@@ -1,0 +1,22 @@
+# Godot generated cache
+.godot/
+
+# .NET build output
+bin/
+obj/
+
+# Mod export/build output
+build/
+
+# IDE/local files
+.vs/
+.idea/
+*.user
+*.suo
+desktop.ini
+
+# Packaged/generated mod files
+*.pck
+*.dll
+*.deps.json
+*.runtimeconfig.json

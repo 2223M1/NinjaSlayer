@@ -1,0 +1,63 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <Sts2Dir>C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2Dir>
+      <!-- 新增 -->
+    <GodotExe>C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
+    <Sts2DataDir>$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
+    <PostBuildModDir>$(MSBuildProjectDirectory)\build\mods\$(MSBuildProjectName)\</PostBuildModDir>
+    <SteamModDir>$(Sts2Dir)\mods\$(MSBuildProjectName)\</SteamModDir>
+  </PropertyGroup>
+    
+  <ItemGroup>
+    <Reference Include="sts2">
+      <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+
+    <Reference Include="0Harmony">
+      <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
+      <Private>true</Private>
+    </Reference>        
+      
+    <!-- NuGet获取 -->
+    <PackageReference Include="STS2.RitsuLib" Version="0.4.26" />
+    <!-- 如果你在其他版本开发，自由指定兼容版本 -->
+    <!-- <PackageReference Include=" STS2.RitsuLib.Compat.0.103.2 " Version="*" /> -->
+  </ItemGroup>
+    
+  <ItemGroup>
+    <Compile Remove="Code\ExternalAnimations\HexaghostOrbVisual.cs" />
+    <Compile Remove="Code\ExternalAnimations\HexaghostVisuals.cs" />
+  </ItemGroup>
+
+  <Target Name="Copy Mod" AfterTargets="PostBuildEvent">
+    <Message Text="Copying mod to $(PostBuildModDir)..." Importance="high" />
+    <MakeDir Directories="$(PostBuildModDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PostBuildModDir)" />
+    <Copy SourceFiles="$(MSBuildProjectName).json" DestinationFolder="$(PostBuildModDir)" />
+  </Target>
+
+  <!-- 新增 -->
+  <Target Name="ExportPck" AfterTargets="Build" Condition="'$(IsInnerGodotExport)' != 'true' and Exists('$(GodotExe)')">
+    <Message Text="Exporting PCK to $(PostBuildModDir)..." Importance="high" />
+    <MakeDir Directories="$(PostBuildModDir)" />
+    <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(PostBuildModDir)$(MSBuildProjectName).pck&quot;"
+      EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
+      ContinueOnError="WarnAndContinue" />
+  </Target>
+
+  <Target Name="SyncModToSteam" AfterTargets="ExportPck" Condition="'$(IsInnerGodotExport)' != 'true' and Exists('$(PostBuildModDir)')">
+    <Message Text="Syncing mod to $(SteamModDir)..." Importance="high" />
+    <MakeDir Directories="$(SteamModDir)" />
+    <ItemGroup>
+      <BuiltModFiles Include="$(PostBuildModDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuiltModFiles)" DestinationFiles="@(BuiltModFiles->'$(SteamModDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>
