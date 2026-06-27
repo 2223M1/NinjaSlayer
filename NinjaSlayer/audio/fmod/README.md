@@ -1,8 +1,13 @@
 # FMOD Bank Output
 
-Export these files from FMOD Studio and place them in this folder:
+FMOD Studio builds to `desktop/NinjaSlayer.bank` (see `STS2_FModProject_Minimal-main/Metadata/Workspace.xml`).
 
-`NinjaSlayer.bank`
-`GUIDs.txt`
+The game loads `NinjaSlayer.bank` in **this folder** (not `desktop/`).
 
-Do not place `Master.bank` here. The tutorial's bank workflow registers the project bank and `GUIDs.txt`.
+After `File → Build` in FMOD Studio:
+
+1. Confirm `desktop/NinjaSlayer.bank` updated (size >> 27KB).
+2. Copy to `NinjaSlayer.bank` here, **or** run `dotnet build` (auto-syncs from `desktop/` when present).
+3. `File → Export GUIDs` → update `GUIDs.txt` in this folder.
+
+Do not place `Master.bank` here. The mod registers only `NinjaSlayer.bank` and `GUIDs.txt`.

@@ -1,12 +1,10 @@
-using Godot;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -20,6 +18,10 @@ public sealed class GiantShurikenCard : ModCardTemplate
     private const CardRarity rarity = CardRarity.Token;
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = false;
+
+    public override TargetType TargetType => Owner?.Creature.HasPower<NinjaSlayerSoarPower>() == true
+        ? TargetType.AllEnemies
+        : targetType;
 
     public override CardAssetProfile AssetProfile => new(
         PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
@@ -42,11 +44,7 @@ public sealed class GiantShurikenCard : ModCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
-            .Targeting(cardPlay.Target)
-            .WithHitVfxNode(t => NShivThrowVfx.Create(Owner.Creature, t, Colors.Green))
+        await ShurikenCombat.BuildAttackCommand(this, cardPlay, DynamicVars.Damage, CombatState)
             .Execute(choiceContext);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
     }

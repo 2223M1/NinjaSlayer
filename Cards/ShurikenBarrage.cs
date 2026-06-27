@@ -36,7 +36,11 @@ public sealed class ShurikenBarrage : ModCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars["Shuriken"].IntValue, PileType.Hand, IsUpgraded);
-        foreach (CardModel shuriken in Owner.PlayerCombatState?.AllCards.Where(c => c.Tags.Contains(NinjaSlayerCardTags.Shuriken)).ToList() ?? [])
+        List<CardModel> deckShuriken = [
+            .. PileType.Draw.GetPile(Owner).Cards,
+            .. PileType.Discard.GetPile(Owner).Cards
+        ];
+        foreach (CardModel shuriken in deckShuriken.Where(c => c.Tags.Contains(NinjaSlayerCardTags.Shuriken)))
         {
             await DamageCmd.Attack(shuriken.DynamicVars.Damage.BaseValue)
                 .FromCard(this)

@@ -12,6 +12,8 @@
     <Sts2DataDir>$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
     <PostBuildModDir>$(MSBuildProjectDirectory)\build\mods\$(MSBuildProjectName)\</PostBuildModDir>
     <SteamModDir>$(Sts2Dir)\mods\$(MSBuildProjectName)\</SteamModDir>
+    <FmodDesktopBank>$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\desktop\NinjaSlayer.bank</FmodDesktopBank>
+    <FmodRootBank>$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\NinjaSlayer.bank</FmodRootBank>
   </PropertyGroup>
     
   <ItemGroup>
@@ -31,16 +33,23 @@
     <!-- <PackageReference Include=" STS2.RitsuLib.Compat.0.103.2 " Version="*" /> -->
   </ItemGroup>
     
-  <ItemGroup>
-    <Compile Remove="Code\ExternalAnimations\HexaghostOrbVisual.cs" />
-    <Compile Remove="Code\ExternalAnimations\HexaghostVisuals.cs" />
-  </ItemGroup>
-
   <Target Name="Copy Mod" AfterTargets="PostBuildEvent">
     <Message Text="Copying mod to $(PostBuildModDir)..." Importance="high" />
     <MakeDir Directories="$(PostBuildModDir)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PostBuildModDir)" />
     <Copy SourceFiles="$(MSBuildProjectName).json" DestinationFolder="$(PostBuildModDir)" />
+  </Target>
+
+  <Target Name="SyncFmodBankFromDesktop" BeforeTargets="Build">
+    <Copy SourceFiles="$(FmodDesktopBank)"
+          DestinationFiles="$(FmodRootBank)"
+          Condition="Exists('$(FmodDesktopBank)')"
+          SkipUnchangedFiles="false" />
+    <Message Text="Synced FMOD bank from desktop to mod root."
+             Importance="high"
+             Condition="Exists('$(FmodDesktopBank)')" />
+    <Warning Text="FMOD desktop bank not found at $(FmodDesktopBank). Build in FMOD Studio, then copy NinjaSlayer.bank to $(FmodRootBank)."
+             Condition="!Exists('$(FmodDesktopBank)') and !Exists('$(FmodRootBank)')" />
   </Target>
 
   <!-- 新增 -->

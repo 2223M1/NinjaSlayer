@@ -1,9 +1,9 @@
 {
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.title": "茶道呼吸",
-  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "回合结束时，若本回合没有受到未被格挡的伤害，回复{Heal:diff()}点生命。",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "回合结束时，如果手牌中有[sine]茶道[/sine]，回复{Heal:diff()}点生命。",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.flavor": "呼吸、凝神，空手道仍从自我中涌出。",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.title": "深层茶道呼吸",
-  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "回合结束时，若本回合没有受到未被格挡的伤害，回复{Heal:diff()}点生命。",
+  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "回合结束时，如果手牌中有[sine]茶道[/sine]，回复{Heal:diff()}点生命。",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.flavor": "更深的呼吸，更接近彼岸侧门。",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.title": "毛毯",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.description": "每次进入奈落时，额外获得{NarakuLife:diff()}点奈落生命。",

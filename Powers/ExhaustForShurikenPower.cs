@@ -15,6 +15,8 @@ public sealed class ExhaustForShurikenPower : ModPowerTemplate
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
+
     private int exhaustCount;
 
     public override async Task AfterCardExhausted(PlayerChoiceContext choiceContext, CardModel card, bool causedByEthereal)

@@ -7,6 +7,7 @@ namespace NinjaSlayer.Relics;
 [RegisterRelic(typeof(NinjaSlayerRelicPool))]
 public sealed class DeepChadoBreathingRelic : ChadoBreathingRelic
 {
-    protected override int HealAmount => 3;
+    protected override int HealAmount => 4;
+    protected override int MaxHealPerCombat => 24;
     public override RelicRarity Rarity => RelicRarity.Ancient;
 }

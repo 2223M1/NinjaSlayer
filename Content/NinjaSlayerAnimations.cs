@@ -26,6 +26,7 @@ public static class NinjaSlayerAnimations
         builder.AddAnyState("Idle", "idle");
         builder.AddAnyState("Attack", NinjaSlayerCharacter.AttackCueName);
         builder.AddAnyState("XAttack", "x_attack");
+        builder.AddAnyState("XAttackCue", "x_attack");
         builder.AddAnyState("Cast", "cast");
         builder.AddAnyState("Hit", NinjaSlayerCharacter.HitCueName);
         builder.AddAnyState("BlockedHit", NinjaSlayerCharacter.BlockedHitCueName);

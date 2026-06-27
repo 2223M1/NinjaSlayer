@@ -1,4 +1,3 @@
-using System.Reflection;
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -6,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Events;
+using NinjaSlayer.Code.Interop;
 
 namespace NinjaSlayer.Code.Commands;
 
@@ -43,26 +43,12 @@ public static class ScryCmd
             await CardCmd.Discard(choiceContext, card);
         }
 
-        await NinjaSlayerHook.OnScryed(choiceContext, player, amount, cardsToDiscard.Count);
-        await NotifyWatcherScryed(choiceContext, player, amount, cardsToDiscard.Count);
-    }
+        int discardedAmount = cardsToDiscard.Count;
+        await NinjaSlayerHook.OnScryed(choiceContext, player, amount, discardedAmount);
 
-    private static async Task NotifyWatcherScryed(PlayerChoiceContext choiceContext, Player player, int amount, int discardedAmount)
-    {
-        MethodInfo? onScryed = AppDomain.CurrentDomain.GetAssemblies()
-            .Select(a => a.GetType("Watcher.Code.Events.WatcherHook"))
-            .Where(t => t != null)
-            .Select(t => t!.GetMethod(
-                "OnScryed",
-                BindingFlags.Public | BindingFlags.Static,
-                null,
-                [typeof(PlayerChoiceContext), typeof(Player), typeof(int), typeof(int)],
-                null))
-            .FirstOrDefault(m => m != null);
-
-        if (onScryed?.Invoke(null, new object[] { choiceContext, player, amount, discardedAmount }) is Task task)
+        if (WatcherScryHookInterop.IsReady)
         {
-            await task;
+            await WatcherScryHookInterop.OnScryed(choiceContext, player, amount, discardedAmount);
         }
     }
 }

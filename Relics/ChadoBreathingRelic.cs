@@ -1,15 +1,13 @@
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Combat.History.Entries;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Entities.Multiplayer;
-using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
-using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -22,9 +20,11 @@ namespace NinjaSlayer.Relics;
 [RegisterTouchOfOrobasRefinement(typeof(DeepChadoBreathingRelic))]
 public class ChadoBreathingRelic : ModRelicTemplate
 {
-    private int _lastBreathedTurnNumber;
+    private int _healedThisCombat;
 
-    protected virtual int HealAmount => 1;
+    protected virtual int HealAmount => 2;
+    protected virtual int MaxHealPerCombat => 12;
+
     public override RelicRarity Rarity => RelicRarity.Starter;
 
     public override RelicAssetProfile AssetProfile => new(
@@ -37,60 +37,52 @@ public class ChadoBreathingRelic : ModRelicTemplate
         new HealVar(HealAmount)
     ];
 
-    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    public override Task BeforeCombatStart()
     {
-        if (player != Owner || Owner.PlayerCombatState?.TurnNumber <= 1)
-        {
-            return;
-        }
-
-        await TryBreathe(choiceContext, LostHpLastPlayerTurn);
+        _healedThisCombat = 0;
+        return Task.CompletedTask;
     }
 
-    public override async Task AfterCombatEnd(CombatRoom room)
+    public override Task AfterCombatEnd(CombatRoom _)
     {
-        if (Owner.PlayerCombatState?.TurnNumber <= 1 || room.CombatState.CurrentSide != CombatSide.Player)
-        {
-            return;
-        }
-
-        await TryBreathe(new HookPlayerChoiceContext(this, Owner.NetId, room.CombatState, GameActionType.Combat), LostHpThisTurn);
+        _healedThisCombat = 0;
+        return Task.CompletedTask;
     }
 
-    public async Task TryBreathe(PlayerChoiceContext choiceContext, Func<Creature, bool> lostHp)
+    public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
-        if (_lastBreathedTurnNumber == Owner.PlayerCombatState?.TurnNumber || lostHp(Owner.Creature) || Owner.Creature.IsDead)
+        if (!participants.Contains(Owner.Creature) || Owner.Creature.IsDead)
         {
             return;
         }
 
-        _lastBreathedTurnNumber = Owner.PlayerCombatState?.TurnNumber ?? 0;
+        await TryBreathe();
+    }
+
+    private async Task TryBreathe()
+    {
+        if (!HandHasChado())
+        {
+            return;
+        }
+
+        int remaining = MaxHealPerCombat - _healedThisCombat;
+        if (remaining <= 0)
+        {
+            return;
+        }
+
+        int heal = Math.Min((int)DynamicVars.Heal.BaseValue, remaining);
         Flash();
-        await CreatureCmd.Heal(Owner.Creature, HealAmount);
+        await CreatureCmd.Heal(Owner.Creature, heal);
+        _healedThisCombat += heal;
+
         if (Owner.Creature.HasPower<NarakuPower>())
         {
             await NinjaSlayerActions.ExitNaraku(Owner.Creature);
         }
     }
 
-    private static bool LostHpThisTurn(Creature creature)
-    {
-        return CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>().Any(e =>
-            e.HappenedThisTurn(creature.CombatState) &&
-            e.Receiver == creature &&
-            e.Result.UnblockedDamage > 0);
-    }
-
-    private static bool LostHpLastPlayerTurn(Creature creature)
-    {
-        if (creature.Player == null)
-        {
-            return false;
-        }
-
-        return CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>().Any(e =>
-            e.HappenedLastPlayerTurn(creature.Player) &&
-            e.Receiver == creature &&
-            e.Result.UnblockedDamage > 0);
-    }
+    private bool HandHasChado() =>
+        PileType.Hand.GetPile(Owner).Cards.Any(c => c is ChadoCard);
 }

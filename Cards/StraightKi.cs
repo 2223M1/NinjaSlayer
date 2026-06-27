@@ -44,7 +44,7 @@ public sealed class StraightKi : ModCardTemplate
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this)
-            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
 

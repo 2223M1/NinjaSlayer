@@ -98,3 +98,11 @@ Place potion images in `NinjaSlayer/images/potions/`:
 
 - `ZbrAmpoulePotion.png`
 - `ZbrAmpoulePotion_outline.png`
+
+## Power Icons
+
+Power icons load through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. Only `soar_power.png` ships today; every other power falls back to a shared placeholder at runtime, so the game never references a missing texture. Drop a `{PowerClassName}.png` to give a power its real icon — it is picked up automatically with no code change.
+
+## Card Art Naming
+
+Card portraits resolve from the card's class name (`res://NinjaSlayer/images/cards/{ClassName}.png`). The generic-named cards were renamed to meaningful English (e.g. `SkillBlue2`→`ReadyBlade`, `AttackGold2`→`StunStrike`); their PNG + `.import` files were renamed to match. New cards just need a `{ClassName}.png`.

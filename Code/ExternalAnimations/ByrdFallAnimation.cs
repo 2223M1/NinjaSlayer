@@ -4,8 +4,9 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
+using NinjaSlayer.Code.Nodes;
 
-namespace ActsFromThePast;
+namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class ByrdFallAnimation
 {
@@ -20,18 +21,24 @@ public static class ByrdFallAnimation
         var visuals = creatureNode.Visuals;
         if (visuals == null) return;
 
-        var originalPos = visuals.Position;
+        var anchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals);
+        if (anchor == null) return;
+
+        var originalPos = anchor.Position;
 
         var tween = creatureNode.CreateTween();
-        tween.TweenProperty(visuals, "position:y",
+        tween.TweenProperty(anchor, "position:y",
                 originalPos.Y + fallDistance, Duration)
             .SetEase(Tween.EaseType.In)
             .SetTrans(Tween.TransitionType.Quad);
 
         await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
 
+        SoarVisualState.ResetVisualsToGround(creature);
+        HopAnimation.SyncBasePosition(creature, Vector2.Zero);
+
         NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
-        
+
         SfxCmd.Play("event:/sfx/enemy/enemy_impact_enemy_size/enemy_impact_fur");
     }
 }

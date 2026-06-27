@@ -1,0 +1,66 @@
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using NinjaSlayer.Powers;
+using NinjaSlayer.Scripts;
+
+namespace NinjaSlayer.Content;
+
+public readonly struct NinjaSlayerCombatAudioSet
+{
+#if DEBUG
+    private const bool LogCombatSfx = true;
+#else
+    private const bool LogCombatSfx = false;
+#endif
+
+    public string FastAttack { get; init; }
+    public string SlowAttack { get; init; }
+    public string Cast { get; init; }
+    public string Hurt { get; init; }
+    public string Death { get; init; }
+    public string IntroSpinAttack { get; init; }
+    public string LoopSpinAttack { get; init; }
+    public string OutroSpinAttack { get; init; }
+
+    public static NinjaSlayerCombatAudioSet For(Creature creature) =>
+        creature.HasPower<NarakuPower>() ? Naraku : NinjaSlayer;
+
+    public static readonly NinjaSlayerCombatAudioSet NinjaSlayer = new()
+    {
+        FastAttack = NinjaSlayerAudio.NinjaSlayerFastAttackEvent,
+        SlowAttack = NinjaSlayerAudio.NinjaSlayerSlowAttackEvent,
+        Cast = NinjaSlayerAudio.NinjaSlayerCastEvent,
+        Hurt = NinjaSlayerAudio.NinjaSlayerHurtEvent,
+        Death = NinjaSlayerAudio.NinjaSlayerDeathEvent,
+        IntroSpinAttack = NinjaSlayerAudio.NinjaSlayerIntroSpinAttackEvent,
+        LoopSpinAttack = NinjaSlayerAudio.NinjaSlayerLoopSpinAttackEvent,
+        OutroSpinAttack = NinjaSlayerAudio.NinjaSlayerOutroSpinAttackEvent,
+    };
+
+    public static readonly NinjaSlayerCombatAudioSet Naraku = new()
+    {
+        FastAttack = NinjaSlayerAudio.NarakuFastAttackEvent,
+        SlowAttack = NinjaSlayerAudio.NarakuSlowAttackEvent,
+        Cast = NinjaSlayerAudio.NarakuCastEvent,
+        Hurt = NinjaSlayerAudio.NarakuHurtEvent,
+        Death = NinjaSlayerAudio.NarakuDeathEvent,
+        IntroSpinAttack = NinjaSlayerAudio.NinjaSlayerIntroSpinAttackEvent,
+        LoopSpinAttack = NinjaSlayerAudio.NinjaSlayerLoopSpinAttackEvent,
+        OutroSpinAttack = NinjaSlayerAudio.NinjaSlayerOutroSpinAttackEvent,
+    };
+
+    public static void Play(string? eventPath, float volume = 1f)
+    {
+        if (string.IsNullOrEmpty(eventPath))
+        {
+            return;
+        }
+
+        if (LogCombatSfx)
+        {
+            Entry.Logger.Info($"Combat SFX: {eventPath}");
+        }
+
+        SfxCmd.Play(eventPath, volume);
+    }
+}

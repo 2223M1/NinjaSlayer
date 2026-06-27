@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Powers;
+using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -9,4 +10,6 @@ public sealed class StarlessNightPower : ModPowerTemplate
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.None;
+
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 }

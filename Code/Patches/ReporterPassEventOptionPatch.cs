@@ -9,11 +9,11 @@ using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using NinjaSlayer.Relics;
+using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-[HarmonyPatch(typeof(EventModel), "SetEventState")]
-internal static class ReporterPassEventOptionPatch
+public sealed class ReporterPassEventOptionPatch : IPatchMethod
 {
     private const int CardsToUpgrade = 3;
     private const string RecordOptionKey = "NINJA_SLAYER_REPORTER_PASS_RECORD";
@@ -23,7 +23,16 @@ internal static class ReporterPassEventOptionPatch
         AccessTools.Method(typeof(EventModel), "SetEventFinished", new[] { typeof(LocString) })
         ?? throw new MissingMethodException(nameof(EventModel), "SetEventFinished");
 
-    private static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
+    public static string PatchId => "ninjaslayer_reporter_pass_event_option";
+
+    public static string Description => "Inject ReporterPassRelic record option into events.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(EventModel), "SetEventState", [typeof(LocString), typeof(IEnumerable<EventOption>)])];
+
+    public static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
     {
         if (__instance.Owner?.GetRelic<ReporterPassRelic>() == null || __instance.IsFinished || eventOptions == null)
         {

@@ -28,8 +28,13 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
     private const string selectTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer.png";
     private const string selectLockedTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer_locked.png";
     private const string mapMarkerTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/map_marker.png";
-    private static readonly Vector2 combatVisualsBasePosition = new(-160f, -180f);
-    private const float combatVisualsBaseScale = 0.32f;
+    public const string CharacterSelectTransitionMaterialPath = "res://NinjaSlayer/materials/transitions/ninja_slayer_transition_mat.tres";
+    public const string TransitionFramePathFormat = "res://NinjaSlayer/images/ui/transitions/ninja_slayer/ninja_slayer_transition_{0:D4}.png";
+    public const int TransitionFrameCount = 60;
+    private static readonly Vector2 combatVisualsBasePosition = new(-160f, -190f);
+    private const float combatVisualsBaseScale = 0.33f;
+    private const float xAttackSpinDuration = 0.24f;
+    private const float xAttackSpinFps = 60f;
     public const bool OriginalAnimations = true;
     public const string AttackCueName = OriginalAnimations ? "attack" : "archived_attack";
     public const string HitCueName = OriginalAnimations ? "hit" : "archived_hit";
@@ -42,13 +47,7 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 0f))
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 55f))
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 0f)))
-        .Sequence("x_attack", seq => seq
-            .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.04f, CueStyle(offsetX: 0f, scaleX: 1f))
-            .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.04f, CueStyle(offsetX: 0f, scaleX: 0.2f))
-            .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.04f, CueStyle(offsetX: 0f, scaleX: -1f))
-            .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.04f, CueStyle(offsetX: 0f, scaleX: -0.2f))
-            .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.04f, CueStyle(offsetX: 0f, scaleX: 0.2f))
-            .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.04f, CueStyle(offsetX: 0f, scaleX: 1f)))
+        .Sequence("x_attack", AddXAttackSpinFrames)
         .Single("hit", idleTexturePath, 0.01f, CueStyle(offsetX: 0f))
         .Sequence("archived_hit", seq => seq
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/hit/hit_0001.png", 0.08f, CueStyle(offsetX: 0f, rotationDegrees: 0f))
@@ -80,17 +79,17 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
             CharacterSelectBgPath: selectBgTexturePath,
             CharacterSelectIconPath: selectTexturePath,
             CharacterSelectLockedIconPath: selectLockedTexturePath,
-            CharacterSelectTransitionPath: null,
+            CharacterSelectTransitionPath: CharacterSelectTransitionMaterialPath,
             MapMarkerPath: mapMarkerTexturePath
         ),
         Vfx: null,
         Spine: null,
         Audio: new CharacterAudioAssetSet(
-            CharacterSelectSfx: null,
-            CharacterTransitionSfx: null,
-            AttackSfx: NinjaSlayerAudio.CharacterAttackEvent,
+            CharacterSelectSfx: NinjaSlayerAudio.NinjaSlayerSelectEvent,
+            CharacterTransitionSfx: NinjaSlayerAudio.NinjaSlayerTransitionEvent,
+            AttackSfx: null,
             CastSfx: null,
-            DeathSfx: NinjaSlayerAudio.CharacterDeathEvent
+            DeathSfx: NinjaSlayerAudio.NinjaSlayerDeathEvent
         ),
         Multiplayer: null,
         VisualCues: CombatVisualCues,
@@ -105,9 +104,11 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
     public override Color MapDrawingColor => new("D32020FF");
     public override Color RemoteTargetingLineColor => new("E34B3FFF");
     public override Color RemoteTargetingLineOutline => new("691A1BFF");
-    public override float AttackAnimDelay => 0.24f;
+    public override float AttackAnimDelay => 0.15f;
     public override float CastAnimDelay => 0.2f;
     public override bool RequiresEpochAndTimeline => false;
+    public override string CharacterSelectSfx => NinjaSlayerAudio.NinjaSlayerSelectEvent;
+    public override string CharacterTransitionSfx => NinjaSlayerAudio.NinjaSlayerTransitionEvent;
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() => RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(AssetProfile.Scenes!.VisualsPath!);
 
@@ -119,6 +120,31 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
         }
 
         seq.Loop();
+    }
+
+    private static void AddXAttackSpinFrames(VisualFrameSequenceBuilder seq)
+    {
+        AddVerticalSpinFrames(seq, xAttackSpinDuration, xAttackSpinFps, moveDistance: 0f);
+    }
+
+    private static void AddVerticalSpinFrames(VisualFrameSequenceBuilder seq, float duration, float fps, float moveDistance)
+    {
+        const string framePath = "res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png";
+        var frameCount = Mathf.CeilToInt(duration * fps);
+        var frameDuration = duration / frameCount;
+
+        for (var i = 0; i < frameCount; i++)
+        {
+            var progress = frameCount == 1 ? 1f : i / (frameCount - 1f);
+            var scaleX = Mathf.Cos(progress * Mathf.Pi * 2f);
+            if (Mathf.Abs(scaleX) < 0.18f)
+            {
+                scaleX = scaleX < 0f ? -0.18f : 0.18f;
+            }
+
+            var x = Mathf.Sin(progress * Mathf.Pi) * moveDistance;
+            seq.Frame(framePath, frameDuration, CueStyle(offsetX: x, scaleX: scaleX));
+        }
     }
 
     private static VisualNodeStyle CueStyle(float offsetX, float rotationDegrees = 0f, float scaleX = 1f)

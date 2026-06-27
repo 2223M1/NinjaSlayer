@@ -43,7 +43,7 @@ public static class NinjaSlayerActions
     public static async Task AddGeneratedCards<T>(Player owner, int count, PileType pile, CardPilePosition position = CardPilePosition.Bottom)
         where T : CardModel
     {
-        if (count <= 0)
+        if (count <= 0 || CombatManager.Instance.IsOverOrEnding)
         {
             return;
         }
@@ -61,27 +61,42 @@ public static class NinjaSlayerActions
 
     public static async Task AddGeneratedShuriken(PlayerChoiceContext choiceContext, Player owner, int count, PileType pile, bool upgraded = false, CardPilePosition position = CardPilePosition.Bottom)
     {
-        if (count <= 0)
+        if (count <= 0 || CombatManager.Instance.IsOverOrEnding)
         {
             return;
         }
 
         ICombatState combatState = owner.Creature.CombatState ?? throw new InvalidOperationException("Generated cards require an active combat state.");
         List<CardModel> cards = new();
-        bool starlessNight = owner.Creature.HasPower<StarlessNightPower>();
-        if (starlessNight)
+        if (owner.Creature.HasPower<StarlessNightPower>())
         {
-            count = 1;
-            pile = PileType.Hand;
-            position = CardPilePosition.Bottom;
-            upgraded |= await ExhaustAllShuriken(choiceContext, owner);
+            for (int i = 0; i < count; i++)
+            {
+                CardModel shuriken = combatState.CreateCard<ShurikenCard>(owner);
+                if (upgraded)
+                {
+                    CardCmd.Upgrade(shuriken);
+                }
+
+                cards.Add(shuriken);
+            }
+
+            IReadOnlyList<CardPileAddResult> shurikenResults = await CardPileCmd.AddGeneratedCardsToCombat(cards, pile, owner, position);
+            PreviewGeneratedPileAdd(pile, shurikenResults);
+
+            CardModel giantShuriken = combatState.CreateCard<GiantShurikenCard>(owner);
+            if (await ExhaustAllShuriken(choiceContext, owner))
+            {
+                CardCmd.Upgrade(giantShuriken);
+            }
+
+            await CardPileCmd.AddGeneratedCardToCombat(giantShuriken, PileType.Hand, owner);
+            return;
         }
 
         for (int i = 0; i < count; i++)
         {
-            CardModel card = starlessNight
-                ? combatState.CreateCard<GiantShurikenCard>(owner)
-                : combatState.CreateCard<ShurikenCard>(owner);
+            CardModel card = combatState.CreateCard<ShurikenCard>(owner);
             if (upgraded)
             {
                 CardCmd.Upgrade(card);

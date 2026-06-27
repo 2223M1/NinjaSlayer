@@ -31,6 +31,8 @@ public sealed class BurningCard : ModCardTemplate
         new DamageVar(6, ValueProp.Unblockable | ValueProp.Unpowered)
     ];
 
+    public override bool HasTurnEndInHandEffect => true;
+
     public BurningCard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
