@@ -1,17 +1,273 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/07-migration-99-100/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 正式版 至 测试版
 
-[2026年03月27日]()[647 字]()[大概 3 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/07-migration-99-100/ -->
 
-## 0.105测试版 至 0.106测试版
+此处记录一些可能会导致你修改代码的更改，并不是所有修改。
+
+## 0.107 至 0.108
+
+### AbstractModel
+
+类型/成员
+0.107
+0.108
+加参 `AbstractModel.ModifyDamageAdditive`
+`(..., CardModel? cardSource)`
+`(..., CardModel? cardSource, CardPlay? cardPlay)`
+加参 `AbstractModel.ModifyDamageMultiplicative`
+同上
+同上
+加参 `AbstractModel.ModifyDamageCap`
+`(..., CardModel? cardSource)`
+`(..., CardModel? cardSource, CardPlay? cardPlay)`
+新增：
+
+```csharp
+// AbstractModel 上
+public virtual Task BeforeCombatRewardOffered(RewardsSet, CombatRoom);
+public virtual bool IsMock => false;
+```
+
+### CardModel
+
+类型/成员
+0.107
+0.108
+改名和改返回类型 `CardModel.GetResultPileTypeForCardPlay`
+`PileType GetResultPileTypeForCardPlay()`
+`(PileType, CardPilePosition) GetResultPileTypeAndPositionForCardPlay()`
+改可见性 `CardModel.PortraitPngPath`
+`private`
+`protected virtual`
+加参 `AttackCommand.FromCard`
+`FromCard(CardModel)`
+`FromCard(CardModel, CardPlay?)`
+加参 `AttackCommand.FromOsty`
+`FromOsty(Creature, CardModel)`
+`FromOsty(Creature, CardModel, CardPlay?)`
+改参数类型 `AttackCommand.CreateContextAsync`
+`(..., PlayerChoiceContext, CardModel)`
+`(..., PlayerChoiceContext, CardPlay)`
+改参数类型 `AttackContext.CreateAsync`
+`(..., PlayerChoiceContext, CardModel)`
+`(..., PlayerChoiceContext, CardPlay)`
+新增：
+
+```csharp
+public CardModel CreateCloneForPlayer(Player);
+public void GiveToAnotherPlayer(Player);
+// AttackCommand
+public CardPlay? CardPlay { get; }
+```
+
+### OrbModel
+
+类型/成员
+0.107
+0.108
+改名 `OrbModel.Triggered` 事件
+`event Action? Triggered`
+`event Action? PassiveActivated`
+改名+拆分 `OrbModel.Trigger()`
+`void Trigger()`
+`void ActivateEvoke(Creature[])` + `Task TriggerPassive(PlayerChoiceContext, Creature?)`
+新增事件 `event Action<Creature[]>? EvokeActivated`。
+
+### EventModel / EventCombatSynchronizer
+
+类型/成员
+0.107
+0.108
+加参 `EventModel.BeginEvent`
+`BeginEvent(Player, bool)`
+`BeginEvent(Player, EventCombatSynchronizer?, bool)`
+删除 `EventModel.GenerateInternalCombatState`
+`void GenerateInternalCombatState(IRunState)`
+删除
+删除 `EventModel.ResetInternalCombatState`
+`void ResetInternalCombatState()`
+删除
+删除 `EncounterModel.IsDebugEncounter`
+`virtual bool IsDebugEncounter => false`
+删除
+新增类 `EventCombatSynchronizer`（`InitializeForEvent`/`ReadyToEnterCombat`/`ResetState`/`MutableEncounterForLayout`/`CombatStateForLayout`），替代被删除的两个方法。
+
+### EpochModel
+
+类型/成员
+0.107
+0.108
+删除 `EpochModel.Year`
+`string Year`
+删除/私有化
+删除 `EpochModel.EraName`
+`string EraName`
+删除/私有化
+删除 `EpochModel.ModelId`
+`ModelId ModelId`
+删除/私有化
+删除 `EpochModel.IsArtPlaceholder`
+`bool IsArtPlaceholder`
+删除
+删除 `EpochModel.PackedPortraitPath`
+`string PackedPortraitPath`
+删除/私有化
+新增：
+
+```csharp
+public bool HasRealPortrait;
+public static IReadOnlyList<Type> AllEpochs;
+```
+
+### CardCreationOptions / Save / UserData
+
+`CardCreationOptions` 卡池与过滤器拆分。
+类型/成员
+0.107
+0.108
+删除 `CardCreationOptions.CustomCardPool`
+`IEnumerable<CardModel>? CustomCardPool`
+删除
+删除 `CardCreationOptions.ForNonCombatWithDefaultOdds`
+静态方法
+删除
+删除 `CardCreationOptions.WithRngOverride`
+`WithRngOverride(Rng)`
+删除
+改签名 `CardCreationOptions.WithCardPools`
+`WithCardPools(IEnumerable<CardPoolModel>, Func<CardModel,bool>?)`
+`WithCardPools(IEnumerable<CardPoolModel>)`
+新增 `CardCreationOptions WithFilter(Func<CardModel,bool>)` 替代原先内联的过滤 predicate。
+类型/成员
+0.107
+0.108
+改参数类型 `SaveManager.IncrementNumReloads`
+`(SerializableRun, bool isMultiplayer)`
+`(SerializableRun, NetGameType, bool forceInTest=false)`
+加重载 `UserDataPathProvider.GetProfileDir`
+`GetProfileDir(int)`
+`GetProfileDir(int, bool? forceModState)`（旧重载保留）
+新增 `UserDataPathProvider.GetAccountDir(bool? forceModState=null)`、`PrefsSave.IsBestiaryActionsPreferred`。
+
+### GameActions / RunManager / ControllerInput
+
+`VoteToMoveToNextActAction` 构造加参，控制器方向键统一为 `Up/Down/Left/Right`。
+类型/成员
+0.107
+0.108
+加参 `VoteToMoveToNextActAction` ctor
+`VoteToMoveToNextActAction(Player)`
+`VoteToMoveToNextActAction(Player, int currentActIndex)`
+改名 `Controller.dPadNorth`
+`dPadNorth`
+`dPadUp`
+改名 `Controller.dPadSouth`
+`dPadSouth`
+`dPadDown`
+改名 `Controller.dPadEast`
+`dPadEast`
+`dPadRight`
+改名 `Controller.dPadWest`
+`dPadWest`
+`dPadLeft`
+改名 `Controller.joystickPress`
+`joystickPress`
+`lStickPress`
+新增（部分）：
+
+```csharp
+// VoteToMoveToNextActAction
+public int CurrentActIndex { get; }
+// NGame
+public Task GameStartupComplete { get; }
+public static string GetGameVersion();
+// RunManager
+public bool IsPaused;
+public event Func<Task>? TestFadeOut;
+public event Func<Task>? TestFadeIn;
+// Creature
+public void SetNodeVisible(bool);
+// NullCombatState 单例
+public static NullCombatState Instance { get; }
+// GodotControllerInputStrategy / SteamControllerInputStrategy
+public Vector2 GetLeftAnalogStickDirection();
+// EventOption 拷贝构造
+public EventOption(EventOption);
+// DailyRunUtility
+public static DateTimeOffset? AddLeaderboardDays(DateTimeOffset, int);
+// RestSiteOption 测试入口
+public static Func<Player, List<RestSiteOption>>? generateForTests;
+// CharacterModel
+public LocString BestiarySeenQuote;
+public LocString? BestiaryKillQuote;
+// ModifierModel
+public static IReadOnlyCollection<ModifierModel> Pick2Good1Bad(Rng, IEnumerable<CharacterModel>);
+// CardPoolModel
+protected void InvalidateCardCache();
+// MonsterModel
+public virtual float HurtAnimationTrackOffsetForDoom => 0.1f;
+// PlayerMapPointHistoryEntry
+public bool IsAffectedByFurCoat { get; set; }
+```
+
+## 0.106 至 0.107
+
+### `ActModel` 新增 abstract 成员
+
+```csharp
+public abstract int Index { get; }
+public abstract bool IsDefault { get; }
+public abstract bool IsUnlocked(UnlockState unlockState);
+```
+任何继承 `ActModel` 的 mod 类型必须实现这三个新成员，否则编译失败。
+
+### AbstractModel 新增 virtual 方法
+
+```csharp
+// 卡牌关键词修饰
+public virtual bool TryModifyKeywordsInCombat(CardModel card, ISet<CardKeyword> keywords)
+
+// 金币修饰（替代旧的 ShouldGainGold 概念）
+public virtual decimal ModifyGoldGained(Player player, decimal amount)
+
+// Power Amount 拆分为加法和乘法
+public virtual decimal ModifyPowerAmountGivenAdditive(PowerModel power, Creature giver, decimal amount, Creature? target, CardModel? cardSource)
+public virtual decimal ModifyPowerAmountGivenMultiplicative(PowerModel power, Creature giver, decimal amount, Creature? target, CardModel? cardSource)
+
+// 金币修饰后通知
+public virtual Task AfterModifyingGoldGained(Player player, decimal amount)
+```
+
+### 删除的方法
+
+sts2106
+替代
+`ModifyPowerAmountGiven(...)`
+`ModifyPowerAmountGivenAdditive` + `ModifyPowerAmountGivenMultiplicative`
+`ShouldGainGold(decimal, Player)`
+改用 `ModifyGoldGained` + 检查返回值
+
+### CardModel 新增属性
+
+```csharp
+public virtual string Title
+```
+卡牌模型现在可以直接获取标题文本。之前需要通过 LocString 查询，现在有直接的 Title 属性。
+
+## EncounterModel 变更
+
+新增：
+
+```csharp
+public virtual float CalculateGoldProportion(CombatState combatState)
+```
+
+## 0.105 至 0.106
 
 ## 变量变动
 
 -
 新增枚举`HpLossHookPhase`，用于`ModifyHpLost`。
-
 -
 `ModifyDamageHookType`新增`ModifyDamageHookType.Cap`，用于`ModifyDamageCap`接口。
 
@@ -20,46 +276,45 @@
 ### AbstractModel
 
 涉及一些函数改名和参数新增。
-
-| 0.105 | 0.106
-
-| `BeforeSideTurnStart(PlayerChoiceContext choiceContext, CombatSide side, ICombatState combatState)` | `BeforeSideTurnStart(PlayerChoiceContext choiceContext, CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)`
-
-| `AfterSideTurnStart(CombatSide side, ICombatState combatState)` | `AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)`
-
-| `BeforeTurnEndVeryEarly(PlayerChoiceContext choiceContext, CombatSide side)` | `BeforeSideTurnEndVeryEarly(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
-
-| `BeforeTurnEndEarly(PlayerChoiceContext choiceContext, CombatSide side)` | `BeforeSideTurnEndEarly(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
-
-| `BeforeTurnEnd(PlayerChoiceContext choiceContext, CombatSide side)` | `BeforeSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
-
-| `AfterTurnEnd(PlayerChoiceContext choiceContext, CombatSide side)` | `AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
-
-| `AfterTurnEndLate(PlayerChoiceContext choiceContext, CombatSide side)` | `AfterSideTurnEndLate(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
-
-| `AfterCardChangedPiles(..., AbstractModel? source)` | `AfterCardChangedPiles(..., AbstractModel? clonedBy)`
-
-| `AfterCardChangedPilesLate(..., AbstractModel? source)` | `AfterCardChangedPilesLate(..., AbstractModel? clonedBy)`
-
+0.105
+0.106
+`BeforeSideTurnStart(PlayerChoiceContext choiceContext, CombatSide side, ICombatState combatState)`
+`BeforeSideTurnStart(PlayerChoiceContext choiceContext, CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)`
+`AfterSideTurnStart(CombatSide side, ICombatState combatState)`
+`AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)`
+`BeforeTurnEndVeryEarly(PlayerChoiceContext choiceContext, CombatSide side)`
+`BeforeSideTurnEndVeryEarly(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
+`BeforeTurnEndEarly(PlayerChoiceContext choiceContext, CombatSide side)`
+`BeforeSideTurnEndEarly(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
+`BeforeTurnEnd(PlayerChoiceContext choiceContext, CombatSide side)`
+`BeforeSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
+`AfterTurnEnd(PlayerChoiceContext choiceContext, CombatSide side)`
+`AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
+`AfterTurnEndLate(PlayerChoiceContext choiceContext, CombatSide side)`
+`AfterSideTurnEndLate(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)`
+`AfterCardChangedPiles(..., AbstractModel? source)`
+`AfterCardChangedPiles(..., AbstractModel? clonedBy)`
+`AfterCardChangedPilesLate(..., AbstractModel? source)`
+`AfterCardChangedPilesLate(..., AbstractModel? clonedBy)`
 此外`ModifyHpLost`一些函数进行了合并，新增枚举`HpLossHookPhase`。
-
 之前的`ModifyHpLostBeforeOsty`相当于传入参数`HpLossHookPhase.BeforeOsty`，afterosty以此类推。
-
-| 0.105 | 0.106
-
-| `ModifyHpLostBeforeOsty(..., out IEnumerable<AbstractModel> modifiers)` | `ModifyHpLost(..., HpLossHookPhase phases, out IEnumerable<AbstractModel> modifiers)`
-
-| `ModifyHpLostAfterOsty(..., out IEnumerable<AbstractModel> modifiers)` | `ModifyHpLost(..., HpLossHookPhase phases, out IEnumerable<AbstractModel> modifiers)`
+0.105
+0.106
+`ModifyHpLostBeforeOsty(..., out IEnumerable<AbstractModel> modifiers)`
+`ModifyHpLost(..., HpLossHookPhase phases, out IEnumerable<AbstractModel> modifiers)`
+`ModifyHpLostAfterOsty(..., out IEnumerable<AbstractModel> modifiers)`
+`ModifyHpLost(..., HpLossHookPhase phases, out IEnumerable<AbstractModel> modifiers)`
 
 ### CardPileCmd
 
-| 0.105 | 0.106
-
-| `Task AddCurseToDeck<T>(Player owner)` | `Task<CardModel?> AddCurseToDeck<T>(Player owner)`
-
-| `Task AddCursesToDeck(IEnumerable<CardModel> curses, Player owner)` | `Task<IEnumerable<CardPileAddResult>> AddCursesToDeck(...)`
-
-| `Add(..., AbstractModel? source = null, ...)` | `Add(..., AbstractModel? clonedBy = null, ...)`
+0.105
+0.106
+`Task AddCurseToDeck<T>(Player owner)`
+`Task<CardModel?> AddCurseToDeck<T>(Player owner)`
+`Task AddCursesToDeck(IEnumerable<CardModel> curses, Player owner)`
+`Task<IEnumerable<CardPileAddResult>> AddCursesToDeck(...)`
+`Add(..., AbstractModel? source = null, ...)`
+`Add(..., AbstractModel? clonedBy = null, ...)`
 
 ### CardSelectCmd
 
@@ -75,7 +330,6 @@
 
 -
 添加了`min_game_version`字段，必填。
-
 -
 依赖mod写法变动，查看`环境配置`或者两个基础库的第0章。
 
@@ -83,7 +337,6 @@
 
 -
 `bool ShowsInfiniteHp`改成了`HpDisplay`枚举。
-
 -
 `bool IsInstanced`改成了`PowerInstanceType`枚举。
 
@@ -91,26 +344,20 @@
 
 -
 一些函数开始传入`PlayerChoiceContext`参数，与下面的进行配合。
-
 -
 一些效果执行函数，例如`PowerCmd.Apply`等，需要一个`PlayerChoiceContext`参数。如果你的函数传入参数有对应类型添加即可。如果你找不到这个类型的参数，传入`new ThrowingPlayerChoiceContext()`。
-
 -
 `CardPileCmd.AddGeneratedCardToCombat`等，之前传入`addedByPlayer`的`bool`类型的参数的位置，改成了`Player? creator`。所以如果之前是`false`的现在填`null`，是`true`的话填`cardPlay.card.Owner`或者`Owner`，根据语境。
-
 -
 `OnTurnEndInHand`从`public virtual`改为`protected virtual`。
-
 -
 `GetResultPileType`改名为`GetResultPileTypeForCardPlay`。新增`GetResultPileTypeForOnTurnEndInHandEffect`。
 
 旧版 `AbstractModel` 里有：
-
 - `BeforePlayPhaseStart(PlayerChoiceContext choiceContext, Player player)`
 - `BeforePlayPhaseStartLate(PlayerChoiceContext choiceContext, Player player)`
 
 0.104 版这两个点被移除了，换成了：
-
 - `AfterAutoPrePlayPhaseEnteredEarly(PlayerChoiceContext choiceContext, Player player)`
 - `AfterAutoPrePlayPhaseEntered(PlayerChoiceContext choiceContext, Player player)`
 - `AfterAutoPrePlayPhaseEnteredLate(PlayerChoiceContext choiceContext, Player player)`
@@ -123,7 +370,6 @@
 ## 0.99 至 0.103
 
 主要是能量表盘问题。
-
 结构从：
 
 ```plaintext
@@ -135,7 +381,6 @@ TestEnergyCounter (Control)
 ├── BurstFront (CPUParticles2D) %
 └── Label (Label)
 ```
-
 改成了：
 
 ```plaintext
@@ -147,5 +392,9 @@ TestEnergyCounter (Control)
 ├── EnergyVfxFront (NParticlesContainer) %
 └── Label (Label)
 ```
-
 所以如果你在正式版添加人物，需要添加`BurstBack (CPUParticles2D) %`和`BurstFront (CPUParticles2D) %`这两个节点。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/07-migration-99-100/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

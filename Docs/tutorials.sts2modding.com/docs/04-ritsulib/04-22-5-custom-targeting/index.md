@@ -1,31 +1,24 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-5-custom-targeting/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 自定义目标
 
-[2026年05月26日]()[956 字]()[大概 4 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-5-custom-targeting/ -->
 
 如果你的卡牌拥有更特殊的瞄准条件（比如要求“只能指定一个有护甲的敌人”，或者“对所有当前拥有攻击意图的怪物造成伤害”），我们就需要使用自定义目标类型了。
-
-`RitsuLib` 的目标扩展系统不仅让你能极简地定制自己专属的箭头捕捉逻辑，还提供了一套全方位兼容单体与群体选取的遍历扩展。
 
 ## RitsuLib 预置的目标类型
 
 在手写注册前，RitsuLib 的 `CustomTargetType` 类为你预先配备好了原版没有，但呼声极高的常用目标类型：
-
 - `CustomTargetType.Anyone`: 单体目标，允许你把指向箭头指在任意存活的友方或敌方。
 - `CustomTargetType.Everyone`: 群体目标，包含场上所有存活的生物。
 - `CustomTargetType.AnyAttackingEnemy` / `AllAttackingEnemies`: 单体 / 群体目标，限定为“当前拥有攻击意图的存活敌人”。
 - `CustomTargetType.AnyBlockingEnemy` / `AllBlockingEnemies`: 单体 / 群体目标，限定为“当前护甲大于0的存活敌人”。
 - `CustomTargetType.AllHighestHpEnemies` / `AllLowestHpEnemies`: 群体目标，当前血量并列最高 / 最低的所有存活敌人。
-- 等等…
+- 等等...
 
 如果这些恰好符合你的需求，直接看`结算目标`一节如何使用即可，不需要做任何注册动作，你可以直接将卡牌中的 `TargetType` 填为上述值。
 
 ## 注册自定义目标类型
 
 若预置类型仍未能满足，RitsuLib 为你提供了注册的 API，只要你提供回调即可。
-
 可以单独建一个类来存储返回的 `TargetType`，然后将它们在你的模组启动阶段进行一并注册：
 
 ```csharp
@@ -60,6 +53,7 @@ public static class TestTargets
 }
 ```
 
+>
 注意：注册时传入的标识字符串（例如 `"WOUNDED_ENEMY"`） 必须在你的 Mod 中保持唯一，且模组一旦发布后绝对不要去修改它。底层机制会根据这个字符计算与绑定一个确定性的枚举数字写入玩家存档，随意改名会让旧存档读挡时由于匹配不到此卡类型的目标导致问题。
 
 之后别忘了在你的模块初始化点（例如 `Entry.Init()`）调用一次 `TestTargets.Register()`。
@@ -100,3 +94,8 @@ public sealed class StrikeWounded()
     }
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-22-5-custom-targeting/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

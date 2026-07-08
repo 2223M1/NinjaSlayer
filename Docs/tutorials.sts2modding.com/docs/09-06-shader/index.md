@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/09-06-shader/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # Shader
 
-[2026年05月18日]()[2.6k 字]()[大概 14 分钟]()[vitechliu]()
+<!-- Source: https://tutorials.sts2modding.com/docs/09-06-shader/ -->
 
 ## Shader
 
 Shader是高级特效的一部分，我们会在很多地方用到它。
-
 - 动态调色与风格化：不修改原图，就能实现角色受伤闪红、冻结变蓝、中毒变绿等效果。
 - 纹理混合与程序化细节：将多张贴图按遮罩混合，或通过噪声算法生成动态纹理（如火焰、水流、云）。
 - 描边、发光与轮廓：基于法线或深度信息，为素材添加外发光、边缘光或漫画风描边。
@@ -19,14 +15,11 @@ Shader是高级特效的一部分，我们会在很多地方用到它。
 ### 1.使用Shader丰富现有的特效/动画
 
 有的时候，你已经使用帧动画/粒子实现了一个特效，但你感觉他不够亮，颜色不对，打击感/运动感不足等。
-
 或者说你想办法弄一个史莱姆素材，这时候你想为这个史莱姆动画做一些不同颜色的，发光的，扭曲的变体。
-
 这时候就可以给特效本体的材质加上一个shader，并且为其修改相关参数。
-
 这里提供一个万能的shader，存下来保存为advanced.gdshader。
 
-```shaderlab
+```plaintext
 shader_type canvas_item;
 
 // =============================================
@@ -457,17 +450,17 @@ void fragment() {
     COLOR = vec4(final_rgb, final_alpha);
 }
 ```
-
 我们为需要加上shader的节点(比如SpriteAnimation2D, Sprite2D等), 点击CanvasItem - Material 新建一个ShaderMaterial，然后快速加载刚才的Shader
-
 随后点击shader，可以在下方调节各种参数。
-
 包括了发光、曝光、模糊、动态模糊、锐化、扭曲、色相、描边、漩涡、波纹、色差偏移（RGB分离）等常见后处理效果。
 
 ### 2.区域效果
 
 可以参考游戏中的储君攻击_受击特效starry_impact 和 尖叫 scream:
-
 我们注意到这里的vfx_distortion相关 就是一个屏幕扭曲处理, 它表现为一块区域的扭曲。
-
 shader是纯代码，AI友好的，这意味着我们需要仿照类似效果时，只需要把他的gdshader源码偷出来喂给AI，让AI实现你需要的效果即可。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/09-06-shader/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

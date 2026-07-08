@@ -1,14 +1,9 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # RitsuLib
 
-[2026年04月21日]()[687 字]()[大概 3 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/ -->
 
 `RitsuLib`是另一个统一添加新内容行为的基础mod。
-
 [https://github.com/BAKAOLC/STS2-RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib)
-
 先依赖ritsulib才能查看这里里面的文章。
 
 ## 下载
@@ -44,10 +39,8 @@
 
 -
 前往 [https://github.com/BAKAOLC/STS2-RitsuLib/releases](https://github.com/BAKAOLC/STS2-RitsuLib/releases) 下载稳定版本（不是`Development build`，而是例如`STS2.RitsuLib.X.X.X.github.zip`这样的），解压出来放在`mods`文件夹里。记住你下载的版本。
-
 -
 请根据你的游戏版本选择对应的`RitsuLib`版本。例如不带后缀的`STS2.RitsuLib.XXX.github.zip`一般跟随测试版，而例如`STS2.RitsuLib.Compat.0.103.2.XXX.github.zip`这种是兼容`0.103.2`正式版的版本。
-
 -
 在`csproj`文件中相应位置引用`STS2-RitsuLib.dll`，如下，两种方式都可。推荐使用nuget。
 
@@ -70,7 +63,6 @@
   </Reference>
 </ItemGroup>
 ```
-
 - 不要忘了在你`{modid}.json`中填写`dependencies`。
 
 ```json
@@ -78,7 +70,6 @@
   { "id": "STS2-RitsuLib", "min_version": "0.2.27" }
 ],
 ```
-
 - 分发时，可以把自己的mod和`STS2-RitsuLib.XXX.variant-pack.zip`解压后的打包给玩家。该版本可以自己检测游戏版本并使用对应的库。
 
 ## 初始化函数
@@ -123,7 +114,6 @@ public class Entry
 [RegisterCharacterStarterCard(typeof(TestCharacter), 5)]
 public class TestCard : ModCardTemplate {}
 ```
-
 或是在初始化函数中显式注册：
 
 ```csharp
@@ -134,3 +124,53 @@ RitsuLibFramework.CreateContentPack(ModId)
     .ActEncounter<Glory, TestEncounter>()
     .Apply();
 ```
+
+## 未讲解内容
+
+以下公开 API 在 RitsuLib 源码中存在，但本教程暂无对应文章。
+
+### RitsuLibFramework 中的公开方法
+
+- `GetModelCloneRegistry()` — 模型复制监听
+- `GetCardTransformRegistry()` / `ModCardTransformRegistry` — 卡牌转换监听
+- `RegisterHealHookListener()` / `IHealHookListener` / `HealHook` — 全局治疗事件钩子
+- `RegisterCardOnPlayHookListener()` / `ICardOnPlayHookListener` — 全局卡牌打出钩子
+- `RegisterFreePlayBinding()` — 免费打出检测器
+- `RegisterAncientOption<T>()` — 给已有的先古之民注入选项
+- `RegisterModSettingsSidebarOrder()` / `RegisterModSettingsPageOrder()` — 设置页排序
+- `GetModRunRng()` / `GetModPlayerRng()` — 额外的独立随机数生成器
+- `RegisterRelicVisibilityRule()` — 遗物可见性控制
+- `RegisterDustyTomeCard()` — 尘封魔典卡牌注册
+- `I18N` 实例创建：`CreateLocalization()` / `CreateModLocalizationWithFallback()` — 和游戏独立的本地化系统
+
+### 接口
+
+- `IAttackHitHookListener` / `AttackHitHook` — 攻击命中全局监听
+- `IPlayerResourceHookListener` / `PlayerResourceHook` — 能量/辉星变化全局监听
+- `IRitsuGodotNodeFactory<TNode>` — 类型化节点工厂
+- `IModCharacterCardLibraryCompendiumPlacement` — 图鉴卡池放置规则
+
+### 公开静态工具类
+
+- `DynamicVarTooltipRegistry` — 动态变量提示文本注册
+- `RitsuGodotNodeFactories` — 节点工厂帮助类
+- `CombatBackgroundAssetsFactory` — 战斗背景资源工厂
+- `ModAncientStageVisuals` — 先古之民场景构造器
+- `CharacterAssetPathHelper` — 角色资源路径辅助
+- `CharacterOwnedVanillaRelicModelId` — 原版遗物 ID 常量
+
+### 注册注解
+
+- `[RegisterSmartFormatter]` — SmartFormat 格式化器注册
+- `[RegisterSmartFormatSource]` — SmartFormat 数据源注册
+- `[RegisterDefaultModelCapability]` — 默认组件配置
+- `[RegisterMutuallyExclusiveModifierGroup]` — 互斥每日特效组
+- `[AutoTimelineSlotBeforeEpochColumn]` / `[AutoTimelineSlotAfterEpochColumn]` / `[AutoTimelineSlotInEpochColumn]` — 时间线定位
+- `[RegisterEpochRelicsFromPool]` — 将指定遗物池里的所有遗物注册为该时期的解锁内容
+- `[RequireAllCardsInPool]` — 要求整个池的卡都被发现才能解锁该时期
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

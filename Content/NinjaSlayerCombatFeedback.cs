@@ -1,9 +1,13 @@
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.ExternalAnimations;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Models;
 
@@ -18,10 +22,28 @@ public sealed class NinjaSlayerCombatFeedback : HookedSingletonModel
     {
     }
 
-    public override Task BeforeCombatStart()
+    public override async Task BeforeCombatStart()
     {
         _lowHealthLinePlayed = false;
-        return Task.CompletedTask;
+
+        ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
+        if (combatState == null)
+        {
+            return;
+        }
+
+        foreach (Player player in combatState.Players)
+        {
+            if (player.Character is not NinjaSlayerCharacter)
+            {
+                continue;
+            }
+
+            if (NinjaSlayerRunData.ConsumePendingAncientEntranceAnimation(player))
+            {
+                await AncientEntranceAnimation.Play(player);
+            }
+        }
     }
 
     public override Task AfterCombatEnd(CombatRoom room)
@@ -30,34 +52,42 @@ public sealed class NinjaSlayerCombatFeedback : HookedSingletonModel
         return Task.CompletedTask;
     }
 
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target.Player?.Character is not NinjaSlayerCharacter)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        TryPlayLowHealthVoice(target, result);
+        TryPlayLowHealthVoice(target, result, dealer);
 
         if (!props.IsPoweredAttack())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (result.UnblockedDamage > 0)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (result.BlockedDamage > 0)
         {
-            await CreatureCmd.TriggerAnim(target, "BlockedHit", 0.2f);
+            _ = CreatureCmd.TriggerAnim(target, "BlockedHit", 0.2f);
         }
+
+        return Task.CompletedTask;
     }
 
-    private void TryPlayLowHealthVoice(Creature target, DamageResult result)
+    private void TryPlayLowHealthVoice(Creature target, DamageResult result, Creature? dealer)
     {
         if (_lowHealthLinePlayed || result.UnblockedDamage <= 0)
+        {
+            return;
+        }
+
+        if (ShouldSuppressLowHealthVoiceForWaterfallGiantExplode(dealer)
+            && target.CurrentHp * 3 < target.MaxHp)
         {
             return;
         }
@@ -69,5 +99,15 @@ public sealed class NinjaSlayerCombatFeedback : HookedSingletonModel
 
         _lowHealthLinePlayed = true;
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLowHealthEvent);
+    }
+
+    private static bool ShouldSuppressLowHealthVoiceForWaterfallGiantExplode(Creature? dealer)
+    {
+        if (dealer?.Monster is not WaterfallGiant giant)
+        {
+            return false;
+        }
+
+        return giant.NextMove.Id == "EXPLODE_MOVE";
     }
 }

@@ -1,12 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-14-add-new-character/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新人物
 
-[2026年05月04日]()[5.4k 字]()[大概 26 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-14-add-new-character/ -->
 
 添加新人物过于麻烦了，于是单开一章。
 
+>
 以下示例默认你已经在`Entry.Init()`中启用了`RitsuLib`的自动注册，否则`[RegisterCharacter]`之类的attribute不会生效（详见第0章）：
 
 ```csharp
@@ -18,7 +16,6 @@ ModTypeDiscoveryHub.RegisterModAssembly(ModId, assembly);
 ## 创建池子
 
 需要创建人物独有的卡牌、药水、遗物池各一个。
-
 `TestCardPool.cs`:
 
 ```csharp
@@ -54,7 +51,6 @@ public class TestCardPool : TypeListCardPoolModel
     public override bool IsColorless => false;
 }
 ```
-
 `TestRelicPool.cs`:
 
 ```csharp
@@ -72,7 +68,6 @@ public class TestRelicPool : TypeListRelicPoolModel
     public override string EnergyColorName => "test";
 }
 ```
-
 `TestPotionPool.cs`:
 
 ```csharp
@@ -90,7 +85,6 @@ public class TestPotionPool : TypeListPotionPoolModel
     public override string EnergyColorName => "test";
 }
 ```
-
 当你创建你自己人物的池子时，不要忘了把你的卡牌药水遗物等（比如打击）的注册目标改成你的池子，例如：
 
 ```csharp
@@ -106,19 +100,14 @@ public class TestCard : ModCardTemplate
 ```csharp
 RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<TestCard, Shiv>();
 ```
-
 第一个类型参数是你的初始卡，第二个类型参数是被升级成的卡。
-
 `欧洛巴斯之触`可以把初始遗物升级。同样在初始化函数里注册映射：
 
 ```csharp
 RitsuLibFramework.RegisterTouchOfOrobasRefinementMapping<TestRelic, Akabeko>();
 ```
-
 `尘封魔典`可以获得一张先古卡。这个结果是从你池子里选出所有先古卡，然后去除`古老牙齿`的那张得到的。所以只需再创建一张先古卡即可。
-
 `美味饼干`会根据你的人物使用不同的图标。参考下方`AssetProfile`属性里的`VanillaRelicVisualOverrides`值填写。
-
 `海玻璃`会使用不同角色的池子设置效果。需要一条你的人物的本地化文本，在你mod的`relics.json`里添加`SEA_GLASS.{你人物id}.title`即可：
 
 ```json
@@ -126,11 +115,16 @@ RitsuLibFramework.RegisterTouchOfOrobasRefinementMapping<TestRelic, Akabeko>();
   "SEA_GLASS.TEST_CHARACTER_TEST_CHARACTER.title": "戈多玻璃"
 }
 ```
-
-`色彩哲学家`事件会产生三个角色的卡池。默认不接收你的角色，需要给你的卡池实现`IModColorfulPhilosophersCardPool`接口。
+`色彩哲学家`事件会产生三个角色的卡池。默认不接收你的角色，需要给你的卡池实现`IModColorfulPhilosophersCardPool`接口以及本地化文本。
 
 ```csharp
 public class TestCardPool : TypeListCardPoolModel, IModColorfulPhilosophersCardPool {}
+```
+另外需要在你自己的`events.json`里写本地化文本（其中的ID是你卡池的`EnergyColorName`的大写）：
+
+```json
+"COLORFUL_PHILOSOPHERS.pages.INITIAL.options.TEST.title": "淡蓝色",
+"COLORFUL_PHILOSOPHERS.pages.INITIAL.options.TEST.description": "获得[blue]{Cards}[/blue]张戈多的卡牌。",
 ```
 
 ## 创建人物
@@ -141,9 +135,11 @@ public class TestCardPool : TypeListCardPoolModel, IModColorfulPhilosophersCardP
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Characters;
 using MegaCrit.Sts2.Core.Models.Relics;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2RitsuLib.Data.Models;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Characters;
+using STS2RitsuLib.Scaffolding.Godot;
 
 namespace Test.Scripts;
 
@@ -270,11 +266,11 @@ Ui: new(
     CharacterSelectBgPath: "res://Test/scenes/test_bg.tscn",
 )
 ```
-
 没什么要求，Godot里创建一个新的场景，类型为`Control`，自己搭建场景即可。参考：（根节点大小建议为2560x1200，可从最下方复制tscn资源）
 
 ## 自定义战斗模型
 
+>
 如果你的人物使用帧动画或者静态图，可参照`角色动画`一章设置
 
 `AssetProfile`里的：
@@ -284,7 +280,6 @@ Scenes: new(
     VisualsPath: "res://Test/scenes/test_character.tscn"
 )
 ```
-
 新建一个`Node2D`类型的场景，如下：
 
 ```plaintext
@@ -295,11 +290,8 @@ TestCharacter (Node2D)
 ├── CenterPos (Marker2D) %
 └── TalkPos (Marker2D) %
 ```
-
 其中`Visuals`，`Bounds`，`IntentPos`，`CenterPos`，`TalkPos`需要右键勾选`作为唯一名称访问`，出现`%`即可。名字不要改。
-
 `Bounds`就是你的人物hitbox的大小，如果你觉得血条太短调整一下它的大小。
-
 - 人物显示在x轴上方。
 - 如果想使用3d模型，新建`visuals→subviewportcontainer→subviewport`的层级结构，然后在`subviewport`中添加`camera3d`和任意3d模型，在3d视图中调整视角至2d视图正常显示。最后设置`subviewport`的`transparent`为`true`。
 
@@ -309,10 +301,8 @@ TestCharacter (Node2D)
 
 -
 其中`Visuals`可以更改成任意继承了`Node2D`的类型，例如`SpineSprite`，`Sprite2D`，`AnimatedSprite2D`或是`AnimationPlayer`，或者在它之下新建节点都可。
-
 -
 如果要自然支持Spine播放，需要把`Visuals`改成`SpineSprite`类型（不需要改名），且你的战斗人物模型需要有`idle_loop`（待机循环），`attack`（攻击动作），`cast`（能力卡动作），`hurt`（受伤），`die`（死亡）这些动画名。（如果你没有`SpineSprite`，参考`卡图&皮肤替换`一章先下载`Spine Godot Extension`。）
-
 -
 非Spine需要使用动画状态机，详见`角色动画`一章。
 
@@ -325,7 +315,6 @@ Scenes: new(
     EnergyCounterPath: "res://Test/scenes/test_energy_counter.tscn"
 )
 ```
-
 - 建议从原版或者下面的附赠资源处复制一份tscn快速开始。
 
 创建一个`Control`类型的新场景，设定以下结构（名字不能改变）：
@@ -339,7 +328,6 @@ TestEnergyCounter (Control)
 ├── EnergyVfxFront (Node2D) %
 └── Label (Label)
 ```
-
 - 后面标`%`的需要作为唯一名称访问。名字不要改，label也是。
 - RotationLayers里放需要旋转的图层。没有也行。
 
@@ -352,16 +340,13 @@ Scenes: new(
     MerchantAnimPath: "res://Test/scenes/test_character_merchant.tscn"
 )
 ```
-
 创建一个`Node2D`类型的新场景，只放一个节点即可：
 
 ```plaintext
 TestCharacterMerchant (任意)
 ```
-
 -
 如果你使用Spine模型，类型改为`SpineSprite`，默认播放动画名是`relaxed_loop`。
-
 -
 如果你是其他动画，改成你想要的类型即可。
 
@@ -374,7 +359,6 @@ Scenes: new(
     RestSiteAnimPath: "res://RitsuTest/scenes/test_character_rest_site.tscn"
 )
 ```
-
 - 建议从原版或者下面的附赠资源处复制一份tscn快速开始。
 
 创建一个`Node2D`类型的新场景，设定以下结构：
@@ -382,36 +366,31 @@ Scenes: new(
 ```plaintext
 TestCharacterRestSite (Node2D)
 ├── Node (任意)
-└── ControlRoot (Control) %
+└── ControlRoot (Control)
     ├── SelectionReticle (Control) %
     ├── Hitbox (Control) %
     ├── ThoughtBubbleRight (Control) %
     └── ThoughtBubbleLeft (Control) %
 ```
-
 -
 自行更换`Node`的类型制作动画，也可以添加更多节点。人物朝向右边。
-
+-
+如果你使用的Node不是Spine动画，你需要把角色动画节点（Node）放在 `ControlRoot` 里，不然不会自动翻转X轴（联机模式下）。
 -
 如果你使用spine模型，代码会找到所有是SpineSprite类型的节点，根据当前幕数播放`overgrowth_loop`、`hive_loop`或者`glory_loop`动画。这些动画的区别只是光照颜色不同。
-
 -
 如果你使用其他动画，只要把Node换成你的类型就行了。可以创建一个自定义脚本（继承`NRestSiteCharacter`）然后自行播放动画。
 
 ## 自定义过渡动画
 
 过渡动画首先需要准备一张2560x1200的图片，如下。
-
 越接近白色的部分越先出现，逐步覆盖到黑色。如下的过渡图就是从左到右。
-
 然后创建一个`shader material`类型的资源，并添加配套着色器。代码在最后。
-
 在`shader parameters`中设置你自己的过渡纹理。
 
 ## 本地化文件
 
 创建`{modId}/localization/{Language}/characters.json`，填写以下内容：
-
 - 通过`ritsulib`添加内容，其id会变成`{modid}_{类别}_{原id}`。例如这里的`modid`是`TEST`,类别是`CHARACTER`。
 
 ```json
@@ -448,7 +427,6 @@ TestCharacterRestSite (Node2D)
   "TEST_CHARACTER_TEST_CHARACTER.unlockText": "用[pink]{Prerequisite}[/pink]进行一局游戏来解锁这个角色。"
 }
 ```
-
 同时还需要先古对话的json。创建`{modId}/localization/{Language}/ancients.json`。详见`先古对话`一章。
 
 ```json
@@ -711,12 +689,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="RotationLayers" type="Control" parent="Layers"]
 unique_name_in_owner = true
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+mouse_filter = 2
 
 [node name="Layer1" type="TextureRect" parent="Layers"]
 layout_mode = 1
@@ -868,3 +848,8 @@ shader = SubResource("Shader_wjwex")
 shader_parameter/transitionTex = ExtResource("1_2pnya")
 shader_parameter/threshold = 0.0
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-14-add-new-character/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

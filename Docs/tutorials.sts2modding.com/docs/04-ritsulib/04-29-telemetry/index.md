@@ -1,14 +1,9 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-29-telemetry/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 数据遥测
 
-[2026年05月26日]()[2.6k 字]()[大概 13 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-29-telemetry/ -->
 
 RitsuLib 的遥测系统提供一个方便收集数据的接口，供后台分析数据。
-
 但是，其本身只提供发送系统，不提供收集服务，以及服务器搭建等。
-
 当你注册该系统时，玩家会收到是否接受发送数据的请求，只有接受了才会发送给你。
 
 ## 注册申请方
@@ -58,22 +53,26 @@ public static partial class TestTelemetry
     }
 }
 ```
-
 RitsuLib 会为申请方生成设置页和授权入口。`Description` 或 `DescriptionText` 是玩家看到的授权说明，不要写成“改进体验”这种空话；应该直接说明数据类别和用途。
-
 可用请求类别：
-
-| 工厂方法 | request id | 类别
-
-| `TelemetryRequest.BasicUsage(...)` | `basic_usage` | `TelemetryDataCategory.BasicUsage`
-
-| `TelemetryRequest.ModInventory(...)` | `mod_inventory` | `TelemetryDataCategory.ModInventory`
-
-| `TelemetryRequest.RunHistory(...)` | `run_history` | `TelemetryDataCategory.RunHistory`
-
-| `TelemetryRequest.Diagnostics(...)` | `diagnostics` | `TelemetryDataCategory.Diagnostics`
-
-| `TelemetryRequest.Custom(...)` | 你传入的 id | `TelemetryDataCategory.Custom`
+工厂方法
+request id
+类别
+`TelemetryRequest.BasicUsage(...)`
+`basic_usage`
+`TelemetryDataCategory.BasicUsage`
+`TelemetryRequest.ModInventory(...)`
+`mod_inventory`
+`TelemetryDataCategory.ModInventory`
+`TelemetryRequest.RunHistory(...)`
+`run_history`
+`TelemetryDataCategory.RunHistory`
+`TelemetryRequest.Diagnostics(...)`
+`diagnostics`
+`TelemetryDataCategory.Diagnostics`
+`TelemetryRequest.Custom(...)`
+你传入的 id
+`TelemetryDataCategory.Custom`
 
 ## 发送自定义事件
 
@@ -116,7 +115,6 @@ public static partial class TestTelemetry
     }
 }
 ```
-
 `properties` 是扁平字段，适合后端建索引；`payload` 是结构化 JSON，适合保存完整上下文。不要把本地路径、玩家昵称、账号标识、完整日志文件或未裁剪的大对象塞进 payload。
 
 ## 捕获异常
@@ -135,13 +133,11 @@ catch (Exception ex)
     throw;
 }
 ```
-
 如果玩家没有授权 diagnostics，这次调用也是 no-op。不要为了“确保上报”绕过授权系统。
 
 ## 自动上传一局数据
 
 注册了 `TelemetryRequest.RunHistory(...)` 后，RitsuLib 会在游戏结束时为已授权申请方采集原版 `SerializableRun` JSON。`captureFilter` 可以控制哪些跑局进入队列，例如跳过放弃的跑局、只采集某个挑战模式。
-
 需要手动上传 run-history JSON 时，用 `TelemetryApi.CaptureVanillaRunHistory`：
 
 ```csharp
@@ -157,7 +153,6 @@ TelemetryApi.CaptureVanillaRunHistory(
         ["payload_kind"] = "imported_run_history",
     });
 ```
-
 这个方法内部同样走 `run_history` 授权和队列。它适合“你已经拿到了原版 run-history JSON”的情况，不要拿任意自定义对象冒充原版跑局。
 
 ## contribution provider
@@ -189,13 +184,11 @@ public sealed class TestBalanceContribution : ITelemetryContributionProvider
     }
 }
 ```
-
 初始化时注册：
 
 ```csharp
 TelemetryRegistry.RegisterContributionProvider(new TestBalanceContribution());
 ```
-
 如果另一个 Mod 想订阅你的共享 contribution，它的请求里要写 `"test/balance_context"` 或 `"test:balance_context"`。共享数据会出现在 envelope 的 `shared_contributions`；私有数据会出现在 `private_contributions`。
 
 ## 后端和批量格式
@@ -209,21 +202,17 @@ TelemetryRegistry.RegisterContributionProvider(new TestBalanceContribution());
   "events": []
 }
 ```
-
 每个事件 envelope 都包含 `schema`、`applicantId`、`eventName`、`requestId`、`category`、`timestampUtc`、`properties` 和 `payload`。后端建议先校验 `schema`、`applicant_id` 和事件数量，再把原始 JSON 保存下来。需要接 PostHog 时可以用 `PostHogTelemetryAdapter`，但公开项目 API key 会进 Mod 包；正式发布更推荐你自己的后端代理。
 
 ## 使用 PostHog+Cloudflare 搭建简单遥测服务
 
 `posthog`提供100万事件/月的免费额度，并且数据会保留一年，对于mod来说绰绰有余。
-
 （可选）另外还需要一个`cloudflare`转发（同样有免费额度）。不然的话你的apikey会暴露在代码和请求中能被别人看到后窃取，然后可能会被污染数据库。但是对于免费版和小规模mod来说，如果你不在乎这个可以不用。
-
 （可选）还有问题是Cloudflare默认分配的域名可能会直连失败，导致直连玩家可能无法发送信息给你。你可以付极低费用购买一个不常用的海外自定义域名，不在乎的话也不用。
 
 ### 第一步：注册
 
 先注册[posthog](https://posthog.com/)和[cloudflare](https://dash.cloudflare.com/sign-up)账号。
-
 来到`posthog`默认项目的设置里，找到`Settings - General - Project token`，把它复制下来。
 
 ### 第二步：代理（可选）
@@ -237,19 +226,16 @@ TelemetryRegistry.RegisterContributionProvider(new TestBalanceContribution());
 ```bash
 npm install -g wrangler
 ```
-
 安装后验证：
 
 ```bash
 wrangler --version
 ```
-
 然后登录：
 
 ```bash
 wrangler login
 ```
-
 会弹出浏览器，授权 wrangler 访问你的 Cloudflare 账号。授权成功后终端会显示 `Successfully logged in`。
 
 #### 创建项目
@@ -259,7 +245,6 @@ wrangler login
 ```bash
 wrangler init
 ```
-
 然后他会问很多问题，参照下面选择：
 
 ```plaintext
@@ -453,19 +438,16 @@ export default {
 	},
 };
 ```
-
 然后在你的项目里部署：
 
 ```bash
 wrangler deploy
 ```
-
 部署成功后会输出类似：
 
 ```plaintext
 Your worker has been deployed to https://telemetry-proxy.yourname.workers.dev
 ```
-
 如果没有自定义域名，这就是你 mod 里要填的 `host` 地址。
 
 #### 设置机密环境变量
@@ -476,13 +458,11 @@ Your worker has been deployed to https://telemetry-proxy.yourname.workers.dev
 wrangler secret put POSTHOG_API_KEY
 # 然后粘贴你的 key，回车或ctrl+d确认
 ```
-
 设置后可以用以下命令验证 secret 是否存在（不会显示值）：
 
 ```bash
 wrangler secret list
 ```
-
 应该看到 `POSTHOG_API_KEY` 在列表中。
 
 #### （可选）修改域名
@@ -492,9 +472,7 @@ wrangler secret list
 ### 第三步：模组端代码
 
 以下对应参数换成你自己的。
-
 如果你不在乎apikey被泄露，`host`填写`https://us.i.posthog.com`（或者`https://eu.i.posthog.com`,打开posthog的设置查看`Region`以决定），`projectApiKey`就填写你的key。
-
 如果使用代理就这么写：
 
 ```csharp
@@ -523,5 +501,9 @@ TelemetryRegistry.RegisterApplicant(new()
 ### 第四步：分析数据
 
 然后接受发送遥测数据的用户的信息就能来到你的posthog里了。具体怎么分析数据不在本教程范畴内。
-
 简单来说，在posthog控制台左侧点击`Apps - Product analytics - My insights - New insight`，`Series`选择事件类型，`Breakdown`添加`Country name`，右上角图表类型选择`Bar chart`即可查看每日启动你的mod的用户的国家分布。你可以保存这个图表之后快速启动本分析。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-29-telemetry/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

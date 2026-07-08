@@ -1,16 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-15-add-singleton/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加单例
 
-[2026年05月04日]()[242 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-15-add-singleton/ -->
 
 单例（`SingletonModel`）是一种独立于卡牌、遗物等的`AbstractModel`。所有的`AbstractModel`都有接收游戏事件发生的能力。
-
 可以用来做一些全局的影响。
-
 例如，多人模式就使用了一个`SingletonModel`，用于判断怪物是否根据玩家数量提高获得的格挡。
-
 你可以用来做关键词的效果，例如一个关键词是打出后抽一张，就可以创建单例，在出牌后判断是否有关键词然后抽牌。
 
 ## 代码
@@ -41,9 +35,13 @@ public class TestSingleton : CustomSingletonModel
     // }
 }
 ```
-
 -
 然后你可以向上面一样重载`AbstractModel`下的虚函数来监听游戏事件了，和遗物、药水等的接口一致。
-
 -
 你可以反编译原版的`Hook.cs`看看有哪些接口。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-15-add-singleton/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

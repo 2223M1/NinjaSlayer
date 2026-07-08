@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-07-add-ancient/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加先古之民
 
-[2026年05月04日]()[1.5k 字]()[大概 7 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-07-add-ancient/ -->
 
 首先创建类：
 
@@ -52,9 +49,7 @@ public class TestAncient : CustomAncientModel
     );
 }
 ```
-
 然后创建`{modId}/localization/{Language}/ancients.json`。已经有的话继续添加内容即可。
-
 此处id为`{命名空间第一段大写}-{类名的大写SNAKE_CASE}`。编写规则参考`先古对话`一章。
 
 ```json
@@ -101,7 +96,6 @@ public class TestAncient : CustomAncientModel
   "TEST-TEST_ANCIENT.talk.REGENT.2-2.ancient": "臣民等的是结果，而王座等的是时机。您两样都想要，就得学两样都等。"
 }
 ```
-
 场景示例`test_ancient.tscn`：
 
 ```plaintext
@@ -196,3 +190,8 @@ offset_right = 1044.0
 offset_bottom = 515.0
 texture = ExtResource("1_xjdov")
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-07-add-ancient/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

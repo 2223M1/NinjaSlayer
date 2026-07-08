@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-02-mod-config/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 自定义模组配置
 
-[2026年05月04日]()[229 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-02-mod-config/ -->
 
 - 要使用此功能，需要先放一张图片到`{modId}\mod_image.png`作为mod图标，尺寸任意，否则会由于报错不显示配置。
 - 添加一个继承`SimpleModConfig`（或者是`ModConfig`如果你想要更复杂的设置）的类，在其中添加`public static bool`变量。支持`bool`，`double`，`enum`，`string`。
@@ -61,5 +58,9 @@ public sealed class TestModConfig : SimpleModConfig
     }
 }
 ```
-
 更多请参考`baselib`的`BaseLib.Config`下的类。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-02-mod-config/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

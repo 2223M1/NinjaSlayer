@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-19-hand-outline/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 手牌泛光
 
-[2026年05月08日]()[222 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-19-hand-outline/ -->
 
 ## 原版
 
@@ -32,7 +29,6 @@ public static void Init()
     ));
 }
 ```
-
 使用`Dynamic`也可以注册动态变化的泛光：
 
 ```csharp
@@ -41,3 +37,8 @@ ModCardHandOutlineRegistry.Register<TestCard>(ModCardHandOutlineRules.Dynamic(
     card => card.Owner.Creature.CurrentHp <= 5 ? Colors.Red : Colors.Orange // 决定该是什么颜色
 ));
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-19-hand-outline/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

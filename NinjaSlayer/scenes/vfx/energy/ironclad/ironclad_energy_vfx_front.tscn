@@ -1,6 +1,6 @@
 [gd_scene load_steps=43 format=3]
 
-[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerNParticlesContainer.cs" id="1_ymtlw"]
+[ext_resource type="Script" path="res://src/Core/Nodes/Vfx/Utilities/NParticlesContainer.cs" id="1_ymtlw"]
 [ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/vfx/fire_impact/vfx_fire_flipbook_1.tscn" id="2_sbapc"]
 [ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/vfx/fire_impact/vfx_fire_flipbook_2.tscn" id="3_vk61g"]
 [ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/vfx/fire_impact/vfx_fire_flipbook_3.tscn" id="4_pgaf6"]

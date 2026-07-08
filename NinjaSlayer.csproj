@@ -5,7 +5,9 @@
     <LangVersion>13.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
 
+    <!-- Build against the same game version you ship to players (Steam-update before release builds). -->
     <Sts2Dir>C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2Dir>
       <!-- 新增 -->
     <GodotExe>C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
@@ -19,16 +21,19 @@
   <ItemGroup>
     <Reference Include="sts2">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
-      <Private>true</Private>
+      <Private>false</Private>
     </Reference>
 
     <Reference Include="0Harmony">
       <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
-      <Private>true</Private>
+      <Private>false</Private>
     </Reference>        
       
     <!-- NuGet获取 -->
-    <PackageReference Include="STS2.RitsuLib" Version="0.4.26" />
+    <PackageReference Include="STS2.RitsuLib" Version="0.4.46">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <!-- 如果你在其他版本开发，自由指定兼容版本 -->
     <!-- <PackageReference Include=" STS2.RitsuLib.Compat.0.103.2 " Version="*" /> -->
   </ItemGroup>
@@ -61,7 +66,19 @@
       ContinueOnError="WarnAndContinue" />
   </Target>
 
-  <Target Name="SyncModToSteam" AfterTargets="ExportPck" Condition="'$(IsInnerGodotExport)' != 'true' and Exists('$(PostBuildModDir)')">
+  <Target Name="ValidateModOutput" AfterTargets="ExportPck" Condition="'$(IsInnerGodotExport)' != 'true'">
+    <Message Text="Mod build references sts2.dll at $(Sts2DataDir). Match this to target players' game version before distributing." Importance="high" />
+    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')"
+           Text="sts2.dll not found at $(Sts2DataDir). Update Sts2Dir or install/update Slay the Spire 2." />
+    <Error Condition="!Exists('$(PostBuildModDir)$(MSBuildProjectName).dll')"
+           Text="Mod DLL missing at $(PostBuildModDir)$(MSBuildProjectName).dll" />
+    <Error Condition="!Exists('$(PostBuildModDir)$(MSBuildProjectName).json')"
+           Text="Mod manifest missing at $(PostBuildModDir)$(MSBuildProjectName).json" />
+    <Error Condition="!Exists('$(PostBuildModDir)$(MSBuildProjectName).pck')"
+           Text="Mod PCK missing at $(PostBuildModDir)$(MSBuildProjectName).pck. Export requires Godot at $(GodotExe)." />
+  </Target>
+
+  <Target Name="SyncModToSteam" AfterTargets="ValidateModOutput" Condition="'$(IsInnerGodotExport)' != 'true' and Exists('$(PostBuildModDir)')">
     <Message Text="Syncing mod to $(SteamModDir)..." Importance="high" />
     <MakeDir Directories="$(SteamModDir)" />
     <ItemGroup>

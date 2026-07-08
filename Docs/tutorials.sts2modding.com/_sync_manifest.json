@@ -1,396 +1,481 @@
-﻿{
+{
   "source": "https://tutorials.sts2modding.com/",
-  "syncedAt": "2026-06-17 14:40:26 +08:00",
-  "pageCount": 78,
+  "sourceRepository": "https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials",
+  "syncedAt": "2026-07-08T15:21:40+08:00",
+  "pageCount": 79,
   "pages": [
     {
       "url": "https://tutorials.sts2modding.com/docs/01-env-setup/",
-      "title": "环境配置",
+      "route": "docs/01-env-setup/",
+      "title": "01 环境配置",
       "path": "tutorials.sts2modding.com/docs/01-env-setup/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/02-install-view-source-and-patch/",
-      "title": "安装、看源码、修改",
+      "route": "docs/02-install-view-source-and-patch/",
+      "title": "02 常见问题",
       "path": "tutorials.sts2modding.com/docs/02-install-view-source-and-patch/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-choose-base-library/",
-      "title": "选择基础库",
+      "route": "docs/03-choose-base-library/",
+      "title": "03 选择基础库",
       "path": "tutorials.sts2modding.com/docs/03-choose-base-library/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/05-variable-and-description/",
-      "title": "变量与描述",
+      "route": "docs/05-variable-and-description/",
+      "title": "04 变量与描述",
       "path": "tutorials.sts2modding.com/docs/05-variable-and-description/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/08-ancient-dialogue/",
-      "title": "先古对话",
+      "route": "docs/08-ancient-dialogue/",
+      "title": "05 先古对话",
       "path": "tutorials.sts2modding.com/docs/08-ancient-dialogue/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/07-quick-debug-and-hot-reload/",
-      "title": "快速调试&热重载",
+      "route": "docs/07-quick-debug-and-hot-reload/",
+      "title": "06 快速调试&热重载",
       "path": "tutorials.sts2modding.com/docs/07-quick-debug-and-hot-reload/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/08-launch-arguments/",
-      "title": "启动项参数",
+      "route": "docs/08-launch-arguments/",
+      "title": "07 启动项参数",
       "path": "tutorials.sts2modding.com/docs/08-launch-arguments/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-console-commands/",
-      "title": "控制台指令",
+      "route": "docs/09-console-commands/",
+      "title": "08 控制台指令",
       "path": "tutorials.sts2modding.com/docs/09-console-commands/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/10-patch/",
-      "title": "Patch",
+      "route": "docs/10-patch/",
+      "title": "09 Patch",
       "path": "tutorials.sts2modding.com/docs/10-patch/index.md"
     },
     {
+      "url": "https://tutorials.sts2modding.com/docs/11-upload-workshop/",
+      "route": "docs/11-upload-workshop/",
+      "title": "10 上传工坊",
+      "path": "tutorials.sts2modding.com/docs/11-upload-workshop/index.md"
+    },
+    {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/",
-      "title": "RitsuLib",
+      "route": "docs/04-ritsulib/",
+      "title": "00 总览",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-01-add-card/",
-      "title": "添加卡牌",
+      "route": "docs/04-ritsulib/04-01-add-card/",
+      "title": "01 添加卡牌",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-01-add-card/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-02-custom-config/",
-      "title": "自定义配置",
+      "route": "docs/04-ritsulib/04-02-custom-config/",
+      "title": "02 自定义配置",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-02-custom-config/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-03-add-relic/",
-      "title": "添加新遗物",
+      "route": "docs/04-ritsulib/04-03-add-relic/",
+      "title": "03 添加新遗物",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-03-add-relic/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-04-card-properties/",
-      "title": "添加卡牌属性",
+      "route": "docs/04-ritsulib/04-04-card-properties/",
+      "title": "04 添加卡牌属性",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-04-card-properties/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-05-add-power/",
-      "title": "添加新能力",
+      "route": "docs/04-ritsulib/04-05-add-power/",
+      "title": "05 添加新能力",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-05-add-power/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-06-add-potion/",
-      "title": "添加新药水",
+      "route": "docs/04-ritsulib/04-06-add-potion/",
+      "title": "06 添加新药水",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-06-add-potion/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-07-add-ancient/",
-      "title": "添加先古之民",
+      "route": "docs/04-ritsulib/04-07-add-ancient/",
+      "title": "07 添加先古之民",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-07-add-ancient/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-08-add-orb/",
-      "title": "添加充能球",
+      "route": "docs/04-ritsulib/04-08-add-orb/",
+      "title": "08 添加充能球",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-08-add-orb/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-09-add-timeline/",
-      "title": "添加时间线",
+      "route": "docs/04-ritsulib/04-09-add-timeline/",
+      "title": "09 添加时间线",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-09-add-timeline/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-10-add-audio/",
-      "title": "添加音频",
+      "route": "docs/04-ritsulib/04-10-add-audio/",
+      "title": "10 添加音频",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-10-add-audio/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-11-add-monster/",
-      "title": "添加新怪物",
+      "route": "docs/04-ritsulib/04-11-add-monster/",
+      "title": "11 添加新怪物",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-11-add-monster/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-12-add-event/",
-      "title": "添加新事件",
+      "route": "docs/04-ritsulib/04-12-add-event/",
+      "title": "12 添加新事件",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-12-add-event/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-13-add-enchantment/",
-      "title": "添加新附魔",
+      "route": "docs/04-ritsulib/04-13-add-enchantment/",
+      "title": "13 添加新附魔",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-13-add-enchantment/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-14-add-new-character/",
-      "title": "添加新人物",
+      "route": "docs/04-ritsulib/04-14-add-new-character/",
+      "title": "14 添加新人物",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-14-add-new-character/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-add-singleton/",
-      "title": "添加单例",
+      "route": "docs/04-ritsulib/04-15-add-singleton/",
+      "title": "15 添加单例",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-15-add-singleton/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-1-add-card-pool/",
-      "title": "添加卡池",
+      "route": "docs/04-ritsulib/04-15-1-add-card-pool/",
+      "title": "16 添加卡池",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-15-1-add-card-pool/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-2-character-animation/",
-      "title": "角色动画",
+      "route": "docs/04-ritsulib/04-15-2-character-animation/",
+      "title": "17 角色动画",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-15-2-character-animation/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-18-add-capability/",
-      "title": "添加组件",
+      "route": "docs/04-ritsulib/04-18-add-capability/",
+      "title": "18 添加组件",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-18-add-capability/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-16-health-bar-overlay/",
-      "title": "血条覆盖",
+      "route": "docs/04-ritsulib/04-16-health-bar-overlay/",
+      "title": "01 血条覆盖",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-16-health-bar-overlay/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-18-max-hand-size/",
-      "title": "手牌上限",
+      "route": "docs/04-ritsulib/04-18-max-hand-size/",
+      "title": "02 手牌上限",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-18-max-hand-size/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-19-hand-outline/",
-      "title": "手牌泛光",
+      "route": "docs/04-ritsulib/04-19-hand-outline/",
+      "title": "03 手牌泛光",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-19-hand-outline/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-20-custom-card-pile/",
-      "title": "自定义卡牌堆",
+      "route": "docs/04-ritsulib/04-20-custom-card-pile/",
+      "title": "04 自定义卡牌堆",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-20-custom-card-pile/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-21-top-bar-button/",
-      "title": "顶栏按钮",
+      "route": "docs/04-ritsulib/04-21-top-bar-button/",
+      "title": "05 顶栏按钮",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-21-top-bar-button/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-notification/",
-      "title": "通知提示",
+      "route": "docs/04-ritsulib/04-22-notification/",
+      "title": "06 通知提示",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-notification/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-1-extra-badge/",
-      "title": "额外角标",
+      "route": "docs/04-ritsulib/04-22-1-extra-badge/",
+      "title": "07 额外角标",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-1-extra-badge/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-2-common-tools/",
-      "title": "常用工具",
+      "route": "docs/04-ritsulib/04-22-2-common-tools/",
+      "title": "08 常用工具",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-2-common-tools/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-3-in-run-data/",
-      "title": "局内数据",
+      "route": "docs/04-ritsulib/04-22-3-in-run-data/",
+      "title": "09 局内数据",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-3-in-run-data/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-4-custom-reward/",
-      "title": "自定义奖励",
+      "route": "docs/04-ritsulib/04-22-4-custom-reward/",
+      "title": "10 自定义奖励",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-4-custom-reward/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-5-custom-targeting/",
-      "title": "自定义目标",
+      "route": "docs/04-ritsulib/04-22-5-custom-targeting/",
+      "title": "11 自定义目标",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-5-custom-targeting/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-6-right-click/",
-      "title": "右键交互",
+      "route": "docs/04-ritsulib/04-22-6-right-click/",
+      "title": "12 右键交互",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-6-right-click/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-7-secondary-resources/",
-      "title": "次要资源",
+      "route": "docs/04-ritsulib/04-22-7-secondary-resources/",
+      "title": "13 次要资源",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-22-7-secondary-resources/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-17-data-save/",
-      "title": "数据保存",
+      "route": "docs/04-ritsulib/04-17-data-save/",
+      "title": "01 数据保存",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-17-data-save/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-23-lifecycle-events/",
-      "title": "生命周期事件",
+      "route": "docs/04-ritsulib/04-23-lifecycle-events/",
+      "title": "02 生命周期事件",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-23-lifecycle-events/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-24-patch-system/",
-      "title": "补丁系统",
+      "route": "docs/04-ritsulib/04-24-patch-system/",
+      "title": "03 补丁系统",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-24-patch-system/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-25-update-checker/",
-      "title": "更新检查",
+      "route": "docs/04-ritsulib/04-25-update-checker/",
+      "title": "04 更新检查",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-25-update-checker/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-26-runtime-hotkey/",
-      "title": "运行时热键",
+      "route": "docs/04-ritsulib/04-26-runtime-hotkey/",
+      "title": "05 运行时热键",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-26-runtime-hotkey/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-27-content-registry/",
-      "title": "内容注册",
+      "route": "docs/04-ritsulib/04-27-content-registry/",
+      "title": "06 内容注册",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-27-content-registry/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-28-node-attachment/",
-      "title": "节点附加",
+      "route": "docs/04-ritsulib/04-28-node-attachment/",
+      "title": "07 节点附加",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-28-node-attachment/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-29-telemetry/",
-      "title": "数据遥测",
+      "route": "docs/04-ritsulib/04-29-telemetry/",
+      "title": "09 数据遥测",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-29-telemetry/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-ritsulib/04-30-mod-integration/",
-      "title": "模组联动",
+      "route": "docs/04-ritsulib/04-30-mod-integration/",
+      "title": "10 模组联动",
       "path": "tutorials.sts2modding.com/docs/04-ritsulib/04-30-mod-integration/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/",
-      "title": "BaseLib",
+      "route": "docs/03-baselib/",
+      "title": "00 总览",
       "path": "tutorials.sts2modding.com/docs/03-baselib/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-01-add-card/",
-      "title": "添加卡牌",
+      "route": "docs/03-baselib/03-01-add-card/",
+      "title": "01 添加卡牌",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-01-add-card/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-02-mod-config/",
-      "title": "自定义模组配置",
+      "route": "docs/03-baselib/03-02-mod-config/",
+      "title": "02 自定义模组配置",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-02-mod-config/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-03-add-relic/",
-      "title": "添加新遗物",
+      "route": "docs/03-baselib/03-03-add-relic/",
+      "title": "03 添加新遗物",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-03-add-relic/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-04-card-properties/",
-      "title": "添加卡牌属性",
+      "route": "docs/03-baselib/03-04-card-properties/",
+      "title": "04 添加卡牌属性",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-04-card-properties/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-05-add-power/",
-      "title": "添加新能力",
+      "route": "docs/03-baselib/03-05-add-power/",
+      "title": "05 添加新能力",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-05-add-power/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-06-add-potion/",
-      "title": "添加新药水",
+      "route": "docs/03-baselib/03-06-add-potion/",
+      "title": "06 添加新药水",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-06-add-potion/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-07-add-ancient/",
-      "title": "添加先古之民",
+      "route": "docs/03-baselib/03-07-add-ancient/",
+      "title": "07 添加先古之民",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-07-add-ancient/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-08-add-orb/",
-      "title": "添加充能球",
+      "route": "docs/03-baselib/03-08-add-orb/",
+      "title": "08 添加充能球",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-08-add-orb/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-09-run-save/",
-      "title": "局内保存",
+      "route": "docs/03-baselib/03-09-run-save/",
+      "title": "09 局内保存",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-09-run-save/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-10-mod-integration/",
-      "title": "mod联动",
+      "route": "docs/03-baselib/03-10-mod-integration/",
+      "title": "10 mod联动",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-10-mod-integration/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-11-add-monster/",
-      "title": "添加新怪物",
+      "route": "docs/03-baselib/03-11-add-monster/",
+      "title": "11 添加新怪物",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-11-add-monster/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-12-add-event/",
-      "title": "添加新事件",
+      "route": "docs/03-baselib/03-12-add-event/",
+      "title": "12 添加新事件",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-12-add-event/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-13-add-enchantment/",
-      "title": "添加新附魔",
+      "route": "docs/03-baselib/03-13-add-enchantment/",
+      "title": "13 添加新附魔",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-13-add-enchantment/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/04-add-new-character/",
-      "title": "添加新人物",
+      "route": "docs/04-add-new-character/",
+      "title": "14 添加新人物",
       "path": "tutorials.sts2modding.com/docs/04-add-new-character/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-15-add-singleton/",
-      "title": "添加单例",
+      "route": "docs/03-baselib/03-15-add-singleton/",
+      "title": "15 添加单例",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-15-add-singleton/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/03-baselib/03-16-max-hand-size/",
-      "title": "手牌上限",
+      "route": "docs/03-baselib/03-16-max-hand-size/",
+      "title": "16 手牌上限",
       "path": "tutorials.sts2modding.com/docs/03-baselib/03-16-max-hand-size/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/07-migration-99-100/",
-      "title": "正式版 至 测试版",
+      "route": "docs/07-migration-99-100/",
+      "title": "01 测试版 至 正式版",
       "path": "tutorials.sts2modding.com/docs/07-migration-99-100/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/08-migration-baselib-to-ritsulib/",
-      "title": "BaseLib 至 RitsuLib",
+      "route": "docs/08-migration-baselib-to-ritsulib/",
+      "title": "02 BaseLib 至 RitsuLib",
       "path": "tutorials.sts2modding.com/docs/08-migration-baselib-to-ritsulib/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/05-card-art-and-skin-replacement/",
-      "title": "卡图&Spine",
+      "route": "docs/05-card-art-and-skin-replacement/",
+      "title": "01 卡图&Spine",
       "path": "tutorials.sts2modding.com/docs/05-card-art-and-skin-replacement/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/06-style-art-drawing/",
-      "title": "风格原画绘制",
+      "route": "docs/06-style-art-drawing/",
+      "title": "02 风格原画绘制",
       "path": "tutorials.sts2modding.com/docs/06-style-art-drawing/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-01-frame-animation/",
-      "title": "帧动画的处理",
+      "route": "docs/09-01-frame-animation/",
+      "title": "01 帧动画的处理",
       "path": "tutorials.sts2modding.com/docs/09-01-frame-animation/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-02-texture-atlas/",
-      "title": "材质图集(Texture Atlas)",
+      "route": "docs/09-02-texture-atlas/",
+      "title": "02 材质图集",
       "path": "tutorials.sts2modding.com/docs/09-02-texture-atlas/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-03-vfx-instantiation/",
-      "title": "特效的播放(实例化)与缓存",
+      "route": "docs/09-03-vfx-instantiation/",
+      "title": "03 特效的播放(实例化)与缓存",
       "path": "tutorials.sts2modding.com/docs/09-03-vfx-instantiation/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-04-particle-vfx/",
-      "title": "粒子特效",
+      "route": "docs/09-04-particle-vfx/",
+      "title": "04 粒子特效",
       "path": "tutorials.sts2modding.com/docs/09-04-particle-vfx/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-05-world-environment/",
-      "title": "WorldEnvironment 全局环境光照",
+      "route": "docs/09-05-world-environment/",
+      "title": "05 全局环境光照",
       "path": "tutorials.sts2modding.com/docs/09-05-world-environment/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-06-shader/",
-      "title": "Shader",
+      "route": "docs/09-06-shader/",
+      "title": "06 Shader",
       "path": "tutorials.sts2modding.com/docs/09-06-shader/index.md"
     },
     {
       "url": "https://tutorials.sts2modding.com/docs/09-07-game-builtin-vfx/",
-      "title": "游戏本体特效",
+      "route": "docs/09-07-game-builtin-vfx/",
+      "title": "07 游戏本体特效",
       "path": "tutorials.sts2modding.com/docs/09-07-game-builtin-vfx/index.md"
     }
   ],

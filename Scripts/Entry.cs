@@ -1,5 +1,5 @@
+using System.Linq;
 using System.Reflection;
-using Godot.Bridge;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 using NinjaSlayer.Cards;
@@ -10,6 +10,7 @@ using STS2RitsuLib;
 using STS2RitsuLib.Audio;
 using STS2RitsuLib.Interop;
 using STS2RitsuLib.Patching.Core;
+using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Scripts;
 
@@ -20,12 +21,11 @@ public class Entry
     public static readonly Logger Logger = RitsuLibFramework.CreateLogger(ModId);
     private static readonly Type[] GodotSceneScriptTypes =
     [
-        typeof(NinjaSlayerNEnergyCounter),
-        typeof(NinjaSlayerMegaLabel),
-        typeof(NinjaSlayerNParticlesContainer),
         typeof(NinjaSlayerSpinPivot),
+        typeof(NinjaSlayerSpinMotionBlur),
         typeof(NarakuVisualOverlay),
-        typeof(NinjaSlayerTransitionOverlay)
+        typeof(NinjaSlayerTransitionOverlay),
+        typeof(NNinjaSlayerGroundFireVfx)
     ];
 
     public static void Init()
@@ -36,6 +36,11 @@ public class Entry
         var assembly = Assembly.GetExecutingAssembly();
         RitsuLibFramework.EnsureGodotScriptsRegistered(assembly, Logger);
         ModTypeDiscoveryHub.RegisterModAssembly(ModId, assembly);
+
+        using (RitsuLibFramework.BeginModDataRegistration(ModId))
+        {
+            NinjaSlayerRunData.Register(ModId);
+        }
 
         RitsuLibFramework.CreateContentPack(ModId)
             .Character<NinjaSlayerCharacter>(character => character
@@ -51,17 +56,45 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
         patcher.RegisterPatch<ReporterPassEventOptionPatch>();
-        patcher.RegisterPatch<NarakuLifeHealthBarPatch>();
+        patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
+        patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
+        patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
+        patcher.RegisterPatch<CardTransformShineSfxPatch>();
+        patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
+        patcher.RegisterPatch<NinjaSlayerRoomFadeInGatePatch>();
+        patcher.RegisterPatch<NinjaSlayerFadeInGatePatch>();
+        patcher.RegisterPatch<NinjaSlayerEmbarkLoadDelayPatch>();
+        patcher.RegisterPatch<NinjaSlayerSaveLoadDelayPatch>();
+        patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
+        patcher.RegisterPatch<NinjaSlayerCardBodyTypographyPatch>();
+        patcher.RegisterPatch<NinjaSlayerHoverTipTypographyPatch>();
+        patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
         if (!patcher.PatchAll())
         {
+            LogPatchFailure(patcher);
             throw new InvalidOperationException("Critical NinjaSlayer patches failed to apply.");
         }
 
         RegisterFmodBanksIfPresent();
-        ScriptManagerBridge.LookupScriptsInAssembly(assembly);
+    }
+
+    private static void LogPatchFailure(ModPatcher patcher)
+    {
+        Logger.Error(
+            $"PatchAll failed for {patcher.PatcherName}: applied {patcher.AppliedPatchCount}/{patcher.RegisteredPatchCount}.");
+
+        foreach (ModPatchInfo patch in patcher.RegisteredPatches)
+        {
+            string paramList = patch.ParameterTypes is { Length: > 0 } types
+                ? string.Join(", ", types.Select(t => t.Name))
+                : "(none)";
+
+            Logger.Error(
+                $"  patch id={patch.Id}, critical={patch.IsCritical}, target={patch.TargetType?.Name}.{patch.MethodName}({paramList})");
+        }
     }
 
     private static void RegisterFmodBanksIfPresent()

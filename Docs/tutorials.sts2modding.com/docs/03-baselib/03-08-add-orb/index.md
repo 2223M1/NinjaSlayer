@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-08-add-orb/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加充能球
 
-[2026年05月04日]()[407 字]()[大概 2 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-08-add-orb/ -->
 
 先创建类：
 
@@ -63,7 +60,6 @@ public class TestOrb : CustomOrbModel
     }
 }
 ```
-
 然后创建`{modId}/localization/{Language}/orbs.json`。
 
 ```json
@@ -73,9 +69,7 @@ public class TestOrb : CustomOrbModel
     "TEST-TEST_ORB.title": "戈多球"
 }
 ```
-
 使用`await OrbCmd.Channel<TestOrb>(choiceContext, cardPlay.Card.Owner)`以生成。
-
 `test_orb.tscn`:
 
 ```plaintext
@@ -88,3 +82,8 @@ public class TestOrb : CustomOrbModel
 [node name="Icon" type="Sprite2D" parent="."]
 texture = ExtResource("1_voa3m")
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-08-add-orb/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

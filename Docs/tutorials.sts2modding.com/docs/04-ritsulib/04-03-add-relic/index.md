@@ -1,10 +1,8 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-03-add-relic/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新遗物
 
-[2026年05月04日]()[430 字]()[大概 2 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-03-add-relic/ -->
 
+>
 以下示例默认已经在`Entry.Init()`中调用了`RitsuLibFramework.EnsureGodotScriptsRegistered(...)`和`ModTypeDiscoveryHub.RegisterModAssembly(...)`，否则自动注册不会生效。
 
 和添加卡牌类似。先新建一个类。
@@ -51,18 +49,14 @@ public class TestRelic : ModRelicTemplate
     }
 }
 ```
-
 -
 `[RegisterRelic(typeof(TestRelicPool))]`会把遗物自动注册到指定遗物池。示例用的是自定义池；如果你要放到别的池子里，就把这里的类型改掉。
-
 -
 继承的是`ModRelicTemplate`。
-
 -
 图片资源统一放在`AssetProfile`里配置。
 
 然后放一张图片`Test/images/relics/TestRelic.png`。这里偷懒三张图片用了一样的，可以自己修改路径。
-
 然后写一个本地化文件，`{modId}/localization/{Language}/relics.json`。
 
 ```json
@@ -72,7 +66,6 @@ public class TestRelic : ModRelicTemplate
     "TEST_RELIC_TEST_RELIC.flavor": "觉得很眼熟？"
 }
 ```
-
 - `{Cards}`对应上面的`CardsVar(1)`。
 
 ## 最终项目参考
@@ -90,3 +83,8 @@ Test
         └── zhs
             └── relics.json
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-03-add-relic/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

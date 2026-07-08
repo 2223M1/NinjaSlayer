@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-10-mod-integration/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # mod联动
 
-[2026年05月04日]()[241 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-10-mod-integration/ -->
 
 `baselib`添加了一个mod联动的功能，可实现可选依赖的功能。
 
@@ -27,7 +24,6 @@ public class Entry {
     }
 }
 ```
-
 如果你不依赖这个mod的dll，无法直接调用`Register`函数。
 
 ## 你的mod
@@ -51,7 +47,6 @@ public static class TestInterop
     public static List<string> Ids { get; set; }
 }
 ```
-
 然后在合适的时机调用即可：
 
 ```csharp
@@ -60,3 +55,8 @@ if (ModManager.GetLoadedMods().Any(m => string.Equals(m.manifest?.id, "test")))
     TestInterop.Register("JustAnotherModId");
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-10-mod-integration/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

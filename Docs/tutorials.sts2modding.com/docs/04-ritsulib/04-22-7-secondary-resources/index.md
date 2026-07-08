@@ -1,10 +1,8 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-7-secondary-resources/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 次要资源
 
-[2026年06月09日]()[1.8k 字]()[大概 8 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-7-secondary-resources/ -->
 
+>
 该功能处于测试阶段，如有问题请提出
 
 次级资源（SecondaryResource）是一套类似`星辉`的第二套战斗资源系统。你可以用它制作需要额外费用或额外资源管理的卡牌、遗物和能力。
@@ -12,7 +10,6 @@
 ## 注册资源
 
 每个资源需要先注册定义，之后才能在战斗中使用。在初始化函数中注册。
-
 我们可以建一个新的类来管理，同时也可以直接放在你的主类里。只要保证在初始化中调用即可。
 
 ```csharp
@@ -52,32 +49,29 @@ public static class ModResources
     }
 }
 ```
-
 然后不要忘记在你的 `Entry.Init` 中调用。
-
 - `Register` 的第一个参数 `"mana"` 是本地 ID，返回格式为 `TEST_SECONDARY_RESOURCE_MANA`（`{MODID}_{TYPE}_{LOCALID}`）。
 
 `turnStartPolicy`是回合开始时的自动行为，包括以下类型：
-
-| 策略 | 效果
-
-| `None` | 什么都不做
-
-| `ResetToMax` | 将当前数量回满到上限
-
-| `AddMaxToCurrent` | 将上限数值加到当前数量上（如蓄能）
-
-| `Clear` | 清零
-
+策略
+效果
+`None`
+什么都不做
+`ResetToMax`
+将当前数量回满到上限
+`AddMaxToCurrent`
+将上限数值加到当前数量上（如蓄能）
+`Clear`
+清零
 `persistencePolicy`是存档持久化范围，包括：
-
-| 策略 | 效果
-
-| `None` | 不存档，仅运行时存在
-
-| `Combat` | 在当前战斗内恢复
-
-| `Run` | 跨战斗持久化（整局有效）
+策略
+效果
+`None`
+不存档，仅运行时存在
+`Combat`
+在当前战斗内恢复
+`Run`
+跨战斗持久化（整局有效）
 
 ## 修改资源数量
 
@@ -133,7 +127,6 @@ X 费用：
 this.SecondaryCosts().Set(ModResources.ManaId, SecondaryResourceCost.X());       // 消耗所有法力
 this.SecondaryCosts().Set(ModResources.ManaId, SecondaryResourceCost.X(2));      // 消耗所有法力，X 数值乘以 2
 ```
-
 `Set` 的第三个参数 `duration` 可以给卡牌设置临时的次级资源消耗，到期自动清除：
 
 ```csharp
@@ -141,14 +134,12 @@ this.SecondaryCosts().Set(ModResources.ManaId, 1, SecondaryResourceCostDuration.
 this.SecondaryCosts().Set(ModResources.RageId, 2, SecondaryResourceCostDuration.ThisCombat);  // 仅本场战斗，消耗1点法力
 this.SecondaryCosts().Set(ModResources.ManaId, 1, SecondaryResourceCostDuration.UntilPlayed); // 消耗1点法力，打出后清除
 ```
-
 如需手动清理到期费用，可使用扩展方法：
 
 ```csharp
 card.ClearSecondaryCostsThisTurn();       // 回合结束时框架自动调用，一般无需手动写
 card.ClearSecondaryCostsUntilPlayed();    // 打出后框架自动调用
 ```
-
 免费打出或者移除费用消耗：
 
 ```csharp
@@ -224,41 +215,36 @@ public class ManaRelic : ModRelicTemplate, ISecondaryResourceHookListener
     }
 }
 ```
-
 钩子通过 `context.Definition.Id` 判断是哪个资源，和 `ModResources.ManaId` 比较即可。
-
 接口提供的全部钩子：
-
-| 钩子 | 用途
-
-| `ModifySecondaryResourceGain` | 修正获得数量
-
-| `ModifyMaxSecondaryResource` | 修正上限
-
-| `ModifySecondaryResourceCost` | 修正卡牌固定费用（不含 X 部分）
-
-| `ModifySecondaryResourceXValue` | 修正 X 费用值
-
-| `ShouldGainSecondaryResource` | 阻止资源获得（返回 `false` 则不获得）
-
-| `ShouldSpendSecondaryResource` | 阻止资源消耗（返回 `false` 则不消耗）
-
-| `ShouldResetSecondaryResource` | 阻止回合重置（返回 `false` 则不重置）
-
-| `AfterSecondaryResourceChanged` | 数量变化后回调
-
-| `AfterSecondaryResourceSpent` | 资源被消耗后回调
-
-| `AfterSecondaryResourceReset` | 资源被重置后回调
+钩子
+用途
+`ModifySecondaryResourceGain`
+修正获得数量
+`ModifyMaxSecondaryResource`
+修正上限
+`ModifySecondaryResourceCost`
+修正卡牌固定费用（不含 X 部分）
+`ModifySecondaryResourceXValue`
+修正 X 费用值
+`ShouldGainSecondaryResource`
+阻止资源获得（返回 `false` 则不获得）
+`ShouldSpendSecondaryResource`
+阻止资源消耗（返回 `false` 则不消耗）
+`ShouldResetSecondaryResource`
+阻止回合重置（返回 `false` 则不重置）
+`AfterSecondaryResourceChanged`
+数量变化后回调
+`AfterSecondaryResourceSpent`
+资源被消耗后回调
+`AfterSecondaryResourceReset`
+资源被重置后回调
 
 ## 战斗 UI
 
 可以通过`RegisterCombatUi`和`RegisterCardUi`注册次级资源的战斗界面元素。
-
 ritsulib内置封装好的能量盘和卡牌费用展示的组件，例如`NSecondaryResourceCounter`和`NSecondaryResourceCardCostUi`。
-
 如果你想要自定义的ui，请创建并返回自己的，并自行绑定数值和玩家。
-
 以下使用内置的UI：
 
 ```csharp
@@ -316,8 +302,7 @@ registry.RegisterCardUi(
 // 永远显示（不受角色限制）
 registry.AlwaysShowInCombatUi(ManaDefinition.LocalId);
 ```
-
-- `RegisterCombatUi` 基于 `NodeAttachment` 系统自动挂载（详见”节点附加”教程）。
+- `RegisterCombatUi` 基于 `NodeAttachment` 系统自动挂载（详见"节点附加"教程）。
 - `SecondaryResourceCounterStyle` 等style可自由配置喜欢的风格。
 
 ## 本地化
@@ -332,7 +317,6 @@ registry.AlwaysShowInCombatUi(ManaDefinition.LocalId);
     "TEST_SECONDARY_RESOURCE_RAGE.description": "每回合开始时清零。打出攻击牌可获得怒气。"
 }
 ```
-
 如果没有提供 `titleKey` / `descriptionKey`，框架会按 `{resourceId}.title` 和 `{resourceId}.description` 自动推导 key。
 
 ## 在卡牌文本中显示图标
@@ -349,3 +333,8 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
 // "消耗 {Mana:secondaryResourceIcons()} 点法力。"
 // 或者 {Mana} 使用数字
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-22-7-secondary-resources/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

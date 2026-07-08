@@ -17,9 +17,17 @@ public static class NinjaSlayerAudio
     public const string NinjaSlayerDeathEvent = NinjaSlayerRoot + "/ninja_slayer_death";
     public const string NinjaSlayerSelectEvent = NinjaSlayerRoot + "/ninja_slayer_select";
     public const string NinjaSlayerTransitionEvent = NinjaSlayerRoot + "/ninja_slayer_transition";
+    public const string NinjaSlayerShortWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_short_washoi";
+    public const string NinjaSlayerLongWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_long_washoi";
 
     /// <summary>FMOD clip length for ninja_slayer_transition (6月16日(1).wav).</summary>
     public const float TransitionSeconds = 2.0201361f;
+
+    /// <summary>Delay before run asset loading starts during the embark transition animation.</summary>
+    public const float EmbarkLoadStartDelaySeconds = 1.0f;
+
+    /// <summary>Delay before run asset loading starts during the save-load transition animation.</summary>
+    public const float SaveLoadStartDelaySeconds = 1.0f;
     public const string NinjaSlayerIntroSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_intro_spin_attack";
     public const string NinjaSlayerLoopSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_loop_spin_attack";
     public const string NinjaSlayerOutroSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_outro_spin_attack";

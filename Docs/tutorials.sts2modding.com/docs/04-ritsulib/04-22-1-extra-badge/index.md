@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-1-extra-badge/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 额外角标
 
-[2026年05月26日]()[446 字]()[大概 2 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-1-extra-badge/ -->
 
 ## 能力图标角标
 
 用于显示能力双数字，或者更多数量。
-
 给能力实现 `IPowerExtraIconAmountLabelSpecsProvider`。RitsuLib 会把它们放到指定角落。
 
 ```csharp
@@ -49,20 +45,19 @@ public sealed class TestMeterPower
     }
 }
 ```
-
 可选角落：
-
-| 位置 | 说明
-
-| `TopLeft` | 左上角
-
-| `TopRight` | 右上角
-
-| `BottomLeft` | 左下角
-
-| `BottomRight` | 右下角，原版常用于主计数，谨慎占用
-
-| `Custom` | 自己提供 `Rect2`，适合特殊图标
+位置
+说明
+`TopLeft`
+左上角
+`TopRight`
+右上角
+`BottomLeft`
+左下角
+`BottomRight`
+右下角，原版常用于主计数，谨慎占用
+`Custom`
+自己提供 `Rect2`，适合特殊图标
 
 ## 遗物角标
 
@@ -104,7 +99,6 @@ public sealed class TestCounterRelic
     }
 }
 ```
-
 角标刷新通常跟随原版 `DisplayAmountChanged`。如果你的角标不依赖 `DisplayAmount`，也可以实现 `IRelicExtraIconAmountLabelsChangeSource`，在内部状态变化时触发 `RelicExtraIconAmountLabelsInvalidated`。
 
 ## 意图角标
@@ -127,5 +121,9 @@ public sealed class TestIntent : AbstractIntent, IIntentExtraCornerAmountLabelsP
     }
 }
 ```
-
 意图图标会随战斗 UI 刷新重新读取；如果你的意图角标只在某个外部状态变化时刷新，可以实现 `IIntentExtraCornerAmountLabelsChangeSource` 并触发 `IntentExtraCornerAmountLabelsInvalidated`。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-22-1-extra-badge/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

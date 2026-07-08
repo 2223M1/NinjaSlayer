@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -32,7 +33,8 @@ public sealed class StraightKi : ModCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(18, ValueProp.Move)
+        new DamageVar(18, ValueProp.Move),
+        new DynamicVar("Karate", 4)
     ];
 
     public StraightKi() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -43,10 +45,12 @@ public sealed class StraightKi : ModCardTemplate
         bool shouldStun = cardPlay.Target.HasPower<WeakPower>() && cardPlay.Target.HasPower<VulnerablePower>();
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
+            .FromCard(this, cardPlay)
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
+
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
 
         if (shouldStun)
         {

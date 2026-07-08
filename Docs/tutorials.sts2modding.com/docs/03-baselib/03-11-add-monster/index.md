@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-11-add-monster/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新怪物
 
-[2026年05月04日]()[1.6k 字]()[大概 8 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-11-add-monster/ -->
 
 ## 怪物
 
@@ -15,6 +12,7 @@ using BaseLib.Utils.NodeFactories;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Ascension;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
@@ -52,7 +50,7 @@ public class TestMonster : CustomMonsterModel
     // 战斗开始时，在这里给自己上buff之类
     public override async Task AfterAddedToRoom()
     {
-        await PowerCmd.Apply<StrengthPower>(Creature, 2m, Creature, null);
+        await PowerCmd.Apply<StrengthPower>(new ThrowingPlayerChoiceContext(), Creature, 2m, Creature, null);
     }
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
@@ -104,8 +102,9 @@ public class TestMonster : CustomMonsterModel
     }
 }
 ```
-
 然后在你指定的位置创建`tscn`场景文件。要求和人物场景类似。底部附赠一个示例场景。
+
+>
 
 ```plaintext
 TestCharacter (Node2D)
@@ -114,11 +113,8 @@ TestCharacter (Node2D)
 ├── IntentPos (Marker2D) %
 └── CenterPos (Marker2D) %
 ```
-
 其中`Visuals`，`Bounds`，`IntentPos`，`CenterPos`需要右键勾选`作为唯一名称访问`，出现`%`即可。名字不要改。
-
 `Bounds`就是你的人物hitbox的大小，如果你觉得血条太短调整一下它的大小。
-
 人物显示在x轴上方。
 
 然后创建`{modId}/localization/{Language}/monsters.json`。
@@ -222,9 +218,7 @@ public class TestMultiEncounter : CustomEncounterModel
     ];
 }
 ```
-
 然后需要在你指定的路径创建场景：（使用`Marker2D`节点标注怪物在哪）
-
 同样最下方提供示例。
 
 ```plaintext
@@ -255,7 +249,6 @@ TODO:重载CustomEncounterBackground
     "TEST-TEST_MULTI_ENCOUNTER.loss": "{character}被[gold]{encounter}[/gold]的一堆新版本淹没。"
 }
 ```
-
 `test_monster.tscn`:
 
 ```tscn
@@ -286,7 +279,6 @@ position = Vector2(0, -159)
 unique_name_in_owner = true
 position = Vector2(0, -72)
 ```
-
 `test_multi_encounter.tscn`:
 
 ```tscn
@@ -325,3 +317,8 @@ position = Vector2(1450, 387)
 [node name="fourth2" type="Marker2D" parent="."]
 position = Vector2(1750, 387)
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-11-add-monster/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-notification/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 通知提示
 
-[2026年05月16日]()[316 字]()[大概 1 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-notification/ -->
 
 `RitsuLib`提供了一套通知提示服务，用于向玩家显示非侵入式消息。框架会在 `GameReadyEvent` 之后把 Toast 挂到游戏根节点，建议在局内/UI 就绪后再调用。
 
@@ -42,7 +39,6 @@ public class Entry
     }
 }
 ```
-
 需要完全控制样式与动画时，构造 `RitsuToastRequest` 并交给 `Show`：
 
 ```csharp
@@ -71,3 +67,8 @@ RitsuToastService.Show(new RitsuToastRequest(
     // FadeScale：淡入淡出并缩放
     animationOverride: RitsuToastAnimationPreset.FadeScale));
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-22-notification/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

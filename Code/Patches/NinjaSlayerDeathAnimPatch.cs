@@ -1,6 +1,5 @@
-using System.Threading;
-using System.Threading.Tasks;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
@@ -18,29 +17,25 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
 
     public static ModPatchTarget[] GetTargets() =>
     [
-        new(typeof(NCreature), nameof(NCreature.StartDeathAnim), [typeof(bool)]),
-        new(typeof(NCreature), "AnimDie", [typeof(bool), typeof(CancellationToken)])
+        new(typeof(NCreature), nameof(NCreature.StartDeathAnim), [typeof(bool)])
     ];
 
-    public static void Postfix(NCreature __instance, ref float __result)
+    public static void Prefix(NCreature __instance, out bool __state)
     {
-        if (!IsNinjaSlayerNonSpine(__instance))
+        __state = IsNinjaSlayerNonSpine(__instance)
+            && (__instance.DeathAnimationTask == null || __instance.DeathAnimationTask.IsCompleted);
+    }
+
+    public static void Postfix(NCreature __instance, ref float __result, bool __state)
+    {
+        if (!__state)
         {
             return;
         }
 
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(__instance.Entity).Death);
+        TaskHelper.RunSafely(DeathAnimation.Play(__instance.Entity));
         __result = DeathAnimation.DurationSeconds;
-    }
-
-    public static async Task Prefix(NCreature __instance, bool shouldRemove, CancellationToken cancelToken)
-    {
-        if (!IsNinjaSlayerNonSpine(__instance))
-        {
-            return;
-        }
-
-        await DeathAnimation.Play(__instance.Entity);
     }
 
     private static bool IsNinjaSlayerNonSpine(NCreature creatureNode)

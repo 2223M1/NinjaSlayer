@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerNParticlesContainer.cs" id="1_4yq81"]
+[ext_resource type="Script" path="res://src/Core/Nodes/Vfx/Utilities/NParticlesContainer.cs" id="1_4yq81"]
 [ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/vfx/common/vfx_common_glow.tscn" id="2_jwa36"]
 
 [sub_resource type="Curve" id="Curve_k5mkh"]

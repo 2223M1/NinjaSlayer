@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-30-mod-integration/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 模组联动
 
-[2026年05月26日]()[597 字]()[大概 3 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-30-mod-integration/ -->
 
 可实现可选依赖、模组联动的功能。
 
@@ -33,7 +30,6 @@ public class Entry
     public int GetScore() => 10;
 }
 ```
-
 如果你不想在 `.csproj` 里强依赖（硬引用）这个 mod 的 dll，但又希望在它存在时调用它，可以使用 RitsuLib 的跨 Mod Interop 机制编写强类型代理。
 
 ## 你的mod
@@ -80,9 +76,7 @@ public static class TargetCatalogInterop
     }
 }
 ```
-
 然后在合适的时机调用即可。把目标不存在的情况当作正常分支进行处理：
-
 确保在 Mod 初始化阶段已向 RitsuLib 注册当前程序集`ModTypeDiscoveryHub.RegisterModAssembly(Entry.ModId, Assembly.GetExecutingAssembly());`
 
 ```csharp
@@ -133,5 +127,9 @@ public static class ExternalCatalogInterop
     }
 }
 ```
-
 框架自动区分：类型名里含 `,`（逗号）→ 走 `AssemblyInterop` 路径；不含逗号 → 走 `ModInterop` 路径。所以两种模式可以共存在同一个项目里，互不干扰。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-30-mod-integration/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

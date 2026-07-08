@@ -1,4 +1,5 @@
-﻿using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -7,22 +8,46 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Content;
 
 public static class NinjaSlayerActions
 {
-    public static async Task EnterNaraku(PlayerChoiceContext choiceContext, Player player, decimal life = 12)
+    public static async Task EnsureNarakuForm(PlayerChoiceContext choiceContext, Player player)
     {
         if (player.Creature.HasPower<OneBodyOneSoulPower>())
         {
-            await PlayerCmd.GainEnergy(1, player);
+            await GrantNarakuEntryBonus(choiceContext, player);
             await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, 6, player.Creature, null);
             return;
         }
 
+        if (player.Creature.HasPower<NarakuPower>())
+        {
+            return;
+        }
+
         await PowerCmd.Apply<NarakuPower>(choiceContext, player.Creature, 1, player.Creature, null);
+        await GrantNarakuEntryBonus(choiceContext, player);
+    }
+
+    private static async Task GrantNarakuEntryBonus(PlayerChoiceContext choiceContext, Player player)
+    {
+        await PlayerCmd.GainEnergy(2, player);
+        await CardPileCmd.Draw(choiceContext, 2, player);
+    }
+
+    public static async Task EnterNaraku(PlayerChoiceContext choiceContext, Player player, decimal life = 12)
+    {
+        await EnsureNarakuForm(choiceContext, player);
+
+        if (player.Creature.HasPower<OneBodyOneSoulPower>() || life <= 0)
+        {
+            return;
+        }
+
         await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, life, player.Creature, null);
     }
 
@@ -31,6 +56,42 @@ public static class NinjaSlayerActions
         await PowerCmd.Remove<NarakuPower>(creature);
         await PowerCmd.Remove<NarakuLifePower>(creature);
     }
+
+    // Tea-count scaling: how many Chado cards are currently held. Used both for gameplay branches
+    // and as a static multiplier for CalculatedDamageVar/CalculatedBlockVar (must stay static).
+    public static int ChadoInHandCount(Player player) =>
+        PileType.Hand.GetPile(player).Cards.Count(c => c is ChadoCard);
+
+    public static decimal ChadoInHandMultiplier(CardModel card, Creature? _) =>
+        PileType.Hand.GetPile(card.Owner).Cards.Count(c => c is ChadoCard);
+
+    public static decimal ChadoInExhaustPileMultiplier(CardModel card, Creature? _) =>
+        PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c is ChadoCard);
+
+    public static decimal ChadoGeneratedThisCombatMultiplier(CardModel card, Creature? _) =>
+        CombatManager.Instance.History.Entries
+            .OfType<CardGeneratedEntry>()
+            .Count(e => e.Creator == card.Owner && e.Card is ChadoCard);
+
+    public static bool ChadoExhaustedThisTurn(CardModel card) =>
+        CombatManager.Instance.History.Entries
+            .OfType<CardExhaustedEntry>()
+            .Any(e => e.HappenedThisTurn(card.CombatState)
+                && e.Card.Owner == card.Owner
+                && e.Card is ChadoCard);
+
+    public static int MeleeAttacksPlayedThisTurn(Player player) =>
+        CombatManager.Instance.History.CardPlaysFinished.Count(e =>
+            e.HappenedThisTurn(player.Creature.CombatState)
+            && e.CardPlay.Card.Owner == player
+            && KarateTriggerRules.IsMeleeAttack(e.CardPlay.Card));
+
+    public static int RubHandsShurikenCount(Player player) =>
+        MeleeAttacksPlayedThisTurn(player) + 1;
+
+    // Static multiplier (1 while in Naraku, else 0) so cards can preview bonus damage live.
+    public static decimal NarakuActiveMultiplier(CardModel card, Creature? _) =>
+        card.Owner.Creature.HasPower<NarakuPower>() ? 1 : 0;
 
     public static async Task AddGeneratedCard<T>(Player owner, PileType pile, CardPilePosition position = CardPilePosition.Bottom)
         where T : CardModel
@@ -158,19 +219,45 @@ public static class NinjaSlayerActions
         }
 
         int extraDamage = karate.Amount;
-        await CreatureCmd.Damage(choiceContext, target, extraDamage, ValueProp.Unpowered, dealer, null);
+        await CreatureCmd.Damage(choiceContext, target, extraDamage, ValueProp.Unpowered, dealer);
+
+        ICombatState? combatState = target.CombatState ?? dealer.CombatState;
+        if (combatState != null)
+        {
+            foreach (Player player in combatState.Players)
+            {
+                if (player.Creature.GetPower<ShieldFromNothingPower>() is { } shieldFromNothing)
+                {
+                    await shieldFromNothing.OnKarateTriggered(choiceContext);
+                }
+            }
+        }
+
         if (!target.IsDead)
         {
             await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
         }
+
+        KarateCombatPreviewContext.RefreshHealthBar(target);
     }
 
-    public static async Task ClearAllKarate(PlayerChoiceContext choiceContext, Player player)
+    public static async Task<int> ClearAllKarate(PlayerChoiceContext choiceContext, Player player)
     {
         ICombatState combatState = player.Creature.CombatState ?? throw new InvalidOperationException("Karate can only be cleared during combat.");
-        foreach (Creature enemy in combatState.Enemies)
+
+        int clearedUnits = 0;
+        foreach (Creature creature in combatState.Creatures.ToList())
         {
-            await PowerCmd.Remove<KaratePower>(enemy);
+            KaratePower? karate = creature.GetPower<KaratePower>();
+            if (karate == null || karate.Amount <= 0)
+            {
+                continue;
+            }
+
+            clearedUnits++;
+            await PowerCmd.Remove(karate);
         }
+
+        return clearedUnits;
     }
 }

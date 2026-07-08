@@ -1,12 +1,8 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-28-node-attachment/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 节点附加
 
-[2026年05月26日]()[762 字]()[大概 3 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-28-node-attachment/ -->
 
 节点附加适合给原版 Godot 节点挂一个自己的子节点，例如给战斗 UI 加一个小面板、给血条旁边加一个调试层，或给某个已有容器塞入辅助 `Control`。
-
 类似于给已有的场景进行“patch”（补丁修改）。
 
 ## 注册方式一：显式注册
@@ -87,9 +83,7 @@ ModNodeAttachmentRegistry.For(Entry.ModId)
             DuplicatePolicy = NodeAttachmentDuplicatePolicy.ThrowIfExistingByName,
         });
 ```
-
 `RegisterReadyChildFromScene` 要求场景根节点本身就是 `TNode`。（上面是`Control`）。
-
 如果场景根节点需要经过 RitsuLib 的场景转换：
 
 ```csharp
@@ -99,7 +93,6 @@ ModNodeAttachmentRegistry.For(Entry.ModId)
         "res://Test/scenes/ui/converted_combat_panel.tscn",
         static (_, panel) => panel.Refresh());
 ```
-
 `RegisterReadyChildFromConvertedScene<TParent,TNode>` 的 `TNode` 需要有公开无参构造函数。
 
 ## 注册方式二：自动注册
@@ -128,7 +121,6 @@ public sealed partial class TestTurnCounter : Label, INodeAttachmentSetup
     }
 }
 ```
-
 同时还有`[RegisterNodeAttachment]`，`[RegisterNodeAttachmentFromScene]`和`[RegisterNodeAttachmentFromConvertedScene]`等自动注册属性。
 
 ## 取回附加节点
@@ -145,7 +137,6 @@ if (ModNodeAttachmentRegistry.For(Entry.ModId)
     badge.Visible = true;
 }
 ```
-
 也可以用全局 id：
 
 ```csharp
@@ -158,29 +149,33 @@ ModNodeAttachmentRegistry.TryGetAttachedById<NCombatUi, TestCombatUiBadge>(
     id,
     out var badge);
 ```
-
 `TryGetAttached` 不会创建节点；只有父节点 ready 时才会真正挂载。
 
 ## NodeAttachmentOptions的参数
 
-| 选项 | 用途
-
-| `Name` / `NodeName` | 给直接子节点设置名称，也是重复策略查找已有节点的依据
-
-| `Order` | 同一个父节点上多个 attachment 的排序，数值小的先执行
-
-| `DuplicatePolicy` | 处理已有同名直接子节点：复用、跳过、替换、报错或允许重名
-
-| `AddMode` | 默认用 `AddChildSafely`；少数必须立刻加入树的节点可用 `AddChildDirect`
-
-| `SetupTiming` | setup 在加入树前还是加入树后执行
-
-| `ChildIndex` | 挂载后移动到指定子节点下标
-
-| `InsertBeforeName` / `InsertAfterName` | 挂载后移动到某个同级节点前后
-
-| `UniqueNameInOwner` | 设置 `UniqueNameInOwner`，并在加入后把父节点设为 owner
-
-| `IncludeDerivedParentTypes` | 父类型的子类是否也应用该 attachment，默认 true
-
+选项
+用途
+`Name` / `NodeName`
+给直接子节点设置名称，也是重复策略查找已有节点的依据
+`Order`
+同一个父节点上多个 attachment 的排序，数值小的先执行
+`DuplicatePolicy`
+处理已有同名直接子节点：复用、跳过、替换、报错或允许重名
+`AddMode`
+默认用 `AddChildSafely`；少数必须立刻加入树的节点可用 `AddChildDirect`
+`SetupTiming`
+setup 在加入树前还是加入树后执行
+`ChildIndex`
+挂载后移动到指定子节点下标
+`InsertBeforeName` / `InsertAfterName`
+挂载后移动到某个同级节点前后
+`UniqueNameInOwner`
+设置 `UniqueNameInOwner`，并在加入后把父节点设为 owner
+`IncludeDerivedParentTypes`
+父类型的子类是否也应用该 attachment，默认 true
 `ChildIndex`、`InsertBeforeName`、`InsertAfterName` 三者只能选一个。只要 `DuplicatePolicy` 不是 `AllowDuplicateName`，就必须设置 `Name` / `NodeName`。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-28-node-attachment/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

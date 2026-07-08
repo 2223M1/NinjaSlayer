@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-17-data-save/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 数据保存
 
-[2026年05月04日]()[1.3k 字]()[大概 5 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-17-data-save/ -->
 
 ## 挂载对象的局内保存（SavedAttachedState）
 
 如果你想给卡牌、遗物等对象添加一个会随存档保存的状态，可以使用`SavedAttachedState<TOwner, TValue>`。
-
 下面以遗物为例：每回合开始时记录经过的回合数，并把这个数值显示在遗物描述里的`{GameTurns}`中。
 
 ```csharp
@@ -55,19 +51,15 @@ public class TestRelic : ModRelicTemplate
     }
 }
 ```
-
 `SavedAttachedState<TestRelic, int>`表示给`TestRelic`附加一个`int`类型的可保存状态。
 
 ```csharp
 public static readonly SavedAttachedState<TestRelic, int> GameTurns = new("GameTurns", _ => 0);
 ```
-
 -
 第一个参数`"GameTurns"`是保存用的状态名，同一个对象类型里不要重复。
-
 -
 第二个参数`_ => 0`是默认值构造，读档时没有这个值就会使用`0`。
-
 -
 使用`GameTurns[this]`读取或修改当前遗物实例上的状态。
 
@@ -79,7 +71,6 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
     new DynamicVar("GameTurns", GameTurns[this])
 ];
 ```
-
 本地化文本示例：
 
 ```json
@@ -89,17 +80,16 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
   "TEST_RELIC_TEST_RELIC.flavor": "觉得很眼熟？"
 }
 ```
-
 这样`GameTurns`就会在局内保存和读取，不需要你自己额外写序列化逻辑。
 
 ## 全局的局内保存（RunSavedData）
 
 `RunSavedData`可用于一局游戏全局的数据保存，也包括联机模式下每个玩家单独的数据。请查看对应章节（`RitsuLib/02 - 玩法基底/09 - 局内数据`）。
+此功能适用于针对一局游戏的全局配置，如果你想要战斗中的数据保存，使用 `SavedAttachedState` 和 `SavedProperty` 更合适。
 
-## 跨局的数据持久化（ModDataStore）
+## 全游戏的数据持久化（ModDataStore）
 
-要想实现一直存在的跨局数据（例如：解锁进度、击杀统计、你的 Mod 的独立设置面板参数），你需要使用更底层的存储方案：`ModDataStore`。
-
+要想实现一直存在的数据（例如：解锁进度、击杀统计、你的 Mod 的独立设置面板参数），使用`ModDataStore`。
 `RitsuLib` 的这一套持久化架构提供全自动的文件读写和分发处理，支持按存档槽位隔离、或者全存档通用配置。
 
 ### 定义与注册你的数据
@@ -109,7 +99,7 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
 ```csharp
 using STS2RitsuLib;
 using STS2RitsuLib.Data;
-using STS2RitsuLib.Modding;
+using STS2RitsuLib.Utils.Persistence;
 
 namespace Test.Scripts.Data;
 
@@ -135,16 +125,13 @@ using (RitsuLibFramework.BeginModDataRegistration(Entry.ModId))
     );
 }
 ```
-
 RitsuLib 将“数据存储的范围”划分为两种常用级别：
-
 - **全局生效 (`SaveScope.Global`)**：所有存档槽位互通共用。适合存 Mod 独立的“游戏选项/设置”、快捷键绑定、玩家在你的 Mod 里的通用全局成就等。
 - **当前存档槽位生效 (`SaveScope.Profile`)**：只针对游戏主界面选中的特定存档位 (Profile) 独立。在存档 A 里解锁的东西，如果换到新建的存档 B 就没有了。非常适合存储当前玩家游玩你的新角色的经验值进度、特定于某个存档的卡牌解锁状态。
 
 ### 读写档位数据
 
 当游戏已经加载好时，可以拿取和存入这些数据。
-
 读取数据：
 
 ```csharp
@@ -158,7 +145,6 @@ if (progress.HasUnlockedSecret)
     // ...让特定卡牌生成
 }
 ```
-
 更新与写入数据： 如果你需要修改它，并在硬盘中保存好防止丢失：
 
 ```csharp
@@ -178,6 +164,7 @@ store.Modify<ModProgressData>("mod_progress", data =>
 store.Save("mod_progress");
 ```
 
+>
 ⚠️ 你必须显式调用 `.Save("your_key")` 它才会被安全地写入物理磁盘。可以在多次修改才进行一次 `.Save()` 写入操作。
 
 查询数据是否存在：
@@ -190,3 +177,8 @@ if (!store.HasExistingData("mod_progress"))
     // 执行给予见面礼物等初始化逻辑...
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-17-data-save/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

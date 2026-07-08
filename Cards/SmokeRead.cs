@@ -14,7 +14,7 @@ namespace NinjaSlayer.Cards;
 [RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class SmokeRead : ModCardTemplate
 {
-    private const int energyCost = 1;
+    private const int energyCost = 0;
     private const CardType type = CardType.Skill;
     private const CardRarity rarity = CardRarity.Common;
     private const TargetType targetType = TargetType.Self;
@@ -27,7 +27,7 @@ public sealed class SmokeRead : ModCardTemplate
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new BlockVar(5, ValueProp.Move),
+        new BlockVar(3, ValueProp.Move),
         new CardsVar(2)
     ];
 

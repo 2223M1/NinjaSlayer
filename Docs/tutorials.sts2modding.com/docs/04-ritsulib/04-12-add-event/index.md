@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-12-add-event/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新事件
 
-[2026年05月04日]()[1.2k 字]()[大概 5 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-12-add-event/ -->
 
 ## 简单多阶段事件
 
@@ -101,11 +98,8 @@ public sealed class TestEvent : ModEventTemplate
     }
 }
 ```
-
 以上代码的字符串基本都和json中的文本键有关。
-
 创建`{modId}/localization/{Language}/events.json`。
-
 - 通过`ritsulib`添加内容，其id会变成`{modid}_{类别}_{原id}`。例如这里的`modid`是`TEST`,类别是`EVENT`。
 
 ```json
@@ -157,3 +151,8 @@ public override async Task Resume(AbstractRoom room)
 {
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-12-add-event/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

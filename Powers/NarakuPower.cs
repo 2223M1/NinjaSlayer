@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
@@ -21,10 +23,15 @@ public sealed class NarakuPower : ModPowerTemplate
 
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 
+    protected override IEnumerable<DynamicVar> CanonicalVars => [
+        new HpLossVar(4)
+    ];
+
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
         NarakuVisualOverlay.Sync(Owner);
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner]);
         return Task.CompletedTask;
     }
 
@@ -44,11 +51,26 @@ public sealed class NarakuPower : ModPowerTemplate
 
     public override async Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer, DamageResult result, ValueProp props, Creature target, CardModel? cardSource)
     {
-        if (dealer != Owner || cardSource?.Type != CardType.Attack || props.HasFlag(ValueProp.Unblockable) || result.BlockedDamage <= 0)
+        if (dealer != Owner || !props.IsPoweredAttack())
         {
             return;
         }
 
-        await CreatureCmd.Damage(choiceContext, target, result.BlockedDamage, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, dealer, cardSource);
+        IReadOnlyList<Creature> enemies = CombatState.HittableEnemies;
+        if (enemies.Count == 0)
+        {
+            return;
+        }
+
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies);
+
+        await CreatureCmd.Damage(
+            choiceContext,
+            enemies,
+            DynamicVars.HpLoss.BaseValue,
+            ValueProp.Unblockable | ValueProp.Unpowered,
+            Owner,
+            cardSource,
+            null);
     }
 }

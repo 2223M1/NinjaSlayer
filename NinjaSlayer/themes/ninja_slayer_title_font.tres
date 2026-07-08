@@ -1,0 +1,8 @@
+[gd_resource type="FontVariation" load_steps=3 format=3 uid="uid://cninjatitlefarrier"]
+
+[ext_resource type="FontFile" uid="uid://bqx7farricgblack" path="res://NinjaSlayer/fonts/farrier_icg_black.otf" id="1_farrier"]
+[ext_resource type="FontVariation" uid="uid://bxphqqry0qswt" path="res://themes/fonts/zhs/source_han_serif_sc_bold_shared.tres" id="2_zhs_bold"]
+
+[resource]
+base_font = ExtResource("1_farrier")
+fallbacks = Array[Font]([ExtResource("2_zhs_bold")])

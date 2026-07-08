@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-10-add-audio/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加音频
 
-[2026年05月04日]()[1.1k 字]()[大概 5 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-10-add-audio/ -->
 
 [https://github.com/BAKAOLC/STS2-RitsuLib/blob/main/Docs/zh/FmodAndAudio.md](https://github.com/BAKAOLC/STS2-RitsuLib/blob/main/Docs/zh/FmodAndAudio.md)
 
@@ -14,13 +11,11 @@
 ### 下载fmod
 
 前往官网 [https://www.fmod.com/download#fmodstudio](https://www.fmod.com/download#fmodstudio) ，下载2.03.06版本的fmod studio。
-
 安装完毕后打开。
 
 ### 下载原版工程
 
 先下载一个拥有原版音频guid对应的工程，可以下载ritsulib作者制作的音频示例工程（整个一起下载）： [https://github.com/BAKAOLC/STS2_FModProject_Minimal](https://github.com/BAKAOLC/STS2_FModProject_Minimal) ，或者网盘： [https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar](https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar) 。
-
 下载完毕后打开。
 
 ### 导入音频
@@ -29,26 +24,20 @@
 
 ### 重命名bank
 
-点击中间的`Banks`栏，将两个bank重命名为你的项目的名字，最好也是`XXX`和`Master`。
-
-- `XXX`最好删除重建一个，但是`Master`不能删除然后重建。
+点击中间的`Banks`栏，新建一个bank，命名为`Test`或者你喜欢的名字。
+- 不要对原来有的`Master`做任何操作。
 
 ### 新建event
 
 点击左侧的`Events`栏，可以右键新建文件夹，套一些文件夹改名防止你和别人的id撞上。然后右键新建event。
-
 右键你的 event，点击 `Assign To Bank`，选择 `Test` 或者你重命名的那个。（不是 Master 那个）
-
 接着点击`Window - Mixer Routing`，需要创建和原版一致的routing，这里是`master/sfx`，然后把你的音频放在此处。
-
 例如原版游戏代码中的路径为`event:/sfx/heal`、`event:/music/act3_a1_v1`之类，那么你就需要分别放在`master/sfx`和`master/music`组下。
-
 这一步会让你的音频受到游戏的音量与效果影响，例如`sfx`受到音响音量影响`music`受到音乐音量影响。
 
 ### 新建sheet
 
 然后点击你刚才的event，中间会出现sheet界面。在其中右键新建一个任意类型的sheet。
-
 - 简单来说，timeline可以实现音频拼接或者延迟触发，action可以多个音频随机触发一个（右键add multi instrument）等，parameter可以调整音频的参数等。
 
 例如我们新建一个timeline sheet，然后点击assets将音频素材拖到轨道里。
@@ -57,10 +46,8 @@
 
 -
 点击菜单栏的`File`，点击`Build`，然后再点击`Export GUIDs`。
-
 -
 从你保存的项目的根目录找到`Build`这个文件夹，复制`GUIDs.txt`和`Desktop/Test.bank`（或者你的命名的bank，不是任何其他带有Master的bank）到你的mod项目中，例如复制到`Test/audios`里。
-
 -
 你也可以设置自动构建的路径，点击`Edit - Preference - Build`选择构建路径。
 
@@ -89,9 +76,7 @@ public class Entry
     }
 }
 ```
-
 然后你指定的fmod就被加载到游戏里了。例如使用：
-
 - 人物音频：
 
 ```csharp
@@ -103,7 +88,6 @@ Audio: new(
     // CharacterTransitionSfx: "event:/sfx/ui/wipe_ironclad"
 ),
 ```
-
 - 卡牌音效：
 
 ```csharp
@@ -113,7 +97,6 @@ await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
     .Targeting(cardPlay.Target!)
     .Execute(choiceContext);
 ```
-
 和
 
 ```csharp
@@ -130,7 +113,6 @@ SfxCmd.Play("event:/sfx/block_gain");
 
 -
 安装[fmod插件 6.1.0-4.5.0](https://github.com/utopia-rise/fmod-gdextension/releases/tag/6.1.0-4.5.0)，点击`addons.zip`下载（或者网盘 [https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar](https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar) ），把解压出来的`addons`复制到你的项目里，然后在编辑器菜单点击`项目 - 项目设置 - 插件`启用它。
-
 -
 禁用对你需要通过fmod加载的音频的导入，原样导出。如下操作。
 
@@ -139,7 +121,6 @@ SfxCmd.Play("event:/sfx/block_gain");
 ### 导入资源
 
 如果你是方法1和2，把你的音频文件放到你喜欢的位置，例如`Test/audios/test.ogg`。
-
 如果你是方法3，把音频复制到和你mod同级目录内。
 
 ### 加载并播放
@@ -153,9 +134,13 @@ public static void Init()
        FmodStudioStreamingFiles.TryPreloadAsSound("res://Test/audios/waveform.ogg");
    }
 ```
-
 在你需要播放音频的地方播放：
 
 ```csharp
 FmodStudioStreamingFiles.TryPlaySoundFile("res://Test/audios/waveform.ogg");
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-10-add-audio/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

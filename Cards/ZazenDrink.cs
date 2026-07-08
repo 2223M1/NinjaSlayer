@@ -12,7 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ZazenDrink : ModCardTemplate
+public sealed class ZazenDrink : ModCardTemplate, IDrawCastSkillCard
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Skill;
@@ -41,6 +41,7 @@ public sealed class ZazenDrink : ModCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await DrawUntilFullDiscardingStatuses(choiceContext);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
     }

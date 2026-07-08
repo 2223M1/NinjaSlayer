@@ -1,22 +1,19 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-2-character-animation/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 角色动画
 
-[2026年05月26日]()[1.1k 字]()[大概 5 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-2-character-animation/ -->
 
 角色动画有多种快速建立的方式。
-
 以下代码都在人物类里编写。
 
 ## VisualCueSet 和状态机（静态图或帧动画）
 
 `VisualCueSet` 适合静态图或帧动画。每个 cue 可以是一张图，也可以是一段帧动画。
-
 使用该系统仍然推荐保留`VisualsPath`和`TryCreateCreatureVisuals`。另外你的场景需要至少有一个`Sprite2D`类型的节点（例如把`Visuals`改成该类型）。
 
 ```csharp
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2RitsuLib.Scaffolding.Characters;
+using STS2RitsuLib.Scaffolding.Godot;
 using STS2RitsuLib.Scaffolding.Visuals;
 
 namespace Test.Scripts;
@@ -26,27 +23,25 @@ public sealed class TestCharacter
 {
     public override CharacterAssetProfile AssetProfile => new( // 如果你用人物那章和ironclad merge的用法可以保留你的写法
         Scenes: new(
-            VisualsPath = "res://Test/scenes/characters/test_visuals.tscn", // 需要保留
+            VisualsPath: "res://Test/scenes/characters/test_visuals.tscn" // 需要保留
         ),
         VisualCues: ModVisualCues.CueSet()
             // idle动画使用单图
             .Single("idle", "res://Test/images/character/idle.png")
-            .Single("hit", "res://Test/images/character/hit.png")
-            // .Single("hit", "res://Test/images/character/hit.png", 0.5f) // 对于ritsulib0.3.9及以上版本，可以设置单图的持续时间
+            .Single("hit", "res://Test/images/character/hit.png", 0.5f) // 持续0.5秒
+            // .Single("hit", "res://Test/images/character/hit.png") // 或者永久切换
             // attack动画使用帧动画
             .Sequence("attack", seq => seq
                 .Frame("res://Test/images/character/attack_01.png", 0.06f)
                 .Frame("res://Test/images/character/attack_02.png", 0.06f)
                 .Frame("res://Test/images/character/attack_03.png", 0.08f))
             .Single("dead", "res://Test/images/character/dead.png")
-            .Build(), // 最后需要调用一次build
-    )
+            .Build() // 最后需要调用一次build
+    );
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() => RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(AssetProfile.Scenes!.VisualsPath!); // 需要保留
-    };
 }
 ```
-
 如果你只是想拥有原版常见的 `idle`、`hit`、`attack`、`cast`、`dead`、`relaxed` 状态，可以直接使用 `ModAnimStateMachines.StandardCue`：
 
 ```csharp
@@ -76,13 +71,7 @@ public sealed class TestCharacter
     }
 }
 ```
-
 这里`idle`和`relaxed`默认是循环的，其他动画播放结束后自动回到`idle`。
-
-对于0.3.9版本以下，单帧`Single`或者单帧`Sequence`无法设置持续时间，所以如果你都用静态帧的话推荐用0.3.9版本以上的`RitsuLib`。
-
-0.3.9版本以上，单图动画可以设置持续时间，例如`Single("hit", "res://Test/images/character/hit.png", 0.5f)`。
-
 角色在商店、篝火等世界场景里也可以使用程序化 cue，不一定要单独做一个完整场景：
 
 ```csharp
@@ -113,13 +102,13 @@ public sealed class TestCharacter
 ## 场景自动转换（spine动画或自定义种类动画）
 
 如果不想维护完整 `.tscn`，也可以在代码里使用自动场景转换，这种方式只需要你的场景结构和原版一致，不需要额外配置。
-
 也是教程使用的方式。
 
 ```csharp
 using Godot;
-using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2RitsuLib.Scaffolding.Characters;
+using STS2RitsuLib.Scaffolding.Godot;
 
 namespace Test.Scripts;
 
@@ -167,7 +156,6 @@ protected override CreatureAnimator? SetupCustomCreatureAnimator(MegaSprite cont
     return creatureAnimator;
 }
 ```
-
 要播放，可以使用`await CreatureCmd.TriggerAnim(Owner.Creature, "Shiv", Owner.Character.CastAnimDelay);`或者在攻击时指定：
 
 ```csharp
@@ -177,7 +165,6 @@ await DamageCmd.Attack(DynamicVars.Damage.BaseValue).WithAttackerAnim("Shiv", 0.
 ### AnimationStateMachine
 
 使用`SetupCustomCombatAnimationStateMachine`动画状态机控制可同时扩展spine、静态图和帧动画。
-
 以下创建和上面效果相同的状态机，播放逻辑一致。
 
 ```csharp
@@ -206,3 +193,8 @@ protected override ModAnimStateMachine? SetupCustomCombatAnimationStateMachine(
     return builder.BuildForVisualsRoot(visualsRoot, character); // 创建帧动画。
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-15-2-character-animation/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

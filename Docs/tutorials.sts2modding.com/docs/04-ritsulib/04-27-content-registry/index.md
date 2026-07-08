@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-27-content-registry/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 内容注册
 
-[2026年05月26日]()[329 字]()[大概 1 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-27-content-registry/ -->
 
 教程大多使用 `[RegisterCard]`、`[RegisterRelic]` 这类注解，但其实`Ritsulib`支持至少三种注册方式。
 
@@ -59,7 +56,6 @@ public class Entry
     }
 }
 ```
-
 `Apply()` 只在这一串最后调用一次。Builder 会按你添加的顺序执行，所以会被其他规则引用的模型要先注册。
 
 ## 方法三：直接使用注册器
@@ -86,3 +82,8 @@ public class Entry
     }
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-27-content-registry/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

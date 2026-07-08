@@ -1,16 +1,13 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-1-add-card-pool/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加卡池
 
-[2026年05月23日]()[449 字]()[大概 2 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-15-1-add-card-pool/ -->
 
+>
 以下示例默认你已经在`Entry.Init()`中启用了`RitsuLib`的自动注册，否则`[RegisterCharacter]`之类的attribute不会生效（详见第0章）。
 
 ## 人物卡池
 
 参考添加人物一章：
-
 `TestCardPool.cs`:
 
 ```csharp
@@ -45,9 +42,7 @@ public class TestCardPool : TypeListCardPoolModel
     public override bool IsColorless => false;
 }
 ```
-
 其中的`PoolFrameMaterial`是对所有注册在其中的卡牌生效的，除非卡牌自己指定了`FrameMaterial`。
-
 然后写在人物的泛型里即可：
 
 ```csharp
@@ -64,7 +59,6 @@ public class MultiClassSharedPool : TypeListCardPoolModel
 {
 }
 ```
-
 这种方式默认不会出现在图鉴里。如果需要出现在图鉴，在你的初始化函数`Entry.Init`中写：
 
 ```csharp
@@ -75,9 +69,7 @@ ModContentRegistry.For(ModId)
         // null // 放置顺序（可选）
     );
 ```
-
 如果你想在图鉴里悬浮图标时显示额外文字，在`{modId}/localization/{Language}/card_library.json`中写：
-
 其中的ID为`{ModId}_POOLFILTER_{ID}`，ID是我们刚刚代码写入的大写形式。
 
 ```json
@@ -85,3 +77,8 @@ ModContentRegistry.For(ModId)
     "REME_MOD_POOLFILTER_REME_MULTICLASS_SHARED_POOL": "多职业共享池。"
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-15-1-add-card-pool/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

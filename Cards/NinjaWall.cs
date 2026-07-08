@@ -25,10 +25,6 @@ public sealed class NinjaWall : ModCardTemplate
         PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
     );
 
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [
-        CardKeyword.Exhaust
-    ];
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(20, ValueProp.Move),
         new DynamicVar("Karate", 4)
@@ -41,11 +37,10 @@ public sealed class NinjaWall : ModCardTemplate
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
         await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
-        PlayerCmd.EndTurn(Owner, canBackOut: false);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(5);
+        DynamicVars.Block.UpgradeValueBy(4);
     }
 }

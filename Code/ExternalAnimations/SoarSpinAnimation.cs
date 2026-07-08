@@ -80,6 +80,8 @@ public static class SoarSpinAnimation
         StopAirborneSpin(creature);
         spinDegrees.Remove(creature);
 
+        NinjaSlayerSpinMotionBlur.Get(creature)?.Reset();
+
         var visuals = GetSpinVisual(creature);
         if (visuals == null)
         {

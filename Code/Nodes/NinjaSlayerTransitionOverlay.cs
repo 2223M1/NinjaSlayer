@@ -48,6 +48,14 @@ public partial class NinjaSlayerTransitionOverlay : Control
         Visible = true;
         var elapsed = 0.0;
 
+        // Cap how much a single tick can advance the clock. The animation runs on the main
+        // thread, overlapping main-thread run/save loading; when loading stalls the thread the
+        // next ProcessFrame delta spikes. Without a cap that spike jumps the frame index over
+        // several frames (visible stutter). Clamping to ~2 nominal frames turns a load hitch
+        // into a brief pause that resumes in order instead of skipping frames.
+        var secondsPerFrame = frames.Length > 0 && duration > 0f ? duration / frames.Length : 0f;
+        var maxStep = secondsPerFrame > 0f ? secondsPerFrame * 2f : double.MaxValue;
+
         while (elapsed < duration)
         {
             if (cancelToken.IsCancellationRequested)
@@ -59,7 +67,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
             var frameIndex = Math.Clamp((int)(progress * frames.Length), 0, frames.Length - 1);
             SetFrame(frames[frameIndex]);
 
-            elapsed += await this.AwaitProcessFrame(cancelToken);
+            elapsed += Math.Min(await this.AwaitProcessFrame(cancelToken), maxStep);
         }
 
         SetFrame(frames[^1]);

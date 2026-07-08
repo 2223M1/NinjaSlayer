@@ -1,4 +1,4 @@
-﻿using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -25,8 +25,8 @@ public sealed class Chop : ModCardTemplate
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(4, ValueProp.Move),
-        new DynamicVar("Karate", 3)
+        new DamageVar(3, ValueProp.Move),
+        new DynamicVar("Karate", 2)
     ];
 
     public Chop() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -35,15 +35,20 @@ public sealed class Chop : ModCardTemplate
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
+            .FromCard(this, cardPlay)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
         await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        if (!Keywords.Contains(CardKeyword.Exhaust) && !ExhaustOnNextPlay)
+        {
+            await CardPileCmd.Add(this, PileType.Draw, CardPilePosition.Top);
+        }
     }
 
     protected override void OnUpgrade()
     {
+        DynamicVars.Damage.UpgradeValueBy(1);
         DynamicVars["Karate"].UpgradeValueBy(1);
     }
 }

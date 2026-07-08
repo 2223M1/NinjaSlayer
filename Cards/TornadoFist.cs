@@ -1,47 +1,87 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
-using STS2RitsuLib.Interop.AutoRegistration;
+using STS2RitsuLib.Cards.DynamicVars;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class TornadoFist : ModCardTemplate
+public sealed class TornadoFist : NinjaSlayerXAttackCard
 {
-    private const int energyCost = 3;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
+    private const int energyCost = 0;
+    private const CardType type = CardType.Attack;
+    private const CardRarity rarity = CardRarity.Uncommon;
+    private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
     public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/DragonTornado.png"
+        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
     );
 
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [
-        CardKeyword.Exhaust
-    ];
-
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        HoverTipFactory.FromPower<NinjaSlayerSoarPower>(),
-        HoverTipFactory.FromCard<ShurikenCard>(),
-        HoverTipFactory.FromCard<GiantShurikenCard>()
+    protected override IEnumerable<DynamicVar> CanonicalVars => [
+        new DamageVar(6, ValueProp.Move),
+        new PowerVar<VulnerablePower>(1),
+        new ComputedDynamicVar(
+            "CalculatedHits",
+            0m,
+            card => card is TornadoFist tornadoFist ? tornadoFist.ResolveXHitCount() : 0m)
     ];
 
     public TornadoFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
-    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    protected override int ResolveXHitCount()
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLongjuanquanEvent);
-        await PowerCmd.Apply<NinjaSlayerSoarPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
+        int hits = ResolveEnergyXValue();
+        if (IsUpgraded)
+        {
+            hits++;
+        }
+
+        return hits;
     }
 
-    protected override void OnUpgrade()
+    protected override Task OnBeforeXHit(
+        PlayerChoiceContext choiceContext,
+        CardPlay cardPlay,
+        int hitIndex,
+        int totalHits)
     {
-        AddKeyword(CardKeyword.Retain);
+        if (Owner.Creature.HasPower<NarakuPower>())
+        {
+            SpinComboAudio.PlayNarakuSlowAttack(Owner.Creature);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    protected override async Task ExecuteXHit(
+        PlayerChoiceContext choiceContext,
+        CardPlay cardPlay,
+        int hitIndex,
+        int totalHits)
+    {
+        ArgumentNullException.ThrowIfNull(cardPlay.Target);
+
+        var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, cardPlay)
+            .WithAttackerAnim(AttackerAnimTrigger, Owner.Character.AttackAnimDelay)
+            .Targeting(cardPlay.Target);
+        await command.Execute(choiceContext);
+        if (command.Results.SelectMany(r => r).Any(r => r.UnblockedDamage > 0))
+        {
+            await PowerCmd.Apply<VulnerablePower>(
+                choiceContext,
+                cardPlay.Target,
+                DynamicVars["VulnerablePower"].BaseValue,
+                Owner.Creature,
+                this);
+        }
     }
 }

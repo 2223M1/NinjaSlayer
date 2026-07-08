@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-06-add-potion/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新药水
 
-[2026年05月04日]()[326 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-06-add-potion/ -->
 
 首先创建类：（很多代码和卡牌类似，参考即可）
 
@@ -51,7 +48,6 @@ public class TestPotion : CustomPotionModel
     }
 }
 ```
-
 然后创建`{modId}/localization/{Language}/potions.json`。
 
 ```json
@@ -60,3 +56,8 @@ public class TestPotion : CustomPotionModel
     "TEST-TEST_POTION.description": "将[blue]{Cards}[/blue]张[gold]灵魂[/gold]加入你的[gold]手牌[/gold]。"
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-06-add-potion/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

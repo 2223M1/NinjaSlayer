@@ -33,6 +33,8 @@ public abstract class NinjaSlayerXAttackCard : ModCardTemplate
         return Math.Max(0, ResolveEnergyXValue());
     }
 
+    public int GetPreviewHitCount() => ResolveXHitCount();
+
     protected sealed override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         int hits = ResolveXHitCount();

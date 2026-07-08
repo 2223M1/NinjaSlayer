@@ -1,15 +1,17 @@
+using System;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Content;
+using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -38,19 +40,30 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         }
 
         NinjaSlayerTransitionGate.Pending = false;
-        __result = PlayNinjaSlayerTransitionAsync(__instance, cancelToken);
+
+        // Start the frame animation in the background and return immediately so the caller's
+        // run/save asset loading overlaps the animation instead of producing a black hold
+        // afterwards. The reveal patches (RoomFadeIn/FadeIn) await this task before showing.
+        NinjaSlayerTransitionGate.AnimationTask = BeginNinjaSlayerTransition(__instance, cancelToken);
+
+        var delay = NinjaSlayerTransitionGate.ConsumeLoadStartDelay();
+        __result = delay > 0f
+            ? Cmd.Wait(delay, cancelToken ?? CancellationToken.None)
+            : Task.CompletedTask;
         return false;
     }
 
-    private static async Task PlayNinjaSlayerTransitionAsync(NTransition transition, CancellationToken? cancelToken)
+    private static Task BeginNinjaSlayerTransition(NTransition transition, CancellationToken? cancelToken)
     {
         if (SaveManager.Instance.PrefsSave.FastMode == FastModeType.Instant)
         {
             SetInTransition(transition, true);
             transition.Visible = false;
-            return;
+            return Task.CompletedTask;
         }
 
+        // Cover the screen synchronously before returning so the character select / menu never
+        // flashes through: opaque black underlay plus the first animation frame on top.
         KillTransitionTween(transition);
 
         SetInTransition(transition, true);
@@ -62,14 +75,31 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
         var simpleTransition = transition.GetNode<ColorRect>("SimpleTransition");
         simpleTransition.Color = Colors.Black;
-        simpleTransition.Modulate = new Color(1f, 1f, 1f, 0f);
+        simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
 
         var overlay = NinjaSlayerTransitionOverlay.GetOrCreate(transition);
-        await overlay.PlayAsync(NinjaSlayerAudio.TransitionSeconds, cancelToken ?? CancellationToken.None);
+        return PlayOverlayAsync(overlay, simpleTransition, cancelToken);
+    }
 
-        simpleTransition.Color = Colors.Black;
-        simpleTransition.Modulate = Colors.Black;
-        transition.MouseFilter = Control.MouseFilterEnum.Stop;
+    private static async Task PlayOverlayAsync(NinjaSlayerTransitionOverlay overlay, ColorRect simpleTransition, CancellationToken? cancelToken)
+    {
+        try
+        {
+            await overlay.PlayAsync(NinjaSlayerAudio.TransitionSeconds, cancelToken ?? CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn($"NinjaSlayer transition animation failed: {ex}");
+        }
+        finally
+        {
+            // Keep the screen covered with opaque black until the reveal patch clears/fades it.
+            if (GodotObject.IsInstanceValid(simpleTransition))
+            {
+                simpleTransition.Color = Colors.Black;
+                simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
+            }
+        }
     }
 
     private static void KillTransitionTween(NTransition transition)

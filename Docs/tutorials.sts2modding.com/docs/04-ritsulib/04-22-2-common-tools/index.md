@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-2-common-tools/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 常用工具
 
-[2026年05月26日]()[993 字]()[大概 4 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-2-common-tools/ -->
 
 ## DynamicEnumValueRegistry
 
 统一管理动态枚举的扩展逻辑确保安全。可以为已知枚举添加分支。
-
 但是只是添加枚举，其他匹配逻辑和素材需要自己制作。
 
 ```csharp
@@ -23,7 +19,6 @@ Field = enumRegistry.RegisterOwned("FIELD").Value;
 ## WeightedList
 
 `WeightedList<T>` 是一个带权重的列表，可以用原版 `Rng` 抽取，也可以不放回抽取。
-
 可用于抽取选项（奖励卡牌池等）。
 
 ```csharp
@@ -63,13 +58,11 @@ public static class TestWeightedRewards
     }
 }
 ```
-
 如果元素实现 `IWeightedValue`，`Add(item)` 会自动读取 `Weight`；否则默认权重是 1。权重必须大于 0，空列表上 `GetRandom` 会抛异常；不确定列表是否为空时用 `TryGetRandom`。
 
 ## AttachedState
 
 `AttachedState<TKey,TValue>` 用 `ConditionalWeakTable` 把数据挂到任意引用对象上，不需要继承原版类，也不会阻止 key 被 GC。
-
 可实现给一个类添加额外变量。
 
 ```csharp
@@ -110,7 +103,6 @@ public static class TestCreatureHeat
     }
 }
 ```
-
 用 `TryGetValue` 做只读判断，不会创建默认值。用索引器或 `GetOrCreate` 时会创建默认状态。
 
 ## SavedAttachedState
@@ -139,7 +131,6 @@ public static class TestSavedCardFlags
     }
 }
 ```
-
 `name` 会注入原版 `SavedPropertiesTypeCache`，必须全局唯一。推荐带上 Mod id 前缀，发布后不要改名。复杂对象请改用 `RunSavedData` 或 `ModDataStore`，不要硬塞进 `SavedAttachedState`。
 
 ## 动态枚举值
@@ -164,26 +155,26 @@ public static class TestDynamicTags
     }
 }
 ```
-
 确保你的ID不会和别人撞车。
 
 ## MaterialUtils
 
-| 方法名称 | 功能说明
-
-| `CreateReplaceHueShaderMaterial` | 创建一个替换色调的着色器材质（保留原亮度和饱和度），适用于修改原版卡框等。参数为 RGB 色值和亮度。
-
-| `CreateRgbShaderMaterial`(已过时) | 使用原版的 HSV 着色器和给定的 RGB 参数创建着色器材质。（建议改用 `CreateReplaceHueShaderMaterial`）。
-
-| `CreateHsvShaderMaterial` | 使用原版的 HSV 着色器和给定的 H, S, V 参数创建着色器材质。
-
-| `CreateUnmodulatedHsvShaderMaterial` | 返回一个保留原始颜色（h=0, s=1, v=1）的原版 HSV 着色器材质。用于自定义卡框。
-
-| `CreateDoomBarShaderMaterial` | 创建游戏原版灾厄血条材质（自带正确的 `NoiseTexture`）。
-
-| `CreateVanillaDoomBarGradientTexture` | 创建游戏原版灾厄的渐变纹理。
-
-| `CreateVanillaDoomBarNoiseTexture` | 创建与原版灾厄血条覆盖材质匹配的 `NoiseTexture2D`。
+方法名称
+功能说明
+`CreateReplaceHueShaderMaterial`
+创建一个替换色调的着色器材质（保留原亮度和饱和度），适用于修改原版卡框等。参数为 RGB 色值和亮度。
+`CreateRgbShaderMaterial`(已过时)
+使用原版的 HSV 着色器和给定的 RGB 参数创建着色器材质。（建议改用 `CreateReplaceHueShaderMaterial`）。
+`CreateHsvShaderMaterial`
+使用原版的 HSV 着色器和给定的 H, S, V 参数创建着色器材质。
+`CreateUnmodulatedHsvShaderMaterial`
+返回一个保留原始颜色（h=0, s=1, v=1）的原版 HSV 着色器材质。用于自定义卡框。
+`CreateDoomBarShaderMaterial`
+创建游戏原版灾厄血条材质（自带正确的 `NoiseTexture`）。
+`CreateVanillaDoomBarGradientTexture`
+创建游戏原版灾厄的渐变纹理。
+`CreateVanillaDoomBarNoiseTexture`
+创建与原版灾厄血条覆盖材质匹配的 `NoiseTexture2D`。
 
 ## HoverTipHelper
 
@@ -198,5 +189,9 @@ using STS2RitsuLib.Utils;
 HoverTipHelper.AddTipToOwner(owner, "Test", "这是一条额外说明。");
 HoverTipHelper.AddCardTipsToOwner(owner, cards);
 ```
-
 `HoverTipHelper` 的方法返回 `false` 表示当前没有绑定活动悬浮提示组，通常可以忽略；如果你在自定义控件里自己管理悬浮提示，需要先按原版方式创建并绑定悬浮提示组。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-22-2-common-tools/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -1,4 +1,4 @@
-﻿using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -39,7 +39,7 @@ public sealed class KarateFinish : ModCardTemplate
             await PowerCmd.Remove(karate);
         }
 
-        await CreatureCmd.Damage(choiceContext, cardPlay.Target, amount * DynamicVars["Multiplier"].BaseValue, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, Owner.Creature, this);
+        await CreatureCmd.Damage(choiceContext, cardPlay.Target, amount * DynamicVars["Multiplier"].BaseValue, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this, cardPlay);
     }
 
     protected override void OnUpgrade()

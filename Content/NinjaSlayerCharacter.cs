@@ -1,13 +1,15 @@
-﻿using Godot;
+using Godot;
 using MegaCrit.Sts2.Core.Entities.Characters;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Characters;
+using STS2RitsuLib.Scaffolding.Characters.Visuals.Definition;
 using STS2RitsuLib.Scaffolding.Godot;
 using STS2RitsuLib.Scaffolding.Visuals;
 using STS2RitsuLib.Scaffolding.Visuals.Definition;
@@ -24,21 +26,19 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
     private const string iconTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/character_icon_NinjaSlayer.png";
     private const string iconOutlineTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/character_icon_NinjaSlayer_outline.png";
     private const string iconScenePath = "res://NinjaSlayer/scenes/ui/ninja_slayer_icon.tscn";
-    private const string selectBgTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/character_select_NinjaSlayer_bg.png";
+    private const string selectBgScenePath = "res://NinjaSlayer/scenes/char_select/char_select_bg_ninja_slayer.tscn";
     private const string selectTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer.png";
     private const string selectLockedTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer_locked.png";
     private const string mapMarkerTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/map_marker.png";
     public const string CharacterSelectTransitionMaterialPath = "res://NinjaSlayer/materials/transitions/ninja_slayer_transition_mat.tres";
     public const string TransitionFramePathFormat = "res://NinjaSlayer/images/ui/transitions/ninja_slayer/ninja_slayer_transition_{0:D4}.png";
     public const int TransitionFrameCount = 60;
-    private static readonly Vector2 combatVisualsBasePosition = new(-160f, -190f);
-    private const float combatVisualsBaseScale = 0.33f;
     private const float xAttackSpinDuration = 0.24f;
     private const float xAttackSpinFps = 60f;
-    public const bool OriginalAnimations = true;
-    public const string AttackCueName = OriginalAnimations ? "attack" : "archived_attack";
-    public const string HitCueName = OriginalAnimations ? "hit" : "archived_hit";
-    public const string BlockedHitCueName = OriginalAnimations ? "blocked_hit" : "archived_blocked_hit";
+    public static readonly bool OriginalAnimations = true;
+    public static readonly string AttackCueName = OriginalAnimations ? "attack" : "archived_attack";
+    public static readonly string HitCueName = OriginalAnimations ? "hit" : "archived_hit";
+    public static readonly string BlockedHitCueName = OriginalAnimations ? "blocked_hit" : "archived_blocked_hit";
 
     public static readonly VisualCueSet CombatVisualCues = ModVisualCues.CueSet()
         .Sequence("idle", AddIdleFrames)
@@ -64,6 +64,19 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
         .Single("relaxed", "res://NinjaSlayer/images/characters/ninja_slayer/relaxed/relaxed_0001.png", CueStyle(offsetX: 0f))
         .Build();
 
+    public static class MerchantVisuals
+    {
+        public const float BodyScale = 1.1f;
+        public const float BodyOffsetX = -40f;
+        public const float BodyOffsetY = -100f;
+        public const string IdleTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/merchant/ninja_slayer_merchant_idle.png";
+
+        public static VisualNodeStyle BodyStyle() =>
+            VisualNodeStyle.Create()
+                .WithOffset(new Vector2(BodyOffsetX, BodyOffsetY))
+                .WithScale(BodyScale);
+    }
+
     public override CharacterGender Gender => CharacterGender.Masculine;
     public override CharacterAssetProfile AssetProfile => new(
         Scenes: new CharacterSceneAssetSet(
@@ -76,7 +89,7 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
             IconTexturePath: iconTexturePath,
             IconOutlineTexturePath: iconOutlineTexturePath,
             IconPath: iconScenePath,
-            CharacterSelectBgPath: selectBgTexturePath,
+            CharacterSelectBgPath: selectBgScenePath,
             CharacterSelectIconPath: selectTexturePath,
             CharacterSelectLockedIconPath: selectLockedTexturePath,
             CharacterSelectTransitionPath: CharacterSelectTransitionMaterialPath,
@@ -93,7 +106,9 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
         ),
         Multiplayer: null,
         VisualCues: CombatVisualCues,
-        WorldProceduralVisuals: null
+        WorldProceduralVisuals: CharacterWorldProceduralVisualSetBuilder.Create()
+            .Merchant(cues => cues.Single("idle", MerchantVisuals.IdleTexturePath, MerchantVisuals.BodyStyle()))
+            .Build()
     );
     public override Color NameColor => new("D32020FF");
     public override int StartingHp => 72;
@@ -150,8 +165,8 @@ public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardP
     private static VisualNodeStyle CueStyle(float offsetX, float rotationDegrees = 0f, float scaleX = 1f)
     {
         return VisualNodeStyle.Create()
-            .WithPosition(combatVisualsBasePosition + new Vector2(offsetX, 0f))
-            .WithScale(new Vector2(combatVisualsBaseScale * scaleX, combatVisualsBaseScale))
+            .WithPosition(NinjaSlayerCombatVisuals.BodySpriteBasePosition + new Vector2(offsetX, 0f))
+            .WithScale(new Vector2(NinjaSlayerCombatVisuals.BodySpriteBaseScale * scaleX, NinjaSlayerCombatVisuals.BodySpriteBaseScale))
             .WithRotationDegrees(rotationDegrees);
     }
 

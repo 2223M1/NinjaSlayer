@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-26-runtime-hotkey/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 运行时热键
 
-[2026年05月16日]()[423 字]()[大概 1 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-26-runtime-hotkey/ -->
 
 `RitsuLib`提供了一套运行时热键注册系统，支持多绑定、重绑定、修饰键，且支持在输入框或开发者控制台打开时自动不触发。
 
@@ -84,20 +81,24 @@ foreach (var info in RuntimeHotkeyService.GetRegisteredHotkeyDetails())
 ### 绑定字符串格式
 
 写法：`[修饰键+][修饰键+]主键`，`+` 连接，不区分大小写。
-
-| 修饰键 | 说明
-
-| `Ctrl` | 控制键
-
-| `Alt` | Alt 键
-
-| `Shift` | Shift 键
-
-| `Meta` | Win / Command 等元键
-
+修饰键
+说明
+`Ctrl`
+控制键
+`Alt`
+Alt 键
+`Shift`
+Shift 键
+`Meta`
+Win / Command 等元键
 示例：
-
 - `F5`
 - `Ctrl+S`
 - `Ctrl+Shift+R`
 - `Alt+F4`
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-26-runtime-hotkey/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

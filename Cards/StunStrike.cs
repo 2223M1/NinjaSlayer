@@ -25,7 +25,8 @@ public sealed class StunStrike : ModCardTemplate
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(10, ValueProp.Move)
+        new DamageVar(10, ValueProp.Move),
+        new DynamicVar("Karate", 3)
     ];
 
     public StunStrike() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -34,10 +35,11 @@ public sealed class StunStrike : ModCardTemplate
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
+            .FromCard(this, cardPlay)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
         await CreatureCmd.Stun(cardPlay.Target);
         await PowerCmd.Apply<DelayedSelfStunPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }

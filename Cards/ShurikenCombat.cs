@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -24,8 +25,9 @@ internal static class ShurikenCombat
         ICombatState? combatState)
     {
         var command = DamageCmd.Attack(damage.BaseValue)
-            .FromCard(card)
-            .WithAttackerAnim("Attack", card.Owner!.Character.AttackAnimDelay);
+            .FromCard(card, cardPlay)
+            .WithAttackerAnim("Attack", card.Owner!.Character.AttackAnimDelay)
+            .WithHitFx(null, null, TmpSfx.daggerThrow);
 
         if (HasSoarSpread(card))
         {

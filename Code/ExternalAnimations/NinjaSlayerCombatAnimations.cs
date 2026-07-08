@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -44,16 +45,24 @@ public static class NinjaSlayerCombatAnimations
                 result = PlayVisualCueTrigger(creature, triggerName, waitTime);
                 return true;
             case "Cast":
+                if (NinjaSlayerCombatCastContext.GetCurrentCard(creature) is not IDrawCastSkillCard)
+                {
+                    result = Task.CompletedTask;
+                    return true;
+                }
+
                 NinjaSlayerCombatAudioSet.Play(audio.Cast);
                 result = PlayCastAnimation(creature);
                 return true;
             case "Hit":
                 NinjaSlayerCombatAudioSet.Play(audio.Hurt);
-                result = PlayHitAnimation(creature);
+                _ = PlayHitAnimation(creature);
+                result = Task.CompletedTask;
                 return true;
             case "BlockedHit":
                 var duration = waitTime > 0f ? waitTime : DefaultBlockedHitDuration;
-                result = PlayBlockedHitAnimation(creature, duration);
+                _ = PlayBlockedHitAnimation(creature, duration);
+                result = Task.CompletedTask;
                 return true;
             default:
                 return false;
@@ -63,6 +72,7 @@ public static class NinjaSlayerCombatAnimations
     public static void StopSoarSpinAndReturnToIdle(Creature creature)
     {
         SoarSpinAnimation.ResetSpinVisual(creature);
+        NinjaSlayerSpinMotionBlur.Get(creature)?.Reset();
         creature.GetCreatureNode()?.SetAnimationTrigger("Idle");
     }
 

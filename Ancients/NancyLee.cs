@@ -17,12 +17,21 @@ public sealed class NancyLee : ModAncientEventTemplate
         BackgroundScenePath: "res://NinjaSlayer/scenes/ancients/nancy_lee.tscn"
     );
 
+    public override AncientEventPresentationAssetProfile AncientPresentationAssetProfile => new(
+        MapIconPath: "res://icon.svg",
+        MapIconOutlinePath: "res://icon.svg",
+        RunHistoryIconPath: "res://icon.svg",
+        RunHistoryIconOutlinePath: "res://icon.svg"
+    );
+
     private IReadOnlyList<EventOption> Pool1 => [
-        CreateModRelicOption<IrcTerminalRelic>()
+        CreateModRelicOption<IrcTerminalRelic>(),
+        CreateModRelicOption<MotherUnixRelic>()
     ];
 
     private IReadOnlyList<EventOption> Pool2 => [
-        CreateModRelicOption<ReporterPassRelic>()
+        CreateModRelicOption<ReporterPassRelic>(),
+        CreateModRelicOption<HackerMotokoRelic>()
     ];
 
     private IReadOnlyList<EventOption> Pool3 => [

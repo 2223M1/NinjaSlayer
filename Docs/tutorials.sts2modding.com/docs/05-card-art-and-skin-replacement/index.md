@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/05-card-art-and-skin-replacement/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 卡图&Spine
 
-[2026年03月13日]()[552 字]()[大概 2 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/05-card-art-and-skin-replacement/ -->
 
 ## 卡图替换
 
@@ -34,16 +31,12 @@ public static class CardModel_GetPortrait_Patch
 ## Spine导入
 
 尖塔使用`4.2.43`版本的Spine，在这之下版本的不能直接使用。（神秘链接或网盘：[https://github.com/wang606/SpineSkeletonDataConverter](https://github.com/wang606/SpineSkeletonDataConverter) ）
-
 -
 第一步，安装一个`Spine Godot Extension`，建议直接下载我编译好的：[https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar](https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar) 。参考 [https://zh.esotericsoftware.com/spine-godot](https://zh.esotericsoftware.com/spine-godot) 。把里面的文件放到你的项目根目录，然后可能需要重启一下Godot。
-
 -
 把spine中导出的atlas,skel,png文件放入项目你自己指定的位置，能在Godot文件系统中看到就算成功。
-
 -
 右键godot文件系统创建资源，创建一个`SpineSkeletonDataResource`，并把`Atlas Res`和`SkeletonFile Res`分别设置为atlas和skel文件。
-
 -
 你的战斗人物模型需要有`idle_loop`（待机循环），`attack`（攻击动作），`cast`（能力卡动作），`hurt`（受伤），`die`（死亡）这些动画名。
 
@@ -57,3 +50,9 @@ public static class CardModel_GetPortrait_Patch
 - 创建一个继承`NCreatureVisuals`的类，把它挂载到你新建的`Node2D`场景中。参考`添加新人物`的`自定义人物背景`这一节。现在不需要脚本了
 - 该场景需要有唯一化命名（%）的`Visuals(Node2D)`，`Bounds(Control)`，`IntentPos(Marker2D)`，`CenterPos(Marker2D)`。
 - 如果想使用3d模型，新建`subviewportcontainer→subviewport`的层级结构，然后在`subviewport`中添加`camera3d`和任意3d模型，在3d视图中调整视角至2d视图正常显示。最后设置`subviewport`的`transparent`为`true`。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/05-card-art-and-skin-replacement/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

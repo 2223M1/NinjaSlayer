@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/10-patch/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # Patch
 
-[2026年05月17日]()[4.2k 字]()[大概 21 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/10-patch/ -->
 
 ## 简介
 
 [https://harmony.pardeike.net/articles/intro.html](https://harmony.pardeike.net/articles/intro.html)
-
 `Harmony`提供一种用于在运行时为 .NET 程序进行补丁、替换和装饰的方法。简单来说，可以把原版游戏代码的逻辑修改成你想要的。
 
 ## 基础
@@ -33,7 +29,6 @@ public class SomeGameClass
     }
 }
 ```
-
 在你的初始化函数里调用运行patch函数：
 
 ```csharp
@@ -42,9 +37,7 @@ using HarmonyLib; // 写在类最上方的using里
 var harmony = new Harmony("com.example.patch"); // patch的ID，和别人写的不一致防撞车
 harmony.PatchAll();
 ```
-
 那么`Harmony`就会寻找你这个程序集里的所有patch并尝试加载。
-
 假如你写了这么一个patch：
 
 ```csharp
@@ -69,7 +62,6 @@ public class Patch01
     static void Postfix(ref int __result) => __result *= 2;
 }
 ```
-
 那么运行时就相当于把原方法改成了类似下面这样（实际逻辑并非如此，仅供演示）：
 
 ```csharp
@@ -98,7 +90,6 @@ public int DoSomething()
 ### 实现 Patch
 
 注册一个patch有显式和特性自动注册两种方式。一般使用自动注册。
-
 在一个类或方法上声明一个`[HarmonyPatch]`特性即可注册。
 
 ```csharp
@@ -111,7 +102,6 @@ class MyPatches
     }
 }
 ```
-
 或者
 
 ```csharp
@@ -129,7 +119,6 @@ class MyPatches
 ### 特性参数
 
 `[HarmonyPatch]`特性可以传入以下参数：
-
 - `declaringType`：即为patch目标类。
 - `methodName`：目标方法的名字。推荐使用`nameof`，如果目标方法可访问的话。
 - `methodType`：目标方法类型。一些类型的方法会在编译后更改名字（构造函数，getter，setter，async等）或者本身没有名字（操作符重载）。如果是这些需要添加方法类型。
@@ -141,7 +130,6 @@ class MyPatches
 #### methodType
 
 如果目标函数不是普通方法名，需用 `MethodType` 指明要 patch 哪一种。
-
 原版：
 
 ```csharp
@@ -158,9 +146,7 @@ public class Wallet
     }
 }
 ```
-
 Patch（分别 patch 属性的 getter、构造函数，以及 async 方法）：
-
 TODO: enumrator, generic
 
 ```csharp
@@ -201,12 +187,11 @@ class PatchFetchGoldAsync
 protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
 {
     ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
-    await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue).FromCard(this).Targeting(cardPlay.Target)
+    await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue).FromCard(this, cardPlay).Targeting(cardPlay.Target)
         .WithHitFx("vfx/vfx_attack_slash")
         .Execute(choiceContext);
 }
 ```
-
 点击上方`C# 12.0 / VS 2022.8`那一个下拉框，选择`C# 4.0`或者之前的版本（需要在5.0之前），你会发现代码变成以下样子了：
 
 ```csharp
@@ -259,17 +244,14 @@ protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardP
 	return stateMachine.<>t__builder.Task;
 }
 ```
-
 -
 此时如果不加`MethodType.Async`，那么进入的是`OnPlay`函数，无法进入编译以前的逻辑。
-
 -
 如果加上`MethodType.Async`，那么进入的是`<OnPlay>d__5.MoveNext`函数。此时传入`object __instance`的类型为`<OnPlay>d__5`。可以通过反射拿到其字段，例如`<>4__this`。
 
 #### argumentVariations
 
 带 `ref` / `out` 的重载不能只在 `argumentTypes` 里写 `typeof(T)`，还要用 `ArgumentType` 标出传递方式。
-
 原版：
 
 ```csharp
@@ -278,7 +260,6 @@ public class ScoreBoard
     public void Add(ref int delta) => delta += 10;
 }
 ```
-
 Patch：
 
 ```csharp
@@ -290,7 +271,6 @@ class PatchAdd
     static void Prefix(ref int delta) => delta *= 2;
 }
 ```
-
 你可以自由组合传入参数，参考：
 
 ```csharp
@@ -311,7 +291,6 @@ class PatchAdd
 ### Patch 方法参数
 
 Patch 方法只需声明你要用到的参数，Harmony 会按参数名注入（Transpiler 除外，按类型匹配）。
-
 对于如下的示例代码来说：
 
 ```csharp
@@ -458,9 +437,7 @@ class PatchAttackMeta
 #### __runOriginal
 
 Prefix：原方法是否将会执行；
-
 Postfix：原方法是否已经执行（被 Prefix 跳过时为 `false`）。
-
 只读。
 
 ```csharp
@@ -575,7 +552,6 @@ class PatchDealPrefix
 #### 跳过原方法、改变返回值
 
 如果返回类型是bool，`return false` 时不执行原方法体，`Postfix` 仍会执行。
-
 此方式受patch载入顺序影响。例如mod A比B先加载并跳过，A的会执行B的则不会。
 
 ```csharp
@@ -642,13 +618,11 @@ class PatchDealPostfix
     static void Postfix(ref int __result) => __result *= 2;
 }
 ```
-
 此外还可以与 Prefix 的 __state 配合。
 
 ### Transpiler
 
 直接在 IL 层调用修改。更为灵活，适合执行复杂修改。
-
 在prefix和postfix能达到你想要的效果的时候，不建议过多使用transpiler。
 
 ```csharp
@@ -675,15 +649,12 @@ class PatchDealTranspiler
     }
 }
 ```
-
 以上效果等同于`static void Postfix(ref int __result) => __result *= 2;`。
-
 更复杂的请查阅`Harmony`文档。复杂定位使用 `CodeMatcher`。
 
 ### Finalizer
 
 可观察、替换或吞掉异常。
-
 原方法：
 
 ```csharp
@@ -693,7 +664,6 @@ public void Risky()
         throw new InvalidOperationException("bonus is negative");
 }
 ```
-
 以下的patch效果：捕获后吞掉 `InvalidOperationException`让其不再报错，其它异常原样抛出。
 
 ```csharp
@@ -714,13 +684,11 @@ class PatchRiskyFinalizer
 ### Reverse Patch
 
 把一个原版代码的逻辑拷贝到你指定的方法中。
-
 例如有这样的原版代码：
 
 ```csharp
 private int SecretScale(int value) => value * 3;
 ```
-
 进行如下patch：
 
 ```csharp
@@ -737,7 +705,6 @@ public static class CombatMathBridge
         throw new NotImplementedException(); // 修改这里的逻辑没有意义，保持这样即可
 }
 ```
-
 然后调用`CombatMathBridge.SecretScale(combat, 10)`相当于调用原方法。
 
 ## 其他 Patch 工具
@@ -796,7 +763,6 @@ public static void IterateFields(object source, object target, Action<Traverse, 
 public static void IterateProperties(object source, Action<Traverse> action)
 public static void IterateProperties(object source, object target, Action<Traverse, Traverse> action)
 ```
-
 例子：
 
 ```csharp
@@ -833,7 +799,6 @@ void Test()
     Console.WriteLine(foo.GetSecret()); // outputs WORLD
 }
 ```
-
 `Traverse`内置了空保护，即使中间有一层没找到也会传播空。
 
 ### AccessTools
@@ -941,7 +906,6 @@ class MyPatchMany
 ### HarmonyPriority
 
 多个 mod patch 同一原版方法时，可用下面注解控制相对顺序（写在 `Prefix` / `Postfix` 方法上，或写在补丁类上作用于该类全部补丁）。
-
 对于如下的原版代码：
 
 ```csharp
@@ -977,7 +941,6 @@ class PatchBarB
 
 // 仅 A、B 两个 Postfix 时：先 B 后 A，最终 __result 为 "from A"
 ```
-
 常用档位：`Priority.First` (800)、`High` (600)、`Normal` (400)、`Low` (200)、`Last` (0)。
 
 #### HarmonyBefore / HarmonyAfter
@@ -1018,6 +981,11 @@ class PatchBarModB
 
 -
 不要滥用 Transpiler 和bool prefix跳过代码。请保证你的patch的健壮性，不要和其他mod冲突。
-
 -
 如果使用ritsulib，可通过其patch封装系统进行补丁，具体逻辑类似。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/10-patch/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

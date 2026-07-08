@@ -1,100 +1,179 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-choose-base-library/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 选择基础库
 
-[2026年04月21日]()[474 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-choose-base-library/ -->
 
+>
 如果你要制作一个人物mod，选择一个基础库可以减少你的patch数量并减轻你的工作。同时也可以提高和其他mod的兼容性。
 
 目前（工坊未开放之前）常用的基础库有[BaseLib](https://github.com/Alchyr/BaseLib-StS2)和[RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib)两个。
-
 可前往对应分类查看。
 
 ## 对比
 
 以下表格为这些基础库目前为止（2026.06.06）支持的功能表格。
-
-| 功能 | BaseLib | RitsuLib | 说明
-
-| 基础内容注册 | ✅ | ✅ | -
-
-| 局内数据保存 | ✅ | ✅ | -
-
-| 控制手牌上限 | ✅ | ✅ | -
-
-| Mod联动 (Interop) | ✅ | ✅ | -
-
-| 配置选项 | ✅ | ✅ | RitsuLib功能丰富且支持镜像BaseLib配置
-
-| 可使用原版素材(placeholder) | ✅ | ✅ | -
-
-| dynamicvar的提示文本 | ✅ | ✅ | -
-
-| 关键词注册 | ✅ | ✅ | -
-
-| 血条覆盖层(中毒灾厄) | ✅ | ✅ | -
-
-| 不挂载脚本场景转换 | ✅ | ✅ | -
-
-| 人物非spine动画兼容 | ✅ | ✅ | -
-
-| 新牌堆 | ✅ | ✅ | -
-
-| 缺少资源时占位警告 | ✅ | ✅ | -
-
-| 卡牌支持AnyPlayer | ✅ | ✅ | -
-
-| 额外角标 | ✅ | ✅ | baselib只有两数字能力展示
-
-| 自定义奖励 | ✅ | ✅ | -
-
-| 节点附加 | ✅ | ✅ | -
-
-| 组件 | ✅ | ✅ | -
-
-| 一代本地化符号 | ✅ | ❌ | -
-
-| FMOD音频 | ❌ | ✅ | baselib使用godot原生音频播放；
+功能
+BaseLib
+RitsuLib
+说明
+基础内容注册
+✅
+✅
+-
+局内数据保存
+✅
+✅
+-
+控制手牌上限
+✅
+✅
+-
+Mod联动 (Interop)
+✅
+✅
+-
+配置选项
+✅
+✅
+RitsuLib功能丰富且支持镜像BaseLib配置
+可使用原版素材(placeholder)
+✅
+✅
+-
+dynamicvar的提示文本
+✅
+✅
+-
+关键词注册
+✅
+✅
+-
+血条覆盖层(中毒灾厄)
+✅
+✅
+-
+不挂载脚本场景转换
+✅
+✅
+-
+人物非spine动画兼容
+✅
+✅
+-
+新牌堆
+✅
+✅
+-
+缺少资源时占位警告
+✅
+✅
+-
+卡牌支持AnyPlayer
+✅
+✅
+-
+额外角标
+✅
+✅
+baselib只有两数字能力展示
+自定义奖励
+✅
+✅
+-
+节点附加
+✅
+✅
+-
+组件
+✅
+✅
+-
+一代本地化符号
+✅
+❌
+-
+FMOD音频
+❌
+✅
+baselib使用godot原生音频播放；
 ritsulib支持fmod
-
-| 诊断调试工具 | 🚧 | ✅ | 导出卡牌图片、patch dump等
-
-| 数据持久化 | ❌ | ✅ | -
-
-| 顶栏按钮 | ❌ | ✅ | -
-
-| 通知提示 | ❌ | ✅ | -
-
-| 自定义目标 | ❌ | ✅ | -
-
-| 数据遥测 | ❌ | ✅ | -
-
-| 模组更新检查 | ❌ | ✅ | -
-
-| 时间线注册 | ❌ | ✅ | 游戏时间线小故事
-
-| 事件管线 | ❌ | ✅ | 订阅事件，触发时调用
-
-| 生命周期事件 | ❌ | ✅ | -
-
-| 手牌发光管理 | ❌ | ✅ | -
-
-| 快捷键绑定 | ❌ | ✅ | -
-
-| 动画状态机 | ❌ | ✅ | baselib可接受原版动画名，
+诊断调试工具
+🚧
+✅
+导出卡牌图片、patch dump等
+数据持久化
+❌
+✅
+-
+顶栏按钮
+❌
+✅
+-
+通知提示
+❌
+✅
+-
+自定义目标
+❌
+✅
+-
+数据遥测
+❌
+✅
+-
+模组更新检查
+❌
+✅
+-
+时间线注册
+❌
+✅
+游戏时间线小故事
+事件管线
+❌
+✅
+订阅事件，触发时调用
+生命周期事件
+❌
+✅
+-
+手牌发光管理
+❌
+✅
+-
+快捷键绑定
+❌
+✅
+-
+动画状态机
+❌
+✅
+baselib可接受原版动画名，
 但不能自定义
-
-| 网络 | custommessage | 侧载网络管理 | -
-
-| 内容物ID | 命名空间第一段大写，
-例如`TEST-TEST_CARD` | modid与分类，
-例如`TEST_CARD_TEST_CARD` | -
-
-| patch | 原始`harmony` | 原始`harmony`以及封装patch系统 | -
-
-| 非原生玩法内容 | 有 | 无 | -
+网络
+custommessage
+侧载网络管理
+-
+内容物ID
+命名空间第一段大写，
+例如`TEST-TEST_CARD`
+modid与分类，
+例如`TEST_CARD_TEST_CARD`
+-
+patch
+原始`harmony`
+原始`harmony`以及封装patch系统
+-
+非原生玩法内容
+有
+无
+-
 
 ## 重要说明
 
 - 如果你不添加任何游戏内容，不需要基础库也可以。但是如果你制作人物mod等，最好使用一个基础库减少工作量并提高兼容性。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-choose-base-library/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

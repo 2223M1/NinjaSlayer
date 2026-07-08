@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-13-add-enchantment/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新附魔
 
-[2026年05月04日]()[513 字]()[大概 2 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-13-add-enchantment/ -->
 
 首先创建附魔类：
 
@@ -16,7 +13,6 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Test.Scripts;
 
@@ -55,21 +51,11 @@ public class TestEnchantment : CustomEnchantmentModel
     }
 
     // 修改卡牌获得的格挡值，返回增加的改变量。
-    public override decimal EnchantBlockAdditive(decimal originalBlock, ValueProp props)
+    public override decimal EnchantBlockAdditive(decimal originalBlock)
     {
-        if (!props.IsPoweredCardOrMonsterMoveBlock())
-        {
-            return 0m;
-        }
         // 获得格挡额外增加Amount数量。这个数量是你给予附魔时指定的。
         return Amount;
     }
-
-    // 0.106的写法
-    // public override decimal EnchantBlockAdditive(decimal originalBlock)
-    // {
-    //     return Amount;
-    // }
 
     // 当附魔的卡牌被打出时调用。
     public override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)
@@ -83,7 +69,6 @@ public class TestEnchantment : CustomEnchantmentModel
     }
 }
 ```
-
 然后创建`{modId}/localization/{Language}/enchantments.json`。
 
 ```json
@@ -93,8 +78,12 @@ public class TestEnchantment : CustomEnchantmentModel
     "TEST-TEST_ENCHANTMENT.description": "这张牌获得[gold]保留[/gold]。\n这张牌获得的[gold]格挡[/gold]值增加[blue]{Amount}[/blue]点。\n第一次打出时抽{Cards}张牌。" // 附魔介绍
 }
 ```
-
 如何使用：
-
 - 控制台里输入`enchant TEST-TEST_ENCHANTMENT [数量] [给予手牌的编号]`。
-- 在效果里，使用`CardCmd.Enchant<TestEhchantment>(card, 2m)`。第二个参数用于修改Amount。
+- 在效果里，使用`CardCmd.Enchant<TestEnchantment>(card, 2m)`。第二个参数用于修改Amount。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-13-add-enchantment/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

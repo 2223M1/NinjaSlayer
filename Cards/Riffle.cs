@@ -1,12 +1,14 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -15,7 +17,7 @@ namespace NinjaSlayer.Cards;
 [RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class Riffle : ModCardTemplate
 {
-    private const int energyCost = 1;
+    private const int energyCost = 2;
     private const CardType type = CardType.Attack;
     private const CardRarity rarity = CardRarity.Uncommon;
     private const TargetType targetType = TargetType.AnyEnemy;
@@ -25,13 +27,22 @@ public sealed class Riffle : ModCardTemplate
         PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
     );
 
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [
+        CardKeyword.Exhaust
+    ];
+
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(6, ValueProp.Move),
-        new CardsVar(2)
+        new DamageVar(3, ValueProp.Move),
+        new RepeatVar(3),
+        new CalculationBaseVar(0),
+        new CalculationExtraVar(1),
+        new CalculatedVar("StrengthLoss").WithMultiplier((_, target) =>
+            target?.GetPowerAmount<KaratePower>() ?? 0)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)
+        HoverTipFactory.FromPower<KaratePower>(),
+        HoverTipFactory.FromPower<StrengthPower>()
     ];
 
     public Riffle() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -39,17 +50,28 @@ public sealed class Riffle : ModCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
+        int strengthLoss = (int)((CalculatedVar)DynamicVars["StrengthLoss"]).Calculate(cardPlay.Target);
+
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
+            .FromCard(this, cardPlay)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
 
-        await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
+        if (strengthLoss > 0)
+        {
+            await PowerCmd.Apply<RiffleStrengthDownPower>(
+                choiceContext,
+                cardPlay.Target,
+                strengthLoss,
+                Owner.Creature,
+                this);
+        }
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Cards.UpgradeValueBy(1);
+        RemoveKeyword(CardKeyword.Exhaust);
     }
 }

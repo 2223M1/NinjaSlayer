@@ -1,10 +1,8 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-05-add-power/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新能力
 
-[2026年05月04日]()[716 字]()[大概 3 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-05-add-power/ -->
 
+>
 以下示例默认已经在`Entry.Init()`中调用了`RitsuLibFramework.EnsureGodotScriptsRegistered(...)`和`ModTypeDiscoveryHub.RegisterModAssembly(...)`，否则自动注册不会生效。
 
 ## 代码
@@ -38,12 +36,10 @@ public class TestPower : ModPowerTemplate
     // 抽牌后给予玩家力量
     public override async Task AfterCardDrawn(PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw)
     {
-        await PowerCmd.Apply<StrengthPower>(Owner, Amount, Owner, null);
-        // await PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount, Owner, null); // 测试版
+        await PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount, Owner, null);
     }
 }
 ```
-
 - `[RegisterPower]`会自动注册能力。
 - 继承的是`ModPowerTemplate`。
 - `AssetProfile`里的`IconPath`和`BigIconPath`分别对应能力的小图和大图。
@@ -52,7 +48,6 @@ public class TestPower : ModPowerTemplate
 ## 文本
 
 添加json，`{ModId}/localization/{Language}/powers.json`。
-
 - 通过`ritsulib`添加内容，其id会变成`{modid}_{类别}_{原id}`。例如这里的`modid`是`TEST`,类别是`POWER`。
 
 ```json
@@ -62,9 +57,7 @@ public class TestPower : ModPowerTemplate
     "TEST_POWER_TEST_POWER.title": "邪火"
 }
 ```
-
 `smartDescription`可以使用`{Amount}`来显示当前层数。
-
 然后使用`PowerCmd.Apply<TestPower>(...)`给予即可。或者使用控制台`power TEST_POWER_TEST_POWER 1 0`。
 
 ## 最终项目参考
@@ -86,9 +79,7 @@ Test
 ## 临时能力
 
 塔2的临时能力有来源显示，于是提供了一个方便的包装。
-
 这个临时能力会在回合结束时自动消失。
-
 其他的图标资源和额外效果等参照上方。
 
 ```csharp
@@ -127,3 +118,8 @@ public class TempFromTestCardPower : TempPower<TestCard>
 {
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-05-add-power/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

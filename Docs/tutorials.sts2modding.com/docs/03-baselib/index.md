@@ -1,14 +1,11 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # BaseLib
 
-[2026年03月20日]()[290 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/ -->
 
 `BaseLib`是统一添加新内容行为的基础mod，类似于塔1的`basemod`加上`stslib`。
-
 [https://github.com/Alchyr/BaseLib-StS2](https://github.com/Alchyr/BaseLib-StS2)
 
+>
 由于目前`BaseLib`尚处于开发阶段，如果只打patch不添加新内容可以不使用。
 以下内容使用baselib3.1.2。
 
@@ -18,7 +15,6 @@
 
 -
 前往 [https://github.com/Alchyr/BaseLib-StS2/releases](https://github.com/Alchyr/BaseLib-StS2/releases) 下载`dll`，`pck`和`json`三个文件，把他们放在`mods`文件夹里。记住你下载的版本。
-
 -
 在`csproj`文件中相应位置引用`BaseLib.dll`，如下，两种方式都可。现在推荐使用nuget。
 
@@ -43,7 +39,6 @@
   <PackageReference Include="Alchyr.Sts2.BaseLib" Version="*" />
 </ItemGroup>
 ```
-
 - 不要忘了在你`{modid}.json`中填写`dependencies`。
 
 ```json
@@ -51,3 +46,8 @@
   { "id": "BaseLib", "min_version": "3.1.2" }
 ],
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

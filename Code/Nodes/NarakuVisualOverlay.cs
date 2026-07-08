@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.Nodes;
@@ -10,13 +11,19 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class NarakuVisualOverlay : Sprite2D
 {
     private const string NodeName = "NarakuVisualOverlay";
-    private const string TexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png";
+    private const string NarakuTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png";
+    private const string OneBodyOneSoulTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/one_body_one_soul.png";
+    private const float NarakuScale = 0.5f;
+    private const float BodyTextureHeight = 1080f;
 
     private Creature? creature;
     private Sprite2D? source;
+    private string? activeTexturePath;
 
     public static void Sync(Creature creature)
     {
+        NinjaSlayerVisualRig.SyncShadowScale(creature);
+
         var visualsRoot = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
         var source = visualsRoot?.GetNodeOrNull<Sprite2D>("%Visuals");
         if (visualsRoot == null || source == null)
@@ -24,17 +31,21 @@ public partial class NarakuVisualOverlay : Sprite2D
             return;
         }
 
-        var overlay = visualsRoot.GetNodeOrNull<NarakuVisualOverlay>(NodeName);
+        var parent = NinjaSlayerVisualRig.GetAirborneAnchor(visualsRoot) ?? visualsRoot;
+        var overlay = visualsRoot.FindChild(NodeName, recursive: true) as NarakuVisualOverlay;
         if (overlay == null)
         {
             overlay = new NarakuVisualOverlay { Name = NodeName };
-            visualsRoot.AddChild(overlay);
+            parent.AddChild(overlay);
+        }
+        else if (overlay.GetParent() != parent)
+        {
+            overlay.Reparent(parent);
         }
 
         overlay.creature = creature;
         overlay.source = source;
-        overlay.Texture ??= PreloadManager.Cache.GetTexture2D(TexturePath);
-        overlay.Centered = source.Centered;
+        overlay.Centered = true;
         overlay.FlipH = source.FlipH;
         overlay.FlipV = source.FlipV;
         overlay.ZIndex = source.ZIndex + 1;
@@ -54,22 +65,68 @@ public partial class NarakuVisualOverlay : Sprite2D
             return;
         }
 
-        bool isNaraku = creature.HasPower<NarakuPower>();
-        source.Visible = !isNaraku;
-        Visible = isNaraku;
-        if (!isNaraku)
+        string? formTexturePath = ResolveFormTexturePath(creature);
+        source.Visible = formTexturePath == null;
+        Visible = formTexturePath != null;
+        if (formTexturePath == null)
         {
             return;
         }
 
-        Position = source.Position;
-        Rotation = source.Rotation;
-        Scale = source.Scale;
-        Skew = source.Skew;
+        if (activeTexturePath != formTexturePath)
+        {
+            Texture = PreloadManager.Cache.GetTexture2D(formTexturePath);
+            activeTexturePath = formTexturePath;
+        }
+
+        float y = NinjaSlayerCombatVisuals.BodySpriteBasePosition.Y;
+        if (formTexturePath == NarakuTexturePath)
+        {
+            y += NinjaSlayerCombatVisuals.NarakuFormYOffset;
+        }
+
+        Position = new Vector2(0f, y);
+        Offset = Vector2.Zero;
+        float scale = GetFormScale(formTexturePath);
+        Scale = new Vector2(
+            Mathf.Sign(source.Scale.X == 0f ? 1f : source.Scale.X) * scale,
+            scale);
+        Rotation = 0f;
+        Skew = 0f;
         Modulate = source.Modulate;
         SelfModulate = source.SelfModulate;
-        Offset = source.Offset;
         FlipH = source.FlipH;
         FlipV = source.FlipV;
+    }
+
+    private float GetFormScale(string formTexturePath)
+    {
+        if (formTexturePath == NarakuTexturePath)
+        {
+            return NarakuScale;
+        }
+
+        float height = Texture?.GetHeight() ?? 0f;
+        if (height <= 0f)
+        {
+            return NinjaSlayerCombatVisuals.BodySpriteBaseScale;
+        }
+
+        return BodyTextureHeight * NinjaSlayerCombatVisuals.BodySpriteBaseScale / height;
+    }
+
+    private static string? ResolveFormTexturePath(Creature creature)
+    {
+        if (creature.HasPower<NarakuPower>())
+        {
+            return NarakuTexturePath;
+        }
+
+        if (creature.HasPower<OneBodyOneSoulPower>())
+        {
+            return OneBodyOneSoulTexturePath;
+        }
+
+        return null;
     }
 }

@@ -1,13 +1,11 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-21-top-bar-button/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 顶栏按钮
 
-[2026年05月16日]()[378 字]()[大概 1 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-21-top-bar-button/ -->
 
+>
 以下示例默认已经在 `Entry.Init()` 中调用了 `ModTypeDiscoveryHub.RegisterModAssembly(...)`，否则自动注册不会生效。
 
-`RitsuLib` 提供自定义顶栏按钮，支持图标、点击、可见性、打开态摇摆和计数徽章。
+`RitsuLib` 提供自定义顶栏按钮注册。
 
 ## 使用方式
 
@@ -50,13 +48,13 @@ public class RecipeButtonHandler : IModTopBarButtonHandler
 
     public bool IsOpen(ModTopBarButtonContext ctx)
     {
-        // 关联界面是否已打开；如果打开，按钮会持续动态摆动
+        // 关联界面是否已打开。如果打开，按钮会持续动态摆动
         return ModScreenService.CurrentCapstoneScreen is MyRecipeScreen;
     }
 
     public int GetCount(ModTopBarButtonContext ctx)
     {
-        // 角标数字；返回 -1 表示不显示徽章
+        // 角标数字；返回 -1 表示不显示
         return -1;
     }
 }
@@ -65,7 +63,6 @@ public class RecipeButtonHandler : IModTopBarButtonHandler
 ## 本地化
 
 在`{modId}/localization/{lang}/static_hover_tips.json`中添加文本。
-
 ID格式为`{MODID}_TOPBARBUTTON_{LOCALSTEM}`，例如这里会变成`TEST_TOPBARBUTTON_RECIPES`。
 
 ```json
@@ -77,7 +74,7 @@ ID格式为`{MODID}_TOPBARBUTTON_{LOCALSTEM}`，例如这里会变成`TEST_TOPBA
 
 ## 显式注册
 
-需要在初始化里动态注册时，可在 `Entry.Init` 中调用 `ModTopBarButtonRegistry.For(ModId).RegisterOwned(…)：
+需要在初始化里动态注册时，可在 `Entry.Init` 中调用 `ModTopBarButtonRegistry.For(ModId).RegisterOwned(...)：
 
 ```csharp
 using STS2RitsuLib.TopBar;
@@ -89,3 +86,8 @@ ModTopBarButtonRegistry.For(ModId).RegisterOwned("recipes", new ModTopBarButtonS
     VisibleWhen = ctx => ctx.Player != null,
 });
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-21-top-bar-button/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

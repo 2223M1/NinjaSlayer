@@ -10,7 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class Footwork : ModCardTemplate
+public sealed class NinjaSlayerFootwork : ModCardTemplate
 {
     private const int energyCost = 3;
     private const CardType type = CardType.Power;
@@ -19,7 +19,7 @@ public sealed class Footwork : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
+        PortraitPath: "res://NinjaSlayer/images/cards/Footwork.png"
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
@@ -27,7 +27,7 @@ public sealed class Footwork : ModCardTemplate
         new DynamicVar("Evasion", 1)
     ];
 
-    public Footwork() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaSlayerFootwork() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

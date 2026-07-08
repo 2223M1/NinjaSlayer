@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-20-custom-card-pile/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 自定义卡牌堆
 
-[2026年05月16日]()[879 字]()[大概 4 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-20-custom-card-pile/ -->
 
 `RitsuLib`提供了一套自定义卡牌堆系统。
 
@@ -33,15 +30,18 @@ public class Entry
         var registry = ModCardPileRegistry.For(ModId);
         VoidPile = registry.RegisterOwned("void_pile", new ModCardPileSpec
         {
+            // Scope 决定了牌堆的生命周期，
             // CombatOnly：每次战斗创建，战斗结束时销毁
             // RunPersistent：同一局游戏内可跨战斗保留（仅存于内存，需自行写入存档）
             Scope = ModCardPileScope.CombatOnly,
+            // Style 决定了牌堆按钮放置的位置，
             // Headless：不可见
             // TopBarDeck：顶栏牌组按钮旁
             // BottomLeft：战斗UI左下（抽牌堆附近）
             // BottomRight：战斗UI右下（消耗堆附近）
             // ExtraHand：额外手牌容器
             Style = ModCardPileUiStyle.BottomLeft,
+            // 锚点，见下
             Anchor = ModCardPileAnchor.Default,
             IconPath = "res://Test/images/void_pile.png",
             // 点击打开
@@ -51,35 +51,11 @@ public class Entry
     }
 }
 ```
-
 - `RegisterOwned` 返回 `ModCardPileDefinition`，其 `.PileType` 是运行时操作牌堆的标识。
-- RitsuLib 用 Harmony patch 拦截了原版 `CardPile.Get(PileType, Player)`，所以用你的 `PileType` 可以直接拿到牌堆对象。
 
-## 使用卡牌堆
+## Anchor（摆放位置，描点）
 
-注册后通过 `CardPileCmd.Add` 把卡牌移入自定义牌堆：
-
-```csharp
-using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Players;
-
-// 单张移入
-await CardPileCmd.Add(card, Entry.VoidPile);
-
-// 获取玩家的牌堆对象，手动读写
-var pile = Entry.VoidPile.GetPile(player);
-foreach (var c in pile.Cards)
-{
-    Logger.Info($"虚空堆中的卡牌: {c.Id}");
-}
-
-// 其他参考原版api即可
-```
-
-## Anchor（锚点）
-
-- `Anchor` 和 `Style` 一起决定按钮或 ExtraHand 挂在哪。不写时等价于 `ModCardPileAnchor.Default`。
+- `Anchor` 和 `Style` 一起决定你的额外卡牌堆挂在哪。不写时等价于 `ModCardPileAnchor.Default`。
 
 ### 写法一：Default
 
@@ -120,7 +96,6 @@ Anchor = new ModCardPileAnchor(
     // 锚点对齐控件哪条边，如 PivotCenter
     CustomAuthoringPivot: ModCardPileAnchor.PivotCenter),
 ```
-
 这种方式下，控件在对应牌堆的父节点（不是在整个屏幕的位置）最左上角的位置为 `CustomPosition + Offset - 名义尺寸 * CustomAuthoringPivot`。
 
 ### 静态工厂
@@ -146,33 +121,67 @@ Anchor = ModCardPileAnchor.AtPivot(
 ### 锚点种类
 
 须与 `Style` 搭配；不匹配时可能排不到预期位置。
+Kind
+搭配的 Style
+说明
+`StyleDefault`
+任意
+用该 Style 默认规则自动排版；`Default` 即此项
+`BottomLeftPrimary`
+`BottomLeft`
+从抽牌堆按钮右侧起向右叠
+`BottomLeftSecondary`
+`BottomLeft`
+从弃牌堆按钮右侧起向右叠
+`BottomRightPrimary`
+`BottomRight`
+从消耗堆按钮左侧起向左叠
+`BottomRightSecondary`
+`BottomRight`
+从消耗堆按钮左侧起向右叠
+`TopBarAfterDeck`
+`TopBarDeck`
+顶栏原版牌组按钮右侧
+`TopBarBeforeModifiers`
+`TopBarDeck`
+顶栏右侧每日效果按钮组左侧
+`ExtraHandAbove`
+`ExtraHand`
+手牌区域上方，再加 `Offset`
+`ExtraHandBelow`
+`ExtraHand`
+手牌区域下方，再加 `Offset`
+`Custom`
+任意
+完全自定像素位置，不参与左下/右下自动排队
 
-| Kind | 搭配的 Style | 说明
+## 使用卡牌堆
 
-| `StyleDefault` | 任意 | 用该 Style 默认规则自动排版；`Default` 即此项
+和原版api一样，可以通过 `CardPileCmd` 的函数操作卡牌堆，或者 `.GetPile` 扩展方法获得牌堆。
+例如参考以下代码，通过 `CardPileCmd.Add` 把卡牌移入自定义牌堆和遍历卡牌：
 
-| `BottomLeftPrimary` | `BottomLeft` | 从抽牌堆按钮右侧起向右叠
+```csharp
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Players;
 
-| `BottomLeftSecondary` | `BottomLeft` | 从弃牌堆按钮右侧起向右叠
+// 单张移入
+await CardPileCmd.Add(card, Entry.VoidPile);
 
-| `BottomRightPrimary` | `BottomRight` | 从消耗堆按钮左侧起向左叠
+// 获取玩家的牌堆对象，手动读写
+var pile = Entry.VoidPile.GetPile(player);
+foreach (var c in pile.Cards)
+{
+    Logger.Info($"虚空堆中的卡牌: {c.Id}");
+}
 
-| `BottomRightSecondary` | `BottomRight` | 从消耗堆按钮左侧起向右叠
-
-| `TopBarAfterDeck` | `TopBarDeck` | 顶栏原版牌组按钮右侧
-
-| `TopBarBeforeModifiers` | `TopBarDeck` | 顶栏右侧每日效果按钮组左侧
-
-| `ExtraHandAbove` | `ExtraHand` | 手牌区域上方，再加 `Offset`
-
-| `ExtraHandBelow` | `ExtraHand` | 手牌区域下方，再加 `Offset`
-
-| `Custom` | 任意 | 完全自定像素位置，不参与左下/右下自动排队
+// 其他参考原版卡牌操作即可
+```
 
 ## 本地化文本
 
+添加鼠标悬浮在牌堆按钮上的提示文本，或者提示卡牌堆为空的对话文本。
 在`{modId}/localization/{lang}/static_hover_tips.json`中添加文本。
-
 ID格式为`{MODID}_CARDPILE_{LOCALSTEM}`，例如这里会变成`TEST_CARDPILE_VOID_PILE`。
 
 ```json
@@ -182,3 +191,8 @@ ID格式为`{MODID}_CARDPILE_{LOCALSTEM}`，例如这里会变成`TEST_CARDPILE_
   "TEST_CARDPILE_VOID_PILE.empty": "虚空堆是空的。"
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-20-custom-card-pile/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

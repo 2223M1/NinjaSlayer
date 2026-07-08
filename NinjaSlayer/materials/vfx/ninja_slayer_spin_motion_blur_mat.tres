@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://NinjaSlayer/shaders/vfx/horizontal_motion_blur.gdshader" id="1_blur"]
+
+[resource]
+shader = ExtResource("1_blur")
+shader_parameter/blur_strength = 0.0
+shader_parameter/blur_sign = 1.0

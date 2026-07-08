@@ -1,14 +1,9 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-25-update-checker/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 更新检查
 
-[2026年05月27日]()[1.2k 字]()[大概 6 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-25-update-checker/ -->
 
 RitsuLib 的更新检查用于在发现新版本时显示通知提示。
-
 它不负责下载、安装或替换文件，只负责“告诉玩家有更新，并把玩家带到发布页”。
-
 你需要自己提供资源站点。
 
 ## 注册检查
@@ -28,9 +23,7 @@ RitsuLibFramework.RegisterModUpdateCheck(new()
     ReleasePageUri = new Uri("https://example.com/test-mod/releases"),
 });
 ```
-
 `ReleasePageUri` 是 manifest 没写 `release_page_url` 时的备用发布页。如果检查到新版本但两边都没有发布页，结果会是 `InvalidData`，不会显示更新 Toast。
-
 `manifestUri` 必须是 `https` 的绝对 URL。
 
 ## manifest json 格式
@@ -54,16 +47,15 @@ RitsuLibFramework.RegisterModUpdateCheck(new()
   }
 }
 ```
-
 Toast 文案支持这些占位符：
-
-| 占位符 | 含义
-
-| `{display_name}` | 注册时的 `DisplayName`
-
-| `{current_version}` | 当前安装版本
-
-| `{latest_version}` | manifest 中的最新版本
+占位符
+含义
+`{display_name}`
+注册时的 `DisplayName`
+`{current_version}`
+当前安装版本
+`{latest_version}`
+manifest 中的最新版本
 
 ## 自定义检查
 
@@ -107,13 +99,11 @@ switch (result.Status)
 ## 使用Github Pages搭建简单更新检查
 
 可以使用pages搭建免费的托管json，唯一的问题是国内访问也许会有问题。
-
 可以参考流程，然后使用`cloudflare`转发或者自己找其他运营商托管你的文件。
 
 ### 第一步：创建项目
 
 先把你的项目托管到github上，这方面自行查找相关教程。需要仓库访问性为`public`。
-
 然后在项目根目录（或者你喜欢的地方，但下面自行更改地址）下创建一个`update.template.json`文件，内容如下：（自行修改`release_page_url`和`localized`字段）
 
 ```json
@@ -146,7 +136,6 @@ switch (result.Status)
 ### 第三步：工作流
 
 使用工作流自动从你的`mod_manifest.json`读取版本号，不用手动填写`update.json`。
-
 创建一个`tools/generate-update-manifest.mjs`文件（参考ritsulib）：
 
 ```js
@@ -180,7 +169,6 @@ const output = {
 await mkdir(dirname(outputPath), { recursive: true })
 await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
 ```
-
 然后创建`.github/workflows/deploy.yml`这些文件夹和文件：
 
 ```yml
@@ -224,7 +212,6 @@ jobs:
 ### 第四步：推送&验收
 
 不要忘了在你的初始化函数里注册更新检查。你也可以写个逻辑读取你的json里的版本号，这里不再编写。
-
 之后每次更新，你要做的就是更改你的`{modId}.json`里的版本号和这里的`CurrentVersion`，然后`pull`到你的仓库里。
 
 ```csharp
@@ -241,4 +228,11 @@ RitsuLibFramework.RegisterModUpdateCheck(new()
 });
 ```
 
+>
 提醒：release page也需要自己写，如果你暂时不需要`ReleasePageUri`就写自己仓库主页。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-25-update-checker/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

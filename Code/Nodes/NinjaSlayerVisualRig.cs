@@ -1,11 +1,15 @@
 using Godot;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.Nodes;
 
 public static class NinjaSlayerVisualRig
 {
     public const string AirborneAnchorName = "AirborneAnchor";
+    public const string ShadowNodeName = "Shadow";
     public const float SpinTextureSize = 1800f;
     public const float SpinPivotX = 1480f;
 
@@ -24,5 +28,18 @@ public static class NinjaSlayerVisualRig
     public static Sprite2D? GetBodySprite(NCreatureVisuals? visuals)
     {
         return visuals?.GetNodeOrNull<Sprite2D>("%Visuals");
+    }
+
+    public static void SyncShadowScale(Creature creature)
+    {
+        var visuals = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
+        var shadow = visuals?.GetNodeOrNull<Sprite2D>(ShadowNodeName);
+        if (shadow == null)
+        {
+            return;
+        }
+
+        float scale = NinjaSlayerCombatVisuals.GetShadowScale(creature);
+        shadow.Scale = new Vector2(scale, scale);
     }
 }

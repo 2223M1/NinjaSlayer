@@ -32,7 +32,24 @@ public sealed class NinjaSlayerSoarPower : ModPowerTemplate
         new DynamicVar(DamageDecreaseKey, 50)
     ];
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal bool IsResolvingSoarAutoPlay { get; private set; }
+
+    public override int ModifyCardPlayCount(CardModel card, Creature? target, int playCount)
+    {
+        if (!IsResolvingSoarAutoPlay || card.Owner.Creature != Owner)
+        {
+            return playCount;
+        }
+
+        if (!card.Tags.Contains(NinjaSlayerCardTags.Shuriken))
+        {
+            return playCount;
+        }
+
+        return playCount + 1;
+    }
+
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target != Owner)
         {
@@ -85,7 +102,7 @@ public sealed class NinjaSlayerSoarPower : ModPowerTemplate
         return Task.CompletedTask;
     }
 
-    private static async Task AutoPlayDeckShuriken(PlayerChoiceContext choiceContext, Player player)
+    private async Task AutoPlayDeckShuriken(PlayerChoiceContext choiceContext, Player player)
     {
         ICombatState combatState = player.Creature.CombatState ?? throw new InvalidOperationException("Soar requires combat.");
         List<CardModel> shurikens = player.PlayerCombatState?.AllCards
@@ -100,31 +117,39 @@ public sealed class NinjaSlayerSoarPower : ModPowerTemplate
         var creature = player.Creature;
         float perHitDuration = player.Character?.AttackAnimDelay ?? 0.15f;
 
-        await SpinComboAudio.PlaySequence(creature, shurikens.Count, perHitDuration, async () =>
+        IsResolvingSoarAutoPlay = true;
+        try
         {
-            bool first = true;
-            foreach (CardModel shuriken in shurikens)
+            await SpinComboAudio.PlaySequence(creature, shurikens.Count, perHitDuration, async () =>
             {
-                if (!combatState.IsLiveCombat() || !combatState.HittableEnemies.Any())
+                bool first = true;
+                foreach (CardModel shuriken in shurikens)
                 {
-                    break;
-                }
+                    if (!combatState.IsLiveCombat() || !combatState.HittableEnemies.Any())
+                    {
+                        break;
+                    }
 
-                Creature? target = player.RunState.Rng.CombatTargets.NextItem(combatState.HittableEnemies);
-                if (target == null)
-                {
-                    continue;
-                }
+                    Creature? target = player.RunState.Rng.CombatTargets.NextItem(combatState.HittableEnemies);
+                    if (target == null)
+                    {
+                        continue;
+                    }
 
-                if (creature.HasPower<NarakuPower>())
-                {
-                    SpinComboAudio.PlayNarakuSlowAttack(creature);
-                }
+                    if (creature.HasPower<NarakuPower>())
+                    {
+                        SpinComboAudio.PlayNarakuSlowAttack(creature);
+                    }
 
-                await CardCmd.AutoPlay(choiceContext, shuriken, target, AutoPlayType.Default, skipXCapture: false, !first);
-                SoarSpinAnimation.EnsureAirborneSpin(creature);
-                first = false;
-            }
-        });
+                    await CardCmd.AutoPlay(choiceContext, shuriken, target, AutoPlayType.Default, skipXCapture: false, !first);
+                    SoarSpinAnimation.EnsureAirborneSpin(creature);
+                    first = false;
+                }
+            });
+        }
+        finally
+        {
+            IsResolvingSoarAutoPlay = false;
+        }
     }
 }

@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-05-add-power/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新能力
 
-[2026年05月04日]()[214 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-05-add-power/ -->
 
 新建类：
 
@@ -22,12 +19,10 @@ public class TestPower : CustomPowerModel
     // 抽牌后给予玩家力量
     public override async Task AfterCardDrawn(PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw)
     {
-        await PowerCmd.Apply<StrengthPower>(Owner, Amount, Owner, null);
-        // await PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount, Owner, null); // 测试版
+        await PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount, Owner, null);
     }
 }
 ```
-
 添加json，`{modId}/localization/{Language}/powers.json`。
 
 ```json
@@ -37,5 +32,9 @@ public class TestPower : CustomPowerModel
     "TEST-TEST_POWER.title": "邪火"
 }
 ```
-
 然后使用`PowerCmd.Apply<TestPower>(...)`给予即可。或者使用控制台`power TEST-TEST_POWER 1 0`。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-05-add-power/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

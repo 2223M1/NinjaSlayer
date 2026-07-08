@@ -1,4 +1,4 @@
-﻿using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
@@ -32,7 +32,8 @@ public sealed class OneBodyOneSoul : ModCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new EnergyVar(1)
+        new EnergyVar(2),
+        new CardsVar(2)
     ];
 
     public OneBodyOneSoul() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }

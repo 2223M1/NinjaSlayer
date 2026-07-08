@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-03-add-relic/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新遗物
 
-[2026年05月04日]()[287 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-03-add-relic/ -->
 
 和添加卡牌类似。先新建一个类。
 
@@ -35,9 +32,7 @@ public class TestRelic : CustomRelicModel
     // public override RelicModel? GetUpgradeReplacement() => ModelDb.Relic<Circlet>().ToMutable();
 }
 ```
-
 然后放一张图片`test/images/relics/test_relic.png`。路径不一定是`test`，组织风格自定义，参考上面卡图部分。这里偷懒三张图片用了一样的，可以自己修改。
-
 然后写一个本地化文件，`{modId}/localization/{Language}/relics.json`。
 
 ```json
@@ -47,3 +42,8 @@ public class TestRelic : CustomRelicModel
   "TEST-TEST_RELIC.flavor": "觉得很眼熟？"
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-03-add-relic/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -1,10 +1,8 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-06-add-potion/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加新药水
 
-[2026年05月04日]()[422 字]()[大概 2 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-06-add-potion/ -->
 
+>
 以下示例默认已经在`Entry.Init()`中调用了`RitsuLibFramework.EnsureGodotScriptsRegistered(...)`和`ModTypeDiscoveryHub.RegisterModAssembly(...)`，否则自动注册不会生效。
 
 首先创建类：（很多代码和卡牌类似，参考即可）
@@ -53,7 +51,6 @@ public class TestPotion : ModPotionTemplate
     }
 }
 ```
-
 - `[RegisterPotion(typeof(TestPotionPool))]`会把药水自动注册到指定药水池。示例里用的是自定义角色药水池。
 - 继承的是`ModPotionTemplate`。
 - `CanonicalVars`、`AdditionalHoverTips`这些写法和卡牌类似。
@@ -67,7 +64,6 @@ public class TestPotion : ModPotionTemplate
     "TEST_POTION_TEST_POTION.description": "将[blue]{Cards}[/blue]张[gold]灵魂[/gold]加入你的[gold]手牌[/gold]。"
 }
 ```
-
 - `{Cards}`对应前面的`CardsVar(3)`。
 
 ## 最终项目参考
@@ -84,3 +80,8 @@ Test
         └── zhs
             └── potions.json
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-06-add-potion/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

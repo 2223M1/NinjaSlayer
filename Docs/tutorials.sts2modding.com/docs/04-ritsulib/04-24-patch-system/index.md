@@ -1,14 +1,9 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-24-patch-system/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 补丁系统
 
-[2026年05月16日]()[533 字]()[大概 2 分钟]()[alkaid616]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-24-patch-system/ -->
 
 `RitsuLib`在`Harmony`之上封装了一层Patch系统，统一了补丁声明、注册和失败处理。
-
 原始的`Harmony`patch方式仍然可用，如果你要维护中大型项目建议使用该系统。
-
 仅讲解`RitsuLib`的Patch系统怎么用，其他请参考基础patch教程。
 
 ## 基本流程
@@ -17,9 +12,7 @@
 
 ```csharp
 using MegaCrit.Sts2.Core.Logging;
-using MegaCrit.Sts2.Core.Modding;
-using STS2RitsuLib;
-using STS2RitsuLib.Patching.Core;
+using MegaCrit.Sts2.Core.Nodes;
 using STS2RitsuLib.Patching.Models;
 
 namespace Test.Scripts;
@@ -48,6 +41,13 @@ public class LogReleaseGamePatch : IPatchMethod
 ```
 
 ```csharp
+using MegaCrit.Sts2.Core.Logging;
+using MegaCrit.Sts2.Core.Modding;
+using STS2RitsuLib;
+using STS2RitsuLib.Patching.Core; // RegisterPatch<T> 等扩展方法在此命名空间
+
+namespace Test.Scripts;
+
 [ModInitializer(nameof(Init))]
 public class Entry
 {
@@ -67,7 +67,6 @@ public class Entry
     }
 }
 ```
-
 - 每个逻辑区域建议使用一个 patcher。
 - 先注册完所有补丁，最后统一调用一次 `PatchAll()`。
 
@@ -76,7 +75,7 @@ public class Entry
 一个类型统一注册多个补丁：
 
 ```csharp
-using STS2RitsuLib.Patching.Core;
+using STS2RitsuLib.Patching.Core; // ModPatcher + RegisterPatch<T> 扩展方法
 using STS2RitsuLib.Patching.Models;
 
 namespace Test.Scripts;
@@ -90,8 +89,7 @@ public sealed class MyPatchSet : IModPatches
     }
 }
 ```
-
-注册方式：`patcher.RegisterPatches<MyPatchSet>();`
+注册方式：`patcher.RegisterPatches<MyPatchSet>();`（同样需要 `using STS2RitsuLib.Patching.Core;`）
 
 ## 忽略缺失目标
 
@@ -138,3 +136,8 @@ var builder = new DynamicPatchBuilder("my_dynamic")
 // 关键失败是否回滚
 patcher.ApplyDynamic(builder, rollbackOnCriticalFailure: false);
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-24-patch-system/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

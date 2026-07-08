@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -22,10 +23,14 @@ public sealed class BloodTears : ModCardTemplate
         PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
     );
 
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
+        HoverTipFactory.FromPower<KaratePower>()
+    ];
+
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Energy", 3),
         new CardsVar(2),
-        new DynamicVar("LifeLoss", 3)
+        new DynamicVar("Karate", 3)
     ];
 
     public BloodTears() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -34,11 +39,11 @@ public sealed class BloodTears : ModCardTemplate
     {
         await PlayerCmd.GainEnergy(DynamicVars["Energy"].BaseValue, Owner);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
-        await PowerCmd.Apply<BloodTearsPower>(choiceContext, Owner.Creature, DynamicVars["LifeLoss"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<BloodTearsPower>(choiceContext, Owner.Creature, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["LifeLoss"].UpgradeValueBy(-1);
+        DynamicVars["Karate"].UpgradeValueBy(1);
     }
 }

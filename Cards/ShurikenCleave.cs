@@ -39,7 +39,7 @@ public sealed class ShurikenCleave : ModCardTemplate
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(Owner.Creature).FastAttack);
         await JumpAnimation.Play(Owner.Creature);
         await DamageCmd.Attack(DynamicVars.CalculatedDamage)
-            .FromCard(this)
+            .FromCard(this, cardPlay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Shuriken Cleave requires combat."))
             .Execute(choiceContext);
     }

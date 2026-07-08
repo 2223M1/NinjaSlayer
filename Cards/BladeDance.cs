@@ -12,7 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class BladeDance : ModCardTemplate
+public sealed class NinjaSlayerBladeDance : ModCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Attack;
@@ -21,7 +21,7 @@ public sealed class BladeDance : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
+        PortraitPath: "res://NinjaSlayer/images/cards/BladeDance.png"
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
@@ -29,13 +29,13 @@ public sealed class BladeDance : ModCardTemplate
         new CardsVar(4)
     ];
 
-    public BladeDance() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaSlayerBladeDance() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
+            .FromCard(this, cardPlay)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);

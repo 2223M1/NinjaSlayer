@@ -1,16 +1,11 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/08-ancient-dialogue/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 先古对话
 
-[2026年03月28日]()[880 字]()[大概 3 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/08-ancient-dialogue/ -->
 
 ## 创建文件
 
 创建`{modId}/localization/{Language}/ancients.json`。
-
 先古对话的id遵循`{先古之民ID}.talk.{角色ID}.{对话序号}-{行号}[可选 r].{ancient|char|next}`的格式。
-
 例如达弗对话铁甲战士：
 
 ```json
@@ -29,11 +24,8 @@
 ## 对话内容
 
 最后一段的`ancient`表示是先古之民说的话，`char`是角色说的话，`next`是继续按钮的文本。
-
 最后第二段`x-y`表示第`x`套对话的第`y`句。
-
 游戏按照遇见次数选取第几套对话：（第一次第0套，第二次第1套，第五次第2套）
-
 - 全游戏第一次遇见这个先古之民时，触发`DARV.talk.firstVisitEver.0-0.ancient`对话。
 - 那之后，铁甲战士第一次遇见时，触发第`0`套对话。他会先说`DARV.talk.IRONCLAD.0-0.ancient`这句，如果有`0-1`会继续说下去，`0-2`以此类推。（对于每一个`x-y`里的`y`，可以有一条对话和一个`next`，next是来指定按钮的文字的）
 - 铁甲战士第二次遇见时，触发第`1`套对话。
@@ -52,13 +44,11 @@
 ## 攻击建筑师
 
 由于建筑师原版是在代码里指定攻击动画的，两个基础库都改成json里可以添加`-attack`后缀指定攻击动画。
-
 值可以填`Both`、`Architect`、`Player`或`None`指定谁来攻击。
 
 ```json
 "THE_ARCHITECT.talk.TEST_CHARACTER.0-attack": "Both"
 ```
-
 特别的，baselib可以指定`-startattack`和`-endattack`在对话开始前或者之后攻击（静默猎手如此），值可以填`Both`、`Architect`、`Player`或`None`指定谁来攻击。
 
 ## 基础库扩展
@@ -68,9 +58,13 @@
 ```json
 "TEST_ANCIENT.talk.TEST_CHARACTER.1-visit": "3"
 ```
-
 ritsulib可以指定`.sfx`来播放一个fmod音效：
 
 ```json
 "TEST_ANCIENT.talk.ANY.0-0r.ancient.sfx": "event:/sfx/ui/enchant_simple"
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/08-ancient-dialogue/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

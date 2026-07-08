@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-16-health-bar-overlay/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 血条覆盖
 
-[2026年05月04日]()[324 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-16-health-bar-overlay/ -->
 
 你可以使用该功能制作类似`中毒``灾厄`的血条覆盖层。
 
@@ -61,7 +58,6 @@ public class TestPower2 : ModPowerTemplate, IHealthBarForecastSource
     }
 }
 ```
-
 配套的文本`powers.json`：
 
 ```json
@@ -71,3 +67,8 @@ public class TestPower2 : ModPowerTemplate, IHealthBarForecastSource
     "TEST_POWER_TEST_POWER2.title": "弱点"
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-16-health-bar-overlay/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

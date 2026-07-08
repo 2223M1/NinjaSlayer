@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-04-card-properties/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加卡牌属性
 
-[2026年05月04日]()[1.1k 字]()[大概 4 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-04-card-properties/ -->
 
 ## 添加新卡牌关键词
 
-这里的关键词指的是`消耗`，`虚无`一类的卡牌属性。`RitsuLib`没有`customenum`，但是统一管理。
-
+这里的关键词指的是`消耗`，`虚无`一类的卡牌属性。
 - 新建一个类：
 
 ```csharp
@@ -28,13 +24,10 @@ public class MyKeywords
     // public static readonly CardKeyword Unique2 = ModContentRegistry.GetQualifiedKeywordId(Entry.ModId, nameof(Unique2)).GetModCardKeyword();
 }
 ```
-
 -
 `CardDescriptionPlacement`代表这个关键词的描述加在卡牌的位置。`BeforeCardDescription`表示在描述之前。默认不显示。
-
 -
 `IconPath`和`CardDescriptionPlacement`都是可选的。
-
 -
 添加一个本地化文件，`{modId}/localization/{Language}/card_keywords.json`。使用的键是`TEST_KEYWORD_{id大写}`。
 
@@ -44,7 +37,6 @@ public class MyKeywords
     "TEST_KEYWORD_UNIQUE.title": "唯一"
 }
 ```
-
 - 然后在你的卡牌类里的这里添加自定义keyword：
 
 ```csharp
@@ -56,17 +48,13 @@ public override IEnumerable<CardKeyword> CanonicalKeywords => [
     // CardKeyword.Exhaust, // 添加原版关键词
 ];
 ```
-
 判断是否有：`Keywords.Contains(MyKeywords.Unique)`
-
 可配合单例（`SingletonModel`）实现逻辑。参考对应文章。
 
 ## 添加新动态变量
 
 动态变量是指`伤害`，`格挡`，`抽牌数`，`获得能量数`等这种动态数值。虽然可以通过`new DynamicPower("xxx", 1)`这种形式添加，但是写一个新的类比较规范也便于扩展功能。参考`变量与描述`这章。
-
 通过`ritsulib`的`WithSharedTooltip`可以添加tooltip。如果不需要添加本地化文本，就不添加这行。
-
 如果你只是个简单的数值，这样就行：
 
 ```csharp
@@ -77,6 +65,8 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
 ];
 ```
 
+### 关键词附加文本
+
 （可选）然后添加一个新的本地化文件`{modId}/localization/{Language}/static_hover_tips.json`。
 
 ```json
@@ -85,7 +75,6 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
     "TEST_LEECH.title": "汲取"
 }
 ```
-
 然后在卡牌的描述写上`{Leech}`以使用：
 
 ```json
@@ -94,9 +83,7 @@ protected override IEnumerable<DynamicVar> CanonicalVars => [
     "TEST_CARD_TEST_CARD.description": "[gold]汲取[/gold]{Leech:diff()}。\n造成{Damage:diff()}点伤害。"
 }
 ```
-
 `:diff()`表示这个值一旦和基础值不同，就会变红色或绿色（例如升级时增加数值，预览变成绿色）。
-
 简单来说效果可以在`OnPlay`这么写，或者写一个自己的Cmd方便执行效果：
 
 ```csharp
@@ -109,11 +96,8 @@ await CreatureCmd.Heal(cardPlay.Card.Owner.Creature, DynamicVars["Leech"].BaseVa
 ## 添加卡牌提示文本
 
 指的是卡牌旁出现的提示方框，或预览卡牌。在描述里的关键词一般是添加提示文本和染色搭配，例如`易伤`，`激发`等。
-
 和塔1不同，关键词提示是通过描述染色（`[gold]易伤[/gold]`）然后添加卡牌提示文本实现的。
-
 例如，你给卡牌加上`消耗`就会自动给你加它的提示文本。但是如果你的卡牌没有`消耗`但是描述中是`“消耗一张牌”`，就通过这种方式添加提示文本。
-
 仅需在卡牌类中重载`AdditionalHoverTips`即可：
 
 ```csharp
@@ -134,7 +118,6 @@ public class TestCard : ModCardTemplate
 ## 添加卡牌tag
 
 tag是指`打击``防御`这种。如果有打击tag会被打击木偶增伤。
-
 不要忘记给你的打击和防御加上strike和defend的tag。
 
 ```csharp
@@ -154,7 +137,6 @@ public class MyTags
     // public static readonly CardTag Heavy2 = ModContentRegistry.GetQualifiedCardTagId(Entry.ModId, nameof(Heavy2)).GetModCardTag();
 }
 ```
-
 然后在你的卡牌类里添加：
 
 ```csharp
@@ -166,7 +148,6 @@ protected override HashSet<CardTag> CanonicalTags => [
     // CardTag.Strike, // 添加原版tag
 ];
 ```
-
 需要使用时这么写。`Card`需要是个`CardModel`类型。
 
 ```csharp
@@ -175,3 +156,8 @@ if (Card.Tags.Any(t => t == MyTags.Heavy))
     // Do something
 }
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-04-card-properties/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

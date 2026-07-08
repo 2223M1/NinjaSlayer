@@ -1,16 +1,12 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/01-env-setup/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 环境配置
 
-[2026年03月07日]()[2.5k 字]()[大概 12 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/01-env-setup/ -->
 
 以防你有网络问题下载工具：[https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar](https://pan.baidu.com/s/1yuxPkDpCV8EVLkDubqiirg?pwd=apar)
 
 ## 编程基础
 
 阅读本教程你至少需要：
-
 - C#语言基础（或者其他语言的基础） [https://learn.microsoft.com/zh-cn/dotnet/csharp/tour-of-csharp/](https://learn.microsoft.com/zh-cn/dotnet/csharp/tour-of-csharp/)
 - json文本基础 [https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Scripting/JSON](https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Scripting/JSON)
 - 使用Godot编辑器的简单功能
@@ -20,17 +16,13 @@
 ## 其他教程和mod模板
 
 [https://github.com/freude916/sts2-quickRestart/blob/main/README.md](https://github.com/freude916/sts2-quickRestart/blob/main/README.md)
-
 `ritsulib`模板：[https://github.com/alkaid616/RitsuLibModTemplate](https://github.com/alkaid616/RitsuLibModTemplate)
-
 `baselib`模板：[https://github.com/Alchyr/ModTemplate-StS2](https://github.com/Alchyr/ModTemplate-StS2)
 
 ## 安装Godot 4.5.1 Mono
 
 《杀戮尖塔2》是用`Godot4.5.1 Mono`开发的，所以你需要安装`Godot4.5.1 Mono`版本的编辑器。
-
 进入[Godot下载界面](https://godotengine.org/download/archive/4.5.1-stable/)，下载并安装编辑器。注意选择`.NET`版本。
-
 或者，你也可以下载制作组自己使用的Godot修改版本[MegaDot](https://megadot.megacrit.com/)。由于暂不清楚这个版本和官方版本的区别，所以建议直接使用官方版本。
 
 ## 安装.NET SDK
@@ -40,17 +32,13 @@
 ## 选择文本编辑器
 
 选择一个文本编辑器。可以使用[Visual Studio Code](https://code.visualstudio.com/)或者[Rider](https://www.jetbrains.com/zh-cn/rider/download/?section=windows)（强烈推荐新手使用Rider）。另外也可以使用Visual Studio等其他 IDE。以下只介绍 VS Code 的配置方法。
-
 强烈推荐新手使用Rider
-
 强烈推荐新手使用Rider
-
 强烈推荐新手使用Rider
 
 ## 安装VS Code插件（可选）
 
 安装[C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)。你还可以安装[Godot Tools](https://marketplace.visualstudio.com/items?itemName=geequlim.godot-tools)等插件。
-
 记得打开设置把自动保存开了。
 
 ## 参考官方文档
@@ -68,7 +56,6 @@
 ## 创建{modid}.json
 
 用你的IDE（VSCode、Rider、VS等）打开项目文件夹。创建一个新文件（双击资源管理器或者右键新建文件），名字为`{modid}.json`。`modid`建议和项目名以及其中内容相同。填写以下内容。
-
 - 不是创建`{modid}.json`这么一个文件，而是把`{modid}`替换成你的项目名，例如`Test.json`。之后提到的`{}``[]`都是替换。
 
 ```json
@@ -78,19 +65,18 @@
   "author": "作者名",
   "description": "Mod 描述",
   "version": "0.1.0",
-  "min_game_version": "0.105.0", // 你的mod兼容的最小游戏版本（测试版新增）
+  "min_game_version": "0.107.1", // 你的mod兼容的最小游戏版本
   "has_pck": true,         // 是否有 .pck 资源包
   "has_dll": true,        // 是否有 .dll 代码
   "dependencies": [],     // 依赖的其他mod id
   "affects_gameplay": true // 多人模式时是否影响内容，如果是替换模型和优化等不影响内容的mod可填false，默认true
 }
 ```
+- 所有版本的字符串必须符合[标准版本语义](https://semver.org/)。简单来说必须是`X.X.X`三段，而不能是两段了。
 
-- `0.105.0`以后，所有版本的字符串必须符合[标准版本语义](https://semver.org/)。简单来说必须是`X.X.X`三段，而不能是两段了。
+依赖的写法：
 
-正式版添加依赖（填入其他mod在这个json的id）：`"dependencies": ["AnotherMod"]`
-
-- 测试版添加依赖参考：
+>
 
 ```json
 "dependencies": [
@@ -101,10 +87,8 @@
 ## 修改.csproj
 
 打开你的`.csproj`文件，修改并换成以下内容：
-
 -
 `Rider`为右键你的项目，点击`Edit - Edit csproj`。
-
 -
 `VSCode`直接找你项目里的`.csproj`文件编辑。
 
@@ -149,6 +133,7 @@
 
 创建一个`Scripts`文件夹，创建一个`Entry.cs`文件（两者命名随意，为了整洁美观）。内容改成以下：
 
+>
 建议命名空间第一段改成你自己的，不要用`Test`以免后续更改麻烦。另外不要忘记每个文件都加上`namespace`！
 
 ```csharp
@@ -184,28 +169,23 @@ public class Entry
 ## 导出PCK
 
 回到Godot编辑器，点击项目→导出，点击上方的`添加`一个windows预设，然后
-
 -
 点击`导出pck/zip`，把文件名字改成`[项目名].pck`。
-
 -
 文件夹选择你之前导出的dll同名目录。
-
 -
 注意一定得是pck！！！
-
 -
 可选：由于现在不需要pck里包含`mod_manifest.json`了，在导出选项里点击`资源`，`从项目中排除文件或目录`，填写`{modid}.json`，`modid`填你自己的，不要写`{modid}`。
-
 -
 建议之后通过之后的自动打包进行。如果要兼容mac平台见下：
 
+>
 用文本编辑器打开`export_presets.cfg`，将`binary_format/architecture="x86_64"`改为`binary_format/architecture="msil"`。
 
 ## 了解导出结果
 
 现在你的`mods`文件夹里有一个你的mod命名的文件夹，里面有一个dll文件、一个pck文件和一个json文件，这三个文件是构成一个mod的组件。
-
 - dll文件是mod的代码。如果你没有代码，可以不要。如果你之后改动了代码，只要重新build一下就行。
 - pck文件是mod的素材资源。如果你没有素材，可以不要。如果你没有素材上的变动，不需要重新打包一次pck。
 - json文件是mod的配置文件，是必须的。
@@ -217,7 +197,6 @@ public class Entry
 ## Rider不启动Godot打包（可选）
 
 Godot支持命令行导出pck（首先你需要添加一个导出配置），例如使用终端命令：`"{你的godot.exe的路径}" --headless --export-pack "{你的导出配置的名字，例如Windows Desktop}" "{杀戮尖塔根目录}/mods/{你的modid}/{你的modid}.pck"`，参考 [https://docs.godotengine.org/zh-cn/4.x/tutorials/editor/command_line_tutorial.html#exporting](https://docs.godotengine.org/zh-cn/4.x/tutorials/editor/command_line_tutorial.html#exporting) 。你可以把这个命令保存成一个cmd或者csproj里的target。
-
 打开你的`csproj`并新增以下内容：
 
 ```xml
@@ -263,7 +242,6 @@ Godot支持命令行导出pck（首先你需要添加一个导出配置），例
   </Target>
 </Project>
 ```
-
 然后右键你的项目点击`Publish`即可。一路点OK就行。
 
 ## VSCode不启动Godot打包（可选）
@@ -313,11 +291,14 @@ Godot支持命令行导出pck（首先你需要添加一个导出配置），例
   </Target>
 </Project>
 ```
-
 然后控制台输入`dotnet build -t:ExportPck`即可连PCK一起导出。输入`dotnet build`仅编译dll。
-
 方法不限。你也可以使用`tasks.json`和`publish`（modtemplate使用的）。
 
 ## mac支持（可选）
 
 用文本编辑器打开`export_presets.cfg`，将`binary_format/architecture="x86_64"`改为`binary_format/architecture="msil"`。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/01-env-setup/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

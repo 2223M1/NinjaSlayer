@@ -1,14 +1,10 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-09-run-save/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 局内保存
 
-[2026年05月04日]()[530 字]()[大概 2 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/03-baselib/03-09-run-save/ -->
 
 ## SavedProperty
 
 在卡牌、遗物、附魔、Modifier（每日挑战效果）的`Model`的属性中中添加带`SavedProperty`的属性即可保存。
-
 - 一定要是[属性](https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/properties)。
 
 ```csharp
@@ -44,10 +40,8 @@ public class TestRelic : CustomRelicModel
 ## SavedSpireField
 
 使用一个静态变量`SavedSpireField<TType, TVal>`可以为一个类添加可保存的新的变量。这种方式不需要你对类有编辑能力，例如可往所有遗物里加个变量。
-
 -
 `TType`目前只能是卡牌、遗物、附魔、Modifier（每日挑战效果）。
-
 -
 `TVal`只能是可支持的类，见最下方。
 
@@ -73,7 +67,6 @@ public class TestRelic : CustomRelicModel
     }
 }
 ```
-
 支持的类：
 
 ```csharp
@@ -92,5 +85,9 @@ protected static readonly HashSet<Type> SupportedTypes =
 protected static bool IsTypeSupported(Type t) =>
     SupportedTypes.Contains(t) || t.IsEnum || (t.IsArray && t.GetElementType()!.IsEnum);
 ```
-
 此外你也可以使用`SpireField<TType, TVal>`为一个类添加新的变量，无法保存。
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/03-baselib/03-09-run-save/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -10,7 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class RedBlackFlame : ModCardTemplate
+public sealed class RedBlackFlame : NarakuThemedCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Skill;
@@ -30,7 +30,7 @@ public sealed class RedBlackFlame : ModCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await NinjaSlayerActions.EnterNaraku(choiceContext, Owner);
+        await EnsureNarakuForm(choiceContext);
         foreach (CardModel card in PileType.Hand.GetPile(Owner).Cards.Where(c => c.Type == CardType.Attack).ToList())
         {
             CardCmd.ApplyKeyword(card, CardKeyword.Exhaust);

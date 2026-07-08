@@ -1,13 +1,11 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
-using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -49,7 +47,7 @@ public class ChadoBreathingRelic : ModRelicTemplate
         return Task.CompletedTask;
     }
 
-    public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
+    public override async Task BeforeSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
         if (!participants.Contains(Owner.Creature) || Owner.Creature.IsDead)
         {
@@ -61,7 +59,7 @@ public class ChadoBreathingRelic : ModRelicTemplate
 
     private async Task TryBreathe()
     {
-        if (!HandHasChado())
+        if (NinjaSlayerActions.ChadoInHandCount(Owner) <= 0)
         {
             return;
         }
@@ -82,7 +80,4 @@ public class ChadoBreathingRelic : ModRelicTemplate
             await NinjaSlayerActions.ExitNaraku(Owner.Creature);
         }
     }
-
-    private bool HandHasChado() =>
-        PileType.Hand.GetPile(Owner).Cards.Any(c => c is ChadoCard);
 }

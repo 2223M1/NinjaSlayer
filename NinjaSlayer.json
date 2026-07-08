@@ -4,11 +4,11 @@
   "author": "波比梓狸",
   "description": "从现在开始就是真正的忍者世界了",
   "version": "0.1.0",
-  "min_game_version": "0.107.0", 
+  "min_game_version": "0.108.0", 
   "has_pck": true,         
   "has_dll": true,        
   "dependencies": [
-    { "id": "STS2-RitsuLib", "min_version": "0.4.26" }
+    { "id": "STS2-RitsuLib", "min_version": "0.4.46" }
   ],     
   "affects_gameplay": true 
 }

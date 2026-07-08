@@ -1,9 +1,6 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-08-add-orb/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加充能球
 
-[2026年05月04日]()[362 字]()[大概 1 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-08-add-orb/ -->
 
 先创建类：
 
@@ -14,6 +11,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
+using STS2RitsuLib.Scaffolding.Godot;
 
 namespace Test.Scripts;
 
@@ -25,6 +23,13 @@ public class TestOrb : ModOrbTemplate
 
     // 激发效果数值
     public override decimal EvokeVal => ModifyOrbValue(2);
+
+    // 战斗中充能球的文本显示样式。
+    // Contextual 表示匹配普通原版充能球行为：平时显示被动值；当充能球被预览为激发时显示激发值。一般用于大多数充能球。
+    // SinglePassive 表示只显示被动值。
+    // SingleEvoke 表示只显示激发值。
+    // Both 表示同时显示被动值和激发值。原版用于黑暗充能球。
+    public override ModOrbValueDisplayMode ValueDisplayMode => ModOrbValueDisplayMode.Contextual;
 
     // 暗色，使用球的主体色的暗色调
     public override Color DarkenedColor => new(0.1f, 0.2f, 0.5f);
@@ -62,7 +67,6 @@ public class TestOrb : ModOrbTemplate
     }
 }
 ```
-
 然后创建`{modId}/localization/{Language}/orbs.json`。
 
 ```json
@@ -72,9 +76,7 @@ public class TestOrb : ModOrbTemplate
     "TEST_ORB_TEST_ORB.title": "戈多球"
 }
 ```
-
 使用`await OrbCmd.Channel<TestOrb>(choiceContext, cardPlay.Card.Owner)`以生成。
-
 `test_orb.tscn`:
 
 ```plaintext
@@ -87,3 +89,8 @@ public class TestOrb : ModOrbTemplate
 [node name="Icon" type="Sprite2D" parent="."]
 texture = ExtResource("1_voa3m")
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-08-add-orb/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

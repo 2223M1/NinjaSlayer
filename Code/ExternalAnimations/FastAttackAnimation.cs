@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -10,13 +10,13 @@ public static class FastAttackAnimation
 {
     private const float AnimationDuration = 0.24f;
 
-    public static async Task Play(Creature creature, float waitTime)
+    public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null) return;
 
         var originalPos = creatureNode.Position;
-        var direction = creature.IsPlayer ? 1f : -1f;
+        var direction = (creature.IsPlayer ? 1f : -1f) * (reverseDirection ? -1f : 1f);
 
         var tween = creatureNode.CreateTween();
 

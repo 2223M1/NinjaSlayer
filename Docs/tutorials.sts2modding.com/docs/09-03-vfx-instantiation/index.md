@@ -1,16 +1,11 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/09-03-vfx-instantiation/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 特效的播放(实例化)与缓存
 
-[2026年05月18日]()[1.2k 字]()[大概 5 分钟]()[vitechliu]()
+<!-- Source: https://tutorials.sts2modding.com/docs/09-03-vfx-instantiation/ -->
 
 ## 特效的实例化与播放
 
 特效建好之后，我们现在需要解决如何将其播放的问题。
-
 注意到游戏本体使用了`AttackCommand`的`WithHitFX()`等方法来播放特效，我们不建议使用，因为这个方法只能播放游戏本体路径下的特效，而我们的特效是存放在mod子目录下，除非你Patch游戏本体，或者使用前置插件等。
-
 同时游戏本体的场景缓存策略会清除其他场景，所以我们最好是内置自己的方法。
 
 ### 使用工具类实例化
@@ -55,17 +50,14 @@ public static class VFXUtil {
     }
 }
 ```
-
 VFXUtil.PlaySimple()方法简单实例化一个节点，并在给定的时间（秒）后自动销毁，省去了写销毁脚本的步骤。
 
 ```csharp
 // 使用方式
 VFXUtil.PlaySimple("res://YourMod/scenes/vfx/glow.tscn", position, 2f);
 ```
-
 复杂使用示例（工厂方法）：
 你的特效可能挂载了自定义脚本，可以使用GenVFXNode()方法来更精确的实例化，控制位置等。
-
 以下是万象辉星Mod中创世之柱动画的创建方法。(需要放到角色背后，并且不销毁)
 
 ```csharp
@@ -93,7 +85,6 @@ public static Pillar? Spawn(Creature creature, Vector2 position) {
 #### 为什么需要 Mod 独立缓存？
 
 STS2 的 `PreloadManager`的缓存逻辑 在场景切换时会 `UnloadAssets()`，只保留了本体的特效，导致 Mod 的特效场景被意外清理。
-
 我们可以通过HarmonyPatch解决这些问题，但比较复杂，本文暂不讨论，而是简单的创建独立的缓存：
 
 ```csharp
@@ -148,9 +139,7 @@ NCombatRoom (Control)
 ├── %CombatVfxContainer          // 前台特效容器 (ZIndex = -9)
 └── RadialBlur                   // 径向模糊效果
 ```
-
 选择原则：
-
 - 前台特效（`CombatVfxContainer`）：短暂存在的攻击特效、命中效果、粒子爆发。需要覆盖在角色上方。
 - 后台特效（`BackCombatVfxContainer`）：持续存在的状态特效、背景元素。需要显示在角色后方。
 
@@ -182,7 +171,6 @@ Vector2 globalPos = ownerNode.GlobalPosition;
 #### 获取角色朝向
 
 在对战大螃蟹boss的时候，角色可能会朝向左边，如果特效播放的位置是角色前方/后方的话，需要动态获取角色朝向
-
 这里给VFXUtil写了个工具方法判断
 
 ```csharp
@@ -200,3 +188,8 @@ int xFac = facingRight ? 1 : -1;
 Vector2 position = Creature.VfxSpawnPosition + new Vector2(100f * xFac, 0f);
 //播放特效...
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/09-03-vfx-instantiation/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

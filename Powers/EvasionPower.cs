@@ -1,11 +1,12 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
-using STS2RitsuLib.Interop.AutoRegistration;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
+using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
@@ -18,21 +19,27 @@ public sealed class EvasionPower : ModPowerTemplate
 
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 
-    public override decimal ModifyHpLostAfterOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageCap(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
-        if (target != Owner || amount <= 1 || Amount <= 0)
+        if (target != Owner || Amount <= 0)
         {
-            return amount;
+            return decimal.MaxValue;
         }
 
-        return 1;
+        if (dealer is not { IsMonster: true } || !props.IsCardOrMonsterMove())
+        {
+            return decimal.MaxValue;
+        }
+
+        return 0m;
     }
 
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override async Task AfterModifyingDamageAmount(CardModel? cardSource)
     {
-        if (target == Owner && result.UnblockedDamage > 0 && Amount > 0)
-        {
-            await PowerCmd.Decrement(this);
-        }
+        Flash();
+        var audio = NinjaSlayerCombatAudioSet.For(Owner);
+        NinjaSlayerCombatAudioSet.Play(audio.FastAttack);
+        _ = FastAttackAnimation.Play(Owner, Owner.Player?.Character?.AttackAnimDelay ?? 0.15f, reverseDirection: true);
+        await PowerCmd.Decrement(this);
     }
 }

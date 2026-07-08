@@ -1,27 +1,25 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-6-right-click/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 右键交互
 
-[2026年05月30日]()[786 字]()[大概 3 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-22-6-right-click/ -->
 
-`RitsuLib` 提供了一个完整的右键交互系统，支持卡牌、遗物、能力、药水四种模型的右键点击，自动处理多人同步、控制器兼容和优先级调度。
+`RitsuLib` 提供了一个右键交互系统，支持卡牌、遗物、能力、药水的右键点击，自动处理多人同步、手柄兼容和优先级调度。
 
+>
 以下示例默认已经在 `Entry.Init()` 中调用了 `ModTypeDiscoveryHub.RegisterModAssembly(...)`，否则自动注册不会生效。
 
 ## 方式一：模型实现接口
 
 如果想把右键行为直接绑定到模型本身（比如一张卡牌或一个遗物），让模型实现对应的接口即可：
-
-| 模型 | 接口
-
-| 卡牌 | `IModRightClickableCard`
-
-| 遗物 | `IModRightClickableRelic`
-
-| 能力 | `IModRightClickablePower`
-
-| 药水 | `IModRightClickablePotion`
+模型
+接口
+卡牌
+`IModRightClickableCard`
+遗物
+`IModRightClickableRelic`
+能力
+`IModRightClickablePower`
+药水
+`IModRightClickablePotion`
 
 ```csharp
 using MegaCrit.Sts2.Core.Entities.Powers;
@@ -57,7 +55,6 @@ public sealed class TestInfoPower
     }
 }
 ```
-
 `CanHandleRightClickLocal` 有默认返回 `true` 的实现，不是必须重写。
 
 ## 方式二：注册绑定
@@ -100,7 +97,6 @@ public class Entry
     }
 }
 ```
-
 同一个模型上可以挂多个绑定，它们会按优先级排序依次执行；如果某个绑定的 `canHandle` 返回 `false`，则跳过该绑定。
 
 ## 方式三：注册接口
@@ -133,7 +129,6 @@ public sealed class TestGlobalHandler : IModRightClickHandler
 // 在 Entry.Init 中注册
 ModRightClickRegistry.Register(new TestGlobalHandler());
 ```
-
 处理器运行在模型绑定之前，按 `Priority` 降序执行。返回 `true` 就消费事件，不会再走模型绑定流程。
 
 ## 上下文参数
@@ -146,13 +141,24 @@ public readonly record struct ModRightClickContext(
     AbstractModel Model,
     ModRightClickTrigger Trigger);
 ```
+参数
+类型
+说明
+`Player`
+`Player`
+发起右键的本地玩家实体，通过 `LocalContext.GetMe(...)` 解析得到
+`Model`
+`AbstractModel`
+被右键点击的游戏模型，运行时可能是 `CardModel` / `RelicModel` / `PowerModel` / `PotionModel`（都继承自 `AbstractModel`）
+`Trigger`
+`ModRightClickTrigger`
+触发元信息，包含 `IsController`（是否为控制器触发）和 `Metadata`（预留的自定义数据）
 
-| 参数 | 类型 | 说明
-
-| `Player` | `Player` | 发起右键的本地玩家实体，通过 `LocalContext.GetMe(...)` 解析得到
-
-| `Model` | `AbstractModel` | 被右键点击的游戏模型，运行时可能是 `CardModel` / `RelicModel` / `PowerModel` / `PotionModel`（都继承自 `AbstractModel`）
-
-| `Trigger` | `ModRightClickTrigger` | 触发元信息，包含 `IsController`（是否为控制器触发）和 `Metadata`（预留的自定义数据）
-
+>
 同步执行阶段使用的是 `ModRightClickExecutionContext`，它多了 `PlayerChoiceContext` 和 `Action` 两个字段。
+
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-22-6-right-click/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

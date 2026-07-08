@@ -1,19 +1,16 @@
-﻿<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-18-add-capability/ -->
-<!-- Synced: 2026-06-17 14:40:26 +08:00 -->
-
 # 添加组件
 
-[2026年06月06日]()[1.7k 字]()[大概 8 分钟]()[Reme]()
+<!-- Source: https://tutorials.sts2modding.com/docs/04-ritsulib/04-18-add-capability/ -->
 
+>
 以下示例默认已经在`Entry.Init()`中调用了`ModTypeDiscoveryHub.RegisterModAssembly(...)`，否则自动注册不会生效。
 
 组件（ModelCapability）是 RitsuLib 提供的通用附加行为系统，可以挂载到任意 `AbstractModel`（卡牌、遗物、药水、能力、怪物、角色等）上，实现模块化的功能注入。
-
 类似塔1的cardmodifier，或者塔2的附魔（但是可以存在多个且不只限于卡牌）。
 
 ## 代码
 
-假设你想实现一个”每次抽到这张牌时获得 1 点力量”的效果：
+假设你想实现一个"每次抽到这张牌时获得 1 点力量"的效果：
 
 ```csharp
 using MegaCrit.Sts2.Core.Commands;
@@ -50,7 +47,6 @@ public class DrawPowerCapability : CardCapability
     }
 }
 ```
-
 - `[RegisterModelCapability]` 会自动注册这个组件，组件 id 为 `{MODID}_MODEL_CAPABILITY_{类名的大写SNAKE_CASE}`。
 - 组件本质也是一个 `AbstractModel`。
 - `Owner` 指向挂载的模型实例（这里是 `CardModel`）。
@@ -74,7 +70,6 @@ public class TestCard : ModCardTemplate
     }
 }
 ```
-
 - `this.GetOrCreateCapability<DrawPowerCapability>()` 将组件附着到卡牌上，自动触发 `OnAttach`。
 
 ## 注册
@@ -104,33 +99,41 @@ RitsuLibFramework.RegisterModelCapability<MyCardCapability>(ModId);
 ## 基类一览
 
 RitsuLib 针对不同 model 类型提供了现成的基类：
-
-| 基类 | 绑定 owner 类型 | 说明
-
-| `CardCapability` | `CardModel` | 卡牌组件，额外暴露 `OnOwnerCardUpgraded`、`OnOwnerCardDowngraded` 等卡牌专属钩子
-
-| `CardPlayCapability` | `CardModel` | 卡牌打出组件，自动比对 `cardPlay.Card` 与 `Owner`，只处理自己所属牌的打出
-
-| `OneShotCardPlayCapability` | `CardModel` | 打出一次后自动移除自身
-
-| `OrbCapability` | `OrbModel` | 充能球组件，含 `OnOwnerOrbPassiveTriggered`、`OnOwnerOrbEvoked` 等
-
-| `RelicCapability`、`PotionCapability`等 | - | 遗物、药水、能力、怪物等也有相应的组件
-
-| `CharacterCapability` | `CharacterModel` | 角色组件（不接收原版 hook）
-
-| `OwnerHookCapability<TModel>` | 任意 `AbstractModel` | 通用 hook 基类，需要手动指定 owner 类型
-
-| `UntilCombatEndCapability<TModel>` | 任意 | 战斗结束后自动移除自身
-
-| `TurnLimitedCapability<TModel>` | 任意 | 计数回合后自动移除自身，剩余回合数自动持久化
-
+基类
+绑定 owner 类型
+说明
+`CardCapability`
+`CardModel`
+卡牌组件，额外暴露 `OnOwnerCardUpgraded`、`OnOwnerCardDowngraded` 等卡牌专属钩子
+`CardPlayCapability`
+`CardModel`
+卡牌打出组件，自动比对 `cardPlay.Card` 与 `Owner`，只处理自己所属牌的打出
+`OneShotCardPlayCapability`
+`CardModel`
+打出一次后自动移除自身
+`OrbCapability`
+`OrbModel`
+充能球组件，含 `OnOwnerOrbPassiveTriggered`、`OnOwnerOrbEvoked` 等
+`RelicCapability`、`PotionCapability`等
+-
+遗物、药水、能力、怪物等也有相应的组件
+`CharacterCapability`
+`CharacterModel`
+角色组件（不接收原版 hook）
+`OwnerHookCapability<TModel>`
+任意 `AbstractModel`
+通用 hook 基类，需要手动指定 owner 类型
+`UntilCombatEndCapability<TModel>`
+任意
+战斗结束后自动移除自身
+`TurnLimitedCapability<TModel>`
+任意
+计数回合后自动移除自身，剩余回合数自动持久化
 如果你想要其他自己指定类型才能挂载的组件，直接继承 `ModelCapability` 或 `ModelCapability<TModel>` 即可。
 
 ## 贡献者接口
 
 组件可以实现以下接口，向 owner 注入额外内容。
-
 以 `ICardDescriptionContributor` 为例，实现在卡牌描述底部追加一段文字：
 
 ```csharp
@@ -163,7 +166,6 @@ public class HealOnExhaustCapability : CardCapability,
     ]
 }
 ```
-
 locstring可以自己指定在哪个本地化表写词条。如果你使用`cards`，则本地化文件 `{modId}/localization/{Language}/cards.json` 中需要对应条目：
 
 ```json
@@ -171,49 +173,57 @@ locstring可以自己指定在哪个本地化表写词条。如果你使用`card
   "TEST_MODELCAPABILITY_HEAL_ON_EXHAUST_CAPABILITY.exhaustHealDescription": "被[gold]消耗[/gold]时，回复[blue]{HealAmount}[/blue]点生命。"
 }
 ```
-
 根据目标分为三类：
 
 ### 通用模型接口（任意 owner）
 
-| 接口 | 作用 | 方法
-
-| `IModelDynamicVarContributor` | 为 owner 的文本提供动态变量 | `GetDynamicVars(AbstractModel)`
-
-| `IModelHoverTipContributor` | 为 owner 添加悬停提示 | `GetHoverTips(AbstractModel)`
-
-| `IModelAssetPathContributor` | 声明 owner 需要的资源路径（阻止打包裁剪） | `GetAssetPaths(ModelAssetPathContext)`
-
-| `IModelRightClickCapability` | 处理右键交互 | `OnRightClick(ModRightClickExecutionContext)`
+接口
+作用
+方法
+`IModelDynamicVarContributor`
+为 owner 的文本提供动态变量
+`GetDynamicVars(AbstractModel)`
+`IModelHoverTipContributor`
+为 owner 添加悬停提示
+`GetHoverTips(AbstractModel)`
+`IModelAssetPathContributor`
+声明 owner 需要的资源路径（阻止打包裁剪）
+`GetAssetPaths(ModelAssetPathContext)`
+`IModelRightClickCapability`
+处理右键交互
+`OnRightClick(ModRightClickExecutionContext)`
 
 ### 卡牌组件专用接口
 
-| 接口 | 作用
-
-| `ICardDescriptionContributor` | 贡献卡牌描述片段
-
-| `ICardHoverTipContributor` | 贡献卡牌悬停提示
-
-| `ICardGlowContributor` | 控制卡牌是否显示金色／红色发光
-
-| `ICardPropertyContributor` | 覆盖卡牌类型、稀有度、目标类型、标签
-
-| `ICardPlayStateContributor` | 控制卡牌可否打出、手牌回合结束效果
-
-| `ICardPlayResultContributor` | 自定义卡牌打出后进入的牌堆
-
-| `ICardTransformCarryOverCapability` | 卡牌转化时将自身携带到结果牌
+接口
+作用
+`ICardDescriptionContributor`
+贡献卡牌描述片段
+`ICardHoverTipContributor`
+贡献卡牌悬停提示
+`ICardGlowContributor`
+控制卡牌是否显示金色／红色发光
+`ICardPropertyContributor`
+覆盖卡牌类型、稀有度、目标类型、标签
+`ICardPlayStateContributor`
+控制卡牌可否打出、手牌回合结束效果
+`ICardPlayResultContributor`
+自定义卡牌打出后进入的牌堆
+`ICardTransformCarryOverCapability`
+卡牌转化时将自身携带到结果牌
 
 ### 充能球组件专用接口
 
-| 接口 | 作用
-
-| `IOrbValueDisplayContributor` | 覆盖被动／激发数值标签的显示
-
-| `IOrbHoverTipDescriptionContributor` | 贡献充能球悬停说明片段
+接口
+作用
+`IOrbValueDisplayContributor`
+覆盖被动／激发数值标签的显示
+`IOrbHoverTipDescriptionContributor`
+贡献充能球悬停说明片段
 
 ## 运行时操作
 
+>
 组件继承自 `AbstractModel`，**禁止使用 `new`**创建。必须通过注册表或框架 API 创建，例如通过`ModelCapabilityRegistry.GetCapabilityId`和`ModelCapabilityRegistry.Create`。
 
 ```csharp
@@ -293,7 +303,6 @@ public class ChargeData
     public int Charge { get; set; }
 }
 ```
-
 也可用 `StatefulModelCapability<TState>` 或 `StatefulModelCapability<TModel, TState>` 自动序列化，看场合选用。
 
 ## 合并行为
@@ -336,7 +345,6 @@ public class StackableBuffCapability : CardCapability, IModelCapabilityMergeHand
     }
 }
 ```
-
 只有 `AddCapability` / `SubtractCapability` / `ApplyCapability` 会走合并流程：
 
 ```csharp
@@ -348,3 +356,8 @@ this.AddCapability(cap); // 叠加。使用SubtractCapability移除层数
 // ❌ 不会叠加：GetOrCreate 只创建一次
 this.GetOrCreateCapability<StackableBuffCapability>();
 ```
+版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
+本页目录
+
+[English](/en/docs/04-ritsulib/04-18-add-capability/)
+[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)
