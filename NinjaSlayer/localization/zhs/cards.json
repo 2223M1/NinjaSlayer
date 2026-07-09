@@ -87,6 +87,8 @@
   "NINJA_SLAYER_CARD_MURDER_FIST.description": "造成{Damage:diff()}点伤害。\n对生命值小于一半的敌人额外打出一次。",
   "NINJA_SLAYER_CARD_I_BLOCK.title": "我挡",
   "NINJA_SLAYER_CARD_I_BLOCK.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n下个回合开始时，获得与剩余[gold]格挡[/gold]相同层数的[gold]活力[/gold]。",
+  "NINJA_SLAYER_CARD_I_HIT.title": "我打",
+  "NINJA_SLAYER_CARD_I_HIT.description": "造成{Damage:diff()}点伤害。\n如果你在本回合[gold]消耗[/gold]过[gold]茶道[/gold]，获得{Energy:diff()}点能量。",
   "NINJA_SLAYER_CARD_IMPURE_FLAME.title": "不净之炎",
   "NINJA_SLAYER_CARD_IMPURE_FLAME.description": "每当获得负面效果时，将{Cards:diff()}张[gold]茶道[/gold]洗入抽牌堆。",
   "NINJA_SLAYER_CARD_NINJA_GREETING.title": "忍者问候",
