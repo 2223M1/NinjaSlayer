@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -38,19 +39,35 @@ public sealed class AlabamaDrop : ModCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
-        await PowerCmd.Apply<KaratePower>(
-            choiceContext,
-            Owner.Creature,
-            DynamicVars["SelfKarate"].BaseValue,
-            Owner.Creature,
-            this);
-        await PowerCmd.Apply<KaratePower>(
-            choiceContext,
-            cardPlay.Target,
-            DynamicVars["EnemyKarate"].BaseValue,
-            Owner.Creature,
-            this);
+
+        bool appliedKarate = false;
+        async Task ApplyKarate()
+        {
+            if (appliedKarate)
+            {
+                return;
+            }
+
+            appliedKarate = true;
+            await PowerCmd.Apply<KaratePower>(
+                choiceContext,
+                Owner.Creature,
+                DynamicVars["SelfKarate"].BaseValue,
+                Owner.Creature,
+                this);
+            await PowerCmd.Apply<KaratePower>(
+                choiceContext,
+                cardPlay.Target,
+                DynamicVars["EnemyKarate"].BaseValue,
+                Owner.Creature,
+                this);
+        }
+
+        await AlabamaDropAnimation.Play(Owner.Creature, cardPlay.Target, ApplyKarate);
+        if (!appliedKarate)
+        {
+            await ApplyKarate();
+        }
     }
 
     protected override void OnUpgrade()
