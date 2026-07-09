@@ -31,7 +31,7 @@ public partial class NarakuVisualOverlay : Sprite2D
             return;
         }
 
-        var parent = NinjaSlayerVisualRig.GetAirborneAnchor(visualsRoot) ?? visualsRoot;
+        var parent = source.GetParent() ?? (Node)(NinjaSlayerVisualRig.GetAirborneAnchor(visualsRoot) ?? visualsRoot);
         var overlay = visualsRoot.FindChild(NodeName, recursive: true) as NarakuVisualOverlay;
         if (overlay == null)
         {
@@ -48,7 +48,10 @@ public partial class NarakuVisualOverlay : Sprite2D
         overlay.Centered = true;
         overlay.FlipH = source.FlipH;
         overlay.FlipV = source.FlipV;
-        overlay.ZIndex = source.ZIndex + 1;
+        overlay.ZIndex = source.ZIndex;
+        overlay.ZAsRelative = source.ZAsRelative;
+        overlay.ShowBehindParent = source.ShowBehindParent;
+        parent.MoveChild(overlay, source.GetIndex() + 1);
         overlay.UpdateVisual();
     }
 
