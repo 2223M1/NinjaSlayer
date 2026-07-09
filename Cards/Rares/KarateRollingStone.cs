@@ -20,9 +20,7 @@ public sealed class KarateRollingStone : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/KataDrill.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KataDrill");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Karate", 4)

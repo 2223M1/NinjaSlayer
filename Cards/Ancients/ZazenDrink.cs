@@ -21,9 +21,7 @@ public sealed class ZazenDrink : ModCardTemplate, IDrawCastSkillCard
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse tea art until Zazen Drink gets dedicated card art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ChadoCard.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

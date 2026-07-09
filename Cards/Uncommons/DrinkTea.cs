@@ -20,9 +20,7 @@ public sealed class DrinkTea : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ChadoCard.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Vigor", 6)

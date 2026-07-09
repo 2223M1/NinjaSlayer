@@ -21,9 +21,7 @@ public sealed class ShurikenGuard : ModCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse shuriken art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ShurikenStock.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenStock");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(9, ValueProp.Move),

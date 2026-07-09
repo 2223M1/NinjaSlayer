@@ -19,9 +19,7 @@ public sealed class TeaSamadhi : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/GreatUke.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("GreatUke");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1)

@@ -21,9 +21,7 @@ public sealed class AlabamaDrop : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse karate art until this card gets dedicated card art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/KarateStraight.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateStraight");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("SelfKarate", 6),

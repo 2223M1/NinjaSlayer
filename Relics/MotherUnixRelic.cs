@@ -16,11 +16,7 @@ public sealed class MotherUnixRelic : ModRelicTemplate
     public override RelicRarity Rarity => RelicRarity.Ancient;
 
     // ponytail: reuse the existing terminal relic art until Nancy gets dedicated icons.
-    public override RelicAssetProfile AssetProfile => new(
-        IconPath: "res://NinjaSlayer/images/relics/PortableIrcTerminalRelic.png",
-        IconOutlinePath: "res://NinjaSlayer/images/relics/PortableIrcTerminalRelic_outline.png",
-        BigIconPath: "res://NinjaSlayer/images/relics/PortableIrcTerminalRelic_large.png"
-    );
+    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For<PortableIrcTerminalRelic>();
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(3)

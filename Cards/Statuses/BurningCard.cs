@@ -23,9 +23,7 @@ public sealed class BurningCard : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = false;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Unplayable,

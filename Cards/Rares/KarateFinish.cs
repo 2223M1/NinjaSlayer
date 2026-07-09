@@ -19,9 +19,7 @@ public sealed class KarateFinish : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Multiplier", 6)

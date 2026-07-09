@@ -20,9 +20,7 @@ public sealed class Injection : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse shuriken-throw art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ShurikenThrow.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenThrow");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new PowerVar<InjectionPower>(2)

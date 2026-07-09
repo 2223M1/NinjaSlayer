@@ -20,9 +20,7 @@ public sealed class NinjaGreeting : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ForgoStrength.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ForgoStrength");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

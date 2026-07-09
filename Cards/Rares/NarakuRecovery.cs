@@ -23,9 +23,7 @@ public sealed class NarakuRecovery : NarakuThemedCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse naraku art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/NarakuWithin.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("NarakuWithin");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

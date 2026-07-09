@@ -22,9 +22,7 @@ public sealed class AssassinationFist : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse combo fist art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ComboFist.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ComboFist");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(5),

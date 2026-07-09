@@ -22,9 +22,7 @@ public sealed class NinjaApathy : ModCardTemplate
 
     public override bool GainsBlock => true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/SmokeRead.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("SmokeRead");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(6, ValueProp.Move)

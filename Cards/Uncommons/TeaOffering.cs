@@ -23,9 +23,7 @@ public sealed class TeaOffering : ModCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/RestGuard.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("RestGuard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(5),

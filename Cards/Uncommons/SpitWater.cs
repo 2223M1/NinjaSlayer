@@ -23,9 +23,7 @@ public sealed class SpitWater : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse back-bridge art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/KarateFinish.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateFinish");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

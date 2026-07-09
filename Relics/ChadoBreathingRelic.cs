@@ -25,11 +25,7 @@ public class ChadoBreathingRelic : ModRelicTemplate
 
     public override RelicRarity Rarity => RelicRarity.Starter;
 
-    public override RelicAssetProfile AssetProfile => new(
-        IconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}.png",
-        IconOutlinePath: $"res://NinjaSlayer/images/relics/{GetType().Name}_outline.png",
-        BigIconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}_large.png"
-    );
+    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new HealVar(HealAmount)

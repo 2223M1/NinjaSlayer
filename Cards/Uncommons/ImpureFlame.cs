@@ -20,9 +20,7 @@ public sealed class ImpureFlame : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse burning art until this card gets dedicated card art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/BurningCard.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BurningCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1)

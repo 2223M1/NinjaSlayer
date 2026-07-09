@@ -20,9 +20,7 @@ public sealed class ShurikenStock : ModCardTemplate
 
     public override bool GainsBlock => true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(8, ValueProp.Move)

@@ -18,9 +18,7 @@ public sealed class HellTornado : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/DragonTornado.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("DragonTornado");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

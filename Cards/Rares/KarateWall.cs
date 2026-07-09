@@ -23,9 +23,7 @@ public sealed class KarateWall : ModCardTemplate
 
     public override bool GainsBlock => true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Retain

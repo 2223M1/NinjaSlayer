@@ -20,9 +20,7 @@ public sealed class NinjaSlayerBladeDance : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/BladeDance.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BladeDance");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(10, ValueProp.Move),

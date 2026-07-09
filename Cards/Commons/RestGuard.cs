@@ -23,9 +23,7 @@ public sealed class RestGuard : ModCardTemplate
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.Any(c => c is ChadoCard);
     protected override bool ShouldGlowGoldInternal => IsPlayable;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(13, ValueProp.Move)

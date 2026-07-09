@@ -19,9 +19,7 @@ public sealed class BladesCome : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse shuriken throw art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ShurikenThrow.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenThrow");
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromCard<ShurikenCard>()

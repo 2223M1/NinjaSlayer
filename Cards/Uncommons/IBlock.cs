@@ -24,9 +24,7 @@ public sealed class IBlock : ModCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse defend art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/DefendNinjaSlayer.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("DefendNinjaSlayer");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(12, ValueProp.Move)

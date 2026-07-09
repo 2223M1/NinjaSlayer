@@ -23,9 +23,7 @@ public sealed class IronShirt : ModCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/NinjaWall.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("NinjaWall");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(8, ValueProp.Move),

@@ -42,6 +42,8 @@ public class Entry
             NinjaSlayerRunData.Register(ModId);
         }
 
+        NinjaSlayerBalanceTelemetry.Register();
+
         RitsuLibFramework.CreateContentPack(ModId)
             .Character<NinjaSlayerCharacter>(character => character
                 .AddStartingCard<StrikeNinjaSlayer>(4, 0)

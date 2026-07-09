@@ -24,9 +24,7 @@ public sealed class StraightKi : ModCardTemplate
     protected override bool ShouldGlowGoldInternal =>
         CombatState?.HittableEnemies.Any(e => e.HasPower<WeakPower>() && e.HasPower<VulnerablePower>()) ?? false;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: $"res://NinjaSlayer/images/cards/{GetType().Name}.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

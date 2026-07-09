@@ -11,11 +11,7 @@ public sealed class NarakuWithinRelic : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
 
-    public override RelicAssetProfile AssetProfile => new(
-        IconPath: "res://NinjaSlayer/images/cards/NarakuWithin.png",
-        IconOutlinePath: "res://NinjaSlayer/images/cards/NarakuWithin.png",
-        BigIconPath: "res://NinjaSlayer/images/cards/NarakuWithin.png"
-    );
+    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.FromCardImage("NarakuWithin");
 
     public override async Task BeforeCombatStart()
     {

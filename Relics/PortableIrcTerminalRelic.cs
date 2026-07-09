@@ -1,4 +1,4 @@
-﻿using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using NinjaSlayer.Cards;
@@ -13,11 +13,7 @@ public sealed class PortableIrcTerminalRelic : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Uncommon;
 
-    public override RelicAssetProfile AssetProfile => new(
-        IconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}.png",
-        IconOutlinePath: $"res://NinjaSlayer/images/relics/{GetType().Name}_outline.png",
-        BigIconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}_large.png"
-    );
+    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     public override async Task BeforeHandDraw(MegaCrit.Sts2.Core.Entities.Players.Player player, PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Combat.ICombatState combatState)
     {

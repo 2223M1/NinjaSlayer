@@ -21,9 +21,7 @@ public sealed class MasochisticBliss : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse debuff-themed art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/BloodTears.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BloodTears");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Vigor", 3)

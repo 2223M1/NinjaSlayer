@@ -1,4 +1,4 @@
-﻿using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -12,11 +12,7 @@ public sealed class MaguroSushiRelic : ModRelicTemplate
     public override RelicRarity Rarity => RelicRarity.Rare;
     public override bool HasUponPickupEffect => true;
 
-    public override RelicAssetProfile AssetProfile => new(
-        IconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}.png",
-        IconOutlinePath: $"res://NinjaSlayer/images/relics/{GetType().Name}_outline.png",
-        BigIconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}_large.png"
-    );
+    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     public override async Task AfterObtained()
     {

@@ -20,9 +20,7 @@ public sealed class BackBridge : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse karate finish art until Back Bridge gets dedicated card art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/KarateFinish.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateFinish");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

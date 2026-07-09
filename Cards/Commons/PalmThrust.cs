@@ -20,9 +20,7 @@ public sealed class PalmThrust : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/Chop.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Chop");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),

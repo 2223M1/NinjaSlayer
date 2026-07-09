@@ -21,9 +21,7 @@ public sealed class HalfMoonCompassKick : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse sweep-kick art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/SweepKick.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("SweepKick");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(12, ValueProp.Move)

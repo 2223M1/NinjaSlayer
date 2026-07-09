@@ -21,9 +21,7 @@ public sealed class SenchaStorm : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/Meditation.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Meditation");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(8),

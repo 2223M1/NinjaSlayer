@@ -25,9 +25,7 @@ public sealed class MurderFist : ModCardTemplate
         CombatState?.HittableEnemies.Any(IsAtOrBelowHalfHp) ?? false;
 
     // ponytail: reuse combo fist art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ComboFist.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ComboFist");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(14, ValueProp.Move)

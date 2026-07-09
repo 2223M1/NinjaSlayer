@@ -1,4 +1,4 @@
-﻿using MegaCrit.Sts2.Core.Entities.Relics;
+using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Content;
@@ -13,11 +13,7 @@ public sealed class BlanketRelic : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;
 
-    public override RelicAssetProfile AssetProfile => new(
-        IconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}.png",
-        IconOutlinePath: $"res://NinjaSlayer/images/relics/{GetType().Name}_outline.png",
-        BigIconPath: $"res://NinjaSlayer/images/relics/{GetType().Name}_large.png"
-    );
+    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("NarakuLife", 3)

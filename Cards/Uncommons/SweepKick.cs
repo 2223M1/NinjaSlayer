@@ -22,9 +22,7 @@ public sealed class SweepKick : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/KarateFinish.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateFinish");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(7, ValueProp.Move),

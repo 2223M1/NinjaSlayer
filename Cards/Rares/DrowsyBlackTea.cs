@@ -19,9 +19,7 @@ public sealed class DrowsyBlackTea : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ChadoCard.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

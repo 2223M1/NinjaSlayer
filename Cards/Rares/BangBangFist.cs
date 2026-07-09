@@ -23,9 +23,7 @@ public sealed class BangBangFist : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse combo fist art until Bang Bang Fist gets dedicated card art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/ComboFist.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ComboFist");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(4, ValueProp.Move),

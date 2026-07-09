@@ -18,9 +18,7 @@ public sealed class NinjaSlayerFootwork : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/Footwork.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Footwork");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("DrawThreshold", 12),

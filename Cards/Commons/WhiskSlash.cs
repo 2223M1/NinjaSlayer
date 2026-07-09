@@ -21,9 +21,7 @@ public sealed class WhiskSlash : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => new(
-        PortraitPath: "res://NinjaSlayer/images/cards/BrewTea.png"
-    );
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BrewTea");
 
     protected override bool ShouldGlowGoldInternal =>
         NinjaSlayerActions.ChadoInHandCount(Owner) > 0;
