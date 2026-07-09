@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -36,8 +37,8 @@ public sealed class Riffle : ModCardTemplate
         new RepeatVar(3),
         new CalculationBaseVar(0),
         new CalculationExtraVar(1),
-        new CalculatedVar("StrengthLoss").WithMultiplier((_, target) =>
-            target?.GetPowerAmount<KaratePower>() ?? 0)
+        new CalculatedVar("StrengthLoss").WithMultiplier((card, target) =>
+            KarateForecastCalculator.RemainingKarateAfterTriggers(target, card))
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -50,15 +51,16 @@ public sealed class Riffle : ModCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        int strengthLoss = (int)((CalculatedVar)DynamicVars["StrengthLoss"]).Calculate(cardPlay.Target);
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(DynamicVars.Repeat.IntValue)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
 
+        int strengthLoss = cardPlay.Target.GetPowerAmount<KaratePower>();
         if (strengthLoss > 0)
         {
             await PowerCmd.Apply<RiffleStrengthDownPower>(

@@ -37,6 +37,7 @@ public sealed class SweepKick : ModCardTemplate
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Sweep Kick requires combat."))
             .Execute(choiceContext);

@@ -9,6 +9,8 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public static class FastAttackAnimation
 {
     private const float AnimationDuration = 0.24f;
+    private const float OriginalAnimationDuration = 0.4f;
+    private const float LungeDistance = NinjaSlayerCombatVisuals.AttackLungeDistance * OriginalAnimationDuration / AnimationDuration;
 
     public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
@@ -32,7 +34,7 @@ public static class FastAttackAnimation
                 {
                     var t = timer / 1f * 2f;
                     var easedT = t * t * (3f - 2f * t);
-                    xOffset = Mathf.Lerp(0f, NinjaSlayerCombatVisuals.AttackLungeDistance, easedT);
+                    xOffset = Mathf.Lerp(0f, LungeDistance, easedT);
                 }
 
                 creatureNode.Position = new Vector2(originalPos.X + xOffset * direction, originalPos.Y);

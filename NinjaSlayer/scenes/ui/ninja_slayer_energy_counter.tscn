@@ -1,12 +1,12 @@
 [gd_scene load_steps=10 format=3]
 
-[ext_resource type="Script" path="res://src/Core/Nodes/Combat/NEnergyCounter.cs" id="1_counter"]
+[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerNEnergyCounter.cs" id="1_counter"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/ninjaslayer_orb_layer_1.png" id="2_layer1"]
 [ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/vfx/energy/ironclad/ironclad_energy_vfx_back.tscn" id="2_back"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/ninjaslayer_orb_layer_2.png" id="3_layer2"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/ninjaslayer_orb_layer_3.png" id="4_layer3"]
 [ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/vfx/energy/ironclad/ironclad_energy_vfx_front.tscn" id="5_front"]
-[ext_resource type="Script" path="res://addons/mega_text/MegaLabel.cs" id="6_label"]
+[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerMegaLabel.cs" id="6_label"]
 [ext_resource type="FontVariation" path="res://NinjaSlayer/themes/kreon_bold_shared.tres" id="7_font"]
 
 [sub_resource type="FontVariation" id="FontVariation_x0k5t"]

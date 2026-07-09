@@ -71,6 +71,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
         var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim(AttackerAnimTrigger, Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target);
         await command.Execute(choiceContext);

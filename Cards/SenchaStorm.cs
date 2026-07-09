@@ -37,6 +37,7 @@ public sealed class SenchaStorm : ModCardTemplate
     {
         await DamageCmd.Attack(DynamicVars.CalculatedDamage)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Sencha Storm requires combat."))
             .Execute(choiceContext);

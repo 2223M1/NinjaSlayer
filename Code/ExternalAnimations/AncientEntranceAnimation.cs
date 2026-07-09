@@ -11,7 +11,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public static class AncientEntranceAnimation
 {
     private const float SlideDuration = 0.5f;
-    private const float FallDuration = 0.3f;
+    private const float FallDuration = 0.6f;
     private const float RiseDuration = 0.2f;
     private const float FallDistance = 900f;
     private const float SideOffset = 1400f;
@@ -79,7 +79,7 @@ public static class AncientEntranceAnimation
         {
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
-            await ByrdFallAnimation.Play(creature, FallDistance);
+            await ByrdFallAnimation.Play(creature, FallDistance, FallDuration);
         }
         finally
         {
@@ -102,7 +102,7 @@ public static class AncientEntranceAnimation
             body.RotationDegrees = snapshot.BodyRotationDegrees + 180f;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
 
-            await ByrdFallAnimation.Play(creature, FallDistance);
+            await ByrdFallAnimation.Play(creature, FallDistance, FallDuration);
             await Task.WhenAll(
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, RiseDuration, Tween.EaseType.Out, Tween.TransitionType.Quad),
                 TweenBodyRotation(body, snapshot.BodyRotationDegrees + 360f, RiseDuration));
@@ -131,7 +131,7 @@ public static class AncientEntranceAnimation
 
             await Task.WhenAll(
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, FallDuration, Tween.EaseType.In, Tween.TransitionType.Quad),
-                ByrdFallAnimation.Play(creature, FallDistance));
+                ByrdFallAnimation.Play(creature, FallDistance, FallDuration));
         }
         finally
         {

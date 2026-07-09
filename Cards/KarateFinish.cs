@@ -39,6 +39,7 @@ public sealed class KarateFinish : ModCardTemplate
             await PowerCmd.Remove(karate);
         }
 
+        NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target);
         await CreatureCmd.Damage(choiceContext, cardPlay.Target, amount * DynamicVars["Multiplier"].BaseValue, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this, cardPlay);
     }
 

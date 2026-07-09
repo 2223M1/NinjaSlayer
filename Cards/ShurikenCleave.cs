@@ -40,6 +40,7 @@ public sealed class ShurikenCleave : ModCardTemplate
         await JumpAnimation.Play(Owner.Creature);
         await DamageCmd.Attack(DynamicVars.CalculatedDamage)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Shuriken Cleave requires combat."))
             .Execute(choiceContext);
     }

@@ -13,7 +13,7 @@ public static class ByrdFallAnimation
     private const float Duration = 0.3f;
     public const float SquashDuration = 0.15f;
 
-    public static async Task Play(Creature creature, float fallDistance)
+    public static async Task Play(Creature creature, float fallDistance, float duration = Duration)
     {
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null) return;
@@ -28,7 +28,7 @@ public static class ByrdFallAnimation
 
         var tween = creatureNode.CreateTween();
         tween.TweenProperty(anchor, "position:y",
-                originalPos.Y + fallDistance, Duration)
+                originalPos.Y + fallDistance, duration)
             .SetEase(Tween.EaseType.In)
             .SetTrans(Tween.TransitionType.Quad);
 

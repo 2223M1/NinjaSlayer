@@ -65,6 +65,18 @@ public static class KarateForecastCalculator
         return triggers * (2 * stack - triggers + 1) / 2;
     }
 
+    public static int RemainingKarateAfterTriggers(Creature? target, CardModel card)
+    {
+        int karate = target?.GetPowerAmount<KaratePower>() ?? 0;
+        if (karate <= 0)
+        {
+            return 0;
+        }
+
+        int hits = ResolveHitCount(card, target);
+        return Math.Max(0, karate - Math.Min(karate, hits));
+    }
+
     public static int ResolveHitCount(CardModel card, Creature? target)
     {
         if (card is NinjaSlayerXAttackCard xAttackCard)

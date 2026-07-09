@@ -36,6 +36,7 @@ public sealed class PalmThrust : ModCardTemplate
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(DynamicVars.Repeat.IntValue)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingRandomOpponents(CombatState ?? throw new InvalidOperationException("Palm Thrust requires combat."))
             .Execute(choiceContext);

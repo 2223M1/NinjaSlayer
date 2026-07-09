@@ -48,7 +48,7 @@
   "NINJA_SLAYER_CARD_RED_BLACK_FLAME.title": "赤黑",
   "NINJA_SLAYER_CARD_RED_BLACK_FLAME.description": "[gold]化身奈落[/gold]。\n手中的所有攻击牌获得[gold]消耗[/gold]，并附魔[gold]黑炎[/gold]。",
   "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.title": "一心同体",
-  "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.description": "本场战斗不能再进入[gold]奈落[/gold]；每次试图进入[gold]奈落[/gold]，改为获得{Energy:diff()}点能量，抽{Cards:diff()}张牌，并获得6点[gold]奈落生命[/gold]。",
+  "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.description": "本场战斗不能再进入[gold]奈落[/gold]；每次试图进入[gold]奈落[/gold]，改为获得{Energy:diff()}点能量，抽{Cards:diff()}张牌，并获得12点[gold]奈落生命[/gold]。",
   "NINJA_SLAYER_CARD_NARAKU_RECOVERY.title": "奈落回血",
   "NINJA_SLAYER_CARD_NARAKU_RECOVERY.description": "[gold]化身奈落[/gold]。\n获得{Life:diff()}层[gold]奈落生命[/gold]。\n获得{Block:diff()}点[gold]格挡[/gold]。\n[gold]消耗[/gold]。",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "直气",

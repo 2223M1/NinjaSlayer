@@ -15,12 +15,15 @@ namespace NinjaSlayer.Content;
 
 public static class NinjaSlayerActions
 {
+    private const int NarakuEntryLife = 12;
+    private const int OneBodyOneSoulNarakuLife = 12;
+
     public static async Task EnsureNarakuForm(PlayerChoiceContext choiceContext, Player player)
     {
         if (player.Creature.HasPower<OneBodyOneSoulPower>())
         {
             await GrantNarakuEntryBonus(choiceContext, player);
-            await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, 6, player.Creature, null);
+            await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, OneBodyOneSoulNarakuLife, player.Creature, null);
             return;
         }
 
@@ -30,7 +33,7 @@ public static class NinjaSlayerActions
         }
 
         await PowerCmd.Apply<NarakuPower>(choiceContext, player.Creature, 1, player.Creature, null);
-        await GrantNarakuEntryBonus(choiceContext, player);
+        await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, NarakuEntryLife, player.Creature, null);
     }
 
     private static async Task GrantNarakuEntryBonus(PlayerChoiceContext choiceContext, Player player)
