@@ -2,8 +2,10 @@ using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Content;
@@ -17,6 +19,12 @@ public static class NinjaSlayerCombatVfx
 
     public static AttackCommand WithHeavyBluntHitFx(this AttackCommand command) =>
         command.WithHitFx(VfxCmd.heavyBluntPath, null, TmpSfx.heavyAttack);
+
+    public static async Task<AttackCommand> ExecuteWithoutScreenShake(this AttackCommand command, PlayerChoiceContext? choiceContext)
+    {
+        using var _ = ScreenShakeSuppressionContext.Suppress();
+        return await command.Execute(choiceContext);
+    }
 
     public static void PlayDefectStrikeHitFx(Creature target)
     {

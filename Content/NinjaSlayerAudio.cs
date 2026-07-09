@@ -8,7 +8,7 @@ public static class NinjaSlayerAudio
     private const string Root = "event:/NinjaSlayerAudio/sfx";
     private const string NinjaSlayerRoot = Root + "/ninja_slayer";
     private const string NarakuRoot = Root + "/naraku";
-    private const string PangbaiRoot = Root + "/pangbai";
+    public const string PangbaiRoot = Root + "/pangbai";
 
     public const string NinjaSlayerFastAttackEvent = NinjaSlayerRoot + "/ninja_slayer_fast_attack";
     public const string NinjaSlayerSlowAttackEvent = NinjaSlayerRoot + "/ninja_slayer_slow_attack";

@@ -222,6 +222,7 @@ public static class NinjaSlayerActions
         }
 
         int extraDamage = karate.Amount;
+        using var _ = ScreenShakeSuppressionContext.Suppress();
         await CreatureCmd.Damage(choiceContext, target, extraDamage, ValueProp.Unpowered, dealer);
 
         ICombatState? combatState = target.CombatState ?? dealer.CombatState;
