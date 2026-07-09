@@ -2,8 +2,8 @@ namespace NinjaSlayer.Content;
 
 public static class NinjaSlayerAudio
 {
-    public const string BankPath = "res://NinjaSlayer/audio/fmod/NinjaSlayer.bank";
-    public const string GuidMappingsPath = "res://NinjaSlayer/audio/fmod/GUIDs.txt";
+    public const string BankPath = NinjaSlayerAssetPaths.FmodRoot + "/NinjaSlayer.bank";
+    public const string GuidMappingsPath = NinjaSlayerAssetPaths.FmodRoot + "/GUIDs.txt";
 
     private const string Root = "event:/NinjaSlayerAudio/sfx";
     private const string NinjaSlayerRoot = Root + "/ninja_slayer";

@@ -6,18 +6,48 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <NoWarn>$(NoWarn);MSB3270</NoWarn>
 
     <!-- Build against the same game version you ship to players (Steam-update before release builds). -->
-    <Sts2Dir>C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2Dir>
-      <!-- 新增 -->
-    <GodotExe>C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
-    <Sts2DataDir>$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
     <PostBuildModDir>$(MSBuildProjectDirectory)\build\mods\$(MSBuildProjectName)\</PostBuildModDir>
-    <SteamModDir>$(Sts2Dir)\mods\$(MSBuildProjectName)\</SteamModDir>
     <FmodDesktopBank>$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\desktop\NinjaSlayer.bank</FmodDesktopBank>
     <FmodRootBank>$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\NinjaSlayer.bank</FmodRootBank>
+    <GodotExportPreset Condition="'$(GodotExportPreset)' == ''">Windows Desktop</GodotExportPreset>
   </PropertyGroup>
-    
+
+  <PropertyGroup>
+    <IsWindows>false</IsWindows>
+    <IsLinux>false</IsLinux>
+    <IsOSX>false</IsOSX>
+    <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
+    <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
+    <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsWindows)' == 'true'">
+    <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">C:\Program Files (x86)\Steam\steamapps</SteamLibraryPath>
+    <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)\common\Slay the Spire 2</Sts2Dir>
+    <GodotExe Condition="'$(GodotExe)' == ''">C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
+    <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)\mods\$(MSBuildProjectName)\</SteamModDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsLinux)' == 'true'">
+    <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/.local/share/Steam/steamapps</SteamLibraryPath>
+    <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Dir>
+    <GodotExe Condition="'$(GodotExe)' == ''">$(SteamLibraryPath)/common/Godot Engine/godot.x11.opt.tools.64</GodotExe>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
+    <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)/mods/$(MSBuildProjectName)/</SteamModDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsOSX)' == 'true'">
+    <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps</SteamLibraryPath>
+    <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Dir>
+    <GodotExe Condition="'$(GodotExe)' == ''">$(HOME)/Applications/Godot_mono.app/Contents/MacOS/Godot</GodotExe>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</Sts2DataDir>
+    <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/$(MSBuildProjectName)/</SteamModDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="sts2">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
@@ -25,17 +55,17 @@
 
     <Reference Include="0Harmony">
       <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
-    </Reference>        
-      
-    <!-- NuGet获取 -->
+    </Reference>
+
+    <!-- NuGet package. -->
     <PackageReference Include="STS2.RitsuLib" Version="0.4.46">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <!-- 如果你在其他版本开发，自由指定兼容版本 -->
+    <!-- If you develop against another game version, specify the matching compatibility package. -->
     <!-- <PackageReference Include=" STS2.RitsuLib.Compat.0.103.2 " Version="*" /> -->
   </ItemGroup>
-    
+
   <Target Name="Copy Mod" AfterTargets="PostBuildEvent">
     <Message Text="Copying mod to $(PostBuildModDir)..." Importance="high" />
     <MakeDir Directories="$(PostBuildModDir)" />
@@ -55,13 +85,12 @@
              Condition="!Exists('$(FmodDesktopBank)') and !Exists('$(FmodRootBank)')" />
   </Target>
 
-  <!-- 新增 -->
   <Target Name="ExportPck" AfterTargets="Build" Condition="'$(IsInnerGodotExport)' != 'true' and Exists('$(GodotExe)')">
     <Message Text="Exporting PCK to $(PostBuildModDir)..." Importance="high" />
     <MakeDir Directories="$(PostBuildModDir)" />
-    <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(PostBuildModDir)$(MSBuildProjectName).pck&quot;"
-      EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
-      ContinueOnError="WarnAndContinue" />
+    <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;$(GodotExportPreset)&quot; &quot;$(PostBuildModDir)$(MSBuildProjectName).pck&quot;"
+          EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
+          ContinueOnError="WarnAndContinue" />
   </Target>
 
   <Target Name="ValidateModOutput" AfterTargets="ExportPck" Condition="'$(IsInnerGodotExport)' != 'true'">
