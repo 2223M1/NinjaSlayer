@@ -25,7 +25,7 @@ public sealed class ShurikenStock : ModCardTemplate
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new BlockVar(9, ValueProp.Move)
+        new BlockVar(8, ValueProp.Move)
     ];
 
     public ShurikenStock() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
