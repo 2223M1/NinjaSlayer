@@ -95,17 +95,22 @@ public static class AncientEntranceAnimation
         }
 
         Vector2 landingPos = snapshot.CreaturePosition + new Vector2(LeftLandingOffset, 0f);
+        float invertedRotationDegrees = snapshot.BodyRotationDegrees + 180f;
+        float uprightRotationDegrees = snapshot.BodyRotationDegrees + 360f;
         try
         {
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             creatureNode.Position = landingPos;
-            body.RotationDegrees = snapshot.BodyRotationDegrees + 180f;
+            body.RotationDegrees = invertedRotationDegrees;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
 
-            await ByrdFallAnimation.Play(creature, FallDistance, FallDuration);
+            await Task.WhenAll(
+                ByrdFallAnimation.Play(creature, FallDistance, FallDuration),
+                HoldBodyRotation(body, invertedRotationDegrees, FallDuration));
+            body.RotationDegrees = invertedRotationDegrees;
             await Task.WhenAll(
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, RiseDuration, Tween.EaseType.Out, Tween.TransitionType.Quad),
-                TweenBodyRotation(body, snapshot.BodyRotationDegrees + 360f, RiseDuration));
+                TweenBodyRotation(body, uprightRotationDegrees, RiseDuration));
         }
         finally
         {
@@ -187,6 +192,21 @@ public static class AncientEntranceAnimation
         tween.TweenProperty(body, "rotation_degrees", targetDegrees, duration)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
+
+        await body.ToSignal(tween, Tween.SignalName.Finished);
+    }
+
+    private static async Task HoldBodyRotation(Node2D body, float rotationDegrees, float duration)
+    {
+        var tween = body.CreateTween();
+        tween.TweenMethod(
+            Callable.From<float>(_ =>
+            {
+                body.RotationDegrees = rotationDegrees;
+            }),
+            0f,
+            1f,
+            duration);
 
         await body.ToSignal(tween, Tween.SignalName.Finished);
     }
