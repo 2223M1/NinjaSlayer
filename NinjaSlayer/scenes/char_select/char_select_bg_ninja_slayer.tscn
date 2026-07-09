@@ -94,10 +94,10 @@ stretch_mode = 5
 [node name="CharacterRoot" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 1233.928
-offset_top = 37.349
-offset_right = 2156.928
-offset_bottom = 1431.349
+offset_left = 1234.928
+offset_top = 38.349
+offset_right = 2157.928
+offset_bottom = 1432.349
 scale = Vector2(0.72, 0.72)
 mouse_filter = 2
 
