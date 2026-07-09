@@ -29,6 +29,8 @@
   "NINJA_SLAYER_CARD_GUARDED_BREATH.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n选择手牌中1张牌，附魔[gold]完美契合[/gold]。",
   "NINJA_SLAYER_CARD_SMOKE_READ.title": "烟读",
   "NINJA_SLAYER_CARD_SMOKE_READ.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n[gold]预见[/gold]{Cards:diff()}。",
+  "NINJA_SLAYER_CARD_NINJA_APATHY.title": "忍者冷漠",
+  "NINJA_SLAYER_CARD_NINJA_APATHY.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将你在本回合打出的下一张牌放置到你的[gold]抽牌堆[/gold]顶部。",
   "NINJA_SLAYER_CARD_SHURIKEN_THROW.title": "投剑",
   "NINJA_SLAYER_CARD_SHURIKEN_THROW.description": "造成{Damage:diff()}点伤害。\n将1张{IfUpgraded:show:[gold]手里剑+[/gold]|[gold]手里剑[/gold]}洗入抽牌堆。",
   "NINJA_SLAYER_CARD_STARLESS_NIGHT.title": "无星之夜",
