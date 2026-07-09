@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
@@ -44,9 +45,13 @@ public sealed class KarateWall : ModCardTemplate
             return false;
         }
 
-        int karateEnemies = CombatState.HittableEnemies.Count(e => e.HasPower<KaratePower>());
-        modifiedCost = originalCost - karateEnemies;
-        return karateEnemies > 0;
+        int karateCreatures = CombatState.Creatures.Count(creature =>
+        {
+            KaratePower? karate = creature.GetPower<KaratePower>();
+            return karate != null && karate.Amount > 0;
+        });
+        modifiedCost = originalCost - karateCreatures;
+        return karateCreatures > 0;
     }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
