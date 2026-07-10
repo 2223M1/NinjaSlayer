@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -52,6 +53,7 @@ public static class AlabamaDropAnimation
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
             targetRig.Body.RotationDegrees = targetInvertedRotation;
 
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await Task.WhenAll(
                 ByrdFallAnimation.Play(owner, RiseDistance, FallDuration, playImpact: true, onImpact),
                 ByrdFallAnimation.Play(target, RiseDistance, FallDuration, playImpact: false),

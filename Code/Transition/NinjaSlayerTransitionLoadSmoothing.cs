@@ -5,7 +5,7 @@ namespace NinjaSlayer.Code.Transition;
 
 public static class NinjaSlayerTransitionLoadSmoothing
 {
-    internal const int FinalizeBatchSize = 2;
+    internal const int FinalizeBatchSize = 1;
 
     private static long animationStartedAt;
     private static int finalizedResourceCount;
