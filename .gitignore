@@ -1,5 +1,7 @@
 # Godot generated cache
 .godot/
+*.cs.uid
+!Code/Nodes/NNinjaSlayerGroundFireVfx.cs.uid
 
 # .NET build output
 bin/
