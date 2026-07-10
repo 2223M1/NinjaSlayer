@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Content;
 
@@ -41,13 +42,27 @@ public static class NinjaSlayerCombatVfx
 
         foreach (Creature target in targets)
         {
-            NNinjaSlayerGroundFireVfx? vfx = NNinjaSlayerGroundFireVfx.Create(target);
-            if (vfx is not null)
+            try
             {
-                NCombatRoom.Instance.CombatVfxContainer.AddChildSafely(vfx);
+                NNinjaSlayerGroundFireVfx? vfx = NNinjaSlayerGroundFireVfx.Create(target);
+                if (vfx is not null)
+                {
+                    NCombatRoom.Instance.CombatVfxContainer.AddChildSafely(vfx);
+                }
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn($"Failed to play burn feedback for {target.GetType().Name}: {ex}");
             }
         }
 
-        SfxCmd.Play(BurnDamageSfx);
+        try
+        {
+            SfxCmd.Play(BurnDamageSfx);
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn($"Failed to play burn feedback audio: {ex}");
+        }
     }
 }

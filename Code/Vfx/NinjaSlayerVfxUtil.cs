@@ -1,34 +1,38 @@
-using System.Collections.Concurrent;
 using Godot;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Vfx;
 
 public static class NinjaSlayerVfxUtil
 {
-    public static readonly ConcurrentDictionary<string, PackedScene> ModSceneCache = new();
-
-    public static T GenVfxNode<T>(string scenePath) where T : Node2D
+    public static T? TryGenVfxNode<T>(string scenePath) where T : Node2D
     {
-        if (ModSceneCache.TryGetValue(scenePath, out PackedScene? cached))
+        try
         {
-            return cached.Instantiate<T>(PackedScene.GenEditState.Disabled);
-        }
-
-        PackedScene scene = GD.Load<PackedScene>(scenePath);
-        ModSceneCache[scenePath] = scene;
-        return scene.Instantiate<T>(PackedScene.GenEditState.Disabled);
-    }
-
-    public static void EnsureCached(IEnumerable<string> scenePaths)
-    {
-        foreach (string path in scenePaths)
-        {
-            if (ModSceneCache.ContainsKey(path))
+            PackedScene? scene = ResourceLoader.Load<PackedScene>(
+                scenePath,
+                null,
+                ResourceLoader.CacheMode.Reuse);
+            if (scene == null || !GodotObject.IsInstanceValid(scene))
             {
-                continue;
+                scene = ResourceLoader.Load<PackedScene>(
+                    scenePath,
+                    null,
+                    ResourceLoader.CacheMode.Replace);
             }
 
-            ModSceneCache[path] = GD.Load<PackedScene>(path);
+            if (scene == null || !GodotObject.IsInstanceValid(scene))
+            {
+                Entry.Logger.Warn($"Unable to load VFX scene: {scenePath}");
+                return null;
+            }
+
+            return scene.Instantiate<T>(PackedScene.GenEditState.Disabled);
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn($"Failed to instantiate VFX scene '{scenePath}': {ex}");
+            return null;
         }
     }
 }

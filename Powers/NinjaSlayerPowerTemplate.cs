@@ -7,4 +7,5 @@ namespace NinjaSlayer.Powers;
 [RegisterPower(Inherit = true)]
 public abstract class NinjaSlayerPowerTemplate : ModPowerTemplate
 {
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 }

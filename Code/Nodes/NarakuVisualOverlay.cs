@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -21,6 +22,18 @@ public partial class NarakuVisualOverlay : Sprite2D
     private string? activeTexturePath;
 
     public static void Sync(Creature creature)
+    {
+        try
+        {
+            SyncCore(creature);
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn($"Failed to synchronize Naraku visual overlay: {ex}");
+        }
+    }
+
+    private static void SyncCore(Creature creature)
     {
         NinjaSlayerVisualRig.SyncShadowScale(creature);
 
