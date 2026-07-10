@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Assets;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Vfx;
@@ -9,19 +10,8 @@ public static class NinjaSlayerVfxUtil
     {
         try
         {
-            PackedScene? scene = ResourceLoader.Load<PackedScene>(
-                scenePath,
-                null,
-                ResourceLoader.CacheMode.Reuse);
-            if (scene == null || !GodotObject.IsInstanceValid(scene))
-            {
-                scene = ResourceLoader.Load<PackedScene>(
-                    scenePath,
-                    null,
-                    ResourceLoader.CacheMode.Replace);
-            }
-
-            if (scene == null || !GodotObject.IsInstanceValid(scene))
+            PackedScene scene = PreloadManager.Cache.GetScene(scenePath);
+            if (!GodotObject.IsInstanceValid(scene))
             {
                 Entry.Logger.Warn($"Unable to load VFX scene: {scenePath}");
                 return null;
