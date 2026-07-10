@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class IHit : ModCardTemplate
+public sealed class IHit : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Attack;
@@ -24,7 +23,7 @@ public sealed class IHit : ModCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(12, ValueProp.Move),
-        new DynamicVar("Energy", 2)
+        new EnergyVar(2)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -47,7 +46,7 @@ public sealed class IHit : ModCardTemplate
 
         if (NinjaSlayerActions.ChadoExhaustedThisTurn(this))
         {
-            await PlayerCmd.GainEnergy(DynamicVars["Energy"].BaseValue, Owner);
+            await PlayerCmd.GainEnergy(DynamicVars.Energy.BaseValue, Owner);
         }
     }
 

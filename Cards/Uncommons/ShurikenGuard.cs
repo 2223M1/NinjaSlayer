@@ -9,8 +9,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ShurikenGuard : ModCardTemplate
+public sealed class ShurikenGuard : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Skill;
@@ -25,7 +24,7 @@ public sealed class ShurikenGuard : ModCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(9, ValueProp.Move),
-        new DynamicVar("Shuriken", 1)
+        new ShurikenVar(1)
     ];
 
     public ShurikenGuard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -34,7 +33,7 @@ public sealed class ShurikenGuard : ModCardTemplate
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-        await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars["Shuriken"].IntValue, PileType.Hand);
+        await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars.Shuriken().IntValue, PileType.Hand);
     }
 
     protected override void OnUpgrade()

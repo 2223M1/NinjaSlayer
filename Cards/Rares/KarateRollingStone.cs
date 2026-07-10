@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class KarateRollingStone : ModCardTemplate
+public sealed class KarateRollingStone : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Power;
@@ -23,7 +22,7 @@ public sealed class KarateRollingStone : ModCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KataDrill");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Karate", 4)
+        new KarateVar(4)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -38,13 +37,13 @@ public sealed class KarateRollingStone : ModCardTemplate
         await PowerCmd.Apply<KarateRollingStonePower>(
             choiceContext,
             Owner.Creature,
-            DynamicVars["Karate"].BaseValue,
+            DynamicVars.Karate().BaseValue,
             Owner.Creature,
             this);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Karate"].UpgradeValueBy(1);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

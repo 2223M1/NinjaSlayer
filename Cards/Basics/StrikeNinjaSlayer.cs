@@ -9,16 +9,13 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class StrikeNinjaSlayer : ModCardTemplate
+public sealed class StrikeNinjaSlayer : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Attack;
     private const CardRarity rarity = CardRarity.Basic;
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
-
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override HashSet<CardTag> CanonicalTags => [
         CardTag.Strike

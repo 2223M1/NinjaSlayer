@@ -8,8 +8,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class MatchaRush : ModCardTemplate
+public sealed class MatchaRush : NinjaSlayerCardTemplate
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Skill;
@@ -25,7 +24,7 @@ public sealed class MatchaRush : ModCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Chado", 2)
+        new ChadoVar(2)
     ];
 
     public MatchaRush() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -33,11 +32,11 @@ public sealed class MatchaRush : ModCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
-        await NinjaSlayerActions.AddGeneratedCards<ChadoCard>(Owner, DynamicVars["Chado"].IntValue, PileType.Hand);
+        await NinjaSlayerActions.AddGeneratedCards<ChadoCard>(Owner, DynamicVars.Chado().IntValue, PileType.Hand);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Chado"].UpgradeValueBy(1);
+        DynamicVars.Chado().UpgradeValueBy(1);
     }
 }

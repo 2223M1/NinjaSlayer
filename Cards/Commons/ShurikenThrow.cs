@@ -11,16 +11,13 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ShurikenThrow : ModCardTemplate
+public sealed class ShurikenThrow : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Attack;
     private const CardRarity rarity = CardRarity.Common;
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
-
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(10, ValueProp.Move)

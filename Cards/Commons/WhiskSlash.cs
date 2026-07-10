@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class WhiskSlash : ModCardTemplate
+public sealed class WhiskSlash : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Attack;

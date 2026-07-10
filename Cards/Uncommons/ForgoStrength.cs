@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ForgoStrength : ModCardTemplate
+public sealed class ForgoStrength : NinjaSlayerCardTemplate
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Skill;
@@ -20,15 +19,13 @@ public sealed class ForgoStrength : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Strength", 2),
-        new DynamicVar("Energy", 2)
+        new EnergyVar(2)
     ];
 
     public ForgoStrength() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -42,11 +39,11 @@ public sealed class ForgoStrength : ModCardTemplate
         }
 
         await PowerCmd.Apply<StrengthPower>(choiceContext, Owner.Creature, -DynamicVars["Strength"].BaseValue, Owner.Creature, this);
-        await PlayerCmd.GainEnergy(DynamicVars["Energy"].BaseValue, Owner);
+        await PlayerCmd.GainEnergy(DynamicVars.Energy.BaseValue, Owner);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Energy"].UpgradeValueBy(1);
+        DynamicVars.Energy.UpgradeValueBy(1);
     }
 }

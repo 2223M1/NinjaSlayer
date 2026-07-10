@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class HalfMoonCompassKick : ModCardTemplate
+public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Attack;

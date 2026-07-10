@@ -12,8 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class KarateWall : ModCardTemplate
+public sealed class KarateWall : NinjaSlayerCardTemplate
 {
     private const int energyCost = 3;
     private const CardType type = CardType.Skill;
@@ -23,14 +22,12 @@ public sealed class KarateWall : ModCardTemplate
 
     public override bool GainsBlock => true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Retain
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Karate", 6)
+        new KarateVar(6)
     ];
 
     public KarateWall() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -56,7 +53,7 @@ public sealed class KarateWall : ModCardTemplate
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await CreatureCmd.GainBlock(Owner.Creature, Owner.Creature.Block, ValueProp.Unpowered | ValueProp.Move, cardPlay);
-        await PowerCmd.Apply<KarateWallPower>(choiceContext, Owner.Creature, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KarateWallPower>(choiceContext, Owner.Creature, DynamicVars.Karate().BaseValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()

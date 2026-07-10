@@ -12,8 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class IBlock : ModCardTemplate
+public sealed class IBlock : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Skill;

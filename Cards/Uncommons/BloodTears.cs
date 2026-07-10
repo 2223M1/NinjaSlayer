@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class BloodTears : ModCardTemplate
+public sealed class BloodTears : NinjaSlayerCardTemplate
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Power;
@@ -19,29 +18,27 @@ public sealed class BloodTears : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Energy", 3),
+        new EnergyVar(3),
         new CardsVar(2),
-        new DynamicVar("Karate", 3)
+        new KarateVar(3)
     ];
 
     public BloodTears() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await PlayerCmd.GainEnergy(DynamicVars["Energy"].BaseValue, Owner);
+        await PlayerCmd.GainEnergy(DynamicVars.Energy.BaseValue, Owner);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
-        await PowerCmd.Apply<BloodTearsPower>(choiceContext, Owner.Creature, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<BloodTearsPower>(choiceContext, Owner.Creature, DynamicVars.Karate().BaseValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Karate"].UpgradeValueBy(1);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

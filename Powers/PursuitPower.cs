@@ -12,13 +12,10 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-[RegisterPower]
-public sealed class PursuitPower : ModPowerTemplate
+public sealed class PursuitPower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
-
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
 
     public int EnergyReward

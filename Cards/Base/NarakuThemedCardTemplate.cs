@@ -6,7 +6,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-public abstract class NarakuThemedCardTemplate : ModCardTemplate
+public abstract class NarakuThemedCardTemplate : NinjaSlayerCardTemplate
 {
     protected NarakuThemedCardTemplate(
         int energyCost,

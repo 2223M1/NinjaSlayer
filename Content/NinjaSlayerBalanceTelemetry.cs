@@ -39,7 +39,8 @@ public static class NinjaSlayerBalanceTelemetry
                 Requests =
                 [
                     TelemetryRequest.RunHistory(
-                        ModSettingsText.Literal("Run History"),
+                        ModSettingsText.Literal(
+                            "Completed run history, including card reward choices, final decks and victory results, for balance analysis."),
                         sharedContributionSubscriptions: [BalanceContextContributionId],
                         captureFilter: evt =>
                             !evt.IsAbandoned
@@ -69,7 +70,8 @@ public static class NinjaSlayerBalanceTelemetry
         {
             return new JsonObject
             {
-                ["version"] = typeof(Entry).Assembly.GetName().Version?.ToString(),
+                ["version"] = NinjaSlayerVersion.Current,
+                ["balance_schema"] = "ninja_slayer_run_history_v1",
             };
         }
     }

@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ReadyBlade : ModCardTemplate
+public sealed class ReadyBlade : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Skill;
@@ -19,11 +18,9 @@ public sealed class ReadyBlade : ModCardTemplate
     private const TargetType targetType = TargetType.Self;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(3),
-        new DynamicVar("Shuriken", 3)
+        new ShurikenVar(3)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -36,12 +33,12 @@ public sealed class ReadyBlade : ModCardTemplate
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
-        await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars["Shuriken"].IntValue, PileType.Draw, position: CardPilePosition.Top);
+        await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars.Shuriken().IntValue, PileType.Draw, position: CardPilePosition.Top);
     }
 
     protected override void OnUpgrade()
     {
         DynamicVars.Cards.UpgradeValueBy(1);
-        DynamicVars["Shuriken"].UpgradeValueBy(1);
+        DynamicVars.Shuriken().UpgradeValueBy(1);
     }
 }

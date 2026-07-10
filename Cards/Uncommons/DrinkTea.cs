@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class DrinkTea : ModCardTemplate
+public sealed class DrinkTea : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Power;
@@ -23,7 +22,7 @@ public sealed class DrinkTea : ModCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Vigor", 6)
+        new VigorAmountVar(6)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -37,13 +36,13 @@ public sealed class DrinkTea : ModCardTemplate
         await PowerCmd.Apply<DrinkTeaPower>(
             choiceContext,
             Owner.Creature,
-            DynamicVars["Vigor"].IntValue,
+            DynamicVars.VigorAmount().IntValue,
             Owner.Creature,
             this);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Vigor"].UpgradeValueBy(2);
+        DynamicVars.VigorAmount().UpgradeValueBy(2);
     }
 }

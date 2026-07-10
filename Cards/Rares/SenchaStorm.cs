@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class SenchaStorm : ModCardTemplate
+public sealed class SenchaStorm : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Attack;

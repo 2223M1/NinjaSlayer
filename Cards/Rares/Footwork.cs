@@ -9,8 +9,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class NinjaSlayerFootwork : ModCardTemplate
+public sealed class NinjaSlayerFootwork : NinjaSlayerCardTemplate
 {
     private const int energyCost = 3;
     private const CardType type = CardType.Power;

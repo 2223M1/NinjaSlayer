@@ -11,8 +11,7 @@ namespace NinjaSlayer.Cards;
 /// Base for NinjaSlayer X-cost attacks with spin combo animation, SFX, and lunge movement.
 /// Subclasses implement per-hit logic in <see cref="ExecuteXHit"/>.
 /// </summary>
-[RegisterCard(typeof(NinjaSlayerCardPool), Inherit = true)]
-public abstract class NinjaSlayerXAttackCard : ModCardTemplate
+public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
 {
     protected NinjaSlayerXAttackCard(
         int energyCost,

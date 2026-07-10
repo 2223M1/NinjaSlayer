@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class RestGuard : ModCardTemplate
+public sealed class RestGuard : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Skill;
@@ -22,8 +21,6 @@ public sealed class RestGuard : ModCardTemplate
     public override bool GainsBlock => true;
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.Any(c => c is ChadoCard);
     protected override bool ShouldGlowGoldInternal => IsPlayable;
-
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(13, ValueProp.Move)

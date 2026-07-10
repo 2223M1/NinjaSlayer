@@ -14,13 +14,9 @@ using STS2RitsuLib.Models;
 namespace NinjaSlayer.Content;
 
 [RegisterSingleton]
-public sealed class NinjaSlayerCombatFeedback : HookedSingletonModel
+public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTemplate
 {
     private bool _lowHealthLinePlayed;
-
-    public NinjaSlayerCombatFeedback() : base(HookType.Combat)
-    {
-    }
 
     public override async Task BeforeCombatStart()
     {
@@ -34,7 +30,7 @@ public sealed class NinjaSlayerCombatFeedback : HookedSingletonModel
 
         foreach (Player player in combatState.Players)
         {
-            if (player.Character is not NinjaSlayerCharacter)
+            if (!IsNinjaSlayer(player))
             {
                 continue;
             }

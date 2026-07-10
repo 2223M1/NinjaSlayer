@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -28,7 +28,7 @@ public sealed class ZbrAmpoulePotion : ModPotionTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new PowerVar<StrengthPower>(2),
-        new DynamicVar("NarakuLife", 12)
+        new NarakuLifeVar(12)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -42,7 +42,7 @@ public sealed class ZbrAmpoulePotion : ModPotionTemplate
         await PowerCmd.Apply<StrengthPower>(choiceContext, target!, DynamicVars.Strength.BaseValue, Owner.Creature, null);
         if (target!.Player != null)
         {
-            await NinjaSlayerActions.EnterNaraku(choiceContext, target.Player, DynamicVars["NarakuLife"].BaseValue);
+            await NinjaSlayerActions.EnterNaraku(choiceContext, target.Player, DynamicVars.NarakuLife().BaseValue);
         }
     }
 }

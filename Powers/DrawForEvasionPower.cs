@@ -11,13 +11,10 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-[RegisterPower]
-public sealed class DrawForEvasionPower : ModPowerTemplate
+public sealed class DrawForEvasionPower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 
     public int DrawThreshold { get; set; } = 12;
     private int cardsDrawnThisTurn;

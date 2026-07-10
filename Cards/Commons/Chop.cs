@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class Chop : ModCardTemplate
+public sealed class Chop : NinjaSlayerCardTemplate
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Attack;
@@ -20,11 +19,9 @@ public sealed class Chop : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(3, ValueProp.Move),
-        new DynamicVar("Karate", 2)
+        new KarateVar(2)
     ];
 
     public Chop() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -38,7 +35,7 @@ public sealed class Chop : ModCardTemplate
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         if (!Keywords.Contains(CardKeyword.Exhaust) && !ExhaustOnNextPlay)
         {
             await CardPileCmd.Add(this, PileType.Draw, CardPilePosition.Top);
@@ -48,6 +45,6 @@ public sealed class Chop : ModCardTemplate
     protected override void OnUpgrade()
     {
         DynamicVars.Damage.UpgradeValueBy(1);
-        DynamicVars["Karate"].UpgradeValueBy(1);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class SmokeRead : ModCardTemplate
+public sealed class SmokeRead : NinjaSlayerCardTemplate
 {
     private const int energyCost = 0;
     private const CardType type = CardType.Skill;
@@ -21,8 +20,6 @@ public sealed class SmokeRead : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     public override bool GainsBlock => true;
-
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(3, ValueProp.Move),

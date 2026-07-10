@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class MasochisticBliss : ModCardTemplate
+public sealed class MasochisticBliss : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Power;
@@ -24,7 +23,7 @@ public sealed class MasochisticBliss : ModCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BloodTears");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Vigor", 3)
+        new VigorAmountVar(3)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -38,13 +37,13 @@ public sealed class MasochisticBliss : ModCardTemplate
         await PowerCmd.Apply<MasochisticBlissPower>(
             choiceContext,
             Owner.Creature,
-            DynamicVars["Vigor"].IntValue,
+            DynamicVars.VigorAmount().IntValue,
             Owner.Creature,
             this);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Vigor"].UpgradeValueBy(1);
+        DynamicVars.VigorAmount().UpgradeValueBy(1);
     }
 }

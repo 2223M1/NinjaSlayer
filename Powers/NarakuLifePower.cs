@@ -11,13 +11,10 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-[RegisterPower]
-public sealed class NarakuLifePower : ModPowerTemplate, IHealthBarForecastSource
+public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarForecastSource
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
     protected override bool IsVisibleInternal => false;
 
     public IEnumerable<HealthBarForecastSegment> GetHealthBarForecastSegments(HealthBarForecastContext context)

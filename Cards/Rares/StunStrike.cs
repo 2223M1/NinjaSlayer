@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class StunStrike : ModCardTemplate
+public sealed class StunStrike : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Attack;
@@ -20,11 +19,9 @@ public sealed class StunStrike : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(10, ValueProp.Move),
-        new DynamicVar("Karate", 3)
+        new KarateVar(3)
     ];
 
     public StunStrike() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -38,7 +35,7 @@ public sealed class StunStrike : ModCardTemplate
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         await CreatureCmd.Stun(cardPlay.Target);
         await PowerCmd.Apply<DelayedSelfStunPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }

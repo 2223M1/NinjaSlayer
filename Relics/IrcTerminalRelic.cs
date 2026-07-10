@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
-public sealed class IrcTerminalRelic : ModRelicTemplate
+public sealed class IrcTerminalRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
 

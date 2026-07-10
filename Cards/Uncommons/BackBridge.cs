@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class BackBridge : ModCardTemplate
+public sealed class BackBridge : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Skill;
@@ -27,7 +26,7 @@ public sealed class BackBridge : ModCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Energy", 2)
+        new EnergyVar(2)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -42,7 +41,7 @@ public sealed class BackBridge : ModCardTemplate
         int clearedUnits = await NinjaSlayerActions.ClearAllKarate(choiceContext, Owner);
         if (clearedUnits > 0)
         {
-            await PlayerCmd.GainEnergy(clearedUnits * DynamicVars["Energy"].BaseValue, Owner);
+            await PlayerCmd.GainEnergy(clearedUnits * DynamicVars.Energy.BaseValue, Owner);
         }
     }
 

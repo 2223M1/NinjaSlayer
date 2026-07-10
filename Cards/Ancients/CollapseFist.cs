@@ -25,7 +25,7 @@ public sealed class CollapseFist : ModCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(20, ValueProp.Move),
-        new DynamicVar("Karate", 8)
+        new KarateVar(8)
     ];
 
     public CollapseFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -39,12 +39,12 @@ public sealed class CollapseFist : ModCardTemplate
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()
     {
         DynamicVars.Damage.UpgradeValueBy(10);
-        DynamicVars["Karate"].UpgradeValueBy(2);
+        DynamicVars.Karate().UpgradeValueBy(2);
     }
 }

@@ -13,8 +13,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-[RegisterPower]
-public sealed class ClankDrinkTeaPower : ModPowerTemplate
+public sealed class ClankDrinkTeaPower : NinjaSlayerPowerTemplate
 {
     private class Data
     {
@@ -23,8 +22,6 @@ public sealed class ClankDrinkTeaPower : ModPowerTemplate
 
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(2)

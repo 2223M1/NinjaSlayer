@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class IronShirt : ModCardTemplate
+public sealed class IronShirt : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Skill;
@@ -27,7 +26,7 @@ public sealed class IronShirt : ModCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(8, ValueProp.Move),
-        new DynamicVar("Karate", 3)
+        new KarateVar(3)
     ];
 
     public IronShirt() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -38,7 +37,7 @@ public sealed class IronShirt : ModCardTemplate
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
         foreach (Creature enemy in CombatState?.HittableEnemies.ToList() ?? [])
         {
-            await PowerCmd.Apply<KaratePower>(choiceContext, enemy, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+            await PowerCmd.Apply<KaratePower>(choiceContext, enemy, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         }
     }
 

@@ -6,8 +6,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
-public sealed class NarakuWithinRelic : ModRelicTemplate
+public sealed class NarakuWithinRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
 

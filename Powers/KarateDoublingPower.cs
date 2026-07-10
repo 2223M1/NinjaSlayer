@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-[RegisterPower]
-public sealed class KarateDoublingPower : ModPowerTemplate
+public sealed class KarateDoublingPower : NinjaSlayerPowerTemplate
 {
     private class Data
     {
@@ -21,8 +20,6 @@ public sealed class KarateDoublingPower : ModPowerTemplate
 
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.None;
-
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 
     public int AppliedTurnNumber
     {

@@ -12,13 +12,10 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-[RegisterPower]
-public sealed class DamageFocusPower : ModPowerTemplate
+public sealed class DamageFocusPower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.None;
-
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(GetType());
 
     public decimal DamageMultiplier { get; set; } = 1m;
     public decimal DefenseMultiplier { get; set; } = 1m;

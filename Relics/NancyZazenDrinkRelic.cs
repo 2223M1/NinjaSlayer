@@ -10,8 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
-public sealed class NancyZazenDrinkRelic : ModRelicTemplate
+public sealed class NancyZazenDrinkRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
     public override bool HasUponPickupEffect => true;

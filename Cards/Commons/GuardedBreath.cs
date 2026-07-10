@@ -13,8 +13,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class GuardedBreath : ModCardTemplate
+public sealed class GuardedBreath : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Skill;
@@ -23,8 +22,6 @@ public sealed class GuardedBreath : ModCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     public override bool GainsBlock => true;
-
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(11, ValueProp.Move)

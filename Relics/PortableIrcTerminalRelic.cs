@@ -8,12 +8,9 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
-public sealed class PortableIrcTerminalRelic : ModRelicTemplate
+public sealed class PortableIrcTerminalRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Uncommon;
-
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     public override async Task BeforeHandDraw(MegaCrit.Sts2.Core.Entities.Players.Player player, PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Combat.ICombatState combatState)
     {

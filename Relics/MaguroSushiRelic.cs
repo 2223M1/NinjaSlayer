@@ -6,13 +6,10 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
-public sealed class MaguroSushiRelic : ModRelicTemplate
+public sealed class MaguroSushiRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Rare;
     public override bool HasUponPickupEffect => true;
-
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     public override async Task AfterObtained()
     {

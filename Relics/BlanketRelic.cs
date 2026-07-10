@@ -8,15 +8,12 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
-public sealed class BlanketRelic : ModRelicTemplate
+public sealed class BlanketRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;
 
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("NarakuLife", 3)
+        new NarakuLifeVar(3)
     ];
 
     public override async Task AfterPowerAmountChanged(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, PowerModel power, decimal amount, MegaCrit.Sts2.Core.Entities.Creatures.Creature? applier, CardModel? cardSource)
@@ -24,7 +21,7 @@ public sealed class BlanketRelic : ModRelicTemplate
         if (power is NarakuPower && power.Owner == Owner.Creature && amount > 0)
         {
             Flash();
-            await MegaCrit.Sts2.Core.Commands.PowerCmd.Apply<NarakuLifePower>(choiceContext, Owner.Creature, DynamicVars["NarakuLife"].BaseValue, Owner.Creature, null);
+            await MegaCrit.Sts2.Core.Commands.PowerCmd.Apply<NarakuLifePower>(choiceContext, Owner.Creature, DynamicVars.NarakuLife().BaseValue, Owner.Creature, null);
         }
     }
 }

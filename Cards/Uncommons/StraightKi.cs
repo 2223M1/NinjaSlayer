@@ -12,8 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class StraightKi : ModCardTemplate
+public sealed class StraightKi : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Attack;
@@ -24,15 +23,13 @@ public sealed class StraightKi : ModCardTemplate
     protected override bool ShouldGlowGoldInternal =>
         CombatState?.HittableEnemies.Any(e => e.HasPower<WeakPower>() && e.HasPower<VulnerablePower>()) ?? false;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(18, ValueProp.Move),
-        new DynamicVar("Karate", 4)
+        new KarateVar(4)
     ];
 
     public StraightKi() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -49,7 +46,7 @@ public sealed class StraightKi : ModCardTemplate
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
 
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
 
         if (shouldStun)
         {

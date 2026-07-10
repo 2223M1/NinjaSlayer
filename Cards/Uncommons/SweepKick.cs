@@ -12,8 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class SweepKick : ModCardTemplate
+public sealed class SweepKick : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Attack;
@@ -26,7 +25,7 @@ public sealed class SweepKick : ModCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(7, ValueProp.Move),
-        new DynamicVar("Karate", 2)
+        new KarateVar(2)
     ];
 
     public SweepKick() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -41,7 +40,7 @@ public sealed class SweepKick : ModCardTemplate
             .Execute(choiceContext);
         foreach (Creature enemy in CombatState?.HittableEnemies.ToList() ?? [])
         {
-            await PowerCmd.Apply<KaratePower>(choiceContext, enemy, DynamicVars["Karate"].BaseValue, Owner.Creature, this);
+            await PowerCmd.Apply<KaratePower>(choiceContext, enemy, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         }
     }
 

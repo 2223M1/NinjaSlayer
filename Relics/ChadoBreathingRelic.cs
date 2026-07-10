@@ -13,10 +13,9 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
 
-[RegisterRelic(typeof(NinjaSlayerRelicPool))]
 [RegisterCharacterStarterRelic(typeof(NinjaSlayerCharacter), 1)]
 [RegisterTouchOfOrobasRefinement(typeof(DeepChadoBreathingRelic))]
-public class ChadoBreathingRelic : ModRelicTemplate
+public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 {
     private int _healedThisCombat;
 
@@ -24,8 +23,6 @@ public class ChadoBreathingRelic : ModRelicTemplate
     protected virtual int MaxHealPerCombat => 12;
 
     public override RelicRarity Rarity => RelicRarity.Starter;
-
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new HealVar(HealAmount)

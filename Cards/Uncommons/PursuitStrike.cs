@@ -11,8 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class PursuitStrike : ModCardTemplate
+public sealed class PursuitStrike : NinjaSlayerCardTemplate
 {
     private const int energyCost = 2;
     private const CardType type = CardType.Attack;
@@ -20,12 +19,10 @@ public sealed class PursuitStrike : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(15, ValueProp.Move),
         new DynamicVar("Pursuit", 3),
-        new DynamicVar("Energy", 2)
+        new EnergyVar(2)
     ];
 
     public PursuitStrike() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -43,12 +40,12 @@ public sealed class PursuitStrike : ModCardTemplate
         PursuitPower? pursuit = await PowerCmd.Apply<PursuitPower>(choiceContext, cardPlay.Target, DynamicVars["Pursuit"].IntValue, Owner.Creature, this);
         if (pursuit != null)
         {
-            pursuit.EnergyReward = DynamicVars["Energy"].IntValue;
+            pursuit.EnergyReward = DynamicVars.Energy.IntValue;
         }
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Energy"].UpgradeValueBy(1);
+        DynamicVars.Energy.UpgradeValueBy(1);
     }
 }

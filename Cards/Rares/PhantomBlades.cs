@@ -8,8 +8,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class PhantomBlades : ModCardTemplate
+public sealed class PhantomBlades : NinjaSlayerCardTemplate
 {
     private const int energyCost = 1;
     private const CardType type = CardType.Skill;
@@ -21,7 +20,7 @@ public sealed class PhantomBlades : ModCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenSpread");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("Shuriken", 3),
+        new ShurikenVar(3),
         new CardsVar(2)
     ];
 
@@ -30,12 +29,12 @@ public sealed class PhantomBlades : ModCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
-        await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars["Shuriken"].IntValue, PileType.Hand);
+        await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars.Shuriken().IntValue, PileType.Hand);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars["Shuriken"].UpgradeValueBy(1);
+        DynamicVars.Shuriken().UpgradeValueBy(1);
     }
 }
