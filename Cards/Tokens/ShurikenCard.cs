@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -10,7 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
+[RegisterCard(typeof(TokenCardPool))]
 public sealed class ShurikenCard : ModCardTemplate
 {
     private const int energyCost = 0;

@@ -4,13 +4,14 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.CardPools;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
+[RegisterCard(typeof(StatusCardPool))]
 public sealed class ChadoCard : ModCardTemplate
 {
     private const int energyCost = 0;

@@ -64,7 +64,6 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
-        patcher.RegisterPatch<NinjaSlayerJackpotCardPoolPatch>();
         patcher.RegisterPatch<ScreenShakeSuppressionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();

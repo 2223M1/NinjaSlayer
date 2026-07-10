@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
@@ -14,7 +15,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
+[RegisterCard(typeof(StatusCardPool))]
 public sealed class BurningCard : ModCardTemplate
 {
     private const int energyCost = -2;

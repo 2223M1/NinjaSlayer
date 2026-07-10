@@ -1,12 +1,13 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models.CardPools;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
+[RegisterCard(typeof(StatusCardPool))]
 public sealed class BusyLine : ModCardTemplate
 {
     private const int energyCost = 1;
