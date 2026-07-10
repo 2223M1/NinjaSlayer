@@ -67,6 +67,8 @@ public class Entry
         patcher.RegisterPatch<ScreenShakeSuppressionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionGcDeferralPatch>();
         patcher.RegisterPatch<NinjaSlayerRoomFadeInGatePatch>();
         patcher.RegisterPatch<NinjaSlayerFadeInGatePatch>();
         patcher.RegisterPatch<NinjaSlayerEmbarkLoadDelayPatch>();

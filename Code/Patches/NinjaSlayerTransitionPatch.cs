@@ -78,6 +78,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
 
         var overlay = NinjaSlayerTransitionOverlay.GetOrCreate(transition);
+        NinjaSlayerTransitionLoadSmoothing.BeginAnimation();
         return PlayOverlayAsync(overlay, simpleTransition, cancelToken);
     }
 
@@ -99,6 +100,8 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
                 simpleTransition.Color = Colors.Black;
                 simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
             }
+
+            NinjaSlayerTransitionLoadSmoothing.EndAnimationAndCollectDeferred();
         }
     }
 
