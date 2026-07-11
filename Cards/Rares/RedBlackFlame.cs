@@ -2,8 +2,8 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Content;
-using NinjaSlayer.Enchantments;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -26,13 +26,24 @@ public sealed class RedBlackFlame : NarakuThemedCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await EnsureNarakuForm(choiceContext);
-        foreach (CardModel card in PileType.Hand.GetPile(Owner).Cards.Where(c => c.Type == CardType.Attack).ToList())
+
+        List<CardModel> attacks = PileType.Hand.GetPile(Owner).Cards
+            .Where(card => card.Type == CardType.Attack)
+            .ToList();
+
+        foreach (CardModel attack in attacks)
         {
-            CardCmd.ApplyKeyword(card, CardKeyword.Exhaust);
-            if (ModelDb.Enchantment<BlackFlameEnchantment>().CanEnchant(card))
-            {
-                CardCmd.Enchant<BlackFlameEnchantment>(card, 1);
-            }
+            CardCmd.ApplyKeyword(attack, CardKeyword.Exhaust);
+        }
+
+        if (attacks.Count > 0)
+        {
+            await PowerCmd.Apply<FreeAttackPower>(
+                choiceContext,
+                Owner.Creature,
+                attacks.Count,
+                Owner.Creature,
+                this);
         }
     }
 

@@ -50,7 +50,7 @@
   "NINJA_SLAYER_CARD_KARATE_WALL.title": "道墙",
   "NINJA_SLAYER_CARD_KARATE_WALL.description": "每有1名生物拥有[gold]空手道[/gold]，耗能减少1。\n翻倍你的[gold]格挡[/gold]。\n本回合每受到一次伤害，给予攻击者{Karate:diff()}层[gold]空手道[/gold]。",
   "NINJA_SLAYER_CARD_RED_BLACK_FLAME.title": "赤黑",
-  "NINJA_SLAYER_CARD_RED_BLACK_FLAME.description": "[gold]化身奈落[/gold]。\n手中的所有攻击牌获得[gold]消耗[/gold]，并附魔[gold]黑炎[/gold]。",
+  "NINJA_SLAYER_CARD_RED_BLACK_FLAME.description": "[gold]化身奈落[/gold]。\n手中的所有攻击牌免费打出。\n打出时[gold]消耗[/gold]。",
   "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.title": "一心同体",
   "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.description": "本场战斗不能再进入[gold]奈落[/gold]；每次试图进入[gold]奈落[/gold]，改为获得{Energy:diff()}点能量，抽{Cards:diff()}张牌，并获得12点[gold]奈落生命[/gold]。",
   "NINJA_SLAYER_CARD_NARAKU_RECOVERY.title": "奈落回血",
