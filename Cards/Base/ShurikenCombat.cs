@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards;
@@ -26,7 +27,8 @@ internal static class ShurikenCombat
     {
         var command = DamageCmd.Attack(damage.BaseValue)
             .FromCard(card, cardPlay)
-            .WithAttackerAnim("Attack", card.Owner!.Character.AttackAnimDelay)
+            .WithNoAttackerAnim()
+            .AfterAttackerAnim(() => HopAnimation.Play(card.Owner!.Creature))
             .WithHitFx(null, null, TmpSfx.daggerThrow);
 
         if (HasSoarSpread(card))
