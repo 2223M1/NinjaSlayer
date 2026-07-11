@@ -40,6 +40,14 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         return Task.CompletedTask;
     }
 
+    public override async Task AfterCombatVictory(CombatRoom _)
+    {
+        if (!Owner.Creature.IsDead)
+        {
+            await TryBreathe();
+        }
+    }
+
     public override async Task BeforeSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
         if (!participants.Contains(Owner.Creature) || Owner.Creature.IsDead)
