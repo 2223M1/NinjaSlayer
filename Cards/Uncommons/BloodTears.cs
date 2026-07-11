@@ -39,6 +39,6 @@ public sealed class BloodTears : NinjaSlayerCardTemplate
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Karate().UpgradeValueBy(1);
+        DynamicVars.Karate().UpgradeValueBy(-1);
     }
 }
