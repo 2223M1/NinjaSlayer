@@ -16,24 +16,6 @@ texture = ExtResource("2_shadow")
 
 [node name="AirborneAnchor" type="Node2D" parent="."]
 
-[node name="SpinGhost0" type="Sprite2D" parent="AirborneAnchor"]
-visible = false
-modulate = Color(1, 1, 1, 0)
-z_index = -1
-show_behind_parent = true
-
-[node name="SpinGhost1" type="Sprite2D" parent="AirborneAnchor"]
-visible = false
-modulate = Color(1, 1, 1, 0)
-z_index = -1
-show_behind_parent = true
-
-[node name="SpinGhost2" type="Sprite2D" parent="AirborneAnchor"]
-visible = false
-modulate = Color(1, 1, 1, 0)
-z_index = -1
-show_behind_parent = true
-
 [node name="Visuals" type="Sprite2D" parent="AirborneAnchor"]
 unique_name_in_owner = true
 position = Vector2(-160, -190)
