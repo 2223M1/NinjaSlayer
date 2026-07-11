@@ -9,13 +9,16 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public static class HopAnimation
 {
     private static readonly Dictionary<ulong, Vector2> _basePositions = new();
+    private static readonly Dictionary<ulong, Tween> _activeTweens = new();
 
     public static void RegisterBasePosition(Creature creature)
     {
         var anchor = GetHopTarget(creature);
         if (anchor != null)
         {
-            _basePositions[anchor.GetInstanceId()] = anchor.Position;
+            var id = anchor.GetInstanceId();
+            StopActiveTween(id, anchor);
+            _basePositions[id] = anchor.Position;
         }
     }
 
@@ -24,7 +27,10 @@ public static class HopAnimation
         var anchor = GetHopTarget(creature);
         if (anchor != null)
         {
-            _basePositions[anchor.GetInstanceId()] = basePosition;
+            var id = anchor.GetInstanceId();
+            StopActiveTween(id, anchor);
+            _basePositions[id] = basePosition;
+            anchor.Position = basePosition;
         }
     }
 
@@ -43,6 +49,7 @@ public static class HopAnimation
         }
 
         var id = anchor.GetInstanceId();
+        StopActiveTween(id, anchor);
         if (!_basePositions.TryGetValue(id, out var basePos) || SoarVisualState.IsAirborne(creature))
         {
             if (SoarVisualState.IsAirborne(creature))
@@ -63,6 +70,7 @@ public static class HopAnimation
         var actionDuration = 0.10f;
 
         var tween = creatureNode.CreateTween();
+        _activeTweens[id] = tween;
 
         tween.TweenMethod(
             Callable.From<float>(t =>
@@ -74,8 +82,34 @@ public static class HopAnimation
             1f,
             animationDuration
         ).SetTrans(Tween.TransitionType.Linear);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (_activeTweens.TryGetValue(id, out Tween? activeTween) && activeTween == tween)
+            {
+                anchor.Position = basePos;
+                _activeTweens.Remove(id);
+            }
+        }));
 
         await Cmd.Wait(actionDuration);
+    }
+
+    private static void StopActiveTween(ulong id, Node2D anchor)
+    {
+        if (!_activeTweens.Remove(id, out Tween? tween))
+        {
+            return;
+        }
+
+        if (GodotObject.IsInstanceValid(tween))
+        {
+            tween.Kill();
+        }
+
+        if (_basePositions.TryGetValue(id, out Vector2 basePos))
+        {
+            anchor.Position = basePos;
+        }
     }
 
     private static Node2D? GetHopTarget(Creature creature)
