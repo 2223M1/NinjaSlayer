@@ -4,7 +4,6 @@ using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Powers;
@@ -16,46 +15,35 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_karate_preview_target";
 
-    public static string Description => "Track card preview targets for karate health bar forecast.";
+    public static string Description => "Track active drag targets for karate health bar forecast.";
 
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(NCard), nameof(NCard.SetPreviewTarget), [typeof(Creature)])];
+        [new(typeof(NCardPlay), "OnCreatureHover", [typeof(NCreature)])];
 
-    public static void Postfix(NCard __instance, Creature? creature)
+    public static void Postfix(NCardPlay __instance, NCreature creature)
     {
-        CardModel? card = __instance.Model;
+        CardModel? card = __instance.Holder?.CardNode?.Model;
         if (card == null)
         {
             return;
         }
 
-        Creature? previousTarget = KarateCombatPreviewContext.CurrentCard == card
-            ? KarateCombatPreviewContext.CurrentTarget
-            : null;
-
-        if (creature == null || !CanPreviewKarate(card, creature))
+        Creature target = creature.Entity;
+        if (!CanPreviewKarate(card, target))
         {
             KarateCombatPreviewContext.Clear(card);
             return;
         }
 
-        bool currentHasKarate = creature.GetPowerAmount<KaratePower>() > 0;
-        bool previousHasKarate = previousTarget?.GetPowerAmount<KaratePower>() > 0;
-        if (!currentHasKarate && !previousHasKarate)
+        if (target.GetPowerAmount<KaratePower>() <= 0)
         {
+            KarateCombatPreviewContext.Clear(card);
             return;
         }
 
-        if (currentHasKarate)
-        {
-            KarateCombatPreviewContext.Set(card, creature);
-        }
-        else
-        {
-            KarateCombatPreviewContext.Clear(card);
-        }
+        KarateCombatPreviewContext.Set(card, target);
     }
 
     private static bool CanPreviewKarate(CardModel card, Creature target) =>
@@ -63,6 +51,26 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
         && KarateTriggerRules.CanTriggerFromCardSource(card)
         && card.Owner.Creature.CombatState != null
         && card.Owner.Creature.CombatState == target.CombatState;
+}
+
+public sealed class KarateCardPreviewClearPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_karate_preview_clear";
+
+    public static string Description => "Clear karate forecasts when card dragging ends.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NCardPlay), "OnCreatureUnhover", [typeof(NCreature)]),
+        new(typeof(NCardPlay), "Cleanup", [typeof(bool)])
+    ];
+
+    public static void Prefix(NCardPlay __instance)
+    {
+        KarateCombatPreviewContext.Clear(__instance.Holder?.CardNode?.Model);
+    }
 }
 
 public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod

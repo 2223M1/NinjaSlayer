@@ -61,6 +61,7 @@ public class Entry
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
         patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
+        patcher.RegisterPatch<KarateCardPreviewClearPatch>();
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
