@@ -42,7 +42,7 @@ public sealed class ChadoCombatRules : NinjaSlayerCombatSingletonTemplate
 
         if (newCost >= DiscardCost)
         {
-            await CardPileCmd.Add(chado, PileType.Discard);
+            await CardCmd.Discard(new ThrowingPlayerChoiceContext(), chado);
         }
     }
 

@@ -1,4 +1,6 @@
 {
+  "NINJA_SLAYER_POWER_POUR_TEA_POWER.title": "倒茶",
+  "NINJA_SLAYER_POWER_POUR_TEA_POWER.description": "丢弃[gold]茶道[/gold]时，获得{Amount}点[gold]格挡[/gold]。",
   "NINJA_SLAYER_POWER_BLOOD_TEARS_POWER.title": "血泪",
   "NINJA_SLAYER_POWER_BLOOD_TEARS_POWER.description": "每回合开始时，给予自身{Amount}层[gold]空手道[/gold]。",
   "NINJA_SLAYER_POWER_I_BLOCK_POWER.title": "我挡",
