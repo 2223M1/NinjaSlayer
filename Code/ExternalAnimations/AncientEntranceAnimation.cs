@@ -23,28 +23,34 @@ public static class AncientEntranceAnimation
     {
         Creature creature = player.Creature;
         float roll = player.RunState.Rng.Niche.NextFloat();
-
-        if (roll < 0.5f)
+        try
         {
-            await SlideFromLeft(creature);
-            return;
+            if (roll < 0.5f)
+            {
+                await SlideFromLeft(creature);
+                return;
+            }
+
+            int longIndex = Mathf.Min(3, Mathf.FloorToInt((roll - 0.5f) / 0.125f));
+            switch (longIndex)
+            {
+                case 0:
+                    await FallFromTop(creature);
+                    break;
+                case 1:
+                    await InvertedFallFromTopLeft(creature);
+                    break;
+                case 2:
+                    await SpinningFallFromSide(creature, fromLeft: true);
+                    break;
+                default:
+                    await SpinningFallFromSide(creature, fromLeft: false);
+                    break;
+            }
         }
-
-        int longIndex = Mathf.Min(3, Mathf.FloorToInt((roll - 0.5f) / 0.125f));
-        switch (longIndex)
+        finally
         {
-            case 0:
-                await FallFromTop(creature);
-                break;
-            case 1:
-                await InvertedFallFromTopLeft(creature);
-                break;
-            case 2:
-                await SpinningFallFromSide(creature, fromLeft: true);
-                break;
-            default:
-                await SpinningFallFromSide(creature, fromLeft: false);
-                break;
+            SetVisualsVisible(creature);
         }
     }
 
@@ -60,6 +66,7 @@ public static class AncientEntranceAnimation
         {
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerShortWashoiEvent);
             creatureNode.Position = new Vector2(basePos.X - SideOffset, basePos.Y);
+            SetVisualsVisible(creature);
             await TweenNodePosition(creatureNode, basePos, SlideDuration, Tween.EaseType.Out, Tween.TransitionType.Quad);
         }
         finally
@@ -79,6 +86,7 @@ public static class AncientEntranceAnimation
         {
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
+            SetVisualsVisible(creature);
             await ByrdFallAnimation.Play(creature, FallDistance, FallDuration);
         }
         finally
@@ -104,6 +112,7 @@ public static class AncientEntranceAnimation
             body.RotationDegrees = invertedRotationDegrees;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
             SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
+            SetVisualsVisible(creature);
 
             await Task.WhenAll(
                 ByrdFallAnimation.Play(creature, FallDistance, FallDuration),
@@ -140,6 +149,7 @@ public static class AncientEntranceAnimation
             creatureNode.Position = startPos;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
             SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
+            SetVisualsVisible(creature);
 
             await Task.WhenAll(
                 TweenSideFallParabola(creatureNode, snapshot.CreaturePosition, direction, FallDuration),
@@ -148,6 +158,15 @@ public static class AncientEntranceAnimation
         finally
         {
             snapshot.Restore(creature);
+        }
+    }
+
+    private static void SetVisualsVisible(Creature creature)
+    {
+        var visuals = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
+        if (visuals != null)
+        {
+            visuals.Show();
         }
     }
 

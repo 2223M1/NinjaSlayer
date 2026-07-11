@@ -30,6 +30,9 @@ public static class NinjaSlayerRunData
         PlayerState.Modify(player, state => state.PendingAncientEntranceAnimation = true);
     }
 
+    public static bool HasPendingAncientEntranceAnimation(Player player) =>
+        PlayerState.Get(player).PendingAncientEntranceAnimation;
+
     public static bool ConsumePendingAncientEntranceAnimation(Player player)
     {
         if (!PlayerState.Get(player).PendingAncientEntranceAnimation)
