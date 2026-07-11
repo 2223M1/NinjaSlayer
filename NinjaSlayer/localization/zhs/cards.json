@@ -10,7 +10,7 @@
   "NINJA_SLAYER_CARD_MEDITATION.title": "冥想",
   "NINJA_SLAYER_CARD_MEDITATION.description": "将1张[gold]茶道[/gold]洗入抽牌堆。\n结束你的回合。",
   "NINJA_SLAYER_CARD_CHADO_CARD.title": "茶道",
-  "NINJA_SLAYER_CARD_CHADO_CARD.description": "抽到时，获得{Energy:energyIcons()}。",
+  "NINJA_SLAYER_CARD_CHADO_CARD.description": "在回合开始时，获得{Energy:energyIcons()}。\n你每花费{Energy:energyIcons()}，其本回合耗能增加{Energy:energyIcons()}。\n增加至{energyPrefix:energyIcons(3)}时进入弃牌堆。",
   "NINJA_SLAYER_CARD_DRINK_TEA.title": "喝茶",
   "NINJA_SLAYER_CARD_DRINK_TEA.description": "每当[gold]茶道[/gold]被[gold]消耗[/gold]时，获得{Vigor:diff()}点[gold]活力[/gold]。",
   "NINJA_SLAYER_CARD_DROWSY_BLACK_TEA.title": "昏睡红茶",

@@ -1,4 +1,3 @@
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
@@ -23,6 +22,7 @@ public sealed class ChadoCard : ModCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
+        CardKeyword.Retain,
         CardKeyword.Exhaust
     ];
 
@@ -35,14 +35,6 @@ public sealed class ChadoCard : ModCardTemplate
     ];
 
     public ChadoCard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
-
-    public override async Task AfterCardDrawn(PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw)
-    {
-        if (card == this)
-        {
-            await PlayerCmd.GainEnergy(DynamicVars.Energy.IntValue, Owner);
-        }
-    }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         Task.CompletedTask;
