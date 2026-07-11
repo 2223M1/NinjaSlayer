@@ -17,7 +17,7 @@ namespace NinjaSlayer.Cards;
 internal static class ShurikenCombat
 {
     internal static bool HasSoarSpread(CardModel card) =>
-        card.IsMutable && card.Owner != null && card.Owner.Creature.HasPower<NinjaSlayerSoarPower>();
+        card.IsMutable && card.Owner != null && card.Owner.Creature.HasPower<HellTornadoPower>();
 
     internal static AttackCommand BuildAttackCommand(
         CardModel card,

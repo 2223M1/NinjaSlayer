@@ -20,7 +20,7 @@ public sealed class GiantShurikenCard : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = false;
 
-    public override TargetType TargetType => Owner?.Creature.HasPower<NinjaSlayerSoarPower>() == true
+    public override TargetType TargetType => Owner?.Creature.HasPower<HellTornadoPower>() == true
         ? TargetType.AllEnemies
         : targetType;
 

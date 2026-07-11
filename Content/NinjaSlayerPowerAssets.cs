@@ -14,7 +14,7 @@ public static class NinjaSlayerPowerAssets
 
     private static string IconPathFor(Type powerType)
     {
-        if (powerType == typeof(NinjaSlayerSoarPower))
+        if (powerType == typeof(HellTornadoPower))
         {
             return NinjaSlayerAssetPaths.PowerImage("soar_power.png");
         }

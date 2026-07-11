@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -24,7 +25,8 @@ public sealed class HellTornado : NinjaSlayerCardTemplate
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        HoverTipFactory.FromPower<NinjaSlayerSoarPower>(),
+        HoverTipFactory.FromPower<SoarPower>(),
+        HoverTipFactory.FromPower<HellTornadoPower>(),
         HoverTipFactory.FromCard<ShurikenCard>(),
         HoverTipFactory.FromCard<GiantShurikenCard>()
     ];
@@ -34,7 +36,8 @@ public sealed class HellTornado : NinjaSlayerCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLongjuanquanEvent);
-        await PowerCmd.Apply<NinjaSlayerSoarPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
+        await PowerCmd.Apply<SoarPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
+        await PowerCmd.Apply<HellTornadoPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()

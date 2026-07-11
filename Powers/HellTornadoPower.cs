@@ -6,9 +6,8 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.ValueProps;
+using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -16,18 +15,13 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class NinjaSlayerSoarPower : NinjaSlayerPowerTemplate
+public sealed class HellTornadoPower : NinjaSlayerPowerTemplate
 {
     private const float RiseDistance = 220f;
     private const float RiseDuration = 0.3f;
-    private const string DamageDecreaseKey = "DamageDecrease";
 
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
-
-    protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar(DamageDecreaseKey, 50)
-    ];
 
     internal bool IsResolvingSoarAutoPlay { get; private set; }
 
@@ -44,21 +38,6 @@ public sealed class NinjaSlayerSoarPower : NinjaSlayerPowerTemplate
         }
 
         return playCount + 1;
-    }
-
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
-    {
-        if (target != Owner)
-        {
-            return 1m;
-        }
-
-        if (!props.IsPoweredAttack())
-        {
-            return 1m;
-        }
-
-        return DynamicVars[DamageDecreaseKey].BaseValue / 100m;
     }
 
     public override async Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
@@ -84,6 +63,7 @@ public sealed class NinjaSlayerSoarPower : NinjaSlayerPowerTemplate
         await SoarSpinAnimation.Decelerate(Owner, RiseDuration);
         await ByrdFallAnimation.Play(Owner, RiseDistance);
         NinjaSlayerCombatAnimations.StopSoarSpinAndReturnToIdle(Owner);
+        await PowerCmd.Remove<SoarPower>(Owner);
         await PowerCmd.Remove(this);
     }
 
