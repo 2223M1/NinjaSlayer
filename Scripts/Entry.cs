@@ -75,8 +75,6 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerEmbarkLoadDelayPatch>();
         patcher.RegisterPatch<NinjaSlayerSaveLoadDelayPatch>();
         patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
-        patcher.RegisterPatch<NinjaSlayerCardBodyTypographyPatch>();
-        patcher.RegisterPatch<NinjaSlayerHoverTipTypographyPatch>();
         patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
         if (!patcher.PatchAll())
         {

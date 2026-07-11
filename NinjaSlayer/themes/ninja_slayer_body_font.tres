@@ -1,6 +1,0 @@
-[gd_resource type="FontVariation" load_steps=2 format=3 uid="uid://cninjabodyfarrier"]
-
-[ext_resource type="FontFile" uid="uid://bqx7farricgblack" path="res://NinjaSlayer/fonts/farrier_icg_black.otf" id="1_farrier"]
-
-[resource]
-base_font = ExtResource("1_farrier")
