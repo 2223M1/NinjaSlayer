@@ -27,6 +27,8 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
 
     protected virtual string AttackerAnimTrigger => "XAttack";
 
+    protected virtual float XAttackHitDelay => Owner.Character.AttackAnimDelay;
+
     protected virtual int ResolveXHitCount()
     {
         return Math.Max(0, ResolveEnergyXValue());
@@ -45,7 +47,7 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
         await NinjaSlayerXAttackSequence.Run(
             Owner.Creature,
             hits,
-            Owner.Character.AttackAnimDelay,
+            XAttackHitDelay,
             hitIndex => RunXHit(choiceContext, cardPlay, hitIndex, hits));
     }
 

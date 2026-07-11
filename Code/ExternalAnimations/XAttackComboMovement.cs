@@ -45,6 +45,14 @@ public static class XAttackComboMovement
         }
 
         float direction = creature.IsPlayer ? 1f : -1f;
+        if (waitTime <= 0f)
+        {
+            creatureNode.Position = new Vector2(
+                basePos.X + NinjaSlayerCombatVisuals.AttackLungeDistance * direction,
+                basePos.Y);
+            return;
+        }
+
         var tween = creatureNode.CreateTween();
         tween.TweenMethod(
             Callable.From<float>(progress =>

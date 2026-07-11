@@ -21,6 +21,8 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
+    protected override float XAttackHitDelay => 0f;
+
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),
         new PowerVar<VulnerablePower>(1),
@@ -68,7 +70,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
-            .WithAttackerAnim(AttackerAnimTrigger, Owner.Character.AttackAnimDelay)
+            .WithAttackerAnim(AttackerAnimTrigger, XAttackHitDelay)
             .Targeting(cardPlay.Target);
         await command.Execute(choiceContext);
         if (command.Results.SelectMany(r => r).Any(r => r.UnblockedDamage > 0))
