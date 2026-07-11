@@ -16,6 +16,7 @@ public static class AncientEntranceAnimation
     private const float FallDistance = 900f;
     private const float SideOffset = 1400f;
     private const float SideStartYOffset = -140f;
+    private const float SideArcHeight = 260f;
     private const float LeftLandingOffset = -110f;
 
     public static async Task Play(Player player)
@@ -141,13 +142,45 @@ public static class AncientEntranceAnimation
             SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
 
             await Task.WhenAll(
-                TweenNodePosition(creatureNode, snapshot.CreaturePosition, FallDuration, Tween.EaseType.In, Tween.TransitionType.Quad),
+                TweenSideFallParabola(creatureNode, snapshot.CreaturePosition, direction, FallDuration),
                 ByrdFallAnimation.Play(creature, FallDistance, FallDuration));
         }
         finally
         {
             snapshot.Restore(creature);
         }
+    }
+
+    private static async Task TweenSideFallParabola(
+        NCreature creatureNode,
+        Vector2 landingPosition,
+        float direction,
+        float duration)
+    {
+        Vector2 worldStartOffset = new(SideOffset * direction, SideStartYOffset - FallDistance);
+        Vector2 controlOffset = new(SideOffset * direction * 0.55f, worldStartOffset.Y - SideArcHeight);
+
+        var tween = creatureNode.CreateTween();
+        tween.TweenMethod(
+            Callable.From<float>(progress =>
+            {
+                float inverse = 1f - progress;
+                Vector2 worldOffset =
+                    inverse * inverse * worldStartOffset
+                    + 2f * inverse * progress * controlOffset;
+
+                // ByrdFall moves the airborne anchor with an ease-in quadratic curve.
+                float anchorYOffset = -FallDistance * (1f - progress * progress);
+                creatureNode.Position = landingPosition
+                    + new Vector2(worldOffset.X, worldOffset.Y - anchorYOffset);
+            }),
+            0f,
+            1f,
+            duration)
+            .SetTrans(Tween.TransitionType.Linear);
+
+        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        creatureNode.Position = landingPosition;
     }
 
     private static bool TryGetRig(Creature creature, out NCreature creatureNode, out Node2D anchor, out Node2D body, out RigSnapshot snapshot)
