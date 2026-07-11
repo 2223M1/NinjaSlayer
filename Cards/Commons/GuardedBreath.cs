@@ -15,6 +15,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class GuardedBreath : NinjaSlayerCardTemplate
 {
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+
     private const int energyCost = 2;
     private const CardType type = CardType.Skill;
     private const CardRarity rarity = CardRarity.Common;

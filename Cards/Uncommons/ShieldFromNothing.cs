@@ -13,6 +13,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShieldFromNothing : NinjaSlayerCardTemplate
 {
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+
     private const int energyCost = 1;
     private const CardType type = CardType.Power;
     private const CardRarity rarity = CardRarity.Uncommon;

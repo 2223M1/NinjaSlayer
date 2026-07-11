@@ -21,7 +21,7 @@ public sealed class NinjaApathy : NinjaSlayerCardTemplate
 
     public override bool GainsBlock => true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("SmokeRead");
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(6, ValueProp.Move)

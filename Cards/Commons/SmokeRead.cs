@@ -13,6 +13,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SmokeRead : NinjaSlayerCardTemplate
 {
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+
     private const int energyCost = 0;
     private const CardType type = CardType.Skill;
     private const CardRarity rarity = CardRarity.Common;

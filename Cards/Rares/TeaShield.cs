@@ -23,7 +23,7 @@ public sealed class TeaShield : NinjaSlayerCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("RestGuard");
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(7),

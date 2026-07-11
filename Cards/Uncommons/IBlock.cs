@@ -23,7 +23,7 @@ public sealed class IBlock : NinjaSlayerCardTemplate
     public override bool GainsBlock => true;
 
     // ponytail: reuse defend art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("DefendNinjaSlayer");
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(12, ValueProp.Move)
