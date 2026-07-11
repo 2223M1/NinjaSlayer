@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Hooks;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Powers;
 
@@ -102,7 +103,18 @@ public static class KarateForecastCalculator
 
         if (card.Type == CardType.Attack && card.EnergyCost.CostsX)
         {
-            return Math.Max(0, card.ResolveEnergyXValue());
+            int xValue = ResolvePreviewXValue(card);
+            if (card is HeavenlyDrill && xValue >= card.DynamicVars.Energy.IntValue)
+            {
+                return xValue * 2;
+            }
+
+            if (card is Volley)
+            {
+                return 0;
+            }
+
+            return xValue;
         }
 
         if (KarateKnownMultiHitCards.TryGetHitCount(card, out int knownHits))
@@ -111,6 +123,17 @@ public static class KarateForecastCalculator
         }
 
         return 1;
+    }
+
+    private static int ResolvePreviewXValue(CardModel card)
+    {
+        int xValue = card.EnergyCost.GetAmountToSpend();
+        if (card.Pile != null && card.CombatState is { } combatState)
+        {
+            xValue = Hook.ModifyXValue(combatState, card, xValue);
+        }
+
+        return Math.Max(0, xValue);
     }
 
     private static bool LostHpThisTurn(Creature creature)

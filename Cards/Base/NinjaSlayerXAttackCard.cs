@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -34,7 +35,18 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
         return Math.Max(0, ResolveEnergyXValue());
     }
 
-    public int GetPreviewHitCount() => ResolveXHitCount();
+    public int GetPreviewHitCount()
+    {
+        int xValue = EnergyCost.GetAmountToSpend();
+        if (Pile != null && CombatState is { } combatState)
+        {
+            xValue = Hook.ModifyXValue(combatState, this, xValue);
+        }
+
+        return Math.Max(0, ModifyPreviewHitCount(xValue));
+    }
+
+    protected virtual int ModifyPreviewHitCount(int xValue) => xValue;
 
     protected sealed override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -64,7 +64,7 @@
   "NINJA_SLAYER_CARD_HELL_TORNADO.title": "地狱龙卷",
   "NINJA_SLAYER_CARD_HELL_TORNADO.description": "获得[gold]翱翔[/gold]。\n在下个回合开始时，将所有[gold]手里剑[/gold]打出2次。\n[gold]翱翔[/gold]时，[gold]手里剑[/gold]会攻击所有敌人。",
   "NINJA_SLAYER_CARD_TORNADO_FIST.title": "龙卷拳",
-  "NINJA_SLAYER_CARD_TORNADO_FIST.description": "造成{Damage:diff()}点伤害{IfUpgraded:show:X+1|X}次。\n每造成1次未被[gold]格挡[/gold]的伤害，给予{VulnerablePower:diff()}层[gold]易伤[/gold]。{InCombat:\n（命中{CalculatedHits:diff()}次）|}",
+  "NINJA_SLAYER_CARD_TORNADO_FIST.description": "造成{Damage:diff()}点伤害{IfUpgraded:show:X+1|X}次。\n每造成1次未被[gold]格挡[/gold]的伤害，给予{VulnerablePower:diff()}层[gold]易伤[/gold]。",
   "NINJA_SLAYER_CARD_REST_GUARD.title": "息守",
   "NINJA_SLAYER_CARD_REST_GUARD.description": "只能在手牌中有[gold]茶道[/gold]时打出。\n获得{Block:diff()}点[gold]格挡[/gold]。",
   "NINJA_SLAYER_CARD_SHURIKEN_STOCK.title": "备镖",

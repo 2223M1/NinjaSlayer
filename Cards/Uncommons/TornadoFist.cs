@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
-using STS2RitsuLib.Cards.DynamicVars;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
@@ -25,11 +24,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),
-        new PowerVar<VulnerablePower>(1),
-        new ComputedDynamicVar(
-            "CalculatedHits",
-            0m,
-            card => card is TornadoFist tornadoFist ? tornadoFist.ResolveXHitCount() : 0m)
+        new PowerVar<VulnerablePower>(1)
     ];
 
     public TornadoFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -44,6 +39,8 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
         return hits;
     }
+
+    protected override int ModifyPreviewHitCount(int xValue) => xValue + (IsUpgraded ? 1 : 0);
 
     protected override Task OnBeforeXHit(
         PlayerChoiceContext choiceContext,
