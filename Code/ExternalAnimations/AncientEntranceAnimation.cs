@@ -16,8 +16,7 @@ public static class AncientEntranceAnimation
     private const float FallDistance = 900f;
     private const float SideOffset = 1400f;
     private const float SideStartYOffset = -140f;
-    private const float LeftLandingOffset = -160f;
-    private const float SpinDegreesPerSecond = 1440f;
+    private const float LeftLandingOffset = -110f;
 
     public static async Task Play(Player player)
     {
@@ -103,10 +102,17 @@ public static class AncientEntranceAnimation
             creatureNode.Position = landingPos;
             body.RotationDegrees = invertedRotationDegrees;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
+            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
 
             await Task.WhenAll(
                 ByrdFallAnimation.Play(creature, FallDistance, FallDuration),
                 HoldBodyRotation(body, invertedRotationDegrees, FallDuration));
+            SoarSpinAnimation.StopAirborneSpin(creature);
+            body.Scale = snapshot.BodyScale;
+            if (body is Sprite2D sprite)
+            {
+                sprite.Offset = Vector2.Zero;
+            }
             body.RotationDegrees = invertedRotationDegrees;
             await Task.WhenAll(
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, RiseDuration, Tween.EaseType.Out, Tween.TransitionType.Quad),
@@ -132,7 +138,7 @@ public static class AncientEntranceAnimation
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             creatureNode.Position = startPos;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
-            SoarSpinAnimation.StartAirborneSpin(creature, SpinDegreesPerSecond);
+            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
 
             await Task.WhenAll(
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, FallDuration, Tween.EaseType.In, Tween.TransitionType.Quad),

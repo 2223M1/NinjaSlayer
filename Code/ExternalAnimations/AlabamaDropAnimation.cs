@@ -20,6 +20,8 @@ public static class AlabamaDropAnimation
     private const float TumbleDegrees = 1800f;
     private const float MinScaleRatio = 0.18f;
 
+    internal const float TumbleDegreesPerSecond = TumbleDegrees / FallDuration;
+
     public static async Task Play(Creature owner, Creature target, Func<Task> onImpact)
     {
         if (!TryGetRig(owner, out CreatureRig ownerRig) || !TryGetRig(target, out CreatureRig targetRig))
