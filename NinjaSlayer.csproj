@@ -37,6 +37,10 @@
     <GodotExe Condition="'$(GodotExe)' == ''">C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
     <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)\mods\$(MSBuildProjectName)\</SteamModDir>
+    <WorkshopUploadRoot Condition="'$(WorkshopUploadRoot)' == ''">$(MSBuildProjectDirectory)\..\上传mod</WorkshopUploadRoot>
+    <WorkshopContentDir Condition="'$(WorkshopContentDir)' == ''">$(WorkshopUploadRoot)\$(MSBuildProjectName)\content\</WorkshopContentDir>
+    <WorkshopUploaderExe Condition="'$(WorkshopUploaderExe)' == ''">$(WorkshopUploadRoot)\ModUploader.exe</WorkshopUploaderExe>
+    <UploadWorkshopAfterBuild Condition="'$(UploadWorkshopAfterBuild)' == ''">true</UploadWorkshopAfterBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsLinux)' == 'true'">
@@ -128,6 +132,26 @@
       <BuiltModFiles Include="$(PostBuildModDir)**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(BuiltModFiles)" DestinationFiles="@(BuiltModFiles->'$(SteamModDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="SyncAndUploadWorkshop"
+          AfterTargets="SyncModToSteam"
+          Condition="'$(IsInnerGodotExport)' != 'true' and '$(IsWindows)' == 'true' and '$(UploadWorkshopAfterBuild)' == 'true'">
+    <Error Condition="!Exists('$(WorkshopUploaderExe)')"
+           Text="Workshop uploader missing at $(WorkshopUploaderExe). Set UploadWorkshopAfterBuild=false to build without uploading." />
+    <Error Condition="!Exists('$(WorkshopUploadRoot)\$(MSBuildProjectName)\workshop.json')"
+           Text="Workshop config missing at $(WorkshopUploadRoot)\$(MSBuildProjectName)\workshop.json." />
+    <MakeDir Directories="$(WorkshopContentDir)" />
+    <ItemGroup>
+      <WorkshopModFiles Include="$(PostBuildModDir)$(MSBuildProjectName).dll" />
+      <WorkshopModFiles Include="$(PostBuildModDir)$(MSBuildProjectName).json" />
+      <WorkshopModFiles Include="$(PostBuildModDir)$(MSBuildProjectName).pck" />
+    </ItemGroup>
+    <Message Text="Syncing exported mod to workshop content at $(WorkshopContentDir)..." Importance="high" />
+    <Copy SourceFiles="@(WorkshopModFiles)" DestinationFolder="$(WorkshopContentDir)" SkipUnchangedFiles="false" />
+    <Message Text="Uploading $(MSBuildProjectName) to Steam Workshop..." Importance="high" />
+    <Exec Command="&quot;$(WorkshopUploaderExe)&quot; upload -w $(MSBuildProjectName)"
+          WorkingDirectory="$(WorkshopUploadRoot)" />
   </Target>
 
   <UsingTask
