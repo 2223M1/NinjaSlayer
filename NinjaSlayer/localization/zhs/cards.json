@@ -153,8 +153,6 @@
   "NINJA_SLAYER_CARD_STEEP_TEA.description": "将1张[gold]茶道[/gold]加入手牌。",
   "NINJA_SLAYER_CARD_COLD_BREW.title": "冷泡",
   "NINJA_SLAYER_CARD_COLD_BREW.description": "[gold]预见[/gold]{Cards:diff()}。\n抽{Draw:diff()}张牌。",
-  "NINJA_SLAYER_CARD_MATCHA_RUSH.title": "抹茶",
-  "NINJA_SLAYER_CARD_MATCHA_RUSH.description": "将{Chado:diff()}张[gold]茶道[/gold]加入手牌。",
   "NINJA_SLAYER_CARD_PALM_THRUST.title": "掌打",
   "NINJA_SLAYER_CARD_PALM_THRUST.description": "随机对敌人造成{Damage:diff()}点伤害{Repeat:diff()}次。",
   "NINJA_SLAYER_CARD_SWEEP_KICK.title": "扫腿",
