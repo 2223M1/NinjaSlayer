@@ -10,14 +10,14 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class AlabamaDropAnimation
 {
-    private const float ApproachDuration = 0.5f;
-    private const float RiseDuration = 0.6f;
+    private const float ApproachDuration = 0.2f;
+    private const float RiseDuration = 0.4f;
     private const float FallDuration = 0.6f;
     private const float StandUpDuration = 0.2f;
     private const float RiseDistance = 900f;
-    private const float ApproachGap = 80f;
+    private const float ApproachGap = 50f;
     private const float ReturnHopHeight = 70f;
-    private const float TumbleDegrees = 720f;
+    private const float TumbleDegrees = 1800f;
     private const float MinScaleRatio = 0.18f;
 
     public static async Task Play(Creature owner, Creature target, Func<Task> onImpact)

@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Monsters;
@@ -46,6 +47,22 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
     {
         _lowHealthLinePlayed = false;
         return Task.CompletedTask;
+    }
+
+    public override async Task AfterPowerAmountChanged(
+        PlayerChoiceContext choiceContext,
+        PowerModel power,
+        decimal amount,
+        Creature? applier,
+        CardModel? cardSource)
+    {
+        if (power.Owner.Player?.Character is not NinjaSlayerCharacter
+            || power.GetTypeForAmount(amount) != PowerType.Debuff)
+        {
+            return;
+        }
+
+        await ShakeAnimation.Play(power.Owner);
     }
 
     public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
