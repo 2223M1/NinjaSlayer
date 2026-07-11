@@ -20,8 +20,7 @@ public sealed class PhantomBlades : NinjaSlayerCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenSpread");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new ShurikenVar(3),
-        new CardsVar(2)
+        new ShurikenVar(3)
     ];
 
     public PhantomBlades() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -30,7 +29,6 @@ public sealed class PhantomBlades : NinjaSlayerCardTemplate
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, DynamicVars.Shuriken().IntValue, PileType.Hand);
-        await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
     }
 
     protected override void OnUpgrade()

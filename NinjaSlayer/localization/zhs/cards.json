@@ -166,7 +166,7 @@
   "NINJA_SLAYER_CARD_SHURIKEN_GUARD.title": "剑壁",
   "NINJA_SLAYER_CARD_SHURIKEN_GUARD.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将{Shuriken:diff()}张[gold]手里剑[/gold]加入手牌。",
   "NINJA_SLAYER_CARD_PHANTOM_BLADES.title": "幻影剑",
-  "NINJA_SLAYER_CARD_PHANTOM_BLADES.description": "将{Shuriken:diff()}张[gold]手里剑[/gold]加入手牌。\n抽{Cards:diff()}张牌。",
+  "NINJA_SLAYER_CARD_PHANTOM_BLADES.description": "将{Shuriken:diff()}张[gold]手里剑[/gold]加入手牌。",
   "NINJA_SLAYER_CARD_SHIELD_FROM_NOTHING.title": "无中生盾",
   "NINJA_SLAYER_CARD_SHIELD_FROM_NOTHING.description": "每当[gold]空手道[/gold]触发时，获得{Block:diff()}点[gold]格挡[/gold]。",
   "NINJA_SLAYER_CARD_EVOLUTION.title": "进化",

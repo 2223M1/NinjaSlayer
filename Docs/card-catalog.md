@@ -123,7 +123,6 @@ BladeDance/BladeDance 蓝/攻击 费用1
 
 幻影剑/PhantomBlades 金/技能 费用1
 将3→4张手里剑加入手牌。
-抽2张牌。
 
 注入/Injection 金/能力 费用2
 你的手里剑造成未被格挡的伤害时，给予2层空手道。
