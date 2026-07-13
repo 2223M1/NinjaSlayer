@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Powers;
 
@@ -83,6 +84,18 @@ public static class NinjaSlayerActions
                 && e.Card.Owner == card.Owner
                 && e.Card is ChadoCard);
 
+    public static bool ChadoDiscardedThisTurn(CardModel card) =>
+        CombatManager.Instance.History.Entries
+            .OfType<CardDiscardedEntry>()
+            .Any(e => e.HappenedThisTurn(card.CombatState)
+                && e.Card.Owner == card.Owner
+                && e.Card is ChadoCard);
+
+    public static bool PreviousFinishedCardWasAttack(Player player) =>
+        CombatManager.Instance.History.CardPlaysFinished
+            .LastOrDefault(e => e.CardPlay.Card.Owner == player)?
+            .CardPlay.Card.Type == CardType.Attack;
+
     public static int MeleeAttacksPlayedThisTurn(Player player) =>
         CombatManager.Instance.History.CardPlaysFinished.Count(e =>
             e.HappenedThisTurn(player.Creature.CombatState)
@@ -123,7 +136,14 @@ public static class NinjaSlayerActions
         PreviewGeneratedPileAdd(pile, results);
     }
 
-    public static async Task AddGeneratedShuriken(PlayerChoiceContext choiceContext, Player owner, int count, PileType pile, bool upgraded = false, CardPilePosition position = CardPilePosition.Bottom)
+    public static async Task AddGeneratedShuriken(
+        PlayerChoiceContext choiceContext,
+        Player owner,
+        int count,
+        PileType pile,
+        bool upgraded = false,
+        CardPilePosition position = CardPilePosition.Bottom,
+        bool prepare = false)
     {
         if (count <= 0 || CombatManager.Instance.IsOverOrEnding)
         {
@@ -171,6 +191,17 @@ public static class NinjaSlayerActions
 
         IReadOnlyList<CardPileAddResult> results = await CardPileCmd.AddGeneratedCardsToCombat(cards, pile, owner, position);
         PreviewGeneratedPileAdd(pile, results);
+
+        if (prepare)
+        {
+            foreach (CardPileAddResult result in results)
+            {
+                if (result.success)
+                {
+                    await PrepareCmd.Apply(result.cardAdded);
+                }
+            }
+        }
     }
 
     private static void PreviewGeneratedPileAdd(PileType pile, CardPileAddResult result)

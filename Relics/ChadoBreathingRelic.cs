@@ -1,12 +1,15 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
 using NinjaSlayer.Content;
+using NinjaSlayer.Cards;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -28,10 +31,19 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         new HealVar(HealAmount)
     ];
 
-    public override Task BeforeCombatStart()
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
+        HoverTipFactory.FromCard<ChadoCard>()
+    ];
+
+    public override async Task BeforeCombatStart()
     {
         _healedThisCombat = 0;
-        return Task.CompletedTask;
+        Flash();
+        await CardPileCmd.AddToCombatAndPreview<ChadoCard>(
+            Owner.Creature,
+            PileType.Hand,
+            1,
+            Owner);
     }
 
     public override Task AfterCombatEnd(CombatRoom _)

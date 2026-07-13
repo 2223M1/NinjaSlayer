@@ -75,5 +75,11 @@
   "NINJA_SLAYER_POWER_INJECTION_POWER.description": "你的手里剑造成未被格挡的伤害时，给予{Amount}层空手道。",
   "NINJA_SLAYER_POWER_INJECTION_POWER.smartDescription": "你的[gold]手里剑[/gold]造成未被格挡的伤害时，给予[blue]{Amount}[/blue]层[gold]空手道[/gold]。",
   "NINJA_SLAYER_POWER_OPENING_POWER.title": "破绽",
-  "NINJA_SLAYER_POWER_OPENING_POWER.description": "本回合，下{Amount}次攻击伤害对这名敌人造成双倍伤害。"
+  "NINJA_SLAYER_POWER_OPENING_POWER.description": "本回合，下{Amount}次攻击伤害对这名敌人造成双倍伤害。",
+  "NINJA_SLAYER_POWER_NEXT_DISCARD_PREPARED_POWER.title": "忍者冷漠",
+  "NINJA_SLAYER_POWER_NEXT_DISCARD_PREPARED_POWER.description": "本回合，接下来{Amount}张进入弃牌堆的牌获得[gold]蓄势[/gold]。",
+  "NINJA_SLAYER_POWER_DISCARD_DEFENSE_POWER.title": "丢弃防御",
+  "NINJA_SLAYER_POWER_DISCARD_DEFENSE_POWER.description": "本回合，每丢弃一张牌，获得{Amount}点[gold]格挡[/gold]。",
+  "NINJA_SLAYER_POWER_OPENING_GUARD_POWER.title": "破绽防御",
+  "NINJA_SLAYER_POWER_OPENING_GUARD_POWER.description": "记录被你完全防御住攻击的敌人，并在下回合开始时给予其1层[gold]破绽[/gold]。"
 }

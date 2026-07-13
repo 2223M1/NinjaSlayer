@@ -27,6 +27,11 @@ public sealed class VigorAmountVar(decimal amount) : DynamicVar(Key, amount)
     public const string Key = "Vigor";
 }
 
+public sealed class CalculatedKarateVar() : CalculatedVar(Key)
+{
+    public const string Key = "CalculatedKarate";
+}
+
 public static class NinjaSlayerDynamicVarExtensions
 {
     public static KarateVar Karate(this DynamicVarSet vars) => (KarateVar)vars[KarateVar.Key];
@@ -39,4 +44,7 @@ public static class NinjaSlayerDynamicVarExtensions
 
     public static VigorAmountVar VigorAmount(this DynamicVarSet vars) =>
         (VigorAmountVar)vars[VigorAmountVar.Key];
+
+    public static CalculatedKarateVar CalculatedKarate(this DynamicVarSet vars) =>
+        (CalculatedKarateVar)vars[CalculatedKarateVar.Key];
 }

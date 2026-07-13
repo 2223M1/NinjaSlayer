@@ -15,12 +15,17 @@ public static class NinjaSlayerDebugCardCatalog
 
         // Commons
         typeof(Chop),
+        typeof(DiscardDefense),
+        typeof(BurningStrike),
         typeof(GuardedBreath),
         typeof(IHit),
         typeof(KataDrill),
+        typeof(LuckyStrike),
         typeof(NinjaApathy),
+        typeof(NinjaWhip),
         typeof(NinjaWall),
         typeof(PalmThrust),
+        typeof(PerfectChop),
         typeof(RestGuard),
         typeof(ShurikenSpread),
         typeof(ShurikenStock),
@@ -28,6 +33,8 @@ public static class NinjaSlayerDebugCardCatalog
         typeof(SipTea),
         typeof(SmokeRead),
         typeof(SteepTea),
+        typeof(TeaHitsPeople),
+        typeof(ThrowKunai),
         typeof(WhiskSlash),
 
         // Ancients
@@ -43,7 +50,9 @@ public static class NinjaSlayerDebugCardCatalog
     private static readonly (Type Original, Type Replacement)[] Replacements = [];
 
     // Add any registered test card type here without changing its normal-mode pool registration.
-    private static readonly Type[] AdditionalCards = [];
+    private static readonly Type[] AdditionalCards = [
+        typeof(OpeningGuard)
+    ];
 
     public static CardModel[] CreateCards()
     {

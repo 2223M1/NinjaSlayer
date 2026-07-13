@@ -6,33 +6,23 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
-using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-public sealed class IHit : NinjaSlayerCardTemplate
+public sealed class BurningStrike : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
-
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("StrikeNinjaSlayer");
+    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BurningCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(12, ValueProp.Move),
-        new EnergyVar(2)
+        new DamageVar(14, ValueProp.Move)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        HoverTipFactory.FromCard<ChadoCard>()
+        HoverTipFactory.FromCard<BurningCard>()
     ];
 
-    public IHit() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
-
-    protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoDiscardedThisTurn(this);
+    public BurningStrike() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -43,11 +33,7 @@ public sealed class IHit : NinjaSlayerCardTemplate
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
-
-        if (NinjaSlayerActions.ChadoDiscardedThisTurn(this))
-        {
-            await PlayerCmd.GainEnergy(DynamicVars.Energy.BaseValue, Owner);
-        }
+        await NinjaSlayerActions.AddGeneratedCard<BurningCard>(Owner, PileType.Draw);
     }
 
     protected override void OnUpgrade()
