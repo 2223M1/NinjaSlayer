@@ -1,11 +1,12 @@
 using Godot;
 using MegaCrit.Sts2.Core.Models;
+using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Utils;
 
 namespace NinjaSlayer.Content;
 
-public sealed class NinjaSlayerCardPool : TypeListCardPoolModel
+public class NinjaSlayerCardPool : TypeListCardPoolModel
 {
     private static readonly Material? _poolFrameMaterial = MaterialUtils.CreateHsvShaderMaterial(1f, 1.2f, 0.65f);
 
@@ -17,6 +18,17 @@ public sealed class NinjaSlayerCardPool : TypeListCardPoolModel
     public override Color EnergyOutlineColor => new("691A1BFF");
     public override Material? PoolFrameMaterial => _poolFrameMaterial;
     public override bool IsColorless => false;
+}
+
+[RegisterSharedCardPool]
+public sealed class NinjaSlayerDebugCardPool : NinjaSlayerCardPool
+{
+    private CardModel[]? _cards;
+
+    public override string Title => "NinjaSlayerDebug";
+
+    public override IEnumerable<CardModel> AllCards =>
+        _cards ??= NinjaSlayerDebugCardCatalog.CreateCards();
 }
 
 public sealed class NinjaSlayerRelicPool : TypeListRelicPoolModel

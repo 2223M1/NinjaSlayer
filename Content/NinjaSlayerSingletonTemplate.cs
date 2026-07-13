@@ -9,7 +9,7 @@ public abstract class NinjaSlayerSingletonTemplate : HookedSingletonModel
     {
     }
 
-    protected static bool IsNinjaSlayer(Player? player) => player?.Character is NinjaSlayerCharacter;
+    protected static bool IsNinjaSlayer(Player? player) => player?.Character is INinjaSlayerCharacter;
 }
 
 public abstract class NinjaSlayerCombatSingletonTemplate : NinjaSlayerSingletonTemplate

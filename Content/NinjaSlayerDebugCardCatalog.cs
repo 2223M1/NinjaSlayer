@@ -1,0 +1,71 @@
+using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Cards;
+
+namespace NinjaSlayer.Content;
+
+public static class NinjaSlayerDebugCardCatalog
+{
+    private static readonly Type[] BaselineCards =
+    [
+        // Basics
+        typeof(DefendNinjaSlayer),
+        typeof(KarateStraight),
+        typeof(Meditation),
+        typeof(StrikeNinjaSlayer),
+
+        // Commons
+        typeof(Chop),
+        typeof(GuardedBreath),
+        typeof(IHit),
+        typeof(KataDrill),
+        typeof(NinjaApathy),
+        typeof(NinjaWall),
+        typeof(PalmThrust),
+        typeof(RestGuard),
+        typeof(ShurikenSpread),
+        typeof(ShurikenStock),
+        typeof(ShurikenThrow),
+        typeof(SipTea),
+        typeof(SmokeRead),
+        typeof(SteepTea),
+        typeof(WhiskSlash),
+
+        // Ancients
+        typeof(CollapseFist),
+        typeof(OneBodyOneSoul),
+        typeof(ZazenDrink),
+    ];
+
+    // Add a baseline card type here to omit it from debug mode.
+    private static readonly Type[] RemovedCards = [];
+
+    // Add (typeof(CurrentCard), typeof(TestReplacement)) here to replace a baseline card.
+    private static readonly (Type Original, Type Replacement)[] Replacements = [];
+
+    // Add any registered test card type here without changing its normal-mode pool registration.
+    private static readonly Type[] AdditionalCards = [];
+
+    public static CardModel[] CreateCards()
+    {
+        HashSet<Type> removed = RemovedCards.ToHashSet();
+        Dictionary<Type, Type> replacements = Replacements.ToDictionary(pair => pair.Original, pair => pair.Replacement);
+
+        IEnumerable<Type> selectedTypes = BaselineCards
+            .Where(type => !removed.Contains(type))
+            .Select(type => replacements.GetValueOrDefault(type, type))
+            .Concat(AdditionalCards)
+            .Distinct();
+
+        return selectedTypes.Select(ResolveCard).ToArray();
+    }
+
+    private static CardModel ResolveCard(Type cardType)
+    {
+        if (!cardType.IsSubclassOf(typeof(CardModel)))
+        {
+            throw new InvalidOperationException($"Debug card pool entry {cardType.FullName} is not a CardModel.");
+        }
+
+        return ModelDb.GetById<CardModel>(ModelDb.GetId(cardType));
+    }
+}

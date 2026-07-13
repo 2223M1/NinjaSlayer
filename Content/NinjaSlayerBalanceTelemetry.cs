@@ -46,6 +46,7 @@ public static class NinjaSlayerBalanceTelemetry
                             !evt.IsAbandoned
                             && evt.Run.Players.Any(player =>
                                 player.CharacterId == ModelDb.Character<NinjaSlayerCharacter>().Id
+                                || player.CharacterId == ModelDb.Character<NinjaSlayerDebugCharacter>().Id
                             )
                     ),
                 ],

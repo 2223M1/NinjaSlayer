@@ -56,7 +56,7 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
         Creature? applier,
         CardModel? cardSource)
     {
-        if (power.Owner.Player?.Character is not NinjaSlayerCharacter
+        if (power.Owner.Player?.Character is not INinjaSlayerCharacter
             || power.GetTypeForAmount(amount) != PowerType.Debuff)
         {
             return;
@@ -67,7 +67,7 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
 
     public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target.Player?.Character is not NinjaSlayerCharacter)
+        if (target.Player?.Character is not INinjaSlayerCharacter)
         {
             return Task.CompletedTask;
         }

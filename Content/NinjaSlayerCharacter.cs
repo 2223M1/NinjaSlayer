@@ -17,8 +17,12 @@ using STS2RitsuLib.Scaffolding.Visuals.StateMachine;
 
 namespace NinjaSlayer.Content;
 
-[RegisterCharacter]
-public sealed class NinjaSlayerCharacter : ModCharacterTemplate<NinjaSlayerCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>
+public interface INinjaSlayerCharacter
+{
+}
+
+public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemplate<TCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>, INinjaSlayerCharacter
+    where TCardPool : CardPoolModel
 {
     private const string visualsPath = "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn";
     private const string energyCounterPath = "res://NinjaSlayer/scenes/ui/ninja_slayer_energy_counter.tscn";

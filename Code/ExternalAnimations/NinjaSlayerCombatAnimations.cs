@@ -16,7 +16,7 @@ public static class NinjaSlayerCombatAnimations
 
     public static bool TryPlayTriggerAnim(Creature creature, string triggerName, float waitTime, ref Task result)
     {
-        if (creature.Player?.Character is not NinjaSlayerCharacter || creature.IsDead)
+        if (creature.Player?.Character is not INinjaSlayerCharacter || creature.IsDead)
         {
             return false;
         }

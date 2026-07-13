@@ -8,7 +8,7 @@ public static class NinjaSlayerAnimations
 {
     public static ModAnimStateMachine BuildCombatAnimationStateMachine(Node visualsRoot, CharacterModel character)
     {
-        if (character is not NinjaSlayerCharacter)
+        if (character is not INinjaSlayerCharacter)
         {
             throw new InvalidOperationException("NinjaSlayer animation state machine requires a NinjaSlayer character model.");
         }

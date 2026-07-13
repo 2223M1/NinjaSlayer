@@ -6,6 +6,7 @@ using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
+using NinjaSlayer.Relics;
 using STS2RitsuLib;
 using STS2RitsuLib.Audio;
 using STS2RitsuLib.Interop;
@@ -50,6 +51,12 @@ public class Entry
                 .AddStartingCard<DefendNinjaSlayer>(4, 1)
                 .AddStartingCard<Meditation>(1, 2)
                 .AddStartingCard<KarateStraight>(1, 3))
+            .Character<NinjaSlayerDebugCharacter>(character => character
+                .AddStartingCard<StrikeNinjaSlayer>(4, 0)
+                .AddStartingCard<DefendNinjaSlayer>(4, 1)
+                .AddStartingCard<Meditation>(1, 2)
+                .AddStartingCard<KarateStraight>(1, 3)
+                .AddStartingRelic<ChadoBreathingRelic>(1, 0))
             .Apply();
 
         RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();

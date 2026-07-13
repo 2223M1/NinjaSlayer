@@ -19,7 +19,7 @@ public sealed class AncientEntranceEventOptionPatch : IPatchMethod
 
     public static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
     {
-        if (__instance is not AncientEventModel || __instance.Owner?.Character is not NinjaSlayerCharacter)
+        if (__instance is not AncientEventModel || __instance.Owner?.Character is not INinjaSlayerCharacter)
         {
             return;
         }

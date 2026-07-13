@@ -40,7 +40,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
 
     private static bool IsNinjaSlayerNonSpine(NCreature creatureNode)
     {
-        return creatureNode.Entity.Player?.Character is NinjaSlayerCharacter
+        return creatureNode.Entity.Player?.Character is INinjaSlayerCharacter
             && !creatureNode.HasSpineAnimation;
     }
 }

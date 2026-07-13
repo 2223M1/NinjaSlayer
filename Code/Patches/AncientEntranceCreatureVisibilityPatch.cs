@@ -29,5 +29,5 @@ public sealed class AncientEntranceCreatureVisibilityPatch : IPatchMethod
     }
 
     private static bool IsNinjaSlayer(MegaCrit.Sts2.Core.Entities.Players.Player player) =>
-        player.Character is NinjaSlayerCharacter;
+        player.Character is INinjaSlayerCharacter;
 }
