@@ -99,6 +99,5 @@ public static class XAttackComboMovement
 
         await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
         creatureNode.Position = basePos;
-        HopAnimation.SyncBasePosition(creature, basePos);
     }
 }
