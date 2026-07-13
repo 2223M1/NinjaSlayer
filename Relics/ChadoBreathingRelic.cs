@@ -16,6 +16,8 @@ namespace NinjaSlayer.Relics;
 [RegisterTouchOfOrobasRefinement(typeof(DeepChadoBreathingRelic))]
 public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 {
+    protected virtual int ChadoCount => 1;
+
     public override RelicRarity Rarity => RelicRarity.Starter;
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -32,8 +34,12 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
             return;
         }
 
-        ChadoCard chado = combatState.CreateCard<ChadoCard>(Owner);
-        await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
+        for (int i = 0; i < ChadoCount; i++)
+        {
+            ChadoCard chado = combatState.CreateCard<ChadoCard>(Owner);
+            await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
+        }
+
         Flash();
     }
 }
