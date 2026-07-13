@@ -86,7 +86,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
     {
         try
         {
-            await overlay.PlayAsync(NinjaSlayerAudio.TransitionSeconds, cancelToken ?? CancellationToken.None);
+            await overlay.PlayAsync(NinjaSlayerAudio.TransitionVisualSeconds, cancelToken ?? CancellationToken.None);
         }
         catch (Exception ex)
         {

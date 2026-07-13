@@ -12,7 +12,7 @@ public sealed class NinjaSlayerEmbarkLoadDelayPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_transition_embark_load_delay";
 
-    public static string Description => "Delay run loading by 1.0s after the embark transition animation starts.";
+    public static string Description => "Start new-run loading 0.2s after the embark transition animation starts.";
 
     public static bool IsCritical => false;
 
@@ -29,7 +29,7 @@ public sealed class NinjaSlayerSaveLoadDelayPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_transition_save_load_delay";
 
-    public static string Description => "Delay run loading by 1.0s after the save-load transition animation starts.";
+    public static string Description => "Start save loading 0.6s after the transition animation starts.";
 
     public static bool IsCritical => false;
 

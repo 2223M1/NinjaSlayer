@@ -24,6 +24,8 @@ public interface INinjaSlayerCharacter
 public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemplate<TCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>, INinjaSlayerCharacter
     where TCardPool : CardPoolModel
 {
+    private const int idleFrameCount = 30;
+    private const float idleLoopDuration = 0.8f;
     private const string visualsPath = "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn";
     private const string energyCounterPath = "res://NinjaSlayer/scenes/ui/ninja_slayer_energy_counter.tscn";
     private const string idleTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png";
@@ -133,9 +135,12 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
 
     private static void AddIdleFrames(VisualFrameSequenceBuilder seq)
     {
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= idleFrameCount; i++)
         {
-            seq.Frame($"res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_{i:0000}.png", 1f / 30f, CueStyle(offsetX: 0f));
+            seq.Frame(
+                $"res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_{i:0000}.png",
+                idleLoopDuration / idleFrameCount,
+                CueStyle(offsetX: 0f));
         }
 
         seq.Loop();
