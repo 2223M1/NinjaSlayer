@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://NinjaSlayer/shaders/vfx/card_overlays/prepared/prepared_main.gdshader" id="1_grje2"]
+
+[resource]
+shader = ExtResource("1_grje2")
+shader_parameter/bright_st = Vector4(0, 0, 0.5, 0)
+shader_parameter/bright_energy = 1.5

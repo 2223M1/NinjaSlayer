@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://NinjaSlayer/shaders/vfx/card_overlays/prepared/prepared_border.gdshader" id="1_ifahw"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/card_overlays/prepared/border_vignette.png" id="2_ui6ca"]
+
+[sub_resource type="Gradient" id="Gradient_o32id"]
+colors = PackedColorArray(0.23587498, 0.51, 0.1275, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_m8t11"]
+gradient = SubResource("Gradient_o32id")
+
+[resource]
+shader = ExtResource("1_ifahw")
+shader_parameter/main_st = Vector4(1, 3, 0.25, 0)
+shader_parameter/mask_erosion = Vector2(0.4, 0.6)
+shader_parameter/lut = SubResource("GradientTexture1D_m8t11")
+shader_parameter/mask = ExtResource("2_ui6ca")

@@ -1,0 +1,226 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/card_overlays/prepared/card_mask.png" id="1_esbo8"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/card_overlays/prepared/border_vignette.png" id="2_2k51p"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/card_overlays/prepared/border_glow.png" id="3_2uuck"]
+[ext_resource type="Material" path="res://NinjaSlayer/materials/vfx/card_overlays/prepared/prepared_border.tres" id="4_ai2lj"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/card_overlays/prepared/noise.png" id="5_qhq7s"]
+[ext_resource type="PackedScene" path="res://NinjaSlayer/scenes/card_overlays/prepared/prepared_specks.tscn" id="6_eq7va"]
+[ext_resource type="Material" path="res://NinjaSlayer/materials/vfx/card_overlays/prepared/prepared_main.tres" id="7_imiq2"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/card_overlays/prepared/prepared_main.png" id="8_1xw8f"]
+
+[sub_resource type="Curve" id="Curve_b8nia"]
+_data = [Vector2(0, 0), 0.0, 2.3007884, 0, 0, Vector2(0.4986945, 0.50145626), 0.0, 0.0, 0, 0, Vector2(1, 0), -0.018286815, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_71x6u"]
+curve = SubResource("Curve_b8nia")
+
+[sub_resource type="Curve" id="Curve_u1lcf"]
+_data = [Vector2(0, 0), 0.0, 4.30388, 0, 0, Vector2(0.501292, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -5.93081, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_m0c3s"]
+curve = SubResource("Curve_u1lcf")
+
+[sub_resource type="Curve" id="Curve_1ll8x"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, -1), 0.0, 0.0, 0, 0, Vector2(1, -0.24951458), 1.7954794, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_oyuva"]
+curve = SubResource("Curve_1ll8x")
+
+[sub_resource type="Curve" id="Curve_hjhl6"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0]
+point_count = 1
+
+[sub_resource type="CurveTexture" id="CurveTexture_pod23"]
+curve = SubResource("Curve_hjhl6")
+
+[sub_resource type="Curve" id="Curve_twkgf"]
+_limits = [0.0, 3.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.604607), -1.44846, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_iejey"]
+_limits = [0.0, 5.0, 0.0, 1.0]
+_data = [Vector2(0, 0.997601), 0.0, 0.0, 0, 0, Vector2(1, 3.25336), 6.03527, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_ose0i"]
+_limits = [0.0, 3.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_2ykcv"]
+curve_x = SubResource("Curve_twkgf")
+curve_y = SubResource("Curve_iejey")
+curve_z = SubResource("Curve_ose0i")
+
+[sub_resource type="Curve" id="Curve_y1cen"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_sy7ae"]
+curve = SubResource("Curve_y1cen")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3netq"]
+lifetime_randomness = 0.6
+particle_flag_align_y = true
+particle_flag_disable_z = true
+particle_flag_damping_as_friction = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 180.0
+emission_ring_inner_radius = 120.0
+emission_ring_cone_angle = 90.0
+direction = Vector3(-1, 0, 0)
+spread = 180.0
+flatness = 1.0
+radial_velocity_min = 19.999977
+radial_velocity_max = 49.999977
+radial_velocity_curve = SubResource("CurveTexture_oyuva")
+gravity = Vector3(0, 0, 0)
+damping_min = 0.1
+damping_max = 0.25
+damping_curve = SubResource("CurveTexture_m0c3s")
+scale_min = 0.08
+scale_max = 0.14999999
+scale_curve = SubResource("CurveTexture_pod23")
+scale_over_velocity_max = 75.0
+scale_over_velocity_curve = SubResource("CurveXYZTexture_2ykcv")
+alpha_curve = SubResource("CurveTexture_71x6u")
+turbulence_enabled = true
+turbulence_noise_strength = 5.0
+turbulence_noise_scale = 10.1
+turbulence_noise_speed = Vector3(0.1, 0.1, 0.1)
+turbulence_noise_speed_random = 1.0
+turbulence_influence_min = 0.65
+turbulence_influence_max = 0.85
+turbulence_initial_displacement_min = 1.49012e-06
+turbulence_initial_displacement_max = 1.49012e-06
+turbulence_influence_over_life = SubResource("CurveTexture_sy7ae")
+
+[node name="vfx_ui_card_afffliction_prepared" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -211.0
+offset_right = 150.0
+offset_bottom = 211.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="card_mask" type="TextureRect" parent="."]
+clip_children = 1
+custom_minimum_size = Vector2(300, 422)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_esbo8")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="border" type="TextureRect" parent="card_mask"]
+self_modulate = Color(0.27396876, 0.5137255, 0.12941176, 0.76862746)
+texture_repeat = 2
+material = ExtResource("4_ai2lj")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -61.0
+offset_right = 61.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_qhq7s")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="card_vignette" type="TextureRect" parent="card_mask"]
+self_modulate = Color(0.15, 0.6, 0.31499997, 0.1254902)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -61.0
+offset_right = 61.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_2k51p")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="card_glow" type="TextureRect" parent="card_mask"]
+self_modulate = Color(0.5505563, 1, 0.30270457, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_2uuck")
+expand_mode = 1
+
+[node name="vfx_common_specks" parent="card_mask" instance=ExtResource("6_eq7va")]
+self_modulate = Color(0.59557605, 1, 0.42108184, 1)
+position = Vector2(150, 211)
+rotation = 0.0
+emitting = true
+lifetime = 2.0
+one_shot = false
+explosiveness = 0.0
+process_material = SubResource("ParticleProcessMaterial_3netq")
+
+[node name="vfx_container" type="TextureRect" parent="."]
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(300, 422)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_right = 300.0
+offset_bottom = 422.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_esbo8")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="main" type="TextureRect" parent="vfx_container"]
+self_modulate = Color(0.51294047, 0.819067, 0.24793532, 0.78431374)
+texture_repeat = 2
+material = ExtResource("7_imiq2")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -211.0
+offset_top = -211.0
+offset_right = -89.0
+offset_bottom = -211.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.2, 1.2)
+pivot_offset = Vector2(211, 211)
+mouse_filter = 2
+texture = ExtResource("8_1xw8f")
+expand_mode = 1
+stretch_mode = 5

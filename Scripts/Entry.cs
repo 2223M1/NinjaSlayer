@@ -84,6 +84,8 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerSaveLoadDelayPatch>();
         patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
         patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
+        patcher.RegisterPatch<PreparedDrawPatch>();
+        patcher.RegisterPatch<PreparedPileExitPatch>();
         if (!patcher.PatchAll())
         {
             LogPatchFailure(patcher);
