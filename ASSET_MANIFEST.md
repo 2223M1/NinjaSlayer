@@ -54,7 +54,6 @@ Place card portraits in `NinjaSlayer/images/cards/`:
 - `DragonTornado.png`
 - `GiantShurikenCard.png`
 - `GreatUke.png`
-- `GuardedBreath.png`
 - `IrcTerminal.png`
 - `KarateFinish.png`
 - `KarateStraight.png`
