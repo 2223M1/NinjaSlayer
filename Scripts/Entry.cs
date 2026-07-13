@@ -86,6 +86,7 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
         patcher.RegisterPatch<PreparedDrawPatch>();
         patcher.RegisterPatch<PreparedPileExitPatch>();
+        patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>();
         if (!patcher.PatchAll())
         {
             LogPatchFailure(patcher);

@@ -1,9 +1,14 @@
+using System.Reflection;
 using System.Threading;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.Cards;
+using MegaCrit.Sts2.Core.Nodes.Screens;
+using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
 using NinjaSlayer.Code.Commands;
 using STS2RitsuLib.Patching.Models;
 
@@ -139,5 +144,42 @@ public sealed class PreparedPileExitPatch : IPatchMethod
         {
             CardCmd.ClearAffliction(card);
         }
+    }
+}
+
+public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
+{
+    private static readonly FieldInfo? GridField =
+        AccessTools.Field(typeof(NCardPileScreen), "_grid");
+
+    public static string PatchId => "ninjaslayer_prepared_draw_pile_display_order";
+
+    public static string Description =>
+        "Show prepared cards first in draw order when viewing the draw pile.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(NCardPileScreen), "OnPileContentsChanged")];
+
+    public static void Postfix(NCardPileScreen __instance)
+    {
+        CardPile pile = __instance.Pile;
+        if (pile.Type != PileType.Draw
+            || !pile.Cards.Any(PrepareCmd.IsPrepared)
+            || GridField?.GetValue(__instance) is not NCardGrid grid)
+        {
+            return;
+        }
+
+        List<CardModel> cards = pile.Cards
+            .Where(PrepareCmd.IsPrepared)
+            .Concat(pile.Cards
+                .Where(card => !PrepareCmd.IsPrepared(card))
+                .OrderBy(card => card.Rarity)
+                .ThenBy(card => card.Id.Entry, StringComparer.Ordinal))
+            .ToList();
+
+        grid.SetCards(cards, PileType.Draw, [SortingOrders.Ascending]);
     }
 }
