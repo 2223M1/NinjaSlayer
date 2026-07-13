@@ -37,8 +37,7 @@ public sealed class ChadoCombatRules : NinjaSlayerCombatSingletonTemplate
 
         int currentCost = chado.EnergyCost.GetWithModifiers(CostModifiers.Local);
         int newCost = Math.Min(DiscardCost, currentCost + amount);
-        chado.EnergyCost.SetThisTurnOrUntilPlayed(newCost);
-        NCard.FindOnTable(chado)?.PlayRandomizeCostAnim();
+        SetCostAndRefresh(chado, newCost);
 
         if (newCost >= DiscardCost)
         {
@@ -71,7 +70,13 @@ public sealed class ChadoCombatRules : NinjaSlayerCombatSingletonTemplate
             return;
         }
 
-        chado.EnergyCost.SetThisTurnOrUntilPlayed(0);
-        NCard.FindOnTable(chado)?.PlayRandomizeCostAnim();
+        SetCostAndRefresh(chado, 0);
+    }
+
+    private static void SetCostAndRefresh(ChadoCard chado, int cost)
+    {
+        chado.EnergyCost.SetThisTurnOrUntilPlayed(cost);
+        chado.InvokeEnergyCostChanged();
+        NCard.FindOnTable(chado)?.UpdateVisuals(PileType.Hand, CardPreviewMode.Normal);
     }
 }
