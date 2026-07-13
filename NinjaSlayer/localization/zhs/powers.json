@@ -73,5 +73,7 @@
   "NINJA_SLAYER_POWER_CLANK_DRINK_TEA_POWER.description": "每回合抽到的前{Amount}张[gold]茶道[/gold]会被[gold]消耗[/gold]。每消耗1张，抽{Cards}张牌。",
   "NINJA_SLAYER_POWER_INJECTION_POWER.title": "注入",
   "NINJA_SLAYER_POWER_INJECTION_POWER.description": "你的手里剑造成未被格挡的伤害时，给予{Amount}层空手道。",
-  "NINJA_SLAYER_POWER_INJECTION_POWER.smartDescription": "你的[gold]手里剑[/gold]造成未被格挡的伤害时，给予[blue]{Amount}[/blue]层[gold]空手道[/gold]。"
+  "NINJA_SLAYER_POWER_INJECTION_POWER.smartDescription": "你的[gold]手里剑[/gold]造成未被格挡的伤害时，给予[blue]{Amount}[/blue]层[gold]空手道[/gold]。",
+  "NINJA_SLAYER_POWER_OPENING_POWER.title": "破绽",
+  "NINJA_SLAYER_POWER_OPENING_POWER.description": "本回合，下{Amount}次攻击伤害对这名敌人造成双倍伤害。"
 }
