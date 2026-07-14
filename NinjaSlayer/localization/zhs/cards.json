@@ -114,7 +114,7 @@
   "NINJA_SLAYER_CARD_MASOCHISTIC_BLISS.title": "自虐爽",
   "NINJA_SLAYER_CARD_MASOCHISTIC_BLISS.description": "每当获得负面效果时，获得{Vigor:diff()}点[gold]活力[/gold]。",
   "NINJA_SLAYER_CARD_READY_BLADE.title": "备刃",
-  "NINJA_SLAYER_CARD_READY_BLADE.description": "[gold]预见[/gold]{Cards:diff()}。\n将{Shuriken:diff()}张[gold]手里剑[/gold]加入抽牌堆顶部。",
+  "NINJA_SLAYER_CARD_READY_BLADE.description": "[gold]蓄势[/gold]{Shuriken:diff()}张[gold]手里剑[/gold]。\n抽{Cards:diff()}张牌。",
   "NINJA_SLAYER_CARD_EVADE.title": "回避",
   "NINJA_SLAYER_CARD_EVADE.description": "获得{Evasion:diff()}层[gold]回避[/gold]。",
   "NINJA_SLAYER_CARD_FORGO_STRENGTH.title": "舍力",
