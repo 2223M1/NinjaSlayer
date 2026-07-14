@@ -23,7 +23,7 @@ public static class NinjaSlayerXAttackSequence
         }
 
         XAttackComboMovement.BeginCombo(creature);
-        bool useSlowAttack = hits <= 2 || creature.HasPower<NarakuPower>();
+        bool useSlowAttack = hits <= 4 || creature.HasPower<NarakuPower>();
         Func<Action, Task> executeHits = async finishSpinEarly =>
         {
             XAttackComboContext.Begin(hits);
