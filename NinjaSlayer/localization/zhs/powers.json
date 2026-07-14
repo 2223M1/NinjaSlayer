@@ -18,7 +18,7 @@
   "NINJA_SLAYER_POWER_EVASION_POWER.title": "回避",
   "NINJA_SLAYER_POWER_EVASION_POWER.description": "下次受到敌人攻击时，完全规避其中一段攻击（不失去生命，格挡也不会降低）。",
   "NINJA_SLAYER_POWER_EVERY_HIT_TEMPORARY_STRENGTH_POWER.title": "临时发劲",
-  "NINJA_SLAYER_POWER_EVERY_HIT_TEMPORARY_STRENGTH_POWER.description": "每造成一次伤害，获得{Amount}点[gold]临时力量[/gold]。",
+  "NINJA_SLAYER_POWER_EVERY_HIT_TEMPORARY_STRENGTH_POWER.description": "你每打出一张攻击牌，获得{Amount}点临时[gold]力量[/gold]。",
   "NINJA_SLAYER_POWER_EXHAUST_FOR_SHURIKEN_POWER.title": "手里剑补给",
   "NINJA_SLAYER_POWER_EXHAUST_FOR_SHURIKEN_POWER.description": "每当你消耗3张牌，将{Amount}张[gold]手里剑[/gold]加入手牌。",
   "NINJA_SLAYER_POWER_STARLESS_NIGHT_POWER.title": "无星之夜",

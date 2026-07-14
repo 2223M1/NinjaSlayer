@@ -28,8 +28,7 @@ public sealed class StraightKi : NinjaSlayerCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(18, ValueProp.Move),
-        new KarateVar(4)
+        new DamageVar(18, ValueProp.Move)
     ];
 
     public StraightKi() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -45,8 +44,6 @@ public sealed class StraightKi : NinjaSlayerCardTemplate
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
-
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
 
         if (shouldStun)
         {

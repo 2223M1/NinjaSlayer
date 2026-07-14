@@ -1,9 +1,11 @@
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -23,7 +25,8 @@ public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("SweepKick");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(12, ValueProp.Move)
+        new DamageVar(4, ValueProp.Move),
+        new DynamicVar("ChadoDamage", 8)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -33,16 +36,25 @@ public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
 
     public HalfMoonCompassKick() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
-    protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoExhaustedThisTurn(this);
+    protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoInHandCount(Owner) > 0;
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (!NinjaSlayerActions.ChadoExhaustedThisTurn(this))
+        List<CardModel> chadoCards = (await CardSelectCmd.FromHand(
+            choiceContext,
+            Owner,
+            new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, int.MaxValue),
+            card => card is ChadoCard,
+            this)).ToList();
+
+        foreach (CardModel chado in chadoCards)
         {
-            return;
+            await CardCmd.Exhaust(choiceContext, chado);
         }
 
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+        decimal damage = DynamicVars.Damage.BaseValue
+            + chadoCards.Count * DynamicVars["ChadoDamage"].BaseValue;
+        await DamageCmd.Attack(damage)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
@@ -52,6 +64,6 @@ public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(4);
+        DynamicVars["ChadoDamage"].UpgradeValueBy(4);
     }
 }

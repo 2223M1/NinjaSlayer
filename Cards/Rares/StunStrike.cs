@@ -20,8 +20,7 @@ public sealed class StunStrike : NinjaSlayerCardTemplate
     private const bool shouldShowInCardLibrary = true;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DamageVar(10, ValueProp.Move),
-        new KarateVar(3)
+        new DamageVar(10, ValueProp.Move)
     ];
 
     public StunStrike() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
@@ -35,7 +34,6 @@ public sealed class StunStrike : NinjaSlayerCardTemplate
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
             .Execute(choiceContext);
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         await CreatureCmd.Stun(cardPlay.Target);
         await PowerCmd.Apply<DelayedSelfStunPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }

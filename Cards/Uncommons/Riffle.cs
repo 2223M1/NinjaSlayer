@@ -17,7 +17,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Riffle : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
+    private const int energyCost = 1;
     private const CardType type = CardType.Attack;
     private const CardRarity rarity = CardRarity.Uncommon;
     private const TargetType targetType = TargetType.AnyEnemy;
@@ -29,7 +29,7 @@ public sealed class Riffle : NinjaSlayerCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(3, ValueProp.Move),
-        new RepeatVar(3),
+        new RepeatVar(2),
         new CalculationBaseVar(0),
         new CalculationExtraVar(1),
         new CalculatedVar("StrengthLoss").WithMultiplier((card, target) =>

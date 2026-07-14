@@ -29,19 +29,6 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
     public TornadoFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
-    protected override int ResolveXHitCount()
-    {
-        int hits = ResolveEnergyXValue();
-        if (IsUpgraded)
-        {
-            hits++;
-        }
-
-        return hits;
-    }
-
-    protected override int ModifyPreviewHitCount(int xValue) => xValue + (IsUpgraded ? 1 : 0);
-
     protected override Task OnBeforeXHit(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay,
@@ -79,5 +66,10 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
                 Owner.Creature,
                 this);
         }
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(3);
     }
 }
