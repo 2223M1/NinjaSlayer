@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -8,4 +9,7 @@ namespace NinjaSlayer.Relics;
 public abstract class NinjaSlayerRelicTemplate : ModRelicTemplate
 {
     public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For(this);
+
+    public override bool IsAllowed(IRunState runState) =>
+        NinjaSlayerContentAccess.HasNinjaSlayer(runState);
 }

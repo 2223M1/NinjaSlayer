@@ -16,6 +16,9 @@ public sealed class BusyLine : ModCardTemplate
     private const TargetType targetType = TargetType.None;
     private const bool shouldShowInCardLibrary = false;
 
+    public override bool CanBeGeneratedInCombat => false;
+    public override bool CanBeGeneratedByModifiers => false;
+
     // ponytail: reuse terminal card art until Busy Line gets dedicated art.
     public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("IrcTerminal");
 

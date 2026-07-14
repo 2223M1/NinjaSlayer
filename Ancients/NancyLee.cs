@@ -1,6 +1,8 @@
 using Godot;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Models.Acts;
+using MegaCrit.Sts2.Core.Runs;
+using NinjaSlayer.Content;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -10,6 +12,9 @@ namespace NinjaSlayer.Ancients;
 [RegisterActAncient(typeof(Glory))]
 public sealed class NancyLee : ModAncientEventTemplate
 {
+    public override bool IsAllowed(IRunState runState) =>
+        NinjaSlayerContentAccess.HasNinjaSlayer(runState);
+
     public override Color ButtonColor => new(0.05f, 0.02f, 0.08f, 0.65f);
     public override Color DialogueColor => new("5B1B3C");
 

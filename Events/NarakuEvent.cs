@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Content;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -32,7 +33,10 @@ public sealed class NarakuEvent : ModEventTemplate
     }
 
     public override bool IsAllowed(IRunState runState) =>
-        runState.Players.Any(HasNarakuThemedDeckCard);
+        runState.Players.Count == 1
+        && runState.Players.Any(player =>
+            player.Character is INinjaSlayerCharacter
+            && HasNarakuThemedDeckCard(player));
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
         Owner?.Creature.CurrentHp < 19

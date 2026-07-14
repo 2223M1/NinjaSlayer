@@ -2,6 +2,8 @@
 
 `NinjaSlayerDebugCharacter` 是角色选择界面中的独立角色。它与正常忍者杀手共享人物实现、起始卡组、初始遗物、药水池、动画和美术，但使用 `NinjaSlayerDebugCardPool`。
 
+`NinjaSlayerDebugCardPool` 是调试角色专属卡池，不注册为共享卡池，也不会进入其他角色的卡牌生成范围。
+
 调试池的唯一成员清单位于 `Content/NinjaSlayerDebugCardCatalog.cs`：
 
 - `BaselineCards`：调试池的默认内容。目前包含全部初始卡、白卡和先古卡。

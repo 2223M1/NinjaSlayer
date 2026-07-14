@@ -1,6 +1,5 @@
 using Godot;
 using MegaCrit.Sts2.Core.Models;
-using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Utils;
 
@@ -20,7 +19,6 @@ public class NinjaSlayerCardPool : TypeListCardPoolModel
     public override bool IsColorless => false;
 }
 
-[RegisterSharedCardPool]
 public sealed class NinjaSlayerDebugCardPool : NinjaSlayerCardPool
 {
     private CardModel[]? _cards;

@@ -67,6 +67,8 @@ public class Entry
         patcher.RegisterPatch<ReporterPassEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
+        patcher.RegisterPatch<NancyLeeCandidatePatch>();
+        patcher.RegisterPatch<NancyLeeLoadedRunPatch>();
         patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
         patcher.RegisterPatch<KarateCardPreviewClearPatch>();
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();

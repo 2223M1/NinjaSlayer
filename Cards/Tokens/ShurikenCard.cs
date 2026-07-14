@@ -20,6 +20,9 @@ public sealed class ShurikenCard : ModCardTemplate
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = false;
 
+    public override bool CanBeGeneratedInCombat => false;
+    public override bool CanBeGeneratedByModifiers => false;
+
     public override TargetType TargetType => Owner?.Creature.HasPower<HellTornadoPower>() == true
         ? TargetType.AllEnemies
         : targetType;
