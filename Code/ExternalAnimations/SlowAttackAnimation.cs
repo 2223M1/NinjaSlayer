@@ -2,14 +2,15 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class SlowAttackAnimation
 {
-    private const float AnimationDuration = 0.5f;
-    private const float ActionDuration = 0.25f;
-    private const float LungeDistance = 120f;
+    private const float AnimationDuration = NinjaSlayerCombatVisuals.SlowAttackLungeDuration * 2f;
+    private const float ActionDuration = NinjaSlayerCombatVisuals.SlowAttackLungeDuration;
+    private const float LungeDistance = NinjaSlayerCombatVisuals.SlowAttackLungeDistance;
 
     public static async Task Play(Creature creature)
     {

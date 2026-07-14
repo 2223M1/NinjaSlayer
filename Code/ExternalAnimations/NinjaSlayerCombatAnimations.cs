@@ -108,14 +108,6 @@ public static class NinjaSlayerCombatAnimations
 
     private static async Task PlayXAttackHit(Creature creature, float waitTime)
     {
-        if (XAttackComboContext.Active)
-        {
-            await Task.WhenAll(
-                PlayVisualCueTrigger(creature, "XAttackCue", waitTime),
-                XAttackComboMovement.PlayHitMovement(creature, waitTime));
-            return;
-        }
-
         await PlayVisualCueTrigger(creature, "XAttackCue", waitTime);
     }
 
