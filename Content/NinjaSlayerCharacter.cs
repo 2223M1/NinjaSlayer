@@ -85,9 +85,10 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
 
     public static class RestSiteVisuals
     {
-        public const float BodyScale = 0.38f;
-        public const float BodyOffsetX = 0f;
-        public const float BodyOffsetY = -80f;
+        // Compensate centered scaling so the 1111x1415 texture keeps its current top-left position.
+        public const float BodyScale = 0.48f;
+        public const float BodyOffsetX = 55.55f;
+        public const float BodyOffsetY = -9.25f;
         public const string IdleTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/rest_site/ninja_slayer_rest_idle.png";
 
         public static VisualNodeStyle BodyStyle() =>
