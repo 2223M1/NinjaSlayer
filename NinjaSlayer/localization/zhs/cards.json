@@ -66,7 +66,7 @@
   "NINJA_SLAYER_CARD_REST_GUARD.title": "息守",
   "NINJA_SLAYER_CARD_REST_GUARD.description": "只能在手牌中有[gold]茶道[/gold]时打出。\n获得{Block:diff()}点[gold]格挡[/gold]。",
   "NINJA_SLAYER_CARD_SHURIKEN_STOCK.title": "备镖",
-  "NINJA_SLAYER_CARD_SHURIKEN_STOCK.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将{Cards:diff()}张[gold]蓄势手里剑[/gold]加入抽牌堆。",
+  "NINJA_SLAYER_CARD_SHURIKEN_STOCK.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n[gold]蓄势[/gold]{Cards:diff()}张[gold]手里剑[/gold]。",
   "NINJA_SLAYER_CARD_SHURIKEN_SPREAD.title": "飞镖",
   "NINJA_SLAYER_CARD_SHURIKEN_SPREAD.description": "将{Shuriken:diff()}张{IfUpgraded:show:[gold]手里剑+[/gold]|[gold]手里剑[/gold]}加入手牌。",
   "NINJA_SLAYER_CARD_BREW_TEA.title": "茶备",
