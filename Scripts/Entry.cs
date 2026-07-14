@@ -89,6 +89,11 @@ public class Entry
         patcher.RegisterPatch<PreparedDrawPatch>();
         patcher.RegisterPatch<PreparedPileExitPatch>();
         patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>();
+        patcher.RegisterPatch<NinjaSlayerFeedbackOpenerPatch>();
+        patcher.RegisterPatch<NinjaSlayerFeedbackOpenPatch>();
+        patcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
+        patcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
+        patcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
         if (!patcher.PatchAll())
         {
             LogPatchFailure(patcher);

@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "id": "delete-feedback-after-180-days",
+      "enabled": true,
+      "conditions": {
+        "prefix": "feedback/"
+      },
+      "deleteObjectsTransition": {
+        "condition": {
+          "maxAge": 15552000,
+          "type": "Age"
+        }
+      }
+    }
+  ]
+}

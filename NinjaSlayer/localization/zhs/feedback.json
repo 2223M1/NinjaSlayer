@@ -1,0 +1,8 @@
+{
+  "NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER": "向忍者杀手 Mod 作者描述你遇到的问题或建议……",
+  "NINJA_SLAYER_FEEDBACK_SEND_BUTTON": "发送给忍者杀手 Mod 作者",
+  "NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER": "发送给 Mod 作者？",
+  "NINJA_SLAYER_FEEDBACK_CONFIRM_BODY": "本次反馈不会发送给 MegaCrit。反馈文字、当前截图和游戏日志压缩包将上传给忍者杀手 Mod 作者。日志可能包含设备、存档和已安装 Mod 的信息。",
+  "NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL": "取消",
+  "NINJA_SLAYER_FEEDBACK_CONFIRM_SEND": "确认并发送"
+}

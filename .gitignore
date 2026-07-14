@@ -7,6 +7,9 @@
 bin/
 obj/
 
+# Node/Worker development dependencies
+node_modules/
+
 # Mod export/build output
 build/
 
