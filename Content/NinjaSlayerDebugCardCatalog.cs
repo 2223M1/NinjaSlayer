@@ -49,7 +49,39 @@ public static class NinjaSlayerDebugCardCatalog
 
     // Add any registered test card type here without changing its normal-mode pool registration.
     private static readonly Type[] AdditionalCards = [
-        typeof(OpeningGuard)
+        // Uncommons
+        typeof(AssassinationFist),
+        typeof(BackBridge),
+        typeof(ColdBrew),
+        typeof(DrinkTea),
+        typeof(Evade),
+        typeof(HalfMoonCompassKick),
+        typeof(IBlock),
+        typeof(IyaIronSlashWave),
+        typeof(Momentum),
+        typeof(MurderFist),
+        typeof(OpeningGuard),
+        typeof(ReadyBlade),
+        typeof(Riffle),
+        typeof(RubHands),
+        typeof(ShieldFromNothing),
+        typeof(ShurikenCleave),
+        typeof(SpitWater),
+        typeof(StarlessNight),
+        typeof(StraightKi),
+        typeof(TornadoFist),
+
+        // Rares
+        typeof(AlabamaDrop),
+        typeof(BladesCome),
+        typeof(ClankDrinkTea),
+        typeof(HellTornado),
+        typeof(KarateFinish),
+        typeof(KillingIntent),
+        typeof(NarakuRecovery),
+        typeof(RedBlackFlame),
+        typeof(StunStrike),
+        typeof(TrueNameRead)
     ];
 
     public static CardModel[] CreateCards()

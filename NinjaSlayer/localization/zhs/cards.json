@@ -12,7 +12,7 @@
   "NINJA_SLAYER_CARD_CHADO_CARD.title": "茶道",
   "NINJA_SLAYER_CARD_POUR_TEA.title": "倒茶",
   "NINJA_SLAYER_CARD_POUR_TEA.description": "丢弃[gold]茶道[/gold]时，获得{Block:diff()}点[gold]格挡[/gold]。",
-  "NINJA_SLAYER_CARD_CHADO_CARD.description": "回合开始时，获得{Energy:energyIcons()}。\n你每花费{Energy:energyIcons()}，本回合耗能增加{Energy:energyIcons()}。\n{energyPrefix:energyIcons(3)}时加入你的弃牌堆。",
+  "NINJA_SLAYER_CARD_CHADO_CARD.description": "回合开始时，获得{Energy:energyIcons()}。\n你每花费{Energy:energyIcons()}，本回合耗能增加{Energy:energyIcons()}。\n{energyPrefix:energyIcons(3)}时丢弃自身。",
   "NINJA_SLAYER_CARD_DRINK_TEA.title": "喝茶",
   "NINJA_SLAYER_CARD_DRINK_TEA.description": "每当[gold]茶道[/gold]被[gold]消耗[/gold]时，获得{Vigor:diff()}点[gold]活力[/gold]。",
   "NINJA_SLAYER_CARD_DROWSY_BLACK_TEA.title": "昏睡红茶",
