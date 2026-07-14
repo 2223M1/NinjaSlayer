@@ -24,7 +24,7 @@ public interface INinjaSlayerCharacter
 public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemplate<TCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>, INinjaSlayerCharacter
     where TCardPool : CardPoolModel
 {
-    private const int idleFrameCount = 30;
+    private const int idleFrameCount = 27;
     private const float idleLoopDuration = 0.8f;
     private const string visualsPath = "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn";
     private const string energyCounterPath = "res://NinjaSlayer/scenes/ui/ninja_slayer_energy_counter.tscn";

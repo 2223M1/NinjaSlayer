@@ -1,13 +1,12 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
-using NinjaSlayer.Powers;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
@@ -29,21 +28,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
     public TornadoFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
-    protected override Task OnBeforeXHit(
-        PlayerChoiceContext choiceContext,
-        CardPlay cardPlay,
-        int hitIndex,
-        int totalHits)
-    {
-        if (Owner.Creature.HasPower<NarakuPower>())
-        {
-            SpinComboAudio.PlayNarakuSlowAttack(Owner.Creature);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    protected override async Task ExecuteXHit(
+    protected override async Task<bool> ExecuteXHit(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay,
         int hitIndex,
@@ -57,7 +42,13 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
             .WithAttackerAnim(AttackerAnimTrigger, XAttackHitDelay)
             .Targeting(cardPlay.Target);
         await command.Execute(choiceContext);
-        if (command.Results.SelectMany(r => r).Any(r => r.UnblockedDamage > 0))
+        List<DamageResult> results = command.Results.SelectMany(r => r).ToList();
+        if (results.Any(r => r.WasTargetKilled))
+        {
+            return true;
+        }
+
+        if (results.Any(r => r.UnblockedDamage > 0))
         {
             await PowerCmd.Apply<VulnerablePower>(
                 choiceContext,
@@ -66,6 +57,8 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
                 Owner.Creature,
                 this);
         }
+
+        return false;
     }
 
     protected override void OnUpgrade()

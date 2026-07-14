@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -13,7 +14,8 @@ public static class NinjaSlayerXAttackSequence
         Creature creature,
         int hits,
         float perHitDelay,
-        Func<int, Task> perHit)
+        float audioHitDuration,
+        Func<int, Task<bool>> perHit)
     {
         if (hits <= 0)
         {
@@ -21,7 +23,8 @@ public static class NinjaSlayerXAttackSequence
         }
 
         XAttackComboMovement.BeginCombo(creature);
-        await SpinComboAudio.PlaySequence(creature, hits, perHitDelay, async () =>
+        bool useSlowAttack = hits <= 2 || creature.HasPower<NarakuPower>();
+        Func<Action, Task> executeHits = async finishSpinEarly =>
         {
             XAttackComboContext.Begin(hits);
             try
@@ -29,7 +32,17 @@ public static class NinjaSlayerXAttackSequence
                 for (int i = 0; i < hits; i++)
                 {
                     XAttackComboContext.CurrentHitIndex = i;
-                    await perHit(i);
+                    if (useSlowAttack)
+                    {
+                        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
+                    }
+
+                    bool targetKilled = await perHit(i);
+                    if (targetKilled)
+                    {
+                        finishSpinEarly();
+                        break;
+                    }
                 }
             }
             finally
@@ -37,6 +50,14 @@ public static class NinjaSlayerXAttackSequence
                 await XAttackComboMovement.EndCombo(creature);
                 XAttackComboContext.End();
             }
-        });
+        };
+
+        if (useSlowAttack)
+        {
+            await SpinComboAudio.RunWithSuppressedAutomaticSfx(() => executeHits(static () => { }));
+            return;
+        }
+
+        await SpinComboAudio.PlayTornadoFistSequence(creature, hits, audioHitDuration, executeHits);
     }
 }

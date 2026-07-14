@@ -30,6 +30,8 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
 
     protected virtual float XAttackHitDelay => Owner.Character.AttackAnimDelay;
 
+    protected virtual float XAttackAudioHitDuration => Owner.Character.AttackAnimDelay;
+
     protected virtual int ResolveXHitCount()
     {
         return Math.Max(0, ResolveEnergyXValue());
@@ -60,13 +62,14 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
             Owner.Creature,
             hits,
             XAttackHitDelay,
+            XAttackAudioHitDuration,
             hitIndex => RunXHit(choiceContext, cardPlay, hitIndex, hits));
     }
 
-    private async Task RunXHit(PlayerChoiceContext choiceContext, CardPlay cardPlay, int hitIndex, int totalHits)
+    private async Task<bool> RunXHit(PlayerChoiceContext choiceContext, CardPlay cardPlay, int hitIndex, int totalHits)
     {
         await OnBeforeXHit(choiceContext, cardPlay, hitIndex, totalHits);
-        await ExecuteXHit(choiceContext, cardPlay, hitIndex, totalHits);
+        return await ExecuteXHit(choiceContext, cardPlay, hitIndex, totalHits);
     }
 
     protected virtual Task OnBeforeXHit(
@@ -75,7 +78,7 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
         int hitIndex,
         int totalHits) => Task.CompletedTask;
 
-    protected abstract Task ExecuteXHit(
+    protected abstract Task<bool> ExecuteXHit(
         PlayerChoiceContext choiceContext,
         CardPlay cardPlay,
         int hitIndex,

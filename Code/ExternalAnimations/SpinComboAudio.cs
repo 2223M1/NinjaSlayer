@@ -76,7 +76,79 @@ public static class SpinComboAudio
     public static void PlayNarakuSlowAttack(Creature creature) =>
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.Naraku.SlowAttack);
 
-    private static async Task RunWithSuppressedAutomaticSfx(Func<Task> action)
+    public static async Task PlayTornadoFistSequence(
+        Creature creature,
+        int hitCount,
+        float perHitDuration,
+        Func<Action, Task> executeHits)
+    {
+        var audio = NinjaSlayerCombatAudioSet.For(creature);
+        float totalDuration = hitCount * perHitDuration;
+        float loopPlayDuration = Math.Max(
+            0f,
+            totalDuration - NinjaSlayerAudio.IntroSpinAttackSeconds - NinjaSlayerAudio.OutroSpinAttackSeconds);
+
+        bool loopStarted = false;
+        bool outroPlayed = false;
+        var earlyOutro = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void FinishEarly()
+        {
+            if (outroPlayed)
+            {
+                return;
+            }
+
+            if (loopStarted)
+            {
+                SfxCmd.StopLoop(creature, audio.LoopSpinAttack);
+                loopStarted = false;
+            }
+
+            outroPlayed = true;
+            NinjaSlayerCombatAudioSet.Play(audio.OutroSpinAttack);
+            earlyOutro.TrySetResult();
+        }
+
+        NinjaSlayerCombatAudioSet.Play(audio.IntroSpinAttack);
+        Task hitsTask = RunWithSuppressedAutomaticSfx(() => executeHits(FinishEarly));
+
+        try
+        {
+            if (await WaitOrFinishEarly(NinjaSlayerAudio.IntroSpinAttackSeconds, earlyOutro.Task))
+            {
+                await hitsTask;
+                return;
+            }
+
+            if (loopPlayDuration > 0f)
+            {
+                SfxCmd.PlayLoop(creature, audio.LoopSpinAttack);
+                loopStarted = true;
+                if (await WaitOrFinishEarly(loopPlayDuration, earlyOutro.Task))
+                {
+                    await hitsTask;
+                    return;
+                }
+            }
+
+            await hitsTask;
+            if (!outroPlayed)
+            {
+                outroPlayed = true;
+                NinjaSlayerCombatAudioSet.Play(audio.OutroSpinAttack);
+            }
+        }
+        finally
+        {
+            if (loopStarted)
+            {
+                SfxCmd.StopLoop(creature, audio.LoopSpinAttack);
+            }
+        }
+    }
+
+    public static async Task RunWithSuppressedAutomaticSfx(Func<Task> action)
     {
         XAttackAudioContext.SuppressAutomaticSfx = true;
         try
@@ -87,5 +159,16 @@ public static class SpinComboAudio
         {
             XAttackAudioContext.SuppressAutomaticSfx = false;
         }
+    }
+
+    private static async Task<bool> WaitOrFinishEarly(float duration, Task earlyOutro)
+    {
+        if (earlyOutro.IsCompleted)
+        {
+            return true;
+        }
+
+        Task completed = await Task.WhenAny(Cmd.Wait(duration), earlyOutro);
+        return completed == earlyOutro;
     }
 }
