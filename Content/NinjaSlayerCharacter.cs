@@ -83,6 +83,19 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
                 .WithScale(BodyScale);
     }
 
+    public static class RestSiteVisuals
+    {
+        public const float BodyScale = 0.38f;
+        public const float BodyOffsetX = 0f;
+        public const float BodyOffsetY = -80f;
+        public const string IdleTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/rest_site/ninja_slayer_rest_idle.png";
+
+        public static VisualNodeStyle BodyStyle() =>
+            VisualNodeStyle.Create()
+                .WithOffset(new Vector2(BodyOffsetX, BodyOffsetY))
+                .WithScale(BodyScale);
+    }
+
     public override CharacterGender Gender => CharacterGender.Masculine;
     public override CharacterAssetProfile AssetProfile => new(
         Scenes: new CharacterSceneAssetSet(
@@ -114,6 +127,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
         VisualCues: CombatVisualCues,
         WorldProceduralVisuals: CharacterWorldProceduralVisualSetBuilder.Create()
             .Merchant(cues => cues.Single("idle", MerchantVisuals.IdleTexturePath, MerchantVisuals.BodyStyle()))
+            .RestSite(cues => cues.Single("relaxed", RestSiteVisuals.IdleTexturePath, RestSiteVisuals.BodyStyle()))
             .Build()
     );
     public override Color NameColor => new("D32020FF");
