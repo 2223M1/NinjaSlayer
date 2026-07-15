@@ -49,7 +49,7 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
         return Task.CompletedTask;
     }
 
-    public override async Task AfterPowerAmountChanged(
+    public override Task AfterPowerAmountChanged(
         PlayerChoiceContext choiceContext,
         PowerModel power,
         decimal amount,
@@ -59,10 +59,11 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
         if (power.Owner.Player?.Character is not INinjaSlayerCharacter
             || power.GetTypeForAmount(amount) != PowerType.Debuff)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        await ShakeAnimation.Play(power.Owner);
+        ShakeAnimation.PlayNonBlocking(power.Owner);
+        return Task.CompletedTask;
     }
 
     public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)

@@ -12,7 +12,7 @@
   "NINJA_SLAYER_POWER_DAMAGE_FOCUS_POWER.title": "死神凝视",
   "NINJA_SLAYER_POWER_DAMAGE_FOCUS_POWER.description": "本回合内，受到来自忍者杀手的伤害提高；其他敌人对忍者杀手造成的生命流失降低。",
   "NINJA_SLAYER_POWER_DELAYED_SELF_STUN_POWER.title": "延迟眩晕",
-  "NINJA_SLAYER_POWER_DELAYED_SELF_STUN_POWER.description": "你的下回合开始时，获得[gold]眩晕[/gold]。",
+  "NINJA_SLAYER_POWER_DELAYED_SELF_STUN_POWER.description": "你的下回合开始时，获得[gold]昏眩[/gold]。",
   "NINJA_SLAYER_POWER_DRAW_FOR_EVASION_POWER.title": "纸一重",
   "NINJA_SLAYER_POWER_DRAW_FOR_EVASION_POWER.description": "每回合抽到指定数量的牌后，在回合结束获得{Amount}层[gold]回避[/gold]。",
   "NINJA_SLAYER_POWER_EVASION_POWER.title": "回避",

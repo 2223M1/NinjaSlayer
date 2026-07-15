@@ -136,7 +136,7 @@
   "NINJA_SLAYER_CARD_RECYCLE.title": "余招再现",
   "NINJA_SLAYER_CARD_RECYCLE.description": "造成{Damage:diff()}点伤害。\n将你弃牌堆中最后1张牌的复制品加入手牌。",
   "NINJA_SLAYER_CARD_STUN_STRIKE.title": "破球击",
-  "NINJA_SLAYER_CARD_STUN_STRIKE.description": "造成{Damage:diff()}点伤害。\n使目标[gold]眩晕[/gold]1回合。\n下回合开始时你获得[gold]眩晕[/gold]。",
+  "NINJA_SLAYER_CARD_STUN_STRIKE.description": "造成{Damage:diff()}点伤害。\n使目标[gold]眩晕[/gold]1回合。\n下回合开始时，你获得[gold]昏眩[/gold]。",
   "NINJA_SLAYER_CARD_NINJA_SLAYER_FOOTWORK.title": "纸一重",
   "NINJA_SLAYER_CARD_NINJA_SLAYER_FOOTWORK.description": "每回合内抽到第{DrawThreshold:diff()}张牌时，回合结束获得{Evasion:diff()}层[gold]回避[/gold]。",
   "NINJA_SLAYER_CARD_REDOUBLE.title": "倍劲",
