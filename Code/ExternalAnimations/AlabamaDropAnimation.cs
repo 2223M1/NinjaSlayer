@@ -1,10 +1,13 @@
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -24,10 +27,16 @@ public static class AlabamaDropAnimation
 
     public static async Task Play(Creature owner, Creature target, Func<Task> onImpact)
     {
+        async Task PlayImpact()
+        {
+            PlayImpactFireBurst(target);
+            await onImpact();
+        }
+
         if (!TryGetRig(owner, out CreatureRig ownerRig) || !TryGetRig(target, out CreatureRig targetRig))
         {
             await CreatureCmd.TriggerAnim(owner, "Cast", owner.Player?.Character.CastAnimDelay ?? 0f);
-            await onImpact();
+            await PlayImpact();
             return;
         }
 
@@ -57,7 +66,7 @@ public static class AlabamaDropAnimation
 
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await Task.WhenAll(
-                ByrdFallAnimation.Play(owner, RiseDistance, FallDuration, playImpact: true, onImpact),
+                ByrdFallAnimation.Play(owner, RiseDistance, FallDuration, playImpact: true, PlayImpact),
                 ByrdFallAnimation.Play(target, RiseDistance, FallDuration, playImpact: false),
                 PlayEntangledFall(
                     ownerRig,
@@ -84,6 +93,22 @@ public static class AlabamaDropAnimation
         {
             targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
             ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
+        }
+    }
+
+    private static void PlayImpactFireBurst(Creature target)
+    {
+        try
+        {
+            NFireBurstVfx? vfx = NFireBurstVfx.Create(target, 1f);
+            if (vfx is not null && NCombatRoom.Instance is { } room)
+            {
+                room.CombatVfxContainer.AddChildSafely(vfx);
+            }
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn($"Failed to play Alabama Drop impact fire burst: {ex}");
         }
     }
 
