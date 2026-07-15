@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ninja Slayer 原著检索"
+  short_description: "检索忍者杀手三部原著证据并辅助人物招式与卡牌主题设计"
+  default_prompt: "使用 $ninjaslayer-lore 检索原著并为当前 Ninja Slayer 设计问题提供带出处的依据。"

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "part1",
+    "prefix": "p1",
+    "part": "第一部",
+    "title": "忍者杀手第一部：新埼玉炎上（重修版）",
+    "filename": "忍者杀手第一部：新埼玉炎上（重修版）.epub"
+  },
+  {
+    "id": "part2",
+    "prefix": "p2",
+    "part": "第二部",
+    "title": "忍者杀手第二部：杀伐都市京都",
+    "filename": "忍者杀手第二部：杀伐都市京都.epub"
+  },
+  {
+    "id": "part3",
+    "prefix": "p3",
+    "part": "第三部",
+    "title": "忍者杀手第三部 - B & M",
+    "filename": "忍者杀手第三部 - B & M.epub"
+  }
+]

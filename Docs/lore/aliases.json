@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "canonical": "忍者杀手",
+      "aliases": ["NINJA SLAYER", "Ninja Slayer"]
+    },
+    {
+      "canonical": "藤木户",
+      "aliases": ["藤木户健二", "藤木戶", "Fujikido", "FUJIKIDO"]
+    },
+    {
+      "canonical": "奈落",
+      "aliases": ["奈落忍者", "Naraku", "NARAKU"]
+    },
+    {
+      "canonical": "茶道",
+      "aliases": ["CHADO", "Chado"]
+    },
+    {
+      "canonical": "空手道",
+      "aliases": ["KARATE", "Karate"]
+    },
+    {
+      "canonical": "手里剑",
+      "aliases": ["手裏剑", "手裏剣", "SHURIKEN", "Shuriken"]
+    },
+    {
+      "canonical": "受身",
+      "aliases": ["UKEMI", "Ukemi"]
+    },
+    {
+      "canonical": "查布",
+      "aliases": ["CHABU", "Chabu"]
+    }
+  ]
+}

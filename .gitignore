@@ -29,3 +29,10 @@ desktop.ini
 *.dll
 *.deps.json
 *.runtimeconfig.json
+
+# Private Ninja Slayer source-text cache (never commit extracted books)
+.lore-cache/
+
+# Python tool caches
+__pycache__/
+*.py[cod]

@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class StunStrike : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
+    private const int energyCost = 3;
     private const CardType type = CardType.Attack;
     private const CardRarity rarity = CardRarity.Rare;
     private const TargetType targetType = TargetType.AnyEnemy;
