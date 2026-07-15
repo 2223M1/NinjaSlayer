@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Nodes;
 using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
@@ -18,11 +19,19 @@ public sealed class NinjaSlayerTransitionSfxPatch : IPatchMethod
 
     public static bool Prefix(string sfx)
     {
-        if (sfx == NinjaSlayerAudio.NinjaSlayerTransitionEvent)
+        if (sfx != NinjaSlayerAudio.NinjaSlayerTransitionEvent)
         {
-            NinjaSlayerTransitionGate.Pending = true;
+            return true;
         }
 
+        if (NGame.Instance?.RootSceneContainer.CurrentScene is NRun)
+        {
+            NinjaSlayerTransitionGate.CancelPendingRequest();
+            SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerSelectEvent);
+            return false;
+        }
+
+        NinjaSlayerTransitionGate.Pending = true;
         return true;
     }
 }

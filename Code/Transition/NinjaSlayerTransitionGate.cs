@@ -25,4 +25,10 @@ internal static class NinjaSlayerTransitionGate
         LoadStartDelaySeconds = 0f;
         return delay;
     }
+
+    internal static void CancelPendingRequest()
+    {
+        Pending = false;
+        LoadStartDelaySeconds = 0f;
+    }
 }

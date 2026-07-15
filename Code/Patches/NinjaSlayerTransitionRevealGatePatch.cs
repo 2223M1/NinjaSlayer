@@ -41,14 +41,21 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
     {
         try
         {
-            await anim;
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn($"NinjaSlayer transition animation faulted before RoomFadeIn: {ex}");
-        }
+            try
+            {
+                await anim;
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn($"NinjaSlayer transition animation faulted before RoomFadeIn: {ex}");
+            }
 
-        await transition.RoomFadeIn(showTransition);
+            await transition.RoomFadeIn(showTransition);
+        }
+        finally
+        {
+            NinjaSlayerTransitionPatch.ReleaseTransitionInput(transition);
+        }
     }
 }
 
@@ -84,13 +91,20 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
     {
         try
         {
-            await anim;
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn($"NinjaSlayer transition animation faulted before FadeIn: {ex}");
-        }
+            try
+            {
+                await anim;
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn($"NinjaSlayer transition animation faulted before FadeIn: {ex}");
+            }
 
-        await transition.FadeIn(time, transitionPath, cancelToken);
+            await transition.FadeIn(time, transitionPath, cancelToken);
+        }
+        finally
+        {
+            NinjaSlayerTransitionPatch.ReleaseTransitionInput(transition);
+        }
     }
 }

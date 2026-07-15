@@ -118,4 +118,15 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
     {
         InTransitionProperty?.SetValue(transition, value);
     }
+
+    internal static void ReleaseTransitionInput(NTransition transition)
+    {
+        if (!GodotObject.IsInstanceValid(transition))
+        {
+            return;
+        }
+
+        transition.MouseFilter = Control.MouseFilterEnum.Ignore;
+        SetInTransition(transition, false);
+    }
 }
