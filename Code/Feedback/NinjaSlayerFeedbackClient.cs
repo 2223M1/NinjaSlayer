@@ -14,8 +14,9 @@ namespace NinjaSlayer.Code.Feedback;
 public static class NinjaSlayerFeedbackClient
 {
     private const string FeedbackUrl = "https://ninja-slayer-telemetry.theonetrue2223.workers.dev/feedback";
+    private const int MaxAttempts = 3;
     private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
-    private static readonly int[] RetryDelaysMs = [500, 1000, 2000];
+    private static readonly int[] RetryDelaysMs = [1500, 2500];
 
     public static async Task<bool> SendAsync(FeedbackData data, Stream screenshotStream, Stream logsStream)
     {
@@ -24,7 +25,7 @@ public static class NinjaSlayerFeedbackClient
 
         try
         {
-            for (int attempt = 0; attempt < RetryDelaysMs.Length; attempt++)
+            for (int attempt = 0; attempt < MaxAttempts; attempt++)
             {
                 try
                 {
@@ -48,7 +49,7 @@ public static class NinjaSlayerFeedbackClient
                     string responseBody = await response.Content.ReadAsStringAsync();
                     int statusCode = (int)response.StatusCode;
                     Entry.Logger.Warn(
-                        $"NinjaSlayer feedback attempt {attempt + 1}/{RetryDelaysMs.Length} rejected " +
+                        $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} rejected " +
                         $"({response.StatusCode}): {responseBody}");
                     if (statusCode is >= 400 and < 500 && statusCode != 429)
                     {
@@ -58,10 +59,10 @@ public static class NinjaSlayerFeedbackClient
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
                 {
                     Entry.Logger.Warn(
-                        $"NinjaSlayer feedback attempt {attempt + 1}/{RetryDelaysMs.Length} failed: {ex}");
+                        $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} failed: {ex}");
                 }
 
-                if (attempt < RetryDelaysMs.Length - 1)
+                if (attempt < MaxAttempts - 1)
                 {
                     await Task.Delay(RetryDelaysMs[attempt]);
                 }

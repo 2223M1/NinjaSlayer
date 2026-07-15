@@ -1,13 +1,19 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ninja-slayer-telemetry",
-  "main": "src/index.js",
-  "compatibility_date": "2026-07-15",
-  "workers_dev": true,
-  "r2_buckets": [
-    {
-      "binding": "FEEDBACK_BUCKET",
-      "bucket_name": "ninja-slayer-feedback"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "ninja-slayer-telemetry",
+	"main": "src/index.js",
+	"compatibility_date": "2026-07-15",
+	"workers_dev": true,
+	"preview_urls": false,
+	"observability": {
+		"logs": {
+			"enabled": true
+		}
+	},
+	"kv_namespaces": [
+		{
+			"binding": "FEEDBACK_KV",
+			"id": "b0c2a010e96040ecb2f6c83a935a61b4"
+		}
+	]
 }

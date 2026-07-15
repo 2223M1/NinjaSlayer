@@ -9,6 +9,9 @@ obj/
 
 # Node/Worker development dependencies
 node_modules/
+feedback-downloads/
+.wrangler/
+wrangler-*.log
 
 # Mod export/build output
 build/

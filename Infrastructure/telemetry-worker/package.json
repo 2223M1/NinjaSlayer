@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node --test",
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev"
+    "dev": "wrangler dev",
+    "feedback": "node scripts/feedback-admin.js"
   },
   "devDependencies": {
     "wrangler": "^4.38.0"

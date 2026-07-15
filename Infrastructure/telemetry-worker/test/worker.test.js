@@ -4,12 +4,13 @@ import { handleRequest } from '../src/index.js';
 
 const UUID = '9b3d6f32-f6d4-4ca4-9a34-128763c3154b';
 
-class MockBucket {
+class MockKv {
   objects = new Map();
   failOnPut = null;
-  async put(key, value) {
+  async get(key) { return this.objects.get(key) ?? null; }
+  async put(key, value, options) {
     if (key.endsWith(this.failOnPut || '__never__')) throw new Error('injected put failure');
-    this.objects.set(key, value);
+    this.objects.set(key, { value, options });
   }
   async delete(key) { this.objects.delete(key); }
 }
@@ -31,41 +32,48 @@ function feedbackRequest(overrides = {}) {
     'screenshot.png',
     { type: overrides.screenshotType ?? 'image/png' },
   ));
-  form.set('logs', new File([new Uint8Array([80, 75, 3, 4])], 'logs.zip', { type: 'application/zip' }));
+  form.set('logs', new File(
+    [overrides.logsBytes ?? new Uint8Array([80, 75, 3, 4])],
+    'logs.zip',
+    { type: overrides.logsType ?? 'application/zip' },
+  ));
   return new Request('https://worker.test/feedback', { method: overrides.method ?? 'PUT', body: form });
 }
 
 test('feedback rejects the wrong method, category, and UUID', async () => {
-  const env = { FEEDBACK_BUCKET: new MockBucket() };
+  const env = { FEEDBACK_KV: new MockKv() };
   assert.equal((await handleRequest(feedbackRequest({ method: 'POST' }), env)).status, 405);
   assert.equal((await handleRequest(feedbackRequest({ category: 'other' }), env)).status, 400);
   assert.equal((await handleRequest(feedbackRequest({ submissionId: 'bad' }), env)).status, 400);
 });
 
 test('feedback rejects an invalid attachment type and an oversized screenshot', async () => {
-  const env = { FEEDBACK_BUCKET: new MockBucket() };
+  const env = { FEEDBACK_KV: new MockKv() };
   assert.equal((await handleRequest(feedbackRequest({ screenshotType: 'image/jpeg' }), env)).status, 400);
   assert.equal((await handleRequest(feedbackRequest({ screenshotBytes: new Uint8Array(5 * 1024 * 1024 + 1) }), env)).status, 413);
 });
 
-test('feedback writes stable metadata, screenshot, and logs keys', async () => {
-  const bucket = new MockBucket();
-  const first = await handleRequest(feedbackRequest(), { FEEDBACK_BUCKET: bucket });
-  const firstKeys = [...bucket.objects.keys()].sort();
-  const second = await handleRequest(feedbackRequest(), { FEEDBACK_BUCKET: bucket });
+test('feedback writes expiring metadata, screenshot, and chunked logs keys idempotently', async () => {
+  const kv = new MockKv();
+  const logsBytes = new Uint8Array(20 * 1024 * 1024 + 1);
+  const first = await handleRequest(feedbackRequest({ logsBytes }), { FEEDBACK_KV: kv });
+  const firstKeys = [...kv.objects.keys()].sort();
+  const second = await handleRequest(feedbackRequest({ logsBytes }), { FEEDBACK_KV: kv });
   assert.equal(first.status, 200);
   assert.equal(second.status, 200);
-  assert.equal(bucket.objects.size, 3);
-  assert.deepEqual([...bucket.objects.keys()].sort(), firstKeys);
+  assert.equal(kv.objects.size, 4);
+  assert.deepEqual([...kv.objects.keys()].sort(), firstKeys);
   assert(firstKeys.every((key) => key.startsWith(`feedback/2026/07/2026-07-15T12-34-56-000Z-${UUID}/`)));
+  assert.equal(firstKeys.filter((key) => key.includes('/logs/part-')).length, 2);
+  assert([...kv.objects.values()].every((entry) => entry.options.expirationTtl === 180 * 24 * 60 * 60));
 });
 
 test('feedback cleans partial objects when a write fails', async () => {
-  const bucket = new MockBucket();
-  bucket.failOnPut = 'logs.zip';
-  const response = await handleRequest(feedbackRequest(), { FEEDBACK_BUCKET: bucket });
+  const kv = new MockKv();
+  kv.failOnPut = 'part-0000.bin';
+  const response = await handleRequest(feedbackRequest(), { FEEDBACK_KV: kv });
   assert.equal(response.status, 500);
-  assert.equal(bucket.objects.size, 0);
+  assert.equal(kv.objects.size, 0);
 });
 
 test('telemetry POST preserves the proxy batch shape', async () => {

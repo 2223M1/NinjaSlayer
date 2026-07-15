@@ -5,7 +5,9 @@ const REQUEST_TIMEOUT_MS = 9000;
 const FEEDBACK_MAX_BODY_BYTES = 64 * 1024 * 1024;
 const SCREENSHOT_MAX_BYTES = 5 * 1024 * 1024;
 const LOGS_MAX_BYTES = 55 * 1024 * 1024;
+const LOG_CHUNK_BYTES = 20 * 1024 * 1024;
 const JSON_MAX_BYTES = 64 * 1024;
+const FEEDBACK_RETENTION_SECONDS = 180 * 24 * 60 * 60;
 const JSON_HEADER = { 'Content-Type': 'application/json' };
 const FEEDBACK_CATEGORIES = new Set(['bug', 'balance', 'feedback', 'translation']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -146,7 +148,7 @@ async function handleFeedback(request, env) {
   if (request.method !== 'PUT') {
     return jsonResponse(405, { error: 'method_not_allowed', message: 'Only PUT is accepted for /feedback' }, { Allow: 'PUT' });
   }
-  if (!env.FEEDBACK_BUCKET) return jsonResponse(503, { error: 'storage_unavailable' });
+  if (!env.FEEDBACK_KV) return jsonResponse(503, { error: 'storage_unavailable' });
   const contentType = request.headers.get('content-type') || '';
   if (!contentType.toLowerCase().startsWith('multipart/form-data;')) {
     return jsonResponse(415, { error: 'unsupported_media_type', message: 'Content-Type must be multipart/form-data' });
@@ -185,19 +187,58 @@ async function handleFeedback(request, env) {
     throw error;
   }
 
-  const keys = [`${prefix}/metadata.json`, `${prefix}/screenshot.png`, `${prefix}/logs.zip`];
+  const metadataKey = `${prefix}/metadata.json`;
+  const screenshotKey = `${prefix}/screenshot.png`;
+  const logChunkCount = Math.ceil(logs.size / LOG_CHUNK_BYTES);
+  const logChunkKeys = Array.from(
+    { length: logChunkCount },
+    (_, index) => `${prefix}/logs/part-${index.toString().padStart(4, '0')}.bin`,
+  );
+  const keys = [metadataKey, screenshotKey, ...logChunkKeys];
+
+  try {
+    if (await env.FEEDBACK_KV.get(metadataKey)) {
+      return jsonResponse(200, { ok: true, id: modContext.submissionId, prefix, idempotent: true });
+    }
+  } catch (error) {
+    console.warn(`[feedback] idempotency check failed for ${modContext.submissionId}: ${error}`);
+  }
+
   const metadata = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     receivedAtUtc: new Date().toISOString(),
     payload,
     modContext,
+    storage: {
+      provider: 'workers-kv',
+      expiresAfterDays: 180,
+      screenshot: { key: screenshotKey, size: screenshot.size, contentType: screenshot.type },
+      logs: {
+        size: logs.size,
+        contentType: logs.type,
+        chunkSize: LOG_CHUNK_BYTES,
+        chunks: logChunkKeys,
+      },
+    },
   };
+  const expiration = { expirationTtl: FEEDBACK_RETENTION_SECONDS };
   try {
-    await env.FEEDBACK_BUCKET.put(keys[1], screenshot.stream(), { httpMetadata: { contentType: 'image/png' } });
-    await env.FEEDBACK_BUCKET.put(keys[2], logs.stream(), { httpMetadata: { contentType: 'application/zip' } });
-    await env.FEEDBACK_BUCKET.put(keys[0], JSON.stringify(metadata, null, 2), { httpMetadata: { contentType: 'application/json' } });
+    const attachmentWrites = [
+      env.FEEDBACK_KV.put(screenshotKey, await screenshot.arrayBuffer(), expiration),
+      ...logChunkKeys.map(async (key, index) => {
+        const start = index * LOG_CHUNK_BYTES;
+        const chunk = await logs.slice(start, Math.min(start + LOG_CHUNK_BYTES, logs.size)).arrayBuffer();
+        await env.FEEDBACK_KV.put(key, chunk, expiration);
+      }),
+    ];
+    const results = await Promise.allSettled(attachmentWrites);
+    const failed = results.find((result) => result.status === 'rejected');
+    if (failed) throw failed.reason;
+
+    // The metadata key is the commit marker and must be written last.
+    await env.FEEDBACK_KV.put(metadataKey, JSON.stringify(metadata, null, 2), expiration);
   } catch (error) {
-    await Promise.allSettled(keys.map((key) => env.FEEDBACK_BUCKET.delete(key)));
+    await Promise.allSettled(keys.map((key) => env.FEEDBACK_KV.delete(key)));
     console.error(`[feedback] failed to persist ${modContext.submissionId}: ${error}`);
     return jsonResponse(500, { error: 'storage_failed' });
   }
