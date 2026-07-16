@@ -18,6 +18,7 @@
 {cd6687eb-fb28-470c-b914-90d8c1509680} event:/NinjaSlayerAudio/sfx/naraku/naraku_slow_attack
 {393ec121-609e-469f-94fb-9a06c5926b32} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_cast
 {8399306f-54e8-4300-ab25-bde9b8f689ff} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_death
+{eeb09a3c-39f1-4190-b538-d248b6dfbeec} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_domo
 {3af9f8fc-8a5b-4b20-97f3-9584ae998a50} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_fast_attack
 {0351689c-9613-4b9d-b9f0-c2d16fc805a1} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_hurt
 {09550113-0b1f-430c-9f3e-d8be1fc650ea} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_intro_spin_attack

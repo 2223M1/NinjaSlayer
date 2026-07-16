@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Entities.Ancients;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Runs;
@@ -45,6 +46,17 @@ public sealed class NancyLee : ModAncientEventTemplate
     ];
 
     public override IEnumerable<EventOption> AllPossibleOptions => [.. Pool1, .. Pool2, .. Pool3];
+
+    protected override AncientDialogueSet DefineDialogues() => new()
+    {
+        FirstVisitEverDialogue = new AncientDialogue("", "", ""),
+        CharacterDialogues = [],
+        AgnosticDialogues =
+        [
+            new AncientDialogue("", "", ""),
+            new AncientDialogue("", "", "")
+        ]
+    };
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() => [
         Rng.NextItem(Pool1)!,
