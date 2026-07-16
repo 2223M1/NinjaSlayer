@@ -18,6 +18,7 @@ using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Audio;
@@ -33,6 +34,8 @@ public static class BossGreetingCinematic
     private const float BossCameraMoveSeconds = 0.2f;
     private const float CameraReturnSeconds = 0.2f;
     private const float DefaultBossZoomMultiplier = 1.5f;
+    private const float BossBubbleLifetimeSeconds = 999f;
+    private const float PostCombatStartBubbleSeconds = 2f;
     private static readonly HashSet<string> ProcessedRoomKeys = [];
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
@@ -158,6 +161,9 @@ public static class BossGreetingCinematic
             return;
         }
 
+        CanvasItem followedFocus = (CanvasItem?)NinjaSlayerVisualRig.GetBodySprite(followedNode.Visuals)
+            ?? followedNode.Visuals.Bounds;
+
         var variants = ninjaSlayers
             .Select((player, index) => (player, variant: AncientEntranceAnimation.FromRoll(StableRoll(context.RoomKeySeed, index))))
             .ToDictionary(pair => pair.player, pair => pair.variant);
@@ -174,11 +180,11 @@ public static class BossGreetingCinematic
             elapsed += delta;
             float progress = Mathf.Clamp(elapsed / Math.Max(zoomDuration, 0.01f), 0f, 1f);
             float zoom = context.BaselineScale.X * Mathf.Lerp(1f, PlayerZoomMultiplier, EaseOut(progress));
-            context.FrameCameraOn(followedNode.Visuals.Bounds, zoom);
+            context.FrameCameraOn(followedFocus, zoom);
         }
 
         await allEntrances;
-        context.FrameCameraOn(followedNode.Visuals.Bounds, context.BaselineScale.X * PlayerZoomMultiplier);
+        context.FrameCameraOn(followedFocus, context.BaselineScale.X * PlayerZoomMultiplier);
 
         float entranceAudioDuration = variants.Values
             .Max(AncientEntranceAnimation.GetCinematicAudioDuration);
@@ -220,8 +226,8 @@ public static class BossGreetingCinematic
                     dialogue,
                     DialogueSide.Right,
                     GetGlobalCenter(bossFocus),
-                    GetBossActionDuration(boss) + 1.2f)
-                : NSpeechBubbleVfx.Create(dialogue, boss, GetBossActionDuration(boss) + 1.2f);
+                    BossBubbleLifetimeSeconds)
+                : NSpeechBubbleVfx.Create(dialogue, boss, BossBubbleLifetimeSeconds);
             if (bubble != null)
             {
                 Sprite2D? bubbleSprite = bubble.GetNodeOrNull<Sprite2D>("%Bubble");
@@ -262,12 +268,24 @@ public static class BossGreetingCinematic
         }
 
         await PlayBossAction(boss, bossNode, context);
+        await context.TweenCameraToBaseline(CameraReturnSeconds);
         if (bubble != null && GodotObject.IsInstanceValid(bubble))
         {
-            bubble.QueueFreeSafely();
+            context.ReleaseNode(bubble);
+            _ = TaskHelper.RunSafely(FadeBossBubbleAfterCombatStart(bubble));
         }
+    }
 
-        await context.TweenCameraToBaseline(CameraReturnSeconds);
+    private static async Task FadeBossBubbleAfterCombatStart(NSpeechBubbleVfx bubble)
+    {
+        SceneTreeTimer timer = ((SceneTree)Engine.GetMainLoop()).CreateTimer(
+            PostCombatStartBubbleSeconds,
+            processAlways: false);
+        await timer.ToSignal(timer, SceneTreeTimer.SignalName.Timeout);
+        if (GodotObject.IsInstanceValid(bubble) && bubble.IsInsideTree())
+        {
+            await bubble.AnimOut();
+        }
     }
 
     private static async Task PlayGreetingVideo(NGlobalUi globalUi, CinematicContext context)
@@ -531,6 +549,8 @@ public static class BossGreetingCinematic
         private bool _spaceWasDown;
         private Node.ProcessModeEnum _roomProcessMode;
         private ulong _lastFrameMsec;
+        private ulong _lastDeltaFrame = ulong.MaxValue;
+        private float _cachedFrameDelta;
 
         public CinematicContext(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
         {
@@ -618,10 +638,16 @@ public static class BossGreetingCinematic
             UpdatePauseAndSkip();
             _cancellation.Token.ThrowIfCancellationRequested();
 
-            ulong now = Time.GetTicksMsec();
-            float delta = _paused ? 0f : Math.Min((now - _lastFrameMsec) / 1000f, 0.05f);
-            _lastFrameMsec = now;
-            return delta;
+            ulong processFrame = Engine.GetProcessFrames();
+            if (processFrame != _lastDeltaFrame)
+            {
+                ulong now = Time.GetTicksMsec();
+                _cachedFrameDelta = _paused ? 0f : Math.Min((now - _lastFrameMsec) / 1000f, 0.05f);
+                _lastFrameMsec = now;
+                _lastDeltaFrame = processFrame;
+            }
+
+            return _cachedFrameDelta;
         }
 
         public async Task WaitSeconds(float seconds)
@@ -729,6 +755,8 @@ public static class BossGreetingCinematic
         public void AttachVideo(VideoStreamPlayer? video) => _video = video;
 
         public void TrackNode(CanvasItem node) => _ownedVisuals.Add(node);
+
+        public void ReleaseNode(CanvasItem node) => _ownedVisuals.Remove(node);
 
         public void Dispose()
         {
