@@ -180,6 +180,17 @@ public static class BossGreetingCinematic
         await allEntrances;
         context.FrameCameraOn(followedNode.Visuals.Bounds, context.BaselineScale.X * PlayerZoomMultiplier);
 
+        float entranceAudioDuration = variants.Values
+            .Max(AncientEntranceAnimation.GetCinematicAudioDuration);
+        float entranceVisualDuration = variants.Values
+            .Max(AncientEntranceAnimation.GetDuration);
+        float remainingAudioSeconds = entranceAudioDuration - entranceVisualDuration;
+        if (remainingAudioSeconds > 0f)
+        {
+            Entry.Logger.Info($"Waiting {remainingAudioSeconds:0.###}s for entrance SFX before DOMO video.");
+            await context.WaitSeconds(remainingAudioSeconds);
+        }
+
         await PlayGreetingVideo(globalUi, context);
 
         Creature? boss = SelectBoss(combatState);
@@ -577,11 +588,19 @@ public static class BossGreetingCinematic
                     return;
                 }
 
-                if (!audioEvent.TryPlay())
+                GodotObject? rawInstance = audioEvent.RawInstance;
+                if (rawInstance == null || !GodotObject.IsInstanceValid(rawInstance) || !rawInstance.HasMethod("start"))
                 {
                     audioEvent.TryRelease();
                     Entry.Logger.Warn($"Could not start cinematic SFX '{eventPath}'.");
                     return;
+                }
+
+                rawInstance.Call("start");
+                bool pauseStateSet = _paused ? audioEvent.TryPause() : audioEvent.TryResume();
+                if (!pauseStateSet)
+                {
+                    Entry.Logger.Warn($"Could not set initial pause state for cinematic SFX '{eventPath}'.");
                 }
 
                 _audioEvents.Add(audioEvent);

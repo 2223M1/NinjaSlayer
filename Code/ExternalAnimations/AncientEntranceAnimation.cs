@@ -13,6 +13,7 @@ public static class AncientEntranceAnimation
     private const float SlideDuration = 0.5f;
     private const float FallDuration = 0.6f;
     private const float RiseDuration = 0.2f;
+    private const float LandingImpactTailSeconds = 0.85f;
     private const float FallDistance = 900f;
     private const float SideOffset = 1400f;
     private const float SideStartYOffset = -140f;
@@ -33,6 +34,12 @@ public static class AncientEntranceAnimation
         EntranceVariant.SlideFromLeft => SlideDuration,
         EntranceVariant.InvertedFallFromTopLeft => FallDuration + RiseDuration,
         _ => FallDuration
+    };
+
+    public static float GetCinematicAudioDuration(EntranceVariant variant) => variant switch
+    {
+        EntranceVariant.SlideFromLeft => NinjaSlayerAudio.ShortWashoiSeconds,
+        _ => Math.Max(NinjaSlayerAudio.LongWashoiSeconds, FallDuration + LandingImpactTailSeconds)
     };
 
     public static EntranceVariant FromRoll(float roll)
