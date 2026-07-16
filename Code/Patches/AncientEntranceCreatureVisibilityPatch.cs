@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
@@ -20,7 +21,8 @@ public sealed class AncientEntranceCreatureVisibilityPatch : IPatchMethod
     {
         if (creature.Player is not { } player
             || !IsNinjaSlayer(player)
-            || !NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player))
+            || (!NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player)
+                && !BossGreetingCinematic.ShouldStage(player)))
         {
             return;
         }

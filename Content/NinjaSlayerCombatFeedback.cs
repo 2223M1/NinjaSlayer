@@ -29,6 +29,11 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
             return;
         }
 
+        if (await BossGreetingCinematic.TryPlay(combatState))
+        {
+            return;
+        }
+
         foreach (Player player in combatState.Players)
         {
             if (!IsNinjaSlayer(player))

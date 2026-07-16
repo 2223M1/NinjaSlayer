@@ -19,6 +19,7 @@ public static class NinjaSlayerAudio
     public const string NinjaSlayerTransitionEvent = NinjaSlayerRoot + "/ninja_slayer_transition";
     public const string NinjaSlayerShortWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_short_washoi";
     public const string NinjaSlayerLongWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_long_washoi";
+    public const string NinjaSlayerDomoEvent = NinjaSlayerRoot + "/ninja_slayer_domo";
 
     /// <summary>FMOD clip length for ninja_slayer_transition (6月16日(1).wav).</summary>
     public const float TransitionAudioSeconds = 2.0201361f;

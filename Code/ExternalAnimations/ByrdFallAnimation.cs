@@ -19,7 +19,8 @@ public static class ByrdFallAnimation
         float fallDistance,
         float duration = Duration,
         bool playImpact = true,
-        Func<Task>? onImpact = null)
+        Func<Task>? onImpact = null,
+        ICinematicAnimationContext? cinematicContext = null)
     {
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null) return;
@@ -38,7 +39,14 @@ public static class ByrdFallAnimation
             .SetEase(Tween.EaseType.In)
             .SetTrans(Tween.TransitionType.Quad);
 
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        if (cinematicContext == null)
+        {
+            await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        }
+        else
+        {
+            await cinematicContext.AwaitTween(creatureNode, tween);
+        }
 
         if (usesAirborneAnchor)
         {

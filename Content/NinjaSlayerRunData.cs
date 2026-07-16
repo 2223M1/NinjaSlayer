@@ -7,6 +7,8 @@ namespace NinjaSlayer.Content;
 public sealed class NinjaSlayerRunState
 {
     public bool PendingAncientEntranceAnimation { get; set; }
+
+    public List<string> CompletedBossGreetingRoomKeys { get; set; } = [];
 }
 
 public static class NinjaSlayerRunData
@@ -42,5 +44,22 @@ public static class NinjaSlayerRunData
 
         PlayerState.Modify(player, state => state.PendingAncientEntranceAnimation = false);
         return true;
+    }
+
+    public static bool HasCompletedBossGreeting(Player player, string roomKey) =>
+        PlayerState.Get(player).CompletedBossGreetingRoomKeys?.Contains(roomKey, StringComparer.Ordinal) ?? false;
+
+    public static void MarkBossGreetingCompleted(Player player, string roomKey)
+    {
+        PlayerState.Modify(player, state =>
+        {
+            state.CompletedBossGreetingRoomKeys ??= [];
+            if (!state.CompletedBossGreetingRoomKeys.Contains(roomKey, StringComparer.Ordinal))
+            {
+                state.CompletedBossGreetingRoomKeys.Add(roomKey);
+            }
+
+            state.PendingAncientEntranceAnimation = false;
+        });
     }
 }
