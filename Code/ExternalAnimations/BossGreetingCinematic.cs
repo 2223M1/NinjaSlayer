@@ -33,9 +33,9 @@ public static class BossGreetingCinematic
     private const float BossCameraMoveSeconds = 0.2f;
     private const float CameraReturnSeconds = 0.2f;
     private const float DefaultBossZoomMultiplier = 1.5f;
-    private const float TargetBubbleWidth = 620f;
     private static readonly HashSet<string> ProcessedRoomKeys = [];
     private static string? _deferredBossBgm;
+    private static bool _musicBusMuted;
 
     public static bool ShouldStage(Player player)
     {
@@ -105,6 +105,14 @@ public static class BossGreetingCinematic
         }
 
         _deferredBossBgm = customMusic;
+        if (!_musicBusMuted)
+        {
+            _musicBusMuted = FmodStudioBusAccess.TrySetMute(FmodStudioRouting.MusicBus, true);
+            Entry.Logger.Info(_musicBusMuted
+                ? "Muted Music Bus for boss greeting."
+                : "Could not mute Music Bus for boss greeting.");
+        }
+
         Entry.Logger.Info($"Deferred boss BGM until greeting completes: {customMusic}");
         return true;
     }
@@ -113,13 +121,27 @@ public static class BossGreetingCinematic
     {
         string? customMusic = _deferredBossBgm;
         _deferredBossBgm = null;
-        if (string.IsNullOrEmpty(customMusic))
+        try
         {
-            return;
-        }
+            if (string.IsNullOrEmpty(customMusic))
+            {
+                return;
+            }
 
-        Entry.Logger.Info($"Starting deferred boss BGM: {customMusic}");
-        NRunMusicController.Instance?.PlayCustomMusic(customMusic);
+            Entry.Logger.Info($"Starting deferred boss BGM while Music Bus is muted: {customMusic}");
+            NRunMusicController.Instance?.PlayCustomMusic(customMusic);
+        }
+        finally
+        {
+            if (_musicBusMuted)
+            {
+                bool unmuted = FmodStudioBusAccess.TrySetMute(FmodStudioRouting.MusicBus, false);
+                Entry.Logger.Info(unmuted
+                    ? "Unmuted Music Bus after boss greeting."
+                    : "Could not unmute Music Bus after boss greeting.");
+                _musicBusMuted = false;
+            }
+        }
     }
 
     private static async Task PlayInternal(
@@ -175,6 +197,7 @@ public static class BossGreetingCinematic
 
         NSpeechBubbleVfx? bubble = null;
         float targetZoom = context.BaselineScale.X * DefaultBossZoomMultiplier;
+        Vector2? targetCameraPosition = null;
         bool showBubble = boss.Monster is not LagavulinMatriarch;
         bool anchorBubbleToBoss = IsKaiserBoss(boss);
         if (showBubble)
@@ -190,33 +213,40 @@ public static class BossGreetingCinematic
                 : NSpeechBubbleVfx.Create(dialogue, boss, GetBossActionDuration(boss) + 1.2f);
             if (bubble != null)
             {
+                Sprite2D? bubbleSprite = bubble.GetNodeOrNull<Sprite2D>("%Bubble");
+                Vector2 finalBubbleScale = bubbleSprite?.Scale ?? Vector2.One * 0.75f;
                 bubble.Visible = false;
                 bubble.ProcessMode = Node.ProcessModeEnum.Disabled;
                 room.SceneContainer.AddChildSafely(bubble);
                 context.TrackNode(bubble);
                 await context.NextFrame();
-                Control? container = bubble.GetNodeOrNull<Control>("%Container");
-                if (container != null && container.Size.X > 1f)
+
+                if (context.TryFrameBossAndBubble(
+                    bossNode.Visuals.Bounds,
+                    bossFocus,
+                    bubble,
+                    finalBubbleScale,
+                    out Vector2 measuredPosition,
+                    out float measuredScale))
                 {
-                    targetZoom = TargetBubbleWidth / container.Size.X;
+                    targetCameraPosition = measuredPosition;
+                    targetZoom = measuredScale;
                 }
             }
         }
 
-        await context.TweenCameraTo(bossFocus, targetZoom, BossCameraMoveSeconds);
+        if (targetCameraPosition is { } cameraPosition)
+        {
+            await context.TweenCameraTo(cameraPosition, targetZoom, BossCameraMoveSeconds);
+        }
+        else
+        {
+            await context.TweenCameraTo(bossFocus, targetZoom, BossCameraMoveSeconds);
+        }
+
         if (bubble != null)
         {
             bubble.ProcessMode = Node.ProcessModeEnum.Inherit;
-            if (!anchorBubbleToBoss)
-            {
-                await context.NextFrame();
-                Control? container = bubble.GetNodeOrNull<Control>("%Container");
-                if (container != null)
-                {
-                    Vector2 desiredTopLeft = context.ViewportSize * new Vector2(0.06f, 0.12f);
-                    bubble.GlobalPosition += desiredTopLeft - container.GetGlobalRect().Position;
-                }
-            }
             bubble.Visible = true;
         }
 
@@ -256,6 +286,7 @@ public static class BossGreetingCinematic
         player.Stop();
         player.QueueFreeSafely();
         context.AttachVideo(null);
+        await context.NextFrame();
     }
 
     private static async Task PlayBossAction(Creature boss, NCreature bossNode, CinematicContext context)
@@ -608,6 +639,71 @@ public static class BossGreetingCinematic
             await TweenCamera(startPosition, startScale, targetPosition, targetScale, duration);
         }
 
+        public Task TweenCameraTo(Vector2 targetPosition, float targetScale, float duration) =>
+            TweenCamera(_room.SceneContainer.Position, _room.SceneContainer.Scale.X, targetPosition, targetScale, duration);
+
+        public bool TryFrameBossAndBubble(
+            Control bossBounds,
+            CanvasItem bossFocus,
+            NSpeechBubbleVfx bubble,
+            Vector2 finalBubbleScale,
+            out Vector2 targetPosition,
+            out float targetScale)
+        {
+            targetPosition = Vector2.Zero;
+            targetScale = BaselineScale.X * DefaultBossZoomMultiplier;
+
+            Sprite2D? bubbleSprite = bubble.GetNodeOrNull<Sprite2D>("%Bubble");
+            Sprite2D? shadow = bubble.GetNodeOrNull<Sprite2D>("%Shadow");
+            Control? text = bubble.GetNodeOrNull<Control>("%Text");
+            if (bubbleSprite == null || shadow == null || text == null)
+            {
+                Entry.Logger.Warn("Could not measure the original boss speech bubble; using fallback camera zoom.");
+                return false;
+            }
+
+            Vector2 animatedScale = bubbleSprite.Scale;
+            float animatedRotation = bubble.Rotation;
+            try
+            {
+                bubbleSprite.Scale = finalBubbleScale;
+                bubble.Rotation = 0f;
+
+                Rect2 composition = GetSceneLocalRect(bossBounds);
+                composition = composition.Merge(GetSceneLocalPointRect(bossFocus));
+                composition = composition.Merge(GetSceneLocalRect(bubbleSprite));
+                composition = composition.Merge(GetSceneLocalRect(shadow));
+                composition = composition.Merge(GetSceneLocalRect(text));
+                if (composition.Size.X <= 1f || composition.Size.Y <= 1f)
+                {
+                    Entry.Logger.Warn("Measured boss greeting bounds were invalid; using fallback camera zoom.");
+                    return false;
+                }
+
+                var safeViewport = new Rect2(
+                    ViewportSize * new Vector2(0.07f, 0.09f),
+                    ViewportSize * new Vector2(0.86f, 0.80f));
+                float fitScale = Math.Min(
+                    safeViewport.Size.X / composition.Size.X,
+                    safeViewport.Size.Y / composition.Size.Y);
+                targetScale = Math.Min(fitScale, BaselineScale.X * DefaultBossZoomMultiplier);
+                if (!float.IsFinite(targetScale) || targetScale <= 0f)
+                {
+                    return false;
+                }
+
+                targetPosition = safeViewport.GetCenter() - composition.GetCenter() * targetScale;
+                Entry.Logger.Info(
+                    $"Boss greeting camera bounds={composition.Position}/{composition.Size}, scale={targetScale:0.###}.");
+                return true;
+            }
+            finally
+            {
+                bubbleSprite.Scale = animatedScale;
+                bubble.Rotation = animatedRotation;
+            }
+        }
+
         public Task TweenCameraToBaseline(float duration) =>
             TweenCamera(_room.SceneContainer.Position, _room.SceneContainer.Scale.X, BaselinePosition, BaselineScale.X, duration);
 
@@ -668,6 +764,30 @@ public static class BossGreetingCinematic
                 _ => Vector2.Zero
             };
             return _room.SceneContainer.GetGlobalTransformWithCanvas().AffineInverse() * globalCenter;
+        }
+
+        private Rect2 GetSceneLocalRect(Control control) =>
+            TransformRectToSceneLocal(new Rect2(Vector2.Zero, control.Size), control.GetGlobalTransformWithCanvas());
+
+        private Rect2 GetSceneLocalRect(Sprite2D sprite) =>
+            TransformRectToSceneLocal(sprite.GetRect(), sprite.GetGlobalTransformWithCanvas());
+
+        private Rect2 GetSceneLocalPointRect(CanvasItem item)
+        {
+            Vector2 center = GetLocalCenter(item);
+            return new Rect2(center - Vector2.One, Vector2.One * 2f);
+        }
+
+        private Rect2 TransformRectToSceneLocal(Rect2 localRect, Transform2D globalTransform)
+        {
+            Transform2D toScene = _room.SceneContainer.GetGlobalTransformWithCanvas().AffineInverse();
+            Vector2 topLeft = toScene * (globalTransform * localRect.Position);
+            Vector2 topRight = toScene * (globalTransform * new Vector2(localRect.End.X, localRect.Position.Y));
+            Vector2 bottomLeft = toScene * (globalTransform * new Vector2(localRect.Position.X, localRect.End.Y));
+            Vector2 bottomRight = toScene * (globalTransform * localRect.End);
+            Vector2 minimum = topLeft.Min(topRight).Min(bottomLeft).Min(bottomRight);
+            Vector2 maximum = topLeft.Max(topRight).Max(bottomLeft).Max(bottomRight);
+            return new Rect2(minimum, maximum - minimum);
         }
 
         private void UpdatePauseAndSkip()
