@@ -29,7 +29,17 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
             return;
         }
 
-        if (await BossGreetingCinematic.TryPlay(combatState))
+        bool greetingPlayed;
+        try
+        {
+            greetingPlayed = await BossGreetingCinematic.TryPlay(combatState);
+        }
+        finally
+        {
+            BossGreetingCinematic.PlayDeferredBossBgm();
+        }
+
+        if (greetingPlayed)
         {
             return;
         }

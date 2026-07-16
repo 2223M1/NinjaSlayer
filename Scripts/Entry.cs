@@ -73,6 +73,7 @@ public class Entry
         patcher.RegisterPatch<KarateCardPreviewClearPatch>();
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
+        patcher.RegisterPatch<BossGreetingMusicPatch>();
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<ScreenShakeSuppressionPatch>();

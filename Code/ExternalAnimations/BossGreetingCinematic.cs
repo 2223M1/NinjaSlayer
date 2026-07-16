@@ -6,7 +6,9 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Models.Encounters;
+using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Audio;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
@@ -33,34 +35,24 @@ public static class BossGreetingCinematic
     private const float DefaultBossZoomMultiplier = 1.5f;
     private const float TargetBubbleWidth = 620f;
     private static readonly HashSet<string> ProcessedRoomKeys = [];
+    private static string? _deferredBossBgm;
 
     public static bool ShouldStage(Player player)
     {
         ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
         return combatState != null
             && player.Character is INinjaSlayerCharacter
-            && TryGetRoomKey(combatState, out string roomKey)
-            && !ProcessedRoomKeys.Contains(GetProcessRoomKey(combatState.RunState, roomKey))
-            && !NinjaSlayerRunData.HasCompletedBossGreeting(player, roomKey);
+            && IsGreetingPending(combatState, out _, out _);
     }
 
     public static async Task<bool> TryPlay(ICombatState combatState)
     {
-        List<Player> ninjaSlayers = combatState.Players
-            .Where(player => player.Character is INinjaSlayerCharacter)
-            .ToList();
-        if (ninjaSlayers.Count == 0 || !TryGetRoomKey(combatState, out string roomKey))
+        if (!IsGreetingPending(combatState, out string roomKey, out List<Player> ninjaSlayers))
         {
             return false;
         }
 
         string processRoomKey = GetProcessRoomKey(combatState.RunState, roomKey);
-        if (ProcessedRoomKeys.Contains(processRoomKey)
-            || ninjaSlayers.All(player => NinjaSlayerRunData.HasCompletedBossGreeting(player, roomKey)))
-        {
-            return false;
-        }
-
         NCombatRoom? room = NCombatRoom.Instance;
         NRun? run = NRun.Instance;
         if (room == null || run?.GlobalUi == null)
@@ -102,6 +94,32 @@ public static class BossGreetingCinematic
         }
 
         return true;
+    }
+
+    public static bool TryDeferBossBgm(string customMusic)
+    {
+        ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
+        if (combatState == null || !IsGreetingPending(combatState, out _, out _))
+        {
+            return false;
+        }
+
+        _deferredBossBgm = customMusic;
+        Entry.Logger.Info($"Deferred boss BGM until greeting completes: {customMusic}");
+        return true;
+    }
+
+    public static void PlayDeferredBossBgm()
+    {
+        string? customMusic = _deferredBossBgm;
+        _deferredBossBgm = null;
+        if (string.IsNullOrEmpty(customMusic))
+        {
+            return;
+        }
+
+        Entry.Logger.Info($"Starting deferred boss BGM: {customMusic}");
+        NRunMusicController.Instance?.PlayCustomMusic(customMusic);
     }
 
     private static async Task PlayInternal(
@@ -401,6 +419,33 @@ public static class BossGreetingCinematic
         return true;
     }
 
+    private static bool IsGreetingPending(
+        ICombatState combatState,
+        out string roomKey,
+        out List<Player> ninjaSlayers)
+    {
+        ninjaSlayers = combatState.Players
+            .Where(player => player.Character is INinjaSlayerCharacter)
+            .ToList();
+        if (ninjaSlayers.Count == 0 || !TryGetRoomKey(combatState, out roomKey))
+        {
+            roomKey = string.Empty;
+            return false;
+        }
+
+        string processRoomKey = GetProcessRoomKey(combatState.RunState, roomKey);
+        if (ProcessedRoomKeys.Contains(processRoomKey))
+        {
+            return false;
+        }
+
+        bool replayAfterLoad = RunManager.Instance.NetService.Type == NetGameType.Singleplayer
+            && LocalContext.GetMe(combatState)?.Character is NinjaSlayerDebugCharacter;
+        string completedRoomKey = roomKey;
+        return replayAfterLoad
+            || !ninjaSlayers.All(player => NinjaSlayerRunData.HasCompletedBossGreeting(player, completedRoomKey));
+    }
+
     private static string GetProcessRoomKey(IRunState runState, string roomKey) =>
         $"{RuntimeHelpers.GetHashCode(runState)}:{roomKey}";
 
@@ -487,7 +532,14 @@ public static class BossGreetingCinematic
             {
                 AudioEventHandle? audioEvent = FmodStudioEventInstances.TryCreateHandle(
                     AudioSource.Event(eventPath),
-                    new AudioPlaybackOptions());
+                    new AudioPlaybackOptions
+                    {
+                        AutoPlay = false,
+                        StartPaused = false,
+                        Volume = 1f,
+                        Pitch = 1f,
+                        Scope = AudioLifecycleScope.Manual
+                    });
                 if (audioEvent == null)
                 {
                     Entry.Logger.Warn($"Could not create cinematic SFX '{eventPath}'.");
@@ -501,11 +553,8 @@ public static class BossGreetingCinematic
                     return;
                 }
 
-                if (_paused)
-                {
-                    audioEvent.TryPause();
-                }
                 _audioEvents.Add(audioEvent);
+                Entry.Logger.Info($"Cinematic SFX started: {eventPath}");
             }
             catch (Exception ex)
             {
