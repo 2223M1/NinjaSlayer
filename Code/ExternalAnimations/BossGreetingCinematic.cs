@@ -672,7 +672,7 @@ public static class BossGreetingCinematic
         {
             Vector2 localTarget = GetLocalCenter(target);
             _room.SceneContainer.Scale = Vector2.One * scale;
-            _room.SceneContainer.Position = ViewportSize * 0.5f - localTarget * scale;
+            _room.SceneContainer.Position = GetCameraPosition(localTarget, scale, ViewportSize * 0.5f);
         }
 
         public async Task TweenCameraTo(CanvasItem target, float targetScale, float duration)
@@ -680,7 +680,7 @@ public static class BossGreetingCinematic
             Vector2 startPosition = _room.SceneContainer.Position;
             float startScale = _room.SceneContainer.Scale.X;
             Vector2 localTarget = GetLocalCenter(target);
-            Vector2 targetPosition = ViewportSize * 0.5f - localTarget * targetScale;
+            Vector2 targetPosition = GetCameraPosition(localTarget, targetScale, ViewportSize * 0.5f);
             await TweenCamera(startPosition, startScale, targetPosition, targetScale, duration);
         }
 
@@ -737,7 +737,10 @@ public static class BossGreetingCinematic
                     return false;
                 }
 
-                targetPosition = safeViewport.GetCenter() - composition.GetCenter() * targetScale;
+                targetPosition = GetCameraPosition(
+                    composition.GetCenter(),
+                    targetScale,
+                    safeViewport.GetCenter());
                 Entry.Logger.Info(
                     $"Boss greeting camera bounds={composition.Position}/{composition.Size}, scale={targetScale:0.###}.");
                 return true;
@@ -811,6 +814,12 @@ public static class BossGreetingCinematic
                 _ => Vector2.Zero
             };
             return _room.SceneContainer.GetGlobalTransformWithCanvas().AffineInverse() * globalCenter;
+        }
+
+        private Vector2 GetCameraPosition(Vector2 localTarget, float scale, Vector2 screenTarget)
+        {
+            Vector2 pivot = _room.SceneContainer.PivotOffset;
+            return screenTarget - pivot - (localTarget - pivot) * scale;
         }
 
         private Rect2 GetSceneLocalRect(Control control) =>
