@@ -18,6 +18,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
+using STS2RitsuLib.Audio;
 using System.Runtime.CompilerServices;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -433,7 +434,7 @@ public static class BossGreetingCinematic
         private readonly NCombatRoom _room;
         private readonly NGlobalUi _globalUi;
         private readonly bool _singlePlayer;
-        private readonly List<GodotObject> _audioEvents = [];
+        private readonly List<AudioEventHandle> _audioEvents = [];
         private readonly List<CanvasItem> _ownedVisuals = [];
         private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
         private readonly CancellationTokenSource _cancellation = new();
@@ -482,22 +483,28 @@ public static class BossGreetingCinematic
 
         public void PlaySfx(string eventPath)
         {
-            GodotObject? server = Engine.GetSingleton("FmodServer");
-            if (server == null)
-            {
-                return;
-            }
-
             try
             {
-                GodotObject? audioEvent = server.Call("create_event_instance", eventPath).AsGodotObject();
+                AudioEventHandle? audioEvent = FmodStudioEventInstances.TryCreateHandle(
+                    AudioSource.Event(eventPath),
+                    new AudioPlaybackOptions());
                 if (audioEvent == null)
                 {
+                    Entry.Logger.Warn($"Could not create cinematic SFX '{eventPath}'.");
                     return;
                 }
 
-                audioEvent.Call("start");
-                audioEvent.Call("set_paused", _paused);
+                if (!audioEvent.TryPlay())
+                {
+                    audioEvent.TryRelease();
+                    Entry.Logger.Warn($"Could not start cinematic SFX '{eventPath}'.");
+                    return;
+                }
+
+                if (_paused)
+                {
+                    audioEvent.TryPause();
+                }
                 _audioEvents.Add(audioEvent);
             }
             catch (Exception ex)
@@ -573,10 +580,10 @@ public static class BossGreetingCinematic
                 _video.QueueFreeSafely();
             }
 
-            foreach (GodotObject audioEvent in _audioEvents.Where(GodotObject.IsInstanceValid))
+            foreach (AudioEventHandle audioEvent in _audioEvents)
             {
-                audioEvent.Call("stop", 0);
-                audioEvent.Call("release");
+                audioEvent.TryStop(allowFadeOut: false);
+                audioEvent.TryRelease();
             }
 
             _audioEvents.Clear();
@@ -630,9 +637,16 @@ public static class BossGreetingCinematic
                     _video.Paused = _paused;
                 }
 
-                foreach (GodotObject audioEvent in _audioEvents.Where(GodotObject.IsInstanceValid))
+                foreach (AudioEventHandle audioEvent in _audioEvents)
                 {
-                    audioEvent.Call("set_paused", _paused);
+                    if (_paused)
+                    {
+                        audioEvent.TryPause();
+                    }
+                    else
+                    {
+                        audioEvent.TryResume();
+                    }
                 }
             }
 
