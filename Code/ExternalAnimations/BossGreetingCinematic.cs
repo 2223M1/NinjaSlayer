@@ -87,12 +87,14 @@ public static class BossGreetingCinematic
         finally
         {
             context.Dispose();
-            room.SceneContainer.Position = context.BaselinePosition;
-            room.SceneContainer.Scale = context.BaselineScale;
-            foreach (Player player in ninjaSlayers)
+            context.RestoreCameraAndScreenShakeTarget();
+            if (GodotObject.IsInstanceValid(room) && room.IsInsideTree())
             {
-                NCreature? node = room.GetCreatureNode(player.Creature);
-                node?.Visuals.Show();
+                foreach (Player player in ninjaSlayers)
+                {
+                    NCreature? node = room.GetCreatureNode(player.Creature);
+                    node?.Visuals.Show();
+                }
             }
         }
 
@@ -537,6 +539,7 @@ public static class BossGreetingCinematic
     private sealed class CinematicContext : ICinematicAnimationContext, IDisposable
     {
         private readonly NCombatRoom _room;
+        private readonly Control _sceneContainer;
         private readonly NGlobalUi _globalUi;
         private readonly bool _singlePlayer;
         private readonly List<AudioEventHandle> _audioEvents = [];
@@ -546,6 +549,7 @@ public static class BossGreetingCinematic
         private VideoStreamPlayer? _video;
         private bool _paused;
         private bool _disposed;
+        private bool _screenShakeTargetSuspended;
         private bool _spaceWasDown;
         private Node.ProcessModeEnum _roomProcessMode;
         private ulong _lastFrameMsec;
@@ -555,15 +559,24 @@ public static class BossGreetingCinematic
         public CinematicContext(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
         {
             _room = room;
+            _sceneContainer = room.SceneContainer;
             _globalUi = globalUi;
             _singlePlayer = RunManager.Instance.IsSingleplayerOrFakeMultiplayer;
-            BaselinePosition = room.SceneContainer.Position;
-            BaselineScale = room.SceneContainer.Scale;
+            BaselinePosition = _sceneContainer.Position;
+            BaselineScale = _sceneContainer.Scale;
             ViewportSize = room.GetViewportRect().Size;
             RoomKeySeed = roomKeySeed;
             _roomProcessMode = room.ProcessMode;
             _lastFrameMsec = Time.GetTicksMsec();
             RaiseTopBarLayers();
+
+            NGame? game = NGame.Instance;
+            if (game != null && ReferenceEquals(game.ScreenshakeTarget, _sceneContainer))
+            {
+                _screenShakeTargetSuspended = true;
+                game.ClearScreenShakeTarget();
+                Entry.Logger.Info("Suspended combat screen shake target for boss greeting camera control.");
+            }
         }
 
         public CancellationToken CancellationToken => _cancellation.Token;
@@ -760,6 +773,53 @@ public static class BossGreetingCinematic
         public void TrackNode(CanvasItem node) => _ownedVisuals.Add(node);
 
         public void ReleaseNode(CanvasItem node) => _ownedVisuals.Remove(node);
+
+        public void RestoreCameraAndScreenShakeTarget()
+        {
+            bool shouldRestoreScreenShake = _screenShakeTargetSuspended;
+            _screenShakeTargetSuspended = false;
+
+            if (!GodotObject.IsInstanceValid(_room)
+                || !GodotObject.IsInstanceValid(_sceneContainer)
+                || !_room.IsInsideTree()
+                || !ReferenceEquals(NCombatRoom.Instance, _room))
+            {
+                if (shouldRestoreScreenShake)
+                {
+                    Entry.Logger.Warn("Skipped restoring boss greeting screen shake target because the combat room changed.");
+                }
+
+                return;
+            }
+
+            _sceneContainer.Position = BaselinePosition;
+            _sceneContainer.Scale = BaselineScale;
+            if (!shouldRestoreScreenShake)
+            {
+                return;
+            }
+
+            NGame? game = NGame.Instance;
+            if (game == null)
+            {
+                Entry.Logger.Warn("Skipped restoring boss greeting screen shake target because the game instance is unavailable.");
+                return;
+            }
+
+            Control? currentTarget = game.ScreenshakeTarget;
+            if (currentTarget != null && !ReferenceEquals(currentTarget, _sceneContainer))
+            {
+                Entry.Logger.Warn("Skipped restoring boss greeting screen shake target because another target took ownership.");
+                return;
+            }
+
+            if (!ReferenceEquals(currentTarget, _sceneContainer))
+            {
+                game.SetScreenShakeTarget(_sceneContainer);
+            }
+
+            Entry.Logger.Info("Restored combat screen shake target after boss greeting camera reset.");
+        }
 
         public void Dispose()
         {
