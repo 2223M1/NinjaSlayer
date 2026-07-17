@@ -25,7 +25,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
     public static string PatchId => "ninjaslayer_character_transition";
 
-    public static string Description => "Play NinjaSlayer transition frame animation during embark and save load.";
+    public static string Description => "Play the NinjaSlayer transition video during embark and save load.";
 
     public static bool IsCritical => true;
 
@@ -41,7 +41,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
         NinjaSlayerTransitionGate.Pending = false;
 
-        // Start the frame animation in the background and return immediately so the caller's
+        // Start the transition video in the background and return immediately so the caller's
         // run/save asset loading overlaps the animation instead of producing a black hold
         // afterwards. The reveal patches (RoomFadeIn/FadeIn) await this task before showing.
         NinjaSlayerTransitionGate.AnimationTask = BeginNinjaSlayerTransition(__instance, cancelToken);
@@ -63,7 +63,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         }
 
         // Cover the screen synchronously before returning so the character select / menu never
-        // flashes through: opaque black underlay plus the first animation frame on top.
+        // flashes through while the video decoder produces its first frame.
         KillTransitionTween(transition);
 
         SetInTransition(transition, true);

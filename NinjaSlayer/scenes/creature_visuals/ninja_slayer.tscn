@@ -16,6 +16,10 @@ texture = ExtResource("2_shadow")
 
 [node name="AirborneAnchor" type="Node2D" parent="."]
 
+[node name="CinematicFocus" type="Marker2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(31.4, -135)
+
 [node name="Visuals" type="Sprite2D" parent="AirborneAnchor"]
 unique_name_in_owner = true
 position = Vector2(-160, -190)

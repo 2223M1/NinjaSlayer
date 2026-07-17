@@ -24,8 +24,8 @@ public interface INinjaSlayerCharacter
 public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemplate<TCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>, INinjaSlayerCharacter
     where TCardPool : CardPoolModel
 {
-    private const int idleFrameCount = 27;
-    private const float idleLoopDuration = idleFrameCount / 30f;
+    private const int idleFrameCount = 22;
+    private const float idleFrameDuration = 1f / 24f;
     private const string visualsPath = "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn";
     private const string energyCounterPath = "res://NinjaSlayer/scenes/ui/ninja_slayer_energy_counter.tscn";
     private const string idleTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png";
@@ -37,8 +37,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
     private const string selectLockedTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer_locked.png";
     private const string mapMarkerTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/map_marker.png";
     public const string CharacterSelectTransitionMaterialPath = "res://NinjaSlayer/materials/transitions/ninja_slayer_transition_mat.tres";
-    public const string TransitionFramePathFormat = "res://NinjaSlayer/images/ui/transitions/ninja_slayer/ninja_slayer_transition_{0:D4}.png";
-    public const int TransitionFrameCount = 60;
+    public const string TransitionVideoPath = "res://NinjaSlayer/videos/ninja_slayer_transition.ogv";
     private const float xAttackSpinDuration = 0.24f;
     private const float xAttackSpinFps = 60f;
     public static readonly bool OriginalAnimations = true;
@@ -154,7 +153,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
         {
             seq.Frame(
                 $"res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_{i:0000}.png",
-                idleLoopDuration / idleFrameCount,
+                idleFrameDuration,
                 CueStyle(offsetX: 0f));
         }
 

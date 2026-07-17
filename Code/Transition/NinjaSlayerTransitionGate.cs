@@ -13,7 +13,7 @@ internal static class NinjaSlayerTransitionGate
     internal static float LoadStartDelaySeconds { get; set; }
 
     /// <summary>
-    /// The currently-playing transition frame animation, started by the FadeOut patch and
+    /// The currently-playing transition video, started by the FadeOut patch and
     /// awaited by the reveal (RoomFadeIn/FadeIn) patches so asset loading overlaps the
     /// animation instead of producing a black hold afterwards.
     /// </summary>

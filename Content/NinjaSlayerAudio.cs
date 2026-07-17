@@ -30,8 +30,8 @@ public static class NinjaSlayerAudio
     /// <summary>FMOD clip length for ninja_slayer_transition (6月16日(1).wav).</summary>
     public const float TransitionAudioSeconds = 2.0201361f;
 
-    /// <summary>Visual frame-animation length; the FMOD event continues independently.</summary>
-    public const float TransitionVisualSeconds = 1.6f;
+    /// <summary>Visual transition video length; the FMOD event continues independently.</summary>
+    public const float TransitionVisualSeconds = 2f;
 
     /// <summary>Delay before run asset loading starts during the embark transition animation.</summary>
     public const float EmbarkLoadStartDelaySeconds = 0.2f;

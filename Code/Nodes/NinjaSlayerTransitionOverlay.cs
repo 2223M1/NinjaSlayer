@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using NinjaSlayer.Code.Transition;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -9,8 +10,10 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class NinjaSlayerTransitionOverlay : Control
 {
     public const string NodeName = "NinjaSlayerTransitionOverlay";
+    private const float VideoAspectRatio = 16f / 9f;
+    private const float PlaybackTimeoutPaddingSeconds = 1f;
 
-    private TextureRect? frameView;
+    private VideoStreamPlayer? videoPlayer;
 
     public override void _Ready()
     {
@@ -24,64 +27,62 @@ public partial class NinjaSlayerTransitionOverlay : Control
         ZAsRelative = false;
         ZIndex = 100;
 
-        if (frameView != null)
+        if (videoPlayer != null)
         {
             return;
         }
 
-        frameView = new TextureRect
+        var aspectContainer = new AspectRatioContainer
         {
-            Name = "FrameView",
+            Name = "VideoAspectContainer",
             MouseFilter = MouseFilterEnum.Ignore,
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+            Ratio = VideoAspectRatio,
+            StretchMode = AspectRatioContainer.StretchModeEnum.Cover,
+            ClipContents = true
         };
-        frameView.SetAnchorsPreset(LayoutPreset.FullRect);
-        AddChild(frameView);
+        aspectContainer.SetAnchorsPreset(LayoutPreset.FullRect);
+        AddChild(aspectContainer);
+
+        videoPlayer = new VideoStreamPlayer
+        {
+            Name = "VideoPlayer",
+            MouseFilter = MouseFilterEnum.Ignore,
+            Expand = true
+        };
+        videoPlayer.SetAnchorsPreset(LayoutPreset.FullRect);
+        aspectContainer.AddChild(videoPlayer);
     }
 
     public async Task PlayAsync(float duration, CancellationToken cancelToken = default)
     {
         EnsureInitialized();
-
-        var frames = NinjaSlayerTransitionFrames.GetFrames();
-        Visible = true;
-        var elapsed = 0.0;
-
-        // Cap how much a single tick can advance the clock. The animation runs on the main
-        // thread, overlapping main-thread run/save loading; when loading stalls the thread the
-        // next ProcessFrame delta spikes. Without a cap that spike jumps the frame index over
-        // several frames (visible stutter). Clamping to ~2 nominal frames turns a load hitch
-        // into a brief pause that resumes in order instead of skipping frames.
-        var secondsPerFrame = frames.Length > 0 && duration > 0f ? duration / frames.Length : 0f;
-        var maxStep = secondsPerFrame > 0f ? secondsPerFrame * 2f : double.MaxValue;
-
-        while (elapsed < duration)
-        {
-            if (cancelToken.IsCancellationRequested)
-            {
-                break;
-            }
-
-            var progress = duration <= 0f ? 1f : (float)(elapsed / duration);
-            var frameIndex = Math.Clamp((int)(progress * frames.Length), 0, frames.Length - 1);
-            SetFrame(frames[frameIndex]);
-
-            elapsed += Math.Min(await this.AwaitProcessFrame(cancelToken), maxStep);
-        }
-
-        SetFrame(frames[^1]);
-        Visible = false;
-    }
-
-    private void SetFrame(Texture2D frame)
-    {
-        if (frameView == null || !GodotObject.IsInstanceValid(frame))
+        if (videoPlayer == null)
         {
             return;
         }
 
-        frameView.Texture = frame;
+        videoPlayer.Stream = NinjaSlayerTransitionVideo.GetStream();
+        Visible = true;
+        videoPlayer.Play();
+        double elapsed = 0.0;
+        try
+        {
+            float timeout = Math.Max(duration, 0f) + PlaybackTimeoutPaddingSeconds;
+            while (videoPlayer.IsPlaying() && elapsed < timeout)
+            {
+                elapsed += await this.AwaitProcessFrame(cancelToken);
+            }
+
+            if (videoPlayer.IsPlaying())
+            {
+                Entry.Logger.Warn($"NinjaSlayer transition video exceeded its {timeout:0.###}s playback timeout.");
+            }
+        }
+        finally
+        {
+            videoPlayer.Stop();
+            Visible = false;
+        }
     }
 
     public static NinjaSlayerTransitionOverlay GetOrCreate(NTransition transition)
@@ -97,7 +98,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
         var overlay = new NinjaSlayerTransitionOverlay
         {
             Name = NodeName,
-            Visible = false,
+            Visible = false
         };
         overlay.EnsureInitialized();
         transition.AddChild(overlay);

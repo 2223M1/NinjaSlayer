@@ -65,7 +65,8 @@ public static class AncientEntranceAnimation
     public static async Task Play(
         Player player,
         EntranceVariant variant,
-        ICinematicAnimationContext? cinematicContext = null)
+        ICinematicAnimationContext? cinematicContext = null,
+        Task? startSignal = null)
     {
         Creature creature = player.Creature;
         try
@@ -73,19 +74,19 @@ public static class AncientEntranceAnimation
             switch (variant)
             {
                 case EntranceVariant.SlideFromLeft:
-                    await SlideFromLeft(creature, cinematicContext);
+                    await SlideFromLeft(creature, cinematicContext, startSignal);
                     break;
                 case EntranceVariant.FallFromTop:
-                    await FallFromTop(creature, cinematicContext);
+                    await FallFromTop(creature, cinematicContext, startSignal);
                     break;
                 case EntranceVariant.InvertedFallFromTopLeft:
-                    await InvertedFallFromTopLeft(creature, cinematicContext);
+                    await InvertedFallFromTopLeft(creature, cinematicContext, startSignal);
                     break;
                 case EntranceVariant.SpinningFallFromLeft:
-                    await SpinningFallFromSide(creature, fromLeft: true, cinematicContext);
+                    await SpinningFallFromSide(creature, fromLeft: true, cinematicContext, startSignal);
                     break;
                 case EntranceVariant.SpinningFallFromRight:
-                    await SpinningFallFromSide(creature, fromLeft: false, cinematicContext);
+                    await SpinningFallFromSide(creature, fromLeft: false, cinematicContext, startSignal);
                     break;
             }
         }
@@ -95,7 +96,10 @@ public static class AncientEntranceAnimation
         }
     }
 
-    private static async Task SlideFromLeft(Creature creature, ICinematicAnimationContext? cinematicContext)
+    private static async Task SlideFromLeft(
+        Creature creature,
+        ICinematicAnimationContext? cinematicContext,
+        Task? startSignal)
     {
         if (!TryGetRig(creature, out NCreature creatureNode, out _, out _, out _))
         {
@@ -105,9 +109,10 @@ public static class AncientEntranceAnimation
         Vector2 basePos = creatureNode.Position;
         try
         {
-            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerShortWashoiEvent);
             creatureNode.Position = new Vector2(basePos.X - SideOffset, basePos.Y);
             SetVisualsVisible(creature);
+            await WaitForStart(startSignal, cinematicContext);
+            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerShortWashoiEvent);
             await TweenNodePosition(creatureNode, basePos, SlideDuration, Tween.EaseType.Out, Tween.TransitionType.Quad, cinematicContext);
         }
         finally
@@ -116,7 +121,10 @@ public static class AncientEntranceAnimation
         }
     }
 
-    private static async Task FallFromTop(Creature creature, ICinematicAnimationContext? cinematicContext)
+    private static async Task FallFromTop(
+        Creature creature,
+        ICinematicAnimationContext? cinematicContext,
+        Task? startSignal)
     {
         if (!TryGetRig(creature, out _, out Node2D anchor, out _, out RigSnapshot snapshot))
         {
@@ -125,9 +133,10 @@ public static class AncientEntranceAnimation
 
         try
         {
-            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
             SetVisualsVisible(creature);
+            await WaitForStart(startSignal, cinematicContext);
+            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext);
         }
         finally
@@ -136,7 +145,10 @@ public static class AncientEntranceAnimation
         }
     }
 
-    private static async Task InvertedFallFromTopLeft(Creature creature, ICinematicAnimationContext? cinematicContext)
+    private static async Task InvertedFallFromTopLeft(
+        Creature creature,
+        ICinematicAnimationContext? cinematicContext,
+        Task? startSignal)
     {
         if (!TryGetRig(creature, out NCreature creatureNode, out Node2D anchor, out Node2D body, out RigSnapshot snapshot))
         {
@@ -148,12 +160,13 @@ public static class AncientEntranceAnimation
         float uprightRotationDegrees = snapshot.BodyRotationDegrees + 360f;
         try
         {
-            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             creatureNode.Position = landingPos;
             body.RotationDegrees = invertedRotationDegrees;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
-            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
             SetVisualsVisible(creature);
+            await WaitForStart(startSignal, cinematicContext);
+            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
+            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
 
             await Task.WhenAll(
                 ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext),
@@ -175,7 +188,11 @@ public static class AncientEntranceAnimation
         }
     }
 
-    private static async Task SpinningFallFromSide(Creature creature, bool fromLeft, ICinematicAnimationContext? cinematicContext)
+    private static async Task SpinningFallFromSide(
+        Creature creature,
+        bool fromLeft,
+        ICinematicAnimationContext? cinematicContext,
+        Task? startSignal)
     {
         if (!TryGetRig(creature, out NCreature creatureNode, out Node2D anchor, out _, out RigSnapshot snapshot))
         {
@@ -186,11 +203,12 @@ public static class AncientEntranceAnimation
         Vector2 startPos = snapshot.CreaturePosition + new Vector2(SideOffset * direction, SideStartYOffset);
         try
         {
-            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             creatureNode.Position = startPos;
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
-            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
             SetVisualsVisible(creature);
+            await WaitForStart(startSignal, cinematicContext);
+            PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
+            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
 
             await Task.WhenAll(
                 TweenSideFallParabola(creatureNode, snapshot.CreaturePosition, direction, FallDuration, cinematicContext),
@@ -320,6 +338,22 @@ public static class AncientEntranceAnimation
         }
 
         await cinematicContext.AwaitTween(owner, tween);
+    }
+
+    private static async Task WaitForStart(Task? startSignal, ICinematicAnimationContext? cinematicContext)
+    {
+        if (startSignal == null)
+        {
+            return;
+        }
+
+        if (cinematicContext == null)
+        {
+            await startSignal;
+            return;
+        }
+
+        await startSignal.WaitAsync(cinematicContext.CancellationToken);
     }
 
     private static void PlaySfx(ICinematicAnimationContext? cinematicContext, string eventPath)

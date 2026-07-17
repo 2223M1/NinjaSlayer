@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens.Settings;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Rooms;
@@ -31,11 +32,18 @@ public static class BossGreetingCinematic
     private const string VideoPath = "res://NinjaSlayer/videos/ninja_slayer_domo.ogv";
     private const float VideoSeconds = 260f / 24f;
     private const float PlayerZoomMultiplier = 2f;
+    private const float PlayerCameraLeadSeconds = 0.2f;
+    private const float PlayerCameraFollowDelaySeconds = 0.2f;
+    private const float PlayerCameraSettleSeconds = 0.12f;
     private const float BossCameraMoveSeconds = 0.2f;
     private const float CameraReturnSeconds = 0.2f;
+    private const float MinimumBossCameraHoldSeconds = 1f;
+    private const float BossActionTimeoutSeconds = 8f;
+    private const int FmodPlaybackStateStopped = 2;
     private const float DefaultBossZoomMultiplier = 1.5f;
     private const float BossBubbleLifetimeSeconds = 999f;
     private const float PostCombatStartBubbleSeconds = 2f;
+    private static readonly Vector2 PlayerFinalCameraOffset = new(0f, -60f);
     private static readonly HashSet<string> ProcessedRoomKeys = [];
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
@@ -163,36 +171,67 @@ public static class BossGreetingCinematic
             return;
         }
 
-        CanvasItem followedFocus = (CanvasItem?)NinjaSlayerVisualRig.GetBodySprite(followedNode.Visuals)
+        CanvasItem followedFocus = (CanvasItem?)NinjaSlayerVisualRig.GetCinematicFocus(followedNode.Visuals)
+            ?? (CanvasItem?)followedNode.Visuals.GetNodeOrNull<Node2D>("%CenterPos")
             ?? followedNode.Visuals.Bounds;
 
         var variants = ninjaSlayers
             .Select((player, index) => (player, variant: AncientEntranceAnimation.FromRoll(StableRoll(context.RoomKeySeed, index))))
             .ToDictionary(pair => pair.player, pair => pair.variant);
+        var entranceStart = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Task[] entranceTasks = ninjaSlayers
-            .Select(player => AncientEntranceAnimation.Play(player, variants[player], context))
+            .Select(player => AncientEntranceAnimation.Play(player, variants[player], context, entranceStart.Task))
             .ToArray();
         Task allEntrances = Task.WhenAll(entranceTasks);
+        Entry.Logger.Info("Boss greeting entrances staged outside the scene; starting camera lead.");
 
-        float zoomDuration = AncientEntranceAnimation.GetDuration(variants[followedPlayer]);
+        float playerZoom = context.BaselineScale.X * PlayerZoomMultiplier;
+        try
+        {
+            await context.TweenCameraToClamped(followedFocus, playerZoom, PlayerCameraLeadSeconds);
+        }
+        catch
+        {
+            entranceStart.TrySetCanceled();
+            try
+            {
+                await allEntrances;
+            }
+            catch (OperationCanceledException)
+            {
+                // Staged entrances restore their visual state when the cinematic is cancelled.
+            }
+
+            throw;
+        }
+
+        context.BeginDelayedCameraFollow(followedFocus);
+        Entry.Logger.Info("Boss greeting camera lead completed; releasing entrance start gate.");
+        entranceStart.TrySetResult();
         float elapsed = 0f;
         while (!allEntrances.IsCompleted)
         {
             float delta = await context.NextFrame();
             elapsed += delta;
-            float progress = Mathf.Clamp(elapsed / Math.Max(zoomDuration, 0.01f), 0f, 1f);
-            float zoom = context.BaselineScale.X * Mathf.Lerp(1f, PlayerZoomMultiplier, EaseOut(progress));
-            context.FrameCameraOn(followedFocus, zoom);
+            context.FrameCameraOnDelayed(
+                followedFocus,
+                playerZoom,
+                elapsed,
+                PlayerCameraFollowDelaySeconds);
         }
 
         await allEntrances;
-        context.FrameCameraOn(followedFocus, context.BaselineScale.X * PlayerZoomMultiplier);
+        await context.TweenCameraToClamped(
+            followedFocus,
+            playerZoom,
+            PlayerCameraSettleSeconds,
+            PlayerFinalCameraOffset);
 
         float entranceAudioDuration = variants.Values
             .Max(AncientEntranceAnimation.GetCinematicAudioDuration);
         float entranceVisualDuration = variants.Values
             .Max(AncientEntranceAnimation.GetDuration);
-        float remainingAudioSeconds = entranceAudioDuration - entranceVisualDuration;
+        float remainingAudioSeconds = entranceAudioDuration - entranceVisualDuration - PlayerCameraSettleSeconds;
         if (remainingAudioSeconds > 0f)
         {
             Entry.Logger.Info($"Waiting {remainingAudioSeconds:0.###}s for entrance SFX before DOMO video.");
@@ -269,8 +308,9 @@ public static class BossGreetingCinematic
             bubble.Visible = true;
         }
 
-        await PlayBossAction(boss, bossNode, context);
+        AudioEventHandle? bossAudio = await PlayBossAction(boss, bossNode, context);
         await context.TweenCameraToBaseline(CameraReturnSeconds);
+        context.HandoffAudioForNaturalRelease(bossAudio, BossActionTimeoutSeconds);
         if (bubble != null && GodotObject.IsInstanceValid(bubble))
         {
             context.ReleaseNode(bubble);
@@ -320,103 +360,97 @@ public static class BossGreetingCinematic
         await context.NextFrame();
     }
 
-    private static async Task PlayBossAction(Creature boss, NCreature bossNode, CinematicContext context)
+    private static async Task<AudioEventHandle?> PlayBossAction(
+        Creature boss,
+        NCreature bossNode,
+        CinematicContext context)
     {
-        if (IsKaiserBoss(boss))
+        BossGreetingActionSpec action = GetBossGreetingAction(boss);
+        AudioEventHandle? audioEvent = action.SfxPath == null
+            ? null
+            : context.PlaySfxWithHandle(action.SfxPath);
+        if (action.AnimationTrigger != null)
         {
-            await context.WaitSeconds(1.75f);
-            return;
+            bossNode.SetAnimationTrigger(action.AnimationTrigger);
         }
 
-        switch (boss.Monster)
+        float elapsedBeforeCompletionWait = 0f;
+        if (action.VfxPath != null)
         {
-            case CeremonialBeast:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/ceremonial_beast/ceremonial_beast_shrill");
-                bossNode.SetAnimationTrigger("Cast");
-                await context.WaitSeconds(0.3f);
-                MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter(boss, "vfx/vfx_scream");
-                await context.WaitSeconds(0.75f);
-                break;
-            case KinPriest:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/the_kin_priest/the_kin_priest_rally");
-                bossNode.SetAnimationTrigger("Rally");
-                await context.WaitSeconds(1f);
-                break;
-            case Vantom:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/vantom/vantom_buff");
-                bossNode.SetAnimationTrigger("BUFF");
-                await context.WaitSeconds(0.6f);
-                break;
-            case LagavulinMatriarch:
-                bossNode.SetAnimationTrigger("Sleep");
-                await context.WaitSeconds(1f);
-                break;
-            case WaterfallGiant:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/waterfall_giant/waterfall_giant_eruption");
-                bossNode.SetAnimationTrigger("Heal");
-                await context.WaitSeconds(0.8f);
-                break;
-            case SoulFysh:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/soul_fysh/soul_fysh_beckon");
-                bossNode.SetAnimationTrigger("Beckon");
-                await context.WaitSeconds(0.3f);
-                MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter(boss, "vfx/vfx_spooky_scream");
-                await context.WaitSeconds(0.3f);
-                break;
-            case TheInsatiable:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/the_insatiable/the_insatiable_liquify_ground");
-                bossNode.SetAnimationTrigger("LiquifySand");
-                await context.WaitSeconds(0.5f);
-                MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter(boss, "vfx/vfx_scream");
-                await context.WaitSeconds(0.75f);
-                break;
-            case KnowledgeDemon:
-                bossNode.SetAnimationTrigger("MindRotTrigger");
-                await context.WaitSeconds(1f);
-                break;
-            case Queen:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/queen/queen_cast");
-                bossNode.SetAnimationTrigger("Cast");
-                await context.WaitSeconds(0.5f);
-                break;
-            case TestSubject:
-                context.PlaySfx("event:/sfx/enemy/enemy_attacks/test_subject/test_subject_bite");
-                bossNode.SetAnimationTrigger("BiteTrigger");
-                await context.WaitSeconds(0.25f);
-                break;
-            case Aeonglass:
-                bossNode.SetAnimationTrigger("Cast");
-                await context.WaitSeconds(0.4f);
-                break;
-            default:
-                await context.WaitSeconds(0.8f);
-                break;
+            await context.WaitSeconds(action.VfxDelay);
+            elapsedBeforeCompletionWait = action.VfxDelay;
+            MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter(boss, action.VfxPath);
         }
+
+        float finishAt = Math.Max(action.MinimumDuration, MinimumBossCameraHoldSeconds);
+        await context.WaitSeconds(Math.Max(0f, finishAt - elapsedBeforeCompletionWait));
+
+        string bossName = boss.Monster?.Id.Entry ?? boss.GetType().Name;
+        Entry.Logger.Info(
+            $"Boss greeting action completed its calibrated duration: boss={bossName}, waited={Math.Max(finishAt, elapsedBeforeCompletionWait):0.###}s.");
+        return audioEvent;
     }
 
-    private static float GetBossActionDuration(Creature boss)
+    private static BossGreetingActionSpec GetBossGreetingAction(Creature boss)
     {
         if (IsKaiserBoss(boss))
         {
-            return 1.75f;
+            return new(null, null, 1.75f);
         }
 
         return boss.Monster switch
         {
-            CeremonialBeast => 1.05f,
-            KinPriest => 1f,
-            Vantom => 0.6f,
-            LagavulinMatriarch => 1f,
-            WaterfallGiant => 0.8f,
-            SoulFysh => 0.6f,
-            TheInsatiable => 1.25f,
-            KnowledgeDemon => 1f,
-            Queen => 0.5f,
-            TestSubject => 0.25f,
-            Aeonglass => 0.4f,
-            _ => 0.8f
+            CeremonialBeast => new(
+                "Cast",
+                "event:/sfx/enemy/enemy_attacks/ceremonial_beast/ceremonial_beast_shrill",
+                1.05f,
+                "vfx/vfx_scream",
+                0.3f),
+            KinPriest => new(
+                "Rally",
+                "event:/sfx/enemy/enemy_attacks/the_kin_priest/the_kin_priest_rally",
+                1f),
+            Vantom => new(
+                "BUFF",
+                "event:/sfx/enemy/enemy_attacks/vantom/vantom_buff",
+                0.6f),
+            LagavulinMatriarch => new("Sleep", null, 1f),
+            WaterfallGiant => new(
+                "Heal",
+                "event:/sfx/enemy/enemy_attacks/waterfall_giant/waterfall_giant_eruption",
+                0.8f),
+            SoulFysh => new(
+                "Beckon",
+                "event:/sfx/enemy/enemy_attacks/soul_fysh/soul_fysh_beckon",
+                0.6f,
+                "vfx/vfx_spooky_scream",
+                0.3f),
+            TheInsatiable => new(
+                "LiquifySand",
+                "event:/sfx/enemy/enemy_attacks/the_insatiable/the_insatiable_liquify_ground",
+                1.25f,
+                "vfx/vfx_scream",
+                0.5f),
+            KnowledgeDemon => new("MindRotTrigger", null, 1f),
+            Queen => new(
+                "Cast",
+                "event:/sfx/enemy/enemy_attacks/queen/queen_cast",
+                0.5f),
+            TestSubject => new(
+                "BiteTrigger",
+                "event:/sfx/enemy/enemy_attacks/test_subject/test_subject_bite",
+                0.25f),
+            Aeonglass => new("Cast", null, 0.4f),
+            _ => new(null, null, 0.8f)
         };
     }
+
+    private sealed record BossGreetingActionSpec(
+        string? AnimationTrigger,
+        string? SfxPath,
+        float MinimumDuration,
+        string? VfxPath = null,
+        float VfxDelay = 0f);
 
     private static Creature? SelectBoss(ICombatState state)
     {
@@ -544,6 +578,7 @@ public static class BossGreetingCinematic
         private readonly bool _singlePlayer;
         private readonly List<AudioEventHandle> _audioEvents = [];
         private readonly List<CanvasItem> _ownedVisuals = [];
+        private readonly List<CameraFollowSample> _cameraFollowSamples = [];
         private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
         private readonly CancellationTokenSource _cancellation = new();
         private VideoStreamPlayer? _video;
@@ -555,6 +590,10 @@ public static class BossGreetingCinematic
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
+        private Vector2 _cameraBasePosition;
+        private float _cameraScale;
+        private Vector2 _cameraShakeOffset;
+        private ScreenPunchInstance? _cameraShake;
 
         public CinematicContext(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
         {
@@ -564,6 +603,8 @@ public static class BossGreetingCinematic
             _singlePlayer = RunManager.Instance.IsSingleplayerOrFakeMultiplayer;
             BaselinePosition = _sceneContainer.Position;
             BaselineScale = _sceneContainer.Scale;
+            _cameraBasePosition = BaselinePosition;
+            _cameraScale = BaselineScale.X;
             ViewportSize = room.GetViewportRect().Size;
             RoomKeySeed = roomKeySeed;
             _roomProcessMode = room.ProcessMode;
@@ -601,7 +642,30 @@ public static class BossGreetingCinematic
             }
         }
 
-        public void PlaySfx(string eventPath)
+        public void PlaySfx(string eventPath) => PlaySfxWithHandle(eventPath);
+
+        public void PlayScreenShake(ShakeStrength strength, ShakeDuration duration, float degrees = -1f)
+        {
+            float multiplier = NScreenshakePaginator.GetShakeMultiplier(
+                SaveManager.Instance.PrefsSave.ScreenShakeOptionIndex);
+            float scaledStrength = GetShakeStrength(strength) * multiplier;
+            if (scaledStrength <= 0f)
+            {
+                _cameraShake = null;
+                _cameraShakeOffset = Vector2.Zero;
+                ApplyCameraTransform();
+                return;
+            }
+
+            float angle = degrees < 0f
+                ? MegaCrit.Sts2.Core.Random.Rng.Chaotic.NextFloat(360f)
+                : degrees;
+            _cameraShake = new ScreenPunchInstance(scaledStrength, GetShakeDuration(duration), angle);
+            _cameraShakeOffset = Vector2.Zero;
+            ApplyCameraTransform();
+        }
+
+        public AudioEventHandle? PlaySfxWithHandle(string eventPath)
         {
             try
             {
@@ -618,7 +682,7 @@ public static class BossGreetingCinematic
                 if (audioEvent == null)
                 {
                     Entry.Logger.Warn($"Could not create cinematic SFX '{eventPath}'.");
-                    return;
+                    return null;
                 }
 
                 GodotObject? rawInstance = audioEvent.RawInstance;
@@ -626,7 +690,7 @@ public static class BossGreetingCinematic
                 {
                     audioEvent.TryRelease();
                     Entry.Logger.Warn($"Could not start cinematic SFX '{eventPath}'.");
-                    return;
+                    return null;
                 }
 
                 rawInstance.Call("start");
@@ -638,10 +702,12 @@ public static class BossGreetingCinematic
 
                 _audioEvents.Add(audioEvent);
                 Entry.Logger.Info($"Cinematic SFX started: {eventPath}");
+                return audioEvent;
             }
             catch (Exception ex)
             {
                 Entry.Logger.Warn($"Could not play cinematic SFX '{eventPath}': {ex.Message}");
+                return null;
             }
         }
 
@@ -658,6 +724,7 @@ public static class BossGreetingCinematic
                 _cachedFrameDelta = _paused ? 0f : Math.Min((now - _lastFrameMsec) / 1000f, 0.05f);
                 _lastFrameMsec = now;
                 _lastDeltaFrame = processFrame;
+                UpdateCameraShake(_cachedFrameDelta);
             }
 
             return _cachedFrameDelta;
@@ -684,21 +751,71 @@ public static class BossGreetingCinematic
         public void FrameCameraOn(CanvasItem target, float scale)
         {
             Vector2 localTarget = GetLocalCenter(target);
-            _room.SceneContainer.Scale = Vector2.One * scale;
-            _room.SceneContainer.Position = GetCameraPosition(localTarget, scale, ViewportSize * 0.5f);
+            FrameCameraOnLocalPoint(localTarget, scale);
+        }
+
+        public void FrameCameraOnClamped(CanvasItem target, float scale)
+        {
+            Vector2 localTarget = ClampCameraTargetToScene(GetLocalCenter(target), scale);
+            FrameCameraOnLocalPoint(localTarget, scale);
+        }
+
+        public void BeginDelayedCameraFollow(CanvasItem target)
+        {
+            _cameraFollowSamples.Clear();
+            _cameraFollowSamples.Add(new CameraFollowSample(0f, GetLocalCenter(target)));
+        }
+
+        public void FrameCameraOnDelayed(
+            CanvasItem target,
+            float scale,
+            float elapsed,
+            float delay)
+        {
+            Vector2 currentTarget = GetLocalCenter(target);
+            AddCameraFollowSample(elapsed, currentTarget);
+
+            float sampleTime = Math.Max(0f, elapsed - delay);
+            while (_cameraFollowSamples.Count > 2 && _cameraFollowSamples[1].Time <= sampleTime)
+            {
+                _cameraFollowSamples.RemoveAt(0);
+            }
+
+            Vector2 delayedTarget = SampleCameraFollowPosition(sampleTime);
+            FrameCameraOnLocalPoint(ClampCameraTargetToScene(delayedTarget, scale), scale);
         }
 
         public async Task TweenCameraTo(CanvasItem target, float targetScale, float duration)
         {
-            Vector2 startPosition = _room.SceneContainer.Position;
-            float startScale = _room.SceneContainer.Scale.X;
+            Vector2 startPosition = _cameraBasePosition;
+            float startScale = _cameraScale;
             Vector2 localTarget = GetLocalCenter(target);
             Vector2 targetPosition = GetCameraPosition(localTarget, targetScale, ViewportSize * 0.5f);
             await TweenCamera(startPosition, startScale, targetPosition, targetScale, duration);
         }
 
+        public async Task TweenCameraToClamped(
+            CanvasItem target,
+            float targetScale,
+            float duration,
+            Vector2 localOffset = default)
+        {
+            float startScale = _cameraScale;
+            Vector2 startCenter = GetCameraCenter(_cameraBasePosition, startScale, ViewportSize * 0.5f);
+            Vector2 targetCenter = GetLocalCenter(target) + localOffset;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += await NextFrame();
+                float progress = EaseOut(Mathf.Clamp(elapsed / duration, 0f, 1f));
+                float scale = Mathf.Lerp(startScale, targetScale, progress);
+                Vector2 center = startCenter.Lerp(targetCenter, progress);
+                FrameCameraOnLocalPoint(ClampCameraTargetToScene(center, scale), scale);
+            }
+        }
+
         public Task TweenCameraTo(Vector2 targetPosition, float targetScale, float duration) =>
-            TweenCamera(_room.SceneContainer.Position, _room.SceneContainer.Scale.X, targetPosition, targetScale, duration);
+            TweenCamera(_cameraBasePosition, _cameraScale, targetPosition, targetScale, duration);
 
         public bool TryFrameBossAndBubble(
             Control bossBounds,
@@ -766,13 +883,23 @@ public static class BossGreetingCinematic
         }
 
         public Task TweenCameraToBaseline(float duration) =>
-            TweenCamera(_room.SceneContainer.Position, _room.SceneContainer.Scale.X, BaselinePosition, BaselineScale.X, duration);
+            TweenCamera(_cameraBasePosition, _cameraScale, BaselinePosition, BaselineScale.X, duration);
 
         public void AttachVideo(VideoStreamPlayer? video) => _video = video;
 
         public void TrackNode(CanvasItem node) => _ownedVisuals.Add(node);
 
         public void ReleaseNode(CanvasItem node) => _ownedVisuals.Remove(node);
+
+        public void HandoffAudioForNaturalRelease(AudioEventHandle? audioEvent, float timeout)
+        {
+            if (audioEvent == null || !_audioEvents.Remove(audioEvent))
+            {
+                return;
+            }
+
+            _ = TaskHelper.RunSafely(ReleaseAudioWhenStopped(audioEvent, timeout));
+        }
 
         public void RestoreCameraAndScreenShakeTarget()
         {
@@ -792,8 +919,11 @@ public static class BossGreetingCinematic
                 return;
             }
 
-            _sceneContainer.Position = BaselinePosition;
-            _sceneContainer.Scale = BaselineScale;
+            _cameraShake = null;
+            _cameraShakeOffset = Vector2.Zero;
+            _cameraBasePosition = BaselinePosition;
+            _cameraScale = BaselineScale.X;
+            ApplyCameraTransform();
             if (!shouldRestoreScreenShake)
             {
                 return;
@@ -848,6 +978,8 @@ public static class BossGreetingCinematic
                 visual.QueueFreeSafely();
             }
             _ownedVisuals.Clear();
+            _cameraShake = null;
+            _cameraShakeOffset = Vector2.Zero;
             _room.ProcessMode = _roomProcessMode;
             RestoreTopBarLayers();
             _cancellation.Dispose();
@@ -860,8 +992,9 @@ public static class BossGreetingCinematic
             {
                 elapsed += await NextFrame();
                 float progress = EaseOut(Mathf.Clamp(elapsed / duration, 0f, 1f));
-                _room.SceneContainer.Position = startPosition.Lerp(targetPosition, progress);
-                _room.SceneContainer.Scale = Vector2.One * Mathf.Lerp(startScale, targetScale, progress);
+                SetCameraTransform(
+                    startPosition.Lerp(targetPosition, progress),
+                    Mathf.Lerp(startScale, targetScale, progress));
             }
         }
 
@@ -880,6 +1013,175 @@ public static class BossGreetingCinematic
         {
             Vector2 pivot = _room.SceneContainer.PivotOffset;
             return screenTarget - pivot - (localTarget - pivot) * scale;
+        }
+
+        private Vector2 GetCameraCenter(Vector2 cameraPosition, float scale, Vector2 screenTarget)
+        {
+            Vector2 pivot = _sceneContainer.PivotOffset;
+            return pivot + (screenTarget - pivot - cameraPosition) / scale;
+        }
+
+        private Vector2 ClampCameraTargetToScene(Vector2 localTarget, float scale)
+        {
+            if (scale <= 0f)
+            {
+                return _sceneContainer.Size * 0.5f;
+            }
+
+            Vector2 halfViewport = ViewportSize / (2f * scale);
+            Vector2 minimum = halfViewport;
+            Vector2 maximum = _sceneContainer.Size - halfViewport;
+            return new Vector2(
+                minimum.X <= maximum.X
+                    ? Mathf.Clamp(localTarget.X, minimum.X, maximum.X)
+                    : _sceneContainer.Size.X * 0.5f,
+                minimum.Y <= maximum.Y
+                    ? Mathf.Clamp(localTarget.Y, minimum.Y, maximum.Y)
+                    : _sceneContainer.Size.Y * 0.5f);
+        }
+
+        private void FrameCameraOnLocalPoint(Vector2 localTarget, float scale)
+        {
+            SetCameraTransform(GetCameraPosition(localTarget, scale, ViewportSize * 0.5f), scale);
+        }
+
+        private void SetCameraTransform(Vector2 position, float scale)
+        {
+            _cameraBasePosition = position;
+            _cameraScale = scale;
+            ApplyCameraTransform();
+        }
+
+        private void ApplyCameraTransform()
+        {
+            if (!GodotObject.IsInstanceValid(_sceneContainer))
+            {
+                return;
+            }
+
+            _sceneContainer.Scale = Vector2.One * _cameraScale;
+            _sceneContainer.Position = _cameraBasePosition + _cameraShakeOffset;
+        }
+
+        private void UpdateCameraShake(float delta)
+        {
+            if (_cameraShake == null || delta <= 0f)
+            {
+                return;
+            }
+
+            _cameraShakeOffset = _cameraShake.Update(delta);
+            if (_cameraShake.IsDone)
+            {
+                _cameraShake = null;
+                _cameraShakeOffset = Vector2.Zero;
+            }
+
+            ApplyCameraTransform();
+        }
+
+        private static float GetShakeStrength(ShakeStrength strength) => strength switch
+        {
+            ShakeStrength.VeryWeak => 2f,
+            ShakeStrength.Weak => 5f,
+            ShakeStrength.Medium => 20f,
+            ShakeStrength.Strong => 40f,
+            ShakeStrength.TooMuch => 80f,
+            _ => 0f
+        };
+
+        private static double GetShakeDuration(ShakeDuration duration) => duration switch
+        {
+            ShakeDuration.Short => 0.3,
+            ShakeDuration.Normal => 0.8,
+            ShakeDuration.Long => 1.2,
+            ShakeDuration.Forever => 999999999.0,
+            _ => 0.0
+        };
+
+        private void AddCameraFollowSample(float elapsed, Vector2 position)
+        {
+            if (_cameraFollowSamples.Count == 0)
+            {
+                _cameraFollowSamples.Add(new CameraFollowSample(elapsed, position));
+                return;
+            }
+
+            CameraFollowSample last = _cameraFollowSamples[^1];
+            if (elapsed <= last.Time + 0.0001f)
+            {
+                _cameraFollowSamples[^1] = new CameraFollowSample(last.Time, position);
+                return;
+            }
+
+            _cameraFollowSamples.Add(new CameraFollowSample(elapsed, position));
+        }
+
+        private Vector2 SampleCameraFollowPosition(float sampleTime)
+        {
+            if (_cameraFollowSamples.Count == 0)
+            {
+                return Vector2.Zero;
+            }
+
+            CameraFollowSample first = _cameraFollowSamples[0];
+            if (_cameraFollowSamples.Count == 1 || sampleTime <= first.Time)
+            {
+                return first.Position;
+            }
+
+            CameraFollowSample second = _cameraFollowSamples[1];
+            float duration = second.Time - first.Time;
+            if (duration <= 0.0001f)
+            {
+                return second.Position;
+            }
+
+            float progress = Mathf.Clamp((sampleTime - first.Time) / duration, 0f, 1f);
+            return first.Position.Lerp(second.Position, progress);
+        }
+
+        private static bool TryGetAudioPlaybackState(AudioEventHandle? audioEvent, out int? playbackState)
+        {
+            playbackState = null;
+            GodotObject? rawInstance = audioEvent?.RawInstance;
+            if (rawInstance == null
+                || !GodotObject.IsInstanceValid(rawInstance)
+                || !rawInstance.HasMethod("get_playback_state"))
+            {
+                return false;
+            }
+
+            try
+            {
+                playbackState = rawInstance.Call("get_playback_state").AsInt32();
+                return playbackState != FmodPlaybackStateStopped;
+            }
+            catch
+            {
+                playbackState = null;
+                return false;
+            }
+        }
+
+        private static async Task ReleaseAudioWhenStopped(AudioEventHandle audioEvent, float timeout)
+        {
+            ulong startedAt = Time.GetTicksMsec();
+            SceneTree tree = (SceneTree)Engine.GetMainLoop();
+            while ((Time.GetTicksMsec() - startedAt) / 1000f < timeout)
+            {
+                if (!TryGetAudioPlaybackState(audioEvent, out _))
+                {
+                    audioEvent.TryRelease();
+                    return;
+                }
+
+                await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+            }
+
+            audioEvent.TryStop(allowFadeOut: false);
+            audioEvent.TryRelease();
+            Entry.Logger.Warn($"Boss greeting audio exceeded its {timeout:0.###}s handoff timeout and was stopped.");
         }
 
         private Rect2 GetSceneLocalRect(Control control) =>
@@ -985,6 +1287,7 @@ public static class BossGreetingCinematic
             _layerSnapshots.Clear();
         }
 
+        private readonly record struct CameraFollowSample(float Time, Vector2 Position);
         private readonly record struct LayerSnapshot(int ZIndex, bool ZAsRelative);
     }
 }

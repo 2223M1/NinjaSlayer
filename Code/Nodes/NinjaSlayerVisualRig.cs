@@ -9,6 +9,7 @@ namespace NinjaSlayer.Code.Nodes;
 public static class NinjaSlayerVisualRig
 {
     public const string AirborneAnchorName = "AirborneAnchor";
+    public const string CinematicFocusName = "CinematicFocus";
     public const string ShadowNodeName = "Shadow";
     public const float SpinTextureSize = 1800f;
     public const float SpinPivotX = 1480f;
@@ -28,6 +29,11 @@ public static class NinjaSlayerVisualRig
     public static Sprite2D? GetBodySprite(NCreatureVisuals? visuals)
     {
         return visuals?.GetNodeOrNull<Sprite2D>("%Visuals");
+    }
+
+    public static Node2D? GetCinematicFocus(NCreatureVisuals? visuals)
+    {
+        return visuals?.GetNodeOrNull<Node2D>($"%{CinematicFocusName}");
     }
 
     public static void SyncShadowScale(Creature creature)
