@@ -37,7 +37,7 @@ public static class BossGreetingCinematic
     private const float PlayerCameraSettleSeconds = 0.12f;
     private const float BossCameraMoveSeconds = 0.2f;
     private const float CameraReturnSeconds = 0.2f;
-    private const float MinimumBossCameraHoldSeconds = 1f;
+    private const float MinimumBossCameraHoldSeconds = 2f;
     private const float BossActionTimeoutSeconds = 8f;
     private const int FmodPlaybackStateStopped = 2;
     private const float DefaultBossZoomMultiplier = 1.5f;
@@ -581,6 +581,7 @@ public static class BossGreetingCinematic
         private readonly List<CameraFollowSample> _cameraFollowSamples = [];
         private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
         private readonly CancellationTokenSource _cancellation = new();
+        private readonly NinjaSlayerHoverTipSuppression _hoverTipSuppression;
         private VideoStreamPlayer? _video;
         private bool _paused;
         private bool _disposed;
@@ -610,6 +611,7 @@ public static class BossGreetingCinematic
             _roomProcessMode = room.ProcessMode;
             _lastFrameMsec = Time.GetTicksMsec();
             RaiseTopBarLayers();
+            _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
 
             NGame? game = NGame.Instance;
             if (game != null && ReferenceEquals(game.ScreenshakeTarget, _sceneContainer))
@@ -982,6 +984,7 @@ public static class BossGreetingCinematic
             _cameraShakeOffset = Vector2.Zero;
             _room.ProcessMode = _roomProcessMode;
             RestoreTopBarLayers();
+            _hoverTipSuppression.Dispose();
             _cancellation.Dispose();
         }
 

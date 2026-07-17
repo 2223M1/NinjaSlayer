@@ -10,6 +10,8 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class NinjaSlayerTransitionOverlay : Control
 {
     public const string NodeName = "NinjaSlayerTransitionOverlay";
+    private const string CanvasLayerName = "NinjaSlayerTransitionCanvasLayer";
+    private const int CanvasLayerIndex = 100;
     private const float VideoAspectRatio = 16f / 9f;
     private const float PlaybackTimeoutPaddingSeconds = 1f;
 
@@ -61,12 +63,13 @@ public partial class NinjaSlayerTransitionOverlay : Control
             return;
         }
 
-        videoPlayer.Stream = NinjaSlayerTransitionVideo.GetStream();
-        Visible = true;
-        videoPlayer.Play();
-        double elapsed = 0.0;
+        using var hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
         try
         {
+            videoPlayer.Stream = NinjaSlayerTransitionVideo.GetStream();
+            Visible = true;
+            videoPlayer.Play();
+            double elapsed = 0.0;
             float timeout = Math.Max(duration, 0f) + PlaybackTimeoutPaddingSeconds;
             while (videoPlayer.IsPlaying() && elapsed < timeout)
             {
@@ -87,11 +90,26 @@ public partial class NinjaSlayerTransitionOverlay : Control
 
     public static NinjaSlayerTransitionOverlay GetOrCreate(NTransition transition)
     {
-        var existing = transition.GetNodeOrNull<NinjaSlayerTransitionOverlay>(NodeName);
+        CanvasLayer? canvasLayer = transition.GetNodeOrNull<CanvasLayer>(CanvasLayerName);
+        if (canvasLayer == null)
+        {
+            canvasLayer = new CanvasLayer
+            {
+                Name = CanvasLayerName,
+                Layer = CanvasLayerIndex
+            };
+            transition.AddChild(canvasLayer);
+        }
+        else
+        {
+            canvasLayer.Layer = CanvasLayerIndex;
+        }
+
+        var existing = canvasLayer.GetNodeOrNull<NinjaSlayerTransitionOverlay>(NodeName);
         if (existing != null)
         {
             existing.EnsureInitialized();
-            transition.MoveChild(existing, -1);
+            canvasLayer.MoveChild(existing, -1);
             return existing;
         }
 
@@ -101,8 +119,8 @@ public partial class NinjaSlayerTransitionOverlay : Control
             Visible = false
         };
         overlay.EnsureInitialized();
-        transition.AddChild(overlay);
-        transition.MoveChild(overlay, -1);
+        canvasLayer.AddChild(overlay);
+        canvasLayer.MoveChild(overlay, -1);
         return overlay;
     }
 }

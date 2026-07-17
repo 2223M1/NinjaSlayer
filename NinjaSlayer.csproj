@@ -69,7 +69,7 @@
     </Reference>
 
     <!-- NuGet package. -->
-    <PackageReference Include="STS2.RitsuLib" Version="0.4.46">
+    <PackageReference Include="STS2.RitsuLib" Version="0.4.58">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
