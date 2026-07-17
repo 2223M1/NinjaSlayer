@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Models.Encounters;
 using MegaCrit.Sts2.Core.Multiplayer.Game;
@@ -261,7 +262,7 @@ public static class BossGreetingCinematic
         if (showBubble)
         {
             string title = combatState.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
-            string dialogue = $"Domo, Ninja Slayer=san, {title} desu.";
+            string dialogue = BuildBossGreetingDialogue(title);
             bubble = anchorBubbleToBoss
                 ? NSpeechBubbleVfx.Create(
                     dialogue,
@@ -316,6 +317,14 @@ public static class BossGreetingCinematic
             context.ReleaseNode(bubble);
             _ = TaskHelper.RunSafely(FadeBossBubbleAfterCombatStart(bubble));
         }
+    }
+
+    private static string BuildBossGreetingDialogue(string bossTitle)
+    {
+        string ninjaSlayerName = LocManager.Instance.Language == "zhs"
+            ? "忍者杀手"
+            : "NINJA SLAYER";
+        return $"DOMO, {ninjaSlayerName}=SAN, {bossTitle} DESU.".ToUpperInvariant();
     }
 
     private static async Task FadeBossBubbleAfterCombatStart(NSpeechBubbleVfx bubble)
