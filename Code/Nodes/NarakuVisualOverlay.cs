@@ -12,8 +12,11 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class NarakuVisualOverlay : Sprite2D
 {
     private const string NodeName = "NarakuVisualOverlay";
-    private const string NarakuTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png";
+    private const string FullyReleasedNarakuTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png";
+    private const string NormalIdleTexturePrefix = "res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_";
+    private const string NarakuIdleTexturePrefix = "res://NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_";
     private const string OneBodyOneSoulTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/one_body_one_soul.png";
+    private const int NarakuIdleFrameCount = 22;
     private const float NarakuScale = 0.5f;
     private const float BodyTextureHeight = 1080f;
 
@@ -81,43 +84,75 @@ public partial class NarakuVisualOverlay : Sprite2D
             return;
         }
 
-        string? formTexturePath = ResolveFormTexturePath(creature);
-        source.Visible = formTexturePath == null;
-        Visible = formTexturePath != null;
-        if (formTexturePath == null)
+        FormVisual form = ResolveFormVisual(creature);
+        source.Visible = form == FormVisual.None;
+        Visible = form != FormVisual.None;
+        if (form == FormVisual.None)
         {
             return;
         }
 
-        if (activeTexturePath != formTexturePath)
+        string texturePath = form switch
         {
-            Texture = PreloadManager.Cache.GetTexture2D(formTexturePath);
-            activeTexturePath = formTexturePath;
+            FormVisual.Naraku => ResolveNarakuIdleTexturePath(source),
+            FormVisual.FullyReleasedNaraku => FullyReleasedNarakuTexturePath,
+            FormVisual.OneBodyOneSoul => OneBodyOneSoulTexturePath,
+            _ => throw new ArgumentOutOfRangeException(nameof(form), form, null)
+        };
+        if (activeTexturePath != texturePath)
+        {
+            Texture = PreloadManager.Cache.GetTexture2D(texturePath);
+            activeTexturePath = texturePath;
         }
 
+        if (form == FormVisual.Naraku)
+        {
+            CopySourceTransform();
+        }
+        else
+        {
+            ApplyLegacyFormTransform(form);
+        }
+
+        Modulate = source.Modulate;
+        SelfModulate = source.SelfModulate;
+        Material = source.Material;
+        FlipH = source.FlipH;
+        FlipV = source.FlipV;
+    }
+
+    private void CopySourceTransform()
+    {
+        Centered = source!.Centered;
+        Position = source.Position;
+        Offset = source.Offset;
+        Scale = source.Scale;
+        Rotation = source.Rotation;
+        Skew = source.Skew;
+    }
+
+    private void ApplyLegacyFormTransform(FormVisual form)
+    {
+        Centered = true;
         float y = NinjaSlayerCombatVisuals.BodySpriteBasePosition.Y;
-        if (formTexturePath == NarakuTexturePath)
+        if (form == FormVisual.FullyReleasedNaraku)
         {
             y += NinjaSlayerCombatVisuals.NarakuFormYOffset;
         }
 
         Position = new Vector2(0f, y);
         Offset = Vector2.Zero;
-        float scale = GetFormScale(formTexturePath);
+        float scale = GetLegacyFormScale(form);
         Scale = new Vector2(
-            Mathf.Sign(source.Scale.X == 0f ? 1f : source.Scale.X) * scale,
+            Mathf.Sign(source!.Scale.X == 0f ? 1f : source.Scale.X) * scale,
             scale);
         Rotation = 0f;
         Skew = 0f;
-        Modulate = source.Modulate;
-        SelfModulate = source.SelfModulate;
-        FlipH = source.FlipH;
-        FlipV = source.FlipV;
     }
 
-    private float GetFormScale(string formTexturePath)
+    private float GetLegacyFormScale(FormVisual form)
     {
-        if (formTexturePath == NarakuTexturePath)
+        if (form == FormVisual.FullyReleasedNaraku)
         {
             return NarakuScale;
         }
@@ -131,18 +166,50 @@ public partial class NarakuVisualOverlay : Sprite2D
         return BodyTextureHeight * NinjaSlayerCombatVisuals.BodySpriteBaseScale / height;
     }
 
-    private static string? ResolveFormTexturePath(Creature creature)
+    private static string ResolveNarakuIdleTexturePath(Sprite2D source)
     {
-        if (creature.HasPower<NarakuPower>())
+        string resourcePath = source.Texture?.ResourcePath ?? string.Empty;
+        int frame = 1;
+        if (resourcePath.StartsWith(NormalIdleTexturePrefix, StringComparison.Ordinal)
+            && resourcePath.EndsWith(".png", StringComparison.Ordinal))
         {
-            return NarakuTexturePath;
+            ReadOnlySpan<char> frameText = resourcePath.AsSpan(
+                NormalIdleTexturePrefix.Length,
+                resourcePath.Length - NormalIdleTexturePrefix.Length - ".png".Length);
+            if (!int.TryParse(frameText, out frame) || frame is < 1 or > NarakuIdleFrameCount)
+            {
+                frame = 1;
+            }
+        }
+
+        return $"{NarakuIdleTexturePrefix}{frame:0000}.png";
+    }
+
+    private static FormVisual ResolveFormVisual(Creature creature)
+    {
+        if (NinjaSlayerFormState.IsFullyReleasedNaraku(creature))
+        {
+            return FormVisual.FullyReleasedNaraku;
+        }
+
+        if (NinjaSlayerFormState.IsNaraku(creature))
+        {
+            return FormVisual.Naraku;
         }
 
         if (creature.HasPower<OneBodyOneSoulPower>())
         {
-            return OneBodyOneSoulTexturePath;
+            return FormVisual.OneBodyOneSoul;
         }
 
-        return null;
+        return FormVisual.None;
+    }
+
+    private enum FormVisual
+    {
+        None,
+        Naraku,
+        FullyReleasedNaraku,
+        OneBodyOneSoul
     }
 }

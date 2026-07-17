@@ -113,7 +113,7 @@ public sealed class HellTornadoPower : NinjaSlayerPowerTemplate
                         continue;
                     }
 
-                    if (creature.HasPower<NarakuPower>())
+                    if (NinjaSlayerFormState.IsFullyReleasedNaraku(creature))
                     {
                         SpinComboAudio.PlayNarakuSlowAttack(creature);
                     }

@@ -1,6 +1,5 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Content;
 
@@ -16,7 +15,7 @@ public static class NinjaSlayerCombatVisuals
     public const float ShadowNarakuScale = 1f;
 
     public static float GetShadowScale(Creature creature) =>
-        creature.HasPower<NarakuPower>()
+        NinjaSlayerFormState.IsFullyReleasedNaraku(creature)
             ? ShadowNarakuScale
             : ShadowNormalScale;
 }

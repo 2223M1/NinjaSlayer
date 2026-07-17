@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.Nodes;
@@ -51,7 +52,9 @@ public partial class NinjaSlayerSpinPivot : Node2D
 
     private bool UseNormalPivot()
     {
-        return creature == null || (!creature.HasPower<NarakuPower>() && !creature.HasPower<OneBodyOneSoulPower>());
+        return creature == null
+            || (!NinjaSlayerFormState.IsFullyReleasedNaraku(creature)
+                && !creature.HasPower<OneBodyOneSoulPower>());
     }
 
     private Creature? FindCreature()

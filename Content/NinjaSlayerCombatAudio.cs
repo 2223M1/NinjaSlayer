@@ -1,7 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
-using NinjaSlayer.Powers;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Content;
@@ -26,7 +25,7 @@ public readonly struct NinjaSlayerCombatAudioSet
     public string OutroSpinAttack { get; init; }
 
     public static NinjaSlayerCombatAudioSet For(Creature creature) =>
-        creature.HasPower<NarakuPower>() ? Naraku : NinjaSlayer;
+        NinjaSlayerFormState.IsFullyReleasedNaraku(creature) ? Naraku : NinjaSlayer;
 
     public static readonly NinjaSlayerCombatAudioSet NinjaSlayer = new()
     {

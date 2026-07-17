@@ -1,7 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using NinjaSlayer.Content;
-using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -23,7 +22,7 @@ public static class SpinComboAudio
         }
 
         var audio = NinjaSlayerCombatAudioSet.For(creature);
-        bool isNaraku = creature.HasPower<NarakuPower>();
+        bool isFullyReleasedNaraku = NinjaSlayerFormState.IsFullyReleasedNaraku(creature);
 
         if (hitCount == 1)
         {
@@ -35,7 +34,7 @@ public static class SpinComboAudio
             return;
         }
 
-        if (isNaraku)
+        if (isFullyReleasedNaraku)
         {
             await RunWithSuppressedAutomaticSfx(executeHits);
             return;

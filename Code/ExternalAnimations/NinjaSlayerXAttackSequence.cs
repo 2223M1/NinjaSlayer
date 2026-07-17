@@ -1,6 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using NinjaSlayer.Content;
-using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -23,7 +22,7 @@ public static class NinjaSlayerXAttackSequence
         }
 
         XAttackComboMovement.BeginCombo(creature);
-        bool useSlowAttack = hits <= 4 || creature.HasPower<NarakuPower>();
+        bool useSlowAttack = hits <= 4 || NinjaSlayerFormState.IsFullyReleasedNaraku(creature);
         Func<Action, Task> executeHits = async finishSpinEarly =>
         {
             XAttackComboContext.Begin(hits);
