@@ -28,6 +28,7 @@
 {5fc0244c-1cce-44ce-947f-0246892aa6f0} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_select
 {916dc9b2-8eb7-4722-8826-8fa50f5f74e2} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_short_washoi
 {841f8492-9735-4dea-b652-b8d22523f8c7} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_slow_attack
+{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_suicide
 {fed07464-e229-44ff-93b4-89ce41274988} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_transition
 {f8f52894-cd03-4773-a8fb-cb949a930e33} event:/NinjaSlayerAudio/sfx/pangbai/pangbai_dragon_flying_kick
 {8caa1a54-723d-4ade-9eb8-16ab697e0fb8} event:/NinjaSlayerAudio/sfx/pangbai/pangbai_longjuanquan

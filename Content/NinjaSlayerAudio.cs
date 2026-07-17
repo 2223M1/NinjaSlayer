@@ -15,6 +15,7 @@ public static class NinjaSlayerAudio
     public const string NinjaSlayerCastEvent = NinjaSlayerRoot + "/ninja_slayer_cast";
     public const string NinjaSlayerHurtEvent = NinjaSlayerRoot + "/ninja_slayer_hurt";
     public const string NinjaSlayerDeathEvent = NinjaSlayerRoot + "/ninja_slayer_death";
+    public const string NinjaSlayerSuicideEvent = NinjaSlayerRoot + "/ninja_slayer_suicide";
     public const string NinjaSlayerSelectEvent = NinjaSlayerRoot + "/ninja_slayer_select";
     public const string NinjaSlayerTransitionEvent = NinjaSlayerRoot + "/ninja_slayer_transition";
     public const string NinjaSlayerShortWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_short_washoi";

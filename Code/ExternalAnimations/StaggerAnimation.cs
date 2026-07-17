@@ -75,13 +75,39 @@ public static class StaggerAnimation
     
     public static void Reset()
     {
-        foreach (var tween in ActiveTweens.Values)
+        foreach (Creature creature in ActiveTweens.Keys
+                     .Concat(OriginalPositions.Keys)
+                     .Concat(OriginalBodyRotations.Keys)
+                     .Distinct()
+                     .ToArray())
         {
-            if (tween.IsValid())
-                tween.Kill();
+            Reset(creature);
         }
-        ActiveTweens.Clear();
-        OriginalPositions.Clear();
-        OriginalBodyRotations.Clear();
+    }
+
+    public static void Reset(Creature creature)
+    {
+        if (ActiveTweens.Remove(creature, out Tween? tween) && tween.IsValid())
+        {
+            tween.Kill();
+        }
+
+        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (creatureNode != null && OriginalPositions.Remove(creature, out Vector2 originalPosition))
+        {
+            creatureNode.Position = originalPosition;
+        }
+
+        Node2D? bodyAnchor = creatureNode == null
+            ? null
+            : NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals)
+                ?? NinjaSlayerVisualRig.GetBodySprite(creatureNode.Visuals);
+        if (bodyAnchor != null && OriginalBodyRotations.Remove(creature, out float originalRotation))
+        {
+            bodyAnchor.RotationDegrees = originalRotation;
+        }
+
+        OriginalPositions.Remove(creature);
+        OriginalBodyRotations.Remove(creature);
     }
 }

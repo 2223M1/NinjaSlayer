@@ -11,7 +11,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_death_animation";
 
-    public static string Description => "Play FMOD death SFX and spin-axis fall for non-Spine NinjaSlayer.";
+    public static string Description => "Choose NinjaSlayer death feedback from the fatal damage source.";
 
     public static bool IsCritical => false;
 
@@ -33,9 +33,13 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             return;
         }
 
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(__instance.Entity).Death);
-        TaskHelper.RunSafely(DeathAnimation.Play(__instance.Entity));
-        __result = DeathAnimation.DurationSeconds;
+        NinjaSlayerDeathKind kind = DeathAnimation.Classify(__instance.Entity);
+        string eventPath = kind == NinjaSlayerDeathKind.EnemyKill
+            ? NinjaSlayerCombatAudioSet.For(__instance.Entity).Death
+            : NinjaSlayerAudio.NinjaSlayerSuicideEvent;
+        NinjaSlayerCombatAudioSet.Play(eventPath);
+        TaskHelper.RunSafely(DeathAnimation.Play(__instance.Entity, kind));
+        __result = DeathAnimation.GetDuration(kind);
     }
 
     private static bool IsNinjaSlayerNonSpine(NCreature creatureNode)
