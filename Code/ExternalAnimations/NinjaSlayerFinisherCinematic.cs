@@ -108,6 +108,7 @@ public static class NinjaSlayerFinisherCinematic
 {
     private const FinisherPresentationMode PresentationMode = FinisherPresentationMode.Enhanced;
     private const float ImpactLeadSeconds = 0.04f;
+    private const float ImpactKnockbackRecoverySeconds = 0.06f;
     private const float DoomPoseSeconds = 0.3f;
     private const float ImpactRecoverySeconds = 0.1f;
     private const float FinisherSettleSeconds = 0.1f;
@@ -1028,14 +1029,22 @@ public static class NinjaSlayerFinisherCinematic
                 {
                     elapsed += await NextFrame();
                     float progress = EaseOut(Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f));
-                    ApplyEnemyFeedback(impactVisuals.Values, progress, flash: true);
+                    ApplyEnemyPosition(impactVisuals.Values, progress);
+                    ApplyEnemyFlash(impactVisuals.Values, progress);
                     _camera.SetTransform(
                         cameraStartPosition.Lerp(punchPosition, progress),
                         Mathf.Lerp(cameraStartScale, punchScale, progress));
                 }
 
                 RestoreEnemyFlash(impactVisuals.Values);
-                float holdSeconds = DoomPoseSeconds - ImpactLeadSeconds - ImpactRecoverySeconds;
+                await RecoverEnemyPositions(
+                    impactVisuals.Values,
+                    ImpactKnockbackRecoverySeconds,
+                    NextFrame);
+                float holdSeconds = DoomPoseSeconds
+                    - ImpactLeadSeconds
+                    - ImpactKnockbackRecoverySeconds
+                    - ImpactRecoverySeconds;
                 if (holdSeconds > 0f)
                 {
                     await WaitSeconds(holdSeconds);
@@ -1046,7 +1055,6 @@ public static class NinjaSlayerFinisherCinematic
                 {
                     elapsed += await NextFrame();
                     float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ImpactRecoverySeconds);
-                    ApplyEnemyFeedback(impactVisuals.Values, 1f - progress, flash: false);
                     _camera.SetTransform(
                         punchPosition.Lerp(cameraStartPosition, progress),
                         Mathf.Lerp(punchScale, cameraStartScale, progress));
@@ -1123,6 +1131,7 @@ public static class NinjaSlayerFinisherCinematic
                     elapsed += await NextEnhancedFrame(cancellationToken);
                     float linearProgress = Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f);
                     float progress = EaseOut(linearProgress);
+                    ApplyEnemyPosition(impactVisuals.Values, progress);
                     ApplyEnhancedEnemyFeedback(impactVisuals.Values, progress, flash: true);
                     presentation.SetImpactState(targetNodes, progress, Mathf.Sin(linearProgress * Mathf.Pi));
                     _camera.SetTransform(
@@ -1132,7 +1141,14 @@ public static class NinjaSlayerFinisherCinematic
 
                 RestoreEnemyFlash(impactVisuals.Values);
                 presentation.SetImpactState(targetNodes, 1f, 0f);
-                float holdSeconds = DoomPoseSeconds - ImpactLeadSeconds - ImpactRecoverySeconds;
+                await RecoverEnemyPositions(
+                    impactVisuals.Values,
+                    ImpactKnockbackRecoverySeconds,
+                    () => NextEnhancedFrame(cancellationToken));
+                float holdSeconds = DoomPoseSeconds
+                    - ImpactLeadSeconds
+                    - ImpactKnockbackRecoverySeconds
+                    - ImpactRecoverySeconds;
                 if (holdSeconds > 0f)
                 {
                     await WaitEnhancedSeconds(holdSeconds, cancellationToken);
@@ -1430,21 +1446,43 @@ public static class NinjaSlayerFinisherCinematic
             }
         }
 
-        private static void ApplyEnemyFeedback(
+        private static void ApplyEnemyPosition(
             IEnumerable<ImpactVisualSnapshot> snapshots,
-            float amount,
-            bool flash)
+            float amount)
         {
             foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
             {
                 snapshot.Body.Position = snapshot.Position
                     + Vector2.Right * snapshot.Direction * EnemyKnockbackPixels * amount;
-                snapshot.Body.SelfModulate = flash
-                    ? snapshot.SelfModulate.Lerp(
-                        new Color(1.8f, 1.8f, 1.8f, snapshot.SelfModulate.A),
-                        amount)
-                    : snapshot.SelfModulate;
             }
+        }
+
+        private static void ApplyEnemyFlash(
+            IEnumerable<ImpactVisualSnapshot> snapshots,
+            float amount)
+        {
+            foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
+            {
+                snapshot.Body.SelfModulate = snapshot.SelfModulate.Lerp(
+                    new Color(1.8f, 1.8f, 1.8f, snapshot.SelfModulate.A),
+                    amount);
+            }
+        }
+
+        private static async Task RecoverEnemyPositions(
+            IReadOnlyCollection<ImpactVisualSnapshot> snapshots,
+            float duration,
+            Func<Task<float>> nextFrame)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += await nextFrame();
+                float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / duration);
+                ApplyEnemyPosition(snapshots, 1f - progress);
+            }
+
+            ApplyEnemyPosition(snapshots, 0f);
         }
 
         private static void ApplyEnhancedEnemyFeedback(
@@ -1454,8 +1492,6 @@ public static class NinjaSlayerFinisherCinematic
         {
             foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
             {
-                snapshot.Body.Position = snapshot.Position
-                    + Vector2.Right * snapshot.Direction * EnemyKnockbackPixels * amount;
                 snapshot.Body.Scale = snapshot.Scale * new Vector2(
                     1f + EnhancedEnemyStretchX * amount,
                     1f - EnhancedEnemySquashY * amount);
