@@ -31,7 +31,6 @@ public static class NinjaSlayerXAttackSequence
                 for (int i = 0; i < hits; i++)
                 {
                     XAttackComboContext.CurrentHitIndex = i;
-                    NinjaSlayerFinisherCinematic.SetSequenceHitIndex(i, hits);
                     if (useSlowAttack)
                     {
                         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);

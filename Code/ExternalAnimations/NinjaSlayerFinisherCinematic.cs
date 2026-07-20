@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -86,7 +87,7 @@ public sealed record FinisherAttackSpec(
 public static class NinjaSlayerFinisherCinematic
 {
     private const float ImpactLeadSeconds = 0.04f;
-    private const float HitStopSeconds = 0.1f;
+    private const float DoomPoseSeconds = 0.2f;
     private const float ImpactRecoverySeconds = 0.1f;
     private const float FinisherSettleSeconds = 0.1f;
     private const float ReturnSeconds = 0.2f;
@@ -94,25 +95,14 @@ public static class NinjaSlayerFinisherCinematic
     private const float CameraPunchScaleMultiplier = 1.06f;
     private const float CameraPushPixels = 16f;
     private const float EnemyKnockbackPixels = 30f;
-    private const float DeathNotificationTimeoutSeconds = 1f;
 
     private static FinisherSession? _active;
 
     public static bool IsMovementOwned(Creature creature) => _active?.Owner == creature;
 
-    internal static void NotifyDeathAnimationStarted(NCreature creatureNode)
-    {
-        _active?.NotifyDeathAnimationStarted(creatureNode);
-    }
-
     internal static bool TryProtectLethalDamage(Creature target, ref decimal amount)
     {
         return _active?.TryProtectLethalDamage(target, ref amount) == true;
-    }
-
-    internal static void SetSequenceHitIndex(int hitIndex, int totalHits)
-    {
-        _active?.SetHitIndex(hitIndex, totalHits);
     }
 
     public static async Task<AttackCommand> ExecuteWithFinisher(
@@ -140,13 +130,8 @@ public static class NinjaSlayerFinisherCinematic
             try
             {
                 _active = session;
-                command.BeforeDamage(() =>
-                {
-                    session.AdvanceHit();
-                    return Task.CompletedTask;
-                });
                 AttackCommand result = await command.Execute(choiceContext);
-                await session.CommitDeaths(choiceContext);
+                await session.CommitDeaths();
                 return result;
             }
             finally
@@ -178,7 +163,7 @@ public static class NinjaSlayerFinisherCinematic
             {
                 _active = session;
                 await sequence();
-                await session.CommitDeaths(choiceContext);
+                await session.CommitDeaths();
             }
             finally
             {
@@ -208,9 +193,8 @@ public static class NinjaSlayerFinisherCinematic
             try
             {
                 _active = session;
-                session.SetHitIndex(0, 1);
                 await damageAction();
-                await session.CommitDeaths(choiceContext);
+                await session.CommitDeaths();
             }
             finally
             {
@@ -240,7 +224,7 @@ public static class NinjaSlayerFinisherCinematic
 
         List<Creature> enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToList();
         if (enemies.Count == 0
-            || !FinisherForecast.IsGuaranteedClear(owner, enemies, spec, command, out int resolvedHits))
+            || !FinisherForecast.IsGuaranteedClear(owner, enemies, spec, command, out _))
         {
             return false;
         }
@@ -265,8 +249,7 @@ public static class NinjaSlayerFinisherCinematic
             focusNode,
             enemies,
             camera!,
-            spec.Targeting == FinisherTargeting.Random,
-            resolvedHits);
+            spec.Targeting == FinisherTargeting.Random);
         return true;
     }
 
@@ -276,19 +259,15 @@ public static class NinjaSlayerFinisherCinematic
         private readonly NCreature _focusNode;
         private readonly HashSet<Creature> _victims;
         private readonly HashSet<Creature> _deferredDeaths = [];
-        private readonly List<NCreature> _deathNodes = [];
         private readonly CombatCinematicCameraLease _camera;
         private readonly NCombatRoom _room;
         private readonly Vector2 _ownerStartPosition;
         private readonly bool _commitAllGuaranteedVictims;
-        private readonly TaskCompletionSource _deathStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
         private bool _committing;
         private bool _disposed;
-        private int _currentHitIndex = -1;
-        private int _totalHits;
 
         public FinisherSession(
             Creature owner,
@@ -296,8 +275,7 @@ public static class NinjaSlayerFinisherCinematic
             NCreature focusNode,
             IEnumerable<Creature> victims,
             CombatCinematicCameraLease camera,
-            bool commitAllGuaranteedVictims,
-            int totalHits)
+            bool commitAllGuaranteedVictims)
         {
             Owner = owner;
             _ownerNode = ownerNode;
@@ -305,7 +283,6 @@ public static class NinjaSlayerFinisherCinematic
             _victims = victims.ToHashSet();
             _camera = camera;
             _commitAllGuaranteedVictims = commitAllGuaranteedVictims;
-            _totalHits = Math.Max(1, totalHits);
             _room = NCombatRoom.Instance!;
             _ownerStartPosition = ownerNode.Position;
             _lastFrameMsec = Time.GetTicksMsec();
@@ -328,7 +305,6 @@ public static class NinjaSlayerFinisherCinematic
         public bool TryProtectLethalDamage(Creature target, ref decimal amount)
         {
             if (_committing
-                || _currentHitIndex >= _totalHits - 1
                 || !_victims.Contains(target)
                 || amount < target.CurrentHp
                 || target.CurrentHp <= 0)
@@ -357,33 +333,7 @@ public static class NinjaSlayerFinisherCinematic
             return true;
         }
 
-        public void NotifyDeathAnimationStarted(NCreature creatureNode)
-        {
-            if (!_victims.Contains(creatureNode.Entity))
-            {
-                return;
-            }
-
-            if (!_deathNodes.Contains(creatureNode))
-            {
-                _deathNodes.Add(creatureNode);
-            }
-
-            _deathStarted.TrySetResult();
-        }
-
-        public void AdvanceHit()
-        {
-            _currentHitIndex++;
-        }
-
-        public void SetHitIndex(int hitIndex, int totalHits)
-        {
-            _currentHitIndex = hitIndex;
-            _totalHits = Math.Max(1, totalHits);
-        }
-
-        public async Task CommitDeaths(PlayerChoiceContext choiceContext)
+        public async Task CommitDeaths()
         {
             _committing = true;
             bool guaranteedClearMatchedRuntime = _victims.All(
@@ -392,21 +342,31 @@ public static class NinjaSlayerFinisherCinematic
                     || _commitAllGuaranteedVictims);
             IEnumerable<Creature> commitSet = _commitAllGuaranteedVictims ? _victims : _deferredDeaths;
             List<Creature> toKill = commitSet.Where(creature => creature.IsAlive).ToList();
-            Task killTask = toKill.Count > 0 ? CreatureCmd.Kill(toKill) : Task.CompletedTask;
             if (!guaranteedClearMatchedRuntime)
             {
-                Entry.Logger.Warn("Finisher forecast did not match runtime damage; committed real lethal damage without the final freeze.");
-                await killTask;
+                Entry.Logger.Warn("Finisher forecast did not match runtime damage; committed deferred lethal damage without the finisher pose.");
+                if (toKill.Count > 0)
+                {
+                    await CreatureCmd.Kill(toKill);
+                }
                 return;
             }
 
-            await Task.WhenAny(_deathStarted.Task, WaitSeconds(DeathNotificationTimeoutSeconds));
-            if (_deathStarted.Task.IsCompleted)
+            List<NCreature> targetNodes = toKill
+                .Select(creature => _room.GetCreatureNode(creature))
+                .Where(node => node != null)
+                .Cast<NCreature>()
+                .ToList();
+            if (targetNodes.Count > 0)
             {
-                await PlayDeathFreeze();
+                await PlayDoomPoseImpact(targetNodes);
             }
 
-            await killTask;
+            if (toKill.Count > 0)
+            {
+                await CreatureCmd.Kill(toKill);
+                await WaitSeconds(FinisherSettleSeconds);
+            }
         }
 
         public async ValueTask DisposeAsync()
@@ -432,7 +392,7 @@ public static class NinjaSlayerFinisherCinematic
             }
         }
 
-        private async Task PlayDeathFreeze()
+        private async Task PlayDoomPoseImpact(IReadOnlyList<NCreature> targetNodes)
         {
             CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
                 ? cinematicFocus
@@ -447,16 +407,31 @@ public static class NinjaSlayerFinisherCinematic
                 punchScale,
                 _camera.ViewportSize * 0.5f) + new Vector2(-impactDirection * CameraPushPixels, 0f);
             var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
-            List<ProcessModeSnapshot> snapshots = [];
+            CaptureImpactVisuals(targetNodes, impactVisuals);
+            List<NCreature> frozenHurtTracks = [];
+            foreach (NCreature targetNode in targetNodes)
+            {
+                if (SetDoomHurtPose(targetNode))
+                {
+                    frozenHurtTracks.Add(targetNode);
+                }
+            }
+            ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(_ownerNode)
+                ? new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode)
+                : null;
 
             try
             {
+                if (ownerSnapshot is { } snapshot)
+                {
+                    snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
+                }
+
                 _camera.PlayScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
                 float elapsed = 0f;
                 while (elapsed < ImpactLeadSeconds)
                 {
                     elapsed += await NextFrame();
-                    CaptureImpactVisuals(impactVisuals);
                     float progress = EaseOut(Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f));
                     ApplyEnemyFeedback(impactVisuals.Values, progress, flash: true);
                     _camera.SetTransform(
@@ -465,21 +440,11 @@ public static class NinjaSlayerFinisherCinematic
                 }
 
                 RestoreEnemyFlash(impactVisuals.Values);
-                if (GodotObject.IsInstanceValid(_ownerNode))
+                float holdSeconds = DoomPoseSeconds - ImpactLeadSeconds - ImpactRecoverySeconds;
+                if (holdSeconds > 0f)
                 {
-                    snapshots.Add(new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode));
+                    await WaitSeconds(holdSeconds);
                 }
-
-                snapshots.AddRange(_deathNodes
-                    .Where(GodotObject.IsInstanceValid)
-                    .Select(node => new ProcessModeSnapshot(node, node.ProcessMode)));
-                foreach (ProcessModeSnapshot snapshot in snapshots)
-                {
-                    snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
-                }
-
-                await WaitSeconds(HitStopSeconds);
-                RestoreProcessModes(snapshots);
 
                 elapsed = 0f;
                 while (elapsed < ImpactRecoverySeconds)
@@ -491,19 +456,24 @@ public static class NinjaSlayerFinisherCinematic
                         punchPosition.Lerp(cameraStartPosition, progress),
                         Mathf.Lerp(punchScale, cameraStartScale, progress));
                 }
-
-                await WaitSeconds(FinisherSettleSeconds);
             }
             finally
             {
-                RestoreProcessModes(snapshots);
+                if (ownerSnapshot is { } snapshot && GodotObject.IsInstanceValid(snapshot.Node))
+                {
+                    snapshot.Node.ProcessMode = snapshot.Mode;
+                }
+
+                ResumeDoomHurtPoses(frozenHurtTracks);
                 RestoreImpactVisuals(impactVisuals.Values);
             }
         }
 
-        private void CaptureImpactVisuals(Dictionary<Node2D, ImpactVisualSnapshot> snapshots)
+        private void CaptureImpactVisuals(
+            IEnumerable<NCreature> targetNodes,
+            Dictionary<Node2D, ImpactVisualSnapshot> snapshots)
         {
-            foreach (NCreature creatureNode in _deathNodes.Where(GodotObject.IsInstanceValid))
+            foreach (NCreature creatureNode in targetNodes.Where(GodotObject.IsInstanceValid))
             {
                 Node2D body = creatureNode.Visuals.GetCurrentBody();
                 if (!snapshots.ContainsKey(body))
@@ -513,6 +483,38 @@ public static class NinjaSlayerFinisherCinematic
                         body.Position,
                         body.SelfModulate,
                         ResolveImpactDirection(_ownerNode, creatureNode)));
+                }
+            }
+        }
+
+        private static bool SetDoomHurtPose(NCreature creatureNode)
+        {
+            if (!creatureNode.SpineAnimation.IsValid)
+            {
+                return false;
+            }
+
+            creatureNode.SetAnimationTrigger("Hit");
+            using MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
+            if (track?.GetAnimationName() != "hurt")
+            {
+                return false;
+            }
+
+            float trackTime = creatureNode.Entity.Monster?.HurtAnimationTrackOffsetForDoom ?? 0.1f;
+            track.SetTrackTime(trackTime);
+            track.SetTimeScale(0f);
+            return true;
+        }
+
+        private static void ResumeDoomHurtPoses(IEnumerable<NCreature> creatureNodes)
+        {
+            foreach (NCreature creatureNode in creatureNodes.Where(GodotObject.IsInstanceValid))
+            {
+                using MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
+                if (track?.GetAnimationName() == "hurt")
+                {
+                    track.SetTimeScale(1f);
                 }
             }
         }
@@ -548,14 +550,6 @@ public static class NinjaSlayerFinisherCinematic
             {
                 snapshot.Body.Position = snapshot.Position;
                 snapshot.Body.SelfModulate = snapshot.SelfModulate;
-            }
-        }
-
-        private static void RestoreProcessModes(IEnumerable<ProcessModeSnapshot> snapshots)
-        {
-            foreach (ProcessModeSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Node)))
-            {
-                snapshot.Node.ProcessMode = snapshot.Mode;
             }
         }
 
