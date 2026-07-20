@@ -31,6 +31,12 @@ public enum FinisherTargeting
     Random
 }
 
+internal enum FinisherPresentationMode
+{
+    Legacy,
+    Enhanced
+}
+
 public sealed record FinisherAttackSpec(
     CardModel Card,
     CardPlay CardPlay,
@@ -87,6 +93,7 @@ public sealed record FinisherAttackSpec(
 
 public static class NinjaSlayerFinisherCinematic
 {
+    private const FinisherPresentationMode PresentationMode = FinisherPresentationMode.Enhanced;
     private const float ImpactLeadSeconds = 0.04f;
     private const float DoomPoseSeconds = 0.3f;
     private const float ImpactRecoverySeconds = 0.1f;
@@ -101,6 +108,9 @@ public static class NinjaSlayerFinisherCinematic
     private const float CameraPunchScaleMultiplier = 1.06f;
     private const float CameraPushPixels = 16f;
     private const float EnemyKnockbackPixels = 30f;
+    private const float EnhancedEnemyTiltDegrees = 3f;
+    private const float EnhancedEnemyStretchX = 0.06f;
+    private const float EnhancedEnemySquashY = 0.04f;
     private const float ImpactVfxTargetMargin = 160f;
 
     private static FinisherSession? _active;
@@ -413,16 +423,21 @@ public static class NinjaSlayerFinisherCinematic
         private readonly NCombatRoom _room;
         private readonly Vector2 _ownerStartPosition;
         private readonly HashSet<ulong> _vfxBaselineChildIds;
+        private readonly CancellationTokenSource _impactCancellation = new();
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
         private Task _cameraTransitionTask = Task.CompletedTask;
+        private Task _enhancedImpactTask = Task.CompletedTask;
         private int _cameraTransitionGeneration;
         private int _primaryAnimationsStarted;
         private int _primaryDamageCalls;
         private bool _finalZoomStarted;
+        private bool _enhancedImpactScheduled;
+        private bool _enhancedImpactFailed;
         private bool _committing;
         private bool _disposed;
+        private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
 
         public FinisherSession(
             Creature owner,
@@ -457,6 +472,11 @@ public static class NinjaSlayerFinisherCinematic
 
         public Task Begin()
         {
+            if (PresentationMode == FinisherPresentationMode.Enhanced)
+            {
+                _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
+            }
+
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
             _ownerNode.Position = destination;
             _finalZoomStarted = ResolvedHits <= 1;
@@ -497,6 +517,8 @@ public static class NinjaSlayerFinisherCinematic
             {
                 StartFinalZoom();
             }
+
+            TryScheduleEnhancedImpact();
         }
 
         public bool TryProtectLethalDamage(Creature target, ref decimal amount)
@@ -527,6 +549,8 @@ public static class NinjaSlayerFinisherCinematic
                 amount = target.CurrentHp - 1;
             }
 
+            TryScheduleEnhancedImpact();
+
             return true;
         }
 
@@ -554,9 +578,25 @@ public static class NinjaSlayerFinisherCinematic
                 .ToList();
             if (targetNodes.Count > 0)
             {
-                StartFinalZoom();
-                await _cameraTransitionTask;
-                await PlayDoomPoseImpact(targetNodes);
+                if (PresentationMode == FinisherPresentationMode.Enhanced)
+                {
+                    TryScheduleEnhancedImpact();
+                    await _enhancedImpactTask;
+                }
+
+                if (PresentationMode == FinisherPresentationMode.Legacy
+                    || !_enhancedImpactScheduled
+                    || _enhancedImpactFailed)
+                {
+                    if (PresentationMode == FinisherPresentationMode.Enhanced)
+                    {
+                        _finalZoomStarted = false;
+                    }
+
+                    StartFinalZoom();
+                    await _cameraTransitionTask;
+                    await PlayDoomPoseImpact(targetNodes);
+                }
             }
 
             if (toKill.Count > 0)
@@ -569,6 +609,8 @@ public static class NinjaSlayerFinisherCinematic
         public async Task CommitDeferredDeathsWithoutPose()
         {
             _committing = true;
+            _impactCancellation.Cancel();
+            await _enhancedImpactTask;
             List<Creature> toKill = _deferredDeaths.Where(creature => creature.IsAlive).ToList();
             if (toKill.Count > 0)
             {
@@ -586,6 +628,8 @@ public static class NinjaSlayerFinisherCinematic
             _disposed = true;
             try
             {
+                _impactCancellation.Cancel();
+                await _enhancedImpactTask;
                 _cameraTransitionGeneration++;
                 await _cameraTransitionTask;
                 await ReturnToBaseline();
@@ -597,7 +641,62 @@ public static class NinjaSlayerFinisherCinematic
                     _ownerNode.Position = _ownerStartPosition;
                 }
 
+                _hoverTipSuppression?.Dispose();
+                _hoverTipSuppression = null;
+                _impactCancellation.Dispose();
                 _camera.Dispose();
+            }
+        }
+
+        private void TryScheduleEnhancedImpact()
+        {
+            if (PresentationMode != FinisherPresentationMode.Enhanced
+                || _enhancedImpactScheduled
+                || _disposed
+                || !IsFinalPrimaryHitReady()
+                || !_victims.All(victim => victim.IsDead || _deferredDeaths.Contains(victim)))
+            {
+                return;
+            }
+
+            _enhancedImpactScheduled = true;
+            _enhancedImpactTask = RunEnhancedImpact();
+        }
+
+        private bool IsFinalPrimaryHitReady() =>
+            ResolvedHits <= 1
+            || _primaryAnimationsStarted >= ResolvedHits
+            || _primaryDamageCalls >= ResolvedHits;
+
+        private async Task RunEnhancedImpact()
+        {
+            try
+            {
+                await NextFrame();
+                _impactCancellation.Token.ThrowIfCancellationRequested();
+                List<NCreature> targetNodes = _deferredDeaths
+                    .Where(creature => creature.IsAlive)
+                    .Select(creature => _room.GetCreatureNode(creature))
+                    .Where(node => node != null && GodotObject.IsInstanceValid(node))
+                    .Cast<NCreature>()
+                    .ToList();
+                if (targetNodes.Count == 0)
+                {
+                    return;
+                }
+
+                _cameraTransitionGeneration++;
+                await PlayEnhancedDoomPoseImpact(targetNodes, _impactCancellation.Token);
+            }
+            catch (OperationCanceledException) when (_impactCancellation.IsCancellationRequested
+                || _disposed
+                || !GodotObject.IsInstanceValid(_room))
+            {
+            }
+            catch (Exception ex)
+            {
+                _enhancedImpactFailed = true;
+                Entry.Logger.Warn($"Enhanced finisher impact failed; legacy presentation will be used: {ex}");
             }
         }
 
@@ -682,6 +781,120 @@ public static class NinjaSlayerFinisherCinematic
             }
         }
 
+        private async Task PlayEnhancedDoomPoseImpact(
+            IReadOnlyList<NCreature> targetNodes,
+            CancellationToken cancellationToken)
+        {
+            CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
+                ? cinematicFocus
+                : _ownerNode.Visuals.Bounds;
+            float impactDirection = ResolveImpactDirection(_ownerNode, _focusNode);
+            Vector2 cameraStartPosition = _camera.CurrentPosition;
+            float cameraStartScale = _camera.CurrentScale;
+            float punchScale = _camera.BaselineScale.X * FinalHitZoomMultiplier * CameraPunchScaleMultiplier;
+            float recoveryScale = _camera.BaselineScale.X * FinalHitZoomMultiplier;
+            Vector2 punchCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), punchScale);
+            Vector2 punchPosition = _camera.GetCameraPosition(
+                punchCenter,
+                punchScale,
+                _camera.ViewportSize * 0.5f) + new Vector2(-impactDirection * CameraPushPixels, 0f);
+            Vector2 recoveryCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), recoveryScale);
+            Vector2 recoveryPosition = _camera.GetCameraPosition(
+                recoveryCenter,
+                recoveryScale,
+                _camera.ViewportSize * 0.5f);
+            var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
+            CaptureImpactVisuals(targetNodes, impactVisuals);
+            List<NCreature> frozenHurtTracks = [];
+            List<ProcessModeSnapshot> frozenImpactVfx = [];
+            ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(_ownerNode)
+                ? new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode)
+                : null;
+            FinisherImpactPresentation? presentation = null;
+
+            try
+            {
+                presentation = FinisherImpactPresentation.Create(_room, targetNodes.Count);
+                frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
+                foreach (NCreature targetNode in targetNodes)
+                {
+                    if (SetDoomHurtPose(targetNode))
+                    {
+                        frozenHurtTracks.Add(targetNode);
+                    }
+                }
+
+                if (ownerSnapshot is { } snapshot)
+                {
+                    snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
+                }
+
+                _camera.PlayScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
+                float elapsed = 0f;
+                while (elapsed < ImpactLeadSeconds)
+                {
+                    elapsed += await NextEnhancedFrame(cancellationToken);
+                    float linearProgress = Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f);
+                    float progress = EaseOut(linearProgress);
+                    ApplyEnhancedEnemyFeedback(impactVisuals.Values, progress, flash: true);
+                    presentation.SetState(targetNodes, progress, Mathf.Sin(linearProgress * Mathf.Pi));
+                    _camera.SetTransform(
+                        cameraStartPosition.Lerp(punchPosition, progress),
+                        Mathf.Lerp(cameraStartScale, punchScale, progress));
+                }
+
+                RestoreEnemyFlash(impactVisuals.Values);
+                presentation.SetState(targetNodes, 1f, 0f);
+                float holdSeconds = DoomPoseSeconds - ImpactLeadSeconds - ImpactRecoverySeconds;
+                if (holdSeconds > 0f)
+                {
+                    await WaitEnhancedSeconds(holdSeconds, cancellationToken);
+                }
+
+                elapsed = 0f;
+                while (elapsed < ImpactRecoverySeconds)
+                {
+                    elapsed += await NextEnhancedFrame(cancellationToken);
+                    float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ImpactRecoverySeconds);
+                    ApplyEnhancedEnemyFeedback(impactVisuals.Values, 1f - progress, flash: false);
+                    presentation.SetState(targetNodes, 1f - progress, 0f);
+                    _camera.SetTransform(
+                        punchPosition.Lerp(recoveryPosition, progress),
+                        Mathf.Lerp(punchScale, recoveryScale, progress));
+                }
+
+                _camera.SetTransform(recoveryPosition, recoveryScale);
+            }
+            finally
+            {
+                presentation?.Dispose();
+                if (ownerSnapshot is { } snapshot && GodotObject.IsInstanceValid(snapshot.Node))
+                {
+                    snapshot.Node.ProcessMode = snapshot.Mode;
+                }
+
+                RestoreProcessModes(frozenImpactVfx);
+                ResumeDoomHurtPoses(frozenHurtTracks);
+                RestoreImpactVisuals(impactVisuals.Values);
+            }
+        }
+
+        private async Task<float> NextEnhancedFrame(CancellationToken cancellationToken)
+        {
+            float delta = await NextFrame();
+            cancellationToken.ThrowIfCancellationRequested();
+            return delta;
+        }
+
+        private async Task WaitEnhancedSeconds(float seconds, CancellationToken cancellationToken)
+        {
+            float elapsed = 0f;
+            while (elapsed < seconds)
+            {
+                elapsed += await NextEnhancedFrame(cancellationToken);
+            }
+        }
+
         private void StartFinalZoom()
         {
             if (_finalZoomStarted)
@@ -755,6 +968,8 @@ public static class NinjaSlayerFinisherCinematic
                     snapshots.Add(body, new ImpactVisualSnapshot(
                         body,
                         body.Position,
+                        body.Scale,
+                        body.Rotation,
                         body.SelfModulate,
                         ResolveImpactDirection(_ownerNode, creatureNode)));
                 }
@@ -891,6 +1106,28 @@ public static class NinjaSlayerFinisherCinematic
             }
         }
 
+        private static void ApplyEnhancedEnemyFeedback(
+            IEnumerable<ImpactVisualSnapshot> snapshots,
+            float amount,
+            bool flash)
+        {
+            foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
+            {
+                snapshot.Body.Position = snapshot.Position
+                    + Vector2.Right * snapshot.Direction * EnemyKnockbackPixels * amount;
+                snapshot.Body.Scale = snapshot.Scale * new Vector2(
+                    1f + EnhancedEnemyStretchX * amount,
+                    1f - EnhancedEnemySquashY * amount);
+                snapshot.Body.Rotation = snapshot.Rotation
+                    + Mathf.DegToRad(EnhancedEnemyTiltDegrees * snapshot.Direction * amount);
+                snapshot.Body.SelfModulate = flash
+                    ? snapshot.SelfModulate.Lerp(
+                        new Color(1.8f, 1.8f, 1.8f, snapshot.SelfModulate.A),
+                        amount)
+                    : snapshot.SelfModulate;
+            }
+        }
+
         private static void RestoreEnemyFlash(IEnumerable<ImpactVisualSnapshot> snapshots)
         {
             foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
@@ -904,6 +1141,8 @@ public static class NinjaSlayerFinisherCinematic
             foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
             {
                 snapshot.Body.Position = snapshot.Position;
+                snapshot.Body.Scale = snapshot.Scale;
+                snapshot.Body.Rotation = snapshot.Rotation;
                 snapshot.Body.SelfModulate = snapshot.SelfModulate;
             }
         }
@@ -991,6 +1230,8 @@ public static class NinjaSlayerFinisherCinematic
         private readonly record struct ImpactVisualSnapshot(
             Node2D Body,
             Vector2 Position,
+            Vector2 Scale,
+            float Rotation,
             Color SelfModulate,
             float Direction);
     }
