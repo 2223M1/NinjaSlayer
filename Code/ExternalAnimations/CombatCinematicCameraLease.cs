@@ -83,6 +83,12 @@ public sealed class CombatCinematicCameraLease : IDisposable
         return true;
     }
 
+    public static float EaseOutCubic(float value)
+    {
+        float remaining = 1f - Mathf.Clamp(value, 0f, 1f);
+        return 1f - remaining * remaining * remaining;
+    }
+
     public void Advance(float delta)
     {
         if (_screenPunch == null || delta <= 0f)

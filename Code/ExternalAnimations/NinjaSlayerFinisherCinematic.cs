@@ -85,7 +85,6 @@ public sealed record FinisherAttackSpec(
 public static class NinjaSlayerFinisherCinematic
 {
     private const float ApproachSeconds = 0.2f;
-    private const float FollowDelaySeconds = 0.2f;
     private const float FreezeLeadSeconds = 0.1f;
     private const float FreezeSeconds = 0.2f;
     private const float ReturnSeconds = 0.2f;
@@ -316,7 +315,6 @@ public static class NinjaSlayerFinisherCinematic
                 ? cinematicFocus
                 : _ownerNode.Visuals.Bounds;
             float targetScale = _camera.BaselineScale.X * 2f;
-            _camera.BeginDelayedFollow(focus);
             float elapsed = 0f;
             while (elapsed < ApproachSeconds)
             {
@@ -324,11 +322,11 @@ public static class NinjaSlayerFinisherCinematic
                 float progress = EaseOut(Mathf.Clamp(elapsed / ApproachSeconds, 0f, 1f));
                 _ownerNode.Position = _ownerStartPosition.Lerp(destination, progress);
                 float scale = Mathf.Lerp(_camera.BaselineScale.X, targetScale, progress);
-                _camera.FrameOnDelayed(focus, scale, elapsed, FollowDelaySeconds);
+                _camera.FrameOn(focus, scale, clamp: true);
             }
 
             _ownerNode.Position = destination;
-            _ = FollowUntilSettled(focus, targetScale);
+            _camera.FrameOn(focus, targetScale, clamp: true);
         }
 
         public bool TryProtectLethalDamage(Creature target, ref decimal amount)
@@ -468,22 +466,6 @@ public static class NinjaSlayerFinisherCinematic
             }
         }
 
-        private async Task FollowUntilSettled(CanvasItem focus, float scale)
-        {
-            float elapsed = ApproachSeconds;
-            float end = ApproachSeconds + FollowDelaySeconds;
-            while (!_disposed && elapsed < end && GodotObject.IsInstanceValid(focus))
-            {
-                elapsed += await NextFrame();
-                _camera.FrameOnDelayed(focus, scale, elapsed, FollowDelaySeconds);
-            }
-
-            if (!_disposed && GodotObject.IsInstanceValid(focus))
-            {
-                _camera.FrameOn(focus, scale, clamp: true);
-            }
-        }
-
         private async Task ReturnToBaseline()
         {
             if (!GodotObject.IsInstanceValid(_ownerNode))
@@ -499,7 +481,7 @@ public static class NinjaSlayerFinisherCinematic
             while (elapsed < ReturnSeconds)
             {
                 elapsed += await NextFrame();
-                float progress = EaseOut(Mathf.Clamp(elapsed / ReturnSeconds, 0f, 1f));
+                float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ReturnSeconds);
                 _ownerNode.Position = ownerFrom.Lerp(_ownerStartPosition, progress);
                 _camera.SetTransform(
                     cameraFrom.Lerp(_camera.BaselinePosition, progress),

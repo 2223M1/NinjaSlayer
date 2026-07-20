@@ -853,7 +853,13 @@ public static class BossGreetingCinematic
         }
 
         public Task TweenCameraToBaseline(float duration) =>
-            TweenCamera(_camera.CurrentPosition, _camera.CurrentScale, BaselinePosition, BaselineScale.X, duration);
+            TweenCamera(
+                _camera.CurrentPosition,
+                _camera.CurrentScale,
+                BaselinePosition,
+                BaselineScale.X,
+                duration,
+                CombatCinematicCameraLease.EaseOutCubic);
 
         public void AttachVideo(VideoStreamPlayer? video) => _video = video;
 
@@ -909,13 +915,20 @@ public static class BossGreetingCinematic
             _cancellation.Dispose();
         }
 
-        private async Task TweenCamera(Vector2 startPosition, float startScale, Vector2 targetPosition, float targetScale, float duration)
+        private async Task TweenCamera(
+            Vector2 startPosition,
+            float startScale,
+            Vector2 targetPosition,
+            float targetScale,
+            float duration,
+            Func<float, float>? easing = null)
         {
             float elapsed = 0f;
             while (elapsed < duration)
             {
                 elapsed += await NextFrame();
-                float progress = EaseOut(Mathf.Clamp(elapsed / duration, 0f, 1f));
+                float normalized = Mathf.Clamp(elapsed / duration, 0f, 1f);
+                float progress = easing?.Invoke(normalized) ?? EaseOut(normalized);
                 _camera.SetTransform(
                     startPosition.Lerp(targetPosition, progress),
                     Mathf.Lerp(startScale, targetScale, progress));
