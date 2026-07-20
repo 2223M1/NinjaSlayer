@@ -6,6 +6,8 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.Cards;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
 using STS2RitsuLib.Patching.Models;
@@ -50,9 +52,61 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(Creature), nameof(Creature.LoseHpInternal), [typeof(decimal), typeof(MegaCrit.Sts2.Core.ValueProps.ValueProp)])];
 
-    public static void Prefix(Creature __instance, ref decimal amount)
+    public static void Prefix(
+        Creature __instance,
+        ref decimal amount,
+        out int __state)
     {
-        NinjaSlayerFinisherCinematic.TryProtectLethalDamage(__instance, ref amount);
+        NinjaSlayerFinisherCinematic.TryProtectLethalDamage(__instance, ref amount, out __state);
+    }
+
+    public static void Postfix(DamageResult __result, int __state)
+    {
+        NinjaSlayerFinisherCinematic.RegisterProtectedDamageResult(__result, __state);
+    }
+}
+
+public sealed class NinjaSlayerFinisherDamageNumberPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_damage_number";
+    public static string Description => "Display unclamped hit values while finisher victims remain at one HP.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(NDamageNumVfx),
+            nameof(NDamageNumVfx.Create),
+            [typeof(Creature), typeof(DamageResult)])
+    ];
+
+    public static bool Prefix(
+        Creature target,
+        DamageResult result,
+        ref NDamageNumVfx? __result)
+    {
+        if (!NinjaSlayerFinisherCinematic.TryTakeDamageDisplayOverride(result, out int displayDamage))
+        {
+            return true;
+        }
+
+        __result = NDamageNumVfx.Create(target, displayDamage);
+        return false;
+    }
+}
+
+public sealed class NinjaSlayerFinisherCardVisualPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_card_visual_suppression";
+    public static string Description => "Hide played and generated card visuals during enhanced finishers.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(NCard), nameof(NCard._EnterTree))];
+
+    public static void Postfix(NCard __instance)
+    {
+        FinisherCardVisualSuppression.OnCardEnteredTree(__instance);
     }
 }
 

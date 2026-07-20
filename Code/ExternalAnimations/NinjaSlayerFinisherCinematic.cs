@@ -14,6 +14,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -132,9 +133,31 @@ public static class NinjaSlayerFinisherCinematic
 
     public static bool IsMovementOwned(Creature creature) => _active?.Owner == creature;
 
-    internal static bool TryProtectLethalDamage(Creature target, ref decimal amount)
+    internal static void TryProtectLethalDamage(
+        Creature target,
+        ref decimal amount,
+        out int displayDamage)
     {
-        return _active?.TryProtectLethalDamage(target, ref amount) == true;
+        displayDamage = 0;
+        _active?.TryProtectLethalDamage(target, ref amount, out displayDamage);
+    }
+
+    internal static void RegisterProtectedDamageResult(
+        DamageResult result,
+        int displayDamage)
+    {
+        _active?.RegisterProtectedDamageResult(result, displayDamage);
+    }
+
+    internal static bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage)
+    {
+        if (_active != null)
+        {
+            return _active.TryTakeDamageDisplayOverride(result, out displayDamage);
+        }
+
+        displayDamage = 0;
+        return false;
     }
 
     internal static void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
@@ -604,6 +627,8 @@ public static class NinjaSlayerFinisherCinematic
         private readonly NCreature _focusNode;
         private readonly HashSet<Creature> _victims;
         private readonly HashSet<Creature> _deferredDeaths = [];
+        private readonly Dictionary<DamageResult, int> _damageDisplayOverrides =
+            new(ReferenceEqualityComparer.Instance);
         private readonly CombatCinematicCameraLease _camera;
         private readonly NCombatRoom _room;
         private readonly Vector2 _ownerStartPosition;
@@ -627,6 +652,7 @@ public static class NinjaSlayerFinisherCinematic
         private bool _committing;
         private bool _disposed;
         private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
+        private FinisherCardVisualSuppression? _cardVisualSuppression;
         private FinisherImpactPresentation? _presentation;
 
         public FinisherSession(
@@ -665,6 +691,7 @@ public static class NinjaSlayerFinisherCinematic
             if (PresentationMode == FinisherPresentationMode.Enhanced)
             {
                 _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
+                _cardVisualSuppression = FinisherCardVisualSuppression.Acquire(_room, CardPlay);
                 try
                 {
                     _presentation = FinisherImpactPresentation.Create(_room, _victims.Count);
@@ -725,8 +752,9 @@ public static class NinjaSlayerFinisherCinematic
             TryScheduleEnhancedImpact();
         }
 
-        public bool TryProtectLethalDamage(Creature target, ref decimal amount)
+        public bool TryProtectLethalDamage(Creature target, ref decimal amount, out int displayDamage)
         {
+            displayDamage = 0;
             if (_committing
                 || !_victims.Contains(target)
                 || amount < target.CurrentHp
@@ -735,6 +763,7 @@ public static class NinjaSlayerFinisherCinematic
                 return false;
             }
 
+            displayDamage = (int)Math.Clamp(amount, 0m, 999999999m);
             _deferredDeaths.Add(target);
             if (target.CurrentHp == 1)
             {
@@ -756,6 +785,38 @@ public static class NinjaSlayerFinisherCinematic
             TryScheduleEnhancedImpact();
 
             return true;
+        }
+
+        public void RegisterProtectedDamageResult(DamageResult result, int displayDamage)
+        {
+            if (displayDamage <= 0 || !_victims.Contains(result.Receiver))
+            {
+                return;
+            }
+
+            if (result.UnblockedDamage + result.OverkillDamage > 0)
+            {
+                _damageDisplayOverrides[result] = displayDamage;
+                return;
+            }
+
+            NDamageNumVfx? damageVfx = NDamageNumVfx.Create(result.Receiver, displayDamage);
+            Node? vfxContainer = result.Receiver.GetVfxContainer();
+            if (damageVfx != null && vfxContainer != null)
+            {
+                vfxContainer.AddChild(damageVfx);
+            }
+        }
+
+        public bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage)
+        {
+            if (_damageDisplayOverrides.Remove(result, out displayDamage))
+            {
+                return true;
+            }
+
+            displayDamage = 0;
+            return false;
         }
 
         public async Task CommitDeaths()
@@ -849,6 +910,9 @@ public static class NinjaSlayerFinisherCinematic
 
                 _hoverTipSuppression?.Dispose();
                 _hoverTipSuppression = null;
+                _cardVisualSuppression?.Dispose();
+                _cardVisualSuppression = null;
+                _damageDisplayOverrides.Clear();
                 DisposeEnhancedPresentation();
                 _impactCancellation.Dispose();
                 _camera.Dispose();

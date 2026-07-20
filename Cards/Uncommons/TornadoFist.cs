@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
@@ -37,12 +38,26 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         int hitIndex,
         int totalHits)
     {
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(Owner.Creature))
+        {
+            return await TornadoFistFinisherCadenceContext.Run(
+                () => ExecuteXHitCore(choiceContext, cardPlay, TornadoFistSpinAnimation.TurnSeconds));
+        }
+
+        return await ExecuteXHitCore(choiceContext, cardPlay, XAttackHitDelay);
+    }
+
+    private async Task<bool> ExecuteXHitCore(
+        PlayerChoiceContext choiceContext,
+        CardPlay cardPlay,
+        float attackerAnimDelay)
+    {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);
 
         var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
-            .WithAttackerAnim(AttackerAnimTrigger, XAttackHitDelay)
+            .WithAttackerAnim(AttackerAnimTrigger, attackerAnimDelay)
             .Targeting(cardPlay.Target);
         await command.Execute(choiceContext);
         List<DamageResult> results = command.Results.SelectMany(r => r).ToList();
