@@ -1,9 +1,11 @@
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
 using STS2RitsuLib.Patching.Models;
 
@@ -21,6 +23,34 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
     public static void Prefix(Creature __instance, ref decimal amount)
     {
         NinjaSlayerFinisherCinematic.TryProtectLethalDamage(__instance, ref amount);
+    }
+}
+
+public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_primary_damage";
+    public static string Description => "Advance staged finisher camera zoom from primary attack hits.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(CreatureCmd),
+            nameof(CreatureCmd.Damage),
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel),
+                typeof(CardPlay)
+            ])
+    ];
+
+    public static void Prefix(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+    {
+        NinjaSlayerFinisherCinematic.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
     }
 }
 

@@ -65,6 +65,7 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
+        patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
         patcher.RegisterPatch<ReporterPassEventOptionPatch>();

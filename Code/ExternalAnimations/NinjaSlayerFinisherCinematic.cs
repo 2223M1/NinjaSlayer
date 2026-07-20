@@ -88,10 +88,15 @@ public sealed record FinisherAttackSpec(
 public static class NinjaSlayerFinisherCinematic
 {
     private const float ImpactLeadSeconds = 0.04f;
-    private const float DoomPoseSeconds = 0.2f;
+    private const float DoomPoseSeconds = 0.3f;
     private const float ImpactRecoverySeconds = 0.1f;
     private const float FinisherSettleSeconds = 0.1f;
     private const float ReturnSeconds = 0.2f;
+    private const float SingleHitZoomSeconds = 0.1f;
+    private const float MultiHitZoomSeconds = 0.2f;
+    private const float FinalHitZoomSeconds = 0.1f;
+    private const float MultiHitZoomMultiplier = 1.6f;
+    private const float FinalHitZoomMultiplier = 2f;
     private const float ApproachGap = 50f;
     private const float CameraPunchScaleMultiplier = 1.06f;
     private const float CameraPushPixels = 16f;
@@ -105,6 +110,16 @@ public static class NinjaSlayerFinisherCinematic
     internal static bool TryProtectLethalDamage(Creature target, ref decimal amount)
     {
         return _active?.TryProtectLethalDamage(target, ref amount) == true;
+    }
+
+    internal static void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
+    {
+        _active?.NotifyPrimaryAttackAnimation(creature, triggerName);
+    }
+
+    internal static void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+    {
+        _active?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
     }
 
     internal static Task WrapAfterCardPlayed(Task original, CardPlay cardPlay) =>
@@ -304,7 +319,8 @@ public static class NinjaSlayerFinisherCinematic
             enemies,
             camera!,
             spec.CardPlay,
-            forecast.RequiresAfterCardPlayed);
+            forecast.RequiresAfterCardPlayed,
+            forecast.ResolvedHits);
         return true;
     }
 
@@ -398,6 +414,11 @@ public static class NinjaSlayerFinisherCinematic
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
+        private Task _cameraTransitionTask = Task.CompletedTask;
+        private int _cameraTransitionGeneration;
+        private int _primaryAnimationsStarted;
+        private int _primaryDamageCalls;
+        private bool _finalZoomStarted;
         private bool _committing;
         private bool _disposed;
 
@@ -408,7 +429,8 @@ public static class NinjaSlayerFinisherCinematic
             IEnumerable<Creature> victims,
             CombatCinematicCameraLease camera,
             CardPlay cardPlay,
-            bool requiresAfterCardPlayed)
+            bool requiresAfterCardPlayed,
+            int resolvedHits)
         {
             Owner = owner;
             _ownerNode = ownerNode;
@@ -420,22 +442,56 @@ public static class NinjaSlayerFinisherCinematic
             _lastFrameMsec = Time.GetTicksMsec();
             CardPlay = cardPlay;
             RequiresAfterCardPlayed = requiresAfterCardPlayed;
+            ResolvedHits = Math.Max(1, resolvedHits);
         }
 
         public Creature Owner { get; }
         public CardPlay CardPlay { get; }
         public bool RequiresAfterCardPlayed { get; }
+        public int ResolvedHits { get; }
 
         public Task Begin()
         {
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
-            CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
-                ? cinematicFocus
-                : _ownerNode.Visuals.Bounds;
-            float targetScale = _camera.BaselineScale.X * 2f;
             _ownerNode.Position = destination;
-            _camera.FrameOn(focus, targetScale, clamp: true);
+            _finalZoomStarted = ResolvedHits <= 1;
+            StartCameraTransition(
+                ResolvedHits > 1 ? MultiHitZoomMultiplier : FinalHitZoomMultiplier,
+                ResolvedHits > 1 ? MultiHitZoomSeconds : SingleHitZoomSeconds);
             return Task.CompletedTask;
+        }
+
+        public void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
+        {
+            if (ResolvedHits <= 1
+                || creature != Owner
+                || !IsPrimaryAttackTrigger(triggerName))
+            {
+                return;
+            }
+
+            _primaryAnimationsStarted++;
+            if (_primaryAnimationsStarted >= ResolvedHits)
+            {
+                StartFinalZoom();
+            }
+        }
+
+        public void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+        {
+            if (ResolvedHits <= 1
+                || dealer != Owner
+                || cardSource != CardPlay.Card
+                || cardPlay != CardPlay)
+            {
+                return;
+            }
+
+            _primaryDamageCalls++;
+            if (_primaryDamageCalls >= ResolvedHits)
+            {
+                StartFinalZoom();
+            }
         }
 
         public bool TryProtectLethalDamage(Creature target, ref decimal amount)
@@ -493,6 +549,8 @@ public static class NinjaSlayerFinisherCinematic
                 .ToList();
             if (targetNodes.Count > 0)
             {
+                StartFinalZoom();
+                await _cameraTransitionTask;
                 await PlayDoomPoseImpact(targetNodes);
             }
 
@@ -523,6 +581,8 @@ public static class NinjaSlayerFinisherCinematic
             _disposed = true;
             try
             {
+                _cameraTransitionGeneration++;
+                await _cameraTransitionTask;
                 await ReturnToBaseline();
             }
             finally
@@ -571,7 +631,7 @@ public static class NinjaSlayerFinisherCinematic
                     snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
                 }
 
-                _camera.PlayScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
+                _camera.PlayScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
                 float elapsed = 0f;
                 while (elapsed < ImpactLeadSeconds)
                 {
@@ -610,6 +670,67 @@ public static class NinjaSlayerFinisherCinematic
 
                 ResumeDoomHurtPoses(frozenHurtTracks);
                 RestoreImpactVisuals(impactVisuals.Values);
+            }
+        }
+
+        private void StartFinalZoom()
+        {
+            if (_finalZoomStarted)
+            {
+                return;
+            }
+
+            _finalZoomStarted = true;
+            StartCameraTransition(FinalHitZoomMultiplier, FinalHitZoomSeconds);
+        }
+
+        private void StartCameraTransition(float scaleMultiplier, float duration)
+        {
+            int generation = ++_cameraTransitionGeneration;
+            _cameraTransitionTask = RunCameraTransition(generation, scaleMultiplier, duration);
+        }
+
+        private async Task RunCameraTransition(int generation, float scaleMultiplier, float duration)
+        {
+            try
+            {
+                CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
+                    ? cinematicFocus
+                    : _ownerNode.Visuals.Bounds;
+                Vector2 startPosition = _camera.CurrentPosition;
+                float startScale = _camera.CurrentScale;
+                float targetScale = _camera.BaselineScale.X * scaleMultiplier;
+                Vector2 targetCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), targetScale);
+                Vector2 targetPosition = _camera.GetCameraPosition(
+                    targetCenter,
+                    targetScale,
+                    _camera.ViewportSize * 0.5f);
+                float elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    elapsed += await NextFrame();
+                    if (_disposed || generation != _cameraTransitionGeneration)
+                    {
+                        return;
+                    }
+
+                    float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / duration);
+                    _camera.SetTransform(
+                        startPosition.Lerp(targetPosition, progress),
+                        Mathf.Lerp(startScale, targetScale, progress));
+                }
+
+                if (!_disposed && generation == _cameraTransitionGeneration)
+                {
+                    _camera.SetTransform(targetPosition, targetScale);
+                }
+            }
+            catch (OperationCanceledException) when (_disposed || !GodotObject.IsInstanceValid(_room))
+            {
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn($"Finisher camera transition failed: {ex}");
             }
         }
 
@@ -772,6 +893,10 @@ public static class NinjaSlayerFinisherCinematic
             return Mathf.IsZeroApprox(direction) ? 1f : direction;
         }
 
+        private static bool IsPrimaryAttackTrigger(string triggerName) =>
+            triggerName is "Attack" or "SlowAttack" or "XAttack"
+            || triggerName == TornadoFistSpinAnimation.TriggerName;
+
         private readonly record struct ProcessModeSnapshot(Node Node, Node.ProcessModeEnum Mode);
         private readonly record struct ImpactVisualSnapshot(
             Node2D Body,
@@ -783,7 +908,7 @@ public static class NinjaSlayerFinisherCinematic
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
 }
 
-internal readonly record struct FinisherForecastResult(bool RequiresAfterCardPlayed);
+internal readonly record struct FinisherForecastResult(int ResolvedHits, bool RequiresAfterCardPlayed);
 
 internal enum FinisherForecastEffectTargeting
 {
@@ -873,7 +998,7 @@ internal static class FinisherForecast
             }
         }
 
-        result = new FinisherForecastResult(postCardEffects.Count > 0);
+        result = new FinisherForecastResult(hits, postCardEffects.Count > 0);
         var states = enemies.ToDictionary(enemy => enemy, enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,

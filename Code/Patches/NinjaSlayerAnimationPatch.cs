@@ -19,6 +19,8 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
 
     public static bool Prefix(Creature creature, string triggerName, float waitTime, ref Task __result)
     {
+        NinjaSlayerFinisherCinematic.NotifyPrimaryAttackAnimation(creature, triggerName);
+
         // ponytail: one rebuild-time switch restores the archived cue animations.
         if (!NinjaSlayerCharacter.OriginalAnimations)
         {
