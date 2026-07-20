@@ -68,6 +68,7 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
+        patcher.RegisterPatch<TornadoFistCadencePatch>();
         patcher.RegisterPatch<ReporterPassEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
