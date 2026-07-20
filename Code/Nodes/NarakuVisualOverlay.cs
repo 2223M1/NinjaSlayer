@@ -143,8 +143,11 @@ public partial class NarakuVisualOverlay : Sprite2D
         Position = new Vector2(0f, y);
         Offset = Vector2.Zero;
         float scale = GetLegacyFormScale(form);
+        float sourceScaleRatio = Mathf.Abs(source!.Scale.Y) > 0.001f
+            ? Mathf.Abs(source.Scale.X / source.Scale.Y)
+            : 1f;
         Scale = new Vector2(
-            Mathf.Sign(source!.Scale.X == 0f ? 1f : source.Scale.X) * scale,
+            Mathf.Sign(source.Scale.X == 0f ? 1f : source.Scale.X) * scale * sourceScaleRatio,
             scale);
         Rotation = 0f;
         Skew = 0f;

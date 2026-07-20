@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Nodes;
@@ -16,21 +17,87 @@ public static class SoarSpinAnimation
     private const float MinScaleRatio = 0.18f;
     private static readonly Dictionary<Creature, Tween> activeSpinTweens = new();
     private static readonly Dictionary<Creature, float> spinDegrees = new();
+    private static readonly HashSet<Creature> activeVerticalSpins = [];
 
     public static float MaxDegreesPerSecond => FullTurnDegrees / XAttackDuration * 3f;
 
     public static bool IsSpinning(Creature creature) => activeSpinTweens.ContainsKey(creature);
 
+    public static bool IsVerticalSpinActive(Creature creature) => activeVerticalSpins.Contains(creature);
+
     public static async Task Accelerate(Creature creature, float duration)
     {
-        await Play(creature, duration, MaxDegreesPerSecond, accelerating: true);
-        StartAirborneSpin(creature, MaxDegreesPerSecond);
+        activeVerticalSpins.Add(creature);
+        try
+        {
+            await Play(creature, duration, MaxDegreesPerSecond, accelerating: true);
+            StartAirborneSpin(creature, MaxDegreesPerSecond);
+        }
+        catch
+        {
+            ResetSpinVisual(creature);
+            throw;
+        }
     }
 
     public static async Task Decelerate(Creature creature, float duration)
     {
         StopAirborneSpin(creature);
-        await Play(creature, duration, MaxDegreesPerSecond, accelerating: false);
+        try
+        {
+            await Play(creature, duration, MaxDegreesPerSecond, accelerating: false);
+        }
+        finally
+        {
+            ResetSpinVisual(creature);
+        }
+    }
+
+    internal static async Task PlayExactTurn(Creature creature, float duration)
+    {
+        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (creatureNode == null || GetSpinVisual(creature) == null || GetSpinFocus(creature) == null)
+        {
+            await Cmd.Wait(duration);
+            return;
+        }
+
+        bool wasVerticallySpinning = IsVerticalSpinActive(creature);
+        bool resumeAirborneSpin = IsSpinning(creature);
+        StopAirborneSpin(creature);
+        activeVerticalSpins.Add(creature);
+
+        float startingDegrees = spinDegrees.GetValueOrDefault(creature);
+        var tween = creatureNode.CreateTween();
+        tween.TweenMethod(
+                Callable.From<float>(degrees =>
+                {
+                    float currentDegrees = startingDegrees + degrees;
+                    spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
+                    ApplyVerticalSpin(creature, currentDegrees);
+                }),
+                0f,
+                FullTurnDegrees,
+                duration)
+            .SetTrans(Tween.TransitionType.Linear);
+
+        try
+        {
+            await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        }
+        finally
+        {
+            if (resumeAirborneSpin
+                && GodotObject.IsInstanceValid(creatureNode)
+                && SoarVisualState.IsAirborne(creature))
+            {
+                StartAirborneSpin(creature, MaxDegreesPerSecond);
+            }
+            else if (!wasVerticallySpinning)
+            {
+                ResetSpinVisual(creature);
+            }
+        }
     }
 
     public static void StartAirborneSpin(Creature creature, float degreesPerSecond)
@@ -49,6 +116,7 @@ public static class SoarSpinAnimation
             return;
         }
 
+        activeVerticalSpins.Add(creature);
         float startingDegrees = spinDegrees.GetValueOrDefault(creature);
         var tween = creatureNode.CreateTween();
         tween.SetLoops();
@@ -57,7 +125,7 @@ public static class SoarSpinAnimation
             {
                 float currentDegrees = startingDegrees + degrees;
                 spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
-                ApplyVerticalSpin(visuals, currentDegrees);
+                ApplyVerticalSpin(creature, currentDegrees);
             }),
             0f,
             FullTurnDegrees,
@@ -79,6 +147,7 @@ public static class SoarSpinAnimation
     {
         StopAirborneSpin(creature);
         spinDegrees.Remove(creature);
+        activeVerticalSpins.Remove(creature);
 
         NinjaSlayerSpinMotionBlur.Get(creature)?.Reset();
 
@@ -88,12 +157,7 @@ public static class SoarSpinAnimation
             return;
         }
 
-        visuals.Scale = new Vector2(GetNormalScaleX(visuals), visuals.Scale.Y);
-        visuals.RotationDegrees = 0f;
-        if (visuals is Sprite2D sprite)
-        {
-            sprite.Offset = Vector2.Zero;
-        }
+        RestoreVerticalSpin(creature, visuals);
     }
 
     public static void EnsureAirborneSpin(Creature creature)
@@ -132,7 +196,7 @@ public static class SoarSpinAnimation
                 float speed = maxDegreesPerSecond * (accelerating ? ratio * ratio : (1f - ratio) * (1f - ratio));
                 degrees += speed * delta;
                 spinDegrees[creature] = Mathf.PosMod(degrees, FullTurnDegrees);
-                ApplyVerticalSpin(visuals, degrees);
+                ApplyVerticalSpin(creature, degrees);
             }),
             0f,
             duration,
@@ -143,24 +207,35 @@ public static class SoarSpinAnimation
         if (!accelerating)
         {
             spinDegrees.Remove(creature);
-            visuals.Scale = new Vector2(GetNormalScaleX(visuals), visuals.Scale.Y);
-            visuals.RotationDegrees = 0f;
+            RestoreVerticalSpin(creature, visuals);
         }
     }
 
-    private static void ApplyVerticalSpin(Node2D visuals, float degrees)
+    private static void ApplyVerticalSpin(Creature creature, float degrees)
     {
+        Sprite2D? visuals = GetSpinVisual(creature);
+        Node2D? focus = GetSpinFocus(creature);
+        if (visuals == null || focus == null)
+        {
+            return;
+        }
+
         float scaleRatio = Mathf.Cos(Mathf.DegToRad(degrees));
         if (Mathf.Abs(scaleRatio) < MinScaleRatio)
         {
             scaleRatio = scaleRatio < 0f ? -MinScaleRatio : MinScaleRatio;
         }
 
+        float scaleX = GetNormalScaleX(visuals) * scaleRatio;
         visuals.RotationDegrees = 0f;
-        visuals.Scale = new Vector2(GetNormalScaleX(visuals) * scaleRatio, visuals.Scale.Y);
+        visuals.Offset = Vector2.Zero;
+        visuals.Scale = new Vector2(scaleX, visuals.Scale.Y);
+        visuals.Position = new Vector2(
+            focus.Position.X - NinjaSlayerVisualRig.SpinPivotDeltaX * scaleX,
+            visuals.Position.Y);
     }
 
-    private static Node2D? GetSpinVisual(Creature creature)
+    private static Sprite2D? GetSpinVisual(Creature creature)
     {
         var visualsRoot = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
         if (visualsRoot == null)
@@ -168,13 +243,29 @@ public static class SoarSpinAnimation
             return null;
         }
 
-        var body = NinjaSlayerVisualRig.GetBodySprite(visualsRoot);
-        if (body != null)
+        return NinjaSlayerVisualRig.GetBodySprite(visualsRoot);
+    }
+
+    private static Node2D? GetSpinFocus(Creature creature) =>
+        NinjaSlayerVisualRig.GetCinematicFocus(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
+
+    private static void RestoreVerticalSpin(Creature creature, Node2D visuals)
+    {
+        float scaleX = GetNormalScaleX(visuals);
+        visuals.Scale = new Vector2(scaleX, visuals.Scale.Y);
+        visuals.RotationDegrees = 0f;
+        if (visuals is not Sprite2D sprite)
         {
-            return body;
+            return;
         }
 
-        return visualsRoot;
+        sprite.Offset = Vector2.Zero;
+        if (GetSpinFocus(creature) is { } focus)
+        {
+            sprite.Position = new Vector2(
+                focus.Position.X - NinjaSlayerVisualRig.SpinPivotDeltaX * scaleX,
+                sprite.Position.Y);
+        }
     }
 
     private static float GetNormalScaleX(Node2D visuals)

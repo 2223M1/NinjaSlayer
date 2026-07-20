@@ -61,7 +61,7 @@ public partial class NinjaSlayerSpinMotionBlur : Node
             0f,
             1f);
 
-        if (creature != null && SoarSpinAnimation.IsSpinning(creature))
+        if (creature != null && SoarSpinAnimation.IsVerticalSpinActive(creature))
         {
             intensity = Mathf.Max(intensity, SoarSpinIntensityFloor);
         }
