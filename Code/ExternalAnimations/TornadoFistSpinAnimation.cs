@@ -12,7 +12,7 @@ public static class TornadoFistSpinAnimation
 {
     public const string TriggerName = "TornadoFistSpin";
     public const string CueTriggerName = "TornadoFistCue";
-    public const float TurnSeconds = 0.24f;
+    public const float TurnSeconds = 0.15f;
 
     private static readonly Dictionary<Creature, SpinState> ActiveSpins = [];
     private static bool _loggedMissingRig;
