@@ -428,16 +428,21 @@ public static class NinjaSlayerFinisherCinematic
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
         private Task _cameraTransitionTask = Task.CompletedTask;
+        private Task _backdropTransitionTask = Task.CompletedTask;
         private Task _enhancedImpactTask = Task.CompletedTask;
         private int _cameraTransitionGeneration;
+        private int _backdropTransitionGeneration;
         private int _primaryAnimationsStarted;
         private int _primaryDamageCalls;
+        private float _backdropIntensity;
         private bool _finalZoomStarted;
+        private bool _backdropDarkeningStarted;
         private bool _enhancedImpactScheduled;
         private bool _enhancedImpactFailed;
         private bool _committing;
         private bool _disposed;
         private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
+        private FinisherImpactPresentation? _presentation;
 
         public FinisherSession(
             Creature owner,
@@ -475,6 +480,15 @@ public static class NinjaSlayerFinisherCinematic
             if (PresentationMode == FinisherPresentationMode.Enhanced)
             {
                 _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
+                try
+                {
+                    _presentation = FinisherImpactPresentation.Create(_room, _victims.Count);
+                }
+                catch (Exception ex)
+                {
+                    _enhancedImpactFailed = true;
+                    Entry.Logger.Warn($"Could not create enhanced finisher presentation; legacy presentation will be used: {ex}");
+                }
             }
 
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
@@ -483,6 +497,11 @@ public static class NinjaSlayerFinisherCinematic
             StartCameraTransition(
                 ResolvedHits > 1 ? MultiHitZoomMultiplier : FinalHitZoomMultiplier,
                 ResolvedHits > 1 ? MultiHitZoomSeconds : SingleHitZoomSeconds);
+            if (ResolvedHits <= 1)
+            {
+                StartBackdropDarkening();
+            }
+
             return Task.CompletedTask;
         }
 
@@ -631,7 +650,9 @@ public static class NinjaSlayerFinisherCinematic
                 _impactCancellation.Cancel();
                 await _enhancedImpactTask;
                 _cameraTransitionGeneration++;
+                _backdropTransitionGeneration++;
                 await _cameraTransitionTask;
+                await _backdropTransitionTask;
                 await ReturnToBaseline();
             }
             finally
@@ -643,6 +664,7 @@ public static class NinjaSlayerFinisherCinematic
 
                 _hoverTipSuppression?.Dispose();
                 _hoverTipSuppression = null;
+                DisposeEnhancedPresentation();
                 _impactCancellation.Dispose();
                 _camera.Dispose();
             }
@@ -652,6 +674,7 @@ public static class NinjaSlayerFinisherCinematic
         {
             if (PresentationMode != FinisherPresentationMode.Enhanced
                 || _enhancedImpactScheduled
+                || _enhancedImpactFailed
                 || _disposed
                 || !IsFinalPrimaryHitReady()
                 || !_victims.All(victim => victim.IsDead || _deferredDeaths.Contains(victim)))
@@ -682,7 +705,7 @@ public static class NinjaSlayerFinisherCinematic
                     .ToList();
                 if (targetNodes.Count == 0)
                 {
-                    return;
+                    throw new InvalidOperationException("No living target nodes remained for the enhanced finisher impact.");
                 }
 
                 _cameraTransitionGeneration++;
@@ -696,6 +719,7 @@ public static class NinjaSlayerFinisherCinematic
             catch (Exception ex)
             {
                 _enhancedImpactFailed = true;
+                DisposeEnhancedPresentation();
                 Entry.Logger.Warn($"Enhanced finisher impact failed; legacy presentation will be used: {ex}");
             }
         }
@@ -810,11 +834,11 @@ public static class NinjaSlayerFinisherCinematic
             ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(_ownerNode)
                 ? new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode)
                 : null;
-            FinisherImpactPresentation? presentation = null;
+            FinisherImpactPresentation presentation = _presentation
+                ?? throw new InvalidOperationException("The enhanced finisher presentation was not initialized.");
 
             try
             {
-                presentation = FinisherImpactPresentation.Create(_room, targetNodes.Count);
                 frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
                 foreach (NCreature targetNode in targetNodes)
                 {
@@ -837,14 +861,14 @@ public static class NinjaSlayerFinisherCinematic
                     float linearProgress = Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f);
                     float progress = EaseOut(linearProgress);
                     ApplyEnhancedEnemyFeedback(impactVisuals.Values, progress, flash: true);
-                    presentation.SetState(targetNodes, progress, Mathf.Sin(linearProgress * Mathf.Pi));
+                    presentation.SetImpactState(targetNodes, progress, Mathf.Sin(linearProgress * Mathf.Pi));
                     _camera.SetTransform(
                         cameraStartPosition.Lerp(punchPosition, progress),
                         Mathf.Lerp(cameraStartScale, punchScale, progress));
                 }
 
                 RestoreEnemyFlash(impactVisuals.Values);
-                presentation.SetState(targetNodes, 1f, 0f);
+                presentation.SetImpactState(targetNodes, 1f, 0f);
                 float holdSeconds = DoomPoseSeconds - ImpactLeadSeconds - ImpactRecoverySeconds;
                 if (holdSeconds > 0f)
                 {
@@ -857,7 +881,7 @@ public static class NinjaSlayerFinisherCinematic
                     elapsed += await NextEnhancedFrame(cancellationToken);
                     float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ImpactRecoverySeconds);
                     ApplyEnhancedEnemyFeedback(impactVisuals.Values, 1f - progress, flash: false);
-                    presentation.SetState(targetNodes, 1f - progress, 0f);
+                    presentation.SetImpactState(targetNodes, 1f - progress, 0f);
                     _camera.SetTransform(
                         punchPosition.Lerp(recoveryPosition, progress),
                         Mathf.Lerp(punchScale, recoveryScale, progress));
@@ -867,7 +891,7 @@ public static class NinjaSlayerFinisherCinematic
             }
             finally
             {
-                presentation?.Dispose();
+                presentation.SetImpactState([], 0f, 0f);
                 if (ownerSnapshot is { } snapshot && GodotObject.IsInstanceValid(snapshot.Node))
                 {
                     snapshot.Node.ProcessMode = snapshot.Mode;
@@ -904,6 +928,60 @@ public static class NinjaSlayerFinisherCinematic
 
             _finalZoomStarted = true;
             StartCameraTransition(FinalHitZoomMultiplier, FinalHitZoomSeconds);
+            StartBackdropDarkening();
+        }
+
+        private void StartBackdropDarkening()
+        {
+            if (PresentationMode != FinisherPresentationMode.Enhanced
+                || _enhancedImpactFailed
+                || _presentation == null
+                || _backdropDarkeningStarted)
+            {
+                return;
+            }
+
+            _backdropDarkeningStarted = true;
+            int generation = ++_backdropTransitionGeneration;
+            _backdropTransitionTask = RunBackdropTransition(generation, 1f, FinalHitZoomSeconds);
+        }
+
+        private async Task RunBackdropTransition(int generation, float targetIntensity, float duration)
+        {
+            try
+            {
+                float startIntensity = _backdropIntensity;
+                float elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    elapsed += await NextFrame();
+                    if (_disposed
+                        || generation != _backdropTransitionGeneration
+                        || _presentation == null)
+                    {
+                        return;
+                    }
+
+                    float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / duration);
+                    SetBackdropIntensity(Mathf.Lerp(startIntensity, targetIntensity, progress));
+                }
+
+                if (!_disposed
+                    && generation == _backdropTransitionGeneration
+                    && _presentation != null)
+                {
+                    SetBackdropIntensity(targetIntensity);
+                }
+            }
+            catch (OperationCanceledException) when (_disposed || !GodotObject.IsInstanceValid(_room))
+            {
+            }
+            catch (Exception ex)
+            {
+                _enhancedImpactFailed = true;
+                DisposeEnhancedPresentation();
+                Entry.Logger.Warn($"Finisher backdrop transition failed; legacy presentation will be used: {ex}");
+            }
         }
 
         private void StartCameraTransition(float scaleMultiplier, float duration)
@@ -1151,6 +1229,7 @@ public static class NinjaSlayerFinisherCinematic
         {
             if (!GodotObject.IsInstanceValid(_ownerNode))
             {
+                SetBackdropIntensity(0f);
                 _camera.ResetToBaseline();
                 return;
             }
@@ -1158,6 +1237,7 @@ public static class NinjaSlayerFinisherCinematic
             Vector2 ownerFrom = _ownerNode.Position;
             Vector2 cameraFrom = _camera.CurrentPosition;
             float scaleFrom = _camera.CurrentScale;
+            float backdropFrom = _backdropIntensity;
             float elapsed = 0f;
             while (elapsed < ReturnSeconds)
             {
@@ -1167,7 +1247,24 @@ public static class NinjaSlayerFinisherCinematic
                 _camera.SetTransform(
                     cameraFrom.Lerp(_camera.BaselinePosition, progress),
                     Mathf.Lerp(scaleFrom, _camera.BaselineScale.X, progress));
+                SetBackdropIntensity(Mathf.Lerp(backdropFrom, 0f, progress));
             }
+
+            SetBackdropIntensity(0f);
+        }
+
+        private void SetBackdropIntensity(float intensity)
+        {
+            _backdropIntensity = Mathf.Clamp(intensity, 0f, 1f);
+            _presentation?.SetBackdropIntensity(_backdropIntensity);
+        }
+
+        private void DisposeEnhancedPresentation()
+        {
+            _backdropTransitionGeneration++;
+            _presentation?.Dispose();
+            _presentation = null;
+            _backdropIntensity = 0f;
         }
 
         private async Task<float> NextFrame()

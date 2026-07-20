@@ -57,31 +57,42 @@ internal sealed class FinisherImpactPresentation : IDisposable
         };
         _backdrop = new ColorRect
         {
-            Name = "Backdrop",
+            Name = "NinjaSlayerFinisherBackdrop",
             MouseFilter = Control.MouseFilterEnum.Ignore,
             Color = Colors.Transparent
         };
-        _backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        _layer.AddChild(_backdrop);
 
-        for (int i = 0; i < impactCount; i++)
+        try
         {
-            var shader = new Shader { Code = ImpactShaderCode };
-            var material = new ShaderMaterial { Shader = shader };
-            var rays = new ColorRect
-            {
-                Name = $"ImpactRays{i + 1}",
-                MouseFilter = Control.MouseFilterEnum.Ignore,
-                Color = Colors.White,
-                Material = material
-            };
-            rays.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-            _layer.AddChild(rays);
-            _impactMaterials.Add(material);
-        }
+            Control backgroundContainer = room.GetNode<Control>("%BgContainer");
+            room.SceneContainer.AddChild(_backdrop);
+            _backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            room.SceneContainer.MoveChild(_backdrop, backgroundContainer.GetIndex() + 1);
 
-        Node host = NRun.Instance is { } run ? run : room.GetTree().Root;
-        host.AddChild(_layer);
+            for (int i = 0; i < impactCount; i++)
+            {
+                var shader = new Shader { Code = ImpactShaderCode };
+                var material = new ShaderMaterial { Shader = shader };
+                var rays = new ColorRect
+                {
+                    Name = $"ImpactRays{i + 1}",
+                    MouseFilter = Control.MouseFilterEnum.Ignore,
+                    Color = Colors.White,
+                    Material = material
+                };
+                rays.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+                _layer.AddChild(rays);
+                _impactMaterials.Add(material);
+            }
+
+            Node host = NRun.Instance is { } run ? run : room.GetTree().Root;
+            host.AddChild(_layer);
+        }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     public static FinisherImpactPresentation Create(NCombatRoom room, int impactCount)
@@ -94,9 +105,24 @@ internal sealed class FinisherImpactPresentation : IDisposable
         return new FinisherImpactPresentation(room, impactCount);
     }
 
-    public void SetState(IReadOnlyList<NCreature> targets, float intensity, float flash)
+    public void SetBackdropIntensity(float intensity)
     {
-        if (_disposed || targets.Count != _impactMaterials.Count)
+        if (_disposed || !GodotObject.IsInstanceValid(_backdrop))
+        {
+            return;
+        }
+
+        float clampedIntensity = Mathf.Clamp(intensity, 0f, 1f);
+        _backdrop.Color = new Color(
+            0.025f,
+            0.002f,
+            0.006f,
+            MaximumBackdropAlpha * clampedIntensity);
+    }
+
+    public void SetImpactState(IReadOnlyList<NCreature> targets, float intensity, float flash)
+    {
+        if (_disposed || targets.Count > _impactMaterials.Count)
         {
             return;
         }
@@ -104,12 +130,17 @@ internal sealed class FinisherImpactPresentation : IDisposable
         Vector2 viewportSize = _room.GetViewportRect().Size;
         float width = Mathf.Max(1f, viewportSize.X);
         float height = Mathf.Max(1f, viewportSize.Y);
-        _backdrop.Color = new Color(0.025f, 0.002f, 0.006f, MaximumBackdropAlpha * intensity);
-
-        for (int i = 0; i < targets.Count; i++)
+        for (int i = 0; i < _impactMaterials.Count; i++)
         {
-            Vector2 center = targets[i].Hitbox.GetGlobalRect().GetCenter();
             ShaderMaterial material = _impactMaterials[i];
+            if (i >= targets.Count)
+            {
+                material.SetShaderParameter(IntensityParameter, 0f);
+                material.SetShaderParameter(FlashParameter, 0f);
+                continue;
+            }
+
+            Vector2 center = targets[i].Hitbox.GetGlobalRect().GetCenter();
             material.SetShaderParameter(ImpactUvParameter, new Vector2(center.X / width, center.Y / height));
             material.SetShaderParameter(AspectRatioParameter, width / height);
             material.SetShaderParameter(IntensityParameter, intensity);
@@ -128,6 +159,11 @@ internal sealed class FinisherImpactPresentation : IDisposable
         if (GodotObject.IsInstanceValid(_layer))
         {
             _layer.QueueFree();
+        }
+
+        if (GodotObject.IsInstanceValid(_backdrop))
+        {
+            _backdrop.QueueFree();
         }
     }
 }
