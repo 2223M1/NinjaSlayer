@@ -640,6 +640,7 @@ public static class NinjaSlayerFinisherCinematic
         private Task _cameraTransitionTask = Task.CompletedTask;
         private Task _backdropTransitionTask = Task.CompletedTask;
         private Task _enhancedImpactTask = Task.CompletedTask;
+        private Task _cameraShakePumpTask = Task.CompletedTask;
         private int _cameraTransitionGeneration;
         private int _backdropTransitionGeneration;
         private int _primaryAnimationsStarted;
@@ -706,6 +707,7 @@ public static class NinjaSlayerFinisherCinematic
 
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
             _ownerNode.Position = destination;
+            _cameraShakePumpTask = RunCameraShakePump();
             _finalZoomStarted = ResolvedHits <= 1;
             StartCameraTransition(
                 ResolvedHits > 1 ? MultiHitZoomMultiplier : FinalHitZoomMultiplier,
@@ -736,8 +738,7 @@ public static class NinjaSlayerFinisherCinematic
 
         public void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
         {
-            if (ResolvedHits <= 1
-                || dealer != Owner
+            if (dealer != Owner
                 || cardSource != CardPlay.Card
                 || cardPlay != CardPlay)
             {
@@ -745,7 +746,12 @@ public static class NinjaSlayerFinisherCinematic
             }
 
             _primaryDamageCalls++;
-            if (_primaryDamageCalls >= ResolvedHits)
+            bool isFinalHit = _primaryDamageCalls >= ResolvedHits;
+            _camera.PlayScreenShake(
+                isFinalHit ? ShakeStrength.TooMuch : ShakeStrength.Medium,
+                ShakeDuration.Short,
+                rejectWeakerReplacement: true);
+            if (ResolvedHits > 1 && isFinalHit)
             {
                 StartFinalZoom();
             }
@@ -901,6 +907,7 @@ public static class NinjaSlayerFinisherCinematic
                 await _cameraTransitionTask;
                 await _backdropTransitionTask;
                 await ReturnToBaseline();
+                await _cameraShakePumpTask;
             }
             finally
             {
@@ -1012,7 +1019,10 @@ public static class NinjaSlayerFinisherCinematic
                     snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
                 }
 
-                _camera.PlayScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
+                _camera.PlayScreenShake(
+                    ShakeStrength.TooMuch,
+                    ShakeDuration.Short,
+                    rejectWeakerReplacement: true);
                 float elapsed = 0f;
                 while (elapsed < ImpactLeadSeconds)
                 {
@@ -1103,7 +1113,10 @@ public static class NinjaSlayerFinisherCinematic
                     snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
                 }
 
-                _camera.PlayScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
+                _camera.PlayScreenShake(
+                    ShakeStrength.TooMuch,
+                    ShakeDuration.Short,
+                    rejectWeakerReplacement: true);
                 float elapsed = 0f;
                 while (elapsed < ImpactLeadSeconds)
                 {
@@ -1534,10 +1547,34 @@ public static class NinjaSlayerFinisherCinematic
                     : Math.Min((now - _lastFrameMsec) / 1000f, 0.05f);
                 _lastFrameMsec = now;
                 _lastDeltaFrame = processFrame;
-                _camera.Advance(_cachedFrameDelta);
             }
 
             return _cachedFrameDelta;
+        }
+
+        private async Task RunCameraShakePump()
+        {
+            ulong lastFrameMsec = Time.GetTicksMsec();
+            try
+            {
+                while (!_disposed && GodotObject.IsInstanceValid(_room) && _room.IsInsideTree())
+                {
+                    await _room.ToSignal(_room.GetTree(), SceneTree.SignalName.ProcessFrame);
+                    ulong now = Time.GetTicksMsec();
+                    float delta = _room.ProcessMode == Node.ProcessModeEnum.Disabled
+                        ? 0f
+                        : Math.Min((now - lastFrameMsec) / 1000f, 0.05f);
+                    lastFrameMsec = now;
+                    _camera.Advance(delta);
+                }
+            }
+            catch (OperationCanceledException) when (_disposed || !GodotObject.IsInstanceValid(_room))
+            {
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn($"Finisher camera shake pump stopped unexpectedly: {ex}");
+            }
         }
 
         private async Task WaitSeconds(float seconds)

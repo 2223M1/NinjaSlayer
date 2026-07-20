@@ -16,6 +16,8 @@ public static class StaggerAnimation
     private static readonly Dictionary<Creature, float> OriginalBodyRotations = new();
     private static readonly Dictionary<Creature, Tween> ActiveTweens = new();
 
+    public static bool IsActive(Creature creature) => ActiveTweens.ContainsKey(creature);
+
     public static async Task Play(Creature creature)
     {
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);

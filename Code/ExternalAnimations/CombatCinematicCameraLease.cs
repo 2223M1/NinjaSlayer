@@ -24,6 +24,8 @@ public sealed class CombatCinematicCameraLease : IDisposable
     private float _cameraScale;
     private Vector2 _shakeOffset;
     private ScreenPunchInstance? _screenPunch;
+    private float _screenPunchStrength;
+    private bool _screenPunchRejectsWeaker;
     private int _responsiveLayoutAdjustmentCount;
 
     private CombatCinematicCameraLease(NCombatRoom room, string ownerName)
@@ -100,13 +102,19 @@ public sealed class CombatCinematicCameraLease : IDisposable
         if (_screenPunch.IsDone)
         {
             _screenPunch = null;
+            _screenPunchStrength = 0f;
+            _screenPunchRejectsWeaker = false;
             _shakeOffset = Vector2.Zero;
         }
 
         ApplyTransform();
     }
 
-    public void PlayScreenShake(ShakeStrength strength, ShakeDuration duration, float degrees = -1f)
+    public void PlayScreenShake(
+        ShakeStrength strength,
+        ShakeDuration duration,
+        float degrees = -1f,
+        bool rejectWeakerReplacement = false)
     {
         float multiplier = NScreenshakePaginator.GetShakeMultiplier(
             SaveManager.Instance.PrefsSave.ScreenShakeOptionIndex);
@@ -114,8 +122,19 @@ public sealed class CombatCinematicCameraLease : IDisposable
         if (scaledStrength <= 0f)
         {
             _screenPunch = null;
+            _screenPunchStrength = 0f;
+            _screenPunchRejectsWeaker = false;
             _shakeOffset = Vector2.Zero;
             ApplyTransform();
+            return;
+        }
+
+        // Damage VFX may emit a weaker shake after the cinematic hit. Do not let it
+        // replace a stronger punch that is already in progress.
+        if (_screenPunch is { IsDone: false }
+            && _screenPunchRejectsWeaker
+            && scaledStrength < _screenPunchStrength)
+        {
             return;
         }
 
@@ -123,6 +142,8 @@ public sealed class CombatCinematicCameraLease : IDisposable
             ? MegaCrit.Sts2.Core.Random.Rng.Chaotic.NextFloat(360f)
             : degrees;
         _screenPunch = new ScreenPunchInstance(scaledStrength, GetShakeDuration(duration), angle);
+        _screenPunchStrength = scaledStrength;
+        _screenPunchRejectsWeaker = rejectWeakerReplacement;
         _shakeOffset = Vector2.Zero;
         ApplyTransform();
     }
@@ -207,6 +228,8 @@ public sealed class CombatCinematicCameraLease : IDisposable
     public void ResetToBaseline()
     {
         _screenPunch = null;
+        _screenPunchStrength = 0f;
+        _screenPunchRejectsWeaker = false;
         _shakeOffset = Vector2.Zero;
         _cameraPosition = BaselinePosition;
         _cameraScale = BaselineScale.X;

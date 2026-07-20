@@ -11,6 +11,7 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class NinjaSlayerSpinPivot : Node2D
 {
     private Sprite2D? sprite;
+    private Node2D? cinematicFocus;
     private Creature? creature;
     private float normalScaleX = 0.33f;
     private Vector2? lastRawPosition;
@@ -19,6 +20,7 @@ public partial class NinjaSlayerSpinPivot : Node2D
     public override void _Ready()
     {
         sprite = GetParent()?.GetNodeOrNull<Sprite2D>("%Visuals");
+        cinematicFocus = GetParent()?.GetNodeOrNull<Node2D>(NinjaSlayerVisualRig.CinematicFocusName);
         creature = FindCreature();
         if (sprite != null)
         {
@@ -39,9 +41,11 @@ public partial class NinjaSlayerSpinPivot : Node2D
             return;
         }
 
-        bool usePivot = UseNormalPivot() && sprite.Scale.X < 0f;
         bool alreadyAdjusted = lastRawPosition.HasValue && sprite.Position.IsEqualApprox(lastFinalPosition);
         Vector2 rawPosition = alreadyAdjusted ? lastRawPosition!.Value : sprite.Position;
+        bool usePivot = UseNormalPivot()
+            && sprite.Scale.X < 0f
+            && !HasAuthoredFixedPivot(rawPosition);
 
         Vector2 compensation = usePivot ? new Vector2(NinjaSlayerVisualRig.SpinPivotDeltaX * normalScaleX, 0f) : Vector2.Zero;
 
@@ -49,6 +53,18 @@ public partial class NinjaSlayerSpinPivot : Node2D
         sprite.Position = rawPosition + compensation;
         lastRawPosition = rawPosition;
         lastFinalPosition = sprite.Position;
+    }
+
+    private bool HasAuthoredFixedPivot(Vector2 rawPosition)
+    {
+        if (cinematicFocus == null || !GodotObject.IsInstanceValid(cinematicFocus))
+        {
+            return false;
+        }
+
+        float authoredAxisX = rawPosition.X
+            + NinjaSlayerVisualRig.SpinPivotDeltaX * sprite!.Scale.X;
+        return Mathf.IsEqualApprox(authoredAxisX, cinematicFocus.Position.X);
     }
 
     private bool UseNormalPivot()
