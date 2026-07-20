@@ -73,6 +73,9 @@ public static class NinjaSlayerDebugCardCatalog
 
         // Rares
         typeof(AlabamaDrop),
+        // Vanilla three-choice effects require at least three cards per rarity/type pair.
+        typeof(BangBangFist),
+        typeof(BeatPeopleChado),
         typeof(BladesCome),
         typeof(ClankDrinkTea),
         typeof(HellTornado),
