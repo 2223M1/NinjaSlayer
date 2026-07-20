@@ -1,4 +1,6 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
@@ -28,7 +30,8 @@ public enum FinisherTargeting
 {
     Single,
     All,
-    Random
+    Random,
+    Fixed
 }
 
 internal enum FinisherPresentationMode
@@ -43,7 +46,9 @@ public sealed record FinisherAttackSpec(
     Func<Creature, decimal> Damage,
     ValueProp Props,
     int HitCount,
-    FinisherTargeting Targeting)
+    FinisherTargeting Targeting,
+    Creature? SingleTarget = null,
+    IReadOnlyList<Creature>? FixedTargets = null)
 {
     public static FinisherAttackSpec FromCard(
         CardModel card,
@@ -79,7 +84,14 @@ public sealed record FinisherAttackSpec(
             _ => FinisherTargeting.Single
         };
         int hitCount = hitCountOverride ?? KarateForecastCalculator.ResolveHitCount(card, cardPlay.Target);
-        return new FinisherAttackSpec(card, cardPlay, damage, propsOverride ?? props, Math.Max(1, hitCount), targeting);
+        return new FinisherAttackSpec(
+            card,
+            cardPlay,
+            damage,
+            propsOverride ?? props,
+            Math.Max(1, hitCount),
+            targeting,
+            cardPlay.Target);
     }
 
     private static ValueProp ResolveProps(CardModel card)
@@ -115,6 +127,8 @@ public static class NinjaSlayerFinisherCinematic
 
     private static FinisherSession? _active;
     private static FinisherSession? _pendingAfterCardPlayed;
+    private static readonly AsyncLocal<CommandBypassFrame?> CommandBypass = new();
+    private static readonly AsyncLocal<int> DirectDamageBypassDepth = new();
 
     public static bool IsMovementOwned(Creature creature) => _active?.Owner == creature;
 
@@ -131,6 +145,79 @@ public static class NinjaSlayerFinisherCinematic
     internal static void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         _active?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
+    }
+
+    internal static bool TryInterceptAttackCommand(
+        AttackCommand command,
+        PlayerChoiceContext? choiceContext,
+        out Task<AttackCommand>? result)
+    {
+        result = null;
+        if (_active != null
+            || IsCommandBypassed(command)
+            || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
+            || spec == null
+            || IsExcludedAttackCard(spec.Card))
+        {
+            return false;
+        }
+
+        result = ExecuteCommandWithFinisher(
+            command,
+            choiceContext ?? new BlockingPlayerChoiceContext(),
+            spec,
+            "generic-command");
+        return true;
+    }
+
+    internal static bool TryInterceptDirectDamage(
+        PlayerChoiceContext choiceContext,
+        IEnumerable<Creature>? targets,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay,
+        out Task<IEnumerable<DamageResult>>? result)
+    {
+        result = null;
+        if (_active != null
+            || DirectDamageBypassDepth.Value > 0
+            || dealer?.Player?.Character is not INinjaSlayerCharacter
+            || cardSource?.Type != CardType.Attack
+            || cardPlay == null
+            || cardSource.Owner?.Creature != dealer
+            || IsExcludedAttackCard(cardSource))
+        {
+            return false;
+        }
+
+        List<Creature> targetList = targets?.Where(target => target.IsAlive).Distinct().ToList() ?? [];
+        if (targetList.Count == 0)
+        {
+            return false;
+        }
+
+        var spec = new FinisherAttackSpec(
+            cardSource,
+            cardPlay,
+            _ => amount,
+            props,
+            1,
+            FinisherTargeting.Fixed,
+            FixedTargets: targetList);
+        result = ExecuteDirectDamageWithFinisher(
+            choiceContext,
+            spec,
+            () => ExecuteOriginalDirectDamage(
+                choiceContext,
+                targetList,
+                amount,
+                props,
+                dealer,
+                cardSource,
+                cardPlay));
+        return true;
     }
 
     internal static Task WrapAfterCardPlayed(Task original, CardPlay cardPlay) =>
@@ -152,9 +239,18 @@ public static class NinjaSlayerFinisherCinematic
             cardPlay,
             damageOverride,
             hitCountOverride);
-        if (!TryCreateSession(spec, command, out FinisherSession? session))
+        return await ExecuteCommandWithFinisher(command, choiceContext, spec, "explicit-command");
+    }
+
+    private static async Task<AttackCommand> ExecuteCommandWithFinisher(
+        AttackCommand command,
+        PlayerChoiceContext choiceContext,
+        FinisherAttackSpec spec,
+        string entryPoint)
+    {
+        if (!TryCreateSession(spec, command, entryPoint, out FinisherSession? session))
         {
-            return await command.Execute(choiceContext);
+            return await ExecuteOriginalCommand(command, choiceContext);
         }
 
         ArgumentNullException.ThrowIfNull(session);
@@ -165,7 +261,7 @@ public static class NinjaSlayerFinisherCinematic
             _active = session;
             try
             {
-                AttackCommand result = await command.Execute(choiceContext);
+                AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
                 if (session.RequiresAfterCardPlayed)
                 {
                     TransferToAfterCardPlayed(session);
@@ -199,7 +295,7 @@ public static class NinjaSlayerFinisherCinematic
         FinisherAttackSpec spec,
         Func<Task> sequence)
     {
-        if (!TryCreateSession(spec, null, out FinisherSession? session))
+        if (!TryCreateSession(spec, null, "explicit-sequence", out FinisherSession? session))
         {
             await sequence();
             return;
@@ -245,7 +341,16 @@ public static class NinjaSlayerFinisherCinematic
         FinisherAttackSpec spec,
         Func<Task> damageAction)
     {
-        if (!TryCreateSession(spec, null, out FinisherSession? session))
+        await ExecuteDirectWithFinisher(choiceContext, spec, damageAction, "explicit-direct");
+    }
+
+    private static async Task ExecuteDirectWithFinisher(
+        PlayerChoiceContext choiceContext,
+        FinisherAttackSpec spec,
+        Func<Task> damageAction,
+        string entryPoint)
+    {
+        if (!TryCreateSession(spec, null, entryPoint, out FinisherSession? session))
         {
             await damageAction();
             return;
@@ -286,14 +391,29 @@ public static class NinjaSlayerFinisherCinematic
         }
     }
 
+    private static async Task<IEnumerable<DamageResult>> ExecuteDirectDamageWithFinisher(
+        PlayerChoiceContext choiceContext,
+        FinisherAttackSpec spec,
+        Func<Task<IEnumerable<DamageResult>>> damageAction)
+    {
+        IEnumerable<DamageResult> results = [];
+        await ExecuteDirectWithFinisher(
+            choiceContext,
+            spec,
+            async () => results = await damageAction(),
+            "direct-damage");
+        return results;
+    }
+
     private static bool TryCreateSession(
         FinisherAttackSpec spec,
         AttackCommand? command,
+        string entryPoint,
         out FinisherSession? session)
     {
         session = null;
         if (_active != null
-            || spec.Card is ShurikenCard or GiantShurikenCard
+            || IsExcludedAttackCard(spec.Card)
             || spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
@@ -332,8 +452,73 @@ public static class NinjaSlayerFinisherCinematic
             spec.CardPlay,
             forecast.RequiresAfterCardPlayed,
             forecast.ResolvedHits);
+        Entry.Logger.Info(
+            $"NinjaSlayer finisher session started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Targeting}, hits={forecast.ResolvedHits}.");
         return true;
     }
+
+    private static bool IsExcludedAttackCard(CardModel card) =>
+        card is ShurikenCard or GiantShurikenCard
+        || card.Tags.Contains(CardTag.Shiv)
+        || card.Tags.Contains(NinjaSlayerCardTags.Shuriken);
+
+    private static bool IsCommandBypassed(AttackCommand command)
+    {
+        for (CommandBypassFrame? frame = CommandBypass.Value; frame != null; frame = frame.Parent)
+        {
+            if (ReferenceEquals(frame.Command, command))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static async Task<AttackCommand> ExecuteOriginalCommand(
+        AttackCommand command,
+        PlayerChoiceContext choiceContext)
+    {
+        CommandBypassFrame? previous = CommandBypass.Value;
+        CommandBypass.Value = new CommandBypassFrame(command, previous);
+        try
+        {
+            return await command.Execute(choiceContext);
+        }
+        finally
+        {
+            CommandBypass.Value = previous;
+        }
+    }
+
+    private static async Task<IEnumerable<DamageResult>> ExecuteOriginalDirectDamage(
+        PlayerChoiceContext choiceContext,
+        IEnumerable<Creature> targets,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay)
+    {
+        DirectDamageBypassDepth.Value++;
+        try
+        {
+            return await CreatureCmd.Damage(
+                choiceContext,
+                targets,
+                amount,
+                props,
+                dealer,
+                cardSource,
+                cardPlay);
+        }
+        finally
+        {
+            DirectDamageBypassDepth.Value--;
+        }
+    }
+
+    private sealed record CommandBypassFrame(AttackCommand Command, CommandBypassFrame? Parent);
 
     private static void TransferToAfterCardPlayed(FinisherSession session)
     {
@@ -1336,6 +1521,62 @@ public static class NinjaSlayerFinisherCinematic
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
 }
 
+internal static class FinisherAttackCommandAdapter
+{
+    private static readonly FieldInfo? DamagePerHitField = AccessTools.Field(typeof(AttackCommand), "_damagePerHit");
+    private static readonly FieldInfo? CalculatedDamageField = AccessTools.Field(typeof(AttackCommand), "_calculatedDamageVar");
+    private static readonly FieldInfo? HitCountField = AccessTools.Field(typeof(AttackCommand), "_hitCount");
+    private static readonly FieldInfo? SingleTargetField = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
+
+    public static bool TryCreateSpec(AttackCommand command, out FinisherAttackSpec? spec)
+    {
+        spec = null;
+        if (DamagePerHitField == null
+            || CalculatedDamageField == null
+            || HitCountField == null
+            || SingleTargetField == null
+            || command.ModelSource is not CardModel { Type: CardType.Attack } card
+            || command.CardPlay is not { } cardPlay
+            || command.Attacker == null
+            || card.Owner?.Creature != command.Attacker)
+        {
+            return false;
+        }
+
+        var calculatedDamage = CalculatedDamageField.GetValue(command) as CalculatedDamageVar;
+        decimal damagePerHit = (decimal)(DamagePerHitField.GetValue(command) ?? 0m);
+        int hitCount = (int)(HitCountField.GetValue(command) ?? 1);
+        var singleTarget = SingleTargetField.GetValue(command) as Creature;
+        FinisherTargeting? targeting = command.IsRandomlyTargeted
+            ? FinisherTargeting.Random
+            : command.IsSingleTargeted
+                ? FinisherTargeting.Single
+                : command.IsMultiTargeted
+                    ? FinisherTargeting.All
+                    : null;
+        if (targeting == null || targeting == FinisherTargeting.Single && singleTarget == null)
+        {
+            return false;
+        }
+
+        Func<Creature, decimal> damage = calculatedDamage switch
+        {
+            null => _ => damagePerHit,
+            _ when command.IsMultiTargeted && !command.IsRandomlyTargeted => _ => calculatedDamage.Calculate(null),
+            _ => target => calculatedDamage.Calculate(target)
+        };
+        spec = new FinisherAttackSpec(
+            card,
+            cardPlay,
+            damage,
+            command.DamageProps,
+            Math.Max(1, hitCount),
+            targeting.Value,
+            singleTarget);
+        return true;
+    }
+}
+
 internal readonly record struct FinisherForecastResult(int ResolvedHits, bool RequiresAfterCardPlayed);
 
 internal enum FinisherForecastEffectTargeting
@@ -1436,7 +1677,7 @@ internal static class FinisherForecast
 
         return spec.Targeting switch
         {
-            FinisherTargeting.Single => spec.CardPlay.Target is { } target
+            FinisherTargeting.Single => (spec.SingleTarget ?? spec.CardPlay.Target) is { } target
                 && enemies.Count == 1
                 && SimulateFixed(owner, states, spec, hits, _ => [target], Finish),
             FinisherTargeting.All => SimulateFixed(
@@ -1447,6 +1688,15 @@ internal static class FinisherForecast
                 current => current.Keys.Where(enemy => current[enemy].Hp > 0).ToList(),
                 Finish),
             FinisherTargeting.Random => SimulateRandom(owner, states, spec, 0, hits, Finish),
+            FinisherTargeting.Fixed => spec.FixedTargets is { Count: > 0 } fixedTargets
+                && fixedTargets.All(states.ContainsKey)
+                && SimulateFixed(
+                    owner,
+                    states,
+                    spec,
+                    hits,
+                    current => fixedTargets.Where(target => current[target].Hp > 0).ToList(),
+                    Finish),
             _ => false
         };
     }

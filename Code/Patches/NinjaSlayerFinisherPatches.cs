@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -10,6 +11,35 @@ using NinjaSlayer.Code.ExternalAnimations;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
+
+public sealed class NinjaSlayerFinisherAttackCommandPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_attack_command";
+    public static string Description => "Route all eligible NinjaSlayer card attack commands through the finisher system.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(AttackCommand),
+            nameof(AttackCommand.Execute),
+            [typeof(PlayerChoiceContext)])
+    ];
+
+    public static bool Prefix(
+        AttackCommand __instance,
+        PlayerChoiceContext? choiceContext,
+        ref Task<AttackCommand> __result)
+    {
+        if (!NinjaSlayerFinisherCinematic.TryInterceptAttackCommand(__instance, choiceContext, out Task<AttackCommand>? result))
+        {
+            return true;
+        }
+
+        __result = result!;
+        return false;
+    }
+}
 
 public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
 {
@@ -48,9 +78,32 @@ public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
             ])
     ];
 
-    public static void Prefix(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+    public static bool Prefix(
+        PlayerChoiceContext choiceContext,
+        IEnumerable<Creature>? targets,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay,
+        ref Task<IEnumerable<DamageResult>> __result)
     {
         NinjaSlayerFinisherCinematic.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
+        if (!NinjaSlayerFinisherCinematic.TryInterceptDirectDamage(
+                choiceContext,
+                targets,
+                amount,
+                props,
+                dealer,
+                cardSource,
+                cardPlay,
+                out Task<IEnumerable<DamageResult>>? result))
+        {
+            return true;
+        }
+
+        __result = result!;
+        return false;
     }
 }
 
