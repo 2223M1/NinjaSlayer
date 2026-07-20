@@ -1,4 +1,9 @@
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.ExternalAnimations;
 using STS2RitsuLib.Patching.Models;
 
@@ -16,5 +21,45 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
     public static void Prefix(Creature __instance, ref decimal amount)
     {
         NinjaSlayerFinisherCinematic.TryProtectLethalDamage(__instance, ref amount);
+    }
+}
+
+public sealed class NinjaSlayerFinisherAfterCardPlayedPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_after_card_played";
+    public static string Description => "Keep deterministic post-card damage inside an active finisher session.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(Hook),
+            nameof(Hook.AfterCardPlayed),
+            [typeof(ICombatState), typeof(PlayerChoiceContext), typeof(CardPlay)])
+    ];
+
+    public static void Postfix(CardPlay cardPlay, ref Task __result)
+    {
+        __result = NinjaSlayerFinisherCinematic.WrapAfterCardPlayed(__result, cardPlay);
+    }
+}
+
+public sealed class NinjaSlayerFinisherCardPlayCleanupPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_card_play_cleanup";
+    public static string Description => "Clean up deferred finisher damage when card resolution exits early.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(CardModel),
+            nameof(CardModel.OnPlayWrapper),
+            [typeof(PlayerChoiceContext), typeof(Creature), typeof(bool), typeof(ResourceInfo), typeof(bool)])
+    ];
+
+    public static void Postfix(CardModel __instance, ref Task __result)
+    {
+        __result = NinjaSlayerFinisherCinematic.WrapCardPlay(__result, __instance);
     }
 }

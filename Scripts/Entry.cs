@@ -65,6 +65,8 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
+        patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
+        patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
         patcher.RegisterPatch<ReporterPassEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();

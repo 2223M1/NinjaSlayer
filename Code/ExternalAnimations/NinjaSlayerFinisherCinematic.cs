@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
@@ -97,6 +98,7 @@ public static class NinjaSlayerFinisherCinematic
     private const float EnemyKnockbackPixels = 30f;
 
     private static FinisherSession? _active;
+    private static FinisherSession? _pendingAfterCardPlayed;
 
     public static bool IsMovementOwned(Creature creature) => _active?.Owner == creature;
 
@@ -104,6 +106,12 @@ public static class NinjaSlayerFinisherCinematic
     {
         return _active?.TryProtectLethalDamage(target, ref amount) == true;
     }
+
+    internal static Task WrapAfterCardPlayed(Task original, CardPlay cardPlay) =>
+        CompleteAfterCardPlayed(original, cardPlay);
+
+    internal static Task WrapCardPlay(Task original, CardModel card) =>
+        CleanupAfterCardPlay(original, card);
 
     public static async Task<AttackCommand> ExecuteWithFinisher(
         AttackCommand command,
@@ -124,22 +132,38 @@ public static class NinjaSlayerFinisherCinematic
         }
 
         ArgumentNullException.ThrowIfNull(session);
-        await using (session)
+        bool transferred = false;
+        try
         {
             await session.Begin();
+            _active = session;
             try
             {
-                _active = session;
                 AttackCommand result = await command.Execute(choiceContext);
-                await session.CommitDeaths();
+                if (session.RequiresAfterCardPlayed)
+                {
+                    TransferToAfterCardPlayed(session);
+                    transferred = true;
+                }
+                else
+                {
+                    await session.CommitDeaths();
+                }
+
                 return result;
             }
-            finally
+            catch
             {
-                if (ReferenceEquals(_active, session))
-                {
-                    _active = null;
-                }
+                await session.CommitDeferredDeathsWithoutPose();
+                throw;
+            }
+        }
+        finally
+        {
+            if (!transferred)
+            {
+                ClearActive(session);
+                await session.DisposeAsync();
             }
         }
     }
@@ -156,21 +180,36 @@ public static class NinjaSlayerFinisherCinematic
         }
 
         ArgumentNullException.ThrowIfNull(session);
-        await using (session)
+        bool transferred = false;
+        try
         {
             await session.Begin();
+            _active = session;
             try
             {
-                _active = session;
                 await sequence();
-                await session.CommitDeaths();
-            }
-            finally
-            {
-                if (ReferenceEquals(_active, session))
+                if (session.RequiresAfterCardPlayed)
                 {
-                    _active = null;
+                    TransferToAfterCardPlayed(session);
+                    transferred = true;
                 }
+                else
+                {
+                    await session.CommitDeaths();
+                }
+            }
+            catch
+            {
+                await session.CommitDeferredDeathsWithoutPose();
+                throw;
+            }
+        }
+        finally
+        {
+            if (!transferred)
+            {
+                ClearActive(session);
+                await session.DisposeAsync();
             }
         }
     }
@@ -187,21 +226,36 @@ public static class NinjaSlayerFinisherCinematic
         }
 
         ArgumentNullException.ThrowIfNull(session);
-        await using (session)
+        bool transferred = false;
+        try
         {
             await session.Begin();
+            _active = session;
             try
             {
-                _active = session;
                 await damageAction();
-                await session.CommitDeaths();
-            }
-            finally
-            {
-                if (ReferenceEquals(_active, session))
+                if (session.RequiresAfterCardPlayed)
                 {
-                    _active = null;
+                    TransferToAfterCardPlayed(session);
+                    transferred = true;
                 }
+                else
+                {
+                    await session.CommitDeaths();
+                }
+            }
+            catch
+            {
+                await session.CommitDeferredDeathsWithoutPose();
+                throw;
+            }
+        }
+        finally
+        {
+            if (!transferred)
+            {
+                ClearActive(session);
+                await session.DisposeAsync();
             }
         }
     }
@@ -224,7 +278,7 @@ public static class NinjaSlayerFinisherCinematic
 
         List<Creature> enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToList();
         if (enemies.Count == 0
-            || !FinisherForecast.IsGuaranteedClear(owner, enemies, spec, command, out _))
+            || !FinisherForecast.IsGuaranteedClear(owner, enemies, spec, command, out FinisherForecastResult forecast))
         {
             return false;
         }
@@ -249,8 +303,87 @@ public static class NinjaSlayerFinisherCinematic
             focusNode,
             enemies,
             camera!,
-            spec.Targeting == FinisherTargeting.Random);
+            spec.CardPlay,
+            forecast.RequiresAfterCardPlayed);
         return true;
+    }
+
+    private static void TransferToAfterCardPlayed(FinisherSession session)
+    {
+        if (_pendingAfterCardPlayed != null)
+        {
+            throw new InvalidOperationException("A NinjaSlayer finisher is already awaiting AfterCardPlayed.");
+        }
+
+        _pendingAfterCardPlayed = session;
+    }
+
+    private static async Task CompleteAfterCardPlayed(Task original, CardPlay cardPlay)
+    {
+        try
+        {
+            await original;
+        }
+        catch
+        {
+            await CleanupPending(cardPlay.Card, playPose: false);
+            throw;
+        }
+
+        if (_pendingAfterCardPlayed?.CardPlay == cardPlay)
+        {
+            await CleanupPending(cardPlay.Card, playPose: true);
+        }
+    }
+
+    private static async Task CleanupAfterCardPlay(Task original, CardModel card)
+    {
+        try
+        {
+            await original;
+        }
+        finally
+        {
+            if (_pendingAfterCardPlayed?.CardPlay.Card == card)
+            {
+                await CleanupPending(card, playPose: false);
+            }
+        }
+    }
+
+    private static async Task CleanupPending(CardModel card, bool playPose)
+    {
+        FinisherSession? session = _pendingAfterCardPlayed;
+        if (session == null || session.CardPlay.Card != card)
+        {
+            return;
+        }
+
+        _pendingAfterCardPlayed = null;
+        try
+        {
+            if (playPose)
+            {
+                await session.CommitDeaths();
+            }
+            else
+            {
+                await session.CommitDeferredDeathsWithoutPose();
+            }
+        }
+        finally
+        {
+            ClearActive(session);
+            await session.DisposeAsync();
+        }
+    }
+
+    private static void ClearActive(FinisherSession session)
+    {
+        if (ReferenceEquals(_active, session))
+        {
+            _active = null;
+        }
     }
 
     private sealed class FinisherSession : IAsyncDisposable
@@ -262,7 +395,6 @@ public static class NinjaSlayerFinisherCinematic
         private readonly CombatCinematicCameraLease _camera;
         private readonly NCombatRoom _room;
         private readonly Vector2 _ownerStartPosition;
-        private readonly bool _commitAllGuaranteedVictims;
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
@@ -275,20 +407,24 @@ public static class NinjaSlayerFinisherCinematic
             NCreature focusNode,
             IEnumerable<Creature> victims,
             CombatCinematicCameraLease camera,
-            bool commitAllGuaranteedVictims)
+            CardPlay cardPlay,
+            bool requiresAfterCardPlayed)
         {
             Owner = owner;
             _ownerNode = ownerNode;
             _focusNode = focusNode;
             _victims = victims.ToHashSet();
             _camera = camera;
-            _commitAllGuaranteedVictims = commitAllGuaranteedVictims;
             _room = NCombatRoom.Instance!;
             _ownerStartPosition = ownerNode.Position;
             _lastFrameMsec = Time.GetTicksMsec();
+            CardPlay = cardPlay;
+            RequiresAfterCardPlayed = requiresAfterCardPlayed;
         }
 
         public Creature Owner { get; }
+        public CardPlay CardPlay { get; }
+        public bool RequiresAfterCardPlayed { get; }
 
         public Task Begin()
         {
@@ -338,10 +474,8 @@ public static class NinjaSlayerFinisherCinematic
             _committing = true;
             bool guaranteedClearMatchedRuntime = _victims.All(
                 victim => victim.IsDead
-                    || _deferredDeaths.Contains(victim)
-                    || _commitAllGuaranteedVictims);
-            IEnumerable<Creature> commitSet = _commitAllGuaranteedVictims ? _victims : _deferredDeaths;
-            List<Creature> toKill = commitSet.Where(creature => creature.IsAlive).ToList();
+                    || _deferredDeaths.Contains(victim));
+            List<Creature> toKill = _deferredDeaths.Where(creature => creature.IsAlive).ToList();
             if (!guaranteedClearMatchedRuntime)
             {
                 Entry.Logger.Warn("Finisher forecast did not match runtime damage; committed deferred lethal damage without the finisher pose.");
@@ -366,6 +500,16 @@ public static class NinjaSlayerFinisherCinematic
             {
                 await CreatureCmd.Kill(toKill);
                 await WaitSeconds(FinisherSettleSeconds);
+            }
+        }
+
+        public async Task CommitDeferredDeathsWithoutPose()
+        {
+            _committing = true;
+            List<Creature> toKill = _deferredDeaths.Where(creature => creature.IsAlive).ToList();
+            if (toKill.Count > 0)
+            {
+                await CreatureCmd.Kill(toKill);
             }
         }
 
@@ -639,16 +783,70 @@ public static class NinjaSlayerFinisherCinematic
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
 }
 
+internal readonly record struct FinisherForecastResult(bool RequiresAfterCardPlayed);
+
+internal enum FinisherForecastEffectTargeting
+{
+    All,
+    Random
+}
+
+internal sealed record FinisherForecastEffect(
+    decimal Amount,
+    ValueProp Props,
+    Creature? Dealer,
+    CardModel? CardSource,
+    CardPlay? CardPlay,
+    FinisherForecastEffectTargeting Targeting);
+
+internal interface IFinisherForecastContributor
+{
+    bool TryCreateEffect(Creature owner, FinisherAttackSpec spec, out FinisherForecastEffect? effect);
+}
+
+internal sealed class KusarigamaFinisherForecastContributor : IFinisherForecastContributor
+{
+    public bool TryCreateEffect(Creature owner, FinisherAttackSpec spec, out FinisherForecastEffect? effect)
+    {
+        effect = null;
+        Kusarigama? kusarigama = owner.Player?.GetRelic<Kusarigama>();
+        if (kusarigama == null || spec.Card.Type != CardType.Attack)
+        {
+            return false;
+        }
+
+        int cardsPerTrigger = kusarigama.DynamicVars.Cards.IntValue;
+        if (cardsPerTrigger <= 0 || kusarigama.DisplayAmount != cardsPerTrigger - 1)
+        {
+            return false;
+        }
+
+        effect = new FinisherForecastEffect(
+            kusarigama.DynamicVars.Damage.BaseValue,
+            kusarigama.DynamicVars.Damage.Props,
+            owner,
+            null,
+            null,
+            FinisherForecastEffectTargeting.Random);
+        return true;
+    }
+}
+
 internal static class FinisherForecast
 {
+    private static readonly IFinisherForecastContributor[] PostCardContributors =
+    [
+        new KusarigamaFinisherForecastContributor()
+    ];
+
     public static bool IsGuaranteedClear(
         Creature owner,
         IReadOnlyList<Creature> enemies,
         FinisherAttackSpec spec,
         AttackCommand? command,
-        out int resolvedHits)
+        out FinisherForecastResult result)
     {
-        resolvedHits = 0;
+        result = default;
         ICombatState? combatState = owner.CombatState;
         if (combatState == null || enemies.Any(enemy => !Hook.ShouldDie(owner.Player!.RunState, combatState, enemy, out _)))
         {
@@ -666,19 +864,36 @@ internal static class FinisherForecast
             return false;
         }
 
-        resolvedHits = hits;
+        List<FinisherForecastEffect> postCardEffects = [];
+        foreach (IFinisherForecastContributor contributor in PostCardContributors)
+        {
+            if (contributor.TryCreateEffect(owner, spec, out FinisherForecastEffect? effect) && effect != null)
+            {
+                postCardEffects.Add(effect);
+            }
+        }
 
+        result = new FinisherForecastResult(postCardEffects.Count > 0);
         var states = enemies.ToDictionary(enemy => enemy, enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
             enemy.GetPowerAmount<KaratePower>()));
+        bool Finish(Dictionary<Creature, ForecastState> finalStates) =>
+            ApplyPostCardEffects(owner, finalStates, postCardEffects, 0);
+
         return spec.Targeting switch
         {
             FinisherTargeting.Single => spec.CardPlay.Target is { } target
                 && enemies.Count == 1
-                && SimulateFixed(owner, states, spec, hits, _ => [target]),
-            FinisherTargeting.All => SimulateFixed(owner, states, spec, hits, current => current.Keys.Where(e => current[e].Hp > 0).ToList()),
-            FinisherTargeting.Random => SimulateRandom(owner, states, spec, hits),
+                && SimulateFixed(owner, states, spec, hits, _ => [target], Finish),
+            FinisherTargeting.All => SimulateFixed(
+                owner,
+                states,
+                spec,
+                hits,
+                current => current.Keys.Where(enemy => current[enemy].Hp > 0).ToList(),
+                Finish),
+            FinisherTargeting.Random => SimulateRandom(owner, states, spec, 0, hits, Finish),
             _ => false
         };
     }
@@ -688,7 +903,8 @@ internal static class FinisherForecast
         Dictionary<Creature, ForecastState> states,
         FinisherAttackSpec spec,
         int hits,
-        Func<Dictionary<Creature, ForecastState>, IReadOnlyList<Creature>> targets)
+        Func<Dictionary<Creature, ForecastState>, IReadOnlyList<Creature>> targets,
+        Func<Dictionary<Creature, ForecastState>, bool> finish)
     {
         for (int hit = 0; hit < hits; hit++)
         {
@@ -701,31 +917,74 @@ internal static class FinisherForecast
             ApplyHit(owner, states, spec, hitTargets, hit);
         }
 
-        return states.Values.All(state => state.Hp <= 0);
+        return finish(states);
     }
 
     private static bool SimulateRandom(
         Creature owner,
         Dictionary<Creature, ForecastState> states,
         FinisherAttackSpec spec,
-        int hits)
+        int hitIndex,
+        int hitsRemaining,
+        Func<Dictionary<Creature, ForecastState>, bool> finish)
     {
-        if (hits == 0)
+        if (hitsRemaining == 0)
+        {
+            return finish(states);
+        }
+
+        List<Creature> alive = AliveTargets(states);
+        if (alive.Count == 0)
+        {
+            return finish(states);
+        }
+
+        foreach (Creature target in alive)
+        {
+            Dictionary<Creature, ForecastState> branch = Clone(states);
+            ApplyHit(owner, branch, spec, [target], hitIndex);
+            if (!SimulateRandom(owner, branch, spec, hitIndex + 1, hitsRemaining - 1, finish))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ApplyPostCardEffects(
+        Creature owner,
+        Dictionary<Creature, ForecastState> states,
+        IReadOnlyList<FinisherForecastEffect> effects,
+        int effectIndex)
+    {
+        if (effectIndex >= effects.Count)
         {
             return states.Values.All(state => state.Hp <= 0);
         }
 
-        List<Creature> alive = states.Where(pair => pair.Value.Hp > 0).Select(pair => pair.Key).ToList();
+        FinisherForecastEffect effect = effects[effectIndex];
+        List<Creature> alive = AliveTargets(states);
         if (alive.Count == 0)
         {
             return true;
         }
 
+        if (effect.Targeting == FinisherForecastEffectTargeting.All)
+        {
+            foreach (Creature target in alive)
+            {
+                ApplyDamage(owner, states, target, effect.Amount, effect.Props, effect.Dealer, effect.CardSource, effect.CardPlay);
+            }
+
+            return ApplyPostCardEffects(owner, states, effects, effectIndex + 1);
+        }
+
         foreach (Creature target in alive)
         {
-            Dictionary<Creature, ForecastState> branch = states.ToDictionary(pair => pair.Key, pair => pair.Value);
-            ApplyHit(owner, branch, spec, [target], spec.HitCount - hits);
-            if (!SimulateRandom(owner, branch, spec, hits - 1))
+            Dictionary<Creature, ForecastState> branch = Clone(states);
+            ApplyDamage(owner, branch, target, effect.Amount, effect.Props, effect.Dealer, effect.CardSource, effect.CardPlay);
+            if (!ApplyPostCardEffects(owner, branch, effects, effectIndex + 1))
             {
                 return false;
             }
@@ -744,46 +1003,28 @@ internal static class FinisherForecast
         List<(Creature Target, bool TriggerKarate)> damageResults = [];
         foreach (Creature target in targets)
         {
-            ForecastState state = states[target];
-            if (state.Hp <= 0)
+            if (states[target].Hp <= 0)
             {
                 continue;
             }
 
             decimal rawDamage = spec.Damage(target);
-            decimal modified = Hook.ModifyDamage(
-                owner.Player!.RunState,
-                owner.CombatState,
-                target,
+            decimal postHookMultiplier = spec.Card is TornadoFist && hitIndex > 0
+                && target.GetPowerAmount<MegaCrit.Sts2.Core.Models.Powers.VulnerablePower>() <= 0
+                    ? 1.5m
+                    : 1m;
+
+            bool dealtDamage = ApplyDamage(
                 owner,
+                states,
+                target,
                 rawDamage,
                 spec.Props,
-                spec.Card,
-                spec.CardPlay,
-                ModifyDamageHookType.All,
-                CardPreviewMode.None,
-                out _);
-            if (spec.Card is TornadoFist && hitIndex > 0 && target.GetPowerAmount<MegaCrit.Sts2.Core.Models.Powers.VulnerablePower>() <= 0)
-            {
-                modified *= 1.5m;
-            }
-
-            int blocked = spec.Props.HasFlag(ValueProp.Unblockable) ? 0 : Math.Min(state.Block, (int)modified);
-            state = state with { Block = state.Block - blocked };
-            decimal hpLoss = Hook.ModifyHpLost(
-                owner.Player.RunState,
-                owner.CombatState,
-                target,
-                Math.Max(modified - blocked, 0m),
-                spec.Props,
                 owner,
                 spec.Card,
-                HpLossHookPhase.BeforeOsty | HpLossHookPhase.AfterOsty,
-                out _);
-            int lost = Math.Max(0, (int)hpLoss);
-            state = state with { Hp = state.Hp - lost };
-            states[target] = state;
-            damageResults.Add((target, modified > 0m));
+                spec.CardPlay,
+                postHookMultiplier);
+            damageResults.Add((target, dealtDamage));
         }
 
         foreach ((Creature target, bool triggerKarate) in damageResults)
@@ -792,30 +1033,88 @@ internal static class FinisherForecast
             if (triggerKarate && state.Hp > 0 && state.Karate > 0 && spec.Props.IsPoweredAttack()
                 && KarateTriggerRules.CanTriggerFromCardSource(spec.Card))
             {
-                int blocked = Math.Min(state.Block, state.Karate);
-                state = state with
+                ApplyDamage(owner, states, target, state.Karate, ValueProp.Unpowered, owner, null, null);
+                ForecastState afterKarate = states[target];
+                if (afterKarate.Hp > 0)
                 {
-                    Block = state.Block - blocked,
-                    Hp = state.Hp - Math.Max(0, state.Karate - blocked),
-                    Karate = state.Karate - 1
-                };
-                states[target] = state;
+                    states[target] = afterKarate with { Karate = Math.Max(0, afterKarate.Karate - 1) };
+                }
             }
 
-            if (owner.HasPower<NarakuPower>() && spec.Props.IsPoweredAttack())
+            if (owner.GetPower<NarakuPower>() is { } naraku && spec.Props.IsPoweredAttack())
             {
-                int narakuDamage = owner.GetPower<NarakuPower>()!.DynamicVars.HpLoss.IntValue;
-                foreach (Creature enemy in states.Keys.ToList())
+                foreach (Creature enemy in AliveTargets(states))
                 {
-                    ForecastState enemyState = states[enemy];
-                    if (enemyState.Hp > 0)
-                    {
-                        states[enemy] = enemyState with { Hp = enemyState.Hp - narakuDamage };
-                    }
+                    ApplyDamage(
+                        owner,
+                        states,
+                        enemy,
+                        naraku.DynamicVars.HpLoss.BaseValue,
+                        ValueProp.Unblockable | ValueProp.Unpowered,
+                        owner,
+                        spec.Card,
+                        null);
                 }
             }
         }
     }
+
+    private static bool ApplyDamage(
+        Creature owner,
+        Dictionary<Creature, ForecastState> states,
+        Creature target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay,
+        decimal postHookMultiplier = 1m)
+    {
+        ForecastState state = states[target];
+        if (state.Hp <= 0)
+        {
+            return false;
+        }
+
+        decimal modified = Hook.ModifyDamage(
+            owner.Player!.RunState,
+            owner.CombatState,
+            target,
+            dealer,
+            amount,
+            props,
+            cardSource,
+            cardPlay,
+            ModifyDamageHookType.All,
+            CardPreviewMode.None,
+            out _);
+        modified *= postHookMultiplier;
+        int blocked = props.HasFlag(ValueProp.Unblockable)
+            ? 0
+            : Math.Min(state.Block, Math.Max(0, (int)modified));
+        decimal hpLoss = Hook.ModifyHpLost(
+            owner.Player.RunState,
+            owner.CombatState,
+            target,
+            Math.Max(modified - blocked, 0m),
+            props,
+            dealer,
+            cardSource,
+            HpLossHookPhase.BeforeOsty | HpLossHookPhase.AfterOsty,
+            out _);
+        states[target] = state with
+        {
+            Block = state.Block - blocked,
+            Hp = state.Hp - Math.Max(0, (int)hpLoss)
+        };
+        return modified > 0m;
+    }
+
+    private static List<Creature> AliveTargets(Dictionary<Creature, ForecastState> states) =>
+        states.Where(pair => pair.Value.Hp > 0).Select(pair => pair.Key).ToList();
+
+    private static Dictionary<Creature, ForecastState> Clone(Dictionary<Creature, ForecastState> states) =>
+        states.ToDictionary(pair => pair.Key, pair => pair.Value);
 
     private sealed record ForecastState(int Hp, int Block, int Karate);
 }
