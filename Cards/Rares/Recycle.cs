@@ -37,7 +37,7 @@ public sealed class Recycle : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         CardModel? copySource = PileType.Discard.GetPile(Owner).Cards.LastOrDefault();
         if (copySource != null)

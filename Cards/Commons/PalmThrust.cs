@@ -36,7 +36,7 @@ public sealed class PalmThrust : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingRandomOpponents(CombatState ?? throw new InvalidOperationException("Palm Thrust requires combat."))
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
     protected override void OnUpgrade()

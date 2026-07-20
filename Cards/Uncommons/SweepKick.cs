@@ -37,7 +37,7 @@ public sealed class SweepKick : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Sweep Kick requires combat."))
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         foreach (Creature enemy in CombatState?.HittableEnemies.ToList() ?? [])
         {
             await PowerCmd.Apply<KaratePower>(choiceContext, enemy, DynamicVars.Karate().BaseValue, Owner.Creature, this);

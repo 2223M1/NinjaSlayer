@@ -39,7 +39,7 @@ public sealed class ShurikenCleave : NinjaSlayerCardTemplate
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Shuriken Cleave requires combat."))
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
     protected override void OnUpgrade()

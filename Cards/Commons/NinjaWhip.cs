@@ -37,7 +37,7 @@ public sealed class NinjaWhip : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         if (shouldApplyVulnerable && cardPlay.Target.IsAlive)
         {

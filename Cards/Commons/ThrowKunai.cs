@@ -36,7 +36,7 @@ public sealed class ThrowKunai : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
 
         CardModel? card = (await CardSelectCmd.FromHandForDiscard(

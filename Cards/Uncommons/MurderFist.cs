@@ -42,7 +42,7 @@ public sealed class MurderFist : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay, hitCountOverride: hitCount);
     }
 
     protected override void OnUpgrade()

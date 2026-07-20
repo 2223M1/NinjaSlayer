@@ -35,7 +35,7 @@ public sealed class KarateStraight : NinjaSlayerCardTemplate
             .WithHitFx(VfxCmd.bluntPath, null, TmpSfx.bluntAttack)
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
     }
 

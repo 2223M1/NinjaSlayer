@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -34,8 +35,23 @@ public sealed class KarateFinish : NinjaSlayerCardTemplate
             await PowerCmd.Remove(karate);
         }
 
-        NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target);
-        await CreatureCmd.Damage(choiceContext, cardPlay.Target, amount * DynamicVars["Multiplier"].BaseValue, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this, cardPlay);
+        decimal damage = amount * DynamicVars["Multiplier"].BaseValue;
+        ValueProp props = ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move;
+        var finisherSpec = new FinisherAttackSpec(
+            this,
+            cardPlay,
+            _ => damage,
+            props,
+            1,
+            FinisherTargeting.Single);
+        await NinjaSlayerFinisherCinematic.ExecuteDirectWithFinisher(
+            choiceContext,
+            finisherSpec,
+            async () =>
+            {
+                NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target);
+                await CreatureCmd.Damage(choiceContext, cardPlay.Target, damage, props, this, cardPlay);
+            });
     }
 
     protected override void OnUpgrade()

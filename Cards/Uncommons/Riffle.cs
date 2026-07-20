@@ -53,7 +53,7 @@ public sealed class Riffle : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         int strengthLoss = cardPlay.Target.GetPowerAmount<KaratePower>();
         if (strengthLoss > 0)

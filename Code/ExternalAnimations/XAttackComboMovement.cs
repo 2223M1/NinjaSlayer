@@ -20,6 +20,11 @@ public static class XAttackComboMovement
 
     public static void BeginCombo(Creature creature)
     {
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        {
+            return;
+        }
+
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null)
         {
@@ -71,6 +76,11 @@ public static class XAttackComboMovement
 
     public static async Task EndCombo(Creature creature)
     {
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        {
+            return;
+        }
+
         if (!ComboStates.TryGetValue(creature, out ComboMovementState? state))
         {
             return;

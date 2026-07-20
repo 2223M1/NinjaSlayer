@@ -44,7 +44,7 @@ public sealed class RubHands : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, shurikenCount, PileType.Discard, IsUpgraded);
     }

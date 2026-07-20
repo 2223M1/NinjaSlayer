@@ -48,7 +48,6 @@ public static class BossGreetingCinematic
     private static readonly HashSet<string> ProcessedRoomKeys = [];
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
-
     public static bool ShouldStage(Player player)
     {
         ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
@@ -587,23 +586,18 @@ public static class BossGreetingCinematic
         private readonly bool _singlePlayer;
         private readonly List<AudioEventHandle> _audioEvents = [];
         private readonly List<CanvasItem> _ownedVisuals = [];
-        private readonly List<CameraFollowSample> _cameraFollowSamples = [];
         private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
         private readonly CancellationTokenSource _cancellation = new();
         private readonly NinjaSlayerHoverTipSuppression _hoverTipSuppression;
         private VideoStreamPlayer? _video;
         private bool _paused;
         private bool _disposed;
-        private bool _screenShakeTargetSuspended;
         private bool _spaceWasDown;
         private Node.ProcessModeEnum _roomProcessMode;
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
-        private Vector2 _cameraBasePosition;
-        private float _cameraScale;
-        private Vector2 _cameraShakeOffset;
-        private ScreenPunchInstance? _cameraShake;
+        private readonly CombatCinematicCameraLease _camera;
 
         public CinematicContext(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
         {
@@ -611,30 +605,24 @@ public static class BossGreetingCinematic
             _sceneContainer = room.SceneContainer;
             _globalUi = globalUi;
             _singlePlayer = RunManager.Instance.IsSingleplayerOrFakeMultiplayer;
-            BaselinePosition = _sceneContainer.Position;
-            BaselineScale = _sceneContainer.Scale;
-            _cameraBasePosition = BaselinePosition;
-            _cameraScale = BaselineScale.X;
-            ViewportSize = room.GetViewportRect().Size;
+            if (!CombatCinematicCameraLease.TryAcquire(room, "boss greeting", out CombatCinematicCameraLease? camera))
+            {
+                throw new InvalidOperationException("The combat cinematic camera is already in use.");
+            }
+
+            _camera = camera ?? throw new InvalidOperationException("Could not acquire the combat cinematic camera.");
             RoomKeySeed = roomKeySeed;
             _roomProcessMode = room.ProcessMode;
             _lastFrameMsec = Time.GetTicksMsec();
             RaiseTopBarLayers();
             _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
 
-            NGame? game = NGame.Instance;
-            if (game != null && ReferenceEquals(game.ScreenshakeTarget, _sceneContainer))
-            {
-                _screenShakeTargetSuspended = true;
-                game.ClearScreenShakeTarget();
-                Entry.Logger.Info("Suspended combat screen shake target for boss greeting camera control.");
-            }
         }
 
         public CancellationToken CancellationToken => _cancellation.Token;
-        public Vector2 BaselinePosition { get; }
-        public Vector2 BaselineScale { get; }
-        public Vector2 ViewportSize { get; }
+        public Vector2 BaselinePosition => _camera.BaselinePosition;
+        public Vector2 BaselineScale => _camera.BaselineScale;
+        public Vector2 ViewportSize => _camera.ViewportSize;
         public uint RoomKeySeed { get; }
 
         public async Task AwaitTween(Node owner, Tween tween)
@@ -657,23 +645,7 @@ public static class BossGreetingCinematic
 
         public void PlayScreenShake(ShakeStrength strength, ShakeDuration duration, float degrees = -1f)
         {
-            float multiplier = NScreenshakePaginator.GetShakeMultiplier(
-                SaveManager.Instance.PrefsSave.ScreenShakeOptionIndex);
-            float scaledStrength = GetShakeStrength(strength) * multiplier;
-            if (scaledStrength <= 0f)
-            {
-                _cameraShake = null;
-                _cameraShakeOffset = Vector2.Zero;
-                ApplyCameraTransform();
-                return;
-            }
-
-            float angle = degrees < 0f
-                ? MegaCrit.Sts2.Core.Random.Rng.Chaotic.NextFloat(360f)
-                : degrees;
-            _cameraShake = new ScreenPunchInstance(scaledStrength, GetShakeDuration(duration), angle);
-            _cameraShakeOffset = Vector2.Zero;
-            ApplyCameraTransform();
+            _camera.PlayScreenShake(strength, duration, degrees);
         }
 
         public AudioEventHandle? PlaySfxWithHandle(string eventPath)
@@ -735,7 +707,7 @@ public static class BossGreetingCinematic
                 _cachedFrameDelta = _paused ? 0f : Math.Min((now - _lastFrameMsec) / 1000f, 0.05f);
                 _lastFrameMsec = now;
                 _lastDeltaFrame = processFrame;
-                UpdateCameraShake(_cachedFrameDelta);
+                _camera.Advance(_cachedFrameDelta);
             }
 
             return _cachedFrameDelta;
@@ -761,20 +733,17 @@ public static class BossGreetingCinematic
 
         public void FrameCameraOn(CanvasItem target, float scale)
         {
-            Vector2 localTarget = GetLocalCenter(target);
-            FrameCameraOnLocalPoint(localTarget, scale);
+            _camera.FrameOn(target, scale);
         }
 
         public void FrameCameraOnClamped(CanvasItem target, float scale)
         {
-            Vector2 localTarget = ClampCameraTargetToScene(GetLocalCenter(target), scale);
-            FrameCameraOnLocalPoint(localTarget, scale);
+            _camera.FrameOn(target, scale, clamp: true);
         }
 
         public void BeginDelayedCameraFollow(CanvasItem target)
         {
-            _cameraFollowSamples.Clear();
-            _cameraFollowSamples.Add(new CameraFollowSample(0f, GetLocalCenter(target)));
+            _camera.BeginDelayedFollow(target);
         }
 
         public void FrameCameraOnDelayed(
@@ -783,25 +752,15 @@ public static class BossGreetingCinematic
             float elapsed,
             float delay)
         {
-            Vector2 currentTarget = GetLocalCenter(target);
-            AddCameraFollowSample(elapsed, currentTarget);
-
-            float sampleTime = Math.Max(0f, elapsed - delay);
-            while (_cameraFollowSamples.Count > 2 && _cameraFollowSamples[1].Time <= sampleTime)
-            {
-                _cameraFollowSamples.RemoveAt(0);
-            }
-
-            Vector2 delayedTarget = SampleCameraFollowPosition(sampleTime);
-            FrameCameraOnLocalPoint(ClampCameraTargetToScene(delayedTarget, scale), scale);
+            _camera.FrameOnDelayed(target, scale, elapsed, delay);
         }
 
         public async Task TweenCameraTo(CanvasItem target, float targetScale, float duration)
         {
-            Vector2 startPosition = _cameraBasePosition;
-            float startScale = _cameraScale;
-            Vector2 localTarget = GetLocalCenter(target);
-            Vector2 targetPosition = GetCameraPosition(localTarget, targetScale, ViewportSize * 0.5f);
+            Vector2 startPosition = _camera.CurrentPosition;
+            float startScale = _camera.CurrentScale;
+            Vector2 localTarget = _camera.GetLocalCenter(target);
+            Vector2 targetPosition = _camera.GetCameraPosition(localTarget, targetScale, ViewportSize * 0.5f);
             await TweenCamera(startPosition, startScale, targetPosition, targetScale, duration);
         }
 
@@ -811,9 +770,9 @@ public static class BossGreetingCinematic
             float duration,
             Vector2 localOffset = default)
         {
-            float startScale = _cameraScale;
-            Vector2 startCenter = GetCameraCenter(_cameraBasePosition, startScale, ViewportSize * 0.5f);
-            Vector2 targetCenter = GetLocalCenter(target) + localOffset;
+            float startScale = _camera.CurrentScale;
+            Vector2 startCenter = _camera.GetCameraCenter(_camera.CurrentPosition, startScale, ViewportSize * 0.5f);
+            Vector2 targetCenter = _camera.GetLocalCenter(target) + localOffset;
             float elapsed = 0f;
             while (elapsed < duration)
             {
@@ -821,12 +780,12 @@ public static class BossGreetingCinematic
                 float progress = EaseOut(Mathf.Clamp(elapsed / duration, 0f, 1f));
                 float scale = Mathf.Lerp(startScale, targetScale, progress);
                 Vector2 center = startCenter.Lerp(targetCenter, progress);
-                FrameCameraOnLocalPoint(ClampCameraTargetToScene(center, scale), scale);
+                _camera.FrameOnLocalPoint(_camera.ClampTarget(center, scale), scale);
             }
         }
 
         public Task TweenCameraTo(Vector2 targetPosition, float targetScale, float duration) =>
-            TweenCamera(_cameraBasePosition, _cameraScale, targetPosition, targetScale, duration);
+            TweenCamera(_camera.CurrentPosition, _camera.CurrentScale, targetPosition, targetScale, duration);
 
         public bool TryFrameBossAndBubble(
             Control bossBounds,
@@ -878,7 +837,7 @@ public static class BossGreetingCinematic
                     return false;
                 }
 
-                targetPosition = GetCameraPosition(
+                targetPosition = _camera.GetCameraPosition(
                     composition.GetCenter(),
                     targetScale,
                     safeViewport.GetCenter());
@@ -894,7 +853,7 @@ public static class BossGreetingCinematic
         }
 
         public Task TweenCameraToBaseline(float duration) =>
-            TweenCamera(_cameraBasePosition, _cameraScale, BaselinePosition, BaselineScale.X, duration);
+            TweenCamera(_camera.CurrentPosition, _camera.CurrentScale, BaselinePosition, BaselineScale.X, duration);
 
         public void AttachVideo(VideoStreamPlayer? video) => _video = video;
 
@@ -914,52 +873,7 @@ public static class BossGreetingCinematic
 
         public void RestoreCameraAndScreenShakeTarget()
         {
-            bool shouldRestoreScreenShake = _screenShakeTargetSuspended;
-            _screenShakeTargetSuspended = false;
-
-            if (!GodotObject.IsInstanceValid(_room)
-                || !GodotObject.IsInstanceValid(_sceneContainer)
-                || !_room.IsInsideTree()
-                || !ReferenceEquals(NCombatRoom.Instance, _room))
-            {
-                if (shouldRestoreScreenShake)
-                {
-                    Entry.Logger.Warn("Skipped restoring boss greeting screen shake target because the combat room changed.");
-                }
-
-                return;
-            }
-
-            _cameraShake = null;
-            _cameraShakeOffset = Vector2.Zero;
-            _cameraBasePosition = BaselinePosition;
-            _cameraScale = BaselineScale.X;
-            ApplyCameraTransform();
-            if (!shouldRestoreScreenShake)
-            {
-                return;
-            }
-
-            NGame? game = NGame.Instance;
-            if (game == null)
-            {
-                Entry.Logger.Warn("Skipped restoring boss greeting screen shake target because the game instance is unavailable.");
-                return;
-            }
-
-            Control? currentTarget = game.ScreenshakeTarget;
-            if (currentTarget != null && !ReferenceEquals(currentTarget, _sceneContainer))
-            {
-                Entry.Logger.Warn("Skipped restoring boss greeting screen shake target because another target took ownership.");
-                return;
-            }
-
-            if (!ReferenceEquals(currentTarget, _sceneContainer))
-            {
-                game.SetScreenShakeTarget(_sceneContainer);
-            }
-
-            Entry.Logger.Info("Restored combat screen shake target after boss greeting camera reset.");
+            _camera.Dispose();
         }
 
         public void Dispose()
@@ -989,8 +903,6 @@ public static class BossGreetingCinematic
                 visual.QueueFreeSafely();
             }
             _ownedVisuals.Clear();
-            _cameraShake = null;
-            _cameraShakeOffset = Vector2.Zero;
             _room.ProcessMode = _roomProcessMode;
             RestoreTopBarLayers();
             _hoverTipSuppression.Dispose();
@@ -1004,153 +916,10 @@ public static class BossGreetingCinematic
             {
                 elapsed += await NextFrame();
                 float progress = EaseOut(Mathf.Clamp(elapsed / duration, 0f, 1f));
-                SetCameraTransform(
+                _camera.SetTransform(
                     startPosition.Lerp(targetPosition, progress),
                     Mathf.Lerp(startScale, targetScale, progress));
             }
-        }
-
-        private Vector2 GetLocalCenter(CanvasItem target)
-        {
-            Vector2 globalCenter = target switch
-            {
-                Control control => control.GetGlobalRect().GetCenter(),
-                Node2D node2D => node2D.GlobalPosition,
-                _ => Vector2.Zero
-            };
-            return _room.SceneContainer.GetGlobalTransformWithCanvas().AffineInverse() * globalCenter;
-        }
-
-        private Vector2 GetCameraPosition(Vector2 localTarget, float scale, Vector2 screenTarget)
-        {
-            Vector2 pivot = _room.SceneContainer.PivotOffset;
-            return screenTarget - pivot - (localTarget - pivot) * scale;
-        }
-
-        private Vector2 GetCameraCenter(Vector2 cameraPosition, float scale, Vector2 screenTarget)
-        {
-            Vector2 pivot = _sceneContainer.PivotOffset;
-            return pivot + (screenTarget - pivot - cameraPosition) / scale;
-        }
-
-        private Vector2 ClampCameraTargetToScene(Vector2 localTarget, float scale)
-        {
-            if (scale <= 0f)
-            {
-                return _sceneContainer.Size * 0.5f;
-            }
-
-            Vector2 halfViewport = ViewportSize / (2f * scale);
-            Vector2 minimum = halfViewport;
-            Vector2 maximum = _sceneContainer.Size - halfViewport;
-            return new Vector2(
-                minimum.X <= maximum.X
-                    ? Mathf.Clamp(localTarget.X, minimum.X, maximum.X)
-                    : _sceneContainer.Size.X * 0.5f,
-                minimum.Y <= maximum.Y
-                    ? Mathf.Clamp(localTarget.Y, minimum.Y, maximum.Y)
-                    : _sceneContainer.Size.Y * 0.5f);
-        }
-
-        private void FrameCameraOnLocalPoint(Vector2 localTarget, float scale)
-        {
-            SetCameraTransform(GetCameraPosition(localTarget, scale, ViewportSize * 0.5f), scale);
-        }
-
-        private void SetCameraTransform(Vector2 position, float scale)
-        {
-            _cameraBasePosition = position;
-            _cameraScale = scale;
-            ApplyCameraTransform();
-        }
-
-        private void ApplyCameraTransform()
-        {
-            if (!GodotObject.IsInstanceValid(_sceneContainer))
-            {
-                return;
-            }
-
-            _sceneContainer.Scale = Vector2.One * _cameraScale;
-            _sceneContainer.Position = _cameraBasePosition + _cameraShakeOffset;
-        }
-
-        private void UpdateCameraShake(float delta)
-        {
-            if (_cameraShake == null || delta <= 0f)
-            {
-                return;
-            }
-
-            _cameraShakeOffset = _cameraShake.Update(delta);
-            if (_cameraShake.IsDone)
-            {
-                _cameraShake = null;
-                _cameraShakeOffset = Vector2.Zero;
-            }
-
-            ApplyCameraTransform();
-        }
-
-        private static float GetShakeStrength(ShakeStrength strength) => strength switch
-        {
-            ShakeStrength.VeryWeak => 2f,
-            ShakeStrength.Weak => 5f,
-            ShakeStrength.Medium => 20f,
-            ShakeStrength.Strong => 40f,
-            ShakeStrength.TooMuch => 80f,
-            _ => 0f
-        };
-
-        private static double GetShakeDuration(ShakeDuration duration) => duration switch
-        {
-            ShakeDuration.Short => 0.3,
-            ShakeDuration.Normal => 0.8,
-            ShakeDuration.Long => 1.2,
-            ShakeDuration.Forever => 999999999.0,
-            _ => 0.0
-        };
-
-        private void AddCameraFollowSample(float elapsed, Vector2 position)
-        {
-            if (_cameraFollowSamples.Count == 0)
-            {
-                _cameraFollowSamples.Add(new CameraFollowSample(elapsed, position));
-                return;
-            }
-
-            CameraFollowSample last = _cameraFollowSamples[^1];
-            if (elapsed <= last.Time + 0.0001f)
-            {
-                _cameraFollowSamples[^1] = new CameraFollowSample(last.Time, position);
-                return;
-            }
-
-            _cameraFollowSamples.Add(new CameraFollowSample(elapsed, position));
-        }
-
-        private Vector2 SampleCameraFollowPosition(float sampleTime)
-        {
-            if (_cameraFollowSamples.Count == 0)
-            {
-                return Vector2.Zero;
-            }
-
-            CameraFollowSample first = _cameraFollowSamples[0];
-            if (_cameraFollowSamples.Count == 1 || sampleTime <= first.Time)
-            {
-                return first.Position;
-            }
-
-            CameraFollowSample second = _cameraFollowSamples[1];
-            float duration = second.Time - first.Time;
-            if (duration <= 0.0001f)
-            {
-                return second.Position;
-            }
-
-            float progress = Mathf.Clamp((sampleTime - first.Time) / duration, 0f, 1f);
-            return first.Position.Lerp(second.Position, progress);
         }
 
         private static bool TryGetAudioPlaybackState(AudioEventHandle? audioEvent, out int? playbackState)
@@ -1204,7 +973,7 @@ public static class BossGreetingCinematic
 
         private Rect2 GetSceneLocalPointRect(CanvasItem item)
         {
-            Vector2 center = GetLocalCenter(item);
+            Vector2 center = _camera.GetLocalCenter(item);
             return new Rect2(center - Vector2.One, Vector2.One * 2f);
         }
 
@@ -1299,7 +1068,6 @@ public static class BossGreetingCinematic
             _layerSnapshots.Clear();
         }
 
-        private readonly record struct CameraFollowSample(float Time, Vector2 Position);
         private readonly record struct LayerSnapshot(int ZIndex, bool ZAsRelative);
     }
 }

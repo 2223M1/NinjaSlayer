@@ -39,7 +39,7 @@ public sealed class StunStrike : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await CreatureCmd.Stun(cardPlay.Target);
         await PowerCmd.Apply<DelayedSelfStunPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }

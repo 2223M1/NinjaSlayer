@@ -44,7 +44,7 @@ public sealed class WhiskSlash : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         int drawCount = DynamicVars.Cards.IntValue + NinjaSlayerActions.ChadoInHandCount(Owner);
         if (drawCount > 0)

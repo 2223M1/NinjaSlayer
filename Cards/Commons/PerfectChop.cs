@@ -38,7 +38,7 @@ public sealed class PerfectChop : NinjaSlayerCardTemplate
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         await PowerCmd.Apply<KaratePower>(
             choiceContext,

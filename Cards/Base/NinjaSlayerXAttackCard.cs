@@ -58,12 +58,19 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
             return;
         }
 
-        await NinjaSlayerXAttackSequence.Run(
-            Owner.Creature,
-            hits,
-            XAttackHitDelay,
-            XAttackAudioHitDuration,
-            hitIndex => RunXHit(choiceContext, cardPlay, hitIndex, hits));
+        FinisherAttackSpec finisherSpec = FinisherAttackSpec.FromCard(
+            this,
+            cardPlay,
+            hitCountOverride: hits);
+        await NinjaSlayerFinisherCinematic.ExecuteSequenceWithFinisher(
+            choiceContext,
+            finisherSpec,
+            () => NinjaSlayerXAttackSequence.Run(
+                Owner.Creature,
+                hits,
+                XAttackHitDelay,
+                XAttackAudioHitDuration,
+                hitIndex => RunXHit(choiceContext, cardPlay, hitIndex, hits)));
     }
 
     private async Task<bool> RunXHit(PlayerChoiceContext choiceContext, CardPlay cardPlay, int hitIndex, int totalHits)

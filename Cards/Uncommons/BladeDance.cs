@@ -36,7 +36,7 @@ public sealed class NinjaSlayerBladeDance : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         IEnumerable<CardModel> drawnCards = await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
         foreach (CardModel card in drawnCards.Where(c => !c.Tags.Contains(NinjaSlayerCardTags.Shuriken)).ToList())

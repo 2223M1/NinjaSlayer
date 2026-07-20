@@ -44,7 +44,7 @@ public sealed class BangBangFist : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay, hitCountOverride: hits);
     }
 
     protected override void OnUpgrade()

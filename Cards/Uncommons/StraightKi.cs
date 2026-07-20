@@ -43,7 +43,7 @@ public sealed class StraightKi : NinjaSlayerCardTemplate
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         if (shouldStun)
         {

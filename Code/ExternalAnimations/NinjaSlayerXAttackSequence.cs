@@ -31,13 +31,14 @@ public static class NinjaSlayerXAttackSequence
                 for (int i = 0; i < hits; i++)
                 {
                     XAttackComboContext.CurrentHitIndex = i;
+                    NinjaSlayerFinisherCinematic.SetSequenceHitIndex(i, hits);
                     if (useSlowAttack)
                     {
                         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
                     }
 
                     bool targetKilled = await perHit(i);
-                    if (targetKilled)
+                    if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
                     {
                         finishSpinEarly();
                         break;

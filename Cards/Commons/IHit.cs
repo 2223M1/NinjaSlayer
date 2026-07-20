@@ -42,7 +42,7 @@ public sealed class IHit : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         if (NinjaSlayerActions.ChadoDiscardedThisTurn(this))
         {

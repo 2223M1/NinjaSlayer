@@ -59,7 +59,7 @@ public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Half Moon Compass Kick requires combat."))
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay, damageOverride: damage);
     }
 
     protected override void OnUpgrade()

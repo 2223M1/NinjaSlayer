@@ -33,7 +33,7 @@ public sealed class ShurikenThrow : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, 1, PileType.Draw, IsUpgraded, CardPilePosition.Random);
     }
 

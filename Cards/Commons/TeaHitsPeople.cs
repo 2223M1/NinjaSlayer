@@ -35,7 +35,7 @@ public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Tea Hits People requires combat."))
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay, hitCountOverride: hitCount);
     }
 
     protected override void OnUpgrade()

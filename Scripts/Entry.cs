@@ -64,6 +64,8 @@ public class Entry
         var patcher = RitsuLibFramework.CreatePatcher(ModId, "core-patches");
         patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
+        patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
+        patcher.RegisterPatch<NinjaSlayerFinisherDeathAnimationPatch>();
         patcher.RegisterPatch<ReporterPassEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
@@ -74,6 +76,7 @@ public class Entry
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
         patcher.RegisterPatch<BossGreetingMusicPatch>();
+        patcher.RegisterPatch<CombatCinematicLayoutPatch>();
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<ScreenShakeSuppressionPatch>();

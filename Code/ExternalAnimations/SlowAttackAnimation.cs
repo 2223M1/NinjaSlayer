@@ -14,6 +14,12 @@ public static class SlowAttackAnimation
 
     public static async Task Play(Creature creature)
     {
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        {
+            await Cmd.Wait(ActionDuration);
+            return;
+        }
+
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null) return;
 

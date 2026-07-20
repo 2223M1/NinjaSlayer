@@ -32,7 +32,7 @@ public sealed class BurningStrike : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await NinjaSlayerActions.AddGeneratedCard<BurningCard>(Owner, PileType.Draw);
     }
 

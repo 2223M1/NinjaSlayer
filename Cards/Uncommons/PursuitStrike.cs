@@ -35,7 +35,7 @@ public sealed class PursuitStrike : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         PursuitPower? pursuit = await PowerCmd.Apply<PursuitPower>(choiceContext, cardPlay.Target, DynamicVars["Pursuit"].IntValue, Owner.Creature, this);
         if (pursuit != null)

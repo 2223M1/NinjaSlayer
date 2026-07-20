@@ -37,7 +37,7 @@ public sealed class SenchaStorm : NinjaSlayerCardTemplate
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Sencha Storm requires combat."))
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
     protected override void OnUpgrade()

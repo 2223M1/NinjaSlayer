@@ -14,6 +14,12 @@ public static class FastAttackAnimation
 
     public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        {
+            await Cmd.Wait(waitTime);
+            return;
+        }
+
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null) return;
 
