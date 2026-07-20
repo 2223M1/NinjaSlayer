@@ -85,7 +85,6 @@ public sealed record FinisherAttackSpec(
 
 public static class NinjaSlayerFinisherCinematic
 {
-    private const float ApproachSeconds = 0.2f;
     private const float ImpactLeadSeconds = 0.04f;
     private const float HitStopSeconds = 0.1f;
     private const float ImpactRecoverySeconds = 0.1f;
@@ -314,25 +313,16 @@ public static class NinjaSlayerFinisherCinematic
 
         public Creature Owner { get; }
 
-        public async Task Begin()
+        public Task Begin()
         {
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
             CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
                 ? cinematicFocus
                 : _ownerNode.Visuals.Bounds;
             float targetScale = _camera.BaselineScale.X * 2f;
-            float elapsed = 0f;
-            while (elapsed < ApproachSeconds)
-            {
-                elapsed += await NextFrame();
-                float progress = EaseOut(Mathf.Clamp(elapsed / ApproachSeconds, 0f, 1f));
-                _ownerNode.Position = _ownerStartPosition.Lerp(destination, progress);
-                float scale = Mathf.Lerp(_camera.BaselineScale.X, targetScale, progress);
-                _camera.FrameOn(focus, scale, clamp: true);
-            }
-
             _ownerNode.Position = destination;
             _camera.FrameOn(focus, targetScale, clamp: true);
+            return Task.CompletedTask;
         }
 
         public bool TryProtectLethalDamage(Creature target, ref decimal amount)
