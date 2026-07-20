@@ -688,6 +688,7 @@ public static class NinjaSlayerFinisherCinematic
 
         public Task Begin()
         {
+            NinjaSlayerFacingState.SyncForTarget(Owner, _focusNode.Entity);
             if (PresentationMode == FinisherPresentationMode.Enhanced)
             {
                 _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();

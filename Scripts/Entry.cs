@@ -63,6 +63,8 @@ public class Entry
 
         var patcher = RitsuLibFramework.CreatePatcher(ModId, "core-patches");
         patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
+        patcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
+        patcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
