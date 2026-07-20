@@ -1,5 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Nodes;
@@ -50,53 +49,6 @@ public static class SoarSpinAnimation
         finally
         {
             ResetSpinVisual(creature);
-        }
-    }
-
-    internal static async Task PlayExactTurn(Creature creature, float duration)
-    {
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        if (creatureNode == null || GetSpinVisual(creature) == null || GetSpinFocus(creature) == null)
-        {
-            await Cmd.Wait(duration);
-            return;
-        }
-
-        bool wasVerticallySpinning = IsVerticalSpinActive(creature);
-        bool resumeAirborneSpin = IsSpinning(creature);
-        StopAirborneSpin(creature);
-        activeVerticalSpins.Add(creature);
-
-        float startingDegrees = spinDegrees.GetValueOrDefault(creature);
-        var tween = creatureNode.CreateTween();
-        tween.TweenMethod(
-                Callable.From<float>(degrees =>
-                {
-                    float currentDegrees = startingDegrees + degrees;
-                    spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
-                    ApplyVerticalSpin(creature, currentDegrees);
-                }),
-                0f,
-                FullTurnDegrees,
-                duration)
-            .SetTrans(Tween.TransitionType.Linear);
-
-        try
-        {
-            await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
-        }
-        finally
-        {
-            if (resumeAirborneSpin
-                && GodotObject.IsInstanceValid(creatureNode)
-                && SoarVisualState.IsAirborne(creature))
-            {
-                StartAirborneSpin(creature, MaxDegreesPerSecond);
-            }
-            else if (!wasVerticallySpinning)
-            {
-                ResetSpinVisual(creature);
-            }
         }
     }
 

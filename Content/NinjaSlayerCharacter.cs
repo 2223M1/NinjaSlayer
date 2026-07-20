@@ -54,11 +54,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 55f))
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 0f)))
         .Sequence("x_attack", AddXAttackSpinFrames)
-        .Single(
-            "tornado_fist",
-            "res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png",
-            TornadoFistSpinAnimation.TurnSeconds,
-            CueStyle(offsetX: 0f))
+        .Sequence("tornado_fist", AddTornadoFistSpinFrames)
         .Single("hit", idleTexturePath, 0.01f, CueStyle(offsetX: 0f))
         .Sequence("archived_hit", seq => seq
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/hit/hit_0001.png", 0.08f, CueStyle(offsetX: 0f, rotationDegrees: 0f))
@@ -169,6 +165,28 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
     private static void AddXAttackSpinFrames(VisualFrameSequenceBuilder seq)
     {
         AddVerticalSpinFrames(seq, xAttackSpinDuration, xAttackSpinFps, moveDistance: 0f);
+    }
+
+    private static void AddTornadoFistSpinFrames(VisualFrameSequenceBuilder seq)
+    {
+        const float fps = 60f;
+        const string framePath = "res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png";
+        int frameCount = Mathf.CeilToInt(TornadoFistSpinAnimation.TurnSeconds * fps);
+        float frameDuration = TornadoFistSpinAnimation.TurnSeconds / frameCount;
+        float pivotOffset = NinjaSlayerVisualRig.SpinPivotDeltaX * NinjaSlayerCombatVisuals.BodySpriteBaseScale;
+
+        for (int i = 0; i < frameCount; i++)
+        {
+            float progress = frameCount == 1 ? 1f : i / (frameCount - 1f);
+            float scaleX = Mathf.Cos(progress * Mathf.Tau);
+            if (Mathf.Abs(scaleX) < 0.18f)
+            {
+                scaleX = scaleX < 0f ? -0.18f : 0.18f;
+            }
+
+            float fixedPivotOffsetX = pivotOffset * (1f - scaleX);
+            seq.Frame(framePath, frameDuration, CueStyle(fixedPivotOffsetX, scaleX: scaleX));
+        }
     }
 
     private static void AddVerticalSpinFrames(VisualFrameSequenceBuilder seq, float duration, float fps, float moveDistance)
