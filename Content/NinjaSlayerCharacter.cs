@@ -177,7 +177,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
 
         for (int i = 0; i < frameCount; i++)
         {
-            float progress = frameCount == 1 ? 1f : i / (frameCount - 1f);
+            float progress = i / (float)frameCount;
             float scaleX = Mathf.Cos(progress * Mathf.Tau);
             if (Mathf.Abs(scaleX) < 0.18f)
             {
