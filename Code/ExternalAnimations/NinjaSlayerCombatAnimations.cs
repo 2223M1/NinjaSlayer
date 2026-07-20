@@ -44,6 +44,9 @@ public static class NinjaSlayerCombatAnimations
             case "XAttackCue":
                 result = PlayVisualCueTrigger(creature, triggerName, waitTime);
                 return true;
+            case TornadoFistSpinAnimation.TriggerName:
+                result = TornadoFistSpinAnimation.PlayTurn(creature, waitTime);
+                return true;
             case "Cast":
                 if (NinjaSlayerCombatCastContext.GetCurrentCard(creature) is not IDrawCastSkillCard)
                 {

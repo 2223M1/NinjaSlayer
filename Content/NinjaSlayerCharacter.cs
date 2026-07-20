@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -53,6 +54,11 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 55f))
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png", 0.08f, CueStyle(offsetX: 0f)))
         .Sequence("x_attack", AddXAttackSpinFrames)
+        .Single(
+            "tornado_fist",
+            "res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png",
+            TornadoFistSpinAnimation.TurnSeconds,
+            CueStyle(offsetX: 0f))
         .Single("hit", idleTexturePath, 0.01f, CueStyle(offsetX: 0f))
         .Sequence("archived_hit", seq => seq
             .Frame("res://NinjaSlayer/images/characters/ninja_slayer/hit/hit_0001.png", 0.08f, CueStyle(offsetX: 0f, rotationDegrees: 0f))

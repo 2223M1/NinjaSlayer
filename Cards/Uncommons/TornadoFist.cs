@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -19,7 +20,9 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
     private const TargetType targetType = TargetType.AnyEnemy;
     private const bool shouldShowInCardLibrary = true;
 
-    protected override float XAttackHitDelay => 0f;
+    protected override string AttackerAnimTrigger => TornadoFistSpinAnimation.TriggerName;
+    protected override float XAttackHitDelay => TornadoFistSpinAnimation.TurnSeconds;
+    protected override float XAttackAudioHitDuration => TornadoFistSpinAnimation.TurnSeconds;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),
