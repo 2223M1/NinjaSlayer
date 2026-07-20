@@ -17,13 +17,13 @@ public sealed class ScreenShakeSuppressionPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NGame), nameof(NGame.ScreenShake), [typeof(ShakeStrength), typeof(ShakeDuration), typeof(float)])];
 
-    public static bool Prefix(ShakeStrength strength, ShakeDuration duration, float degrees)
+    public static bool Prefix(ShakeStrength strength, ShakeDuration duration, float degAngle)
     {
         if (ScreenShakeSuppressionContext.IsSuppressed)
         {
             return false;
         }
 
-        return !CombatCinematicCameraLease.TryRouteScreenShake(strength, duration, degrees);
+        return !CombatCinematicCameraLease.TryRouteScreenShake(strength, duration, degAngle);
     }
 }
