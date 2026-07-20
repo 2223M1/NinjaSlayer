@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
@@ -85,10 +86,15 @@ public sealed record FinisherAttackSpec(
 public static class NinjaSlayerFinisherCinematic
 {
     private const float ApproachSeconds = 0.2f;
-    private const float FreezeLeadSeconds = 0.1f;
-    private const float FreezeSeconds = 0.2f;
+    private const float ImpactLeadSeconds = 0.04f;
+    private const float HitStopSeconds = 0.1f;
+    private const float ImpactRecoverySeconds = 0.1f;
+    private const float FinisherSettleSeconds = 0.1f;
     private const float ReturnSeconds = 0.2f;
     private const float ApproachGap = 50f;
+    private const float CameraPunchScaleMultiplier = 1.06f;
+    private const float CameraPushPixels = 16f;
+    private const float EnemyKnockbackPixels = 30f;
     private const float DeathNotificationTimeoutSeconds = 1f;
 
     private static FinisherSession? _active;
@@ -438,31 +444,128 @@ public static class NinjaSlayerFinisherCinematic
 
         private async Task PlayDeathFreeze()
         {
-            await WaitSeconds(FreezeLeadSeconds);
+            CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
+                ? cinematicFocus
+                : _ownerNode.Visuals.Bounds;
+            float impactDirection = ResolveImpactDirection(_ownerNode, _focusNode);
+            Vector2 cameraStartPosition = _camera.CurrentPosition;
+            float cameraStartScale = _camera.CurrentScale;
+            float punchScale = cameraStartScale * CameraPunchScaleMultiplier;
+            Vector2 punchCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), punchScale);
+            Vector2 punchPosition = _camera.GetCameraPosition(
+                punchCenter,
+                punchScale,
+                _camera.ViewportSize * 0.5f) + new Vector2(-impactDirection * CameraPushPixels, 0f);
+            var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
             List<ProcessModeSnapshot> snapshots = [];
-            if (GodotObject.IsInstanceValid(_ownerNode))
-            {
-                snapshots.Add(new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode));
-            }
-
-            snapshots.AddRange(_deathNodes
-                .Where(GodotObject.IsInstanceValid)
-                .Select(node => new ProcessModeSnapshot(node, node.ProcessMode)));
-            foreach (ProcessModeSnapshot snapshot in snapshots)
-            {
-                snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
-            }
 
             try
             {
-                await WaitSeconds(FreezeSeconds);
+                _camera.PlayScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
+                float elapsed = 0f;
+                while (elapsed < ImpactLeadSeconds)
+                {
+                    elapsed += await NextFrame();
+                    CaptureImpactVisuals(impactVisuals);
+                    float progress = EaseOut(Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f));
+                    ApplyEnemyFeedback(impactVisuals.Values, progress, flash: true);
+                    _camera.SetTransform(
+                        cameraStartPosition.Lerp(punchPosition, progress),
+                        Mathf.Lerp(cameraStartScale, punchScale, progress));
+                }
+
+                RestoreEnemyFlash(impactVisuals.Values);
+                if (GodotObject.IsInstanceValid(_ownerNode))
+                {
+                    snapshots.Add(new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode));
+                }
+
+                snapshots.AddRange(_deathNodes
+                    .Where(GodotObject.IsInstanceValid)
+                    .Select(node => new ProcessModeSnapshot(node, node.ProcessMode)));
+                foreach (ProcessModeSnapshot snapshot in snapshots)
+                {
+                    snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
+                }
+
+                await WaitSeconds(HitStopSeconds);
+                RestoreProcessModes(snapshots);
+
+                elapsed = 0f;
+                while (elapsed < ImpactRecoverySeconds)
+                {
+                    elapsed += await NextFrame();
+                    float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ImpactRecoverySeconds);
+                    ApplyEnemyFeedback(impactVisuals.Values, 1f - progress, flash: false);
+                    _camera.SetTransform(
+                        punchPosition.Lerp(cameraStartPosition, progress),
+                        Mathf.Lerp(punchScale, cameraStartScale, progress));
+                }
+
+                await WaitSeconds(FinisherSettleSeconds);
             }
             finally
             {
-                foreach (ProcessModeSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Node)))
+                RestoreProcessModes(snapshots);
+                RestoreImpactVisuals(impactVisuals.Values);
+            }
+        }
+
+        private void CaptureImpactVisuals(Dictionary<Node2D, ImpactVisualSnapshot> snapshots)
+        {
+            foreach (NCreature creatureNode in _deathNodes.Where(GodotObject.IsInstanceValid))
+            {
+                Node2D body = creatureNode.Visuals.GetCurrentBody();
+                if (!snapshots.ContainsKey(body))
                 {
-                    snapshot.Node.ProcessMode = snapshot.Mode;
+                    snapshots.Add(body, new ImpactVisualSnapshot(
+                        body,
+                        body.Position,
+                        body.SelfModulate,
+                        ResolveImpactDirection(_ownerNode, creatureNode)));
                 }
+            }
+        }
+
+        private static void ApplyEnemyFeedback(
+            IEnumerable<ImpactVisualSnapshot> snapshots,
+            float amount,
+            bool flash)
+        {
+            foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
+            {
+                snapshot.Body.Position = snapshot.Position
+                    + Vector2.Right * snapshot.Direction * EnemyKnockbackPixels * amount;
+                snapshot.Body.SelfModulate = flash
+                    ? snapshot.SelfModulate.Lerp(
+                        new Color(1.8f, 1.8f, 1.8f, snapshot.SelfModulate.A),
+                        amount)
+                    : snapshot.SelfModulate;
+            }
+        }
+
+        private static void RestoreEnemyFlash(IEnumerable<ImpactVisualSnapshot> snapshots)
+        {
+            foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
+            {
+                snapshot.Body.SelfModulate = snapshot.SelfModulate;
+            }
+        }
+
+        private static void RestoreImpactVisuals(IEnumerable<ImpactVisualSnapshot> snapshots)
+        {
+            foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
+            {
+                snapshot.Body.Position = snapshot.Position;
+                snapshot.Body.SelfModulate = snapshot.SelfModulate;
+            }
+        }
+
+        private static void RestoreProcessModes(IEnumerable<ProcessModeSnapshot> snapshots)
+        {
+            foreach (ProcessModeSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Node)))
+            {
+                snapshot.Node.ProcessMode = snapshot.Mode;
             }
         }
 
@@ -535,7 +638,18 @@ public static class NinjaSlayerFinisherCinematic
                 owner.Position.Y);
         }
 
+        private static float ResolveImpactDirection(NCreature owner, NCreature target)
+        {
+            float direction = Mathf.Sign(target.GlobalPosition.X - owner.GlobalPosition.X);
+            return Mathf.IsZeroApprox(direction) ? 1f : direction;
+        }
+
         private readonly record struct ProcessModeSnapshot(Node Node, Node.ProcessModeEnum Mode);
+        private readonly record struct ImpactVisualSnapshot(
+            Node2D Body,
+            Vector2 Position,
+            Color SelfModulate,
+            float Direction);
     }
 
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
