@@ -101,6 +101,7 @@ public static class NinjaSlayerFinisherCinematic
     private const float CameraPunchScaleMultiplier = 1.06f;
     private const float CameraPushPixels = 16f;
     private const float EnemyKnockbackPixels = 30f;
+    private const float ImpactVfxTargetMargin = 160f;
 
     private static FinisherSession? _active;
     private static FinisherSession? _pendingAfterCardPlayed;
@@ -411,6 +412,7 @@ public static class NinjaSlayerFinisherCinematic
         private readonly CombatCinematicCameraLease _camera;
         private readonly NCombatRoom _room;
         private readonly Vector2 _ownerStartPosition;
+        private readonly HashSet<ulong> _vfxBaselineChildIds;
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
@@ -439,6 +441,9 @@ public static class NinjaSlayerFinisherCinematic
             _camera = camera;
             _room = NCombatRoom.Instance!;
             _ownerStartPosition = ownerNode.Position;
+            _vfxBaselineChildIds = _room.CombatVfxContainer.GetChildren()
+                .Select(child => child.GetInstanceId())
+                .ToHashSet();
             _lastFrameMsec = Time.GetTicksMsec();
             CardPlay = cardPlay;
             RequiresAfterCardPlayed = requiresAfterCardPlayed;
@@ -613,19 +618,22 @@ public static class NinjaSlayerFinisherCinematic
             var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
             CaptureImpactVisuals(targetNodes, impactVisuals);
             List<NCreature> frozenHurtTracks = [];
-            foreach (NCreature targetNode in targetNodes)
-            {
-                if (SetDoomHurtPose(targetNode))
-                {
-                    frozenHurtTracks.Add(targetNode);
-                }
-            }
+            List<ProcessModeSnapshot> frozenImpactVfx = [];
             ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(_ownerNode)
                 ? new ProcessModeSnapshot(_ownerNode, _ownerNode.ProcessMode)
                 : null;
 
             try
             {
+                frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
+                foreach (NCreature targetNode in targetNodes)
+                {
+                    if (SetDoomHurtPose(targetNode))
+                    {
+                        frozenHurtTracks.Add(targetNode);
+                    }
+                }
+
                 if (ownerSnapshot is { } snapshot)
                 {
                     snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
@@ -668,6 +676,7 @@ public static class NinjaSlayerFinisherCinematic
                     snapshot.Node.ProcessMode = snapshot.Mode;
                 }
 
+                RestoreProcessModes(frozenImpactVfx);
                 ResumeDoomHurtPoses(frozenHurtTracks);
                 RestoreImpactVisuals(impactVisuals.Values);
             }
@@ -751,6 +760,87 @@ public static class NinjaSlayerFinisherCinematic
                 }
             }
         }
+
+        private List<ProcessModeSnapshot> FreezeImpactVfx(IReadOnlyList<NCreature> targetNodes)
+        {
+            if (!GodotObject.IsInstanceValid(_room.CombatVfxContainer))
+            {
+                return [];
+            }
+
+            List<Rect2> targetRegions = targetNodes
+                .Where(GodotObject.IsInstanceValid)
+                .Select(target => target.Hitbox.GetGlobalRect().Grow(ImpactVfxTargetMargin))
+                .ToList();
+            if (targetRegions.Count == 0)
+            {
+                return [];
+            }
+
+            List<ProcessModeSnapshot> snapshots = [];
+            foreach (Node vfxRoot in _room.CombatVfxContainer.GetChildren())
+            {
+                if (_vfxBaselineChildIds.Contains(vfxRoot.GetInstanceId())
+                    || !IsNodeActive(vfxRoot)
+                    || !IsVfxNearTargets(vfxRoot, targetRegions))
+                {
+                    continue;
+                }
+
+                CaptureProcessModes(vfxRoot, snapshots);
+            }
+
+            foreach (ProcessModeSnapshot snapshot in snapshots)
+            {
+                if (IsNodeActive(snapshot.Node))
+                {
+                    snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
+                }
+            }
+
+            return snapshots;
+        }
+
+        private static bool IsVfxNearTargets(Node vfxRoot, IReadOnlyList<Rect2> targetRegions)
+        {
+            Vector2? position = vfxRoot switch
+            {
+                Control control => control.GetGlobalRect().GetCenter(),
+                Node2D node => node.GlobalPosition,
+                _ => null
+            };
+            return position.HasValue && targetRegions.Any(region => region.HasPoint(position.Value));
+        }
+
+        private static void CaptureProcessModes(Node node, ICollection<ProcessModeSnapshot> snapshots)
+        {
+            if (!IsNodeActive(node))
+            {
+                return;
+            }
+
+            snapshots.Add(new ProcessModeSnapshot(node, node.ProcessMode));
+            foreach (Node child in node.GetChildren())
+            {
+                CaptureProcessModes(child, snapshots);
+            }
+        }
+
+        private static void RestoreProcessModes(IEnumerable<ProcessModeSnapshot> snapshots)
+        {
+            foreach (ProcessModeSnapshot snapshot in snapshots)
+            {
+                if (IsNodeActive(snapshot.Node))
+                {
+                    snapshot.Node.ProcessMode = snapshot.Mode;
+                }
+            }
+        }
+
+        private static bool IsNodeActive(Node node) =>
+            GodotObject.IsInstanceValid(node)
+            && node.IsInsideTree()
+            && !node.IsQueuedForDeletion();
 
         private static bool SetDoomHurtPose(NCreature creatureNode)
         {
