@@ -24,6 +24,7 @@ public class Entry
     [
         typeof(NinjaSlayerSpinPivot),
         typeof(NinjaSlayerSpinMotionBlur),
+        typeof(NinjaSlayerShadowController),
         typeof(NarakuVisualOverlay),
         typeof(NinjaSlayerTransitionOverlay),
         typeof(NNinjaSlayerGroundFireVfx)
@@ -67,6 +68,7 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
+        patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();

@@ -11,6 +11,7 @@ public static class NinjaSlayerVisualRig
     public const string AirborneAnchorName = "AirborneAnchor";
     public const string CinematicFocusName = "CinematicFocus";
     public const string ShadowNodeName = "Shadow";
+    public const string ShadowControllerNodeName = "ShadowController";
     public const float SpinTextureSize = 1800f;
     public const float SpinPivotX = 1480f;
 
@@ -46,6 +47,14 @@ public static class NinjaSlayerVisualRig
         }
 
         float scale = NinjaSlayerCombatVisuals.GetShadowScale(creature);
-        shadow.Scale = new Vector2(scale, scale);
+        var controller = visuals?.GetNodeOrNull<NinjaSlayerShadowController>(ShadowControllerNodeName);
+        if (controller != null)
+        {
+            controller.SetBaseScale(scale);
+        }
+        else
+        {
+            shadow.Scale = new Vector2(scale, scale);
+        }
     }
 }

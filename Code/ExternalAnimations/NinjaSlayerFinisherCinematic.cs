@@ -121,9 +121,9 @@ public static class NinjaSlayerFinisherCinematic
     private const float CameraPushPixels = 16f;
     private const float EnemyKnockbackPixels = 30f;
     private const float EnhancedEnemyTiltDegrees = 3f;
-    private const float EnhancedEnemyStretchX = 0.06f;
-    private const float EnhancedEnemySquashY = 0.04f;
     private const float ImpactVfxTargetMargin = 160f;
+    private static readonly Vector2 JumpDeathSquash = new(1.2f, 0.55f);
+    private static readonly Vector2 DefaultDeathSquash = new(0.55f, 1.2f);
 
     private static FinisherSession? _active;
     private static FinisherSession? _pendingAfterCardPlayed;
@@ -628,10 +628,13 @@ public static class NinjaSlayerFinisherCinematic
         private readonly HashSet<Creature> _deferredDeaths = [];
         private readonly Dictionary<DamageResult, int> _damageDisplayOverrides =
             new(ReferenceEqualityComparer.Instance);
+        private readonly Dictionary<Node2D, Vector2> _deathSquashOriginalScales = [];
         private readonly CombatCinematicCameraLease _camera;
         private readonly NCombatRoom _room;
         private readonly Vector2 _ownerStartPosition;
         private readonly HashSet<ulong> _vfxBaselineChildIds;
+        private readonly bool _usesJumpDeathSquash;
+        private FinisherCameraFrame _cameraFrame = new([], false);
         private readonly CancellationTokenSource _impactCancellation = new();
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
@@ -676,6 +679,7 @@ public static class NinjaSlayerFinisherCinematic
                 .Select(child => child.GetInstanceId())
                 .ToHashSet();
             _lastFrameMsec = Time.GetTicksMsec();
+            _usesJumpDeathSquash = JumpAnimation.IsActive(owner);
             CardPlay = cardPlay;
             RequiresAfterCardPlayed = requiresAfterCardPlayed;
             ResolvedHits = Math.Max(1, resolvedHits);
@@ -706,6 +710,20 @@ public static class NinjaSlayerFinisherCinematic
 
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
             _ownerNode.Position = destination;
+            CanvasItem cameraFocus = GetCameraFocus();
+            List<NCreature> framingCandidates = _victims
+                .Select(victim => _room.GetCreatureNode(victim))
+                .Where(node => node != null)
+                .Cast<NCreature>()
+                .ToList();
+            float maximumScale = _camera.BaselineScale.X
+                * FinalHitZoomMultiplier
+                * CameraPunchScaleMultiplier;
+            _cameraFrame = FinisherCameraFraming.SelectTargets(
+                _camera,
+                cameraFocus,
+                framingCandidates,
+                maximumScale);
             _cameraShakePumpTask = RunCameraShakePump();
             _finalZoomStarted = ResolvedHits <= 1;
             StartCameraTransition(
@@ -837,6 +855,7 @@ public static class NinjaSlayerFinisherCinematic
                 Entry.Logger.Warn("Finisher forecast did not match runtime damage; committed deferred lethal damage without the finisher pose.");
                 if (toKill.Count > 0)
                 {
+                    RestoreDeathSquashes();
                     await CreatureCmd.Kill(toKill);
                 }
                 return;
@@ -872,6 +891,7 @@ public static class NinjaSlayerFinisherCinematic
 
             if (toKill.Count > 0)
             {
+                RestoreDeathSquashes();
                 await CreatureCmd.Kill(toKill);
                 await WaitSeconds(FinisherSettleSeconds);
             }
@@ -885,6 +905,7 @@ public static class NinjaSlayerFinisherCinematic
             List<Creature> toKill = _deferredDeaths.Where(creature => creature.IsAlive).ToList();
             if (toKill.Count > 0)
             {
+                RestoreDeathSquashes();
                 await CreatureCmd.Kill(toKill);
             }
         }
@@ -920,6 +941,7 @@ public static class NinjaSlayerFinisherCinematic
                 _cardVisualSuppression?.Dispose();
                 _cardVisualSuppression = null;
                 _damageDisplayOverrides.Clear();
+                RestoreDeathSquashes();
                 DisposeEnhancedPresentation();
                 _impactCancellation.Dispose();
                 _camera.Dispose();
@@ -982,20 +1004,16 @@ public static class NinjaSlayerFinisherCinematic
 
         private async Task PlayDoomPoseImpact(IReadOnlyList<NCreature> targetNodes)
         {
-            CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
-                ? cinematicFocus
-                : _ownerNode.Visuals.Bounds;
             float impactDirection = ResolveImpactDirection(_ownerNode, _focusNode);
             Vector2 cameraStartPosition = _camera.CurrentPosition;
             float cameraStartScale = _camera.CurrentScale;
             float punchScale = cameraStartScale * CameraPunchScaleMultiplier;
-            Vector2 punchCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), punchScale);
-            Vector2 punchPosition = _camera.GetCameraPosition(
-                punchCenter,
+            Vector2 punchPosition = GetFramedCameraPosition(
                 punchScale,
-                _camera.ViewportSize * 0.5f) + new Vector2(-impactDirection * CameraPushPixels, 0f);
+                impactDirection * CameraPushPixels);
             var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
             CaptureImpactVisuals(targetNodes, impactVisuals);
+            ApplyDeathSquashes(impactVisuals.Values);
             List<NCreature> frozenHurtTracks = [];
             List<ProcessModeSnapshot> frozenImpactVfx = [];
             ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(_ownerNode)
@@ -1075,26 +1093,18 @@ public static class NinjaSlayerFinisherCinematic
             IReadOnlyList<NCreature> targetNodes,
             CancellationToken cancellationToken)
         {
-            CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
-                ? cinematicFocus
-                : _ownerNode.Visuals.Bounds;
             float impactDirection = ResolveImpactDirection(_ownerNode, _focusNode);
             Vector2 cameraStartPosition = _camera.CurrentPosition;
             float cameraStartScale = _camera.CurrentScale;
             float punchScale = _camera.BaselineScale.X * FinalHitZoomMultiplier * CameraPunchScaleMultiplier;
             float recoveryScale = _camera.BaselineScale.X * FinalHitZoomMultiplier;
-            Vector2 punchCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), punchScale);
-            Vector2 punchPosition = _camera.GetCameraPosition(
-                punchCenter,
+            Vector2 punchPosition = GetFramedCameraPosition(
                 punchScale,
-                _camera.ViewportSize * 0.5f) + new Vector2(-impactDirection * CameraPushPixels, 0f);
-            Vector2 recoveryCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), recoveryScale);
-            Vector2 recoveryPosition = _camera.GetCameraPosition(
-                recoveryCenter,
-                recoveryScale,
-                _camera.ViewportSize * 0.5f);
+                impactDirection * CameraPushPixels);
+            Vector2 recoveryPosition = GetFramedCameraPosition(recoveryScale);
             var impactVisuals = new Dictionary<Node2D, ImpactVisualSnapshot>();
             CaptureImpactVisuals(targetNodes, impactVisuals);
+            ApplyDeathSquashes(impactVisuals.Values);
             List<NCreature> frozenHurtTracks = [];
             List<ProcessModeSnapshot> frozenImpactVfx = [];
             ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(_ownerNode)
@@ -1271,17 +1281,10 @@ public static class NinjaSlayerFinisherCinematic
         {
             try
             {
-                CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
-                    ? cinematicFocus
-                    : _ownerNode.Visuals.Bounds;
                 Vector2 startPosition = _camera.CurrentPosition;
                 float startScale = _camera.CurrentScale;
                 float targetScale = _camera.BaselineScale.X * scaleMultiplier;
-                Vector2 targetCenter = _camera.ClampTarget(_camera.GetLocalCenter(focus), targetScale);
-                Vector2 targetPosition = _camera.GetCameraPosition(
-                    targetCenter,
-                    targetScale,
-                    _camera.ViewportSize * 0.5f);
+                Vector2 targetPosition = GetFramedCameraPosition(targetScale);
                 float elapsed = 0f;
                 while (elapsed < duration)
                 {
@@ -1320,16 +1323,59 @@ public static class NinjaSlayerFinisherCinematic
                 Node2D body = creatureNode.Visuals.GetCurrentBody();
                 if (!snapshots.ContainsKey(body))
                 {
+                    Vector2 originalScale = _deathSquashOriginalScales.GetValueOrDefault(body, body.Scale);
                     snapshots.Add(body, new ImpactVisualSnapshot(
                         body,
                         body.Position,
-                        body.Scale,
+                        originalScale,
                         body.Rotation,
                         body.SelfModulate,
                         ResolveImpactDirection(_ownerNode, creatureNode)));
                 }
             }
         }
+
+        private CanvasItem GetCameraFocus() =>
+            NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals) is { } cinematicFocus
+                ? cinematicFocus
+                : _ownerNode.Visuals.Bounds;
+
+        private Vector2 GetFramedCameraPosition(float scale, float horizontalScreenOffset = 0f)
+        {
+            Vector2 center = FinisherCameraFraming.ResolveCenter(
+                _camera,
+                GetCameraFocus(),
+                _cameraFrame,
+                scale,
+                horizontalScreenOffset);
+            return _camera.GetCameraPosition(center, scale, _camera.ViewportSize * 0.5f);
+        }
+
+        private void ApplyDeathSquashes(IEnumerable<ImpactVisualSnapshot> snapshots)
+        {
+            Vector2 multiplier = GetDeathSquashMultiplier();
+            foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
+            {
+                _deathSquashOriginalScales.TryAdd(snapshot.Body, snapshot.Scale);
+                snapshot.Body.Scale = snapshot.Scale * multiplier;
+            }
+        }
+
+        private void RestoreDeathSquashes()
+        {
+            foreach ((Node2D body, Vector2 scale) in _deathSquashOriginalScales)
+            {
+                if (GodotObject.IsInstanceValid(body))
+                {
+                    body.Scale = scale;
+                }
+            }
+
+            _deathSquashOriginalScales.Clear();
+        }
+
+        private Vector2 GetDeathSquashMultiplier() =>
+            _usesJumpDeathSquash ? JumpDeathSquash : DefaultDeathSquash;
 
         private List<ProcessModeSnapshot> FreezeImpactVfx(IReadOnlyList<NCreature> targetNodes)
         {
@@ -1451,16 +1497,15 @@ public static class NinjaSlayerFinisherCinematic
             ApplyEnemyPosition(snapshots, 0f);
         }
 
-        private static void ApplyEnhancedEnemyFeedback(
+        private void ApplyEnhancedEnemyFeedback(
             IEnumerable<ImpactVisualSnapshot> snapshots,
             float amount,
             bool flash)
         {
+            Vector2 squashMultiplier = GetDeathSquashMultiplier();
             foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
             {
-                snapshot.Body.Scale = snapshot.Scale * new Vector2(
-                    1f + EnhancedEnemyStretchX * amount,
-                    1f - EnhancedEnemySquashY * amount);
+                snapshot.Body.Scale = snapshot.Scale * squashMultiplier;
                 snapshot.Body.Rotation = snapshot.Rotation
                     + Mathf.DegToRad(EnhancedEnemyTiltDegrees * snapshot.Direction * amount);
                 snapshot.Body.SelfModulate = flash
@@ -1479,12 +1524,15 @@ public static class NinjaSlayerFinisherCinematic
             }
         }
 
-        private static void RestoreImpactVisuals(IEnumerable<ImpactVisualSnapshot> snapshots)
+        private void RestoreImpactVisuals(IEnumerable<ImpactVisualSnapshot> snapshots)
         {
+            Vector2 squashMultiplier = GetDeathSquashMultiplier();
             foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
             {
                 snapshot.Body.Position = snapshot.Position;
-                snapshot.Body.Scale = snapshot.Scale;
+                snapshot.Body.Scale = _deathSquashOriginalScales.ContainsKey(snapshot.Body)
+                    ? snapshot.Scale * squashMultiplier
+                    : snapshot.Scale;
                 snapshot.Body.Rotation = snapshot.Rotation;
                 snapshot.Body.SelfModulate = snapshot.SelfModulate;
             }

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://ninjaslayercreaturevisuals"]
+[gd_scene load_steps=6 format=3 uid="uid://ninjaslayercreaturevisuals"]
 
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png" id="1_idle_01"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/shadow.png" id="2_shadow"]
 [ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerSpinPivot.cs" id="2_spin_pivot"]
 [ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerSpinMotionBlur.cs" id="3_spin_motion_blur"]
+[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerShadowController.cs" id="4_shadow_controller"]
 
 [node name="NinjaSlayer" type="Node2D"]
 metadata/_edit_group_ = true
@@ -15,6 +16,9 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_shadow")
 
 [node name="AirborneAnchor" type="Node2D" parent="."]
+
+[node name="ShadowController" type="Node" parent="."]
+script = ExtResource("4_shadow_controller")
 
 [node name="CinematicFocus" type="Marker2D" parent="AirborneAnchor"]
 unique_name_in_owner = true

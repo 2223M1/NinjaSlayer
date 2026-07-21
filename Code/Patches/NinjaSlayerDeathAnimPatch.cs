@@ -33,13 +33,14 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             return;
         }
 
-        NinjaSlayerDeathKind kind = DeathAnimation.Classify(__instance.Entity);
-        string eventPath = kind == NinjaSlayerDeathKind.EnemyKill
-            ? NinjaSlayerCombatAudioSet.For(__instance.Entity).Death
-            : NinjaSlayerAudio.NinjaSlayerSuicideEvent;
-        NinjaSlayerCombatAudioSet.Play(eventPath);
-        TaskHelper.RunSafely(DeathAnimation.Play(__instance.Entity, kind));
-        __result = DeathAnimation.GetDuration(kind);
+        NinjaSlayerDeathContext context = DeathAnimation.CreateContext(__instance.Entity);
+        if (context.Kind != NinjaSlayerDeathKind.EnemyKill)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerSuicideEvent);
+        }
+
+        TaskHelper.RunSafely(DeathAnimation.Play(__instance.Entity, context));
+        __result = DeathAnimation.GetDuration(context.Kind);
     }
 
     private static bool IsNinjaSlayerNonSpine(NCreature creatureNode)

@@ -24,6 +24,9 @@ public static class AlabamaDropAnimation
     private const float ReturnHopHeight = 70f;
     private const float TumbleAngleCoefficient = 1800f;
     private const float MinScaleRatio = 0.18f;
+    private const float LandingSquashScaleX = 1.2f;
+    private const float LandingSquashScaleY = 0.55f;
+    private const float LandingSquashHoldDuration = 0.1f;
 
     internal const float InitialTumbleDegreesPerSecond = 3000f;
     internal const float FinalTumbleDegreesPerSecond = 12000f;
@@ -33,6 +36,27 @@ public static class AlabamaDropAnimation
     {
         bool doomPoseFrozen = false;
         bool impactPlayed = false;
+        bool impactResolutionStarted = false;
+        bool impactResolutionJoined = false;
+        bool targetBodyDisabled = false;
+        Task impactResolutionTask = Task.CompletedTask;
+        Node2D? targetBody = null;
+        Node.ProcessModeEnum targetBodyProcessMode = Node.ProcessModeEnum.Inherit;
+
+        void RestoreTargetBodyProcessMode()
+        {
+            if (!targetBodyDisabled)
+            {
+                return;
+            }
+
+            if (targetBody != null && GodotObject.IsInstanceValid(targetBody))
+            {
+                targetBody.ProcessMode = targetBodyProcessMode;
+            }
+
+            targetBodyDisabled = false;
+        }
 
         async Task PlayImpact()
         {
@@ -49,23 +73,38 @@ public static class AlabamaDropAnimation
             }
             doomPoseFrozen = false;
             await CreatureCmd.TriggerAnim(target, "Hit", 0f);
+            if (targetBody != null && GodotObject.IsInstanceValid(targetBody))
+            {
+                targetBody.ProcessMode = Node.ProcessModeEnum.Disabled;
+                targetBodyDisabled = true;
+            }
             PlayImpactFireBurst(target);
-            await onImpact();
+            impactResolutionTask = onImpact();
+            impactResolutionStarted = true;
         }
 
         if (!TryGetRig(owner, out CreatureRig ownerRig) || !TryGetRig(target, out CreatureRig targetRig))
         {
             await CreatureCmd.TriggerAnim(owner, "Cast", owner.Player?.Character.CastAnimDelay ?? 0f);
             await PlayImpact();
+            if (impactResolutionStarted)
+            {
+                await impactResolutionTask;
+            }
             return;
         }
 
+        targetBody = targetRig.Body;
+        targetBodyProcessMode = targetRig.Body.ProcessMode;
         var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
         BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
         Vector2 ownerStartPos = ownerRig.CreatureNode.Position;
         Vector2 targetStartPos = targetRig.CreatureNode.Position;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
+        Vector2 targetLandingScale = new(
+            targetSnapshot.BodyScale.X * LandingSquashScaleX,
+            targetSnapshot.BodyScale.Y * LandingSquashScaleY);
         float ownerInvertedRotation = ownerSnapshot.BodyRotationDegrees + 180f;
         float targetInvertedRotation = targetSnapshot.BodyRotationDegrees + 180f;
 
@@ -113,23 +152,35 @@ public static class AlabamaDropAnimation
                     ownerInvertedRotation,
                     targetInvertedRotation,
                     targetPivot,
+                    targetLandingScale,
                     FallDuration));
 
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
             ownerRig.Body.Scale = ownerSnapshot.BodyScale;
-            targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
+            targetPivot.Apply(targetInvertedRotation, targetLandingScale);
+            await WaitTweenInterval(ownerRig.CreatureNode, LandingSquashHoldDuration);
+            RestoreTargetBodyProcessMode();
 
-            await Task.WhenAll(
+            Task standUpTask = Task.WhenAll(
                 TweenHopNodePosition(ownerRig.CreatureNode, ownerStartPos, StandUpDuration),
                 TweenBodyRotation(ownerRig.Body, ownerSnapshot.BodyRotationDegrees + 360f, StandUpDuration),
                 TweenBodyRotation(
                     targetRig.Body,
                     targetSnapshot.BodyRotationDegrees + 360f,
                     StandUpDuration,
-                    targetPivot));
+                    targetPivot,
+                    targetSnapshot.BodyScale));
+            impactResolutionJoined = true;
+            await Task.WhenAll(standUpTask, impactResolutionTask);
         }
         finally
         {
+            RestoreTargetBodyProcessMode();
+            if (impactResolutionStarted && !impactResolutionJoined)
+            {
+                _ = TaskHelper.RunSafely(impactResolutionTask);
+            }
+
             if (doomPoseFrozen)
             {
                 DoomHurtPoseController.Resume(targetRig.CreatureNode);
@@ -207,6 +258,7 @@ public static class AlabamaDropAnimation
         float ownerInvertedRotation,
         float targetInvertedRotation,
         BodyPivotCompensation targetPivot,
+        Vector2 targetLandingScale,
         float duration)
     {
         float centerX = (ownerLandingPos.X + targetLandingPos.X) * 0.5f;
@@ -240,7 +292,7 @@ public static class AlabamaDropAnimation
         ownerRig.CreatureNode.Position = ownerLandingPos;
         targetRig.CreatureNode.Position = targetLandingPos;
         ownerRig.Body.Scale = ownerSnapshot.BodyScale;
-        targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
+        targetPivot.Apply(targetInvertedRotation, targetLandingScale);
     }
 
     internal static float GetTumbleAngleDegrees(float progress)
@@ -304,25 +356,38 @@ public static class AlabamaDropAnimation
         creatureNode.Position = target;
     }
 
+    private static async Task WaitTweenInterval(Node owner, float duration)
+    {
+        var tween = owner.CreateTween();
+        tween.TweenInterval(duration);
+        await owner.ToSignal(tween, Tween.SignalName.Finished);
+    }
+
     private static async Task TweenBodyRotation(
         Node2D body,
         float targetDegrees,
         float duration,
-        BodyPivotCompensation? pivotCompensation = null)
+        BodyPivotCompensation? pivotCompensation = null,
+        Vector2? targetScale = null)
     {
         float startDegrees = body.RotationDegrees;
+        Vector2 startScale = body.Scale;
         var tween = body.CreateTween();
         tween.TweenMethod(
                 Callable.From<float>(progress =>
                 {
                     float rotation = Mathf.Lerp(startDegrees, targetDegrees, progress);
+                    Vector2 scale = targetScale.HasValue
+                        ? startScale.Lerp(targetScale.Value, progress)
+                        : body.Scale;
                     if (pivotCompensation is { } compensation)
                     {
-                        compensation.Apply(rotation, body.Scale);
+                        compensation.Apply(rotation, scale);
                     }
                     else
                     {
                         body.RotationDegrees = rotation;
+                        body.Scale = scale;
                     }
                 }),
                 0f,
@@ -332,6 +397,18 @@ public static class AlabamaDropAnimation
             .SetTrans(Tween.TransitionType.Quad);
 
         await body.ToSignal(tween, Tween.SignalName.Finished);
+        if (pivotCompensation is { } compensation)
+        {
+            compensation.Apply(targetDegrees, targetScale ?? body.Scale);
+        }
+        else
+        {
+            body.RotationDegrees = targetDegrees;
+            if (targetScale.HasValue)
+            {
+                body.Scale = targetScale.Value;
+            }
+        }
     }
 
     private readonly record struct BodyPivotCompensation(

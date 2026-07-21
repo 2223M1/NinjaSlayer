@@ -52,6 +52,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
     public Vector2 BaselinePosition { get; }
     public Vector2 BaselineScale { get; }
     public Vector2 ViewportSize { get; private set; }
+    internal Vector2 SceneSize => _sceneContainer.Size;
     public float CurrentScale => _cameraScale;
     public Vector2 CurrentPosition => _cameraPosition;
 
@@ -157,6 +158,17 @@ public sealed class CombatCinematicCameraLease : IDisposable
             _ => Vector2.Zero
         };
         return _sceneContainer.GetGlobalTransformWithCanvas().AffineInverse() * globalCenter;
+    }
+
+    internal Rect2 GetLocalRect(Control target)
+    {
+        Rect2 globalRect = target.GetGlobalRect();
+        Transform2D inverse = _sceneContainer.GetGlobalTransformWithCanvas().AffineInverse();
+        Vector2 topLeft = inverse * globalRect.Position;
+        Vector2 bottomRight = inverse * globalRect.End;
+        return new Rect2(
+            new Vector2(Mathf.Min(topLeft.X, bottomRight.X), Mathf.Min(topLeft.Y, bottomRight.Y)),
+            new Vector2(Mathf.Abs(bottomRight.X - topLeft.X), Mathf.Abs(bottomRight.Y - topLeft.Y)));
     }
 
     public Vector2 GetCameraPosition(Vector2 localTarget, float scale, Vector2 screenTarget)

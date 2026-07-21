@@ -134,14 +134,18 @@ public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
 
     public static bool Prefix(
         PlayerChoiceContext choiceContext,
-        IEnumerable<Creature>? targets,
+        ref IEnumerable<Creature>? targets,
         decimal amount,
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
         CardPlay? cardPlay,
-        ref Task<IEnumerable<DamageResult>> __result)
+        ref Task<IEnumerable<DamageResult>> __result,
+        out object? __state)
     {
+        List<Creature> targetList = targets?.ToList() ?? [];
+        targets = targetList;
+        __state = DeathAnimation.BeginIncomingDamageCapture(targetList, dealer);
         NinjaSlayerFinisherCinematic.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
         if (!NinjaSlayerFinisherCinematic.TryInterceptDirectDamage(
                 choiceContext,
@@ -158,6 +162,13 @@ public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
 
         __result = result!;
         return false;
+    }
+
+    public static void Postfix(
+        ref Task<IEnumerable<DamageResult>> __result,
+        object? __state)
+    {
+        __result = DeathAnimation.CompleteIncomingDamageCapture(__result, __state);
     }
 }
 
