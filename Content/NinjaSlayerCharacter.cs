@@ -146,6 +146,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
     public override bool RequiresEpochAndTimeline => false;
     public override string CharacterSelectSfx => NinjaSlayerAudio.NinjaSlayerSelectEvent;
     public override string CharacterTransitionSfx => NinjaSlayerAudio.NinjaSlayerTransitionEvent;
+    protected override IEnumerable<string> ExtraAssetPaths => BossDeathExplosionVfx.AssetPaths;
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() => RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(AssetProfile.Scenes!.VisualsPath!);
 

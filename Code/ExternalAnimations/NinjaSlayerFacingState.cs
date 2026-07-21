@@ -69,6 +69,14 @@ internal static class NinjaSlayerFacingState
         Apply(creatureNode, targetNode.GlobalPosition.X < creatureNode.GlobalPosition.X);
     }
 
+    internal static void SetFacing(NCreature creatureNode, bool faceLeft)
+    {
+        if (creatureNode.Entity.Player?.Character is INinjaSlayerCharacter)
+        {
+            Apply(creatureNode, faceLeft);
+        }
+    }
+
     public static (Creature? Creature, float BodyScaleX, bool RestoreBodyScale) CaptureSurroundedBody(
         SurroundedPower power)
     {

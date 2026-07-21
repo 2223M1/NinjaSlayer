@@ -55,6 +55,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
     internal Vector2 SceneSize => _sceneContainer.Size;
     public float CurrentScale => _cameraScale;
     public Vector2 CurrentPosition => _cameraPosition;
+    internal static bool IsControllingCamera => _active is { _disposed: false };
 
     public static bool TryAcquire(NCombatRoom room, string ownerName, out CombatCinematicCameraLease? lease)
     {

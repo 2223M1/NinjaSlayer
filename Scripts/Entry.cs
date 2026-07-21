@@ -68,6 +68,10 @@ public class Entry
         patcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
+        patcher.RegisterPatch<BossDeathPresentationPatch>();
+        patcher.RegisterPatch<BossDeathFadeStartPatch>();
+        patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
+        patcher.RegisterPatch<ArchitectExecutionStartPatch>();
         patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
@@ -91,6 +95,8 @@ public class Entry
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<ScreenShakeSuppressionPatch>();
+        patcher.RegisterPatch<ScreenRumbleCinematicSuppressionPatch>();
+        patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();

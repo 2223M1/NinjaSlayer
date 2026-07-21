@@ -21,6 +21,9 @@ public static class NinjaSlayerAudio
     public const string NinjaSlayerShortWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_short_washoi";
     public const string NinjaSlayerLongWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_long_washoi";
     public const string NinjaSlayerDomoEvent = NinjaSlayerRoot + "/ninja_slayer_domo";
+    public const string NinjaSlayerNinjaSoulEvent = NinjaSlayerRoot + "/ninja_slayer_ninja_soul";
+    public const string NinjaSlayerExplosionEvent = NinjaSlayerRoot + "/ninja_slayer_explotion";
+    public const string NinjaSlayerKorosuBeshiEvent = NinjaSlayerRoot + "/ninja_slayer_korosu_beshi";
 
     /// <summary>Longest clip in the randomized short Washoi FMOD event.</summary>
     public const float ShortWashoiSeconds = 1.024014f;

@@ -19,11 +19,14 @@
 {393ec121-609e-469f-94fb-9a06c5926b32} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_cast
 {8399306f-54e8-4300-ab25-bde9b8f689ff} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_death
 {eeb09a3c-39f1-4190-b538-d248b6dfbeec} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_domo
+{0d0e5363-66d0-4b7f-8929-94cf1dc90271} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_explotion
 {3af9f8fc-8a5b-4b20-97f3-9584ae998a50} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_fast_attack
 {0351689c-9613-4b9d-b9f0-c2d16fc805a1} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_hurt
 {09550113-0b1f-430c-9f3e-d8be1fc650ea} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_intro_spin_attack
+{44e279a6-3e23-4b6d-8be0-f6dbf834e11a} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_korosu_beshi
 {15554978-a2b5-482c-8c50-ee1eba9c1b3f} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_long_washoi
 {a9bee68e-cb5d-427e-8248-e8a063343b0e} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_loop_spin_attack
+{d4a68540-4006-4f13-9215-9cfd6f05feae} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_ninja_soul
 {191e4ae4-25f9-41f7-9571-639313302897} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_outro_spin_attack
 {5fc0244c-1cce-44ce-947f-0246892aa6f0} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_select
 {916dc9b2-8eb7-4722-8826-8fa50f5f74e2} event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_short_washoi
