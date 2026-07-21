@@ -10,7 +10,12 @@ public static class ByrdRiseAnimation
 {
     private const float Duration = 0.3f;
 
-    public static async Task Play(Creature creature, float riseDistance, float duration = Duration)
+    public static async Task Play(
+        Creature creature,
+        float riseDistance,
+        float duration = Duration,
+        Tween.EaseType ease = Tween.EaseType.Out,
+        Tween.TransitionType transition = Tween.TransitionType.Quad)
     {
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null) return;
@@ -31,8 +36,8 @@ public static class ByrdRiseAnimation
         var tween = creatureNode.CreateTween();
         tween.TweenProperty(target, "position:y",
                 originalPos.Y - riseDistance, duration)
-            .SetEase(Tween.EaseType.Out)
-            .SetTrans(Tween.TransitionType.Quad);
+            .SetEase(ease)
+            .SetTrans(transition);
 
         await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
     }

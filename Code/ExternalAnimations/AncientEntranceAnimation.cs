@@ -19,6 +19,7 @@ public static class AncientEntranceAnimation
     private const float SideStartYOffset = -140f;
     private const float SideArcHeight = 260f;
     private const float LeftLandingOffset = -110f;
+    private const float TumbleAngleCoefficient = 1800f;
 
     public enum EntranceVariant
     {
@@ -166,12 +167,14 @@ public static class AncientEntranceAnimation
             SetVisualsVisible(creature);
             await WaitForStart(startSignal, cinematicContext);
             PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
-            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
-
             await Task.WhenAll(
                 ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext),
-                HoldBodyRotation(body, invertedRotationDegrees, FallDuration, cinematicContext));
-            SoarSpinAnimation.StopAirborneSpin(creature);
+                HoldBodyRotation(body, invertedRotationDegrees, FallDuration, cinematicContext),
+                SoarSpinAnimation.PlayFiniteAirborneSpin(
+                    creature,
+                    FallDuration,
+                    GetTumbleAngleDegrees,
+                    cinematicContext));
             body.Scale = snapshot.BodyScale;
             if (body is Sprite2D sprite)
             {
@@ -208,16 +211,25 @@ public static class AncientEntranceAnimation
             SetVisualsVisible(creature);
             await WaitForStart(startSignal, cinematicContext);
             PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
-            SoarSpinAnimation.StartAirborneSpin(creature, AlabamaDropAnimation.TumbleDegreesPerSecond);
-
             await Task.WhenAll(
                 TweenSideFallParabola(creatureNode, snapshot.CreaturePosition, direction, FallDuration, cinematicContext),
-                ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext));
+                ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext),
+                SoarSpinAnimation.PlayFiniteAirborneSpin(
+                    creature,
+                    FallDuration,
+                    GetTumbleAngleDegrees,
+                    cinematicContext));
         }
         finally
         {
             snapshot.Restore(creature);
         }
+    }
+
+    private static float GetTumbleAngleDegrees(float progress)
+    {
+        float p = Mathf.Clamp(progress, 0f, 1f);
+        return TumbleAngleCoefficient * (p + 1.2f * p * p + 0.2f * p * p * p);
     }
 
     private static void SetVisualsVisible(Creature creature)

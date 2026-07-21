@@ -87,6 +87,62 @@ public static class SoarSpinAnimation
         activeSpinTweens[creature] = tween;
     }
 
+    public static async Task PlayFiniteAirborneSpin(
+        Creature creature,
+        float duration,
+        Func<float, float> angleDegreesAtProgress,
+        ICinematicAnimationContext? cinematicContext = null)
+    {
+        StopAirborneSpin(creature);
+
+        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (creatureNode == null || GetSpinVisual(creature) == null)
+        {
+            return;
+        }
+
+        activeVerticalSpins.Add(creature);
+        float startingDegrees = spinDegrees.GetValueOrDefault(creature);
+        var tween = creatureNode.CreateTween();
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                {
+                    float currentDegrees = startingDegrees
+                        + angleDegreesAtProgress(progress);
+                    spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
+                    ApplyVerticalSpin(creature, currentDegrees);
+                }),
+                0f,
+                1f,
+                duration)
+            .SetTrans(Tween.TransitionType.Linear);
+
+        activeSpinTweens[creature] = tween;
+        try
+        {
+            if (cinematicContext == null)
+            {
+                await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+            }
+            else
+            {
+                await cinematicContext.AwaitTween(creatureNode, tween);
+            }
+        }
+        finally
+        {
+            if (activeSpinTweens.TryGetValue(creature, out Tween? activeTween)
+                && ReferenceEquals(activeTween, tween))
+            {
+                activeSpinTweens.Remove(creature);
+                if (tween.IsValid())
+                {
+                    tween.Kill();
+                }
+            }
+        }
+    }
+
     public static void StopAirborneSpin(Creature creature)
     {
         if (activeSpinTweens.Remove(creature, out Tween? tween) && tween.IsValid())

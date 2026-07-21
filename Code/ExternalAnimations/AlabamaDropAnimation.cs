@@ -2,9 +2,11 @@ using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -13,22 +15,40 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class AlabamaDropAnimation
 {
-    private const float ApproachDuration = 0.2f;
+    private const float ApproachDuration = 0.1f;
+    private const float ChargeDuration = 0.1f;
     private const float RiseDuration = 0.4f;
     private const float FallDuration = 0.6f;
     private const float StandUpDuration = 0.2f;
     private const float RiseDistance = 900f;
-    private const float ApproachGap = 50f;
     private const float ReturnHopHeight = 70f;
-    private const float TumbleDegrees = 1800f;
+    private const float TumbleAngleCoefficient = 1800f;
     private const float MinScaleRatio = 0.18f;
 
-    internal const float TumbleDegreesPerSecond = TumbleDegrees / FallDuration;
+    internal const float InitialTumbleDegreesPerSecond = 3000f;
+    internal const float FinalTumbleDegreesPerSecond = 12000f;
+    internal const float TotalTumbleDegrees = 4320f;
 
     public static async Task Play(Creature owner, Creature target, Func<Task> onImpact)
     {
+        bool doomPoseFrozen = false;
+        bool impactPlayed = false;
+
         async Task PlayImpact()
         {
+            if (impactPlayed)
+            {
+                return;
+            }
+
+            impactPlayed = true;
+            NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
+            if (targetNode != null)
+            {
+                DoomHurtPoseController.Resume(targetNode);
+            }
+            doomPoseFrozen = false;
+            await CreatureCmd.TriggerAnim(target, "Hit", 0f);
             PlayImpactFireBurst(target);
             await onImpact();
         }
@@ -42,6 +62,7 @@ public static class AlabamaDropAnimation
 
         var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
+        BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
         Vector2 ownerStartPos = ownerRig.CreatureNode.Position;
         Vector2 targetStartPos = targetRig.CreatureNode.Position;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
@@ -57,12 +78,26 @@ public static class AlabamaDropAnimation
                 Tween.EaseType.Out,
                 Tween.TransitionType.Quad);
 
+            NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
+            doomPoseFrozen = DoomHurtPoseController.TryFreeze(targetRig.CreatureNode);
+            await Cmd.Wait(ChargeDuration);
+
             await Task.WhenAll(
-                ByrdRiseAnimation.Play(owner, RiseDistance, RiseDuration),
-                ByrdRiseAnimation.Play(target, RiseDistance, RiseDuration));
+                ByrdRiseAnimation.Play(
+                    owner,
+                    RiseDistance,
+                    RiseDuration,
+                    Tween.EaseType.Out,
+                    Tween.TransitionType.Quart),
+                ByrdRiseAnimation.Play(
+                    target,
+                    RiseDistance,
+                    RiseDuration,
+                    Tween.EaseType.Out,
+                    Tween.TransitionType.Quart));
 
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
-            targetRig.Body.RotationDegrees = targetInvertedRotation;
+            targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
 
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await Task.WhenAll(
@@ -77,20 +112,29 @@ public static class AlabamaDropAnimation
                     targetStartPos,
                     ownerInvertedRotation,
                     targetInvertedRotation,
+                    targetPivot,
                     FallDuration));
 
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
-            targetRig.Body.RotationDegrees = targetInvertedRotation;
             ownerRig.Body.Scale = ownerSnapshot.BodyScale;
-            targetRig.Body.Scale = targetSnapshot.BodyScale;
+            targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
 
             await Task.WhenAll(
                 TweenHopNodePosition(ownerRig.CreatureNode, ownerStartPos, StandUpDuration),
                 TweenBodyRotation(ownerRig.Body, ownerSnapshot.BodyRotationDegrees + 360f, StandUpDuration),
-                TweenBodyRotation(targetRig.Body, targetSnapshot.BodyRotationDegrees + 360f, StandUpDuration));
+                TweenBodyRotation(
+                    targetRig.Body,
+                    targetSnapshot.BodyRotationDegrees + 360f,
+                    StandUpDuration,
+                    targetPivot));
         }
         finally
         {
+            if (doomPoseFrozen)
+            {
+                DoomHurtPoseController.Resume(targetRig.CreatureNode);
+            }
+
             targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
             ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
         }
@@ -148,7 +192,8 @@ public static class AlabamaDropAnimation
         }
 
         float targetHalfWidth = targetRig.Visuals.Bounds.Size.X * Mathf.Abs(targetRig.Visuals.Scale.X) * 0.5f;
-        float x = targetPos.X - directionToTarget * (targetHalfWidth + ApproachGap);
+        float x = targetPos.X - directionToTarget
+            * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap);
         return new Vector2(x, ownerPos.Y);
     }
 
@@ -161,6 +206,7 @@ public static class AlabamaDropAnimation
         Vector2 targetLandingPos,
         float ownerInvertedRotation,
         float targetInvertedRotation,
+        BodyPivotCompensation targetPivot,
         float duration)
     {
         float centerX = (ownerLandingPos.X + targetLandingPos.X) * 0.5f;
@@ -171,7 +217,7 @@ public static class AlabamaDropAnimation
         tween.TweenMethod(
             Callable.From<float>(progress =>
             {
-                float radians = Mathf.DegToRad(TumbleDegrees * progress);
+                float radians = Mathf.DegToRad(GetTumbleAngleDegrees(progress));
                 float orbitRatio = Mathf.Cos(radians);
                 float scaleRatio = ClampScaleRatio(orbitRatio);
 
@@ -179,9 +225,10 @@ public static class AlabamaDropAnimation
                 targetRig.CreatureNode.Position = new Vector2(centerX + targetOffsetX * orbitRatio, targetLandingPos.Y);
 
                 ownerRig.Body.RotationDegrees = ownerInvertedRotation;
-                targetRig.Body.RotationDegrees = targetInvertedRotation;
                 ownerRig.Body.Scale = new Vector2(ownerSnapshot.BodyScale.X * scaleRatio, ownerSnapshot.BodyScale.Y);
-                targetRig.Body.Scale = new Vector2(targetSnapshot.BodyScale.X * scaleRatio, targetSnapshot.BodyScale.Y);
+                targetPivot.Apply(
+                    targetInvertedRotation,
+                    new Vector2(targetSnapshot.BodyScale.X * scaleRatio, targetSnapshot.BodyScale.Y));
             }),
             0f,
             1f,
@@ -193,7 +240,13 @@ public static class AlabamaDropAnimation
         ownerRig.CreatureNode.Position = ownerLandingPos;
         targetRig.CreatureNode.Position = targetLandingPos;
         ownerRig.Body.Scale = ownerSnapshot.BodyScale;
-        targetRig.Body.Scale = targetSnapshot.BodyScale;
+        targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
+    }
+
+    internal static float GetTumbleAngleDegrees(float progress)
+    {
+        float p = Mathf.Clamp(progress, 0f, 1f);
+        return TumbleAngleCoefficient * (p + 1.2f * p * p + 0.2f * p * p * p);
     }
 
     private static float ClampScaleRatio(float scaleRatio)
@@ -251,14 +304,62 @@ public static class AlabamaDropAnimation
         creatureNode.Position = target;
     }
 
-    private static async Task TweenBodyRotation(Node2D body, float targetDegrees, float duration)
+    private static async Task TweenBodyRotation(
+        Node2D body,
+        float targetDegrees,
+        float duration,
+        BodyPivotCompensation? pivotCompensation = null)
     {
+        float startDegrees = body.RotationDegrees;
         var tween = body.CreateTween();
-        tween.TweenProperty(body, "rotation_degrees", targetDegrees, duration)
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                {
+                    float rotation = Mathf.Lerp(startDegrees, targetDegrees, progress);
+                    if (pivotCompensation is { } compensation)
+                    {
+                        compensation.Apply(rotation, body.Scale);
+                    }
+                    else
+                    {
+                        body.RotationDegrees = rotation;
+                    }
+                }),
+                0f,
+                1f,
+                duration)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
 
         await body.ToSignal(tween, Tween.SignalName.Finished);
+    }
+
+    private readonly record struct BodyPivotCompensation(
+        Node2D Body,
+        CanvasItem Parent,
+        Vector2 MarkerBodyLocal,
+        Vector2 MarkerParentLocal)
+    {
+        public static BodyPivotCompensation Capture(CreatureRig rig)
+        {
+            CanvasItem parent = rig.Body.GetParent<CanvasItem>();
+            Vector2 markerCanvas = rig.Visuals.Bounds.GetGlobalRect().GetCenter();
+            Vector2 markerBodyLocal = rig.Body.GetGlobalTransformWithCanvas().AffineInverse() * markerCanvas;
+            Vector2 markerParentLocal = parent.GetGlobalTransformWithCanvas().AffineInverse() * markerCanvas;
+            return new BodyPivotCompensation(rig.Body, parent, markerBodyLocal, markerParentLocal);
+        }
+
+        public void Apply(float rotationDegrees, Vector2 scale)
+        {
+            if (!GodotObject.IsInstanceValid(Body) || !GodotObject.IsInstanceValid(Parent))
+            {
+                return;
+            }
+
+            Body.RotationDegrees = rotationDegrees;
+            Body.Scale = scale;
+            Body.Position = MarkerParentLocal - Body.Transform.BasisXform(MarkerBodyLocal);
+        }
     }
 
     private readonly record struct CreatureRig(

@@ -2,6 +2,7 @@
 .godot/
 *.cs.uid
 !Code/Nodes/NNinjaSlayerGroundFireVfx.cs.uid
+addons/spine/windows/~*.TMP
 
 # .NET build output
 bin/

@@ -11,23 +11,23 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarForecastSource
+public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisualGraftSource
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
     protected override bool IsVisibleInternal => false;
 
-    public IEnumerable<HealthBarForecastSegment> GetHealthBarForecastSegments(HealthBarForecastContext context)
+    public HealthBarVisualGraftMetrics GetHealthBarVisualGraft(HealthBarVisualGraftContext context)
     {
         if (Amount <= 0 || context.Creature != Owner)
         {
-            return [];
+            return new HealthBarVisualGraftMetrics(0);
         }
 
-        return HealthBarForecasts.Single(
+        return new HealthBarVisualGraftMetrics(
             Amount,
             NarakuLifeHealthBarColors.Foreground,
-            HealthBarForecastGrowthDirection.FromRight);
+            null);
     }
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)

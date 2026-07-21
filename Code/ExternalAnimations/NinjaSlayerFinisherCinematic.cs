@@ -1,7 +1,6 @@
 using System.Reflection;
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -118,7 +117,6 @@ public static class NinjaSlayerFinisherCinematic
     private const float FinalHitZoomSeconds = 0.1f;
     private const float MultiHitZoomMultiplier = 1.6f;
     private const float FinalHitZoomMultiplier = 2f;
-    private const float ApproachGap = 50f;
     private const float CameraPunchScaleMultiplier = 1.06f;
     private const float CameraPushPixels = 16f;
     private const float EnemyKnockbackPixels = 30f;
@@ -1009,7 +1007,7 @@ public static class NinjaSlayerFinisherCinematic
                 frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
                 foreach (NCreature targetNode in targetNodes)
                 {
-                    if (SetDoomHurtPose(targetNode))
+                    if (DoomHurtPoseController.TryFreeze(targetNode))
                     {
                         frozenHurtTracks.Add(targetNode);
                     }
@@ -1068,7 +1066,7 @@ public static class NinjaSlayerFinisherCinematic
                 }
 
                 RestoreProcessModes(frozenImpactVfx);
-                ResumeDoomHurtPoses(frozenHurtTracks);
+                DoomHurtPoseController.Resume(frozenHurtTracks);
                 RestoreImpactVisuals(impactVisuals.Values);
             }
         }
@@ -1110,7 +1108,7 @@ public static class NinjaSlayerFinisherCinematic
                 frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
                 foreach (NCreature targetNode in targetNodes)
                 {
-                    if (SetDoomHurtPose(targetNode))
+                    if (DoomHurtPoseController.TryFreeze(targetNode))
                     {
                         frozenHurtTracks.Add(targetNode);
                     }
@@ -1177,7 +1175,7 @@ public static class NinjaSlayerFinisherCinematic
                 }
 
                 RestoreProcessModes(frozenImpactVfx);
-                ResumeDoomHurtPoses(frozenHurtTracks);
+                DoomHurtPoseController.Resume(frozenHurtTracks);
                 RestoreImpactVisuals(impactVisuals.Values);
             }
         }
@@ -1414,38 +1412,6 @@ public static class NinjaSlayerFinisherCinematic
             && node.IsInsideTree()
             && !node.IsQueuedForDeletion();
 
-        private static bool SetDoomHurtPose(NCreature creatureNode)
-        {
-            if (!creatureNode.SpineAnimation.IsValid)
-            {
-                return false;
-            }
-
-            creatureNode.SetAnimationTrigger("Hit");
-            using MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-            if (track?.GetAnimationName() != "hurt")
-            {
-                return false;
-            }
-
-            float trackTime = creatureNode.Entity.Monster?.HurtAnimationTrackOffsetForDoom ?? 0.1f;
-            track.SetTrackTime(trackTime);
-            track.SetTimeScale(0f);
-            return true;
-        }
-
-        private static void ResumeDoomHurtPoses(IEnumerable<NCreature> creatureNodes)
-        {
-            foreach (NCreature creatureNode in creatureNodes.Where(GodotObject.IsInstanceValid))
-            {
-                using MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-                if (track?.GetAnimationName() == "hurt")
-                {
-                    track.SetTimeScale(1f);
-                }
-            }
-        }
-
         private static void ApplyEnemyPosition(
             IEnumerable<ImpactVisualSnapshot> snapshots,
             float amount)
@@ -1632,7 +1598,7 @@ public static class NinjaSlayerFinisherCinematic
 
             float targetHalfWidth = target.Visuals.Bounds.Size.X * Mathf.Abs(target.Visuals.Scale.X) * 0.5f;
             return new Vector2(
-                target.Position.X - direction * (targetHalfWidth + ApproachGap),
+                target.Position.X - direction * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap),
                 owner.Position.Y);
         }
 

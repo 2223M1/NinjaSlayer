@@ -5,6 +5,7 @@ namespace NinjaSlayer.Content;
 
 public static class NinjaSlayerCombatVisuals
 {
+    public const float CloseRangeApproachGap = 20f;
     public const float AttackLungeDistance = 90f;
     public const float SlowAttackLungeDistance = 120f;
     public const float SlowAttackLungeDuration = 0.25f;
