@@ -73,7 +73,6 @@ public static class NinjaSlayerDebugCardCatalog
 
         // Rares
         typeof(AlabamaDrop),
-        // Vanilla three-choice effects require at least three cards per rarity/type pair.
         typeof(BangBangFist),
         typeof(BeatPeopleChado),
         typeof(BladesCome),
@@ -98,7 +97,9 @@ public static class NinjaSlayerDebugCardCatalog
             .Concat(AdditionalCards)
             .Distinct();
 
-        return selectedTypes.Select(ResolveCard).ToArray();
+        CardModel[] cards = selectedTypes.Select(ResolveCard).ToArray();
+        NinjaSlayerDebugRewardCoverage.EnsurePotionFutureCoverage(cards);
+        return cards;
     }
 
     private static CardModel ResolveCard(Type cardType)

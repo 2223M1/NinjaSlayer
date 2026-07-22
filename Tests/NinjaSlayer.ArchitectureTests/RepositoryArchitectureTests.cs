@@ -206,6 +206,56 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void DebugCardPoolCoversEveryPotionFutureRewardBucket()
+    {
+        ClassDeclarationSyntax coverage = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "NinjaSlayerDebugRewardCoverage");
+        int minimumCandidates = coverage.Members.OfType<FieldDeclarationSyntax>()
+            .SelectMany(field => field.Declaration.Variables)
+            .Single(variable => variable.Identifier.Text == "MinimumCandidatesPerBucket")
+            .Initializer?.Value is LiteralExpressionSyntax minimumLiteral
+            ? (int)minimumLiteral.Token.Value!
+            : throw new InvalidOperationException("Potion Future minimum candidate count must be a literal integer.");
+        VariableDeclaratorSyntax requiredBuckets = coverage.Members.OfType<FieldDeclarationSyntax>()
+            .SelectMany(field => field.Declaration.Variables)
+            .Single(variable => variable.Identifier.Text == "RequiredBuckets");
+        (string Rarity, string Type)[] required = RequiredRewardBuckets(requiredBuckets).ToArray();
+
+        ClassDeclarationSyntax catalog = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "NinjaSlayerDebugCardCatalog");
+        HashSet<string> removed = TypeNames(catalog, "RemovedCards").ToHashSet(StringComparer.Ordinal);
+        Dictionary<string, string> replacements = ReplacementTypes(catalog);
+        string[] selectedTypes = TypeNames(catalog, "BaselineCards")
+            .Where(type => !removed.Contains(type))
+            .Select(type => replacements.GetValueOrDefault(type, type))
+            .Concat(TypeNames(catalog, "AdditionalCards"))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        Dictionary<string, (string Rarity, string Type)> cardSpecs = CardRewardMetadata();
+
+        foreach (string cardType in selectedTypes)
+        {
+            Assert.True(cardSpecs.ContainsKey(cardType), $"Debug card {cardType} has no readable CardSpec metadata.");
+        }
+        foreach ((string rarity, string type) in required)
+        {
+            int count = selectedTypes.Count(cardType => cardSpecs[cardType] == (rarity, type));
+            Assert.True(
+                count >= minimumCandidates,
+                $"The Future of Potions requires {minimumCandidates} {rarity}/{type} cards, but the debug pool has {count}.");
+        }
+
+        MethodDeclarationSyntax createCards = catalog.Members.OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "CreateCards");
+        Assert.Contains(
+            createCards.DescendantNodes().OfType<InvocationExpressionSyntax>(),
+            invocation => invocation.Expression.ToString()
+                == "NinjaSlayerDebugRewardCoverage.EnsurePotionFutureCoverage");
+    }
+
+    [Fact]
     public void FormPresentationPoliciesAreCentralized()
     {
         string overlay = Sources
@@ -495,6 +545,82 @@ public sealed class RepositoryArchitectureTests
                 }
             }
         }
+    }
+
+    private static IEnumerable<string> TypeNames(ClassDeclarationSyntax catalog, string fieldName)
+    {
+        CollectionExpressionSyntax collection = catalog.Members.OfType<FieldDeclarationSyntax>()
+            .SelectMany(field => field.Declaration.Variables)
+            .Single(variable => variable.Identifier.Text == fieldName)
+            .Initializer?.Value as CollectionExpressionSyntax
+            ?? throw new InvalidOperationException($"{fieldName} must use a collection expression.");
+        return collection.Elements
+            .OfType<ExpressionElementSyntax>()
+            .Select(element => element.Expression)
+            .OfType<TypeOfExpressionSyntax>()
+            .Select(expression => expression.Type.ToString());
+    }
+
+    private static Dictionary<string, string> ReplacementTypes(ClassDeclarationSyntax catalog)
+    {
+        CollectionExpressionSyntax collection = catalog.Members.OfType<FieldDeclarationSyntax>()
+            .SelectMany(field => field.Declaration.Variables)
+            .Single(variable => variable.Identifier.Text == "Replacements")
+            .Initializer?.Value as CollectionExpressionSyntax
+            ?? throw new InvalidOperationException("Replacements must use a collection expression.");
+        return collection.Elements
+            .OfType<ExpressionElementSyntax>()
+            .Select(element => element.Expression)
+            .OfType<TupleExpressionSyntax>()
+            .ToDictionary(
+                tuple => ((TypeOfExpressionSyntax)tuple.Arguments[0].Expression).Type.ToString(),
+                tuple => ((TypeOfExpressionSyntax)tuple.Arguments[1].Expression).Type.ToString(),
+                StringComparer.Ordinal);
+    }
+
+    private static IEnumerable<(string Rarity, string Type)> RequiredRewardBuckets(
+        VariableDeclaratorSyntax requiredBuckets)
+    {
+        CollectionExpressionSyntax collection = requiredBuckets.Initializer?.Value as CollectionExpressionSyntax
+            ?? throw new InvalidOperationException("RequiredBuckets must use a collection expression.");
+        foreach (BaseObjectCreationExpressionSyntax creation in collection.Elements
+                     .OfType<ExpressionElementSyntax>()
+                     .Select(element => element.Expression)
+                     .OfType<BaseObjectCreationExpressionSyntax>())
+        {
+            SeparatedSyntaxList<ArgumentSyntax> arguments = creation.ArgumentList?.Arguments
+                ?? throw new InvalidOperationException("A reward bucket must declare rarity and type arguments.");
+            yield return (
+                ((MemberAccessExpressionSyntax)arguments[0].Expression).Name.Identifier.Text,
+                ((MemberAccessExpressionSyntax)arguments[1].Expression).Name.Identifier.Text);
+        }
+    }
+
+    private static Dictionary<string, (string Rarity, string Type)> CardRewardMetadata()
+    {
+        var result = new Dictionary<string, (string Rarity, string Type)>(StringComparer.Ordinal);
+        foreach (ClassDeclarationSyntax declaration in Sources
+                     .Where(source => source.RelativePath.StartsWith("Cards/", StringComparison.Ordinal))
+                     .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>()))
+        {
+            VariableDeclaratorSyntax? cardSpec = declaration.Members.OfType<FieldDeclarationSyntax>()
+                .SelectMany(field => field.Declaration.Variables)
+                .SingleOrDefault(variable => variable.Identifier.Text == "CardSpec");
+            if (cardSpec?.Initializer?.Value is not BaseObjectCreationExpressionSyntax creation
+                || creation.ArgumentList?.Arguments.Count < 4)
+            {
+                continue;
+            }
+
+            SeparatedSyntaxList<ArgumentSyntax> arguments = creation.ArgumentList!.Arguments;
+            result.Add(
+                declaration.Identifier.Text,
+                (
+                    ((MemberAccessExpressionSyntax)arguments[3].Expression).Name.Identifier.Text,
+                    ((MemberAccessExpressionSyntax)arguments[2].Expression).Name.Identifier.Text
+                ));
+        }
+        return result;
     }
 
     private static CSharpCompilation CreateCompilation()
