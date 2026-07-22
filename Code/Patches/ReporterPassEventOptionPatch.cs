@@ -1,5 +1,3 @@
-using System.Reflection;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Events;
@@ -8,6 +6,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Patching.Models;
 
@@ -18,11 +17,6 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
     private const int CardsToUpgrade = 3;
     private const string RecordOptionKey = "NINJA_SLAYER_REPORTER_PASS_RECORD";
     private const string RelicLocPrefix = "NINJA_SLAYER_RELIC_REPORTER_PASS_RELIC";
-
-    private static readonly MethodInfo? SetEventFinishedMethod =
-        AccessTools.Method(typeof(EventModel), "SetEventFinished", new[] { typeof(LocString) });
-
-    internal static bool IsAvailable => SetEventFinishedMethod != null;
 
     public static string PatchId => "ninjaslayer_reporter_pass_event_option";
 
@@ -35,7 +29,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 
     public static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
     {
-        if (SetEventFinishedMethod == null || __instance.Owner?.GetRelic<ReporterPassRelic>() == null ||
+        if (__instance.Owner?.GetRelic<ReporterPassRelic>() == null ||
             __instance.IsFinished || eventOptions == null)
         {
             return;
@@ -82,7 +76,9 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
         }
 
         // ponytail: protected finish API; reflection avoids patching every event subclass.
-        SetEventFinishedMethod?.Invoke(eventModel, [new LocString("relics", $"{RelicLocPrefix}.record.done")]);
+        GameCompatibility.ReporterPass.TryFinish(
+            eventModel,
+            new LocString("relics", $"{RelicLocPrefix}.record.done"));
         return Task.CompletedTask;
     }
 }

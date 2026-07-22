@@ -1,6 +1,4 @@
-using System.Reflection;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
@@ -15,6 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Feedback;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
@@ -97,11 +96,6 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 
 public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 {
-    private static readonly MethodInfo? SendButtonSelectedMethod =
-        AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)]);
-
-    internal static bool IsAvailable => SendButtonSelectedMethod != null;
-
     public static string PatchId => "ninjaslayer_feedback_confirmation";
     public static string Description => "Require informed confirmation before uploading NinjaSlayer F2 feedback.";
     public static bool IsCritical => true;
@@ -110,7 +104,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 
     public static bool Prefix(NSendFeedbackScreen __instance, NButton _)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled || SendButtonSelectedMethod == null ||
+        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
             !NinjaSlayerFeedbackSession.IsActive || NinjaSlayerFeedbackSession.IsConfirmed)
         {
             return true;
@@ -146,7 +140,9 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
         }
 
         NinjaSlayerFeedbackSession.Confirm();
-        SendButtonSelectedMethod?.Invoke(screen, [screen.GetNode<NButton>("%SendButton")]);
+        GameCompatibility.Feedback.TrySelectSendButton(
+            screen,
+            screen.GetNode<NButton>("%SendButton"));
     }
 
     private static LocString Loc(string key) => new("feedback", key);
