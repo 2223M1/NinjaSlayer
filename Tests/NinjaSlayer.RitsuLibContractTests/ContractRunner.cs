@@ -7,9 +7,11 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Content;
 using STS2RitsuLib;
 using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
+using STS2RitsuLib.Scaffolding.Visuals.Definition;
 
 namespace NinjaSlayer.RitsuLibContractTests;
 
@@ -24,6 +26,7 @@ public partial class ContractRunner : Node
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyFinisherProtectionTransaction();
+            VerifyWorldVisualStylesAreIdempotent();
             VerifyCriticalRollback();
             GD.Print("NinjaSlayer RitsuLib contracts passed.");
             GetTree().Quit(0);
@@ -212,6 +215,65 @@ public partial class ContractRunner : Node
         contextIsCurrent = false;
         staleLedger.FinalizeProtection(staleToken!);
         Require(staleTarget.CurrentHp == 2, "Finalizer wrote HP into a stale combat.");
+    }
+
+    private static void VerifyWorldVisualStylesAreIdempotent()
+    {
+        VerifyWorldVisualStyle(
+            NinjaSlayerWorldVisualProfile.Merchant.BodyStyle(),
+            new Vector2(
+                NinjaSlayerWorldVisualProfile.Merchant.BodyPositionX,
+                NinjaSlayerWorldVisualProfile.Merchant.BodyPositionY),
+            NinjaSlayerWorldVisualProfile.Merchant.BodyScale,
+            "merchant");
+        VerifyWorldVisualStyle(
+            NinjaSlayerWorldVisualProfile.RestSite.BodyStyle(),
+            new Vector2(
+                NinjaSlayerWorldVisualProfile.RestSite.BodyPositionX,
+                NinjaSlayerWorldVisualProfile.RestSite.BodyPositionY),
+            NinjaSlayerWorldVisualProfile.RestSite.BodyScale,
+            "rest site");
+    }
+
+    private static void VerifyWorldVisualStyle(
+        VisualNodeStyle style,
+        Vector2 expectedPosition,
+        float expectedScale,
+        string label)
+    {
+        Require(style.Position == expectedPosition, $"The {label} style lost its calibrated absolute position.");
+        Require(style.Offset is null, $"The {label} style reintroduced an accumulating offset.");
+        Require(
+            style.Scale == new Vector2(expectedScale, expectedScale),
+            $"The {label} style lost its calibrated scale.");
+
+        Type applicatorType = typeof(VisualNodeStyle).Assembly.GetType(
+            "STS2RitsuLib.Scaffolding.Visuals.Definition.VisualNodeStyleApplicator",
+            throwOnError: true)!;
+        MethodInfo apply = applicatorType.GetMethod(
+            "ApplyTo",
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new MissingMethodException(applicatorType.FullName, "ApplyTo");
+        var node = new Node2D
+        {
+            Position = new Vector2(600f, 400f),
+            Scale = new Vector2(3f, 2f)
+        };
+        try
+        {
+            for (int replay = 0; replay < 3; replay++)
+            {
+                apply.Invoke(null, [style, node, null]);
+                Require(node.Position == expectedPosition, $"The {label} style drifted on replay {replay + 1}.");
+                Require(
+                    node.Scale == new Vector2(expectedScale, expectedScale),
+                    $"The {label} scale drifted on replay {replay + 1}.");
+            }
+        }
+        finally
+        {
+            node.Free();
+        }
     }
 
     private static Creature CreateCreature(ICombatState combatState, int currentHp, int maxHp)

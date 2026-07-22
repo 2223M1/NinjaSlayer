@@ -17,7 +17,7 @@ internal static class NinjaSlayerTransitionVideo
         }
 
         preloadRequested = true;
-        ResourceLoader.LoadThreadedRequest(NinjaSlayerCharacter.TransitionVideoPath);
+        ResourceLoader.LoadThreadedRequest(NinjaSlayerAssetProfile.TransitionVideoPath);
     }
 
     public static VideoStream GetStream()
@@ -27,7 +27,7 @@ internal static class NinjaSlayerTransitionVideo
             return cachedStream;
         }
 
-        string path = NinjaSlayerCharacter.TransitionVideoPath;
+        string path = NinjaSlayerAssetProfile.TransitionVideoPath;
         ResourceLoader.ThreadLoadStatus status = ResourceLoader.LoadThreadedGetStatus(path);
         Resource? resource = status is ResourceLoader.ThreadLoadStatus.InProgress or ResourceLoader.ThreadLoadStatus.Loaded
             ? ResourceLoader.LoadThreadedGet(path)

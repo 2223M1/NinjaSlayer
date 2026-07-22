@@ -115,16 +115,16 @@ const patchSources = filesUnder(join(root, 'Code', 'Patches'))
   .map((path) => readFileSync(path, 'utf8'))
   .join('\n');
 const entrySource = readFileSync(join(root, 'Scripts', 'Entry.cs'), 'utf8');
-const characterSource = readFileSync(join(root, 'Content', 'NinjaSlayerCharacter.cs'), 'utf8');
+const worldVisualSource = readFileSync(join(root, 'Content', 'NinjaSlayerWorldVisualProfile.cs'), 'utf8');
 const patchGroupSource = readFileSync(join(root, 'Code', 'Patches', 'NinjaSlayerPatchGroups.cs'), 'utf8');
 
-for (const visualClass of ['MerchantVisuals', 'RestSiteVisuals']) {
-  const classStart = characterSource.indexOf(`class ${visualClass}`);
-  const bodyStyleStart = characterSource.indexOf('BodyStyle()', classStart);
-  const bodyStyleEnd = characterSource.indexOf(';', bodyStyleStart);
-  const bodyStyle = characterSource.slice(bodyStyleStart, bodyStyleEnd);
+for (const visualClass of ['Merchant', 'RestSite']) {
+  const classStart = worldVisualSource.indexOf(`class ${visualClass}`);
+  const bodyStyleStart = worldVisualSource.indexOf('BodyStyle()', classStart);
+  const bodyStyleEnd = worldVisualSource.indexOf(';', bodyStyleStart);
+  const bodyStyle = worldVisualSource.slice(bodyStyleStart, bodyStyleEnd);
   if (!bodyStyle.includes('.WithPosition(') || bodyStyle.includes('.WithOffset(')) {
-    errors.push(`${visualClass}.BodyStyle must use idempotent absolute positioning`);
+    errors.push(`NinjaSlayerWorldVisualProfile.${visualClass}.BodyStyle must use idempotent absolute positioning`);
   }
 }
 const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+class\s+(\w+)\s*:\s*IPatchMethod/g)]
