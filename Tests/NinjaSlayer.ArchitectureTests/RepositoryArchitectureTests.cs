@@ -153,6 +153,26 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void ChadoRulesDoNotOwnNodesAndPresentationCoversEveryBindingOrder()
+    {
+        string rules = Sources
+            .Single(source => source.RelativePath == "Content/ChadoCombatRules.cs")
+            .Root
+            .ToFullString();
+        Assert.DoesNotContain("NCard", rules, StringComparison.Ordinal);
+        Assert.DoesNotContain("UpdateVisuals", rules, StringComparison.Ordinal);
+
+        string patches = Sources
+            .Single(source => source.RelativePath == "Code/Patches/ChadoPresentationPatches.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("nameof(CardModel.InvokeEnergyCostChanged)", patches, StringComparison.Ordinal);
+        Assert.Contains("nameof(NCard._Ready)", patches, StringComparison.Ordinal);
+        Assert.Contains("PatchTarget.Setter<NCard>(nameof(NCard.Model))", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("set_Model", patches, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void HarmonyInstallationIsCentralizedInCompatibilityInfrastructure()
     {
         string[] allowed =
