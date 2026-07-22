@@ -22,7 +22,7 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
         NinjaSlayerFinisherCinematic.NotifyPrimaryAttackAnimation(creature, triggerName);
 
         // ponytail: one rebuild-time switch restores the archived cue animations.
-        if (!NinjaSlayerCharacter.OriginalAnimations)
+        if (!NinjaSlayerAnimationCatalog.OriginalAnimations)
         {
             return true;
         }

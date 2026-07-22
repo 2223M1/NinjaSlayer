@@ -26,16 +26,16 @@ public static class NinjaSlayerAnimations
             .AddState("relaxed", loop: true).Done();
 
         builder.AddAnyState("Idle", "idle");
-        builder.AddAnyState("Attack", NinjaSlayerCharacter.AttackCueName);
+        builder.AddAnyState("Attack", NinjaSlayerAnimationCatalog.AttackCueName);
         builder.AddAnyState("XAttack", "x_attack");
         builder.AddAnyState("XAttackCue", "x_attack");
         builder.AddAnyState(TornadoFistSpinAnimation.CueTriggerName, "tornado_fist");
         builder.AddAnyState("Cast", "cast");
-        builder.AddAnyState("Hit", NinjaSlayerCharacter.HitCueName);
-        builder.AddAnyState("BlockedHit", NinjaSlayerCharacter.BlockedHitCueName);
+        builder.AddAnyState("Hit", NinjaSlayerAnimationCatalog.HitCueName);
+        builder.AddAnyState("BlockedHit", NinjaSlayerAnimationCatalog.BlockedHitCueName);
         builder.AddAnyState("Dead", "dead");
         builder.AddAnyState("Relaxed", "relaxed");
 
-        return builder.BuildForVisualsRoot(visualsRoot, character, NinjaSlayerCharacter.CombatVisualCues);
+        return builder.BuildForVisualsRoot(visualsRoot, character, NinjaSlayerAnimationCatalog.CombatVisualCues);
     }
 }

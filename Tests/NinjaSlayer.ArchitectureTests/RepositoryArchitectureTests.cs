@@ -206,6 +206,147 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void CharacterPresentationResponsibilitiesAreSeparated()
+    {
+        string character = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerCharacter.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("NinjaSlayerCharacterStats", character, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerAssetProfile.Profile", character, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerAnimations.BuildCombatAnimationStateMachine", character, StringComparison.Ordinal);
+        Assert.DoesNotContain("res://", character, StringComparison.Ordinal);
+        Assert.DoesNotContain("ModVisualCues", character, StringComparison.Ordinal);
+        Assert.DoesNotContain("CharacterWorldProceduralVisualSetBuilder", character, StringComparison.Ordinal);
+        Assert.DoesNotContain("VisualNodeStyle", character, StringComparison.Ordinal);
+
+        string assets = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerAssetProfile.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("NinjaSlayerAnimationCatalog.CombatVisualCues", assets, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerWorldVisualProfile.Profile", assets, StringComparison.Ordinal);
+
+        string animations = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerAnimationCatalog.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("IdleFrameDuration = 1f / 24f", animations, StringComparison.Ordinal);
+        Assert.Contains(".Sequence(\"idle\", AddIdleFrames)", animations, StringComparison.Ordinal);
+        Assert.Contains(".Sequence(\"archived_attack\"", animations, StringComparison.Ordinal);
+        Assert.Contains(".Sequence(\"archived_hit\"", animations, StringComparison.Ordinal);
+        Assert.Contains(".Sequence(\"archived_blocked_hit\"", animations, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CharacterStatsAndAssetPathsMatchThePreSplitSnapshot()
+    {
+        CompilationUnitSyntax stats = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerCharacterStats.cs")
+            .Root;
+        Dictionary<string, string> statValues = stats.DescendantNodes()
+            .OfType<VariableDeclaratorSyntax>()
+            .Where(variable => variable.Initializer is not null)
+            .ToDictionary(
+                variable => variable.Identifier.Text,
+                variable => variable.Initializer!.Value.ToString(),
+                StringComparer.Ordinal);
+        Assert.Equal("72", statValues["StartingHp"]);
+        Assert.Equal("99", statValues["StartingGold"]);
+        Assert.Equal("0.15f", statValues["AttackAnimDelay"]);
+        Assert.Equal("0.2f", statValues["CastAnimDelay"]);
+        Assert.Equal("false", statValues["RequiresEpochAndTimeline"]);
+
+        CompilationUnitSyntax assets = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerAssetProfile.cs")
+            .Root;
+        Dictionary<string, string> paths = assets.DescendantNodes()
+            .OfType<VariableDeclaratorSyntax>()
+            .Where(variable => variable.Initializer?.Value is LiteralExpressionSyntax literal
+                && literal.IsKind(SyntaxKind.StringLiteralExpression))
+            .ToDictionary(
+                variable => variable.Identifier.Text,
+                variable => ((LiteralExpressionSyntax)variable.Initializer!.Value).Token.ValueText,
+                StringComparer.Ordinal);
+        Assert.Equal("res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn", paths["VisualsPath"]);
+        Assert.Equal("res://NinjaSlayer/scenes/ui/ninja_slayer_energy_counter.tscn", paths["EnergyCounterPath"]);
+        Assert.Equal(
+            "res://NinjaSlayer/materials/transitions/ninja_slayer_transition_mat.tres",
+            paths["CharacterSelectTransitionMaterialPath"]);
+        Assert.Equal("res://NinjaSlayer/videos/ninja_slayer_transition.ogv", paths["TransitionVideoPath"]);
+    }
+
+    [Fact]
+    public void WorldPresentationStylesUseAbsoluteCoordinates()
+    {
+        CompilationUnitSyntax world = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerWorldVisualProfile.cs")
+            .Root;
+        Assert.DoesNotContain(
+            world.DescendantNodes().OfType<InvocationExpressionSyntax>(),
+            invocation => invocation.Expression is MemberAccessExpressionSyntax
+            {
+                Name.Identifier.Text: "WithOffset"
+            });
+
+        ClassDeclarationSyntax[] placements = world.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(declaration => declaration.Identifier.Text is "Merchant" or "RestSite")
+            .ToArray();
+        Assert.Equal(2, placements.Length);
+        foreach (ClassDeclarationSyntax placement in placements)
+        {
+            MethodDeclarationSyntax style = placement.Members
+                .OfType<MethodDeclarationSyntax>()
+                .Single(method => method.Identifier.Text == "BodyStyle");
+            InvocationExpressionSyntax[] calls = style.DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .ToArray();
+            Assert.Single(calls, invocation => invocation.Expression is MemberAccessExpressionSyntax
+            {
+                Name.Identifier.Text: "WithPosition"
+            });
+            Assert.Single(calls, invocation => invocation.Expression is MemberAccessExpressionSyntax
+            {
+                Name.Identifier.Text: "WithScale"
+            });
+        }
+    }
+
+    [Fact]
+    public void PresentationConsumersUseDedicatedCatalogs()
+    {
+        string animations = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerAnimations.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("NinjaSlayerAnimationCatalog.AttackCueName", animations, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerAnimationCatalog.CombatVisualCues", animations, StringComparison.Ordinal);
+
+        string transitionVideo = Sources
+            .Single(source => source.RelativePath == "Code/Transition/NinjaSlayerTransitionVideo.cs")
+            .Root
+            .ToFullString();
+        string transitionPaths = Sources
+            .Single(source => source.RelativePath == "Code/Transition/NinjaSlayerTransitionPaths.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("NinjaSlayerAssetProfile.TransitionVideoPath", transitionVideo, StringComparison.Ordinal);
+        Assert.Contains(
+            "NinjaSlayerAssetProfile.CharacterSelectTransitionMaterialPath",
+            transitionPaths,
+            StringComparison.Ordinal);
+
+        foreach (SourceDocument source in Sources.Where(source => source.RelativePath != "Content/NinjaSlayerCharacter.cs"))
+        {
+            string text = source.Root.ToFullString();
+            Assert.DoesNotContain("NinjaSlayerCharacter.CombatVisualCues", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("NinjaSlayerCharacter.TransitionVideoPath", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("NinjaSlayerCharacter.OriginalAnimations", text, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void HarmonyInstallationIsCentralizedInCompatibilityInfrastructure()
     {
         string[] allowed =

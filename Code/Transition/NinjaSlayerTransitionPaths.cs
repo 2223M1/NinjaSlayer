@@ -11,7 +11,7 @@ internal static class NinjaSlayerTransitionPaths
             return false;
         }
 
-        if (path == NinjaSlayerCharacter.CharacterSelectTransitionMaterialPath)
+        if (path == NinjaSlayerAssetProfile.CharacterSelectTransitionMaterialPath)
         {
             return true;
         }
