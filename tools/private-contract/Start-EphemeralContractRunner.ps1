@@ -43,12 +43,39 @@ $sessionId = [Guid]::NewGuid().ToString('N')
 $sessionRoot = Join-Path $env:TEMP "NinjaSlayer-ContractRunner-$sessionId"
 $runnerDirectory = Join-Path $sessionRoot 'runner'
 $referenceDirectory = Join-Path $sessionRoot 'references'
+$dotnetRuntimeDirectory = Join-Path $sessionRoot 'dotnet-runtime'
 $workDirectory = Join-Path $sessionRoot 'work'
 $archive = Join-Path $sessionRoot 'actions-runner.zip'
 $runnerName = "ninjaslayer-contract-$env:COMPUTERNAME-$($sessionId.Substring(0, 8))"
 $downloadUrl = "https://github.com/actions/runner/releases/download/v$RunnerVersion/actions-runner-win-x64-$RunnerVersion.zip"
 $previousSts2DataDirectory = $env:STS2_DATA_DIR
 $previousGodotExecutable = $env:GODOT_EXE
+$previousContractDotnetRoot = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
+
+function Copy-IsolatedDotnet9Runtime {
+    param([Parameter(Mandatory)][string]$Destination)
+
+    $dotnetExecutable = (Get-Command dotnet -ErrorAction Stop).Source
+    $dotnetRoot = Split-Path -Parent $dotnetExecutable
+    $fxr = Get-ChildItem -LiteralPath (Join-Path $dotnetRoot 'host\fxr') -Directory |
+        Where-Object { $_.Name -match '^9\.' } |
+        Sort-Object { [Version]$_.Name } -Descending |
+        Select-Object -First 1
+    $runtime = Get-ChildItem -LiteralPath (Join-Path $dotnetRoot 'shared\Microsoft.NETCore.App') -Directory |
+        Where-Object { $_.Name -match '^9\.' } |
+        Sort-Object { [Version]$_.Name } -Descending |
+        Select-Object -First 1
+    if ($null -eq $fxr -or $null -eq $runtime) {
+        throw 'The protected contract runner requires an installed .NET 9 runtime and hostfxr.'
+    }
+
+    $fxrRoot = Join-Path $Destination 'host\fxr'
+    $sharedRoot = Join-Path $Destination 'shared\Microsoft.NETCore.App'
+    New-Item -ItemType Directory -Path $fxrRoot, $sharedRoot -Force | Out-Null
+    Copy-Item -LiteralPath $dotnetExecutable -Destination $Destination
+    Copy-Item -LiteralPath $fxr.FullName -Destination $fxrRoot -Recurse
+    Copy-Item -LiteralPath $runtime.FullName -Destination $sharedRoot -Recurse
+}
 
 function Remove-SessionDirectory {
     param([Parameter(Mandatory)][string]$Path)
@@ -76,6 +103,7 @@ function Remove-SessionDirectory {
 
 try {
     New-Item -ItemType Directory -Path $runnerDirectory, $referenceDirectory, $workDirectory -Force | Out-Null
+    Copy-IsolatedDotnet9Runtime -Destination $dotnetRuntimeDirectory
     foreach ($fileName in $requiredReferences) {
         $destination = Join-Path $referenceDirectory $fileName
         Copy-Item -LiteralPath (Join-Path $GameDataDirectory $fileName) -Destination $destination
@@ -109,6 +137,7 @@ try {
 
         $env:STS2_DATA_DIR = $referenceDirectory
         $env:GODOT_EXE = $GodotExecutable
+        $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $dotnetRuntimeDirectory
         & .\run.cmd
         if ($LASTEXITCODE -ne 0) {
             throw "The ephemeral GitHub Actions runner exited with code $LASTEXITCODE."
@@ -121,5 +150,6 @@ try {
 finally {
     $env:STS2_DATA_DIR = $previousSts2DataDirectory
     $env:GODOT_EXE = $previousGodotExecutable
+    $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $previousContractDotnetRoot
     Remove-SessionDirectory -Path $sessionRoot
 }
