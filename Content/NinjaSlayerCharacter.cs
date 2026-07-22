@@ -25,11 +25,10 @@ public interface INinjaSlayerCharacter
 public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemplate<TCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>, INinjaSlayerCharacter
     where TCardPool : CardPoolModel
 {
-    private const int idleFrameCount = 22;
     private const float idleFrameDuration = 1f / 24f;
     private const string visualsPath = "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn";
     private const string energyCounterPath = "res://NinjaSlayer/scenes/ui/ninja_slayer_energy_counter.tscn";
-    private const string idleTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png";
+    private const string idleTexturePath = NinjaSlayerFormPresentationCatalog.NormalIdleFirstTexturePath;
     private const string iconTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/character_icon_NinjaSlayer.png";
     private const string iconOutlineTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/character_icon_NinjaSlayer_outline.png";
     private const string iconScenePath = "res://NinjaSlayer/scenes/ui/ninja_slayer_icon.tscn";
@@ -152,10 +151,10 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
 
     private static void AddIdleFrames(VisualFrameSequenceBuilder seq)
     {
-        for (var i = 1; i <= idleFrameCount; i++)
+        for (var i = 1; i <= NinjaSlayerFormPresentationCatalog.NormalIdleFrameCount; i++)
         {
             seq.Frame(
-                $"res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_{i:0000}.png",
+                NinjaSlayerFormPresentationCatalog.NormalIdleTexturePath(i),
                 idleFrameDuration,
                 CueStyle(offsetX: 0f));
         }

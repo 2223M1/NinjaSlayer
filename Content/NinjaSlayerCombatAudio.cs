@@ -20,7 +20,7 @@ public readonly struct NinjaSlayerCombatAudioSet
     public string OutroSpinAttack { get; init; }
 
     public static NinjaSlayerCombatAudioSet For(Creature creature) =>
-        NinjaSlayerFormState.IsFullyReleasedNaraku(creature) ? Naraku : NinjaSlayer;
+        NinjaSlayerFormState.GetPresentation(creature).UsesNarakuAudio ? Naraku : NinjaSlayer;
 
     public static readonly NinjaSlayerCombatAudioSet NinjaSlayer = new()
     {

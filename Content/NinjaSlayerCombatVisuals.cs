@@ -11,12 +11,7 @@ public static class NinjaSlayerCombatVisuals
     public const float SlowAttackLungeDuration = 0.25f;
     public static readonly Vector2 BodySpriteBasePosition = new(-160f, -190f);
     public const float BodySpriteBaseScale = 0.33f;
-    public const float NarakuFormYOffset = -50f;
-    public const float ShadowNormalScale = 0.5f;
-    public const float ShadowNarakuScale = 1f;
 
     public static float GetShadowScale(Creature creature) =>
-        NinjaSlayerFormState.IsFullyReleasedNaraku(creature)
-            ? ShadowNarakuScale
-            : ShadowNormalScale;
+        NinjaSlayerFormState.GetPresentation(creature).ShadowScale;
 }
