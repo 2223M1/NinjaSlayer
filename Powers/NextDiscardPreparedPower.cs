@@ -6,13 +6,12 @@ using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Code.Lifecycle;
 
 namespace NinjaSlayer.Powers;
 
 public sealed class NextDiscardPreparedPower : NinjaSlayerPowerTemplate
 {
-    private readonly HashSet<CardModel> _protectedSourceCards = [];
-
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
@@ -20,7 +19,14 @@ public sealed class NextDiscardPreparedPower : NinjaSlayerPowerTemplate
     {
         if (cardSource is not null)
         {
-            _protectedSourceCards.Add(cardSource);
+            SourceProtectionState? state = CardPlayResolutionScope.GetOrCreateCardState(
+                cardSource,
+                this,
+                static () => new SourceProtectionState());
+            if (state is not null)
+            {
+                state.Protected = true;
+            }
         }
 
         return Task.CompletedTask;
@@ -33,14 +39,14 @@ public sealed class NextDiscardPreparedPower : NinjaSlayerPowerTemplate
             return;
         }
 
-        int unprotectedLayers = Amount - _protectedSourceCards.Count;
-        bool isSourceCard = _protectedSourceCards.Remove(card);
-        if (isSourceCard && unprotectedLayers <= 0)
+        bool isSourceCard = CardPlayResolutionScope.TryGetCardState(card, this, out SourceProtectionState? state)
+            && state is { Protected: true };
+        int unprotectedLayers = Amount - (isSourceCard ? 1 : 0);
+        if (state is not null)
         {
-            return;
+            state.Protected = false;
         }
-
-        if (!isSourceCard && unprotectedLayers <= 0)
+        if (unprotectedLayers <= 0)
         {
             return;
         }
@@ -59,5 +65,10 @@ public sealed class NextDiscardPreparedPower : NinjaSlayerPowerTemplate
         {
             await PowerCmd.Remove(this);
         }
+    }
+
+    private sealed class SourceProtectionState
+    {
+        public bool Protected { get; set; }
     }
 }

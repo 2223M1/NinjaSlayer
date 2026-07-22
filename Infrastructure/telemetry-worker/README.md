@@ -1,8 +1,14 @@
 # NinjaSlayer Telemetry Worker
 
-This Worker keeps the existing PostHog `POST` proxy and adds `PUT /feedback`
-storage in the free Workers KV allowance. Logs are split into 20 MiB chunks and
-all feedback keys expire after 180 days.
+This Worker accepts the RitsuLib `run_history.completed` envelope and anonymous
+F2 feedback. Inputs are strictly validated before telemetry is forwarded to
+PostHog or feedback is committed to Workers KV.
+
+Raw IP addresses are never stored or forwarded. A server-secret HMAC of the
+transient Cloudflare source IP is used for minute limits and Durable Object
+daily quotas. Telemetry is limited to 25 MiB per HMAC per day. Feedback is
+limited to five submissions and 96 MiB per HMAC per day. A submission-scoped
+Durable Object serializes retries so one complete commit wins.
 
 ## Deployment
 
@@ -15,7 +21,14 @@ npm test
 .\node_modules\.bin\wrangler.cmd deploy
 ```
 
-`POSTHOG_API_KEY` must already be present before deployment.
+`POSTHOG_API_KEY` and `RATE_LIMIT_SALT` must be present before deployment. The
+two rate-limit bindings, `ANONYMOUS_QUOTAS`, `FEEDBACK_SUBMISSIONS`, and
+`FEEDBACK_KV` are also mandatory; production requests fail closed with `503`
+when any security dependency is unavailable.
+
+Run `npx wrangler deploy --dry-run` before a live deployment. The Worker accepts
+only snake_case `applicant_id` and `request_id` fields from the RitsuLib 0.4.62
+contract; camelCase and unknown envelope fields are rejected.
 
 ## Feedback administration
 

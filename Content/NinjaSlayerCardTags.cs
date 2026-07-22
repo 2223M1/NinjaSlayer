@@ -9,5 +9,5 @@ namespace NinjaSlayer.Content;
 [RegisterOwnedCardTag(nameof(Shuriken))]
 public class NinjaSlayerCardTags
 {
-    public static readonly CardTag Shuriken = ModContentRegistry.GetQualifiedCardTagId(Entry.ModId, nameof(Shuriken)).GetModCardTag();
+    public static readonly CardTag Shuriken = ModContentRegistry.GetQualifiedCardTagId(NinjaSlayerIds.ModId, nameof(Shuriken)).GetModCardTag();
 }

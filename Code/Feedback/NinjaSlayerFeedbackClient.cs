@@ -53,6 +53,7 @@ public static class NinjaSlayerFeedbackClient
                         logsStream);
                     using HttpRequestMessage request = new(HttpMethod.Put, FeedbackUrl) { Content = form };
                     request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Feedback-Version", "1");
+                    request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Submission-Id", submissionId);
                     using CancellationTokenSource attemptCancellation =
                         CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     attemptCancellation.CancelAfter(AttemptTimeout);

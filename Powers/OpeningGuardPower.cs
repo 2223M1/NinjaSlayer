@@ -13,14 +13,12 @@ namespace NinjaSlayer.Powers;
 
 public sealed class OpeningGuardPower : NinjaSlayerPowerTemplate
 {
-    private readonly HashSet<Creature> _blockedAttackers = [];
-
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.For(typeof(OpeningPower));
 
-    public override Task AfterDamageReceived(
+    public override async Task AfterDamageReceived(
         PlayerChoiceContext choiceContext,
         Creature target,
         DamageResult result,
@@ -33,13 +31,11 @@ public sealed class OpeningGuardPower : NinjaSlayerPowerTemplate
             && dealer.Side != Owner.Side
             && props.IsPoweredAttack()
             && result.WasFullyBlocked
-            && result.BlockedDamage > 0
-            && _blockedAttackers.Add(dealer))
+            && result.BlockedDamage > 0)
         {
             Flash();
+            await PowerCmd.Apply<OpeningGuardMarkPower>(choiceContext, dealer, 1m, Owner, cardSource, silent: true);
         }
-
-        return Task.CompletedTask;
     }
 
     public override async Task BeforeSideTurnStart(
@@ -53,9 +49,31 @@ public sealed class OpeningGuardPower : NinjaSlayerPowerTemplate
             return;
         }
 
-        foreach (Creature attacker in _blockedAttackers.Where(c => c.IsAlive).ToList())
+        await PowerCmd.Remove(this);
+    }
+}
+
+public sealed class OpeningGuardMarkPower : NinjaSlayerPowerTemplate
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Single;
+    public override PowerInstanceType InstanceType => PowerInstanceType.InstancedPerApplier;
+    protected override bool IsVisibleInternal => false;
+
+    public override async Task BeforeSideTurnStart(
+        PlayerChoiceContext choiceContext,
+        CombatSide side,
+        IReadOnlyList<Creature> participants,
+        ICombatState combatState)
+    {
+        if (Applier is not { } guardedCreature || !participants.Contains(guardedCreature))
         {
-            await PowerCmd.Apply<OpeningPower>(choiceContext, attacker, 1m, Owner, null);
+            return;
+        }
+
+        if (Owner.IsAlive)
+        {
+            await PowerCmd.Apply<OpeningPower>(choiceContext, Owner, 1m, guardedCreature, null);
         }
 
         await PowerCmd.Remove(this);

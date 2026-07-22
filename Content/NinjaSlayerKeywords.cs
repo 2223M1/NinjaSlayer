@@ -9,5 +9,5 @@ namespace NinjaSlayer.Content;
 [RegisterOwnedCardKeyword(nameof(Scry), CardDescriptionPlacement = ModKeywordCardDescriptionPlacement.BeforeCardDescription)]
 public class NinjaSlayerKeywords
 {
-    public static readonly CardKeyword Scry = ModContentRegistry.GetQualifiedKeywordId(Entry.ModId, nameof(Scry)).GetModCardKeyword();
+    public static readonly CardKeyword Scry = ModContentRegistry.GetQualifiedKeywordId(NinjaSlayerIds.ModId, nameof(Scry)).GetModCardKeyword();
 }

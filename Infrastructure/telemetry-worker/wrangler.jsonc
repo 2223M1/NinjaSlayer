@@ -16,6 +16,27 @@
 			"id": "b0c2a010e96040ecb2f6c83a935a61b4"
 		}
 	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "ANONYMOUS_QUOTAS",
+				"class_name": "AnonymousQuotaGuard"
+			},
+			{
+				"name": "FEEDBACK_SUBMISSIONS",
+				"class_name": "FeedbackSubmissionCoordinator"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"AnonymousQuotaGuard",
+				"FeedbackSubmissionCoordinator"
+			]
+		}
+	],
 	"ratelimits": [
 		{
 			"name": "TELEMETRY_RATE_LIMITER",

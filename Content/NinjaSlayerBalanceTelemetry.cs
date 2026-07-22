@@ -28,9 +28,9 @@ public static class NinjaSlayerBalanceTelemetry
         TelemetryRegistry.RegisterApplicant(
             new TelemetryApplicant
             {
-                ApplicantId = Entry.ModId,
-                OwnerModId = Entry.ModId,
-                DisplayName = Entry.ModId,
+                ApplicantId = NinjaSlayerIds.ModId,
+                OwnerModId = NinjaSlayerIds.ModId,
+                DisplayName = NinjaSlayerIds.ModId,
                 DisplayNameText = ModSettingsText.Literal("NinjaSlayer"),
                 Adapter = new PostHogTelemetryAdapter(
                     host: "https://ninja-slayer-telemetry.theonetrue2223.workers.dev",
@@ -53,12 +53,12 @@ public static class NinjaSlayerBalanceTelemetry
             }
         );
 
-        Client = TelemetryApi.GetClient(Entry.ModId);
+        Client = TelemetryApi.GetClient(NinjaSlayerIds.ModId);
     }
 
     public class NinjaSlayerBalanceContributionProvider : ITelemetryContributionProvider
     {
-        public string ContributorModId => Entry.ModId;
+        public string ContributorModId => NinjaSlayerIds.ModId;
 
         public string ContributionId => BalanceContextContributionId;
 

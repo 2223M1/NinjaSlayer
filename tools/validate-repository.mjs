@@ -30,7 +30,6 @@ for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter(
   readJson(path);
 }
 readJson(join(root, 'NinjaSlayer.json'));
-readJson(join(root, 'Infrastructure', 'patch-capabilities.json'));
 
 for (const name of ['feedback.json', 'enchantments.json']) {
   const englishPath = join(root, 'NinjaSlayer', 'localization', 'eng', name);
@@ -85,19 +84,70 @@ for (const path of sourceFiles) {
   }
 }
 
-const capabilities = readJson(join(root, 'Infrastructure', 'patch-capabilities.json')) ?? {};
 const patchSources = filesUnder(join(root, 'Code', 'Patches'))
   .filter((path) => path.endsWith('.cs'))
   .map((path) => readFileSync(path, 'utf8'))
   .join('\n');
 const entrySource = readFileSync(join(root, 'Scripts', 'Entry.cs'), 'utf8');
-for (const [capability, patches] of Object.entries(capabilities)) {
-  if (!entrySource.includes(`"${capability}"`)) errors.push(`Entry.cs does not install capability ${capability}`);
-  for (const patch of patches) {
-    const classPattern = new RegExp(`class\\s+${patch.class}\\b[\\s\\S]*?IsCritical\\s*=>\\s*true;`);
-    if (!classPattern.test(patchSources)) errors.push(`${patch.class} is missing or is not critical`);
-    if (!patchSources.includes(`"${patch.id}"`)) errors.push(`${patch.class} does not expose patch id ${patch.id}`);
-    if (!entrySource.includes(`RegisterPatch<${patch.class}>`)) errors.push(`${patch.class} is absent from Entry.cs`);
+const characterSource = readFileSync(join(root, 'Content', 'NinjaSlayerCharacter.cs'), 'utf8');
+const patchGroupSource = readFileSync(join(root, 'Code', 'Patches', 'NinjaSlayerPatchGroups.cs'), 'utf8');
+
+for (const visualClass of ['MerchantVisuals', 'RestSiteVisuals']) {
+  const classStart = characterSource.indexOf(`class ${visualClass}`);
+  const bodyStyleStart = characterSource.indexOf('BodyStyle()', classStart);
+  const bodyStyleEnd = characterSource.indexOf(';', bodyStyleStart);
+  const bodyStyle = characterSource.slice(bodyStyleStart, bodyStyleEnd);
+  if (!bodyStyle.includes('.WithPosition(') || bodyStyle.includes('.WithOffset(')) {
+    errors.push(`${visualClass}.BodyStyle must use idempotent absolute positioning`);
+  }
+}
+const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+class\s+(\w+)\s*:\s*IPatchMethod/g)]
+  .map((match) => match[1]);
+const patchRegistrations = [...patchGroupSource.matchAll(/RegisterPatch<(\w+)>/g)]
+  .map((match) => match[1]);
+for (const patchClass of patchClasses) {
+  const count = patchRegistrations.filter((registered) => registered === patchClass).length;
+  if (count !== 1) errors.push(`${patchClass} must appear in exactly one typed patch group (found ${count})`);
+}
+for (const registered of patchRegistrations) {
+  if (!patchClasses.includes(registered)) errors.push(`Typed patch group references unknown patch ${registered}`);
+}
+
+const patchDeclarations = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+class\s+(\w+)\s*:\s*IPatchMethod/g)];
+const patchBodies = new Map(patchDeclarations.map((match, index) => [
+  match[1],
+  patchSources.slice(match.index, patchDeclarations[index + 1]?.index ?? patchSources.length),
+]));
+for (const groupName of [
+  'CardResolutionPatchGroup',
+  'PreparedPatchGroup',
+  'FinisherCorePatchGroup',
+  'TransitionCorePatchGroup',
+]) {
+  const groupStart = patchGroupSource.indexOf(`class ${groupName}`);
+  const groupEnd = patchGroupSource.indexOf('\ninternal sealed class ', groupStart + 1);
+  const groupBody = patchGroupSource.slice(groupStart, groupEnd < 0 ? undefined : groupEnd);
+  for (const match of groupBody.matchAll(/RegisterPatch<(\w+)>/g)) {
+    if (!patchBodies.get(match[1])?.includes('IsCritical => true')) {
+      errors.push(`${groupName} contains non-critical required patch ${match[1]}`);
+    }
+  }
+}
+
+const patchIds = [...patchSources.matchAll(/PatchId\s*=>\s*"([^"]+)"/g)].map((match) => match[1]);
+for (const patchId of new Set(patchIds)) {
+  const count = patchIds.filter((candidate) => candidate === patchId).length;
+  if (count !== 1) errors.push(`Patch id ${patchId} is declared ${count} times`);
+}
+if (patchIds.length !== patchClasses.length) {
+  errors.push(`Expected one PatchId per IPatchMethod (${patchClasses.length} classes, ${patchIds.length} ids)`);
+}
+
+const patchGroups = [...patchGroupSource.matchAll(/sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
+  .map((match) => match[1]);
+for (const patchGroup of patchGroups) {
+  if (!entrySource.includes(`InstallCapability<${patchGroup}>`)) {
+    errors.push(`Entry.cs does not install typed patch group ${patchGroup}`);
   }
 }
 

@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Rooms;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -26,20 +27,12 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
         new DynamicVar("DebuffBonus", 2)
     ];
 
-    private readonly List<CardPlayState> _playStates = [];
-
-    public override Task BeforeCombatStart()
-    {
-        ClearPlayState();
-        return Task.CompletedTask;
-    }
-
     public override Task BeforeCardPlayed(CardPlay cardPlay)
     {
-        if (cardPlay.Card.Owner == Owner)
+        if (cardPlay.Card.Owner == Owner
+            && cardPlay.Target?.HasPower<ArtifactPower>() != true)
         {
-            _playStates.RemoveAll(state => ReferenceEquals(state.CardPlay, cardPlay));
-            _playStates.Add(new CardPlayState(cardPlay));
+            CardPlayResolutionScope.GetOrCreatePlayState(cardPlay, this, () => new CardPlayState(cardPlay));
         }
 
         return Task.CompletedTask;
@@ -111,32 +104,18 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
             return Task.CompletedTask;
         }
 
-        CardPlayState? state = _playStates.LastOrDefault(candidate => ReferenceEquals(candidate.CardPlay, cardPlay));
+        CardPlayState? state = FindActiveState(cardPlay.Card);
         if (state?.Triggered == true)
         {
             Flash();
         }
-
-        if (state != null)
-        {
-            _playStates.Remove(state);
-        }
         return Task.CompletedTask;
-    }
-
-    public override Task AfterCombatEnd(CombatRoom room)
-    {
-        ClearPlayState();
-        return Task.CompletedTask;
-    }
-
-    private void ClearPlayState()
-    {
-        _playStates.Clear();
     }
 
     private CardPlayState? FindActiveState(CardModel cardSource) =>
-        _playStates.LastOrDefault(state => state.CardPlay.Card == cardSource);
+        CardPlayResolutionScope.TryGetLatestPlayState(cardSource, this, out CardPlayState? state)
+            ? state
+            : null;
 
     private sealed class CardPlayState(CardPlay cardPlay)
     {

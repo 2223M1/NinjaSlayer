@@ -8,7 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
+    <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
+    <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
   </ItemGroup>
 </Project>

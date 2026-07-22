@@ -38,25 +38,14 @@ jobs:
       - name: RefLib compatibility compile
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
           mkdir -p "$RUNNER_TEMP/sts2-empty"
           dotnet restore NinjaSlayer.csproj \
             -p:UseSts2RefLib=true \
             -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
-          restore_status=$?
-          if [ "$restore_status" -eq 0 ]; then
-            dotnet build NinjaSlayer.csproj --no-restore -v:minimal \
-              -p:UseSts2RefLib=true \
-              -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
-            build_status=$?
-          else
-            build_status=$restore_status
-          fi
-          if [ "$build_status" -ne 0 ]; then
-            echo "### RefLib compatibility compile skipped" >> "$GITHUB_STEP_SUMMARY"
-            echo "The project uses game 0.109.x APIs unavailable in Book.StS2.RefLib 0.107.1. Pure logic tests remain authoritative in this runner." >> "$GITHUB_STEP_SUMMARY"
-          fi
-          exit 0
+          dotnet build NinjaSlayer.csproj --no-restore -v:minimal \
+            -p:UseSts2RefLib=true \
+            -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
 
       - name: Worker install and tests
         working-directory: Infrastructure/telemetry-worker

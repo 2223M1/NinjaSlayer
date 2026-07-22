@@ -61,6 +61,11 @@
     <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/$(MSBuildProjectName)/</SteamModDir>
   </PropertyGroup>
 
+  <!-- RefLib carries generated Harmony/Godot compatibility types that also exist in this project. -->
+  <PropertyGroup Condition="!Exists('$(Sts2DataDir)/sts2.dll') and '$(UseSts2RefLib)' == 'true'">
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Tests\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">
@@ -72,12 +77,12 @@
     </Reference>
 
     <PackageReference Include="Book.StS2.RefLib"
-                      Version="0.107.1"
+                      Version="0.109.0-beta"
                       Condition="!Exists('$(Sts2DataDir)/sts2.dll') and '$(UseSts2RefLib)' == 'true'"
                       PrivateAssets="all" />
 
     <!-- NuGet package. -->
-    <PackageReference Include="STS2.RitsuLib" Version="0.4.58">
+    <PackageReference Include="STS2.RitsuLib" Version="0.4.62">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

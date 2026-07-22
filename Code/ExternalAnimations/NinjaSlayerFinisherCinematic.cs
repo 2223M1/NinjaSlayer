@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Text;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
@@ -1788,19 +1787,6 @@ internal static class FinisherAttackCommandAdapter
 
 internal readonly record struct FinisherForecastResult(int ResolvedHits, bool RequiresAfterCardPlayed);
 
-internal enum FinisherForecastOutcome
-{
-    Guaranteed,
-    NotGuaranteed,
-    IndeterminateBudget
-}
-
-internal enum FinisherForecastEffectTargeting
-{
-    All,
-    Random
-}
-
 internal sealed record FinisherForecastEffect(
     decimal Amount,
     ValueProp Props,
@@ -1844,8 +1830,6 @@ internal sealed class KusarigamaFinisherForecastContributor : IFinisherForecastC
 
 internal static class FinisherForecast
 {
-    private const int MaximumSearchStates = 25_000;
-    private static readonly TimeSpan MaximumSearchTime = TimeSpan.FromMilliseconds(8);
     private static readonly IFinisherForecastContributor[] PostCardContributors =
     [
         new KusarigamaFinisherForecastContributor()
@@ -1876,220 +1860,99 @@ internal static class FinisherForecast
             return FinisherForecastOutcome.NotGuaranteed;
         }
 
-        List<FinisherForecastEffect> postCardEffects = [];
+        var enemyIndices = enemies
+            .Select((enemy, index) => (enemy, index))
+            .ToDictionary(pair => pair.enemy, pair => pair.index);
+        List<FinisherForecastPostEffect<ForecastState>> postCardEffects = [];
         foreach (IFinisherForecastContributor contributor in PostCardContributors)
         {
             if (contributor.TryCreateEffect(owner, spec, out FinisherForecastEffect? effect) && effect != null)
             {
-                postCardEffects.Add(effect);
+                postCardEffects.Add(new FinisherForecastPostEffect<ForecastState>(
+                    effect.Targeting,
+                    (states, targets) =>
+                    {
+                        foreach (int target in targets)
+                        {
+                            ApplyDamage(
+                                owner,
+                                enemies,
+                                states,
+                                target,
+                                effect.Amount,
+                                effect.Props,
+                                effect.Dealer,
+                                effect.CardSource,
+                                effect.CardPlay);
+                        }
+
+                        return true;
+                    }));
             }
         }
 
         result = new FinisherForecastResult(hits, postCardEffects.Count > 0);
-        var states = enemies.ToDictionary(enemy => enemy, enemy => new ForecastState(
+        ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>()));
-        var search = new ForecastSearchContext(MaximumSearchStates, MaximumSearchTime);
-        FinisherForecastOutcome Finish(Dictionary<Creature, ForecastState> finalStates) =>
-            ApplyPostCardEffects(owner, finalStates, postCardEffects, 0, search);
-
-        return spec.Targeting switch
+            enemy.GetPowerAmount<KaratePower>())).ToArray();
+        Creature? singleTarget = spec.SingleTarget ?? spec.CardPlay.Target;
+        int? singleTargetIndex = singleTarget != null && enemyIndices.TryGetValue(singleTarget, out int singleIndex)
+            ? singleIndex
+            : null;
+        int[]? fixedTargets = spec.FixedTargets?
+            .Where(enemyIndices.ContainsKey)
+            .Select(target => enemyIndices[target])
+            .ToArray();
+        FinisherForecastTargeting targeting = spec.Targeting switch
         {
-            FinisherTargeting.Single => (spec.SingleTarget ?? spec.CardPlay.Target) is { } target
-                && enemies.Count == 1
-                    ? SimulateFixed(owner, states, spec, hits, _ => [target], Finish)
-                    : FinisherForecastOutcome.NotGuaranteed,
-            FinisherTargeting.All => SimulateFixed(
-                owner,
-                states,
-                spec,
-                hits,
-                current => current.Keys.Where(enemy => current[enemy].Hp > 0).ToList(),
-                Finish),
-            FinisherTargeting.Random => SimulateRandom(owner, states, spec, 0, hits, Finish, search),
-            FinisherTargeting.Fixed => spec.FixedTargets is { Count: > 0 } fixedTargets
-                && fixedTargets.All(states.ContainsKey)
-                    ? SimulateFixed(
-                        owner,
-                        states,
-                        spec,
-                        hits,
-                        current => fixedTargets.Where(target => current[target].Hp > 0).ToList(),
-                        Finish)
-                    : FinisherForecastOutcome.NotGuaranteed,
-            _ => FinisherForecastOutcome.NotGuaranteed
+            FinisherTargeting.Single => FinisherForecastTargeting.Single,
+            FinisherTargeting.All => FinisherForecastTargeting.All,
+            FinisherTargeting.Random => FinisherForecastTargeting.Random,
+            FinisherTargeting.Fixed => FinisherForecastTargeting.Fixed,
+            _ => throw new ArgumentOutOfRangeException(nameof(spec.Targeting), spec.Targeting, null)
         };
-    }
-
-    private static FinisherForecastOutcome SimulateFixed(
-        Creature owner,
-        Dictionary<Creature, ForecastState> states,
-        FinisherAttackSpec spec,
-        int hits,
-        Func<Dictionary<Creature, ForecastState>, IReadOnlyList<Creature>> targets,
-        Func<Dictionary<Creature, ForecastState>, FinisherForecastOutcome> finish)
-    {
-        for (int hit = 0; hit < hits; hit++)
+        if (targeting == FinisherForecastTargeting.Single && (enemies.Count != 1 || singleTargetIndex == null)
+            || targeting == FinisherForecastTargeting.Fixed
+            && (fixedTargets is not { Length: > 0 } || fixedTargets.Length != spec.FixedTargets!.Count))
         {
-            IReadOnlyList<Creature> hitTargets = targets(states);
-            if (hitTargets.Count == 0)
+            return FinisherForecastOutcome.NotGuaranteed;
+        }
+
+        var simulation = new FinisherForecastSimulation<ForecastState>(
+            states,
+            hits,
+            targeting,
+            state => state.Hp > 0,
+            state => $"{state.Hp},{state.Block},{state.Karate}",
+            (current, targets, hitIndex) =>
             {
-                break;
-            }
-
-            ApplyHit(owner, states, spec, hitTargets, hit);
-        }
-
-        return finish(states);
-    }
-
-    private static FinisherForecastOutcome SimulateRandom(
-        Creature owner,
-        Dictionary<Creature, ForecastState> states,
-        FinisherAttackSpec spec,
-        int hitIndex,
-        int hitsRemaining,
-        Func<Dictionary<Creature, ForecastState>, FinisherForecastOutcome> finish,
-        ForecastSearchContext search)
-    {
-        if (hitsRemaining == 0)
-        {
-            return finish(states);
-        }
-
-        List<Creature> alive = AliveTargets(states);
-        if (alive.Count == 0)
-        {
-            return finish(states);
-        }
-
-        string stateKey = search.CreateKey("hits", hitIndex, hitsRemaining, states);
-        MemoSearchLookup lookup = search.Lookup(stateKey, out FinisherForecastOutcome cached);
-        if (lookup == MemoSearchLookup.Cached)
-        {
-            return cached;
-        }
-
-        if (lookup == MemoSearchLookup.BudgetExceeded)
-        {
-            return FinisherForecastOutcome.IndeterminateBudget;
-        }
-
-        bool indeterminate = false;
-        foreach (Creature target in alive)
-        {
-            Dictionary<Creature, ForecastState> branch = Clone(states);
-            ApplyHit(owner, branch, spec, [target], hitIndex);
-            FinisherForecastOutcome branchResult = SimulateRandom(
-                owner,
-                branch,
-                spec,
-                hitIndex + 1,
-                hitsRemaining - 1,
-                finish,
-                search);
-            if (branchResult == FinisherForecastOutcome.NotGuaranteed)
-            {
-                search.Store(stateKey, branchResult);
-                return branchResult;
-            }
-
-            indeterminate |= branchResult == FinisherForecastOutcome.IndeterminateBudget;
-        }
-
-        FinisherForecastOutcome result = indeterminate
-            ? FinisherForecastOutcome.IndeterminateBudget
-            : FinisherForecastOutcome.Guaranteed;
-        search.Store(stateKey, result);
-        return result;
-    }
-
-    private static FinisherForecastOutcome ApplyPostCardEffects(
-        Creature owner,
-        Dictionary<Creature, ForecastState> states,
-        IReadOnlyList<FinisherForecastEffect> effects,
-        int effectIndex,
-        ForecastSearchContext search)
-    {
-        if (effectIndex >= effects.Count)
-        {
-            return states.Values.All(state => state.Hp <= 0)
-                ? FinisherForecastOutcome.Guaranteed
-                : FinisherForecastOutcome.NotGuaranteed;
-        }
-
-        FinisherForecastEffect effect = effects[effectIndex];
-        List<Creature> alive = AliveTargets(states);
-        if (alive.Count == 0)
-        {
-            return FinisherForecastOutcome.Guaranteed;
-        }
-
-        if (effect.Targeting == FinisherForecastEffectTargeting.All)
-        {
-            foreach (Creature target in alive)
-            {
-                ApplyDamage(owner, states, target, effect.Amount, effect.Props, effect.Dealer, effect.CardSource, effect.CardPlay);
-            }
-
-            return ApplyPostCardEffects(owner, states, effects, effectIndex + 1, search);
-        }
-
-        string stateKey = search.CreateKey("effects", effectIndex, effects.Count, states);
-        MemoSearchLookup lookup = search.Lookup(stateKey, out FinisherForecastOutcome cached);
-        if (lookup == MemoSearchLookup.Cached)
-        {
-            return cached;
-        }
-
-        if (lookup == MemoSearchLookup.BudgetExceeded)
-        {
-            return FinisherForecastOutcome.IndeterminateBudget;
-        }
-
-        bool indeterminate = false;
-        foreach (Creature target in alive)
-        {
-            Dictionary<Creature, ForecastState> branch = Clone(states);
-            ApplyDamage(owner, branch, target, effect.Amount, effect.Props, effect.Dealer, effect.CardSource, effect.CardPlay);
-            FinisherForecastOutcome branchResult = ApplyPostCardEffects(
-                owner,
-                branch,
-                effects,
-                effectIndex + 1,
-                search);
-            if (branchResult == FinisherForecastOutcome.NotGuaranteed)
-            {
-                search.Store(stateKey, branchResult);
-                return branchResult;
-            }
-
-            indeterminate |= branchResult == FinisherForecastOutcome.IndeterminateBudget;
-        }
-
-        FinisherForecastOutcome result = indeterminate
-            ? FinisherForecastOutcome.IndeterminateBudget
-            : FinisherForecastOutcome.Guaranteed;
-        search.Store(stateKey, result);
-        return result;
+                ApplyHit(owner, enemies, current, spec, targets, hitIndex);
+                return true;
+            },
+            singleTargetIndex,
+            fixedTargets,
+            postCardEffects);
+        return FinisherForecastEngine.Evaluate(simulation);
     }
 
     private static void ApplyHit(
         Creature owner,
-        Dictionary<Creature, ForecastState> states,
+        IReadOnlyList<Creature> enemies,
+        ForecastState[] states,
         FinisherAttackSpec spec,
-        IReadOnlyList<Creature> targets,
+        IReadOnlyList<int> targets,
         int hitIndex)
     {
-        List<(Creature Target, bool TriggerKarate)> damageResults = [];
-        foreach (Creature target in targets)
+        List<(int Target, bool TriggerKarate)> damageResults = [];
+        foreach (int targetIndex in targets)
         {
-            if (states[target].Hp <= 0)
+            if (states[targetIndex].Hp <= 0)
             {
                 continue;
             }
 
+            Creature target = enemies[targetIndex];
             decimal rawDamage = spec.Damage(target);
             decimal postHookMultiplier = spec.Card is TornadoFist && hitIndex > 0
                 && target.GetPowerAmount<MegaCrit.Sts2.Core.Models.Powers.VulnerablePower>() <= 0
@@ -2098,24 +1961,34 @@ internal static class FinisherForecast
 
             bool dealtDamage = ApplyDamage(
                 owner,
+                enemies,
                 states,
-                target,
+                targetIndex,
                 rawDamage,
                 spec.Props,
                 owner,
                 spec.Card,
                 spec.CardPlay,
                 postHookMultiplier);
-            damageResults.Add((target, dealtDamage));
+            damageResults.Add((targetIndex, dealtDamage));
         }
 
-        foreach ((Creature target, bool triggerKarate) in damageResults)
+        foreach ((int target, bool triggerKarate) in damageResults)
         {
             ForecastState state = states[target];
             if (triggerKarate && state.Hp > 0 && state.Karate > 0 && spec.Props.IsPoweredAttack()
                 && KarateTriggerRules.CanTriggerFromCardSource(spec.Card))
             {
-                ApplyDamage(owner, states, target, state.Karate, ValueProp.Unpowered, owner, null, null);
+                ApplyDamage(
+                    owner,
+                    enemies,
+                    states,
+                    target,
+                    state.Karate,
+                    ValueProp.Unpowered,
+                    owner,
+                    null,
+                    null);
                 ForecastState afterKarate = states[target];
                 if (afterKarate.Hp > 0)
                 {
@@ -2125,10 +1998,11 @@ internal static class FinisherForecast
 
             if (owner.GetPower<NarakuPower>() is { } naraku && spec.Props.IsPoweredAttack())
             {
-                foreach (Creature enemy in AliveTargets(states))
+                foreach (int enemy in AliveTargets(states))
                 {
                     ApplyDamage(
                         owner,
+                        enemies,
                         states,
                         enemy,
                         naraku.DynamicVars.HpLoss.BaseValue,
@@ -2143,8 +2017,9 @@ internal static class FinisherForecast
 
     private static bool ApplyDamage(
         Creature owner,
-        Dictionary<Creature, ForecastState> states,
-        Creature target,
+        IReadOnlyList<Creature> enemies,
+        ForecastState[] states,
+        int targetIndex,
         decimal amount,
         ValueProp props,
         Creature? dealer,
@@ -2152,12 +2027,13 @@ internal static class FinisherForecast
         CardPlay? cardPlay,
         decimal postHookMultiplier = 1m)
     {
-        ForecastState state = states[target];
+        ForecastState state = states[targetIndex];
         if (state.Hp <= 0)
         {
             return false;
         }
 
+        Creature target = enemies[targetIndex];
         decimal modified = Hook.ModifyDamage(
             owner.Player!.RunState,
             owner.CombatState,
@@ -2184,7 +2060,7 @@ internal static class FinisherForecast
             cardSource,
             HpLossHookPhase.BeforeOsty | HpLossHookPhase.AfterOsty,
             out _);
-        states[target] = state with
+        states[targetIndex] = state with
         {
             Block = state.Block - blocked,
             Hp = state.Hp - Math.Max(0, (int)hpLoss)
@@ -2192,45 +2068,8 @@ internal static class FinisherForecast
         return modified > 0m;
     }
 
-    private static List<Creature> AliveTargets(Dictionary<Creature, ForecastState> states) =>
-        states.Where(pair => pair.Value.Hp > 0).Select(pair => pair.Key).ToList();
-
-    private static Dictionary<Creature, ForecastState> Clone(Dictionary<Creature, ForecastState> states) =>
-        states.ToDictionary(pair => pair.Key, pair => pair.Value);
+    private static IEnumerable<int> AliveTargets(IReadOnlyList<ForecastState> states) =>
+        Enumerable.Range(0, states.Count).Where(index => states[index].Hp > 0);
 
     private sealed record ForecastState(int Hp, int Block, int Karate);
-
-    private sealed class ForecastSearchContext(int maximumStates, TimeSpan maximumTime)
-    {
-        private readonly BoundedMemoSearch<string, FinisherForecastOutcome> _search =
-            new(maximumStates, maximumTime);
-
-        public MemoSearchLookup Lookup(string key, out FinisherForecastOutcome result) =>
-            _search.Lookup(key, out result);
-
-        public void Store(string key, FinisherForecastOutcome result)
-        {
-            _search.Store(key, result);
-        }
-
-        public string CreateKey(
-            string stage,
-            int index,
-            int remaining,
-            Dictionary<Creature, ForecastState> states)
-        {
-            var builder = new StringBuilder(stage)
-                .Append(':').Append(index)
-                .Append(':').Append(remaining);
-            foreach (ForecastState state in states.Values)
-            {
-                builder.Append('|')
-                    .Append(state.Hp).Append(',')
-                    .Append(state.Block).Append(',')
-                    .Append(state.Karate);
-            }
-
-            return builder.ToString();
-        }
-    }
 }

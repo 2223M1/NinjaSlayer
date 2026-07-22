@@ -1,28 +1,35 @@
 using System.Reflection;
 using System.Threading;
+using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Audio.Debug;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
+using MegaCrit.Sts2.Core.Random;
 using NinjaSlayer.Code.Commands;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-internal static class PreparedRemovalContext
+internal static class PreparedQueueReorderContext
 {
-    private static readonly AsyncLocal<int> SuppressionDepth = new();
+    private static readonly AsyncLocal<int> Depth = new();
 
-    public static bool IsSuppressed => SuppressionDepth.Value > 0;
+    public static bool IsActive => Depth.Value > 0;
 
-    public static IDisposable Suppress()
+    public static IDisposable Enter()
     {
-        SuppressionDepth.Value++;
+        Depth.Value++;
         return new Scope();
     }
 
@@ -38,15 +45,48 @@ internal static class PreparedRemovalContext
             }
 
             _disposed = true;
-            SuppressionDepth.Value--;
+            Depth.Value--;
+        }
+    }
+}
+
+internal static class PreparedDrawCompatibility
+{
+    private static readonly MethodInfo? DrawInternalMethod = AccessTools.Method(
+        typeof(CardPileCmd),
+        "DrawInternal",
+        [typeof(PlayerChoiceContext), typeof(decimal), typeof(Player), typeof(bool)]);
+    private static readonly MethodInfo? ShuffleFtueCheckMethod = AccessTools.Method(typeof(CardPileCmd), "ShuffleFtueCheck");
+
+    public static bool CanInstall(out string missingMember)
+    {
+        if (DrawInternalMethod is null)
+        {
+            missingMember = "CardPileCmd.DrawInternal(PlayerChoiceContext, decimal, Player, bool)";
+            return false;
+        }
+
+        if (ShuffleFtueCheckMethod is null)
+        {
+            missingMember = "CardPileCmd.ShuffleFtueCheck()";
+            return false;
+        }
+
+        missingMember = string.Empty;
+        return true;
+    }
+
+    public static async Task ShowShuffleFtue()
+    {
+        if (ShuffleFtueCheckMethod?.Invoke(null, null) is Task task)
+        {
+            await task;
         }
     }
 }
 
 public sealed class PreparedDrawPatch : IPatchMethod
 {
-    private static readonly AsyncLocal<int> BypassDepth = new();
-
     public static string PatchId => "ninjaslayer_prepared_draw_filter";
 
     public static string Description => "Keep prepared cards hidden from draws that do not satisfy Speedster timing.";
@@ -64,15 +104,19 @@ public sealed class PreparedDrawPatch : IPatchMethod
         bool fromHandDraw,
         ref Task<IEnumerable<CardModel>> __result)
     {
+        if (!NinjaSlayerPatchCapabilities.PreparedEnabled)
+        {
+            return true;
+        }
+
         CardPile drawPile = PileType.Draw.GetPile(player);
-        if (BypassDepth.Value > 0
-            || IsAllowedPreparedDraw(player, fromHandDraw)
+        if (IsAllowedPreparedDraw(player, fromHandDraw)
             || !drawPile.Cards.Any(PrepareCmd.IsPrepared))
         {
             return true;
         }
 
-        __result = DrawWithoutPrepared(choiceContext, count, player, fromHandDraw, drawPile);
+        __result = PreparedDrawService.Draw(choiceContext, count, player, fromHandDraw);
         return false;
     }
 
@@ -82,45 +126,149 @@ public sealed class PreparedDrawPatch : IPatchMethod
             && player.Creature.CombatState?.CurrentSide == player.Creature.Side;
     }
 
-    private static async Task<IEnumerable<CardModel>> DrawWithoutPrepared(
+}
+
+internal static class PreparedDrawService
+{
+    public static async Task<IEnumerable<CardModel>> Draw(
         PlayerChoiceContext choiceContext,
         decimal count,
         Player player,
-        bool fromHandDraw,
-        CardPile drawPile)
+        bool fromHandDraw)
     {
-        List<CardModel> preparedCards = drawPile.Cards.Where(PrepareCmd.IsPrepared).ToList();
-        BypassDepth.Value++;
-        using IDisposable removalSuppression = PreparedRemovalContext.Suppress();
-        try
+        if (CombatManager.Instance.IsOverOrEnding)
         {
-            foreach (CardModel card in preparedCards)
+            return [];
+        }
+
+        if (player.Creature.CombatState is not { } combatState)
+        {
+            return [];
+        }
+
+        if (!Hook.ShouldDraw(combatState, player, fromHandDraw, out AbstractModel? modifier))
+        {
+            if (modifier is not null)
             {
-                if (drawPile.Cards.Contains(card))
-                {
-                    drawPile.RemoveInternal(card);
-                }
+                await Hook.AfterPreventingDraw(combatState, modifier);
+            }
+            return [];
+        }
+
+        List<CardModel> result = [];
+        CardPile hand = PileType.Hand.GetPile(player);
+        CardPile drawPile = PileType.Draw.GetPile(player);
+        int drawsRequested = count > 0m ? (int)Math.Ceiling(count) : 0;
+        if (drawsRequested == 0)
+        {
+            return result;
+        }
+
+        int availableHandSlots = Math.Max(0, CardPile.MaxCardsInHand - hand.Cards.Count);
+        if (availableHandSlots == 0)
+        {
+            CheckIfFilteredDrawIsPossible(player);
+            return result;
+        }
+
+        for (int index = 0; index < drawsRequested; index++)
+        {
+            if (availableHandSlots <= 0 || CombatManager.Instance.IsOverOrEnding)
+            {
+                break;
             }
 
-            return await CardPileCmd.Draw(choiceContext, count, player, fromHandDraw);
+            if (!CheckIfFilteredDrawIsPossible(player))
+            {
+                break;
+            }
+
+            await ShuffleIfNecessary(choiceContext, player);
+            if (!CheckIfFilteredDrawIsPossible(player))
+            {
+                break;
+            }
+
+            CardModel? card = drawPile.Cards.FirstOrDefault(candidate => !PrepareCmd.IsPrepared(candidate));
+            if (card is null || hand.Cards.Count >= CardPile.MaxCardsInHand)
+            {
+                break;
+            }
+
+            result.Add(card);
+            await CardPileCmd.Add(card, hand);
+            CombatManager.Instance.History.CardDrawn(combatState, card, fromHandDraw);
+            await Hook.AfterCardDrawn(combatState, choiceContext, card, fromHandDraw);
+            card.InvokeDrawn();
+            NDebugAudioManager.Instance?.Play("card_deal.mp3", 0.25f, PitchVariance.Small);
+            availableHandSlots = Math.Max(0, CardPile.MaxCardsInHand - hand.Cards.Count);
         }
-        finally
+
+        return result;
+    }
+
+    private static bool CheckIfFilteredDrawIsPossible(Player player)
+    {
+        bool hasDrawableCard = PileType.Draw.GetPile(player).Cards.Any(card => !PrepareCmd.IsPrepared(card));
+        if (!hasDrawableCard && PileType.Discard.GetPile(player).Cards.Count == 0)
         {
-            try
+            ThinkCmd.Play(new LocString("combat_messages", "NO_DRAW"), player.Creature, 2.0);
+            return false;
+        }
+
+        if (PileType.Hand.GetPile(player).Cards.Count >= CardPile.MaxCardsInHand)
+        {
+            ThinkCmd.Play(new LocString("combat_messages", "HAND_FULL"), player.Creature, 2.0);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static async Task ShuffleIfNecessary(PlayerChoiceContext choiceContext, Player player)
+    {
+        CardPile drawPile = PileType.Draw.GetPile(player);
+        CardPile discardPile = PileType.Discard.GetPile(player);
+        if (drawPile.Cards.Any(card => !PrepareCmd.IsPrepared(card)) || discardPile.Cards.Count == 0)
+        {
+            return;
+        }
+
+        await PreparedDrawCompatibility.ShowShuffleFtue();
+        List<CardModel> shuffledCards = discardPile.Cards.ToList();
+        shuffledCards.StableShuffle(player.RunState.Rng.Shuffle);
+        if (player.Creature.CombatState is not { } combatState)
+        {
+            return;
+        }
+
+        Hook.ModifyShuffleOrder(combatState, player, shuffledCards, isInitialShuffle: false);
+
+        float timeBetweenCardAdds = Math.Min(0.045f, 0.8f / shuffledCards.Count);
+        float randomTimeBetweenCardAdds = 1.11f * timeBetweenCardAdds;
+        float waitTimeAccumulator = 0f;
+        foreach (CardModel card in shuffledCards)
+        {
+            await CardPileCmd.Add(card, drawPile);
+            if (CombatManager.Instance.IsOverOrEnding)
             {
-                for (int index = 0; index < preparedCards.Count; index++)
-                {
-                    CardModel card = preparedCards[index];
-                    if (!drawPile.Cards.Contains(card) && !card.HasBeenRemovedFromState)
-                    {
-                        drawPile.AddInternal(card, Math.Min(index, drawPile.Cards.Count));
-                    }
-                }
+                return;
             }
-            finally
+
+            float wait = timeBetweenCardAdds
+                + Rng.Chaotic.NextFloat(-randomTimeBetweenCardAdds * 0.5f, randomTimeBetweenCardAdds * 0.5f);
+            waitTimeAccumulator += wait;
+            if (waitTimeAccumulator >= ((SceneTree)Engine.GetMainLoop()).Root.GetProcessDeltaTime())
             {
-                BypassDepth.Value--;
+                await Cmd.Wait(wait);
+                waitTimeAccumulator = 0f;
             }
+        }
+
+        await Cmd.CustomScaledWait(0.2f, 0.5f);
+        if (!CombatManager.Instance.IsOverOrEnding)
+        {
+            await Hook.AfterShuffle(combatState, choiceContext, player);
         }
     }
 }
@@ -138,7 +286,8 @@ public sealed class PreparedPileExitPatch : IPatchMethod
 
     public static void Prefix(CardPile __instance, CardModel card)
     {
-        if (!PreparedRemovalContext.IsSuppressed
+        if (NinjaSlayerPatchCapabilities.PreparedEnabled
+            && !PreparedQueueReorderContext.IsActive
             && __instance.Type == PileType.Draw
             && PrepareCmd.IsPrepared(card))
         {
@@ -164,6 +313,11 @@ public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 
     public static void Postfix(NCardPileScreen __instance)
     {
+        if (!NinjaSlayerPatchCapabilities.PreparedEnabled)
+        {
+            return;
+        }
+
         CardPile pile = __instance.Pile;
         if (pile.Type != PileType.Draw
             || !pile.Cards.Any(PrepareCmd.IsPrepared)

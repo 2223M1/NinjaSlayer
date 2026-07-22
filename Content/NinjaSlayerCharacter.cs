@@ -80,7 +80,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
 
         public static VisualNodeStyle BodyStyle() =>
             VisualNodeStyle.Create()
-                .WithOffset(new Vector2(BodyOffsetX, BodyOffsetY))
+                .WithPosition(new Vector2(BodyOffsetX, BodyOffsetY))
                 .WithScale(BodyScale);
     }
 
@@ -94,7 +94,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool> : ModCharacterTemp
 
         public static VisualNodeStyle BodyStyle() =>
             VisualNodeStyle.Create()
-                .WithOffset(new Vector2(BodyOffsetX, BodyOffsetY))
+                .WithPosition(new Vector2(BodyOffsetX, BodyOffsetY))
                 .WithScale(BodyScale);
     }
 

@@ -42,7 +42,7 @@ public static class PrepareCmd
         }
 
         // Top insertion is LIFO; place the new card after the existing prepared queue.
-        using (PreparedRemovalContext.Suppress())
+        using (PreparedQueueReorderContext.Enter())
         {
             drawPile.RemoveInternal(card);
             drawPile.AddInternal(card, Math.Min(preparedAhead, drawPile.Cards.Count));

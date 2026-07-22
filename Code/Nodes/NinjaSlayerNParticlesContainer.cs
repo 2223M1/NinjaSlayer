@@ -10,8 +10,10 @@ public partial class NinjaSlayerNParticlesContainer : NParticlesContainer
     private static readonly FieldInfo? ParticlesField = typeof(NParticlesContainer)
         .GetField("_particles", BindingFlags.Instance | BindingFlags.NonPublic);
 
+#pragma warning disable CS0108, CS0109 // Accessibility differs between the real game assembly and RefLib.
     [Export(PropertyHint.None, "")]
-    private Array<GpuParticles2D>? _particles;
+    private new Array<GpuParticles2D>? _particles;
+#pragma warning restore CS0108, CS0109
 
     public override void _Ready()
     {

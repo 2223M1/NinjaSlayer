@@ -1,0 +1,61 @@
+{
+  "api_key": "proxy",
+  "batch": [
+    {
+      "event": "run_history.completed",
+      "distinct_id": "0123456789abcdef0123456789abcdef",
+      "properties": {
+        "anonymous_install_id": "0123456789abcdef0123456789abcdef",
+        "session_id": "abcdef0123456789abcdef0123456789",
+        "ritsulib_version": "0.4.62",
+        "ritsulib_informational_version": "0.4.62",
+        "ritsulib_build_channel": "release",
+        "ritsulib_build_configuration": "Release",
+        "applicant_id": "NinjaSlayer",
+        "owner_mod_id": "NinjaSlayer",
+        "applicant_display_name": "NinjaSlayer",
+        "game_version": "0.109.0",
+        "game_release_label": "v0.109.0",
+        "platform": "Win32NT",
+        "os_name": "Windows",
+        "os_version": "Microsoft Windows NT 10.0",
+        "process_architecture": "X64",
+        "dotnet_runtime": ".NET 9.0",
+        "game_language": "zhs",
+        "payload_kind": "vanilla_run_history",
+        "json_indented": false,
+        "is_victory": true,
+        "is_abandoned": false,
+        "occurred_at_utc": "2030-08-09T10:11:12.000Z",
+        "run_game_mode": "Standard",
+        "run_is_daily": false,
+        "run_player_count": 1,
+        "run_floor_reached": 52,
+        "run_ascension": 0,
+        "run_time_seconds": 3600,
+        "run_win_time_seconds": 3600,
+        "run_reload_count": 0,
+        "run_character_ids": ["NinjaSlayer:NinjaSlayerCharacter"],
+        "schema": "ritsulib.telemetry.v1",
+        "request_id": "run_history",
+        "category": "RunHistory",
+        "payload": {
+          "base_payload": {},
+          "private_contributions": {
+            "ninja_slayer_balance_context": {
+              "version": "0.1.0",
+              "balance_schema": "ninja_slayer_run_history_v1"
+            }
+          },
+          "applicant_payload": {
+            "run_history": {
+              "players": [],
+              "victory": true
+            }
+          }
+        }
+      },
+      "timestamp": "2030-08-09T10:11:12.000Z"
+    }
+  ]
+}

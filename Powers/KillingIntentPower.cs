@@ -20,8 +20,6 @@ namespace NinjaSlayer.Powers;
 
 public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
 {
-    private Creature? _pendingDebuffAttacker;
-
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
@@ -58,34 +56,20 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
         await CreatureCmd.Damage(choiceContext, dealer, result.BlockedDamage, ValueProp.Unpowered, Owner);
         await CombatManager.Instance.CheckWinCondition();
 
-        if (CombatManager.Instance.IsInProgress && dealer.IsAlive)
-        {
-            _pendingDebuffAttacker = dealer;
-        }
     }
 
     public override async Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
     {
-        if (_pendingDebuffAttacker == null)
-        {
-            return;
-        }
-
-        Creature attacker = _pendingDebuffAttacker;
-        _pendingDebuffAttacker = null;
-
-        if (command.Attacker != attacker || !command.DamageProps.IsPoweredAttack())
+        if (command.Attacker is not { } attacker
+            || !CombatManager.Instance.IsInProgress
+            || !attacker.IsAlive
+            || !command.DamageProps.IsPoweredAttack())
         {
             return;
         }
 
         List<DamageResult> results = command.Results.SelectMany(r => r).ToList();
-        if (!results.Any(r => r.Receiver == Owner && r.BlockedDamage > 0))
-        {
-            return;
-        }
-
-        if (!attacker.IsAlive)
+        if (!results.Any(r => r.Receiver == Owner && r.WasFullyBlocked && r.BlockedDamage > 0))
         {
             return;
         }
@@ -105,8 +89,6 @@ public sealed class KillingIntentPower : NinjaSlayerPowerTemplate
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
-        _pendingDebuffAttacker = null;
-
         if (participants.Contains(Owner))
         {
             await PowerCmd.Decrement(this);
