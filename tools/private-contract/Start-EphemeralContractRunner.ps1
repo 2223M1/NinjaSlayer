@@ -12,6 +12,8 @@ param(
     [ValidatePattern('^[0-9A-Fa-f]{64}$')]
     [string]$RunnerArchiveSha256,
 
+    [string]$RunnerArchivePath,
+
     [string]$RepositoryUrl = 'https://github.com/2223M1/NinjaSlayer',
 
     [string]$GameDataDirectory = 'C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64',
@@ -48,6 +50,30 @@ $downloadUrl = "https://github.com/actions/runner/releases/download/v$RunnerVers
 $previousSts2DataDirectory = $env:STS2_DATA_DIR
 $previousGodotExecutable = $env:GODOT_EXE
 
+function Remove-SessionDirectory {
+    param([Parameter(Mandatory)][string]$Path)
+
+    for ($attempt = 1; $attempt -le 6; $attempt++) {
+        try {
+            if (-not (Test-Path -LiteralPath $Path)) {
+                return
+            }
+
+            Get-ChildItem -LiteralPath $Path -Recurse -Force -File -ErrorAction SilentlyContinue |
+                ForEach-Object { $_.IsReadOnly = $false }
+            Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+            return
+        }
+        catch {
+            if ($attempt -eq 6) {
+                throw "Could not remove ephemeral contract directory after $attempt attempts: $Path. $($_.Exception.Message)"
+            }
+
+            Start-Sleep -Milliseconds (250 * $attempt)
+        }
+    }
+}
+
 try {
     New-Item -ItemType Directory -Path $runnerDirectory, $referenceDirectory, $workDirectory -Force | Out-Null
     foreach ($fileName in $requiredReferences) {
@@ -56,7 +82,13 @@ try {
         (Get-Item -LiteralPath $destination).IsReadOnly = $true
     }
 
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $archive
+    if ([string]::IsNullOrWhiteSpace($RunnerArchivePath)) {
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $archive
+    }
+    else {
+        $resolvedArchive = (Resolve-Path -LiteralPath $RunnerArchivePath -ErrorAction Stop).Path
+        Copy-Item -LiteralPath $resolvedArchive -Destination $archive
+    }
     $actualArchiveHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
     if ($actualArchiveHash -ne $RunnerArchiveSha256) {
         throw "GitHub Actions runner archive SHA-256 mismatch: expected $RunnerArchiveSha256, got $actualArchiveHash."
@@ -89,9 +121,5 @@ try {
 finally {
     $env:STS2_DATA_DIR = $previousSts2DataDirectory
     $env:GODOT_EXE = $previousGodotExecutable
-    if (Test-Path -LiteralPath $sessionRoot) {
-        Get-ChildItem -LiteralPath $referenceDirectory -File -ErrorAction SilentlyContinue |
-            ForEach-Object { $_.IsReadOnly = $false }
-        Remove-Item -LiteralPath $sessionRoot -Recurse -Force -ErrorAction SilentlyContinue
-    }
+    Remove-SessionDirectory -Path $sessionRoot
 }
