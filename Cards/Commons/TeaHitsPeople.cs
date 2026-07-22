@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -25,6 +26,12 @@ public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
     protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoExhaustedThisTurn(this);
 
     public TeaHitsPeople() : base(1, CardType.Attack, CardRarity.Common, TargetType.AllEnemies, true) { }
+
+    public override bool TryGetHitPreview(Creature? target, out int hitCount)
+    {
+        hitCount = NinjaSlayerActions.ChadoExhaustedThisTurn(this) ? 2 : 1;
+        return true;
+    }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

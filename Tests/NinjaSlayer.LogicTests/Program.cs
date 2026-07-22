@@ -24,6 +24,29 @@ Check(memo.Lookup("state-b", out _) == MemoSearchLookup.NewState, "The second st
 Check(memo.Lookup("state-c", out _) == MemoSearchLookup.BudgetExceeded,
     "Forecasting must fail closed after the state budget is exhausted.");
 
+object metricsPlayer = new();
+var metrics = new CombatMetricsSnapshot<object>(1, 0);
+metrics.AddGeneratedChado(metricsPlayer);
+metrics.MarkChadoDiscarded(metricsPlayer);
+metrics.MarkChadoExhausted(metricsPlayer);
+metrics.MarkHpLost(metricsPlayer);
+metrics.AddFinishedCard(metricsPlayer, isAttack: true, isMelee: true);
+Check(metrics.GeneratedChado(metricsPlayer) == 1
+      && metrics.ChadoDiscarded(metricsPlayer)
+      && metrics.ChadoExhausted(metricsPlayer)
+      && metrics.LostHp(metricsPlayer)
+      && metrics.PreviousFinishedWasAttack(metricsPlayer)
+      && metrics.MeleeAttacks(metricsPlayer) == 1,
+    "Combat metrics must update incrementally within one turn.");
+metrics.EnsureTurn(2, 0);
+Check(metrics.GeneratedChado(metricsPlayer) == 1
+      && !metrics.ChadoDiscarded(metricsPlayer)
+      && !metrics.ChadoExhausted(metricsPlayer)
+      && !metrics.LostHp(metricsPlayer)
+      && metrics.PreviousFinishedWasAttack(metricsPlayer)
+      && metrics.MeleeAttacks(metricsPlayer) == 0,
+    "Turn rollover must reset only turn-scoped metrics.");
+
 static FinisherForecastSimulation<ForecastTestState> CreateForecast(
     IReadOnlyList<ForecastTestState> states,
     int hits,
@@ -151,6 +174,22 @@ using (XAttackAudioContext.Suppress())
         "Suppression depth must flow across awaited work.");
 }
 Check(!XAttackAudioContext.SuppressAutomaticSfx, "The final scope must restore automatic SFX.");
+Check(CinematicTimingContract.BossMinimumCameraHoldSeconds == 2f,
+    "Boss framing must hold for at least two active seconds.");
+Check(CinematicTimingContract.BossCameraReturnSeconds == 0.2f
+      && CinematicTimingContract.FinisherReturnSeconds == 0.2f,
+    "Boss and finisher camera restoration timing must remain calibrated.");
+Check(CinematicTimingContract.FinisherWatchdogSeconds == 90f,
+    "The finisher watchdog must retain its non-paused recovery budget.");
+var cinematicLifetime = new CinematicSessionLifetime();
+CancellationToken cinematicToken = cinematicLifetime.Token;
+cinematicLifetime.Cancel();
+Check(cinematicToken.IsCancellationRequested,
+    "Cinematic cancellation must reach every task sharing the session token.");
+cinematicLifetime.Dispose();
+cinematicLifetime.Dispose();
+Check(cinematicLifetime.IsDisposed,
+    "Cinematic resource disposal must be idempotent.");
 
 object subject = new();
 object outerScope = new();

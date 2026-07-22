@@ -32,6 +32,12 @@ public sealed class MurderFist : NinjaSlayerCardTemplate
 
     public MurderFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
 
+    public override bool TryGetHitPreview(Creature? target, out int hitCount)
+    {
+        hitCount = target != null && IsAtOrBelowHalfHp(target) ? 2 : 1;
+        return true;
+    }
+
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target);

@@ -1,5 +1,4 @@
 using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -73,34 +72,19 @@ public static class NinjaSlayerActions
         PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c is ChadoCard);
 
     public static decimal ChadoGeneratedThisCombatMultiplier(CardModel card, Creature? _) =>
-        CombatManager.Instance.History.Entries
-            .OfType<CardGeneratedEntry>()
-            .Count(e => e.Creator == card.Owner && e.Card is ChadoCard);
+        NinjaSlayerCombatMetrics.ChadoGeneratedThisCombat(card.Owner);
 
     public static bool ChadoExhaustedThisTurn(CardModel card) =>
-        CombatManager.Instance.History.Entries
-            .OfType<CardExhaustedEntry>()
-            .Any(e => e.HappenedThisTurn(card.CombatState)
-                && e.Card.Owner == card.Owner
-                && e.Card is ChadoCard);
+        NinjaSlayerCombatMetrics.ChadoExhaustedThisTurn(card.Owner);
 
     public static bool ChadoDiscardedThisTurn(CardModel card) =>
-        CombatManager.Instance.History.Entries
-            .OfType<CardDiscardedEntry>()
-            .Any(e => e.HappenedThisTurn(card.CombatState)
-                && e.Card.Owner == card.Owner
-                && e.Card is ChadoCard);
+        NinjaSlayerCombatMetrics.ChadoDiscardedThisTurn(card.Owner);
 
     public static bool PreviousFinishedCardWasAttack(Player player) =>
-        CombatManager.Instance.History.CardPlaysFinished
-            .LastOrDefault(e => e.CardPlay.Card.Owner == player)?
-            .CardPlay.Card.Type == CardType.Attack;
+        NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(player);
 
     public static int MeleeAttacksPlayedThisTurn(Player player) =>
-        CombatManager.Instance.History.CardPlaysFinished.Count(e =>
-            e.HappenedThisTurn(player.Creature.CombatState)
-            && e.CardPlay.Card.Owner == player
-            && KarateTriggerRules.IsMeleeAttack(e.CardPlay.Card));
+        NinjaSlayerCombatMetrics.MeleeAttacksPlayedThisTurn(player);
 
     public static int RubHandsShurikenCount(Player player) =>
         MeleeAttacksPlayedThisTurn(player) + 1;

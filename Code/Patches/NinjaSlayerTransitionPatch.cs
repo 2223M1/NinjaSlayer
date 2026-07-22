@@ -1,14 +1,13 @@
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -18,11 +17,6 @@ namespace NinjaSlayer.Code.Patches;
 
 public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 {
-    private static readonly PropertyInfo? InTransitionProperty =
-        AccessTools.Property(typeof(NTransition), nameof(NTransition.InTransition));
-
-    private static readonly FieldInfo? TweenField = AccessTools.Field(typeof(NTransition), "_tween");
-
     public static string PatchId => "ninjaslayer_character_transition";
 
     public static string Description => "Play the NinjaSlayer transition video during embark and save load.";
@@ -64,16 +58,16 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
     {
         if (SaveManager.Instance.PrefsSave.FastMode == FastModeType.Instant)
         {
-            SetInTransition(transition, true);
+            GameCompatibility.Transition.SetInTransition(transition, true);
             transition.Visible = false;
             return Task.CompletedTask;
         }
 
         // Cover the screen synchronously before returning so the character select / menu never
         // flashes through while the video decoder produces its first frame.
-        KillTransitionTween(transition);
+        GameCompatibility.Transition.KillTween(transition);
 
-        SetInTransition(transition, true);
+        GameCompatibility.Transition.SetInTransition(transition, true);
         transition.Visible = true;
         transition.MouseFilter = Control.MouseFilterEnum.Stop;
 
@@ -118,20 +112,6 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         }
     }
 
-    private static void KillTransitionTween(NTransition transition)
-    {
-        if (TweenField?.GetValue(transition) is Tween tween)
-        {
-            tween.Kill();
-            TweenField.SetValue(transition, null);
-        }
-    }
-
-    private static void SetInTransition(NTransition transition, bool value)
-    {
-        InTransitionProperty?.SetValue(transition, value);
-    }
-
     internal static void ReleaseTransitionInput(NTransition transition)
     {
         if (!GodotObject.IsInstanceValid(transition))
@@ -140,7 +120,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         }
 
         transition.MouseFilter = Control.MouseFilterEnum.Ignore;
-        SetInTransition(transition, false);
+        GameCompatibility.Transition.SetInTransition(transition, false);
     }
 
     internal static void ForceReleaseTransition(NTransition transition)

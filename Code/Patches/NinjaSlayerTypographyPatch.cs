@@ -1,10 +1,9 @@
-using System.Reflection;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Screens.InspectScreens;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
@@ -34,9 +33,6 @@ public sealed class NinjaSlayerCardTitleTypographyPatch : IPatchMethod
 
 public sealed class NinjaSlayerInspectRelicTypographyPatch : IPatchMethod
 {
-    private static readonly FieldInfo? RelicsField = AccessTools.Field(typeof(NInspectRelicScreen), "_relics");
-    private static readonly FieldInfo? IndexField = AccessTools.Field(typeof(NInspectRelicScreen), "_index");
-
     public static string PatchId => "ninjaslayer_inspect_relic_typography";
 
     public static string Description => "Apply the NinjaSlayer title font to mod relic names.";
@@ -48,15 +44,13 @@ public sealed class NinjaSlayerInspectRelicTypographyPatch : IPatchMethod
 
     public static void Postfix(NInspectRelicScreen __instance)
     {
-        if (RelicsField?.GetValue(__instance) is not IReadOnlyList<RelicModel> relics ||
-            IndexField?.GetValue(__instance) is not int index ||
-            index < 0 ||
-            index >= relics.Count)
+        if (!GameCompatibility.Typography.TryGetSelectedRelic(__instance, out RelicModel? relic)
+            || relic is null)
         {
             return;
         }
 
-        if (relics[index].Pool is not NinjaSlayerRelicPool)
+        if (relic.Pool is not NinjaSlayerRelicPool)
         {
             return;
         }

@@ -1,5 +1,3 @@
-using System.Reflection;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
@@ -8,6 +6,7 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Ancients;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
@@ -39,8 +38,6 @@ public sealed class NancyLeeCandidatePatch : IPatchMethod
 
 public sealed class NancyLeeLoadedRunPatch : IPatchMethod
 {
-    private static readonly FieldInfo? RoomsField = AccessTools.Field(typeof(ActModel), "_rooms");
-
     public static string PatchId => "ninjaslayer_nancy_lee_loaded_run_filter";
 
     public static string Description =>
@@ -57,7 +54,8 @@ public sealed class NancyLeeLoadedRunPatch : IPatchMethod
         if (__instance is not Glory
             || runState == null
             || NinjaSlayerContentAccess.HasNinjaSlayer(runState)
-            || RoomsField?.GetValue(__instance) is not RoomSet rooms
+            || !GameCompatibility.Nancy.TryGetRooms(__instance, out RoomSet? rooms)
+            || rooms is null
             || !rooms.HasAncient
             || rooms.Ancient is not NancyLee)
         {

@@ -1,6 +1,4 @@
-using System.Reflection;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -19,11 +17,13 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Scripts;
+using static NinjaSlayer.Code.ExternalAnimations.FinisherTimeline;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -84,7 +84,8 @@ public sealed record FinisherAttackSpec(
             TargetType.RandomEnemy => FinisherTargeting.Random,
             _ => FinisherTargeting.Single
         };
-        int hitCount = hitCountOverride ?? KarateForecastCalculator.ResolveHitCount(card, cardPlay.Target);
+        int hitCount = hitCountOverride
+            ?? (HitPreviewResolver.TryResolve(card, cardPlay.Target, out int resolvedHits) ? resolvedHits : 0);
         return new FinisherAttackSpec(
             card,
             cardPlay,
@@ -107,25 +108,6 @@ public sealed record FinisherAttackSpec(
 public static class NinjaSlayerFinisherCinematic
 {
     private const FinisherPresentationMode PresentationMode = FinisherPresentationMode.Enhanced;
-    private const float ImpactLeadSeconds = 0.04f;
-    private const float ImpactKnockbackRecoverySeconds = 0.06f;
-    private const float DoomPoseSeconds = 0.3f;
-    private const float ImpactRecoverySeconds = 0.1f;
-    private const float FinisherSettleSeconds = 0.1f;
-    private const float ReturnSeconds = 0.2f;
-    private const float SingleHitZoomSeconds = 0.1f;
-    private const float MultiHitZoomSeconds = 0.2f;
-    private const float FinalHitZoomSeconds = 0.1f;
-    private const float MultiHitZoomMultiplier = 1.6f;
-    private const float FinalHitZoomMultiplier = 2f;
-    private const float CameraPunchScaleMultiplier = 1.06f;
-    private const float CameraPushPixels = 16f;
-    private const float FinisherWatchdogSeconds = 90f;
-    private const float EnemyKnockbackPixels = 30f;
-    private const float EnhancedEnemyTiltDegrees = 3f;
-    private const float ImpactVfxTargetMargin = 160f;
-    private static readonly Vector2 JumpDeathSquash = new(1.2f, 0.55f);
-    private static readonly Vector2 DefaultDeathSquash = new(0.55f, 1.2f);
 
     private static FinisherSession? _active;
     private static FinisherSession? _pendingAfterCardPlayed;
@@ -633,10 +615,7 @@ public static class NinjaSlayerFinisherCinematic
     {
         private readonly NCreature _ownerNode;
         private readonly NCreature _focusNode;
-        private readonly HashSet<Creature> _victims;
-        private readonly HashSet<Creature> _deferredDeaths = [];
-        private readonly Dictionary<DamageResult, int> _damageDisplayOverrides =
-            new(ReferenceEqualityComparer.Instance);
+        private readonly FinisherDamageLedger _ledger;
         private readonly Dictionary<Node2D, Vector2> _deathSquashOriginalScales = [];
         private readonly CombatCinematicCameraLease _camera;
         private readonly NCombatRoom _room;
@@ -644,8 +623,8 @@ public static class NinjaSlayerFinisherCinematic
         private readonly HashSet<ulong> _vfxBaselineChildIds;
         private readonly bool _usesJumpDeathSquash;
         private FinisherCameraFrame _cameraFrame = new([], false);
-        private readonly CancellationTokenSource _impactCancellation = new();
-        private readonly CancellationTokenSource _watchdogCancellation = new();
+        private readonly CinematicSessionLifetime _impactCancellation = new();
+        private readonly CinematicSessionLifetime _watchdogCancellation = new();
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
@@ -681,7 +660,7 @@ public static class NinjaSlayerFinisherCinematic
             Owner = owner;
             _ownerNode = ownerNode;
             _focusNode = focusNode;
-            _victims = victims.ToHashSet();
+            _ledger = new FinisherDamageLedger(victims);
             _camera = camera;
             _room = NCombatRoom.Instance!;
             _ownerStartPosition = ownerNode.Position;
@@ -710,7 +689,7 @@ public static class NinjaSlayerFinisherCinematic
                 _cardVisualSuppression = FinisherCardVisualSuppression.Acquire(_room, CardPlay);
                 try
                 {
-                    _presentation = FinisherImpactPresentation.Create(_room, _victims.Count);
+                    _presentation = FinisherImpactPresentation.Create(_room, _ledger.Victims.Count);
                 }
                 catch (Exception ex)
                 {
@@ -722,7 +701,7 @@ public static class NinjaSlayerFinisherCinematic
             Vector2 destination = ResolveApproachPosition(_ownerNode, _focusNode);
             _ownerNode.Position = destination;
             CanvasItem cameraFocus = GetCameraFocus();
-            List<NCreature> framingCandidates = _victims
+            List<NCreature> framingCandidates = _ledger.Victims
                 .Select(victim => _room.GetCreatureNode(victim))
                 .Where(node => node != null)
                 .Cast<NCreature>()
@@ -790,78 +769,26 @@ public static class NinjaSlayerFinisherCinematic
         public bool TryProtectLethalDamage(Creature target, ref decimal amount, out int displayDamage)
         {
             displayDamage = 0;
-            if (_disposed
-                || _committing
-                || !_victims.Contains(target)
-                || amount < target.CurrentHp
-                || target.CurrentHp <= 0)
+            if (_disposed || !_ledger.TryProtect(target, _committing, ref amount, out displayDamage))
             {
                 return false;
             }
 
-            displayDamage = (int)Math.Clamp(amount, 0m, 999999999m);
-            _deferredDeaths.Add(target);
-            if (target.CurrentHp == 1)
-            {
-                if (target.MaxHp > 1)
-                {
-                    target.SetCurrentHpInternal(2);
-                    amount = 1m;
-                }
-                else
-                {
-                    amount = 0m;
-                }
-            }
-            else
-            {
-                amount = target.CurrentHp - 1;
-            }
-
             TryScheduleEnhancedImpact();
-
             return true;
         }
 
-        public void RegisterProtectedDamageResult(DamageResult result, int displayDamage)
-        {
-            if (displayDamage <= 0 || !_victims.Contains(result.Receiver))
-            {
-                return;
-            }
+        public void RegisterProtectedDamageResult(DamageResult result, int displayDamage) =>
+            _ledger.RegisterProtectedDamageResult(result, displayDamage);
 
-            if (result.UnblockedDamage + result.OverkillDamage > 0)
-            {
-                _damageDisplayOverrides[result] = displayDamage;
-                return;
-            }
-
-            NDamageNumVfx? damageVfx = NDamageNumVfx.Create(result.Receiver, displayDamage);
-            Node? vfxContainer = result.Receiver.GetVfxContainer();
-            if (damageVfx != null && vfxContainer != null)
-            {
-                vfxContainer.AddChild(damageVfx);
-            }
-        }
-
-        public bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage)
-        {
-            if (_damageDisplayOverrides.Remove(result, out displayDamage))
-            {
-                return true;
-            }
-
-            displayDamage = 0;
-            return false;
-        }
+        public bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage) =>
+            _ledger.TryTakeDamageDisplayOverride(result, out displayDamage);
 
         public async Task CommitDeaths()
         {
             _committing = true;
-            bool guaranteedClearMatchedRuntime = _victims.All(
-                victim => victim.IsDead
-                    || _deferredDeaths.Contains(victim));
-            List<Creature> toKill = _deferredDeaths.Where(creature => creature.IsAlive).ToList();
+            bool guaranteedClearMatchedRuntime = _ledger.GuaranteedClearMatchedRuntime();
+            List<Creature> toKill = _ledger.LivingDeferredDeaths();
             if (!guaranteedClearMatchedRuntime)
             {
                 Entry.Logger.Warn("Finisher forecast did not match runtime damage; committed deferred lethal damage without the finisher pose.");
@@ -914,7 +841,7 @@ public static class NinjaSlayerFinisherCinematic
             _committing = true;
             _impactCancellation.Cancel();
             await _enhancedImpactTask;
-            List<Creature> toKill = _deferredDeaths.Where(creature => creature.IsAlive).ToList();
+            List<Creature> toKill = _ledger.LivingDeferredDeaths();
             if (toKill.Count > 0)
             {
                 RestoreDeathSquashes();
@@ -953,7 +880,7 @@ public static class NinjaSlayerFinisherCinematic
                 _hoverTipSuppression = null;
                 _cardVisualSuppression?.Dispose();
                 _cardVisualSuppression = null;
-                _damageDisplayOverrides.Clear();
+                _ledger.Clear();
                 RestoreDeathSquashes();
                 DisposeEnhancedPresentation();
                 _impactCancellation.Dispose();
@@ -967,7 +894,7 @@ public static class NinjaSlayerFinisherCinematic
             try
             {
                 float elapsed = 0f;
-                while (elapsed < FinisherWatchdogSeconds)
+                while (elapsed < WatchdogSeconds)
                 {
                     _watchdogCancellation.Token.ThrowIfCancellationRequested();
                     elapsed += await NextFrame();
@@ -1011,7 +938,7 @@ public static class NinjaSlayerFinisherCinematic
                 || _enhancedImpactFailed
                 || _disposed
                 || !IsFinalPrimaryHitReady()
-                || !_victims.All(victim => victim.IsDead || _deferredDeaths.Contains(victim)))
+                || !_ledger.GuaranteedClearMatchedRuntime())
             {
                 return;
             }
@@ -1031,7 +958,7 @@ public static class NinjaSlayerFinisherCinematic
             {
                 await NextFrame();
                 _impactCancellation.Token.ThrowIfCancellationRequested();
-                List<NCreature> targetNodes = _deferredDeaths
+                List<NCreature> targetNodes = _ledger.DeferredDeaths
                     .Where(creature => creature.IsAlive)
                     .Select(creature => _room.GetCreatureNode(creature))
                     .Where(node => node != null && GodotObject.IsInstanceValid(node))
@@ -1731,18 +1658,12 @@ public static class NinjaSlayerFinisherCinematic
 
 internal static class FinisherAttackCommandAdapter
 {
-    private static readonly FieldInfo? DamagePerHitField = AccessTools.Field(typeof(AttackCommand), "_damagePerHit");
-    private static readonly FieldInfo? CalculatedDamageField = AccessTools.Field(typeof(AttackCommand), "_calculatedDamageVar");
-    private static readonly FieldInfo? HitCountField = AccessTools.Field(typeof(AttackCommand), "_hitCount");
-    private static readonly FieldInfo? SingleTargetField = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
-
     public static bool TryCreateSpec(AttackCommand command, out FinisherAttackSpec? spec)
     {
         spec = null;
-        if (DamagePerHitField == null
-            || CalculatedDamageField == null
-            || HitCountField == null
-            || SingleTargetField == null
+        if (!GameCompatibility.Finisher.TryReadAttackCommand(
+                command,
+                out GameCompatibility.AttackCommandState commandState)
             || command.ModelSource is not CardModel { Type: CardType.Attack } card
             || command.CardPlay is not { } cardPlay
             || command.Attacker == null
@@ -1751,10 +1672,10 @@ internal static class FinisherAttackCommandAdapter
             return false;
         }
 
-        var calculatedDamage = CalculatedDamageField.GetValue(command) as CalculatedDamageVar;
-        decimal damagePerHit = (decimal)(DamagePerHitField.GetValue(command) ?? 0m);
-        int hitCount = (int)(HitCountField.GetValue(command) ?? 1);
-        var singleTarget = SingleTargetField.GetValue(command) as Creature;
+        CalculatedDamageVar? calculatedDamage = commandState.CalculatedDamage;
+        decimal damagePerHit = commandState.DamagePerHit;
+        int hitCount = commandState.HitCount;
+        Creature? singleTarget = commandState.SingleTarget;
         FinisherTargeting? targeting = command.IsRandomlyTargeted
             ? FinisherTargeting.Random
             : command.IsSingleTargeted

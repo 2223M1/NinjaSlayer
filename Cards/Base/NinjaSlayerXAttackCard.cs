@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -49,6 +50,12 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
     }
 
     protected virtual int ModifyPreviewHitCount(int xValue) => xValue;
+
+    public override bool TryGetHitPreview(Creature? target, out int hitCount)
+    {
+        hitCount = GetPreviewHitCount();
+        return true;
+    }
 
     protected sealed override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

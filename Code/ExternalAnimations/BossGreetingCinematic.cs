@@ -25,26 +25,15 @@ using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Audio;
 using System.Runtime.CompilerServices;
+using static NinjaSlayer.Code.ExternalAnimations.BossGreetingTimeline;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class BossGreetingCinematic
 {
     private const string VideoPath = "res://NinjaSlayer/videos/ninja_slayer_domo.ogv";
-    private const float VideoSeconds = 260f / 24f;
-    private const float PlayerZoomMultiplier = 2f;
-    private const float PlayerCameraLeadSeconds = 0.2f;
-    private const float PlayerCameraFollowDelaySeconds = 0.2f;
-    private const float PlayerCameraSettleSeconds = 0.12f;
-    private const float BossCameraMoveSeconds = 0.2f;
-    private const float CameraReturnSeconds = 0.2f;
-    private const float MinimumBossCameraHoldSeconds = 2f;
-    private const float BossActionTimeoutSeconds = 8f;
     private const int FmodPlaybackStateStopped = 2;
     private const float DefaultBossZoomMultiplier = 1.5f;
-    private const float BossBubbleLifetimeSeconds = 999f;
-    private const float PostCombatStartBubbleSeconds = 2f;
-    private static readonly Vector2 PlayerFinalCameraOffset = new(0f, -60f);
     private static readonly HashSet<string> ProcessedRoomKeys = [];
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
@@ -79,7 +68,7 @@ public static class BossGreetingCinematic
 
         await SaveManager.Instance.SaveRun(null, saveProgress: false);
 
-        var context = new CinematicContext(room, run.GlobalUi, StableHash(roomKey));
+        var context = new BossGreetingSession(room, run.GlobalUi, StableHash(roomKey));
         try
         {
             await PlayInternal(combatState, ninjaSlayers, room, run.GlobalUi, context);
@@ -162,7 +151,7 @@ public static class BossGreetingCinematic
         List<Player> ninjaSlayers,
         NCombatRoom room,
         NGlobalUi globalUi,
-        CinematicContext context)
+        BossGreetingSession context)
     {
         Player followedPlayer = SelectFollowedPlayer(combatState, ninjaSlayers, context.RoomKeySeed);
         NCreature? followedNode = room.GetCreatureNode(followedPlayer.Creature);
@@ -338,7 +327,7 @@ public static class BossGreetingCinematic
         }
     }
 
-    private static async Task PlayGreetingVideo(NGlobalUi globalUi, CinematicContext context)
+    private static async Task PlayGreetingVideo(NGlobalUi globalUi, BossGreetingSession context)
     {
         var player = new VideoStreamPlayer
         {
@@ -371,9 +360,9 @@ public static class BossGreetingCinematic
     private static async Task<AudioEventHandle?> PlayBossAction(
         Creature boss,
         NCreature bossNode,
-        CinematicContext context)
+        BossGreetingSession context)
     {
-        BossGreetingActionSpec action = GetBossGreetingAction(boss);
+        BossGreetingActionSpec action = BossGreetingActionCatalog.Get(boss);
         AudioEventHandle? audioEvent = action.SfxPath == null
             ? null
             : context.PlaySfxWithHandle(action.SfxPath);
@@ -398,67 +387,6 @@ public static class BossGreetingCinematic
             $"Boss greeting action completed its calibrated duration: boss={bossName}, waited={Math.Max(finishAt, elapsedBeforeCompletionWait):0.###}s.");
         return audioEvent;
     }
-
-    private static BossGreetingActionSpec GetBossGreetingAction(Creature boss)
-    {
-        if (IsKaiserBoss(boss))
-        {
-            return new(null, null, 1.75f);
-        }
-
-        return boss.Monster switch
-        {
-            CeremonialBeast => new(
-                "Cast",
-                "event:/sfx/enemy/enemy_attacks/ceremonial_beast/ceremonial_beast_shrill",
-                1.05f,
-                "vfx/vfx_scream",
-                0.3f),
-            KinPriest => new(
-                "Rally",
-                "event:/sfx/enemy/enemy_attacks/the_kin_priest/the_kin_priest_rally",
-                1f),
-            Vantom => new(
-                "BUFF",
-                "event:/sfx/enemy/enemy_attacks/vantom/vantom_buff",
-                0.6f),
-            LagavulinMatriarch => new("Sleep", null, 1f),
-            WaterfallGiant => new(
-                "Heal",
-                "event:/sfx/enemy/enemy_attacks/waterfall_giant/waterfall_giant_eruption",
-                0.8f),
-            SoulFysh => new(
-                "Beckon",
-                "event:/sfx/enemy/enemy_attacks/soul_fysh/soul_fysh_beckon",
-                0.6f,
-                "vfx/vfx_spooky_scream",
-                0.3f),
-            TheInsatiable => new(
-                "LiquifySand",
-                "event:/sfx/enemy/enemy_attacks/the_insatiable/the_insatiable_liquify_ground",
-                1.25f,
-                "vfx/vfx_scream",
-                0.5f),
-            KnowledgeDemon => new("MindRotTrigger", null, 1f),
-            Queen => new(
-                "Cast",
-                "event:/sfx/enemy/enemy_attacks/queen/queen_cast",
-                0.5f),
-            TestSubject => new(
-                "BiteTrigger",
-                "event:/sfx/enemy/enemy_attacks/test_subject/test_subject_bite",
-                0.25f),
-            Aeonglass => new("Cast", null, 0.4f),
-            _ => new(null, null, 0.8f)
-        };
-    }
-
-    private sealed record BossGreetingActionSpec(
-        string? AnimationTrigger,
-        string? SfxPath,
-        float MinimumDuration,
-        string? VfxPath = null,
-        float VfxDelay = 0f);
 
     private static Creature? SelectBoss(ICombatState state)
     {
@@ -578,7 +506,7 @@ public static class BossGreetingCinematic
 
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
 
-    private sealed class CinematicContext : ICinematicAnimationContext, IDisposable
+    private sealed class BossGreetingSession : ICinematicAnimationContext, IDisposable
     {
         private readonly NCombatRoom _room;
         private readonly Control _sceneContainer;
@@ -587,7 +515,7 @@ public static class BossGreetingCinematic
         private readonly List<AudioEventHandle> _audioEvents = [];
         private readonly List<CanvasItem> _ownedVisuals = [];
         private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
-        private readonly CancellationTokenSource _cancellation = new();
+        private readonly CinematicSessionLifetime _cancellation = new();
         private readonly NinjaSlayerHoverTipSuppression _hoverTipSuppression;
         private VideoStreamPlayer? _video;
         private bool _paused;
@@ -599,7 +527,7 @@ public static class BossGreetingCinematic
         private float _cachedFrameDelta;
         private readonly CombatCinematicCameraLease _camera;
 
-        public CinematicContext(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
+        public BossGreetingSession(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
         {
             _room = room;
             _sceneContainer = room.SceneContainer;

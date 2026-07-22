@@ -49,42 +49,8 @@ public static class DeathAnimation
     private const float ImpactVfxTargetMargin = 160f;
 
     private static readonly ConditionalWeakTable<Creature, DeathVisualState> VisualStates = new();
-    private static readonly ConditionalWeakTable<Creature, ConsumedFatalDamage> ConsumedFatalDamageEntries = new();
-    private static readonly Dictionary<Creature, IncomingDamageCapture> IncomingDamageCaptures = [];
-
-    internal static NinjaSlayerDeathContext CreateContext(Creature creature)
-    {
-        DamageReceivedEntry? fatalEntry = CombatManager.Instance?.History.Entries
-            .OfType<DamageReceivedEntry>()
-            .LastOrDefault(entry => entry.Receiver == creature && entry.Result.WasTargetKilled);
-
-        var consumed = ConsumedFatalDamageEntries.GetOrCreateValue(creature);
-        if (fatalEntry == null || ReferenceEquals(consumed.Entry, fatalEntry))
-        {
-            return new NinjaSlayerDeathContext(
-                NinjaSlayerDeathKind.Other,
-                null,
-                null,
-                new HashSet<ulong>());
-        }
-
-        consumed.Entry = fatalEntry;
-        Creature? dealer = fatalEntry.Dealer;
-        bool isEnemyKill = dealer != null
-            && dealer != creature
-            && dealer.Side != creature.Side
-            && NCombatRoom.Instance?.GetCreatureNode(dealer) != null;
-        IReadOnlySet<ulong> baseline = isEnemyKill
-            && IncomingDamageCaptures.TryGetValue(creature, out IncomingDamageCapture? capture)
-            && capture.Dealer == dealer
-                ? capture.VfxBaselineChildIds
-                : new HashSet<ulong>();
-        return new NinjaSlayerDeathContext(
-            isEnemyKill ? NinjaSlayerDeathKind.EnemyKill : NinjaSlayerDeathKind.Other,
-            fatalEntry,
-            isEnemyKill ? dealer : null,
-            baseline);
-    }
+    internal static NinjaSlayerDeathContext CreateContext(Creature creature) =>
+        NinjaSlayerDeathClassifier.CreateContext(creature);
 
     public static float GetDuration(NinjaSlayerDeathKind kind) => kind switch
     {
@@ -95,63 +61,12 @@ public static class DeathAnimation
     internal static object? BeginIncomingDamageCapture(
         IEnumerable<Creature>? targets,
         Creature? dealer)
-    {
-        NCombatRoom? room = NCombatRoom.Instance;
-        if (dealer == null || room == null || targets == null)
-        {
-            return null;
-        }
-
-        List<Creature> ninjaSlayerTargets = targets
-            .Where(target => target.Player?.Character is INinjaSlayerCharacter
-                && target != dealer
-                && target.Side != dealer.Side)
-            .Distinct()
-            .ToList();
-        if (ninjaSlayerTargets.Count == 0)
-        {
-            return null;
-        }
-
-        var capture = new IncomingDamageCapture(
-            dealer,
-            room.CombatVfxContainer.GetChildren()
-                .Select(child => child.GetInstanceId())
-                .ToHashSet(),
-            ninjaSlayerTargets);
-        foreach (Creature target in ninjaSlayerTargets)
-        {
-            IncomingDamageCaptures[target] = capture;
-        }
-
-        return capture;
-    }
+        => NinjaSlayerDeathClassifier.BeginIncomingDamageCapture(targets, dealer);
 
     internal static async Task<IEnumerable<DamageResult>> CompleteIncomingDamageCapture(
         Task<IEnumerable<DamageResult>> damageTask,
         object? state)
-    {
-        if (state is not IncomingDamageCapture capture)
-        {
-            return await damageTask;
-        }
-
-        try
-        {
-            return await damageTask;
-        }
-        finally
-        {
-            foreach (Creature target in capture.Targets)
-            {
-                if (IncomingDamageCaptures.TryGetValue(target, out IncomingDamageCapture? active)
-                    && ReferenceEquals(active, capture))
-                {
-                    IncomingDamageCaptures.Remove(target);
-                }
-            }
-        }
-    }
+        => await NinjaSlayerDeathClassifier.CompleteIncomingDamageCapture(damageTask, state);
 
     internal static async Task Play(Creature creature, NinjaSlayerDeathContext context)
     {
@@ -252,13 +167,7 @@ public static class DeathAnimation
     {
         if (markCurrentFatalDamageConsumed)
         {
-            DamageReceivedEntry? fatalEntry = CombatManager.Instance?.History.Entries
-                .OfType<DamageReceivedEntry>()
-                .LastOrDefault(entry => entry.Receiver == creature && entry.Result.WasTargetKilled);
-            if (fatalEntry != null)
-            {
-                ConsumedFatalDamageEntries.GetOrCreateValue(creature).Entry = fatalEntry;
-            }
+            NinjaSlayerDeathClassifier.MarkCurrentFatalDamageConsumed(creature);
         }
 
         if (!VisualStates.TryGetValue(creature, out DeathVisualState? state))
@@ -801,11 +710,6 @@ public static class DeathAnimation
             SceneTreeTimer.SignalName.Timeout);
     }
 
-    private sealed record IncomingDamageCapture(
-        Creature Dealer,
-        IReadOnlySet<ulong> VfxBaselineChildIds,
-        IReadOnlyList<Creature> Targets);
-
     private sealed class CinematicFrameClock
     {
         public ulong LastFrameMsec { get; set; } = Time.GetTicksMsec();
@@ -815,11 +719,6 @@ public static class DeathAnimation
     }
 
     private readonly record struct ProcessModeSnapshot(Node Node, Node.ProcessModeEnum Mode);
-
-    private sealed class ConsumedFatalDamage
-    {
-        public DamageReceivedEntry? Entry { get; set; }
-    }
 
     private sealed class DeathVisualState
     {
@@ -855,7 +754,7 @@ public static class DeathAnimation
         public Sprite2D Body { get; }
         public float AnchorRotationDegrees => _anchorRotationDegrees;
         public Vector2 AnchorScale => _anchorScale;
-        public CancellationTokenSource Cancellation { get; } = new();
+        public CinematicSessionLifetime Cancellation { get; } = new();
         public Node2D? Pivot { get; set; }
         public NinjaSlayerDeathJitter? Jitter { get; set; }
         public Tween? Tween { get; set; }
@@ -873,6 +772,7 @@ public static class DeathAnimation
         public void Restore(Creature creature)
         {
             Cancellation.Cancel();
+            Cancellation.Dispose();
             if (Tween?.IsValid() == true)
             {
                 Tween.Kill();

@@ -1,7 +1,5 @@
-using System.Reflection;
 using System.Threading;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
@@ -17,6 +15,7 @@ using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
 using MegaCrit.Sts2.Core.Random;
 using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Code.Compatibility;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -52,37 +51,10 @@ internal static class PreparedQueueReorderContext
 
 internal static class PreparedDrawCompatibility
 {
-    private static readonly MethodInfo? DrawInternalMethod = AccessTools.Method(
-        typeof(CardPileCmd),
-        "DrawInternal",
-        [typeof(PlayerChoiceContext), typeof(decimal), typeof(Player), typeof(bool)]);
-    private static readonly MethodInfo? ShuffleFtueCheckMethod = AccessTools.Method(typeof(CardPileCmd), "ShuffleFtueCheck");
+    public static bool CanInstall(out string missingMember) =>
+        GameCompatibility.Prepared.CanInstall(out missingMember);
 
-    public static bool CanInstall(out string missingMember)
-    {
-        if (DrawInternalMethod is null)
-        {
-            missingMember = "CardPileCmd.DrawInternal(PlayerChoiceContext, decimal, Player, bool)";
-            return false;
-        }
-
-        if (ShuffleFtueCheckMethod is null)
-        {
-            missingMember = "CardPileCmd.ShuffleFtueCheck()";
-            return false;
-        }
-
-        missingMember = string.Empty;
-        return true;
-    }
-
-    public static async Task ShowShuffleFtue()
-    {
-        if (ShuffleFtueCheckMethod?.Invoke(null, null) is Task task)
-        {
-            await task;
-        }
-    }
+    public static Task ShowShuffleFtue() => GameCompatibility.Prepared.ShowShuffleFtue();
 }
 
 public sealed class PreparedDrawPatch : IPatchMethod
@@ -298,9 +270,6 @@ public sealed class PreparedPileExitPatch : IPatchMethod
 
 public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 {
-    private static readonly FieldInfo? GridField =
-        AccessTools.Field(typeof(NCardPileScreen), "_grid");
-
     public static string PatchId => "ninjaslayer_prepared_draw_pile_display_order";
 
     public static string Description =>
@@ -321,7 +290,8 @@ public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
         CardPile pile = __instance.Pile;
         if (pile.Type != PileType.Draw
             || !pile.Cards.Any(PrepareCmd.IsPrepared)
-            || GridField?.GetValue(__instance) is not NCardGrid grid)
+            || !GameCompatibility.Prepared.TryGetGrid(__instance, out NCardGrid? grid)
+            || grid is null)
         {
             return;
         }

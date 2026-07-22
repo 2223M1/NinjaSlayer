@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
-using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
 using STS2RitsuLib.Patching.Models;
 
@@ -13,12 +11,6 @@ namespace NinjaSlayer.Code.Patches;
 
 public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 {
-    private static readonly FieldInfo? FinalizingField =
-        AccessTools.Field(typeof(AssetLoadingSession), "_finalizing");
-
-    private static readonly MethodInfo? AddToCacheMethod =
-        AccessTools.Method(typeof(AssetLoadingSession), "AddToCache");
-
     public static string PatchId => "ninjaslayer_transition_asset_finalize_batching";
 
     public static string Description =>
@@ -26,23 +18,8 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 
     public static bool IsCritical => true;
 
-    internal static bool CanInstall(out string missingMember)
-    {
-        if (FinalizingField == null)
-        {
-            missingMember = $"{typeof(AssetLoadingSession).FullName}._finalizing";
-            return false;
-        }
-
-        if (AddToCacheMethod == null)
-        {
-            missingMember = $"{typeof(AssetLoadingSession).FullName}.AddToCache";
-            return false;
-        }
-
-        missingMember = string.Empty;
-        return true;
-    }
+    internal static bool CanInstall(out string missingMember) =>
+        GameCompatibility.AssetLoading.CanFinalize(out missingMember);
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(AssetLoadingSession), "FinalizeLoading")];
@@ -54,8 +31,8 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
             return true;
         }
 
-        if (FinalizingField?.GetValue(__instance) is not Queue<string> finalizing ||
-            AddToCacheMethod == null)
+        if (!GameCompatibility.AssetLoading.TryGetFinalizing(__instance, out Queue<string>? finalizing)
+            || finalizing is null)
         {
             return true;
         }
@@ -66,7 +43,7 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
                finalizing.TryDequeue(out string? path))
         {
             Resource? resource = ResourceLoader.LoadThreadedGet(path);
-            AddToCacheMethod.Invoke(__instance, [resource, path]);
+            GameCompatibility.AssetLoading.Cache(__instance, resource, path);
             finalized++;
         }
 
@@ -79,14 +56,6 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 
 public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
 {
-    private static readonly MethodInfo? GcCollectMethod =
-        AccessTools.Method(typeof(GC), nameof(GC.Collect), Type.EmptyTypes);
-
-    private static readonly MethodInfo? SafeCollectMethod =
-        AccessTools.Method(
-            typeof(NinjaSlayerTransitionLoadSmoothing),
-            nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
-
     public static string PatchId => "ninjaslayer_transition_preload_gc_deferral";
 
     public static string Description =>
@@ -100,13 +69,13 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
 
     internal static bool CanInstall(out string missingMember)
     {
-        if (GcCollectMethod == null)
+        if (GameCompatibility.AssetLoading.GcCollect == null)
         {
             missingMember = $"{typeof(GC).FullName}.{nameof(GC.Collect)}";
             return false;
         }
 
-        if (SafeCollectMethod == null)
+        if (GameCompatibility.AssetLoading.SafeCollect == null)
         {
             missingMember = $"{typeof(NinjaSlayerTransitionLoadSmoothing).FullName}.CollectWhenSafe";
             return false;
@@ -119,9 +88,11 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
     {
         foreach (CodeInstruction instruction in instructions)
         {
-            if (GcCollectMethod != null && SafeCollectMethod != null && instruction.Calls(GcCollectMethod))
+            if (GameCompatibility.AssetLoading.GcCollect is { } gcCollect
+                && GameCompatibility.AssetLoading.SafeCollect is { } safeCollect
+                && instruction.Calls(gcCollect))
             {
-                instruction.operand = SafeCollectMethod;
+                instruction.operand = safeCollect;
             }
 
             yield return instruction;
@@ -130,29 +101,17 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
 
     private static bool TryResolveTargets(out ModPatchTarget[] targets, out string missingMember)
     {
-        var signatures = new (string Name, Type[] Parameters)[]
+        if (!GameCompatibility.AssetLoading.TryResolvePreloadStateMachines(
+                out Type[] stateMachines,
+                out missingMember))
         {
-            (nameof(PreloadManager.LoadRunAssets), [typeof(IEnumerable<CharacterModel>)]),
-            (nameof(PreloadManager.LoadActAssets), [typeof(ActModel)]),
-            ("LoadRoomAssets", [typeof(string), typeof(IEnumerable<string>)])
-        };
-        var resolved = new List<ModPatchTarget>(signatures.Length);
-        foreach ((string methodName, Type[] parameterTypes) in signatures)
-        {
-            MethodInfo? method = AccessTools.Method(typeof(PreloadManager), methodName, parameterTypes);
-            Type? stateMachineType = method?.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType;
-            if (stateMachineType == null)
-            {
-                targets = [];
-                missingMember = $"{typeof(PreloadManager).FullName}.{methodName} async state machine";
-                return false;
-            }
-
-            resolved.Add(new ModPatchTarget(stateMachineType, nameof(IAsyncStateMachine.MoveNext)));
+            targets = [];
+            return false;
         }
 
-        targets = resolved.ToArray();
-        missingMember = string.Empty;
+        targets = stateMachines
+            .Select(stateMachine => new ModPatchTarget(stateMachine, "MoveNext"))
+            .ToArray();
         return true;
     }
 }
