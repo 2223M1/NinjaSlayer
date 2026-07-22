@@ -20,6 +20,7 @@ public partial class ContractRunner : Node
         try
         {
             VerifyOriginalLethalTargetFingerprint();
+            VerifyOriginalPreparedDrawTargetFingerprint();
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyFinisherProtectionTransaction();
@@ -38,6 +39,13 @@ public partial class ContractRunner : Node
     {
         Require(
             FinisherLethalTargetContract.TryValidate(out _, out _, out string reason),
+            reason);
+    }
+
+    private static void VerifyOriginalPreparedDrawTargetFingerprint()
+    {
+        Require(
+            PreparedDrawTargetContract.TryValidate(out _, out _, out string reason),
             reason);
     }
 

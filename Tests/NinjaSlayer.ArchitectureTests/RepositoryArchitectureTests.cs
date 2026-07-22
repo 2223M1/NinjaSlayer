@@ -127,6 +127,32 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void PreparedSafetyRunsAfterPileHooksAndGameplayCreationIsGated()
+    {
+        string preparedPatches = Sources
+            .Single(source => source.RelativePath == "Code/Patches/PreparedCardPatches.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("PreparedPileChangeSafetyPatch", preparedPatches, StringComparison.Ordinal);
+        Assert.Contains("CompletePileChangeAfter(__result, card, oldPile)", preparedPatches, StringComparison.Ordinal);
+        Assert.DoesNotContain("PreparedPileExitPatch", preparedPatches, StringComparison.Ordinal);
+        Assert.DoesNotContain("nameof(CardPile.RemoveInternal)", preparedPatches, StringComparison.Ordinal);
+
+        MethodDeclarationSyntax canPrepare = Sources
+            .Single(source => source.RelativePath == "Code/Commands/PrepareCmd.cs")
+            .Root
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "CanPrepare");
+        Assert.Contains("PreparedGameplayEnabled", canPrepare.ToFullString(), StringComparison.Ordinal);
+
+        string entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root.ToFullString();
+        Assert.True(
+            entry.IndexOf("InstallCapability<PreparedSafetyPatchGroup>", StringComparison.Ordinal)
+            < entry.IndexOf("InstallCapability<PreparedGameplayPatchGroup>", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void HarmonyInstallationIsCentralizedInCompatibilityInfrastructure()
     {
         string[] allowed =

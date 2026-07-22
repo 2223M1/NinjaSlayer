@@ -20,7 +20,7 @@ public static class ScryCmd
 
         CardPile drawPile = PileType.Draw.GetPile(player);
         List<CardModel> cardsToScry = drawPile.Cards
-            .Where(card => !PrepareCmd.IsPrepared(card))
+            .Where(card => !PrepareCmd.ShouldReserveFromNormalDraw(card))
             .Take(amount)
             .ToList();
         if (cardsToScry.Count == 0)

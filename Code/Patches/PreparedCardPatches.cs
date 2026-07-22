@@ -14,8 +14,11 @@ using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
 using MegaCrit.Sts2.Core.Random;
+using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.Saves;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.Prepared;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -73,7 +76,7 @@ public sealed class PreparedDrawPatch : IPatchMethod
         bool fromHandDraw,
         ref Task<IEnumerable<CardModel>> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedEnabled)
+        if (!NinjaSlayerPatchCapabilities.PreparedGameplayEnabled)
         {
             return true;
         }
@@ -242,25 +245,46 @@ internal static class PreparedDrawService
     }
 }
 
-public sealed class PreparedPileExitPatch : IPatchMethod
+public sealed class PreparedPileChangeSafetyPatch : IPatchMethod
 {
-    public static string PatchId => "ninjaslayer_prepared_pile_exit_cleanup";
+    public static string PatchId => "ninjaslayer_prepared_pile_change_safety";
 
-    public static string Description => "Clear prepared when a card leaves the draw pile.";
+    public static string Description =>
+        "Clear prepared only after pile-change listeners confirm that a card left the draw pile.";
 
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(CardPile), nameof(CardPile.RemoveInternal), [typeof(CardModel), typeof(bool)])];
+    [
+        new(typeof(Hook), nameof(Hook.AfterCardChangedPiles),
+            [typeof(IRunState), typeof(ICombatState), typeof(CardModel), typeof(PileType), typeof(AbstractModel)])
+    ];
 
-    public static void Prefix(CardPile __instance, CardModel card)
+    public static void Postfix(CardModel card, PileType oldPile, ref Task __result)
     {
-        if (NinjaSlayerPatchCapabilities.PreparedEnabled
-            && !PreparedQueueReorderContext.IsActive
-            && __instance.Type == PileType.Draw
-            && PrepareCmd.IsPrepared(card))
+        if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
         {
-            CardCmd.ClearAffliction(card);
+            __result = PreparedSafetyService.CompletePileChangeAfter(__result, card, oldPile);
+        }
+    }
+}
+
+public sealed class PreparedRunLoadedSafetyPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_prepared_run_loaded_safety";
+
+    public static string Description => "Clear invalid prepared afflictions after a saved run is initialized.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(RunManager), "InitializeSavedRun", [typeof(SerializableRun)], ignoreIfMissing: true)];
+
+    public static void Postfix(RunManager __instance)
+    {
+        if (__instance.DebugOnlyGetState() is { } runState)
+        {
+            PreparedSafetyService.RecoverAfterRunLoaded(runState);
         }
     }
 }
@@ -279,7 +303,7 @@ public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 
     public static void Postfix(NCardPileScreen __instance)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedEnabled)
+        if (!NinjaSlayerPatchCapabilities.PreparedUiEnabled)
         {
             return;
         }
