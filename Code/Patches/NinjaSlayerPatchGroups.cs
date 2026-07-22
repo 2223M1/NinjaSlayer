@@ -82,12 +82,17 @@ internal sealed class CinematicInfrastructurePatchGroup : IModPatches
     }
 }
 
-internal sealed class PreparedPatchGroup : IModPatches
+internal sealed class PreparedGameplayPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<PreparedDrawPatch>();
+}
+
+internal sealed class PreparedSafetyPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
     {
-        patcher.RegisterPatch<PreparedDrawPatch>();
-        patcher.RegisterPatch<PreparedPileExitPatch>();
+        patcher.RegisterPatch<PreparedPileChangeSafetyPatch>();
+        patcher.RegisterPatch<PreparedRunLoadedSafetyPatch>();
     }
 }
 

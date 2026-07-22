@@ -10,7 +10,8 @@ public static class PrepareCmd
 {
     public static bool CanPrepare(CardModel card)
     {
-        return card.IsMutable
+        return NinjaSlayerPatchCapabilities.PreparedGameplayEnabled
+            && card.IsMutable
             && card.IsInCombat
             && !card.HasBeenRemovedFromState
             && card.Owner?.PlayerCombatState is not null
@@ -18,6 +19,9 @@ public static class PrepareCmd
     }
 
     public static bool IsPrepared(CardModel card) => card.Affliction is PreparedAffliction;
+
+    public static bool ShouldReserveFromNormalDraw(CardModel card) =>
+        NinjaSlayerPatchCapabilities.PreparedGameplayEnabled && IsPrepared(card);
 
     public static async Task<bool> Apply(CardModel card)
     {

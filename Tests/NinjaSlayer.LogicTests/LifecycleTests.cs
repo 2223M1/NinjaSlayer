@@ -167,9 +167,14 @@ public sealed class LifecycleTests
         object innerScope = new();
         object stateOwner = new();
         var scopes = new ResolutionScopeRegistry<object, object>();
-        scopes.Begin(subject, outerScope);
-        scopes.GetOrCreateState(outerScope, stateOwner, static () => new List<int>()).Add(1);
-        scopes.Begin(subject, innerScope);
+        Assert.True(scopes.Begin(subject, outerScope));
+        Assert.True(scopes.TryGetOrCreateState(
+            outerScope,
+            stateOwner,
+            static () => new List<int>(),
+            out List<int>? created));
+        created!.Add(1);
+        Assert.True(scopes.Begin(subject, innerScope));
 
         Assert.True(scopes.TryGetLatestScope(subject, out object? latest));
         Assert.Same(innerScope, latest);
@@ -182,5 +187,62 @@ public sealed class LifecycleTests
         scopes.CompleteSubject(subject);
         Assert.Equal(0, scopes.Count);
         Assert.False(scopes.TryGetLatestScope(subject, out _));
+    }
+
+    [Fact]
+    public void ResolutionScopesKeyStateByOwnerReferenceAndStateType()
+    {
+        object subject = new();
+        object scope = new();
+        object owner = new();
+        var scopes = new ResolutionScopeRegistry<object, object>();
+        Assert.True(scopes.Begin(subject, scope));
+
+        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int>(), out List<int>? list));
+        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new HashSet<int>(), out HashSet<int>? set));
+        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int>(), out List<int>? sameList));
+
+        Assert.NotNull(list);
+        Assert.NotNull(set);
+        Assert.Same(list, sameList);
+    }
+
+    [Fact]
+    public async Task ResolutionScopesRejectForeignThreadMutationAndReportOnceInReleaseMode()
+    {
+        var reports = new List<string>();
+        var scopes = new ResolutionScopeRegistry<object, object>(reports.Add, throwOnThreadViolation: false);
+        object subject = new();
+
+        bool[] results = await Task.WhenAll(Enumerable.Range(0, 2).Select(_ => Task.Run(() =>
+            scopes.Begin(subject, new object()))));
+
+        Assert.All(results, Assert.False);
+        Assert.Single(reports);
+        Assert.Equal(0, scopes.Count);
+    }
+
+    [Fact]
+    public async Task ResolutionScopesAssertForeignThreadMutationInStrictMode()
+    {
+        var scopes = new ResolutionScopeRegistry<object, object>(throwOnThreadViolation: true);
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Task.Run(() => scopes.Begin(new object(), new object())));
+
+        Assert.Contains("owner thread", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, scopes.Count);
+    }
+
+    [Fact]
+    public async Task ResolutionScopesCanBeForceClearedAtALifecycleBoundary()
+    {
+        var scopes = new ResolutionScopeRegistry<object, object>(throwOnThreadViolation: false);
+        Assert.True(scopes.Begin(new object(), new object()));
+
+        int cleared = await Task.Run(scopes.ForceClear);
+
+        Assert.Equal(1, cleared);
+        Assert.Equal(0, scopes.Count);
     }
 }

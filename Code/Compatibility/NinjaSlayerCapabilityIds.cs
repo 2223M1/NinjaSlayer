@@ -9,6 +9,7 @@ internal static class NinjaSlayerCapabilityIds
     public const string KaratePreview = "karate-preview";
     public const string Typography = "typography";
     public const string CinematicInfrastructure = "cinematic-infrastructure";
+    public const string PreparedSafety = "prepared-safety";
     public const string PreparedGameplay = "prepared-gameplay";
     public const string PreparedUi = "prepared-ui";
     public const string FinisherCore = "finisher-core";
@@ -27,6 +28,7 @@ internal static class NinjaSlayerCapabilityIds
         KaratePreview,
         Typography,
         CinematicInfrastructure,
+        PreparedSafety,
         PreparedGameplay,
         PreparedUi,
         FinisherCore,

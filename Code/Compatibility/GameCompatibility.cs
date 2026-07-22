@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
@@ -25,6 +26,8 @@ using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Nodes.Screens.InspectScreens;
 using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Transition;
@@ -142,18 +145,43 @@ internal static class GameCompatibility
 
     internal static class Prepared
     {
-        private static readonly MethodInfo? DrawInternal = AccessTools.Method(
-            typeof(CardPileCmd),
-            "DrawInternal",
-            [typeof(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext), typeof(decimal), typeof(Player), typeof(bool)]);
         private static readonly MethodInfo? ShuffleFtueCheck = AccessTools.Method(typeof(CardPileCmd), "ShuffleFtueCheck");
+        private static readonly MethodInfo? AfterCardChangedPiles = AccessTools.Method(
+            typeof(Hook),
+            nameof(Hook.AfterCardChangedPiles),
+            [typeof(IRunState), typeof(MegaCrit.Sts2.Core.Combat.ICombatState), typeof(CardModel), typeof(PileType), typeof(AbstractModel)]);
+        private static readonly MethodInfo? InitializeSavedRun = AccessTools.Method(
+            typeof(RunManager),
+            "InitializeSavedRun",
+            [typeof(SerializableRun)]);
         private static readonly FieldInfo? Grid = AccessTools.Field(typeof(NCardPileScreen), "_grid");
 
-        public static IReadOnlyList<CapabilityProbe> GetGameplayProbes() =>
+        public static IReadOnlyList<CapabilityProbe> GetGameplayProbes()
+        {
+            bool drawContractMatches = PreparedDrawTargetContract.TryValidate(
+                out _,
+                out PreparedDrawTargetFingerprint fingerprint,
+                out string reason);
+            return
+            [
+                CapabilityProbe.Required(
+                    "CardPileCmd.draw-internal-contract",
+                    drawContractMatches,
+                    drawContractMatches ? fingerprint.ToString() : reason),
+                RequiredMember("CardPileCmd.shuffle-ftue", ShuffleFtueCheck, "CardPileCmd.ShuffleFtueCheck()")
+            ];
+        }
+
+        public static IReadOnlyList<CapabilityProbe> GetSafetyProbes() =>
         [
-            RequiredMember("CardPileCmd.draw-internal", DrawInternal,
-                "CardPileCmd.DrawInternal(PlayerChoiceContext, decimal, Player, bool)"),
-            RequiredMember("CardPileCmd.shuffle-ftue", ShuffleFtueCheck, "CardPileCmd.ShuffleFtueCheck()")
+            RequiredMember(
+                "Hook.after-card-changed-piles",
+                AfterCardChangedPiles,
+                "Hook.AfterCardChangedPiles(IRunState, ICombatState, CardModel, PileType, AbstractModel)"),
+            CapabilityProbe.Optional(
+                "RunManager.initialize-saved-run",
+                InitializeSavedRun != null,
+                InitializeSavedRun != null ? "available" : "RunManager.InitializeSavedRun(SerializableRun) is unavailable")
         ];
 
         public static IReadOnlyList<CapabilityProbe> GetUiProbes() =>

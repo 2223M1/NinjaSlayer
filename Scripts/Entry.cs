@@ -88,7 +88,21 @@ public class Entry
             GameCompatibility.Typography.GetProbes());
         InstallCapability<CinematicInfrastructurePatchGroup>(NinjaSlayerCapabilityIds.CinematicInfrastructure);
 
-        CapabilityStatus prepared = InstallCapability<PreparedPatchGroup>(
+        CapabilityStatus preparedSafety = InstallCapability<PreparedSafetyPatchGroup>(
+            NinjaSlayerCapabilityIds.PreparedSafety,
+            GameCompatibility.Prepared.GetSafetyProbes());
+        if (!preparedSafety.IsOperational)
+        {
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.PreparedGameplay,
+                NinjaSlayerCapabilityIds.PreparedSafety);
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.PreparedUi,
+                NinjaSlayerCapabilityIds.PreparedGameplay);
+            return;
+        }
+
+        CapabilityStatus prepared = InstallCapability<PreparedGameplayPatchGroup>(
             NinjaSlayerCapabilityIds.PreparedGameplay,
             GameCompatibility.Prepared.GetGameplayProbes());
         if (prepared.IsOperational)

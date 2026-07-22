@@ -9,7 +9,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 - Enhanced lethal protection is pinned to `Creature.LoseHpInternal` in the supported 0.109.x build (`MVID a49d3537-5a42-4dcd-9877-663e394f2b44`, metadata token `0x06008438`, IL SHA-256 `9c1b0e229a97c39866dcebe88c742175b9d41b27b2d507ed4ca31bfee4f61fc6`). A mismatch or a foreign skipping/result-replacing Harmony patch disables the enhancement and keeps the original attack path.
 - Finisher search limits are 25,000 states and 8 ms; the active-time watchdog is 90 seconds.
 - Transition owns one 30-second watchdog and must restore input, black screen, hover suppression, camera state, and loading state on every exit.
-- Prepared gameplay currently filters normal draws and mirrors vanilla shuffle/history/hook ordering. Prepared cleanup must become independently installable before gameplay compatibility is broadened.
+- Prepared safety clears afflictions only after pile-change hooks confirm the card left the draw pile, and independently repairs invalid state at run-load and combat boundaries. Gameplay is pinned to `CardPileCmd.DrawInternal` in the supported 0.109.x build (`MVID a49d3537-5a42-4dcd-9877-663e394f2b44`, metadata token `0x060087F6`, IL SHA-256 `23ae995c9d6825f8ea24e7febce122641f2660fc3bea0667cf57c3d34b80c857`) and is disabled when either safety or that contract is unavailable.
 - Naraku has normal, new Naraku, fully released Naraku, and One Body One Soul visual policies; this roadmap does not change their abilities.
 - Boss framing holds for at least 2 seconds; boss and finisher camera recovery each remain 0.2 seconds.
 
