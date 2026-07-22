@@ -30,6 +30,32 @@ for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter(
   readJson(path);
 }
 readJson(join(root, 'NinjaSlayer.json'));
+const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));
+if (warningAllowlist) {
+  const entries = Array.isArray(warningAllowlist.entries) ? warningAllowlist.entries : [];
+  const codes = new Set();
+  for (const entry of entries) {
+    if (typeof entry.code !== 'string' || !/^[A-Z]+\d+$/.test(entry.code) || codes.has(entry.code)) {
+      errors.push(`Docs/warning-allowlist.json contains an invalid or duplicate code: ${entry.code ?? '<missing>'}`);
+    }
+    codes.add(entry.code);
+    if (typeof entry.owner !== 'string' || typeof entry.reason !== 'string' || typeof entry.suppressedIn !== 'string') {
+      errors.push(`Warning allowlist entry ${entry.code ?? '<missing>'} is incomplete`);
+    }
+  }
+}
+
+for (const workflow of filesUnder(join(root, '.github', 'workflows')).filter((path) => path.endsWith('.yml'))) {
+  const source = readFileSync(workflow, 'utf8');
+  for (const match of source.matchAll(/^\s*uses:\s*([^\s#]+)\s*$/gm)) {
+    const action = match[1];
+    if (action.startsWith('./')) continue;
+    const revision = action.slice(action.lastIndexOf('@') + 1);
+    if (!/^[0-9a-f]{40}$/.test(revision)) {
+      errors.push(`${relative(root, workflow)} must pin ${action} to a full commit SHA`);
+    }
+  }
+}
 
 for (const name of ['feedback.json', 'enchantments.json']) {
   const englishPath = join(root, 'NinjaSlayer', 'localization', 'eng', name);

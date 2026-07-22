@@ -1,0 +1,13 @@
+[application]
+
+config/name="NinjaSlayer RitsuLib Contract Tests"
+run/main_scene="res://contract.tscn"
+
+[dotnet]
+
+project/assembly_name="NinjaSlayer.RitsuLibContractTests"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
