@@ -1,3 +1,4 @@
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
@@ -24,10 +25,13 @@ public sealed class NancyLeeCandidatePatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(Glory), nameof(Glory.GetUnlockedAncients), [typeof(UnlockState)])];
 
+    [HarmonyAfter(NancyCompatibility.RitsuLibContentRegistryHarmonyId)]
     public static void Postfix(ref IEnumerable<AncientEventModel> __result)
     {
         var runState = RunManager.Instance.DebugOnlyGetState();
-        if (runState == null || NinjaSlayerContentAccess.HasNinjaSlayer(runState))
+        if (!NancyAvailabilityPolicy.ShouldFilterCandidates(
+                runState != null,
+                runState != null && NinjaSlayerContentAccess.HasNinjaSlayer(runState)))
         {
             return;
         }
@@ -51,13 +55,14 @@ public sealed class NancyLeeLoadedRunPatch : IPatchMethod
     public static void Postfix(ActModel __instance, Rng rng)
     {
         var runState = RunManager.Instance.DebugOnlyGetState();
-        if (__instance is not Glory
-            || runState == null
-            || NinjaSlayerContentAccess.HasNinjaSlayer(runState)
-            || !GameCompatibility.Nancy.TryGetRooms(__instance, out RoomSet? rooms)
+        if (runState == null
+            || !NancyCompatibility.TryGetRooms(__instance, out RoomSet? rooms)
             || rooms is null
-            || !rooms.HasAncient
-            || rooms.Ancient is not NancyLee)
+            || !NancyAvailabilityPolicy.ShouldRepairLoadedSelection(
+                __instance is Glory,
+                NinjaSlayerContentAccess.HasNinjaSlayer(runState),
+                rooms.HasAncient,
+                rooms.HasAncient && rooms.Ancient is NancyLee))
         {
             return;
         }

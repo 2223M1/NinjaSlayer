@@ -42,13 +42,14 @@ internal sealed class ReporterPassPatchGroup : IModPatches
     public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<ReporterPassEventOptionPatch>();
 }
 
-internal sealed class NancyCompatibilityPatchGroup : IModPatches
+internal sealed class NancyCandidateFilterPatchGroup : IModPatches
 {
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NancyLeeCandidatePatch>();
-        patcher.RegisterPatch<NancyLeeLoadedRunPatch>();
-    }
+    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<NancyLeeCandidatePatch>();
+}
+
+internal sealed class NancyLoadedRunRepairPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<NancyLeeLoadedRunPatch>();
 }
 
 internal sealed class KaratePreviewPatchGroup : IModPatches

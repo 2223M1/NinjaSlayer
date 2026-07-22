@@ -77,9 +77,10 @@ public class Entry
         InstallCapability<ReporterPassPatchGroup>(
             NinjaSlayerCapabilityIds.ReporterPass,
             GameCompatibility.ReporterPass.GetProbes());
-        InstallCapability<NancyCompatibilityPatchGroup>(
-            NinjaSlayerCapabilityIds.Nancy,
-            GameCompatibility.Nancy.GetProbes());
+        InstallCapability<NancyCandidateFilterPatchGroup>(NinjaSlayerCapabilityIds.NancyCandidateFilter);
+        InstallCapability<NancyLoadedRunRepairPatchGroup>(
+            NinjaSlayerCapabilityIds.NancyLoadedRunRepair,
+            NancyCompatibility.GetLoadedRunRepairProbes());
         InstallCapability<KaratePreviewPatchGroup>(
             NinjaSlayerCapabilityIds.KaratePreview,
             GameCompatibility.KarateHealthBar.GetProbes());

@@ -4,6 +4,9 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Acts;
+using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -23,6 +26,7 @@ public partial class ContractRunner : Node
         {
             VerifyOriginalLethalTargetFingerprint();
             VerifyOriginalPreparedDrawTargetFingerprint();
+            VerifyNancyLoadedRunCompatibility();
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyFinisherProtectionTransaction();
@@ -50,6 +54,25 @@ public partial class ContractRunner : Node
         Require(
             PreparedDrawTargetContract.TryValidate(out _, out _, out string reason),
             reason);
+    }
+
+    private static void VerifyNancyLoadedRunCompatibility()
+    {
+        Require(
+            NancyCompatibility.GetLoadedRunRepairProbes().All(probe => probe.IsAvailable),
+            "The Nancy loaded-run room contract is unavailable.");
+
+        var act = (Glory)RuntimeHelpers.GetUninitializedObject(typeof(Glory));
+        var rooms = new RoomSet();
+        FieldInfo roomsField = typeof(ActModel).GetField(
+            "_rooms",
+            BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new MissingFieldException(typeof(ActModel).FullName, "_rooms");
+        roomsField.SetValue(act, rooms);
+
+        Require(
+            NancyCompatibility.TryGetRooms(act, out RoomSet? resolved) && ReferenceEquals(rooms, resolved),
+            "The Nancy compatibility adapter did not return the loaded act room set.");
     }
 
     private static void VerifyFinalizerOrderingAndTypedState()

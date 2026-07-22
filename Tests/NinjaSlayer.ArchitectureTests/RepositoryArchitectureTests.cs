@@ -173,6 +173,39 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void NancyFilteringAndLoadedRepairHaveIndependentCompatibilityBoundaries()
+    {
+        string patches = Sources
+            .Single(source => source.RelativePath == "Code/Patches/NancyLeeAvailabilityPatches.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains(
+            "HarmonyAfter(NancyCompatibility.RitsuLibContentRegistryHarmonyId)",
+            patches,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("AccessTools", patches, StringComparison.Ordinal);
+
+        string groups = Sources
+            .Single(source => source.RelativePath == "Code/Patches/NinjaSlayerPatchGroups.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("class NancyCandidateFilterPatchGroup", groups, StringComparison.Ordinal);
+        Assert.Contains("class NancyLoadedRunRepairPatchGroup", groups, StringComparison.Ordinal);
+        Assert.DoesNotContain("class NancyCompatibilityPatchGroup", groups, StringComparison.Ordinal);
+
+        string compatibility = Sources
+            .Single(source => source.RelativePath == "Code/Compatibility/NancyCompatibility.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("CapabilityProbe.Required", compatibility, StringComparison.Ordinal);
+        Assert.DoesNotContain("CapabilityProbe.Optional", compatibility, StringComparison.Ordinal);
+
+        string entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root.ToFullString();
+        Assert.Contains("InstallCapability<NancyCandidateFilterPatchGroup>", entry, StringComparison.Ordinal);
+        Assert.Contains("InstallCapability<NancyLoadedRunRepairPatchGroup>", entry, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void FormPresentationPoliciesAreCentralized()
     {
         string overlay = Sources
