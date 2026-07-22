@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout trusted harness from protected main
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: main
           fetch-depth: 0
@@ -27,7 +27,7 @@ jobs:
 
       - name: Validate canonical candidate
         id: candidate
-        shell: pwsh
+        shell: powershell
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
         run: |
@@ -41,7 +41,7 @@ jobs:
           "sha=$($env:CANDIDATE_SHA.ToLowerInvariant())" | Out-File $env:GITHUB_OUTPUT -Append
 
       - name: Checkout candidate sources without credentials
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ steps.candidate.outputs.sha }}
           fetch-depth: 1
@@ -54,7 +54,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Validate isolated runner inputs
-        shell: pwsh
+        shell: powershell
         run: |
           if ([string]::IsNullOrWhiteSpace($env:STS2_DATA_DIR)) {
             throw 'The ephemeral runner did not provide STS2_DATA_DIR.'
@@ -62,10 +62,23 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($env:GODOT_EXE) -or -not (Test-Path -LiteralPath $env:GODOT_EXE -PathType Leaf)) {
             throw 'The ephemeral runner did not provide a valid GODOT_EXE.'
           }
+          if ([string]::IsNullOrWhiteSpace($env:NINJASLAYER_CONTRACT_DOTNET_ROOT)) {
+            throw 'The ephemeral runner did not provide an isolated .NET 9 runtime.'
+          }
+          $contractRuntimes = @(Get-ChildItem (Join-Path $env:NINJASLAYER_CONTRACT_DOTNET_ROOT 'shared\Microsoft.NETCore.App') -Directory)
+          $contractHostFxrs = @(Get-ChildItem (Join-Path $env:NINJASLAYER_CONTRACT_DOTNET_ROOT 'host\fxr') -Directory)
+          if ($contractRuntimes.Count -ne 1 -or $contractRuntimes[0].Name -notmatch '^9\.' -or
+              $contractHostFxrs.Count -ne 1 -or $contractHostFxrs[0].Name -notmatch '^9\.') {
+            throw 'The isolated Contract runtime must contain only one .NET 9 runtime and hostfxr.'
+          }
           $workspace = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
           $referenceDirectory = [IO.Path]::GetFullPath($env:STS2_DATA_DIR)
+          $contractDotnetRoot = [IO.Path]::GetFullPath($env:NINJASLAYER_CONTRACT_DOTNET_ROOT)
           if ($referenceDirectory.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
             throw 'Private references must be mounted outside the repository workspace.'
+          }
+          if ($contractDotnetRoot.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'The isolated .NET runtime must be mounted outside the repository workspace.'
           }
           foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll')) {
             $file = Get-Item -LiteralPath (Join-Path $referenceDirectory $fileName) -ErrorAction Stop
@@ -76,7 +89,7 @@ jobs:
           "NUGET_PACKAGES=$env:RUNNER_TEMP\private-contract-nuget" | Out-File $env:GITHUB_ENV -Append
 
       - name: Restore trusted projects before isolation
-        shell: pwsh
+        shell: powershell
         run: |
           dotnet restore trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj `
             -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
@@ -85,7 +98,7 @@ jobs:
             -p:Sts2DataDir="$env:STS2_DATA_DIR"
 
       - name: Compile candidate and run trusted contracts without network
-        shell: pwsh
+        shell: powershell
         run: |
           $dotnet = (Get-Command dotnet).Source
           $rule = "NinjaSlayer-Contract-$env:GITHUB_RUN_ID"
@@ -99,17 +112,24 @@ jobs:
               -p:BaseOutputPath="$env:RUNNER_TEMP\private-contract-output\"
             if ($LASTEXITCODE -ne 0) { throw 'Sanitized candidate compile failed.' }
             dotnet build trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj `
-              --no-restore -c Release -v:minimal -p:Sts2DataDir="$env:STS2_DATA_DIR"
+              --no-restore -c Debug -v:minimal -p:Sts2DataDir="$env:STS2_DATA_DIR"
             if ($LASTEXITCODE -ne 0) { throw 'RitsuLib contract runner failed to build.' }
-            & $env:GODOT_EXE --headless --path trusted/Tests/NinjaSlayer.RitsuLibContractTests
-            if ($LASTEXITCODE -ne 0) { throw 'RitsuLib contract runner failed.' }
+            $previousDotnetRoot = $env:DOTNET_ROOT
+            try {
+              $env:DOTNET_ROOT = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
+              & $env:GODOT_EXE --headless --path trusted/Tests/NinjaSlayer.RitsuLibContractTests
+              if ($LASTEXITCODE -ne 0) { throw 'RitsuLib contract runner failed.' }
+            }
+            finally {
+              $env:DOTNET_ROOT = $previousDotnetRoot
+            }
           }
           finally {
             Remove-NetFirewallRule -DisplayName $rule -ErrorAction SilentlyContinue
           }
 
       - name: Create allowlisted contract attestation
-        shell: pwsh
+        shell: powershell
         run: |
           $gameName = [Reflection.AssemblyName]::GetAssemblyName((Join-Path $env:STS2_DATA_DIR 'sts2.dll'))
           $attestation = [ordered]@{
@@ -135,7 +155,7 @@ jobs:
 
       - name: Scrub private inputs and caches
         if: always()
-        shell: pwsh
+        shell: powershell
         run: |
           Remove-Item "$env:RUNNER_TEMP\private-contract-*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item candidate -Recurse -Force -ErrorAction SilentlyContinue
