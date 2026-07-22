@@ -19,9 +19,10 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
     private const string RecordOptionKey = "NINJA_SLAYER_REPORTER_PASS_RECORD";
     private const string RelicLocPrefix = "NINJA_SLAYER_RELIC_REPORTER_PASS_RELIC";
 
-    private static readonly MethodInfo SetEventFinishedMethod =
-        AccessTools.Method(typeof(EventModel), "SetEventFinished", new[] { typeof(LocString) })
-        ?? throw new MissingMethodException(nameof(EventModel), "SetEventFinished");
+    private static readonly MethodInfo? SetEventFinishedMethod =
+        AccessTools.Method(typeof(EventModel), "SetEventFinished", new[] { typeof(LocString) });
+
+    internal static bool IsAvailable => SetEventFinishedMethod != null;
 
     public static string PatchId => "ninjaslayer_reporter_pass_event_option";
 
@@ -34,7 +35,8 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 
     public static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
     {
-        if (__instance.Owner?.GetRelic<ReporterPassRelic>() == null || __instance.IsFinished || eventOptions == null)
+        if (SetEventFinishedMethod == null || __instance.Owner?.GetRelic<ReporterPassRelic>() == null ||
+            __instance.IsFinished || eventOptions == null)
         {
             return;
         }
@@ -80,7 +82,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
         }
 
         // ponytail: protected finish API; reflection avoids patching every event subclass.
-        SetEventFinishedMethod.Invoke(eventModel, [new LocString("relics", $"{RelicLocPrefix}.record.done")]);
+        SetEventFinishedMethod?.Invoke(eventModel, [new LocString("relics", $"{RelicLocPrefix}.record.done")]);
         return Task.CompletedTask;
     }
 }

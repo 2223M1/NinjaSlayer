@@ -13,6 +13,6 @@ public static class WatcherScryHookInterop
 {
     public static bool IsReady => false;
 
-    public static Task OnScryed(PlayerChoiceContext ctx, Player player, int amount, int discardedAmount)
+    public static Task OnScryed(PlayerChoiceContext ctx, Player player, int viewedAmount, int discardedAmount)
         => Task.CompletedTask;
 }

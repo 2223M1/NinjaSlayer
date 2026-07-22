@@ -34,26 +34,33 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
     public static bool Prefix(float time, string transitionPath, NTransition __instance, ref Task __result, CancellationToken? cancelToken = null)
     {
-        if (!NinjaSlayerTransitionGate.Pending && !NinjaSlayerTransitionPaths.IsModPath(transitionPath))
+        if (!NinjaSlayerPatchCapabilities.TransitionEnabled ||
+            (!NinjaSlayerTransitionGate.Pending && !NinjaSlayerTransitionPaths.IsModPath(transitionPath)))
         {
             return true;
         }
 
+        bool wasPending = NinjaSlayerTransitionGate.Pending;
         NinjaSlayerTransitionGate.Pending = false;
 
         // Start the transition video in the background and return immediately so the caller's
         // run/save asset loading overlaps the animation instead of producing a black hold
         // afterwards. The reveal patches (RoomFadeIn/FadeIn) await this task before showing.
-        NinjaSlayerTransitionGate.AnimationTask = BeginNinjaSlayerTransition(__instance, cancelToken);
+        NinjaSlayerTransitionGate.StartAnimation(
+            __instance,
+            cancelToken ?? CancellationToken.None,
+            token => BeginNinjaSlayerTransition(__instance, token));
 
-        var delay = NinjaSlayerTransitionGate.ConsumeLoadStartDelay();
+        float delay = wasPending
+            ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
+            : NinjaSlayerAudio.SaveLoadStartDelaySeconds;
         __result = delay > 0f
             ? Cmd.Wait(delay, cancelToken ?? CancellationToken.None)
             : Task.CompletedTask;
         return false;
     }
 
-    private static Task BeginNinjaSlayerTransition(NTransition transition, CancellationToken? cancelToken)
+    private static Task BeginNinjaSlayerTransition(NTransition transition, CancellationToken cancelToken)
     {
         if (SaveManager.Instance.PrefsSave.FastMode == FastModeType.Instant)
         {
@@ -78,15 +85,18 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
 
         var overlay = NinjaSlayerTransitionOverlay.GetOrCreate(transition);
-        NinjaSlayerTransitionLoadSmoothing.BeginAnimation();
+        if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
+        {
+            NinjaSlayerTransitionLoadSmoothing.BeginAnimation();
+        }
         return PlayOverlayAsync(overlay, simpleTransition, cancelToken);
     }
 
-    private static async Task PlayOverlayAsync(NinjaSlayerTransitionOverlay overlay, ColorRect simpleTransition, CancellationToken? cancelToken)
+    private static async Task PlayOverlayAsync(NinjaSlayerTransitionOverlay overlay, ColorRect simpleTransition, CancellationToken cancelToken)
     {
         try
         {
-            await overlay.PlayAsync(NinjaSlayerAudio.TransitionVisualSeconds, cancelToken ?? CancellationToken.None);
+            await overlay.PlayAsync(NinjaSlayerAudio.TransitionVisualSeconds, cancelToken);
         }
         catch (Exception ex)
         {
@@ -101,7 +111,10 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
                 simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
             }
 
-            NinjaSlayerTransitionLoadSmoothing.EndAnimationAndCollectDeferred();
+            if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
+            {
+                NinjaSlayerTransitionLoadSmoothing.EndAnimationAndCollectDeferred();
+            }
         }
     }
 
@@ -128,5 +141,21 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
         transition.MouseFilter = Control.MouseFilterEnum.Ignore;
         SetInTransition(transition, false);
+    }
+
+    internal static void ForceReleaseTransition(NTransition transition)
+    {
+        if (!GodotObject.IsInstanceValid(transition))
+        {
+            return;
+        }
+
+        if (transition.GetNodeOrNull<ColorRect>("SimpleTransition") is { } simpleTransition)
+        {
+            simpleTransition.Modulate = new Color(1f, 1f, 1f, 0f);
+        }
+
+        transition.Visible = false;
+        ReleaseTransitionInput(transition);
     }
 }

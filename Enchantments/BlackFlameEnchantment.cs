@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -24,9 +25,14 @@ public sealed class BlackFlameEnchantment : ModEnchantmentTemplate
 
     public override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)
     {
-        if (cardPlay?.Target != null)
+        if (cardPlay == null)
         {
-            await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, 3, Card.Owner.Creature, Card);
+            return;
+        }
+
+        foreach (var target in BlackFlameHitTracker.TakeLiveOpponents(cardPlay))
+        {
+            await PowerCmd.Apply<KaratePower>(choiceContext, target, 3, Card.Owner.Creature, Card);
         }
     }
 }

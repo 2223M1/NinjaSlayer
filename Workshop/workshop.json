@@ -1,0 +1,9 @@
+{
+  "title": "忍者杀手 Ninja Slayer人物拓展包",
+  "description": "Beta版本，具体机制和卡牌尚未明确，随时调整。A beta version of the Ninja Slayer mod.",
+  "visibility": "unlisted",
+  "changeNote": "See the versioned release notes for this build.",
+  "tags": ["mod", "Simplified Chinese"],
+  "dependencies": [3747602295],
+  "contentDescriptors": []
+}

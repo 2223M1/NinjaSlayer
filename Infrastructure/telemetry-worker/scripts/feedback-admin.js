@@ -52,7 +52,7 @@ function listFeedback() {
   for (const entry of entries) {
     const metadata = JSON.parse(readText(entry.name));
     const description = metadata.payload?.description?.replace(/\s+/g, ' ').slice(0, 100) ?? '';
-    console.log(`${metadata.modContext.submissionId}  ${metadata.modContext.submittedAtUtc}  ${metadata.payload.category}  ${description}`);
+    console.log(`${metadata.modContext.submissionId}  ${metadata.receivedAtUtc}  ${metadata.payload.category}  ${description}`);
   }
 }
 
@@ -72,7 +72,12 @@ function downloadFeedback(submissionId) {
 function deleteFeedback(submissionId) {
   const metadataKey = findMetadataKey(submissionId);
   const metadata = JSON.parse(readText(metadataKey));
-  const keys = [metadata.storage.screenshot.key, ...metadata.storage.logs.chunks, metadataKey];
+  const keys = [
+    metadata.storage.screenshot.key,
+    ...metadata.storage.logs.chunks,
+    metadataKey,
+    `feedback-index/${submissionId}`,
+  ];
   for (const key of keys) runWrangler(['kv', 'key', 'delete', key, ...bindingArgs]);
   console.log(`Deleted ${submissionId}.`);
 }

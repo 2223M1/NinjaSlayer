@@ -9,6 +9,6 @@
     "feedback": "node scripts/feedback-admin.js"
   },
   "devDependencies": {
-    "wrangler": "^4.38.0"
+    "wrangler": "4.113.0"
   }
 }

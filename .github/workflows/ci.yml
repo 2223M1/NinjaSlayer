@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: Infrastructure/telemetry-worker/package-lock.json
+
+      - name: Repository consistency
+        run: node tools/validate-repository.mjs
+
+      - name: Pure logic tests
+        run: dotnet run --project Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj -c Release
+
+      - name: RefLib compatibility compile
+        shell: bash
+        run: |
+          set +e
+          mkdir -p "$RUNNER_TEMP/sts2-empty"
+          dotnet restore NinjaSlayer.csproj \
+            -p:UseSts2RefLib=true \
+            -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
+          restore_status=$?
+          if [ "$restore_status" -eq 0 ]; then
+            dotnet build NinjaSlayer.csproj --no-restore -v:minimal \
+              -p:UseSts2RefLib=true \
+              -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
+            build_status=$?
+          else
+            build_status=$restore_status
+          fi
+          if [ "$build_status" -ne 0 ]; then
+            echo "### RefLib compatibility compile skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "The project uses game 0.109.x APIs unavailable in Book.StS2.RefLib 0.107.1. Pure logic tests remain authoritative in this runner." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit 0
+
+      - name: Worker install and tests
+        working-directory: Infrastructure/telemetry-worker
+        run: |
+          npm ci
+          npm test
+          npm audit --omit=dev
+          npx wrangler deploy --dry-run

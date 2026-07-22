@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using NinjaSlayer.Content;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -46,7 +47,7 @@ public static class SpinComboAudio
             totalDuration - NinjaSlayerAudio.IntroSpinAttackSeconds - NinjaSlayerAudio.OutroSpinAttackSeconds);
 
         NinjaSlayerCombatAudioSet.Play(audio.IntroSpinAttack);
-        Task hitsTask = RunWithSuppressedAutomaticSfx(executeHits);
+        Task hitsTask = ObserveFaults(RunWithSuppressedAutomaticSfx(executeHits), "spin combo");
 
         await Cmd.Wait(NinjaSlayerAudio.IntroSpinAttackSeconds);
 
@@ -110,7 +111,9 @@ public static class SpinComboAudio
         }
 
         NinjaSlayerCombatAudioSet.Play(audio.IntroSpinAttack);
-        Task hitsTask = RunWithSuppressedAutomaticSfx(() => executeHits(FinishEarly));
+        Task hitsTask = ObserveFaults(
+            RunWithSuppressedAutomaticSfx(() => executeHits(FinishEarly)),
+            "Tornado Fist combo");
 
         try
         {
@@ -149,15 +152,8 @@ public static class SpinComboAudio
 
     public static async Task RunWithSuppressedAutomaticSfx(Func<Task> action)
     {
-        XAttackAudioContext.SuppressAutomaticSfx = true;
-        try
-        {
-            await action();
-        }
-        finally
-        {
-            XAttackAudioContext.SuppressAutomaticSfx = false;
-        }
+        using IDisposable suppression = XAttackAudioContext.Suppress();
+        await action();
     }
 
     private static async Task<bool> WaitOrFinishEarly(float duration, Task earlyOutro)
@@ -169,5 +165,16 @@ public static class SpinComboAudio
 
         Task completed = await Task.WhenAny(Cmd.Wait(duration), earlyOutro);
         return completed == earlyOutro;
+    }
+
+    private static Task ObserveFaults(Task task, string operation)
+    {
+        _ = task.ContinueWith(
+            faultedTask => Entry.Logger.Error(
+                $"NinjaSlayer {operation} hit task failed: {faultedTask.Exception}"),
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+        return task;
     }
 }

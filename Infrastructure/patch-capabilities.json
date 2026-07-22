@@ -1,0 +1,26 @@
+{
+  "finisher-core": [
+    { "class": "NinjaSlayerFinisherAttackCommandPatch", "id": "ninjaslayer_finisher_attack_command" },
+    { "class": "NinjaSlayerFinisherLethalDamagePatch", "id": "ninjaslayer_finisher_lethal_damage" },
+    { "class": "NinjaSlayerFinisherPrimaryDamagePatch", "id": "ninjaslayer_finisher_primary_damage" },
+    { "class": "NinjaSlayerFinisherAfterCardPlayedPatch", "id": "ninjaslayer_finisher_after_card_played" },
+    { "class": "NinjaSlayerFinisherCardPlayCleanupPatch", "id": "ninjaslayer_finisher_card_play_cleanup" }
+  ],
+  "transition-core": [
+    { "class": "NinjaSlayerTransitionSfxPatch", "id": "ninjaslayer_character_transition_sfx_gate" },
+    { "class": "NinjaSlayerTransitionPatch", "id": "ninjaslayer_character_transition" },
+    { "class": "NinjaSlayerRoomFadeInGatePatch", "id": "ninjaslayer_transition_room_fadein_gate" },
+    { "class": "NinjaSlayerFadeInGatePatch", "id": "ninjaslayer_transition_fadein_gate" }
+  ],
+  "transition-load-smoothing": [
+    { "class": "NinjaSlayerTransitionAssetFinalizePatch", "id": "ninjaslayer_transition_asset_finalize_batching" },
+    { "class": "NinjaSlayerTransitionGcDeferralPatch", "id": "ninjaslayer_transition_preload_gc_deferral" }
+  ],
+  "feedback": [
+    { "class": "NinjaSlayerFeedbackOpenerPatch", "id": "ninjaslayer_feedback_f2_route" },
+    { "class": "NinjaSlayerFeedbackOpenPatch", "id": "ninjaslayer_feedback_form_labels" },
+    { "class": "NinjaSlayerFeedbackConfirmPatch", "id": "ninjaslayer_feedback_confirmation" },
+    { "class": "NinjaSlayerFeedbackSendPatch", "id": "ninjaslayer_feedback_upload" },
+    { "class": "NinjaSlayerFeedbackClosePatch", "id": "ninjaslayer_feedback_session_cleanup" }
+  ]
+}

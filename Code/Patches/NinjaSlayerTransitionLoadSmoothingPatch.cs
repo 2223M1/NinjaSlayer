@@ -24,7 +24,25 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
     public static string Description =>
         "Finalize threaded resources in small batches while the NinjaSlayer transition is visible.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
+
+    internal static bool CanInstall(out string missingMember)
+    {
+        if (FinalizingField == null)
+        {
+            missingMember = $"{typeof(AssetLoadingSession).FullName}._finalizing";
+            return false;
+        }
+
+        if (AddToCacheMethod == null)
+        {
+            missingMember = $"{typeof(AssetLoadingSession).FullName}.AddToCache";
+            return false;
+        }
+
+        missingMember = string.Empty;
+        return true;
+    }
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(AssetLoadingSession), "FinalizeLoading")];
@@ -61,10 +79,10 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 
 public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
 {
-    private static readonly MethodInfo GcCollectMethod =
+    private static readonly MethodInfo? GcCollectMethod =
         AccessTools.Method(typeof(GC), nameof(GC.Collect), Type.EmptyTypes);
 
-    private static readonly MethodInfo SafeCollectMethod =
+    private static readonly MethodInfo? SafeCollectMethod =
         AccessTools.Method(
             typeof(NinjaSlayerTransitionLoadSmoothing),
             nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
@@ -74,23 +92,34 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
     public static string Description =>
         "Defer forced run-asset garbage collection until the NinjaSlayer transition is covered by black.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
-    public static ModPatchTarget[] GetTargets() =>
-    [
-        new(GetAsyncStateMachineType(nameof(PreloadManager.LoadRunAssets), [typeof(IEnumerable<CharacterModel>)]),
-            nameof(IAsyncStateMachine.MoveNext)),
-        new(GetAsyncStateMachineType(nameof(PreloadManager.LoadActAssets), [typeof(ActModel)]),
-            nameof(IAsyncStateMachine.MoveNext)),
-        new(GetAsyncStateMachineType("LoadRoomAssets", [typeof(string), typeof(IEnumerable<string>)]),
-            nameof(IAsyncStateMachine.MoveNext))
-    ];
+    public static ModPatchTarget[] GetTargets() => TryResolveTargets(out ModPatchTarget[] targets, out _)
+        ? targets
+        : [];
+
+    internal static bool CanInstall(out string missingMember)
+    {
+        if (GcCollectMethod == null)
+        {
+            missingMember = $"{typeof(GC).FullName}.{nameof(GC.Collect)}";
+            return false;
+        }
+
+        if (SafeCollectMethod == null)
+        {
+            missingMember = $"{typeof(NinjaSlayerTransitionLoadSmoothing).FullName}.CollectWhenSafe";
+            return false;
+        }
+
+        return TryResolveTargets(out _, out missingMember);
+    }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         foreach (CodeInstruction instruction in instructions)
         {
-            if (instruction.Calls(GcCollectMethod))
+            if (GcCollectMethod != null && SafeCollectMethod != null && instruction.Calls(GcCollectMethod))
             {
                 instruction.operand = SafeCollectMethod;
             }
@@ -99,12 +128,31 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
         }
     }
 
-    private static Type GetAsyncStateMachineType(string methodName, Type[] parameterTypes)
+    private static bool TryResolveTargets(out ModPatchTarget[] targets, out string missingMember)
     {
-        MethodInfo method = AccessTools.Method(typeof(PreloadManager), methodName, parameterTypes)
-            ?? throw new MissingMethodException(typeof(PreloadManager).FullName, methodName);
+        var signatures = new (string Name, Type[] Parameters)[]
+        {
+            (nameof(PreloadManager.LoadRunAssets), [typeof(IEnumerable<CharacterModel>)]),
+            (nameof(PreloadManager.LoadActAssets), [typeof(ActModel)]),
+            ("LoadRoomAssets", [typeof(string), typeof(IEnumerable<string>)])
+        };
+        var resolved = new List<ModPatchTarget>(signatures.Length);
+        foreach ((string methodName, Type[] parameterTypes) in signatures)
+        {
+            MethodInfo? method = AccessTools.Method(typeof(PreloadManager), methodName, parameterTypes);
+            Type? stateMachineType = method?.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType;
+            if (stateMachineType == null)
+            {
+                targets = [];
+                missingMember = $"{typeof(PreloadManager).FullName}.{methodName} async state machine";
+                return false;
+            }
 
-        return method.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
-            ?? throw new InvalidOperationException($"{method.DeclaringType?.FullName}.{method.Name} is not async.");
+            resolved.Add(new ModPatchTarget(stateMachineType, nameof(IAsyncStateMachine.MoveNext)));
+        }
+
+        targets = resolved.ToArray();
+        missingMember = string.Empty;
+        return true;
     }
 }

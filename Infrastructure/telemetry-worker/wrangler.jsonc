@@ -15,5 +15,23 @@
 			"binding": "FEEDBACK_KV",
 			"id": "b0c2a010e96040ecb2f6c83a935a61b4"
 		}
+	],
+	"ratelimits": [
+		{
+			"name": "TELEMETRY_RATE_LIMITER",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 30,
+				"period": 60
+			}
+		},
+		{
+			"name": "FEEDBACK_RATE_LIMITER",
+			"namespace_id": "1002",
+			"simple": {
+				"limit": 3,
+				"period": 60
+			}
+		}
 	]
 }

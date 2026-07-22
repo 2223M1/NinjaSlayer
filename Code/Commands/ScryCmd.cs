@@ -47,11 +47,12 @@ public static class ScryCmd
         }
 
         int discardedAmount = cardsToDiscard.Count;
-        await NinjaSlayerHook.OnScryed(choiceContext, player, amount, discardedAmount);
+        int viewedAmount = cardsToScry.Count;
+        await NinjaSlayerHook.OnScryed(choiceContext, player, viewedAmount, discardedAmount);
 
         if (WatcherScryHookInterop.IsReady)
         {
-            await WatcherScryHookInterop.OnScryed(choiceContext, player, amount, discardedAmount);
+            await WatcherScryHookInterop.OnScryed(choiceContext, player, viewedAmount, discardedAmount);
         }
     }
 }

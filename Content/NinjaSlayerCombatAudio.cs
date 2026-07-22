@@ -2,18 +2,13 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Scripts;
+using System.Diagnostics;
 
 namespace NinjaSlayer.Content;
 
 public readonly struct NinjaSlayerCombatAudioSet
 {
     private const float PangbaiDelaySeconds = 1f;
-
-#if DEBUG
-    private const bool LogCombatSfx = true;
-#else
-    private const bool LogCombatSfx = false;
-#endif
 
     public string FastAttack { get; init; }
     public string SlowAttack { get; init; }
@@ -75,11 +70,11 @@ public readonly struct NinjaSlayerCombatAudioSet
 
     private static void PlayNow(string eventPath, float volume)
     {
-        if (LogCombatSfx)
-        {
-            Entry.Logger.Info($"Combat SFX: {eventPath}");
-        }
-
+        LogSfx(eventPath);
         SfxCmd.Play(eventPath, volume);
     }
+
+    [Conditional("DEBUG")]
+    private static void LogSfx(string eventPath) =>
+        Entry.Logger.Info($"Combat SFX: {eventPath}");
 }

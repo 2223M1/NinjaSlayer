@@ -31,7 +31,8 @@ Suggested source WAV names for `NinjaSlayer/audio/sources/`:
 
 Current character code references these existing files:
 
-- `NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png` through `NinjaSlayer_idle_0030.png`
+- `NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png` through `NinjaSlayer_idle_0022.png` (24 fps)
+- `NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_0001.png` through `NinjaSlayer_naraku_idle_0022.png` (24 fps)
 - `NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png`
 - `NinjaSlayer/images/characters/ninja_slayer/cast/cast_0001.png`
 - `NinjaSlayer/images/characters/ninja_slayer/hit/hit_0001.png`
@@ -100,7 +101,7 @@ Place potion images in `NinjaSlayer/images/potions/`:
 
 ## Power Icons
 
-Power icons load through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. Only `soar_power.png` ships today; every other power falls back to a shared placeholder at runtime, so the game never references a missing texture. Drop a `{PowerClassName}.png` to give a power its real icon — it is picked up automatically with no code change.
+Power icons load through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. The project currently ships `OpeningPower.png` and `soar_power.png`; every other power falls back to the shared icon at runtime. Drop a `{PowerClassName}.png` into the directory to replace that fallback without changing code.
 
 ## Card Art Naming
 

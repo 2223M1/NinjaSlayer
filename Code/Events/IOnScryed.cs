@@ -5,5 +5,5 @@ namespace NinjaSlayer.Code.Events;
 
 public interface IOnScryed
 {
-    Task OnScryed(PlayerChoiceContext ctx, Player player, int scryAmount, int discardAmount);
+    Task OnScryed(PlayerChoiceContext ctx, Player player, int viewedAmount, int discardedAmount);
 }

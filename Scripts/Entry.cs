@@ -73,15 +73,16 @@ public class Entry
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
         patcher.RegisterPatch<ArchitectExecutionStartPatch>();
         patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
-        patcher.RegisterPatch<TornadoFistFinisherCadencePatch>();
-        patcher.RegisterPatch<ReporterPassEventOptionPatch>();
+        patcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
+        patcher.RegisterPatch<BlackFlameDamagePatch>();
+        if (ReporterPassEventOptionPatch.IsAvailable)
+        {
+            patcher.RegisterPatch<ReporterPassEventOptionPatch>();
+        }
+        else
+        {
+            Logger.Warn("Reporter Pass event option disabled: EventModel.SetEventFinished is unavailable.");
+        }
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
         patcher.RegisterPatch<NancyLeeCandidatePatch>();
@@ -89,7 +90,6 @@ public class Entry
         patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
         patcher.RegisterPatch<KarateCardPreviewClearPatch>();
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
         patcher.RegisterPatch<BossGreetingMusicPatch>();
         patcher.RegisterPatch<CombatCinematicLayoutPatch>();
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
@@ -97,31 +97,138 @@ public class Entry
         patcher.RegisterPatch<ScreenShakeSuppressionPatch>();
         patcher.RegisterPatch<ScreenRumbleCinematicSuppressionPatch>();
         patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionGcDeferralPatch>();
-        patcher.RegisterPatch<NinjaSlayerRoomFadeInGatePatch>();
-        patcher.RegisterPatch<NinjaSlayerFadeInGatePatch>();
-        patcher.RegisterPatch<NinjaSlayerEmbarkLoadDelayPatch>();
-        patcher.RegisterPatch<NinjaSlayerSaveLoadDelayPatch>();
         patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
         patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
         patcher.RegisterPatch<PreparedDrawPatch>();
         patcher.RegisterPatch<PreparedPileExitPatch>();
         patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackOpenerPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackOpenPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
         if (!patcher.PatchAll())
         {
             LogPatchFailure(patcher);
             throw new InvalidOperationException("Critical NinjaSlayer patches failed to apply.");
         }
 
+        InstallFinisherCapability();
+        InstallTransitionCapability();
+        InstallFeedbackCapability();
+
         RegisterFmodBanksIfPresent();
+    }
+
+    private static void InstallFinisherCapability()
+    {
+        NinjaSlayerPatchCapabilities.FinisherEnabled = InstallCapability(
+            "finisher-core",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
+            });
+
+        if (!NinjaSlayerPatchCapabilities.FinisherEnabled)
+        {
+            return;
+        }
+
+        InstallCapability(
+            "finisher-presentation",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
+            });
+
+        if (TornadoFistFinisherCadencePatch.CanInstall(out string missingMember))
+        {
+            InstallCapability(
+                "finisher-tornado-cadence",
+                patcher => patcher.RegisterPatch<TornadoFistFinisherCadencePatch>());
+        }
+        else
+        {
+            Logger.Warn(
+                $"NinjaSlayer capability disabled: finisher-tornado-cadence; missing={missingMember}.");
+        }
+    }
+
+    private static void InstallTransitionCapability()
+    {
+        NinjaSlayerPatchCapabilities.TransitionEnabled = InstallCapability(
+            "transition-core",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerTransitionSfxPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
+                patcher.RegisterPatch<NinjaSlayerRoomFadeInGatePatch>();
+                patcher.RegisterPatch<NinjaSlayerFadeInGatePatch>();
+            });
+
+        if (!NinjaSlayerPatchCapabilities.TransitionEnabled)
+        {
+            return;
+        }
+
+        bool assetFinalizeAvailable = NinjaSlayerTransitionAssetFinalizePatch.CanInstall(out string assetMissing);
+        bool gcDeferralAvailable = NinjaSlayerTransitionGcDeferralPatch.CanInstall(out string gcMissing);
+        if (!assetFinalizeAvailable || !gcDeferralAvailable)
+        {
+            string missing = string.IsNullOrEmpty(assetMissing) ? gcMissing : assetMissing;
+            Logger.Warn($"NinjaSlayer capability disabled: transition-load-smoothing; missing={missing}.");
+            return;
+        }
+
+        NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled = InstallCapability(
+            "transition-load-smoothing",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionGcDeferralPatch>();
+            });
+    }
+
+    private static bool InstallCapability(string capability, Action<ModPatcher> register)
+    {
+        ModPatcher patcher = RitsuLibFramework.CreatePatcher(ModId, capability);
+        register(patcher);
+        if (patcher.PatchAll())
+        {
+            Logger.Info($"NinjaSlayer capability enabled: {capability}.");
+            return true;
+        }
+
+        LogPatchFailure(patcher);
+        Version? gameVersion = typeof(MegaCrit.Sts2.Core.Nodes.NGame).Assembly.GetName().Version;
+        Version? ritsuVersion = typeof(RitsuLibFramework).Assembly.GetName().Version;
+        Logger.Warn(
+            $"NinjaSlayer capability disabled: {capability}; " +
+            $"game={gameVersion}, RitsuLib={ritsuVersion}.");
+        return false;
+    }
+
+    private static void InstallFeedbackCapability()
+    {
+        if (!NinjaSlayerFeedbackConfirmPatch.IsAvailable)
+        {
+            Logger.Warn(
+                "NinjaSlayer capability disabled: feedback; " +
+                "NSendFeedbackScreen.SendButtonSelected is unavailable.");
+            return;
+        }
+
+        NinjaSlayerPatchCapabilities.FeedbackEnabled = InstallCapability(
+            "feedback",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerFeedbackOpenerPatch>();
+                patcher.RegisterPatch<NinjaSlayerFeedbackOpenPatch>();
+                patcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
+                patcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
+                patcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
+            });
     }
 
     private static void LogPatchFailure(ModPatcher patcher)

@@ -15,18 +15,33 @@ public static class NinjaSlayerFeedbackClient
 {
     private const string FeedbackUrl = "https://ninja-slayer-telemetry.theonetrue2223.workers.dev/feedback";
     private const int MaxAttempts = 3;
-    private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
-    private static readonly int[] RetryDelaysMs = [1500, 2500];
+    private const long MaxScreenshotBytes = 5L * 1024 * 1024;
+    private const long MaxLogsBytes = 16L * 1024 * 1024;
+    private const int MaxErrorResponseBytes = 4 * 1024;
+    private static readonly TimeSpan AttemptTimeout = TimeSpan.FromSeconds(10);
+    private static readonly HttpClient HttpClient = new() { Timeout = Timeout.InfiniteTimeSpan };
+    private static readonly int[] RetryDelaysMs = [500, 1000];
 
-    public static async Task<bool> SendAsync(FeedbackData data, Stream screenshotStream, Stream logsStream)
+    public static async Task<bool> SendAsync(
+        FeedbackData data,
+        Stream screenshotStream,
+        Stream logsStream,
+        CancellationToken cancellationToken = default)
     {
         string submissionId = Guid.NewGuid().ToString("D");
         string submittedAtUtc = DateTimeOffset.UtcNow.ToString("O");
 
         try
         {
+            if (!ValidateUploadStream(screenshotStream, MaxScreenshotBytes, "screenshot") ||
+                !ValidateUploadStream(logsStream, MaxLogsBytes, "logs"))
+            {
+                return false;
+            }
+
             for (int attempt = 0; attempt < MaxAttempts; attempt++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     screenshotStream.Position = 0;
@@ -38,7 +53,13 @@ public static class NinjaSlayerFeedbackClient
                         logsStream);
                     using HttpRequestMessage request = new(HttpMethod.Put, FeedbackUrl) { Content = form };
                     request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Feedback-Version", "1");
-                    using HttpResponseMessage response = await HttpClient.SendAsync(request);
+                    using CancellationTokenSource attemptCancellation =
+                        CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    attemptCancellation.CancelAfter(AttemptTimeout);
+                    using HttpResponseMessage response = await HttpClient.SendAsync(
+                        request,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        attemptCancellation.Token);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -46,7 +67,7 @@ public static class NinjaSlayerFeedbackClient
                         return true;
                     }
 
-                    string responseBody = await response.Content.ReadAsStringAsync();
+                    string responseBody = await ReadBoundedResponseAsync(response.Content, attemptCancellation.Token);
                     int statusCode = (int)response.StatusCode;
                     Entry.Logger.Warn(
                         $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} rejected " +
@@ -56,7 +77,12 @@ public static class NinjaSlayerFeedbackClient
                         return false;
                     }
                 }
-                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    Entry.Logger.Warn(
+                        $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} timed out after {AttemptTimeout.TotalSeconds:0}s.");
+                }
+                catch (HttpRequestException ex)
                 {
                     Entry.Logger.Warn(
                         $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} failed: {ex}");
@@ -64,7 +90,7 @@ public static class NinjaSlayerFeedbackClient
 
                 if (attempt < MaxAttempts - 1)
                 {
-                    await Task.Delay(RetryDelaysMs[attempt]);
+                    await Task.Delay(RetryDelaysMs[attempt], cancellationToken);
                 }
             }
 
@@ -76,6 +102,45 @@ public static class NinjaSlayerFeedbackClient
             screenshotStream.Close();
             logsStream.Close();
         }
+    }
+
+    private static bool ValidateUploadStream(Stream stream, long maxBytes, string name)
+    {
+        if (!stream.CanRead || !stream.CanSeek)
+        {
+            Entry.Logger.Warn($"NinjaSlayer feedback {name} stream must be readable and seekable.");
+            return false;
+        }
+
+        if (stream.Length <= maxBytes)
+        {
+            return true;
+        }
+
+        Entry.Logger.Warn(
+            $"NinjaSlayer feedback {name} is {stream.Length} bytes; the limit is {maxBytes} bytes.");
+        return false;
+    }
+
+    private static async Task<string> ReadBoundedResponseAsync(
+        HttpContent content,
+        CancellationToken cancellationToken)
+    {
+        await using Stream stream = await content.ReadAsStreamAsync(cancellationToken);
+        byte[] buffer = new byte[MaxErrorResponseBytes];
+        int totalRead = 0;
+        while (totalRead < buffer.Length)
+        {
+            int read = await stream.ReadAsync(buffer.AsMemory(totalRead, buffer.Length - totalRead), cancellationToken);
+            if (read == 0)
+            {
+                break;
+            }
+
+            totalRead += read;
+        }
+
+        return Encoding.UTF8.GetString(buffer, 0, totalRead);
     }
 
     private static MultipartFormDataContent BuildMultipartContent(

@@ -1,0 +1,97 @@
+name: GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Validate release tag and ancestry
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_NAME -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Release tags must use vX.Y.Z."
+          }
+          git fetch origin main --no-tags
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/main
+          if ($LASTEXITCODE -ne 0) {
+            throw "The release tag commit is not on origin/main."
+          }
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Download target game reference bundle
+        shell: pwsh
+        env:
+          REFERENCE_BUNDLE_URL: ${{ secrets.STS2_REFERENCE_BUNDLE_URL }}
+          REFERENCE_BUNDLE_TOKEN: ${{ secrets.STS2_REFERENCE_BUNDLE_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:REFERENCE_BUNDLE_URL)) {
+            throw "STS2_REFERENCE_BUNDLE_URL is required and must point to a private ZIP containing sts2.dll and 0Harmony.dll."
+          }
+          $headers = @{}
+          if (-not [string]::IsNullOrWhiteSpace($env:REFERENCE_BUNDLE_TOKEN)) {
+            $headers.Authorization = "Bearer $env:REFERENCE_BUNDLE_TOKEN"
+          }
+          Invoke-WebRequest -Uri $env:REFERENCE_BUNDLE_URL -Headers $headers -OutFile "$env:RUNNER_TEMP\sts2-reference.zip"
+          Expand-Archive "$env:RUNNER_TEMP\sts2-reference.zip" "$env:RUNNER_TEMP\sts2-reference" -Force
+          $sts2 = Get-ChildItem "$env:RUNNER_TEMP\sts2-reference" -Recurse -Filter sts2.dll | Select-Object -First 1
+          $harmony = Get-ChildItem "$env:RUNNER_TEMP\sts2-reference" -Recurse -Filter 0Harmony.dll | Select-Object -First 1
+          if ($null -eq $sts2 -or $null -eq $harmony -or $sts2.DirectoryName -ne $harmony.DirectoryName) {
+            throw "The reference bundle must place sts2.dll and 0Harmony.dll in the same directory."
+          }
+          "STS2_DATA_DIR=$($sts2.DirectoryName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Install Godot 4.5.1 Mono
+        shell: pwsh
+        run: |
+          $url = 'https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_win64.zip'
+          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP\godot.zip"
+          Expand-Archive "$env:RUNNER_TEMP\godot.zip" "$env:RUNNER_TEMP\godot" -Force
+          $godot = Get-ChildItem "$env:RUNNER_TEMP\godot" -Recurse -Filter 'Godot_v4.5.1-stable_mono_win64.exe' | Select-Object -First 1
+          if ($null -eq $godot) { throw 'Godot executable was not found after extraction.' }
+          "GODOT_EXE=$($godot.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Validate resources and Spine extension
+        shell: pwsh
+        run: |
+          node .\tools\validate-repository.mjs
+          if (-not (Test-Path '.\addons\spine\windows\libspine_godot.windows.editor.x86_64.dll')) {
+            throw 'The Godot 4.5.1 Spine GDExtension is missing.'
+          }
+          & $env:GODOT_EXE --headless --editor --quit --path . --import
+          if ($LASTEXITCODE -ne 0) { throw 'Godot resource import failed.' }
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.Substring(1)
+          dotnet msbuild .\NinjaSlayer.csproj -t:PackageMod `
+            -p:Configuration=Release `
+            -p:NinjaSlayerVersion=$version `
+            -p:Sts2DataDir="$env:STS2_DATA_DIR" `
+            -p:GodotExe="$env:GODOT_EXE"
+          if ($LASTEXITCODE -ne 0) { throw 'PackageMod failed.' }
+          $archive = "NinjaSlayer-$env:GITHUB_REF_NAME.zip"
+          Compress-Archive -Path '.\build\mods\NinjaSlayer\*' -DestinationPath $archive -Force
+          "RELEASE_ARCHIVE=$archive" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $env:GITHUB_REF_NAME $env:RELEASE_ARCHIVE --verify-tag --generate-notes --title "NinjaSlayer $env:GITHUB_REF_NAME"

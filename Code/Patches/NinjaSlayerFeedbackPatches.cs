@@ -27,14 +27,15 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
 
     public static string Description => "Route only a local NinjaSlayer player's in-run F2 feedback to the mod author.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NFeedbackScreenOpener), nameof(NFeedbackScreenOpener._Input), [typeof(InputEvent)])];
 
     public static bool Prefix(NFeedbackScreenOpener __instance, InputEvent inputEvent)
     {
-        if (inputEvent is not InputEventKey { Pressed: not false, Keycode: Key.F2 }
+        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
+            inputEvent is not InputEventKey { Pressed: not false, Keycode: Key.F2 }
             || !IsLocalNinjaSlayer()
             || NGame.Instance is not { } game
             || game.GetOrCreateFeedbackScreen().Visible
@@ -75,7 +76,7 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_feedback_form_labels";
     public static string Description => "Label NinjaSlayer F2 feedback with its actual recipient.";
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() => [new(typeof(NSendFeedbackScreen), nameof(NSendFeedbackScreen.Open))];
 
     public static void Postfix(NSendFeedbackScreen __instance)
@@ -96,19 +97,21 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 
 public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 {
-    private static readonly MethodInfo SendButtonSelectedMethod =
-        AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)])
-        ?? throw new MissingMethodException(nameof(NSendFeedbackScreen), "SendButtonSelected");
+    private static readonly MethodInfo? SendButtonSelectedMethod =
+        AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)]);
+
+    internal static bool IsAvailable => SendButtonSelectedMethod != null;
 
     public static string PatchId => "ninjaslayer_feedback_confirmation";
     public static string Description => "Require informed confirmation before uploading NinjaSlayer F2 feedback.";
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)])];
 
     public static bool Prefix(NSendFeedbackScreen __instance, NButton _)
     {
-        if (!NinjaSlayerFeedbackSession.IsActive || NinjaSlayerFeedbackSession.IsConfirmed)
+        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled || SendButtonSelectedMethod == null ||
+            !NinjaSlayerFeedbackSession.IsActive || NinjaSlayerFeedbackSession.IsConfirmed)
         {
             return true;
         }
@@ -143,7 +146,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
         }
 
         NinjaSlayerFeedbackSession.Confirm();
-        SendButtonSelectedMethod.Invoke(screen, [screen.GetNode<NButton>("%SendButton")]);
+        SendButtonSelectedMethod?.Invoke(screen, [screen.GetNode<NButton>("%SendButton")]);
     }
 
     private static LocString Loc(string key) => new("feedback", key);
@@ -153,7 +156,7 @@ public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_feedback_upload";
     public static string Description => "Upload confirmed NinjaSlayer F2 feedback to the mod author's Worker.";
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NSendFeedbackScreen), "SendFeedback", [typeof(FeedbackData), typeof(Stream), typeof(Stream)])];
 
@@ -163,7 +166,8 @@ public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
         Stream logsMemoryStream,
         ref Task<bool> __result)
     {
-        if (!NinjaSlayerFeedbackSession.IsActive || !NinjaSlayerFeedbackSession.IsConfirmed)
+        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
+            !NinjaSlayerFeedbackSession.IsActive || !NinjaSlayerFeedbackSession.IsConfirmed)
         {
             return true;
         }
@@ -177,7 +181,7 @@ public sealed class NinjaSlayerFeedbackClosePatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_feedback_session_cleanup";
     public static string Description => "Clear NinjaSlayer feedback routing when the form closes.";
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() => [new(typeof(NSendFeedbackScreen), "Close")];
 
     public static void Postfix(NSendFeedbackScreen __instance)

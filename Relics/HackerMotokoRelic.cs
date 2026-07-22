@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Rooms;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -25,8 +26,7 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
         new DynamicVar("DebuffBonus", 2)
     ];
 
-    private CardModel? _triggeringCard;
-    private readonly List<PowerModel> _boostedPowers = [];
+    private readonly List<CardPlayState> _playStates = [];
 
     public override Task BeforeCombatStart()
     {
@@ -34,14 +34,26 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
         return Task.CompletedTask;
     }
 
+    public override Task BeforeCardPlayed(CardPlay cardPlay)
+    {
+        if (cardPlay.Card.Owner == Owner)
+        {
+            _playStates.RemoveAll(state => ReferenceEquals(state.CardPlay, cardPlay));
+            _playStates.Add(new CardPlayState(cardPlay));
+        }
+
+        return Task.CompletedTask;
+    }
+
     public override Task BeforePowerAmountChanged(PowerModel power, decimal amount, Creature target, Creature? applier, CardModel? cardSource)
     {
-        if (_triggeringCard != null)
+        if (cardSource == null || applier != Owner.Creature || target.Side == Owner.Creature.Side)
         {
             return Task.CompletedTask;
         }
 
-        if (cardSource == null || applier != Owner.Creature || target.Side == Owner.Creature.Side)
+        CardPlayState? state = FindActiveState(cardSource);
+        if (state == null || target.HasPower<ArtifactPower>())
         {
             return Task.CompletedTask;
         }
@@ -51,29 +63,40 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
             return Task.CompletedTask;
         }
 
-        _triggeringCard = cardSource;
-        _boostedPowers.Add(power);
+        if (state.TemporaryInternalPowerTypes.Contains(power.GetType()) || !state.BoostedPowers.Add(power))
+        {
+            return Task.CompletedTask;
+        }
+
+        state.PendingBonuses.Add(power);
+        if (power is ITemporaryPower temporaryPower)
+        {
+            state.TemporaryInternalPowerTypes.Add(temporaryPower.InternallyAppliedPower.GetType());
+        }
+
+        state.Triggered = true;
         return Task.CompletedTask;
     }
 
     public override decimal ModifyPowerAmountGivenAdditive(PowerModel power, Creature giver, decimal amount, Creature? target, CardModel? cardSource)
     {
-        if (_triggeringCard == null || cardSource != _triggeringCard || giver != Owner.Creature)
+        if (cardSource == null || giver != Owner.Creature)
         {
             return 0m;
         }
 
-        if (target == null || target.Side == Owner.Creature.Side)
+        CardPlayState? state = FindActiveState(cardSource);
+        if (state == null || target == null || target.Side == Owner.Creature.Side || target.HasPower<ArtifactPower>())
         {
             return 0m;
         }
 
-        if (HasBoostedTemporaryPowerSource(power))
+        if (!power.IsVisible || power.GetTypeForAmount(amount) != PowerType.Debuff)
         {
             return 0m;
         }
 
-        if (power.GetTypeForAmount(amount) != PowerType.Debuff)
+        if (!state.PendingBonuses.Remove(power))
         {
             return 0m;
         }
@@ -88,12 +111,16 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
             return Task.CompletedTask;
         }
 
-        if (_triggeringCard == cardPlay.Card)
+        CardPlayState? state = _playStates.LastOrDefault(candidate => ReferenceEquals(candidate.CardPlay, cardPlay));
+        if (state?.Triggered == true)
         {
             Flash();
         }
 
-        ClearPlayState();
+        if (state != null)
+        {
+            _playStates.Remove(state);
+        }
         return Task.CompletedTask;
     }
 
@@ -105,10 +132,18 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
 
     private void ClearPlayState()
     {
-        _triggeringCard = null;
-        _boostedPowers.Clear();
+        _playStates.Clear();
     }
 
-    private bool HasBoostedTemporaryPowerSource(PowerModel power) =>
-        _boostedPowers.OfType<ITemporaryPower>().Any(p => p.InternallyAppliedPower.GetType() == power.GetType());
+    private CardPlayState? FindActiveState(CardModel cardSource) =>
+        _playStates.LastOrDefault(state => state.CardPlay.Card == cardSource);
+
+    private sealed class CardPlayState(CardPlay cardPlay)
+    {
+        public CardPlay CardPlay { get; } = cardPlay;
+        public HashSet<PowerModel> BoostedPowers { get; } = new(ReferenceEqualityComparer.Instance);
+        public HashSet<PowerModel> PendingBonuses { get; } = new(ReferenceEqualityComparer.Instance);
+        public HashSet<Type> TemporaryInternalPowerTypes { get; } = [];
+        public bool Triggered { get; set; }
+    }
 }

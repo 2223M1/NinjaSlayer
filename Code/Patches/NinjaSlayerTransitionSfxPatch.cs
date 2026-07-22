@@ -12,14 +12,15 @@ public sealed class NinjaSlayerTransitionSfxPatch : IPatchMethod
 
     public static string Description => "Arm NinjaSlayer frame transition when transition SFX plays.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(SfxCmd), nameof(SfxCmd.Play), [typeof(string), typeof(float)])];
 
     public static bool Prefix(string sfx)
     {
-        if (sfx != NinjaSlayerAudio.NinjaSlayerTransitionEvent)
+        if (!NinjaSlayerPatchCapabilities.TransitionEnabled ||
+            sfx != NinjaSlayerAudio.NinjaSlayerTransitionEvent)
         {
             return true;
         }

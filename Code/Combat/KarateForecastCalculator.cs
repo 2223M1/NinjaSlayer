@@ -31,7 +31,7 @@ public static class KarateForecastCalculator
             return stack;
         }
 
-        return CumulativeDamage(stack, ResolveHitCount(previewCard, target));
+        return KarateDamageMath.CumulativeDamage(stack, ResolveHitCount(previewCard, target));
     }
 
     public static int ResolveHpPreviewDamage(KaratePower karate, CardModel? previewCard, Creature target)
@@ -52,19 +52,11 @@ public static class KarateForecastCalculator
             return 0;
         }
 
-        return CumulativeDamage(stack, ResolveHitCount(previewCard, target));
+        return KarateDamageMath.CumulativeDamage(stack, ResolveHitCount(previewCard, target));
     }
 
     public static int CumulativeDamage(int stack, int hits)
-    {
-        if (stack <= 0 || hits <= 0)
-        {
-            return 0;
-        }
-
-        int triggers = Math.Min(stack, hits);
-        return triggers * (2 * stack - triggers + 1) / 2;
-    }
+        => KarateDamageMath.CumulativeDamage(stack, hits);
 
     public static int RemainingKarateAfterTriggers(Creature? target, CardModel card)
     {

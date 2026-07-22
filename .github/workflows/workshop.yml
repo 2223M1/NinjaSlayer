@@ -1,0 +1,64 @@
+name: Publish Steam Workshop
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing GitHub Release tag (vX.Y.Z)
+        required: true
+        type: string
+      confirmation:
+        description: Type PUBLISH_NINJASLAYER_3761570842
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: workshop-production
+    steps:
+      - name: Validate manual confirmation
+        shell: bash
+        run: |
+          [[ '${{ inputs.release_tag }}' =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
+          [[ '${{ inputs.confirmation }}' == 'PUBLISH_NINJASLAYER_3761570842' ]] || { echo 'Invalid confirmation string'; exit 1; }
+
+      - name: Checkout release tag
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.release_tag }}
+          fetch-depth: 1
+
+      - name: Download existing GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          gh release view "$RELEASE_TAG" --json tagName --jq '.tagName'
+          gh release download "$RELEASE_TAG" --pattern "NinjaSlayer-$RELEASE_TAG.zip" --dir "$RUNNER_TEMP/release"
+          mkdir -p "$RUNNER_TEMP/content"
+          unzip -q "$RUNNER_TEMP/release/NinjaSlayer-$RELEASE_TAG.zip" -d "$RUNNER_TEMP/content"
+          (cd "$RUNNER_TEMP/content" && sha256sum --check SHA256SUMS)
+
+      - name: Install SteamCMD
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/steamcmd"
+          curl --fail --silent --show-error --location \
+            https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP/steamcmd"
+
+      - name: Publish Workshop item 3761570842
+        shell: bash
+        env:
+          STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+          STEAM_CONFIG_VDF: ${{ secrets.STEAM_CONFIG_VDF }}
+          CONTENT_DIR: ${{ runner.temp }}/content
+          PREVIEW_FILE: ${{ github.workspace }}/Workshop/image.png
+          CHANGE_NOTE: NinjaSlayer ${{ inputs.release_tag }} - see the matching GitHub Release notes
+          STEAMCMD: ${{ runner.temp }}/steamcmd/steamcmd.sh
+        run: bash .github/scripts/publish-workshop.sh

@@ -19,20 +19,19 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
 
     public static string Description => "Hold RoomFadeIn until the NinjaSlayer transition animation finishes.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NTransition), nameof(NTransition.RoomFadeIn), [typeof(bool)])];
 
     public static bool Prefix(NTransition __instance, ref Task __result, bool showTransition)
     {
-        var anim = NinjaSlayerTransitionGate.AnimationTask;
+        var anim = NinjaSlayerTransitionGate.TakeAnimation();
         if (anim == null)
         {
             return true;
         }
 
-        NinjaSlayerTransitionGate.AnimationTask = null;
         __result = DelayThenReveal(__instance, anim, showTransition);
         return false;
     }
@@ -54,6 +53,7 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
         }
         finally
         {
+            NinjaSlayerTransitionGate.CompleteAnimation(anim);
             NinjaSlayerTransitionPatch.ReleaseTransitionInput(transition);
         }
     }
@@ -69,20 +69,19 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
 
     public static string Description => "Hold FadeIn until the NinjaSlayer transition animation finishes.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NTransition), nameof(NTransition.FadeIn), [typeof(float), typeof(string), typeof(CancellationToken?)])];
 
     public static bool Prefix(NTransition __instance, ref Task __result, float time, string transitionPath, CancellationToken? cancelToken)
     {
-        var anim = NinjaSlayerTransitionGate.AnimationTask;
+        var anim = NinjaSlayerTransitionGate.TakeAnimation();
         if (anim == null)
         {
             return true;
         }
 
-        NinjaSlayerTransitionGate.AnimationTask = null;
         __result = DelayThenReveal(__instance, anim, time, transitionPath, cancelToken);
         return false;
     }
@@ -104,6 +103,7 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
         }
         finally
         {
+            NinjaSlayerTransitionGate.CompleteAnimation(anim);
             NinjaSlayerTransitionPatch.ReleaseTransitionInput(transition);
         }
     }

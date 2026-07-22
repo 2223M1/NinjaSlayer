@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
@@ -20,6 +21,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Scripts;
@@ -119,6 +121,7 @@ public static class NinjaSlayerFinisherCinematic
     private const float FinalHitZoomMultiplier = 2f;
     private const float CameraPunchScaleMultiplier = 1.06f;
     private const float CameraPushPixels = 16f;
+    private const float FinisherWatchdogSeconds = 90f;
     private const float EnemyKnockbackPixels = 30f;
     private const float EnhancedEnemyTiltDegrees = 3f;
     private const float ImpactVfxTargetMargin = 160f;
@@ -138,7 +141,10 @@ public static class NinjaSlayerFinisherCinematic
         out int displayDamage)
     {
         displayDamage = 0;
-        _active?.TryProtectLethalDamage(target, ref amount, out displayDamage);
+        if (NinjaSlayerPatchCapabilities.FinisherEnabled)
+        {
+            _active?.TryProtectLethalDamage(target, ref amount, out displayDamage);
+        }
     }
 
     internal static void RegisterProtectedDamageResult(
@@ -175,7 +181,8 @@ public static class NinjaSlayerFinisherCinematic
         out Task<AttackCommand>? result)
     {
         result = null;
-        if (_active != null
+        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
+            || _active != null
             || IsCommandBypassed(command)
             || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
             || spec == null
@@ -203,7 +210,8 @@ public static class NinjaSlayerFinisherCinematic
         out Task<IEnumerable<DamageResult>>? result)
     {
         result = null;
-        if (_active != null
+        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
+            || _active != null
             || DirectDamageBypassDepth.Value > 0
             || dealer?.Player?.Character is not INinjaSlayerCharacter
             || cardSource?.Type != CardType.Attack
@@ -434,7 +442,8 @@ public static class NinjaSlayerFinisherCinematic
         out FinisherSession? session)
     {
         session = null;
-        if (_active != null
+        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
+            || _active != null
             || IsExcludedAttackCard(spec.Card)
             || spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
@@ -446,7 +455,8 @@ public static class NinjaSlayerFinisherCinematic
 
         List<Creature> enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToList();
         if (enemies.Count == 0
-            || !FinisherForecast.IsGuaranteedClear(owner, enemies, spec, command, out FinisherForecastResult forecast))
+            || FinisherForecast.Evaluate(owner, enemies, spec, command, out FinisherForecastResult forecast)
+                != FinisherForecastOutcome.Guaranteed)
         {
             return false;
         }
@@ -636,6 +646,7 @@ public static class NinjaSlayerFinisherCinematic
         private readonly bool _usesJumpDeathSquash;
         private FinisherCameraFrame _cameraFrame = new([], false);
         private readonly CancellationTokenSource _impactCancellation = new();
+        private readonly CancellationTokenSource _watchdogCancellation = new();
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
@@ -692,6 +703,7 @@ public static class NinjaSlayerFinisherCinematic
 
         public Task Begin()
         {
+            _ = RunWatchdog();
             NinjaSlayerFacingState.SyncForTarget(Owner, _focusNode.Entity);
             if (PresentationMode == FinisherPresentationMode.Enhanced)
             {
@@ -779,7 +791,8 @@ public static class NinjaSlayerFinisherCinematic
         public bool TryProtectLethalDamage(Creature target, ref decimal amount, out int displayDamage)
         {
             displayDamage = 0;
-            if (_committing
+            if (_disposed
+                || _committing
                 || !_victims.Contains(target)
                 || amount < target.CurrentHp
                 || target.CurrentHp <= 0)
@@ -920,6 +933,7 @@ public static class NinjaSlayerFinisherCinematic
             _disposed = true;
             try
             {
+                _watchdogCancellation.Cancel();
                 _impactCancellation.Cancel();
                 await _enhancedImpactTask;
                 _cameraTransitionGeneration++;
@@ -944,7 +958,50 @@ public static class NinjaSlayerFinisherCinematic
                 RestoreDeathSquashes();
                 DisposeEnhancedPresentation();
                 _impactCancellation.Dispose();
+                _watchdogCancellation.Dispose();
                 _camera.Dispose();
+            }
+        }
+
+        private async Task RunWatchdog()
+        {
+            try
+            {
+                float elapsed = 0f;
+                while (elapsed < FinisherWatchdogSeconds)
+                {
+                    _watchdogCancellation.Token.ThrowIfCancellationRequested();
+                    elapsed += await NextFrame();
+                }
+
+                if (_disposed)
+                {
+                    return;
+                }
+
+                Entry.Logger.Error(
+                    "NinjaSlayer finisher exceeded 90 active seconds; committing deferred deaths and restoring state.");
+                try
+                {
+                    await CommitDeferredDeathsWithoutPose();
+                }
+                finally
+                {
+                    if (ReferenceEquals(_pendingAfterCardPlayed, this))
+                    {
+                        _pendingAfterCardPlayed = null;
+                    }
+
+                    ClearActive(this);
+                    await DisposeAsync();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Error($"NinjaSlayer finisher watchdog failed: {ex}");
             }
         }
 
@@ -1731,6 +1788,13 @@ internal static class FinisherAttackCommandAdapter
 
 internal readonly record struct FinisherForecastResult(int ResolvedHits, bool RequiresAfterCardPlayed);
 
+internal enum FinisherForecastOutcome
+{
+    Guaranteed,
+    NotGuaranteed,
+    IndeterminateBudget
+}
+
 internal enum FinisherForecastEffectTargeting
 {
     All,
@@ -1780,12 +1844,14 @@ internal sealed class KusarigamaFinisherForecastContributor : IFinisherForecastC
 
 internal static class FinisherForecast
 {
+    private const int MaximumSearchStates = 25_000;
+    private static readonly TimeSpan MaximumSearchTime = TimeSpan.FromMilliseconds(8);
     private static readonly IFinisherForecastContributor[] PostCardContributors =
     [
         new KusarigamaFinisherForecastContributor()
     ];
 
-    public static bool IsGuaranteedClear(
+    public static FinisherForecastOutcome Evaluate(
         Creature owner,
         IReadOnlyList<Creature> enemies,
         FinisherAttackSpec spec,
@@ -1796,7 +1862,7 @@ internal static class FinisherForecast
         ICombatState? combatState = owner.CombatState;
         if (combatState == null || enemies.Any(enemy => !Hook.ShouldDie(owner.Player!.RunState, combatState, enemy, out _)))
         {
-            return false;
+            return FinisherForecastOutcome.NotGuaranteed;
         }
 
         int hits = spec.HitCount;
@@ -1807,7 +1873,7 @@ internal static class FinisherForecast
 
         if (hits <= 0)
         {
-            return false;
+            return FinisherForecastOutcome.NotGuaranteed;
         }
 
         List<FinisherForecastEffect> postCardEffects = [];
@@ -1824,14 +1890,16 @@ internal static class FinisherForecast
             enemy.CurrentHp,
             enemy.Block,
             enemy.GetPowerAmount<KaratePower>()));
-        bool Finish(Dictionary<Creature, ForecastState> finalStates) =>
-            ApplyPostCardEffects(owner, finalStates, postCardEffects, 0);
+        var search = new ForecastSearchContext(MaximumSearchStates, MaximumSearchTime);
+        FinisherForecastOutcome Finish(Dictionary<Creature, ForecastState> finalStates) =>
+            ApplyPostCardEffects(owner, finalStates, postCardEffects, 0, search);
 
         return spec.Targeting switch
         {
             FinisherTargeting.Single => (spec.SingleTarget ?? spec.CardPlay.Target) is { } target
                 && enemies.Count == 1
-                && SimulateFixed(owner, states, spec, hits, _ => [target], Finish),
+                    ? SimulateFixed(owner, states, spec, hits, _ => [target], Finish)
+                    : FinisherForecastOutcome.NotGuaranteed,
             FinisherTargeting.All => SimulateFixed(
                 owner,
                 states,
@@ -1839,27 +1907,28 @@ internal static class FinisherForecast
                 hits,
                 current => current.Keys.Where(enemy => current[enemy].Hp > 0).ToList(),
                 Finish),
-            FinisherTargeting.Random => SimulateRandom(owner, states, spec, 0, hits, Finish),
+            FinisherTargeting.Random => SimulateRandom(owner, states, spec, 0, hits, Finish, search),
             FinisherTargeting.Fixed => spec.FixedTargets is { Count: > 0 } fixedTargets
                 && fixedTargets.All(states.ContainsKey)
-                && SimulateFixed(
-                    owner,
-                    states,
-                    spec,
-                    hits,
-                    current => fixedTargets.Where(target => current[target].Hp > 0).ToList(),
-                    Finish),
-            _ => false
+                    ? SimulateFixed(
+                        owner,
+                        states,
+                        spec,
+                        hits,
+                        current => fixedTargets.Where(target => current[target].Hp > 0).ToList(),
+                        Finish)
+                    : FinisherForecastOutcome.NotGuaranteed,
+            _ => FinisherForecastOutcome.NotGuaranteed
         };
     }
 
-    private static bool SimulateFixed(
+    private static FinisherForecastOutcome SimulateFixed(
         Creature owner,
         Dictionary<Creature, ForecastState> states,
         FinisherAttackSpec spec,
         int hits,
         Func<Dictionary<Creature, ForecastState>, IReadOnlyList<Creature>> targets,
-        Func<Dictionary<Creature, ForecastState>, bool> finish)
+        Func<Dictionary<Creature, ForecastState>, FinisherForecastOutcome> finish)
     {
         for (int hit = 0; hit < hits; hit++)
         {
@@ -1875,13 +1944,14 @@ internal static class FinisherForecast
         return finish(states);
     }
 
-    private static bool SimulateRandom(
+    private static FinisherForecastOutcome SimulateRandom(
         Creature owner,
         Dictionary<Creature, ForecastState> states,
         FinisherAttackSpec spec,
         int hitIndex,
         int hitsRemaining,
-        Func<Dictionary<Creature, ForecastState>, bool> finish)
+        Func<Dictionary<Creature, ForecastState>, FinisherForecastOutcome> finish,
+        ForecastSearchContext search)
     {
         if (hitsRemaining == 0)
         {
@@ -1894,35 +1964,66 @@ internal static class FinisherForecast
             return finish(states);
         }
 
+        string stateKey = search.CreateKey("hits", hitIndex, hitsRemaining, states);
+        MemoSearchLookup lookup = search.Lookup(stateKey, out FinisherForecastOutcome cached);
+        if (lookup == MemoSearchLookup.Cached)
+        {
+            return cached;
+        }
+
+        if (lookup == MemoSearchLookup.BudgetExceeded)
+        {
+            return FinisherForecastOutcome.IndeterminateBudget;
+        }
+
+        bool indeterminate = false;
         foreach (Creature target in alive)
         {
             Dictionary<Creature, ForecastState> branch = Clone(states);
             ApplyHit(owner, branch, spec, [target], hitIndex);
-            if (!SimulateRandom(owner, branch, spec, hitIndex + 1, hitsRemaining - 1, finish))
+            FinisherForecastOutcome branchResult = SimulateRandom(
+                owner,
+                branch,
+                spec,
+                hitIndex + 1,
+                hitsRemaining - 1,
+                finish,
+                search);
+            if (branchResult == FinisherForecastOutcome.NotGuaranteed)
             {
-                return false;
+                search.Store(stateKey, branchResult);
+                return branchResult;
             }
+
+            indeterminate |= branchResult == FinisherForecastOutcome.IndeterminateBudget;
         }
 
-        return true;
+        FinisherForecastOutcome result = indeterminate
+            ? FinisherForecastOutcome.IndeterminateBudget
+            : FinisherForecastOutcome.Guaranteed;
+        search.Store(stateKey, result);
+        return result;
     }
 
-    private static bool ApplyPostCardEffects(
+    private static FinisherForecastOutcome ApplyPostCardEffects(
         Creature owner,
         Dictionary<Creature, ForecastState> states,
         IReadOnlyList<FinisherForecastEffect> effects,
-        int effectIndex)
+        int effectIndex,
+        ForecastSearchContext search)
     {
         if (effectIndex >= effects.Count)
         {
-            return states.Values.All(state => state.Hp <= 0);
+            return states.Values.All(state => state.Hp <= 0)
+                ? FinisherForecastOutcome.Guaranteed
+                : FinisherForecastOutcome.NotGuaranteed;
         }
 
         FinisherForecastEffect effect = effects[effectIndex];
         List<Creature> alive = AliveTargets(states);
         if (alive.Count == 0)
         {
-            return true;
+            return FinisherForecastOutcome.Guaranteed;
         }
 
         if (effect.Targeting == FinisherForecastEffectTargeting.All)
@@ -1932,20 +2033,46 @@ internal static class FinisherForecast
                 ApplyDamage(owner, states, target, effect.Amount, effect.Props, effect.Dealer, effect.CardSource, effect.CardPlay);
             }
 
-            return ApplyPostCardEffects(owner, states, effects, effectIndex + 1);
+            return ApplyPostCardEffects(owner, states, effects, effectIndex + 1, search);
         }
 
+        string stateKey = search.CreateKey("effects", effectIndex, effects.Count, states);
+        MemoSearchLookup lookup = search.Lookup(stateKey, out FinisherForecastOutcome cached);
+        if (lookup == MemoSearchLookup.Cached)
+        {
+            return cached;
+        }
+
+        if (lookup == MemoSearchLookup.BudgetExceeded)
+        {
+            return FinisherForecastOutcome.IndeterminateBudget;
+        }
+
+        bool indeterminate = false;
         foreach (Creature target in alive)
         {
             Dictionary<Creature, ForecastState> branch = Clone(states);
             ApplyDamage(owner, branch, target, effect.Amount, effect.Props, effect.Dealer, effect.CardSource, effect.CardPlay);
-            if (!ApplyPostCardEffects(owner, branch, effects, effectIndex + 1))
+            FinisherForecastOutcome branchResult = ApplyPostCardEffects(
+                owner,
+                branch,
+                effects,
+                effectIndex + 1,
+                search);
+            if (branchResult == FinisherForecastOutcome.NotGuaranteed)
             {
-                return false;
+                search.Store(stateKey, branchResult);
+                return branchResult;
             }
+
+            indeterminate |= branchResult == FinisherForecastOutcome.IndeterminateBudget;
         }
 
-        return true;
+        FinisherForecastOutcome result = indeterminate
+            ? FinisherForecastOutcome.IndeterminateBudget
+            : FinisherForecastOutcome.Guaranteed;
+        search.Store(stateKey, result);
+        return result;
     }
 
     private static void ApplyHit(
@@ -2072,4 +2199,38 @@ internal static class FinisherForecast
         states.ToDictionary(pair => pair.Key, pair => pair.Value);
 
     private sealed record ForecastState(int Hp, int Block, int Karate);
+
+    private sealed class ForecastSearchContext(int maximumStates, TimeSpan maximumTime)
+    {
+        private readonly BoundedMemoSearch<string, FinisherForecastOutcome> _search =
+            new(maximumStates, maximumTime);
+
+        public MemoSearchLookup Lookup(string key, out FinisherForecastOutcome result) =>
+            _search.Lookup(key, out result);
+
+        public void Store(string key, FinisherForecastOutcome result)
+        {
+            _search.Store(key, result);
+        }
+
+        public string CreateKey(
+            string stage,
+            int index,
+            int remaining,
+            Dictionary<Creature, ForecastState> states)
+        {
+            var builder = new StringBuilder(stage)
+                .Append(':').Append(index)
+                .Append(':').Append(remaining);
+            foreach (ForecastState state in states.Values)
+            {
+                builder.Append('|')
+                    .Append(state.Hp).Append(',')
+                    .Append(state.Block).Append(',')
+                    .Append(state.Karate);
+            }
+
+            return builder.ToString();
+        }
+    }
 }

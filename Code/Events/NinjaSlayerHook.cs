@@ -20,13 +20,19 @@ public static class NinjaSlayerHook
         {
             var abstractModel = (AbstractModel)(object)model;
             ctx.PushModel(abstractModel);
-            await invoke(model);
-            ctx.PopModel(abstractModel);
+            try
+            {
+                await invoke(model);
+            }
+            finally
+            {
+                ctx.PopModel(abstractModel);
+            }
         }
     }
 
-    public static Task OnScryed(PlayerChoiceContext ctx, Player player, int amount, int discardedAmount)
+    public static Task OnScryed(PlayerChoiceContext ctx, Player player, int viewedAmount, int discardedAmount)
     {
-        return Dispatch<IOnScryed>(ctx, player, m => m.OnScryed(ctx, player, amount, discardedAmount));
+        return Dispatch<IOnScryed>(ctx, player, m => m.OnScryed(ctx, player, viewedAmount, discardedAmount));
     }
 }
