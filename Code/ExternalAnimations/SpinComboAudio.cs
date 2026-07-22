@@ -23,7 +23,7 @@ public static class SpinComboAudio
         }
 
         var audio = NinjaSlayerCombatAudioSet.For(creature);
-        bool isFullyReleasedNaraku = NinjaSlayerFormState.IsFullyReleasedNaraku(creature);
+        bool forcePerHitComboAudio = NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
 
         if (hitCount == 1)
         {
@@ -35,7 +35,7 @@ public static class SpinComboAudio
             return;
         }
 
-        if (isFullyReleasedNaraku)
+        if (forcePerHitComboAudio)
         {
             await RunWithSuppressedAutomaticSfx(executeHits);
             return;
@@ -73,8 +73,8 @@ public static class SpinComboAudio
         }
     }
 
-    public static void PlayNarakuSlowAttack(Creature creature) =>
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.Naraku.SlowAttack);
+    public static void PlayFormSlowAttack(Creature creature) =>
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
 
     public static async Task PlayTornadoFistSequence(
         Creature creature,

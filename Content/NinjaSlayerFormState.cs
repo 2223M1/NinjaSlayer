@@ -12,4 +12,10 @@ public static class NinjaSlayerFormState
     public static bool IsFullyReleasedNaraku(Creature creature) =>
         IsNaraku(creature)
         && creature.Player?.GetRelic<NarakuWithinRelic>() != null;
+
+    public static NinjaSlayerFormPresentation GetPresentation(Creature creature) =>
+        NinjaSlayerFormPresentationCatalog.Resolve(
+            IsNaraku(creature),
+            creature.Player?.GetRelic<NarakuWithinRelic>() != null,
+            creature.HasPower<OneBodyOneSoulPower>());
 }

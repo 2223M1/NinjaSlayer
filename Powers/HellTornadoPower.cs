@@ -113,9 +113,9 @@ public sealed class HellTornadoPower : NinjaSlayerPowerTemplate
                         continue;
                     }
 
-                    if (NinjaSlayerFormState.IsFullyReleasedNaraku(creature))
+                    if (NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio)
                     {
-                        SpinComboAudio.PlayNarakuSlowAttack(creature);
+                        SpinComboAudio.PlayFormSlowAttack(creature);
                     }
 
                     await CardCmd.AutoPlay(choiceContext, shuriken, target, AutoPlayType.Default, skipXCapture: false, !first);

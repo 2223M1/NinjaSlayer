@@ -25,6 +25,8 @@ The character scene uses these namespaced resources:
 - `NinjaSlayer/images/characters/ninja_slayer/naraku.png`
 - `NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn`
 
+Normal, Naraku, fully released Naraku, and One Body One Soul body resources and presentation policies are centralized in `Content/NinjaSlayerFormPresentation.cs`.
+
 Use `NinjaSlayer/images/characters/ninja_slayer/` for future character UI replacements.
 
 ## Card Images

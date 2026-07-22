@@ -173,6 +173,39 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void FormPresentationPoliciesAreCentralized()
+    {
+        string overlay = Sources
+            .Single(source => source.RelativePath == "Code/Nodes/NarakuVisualOverlay.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("NinjaSlayerFormState.GetPresentation", overlay, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("res://", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("enum FormVisual", overlay, StringComparison.Ordinal);
+
+        string[] presentationConsumers =
+        [
+            "Code/ExternalAnimations/NinjaSlayerXAttackSequence.cs",
+            "Code/ExternalAnimations/SpinComboAudio.cs",
+            "Code/Nodes/NinjaSlayerSpinPivot.cs",
+            "Content/NinjaSlayerCombatAudio.cs",
+            "Content/NinjaSlayerCombatVisuals.cs",
+            "Powers/HellTornadoPower.cs"
+        ];
+        foreach (string relativePath in presentationConsumers)
+        {
+            string source = Sources.Single(item => item.RelativePath == relativePath).Root.ToFullString();
+            Assert.Contains("NinjaSlayerFormState.GetPresentation", source, StringComparison.Ordinal);
+        }
+
+        foreach (SourceDocument source in Sources.Where(source => source.RelativePath != "Content/NinjaSlayerFormState.cs"))
+        {
+            Assert.DoesNotContain("IsFullyReleasedNaraku(", source.Root.ToFullString(), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void HarmonyInstallationIsCentralizedInCompatibilityInfrastructure()
     {
         string[] allowed =

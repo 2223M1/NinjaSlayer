@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
-using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -71,8 +70,7 @@ public partial class NinjaSlayerSpinPivot : Node2D
     {
         return creature == null
             || (!SoarSpinAnimation.IsVerticalSpinActive(creature)
-                && !NinjaSlayerFormState.IsFullyReleasedNaraku(creature)
-                && !creature.HasPower<OneBodyOneSoulPower>());
+                && NinjaSlayerFormState.GetPresentation(creature).UseNormalSpinPivot);
     }
 
     private Creature? FindCreature()
