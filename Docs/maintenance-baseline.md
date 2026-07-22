@@ -6,6 +6,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 
 - Supported game line: `0.109.x`; RitsuLib: `0.4.62`; public RefLib: `0.109.0-beta`.
 - Finisher capability owns attack interception, lethal protection, primary damage observation, post-card commit, and card-play cleanup. Presentation and Tornado cadence are separate optional capabilities.
+- Enhanced lethal protection is pinned to `Creature.LoseHpInternal` in the supported 0.109.x build (`MVID a49d3537-5a42-4dcd-9877-663e394f2b44`, metadata token `0x06008438`, IL SHA-256 `9c1b0e229a97c39866dcebe88c742175b9d41b27b2d507ed4ca31bfee4f61fc6`). A mismatch or a foreign skipping/result-replacing Harmony patch disables the enhancement and keeps the original attack path.
 - Finisher search limits are 25,000 states and 8 ms; the active-time watchdog is 90 seconds.
 - Transition owns one 30-second watchdog and must restore input, black screen, hover suppression, camera state, and loading state on every exit.
 - Prepared gameplay currently filters normal draws and mirrors vanilla shuffle/history/hook ordering. Prepared cleanup must become independently installable before gameplay compatibility is broadened.
