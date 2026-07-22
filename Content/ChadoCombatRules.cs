@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Nodes.Cards;
 using NinjaSlayer.Cards;
 using STS2RitsuLib.Interop.AutoRegistration;
 
@@ -37,7 +36,7 @@ public sealed class ChadoCombatRules : NinjaSlayerCombatSingletonTemplate
 
         int currentCost = chado.EnergyCost.GetWithModifiers(CostModifiers.Local);
         int newCost = Math.Min(DiscardCost, currentCost + amount);
-        SetCostAndRefresh(chado, newCost);
+        SetCostAndNotify(chado, newCost);
 
         if (newCost >= DiscardCost)
         {
@@ -70,13 +69,12 @@ public sealed class ChadoCombatRules : NinjaSlayerCombatSingletonTemplate
             return;
         }
 
-        SetCostAndRefresh(chado, 0);
+        SetCostAndNotify(chado, 0);
     }
 
-    private static void SetCostAndRefresh(ChadoCard chado, int cost)
+    private static void SetCostAndNotify(ChadoCard chado, int cost)
     {
         chado.EnergyCost.SetThisTurnOrUntilPlayed(cost);
         chado.InvokeEnergyCostChanged();
-        NCard.FindOnTable(chado)?.UpdateVisuals(PileType.Hand, CardPreviewMode.Normal);
     }
 }

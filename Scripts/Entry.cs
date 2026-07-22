@@ -86,6 +86,7 @@ public class Entry
         InstallCapability<TypographyPatchGroup>(
             NinjaSlayerCapabilityIds.Typography,
             GameCompatibility.Typography.GetProbes());
+        InstallCapability<ChadoPresentationPatchGroup>(NinjaSlayerCapabilityIds.ChadoPresentation);
         InstallCapability<CinematicInfrastructurePatchGroup>(NinjaSlayerCapabilityIds.CinematicInfrastructure);
 
         CapabilityStatus preparedSafety = InstallCapability<PreparedSafetyPatchGroup>(

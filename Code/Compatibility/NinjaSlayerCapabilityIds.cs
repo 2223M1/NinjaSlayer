@@ -8,6 +8,7 @@ internal static class NinjaSlayerCapabilityIds
     public const string Nancy = "nancy-compatibility";
     public const string KaratePreview = "karate-preview";
     public const string Typography = "typography";
+    public const string ChadoPresentation = "chado-presentation";
     public const string CinematicInfrastructure = "cinematic-infrastructure";
     public const string PreparedSafety = "prepared-safety";
     public const string PreparedGameplay = "prepared-gameplay";
@@ -27,6 +28,7 @@ internal static class NinjaSlayerCapabilityIds
         Nancy,
         KaratePreview,
         Typography,
+        ChadoPresentation,
         CinematicInfrastructure,
         PreparedSafety,
         PreparedGameplay,

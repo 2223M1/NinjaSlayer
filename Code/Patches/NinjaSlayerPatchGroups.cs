@@ -70,6 +70,15 @@ internal sealed class TypographyPatchGroup : IModPatches
     }
 }
 
+internal sealed class ChadoPresentationPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
+        patcher.RegisterPatch<ChadoEnergyCostVisualPatch>();
+        patcher.RegisterPatch<ChadoCardNodeLifecyclePatch>();
+    }
+}
+
 internal sealed class CinematicInfrastructurePatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
