@@ -37,26 +37,34 @@ internal sealed class CardResolutionPatchGroup : IModPatches
     }
 }
 
-internal sealed class EventCompatibilityPatchGroup : IModPatches
+internal sealed class ReporterPassPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<ReporterPassEventOptionPatch>();
+}
+
+internal sealed class NancyCompatibilityPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
     {
-        if (ReporterPassEventOptionPatch.IsAvailable)
-        {
-            patcher.RegisterPatch<ReporterPassEventOptionPatch>();
-        }
         patcher.RegisterPatch<NancyLeeCandidatePatch>();
         patcher.RegisterPatch<NancyLeeLoadedRunPatch>();
     }
 }
 
-internal sealed class CombatUiPatchGroup : IModPatches
+internal sealed class KaratePreviewPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
     {
         patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
         patcher.RegisterPatch<KarateCardPreviewClearPatch>();
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
+    }
+}
+
+internal sealed class TypographyPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
         patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
         patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
     }

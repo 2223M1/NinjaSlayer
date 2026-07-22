@@ -172,8 +172,9 @@ if (patchIds.length !== patchClasses.length) {
 const patchGroups = [...patchGroupSource.matchAll(/sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
   .map((match) => match[1]);
 for (const patchGroup of patchGroups) {
-  if (!entrySource.includes(`InstallCapability<${patchGroup}>`)) {
-    errors.push(`Entry.cs does not install typed patch group ${patchGroup}`);
+  const installationCount = [...entrySource.matchAll(new RegExp(`InstallCapability<${patchGroup}>`, 'g'))].length;
+  if (installationCount !== 1) {
+    errors.push(`Entry.cs must install typed patch group ${patchGroup} exactly once (found ${installationCount})`);
   }
 }
 
@@ -181,10 +182,12 @@ const compatibilityOwnedFiles = [
   'Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs',
   'Code/Patches/KarateHealthBarPreviewPatch.cs',
   'Code/Patches/NancyLeeAvailabilityPatches.cs',
+  'Code/Patches/NinjaSlayerFeedbackPatches.cs',
   'Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs',
   'Code/Patches/NinjaSlayerTransitionPatch.cs',
   'Code/Patches/NinjaSlayerTypographyPatch.cs',
   'Code/Patches/PreparedCardPatches.cs',
+  'Code/Patches/ReporterPassEventOptionPatch.cs',
   'Code/Patches/TornadoFistFinisherCadencePatch.cs',
 ];
 const privateReflectionPattern = /AccessTools\.(?:Field|Method|Property)|BindingFlags|GetField\(|GetMethod\(/;
@@ -195,20 +198,34 @@ for (const relativePath of compatibilityOwnedFiles) {
   }
 }
 
-const compatibilitySource = readFileSync(join(root, 'Code', 'Compatibility', 'GameCompatibility.cs'), 'utf8');
-for (const capability of [
-  'finisher-command',
-  'prepared-draw',
-  'nancy-room-load',
-  'karate-health-text',
-  'typography',
-  'transition',
-  'transition-loading',
-  'tornado-cadence',
-]) {
-  if (!compatibilitySource.includes(`new("${capability}"`)) {
-    errors.push(`GameCompatibility is missing descriptor ${capability}`);
-  }
+const capabilityIdSource = readFileSync(
+  join(root, 'Code', 'Compatibility', 'NinjaSlayerCapabilityIds.cs'),
+  'utf8',
+);
+const capabilityIds = [...capabilityIdSource.matchAll(/const\s+string\s+\w+\s*=\s*"([^"]+)"/g)]
+  .map((match) => match[1]);
+for (const capabilityId of new Set(capabilityIds)) {
+  const count = capabilityIds.filter((candidate) => candidate === capabilityId).length;
+  if (count !== 1) errors.push(`Capability id ${capabilityId} is declared ${count} times`);
+}
+if (capabilityIds.length !== patchGroups.length) {
+  errors.push(
+    `Expected one capability id per typed patch group (${patchGroups.length} groups, ${capabilityIds.length} ids)`,
+  );
+}
+if (/InstallCapability<[^>]+>\(\s*"/.test(entrySource)) {
+  errors.push('Entry.cs must use NinjaSlayerCapabilityIds for every capability installation');
+}
+const installedCapabilityNames = [
+  ...entrySource.matchAll(/InstallCapability<[^>]+>\(\s*NinjaSlayerCapabilityIds\.(\w+)/g),
+].map((match) => match[1]);
+const declaredCapabilityNames = [
+  ...capabilityIdSource.matchAll(/const\s+string\s+(\w+)\s*=\s*"[^"]+"/g),
+].map((match) => match[1]);
+if (
+  [...installedCapabilityNames].sort().join('\n') !== [...declaredCapabilityNames].sort().join('\n')
+) {
+  errors.push('Every declared capability id must be installed exactly once by Entry.cs');
 }
 
 const concreteCardSources = filesUnder(join(root, 'Cards'))

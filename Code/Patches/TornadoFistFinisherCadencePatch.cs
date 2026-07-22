@@ -23,9 +23,6 @@ public sealed class TornadoFistFinisherCadencePatch : IPatchMethod
         ? targets
         : [];
 
-    internal static bool CanInstall(out string missingMember) =>
-        GameCompatibility.TornadoCadence.CanInstall(out missingMember);
-
     private static bool TryResolveTargets(out ModPatchTarget[] targets, out string missingMember)
     {
         if (!GameCompatibility.TornadoCadence.TryResolveStateMachines(

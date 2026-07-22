@@ -18,9 +18,6 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 
     public static bool IsCritical => true;
 
-    internal static bool CanInstall(out string missingMember) =>
-        GameCompatibility.AssetLoading.CanFinalize(out missingMember);
-
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(AssetLoadingSession), "FinalizeLoading")];
 
@@ -66,23 +63,6 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() => TryResolveTargets(out ModPatchTarget[] targets, out _)
         ? targets
         : [];
-
-    internal static bool CanInstall(out string missingMember)
-    {
-        if (GameCompatibility.AssetLoading.GcCollect == null)
-        {
-            missingMember = $"{typeof(GC).FullName}.{nameof(GC.Collect)}";
-            return false;
-        }
-
-        if (GameCompatibility.AssetLoading.SafeCollect == null)
-        {
-            missingMember = $"{typeof(NinjaSlayerTransitionLoadSmoothing).FullName}.CollectWhenSafe";
-            return false;
-        }
-
-        return TryResolveTargets(out _, out missingMember);
-    }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {

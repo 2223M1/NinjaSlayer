@@ -9,15 +9,20 @@ using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Cards;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
+using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Nodes.Screens.InspectScreens;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -29,17 +34,6 @@ namespace NinjaSlayer.Code.Compatibility;
 internal static class GameCompatibility
 {
     public const string SupportedGameVersion = "0.109.x";
-    public static readonly IReadOnlyList<CompatibilityCapability> Capabilities =
-    [
-        new("finisher-command", SupportedGameVersion, "Disable enhanced finisher interception"),
-        new("prepared-draw", SupportedGameVersion, "Disable Prepared draw filtering"),
-        new("nancy-room-load", SupportedGameVersion, "Keep the loaded room without replacement"),
-        new("karate-health-text", SupportedGameVersion, "Keep the original HP label"),
-        new("typography", SupportedGameVersion, "Keep the original title font"),
-        new("transition", SupportedGameVersion, "Use the original transition"),
-        new("transition-loading", SupportedGameVersion, "Use the original asset finalization and GC"),
-        new("tornado-cadence", SupportedGameVersion, "Keep original command pacing")
-    ];
 
     internal static class Finisher
     {
@@ -47,6 +41,22 @@ internal static class GameCompatibility
         private static readonly FieldInfo? CalculatedDamage = AccessTools.Field(typeof(AttackCommand), "_calculatedDamageVar");
         private static readonly FieldInfo? HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
         private static readonly FieldInfo? SingleTarget = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
+
+        public static IReadOnlyList<CapabilityProbe> GetProbes()
+        {
+            bool lethalTargetAvailable = CanProtectLethalDamage(out string lethalReason);
+            return
+            [
+                RequiredMember("AttackCommand.damage-per-hit", DamagePerHit, "AttackCommand._damagePerHit"),
+                RequiredMember("AttackCommand.calculated-damage", CalculatedDamage, "AttackCommand._calculatedDamageVar"),
+                RequiredMember("AttackCommand.hit-count", HitCount, "AttackCommand._hitCount"),
+                RequiredMember("AttackCommand.single-target", SingleTarget, "AttackCommand._singleTarget"),
+                CapabilityProbe.Required(
+                    "Creature.lethal-damage-contract",
+                    lethalTargetAvailable,
+                    lethalTargetAvailable ? "validated" : lethalReason)
+            ];
+        }
 
         public static bool CanProtectLethalDamage(out string reason)
         {
@@ -139,23 +149,17 @@ internal static class GameCompatibility
         private static readonly MethodInfo? ShuffleFtueCheck = AccessTools.Method(typeof(CardPileCmd), "ShuffleFtueCheck");
         private static readonly FieldInfo? Grid = AccessTools.Field(typeof(NCardPileScreen), "_grid");
 
-        public static bool CanInstall(out string missingMember)
-        {
-            if (DrawInternal == null)
-            {
-                missingMember = "CardPileCmd.DrawInternal(PlayerChoiceContext, decimal, Player, bool)";
-                return false;
-            }
+        public static IReadOnlyList<CapabilityProbe> GetGameplayProbes() =>
+        [
+            RequiredMember("CardPileCmd.draw-internal", DrawInternal,
+                "CardPileCmd.DrawInternal(PlayerChoiceContext, decimal, Player, bool)"),
+            RequiredMember("CardPileCmd.shuffle-ftue", ShuffleFtueCheck, "CardPileCmd.ShuffleFtueCheck()")
+        ];
 
-            if (ShuffleFtueCheck == null)
-            {
-                missingMember = "CardPileCmd.ShuffleFtueCheck()";
-                return false;
-            }
-
-            missingMember = string.Empty;
-            return true;
-        }
+        public static IReadOnlyList<CapabilityProbe> GetUiProbes() =>
+        [
+            RequiredMember("NCardPileScreen.grid", Grid, "NCardPileScreen._grid")
+        ];
 
         public static async Task ShowShuffleFtue()
         {
@@ -176,6 +180,14 @@ internal static class GameCompatibility
     {
         private static readonly FieldInfo? Rooms = AccessTools.Field(typeof(ActModel), "_rooms");
 
+        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
+        [
+            CapabilityProbe.Optional(
+                "ActModel.rooms",
+                Rooms != null,
+                Rooms != null ? "available" : "ActModel._rooms is unavailable")
+        ];
+
         public static bool TryGetRooms(ActModel act, out RoomSet? rooms)
         {
             rooms = Rooms?.GetValue(act) as RoomSet;
@@ -187,6 +199,18 @@ internal static class GameCompatibility
     {
         private static readonly FieldInfo? Creature = AccessTools.Field(typeof(NHealthBar), "_creature");
         private static readonly FieldInfo? HpLabel = AccessTools.Field(typeof(NHealthBar), "_hpLabel");
+
+        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
+        [
+            CapabilityProbe.Optional(
+                "NHealthBar.creature",
+                Creature != null,
+                Creature != null ? "available" : "NHealthBar._creature is unavailable"),
+            CapabilityProbe.Optional(
+                "NHealthBar.hp-label",
+                HpLabel != null,
+                HpLabel != null ? "available" : "NHealthBar._hpLabel is unavailable")
+        ];
 
         public static bool TryGetState(NHealthBar healthBar, out Creature? creature, out MegaLabel? hpLabel)
         {
@@ -200,6 +224,18 @@ internal static class GameCompatibility
     {
         private static readonly FieldInfo? Relics = AccessTools.Field(typeof(NInspectRelicScreen), "_relics");
         private static readonly FieldInfo? Index = AccessTools.Field(typeof(NInspectRelicScreen), "_index");
+
+        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
+        [
+            CapabilityProbe.Optional(
+                "NInspectRelicScreen.relics",
+                Relics != null,
+                Relics != null ? "available" : "NInspectRelicScreen._relics is unavailable"),
+            CapabilityProbe.Optional(
+                "NInspectRelicScreen.index",
+                Index != null,
+                Index != null ? "available" : "NInspectRelicScreen._index is unavailable")
+        ];
 
         public static bool TryGetSelectedRelic(NInspectRelicScreen screen, out RelicModel? relic)
         {
@@ -223,6 +259,12 @@ internal static class GameCompatibility
             AccessTools.Property(typeof(NTransition), nameof(NTransition.InTransition));
         private static readonly FieldInfo? Tween = AccessTools.Field(typeof(NTransition), "_tween");
 
+        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
+        [
+            RequiredMember("NTransition.in-transition", InTransition, "NTransition.InTransition"),
+            RequiredMember("NTransition.tween", Tween, "NTransition._tween")
+        ];
+
         public static void SetInTransition(NTransition transition, bool value) =>
             InTransition?.SetValue(transition, value);
 
@@ -245,22 +287,23 @@ internal static class GameCompatibility
             typeof(NinjaSlayerTransitionLoadSmoothing),
             nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
 
-        public static bool CanFinalize(out string missingMember)
+        public static IReadOnlyList<CapabilityProbe> GetProbes()
         {
-            if (Finalizing == null)
-            {
-                missingMember = $"{typeof(AssetLoadingSession).FullName}._finalizing";
-                return false;
-            }
-
-            if (AddToCache == null)
-            {
-                missingMember = $"{typeof(AssetLoadingSession).FullName}.AddToCache";
-                return false;
-            }
-
-            missingMember = string.Empty;
-            return true;
+            bool stateMachinesAvailable = TryResolvePreloadStateMachines(out _, out string stateMachineReason);
+            return
+            [
+                RequiredMember("AssetLoadingSession.finalizing", Finalizing, "AssetLoadingSession._finalizing"),
+                RequiredMember("AssetLoadingSession.add-to-cache", AddToCache, "AssetLoadingSession.AddToCache"),
+                RequiredMember("GC.collect", GcCollect, "System.GC.Collect()"),
+                RequiredMember(
+                    "TransitionLoadSmoothing.safe-collect",
+                    SafeCollect,
+                    "NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe"),
+                CapabilityProbe.Required(
+                    "PreloadManager.state-machines",
+                    stateMachinesAvailable,
+                    stateMachinesAvailable ? "validated" : stateMachineReason)
+            ];
         }
 
         public static bool TryGetFinalizing(AssetLoadingSession session, out Queue<string>? finalizing)
@@ -311,21 +354,21 @@ internal static class GameCompatibility
             typeof(TornadoFistFinisherCadenceContext),
             nameof(TornadoFistFinisherCadenceContext.WaitUnlessActive));
 
-        public static bool CanInstall(out string missingMember)
+        public static IReadOnlyList<CapabilityProbe> GetProbes()
         {
-            if (CustomWait == null)
-            {
-                missingMember = $"{typeof(Cmd).FullName}.{nameof(Cmd.CustomScaledWait)}";
-                return false;
-            }
-
-            if (ScopedWait == null)
-            {
-                missingMember = $"{typeof(TornadoFistFinisherCadenceContext).FullName}.WaitUnlessActive";
-                return false;
-            }
-
-            return TryResolveStateMachines(out _, out missingMember);
+            bool stateMachinesAvailable = TryResolveStateMachines(out _, out string stateMachineReason);
+            return
+            [
+                RequiredMember("Cmd.custom-scaled-wait", CustomWait, "Cmd.CustomScaledWait"),
+                RequiredMember(
+                    "TornadoCadence.scoped-wait",
+                    ScopedWait,
+                    "TornadoFistFinisherCadenceContext.WaitUnlessActive"),
+                CapabilityProbe.Required(
+                    "TornadoCadence.state-machines",
+                    stateMachinesAvailable,
+                    stateMachinesAvailable ? "validated" : stateMachineReason)
+            ];
         }
 
         public static bool TryResolveStateMachines(out Type[] stateMachines, out string missingMember)
@@ -368,9 +411,56 @@ internal static class GameCompatibility
             return true;
         }
     }
-}
 
-internal sealed record CompatibilityCapability(
-    string Name,
-    string SupportedVersion,
-    string DegradedBehavior);
+    internal static class ReporterPass
+    {
+        private static readonly MethodInfo? SetEventFinished =
+            AccessTools.Method(typeof(EventModel), "SetEventFinished", [typeof(LocString)]);
+
+        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
+        [
+            RequiredMember("EventModel.set-event-finished", SetEventFinished,
+                "EventModel.SetEventFinished(LocString)")
+        ];
+
+        public static bool TryFinish(EventModel eventModel, LocString result)
+        {
+            if (SetEventFinished == null)
+            {
+                return false;
+            }
+
+            SetEventFinished.Invoke(eventModel, [result]);
+            return true;
+        }
+    }
+
+    internal static class Feedback
+    {
+        private static readonly MethodInfo? SendButtonSelected =
+            AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)]);
+
+        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
+        [
+            RequiredMember("NSendFeedbackScreen.send-button-selected", SendButtonSelected,
+                "NSendFeedbackScreen.SendButtonSelected(NButton)")
+        ];
+
+        public static bool TrySelectSendButton(NSendFeedbackScreen screen, NButton button)
+        {
+            if (SendButtonSelected == null)
+            {
+                return false;
+            }
+
+            SendButtonSelected.Invoke(screen, [button]);
+            return true;
+        }
+    }
+
+    private static CapabilityProbe RequiredMember(string name, MemberInfo? member, string memberDescription) =>
+        CapabilityProbe.Required(
+            name,
+            member != null,
+            member != null ? "available" : $"{memberDescription} is unavailable");
+}

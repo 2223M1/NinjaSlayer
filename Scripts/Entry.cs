@@ -3,6 +3,7 @@ using System.Reflection;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
@@ -71,112 +72,163 @@ public class Entry
 
     private static void InstallBaseCapabilities()
     {
-        NinjaSlayerPatchCapabilities.GameplayEnabled =
-            InstallCapability<GameplayPatchGroup>("gameplay");
-        NinjaSlayerPatchCapabilities.CardResolutionEnabled =
-            InstallCapability<CardResolutionPatchGroup>("card-resolution");
-        InstallCapability<EventCompatibilityPatchGroup>("event-compatibility");
-        InstallCapability<CombatUiPatchGroup>("combat-ui");
-        InstallCapability<CinematicInfrastructurePatchGroup>("cinematic-infrastructure");
+        InstallCapability<GameplayPatchGroup>(NinjaSlayerCapabilityIds.Gameplay);
+        InstallCapability<CardResolutionPatchGroup>(NinjaSlayerCapabilityIds.CardResolution);
+        InstallCapability<ReporterPassPatchGroup>(
+            NinjaSlayerCapabilityIds.ReporterPass,
+            GameCompatibility.ReporterPass.GetProbes());
+        InstallCapability<NancyCompatibilityPatchGroup>(
+            NinjaSlayerCapabilityIds.Nancy,
+            GameCompatibility.Nancy.GetProbes());
+        InstallCapability<KaratePreviewPatchGroup>(
+            NinjaSlayerCapabilityIds.KaratePreview,
+            GameCompatibility.KarateHealthBar.GetProbes());
+        InstallCapability<TypographyPatchGroup>(
+            NinjaSlayerCapabilityIds.Typography,
+            GameCompatibility.Typography.GetProbes());
+        InstallCapability<CinematicInfrastructurePatchGroup>(NinjaSlayerCapabilityIds.CinematicInfrastructure);
 
-        if (PreparedDrawCompatibility.CanInstall(out string missingMember))
+        CapabilityStatus prepared = InstallCapability<PreparedPatchGroup>(
+            NinjaSlayerCapabilityIds.PreparedGameplay,
+            GameCompatibility.Prepared.GetGameplayProbes());
+        if (prepared.IsOperational)
         {
-            NinjaSlayerPatchCapabilities.PreparedEnabled =
-                InstallCapability<PreparedPatchGroup>("prepared");
-            if (NinjaSlayerPatchCapabilities.PreparedEnabled)
-            {
-                InstallCapability<PreparedUiPatchGroup>("prepared-ui");
-            }
+            InstallCapability<PreparedUiPatchGroup>(
+                NinjaSlayerCapabilityIds.PreparedUi,
+                GameCompatibility.Prepared.GetUiProbes());
         }
         else
         {
-            Logger.Warn($"NinjaSlayer capability disabled: prepared; missing={missingMember}.");
-        }
-
-        if (!ReporterPassEventOptionPatch.IsAvailable)
-        {
-            Logger.Warn("Reporter Pass event option disabled: EventModel.SetEventFinished is unavailable.");
+            DisableByDependency(NinjaSlayerCapabilityIds.PreparedUi, NinjaSlayerCapabilityIds.PreparedGameplay);
         }
     }
 
     private static void InstallFinisherCapability()
     {
-        NinjaSlayerPatchCapabilities.FinisherEnabled =
-            InstallCapability<FinisherCorePatchGroup>("finisher-core");
+        CapabilityStatus finisher = InstallCapability<FinisherCorePatchGroup>(
+            NinjaSlayerCapabilityIds.FinisherCore,
+            GameCompatibility.Finisher.GetProbes());
 
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled)
+        if (!finisher.IsOperational)
         {
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.FinisherPresentation,
+                NinjaSlayerCapabilityIds.FinisherCore);
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.FinisherTornadoCadence,
+                NinjaSlayerCapabilityIds.FinisherCore);
             return;
         }
 
-        InstallCapability<FinisherPresentationPatchGroup>("finisher-presentation");
-
-        if (TornadoFistFinisherCadencePatch.CanInstall(out string missingMember))
-        {
-            InstallCapability<FinisherCadencePatchGroup>("finisher-tornado-cadence");
-        }
-        else
-        {
-            Logger.Warn(
-                $"NinjaSlayer capability disabled: finisher-tornado-cadence; missing={missingMember}.");
-        }
+        InstallCapability<FinisherPresentationPatchGroup>(NinjaSlayerCapabilityIds.FinisherPresentation);
+        InstallCapability<FinisherCadencePatchGroup>(
+            NinjaSlayerCapabilityIds.FinisherTornadoCadence,
+            GameCompatibility.TornadoCadence.GetProbes());
     }
 
     private static void InstallTransitionCapability()
     {
-        NinjaSlayerPatchCapabilities.TransitionEnabled =
-            InstallCapability<TransitionCorePatchGroup>("transition-core");
+        CapabilityStatus transition = InstallCapability<TransitionCorePatchGroup>(
+            NinjaSlayerCapabilityIds.TransitionCore,
+            GameCompatibility.Transition.GetProbes());
 
-        if (!NinjaSlayerPatchCapabilities.TransitionEnabled)
+        if (!transition.IsOperational)
         {
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
+                NinjaSlayerCapabilityIds.TransitionCore);
             return;
         }
 
-        bool assetFinalizeAvailable = NinjaSlayerTransitionAssetFinalizePatch.CanInstall(out string assetMissing);
-        bool gcDeferralAvailable = NinjaSlayerTransitionGcDeferralPatch.CanInstall(out string gcMissing);
-        if (!assetFinalizeAvailable || !gcDeferralAvailable)
-        {
-            string missing = string.IsNullOrEmpty(assetMissing) ? gcMissing : assetMissing;
-            Logger.Warn($"NinjaSlayer capability disabled: transition-load-smoothing; missing={missing}.");
-            return;
-        }
-
-        NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled =
-            InstallCapability<TransitionSmoothingPatchGroup>("transition-load-smoothing");
+        InstallCapability<TransitionSmoothingPatchGroup>(
+            NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
+            GameCompatibility.AssetLoading.GetProbes());
     }
 
-    private static bool InstallCapability<TPatchGroup>(string capability)
+    private static CapabilityStatus InstallCapability<TPatchGroup>(
+        string capabilityId,
+        IReadOnlyList<CapabilityProbe>? probes = null)
         where TPatchGroup : IModPatches
     {
-        ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, capability);
-        patcher.RegisterPatches<TPatchGroup>();
-        if (patcher.PatchAll())
+        CapabilityProbe[] probeSnapshot = probes?.ToArray() ?? [];
+        if (probeSnapshot.Any(probe => probe.IsRequired && !probe.IsAvailable))
         {
-            Logger.Info($"NinjaSlayer capability enabled: {capability}.");
-            return true;
+            CapabilityStatus disabled = CapabilityStatusEvaluator.EvaluatePatchResult(
+                probeSnapshot,
+                patchAllSucceeded: false,
+                registeredPatchCount: 0,
+                appliedPatchCount: 0);
+            PublishCapabilityStatus(capabilityId, disabled);
+            return disabled;
         }
 
-        LogPatchFailure(patcher);
-        Version? gameVersion = typeof(MegaCrit.Sts2.Core.Nodes.NGame).Assembly.GetName().Version;
-        Version? ritsuVersion = typeof(RitsuLibFramework).Assembly.GetName().Version;
-        Logger.Warn(
-            $"NinjaSlayer capability disabled: {capability}; " +
-            $"game={gameVersion}, RitsuLib={ritsuVersion}.");
-        return false;
+        ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, capabilityId);
+        bool patchAllSucceeded;
+        try
+        {
+            patcher.RegisterPatches<TPatchGroup>();
+            patchAllSucceeded = patcher.PatchAll();
+        }
+        catch (Exception exception)
+        {
+            patchAllSucceeded = false;
+            try
+            {
+                patcher.UnpatchAll();
+            }
+            catch (Exception rollbackException)
+            {
+                Logger.Error($"Capability rollback failed: {capabilityId}; {rollbackException}");
+            }
+
+            Logger.Error($"Capability installation threw: {capabilityId}; {exception}");
+        }
+
+        CapabilityStatus status = CapabilityStatusEvaluator.EvaluatePatchResult(
+            probeSnapshot,
+            patchAllSucceeded,
+            patcher.RegisteredPatchCount,
+            patcher.AppliedPatchCount);
+        if (!patchAllSucceeded)
+        {
+            LogPatchFailure(patcher);
+        }
+
+        PublishCapabilityStatus(capabilityId, status);
+        return status;
     }
 
     private static void InstallFeedbackCapability()
     {
-        if (!NinjaSlayerFeedbackConfirmPatch.IsAvailable)
-        {
-            Logger.Warn(
-                "NinjaSlayer capability disabled: feedback; " +
-                "NSendFeedbackScreen.SendButtonSelected is unavailable.");
-            return;
-        }
+        InstallCapability<FeedbackPatchGroup>(
+            NinjaSlayerCapabilityIds.Feedback,
+            GameCompatibility.Feedback.GetProbes());
+    }
 
-        NinjaSlayerPatchCapabilities.FeedbackEnabled =
-            InstallCapability<FeedbackPatchGroup>("feedback");
+    private static void DisableByDependency(string capabilityId, string dependencyId)
+    {
+        CapabilityStatus status = CapabilityStatusEvaluator.DisabledByDependency(dependencyId);
+        PublishCapabilityStatus(capabilityId, status);
+    }
+
+    private static void PublishCapabilityStatus(string capabilityId, CapabilityStatus status)
+    {
+        NinjaSlayerCapabilityRegistry.Current.Publish(capabilityId, status);
+        Version? gameVersion = typeof(MegaCrit.Sts2.Core.Nodes.NGame).Assembly.GetName().Version;
+        Version? ritsuVersion = typeof(RitsuLibFramework).Assembly.GetName().Version;
+        string message =
+            $"NinjaSlayer capability {status.State.ToString().ToLowerInvariant()}: {capabilityId}; " +
+            $"patches={status.InstalledPatchCount}; reason={status.Reason}; " +
+            $"game={gameVersion}; RitsuLib={ritsuVersion}.";
+
+        if (status.State == CapabilityState.Enabled)
+        {
+            Logger.Info(message);
+        }
+        else
+        {
+            Logger.Warn(message);
+        }
     }
 
     private static void LogPatchFailure(ModPatcher patcher)

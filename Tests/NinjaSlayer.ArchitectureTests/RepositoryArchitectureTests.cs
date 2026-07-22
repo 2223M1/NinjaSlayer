@@ -49,6 +49,84 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void EveryTypedCapabilityGroupIsInstalledExactlyOnce()
+    {
+        string[] groups = DeclaredClasses()
+            .Where(item => item.Symbol.AllInterfaces.Any(type => type.Name == "IModPatches")
+                || item.Declaration.BaseList?.Types.Any(type =>
+                    type.Type.ToString().EndsWith("IModPatches", StringComparison.Ordinal)) == true)
+            .Select(item => item.Symbol.Name)
+            .ToArray();
+        CompilationUnitSyntax entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root;
+
+        foreach (string group in groups)
+        {
+            int installationCount = entry.DescendantNodes().OfType<InvocationExpressionSyntax>()
+                .Count(invocation => invocation.Expression is GenericNameSyntax
+                {
+                    Identifier.Text: "InstallCapability",
+                    TypeArgumentList.Arguments.Count: 1
+                } generic && generic.TypeArgumentList.Arguments[0].ToString() == group);
+            Assert.Equal(1, installationCount);
+        }
+    }
+
+    [Fact]
+    public void CapabilityIdsAreCentralizedAndUnique()
+    {
+        ClassDeclarationSyntax ids = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "NinjaSlayerCapabilityIds");
+        VariableDeclaratorSyntax[] declarations = ids.Members.OfType<FieldDeclarationSyntax>()
+            .SelectMany(field => field.Declaration.Variables)
+            .Where(variable => variable.Initializer?.Value is LiteralExpressionSyntax literal
+                && literal.IsKind(SyntaxKind.StringLiteralExpression))
+            .ToArray();
+        string[] values = declarations
+            .Select(variable => variable.Initializer?.Value)
+            .OfType<LiteralExpressionSyntax>()
+            .Select(literal => literal.Token.ValueText)
+            .ToArray();
+
+        Assert.NotEmpty(values);
+        Assert.Equal(values.Length, values.Distinct(StringComparer.Ordinal).Count());
+
+        CompilationUnitSyntax entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root;
+        Assert.DoesNotContain(
+            entry.DescendantNodes().OfType<InvocationExpressionSyntax>(),
+            invocation => invocation.Expression is GenericNameSyntax { Identifier.Text: "InstallCapability" }
+                && invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression is LiteralExpressionSyntax);
+
+        string[] installedIds = entry.DescendantNodes().OfType<InvocationExpressionSyntax>()
+            .Where(invocation => invocation.Expression is GenericNameSyntax { Identifier.Text: "InstallCapability" })
+            .Select(invocation => invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression)
+            .OfType<MemberAccessExpressionSyntax>()
+            .Where(member => member.Expression.ToString() == "NinjaSlayerCapabilityIds")
+            .Select(member => member.Name.Identifier.Text)
+            .ToArray();
+        Assert.Equal(
+            declarations.Select(declaration => declaration.Identifier.Text).Order(StringComparer.Ordinal),
+            installedIds.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void RuntimeCapabilityGatesHaveNoMutableSetters()
+    {
+        ClassDeclarationSyntax gates = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "NinjaSlayerPatchCapabilities");
+
+        Assert.All(
+            gates.Members.OfType<PropertyDeclarationSyntax>(),
+            property => Assert.True(
+                property.AccessorList == null
+                || property.AccessorList.Accessors.All(accessor =>
+                    !accessor.IsKind(SyntaxKind.SetAccessorDeclaration)
+                    && !accessor.IsKind(SyntaxKind.InitAccessorDeclaration)),
+                $"Capability gate {property.Identifier.Text} must be get-only."));
+    }
+
+    [Fact]
     public void HarmonyInstallationIsCentralizedInCompatibilityInfrastructure()
     {
         string[] allowed =

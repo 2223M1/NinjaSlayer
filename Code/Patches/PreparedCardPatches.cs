@@ -51,9 +51,6 @@ internal static class PreparedQueueReorderContext
 
 internal static class PreparedDrawCompatibility
 {
-    public static bool CanInstall(out string missingMember) =>
-        GameCompatibility.Prepared.CanInstall(out missingMember);
-
     public static Task ShowShuffleFtue() => GameCompatibility.Prepared.ShowShuffleFtue();
 }
 
