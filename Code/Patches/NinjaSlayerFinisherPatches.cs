@@ -1,3 +1,4 @@
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Combat;
@@ -10,6 +11,7 @@ using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -52,17 +54,43 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(Creature), nameof(Creature.LoseHpInternal), [typeof(decimal), typeof(MegaCrit.Sts2.Core.ValueProps.ValueProp)])];
 
+    [HarmonyPriority(Priority.Last)]
     public static void Prefix(
         Creature __instance,
         ref decimal amount,
-        out int __state)
+        out FinisherProtectionToken? __state)
     {
         NinjaSlayerFinisherCinematic.TryProtectLethalDamage(__instance, ref amount, out __state);
     }
 
-    public static void Postfix(DamageResult __result, int __state)
+    [HarmonyPriority(Priority.First)]
+    public static void Postfix(
+        DamageResult? __result,
+        bool __runOriginal,
+        FinisherProtectionToken? __state)
     {
-        NinjaSlayerFinisherCinematic.RegisterProtectedDamageResult(__result, __state);
+        NinjaSlayerFinisherCinematic.ConfirmProtectedDamageResult(__result, __runOriginal, __state);
+    }
+
+    [HarmonyPriority(Priority.Last)]
+    public static Exception? Finalizer(Exception? __exception, FinisherProtectionToken? __state)
+    {
+        try
+        {
+            NinjaSlayerFinisherCinematic.FinalizeLethalProtection(__state);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                Entry.Logger.Error($"NinjaSlayer finisher lethal-protection Finalizer failed: {ex}");
+            }
+            catch
+            {
+            }
+        }
+
+        return __exception;
     }
 }
 

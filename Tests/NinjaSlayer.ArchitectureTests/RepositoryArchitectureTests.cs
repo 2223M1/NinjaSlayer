@@ -124,6 +124,33 @@ public sealed class RepositoryArchitectureTests
         }
     }
 
+    [Fact]
+    public void LethalProtectionPatchMaintainsTypedFinalizerContract()
+    {
+        ClassDeclarationSyntax patch = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "NinjaSlayerFinisherLethalDamagePatch");
+        MethodDeclarationSyntax prefix = patch.Members.OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Prefix");
+        MethodDeclarationSyntax postfix = patch.Members.OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Postfix");
+        MethodDeclarationSyntax finalizer = patch.Members.OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Finalizer");
+
+        ParameterSyntax prefixState = prefix.ParameterList.Parameters.Single(parameter => parameter.Identifier.Text == "__state");
+        ParameterSyntax postfixState = postfix.ParameterList.Parameters.Single(parameter => parameter.Identifier.Text == "__state");
+        ParameterSyntax finalizerState = finalizer.ParameterList.Parameters.Single(parameter => parameter.Identifier.Text == "__state");
+        Assert.Equal("FinisherProtectionToken?", prefixState.Type?.ToString());
+        Assert.Equal(prefixState.Type?.ToString(), postfixState.Type?.ToString());
+        Assert.Equal(prefixState.Type?.ToString(), finalizerState.Type?.ToString());
+        Assert.Contains(postfix.ParameterList.Parameters,
+            parameter => parameter.Identifier.Text == "__runOriginal" && parameter.Type?.ToString() == "bool");
+        Assert.Equal("Exception?", finalizer.ReturnType.ToString());
+        Assert.Contains(finalizer.DescendantNodes().OfType<CatchClauseSyntax>(), _ => true);
+        Assert.Contains(finalizer.DescendantNodes().OfType<ReturnStatementSyntax>(),
+            statement => statement.Expression?.ToString() == "__exception");
+    }
+
     private static IEnumerable<(ClassDeclarationSyntax Declaration, INamedTypeSymbol Symbol)> DeclaredClasses()
     {
         foreach (SourceDocument source in Sources)

@@ -48,6 +48,58 @@ internal static class GameCompatibility
         private static readonly FieldInfo? HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
         private static readonly FieldInfo? SingleTarget = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
 
+        public static bool CanProtectLethalDamage(out string reason)
+        {
+            if (!FinisherLethalTargetContract.TryValidate(
+                    out MethodInfo? lethalDamage,
+                    out _,
+                    out reason)
+                || lethalDamage == null)
+            {
+                return false;
+            }
+
+            HarmonyLib.Patches? patchInfo = Harmony.GetPatchInfo(lethalDamage);
+            if (patchInfo == null)
+            {
+                reason = string.Empty;
+                return true;
+            }
+
+            HarmonyLib.Patch? unsafeTranspiler = patchInfo.Transpilers.FirstOrDefault(patch => !IsNinjaSlayerPatch(patch));
+            if (unsafeTranspiler != null)
+            {
+                reason = $"foreign transpiler {DescribePatch(unsafeTranspiler)} targets Creature.LoseHpInternal.";
+                return false;
+            }
+
+            HarmonyLib.Patch? skippingPrefix = patchInfo.Prefixes.FirstOrDefault(patch =>
+                !IsNinjaSlayerPatch(patch) && patch.PatchMethod.ReturnType == typeof(bool));
+            if (skippingPrefix != null)
+            {
+                reason = $"foreign bool Prefix {DescribePatch(skippingPrefix)} can skip Creature.LoseHpInternal.";
+                return false;
+            }
+
+            HarmonyLib.Patch? resultReplacement = patchInfo.Prefixes
+                .Concat(patchInfo.Postfixes)
+                .Concat(patchInfo.Finalizers)
+                .FirstOrDefault(patch =>
+                    !IsNinjaSlayerPatch(patch)
+                    && patch.PatchMethod.GetParameters().Any(parameter =>
+                        parameter.Name == "__result"
+                        && parameter.ParameterType.IsByRef
+                        && parameter.ParameterType.GetElementType() == typeof(DamageResult)));
+            if (resultReplacement != null)
+            {
+                reason = $"foreign result-replacement Patch {DescribePatch(resultReplacement)} targets Creature.LoseHpInternal.";
+                return false;
+            }
+
+            reason = string.Empty;
+            return true;
+        }
+
         public static bool TryReadAttackCommand(AttackCommand command, out AttackCommandState state)
         {
             if (DamagePerHit == null || CalculatedDamage == null || HitCount == null || SingleTarget == null)
@@ -63,6 +115,13 @@ internal static class GameCompatibility
                 SingleTarget.GetValue(command) as Creature);
             return true;
         }
+
+        private static bool IsNinjaSlayerPatch(HarmonyLib.Patch patch) =>
+            patch.PatchMethod.DeclaringType?.Assembly == typeof(GameCompatibility).Assembly;
+
+        private static string DescribePatch(HarmonyLib.Patch patch) =>
+            $"owner={patch.owner}, method={patch.PatchMethod.DeclaringType?.FullName}.{patch.PatchMethod.Name}, "
+            + $"priority={patch.priority}, before=[{string.Join(',', patch.before)}], after=[{string.Join(',', patch.after)}]";
     }
 
     internal readonly record struct AttackCommandState(

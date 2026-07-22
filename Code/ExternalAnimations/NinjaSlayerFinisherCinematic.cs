@@ -109,37 +109,75 @@ public static class NinjaSlayerFinisherCinematic
 {
     private const FinisherPresentationMode PresentationMode = FinisherPresentationMode.Enhanced;
 
+    private static readonly object SessionRegistrySync = new();
     private static FinisherSession? _active;
     private static FinisherSession? _pendingAfterCardPlayed;
+    private static ICombatState? _epochCombatState;
+    private static NCombatRoom? _epochRoom;
+    private static long _nextSessionId;
+    private static long _combatEpoch;
+    private static long _registryGeneration;
+    private static int _compatibilityWarningLogged;
     private static readonly AsyncLocal<CommandBypassFrame?> CommandBypass = new();
     private static readonly AsyncLocal<int> DirectDamageBypassDepth = new();
 
-    public static bool IsMovementOwned(Creature creature) => _active?.Owner == creature;
+    public static bool IsMovementOwned(Creature creature) => GetActiveSession()?.Owner == creature;
 
     internal static void TryProtectLethalDamage(
         Creature target,
         ref decimal amount,
-        out int displayDamage)
+        out FinisherProtectionToken? token)
     {
-        displayDamage = 0;
+        token = null;
         if (NinjaSlayerPatchCapabilities.FinisherEnabled)
         {
-            _active?.TryProtectLethalDamage(target, ref amount, out displayDamage);
+            GetActiveSession()?.TryProtectLethalDamage(target, ref amount, out token);
         }
     }
 
-    internal static void RegisterProtectedDamageResult(
-        DamageResult result,
-        int displayDamage)
+    internal static void ConfirmProtectedDamageResult(
+        DamageResult? result,
+        bool originalRan,
+        FinisherProtectionToken? token)
     {
-        _active?.RegisterProtectedDamageResult(result, displayDamage);
+        if (token == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (result != null)
+            {
+                token.Ledger.Confirm(token, result, originalRan);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogErrorSafely($"Could not confirm NinjaSlayer finisher lethal protection: {ex}");
+        }
+        finally
+        {
+            if (token.IsConfirmed
+                && GetActiveSession() is { } session
+                && session.SessionId == token.SessionId
+                && session.CombatEpoch == token.CombatEpoch)
+            {
+                session.NotifyProtectedDamageConfirmed();
+            }
+        }
+    }
+
+    internal static void FinalizeLethalProtection(FinisherProtectionToken? token)
+    {
+        token?.Ledger.FinalizeProtection(token);
     }
 
     internal static bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage)
     {
-        if (_active != null)
+        if (GetActiveSession() is { } session)
         {
-            return _active.TryTakeDamageDisplayOverride(result, out displayDamage);
+            return session.TryTakeDamageDisplayOverride(result, out displayDamage);
         }
 
         displayDamage = 0;
@@ -148,12 +186,12 @@ public static class NinjaSlayerFinisherCinematic
 
     internal static void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
     {
-        _active?.NotifyPrimaryAttackAnimation(creature, triggerName);
+        GetActiveSession()?.NotifyPrimaryAttackAnimation(creature, triggerName);
     }
 
     internal static void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
-        _active?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
+        GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
     }
 
     internal static bool TryInterceptAttackCommand(
@@ -163,7 +201,7 @@ public static class NinjaSlayerFinisherCinematic
     {
         result = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || _active != null
+            || HasRegisteredSession()
             || IsCommandBypassed(command)
             || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
             || spec == null
@@ -192,7 +230,7 @@ public static class NinjaSlayerFinisherCinematic
     {
         result = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || _active != null
+            || HasRegisteredSession()
             || DirectDamageBypassDepth.Value > 0
             || dealer?.Player?.Character is not INinjaSlayerCharacter
             || cardSource?.Type != CardType.Attack
@@ -269,34 +307,37 @@ public static class NinjaSlayerFinisherCinematic
         try
         {
             await session.Begin();
-            _active = session;
-            try
+            AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
+            if (session.RequiresAfterCardPlayed)
             {
-                AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
-                if (session.RequiresAfterCardPlayed)
-                {
-                    TransferToAfterCardPlayed(session);
-                    transferred = true;
-                }
-                else
-                {
-                    await session.CommitDeaths();
-                }
+                TransferToAfterCardPlayed(session);
+                transferred = true;
+            }
+            else
+            {
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Succeeded,
+                    FinisherCompletionMode.PlayPose);
+            }
 
-                return result;
-            }
-            catch
-            {
-                await session.CommitDeferredDeathsWithoutPose();
-                throw;
-            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await session.CompleteAsync(
+                FinisherCompletionStatus.Faulted,
+                FinisherCompletionMode.CommitWithoutPose,
+                ex.Message);
+            throw;
         }
         finally
         {
             if (!transferred)
             {
-                ClearActive(session);
-                await session.DisposeAsync();
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Cancelled,
+                    FinisherCompletionMode.CommitWithoutPose,
+                    "Command wrapper exited before normal completion.");
             }
         }
     }
@@ -317,32 +358,35 @@ public static class NinjaSlayerFinisherCinematic
         try
         {
             await session.Begin();
-            _active = session;
-            try
+            await sequence();
+            if (session.RequiresAfterCardPlayed)
             {
-                await sequence();
-                if (session.RequiresAfterCardPlayed)
-                {
-                    TransferToAfterCardPlayed(session);
-                    transferred = true;
-                }
-                else
-                {
-                    await session.CommitDeaths();
-                }
+                TransferToAfterCardPlayed(session);
+                transferred = true;
             }
-            catch
+            else
             {
-                await session.CommitDeferredDeathsWithoutPose();
-                throw;
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Succeeded,
+                    FinisherCompletionMode.PlayPose);
             }
+        }
+        catch (Exception ex)
+        {
+            await session.CompleteAsync(
+                FinisherCompletionStatus.Faulted,
+                FinisherCompletionMode.CommitWithoutPose,
+                ex.Message);
+            throw;
         }
         finally
         {
             if (!transferred)
             {
-                ClearActive(session);
-                await session.DisposeAsync();
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Cancelled,
+                    FinisherCompletionMode.CommitWithoutPose,
+                    "Sequence wrapper exited before normal completion.");
             }
         }
     }
@@ -372,32 +416,35 @@ public static class NinjaSlayerFinisherCinematic
         try
         {
             await session.Begin();
-            _active = session;
-            try
+            await damageAction();
+            if (session.RequiresAfterCardPlayed)
             {
-                await damageAction();
-                if (session.RequiresAfterCardPlayed)
-                {
-                    TransferToAfterCardPlayed(session);
-                    transferred = true;
-                }
-                else
-                {
-                    await session.CommitDeaths();
-                }
+                TransferToAfterCardPlayed(session);
+                transferred = true;
             }
-            catch
+            else
             {
-                await session.CommitDeferredDeathsWithoutPose();
-                throw;
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Succeeded,
+                    FinisherCompletionMode.PlayPose);
             }
+        }
+        catch (Exception ex)
+        {
+            await session.CompleteAsync(
+                FinisherCompletionStatus.Faulted,
+                FinisherCompletionMode.CommitWithoutPose,
+                ex.Message);
+            throw;
         }
         finally
         {
             if (!transferred)
             {
-                ClearActive(session);
-                await session.DisposeAsync();
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Cancelled,
+                    FinisherCompletionMode.CommitWithoutPose,
+                    "Direct-damage wrapper exited before normal completion.");
             }
         }
     }
@@ -424,13 +471,25 @@ public static class NinjaSlayerFinisherCinematic
     {
         session = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || _active != null
+            || HasRegisteredSession()
             || IsExcludedAttackCard(spec.Card)
             || spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room)
         {
+            return false;
+        }
+
+        if (!GameCompatibility.Finisher.CanProtectLethalDamage(out string compatibilityReason))
+        {
+            if (Interlocked.Exchange(ref _compatibilityWarningLogged, 1) == 0)
+            {
+                LogWarningSafely(
+                    $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason} "
+                    + $"supportedGame={GameCompatibility.SupportedGameVersion}.");
+            }
+
             return false;
         }
 
@@ -456,17 +515,25 @@ public static class NinjaSlayerFinisherCinematic
             return false;
         }
 
-        session = new FinisherSession(
-            owner,
-            ownerNode,
-            focusNode,
-            enemies,
-            camera!,
-            spec.CardPlay,
-            forecast.RequiresAfterCardPlayed,
-            forecast.ResolvedHits);
-        Entry.Logger.Info(
-            $"NinjaSlayer finisher session started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Targeting}, hits={forecast.ResolvedHits}.");
+        if (!TryRegisterSession(
+                owner,
+                ownerNode,
+                focusNode,
+                enemies,
+                camera!,
+                spec.CardPlay,
+                forecast.RequiresAfterCardPlayed,
+                forecast.ResolvedHits,
+                combatState,
+                room,
+                out session))
+        {
+            camera!.Dispose();
+            return false;
+        }
+
+        LogInfoSafely(
+            $"NinjaSlayer finisher session {session!.SessionId} started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Targeting}, hits={forecast.ResolvedHits}.");
         return true;
     }
 
@@ -535,12 +602,17 @@ public static class NinjaSlayerFinisherCinematic
 
     private static void TransferToAfterCardPlayed(FinisherSession session)
     {
-        if (_pendingAfterCardPlayed != null)
+        lock (SessionRegistrySync)
         {
-            throw new InvalidOperationException("A NinjaSlayer finisher is already awaiting AfterCardPlayed.");
-        }
+            if (!ReferenceEquals(_active, session)
+                || _pendingAfterCardPlayed != null
+                || !session.TryAwaitPostCard())
+            {
+                throw new InvalidOperationException("A NinjaSlayer finisher is already awaiting AfterCardPlayed.");
+            }
 
-        _pendingAfterCardPlayed = session;
+            _pendingAfterCardPlayed = session;
+        }
     }
 
     private static async Task CompleteAfterCardPlayed(Task original, CardPlay cardPlay)
@@ -555,7 +627,7 @@ public static class NinjaSlayerFinisherCinematic
             throw;
         }
 
-        if (_pendingAfterCardPlayed?.CardPlay == cardPlay)
+        if (GetPendingSession(cardPlay) != null)
         {
             await CleanupPending(cardPlay.Card, playPose: true);
         }
@@ -569,7 +641,7 @@ public static class NinjaSlayerFinisherCinematic
         }
         finally
         {
-            if (_pendingAfterCardPlayed?.CardPlay.Card == card)
+            if (GetPendingSession(card) != null)
             {
                 await CleanupPending(card, playPose: false);
             }
@@ -578,41 +650,189 @@ public static class NinjaSlayerFinisherCinematic
 
     private static async Task CleanupPending(CardModel card, bool playPose)
     {
-        FinisherSession? session = _pendingAfterCardPlayed;
-        if (session == null || session.CardPlay.Card != card)
+        FinisherSession? session = GetPendingSession(card);
+        if (session == null)
         {
             return;
         }
 
-        _pendingAfterCardPlayed = null;
-        try
+        await session.CompleteAsync(
+            playPose ? FinisherCompletionStatus.Succeeded : FinisherCompletionStatus.Degraded,
+            playPose ? FinisherCompletionMode.PlayPose : FinisherCompletionMode.CommitWithoutPose,
+            playPose ? null : "Card resolution ended before AfterCardPlayed completed.");
+    }
+
+    private static FinisherSession? GetActiveSession()
+    {
+        lock (SessionRegistrySync)
         {
-            if (playPose)
-            {
-                await session.CommitDeaths();
-            }
-            else
-            {
-                await session.CommitDeferredDeathsWithoutPose();
-            }
-        }
-        finally
-        {
-            ClearActive(session);
-            await session.DisposeAsync();
+            return _active;
         }
     }
 
-    private static void ClearActive(FinisherSession session)
+    private static bool HasRegisteredSession()
     {
-        if (ReferenceEquals(_active, session))
+        lock (SessionRegistrySync)
         {
-            _active = null;
+            return _active != null || _pendingAfterCardPlayed != null;
+        }
+    }
+
+    private static FinisherSession? GetPendingSession(CardPlay cardPlay)
+    {
+        lock (SessionRegistrySync)
+        {
+            return _pendingAfterCardPlayed?.CardPlay == cardPlay ? _pendingAfterCardPlayed : null;
+        }
+    }
+
+    private static FinisherSession? GetPendingSession(CardModel card)
+    {
+        lock (SessionRegistrySync)
+        {
+            return _pendingAfterCardPlayed?.CardPlay.Card == card ? _pendingAfterCardPlayed : null;
+        }
+    }
+
+    private static bool TryRegisterSession(
+        Creature owner,
+        NCreature ownerNode,
+        NCreature focusNode,
+        IEnumerable<Creature> victims,
+        CombatCinematicCameraLease camera,
+        CardPlay cardPlay,
+        bool requiresAfterCardPlayed,
+        int resolvedHits,
+        ICombatState combatState,
+        NCombatRoom room,
+        out FinisherSession? session)
+    {
+        lock (SessionRegistrySync)
+        {
+            if (_active != null || _pendingAfterCardPlayed != null)
+            {
+                session = null;
+                return false;
+            }
+
+            if (!ReferenceEquals(_epochCombatState, combatState) || !ReferenceEquals(_epochRoom, room))
+            {
+                _epochCombatState = combatState;
+                _epochRoom = room;
+                _combatEpoch++;
+            }
+
+            long sessionId = ++_nextSessionId;
+            long registryGeneration = ++_registryGeneration;
+            try
+            {
+                session = new FinisherSession(
+                    sessionId,
+                    _combatEpoch,
+                    registryGeneration,
+                    combatState,
+                    room,
+                    owner,
+                    ownerNode,
+                    focusNode,
+                    victims,
+                    camera,
+                    cardPlay,
+                    requiresAfterCardPlayed,
+                    resolvedHits);
+            }
+            catch (Exception ex)
+            {
+                session = null;
+                LogWarningSafely($"Could not create NinjaSlayer finisher session {sessionId}: {ex}");
+                return false;
+            }
+
+            _active = session;
+            return true;
+        }
+    }
+
+    private static bool IsSessionCurrent(FinisherSession session)
+    {
+        lock (SessionRegistrySync)
+        {
+            return session.RegistryGeneration == _registryGeneration
+                && (ReferenceEquals(_active, session) || ReferenceEquals(_pendingAfterCardPlayed, session));
+        }
+    }
+
+    private static void MarkSessionCompleting(FinisherSession session)
+    {
+        lock (SessionRegistrySync)
+        {
+            if (ReferenceEquals(_pendingAfterCardPlayed, session))
+            {
+                _pendingAfterCardPlayed = null;
+            }
+        }
+    }
+
+    private static void UnregisterSession(FinisherSession session)
+    {
+        lock (SessionRegistrySync)
+        {
+            bool changed = false;
+            if (ReferenceEquals(_active, session))
+            {
+                _active = null;
+                changed = true;
+            }
+
+            if (ReferenceEquals(_pendingAfterCardPlayed, session))
+            {
+                _pendingAfterCardPlayed = null;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                _registryGeneration++;
+            }
+        }
+    }
+
+    private static void LogErrorSafely(string message)
+    {
+        try
+        {
+            Entry.Logger.Error(message);
+        }
+        catch
+        {
+        }
+    }
+
+    private static void LogInfoSafely(string message)
+    {
+        try
+        {
+            Entry.Logger.Info(message);
+        }
+        catch
+        {
+        }
+    }
+
+    private static void LogWarningSafely(string message)
+    {
+        try
+        {
+            Entry.Logger.Warn(message);
+        }
+        catch
+        {
         }
     }
 
     private sealed class FinisherSession : IAsyncDisposable
     {
+        private readonly ICombatState _combatState;
         private readonly NCreature _ownerNode;
         private readonly NCreature _focusNode;
         private readonly FinisherDamageLedger _ledger;
@@ -622,6 +842,7 @@ public static class NinjaSlayerFinisherCinematic
         private readonly Vector2 _ownerStartPosition;
         private readonly HashSet<ulong> _vfxBaselineChildIds;
         private readonly bool _usesJumpDeathSquash;
+        private readonly FinisherCompletionProtocol _completionProtocol;
         private FinisherCameraFrame _cameraFrame = new([], false);
         private readonly CinematicSessionLifetime _impactCancellation = new();
         private readonly CinematicSessionLifetime _watchdogCancellation = new();
@@ -642,12 +863,18 @@ public static class NinjaSlayerFinisherCinematic
         private bool _enhancedImpactScheduled;
         private bool _enhancedImpactFailed;
         private bool _committing;
+        private bool _deathCommitStarted;
         private bool _disposed;
         private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
         private FinisherCardVisualSuppression? _cardVisualSuppression;
         private FinisherImpactPresentation? _presentation;
 
         public FinisherSession(
+            long sessionId,
+            long combatEpoch,
+            long registryGeneration,
+            ICombatState combatState,
+            NCombatRoom room,
             Creature owner,
             NCreature ownerNode,
             NCreature focusNode,
@@ -657,16 +884,27 @@ public static class NinjaSlayerFinisherCinematic
             bool requiresAfterCardPlayed,
             int resolvedHits)
         {
+            SessionId = sessionId;
+            CombatEpoch = combatEpoch;
+            RegistryGeneration = registryGeneration;
+            _combatState = combatState;
+            _room = room;
             Owner = owner;
             _ownerNode = ownerNode;
             _focusNode = focusNode;
-            _ledger = new FinisherDamageLedger(victims);
             _camera = camera;
-            _room = NCombatRoom.Instance!;
+            _completionProtocol = new FinisherCompletionProtocol(sessionId);
+            _ledger = new FinisherDamageLedger(
+                victims,
+                sessionId,
+                combatEpoch,
+                combatState,
+                IsCurrentCombatContext);
             _ownerStartPosition = ownerNode.Position;
             _vfxBaselineChildIds = _room.CombatVfxContainer.GetChildren()
                 .Select(child => child.GetInstanceId())
                 .ToHashSet();
+            _room.TreeExiting += OnRoomTreeExiting;
             _lastFrameMsec = Time.GetTicksMsec();
             _usesJumpDeathSquash = JumpAnimation.IsActive(owner);
             CardPlay = cardPlay;
@@ -674,13 +912,23 @@ public static class NinjaSlayerFinisherCinematic
             ResolvedHits = Math.Max(1, resolvedHits);
         }
 
+        public long SessionId { get; }
+        public long CombatEpoch { get; }
+        public long RegistryGeneration { get; }
         public Creature Owner { get; }
         public CardPlay CardPlay { get; }
         public bool RequiresAfterCardPlayed { get; }
         public int ResolvedHits { get; }
+        public Task<FinisherCompletionResult> Completion => _completionProtocol.Completion;
 
         public Task Begin()
         {
+            if (!_completionProtocol.TryStart())
+            {
+                throw new InvalidOperationException(
+                    $"Finisher session {SessionId} cannot begin from phase {_completionProtocol.Phase}.");
+            }
+
             _ = RunWatchdog();
             NinjaSlayerFacingState.SyncForTarget(Owner, _focusNode.Entity);
             if (PresentationMode == FinisherPresentationMode.Enhanced)
@@ -694,7 +942,7 @@ public static class NinjaSlayerFinisherCinematic
                 catch (Exception ex)
                 {
                     _enhancedImpactFailed = true;
-                    Entry.Logger.Warn($"Could not create enhanced finisher presentation; legacy presentation will be used: {ex}");
+                    LogWarningSafely($"Could not create enhanced finisher presentation; legacy presentation will be used: {ex}");
                 }
             }
 
@@ -727,9 +975,13 @@ public static class NinjaSlayerFinisherCinematic
             return Task.CompletedTask;
         }
 
+        public bool TryAwaitPostCard() => _completionProtocol.TryAwaitPostCard();
+
         public void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
         {
-            if (ResolvedHits <= 1
+            if (_disposed
+                || _committing
+                || ResolvedHits <= 1
                 || creature != Owner
                 || !IsPrimaryAttackTrigger(triggerName))
             {
@@ -745,7 +997,9 @@ public static class NinjaSlayerFinisherCinematic
 
         public void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
         {
-            if (dealer != Owner
+            if (_disposed
+                || _committing
+                || dealer != Owner
                 || cardSource != CardPlay.Card
                 || cardPlay != CardPlay)
             {
@@ -766,45 +1020,176 @@ public static class NinjaSlayerFinisherCinematic
             TryScheduleEnhancedImpact();
         }
 
-        public bool TryProtectLethalDamage(Creature target, ref decimal amount, out int displayDamage)
+        public bool TryProtectLethalDamage(
+            Creature target,
+            ref decimal amount,
+            out FinisherProtectionToken? token)
         {
-            displayDamage = 0;
-            if (_disposed || !_ledger.TryProtect(target, _committing, ref amount, out displayDamage))
+            token = null;
+            if (_disposed
+                || !IsCurrentCombatContext()
+                || !_ledger.TryProtect(target, _committing, ref amount, out token))
             {
                 return false;
             }
 
-            TryScheduleEnhancedImpact();
             return true;
         }
 
-        public void RegisterProtectedDamageResult(DamageResult result, int displayDamage) =>
-            _ledger.RegisterProtectedDamageResult(result, displayDamage);
+        public void NotifyProtectedDamageConfirmed()
+        {
+            if (!_disposed && !_committing)
+            {
+                TryScheduleEnhancedImpact();
+            }
+        }
 
         public bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage) =>
             _ledger.TryTakeDamageDisplayOverride(result, out displayDamage);
 
-        public async Task CommitDeaths()
+        public async Task<FinisherCompletionResult> CompleteAsync(
+            FinisherCompletionStatus requestedStatus,
+            FinisherCompletionMode requestedMode,
+            string? diagnostic = null)
+        {
+            if (!_completionProtocol.TryBeginCompletion())
+            {
+                return await Completion;
+            }
+
+            MarkSessionCompleting(this);
+            FinisherCompletionStatus status = requestedStatus;
+            FinisherCompletionMode mode = requestedMode;
+            string? finalDiagnostic = diagnostic;
+            bool currentCombat = IsCurrentCombatContext();
+            if (!currentCombat)
+            {
+                status = FinisherCompletionStatus.Cancelled;
+                mode = FinisherCompletionMode.ReleaseOnly;
+                finalDiagnostic = AppendDiagnostic(finalDiagnostic, "Combat or room generation changed before completion.");
+            }
+
+            try
+            {
+                if (mode != FinisherCompletionMode.ReleaseOnly)
+                {
+                    if (!_completionProtocol.TryTransition(FinisherSessionPhase.Committing))
+                    {
+                        throw new InvalidOperationException(
+                            $"Finisher session {SessionId} cannot commit from phase {_completionProtocol.Phase}.");
+                    }
+
+                    if (mode == FinisherCompletionMode.PlayPose)
+                    {
+                        bool posePlayed = await CommitDeathsWithPoseCore();
+                        if (!posePlayed)
+                        {
+                            status = FinisherCompletionStatus.Degraded;
+                            mode = FinisherCompletionMode.CommitWithoutPose;
+                            finalDiagnostic = AppendDiagnostic(
+                                finalDiagnostic,
+                                "Runtime damage did not satisfy the forecast or target visuals were unavailable.");
+                        }
+                    }
+                    else
+                    {
+                        await CommitDeferredDeathsWithoutPoseCore();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                status = FinisherCompletionStatus.Faulted;
+                finalDiagnostic = AppendDiagnostic(finalDiagnostic, ex.Message);
+                LogErrorSafely($"NinjaSlayer finisher session {SessionId} completion failed: {ex}");
+                if (IsCurrentCombatContext() && mode != FinisherCompletionMode.ReleaseOnly)
+                {
+                    try
+                    {
+                        mode = FinisherCompletionMode.CommitWithoutPose;
+                        await CommitConfirmedDeathsEmergencyCore();
+                    }
+                    catch (Exception fallbackEx)
+                    {
+                        finalDiagnostic = AppendDiagnostic(finalDiagnostic, $"Fallback commit failed: {fallbackEx.Message}");
+                        LogErrorSafely(
+                            $"NinjaSlayer finisher session {SessionId} fallback death commit failed: {fallbackEx}");
+                    }
+                }
+            }
+            finally
+            {
+                _completionProtocol.TryTransition(FinisherSessionPhase.Restoring);
+                bool mayRestoreCurrentCombat = mode != FinisherCompletionMode.ReleaseOnly
+                    && IsCurrentCombatContext();
+                if (!mayRestoreCurrentCombat)
+                {
+                    mode = FinisherCompletionMode.ReleaseOnly;
+                    if (status != FinisherCompletionStatus.Faulted)
+                    {
+                        status = FinisherCompletionStatus.Cancelled;
+                    }
+                }
+
+                try
+                {
+                    await RestoreResourcesCore(mayRestoreCurrentCombat);
+                }
+                catch (Exception ex)
+                {
+                    status = FinisherCompletionStatus.Faulted;
+                    finalDiagnostic = AppendDiagnostic(finalDiagnostic, $"Resource restoration failed: {ex.Message}");
+                    LogErrorSafely($"NinjaSlayer finisher session {SessionId} restoration failed: {ex}");
+                }
+                finally
+                {
+                    UnregisterSession(this);
+                    _completionProtocol.TryTransition(FinisherSessionPhase.Finished);
+                    _completionProtocol.Finish(new FinisherCompletionResult(
+                        SessionId,
+                        status,
+                        mode,
+                        finalDiagnostic));
+                }
+            }
+
+            return await Completion;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            bool currentCombat = IsCurrentCombatContext();
+            await CompleteAsync(
+                FinisherCompletionStatus.Cancelled,
+                currentCombat ? FinisherCompletionMode.CommitWithoutPose : FinisherCompletionMode.ReleaseOnly,
+                "Finisher session was disposed before normal completion.");
+        }
+
+        private async Task<bool> CommitDeathsWithPoseCore()
         {
             _committing = true;
+            _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
             bool guaranteedClearMatchedRuntime = _ledger.GuaranteedClearMatchedRuntime();
             List<Creature> toKill = _ledger.LivingDeferredDeaths();
             if (!guaranteedClearMatchedRuntime)
             {
-                Entry.Logger.Warn("Finisher forecast did not match runtime damage; committed deferred lethal damage without the finisher pose.");
-                if (toKill.Count > 0)
-                {
-                    RestoreDeathSquashes();
-                    await CreatureCmd.Kill(toKill);
-                }
-                return;
+                LogWarningSafely(
+                    $"Finisher session {SessionId} forecast did not match runtime damage; committing confirmed deaths without the pose.");
+                await KillDeferredDeathsOnce(toKill);
+                return false;
             }
 
             List<NCreature> targetNodes = toKill
                 .Select(creature => _room.GetCreatureNode(creature))
-                .Where(node => node != null)
+                .Where(node => node != null && GodotObject.IsInstanceValid(node))
                 .Cast<NCreature>()
                 .ToList();
+            if (toKill.Count > 0 && targetNodes.Count == 0)
+            {
+                await KillDeferredDeathsOnce(toKill);
+                return false;
+            }
+
             if (targetNodes.Count > 0)
             {
                 if (PresentationMode == FinisherPresentationMode.Enhanced)
@@ -828,28 +1213,79 @@ public static class NinjaSlayerFinisherCinematic
                 }
             }
 
-            if (toKill.Count > 0)
+            if (await KillDeferredDeathsOnce(toKill))
             {
-                RestoreDeathSquashes();
-                await CreatureCmd.Kill(toKill);
                 await WaitSeconds(FinisherSettleSeconds);
             }
+
+            return true;
         }
 
-        public async Task CommitDeferredDeathsWithoutPose()
+        private async Task CommitDeferredDeathsWithoutPoseCore()
         {
             _committing = true;
             _impactCancellation.Cancel();
             await _enhancedImpactTask;
-            List<Creature> toKill = _ledger.LivingDeferredDeaths();
-            if (toKill.Count > 0)
-            {
-                RestoreDeathSquashes();
-                await CreatureCmd.Kill(toKill);
-            }
+            _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
+            await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths());
         }
 
-        public async ValueTask DisposeAsync()
+        private async Task CommitConfirmedDeathsEmergencyCore()
+        {
+            _committing = true;
+            try
+            {
+                _impactCancellation.Cancel();
+            }
+            catch (Exception ex)
+            {
+                LogWarningSafely(
+                    $"Finisher session {SessionId} could not cancel its impact during fallback commit: {ex}");
+            }
+
+            try
+            {
+                _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
+            }
+            catch (Exception ex)
+            {
+                LogWarningSafely(
+                    $"Finisher session {SessionId} could not release every pending protection during fallback commit: {ex}");
+            }
+
+            await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths());
+        }
+
+        private async Task<bool> KillDeferredDeathsOnce(IEnumerable<Creature> deferredDeaths)
+        {
+            if (_deathCommitStarted || !IsCurrentCombatContext())
+            {
+                return false;
+            }
+
+            List<Creature> toKill = deferredDeaths.Where(creature => creature.IsAlive).Distinct().ToList();
+            if (toKill.Count == 0)
+            {
+                _deathCommitStarted = true;
+                return false;
+            }
+
+            try
+            {
+                RestoreDeathSquashes();
+            }
+            catch (Exception ex)
+            {
+                LogWarningSafely(
+                    $"Finisher session {SessionId} could not restore a death squash before committing deaths: {ex}");
+            }
+
+            _deathCommitStarted = true;
+            await CreatureCmd.Kill(toKill);
+            return true;
+        }
+
+        private async Task RestoreResourcesCore(bool mayRestoreCurrentCombat)
         {
             if (_disposed)
             {
@@ -857,36 +1293,41 @@ public static class NinjaSlayerFinisherCinematic
             }
 
             _disposed = true;
-            try
+            var cleanup = new FinisherCleanupAccumulator();
+            cleanup.Capture(_watchdogCancellation.Cancel);
+            cleanup.Capture(_impactCancellation.Cancel);
+            await cleanup.CaptureAsync(() => _enhancedImpactTask);
+            _cameraTransitionGeneration++;
+            _backdropTransitionGeneration++;
+            await cleanup.CaptureAsync(() => _cameraTransitionTask);
+            await cleanup.CaptureAsync(() => _backdropTransitionTask);
+            if (mayRestoreCurrentCombat)
             {
-                _watchdogCancellation.Cancel();
-                _impactCancellation.Cancel();
-                await _enhancedImpactTask;
-                _cameraTransitionGeneration++;
-                _backdropTransitionGeneration++;
-                await _cameraTransitionTask;
-                await _backdropTransitionTask;
-                await ReturnToBaseline();
-                await _cameraShakePumpTask;
+                await cleanup.CaptureAsync(ReturnToBaseline);
             }
-            finally
-            {
-                if (GodotObject.IsInstanceValid(_ownerNode))
-                {
-                    _ownerNode.Position = _ownerStartPosition;
-                }
+            await cleanup.CaptureAsync(() => _cameraShakePumpTask);
 
-                _hoverTipSuppression?.Dispose();
-                _hoverTipSuppression = null;
-                _cardVisualSuppression?.Dispose();
-                _cardVisualSuppression = null;
-                _ledger.Clear();
-                RestoreDeathSquashes();
-                DisposeEnhancedPresentation();
-                _impactCancellation.Dispose();
-                _watchdogCancellation.Dispose();
-                _camera.Dispose();
+            if (mayRestoreCurrentCombat && GodotObject.IsInstanceValid(_ownerNode))
+            {
+                cleanup.Capture(() => _ownerNode.Position = _ownerStartPosition);
             }
+
+            cleanup.Capture(() => _hoverTipSuppression?.Dispose());
+            _hoverTipSuppression = null;
+            cleanup.Capture(() => _cardVisualSuppression?.Dispose());
+            _cardVisualSuppression = null;
+            cleanup.Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
+            cleanup.Capture(RestoreDeathSquashes);
+            cleanup.Capture(DisposeEnhancedPresentation);
+            if (GodotObject.IsInstanceValid(_room))
+            {
+                cleanup.Capture(() => _room.TreeExiting -= OnRoomTreeExiting);
+            }
+            cleanup.Capture(_impactCancellation.Dispose);
+            cleanup.Capture(_watchdogCancellation.Dispose);
+            cleanup.Capture(_camera.Dispose);
+            cleanup.ThrowIfAny(
+                $"Finisher session {SessionId} encountered {cleanup.FailureCount} resource-restoration failure(s).");
         }
 
         private async Task RunWatchdog()
@@ -897,6 +1338,15 @@ public static class NinjaSlayerFinisherCinematic
                 while (elapsed < WatchdogSeconds)
                 {
                     _watchdogCancellation.Token.ThrowIfCancellationRequested();
+                    if (!IsCurrentCombatContext())
+                    {
+                        await CompleteAsync(
+                            FinisherCompletionStatus.Cancelled,
+                            FinisherCompletionMode.ReleaseOnly,
+                            "Combat room changed while the finisher was active.");
+                        return;
+                    }
+
                     elapsed += await NextFrame();
                 }
 
@@ -905,31 +1355,64 @@ public static class NinjaSlayerFinisherCinematic
                     return;
                 }
 
-                Entry.Logger.Error(
-                    "NinjaSlayer finisher exceeded 90 active seconds; committing deferred deaths and restoring state.");
-                try
-                {
-                    await CommitDeferredDeathsWithoutPose();
-                }
-                finally
-                {
-                    if (ReferenceEquals(_pendingAfterCardPlayed, this))
-                    {
-                        _pendingAfterCardPlayed = null;
-                    }
-
-                    ClearActive(this);
-                    await DisposeAsync();
-                }
+                LogErrorSafely(
+                    $"NinjaSlayer finisher session {SessionId} exceeded 90 active seconds; committing confirmed deaths and restoring state.");
+                await CompleteAsync(
+                    FinisherCompletionStatus.Degraded,
+                    FinisherCompletionMode.CommitWithoutPose,
+                    "Finisher watchdog expired.");
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (_watchdogCancellation.IsCancellationRequested || _disposed)
             {
+            }
+            catch (OperationCanceledException ex)
+            {
+                await CompleteAsync(
+                    FinisherCompletionStatus.Cancelled,
+                    FinisherCompletionMode.ReleaseOnly,
+                    ex.Message);
             }
             catch (Exception ex)
             {
-                Entry.Logger.Error($"NinjaSlayer finisher watchdog failed: {ex}");
+                LogErrorSafely($"NinjaSlayer finisher session {SessionId} watchdog failed: {ex}");
+                await CompleteAsync(
+                    FinisherCompletionStatus.Faulted,
+                    IsCurrentCombatContext()
+                        ? FinisherCompletionMode.CommitWithoutPose
+                        : FinisherCompletionMode.ReleaseOnly,
+                    ex.Message);
             }
         }
+
+        private void OnRoomTreeExiting()
+        {
+            _ = CompleteAfterRoomExit();
+        }
+
+        private async Task CompleteAfterRoomExit()
+        {
+            try
+            {
+                await CompleteAsync(
+                    FinisherCompletionStatus.Cancelled,
+                    FinisherCompletionMode.ReleaseOnly,
+                    "Combat room exited the scene tree.");
+            }
+            catch (Exception ex)
+            {
+                LogErrorSafely($"NinjaSlayer finisher session {SessionId} room-exit cleanup failed: {ex}");
+            }
+        }
+
+        private bool IsCurrentCombatContext() =>
+            IsSessionCurrent(this)
+            && ReferenceEquals(Owner.CombatState, _combatState)
+            && ReferenceEquals(NCombatRoom.Instance, _room)
+            && GodotObject.IsInstanceValid(_room)
+            && _room.IsInsideTree();
+
+        private static string AppendDiagnostic(string? current, string next) =>
+            string.IsNullOrWhiteSpace(current) ? next : $"{current} {next}";
 
         private void TryScheduleEnhancedImpact()
         {
@@ -981,7 +1464,7 @@ public static class NinjaSlayerFinisherCinematic
             {
                 _enhancedImpactFailed = true;
                 DisposeEnhancedPresentation();
-                Entry.Logger.Warn($"Enhanced finisher impact failed; legacy presentation will be used: {ex}");
+                LogWarningSafely($"Enhanced finisher impact failed; legacy presentation will be used: {ex}");
             }
         }
 
@@ -1250,7 +1733,7 @@ public static class NinjaSlayerFinisherCinematic
             {
                 _enhancedImpactFailed = true;
                 DisposeEnhancedPresentation();
-                Entry.Logger.Warn($"Finisher backdrop transition failed; legacy presentation will be used: {ex}");
+                LogWarningSafely($"Finisher backdrop transition failed; legacy presentation will be used: {ex}");
             }
         }
 
@@ -1293,7 +1776,7 @@ public static class NinjaSlayerFinisherCinematic
             }
             catch (Exception ex)
             {
-                Entry.Logger.Warn($"Finisher camera transition failed: {ex}");
+                LogWarningSafely($"Finisher camera transition failed: {ex}");
             }
         }
 
@@ -1606,7 +2089,7 @@ public static class NinjaSlayerFinisherCinematic
             }
             catch (Exception ex)
             {
-                Entry.Logger.Warn($"Finisher camera shake pump stopped unexpectedly: {ex}");
+                LogWarningSafely($"Finisher camera shake pump stopped unexpectedly: {ex}");
             }
         }
 
