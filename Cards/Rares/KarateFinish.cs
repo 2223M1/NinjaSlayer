@@ -13,17 +13,14 @@ namespace NinjaSlayer.Cards;
 
 public sealed class KarateFinish : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KarateFinish), 2, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("Multiplier", 6)
     ];
 
-    public KarateFinish() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public KarateFinish() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

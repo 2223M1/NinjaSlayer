@@ -12,16 +12,12 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ZazenDrink : ModCardTemplate, IDrawCastSkillCard
+public sealed class ZazenDrink : NinjaSlayerStandaloneCardTemplate, IDrawCastSkillCard
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Ancient;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ZazenDrink), 0, CardType.Skill, CardRarity.Ancient, TargetType.Self, true, "ChadoCard");
+
 
     // ponytail: reuse tea art until Zazen Drink gets dedicated card art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -35,7 +31,7 @@ public sealed class ZazenDrink : ModCardTemplate, IDrawCastSkillCard
         HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)
     ];
 
-    public ZazenDrink() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ZazenDrink() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

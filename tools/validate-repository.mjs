@@ -185,6 +185,73 @@ for (const capability of [
   }
 }
 
+const concreteCardSources = filesUnder(join(root, 'Cards'))
+  .filter((path) => path.endsWith('.cs') && !path.includes(`${join('Cards', 'Base')}`))
+  .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
+  .filter(({ source }) => /public\s+sealed\s+class\s+\w+/.test(source));
+const cardSpecPattern = /private\s+static\s+readonly\s+NinjaSlayerCardSpec\s+CardSpec\s*=\s*new\s*\(\s*nameof\((\w+)\)/g;
+let cardSpecCount = 0;
+for (const { path, source } of concreteCardSources) {
+  const className = /public\s+sealed\s+class\s+(\w+)/.exec(source)?.[1];
+  if (!className) continue;
+
+  const specs = [...source.matchAll(cardSpecPattern)];
+  cardSpecCount += specs.length;
+  if (specs.length !== 1) {
+    errors.push(`${relative(root, path)} must declare exactly one NinjaSlayerCardSpec (found ${specs.length})`);
+    continue;
+  }
+  if (specs[0][1] !== className) {
+    errors.push(`${relative(root, path)} CardSpec id ${specs[0][1]} does not match class ${className}`);
+  }
+  const constructorPattern = new RegExp(`public\\s+${className}\\(\\)\\s*:\\s*base\\(CardSpec\\)`);
+  if (!constructorPattern.test(source)) {
+    errors.push(`${relative(root, path)} constructor must delegate to base(CardSpec)`);
+  }
+}
+if (cardSpecCount !== 93) {
+  errors.push(`Expected 93 concrete NinjaSlayerCardSpec declarations, found ${cardSpecCount}`);
+}
+for (const { path, source } of concreteCardSources) {
+  if (/public\s+\w+\(\)\s*:\s*base\((?!CardSpec\b)[^)]*,[^)]*,[^)]*,[^)]*,[^)]*\)/s.test(source)) {
+    errors.push(`${relative(root, path)} still uses the legacy five-argument card constructor`);
+  }
+}
+
+const placeholderInventoryPath = join(root, 'Docs', 'placeholder-assets.json');
+const placeholderInventory = readJson(placeholderInventoryPath);
+if (placeholderInventory) {
+  const items = Array.isArray(placeholderInventory.items) ? placeholderInventory.items : [];
+  const ids = new Set();
+  const sources = new Set();
+  for (const item of items) {
+    if (typeof item.id !== 'string' || ids.has(item.id)) {
+      errors.push(`Docs/placeholder-assets.json contains a missing or duplicate id: ${item.id ?? '<missing>'}`);
+    }
+    ids.add(item.id);
+    if (typeof item.source !== 'string' || !existsSync(join(root, ...item.source.split('/')))) {
+      errors.push(`Placeholder ${item.id ?? '<missing>'} references missing source ${item.source ?? '<missing>'}`);
+    }
+    sources.add(item.source);
+    for (const field of ['currentAsset', 'targetAsset']) {
+      if (typeof item[field] !== 'string' || item[field].length === 0) {
+        errors.push(`Placeholder ${item.id ?? '<missing>'} must define ${field}`);
+      }
+    }
+    if (typeof item.releaseBlocking !== 'boolean') {
+      errors.push(`Placeholder ${item.id ?? '<missing>'} must define boolean releaseBlocking`);
+    }
+  }
+
+  const visualPonytailSources = filesUnder(root)
+    .filter((path) => /\.(cs|md)$/.test(path))
+    .filter((path) => /ponytail:.*(?:art|icon|stand-in)/i.test(readFileSync(path, 'utf8')))
+    .map((path) => relative(root, path).replaceAll('\\', '/'));
+  for (const source of visualPonytailSources) {
+    if (!sources.has(source)) errors.push(`Placeholder inventory is missing visual marker in ${source}`);
+  }
+}
+
 const cardLocalization = readJson(join(root, 'NinjaSlayer', 'localization', 'zhs', 'cards.json')) ?? {};
 const catalog = readFileSync(join(root, 'Docs', 'card-catalog.md'), 'utf8');
 for (const [key, title] of Object.entries(cardLocalization)) {

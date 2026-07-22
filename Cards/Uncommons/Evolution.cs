@@ -12,19 +12,15 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Evolution : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Evolution), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
 
-    private const int energyCost = 1;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(3, ValueProp.Move)
     ];
 
-    public Evolution() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public Evolution() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

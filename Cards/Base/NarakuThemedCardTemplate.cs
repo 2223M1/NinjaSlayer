@@ -8,13 +8,8 @@ namespace NinjaSlayer.Cards;
 
 public abstract class NarakuThemedCardTemplate : NinjaSlayerCardTemplate
 {
-    protected NarakuThemedCardTemplate(
-        int energyCost,
-        CardType type,
-        CardRarity rarity,
-        TargetType targetType,
-        bool shouldShowInCardLibrary)
-        : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
+    protected NarakuThemedCardTemplate(NinjaSlayerCardSpec cardSpec)
+        : base(cardSpec)
     {
     }
 

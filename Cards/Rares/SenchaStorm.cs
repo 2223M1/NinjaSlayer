@@ -13,14 +13,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SenchaStorm : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.AllEnemies;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SenchaStorm), 2, CardType.Attack, CardRarity.Rare, TargetType.AllEnemies, true, "Meditation");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Meditation");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(8),
@@ -28,7 +24,7 @@ public sealed class SenchaStorm : NinjaSlayerCardTemplate
         new CalculatedDamageVar(ValueProp.Move).WithMultiplier(NinjaSlayerActions.ChadoInHandMultiplier)
     ];
 
-    public SenchaStorm() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public SenchaStorm() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

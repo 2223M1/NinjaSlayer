@@ -12,11 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BloodTears : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BloodTears), 0, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
+
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromPower<KaratePower>()
@@ -28,7 +25,7 @@ public sealed class BloodTears : NinjaSlayerCardTemplate
         new KarateVar(3)
     ];
 
-    public BloodTears() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public BloodTears() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

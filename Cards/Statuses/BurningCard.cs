@@ -16,18 +16,14 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(StatusCardPool))]
-public sealed class BurningCard : ModCardTemplate
+public sealed class BurningCard : NinjaSlayerStandaloneCardTemplate
 {
-    private const int energyCost = -2;
-    private const CardType type = CardType.Status;
-    private const CardRarity rarity = CardRarity.Status;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = false;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BurningCard), -2, CardType.Status, CardRarity.Status, TargetType.Self, false);
+
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Unplayable,
@@ -46,7 +42,7 @@ public sealed class BurningCard : ModCardTemplate
 
     protected override IEnumerable<string> ExtraRunAssetPaths => NNinjaSlayerGroundFireVfx.AssetPaths;
 
-    public BurningCard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public BurningCard() : base(CardSpec) { }
 
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
     {

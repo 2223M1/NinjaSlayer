@@ -15,7 +15,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class PerfectChop : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Chop");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PerfectChop), 2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "Chop");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(16, ValueProp.Move),
@@ -28,7 +29,7 @@ public sealed class PerfectChop : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
-    public PerfectChop() : base(2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true) { }
+    public PerfectChop() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

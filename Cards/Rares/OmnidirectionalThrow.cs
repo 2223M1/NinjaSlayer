@@ -10,20 +10,16 @@ namespace NinjaSlayer.Cards;
 
 public sealed class OmnidirectionalThrow : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OmnidirectionalThrow), 1, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "ShurikenSpread");
+
 
     // ponytail: reuse shuriken art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenSpread");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new ShurikenVar(3)
     ];
 
-    public OmnidirectionalThrow() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public OmnidirectionalThrow() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

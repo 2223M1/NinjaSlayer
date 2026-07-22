@@ -12,7 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DiscardDefense : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DiscardDefense), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
+
     public override bool GainsBlock => true;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
@@ -24,7 +25,7 @@ public sealed class DiscardDefense : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<DiscardDefensePower>()
     ];
 
-    public DiscardDefense() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self, true) { }
+    public DiscardDefense() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

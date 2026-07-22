@@ -14,16 +14,12 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaShield : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaShield), 1, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "BlockCard");
+
 
     public override bool GainsBlock => true;
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(7),
@@ -35,7 +31,7 @@ public sealed class TeaShield : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    public TeaShield() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public TeaShield() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

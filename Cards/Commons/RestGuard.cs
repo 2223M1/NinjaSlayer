@@ -12,13 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class RestGuard : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(RestGuard), 0, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
 
-    private const int energyCost = 0;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+
 
     public override bool GainsBlock => true;
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.Any(c => c is ChadoCard);
@@ -28,7 +24,7 @@ public sealed class RestGuard : NinjaSlayerCardTemplate
         new BlockVar(6, ValueProp.Move)
     ];
 
-    public RestGuard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public RestGuard() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

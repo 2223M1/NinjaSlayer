@@ -12,14 +12,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BackBridge : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BackBridge), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "KarateFinish");
+
 
     // ponytail: reuse karate finish art until Back Bridge gets dedicated card art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateFinish");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -33,7 +29,7 @@ public sealed class BackBridge : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
-    public BackBridge() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public BackBridge() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

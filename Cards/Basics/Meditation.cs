@@ -10,17 +10,14 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Meditation : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Basic;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Meditation), 0, CardType.Skill, CardRarity.Basic, TargetType.Self, true);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
     ];
 
-    public Meditation() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public Meditation() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

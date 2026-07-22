@@ -14,11 +14,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class KarateWall : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 3;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KarateWall), 3, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
+
 
     public override bool GainsBlock => true;
 
@@ -30,7 +27,7 @@ public sealed class KarateWall : NinjaSlayerCardTemplate
         new KarateVar(6)
     ];
 
-    public KarateWall() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public KarateWall() : base(CardSpec) { }
 
     public override bool TryModifyEnergyCostInCombat(CardModel card, decimal originalCost, out decimal modifiedCost)
     {

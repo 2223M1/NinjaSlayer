@@ -11,20 +11,16 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaSlayerFootwork : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 3;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaSlayerFootwork), 3, CardType.Power, CardRarity.Rare, TargetType.Self, true, "Footwork");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Footwork");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("DrawThreshold", 12),
         new DynamicVar("Evasion", 1)
     ];
 
-    public NinjaSlayerFootwork() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaSlayerFootwork() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

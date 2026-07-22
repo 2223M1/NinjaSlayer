@@ -12,13 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BeatPeopleChado : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BeatPeopleChado), 1, CardType.Power, CardRarity.Rare, TargetType.Self, true, "ChadoCard");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new KarateVar(3)
@@ -29,7 +25,7 @@ public sealed class BeatPeopleChado : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
-    public BeatPeopleChado() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public BeatPeopleChado() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

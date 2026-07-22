@@ -14,14 +14,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class AssassinationFist : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(AssassinationFist), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "ComboFist");
+
 
     // ponytail: reuse combo fist art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ComboFist");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(5),
@@ -34,7 +30,7 @@ public sealed class AssassinationFist : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    public AssassinationFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public AssassinationFist() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

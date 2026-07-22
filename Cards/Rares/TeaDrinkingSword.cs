@@ -12,14 +12,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaDrinkingSword : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaDrinkingSword), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "ShurikenThrow");
+
 
     // ponytail: reuse shuriken-throw art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenThrow");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("ShurikenThreshold", 5)
@@ -30,7 +26,7 @@ public sealed class TeaDrinkingSword : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ShurikenCard>()
     ];
 
-    public TeaDrinkingSword() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public TeaDrinkingSword() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

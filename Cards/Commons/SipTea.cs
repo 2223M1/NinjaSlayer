@@ -12,14 +12,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SipTea : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SipTea), 0, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BrewTea");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BrewTea");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(3)
@@ -29,7 +25,7 @@ public sealed class SipTea : NinjaSlayerCardTemplate
         HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)
     ];
 
-    public SipTea() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public SipTea() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

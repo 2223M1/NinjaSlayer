@@ -11,15 +11,11 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class OneBodyOneSoul : ModCardTemplate
+public sealed class OneBodyOneSoul : NinjaSlayerStandaloneCardTemplate
 {
-    private const int energyCost = 3;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Ancient;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OneBodyOneSoul), 3, CardType.Power, CardRarity.Ancient, TargetType.Self, true);
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Ethereal
@@ -34,7 +30,7 @@ public sealed class OneBodyOneSoul : ModCardTemplate
         new CardsVar(2)
     ];
 
-    public OneBodyOneSoul() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public OneBodyOneSoul() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

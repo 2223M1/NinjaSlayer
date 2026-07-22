@@ -15,14 +15,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AllEnemies;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(HalfMoonCompassKick), 0, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true, "SweepKick");
+
 
     // ponytail: reuse sweep-kick art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("SweepKick");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(4, ValueProp.Move),
@@ -34,7 +30,7 @@ public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
         HoverTipFactory.FromKeyword(CardKeyword.Exhaust)
     ];
 
-    public HalfMoonCompassKick() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public HalfMoonCompassKick() : base(CardSpec) { }
 
     protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoInHandCount(Owner) > 0;
 

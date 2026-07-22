@@ -17,11 +17,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Riffle : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Riffle), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -41,7 +38,7 @@ public sealed class Riffle : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<StrengthPower>()
     ];
 
-    public Riffle() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public Riffle() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

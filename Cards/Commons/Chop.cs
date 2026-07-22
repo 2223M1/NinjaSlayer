@@ -13,18 +13,15 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Chop : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Chop), 0, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(3, ValueProp.Move),
         new KarateVar(2)
     ];
 
-    public Chop() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public Chop() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

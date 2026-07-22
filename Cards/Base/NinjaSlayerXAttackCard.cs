@@ -15,13 +15,8 @@ namespace NinjaSlayer.Cards;
 /// </summary>
 public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
 {
-    protected NinjaSlayerXAttackCard(
-        int energyCost,
-        CardType type,
-        CardRarity rarity,
-        TargetType targetType,
-        bool shouldShowInCardLibrary)
-        : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
+    protected NinjaSlayerXAttackCard(NinjaSlayerCardSpec cardSpec)
+        : base(cardSpec)
     {
     }
 

@@ -13,7 +13,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaHitsPeople), 1, CardType.Attack, CardRarity.Common, TargetType.AllEnemies, true, "ChadoCard");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move)
@@ -25,7 +26,7 @@ public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
 
     protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoExhaustedThisTurn(this);
 
-    public TeaHitsPeople() : base(1, CardType.Attack, CardRarity.Common, TargetType.AllEnemies, true) { }
+    public TeaHitsPeople() : base(CardSpec) { }
 
     public override bool TryGetHitPreview(Creature? target, out int hitCount)
     {

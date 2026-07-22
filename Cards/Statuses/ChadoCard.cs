@@ -11,18 +11,14 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(StatusCardPool))]
-public sealed class ChadoCard : ModCardTemplate
+public sealed class ChadoCard : NinjaSlayerStandaloneCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Status;
-    private const CardRarity rarity = CardRarity.Status;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = false;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ChadoCard), 0, CardType.Status, CardRarity.Status, TargetType.Self, false);
+
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Retain,
@@ -37,7 +33,7 @@ public sealed class ChadoCard : ModCardTemplate
         new EnergyVar(1)
     ];
 
-    public ChadoCard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ChadoCard() : base(CardSpec) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         Task.CompletedTask;

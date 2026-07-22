@@ -12,13 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaWall : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaWall), 2, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
 
-    private const int energyCost = 2;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+
 
     public override bool GainsBlock => true;
 
@@ -27,7 +23,7 @@ public sealed class NinjaWall : NinjaSlayerCardTemplate
         new KarateVar(4)
     ];
 
-    public NinjaWall() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaWall() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

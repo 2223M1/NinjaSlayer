@@ -12,13 +12,18 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(TokenCardPool))]
-public sealed class GiantShurikenCard : ModCardTemplate
+public sealed class GiantShurikenCard : NinjaSlayerStandaloneCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Token;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(
+        nameof(GiantShurikenCard),
+        0,
+        CardType.Attack,
+        CardRarity.Token,
+        targetType,
+        false,
+        Tags: [NinjaSlayerCardTags.Shuriken]);
+
     private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = false;
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
@@ -27,14 +32,9 @@ public sealed class GiantShurikenCard : ModCardTemplate
         ? TargetType.AllEnemies
         : targetType;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
-    ];
-
-    protected override HashSet<CardTag> CanonicalTags => [
-        NinjaSlayerCardTags.Shuriken
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
@@ -42,7 +42,7 @@ public sealed class GiantShurikenCard : ModCardTemplate
         new CardsVar(1)
     ];
 
-    public GiantShurikenCard() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public GiantShurikenCard() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

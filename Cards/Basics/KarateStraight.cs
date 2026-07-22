@@ -14,18 +14,15 @@ namespace NinjaSlayer.Cards;
 
 public sealed class KarateStraight : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Basic;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KarateStraight), 2, CardType.Attack, CardRarity.Basic, TargetType.AnyEnemy, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(8, ValueProp.Move),
         new KarateVar(4)
     ];
 
-    public KarateStraight() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public KarateStraight() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -10,13 +10,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Contraption : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Contraption), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
-    public Contraption() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+
+    public Contraption() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

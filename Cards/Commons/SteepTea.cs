@@ -11,20 +11,16 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SteepTea : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SteepTea), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BrewTea");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BrewTea");
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    public SteepTea() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public SteepTea() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

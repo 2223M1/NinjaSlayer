@@ -13,13 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class RubHands : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(RubHands), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "ShurikenThrow");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenThrow");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),
@@ -32,7 +28,7 @@ public sealed class RubHands : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ShurikenCard>()
     ];
 
-    public RubHands() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public RubHands() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

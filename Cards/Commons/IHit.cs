@@ -13,13 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IHit : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IHit), 2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "StrikeNinjaSlayer");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("StrikeNinjaSlayer");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(12, ValueProp.Move),
@@ -30,7 +26,7 @@ public sealed class IHit : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    public IHit() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public IHit() : base(CardSpec) { }
 
     protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoDiscardedThisTurn(this);
 

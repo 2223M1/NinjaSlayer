@@ -13,14 +13,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class WhiskSlash : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(WhiskSlash), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "BrewTea");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BrewTea");
 
     protected override bool ShouldGlowGoldInternal =>
         NinjaSlayerActions.ChadoInHandCount(Owner) > 0;
@@ -34,7 +30,7 @@ public sealed class WhiskSlash : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    public WhiskSlash() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public WhiskSlash() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

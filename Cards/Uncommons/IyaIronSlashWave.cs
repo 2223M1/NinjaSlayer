@@ -12,13 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IyaIronSlashWave : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IyaIronSlashWave), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "ShurikenThrow");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenThrow");
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -28,7 +24,7 @@ public sealed class IyaIronSlashWave : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ShurikenCard>()
     ];
 
-    public IyaIronSlashWave() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public IyaIronSlashWave() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

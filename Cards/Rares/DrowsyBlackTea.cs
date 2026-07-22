@@ -11,14 +11,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DrowsyBlackTea : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DrowsyBlackTea), 2, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "ChadoCard");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -29,7 +25,7 @@ public sealed class DrowsyBlackTea : NinjaSlayerCardTemplate
         HoverTipFactory.FromKeyword(CardKeyword.Exhaust)
     ];
 
-    public DrowsyBlackTea() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public DrowsyBlackTea() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

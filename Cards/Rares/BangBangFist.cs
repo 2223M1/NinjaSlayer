@@ -15,14 +15,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BangBangFist : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BangBangFist), 1, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy, true, "ComboFist");
+
 
     // ponytail: reuse combo fist art until Bang Bang Fist gets dedicated card art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ComboFist");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(4, ValueProp.Move),
@@ -32,7 +28,7 @@ public sealed class BangBangFist : NinjaSlayerCardTemplate
         new CalculatedVar("CalculatedHits").WithMultiplier((_, target) => CountDistinctDebuffs(target))
     ];
 
-    public BangBangFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public BangBangFist() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

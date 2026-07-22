@@ -12,11 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ReadyBlade : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ReadyBlade), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1),
@@ -27,7 +24,7 @@ public sealed class ReadyBlade : NinjaSlayerCardTemplate
         .. HoverTipFactory.FromAffliction<PreparedAffliction>()
     ];
 
-    public ReadyBlade() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ReadyBlade() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

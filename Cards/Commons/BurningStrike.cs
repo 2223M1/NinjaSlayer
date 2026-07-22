@@ -12,7 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BurningStrike : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BurningCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BurningStrike), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "BurningCard");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(14, ValueProp.Move)
@@ -22,7 +23,7 @@ public sealed class BurningStrike : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<BurningCard>()
     ];
 
-    public BurningStrike() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true) { }
+    public BurningStrike() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -13,13 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaGreeting : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaGreeting), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "ForgoStrength");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ForgoStrength");
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -33,7 +29,7 @@ public sealed class NinjaGreeting : NinjaSlayerCardTemplate
         EnergyHoverTip
     ];
 
-    public NinjaGreeting() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaGreeting() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

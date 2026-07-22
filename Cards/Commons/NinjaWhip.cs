@@ -13,7 +13,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaWhip : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("PursuitStrike");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaWhip), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "PursuitStrike");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(8, ValueProp.Move),
@@ -26,7 +27,7 @@ public sealed class NinjaWhip : NinjaSlayerCardTemplate
 
     protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.PreviousFinishedCardWasAttack(Owner);
 
-    public NinjaWhip() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true) { }
+    public NinjaWhip() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -14,14 +14,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenCleave : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AllEnemies;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenCleave), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true, "ShurikenBarrage");
+
 
     // ponytail: reuse barrage art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenBarrage");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(10),
@@ -29,7 +25,7 @@ public sealed class ShurikenCleave : NinjaSlayerCardTemplate
         new CalculatedDamageVar(ValueProp.Move).WithMultiplier(ShurikenInHandCount)
     ];
 
-    public ShurikenCleave() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ShurikenCleave() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

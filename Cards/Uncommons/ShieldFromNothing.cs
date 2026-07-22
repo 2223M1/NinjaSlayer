@@ -13,13 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShieldFromNothing : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShieldFromNothing), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
 
-    private const int energyCost = 1;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(1, ValueProp.Unpowered)
@@ -29,7 +25,7 @@ public sealed class ShieldFromNothing : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
-    public ShieldFromNothing() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ShieldFromNothing() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

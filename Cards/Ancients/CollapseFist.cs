@@ -12,23 +12,19 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class CollapseFist : ModCardTemplate
+public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Ancient;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(CollapseFist), 2, CardType.Attack, CardRarity.Ancient, TargetType.AnyEnemy, true, "KarateStraight");
+
 
     // ponytail: reuse straight-punch art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateStraight");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(20, ValueProp.Move),
         new KarateVar(8)
     ];
 
-    public CollapseFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public CollapseFist() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

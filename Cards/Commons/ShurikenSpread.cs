@@ -9,17 +9,14 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenSpread : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenSpread), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new ShurikenVar(2)
     ];
 
-    public ShurikenSpread() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ShurikenSpread() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

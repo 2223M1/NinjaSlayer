@@ -14,23 +14,19 @@ namespace NinjaSlayer.Cards;
 
 public sealed class MurderFist : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(MurderFist), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "ComboFist");
+
 
     protected override bool ShouldGlowGoldInternal =>
         CombatState?.HittableEnemies.Any(IsAtOrBelowHalfHp) ?? false;
 
     // ponytail: reuse combo fist art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ComboFist");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(14, ValueProp.Move)
     ];
 
-    public MurderFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public MurderFist() : base(CardSpec) { }
 
     public override bool TryGetHitPreview(Creature? target, out int hitCount)
     {

@@ -13,17 +13,14 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenThrow : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenThrow), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(10, ValueProp.Move)
     ];
 
-    public ShurikenThrow() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ShurikenThrow() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

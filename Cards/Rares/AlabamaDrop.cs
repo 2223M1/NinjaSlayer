@@ -13,14 +13,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class AlabamaDrop : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(AlabamaDrop), 2, CardType.Skill, CardRarity.Rare, TargetType.AnyEnemy, true, "KarateStraight");
+
 
     // ponytail: reuse karate art until this card gets dedicated card art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateStraight");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("SelfKarate", 6),
@@ -31,7 +27,7 @@ public sealed class AlabamaDrop : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
-    public AlabamaDrop() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public AlabamaDrop() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

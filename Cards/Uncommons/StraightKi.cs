@@ -14,11 +14,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class StraightKi : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(StraightKi), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
+
 
     protected override bool ShouldGlowGoldInternal =>
         CombatState?.HittableEnemies.Any(e => e.HasPower<WeakPower>() && e.HasPower<VulnerablePower>()) ?? false;
@@ -31,7 +28,7 @@ public sealed class StraightKi : NinjaSlayerCardTemplate
         new DamageVar(18, ValueProp.Move)
     ];
 
-    public StraightKi() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public StraightKi() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

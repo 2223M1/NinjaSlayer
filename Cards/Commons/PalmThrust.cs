@@ -12,21 +12,17 @@ namespace NinjaSlayer.Cards;
 
 public sealed class PalmThrust : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.RandomEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PalmThrust), 1, CardType.Attack, CardRarity.Common, TargetType.RandomEnemy, true, "Chop");
+
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("Chop");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),
         new RepeatVar(2)
     ];
 
-    public PalmThrust() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public PalmThrust() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

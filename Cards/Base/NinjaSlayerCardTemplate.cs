@@ -12,17 +12,26 @@ namespace NinjaSlayer.Cards;
 [RegisterCard(typeof(NinjaSlayerCardPool), Inherit = true)]
 public abstract class NinjaSlayerCardTemplate : ModCardTemplate, IHitPreviewProvider
 {
-    protected NinjaSlayerCardTemplate(
-        int energyCost,
-        CardType type,
-        CardRarity rarity,
-        TargetType targetType,
-        bool shouldShowInCardLibrary)
-        : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
+    private readonly NinjaSlayerCardSpec _cardSpec;
+
+    protected NinjaSlayerCardTemplate(NinjaSlayerCardSpec cardSpec)
+        : base(
+            cardSpec.EnergyCost,
+            cardSpec.Type,
+            cardSpec.Rarity,
+            cardSpec.TargetType,
+            cardSpec.ShouldShowInCardLibrary)
     {
+        _cardSpec = cardSpec;
     }
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.For(this);
+    public NinjaSlayerCardSpec Metadata => _cardSpec with { Tags = Tags.ToArray() };
+
+    public override CardAssetProfile AssetProfile => _cardSpec.AssetName is { } assetName
+        ? NinjaSlayerCardAssets.Named(assetName)
+        : NinjaSlayerCardAssets.For(this);
+
+    protected override HashSet<CardTag> CanonicalTags => _cardSpec.Tags?.ToHashSet() ?? [];
 
     public virtual bool TryGetHitPreview(Creature? target, out int hitCount)
     {

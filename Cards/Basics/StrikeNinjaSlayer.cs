@@ -11,21 +11,20 @@ namespace NinjaSlayer.Cards;
 
 public sealed class StrikeNinjaSlayer : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Basic;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
-
-    protected override HashSet<CardTag> CanonicalTags => [
-        CardTag.Strike
-    ];
+    private static readonly NinjaSlayerCardSpec CardSpec = new(
+        nameof(StrikeNinjaSlayer),
+        1,
+        CardType.Attack,
+        CardRarity.Basic,
+        TargetType.AnyEnemy,
+        true,
+        Tags: [CardTag.Strike]);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move)
     ];
 
-    public StrikeNinjaSlayer() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public StrikeNinjaSlayer() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

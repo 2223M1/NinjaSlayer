@@ -13,13 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DrinkTea : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DrinkTea), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "ChadoCard");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ChadoCard");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new VigorAmountVar(6)
@@ -29,7 +25,7 @@ public sealed class DrinkTea : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<VigorPower>()
     ];
 
-    public DrinkTea() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public DrinkTea() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

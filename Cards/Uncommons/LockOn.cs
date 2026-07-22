@@ -11,11 +11,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class LockOn : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(LockOn), 1, CardType.Skill, CardRarity.Uncommon, TargetType.AnyEnemy, true);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -26,7 +23,7 @@ public sealed class LockOn : NinjaSlayerCardTemplate
         new DynamicVar("DefensePercent", 25)
     ];
 
-    public LockOn() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public LockOn() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

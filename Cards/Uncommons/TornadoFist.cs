@@ -15,11 +15,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TornadoFist : NinjaSlayerXAttackCard
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TornadoFist), 0, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
+
 
     protected override string AttackerAnimTrigger => TornadoFistSpinAnimation.TriggerName;
     protected override float XAttackHitDelay => 0f;
@@ -30,7 +27,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         new PowerVar<VulnerablePower>(1)
     ];
 
-    public TornadoFist() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public TornadoFist() : base(CardSpec) { }
 
     protected override async Task<bool> ExecuteXHit(
         PlayerChoiceContext choiceContext,

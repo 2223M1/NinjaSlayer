@@ -15,7 +15,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ThrowKunai : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("ShurikenThrow");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ThrowKunai), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "ShurikenThrow");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(9, ValueProp.Move),
@@ -26,7 +27,7 @@ public sealed class ThrowKunai : NinjaSlayerCardTemplate
         HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)
     ];
 
-    public ThrowKunai() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true) { }
+    public ThrowKunai() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

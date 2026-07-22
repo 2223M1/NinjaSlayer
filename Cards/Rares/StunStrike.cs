@@ -15,11 +15,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class StunStrike : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 3;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(StunStrike), 3, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(10, ValueProp.Move)
@@ -29,7 +26,7 @@ public sealed class StunStrike : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<RingingPower>()
     ];
 
-    public StunStrike() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public StunStrike() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -12,14 +12,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class KataDrill : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KataDrill), 1, CardType.Skill, CardRarity.Common, TargetType.AnyEnemy, true, "KarateStraight");
+
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateStraight");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -33,7 +29,7 @@ public sealed class KataDrill : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KaratePower>()
     ];
 
-    public KataDrill() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public KataDrill() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

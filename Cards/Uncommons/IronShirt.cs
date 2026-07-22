@@ -13,23 +13,19 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IronShirt : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IronShirt), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+
 
     public override bool GainsBlock => true;
 
     // ponytail: reuse karate art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(8, ValueProp.Move),
         new KarateVar(3)
     ];
 
-    public IronShirt() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public IronShirt() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

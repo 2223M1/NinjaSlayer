@@ -12,6 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class LuckyStrike : NinjaSlayerCardTemplate
 {
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(LuckyStrike), 0, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
+
     public override bool GainsBlock => true;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
@@ -24,7 +26,7 @@ public sealed class LuckyStrike : NinjaSlayerCardTemplate
         HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)
     ];
 
-    public LuckyStrike() : base(0, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true) { }
+    public LuckyStrike() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

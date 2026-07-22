@@ -12,14 +12,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ColdBrew : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ColdBrew), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "SmokeRead");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("SmokeRead");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(3),
@@ -30,7 +26,7 @@ public sealed class ColdBrew : NinjaSlayerCardTemplate
         HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)
     ];
 
-    public ColdBrew() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ColdBrew() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

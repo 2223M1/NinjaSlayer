@@ -11,13 +11,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenStock : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenStock), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
 
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+
 
     public override bool GainsBlock => true;
 
@@ -26,7 +22,7 @@ public sealed class ShurikenStock : NinjaSlayerCardTemplate
         new CardsVar(1)
     ];
 
-    public ShurikenStock() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ShurikenStock() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

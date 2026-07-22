@@ -11,11 +11,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Evade : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Evade), 2, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -25,7 +22,7 @@ public sealed class Evade : NinjaSlayerCardTemplate
         new DynamicVar("Evasion", 1)
     ];
 
-    public Evade() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public Evade() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

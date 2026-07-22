@@ -13,20 +13,16 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaSlayerBladeDance : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaSlayerBladeDance), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "BladeDance");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BladeDance");
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(10, ValueProp.Move),
         new CardsVar(4)
     ];
 
-    public NinjaSlayerBladeDance() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaSlayerBladeDance() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

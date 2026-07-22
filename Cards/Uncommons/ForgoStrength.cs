@@ -13,11 +13,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ForgoStrength : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ForgoStrength), 0, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -28,7 +25,7 @@ public sealed class ForgoStrength : NinjaSlayerCardTemplate
         new EnergyVar(2)
     ];
 
-    public ForgoStrength() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ForgoStrength() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

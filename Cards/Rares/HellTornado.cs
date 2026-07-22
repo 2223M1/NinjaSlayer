@@ -12,13 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class HellTornado : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 3;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(HellTornado), 3, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "DragonTornado");
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("DragonTornado");
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -31,7 +27,7 @@ public sealed class HellTornado : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<GiantShurikenCard>()
     ];
 
-    public HellTornado() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public HellTornado() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

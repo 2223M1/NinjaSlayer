@@ -12,11 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Redouble : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Redouble), 1, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("SelfKarate", 6)
@@ -27,7 +24,7 @@ public sealed class Redouble : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<KarateDoublingPower>()
     ];
 
-    public Redouble() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public Redouble() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

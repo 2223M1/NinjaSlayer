@@ -11,23 +11,22 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DefendNinjaSlayer : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Basic;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(
+        nameof(DefendNinjaSlayer),
+        1,
+        CardType.Skill,
+        CardRarity.Basic,
+        TargetType.Self,
+        true,
+        Tags: [CardTag.Defend]);
 
     public override bool GainsBlock => true;
-
-    protected override HashSet<CardTag> CanonicalTags => [
-        CardTag.Defend
-    ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(5, ValueProp.Move)
     ];
 
-    public DefendNinjaSlayer() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public DefendNinjaSlayer() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

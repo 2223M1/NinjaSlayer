@@ -10,13 +10,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Momentum : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Momentum), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
-    public Momentum() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+
+    public Momentum() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

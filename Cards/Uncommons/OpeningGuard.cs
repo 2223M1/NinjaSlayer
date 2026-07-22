@@ -12,7 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class OpeningGuard : NinjaSlayerCardTemplate
 {
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OpeningGuard), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+
     public override bool GainsBlock => true;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
@@ -23,7 +24,7 @@ public sealed class OpeningGuard : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<OpeningPower>()
     ];
 
-    public OpeningGuard() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true) { }
+    public OpeningGuard() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

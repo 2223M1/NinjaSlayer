@@ -10,13 +10,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class StarlessNight : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(StarlessNight), 2, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
-    public StarlessNight() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+
+    public StarlessNight() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

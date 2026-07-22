@@ -13,11 +13,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class PursuitStrike : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Attack;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.AnyEnemy;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PursuitStrike), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
+
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(15, ValueProp.Move),
@@ -25,7 +22,7 @@ public sealed class PursuitStrike : NinjaSlayerCardTemplate
         new EnergyVar(2)
     ];
 
-    public PursuitStrike() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public PursuitStrike() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

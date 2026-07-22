@@ -13,15 +13,11 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaApathy : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Common;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaApathy), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
+
 
     public override bool GainsBlock => true;
 
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BlockCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(6, ValueProp.Move)
@@ -31,7 +27,7 @@ public sealed class NinjaApathy : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<NextDiscardPreparedPower>()
     ];
 
-    public NinjaApathy() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public NinjaApathy() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

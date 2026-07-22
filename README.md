@@ -9,10 +9,11 @@ NinjaSlayer is a Slay the Spire 2 character mod built with Godot 4.5.1 Mono and 
 | Slay the Spire 2 | `0.109.x` (`min_game_version`: `0.109.0`) |
 | .NET target | `net9.0` |
 | Godot | `4.5.1` Mono |
-| RitsuLib | `0.4.58` or newer compatible release |
+| RitsuLib | `0.4.62` |
+| CI reference API | `Book.StS2.RefLib 0.109.0-beta` |
 | Spine GDExtension | Godot 4.5.1 build committed under `addons/spine` |
 
-Local distributable builds must compile against the `sts2.dll` and `0Harmony.dll` from the target game installation. `Book.StS2.RefLib 0.107.1` is used only as a best-effort CI compatibility check and does not lower the manifest's game requirement.
+Local distributable builds must compile against the `sts2.dll` and `0Harmony.dll` from the target game installation. CI performs a blocking full-project compile against `Book.StS2.RefLib 0.109.0-beta`; final packages still use the real `0.109.x` game assemblies, and the reference package does not lower the manifest's game requirement.
 
 ## Build Commands
 
@@ -72,5 +73,7 @@ npx wrangler deploy --dry-run
 ```
 
 Production requires `POSTHOG_API_KEY` and `RATE_LIMIT_SALT` secrets, the two configured rate-limit bindings, and `FEEDBACK_KV`. Missing security bindings cause a `503` response. See `Docs/privacy.md` for data handling and retention.
+
+Wrangler is pinned to `4.113.0`. Its local Miniflare dependency currently carries the upstream Sharp/libvips advisory documented in `Docs/dependency-security.md`; production dependencies are audited separately, and the project does not use `npm audit fix --force` to apply an incompatible downgrade.
 
 This repository intentionally does not declare a license. Do not infer reuse rights from source availability.

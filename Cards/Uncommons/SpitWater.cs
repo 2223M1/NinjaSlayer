@@ -15,14 +15,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SpitWater : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 1;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SpitWater), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "KarateFinish");
+
 
     // ponytail: reuse back-bridge art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("KarateFinish");
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -41,7 +37,7 @@ public sealed class SpitWater : NinjaSlayerCardTemplate
     protected override bool ShouldGlowGoldInternal =>
         CombatState?.HittableEnemies.Any(e => e.HasPower<KaratePower>()) ?? false;
 
-    public SpitWater() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public SpitWater() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

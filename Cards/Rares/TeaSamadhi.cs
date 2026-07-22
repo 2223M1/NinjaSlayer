@@ -11,20 +11,16 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaSamadhi : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaSamadhi), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "GreatUke");
+
 
     // ponytail: reuse tea art until this card gets dedicated art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("GreatUke");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1)
     ];
 
-    public TeaSamadhi() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public TeaSamadhi() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

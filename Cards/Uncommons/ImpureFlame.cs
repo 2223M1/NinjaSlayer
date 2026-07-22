@@ -12,14 +12,10 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ImpureFlame : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 2;
-    private const CardType type = CardType.Power;
-    private const CardRarity rarity = CardRarity.Uncommon;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ImpureFlame), 2, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BurningCard");
+
 
     // ponytail: reuse burning art until this card gets dedicated card art.
-    public override CardAssetProfile AssetProfile => NinjaSlayerCardAssets.Named("BurningCard");
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1)
@@ -29,7 +25,7 @@ public sealed class ImpureFlame : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    public ImpureFlame() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public ImpureFlame() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -12,11 +12,8 @@ namespace NinjaSlayer.Cards;
 
 public sealed class GreatUke : NinjaSlayerCardTemplate
 {
-    private const int energyCost = 0;
-    private const CardType type = CardType.Skill;
-    private const CardRarity rarity = CardRarity.Rare;
-    private const TargetType targetType = TargetType.Self;
-    private const bool shouldShowInCardLibrary = true;
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(GreatUke), 0, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
+
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust
@@ -26,7 +23,7 @@ public sealed class GreatUke : NinjaSlayerCardTemplate
         new DynamicVar("Reduction", 3)
     ];
 
-    public GreatUke() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary) { }
+    public GreatUke() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
