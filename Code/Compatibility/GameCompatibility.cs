@@ -25,7 +25,6 @@ using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardLibrary;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Nodes.Screens.InspectScreens;
-using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -201,25 +200,6 @@ internal static class GameCompatibility
         {
             grid = Grid?.GetValue(screen) as NCardGrid;
             return grid != null;
-        }
-    }
-
-    internal static class Nancy
-    {
-        private static readonly FieldInfo? Rooms = AccessTools.Field(typeof(ActModel), "_rooms");
-
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            CapabilityProbe.Optional(
-                "ActModel.rooms",
-                Rooms != null,
-                Rooms != null ? "available" : "ActModel._rooms is unavailable")
-        ];
-
-        public static bool TryGetRooms(ActModel act, out RoomSet? rooms)
-        {
-            rooms = Rooms?.GetValue(act) as RoomSet;
-            return rooms != null;
         }
     }
 
