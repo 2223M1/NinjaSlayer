@@ -255,7 +255,9 @@ test('concurrent retries for one submission are serialized and idempotent', asyn
   ]);
   assert.equal(first.status, 200);
   assert.equal(second.status, 200);
-  assert.equal((await second.json()).idempotent, true);
+  const responses = await Promise.all([first.json(), second.json()]);
+  assert.equal(responses[0].prefix, responses[1].prefix);
+  assert.equal(responses.filter((body) => body.idempotent === true).length, 1);
   assert.equal([...kv.objects.keys()].filter((key) => key.endsWith('/metadata.json')).length, 1);
 });
 
