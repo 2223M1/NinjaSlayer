@@ -24,12 +24,15 @@ dotnet restore .\NinjaSlayer.csproj
 dotnet build .\NinjaSlayer.csproj --no-restore -v:minimal
 ```
 
-Run dependency-free logic checks:
+Run the public logic, architecture, and RitsuLib contract checks:
 
 ```powershell
-dotnet run --project .\Tests\NinjaSlayer.LogicTests\NinjaSlayer.LogicTests.csproj -c Release
+dotnet test .\Tests\NinjaSlayer.LogicTests\NinjaSlayer.LogicTests.csproj -c Release
+dotnet test .\Tests\NinjaSlayer.ArchitectureTests\NinjaSlayer.ArchitectureTests.csproj -c Release
 node .\tools\validate-repository.mjs
 ```
+
+The RitsuLib Harmony contract requires an initialized Godot host and real game references. It is run by the protected workflow; locally, build its project and launch its `project.godot` with Godot 4.5.1 Mono in headless mode.
 
 The checked-in `global.json` requires a .NET 9 SDK and prevents Godot 4.5.1 Mono from accidentally loading an incompatible .NET 10 MSBuild toolset.
 
@@ -47,6 +50,7 @@ dotnet msbuild .\NinjaSlayer.csproj -t:InstallLocal -p:Configuration=Release
 - A clean exact `vX.Y.Z` tag produces version `X.Y.Z`.
 - Normal commits produce `X.Y.Z-dev.N+gCOMMIT`; dirty trees include `.dirty`.
 - GitHub Release automation accepts only strict `vX.Y.Z` tags whose commit belongs to `main`.
+- A Release also requires a text-only attestation from the protected game-contract workflow for the exact tag commit.
 - The release workflow requires the `STS2_REFERENCE_BUNDLE_URL` secret to point to a private ZIP containing the target `sts2.dll` and `0Harmony.dll`.
 - GitHub Releases never publish Steam Workshop content.
 
@@ -77,3 +81,9 @@ Production requires `POSTHOG_API_KEY` and `RATE_LIMIT_SALT` secrets, the two con
 Wrangler is pinned to `4.113.0`. Its local Miniflare dependency currently carries the upstream Sharp/libvips advisory documented in `Docs/dependency-security.md`; production dependencies are audited separately, and the project does not use `npm audit fix --force` to apply an incompatible downgrade.
 
 This repository intentionally does not declare a license. Do not infer reuse rights from source availability.
+
+## Protected Contract
+
+The manual `Protected game contract` workflow accepts only a reviewed full SHA that is already on canonical `main`, then requires approval through the `game-contract` environment. Its workflow and build harness come from protected `main`; candidate project files, targets, tests, NuGet configuration, and workflows are never evaluated with the private game references mounted.
+
+The job compiles candidate source through `tools/private-contract`, runs the trusted RitsuLib contracts with outbound `dotnet` traffic blocked, uploads only a small JSON attestation, and removes the candidate checkout, private references, build output, and isolated NuGet folder. It must not be converted to `pull_request_target` or given access to fork commits.

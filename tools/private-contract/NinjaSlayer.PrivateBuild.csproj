@@ -1,0 +1,40 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <CandidateRoot>$([System.IO.Path]::GetFullPath('$(CandidateRoot)'))</CandidateRoot>
+  </PropertyGroup>
+  <Target Name="ValidateTrustedInputs" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(CandidateRoot)' == '' or !Exists('$(CandidateRoot)/NinjaSlayer.csproj')"
+           Text="CandidateRoot must point to a checked-out NinjaSlayer repository." />
+    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll') or !Exists('$(Sts2DataDir)/0Harmony.dll')"
+           Text="The private contract requires sts2.dll and 0Harmony.dll." />
+  </Target>
+  <ItemGroup>
+    <Compile Include="$(CandidateRoot)\Afflictions\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Ancients\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Cards\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Code\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Content\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Enchantments\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Events\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Powers\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Relics\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Scripts\**\*.cs" />
+    <Reference Include="sts2">
+      <HintPath>$(Sts2DataDir)\sts2.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(Sts2DataDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <PackageReference Include="STS2.RitsuLib" Version="0.4.62" PrivateAssets="all" />
+    <PackageReference Include="SmartFormat" Version="3.3.0" />
+  </ItemGroup>
+</Project>

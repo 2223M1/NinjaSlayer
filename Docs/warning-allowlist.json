@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "code": "MSB3270",
+      "owner": "external-game-reference",
+      "reason": "The target game and tooling can report an architecture mismatch while resolving third-party assemblies.",
+      "suppressedIn": "NinjaSlayer.csproj"
+    }
+  ]
+}

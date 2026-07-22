@@ -1,0 +1,31 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and '$(OS)' == 'Windows_NT'">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64</Sts2DataDir>
+  </PropertyGroup>
+  <Target Name="RequirePrivateGameContract" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll') or !Exists('$(Sts2DataDir)/0Harmony.dll')"
+           Text="RitsuLib contract tests require the protected 0.109.x game reference bundle." />
+  </Target>
+  <ItemGroup>
+    <Compile Include="ContractRunner.cs" />
+    <Reference Include="sts2">
+      <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="GodotSharp">
+      <HintPath>$(Sts2DataDir)/GodotSharp.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <PackageReference Include="STS2.RitsuLib" Version="0.4.62" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

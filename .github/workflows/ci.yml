@@ -33,7 +33,10 @@ jobs:
         run: node tools/validate-repository.mjs
 
       - name: Pure logic tests
-        run: dotnet run --project Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj -c Release
+        run: dotnet test Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj -c Release -v:minimal
+
+      - name: Roslyn architecture tests
+        run: dotnet test Tests/NinjaSlayer.ArchitectureTests/NinjaSlayer.ArchitectureTests.csproj -c Release -v:minimal
 
       - name: RefLib compatibility compile
         shell: bash
