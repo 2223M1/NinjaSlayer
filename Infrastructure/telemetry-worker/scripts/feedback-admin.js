@@ -1,7 +1,14 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import {
+  feedbackIndexKey,
+  feedbackTombstoneKey,
+  parseFeedbackIndexMarker,
+  validateCompletedFeedbackMetadata,
+} from '../src/feedback-storage.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const wrangler = join(root, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
@@ -32,34 +39,59 @@ function readBinary(key) {
   return runWrangler(['kv', 'key', 'get', key, ...bindingArgs], null);
 }
 
-function metadataEntries() {
-  return listKeys().filter((entry) => entry.name.endsWith('/metadata.json'));
+function indexEntries() {
+  return listKeys('feedback-index/');
 }
 
-function findMetadataKey(submissionId) {
+function findIndexKey(submissionId) {
   if (!uuidPattern.test(submissionId)) throw new Error('The submission ID must be a UUID.');
-  const matches = metadataEntries().filter((entry) => entry.name.includes(submissionId));
+  const expected = feedbackIndexKey(submissionId);
+  const matches = indexEntries().filter((entry) => entry.name === expected);
   if (matches.length !== 1) throw new Error(`Expected one feedback entry for ${submissionId}, found ${matches.length}.`);
   return matches[0].name;
 }
 
+function readCompletedFeedback(indexKey, expectedSubmissionId = null) {
+  const marker = parseFeedbackIndexMarker(readText(indexKey), expectedSubmissionId);
+  if (!marker || marker.state !== 'completed') throw new Error(`${indexKey} is not a valid completed submission.`);
+  const metadataText = readText(marker.completion.metadataKey);
+  const metadataSha256 = createHash('sha256').update(metadataText, 'utf8').digest('hex');
+  if (metadataSha256 !== marker.completion.metadataSha256) {
+    throw new Error(`${indexKey} metadata hash does not match its completion marker.`);
+  }
+  const metadata = JSON.parse(metadataText);
+  if (!validateCompletedFeedbackMetadata(metadata, marker)) {
+    throw new Error(`${indexKey} metadata does not belong to its completed attempt.`);
+  }
+  return { marker, metadata, metadataText };
+}
+
 function listFeedback() {
-  const entries = metadataEntries();
+  const entries = indexEntries();
   if (entries.length === 0) {
     console.log('No feedback is currently stored.');
     return;
   }
   for (const entry of entries) {
-    const metadata = JSON.parse(readText(entry.name));
-    const description = metadata.payload?.description?.replace(/\s+/g, ' ').slice(0, 100) ?? '';
-    console.log(`${metadata.modContext.submissionId}  ${metadata.receivedAtUtc}  ${metadata.payload.category}  ${description}`);
+    const marker = parseFeedbackIndexMarker(readText(entry.name));
+    if (!marker) {
+      console.error(`Skipped ${entry.name}: unsupported or invalid index marker.`);
+      continue;
+    }
+    if (marker.state !== 'completed') continue;
+    try {
+      const { metadata } = readCompletedFeedback(entry.name, marker.submissionId);
+      const description = metadata.payload?.description?.replace(/\s+/g, ' ').slice(0, 100) ?? '';
+      console.log(`${metadata.modContext.submissionId}  ${metadata.receivedAtUtc}  ${metadata.payload.category}  ${description}`);
+    } catch (error) {
+      console.error(`Skipped ${entry.name}: ${error.message}`);
+    }
   }
 }
 
 function downloadFeedback(submissionId) {
-  const metadataKey = findMetadataKey(submissionId);
-  const metadataText = readText(metadataKey);
-  const metadata = JSON.parse(metadataText);
+  const indexKey = findIndexKey(submissionId);
+  const { metadata, metadataText } = readCompletedFeedback(indexKey, submissionId);
   const outputDir = join(root, 'feedback-downloads', submissionId);
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(join(outputDir, 'metadata.json'), metadataText);
@@ -70,14 +102,20 @@ function downloadFeedback(submissionId) {
 }
 
 function deleteFeedback(submissionId) {
-  const metadataKey = findMetadataKey(submissionId);
-  const metadata = JSON.parse(readText(metadataKey));
+  const indexKey = findIndexKey(submissionId);
+  const { marker, metadata } = readCompletedFeedback(indexKey, submissionId);
   const keys = [
     metadata.storage.screenshot.key,
     ...metadata.storage.logs.chunks,
-    metadataKey,
-    `feedback-index/${submissionId}`,
+    marker.completion.metadataKey,
+    indexKey,
   ];
+  runWrangler([
+    'kv', 'key', 'put', feedbackTombstoneKey(submissionId),
+    JSON.stringify({ schemaVersion: 1, submissionId, deletedAtUtc: new Date().toISOString() }),
+    ...bindingArgs,
+    '--ttl', String(180 * 24 * 60 * 60),
+  ]);
   for (const key of keys) runWrangler(['kv', 'key', 'delete', key, ...bindingArgs]);
   console.log(`Deleted ${submissionId}.`);
 }

@@ -13,6 +13,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 - The debug card pool keeps at least three candidates in every rarity/type bucket that `TheFutureOfPotions` can request, so its fixed three-card reward cannot stall after a debug catalog edit.
 - NinjaSlayer per-player RunData remains on schema 1. The former implicit RitsuLib 0.4.62 default and the explicit registration both resolve to version 1; de-identified fixtures preserve the state shapes from `ea3c6f9` and `a55e153`. Loaded room keys discard null/empty entries and ordinal duplicates while preserving first occurrence order.
 - F2 feedback uses at most three 10-second attempts within a 35-second total budget. Only network errors, timeouts, HTTP 408/429, and 5xx responses retry; `Retry-After` is capped at 5 seconds. The transport never owns caller streams, while the Harmony replacement preserves the original method's close-on-every-exit contract.
+- Feedback persistence uses a submission-scoped Durable Object lease, attempt-specific KV paths, and a SHA-256-bound completion marker. Expired attempts may be replaced, but stale writers and cleanup paths cannot overwrite or delete the winning attempt.
 - Naraku has normal, new Naraku, fully released Naraku, and One Body One Soul visual policies; this roadmap does not change their abilities.
 - Boss framing holds for at least 2 seconds; boss and finisher camera recovery each remain 0.2 seconds.
 

@@ -9,6 +9,7 @@ import {
   readBodyLimited,
 } from './limits.js';
 import { FeedbackSubmissionCoordinator } from './feedback.js';
+import { feedbackTombstoneKey } from './feedback-storage.js';
 import { AnonymousQuotaGuard, consumeDailyQuota, enforceMinuteRateLimit } from './security.js';
 import { UUID_PATTERN, validateTelemetryBody } from './validation.js';
 
@@ -91,6 +92,9 @@ async function handleFeedback(request, env) {
   const submissionHeader = request.headers.get('X-NinjaSlayer-Submission-Id');
   if (submissionHeader && !UUID_PATTERN.test(submissionHeader)) {
     return jsonResponse(400, { error: 'invalid_feedback', message: 'Submission header must be a UUID' });
+  }
+  if (submissionHeader && await env.FEEDBACK_KV.get(feedbackTombstoneKey(submissionHeader))) {
+    return jsonResponse(410, { error: 'submission_deleted' });
   }
   const coordinatorName = submissionHeader ?? 'legacy-feedback-ingress';
   const id = env.FEEDBACK_SUBMISSIONS.idFromName(coordinatorName);

@@ -11,6 +11,7 @@ export const LOG_CHUNK_BYTES = 4 * 1024 * 1024;
 export const JSON_MAX_BYTES = 64 * 1024;
 export const REQUEST_TIMEOUT_MS = 9000;
 export const FEEDBACK_RETENTION_SECONDS = 180 * 24 * 60 * 60;
+export const FEEDBACK_WRITE_LEASE_MS = 2 * 60 * 1000;
 
 export const JSON_HEADER = { 'Content-Type': 'application/json' };
 

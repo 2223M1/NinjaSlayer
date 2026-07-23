@@ -8,7 +8,16 @@ Raw IP addresses are never stored or forwarded. A server-secret HMAC of the
 transient Cloudflare source IP is used for minute limits and Durable Object
 daily quotas. Telemetry is limited to 25 MiB per HMAC per day. Feedback is
 limited to five submissions and 96 MiB per HMAC per day. A submission-scoped
-Durable Object serializes retries so one complete commit wins.
+Durable Object owns a renewable two-minute write lease so one complete attempt
+wins even when requests overlap or an isolate is restarted.
+
+Feedback attachments and metadata live below an attempt-specific prefix. The
+stable `feedback-index/<submissionId>` key is first a writing marker and becomes
+a completion marker only after every object is present. The completion marker
+binds the winning attempt to the SHA-256 of its metadata. Valid retries return
+retryable `503` while the lease is active, take over an expired lease, or repair a missing
+index marker from durable completion state. Administrative deletion writes a
+retained tombstone before removing data so a late retry cannot recreate it.
 
 ## Deployment
 
@@ -39,4 +48,7 @@ npm run feedback -- delete <submission UUID>
 ```
 
 Downloads are written to `feedback-downloads/<submission UUID>/` with
-`metadata.json`, `screenshot.png`, and the reassembled `logs.zip`.
+`metadata.json`, `screenshot.png`, and the reassembled `logs.zip`. The tool only
+accepts completed schema-2 index markers whose attempt, metadata path, and
+metadata SHA-256 agree; writing, malformed, and legacy weak markers are not
+treated as completed submissions.

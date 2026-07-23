@@ -58,9 +58,16 @@ export async function consumeDailyQuota(env, clientKey, category, bytes) {
 export class AnonymousQuotaGuard {
   constructor(state) {
     this.storage = state.storage;
+    this.pending = Promise.resolve();
   }
 
-  async fetch(request) {
+  fetch(request) {
+    const operation = this.pending.then(() => this.consume(request));
+    this.pending = operation.then(() => undefined, () => undefined);
+    return operation;
+  }
+
+  async consume(request) {
     if (request.method !== 'POST') return jsonResponse(405, { error: 'method_not_allowed' });
     const category = request.headers.get('X-Quota-Category');
     const limits = DAILY_LIMITS[category];
