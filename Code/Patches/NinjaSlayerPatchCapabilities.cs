@@ -14,6 +14,7 @@ internal static class NinjaSlayerPatchCapabilities
     public static bool TransitionLoadSmoothingEnabled =>
         IsOperational(NinjaSlayerCapabilityIds.TransitionLoadSmoothing);
     public static bool FeedbackEnabled => IsOperational(NinjaSlayerCapabilityIds.Feedback);
+    public static bool TelemetryIdentityEnabled => IsOperational(NinjaSlayerCapabilityIds.TelemetryIdentity);
 
     private static bool IsOperational(string capabilityId) =>
         NinjaSlayerCapabilityRegistry.Current.IsOperational(capabilityId);

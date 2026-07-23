@@ -173,11 +173,11 @@ internal sealed class FinisherCardVisualSuppression : IDisposable
     }
 }
 
-internal partial class FinisherCardVisualMonitor : Node
+public partial class FinisherCardVisualMonitor : Node
 {
     private FinisherCardVisualSuppression? _owner;
 
-    public void Initialize(FinisherCardVisualSuppression owner)
+    internal void Initialize(FinisherCardVisualSuppression owner)
     {
         _owner = owner;
     }

@@ -20,6 +20,7 @@ internal static class NinjaSlayerCapabilityIds
     public const string TransitionCore = "transition-core";
     public const string TransitionLoadSmoothing = "transition-load-smoothing";
     public const string Feedback = "feedback";
+    public const string TelemetryIdentity = "telemetry-identity";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -40,6 +41,7 @@ internal static class NinjaSlayerCapabilityIds
         FinisherTornadoCadence,
         TransitionCore,
         TransitionLoadSmoothing,
-        Feedback
+        Feedback,
+        TelemetryIdentity
     ];
 }

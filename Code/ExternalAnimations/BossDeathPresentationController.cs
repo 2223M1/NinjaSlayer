@@ -9,7 +9,7 @@ using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-internal sealed partial class BossDeathPresentationController : Node, IDeathDelayer
+public sealed partial class BossDeathPresentationController : Node, IDeathDelayer
 {
     private const float SoulLeadSeconds = 1f;
     private const float CameraScaleMultiplier = 2f;
@@ -29,7 +29,7 @@ internal sealed partial class BossDeathPresentationController : Node, IDeathDela
     private float _estimatedDisappearSeconds;
     private bool _exploded;
 
-    public static BossDeathPresentationController Attach(
+    internal static BossDeathPresentationController Attach(
         NCreature boss,
         NCombatRoom room,
         BossDeathPartSpec? partSpec)

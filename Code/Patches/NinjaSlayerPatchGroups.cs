@@ -168,3 +168,12 @@ internal sealed class FeedbackPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
     }
 }
+
+internal sealed class TelemetryIdentityPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
+        patcher.RegisterPatch<NinjaSlayerTelemetryIdentityLaunchPatch>();
+        patcher.RegisterPatch<NinjaSlayerTelemetryIdentityCleanupPatch>();
+    }
+}
