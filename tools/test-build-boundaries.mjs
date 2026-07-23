@@ -99,6 +99,7 @@ for (const safeguard of [
   "if ($head -ne $originMain)",
   "SHA256SUMS",
   "Invoke-Native -Command gh -Arguments @('release', 'upload', $tag, $archivePath, '--clobber')",
+  "$releaseExists = $LASTEXITCODE -eq 0",
   "Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer')",
 ]) {
   assert(quickRelease.includes(safeguard), `Quick release must retain safeguard: ${safeguard}`);
