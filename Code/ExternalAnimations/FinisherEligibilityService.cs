@@ -91,7 +91,7 @@ internal static class FinisherEligibilityService
         }
 
         FinisherLog.Info(
-            $"NinjaSlayer finisher session {session!.SessionId} started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Targeting}, hits={forecast.ResolvedHits}.");
+            $"NinjaSlayer finisher session {session!.SessionId} started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Forecast.Targeting}, hits={forecast.ResolvedHits}.");
         return true;
     }
 }

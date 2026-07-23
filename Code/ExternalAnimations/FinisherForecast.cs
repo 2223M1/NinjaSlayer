@@ -86,13 +86,14 @@ internal static class FinisherForecast
         out FinisherForecastResult result)
     {
         result = default;
+        FinisherForecastDescriptor descriptor = spec.Forecast;
         ICombatState? combatState = owner.CombatState;
         if (combatState == null || enemies.Any(enemy => !Hook.ShouldDie(owner.Player!.RunState, combatState, enemy, out _)))
         {
             return FinisherForecastOutcome.NotGuaranteed;
         }
 
-        int hits = spec.HitCount;
+        int hits = descriptor.HitCount;
         if (command != null)
         {
             hits = (int)Math.Ceiling(Math.Max(0m, Hook.ModifyAttackHitCount(combatState, command, hits)));
@@ -120,31 +121,31 @@ internal static class FinisherForecast
             enemy.CurrentHp,
             enemy.Block,
             enemy.GetPowerAmount<KaratePower>())).ToArray();
-        Creature? singleTarget = spec.SingleTarget ?? spec.CardPlay.Target;
+        Creature? singleTarget = descriptor.SingleTarget ?? spec.CardPlay.Target;
         int? singleTargetIndex = singleTarget != null && enemyIndices.TryGetValue(singleTarget, out int singleIndex)
             ? singleIndex
             : null;
-        int[]? fixedTargets = spec.FixedTargets?
+        int[]? fixedTargets = descriptor.FixedTargets?
             .Where(enemyIndices.ContainsKey)
             .Select(target => enemyIndices[target])
             .ToArray();
-        FinisherForecastTargeting targeting = spec.Targeting switch
+        FinisherForecastTargeting targeting = descriptor.Targeting switch
         {
             FinisherTargeting.Single => FinisherForecastTargeting.Single,
             FinisherTargeting.All => FinisherForecastTargeting.All,
             FinisherTargeting.Random => FinisherForecastTargeting.Random,
             FinisherTargeting.Fixed => FinisherForecastTargeting.Fixed,
-            _ => throw new ArgumentOutOfRangeException(nameof(spec.Targeting), spec.Targeting, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(descriptor.Targeting), descriptor.Targeting, null)
         };
         if (targeting == FinisherForecastTargeting.Single && (enemies.Count != 1 || singleTargetIndex == null)
             || targeting == FinisherForecastTargeting.Fixed
-            && (fixedTargets is not { Length: > 0 } || fixedTargets.Length != spec.FixedTargets!.Count))
+            && (fixedTargets is not { Length: > 0 } || fixedTargets.Length != descriptor.FixedTargets!.Count))
         {
             return FinisherForecastOutcome.NotGuaranteed;
         }
 
-        decimal[] damageByTarget = enemies.Select(spec.Damage).ToArray();
-        decimal? narakuHpLoss = owner.GetPower<NarakuPower>() is { } naraku && spec.Props.IsPoweredAttack()
+        decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
+        decimal? narakuHpLoss = owner.GetPower<NarakuPower>() is { } naraku && descriptor.Props.IsPoweredAttack()
             ? naraku.DynamicVars.HpLoss.BaseValue
             : null;
         var cacheKey = new FinisherForecastFrameKey(
@@ -236,7 +237,7 @@ internal static class FinisherForecast
                 states,
                 targetIndex,
                 rawDamage,
-                spec.Props,
+                spec.Forecast.Props,
                 owner,
                 spec.Card,
                 spec.CardPlay,
@@ -247,7 +248,7 @@ internal static class FinisherForecast
         foreach ((int target, bool triggerKarate) in damageResults)
         {
             ForecastState state = states[target];
-            if (triggerKarate && state.Hp > 0 && state.Karate > 0 && spec.Props.IsPoweredAttack()
+            if (triggerKarate && state.Hp > 0 && state.Karate > 0 && spec.Forecast.Props.IsPoweredAttack()
                 && KarateTriggerRules.CanTriggerFromCardSource(spec.Card))
             {
                 ApplyDamage(

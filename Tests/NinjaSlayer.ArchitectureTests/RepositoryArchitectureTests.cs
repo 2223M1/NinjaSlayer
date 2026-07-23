@@ -795,6 +795,22 @@ public sealed class RepositoryArchitectureTests
         }
     }
 
+    [Fact]
+    public void FinisherForecastInputsUseOneDescriptor()
+    {
+        string orchestrator = SourceText("Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs");
+        string descriptor = SourceText("Code/ExternalAnimations/FinisherForecastDescriptor.cs");
+        string forecast = SourceText("Code/ExternalAnimations/FinisherForecast.cs");
+        string frameKey = SourceText("Code/ExternalAnimations/FinisherForecastFrameKey.cs");
+
+        Assert.Contains("CardPlay CardPlay,", orchestrator, StringComparison.Ordinal);
+        Assert.Contains("FinisherForecastDescriptor Forecast", orchestrator, StringComparison.Ordinal);
+        Assert.Contains("Func<Creature, decimal> Damage", descriptor, StringComparison.Ordinal);
+        Assert.Contains("FinisherTargeting Targeting", descriptor, StringComparison.Ordinal);
+        Assert.Contains("FinisherForecastDescriptor descriptor = spec.Forecast", forecast, StringComparison.Ordinal);
+        Assert.Contains("FinisherForecastDescriptor descriptor = spec.Forecast", frameKey, StringComparison.Ordinal);
+    }
+
     private static string SourceText(string relativePath) => Sources
         .Single(source => source.RelativePath == relativePath)
         .Root

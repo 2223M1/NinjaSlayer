@@ -38,14 +38,15 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         Creature? singleTarget,
         IReadOnlyList<FinisherForecastEffect> effects)
     {
+        FinisherForecastDescriptor descriptor = spec.Forecast;
         _owner = owner;
         _card = spec.Card;
         _cardPlay = spec.CardPlay;
         _command = command;
         _singleTarget = singleTarget;
-        _fixedTargets = spec.FixedTargets?.ToArray() ?? [];
-        _props = spec.Props;
-        _targeting = spec.Targeting;
+        _fixedTargets = descriptor.FixedTargets?.ToArray() ?? [];
+        _props = descriptor.Props;
+        _targeting = descriptor.Targeting;
         _narakuHpLoss = narakuHpLoss;
         _hits = hits;
         _enemies = enemies.Select((enemy, index) => new EnemySnapshot(
