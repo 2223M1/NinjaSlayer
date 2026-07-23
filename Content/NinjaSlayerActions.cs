@@ -182,7 +182,7 @@ public static class NinjaSlayerActions
             {
                 if (result.success)
                 {
-                    await PrepareCmd.Apply(result.cardAdded);
+                    _ = await PrepareCmd.Apply(result.cardAdded);
                 }
             }
         }

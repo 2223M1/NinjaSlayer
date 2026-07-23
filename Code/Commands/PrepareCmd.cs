@@ -4,10 +4,12 @@ using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
+using NinjaSlayer.Code.Prepared;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Commands;
 
-public static class PrepareCmd
+internal static class PrepareCmd
 {
     public static bool CanPrepare(CardModel card)
     {
@@ -24,11 +26,11 @@ public static class PrepareCmd
     public static bool ShouldReserveFromNormalDraw(CardModel card) =>
         NinjaSlayerPatchCapabilities.PreparedGameplayEnabled && IsPrepared(card);
 
-    public static async Task<bool> Apply(CardModel card)
+    public static async Task<PreparedApplyResult> Apply(CardModel card)
     {
         if (!CanPrepare(card))
         {
-            return false;
+            return new PreparedApplyResult(PreparedApplyStatus.NotApplied);
         }
 
         CardPile drawPile = PileType.Draw.GetPile(card.Owner);
@@ -36,21 +38,58 @@ public static class PrepareCmd
         PreparedAffliction? affliction = await CardCmd.Afflict<PreparedAffliction>(card, 1m);
         if (affliction is null)
         {
-            return false;
+            return new PreparedApplyResult(PreparedApplyStatus.NotApplied);
         }
 
         CardPileAddResult result = await CardPileCmd.Add(card, drawPile, CardPilePosition.Top);
-        if (!result.success || !drawPile.Cards.Contains(card))
+        if (!result.success || !drawPile.Cards.Any(candidate => ReferenceEquals(candidate, card)))
         {
-            CardCmd.ClearAffliction(card);
-            return false;
+            PreparedCleanupResult cleanup = PreparedSafetyService.RepairAfterApplyFailure(
+                card,
+                "draw-pile add was not confirmed");
+            return Report(card, PreparedApplyPolicy.ResolveAfterReposition(
+                new PreparedQueueTransactionResult(
+                    PreparedQueueTransactionStatus.FailedUncertain,
+                    new InvalidOperationException("Prepared draw-pile add was not confirmed.")),
+                hasStablePreparedPlacement: false,
+                cleanup,
+                "draw-pile add was not confirmed"));
         }
 
         // Top insertion is LIFO; place the new card after the existing prepared queue.
-        PreparedQueueCompatibility.Reposition(
+        PreparedQueueTransactionResult reposition = PreparedQueueCompatibility.TryReposition(
             drawPile,
             card,
             Math.Min(preparedAhead, drawPile.Cards.Count));
-        return true;
+        bool stablePlacement = PreparedSafetyService.HasStablePreparedPlacement(card, drawPile);
+        PreparedCleanupResult repair = stablePlacement
+            ? new PreparedCleanupResult(PreparedCleanupStatus.NotRequired)
+            : PreparedSafetyService.RepairAfterApplyFailure(card, "queue reposition was not confirmed");
+        return Report(card, PreparedApplyPolicy.ResolveAfterReposition(
+            reposition,
+            stablePlacement,
+            repair,
+            "queue reposition was not confirmed"));
+    }
+
+    private static PreparedApplyResult Report(CardModel card, PreparedApplyResult result)
+    {
+        if (!result.IsDegraded)
+        {
+            return result;
+        }
+
+        string diagnostic = result.Error is null ? string.Empty : $" {result.Error}";
+        string message = $"Prepared apply {result.Status} for {card.Id}: {result.Reason}.{diagnostic}";
+        if (result.RequiresLifecycleRepair)
+        {
+            Entry.Logger.Error(message);
+        }
+        else
+        {
+            Entry.Logger.Warn(message);
+        }
+
+        return result;
     }
 }

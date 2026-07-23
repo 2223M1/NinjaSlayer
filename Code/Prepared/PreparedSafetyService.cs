@@ -58,6 +58,20 @@ internal static class PreparedSafetyService
         }
     }
 
+    public static bool HasStablePreparedPlacement(CardModel card, CardPile expectedDrawPile)
+    {
+        int occurrences = card.Owner.Piles.Sum(pile =>
+            pile.Cards.Count(candidate => ReferenceEquals(candidate, card)));
+        return PrepareCmd.IsPrepared(card)
+            && ReferenceEquals(card.Pile, expectedDrawPile)
+            && expectedDrawPile.Cards.Count(candidate => ReferenceEquals(candidate, card)) == 1
+            && occurrences == 1
+            && BelongsToCombat(card, card.Owner.Creature.CombatState);
+    }
+
+    public static PreparedCleanupResult RepairAfterApplyFailure(CardModel card, string reason) =>
+        TryClear(card, $"apply recovery: {reason}", logFailure: false);
+
     private static void CleanupPlayers(
         IEnumerable<Player> players,
         bool combatIsEnding,
@@ -94,13 +108,39 @@ internal static class PreparedSafetyService
         && ReferenceEquals(card.CombatState, combatState)
         && card.Owner.PlayerCombatState?.AllCards.Contains(card) == true;
 
-    private static void TryClear(CardModel card, string reason)
+    private static PreparedCleanupResult TryClear(CardModel card, string reason, bool logFailure = true)
     {
+        if (!PrepareCmd.IsPrepared(card))
+        {
+            return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
+        }
+
         try
         {
             CardCmd.ClearAffliction(card);
+            if (!PrepareCmd.IsPrepared(card))
+            {
+                return new PreparedCleanupResult(PreparedCleanupStatus.Cleared);
+            }
+
+            var exception = new InvalidOperationException("Prepared affliction remained after cleanup.");
+            LogCleanupFailure(card, reason, exception, logFailure);
+            return new PreparedCleanupResult(PreparedCleanupStatus.Failed, exception);
         }
         catch (Exception exception)
+        {
+            LogCleanupFailure(card, reason, exception, logFailure);
+            return new PreparedCleanupResult(PreparedCleanupStatus.Failed, exception);
+        }
+    }
+
+    private static void LogCleanupFailure(
+        CardModel card,
+        string reason,
+        Exception exception,
+        bool logFailure)
+    {
+        if (logFailure)
         {
             Entry.Logger.Error($"Prepared safety cleanup failed at {reason} for {card.Id}: {exception}");
         }

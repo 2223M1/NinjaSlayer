@@ -31,6 +31,7 @@
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedSafetyPolicy.cs" Link="PreparedSafetyPolicy.cs" />
+    <Compile Include="..\..\Code\Prepared\PreparedApplyTransaction.cs" Link="PreparedApplyTransaction.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedDrawPolicy.cs" Link="PreparedDrawPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\NextDiscardProtectionPolicy.cs" Link="NextDiscardProtectionPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
