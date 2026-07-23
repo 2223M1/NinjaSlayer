@@ -28,12 +28,17 @@ internal enum PreparedCleanupStatus
 {
     NotRequired,
     Cleared,
-    Failed
+    Failed,
+    Deferred
 }
 
 internal readonly record struct PreparedCleanupResult(
     PreparedCleanupStatus Status,
-    Exception? Error = null);
+    Exception? Error = null,
+    string? Reason = null)
+{
+    public bool RequiresLifecycleRepair => Status is PreparedCleanupStatus.Failed or PreparedCleanupStatus.Deferred;
+}
 
 internal enum PreparedQueueTransactionStatus
 {

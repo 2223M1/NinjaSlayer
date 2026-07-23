@@ -161,10 +161,15 @@ internal static class GameCompatibility
             typeof(Hook),
             nameof(Hook.AfterCardChangedPiles),
             [typeof(IRunState), typeof(MegaCrit.Sts2.Core.Combat.ICombatState), typeof(CardModel), typeof(PileType), typeof(AbstractModel)]);
+        private static readonly MethodInfo? BeforeCombatStart = AccessTools.Method(
+            typeof(Hook),
+            nameof(Hook.BeforeCombatStart),
+            [typeof(IRunState), typeof(MegaCrit.Sts2.Core.Combat.ICombatState)]);
         private static readonly MethodInfo? InitializeSavedRun = AccessTools.Method(
             typeof(RunManager),
             "InitializeSavedRun",
             [typeof(SerializableRun)]);
+        private static readonly PropertyInfo? RunManagerState = AccessTools.Property(typeof(RunManager), "State");
         private static readonly FieldInfo? Grid = AccessTools.Field(typeof(NCardPileScreen), "_grid");
 
         public static IReadOnlyList<CapabilityProbe> GetGameplayProbes()
@@ -196,10 +201,16 @@ internal static class GameCompatibility
                 "Hook.after-card-changed-piles",
                 AfterCardChangedPiles,
                 "Hook.AfterCardChangedPiles(IRunState, ICombatState, CardModel, PileType, AbstractModel)"),
+            RequiredMember(
+                "Hook.before-combat-start",
+                BeforeCombatStart,
+                "Hook.BeforeCombatStart(IRunState, ICombatState)"),
             CapabilityProbe.Optional(
                 "RunManager.initialize-saved-run",
-                InitializeSavedRun != null,
-                InitializeSavedRun != null ? "available" : "RunManager.InitializeSavedRun(SerializableRun) is unavailable")
+                InitializeSavedRun != null && RunManagerState != null,
+                InitializeSavedRun != null && RunManagerState != null
+                    ? "available"
+                    : "RunManager.InitializeSavedRun(SerializableRun) or RunManager.State is unavailable")
         ];
 
         public static IReadOnlyList<CapabilityProbe> GetUiProbes() =>
@@ -219,6 +230,12 @@ internal static class GameCompatibility
         {
             grid = Grid?.GetValue(screen) as NCardGrid;
             return grid != null;
+        }
+
+        public static bool TryGetRunState(RunManager manager, out IRunState? runState)
+        {
+            runState = RunManagerState?.GetValue(manager) as IRunState;
+            return runState is not null;
         }
     }
 

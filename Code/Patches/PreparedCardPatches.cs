@@ -244,11 +244,15 @@ public sealed class PreparedPileChangeSafetyPatch : IPatchMethod
             [typeof(IRunState), typeof(ICombatState), typeof(CardModel), typeof(PileType), typeof(AbstractModel)])
     ];
 
-    public static void Postfix(CardModel card, PileType oldPile, ref Task __result)
+    public static void Postfix(
+        ICombatState? combatState,
+        CardModel card,
+        PileType oldPile,
+        ref Task __result)
     {
         if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
         {
-            __result = PreparedSafetyService.CompletePileChangeAfter(__result, card, oldPile);
+            __result = PreparedSafetyService.CompletePileChangeAfter(__result, combatState, card, oldPile);
         }
     }
 }
@@ -266,11 +270,32 @@ public sealed class PreparedRunLoadedSafetyPatch : IPatchMethod
 
     public static void Postfix(RunManager __instance)
     {
-        if (__instance.DebugOnlyGetState() is { } runState)
+        if (GameCompatibility.Prepared.TryGetRunState(__instance, out IRunState? runState)
+            && runState is not null)
         {
             PreparedSafetyService.RecoverAfterRunLoaded(runState);
         }
     }
+}
+
+public sealed class PreparedCombatStartSafetyPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_prepared_combat_start_safety";
+
+    public static string Description => "Repair invalid prepared markers at the current combat boundary.";
+
+    public static bool IsCritical => true;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(Hook),
+            nameof(Hook.BeforeCombatStart),
+            [typeof(IRunState), typeof(ICombatState)])
+    ];
+
+    public static void Prefix(ICombatState? combatState) =>
+        PreparedSafetyService.RecoverBeforeCombatStart(combatState);
 }
 
 public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod

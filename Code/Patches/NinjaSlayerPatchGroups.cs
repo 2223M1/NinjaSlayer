@@ -103,6 +103,7 @@ internal sealed class PreparedSafetyPatchGroup : IModPatches
     {
         patcher.RegisterPatch<PreparedPileChangeSafetyPatch>();
         patcher.RegisterPatch<PreparedRunLoadedSafetyPatch>();
+        patcher.RegisterPatch<PreparedCombatStartSafetyPatch>();
     }
 }
 

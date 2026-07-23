@@ -12,12 +12,6 @@ public sealed class PreparedSafetyLifecycleRules : NinjaSlayerSingletonTemplate
     {
     }
 
-    public override Task BeforeCombatStart()
-    {
-        PreparedSafetyService.RecoverBeforeCombatStart();
-        return Task.CompletedTask;
-    }
-
     public override Task AfterCombatEnd(CombatRoom room)
     {
         PreparedSafetyService.RecoverAfterCombatEnd(room);

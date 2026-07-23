@@ -5,6 +5,42 @@ namespace NinjaSlayer.LogicTests;
 public sealed class PreparedSafetyTests
 {
     [Fact]
+    public void CombatStateAccessPrefersMatchingSuppliedContext()
+    {
+        object state = new();
+
+        CombatStateAccessResult<object> result = CombatStateAccessPolicy.Resolve(state, state);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(CombatStateAccessStatus.Supplied, result.Status);
+        Assert.Same(state, result.State);
+    }
+
+    [Fact]
+    public void CombatStateAccessUsesCardContextWhenHookContextIsAbsent()
+    {
+        object state = new();
+
+        CombatStateAccessResult<object> result = CombatStateAccessPolicy.Resolve<object>(null, state);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(CombatStateAccessStatus.CardOwned, result.Status);
+        Assert.Same(state, result.State);
+    }
+
+    [Fact]
+    public void CombatStateAccessFailsClosedForMismatchAndMissingContext()
+    {
+        CombatStateAccessResult<object> mismatch = CombatStateAccessPolicy.Resolve(new object(), new object());
+        CombatStateAccessResult<object> unavailable = CombatStateAccessPolicy.Resolve<object>(null, null);
+
+        Assert.False(mismatch.Succeeded);
+        Assert.Equal(CombatStateAccessStatus.Mismatched, mismatch.Status);
+        Assert.False(unavailable.Succeeded);
+        Assert.Equal(CombatStateAccessStatus.Unavailable, unavailable.Status);
+    }
+
+    [Fact]
     public void NotAppliedResultIsNeitherPreparedNorDegraded()
     {
         var result = new PreparedApplyResult(PreparedApplyStatus.NotApplied);
@@ -12,6 +48,20 @@ public sealed class PreparedSafetyTests
         Assert.False(result.IsPrepared);
         Assert.False(result.IsDegraded);
         Assert.False(result.RequiresLifecycleRepair);
+    }
+
+    [Theory]
+    [InlineData((int)PreparedCleanupStatus.NotRequired, false)]
+    [InlineData((int)PreparedCleanupStatus.Cleared, false)]
+    [InlineData((int)PreparedCleanupStatus.Failed, true)]
+    [InlineData((int)PreparedCleanupStatus.Deferred, true)]
+    public void CleanupResultIdentifiesLifecycleRepair(
+        int statusValue,
+        bool expectedRepair)
+    {
+        var result = new PreparedCleanupResult((PreparedCleanupStatus)statusValue);
+
+        Assert.Equal(expectedRepair, result.RequiresLifecycleRepair);
     }
 
     [Theory]
