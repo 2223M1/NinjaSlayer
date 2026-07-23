@@ -28,6 +28,10 @@ public static class AlabamaDropAnimation
     private const float LandingSquashScaleX = 1.2f;
     private const float LandingSquashScaleY = 0.55f;
     private const float LandingSquashHoldDuration = 0.1f;
+    private const float GrabHitSparkScale = 0.5f;
+    private const float ImpactFireBurstReferenceSize = 450f;
+    private const float MinImpactFireBurstScale = 0.4f;
+    private const float MaxImpactFireBurstScale = 1f;
 
     internal const float InitialTumbleDegreesPerSecond = 3000f;
     internal const float FinalTumbleDegreesPerSecond = 12000f;
@@ -67,6 +71,7 @@ public static class AlabamaDropAnimation
             }
 
             impactPlayed = true;
+            SfxCmd.PlayDamage(target.Monster, 0);
             NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
             if (targetNode != null)
             {
@@ -216,7 +221,11 @@ public static class AlabamaDropAnimation
     {
         try
         {
-            NFireBurstVfx? vfx = NFireBurstVfx.Create(target, 1f);
+            NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
+            float scale = targetNode?.Visuals is { } visuals
+                ? CalculateImpactFireBurstScale(visuals.Bounds.Size, visuals.Scale)
+                : MaxImpactFireBurstScale;
+            NFireBurstVfx? vfx = NFireBurstVfx.Create(target, scale);
             if (vfx is not null && NCombatRoom.Instance is { } room)
             {
                 room.CombatVfxContainer.AddChildSafely(vfx);
@@ -232,11 +241,11 @@ public static class AlabamaDropAnimation
     {
         try
         {
-            VfxCmd.PlayOnCreatureCenter(target, VfxCmd.bluntPath);
-            if (NCombatRoom.Instance is { } room)
+            if (NCombatRoom.Instance is { } room
+                && NHitSparkVfx.Create(target, requireInteractable: false) is { } hitSpark)
             {
-                room.CombatVfxContainer.AddChildSafely(
-                    NHitSparkVfx.Create(target, requireInteractable: false));
+                hitSpark.Scale = Vector2.One * GrabHitSparkScale;
+                room.CombatVfxContainer.AddChildSafely(hitSpark);
             }
         }
         catch (Exception ex)
@@ -245,6 +254,27 @@ public static class AlabamaDropAnimation
         }
 
         SfxCmd.PlayDamage(target.Monster, 0);
+    }
+
+    internal static float CalculateImpactFireBurstScale(Vector2 boundsSize, Vector2 visualsScale)
+    {
+        float width = boundsSize.X * Mathf.Abs(visualsScale.X);
+        float height = boundsSize.Y * Mathf.Abs(visualsScale.Y);
+        if (!float.IsFinite(width) || !float.IsFinite(height) || width <= 0f || height <= 0f)
+        {
+            return MaxImpactFireBurstScale;
+        }
+
+        float sizeMetric = Mathf.Sqrt(width * height);
+        if (!float.IsFinite(sizeMetric))
+        {
+            return MaxImpactFireBurstScale;
+        }
+
+        return Mathf.Clamp(
+            sizeMetric / ImpactFireBurstReferenceSize,
+            MinImpactFireBurstScale,
+            MaxImpactFireBurstScale);
     }
 
     private static bool TryGetRig(Creature creature, out CreatureRig rig)
