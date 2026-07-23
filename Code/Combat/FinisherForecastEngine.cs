@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NinjaSlayer.Code.Combat;
 
 internal enum FinisherForecastOutcome
@@ -27,33 +25,41 @@ internal sealed record FinisherForecastPostEffect<TState>(
     FinisherForecastEffectTargeting Targeting,
     Func<TState[], IReadOnlyList<int>, bool> TryApply);
 
-internal sealed record FinisherForecastSimulation<TState>(
+internal sealed record FinisherForecastSimulation<TState, TStateKey>(
     IReadOnlyList<TState> InitialStates,
     int HitCount,
     FinisherForecastTargeting Targeting,
     Func<TState, bool> IsAlive,
-    Func<TState, string> StateKey,
+    Func<TState, TStateKey> StateKey,
     Func<TState[], IReadOnlyList<int>, int, bool> TryApplyHit,
     int? SingleTarget = null,
     IReadOnlyList<int>? FixedTargets = null,
-    IReadOnlyList<FinisherForecastPostEffect<TState>>? PostEffects = null);
+    IReadOnlyList<FinisherForecastPostEffect<TState>>? PostEffects = null)
+    where TStateKey : notnull;
+
+internal enum FinisherForecastSearchStage
+{
+    Hits,
+    Effects
+}
 
 internal static class FinisherForecastEngine
 {
     public const int DefaultMaximumSearchStates = 25_000;
     public static readonly TimeSpan DefaultMaximumSearchTime = TimeSpan.FromMilliseconds(8);
 
-    public static FinisherForecastOutcome Evaluate<TState>(
-        FinisherForecastSimulation<TState> simulation,
+    public static FinisherForecastOutcome Evaluate<TState, TStateKey>(
+        FinisherForecastSimulation<TState, TStateKey> simulation,
         int maximumSearchStates = DefaultMaximumSearchStates,
         TimeSpan? maximumSearchTime = null)
+        where TStateKey : notnull
     {
         if (simulation.HitCount <= 0 || simulation.InitialStates.Count == 0)
         {
             return FinisherForecastOutcome.NotGuaranteed;
         }
 
-        var search = new SearchContext<TState>(
+        var search = new SearchContext<TState, TStateKey>(
             simulation.StateKey,
             maximumSearchStates,
             maximumSearchTime ?? DefaultMaximumSearchTime);
@@ -87,12 +93,13 @@ internal static class FinisherForecastEngine
         };
     }
 
-    private static FinisherForecastOutcome SimulateFixed<TState>(
-        FinisherForecastSimulation<TState> simulation,
+    private static FinisherForecastOutcome SimulateFixed<TState, TStateKey>(
+        FinisherForecastSimulation<TState, TStateKey> simulation,
         TState[] states,
         IReadOnlyList<IReadOnlyList<int>> targetSets,
-        SearchContext<TState> search,
+        SearchContext<TState, TStateKey> search,
         bool resolveTargetsEachHit = false)
+        where TStateKey : notnull
     {
         for (int hit = 0; hit < simulation.HitCount; hit++)
         {
@@ -113,12 +120,13 @@ internal static class FinisherForecastEngine
         return ApplyPostEffects(simulation, states, effectIndex: 0, search);
     }
 
-    private static FinisherForecastOutcome SimulateRandom<TState>(
-        FinisherForecastSimulation<TState> simulation,
+    private static FinisherForecastOutcome SimulateRandom<TState, TStateKey>(
+        FinisherForecastSimulation<TState, TStateKey> simulation,
         TState[] states,
         int hitIndex,
         int hitsRemaining,
-        SearchContext<TState> search)
+        SearchContext<TState, TStateKey> search)
+        where TStateKey : notnull
     {
         if (hitsRemaining == 0)
         {
@@ -131,14 +139,18 @@ internal static class FinisherForecastEngine
             return ApplyPostEffects(simulation, states, effectIndex: 0, search);
         }
 
-        string key = search.CreateKey("hits", hitIndex, hitsRemaining, states);
+        FinisherForecastSearchKey<TStateKey> key = search.CreateKey(
+            FinisherForecastSearchStage.Hits,
+            hitIndex,
+            hitsRemaining,
+            states);
         MemoSearchLookup lookup = search.Lookup(key, out FinisherForecastOutcome cached);
         if (lookup == MemoSearchLookup.Cached)
         {
             return cached;
         }
 
-        if (lookup == MemoSearchLookup.BudgetExceeded)
+        if (lookup is MemoSearchLookup.StateBudgetExceeded or MemoSearchLookup.WatchdogExpired)
         {
             return FinisherForecastOutcome.IndeterminateBudget;
         }
@@ -175,11 +187,12 @@ internal static class FinisherForecastEngine
         return result;
     }
 
-    private static FinisherForecastOutcome ApplyPostEffects<TState>(
-        FinisherForecastSimulation<TState> simulation,
+    private static FinisherForecastOutcome ApplyPostEffects<TState, TStateKey>(
+        FinisherForecastSimulation<TState, TStateKey> simulation,
         TState[] states,
         int effectIndex,
-        SearchContext<TState> search)
+        SearchContext<TState, TStateKey> search)
+        where TStateKey : notnull
     {
         IReadOnlyList<FinisherForecastPostEffect<TState>> effects = simulation.PostEffects ?? [];
         if (effectIndex >= effects.Count)
@@ -206,14 +219,18 @@ internal static class FinisherForecastEngine
             return ApplyPostEffects(simulation, states, effectIndex + 1, search);
         }
 
-        string key = search.CreateKey("effects", effectIndex, effects.Count, states);
+        FinisherForecastSearchKey<TStateKey> key = search.CreateKey(
+            FinisherForecastSearchStage.Effects,
+            effectIndex,
+            effects.Count,
+            states);
         MemoSearchLookup lookup = search.Lookup(key, out FinisherForecastOutcome cached);
         if (lookup == MemoSearchLookup.Cached)
         {
             return cached;
         }
 
-        if (lookup == MemoSearchLookup.BudgetExceeded)
+        if (lookup is MemoSearchLookup.StateBudgetExceeded or MemoSearchLookup.WatchdogExpired)
         {
             return FinisherForecastOutcome.IndeterminateBudget;
         }
@@ -248,30 +265,73 @@ internal static class FinisherForecastEngine
     private static int[] AliveTargets<TState>(TState[] states, Func<TState, bool> isAlive) =>
         Enumerable.Range(0, states.Length).Where(index => isAlive(states[index])).ToArray();
 
-    private sealed class SearchContext<TState>(
-        Func<TState, string> stateKey,
+    private sealed class SearchContext<TState, TStateKey>(
+        Func<TState, TStateKey> stateKey,
         int maximumStates,
         TimeSpan maximumTime)
+        where TStateKey : notnull
     {
-        private readonly BoundedMemoSearch<string, FinisherForecastOutcome> _search =
+        private readonly BoundedMemoSearch<FinisherForecastSearchKey<TStateKey>, FinisherForecastOutcome> _search =
             new(maximumStates, maximumTime);
 
-        public MemoSearchLookup Lookup(string key, out FinisherForecastOutcome result) =>
+        public MemoSearchLookup Lookup(
+            FinisherForecastSearchKey<TStateKey> key,
+            out FinisherForecastOutcome result) =>
             _search.Lookup(key, out result);
 
-        public void Store(string key, FinisherForecastOutcome result) => _search.Store(key, result);
+        public void Store(FinisherForecastSearchKey<TStateKey> key, FinisherForecastOutcome result) =>
+            _search.Store(key, result);
 
-        public string CreateKey(string stage, int index, int remaining, IReadOnlyList<TState> states)
-        {
-            var builder = new StringBuilder(stage)
-                .Append(':').Append(index)
-                .Append(':').Append(remaining);
-            foreach (TState state in states)
-            {
-                builder.Append('|').Append(stateKey(state));
-            }
-
-            return builder.ToString();
-        }
+        public FinisherForecastSearchKey<TStateKey> CreateKey(
+            FinisherForecastSearchStage stage,
+            int index,
+            int remaining,
+            IReadOnlyList<TState> states) =>
+            new(stage, index, remaining, states.Select(stateKey));
     }
+}
+
+internal sealed class FinisherForecastSearchKey<TStateKey> : IEquatable<FinisherForecastSearchKey<TStateKey>>
+    where TStateKey : notnull
+{
+    private readonly TStateKey[] _states;
+    private readonly int _hashCode;
+
+    public FinisherForecastSearchKey(
+        FinisherForecastSearchStage stage,
+        int index,
+        int remaining,
+        IEnumerable<TStateKey> states)
+    {
+        Stage = stage;
+        Index = index;
+        Remaining = remaining;
+        _states = states.ToArray();
+
+        var hash = new HashCode();
+        hash.Add(Stage);
+        hash.Add(Index);
+        hash.Add(Remaining);
+        foreach (TStateKey state in _states)
+        {
+            hash.Add(state);
+        }
+
+        _hashCode = hash.ToHashCode();
+    }
+
+    public FinisherForecastSearchStage Stage { get; }
+    public int Index { get; }
+    public int Remaining { get; }
+
+    public bool Equals(FinisherForecastSearchKey<TStateKey>? other) =>
+        other is not null
+        && Stage == other.Stage
+        && Index == other.Index
+        && Remaining == other.Remaining
+        && _states.AsSpan().SequenceEqual(other._states);
+
+    public override bool Equals(object? obj) => Equals(obj as FinisherForecastSearchKey<TStateKey>);
+
+    public override int GetHashCode() => _hashCode;
 }
