@@ -72,6 +72,7 @@ internal sealed class KusarigamaFinisherForecastContributor : IFinisherForecastC
 
 internal static class FinisherForecast
 {
+    private static readonly FrameScopedCache<FinisherForecastFrameKey, CachedForecast> FrameCache = new();
     private static readonly IFinisherForecastContributor[] PostCardContributors =
     [
         new KusarigamaFinisherForecastContributor()
@@ -105,35 +106,16 @@ internal static class FinisherForecast
         var enemyIndices = enemies
             .Select((enemy, index) => (enemy, index))
             .ToDictionary(pair => pair.enemy, pair => pair.index);
-        List<FinisherForecastPostEffect<ForecastState>> postCardEffects = [];
+        List<FinisherForecastEffect> forecastEffects = [];
         foreach (IFinisherForecastContributor contributor in PostCardContributors)
         {
             if (contributor.TryCreateEffect(owner, spec, out FinisherForecastEffect? effect) && effect != null)
             {
-                postCardEffects.Add(new FinisherForecastPostEffect<ForecastState>(
-                    effect.Targeting,
-                    (states, targets) =>
-                    {
-                        foreach (int target in targets)
-                        {
-                            ApplyDamage(
-                                owner,
-                                enemies,
-                                states,
-                                target,
-                                effect.Amount,
-                                effect.Props,
-                                effect.Dealer,
-                                effect.CardSource,
-                                effect.CardPlay);
-                        }
-
-                        return true;
-                    }));
+                forecastEffects.Add(effect);
             }
         }
 
-        result = new FinisherForecastResult(hits, postCardEffects.Count > 0);
+        result = new FinisherForecastResult(hits, forecastEffects.Count > 0);
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
@@ -161,21 +143,66 @@ internal static class FinisherForecast
             return FinisherForecastOutcome.NotGuaranteed;
         }
 
-        var simulation = new FinisherForecastSimulation<ForecastState>(
+        decimal[] damageByTarget = enemies.Select(spec.Damage).ToArray();
+        decimal? narakuHpLoss = owner.GetPower<NarakuPower>() is { } naraku && spec.Props.IsPoweredAttack()
+            ? naraku.DynamicVars.HpLoss.BaseValue
+            : null;
+        var cacheKey = new FinisherForecastFrameKey(
+            owner,
+            spec,
+            command,
+            enemies,
+            damageByTarget,
+            narakuHpLoss,
+            hits,
+            singleTarget,
+            forecastEffects);
+        ulong frame = Engine.GetProcessFrames();
+        if (FrameCache.TryGet(frame, cacheKey, out CachedForecast cached))
+        {
+            result = cached.Result;
+            return cached.Outcome;
+        }
+
+        List<FinisherForecastPostEffect<ForecastState>> postCardEffects = forecastEffects
+            .Select(effect => new FinisherForecastPostEffect<ForecastState>(
+                effect.Targeting,
+                (effectStates, targets) =>
+                {
+                    foreach (int target in targets)
+                    {
+                        ApplyDamage(
+                            owner,
+                            enemies,
+                            effectStates,
+                            target,
+                            effect.Amount,
+                            effect.Props,
+                            effect.Dealer,
+                            effect.CardSource,
+                            effect.CardPlay);
+                    }
+
+                    return true;
+                }))
+            .ToList();
+        var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
             states,
             hits,
             targeting,
             state => state.Hp > 0,
-            state => $"{state.Hp},{state.Block},{state.Karate}",
+            state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
             (current, targets, hitIndex) =>
             {
-                ApplyHit(owner, enemies, current, spec, targets, hitIndex);
+                ApplyHit(owner, enemies, current, spec, damageByTarget, narakuHpLoss, targets, hitIndex);
                 return true;
             },
             singleTargetIndex,
             fixedTargets,
             postCardEffects);
-        return FinisherForecastEngine.Evaluate(simulation);
+        FinisherForecastOutcome outcome = FinisherForecastEngine.Evaluate(simulation);
+        FrameCache.Store(frame, cacheKey, new CachedForecast(outcome, result));
+        return outcome;
     }
 
     private static void ApplyHit(
@@ -183,6 +210,8 @@ internal static class FinisherForecast
         IReadOnlyList<Creature> enemies,
         ForecastState[] states,
         FinisherAttackSpec spec,
+        IReadOnlyList<decimal> damageByTarget,
+        decimal? narakuHpLoss,
         IReadOnlyList<int> targets,
         int hitIndex)
     {
@@ -195,7 +224,7 @@ internal static class FinisherForecast
             }
 
             Creature target = enemies[targetIndex];
-            decimal rawDamage = spec.Damage(target);
+            decimal rawDamage = damageByTarget[targetIndex];
             decimal postHookMultiplier = spec.Card is TornadoFist && hitIndex > 0
                 && target.GetPowerAmount<MegaCrit.Sts2.Core.Models.Powers.VulnerablePower>() <= 0
                     ? 1.5m
@@ -238,7 +267,7 @@ internal static class FinisherForecast
                 }
             }
 
-            if (owner.GetPower<NarakuPower>() is { } naraku && spec.Props.IsPoweredAttack())
+            if (narakuHpLoss.HasValue)
             {
                 foreach (int enemy in AliveTargets(states))
                 {
@@ -247,7 +276,7 @@ internal static class FinisherForecast
                         enemies,
                         states,
                         enemy,
-                        naraku.DynamicVars.HpLoss.BaseValue,
+                        narakuHpLoss.Value,
                         ValueProp.Unblockable | ValueProp.Unpowered,
                         owner,
                         spec.Card,
@@ -314,4 +343,8 @@ internal static class FinisherForecast
         Enumerable.Range(0, states.Count).Where(index => states[index].Hp > 0);
 
     private sealed record ForecastState(int Hp, int Block, int Karate);
+    private readonly record struct ForecastStateKey(int Hp, int Block, int Karate);
+    private readonly record struct CachedForecast(
+        FinisherForecastOutcome Outcome,
+        FinisherForecastResult Result);
 }

@@ -656,6 +656,20 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void FinisherForecastUsesDeterministicStructuredSearchAndFrameCaching()
+    {
+        string engine = SourceText("Code/Combat/FinisherForecastEngine.cs");
+        string forecast = SourceText("Code/ExternalAnimations/FinisherForecast.cs");
+
+        Assert.DoesNotContain("StringBuilder", engine, StringComparison.Ordinal);
+        Assert.DoesNotContain("Func<TState, string>", engine, StringComparison.Ordinal);
+        Assert.Contains("FinisherForecastSimulation<TState, TStateKey>", engine, StringComparison.Ordinal);
+        Assert.Contains("FinisherForecastSearchKey<TStateKey>", engine, StringComparison.Ordinal);
+        Assert.Contains("FrameScopedCache<FinisherForecastFrameKey, CachedForecast>", forecast, StringComparison.Ordinal);
+        Assert.Contains("Engine.GetProcessFrames()", forecast, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void HighFrequencyContextsUseOwnedScopes()
     {
         string karatePatch = SourceText("Code/Patches/KarateHealthBarPreviewPatch.cs");

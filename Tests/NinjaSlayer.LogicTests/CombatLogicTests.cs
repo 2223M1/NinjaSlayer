@@ -26,7 +26,7 @@ public sealed class CombatLogicTests
         Assert.True(cached);
         Assert.Equal(1, memo.VisitedStates);
         Assert.Equal(MemoSearchLookup.NewState, memo.Lookup("state-b", out _));
-        Assert.Equal(MemoSearchLookup.BudgetExceeded, memo.Lookup("state-c", out _));
+        Assert.Equal(MemoSearchLookup.StateBudgetExceeded, memo.Lookup("state-c", out _));
     }
 
     [Fact]
@@ -34,8 +34,60 @@ public sealed class CombatLogicTests
     {
         var memo = new BoundedMemoSearch<string, bool>(2, TimeSpan.Zero);
 
-        Assert.Equal(MemoSearchLookup.BudgetExceeded, memo.Lookup("state", out _));
+        Assert.Equal(MemoSearchLookup.WatchdogExpired, memo.Lookup("state", out _));
         Assert.Equal(0, memo.VisitedStates);
+    }
+
+    [Fact]
+    public void MemoSearchPrefersTheDeterministicStateBudgetOverTheWatchdog()
+    {
+        var memo = new BoundedMemoSearch<string, bool>(
+            maximumStates: 0,
+            maximumTime: TimeSpan.Zero,
+            elapsed: () => TimeSpan.MaxValue);
+
+        Assert.Equal(MemoSearchLookup.StateBudgetExceeded, memo.Lookup("state", out _));
+    }
+
+    [Fact]
+    public void MemoSearchStillUsesTheWatchdogWhenStateBudgetRemains()
+    {
+        var memo = new BoundedMemoSearch<string, bool>(
+            maximumStates: 1,
+            maximumTime: TimeSpan.FromMilliseconds(1),
+            elapsed: () => TimeSpan.FromMilliseconds(2));
+
+        Assert.Equal(MemoSearchLookup.WatchdogExpired, memo.Lookup("state", out _));
+    }
+
+    [Fact]
+    public void ForecastSearchKeysPreserveStructuredStateBoundaries()
+    {
+        var first = new FinisherForecastSearchKey<string>(
+            FinisherForecastSearchStage.Hits, 1, 2, ["1|2", "3"]);
+        var same = new FinisherForecastSearchKey<string>(
+            FinisherForecastSearchStage.Hits, 1, 2, ["1|2", "3"]);
+        var different = new FinisherForecastSearchKey<string>(
+            FinisherForecastSearchStage.Hits, 1, 2, ["1", "2|3"]);
+
+        Assert.Equal(first, same);
+        Assert.Equal(first.GetHashCode(), same.GetHashCode());
+        Assert.NotEqual(first, different);
+    }
+
+    [Fact]
+    public void FrameScopedCacheReusesOnlyTheCurrentFrameAndKey()
+    {
+        var cache = new FrameScopedCache<string, int>();
+        cache.Store(10, "forecast-a", 42);
+
+        Assert.True(cache.TryGet(10, "forecast-a", out int cached));
+        Assert.Equal(42, cached);
+        Assert.False(cache.TryGet(10, "forecast-b", out _));
+        Assert.Equal(1, cache.Count);
+
+        Assert.False(cache.TryGet(11, "forecast-a", out _));
+        Assert.Equal(0, cache.Count);
     }
 
     [Fact]
@@ -189,10 +241,11 @@ public sealed class CombatLogicTests
     }
 
     private static FinisherForecastOutcome EvaluateForecastForCorrectness<TState>(
-        FinisherForecastSimulation<TState> simulation) =>
+        FinisherForecastSimulation<TState, TState> simulation)
+        where TState : notnull =>
         FinisherForecastEngine.Evaluate(simulation, maximumSearchTime: TimeSpan.MaxValue);
 
-    private static FinisherForecastSimulation<ForecastTestState> CreateForecast(
+    private static FinisherForecastSimulation<ForecastTestState, ForecastTestState> CreateForecast(
         IReadOnlyList<ForecastTestState> states,
         int hits,
         FinisherForecastTargeting targeting,
@@ -202,12 +255,12 @@ public sealed class CombatLogicTests
         bool unknownEffect = false,
         int? singleTarget = null)
     {
-        return new FinisherForecastSimulation<ForecastTestState>(
+        return new FinisherForecastSimulation<ForecastTestState, ForecastTestState>(
             states,
             hits,
             targeting,
             state => state.Hp > 0,
-            state => $"{state.Hp},{state.Block},{state.Karate}",
+            state => state,
             (current, targets, _) =>
             {
                 if (unknownEffect)
