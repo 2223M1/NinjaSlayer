@@ -144,8 +144,16 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 if (-not $SkipGitHub) {
     Invoke-Native -Command gh -Arguments @('auth', 'status')
-    & gh release view $tag *> $null
-    if ($LASTEXITCODE -eq 0) {
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & gh release view $tag *> $null
+        $releaseExists = $LASTEXITCODE -eq 0
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($releaseExists) {
         Invoke-Native -Command gh -Arguments @('release', 'edit', $tag, '--title', "NinjaSlayer $tag", '--notes-file', $releaseNotePath)
     }
     else {
