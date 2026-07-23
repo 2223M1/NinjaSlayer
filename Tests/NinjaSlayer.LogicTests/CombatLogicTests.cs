@@ -28,6 +28,15 @@ public sealed class CombatLogicTests
     }
 
     [Fact]
+    public void MemoSearchHonorsAnExpiredTimeBudget()
+    {
+        var memo = new BoundedMemoSearch<string, bool>(2, TimeSpan.Zero);
+
+        Assert.Equal(MemoSearchLookup.BudgetExceeded, memo.Lookup("state", out _));
+        Assert.Equal(0, memo.VisitedStates);
+    }
+
+    [Fact]
     public void CombatMetricsResetOnlyTurnScopedValues()
     {
         object player = new();
@@ -58,31 +67,31 @@ public sealed class CombatLogicTests
     [Fact]
     public void FinisherForecastHandlesDeterministicCombatEffects()
     {
-        Assert.Equal(FinisherForecastOutcome.Guaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(5, 0, 0)], 1, FinisherForecastTargeting.Single, 5, singleTarget: 0)));
-        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(6, 0, 0)], 1, FinisherForecastTargeting.Single, 5, singleTarget: 0)));
-        Assert.Equal(FinisherForecastOutcome.Guaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(5, 0, 0), new ForecastTestState(5, 0, 0)],
             1, FinisherForecastTargeting.All, 5)));
-        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(5, 0, 0), new ForecastTestState(6, 0, 0)],
             1, FinisherForecastTargeting.All, 5)));
-        Assert.Equal(FinisherForecastOutcome.Guaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(5, 0, 0), new ForecastTestState(5, 0, 0)],
             2, FinisherForecastTargeting.Random, 5)));
-        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(5, 0, 0), new ForecastTestState(5, 0, 0)],
             1, FinisherForecastTargeting.Random, 5)));
-        Assert.Equal(FinisherForecastOutcome.Guaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(5, 3, 0)], 1, FinisherForecastTargeting.Single, 8, singleTarget: 0)));
-        Assert.Equal(FinisherForecastOutcome.Guaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(7, 0, 3)], 2, FinisherForecastTargeting.Single, 1,
             useKarate: true, singleTarget: 0)));
-        Assert.Equal(FinisherForecastOutcome.Guaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(1, 0, 0), new ForecastTestState(2, 0, 0)],
             1, FinisherForecastTargeting.Random, 1, narakuSplash: 2)));
-        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, FinisherForecastEngine.Evaluate(CreateForecast(
+        Assert.Equal(FinisherForecastOutcome.NotGuaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(1, 0, 0)], 1, FinisherForecastTargeting.Single, 1,
             unknownEffect: true, singleTarget: 0)));
     }
@@ -101,6 +110,10 @@ public sealed class CombatLogicTests
 
         Assert.Equal(FinisherForecastOutcome.IndeterminateBudget, result);
     }
+
+    private static FinisherForecastOutcome EvaluateForecastForCorrectness<TState>(
+        FinisherForecastSimulation<TState> simulation) =>
+        FinisherForecastEngine.Evaluate(simulation, maximumSearchTime: TimeSpan.MaxValue);
 
     private static FinisherForecastSimulation<ForecastTestState> CreateForecast(
         IReadOnlyList<ForecastTestState> states,
