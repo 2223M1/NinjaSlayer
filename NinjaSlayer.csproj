@@ -43,10 +43,13 @@
     <Compile Remove="Tests\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+      <!-- Public Godot scripts implement game interfaces, so the editor load context needs this in the local build output. -->
+      <Private>true</Private>
     </Reference>
 
     <Reference Include="0Harmony" Condition="Exists('$(Sts2DataDir)/0Harmony.dll')">
       <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
+      <Private>true</Private>
     </Reference>
 
     <PackageReference Include="Book.StS2.RefLib"

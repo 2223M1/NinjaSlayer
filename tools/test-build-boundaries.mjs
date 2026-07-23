@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+  chmodSync,
   existsSync,
   mkdtempSync,
   readFileSync,
@@ -45,6 +46,12 @@ function fileHash(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex').toUpperCase();
 }
 
+function xmlElement(source, element, name) {
+  const match = source.match(new RegExp(`<${element}\\s+[^>]*${name}[^>]*>([\\s\\S]*?)<\\/${element}>`));
+  assert(match, `Missing ${element} ${name}.`);
+  return match[0];
+}
+
 const project = readFileSync(projectPath, 'utf8');
 assert(project.includes('<Import Project="eng\\NinjaSlayer.Version.props" />'));
 assert(project.includes('<Import Project="eng\\NinjaSlayer.Version.targets" />'));
@@ -62,6 +69,7 @@ assert(
   'Delivery targets must remain explicit and must not attach themselves to ordinary builds.',
 );
 for (const target of [
+  'BuildGodotEditorAssembly',
   'PackageMod',
   'InstallLocal',
   'ValidateWorkshopPublish',
@@ -71,8 +79,32 @@ for (const target of [
   assert(packagingTargets.includes(`<Target Name="${target}"`), `Missing delivery target ${target}.`);
 }
 assert(
+  packagingTargets.includes('BuildGodotEditorAssembly;Build;SyncFmodBankForPackage'),
+  'Packaging must refresh the Godot editor assembly before exporting the requested configuration.',
+);
+const editorBuildTarget = xmlElement(
+  packagingTargets,
+  'Target',
+  'Name="BuildGodotEditorAssembly"',
+);
+assert(editorBuildTarget.includes(`Condition="'$(Configuration)' != 'Debug'"`));
+assert(editorBuildTarget.includes('Targets="Build"'));
+assert(editorBuildTarget.includes('Properties="Configuration=Debug"'));
+assert(editorBuildTarget.includes('BuildInParallel="false"'));
+assert(
   packagingTargets.includes('ValidateWorkshopPublish;PackageMod;StageWorkshop'),
   'Workshop publication must validate before packaging or staging.',
+);
+assert(
+  packagingTargets.includes('CustomErrorRegularExpression="System\\.[A-Za-z0-9_.]+Exception:|SCRIPT ERROR:|ERROR:"'),
+  'Godot export must fail when the editor reports a managed or Godot error with exit code zero.',
+);
+const sts2Reference = xmlElement(project, 'Reference', 'Include="sts2"');
+const harmonyReference = xmlElement(project, 'Reference', 'Include="0Harmony"');
+assert(
+  sts2Reference.includes('<Private>true</Private>')
+    && harmonyReference.includes('<Private>true</Private>'),
+  'Local game references must be present in the Godot editor dependency context.',
 );
 
 const sandbox = mkdtempSync(join(tmpdir(), 'ninjaslayer-build-boundaries-'));
@@ -133,6 +165,19 @@ try {
 </Project>
 `;
   writeFileSync(harnessPath, harness.trimStart(), 'utf8');
+
+  const fakeGodotPath = join(sandbox, process.platform === 'win32' ? 'fake-godot.cmd' : 'fake-godot.sh');
+  const fakeGodot = process.platform === 'win32'
+    ? '@echo off\r\necho System.TypeLoadException: simulated editor load failure\r\nexit /b 0\r\n'
+    : '#!/bin/sh\nprintf "%s\\n" "System.TypeLoadException: simulated editor load failure"\nexit 0\n';
+  writeFileSync(fakeGodotPath, fakeGodot, 'utf8');
+  if (process.platform !== 'win32') chmodSync(fakeGodotPath, 0o755);
+
+  const godotFailure = runMsbuild(harnessPath, 'ExportPckForPackage', {
+    GodotExe: fakeGodotPath,
+  });
+  assert.notEqual(godotFailure.status, 0, 'Managed Godot errors must fail packaging even with exit code zero.');
+  assert.match(`${godotFailure.stdout}\n${godotFailure.stderr}`, /System\.TypeLoadException/);
 
   requireSuccess(runMsbuild(harnessPath, 'InstallLocal'), 'temporary InstallLocal');
   const artifactNames = ['NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck'];
