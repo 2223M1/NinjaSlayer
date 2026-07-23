@@ -688,6 +688,24 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void TransitionLifecycleUsesAViewAdapter()
+    {
+        string session = SourceText("Code/Transition/NinjaSlayerTransitionSession.cs");
+        string transitionPatch = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
+        string adapter = SourceText("Code/Transition/TransitionViewAdapter.cs");
+
+        Assert.Contains("ITransitionViewAdapter", session, StringComparison.Ordinal);
+        Assert.DoesNotContain("SimpleTransition", session, StringComparison.Ordinal);
+        Assert.DoesNotContain("GradientTransition", session, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetNode", session, StringComparison.Ordinal);
+        Assert.DoesNotContain("SimpleTransition", transitionPatch, StringComparison.Ordinal);
+        Assert.DoesNotContain("GradientTransition", transitionPatch, StringComparison.Ordinal);
+        Assert.Contains("SimpleTransitionPath", adapter, StringComparison.Ordinal);
+        Assert.Contains("GradientTransitionPath", adapter, StringComparison.Ordinal);
+        Assert.Contains("void Restore(bool forceRelease)", adapter, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void HighFrequencyContextsUseOwnedScopes()
     {
         string karatePatch = SourceText("Code/Patches/KarateHealthBarPreviewPatch.cs");

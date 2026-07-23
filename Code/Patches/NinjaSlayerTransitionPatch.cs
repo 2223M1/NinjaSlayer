@@ -1,13 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using NinjaSlayer.Code.Nodes;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -42,7 +40,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         if (!NinjaSlayerTransitionGate.TryStartSession(
                 __instance,
                 cancelToken ?? CancellationToken.None,
-                (session, token) => BeginNinjaSlayerTransition(session, __instance, token),
+                BeginNinjaSlayerTransition,
                 out _))
         {
             return true;
@@ -59,44 +57,27 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
     private static Task BeginNinjaSlayerTransition(
         NinjaSlayerTransitionSession session,
-        NTransition transition,
         CancellationToken cancelToken)
     {
         if (SaveManager.Instance.PrefsSave.FastMode == FastModeType.Instant)
         {
-            GameCompatibility.Transition.SetInTransition(transition, true);
-            transition.Visible = false;
+            session.PrepareInstantView();
             return Task.CompletedTask;
         }
 
         // Cover the screen synchronously before returning so the character select / menu never
         // flashes through while the video decoder produces its first frame.
-        GameCompatibility.Transition.KillTween(transition);
-
-        GameCompatibility.Transition.SetInTransition(transition, true);
-        transition.Visible = true;
-        transition.MouseFilter = Control.MouseFilterEnum.Stop;
-
-        var gradientTransition = transition.GetNode<Control>("GradientTransition");
-        gradientTransition.Modulate = new Color(1f, 1f, 1f, 0f);
-
-        var simpleTransition = transition.GetNode<ColorRect>("SimpleTransition");
-        simpleTransition.Color = Colors.Black;
-        simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
-
-        var overlay = NinjaSlayerTransitionOverlay.GetOrCreate(transition);
-        session.OwnOverlay(overlay);
+        NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
         if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
         {
             session.BeginLoadSmoothing();
         }
-        return PlayOverlayAsync(session, overlay, simpleTransition, cancelToken);
+        return PlayOverlayAsync(session, overlay, cancelToken);
     }
 
     private static async Task PlayOverlayAsync(
         NinjaSlayerTransitionSession session,
         NinjaSlayerTransitionOverlay overlay,
-        ColorRect simpleTransition,
         CancellationToken cancelToken)
     {
         try
@@ -106,10 +87,9 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         finally
         {
             // Keep the screen covered with opaque black until the reveal patch clears/fades it.
-            if (session.ShouldHoldBackdrop && GodotObject.IsInstanceValid(simpleTransition))
+            if (session.ShouldHoldBackdrop)
             {
-                simpleTransition.Color = Colors.Black;
-                simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
+                session.HoldBackdrop();
             }
 
             session.EndLoadSmoothing();

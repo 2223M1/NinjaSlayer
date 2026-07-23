@@ -1,6 +1,4 @@
-using Godot;
 using MegaCrit.Sts2.Core.Nodes;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Scripts;
 
@@ -12,20 +10,20 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     private readonly CancellationToken _externalCancellation;
     private readonly CancellationTokenSource _lifetime;
     private readonly TransitionCompletionProtocol _protocol;
-    private NinjaSlayerTransitionOverlay? _overlay;
+    private readonly ITransitionViewAdapter _view;
     private Task _animationTask = Task.CompletedTask;
     private int _loadSmoothingStarted;
     private int _disposed;
 
-    public NinjaSlayerTransitionSession(NTransition transition, CancellationToken externalCancellation)
+    public NinjaSlayerTransitionSession(ITransitionViewAdapter view, CancellationToken externalCancellation)
     {
-        Transition = transition;
+        _view = view;
         _externalCancellation = externalCancellation;
         _lifetime = CancellationTokenSource.CreateLinkedTokenSource(externalCancellation);
         _protocol = new TransitionCompletionProtocol(Interlocked.Increment(ref _nextSessionId));
     }
 
-    public NTransition Transition { get; }
+    public NTransition Transition => _view.Transition;
     public long SessionId => _protocol.SessionId;
     public Task<TransitionCompletionResult> Completion => _protocol.Completion;
     public bool ShouldHoldBackdrop => !_protocol.IsCompletionStarted;
@@ -49,7 +47,11 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
     public bool TryClaimReveal() => _protocol.TryClaimReveal();
 
-    public void OwnOverlay(NinjaSlayerTransitionOverlay overlay) => _overlay = overlay;
+    public void PrepareInstantView() => _view.PrepareInstant();
+
+    public NinjaSlayerTransitionOverlay PrepareAnimatedView() => _view.PrepareAnimated();
+
+    public void HoldBackdrop() => _view.HoldBackdrop();
 
     public void BeginLoadSmoothing()
     {
@@ -94,7 +96,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
         var cleanupFailures = new List<Exception>();
         CaptureCleanup(cleanupFailures, _lifetime.Cancel);
-        CaptureCleanup(cleanupFailures, () => _overlay?.StopPlayback());
+        CaptureCleanup(cleanupFailures, _view.StopPlayback);
         CaptureCleanup(cleanupFailures, EndLoadSmoothing);
         CaptureCleanup(cleanupFailures, () => RestoreTransition(forceRelease));
 
@@ -180,27 +182,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
     private void RestoreTransition(bool forceRelease)
     {
-        if (!GodotObject.IsInstanceValid(Transition))
-        {
-            return;
-        }
-
-        if (forceRelease)
-        {
-            GameCompatibility.Transition.KillTween(Transition);
-            if (Transition.GetNodeOrNull<ColorRect>("SimpleTransition") is { } simpleTransition)
-            {
-                simpleTransition.Modulate = new Color(1f, 1f, 1f, 0f);
-            }
-            if (Transition.GetNodeOrNull<Control>("GradientTransition") is { } gradientTransition)
-            {
-                gradientTransition.Modulate = new Color(1f, 1f, 1f, 0f);
-            }
-            Transition.Visible = false;
-        }
-
-        Transition.MouseFilter = Control.MouseFilterEnum.Ignore;
-        GameCompatibility.Transition.SetInTransition(Transition, false);
+        _view.Restore(forceRelease);
     }
 
     private static void CaptureCleanup(ICollection<Exception> failures, Action cleanup)
