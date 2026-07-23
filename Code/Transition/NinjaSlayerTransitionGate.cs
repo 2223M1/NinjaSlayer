@@ -98,6 +98,14 @@ internal static class NinjaSlayerTransitionGate
 
     internal static void CancelPendingRequest() => Pending = false;
 
+    internal static (bool Active, bool Pending) GetHealthState()
+    {
+        lock (SyncRoot)
+        {
+            return (_activeSession is not null, _pending);
+        }
+    }
+
     internal static void OnSessionCompleted(NinjaSlayerTransitionSession session)
     {
         lock (SyncRoot)

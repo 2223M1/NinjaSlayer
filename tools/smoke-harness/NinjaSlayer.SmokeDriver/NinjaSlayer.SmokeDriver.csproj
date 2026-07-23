@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>NinjaSlayer-SmokeDriver</AssemblyName>
+    <RootNamespace>NinjaSlayer.SmokeDriver</RootNamespace>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <RitsuLibAssemblyPath Condition="'$(RitsuLibAssemblyPath)' == ''">$(UserProfile)\.nuget\packages\sts2.ritsulib\0.4.62\lib\net9.0\STS2-RitsuLib.dll</RitsuLibAssemblyPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="sts2">
+      <HintPath>$(Sts2DataDir)\sts2.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="GodotSharp">
+      <HintPath>$(Sts2DataDir)\GodotSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(Sts2DataDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="NinjaSlayer">
+      <HintPath>$(NinjaSlayerAssemblyPath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="STS2-RitsuLib">
+      <HintPath>$(RitsuLibAssemblyPath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="ValidateSmokeReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(Sts2DataDir)\sts2.dll')" Text="SmokeDriver requires Sts2DataDir." />
+    <Error Condition="!Exists('$(NinjaSlayerAssemblyPath)')" Text="SmokeDriver requires NinjaSlayerAssemblyPath." />
+    <Error Condition="!Exists('$(RitsuLibAssemblyPath)')" Text="SmokeDriver requires RitsuLibAssemblyPath." />
+  </Target>
+</Project>

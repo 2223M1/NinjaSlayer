@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Nodes;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Diagnostics;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Transition;
@@ -113,6 +114,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         }
 
         var result = new TransitionCompletionResult(SessionId, status, diagnostic);
+        NinjaSlayerRuntimeCounters.RecordTransition(result.Status);
         _protocol.Finish(result);
         NinjaSlayerTransitionGate.OnSessionCompleted(this);
         Dispose();

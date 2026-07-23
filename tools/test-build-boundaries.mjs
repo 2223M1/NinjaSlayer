@@ -110,11 +110,14 @@ for (const forbidden of [
   assert(!releaseWorkflow.includes(forbidden), `Release workflow must not contain ${forbidden}.`);
 }
 for (const required of [
-  "[ValidateSet('Contract', 'Release')]",
+  "[ValidateSet('Contract', 'Release', 'Smoke')]",
   "'Contract' { 'ninjaslayer-contract' }",
   "'Release' { 'ninjaslayer-release' }",
-  "$env:NINJASLAYER_SPINE_DIR = $spineDirectory",
+  "'Smoke' { 'ninjaslayer-smoke' }",
+  "$env:NINJASLAYER_SPINE_DIR = if ($RunnerPurpose -eq 'Release') { $spineDirectory } else { $null }",
   '$env:NINJASLAYER_SPINE_DIR = $previousSpineDirectory',
+  '$env:NINJASLAYER_SMOKE_GAME_ROOT = $previousSmokeGameRoot',
+  '$env:NINJASLAYER_RITSULIB_MOD_DIR = $previousRitsuLibModDirectory',
   'Remove-SessionDirectory -Path $sessionRoot',
 ]) {
   assert(ephemeralRunner.includes(required), `Ephemeral runner launcher is missing: ${required}`);
@@ -149,7 +152,12 @@ const editorBuildTarget = xmlElement(
 );
 assert(editorBuildTarget.includes(`Condition="'$(Configuration)' != 'Debug'"`));
 assert(editorBuildTarget.includes('Targets="Build"'));
-assert(editorBuildTarget.includes('Properties="Configuration=Debug"'));
+assert(
+  editorBuildTarget.includes(
+    'Properties="Configuration=Debug;GodotDisabledSourceGenerators=ScriptPathAttribute"',
+  ),
+  'The export-only editor assembly must not register game-dependent mod scripts.',
+);
 assert(editorBuildTarget.includes('BuildInParallel="false"'));
 assert(
   packagingTargets.includes('ValidateWorkshopPublish;PackageMod;StageWorkshop'),

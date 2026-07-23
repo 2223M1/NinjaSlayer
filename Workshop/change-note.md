@@ -1,1 +1,1 @@
-Release notes are generated from the matching GitHub Release. Update this file only when a release needs an additional Workshop-specific notice.
+新增受保护的实机冒烟测试与运行时健康诊断，并进一步提升 Prepared、处决和转场的异常恢复可靠性。

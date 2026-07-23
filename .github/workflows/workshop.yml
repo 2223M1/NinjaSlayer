@@ -72,6 +72,6 @@ jobs:
           STEAM_CONFIG_VDF: ${{ secrets.STEAM_CONFIG_VDF }}
           CONTENT_DIR: ${{ runner.temp }}/content
           PREVIEW_FILE: ${{ github.workspace }}/Workshop/image.png
-          CHANGE_NOTE: NinjaSlayer ${{ inputs.release_tag }} - see the matching GitHub Release notes
+          CHANGE_NOTE_FILE: ${{ github.workspace }}/Workshop/change-note.md
           STEAMCMD: ${{ runner.temp }}/steamcmd/steamcmd.sh
         run: bash .github/scripts/publish-workshop.sh
