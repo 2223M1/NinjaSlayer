@@ -13,24 +13,39 @@ namespace NinjaSlayer.Code.Prepared;
 
 internal static class PreparedSafetyService
 {
-    public static async Task CompletePileChangeAfter(Task original, CardModel card, PileType oldPile)
+    private static readonly ICombatStateAccessor CombatStateAccessor = new CardCombatStateAccessor();
+
+    public static async Task<PreparedCleanupResult> CompletePileChangeAfter(
+        Task original,
+        ICombatState? suppliedCombatState,
+        CardModel card,
+        PileType oldPile)
     {
         await original;
         if (!NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
         {
-            return;
+            return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
         }
 
-        ICombatState? currentCombat = CombatManager.Instance.DebugOnlyGetState();
-        bool belongsToCurrentCombat = BelongsToCombat(card, currentCombat);
+        CombatStateAccessResult<ICombatState> access = CombatStateAccessor.Resolve(card, suppliedCombatState);
+        if (!access.Succeeded)
+        {
+            return new PreparedCleanupResult(
+                PreparedCleanupStatus.Deferred,
+                Reason: access.Reason ?? "The current combat state could not be confirmed.");
+        }
+
+        bool belongsToCurrentCombat = BelongsToCombat(card, access.State);
         if (PreparedSafetyPolicy.ShouldClearAfterPileChange(
                 PrepareCmd.IsPrepared(card),
                 oldPile == PileType.Draw,
                 card.Pile?.Type == PileType.Draw,
                 belongsToCurrentCombat))
         {
-            TryClear(card, "confirmed draw-pile exit");
+            return TryClear(card, "confirmed draw-pile exit");
         }
+
+        return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
     }
 
     public static void RecoverAfterRunLoaded(IRunState runState)
@@ -41,10 +56,9 @@ internal static class PreparedSafetyService
         }
     }
 
-    public static void RecoverBeforeCombatStart()
+    public static void RecoverBeforeCombatStart(ICombatState? combatState)
     {
-        if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled
-            && CombatManager.Instance.DebugOnlyGetState() is { } combatState)
+        if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled && combatState is not null)
         {
             CleanupPlayers(combatState.Players, combatIsEnding: false, "combat start");
         }

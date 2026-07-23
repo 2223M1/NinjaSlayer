@@ -134,7 +134,10 @@ public sealed class RepositoryArchitectureTests
             .Root
             .ToFullString();
         Assert.Contains("PreparedPileChangeSafetyPatch", preparedPatches, StringComparison.Ordinal);
-        Assert.Contains("CompletePileChangeAfter(__result, card, oldPile)", preparedPatches, StringComparison.Ordinal);
+        Assert.Contains(
+            "CompletePileChangeAfter(__result, combatState, card, oldPile)",
+            preparedPatches,
+            StringComparison.Ordinal);
         Assert.DoesNotContain("PreparedPileExitPatch", preparedPatches, StringComparison.Ordinal);
         Assert.DoesNotContain("nameof(CardPile.RemoveInternal)", preparedPatches, StringComparison.Ordinal);
 
@@ -183,6 +186,21 @@ public sealed class RepositoryArchitectureTests
         Assert.True(
             entry.IndexOf("InstallCapability<PreparedSafetyPatchGroup>", StringComparison.Ordinal)
             < entry.IndexOf("InstallCapability<PreparedGameplayPatchGroup>", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void PreparedSafetyUsesContextualCombatStateAccess()
+    {
+        string service = SourceText("Code/Prepared/PreparedSafetyService.cs");
+        string accessor = SourceText("Code/Prepared/CombatStateAccessor.cs");
+        string patches = SourceText("Code/Patches/PreparedCardPatches.cs");
+
+        Assert.DoesNotContain("DebugOnlyGetState", service, StringComparison.Ordinal);
+        Assert.DoesNotContain("DebugOnlyGetState", patches, StringComparison.Ordinal);
+        Assert.Contains("ICombatStateAccessor", service, StringComparison.Ordinal);
+        Assert.Contains("class CardCombatStateAccessor", accessor, StringComparison.Ordinal);
+        Assert.Contains("PreparedCleanupStatus.Deferred", service, StringComparison.Ordinal);
+        Assert.Contains("ICombatState? combatState", patches, StringComparison.Ordinal);
     }
 
     [Fact]
