@@ -733,7 +733,7 @@ public sealed class RepositoryArchitectureTests
         ClassDeclarationSyntax presentation = Sources
             .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
             .Single(declaration => declaration.Identifier.Text == "FinisherPresentationPatchGroup");
-        string compatibility = SourceText("Code/Compatibility/GameCompatibility.cs");
+        string compatibility = SourceText("Code/Compatibility/GameCompatibility.Finisher.cs");
 
         Assert.DoesNotContain("NinjaSlayerFinisherDeathStartPatch", core.ToFullString(), StringComparison.Ordinal);
         Assert.Contains("NinjaSlayerFinisherDeathStartPatch", presentation.ToFullString(), StringComparison.Ordinal);
@@ -741,6 +741,40 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("NCreature.start-death-animation", compatibility, StringComparison.Ordinal);
         Assert.Contains("FinisherPresentationPatchGroup", groups, StringComparison.Ordinal);
         Assert.Contains("DeathAnimationTask", patches, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GameCompatibilityIsSplitByCapability()
+    {
+        string facade = SourceText("Code/Compatibility/GameCompatibility.cs");
+        string[] capabilityFiles =
+        [
+            "GameCompatibility.Finisher.cs",
+            "GameCompatibility.Prepared.cs",
+            "GameCompatibility.Transition.cs",
+            "GameCompatibility.Typography.cs",
+            "GameCompatibility.Feedback.cs",
+            "GameCompatibility.KarateHealthBar.cs",
+            "GameCompatibility.AssetLoading.cs",
+            "GameCompatibility.TornadoCadence.cs",
+            "GameCompatibility.ReporterPass.cs"
+        ];
+
+        Assert.Contains("partial class GameCompatibility", facade, StringComparison.Ordinal);
+        foreach (string fileName in capabilityFiles)
+        {
+            string source = SourceText($"Code/Compatibility/{fileName}");
+            Assert.Contains("partial class GameCompatibility", source, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain("static class Finisher", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class Prepared", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class Transition", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class Typography", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class Feedback", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class AssetLoading", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class TornadoCadence", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class ReporterPass", facade, StringComparison.Ordinal);
     }
 
     private static string SourceText(string relativePath) => Sources
