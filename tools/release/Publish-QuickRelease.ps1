@@ -63,17 +63,17 @@ if ([string]::IsNullOrWhiteSpace($releaseNote)) {
     throw 'Release note must contain at least one sentence.'
 }
 
-Invoke-Native git fetch origin main --tags
-$branch = Get-NativeText git branch --show-current
+Invoke-Native -Command git -Arguments @('fetch', 'origin', 'main', '--tags')
+$branch = Get-NativeText -Command git -Arguments @('branch', '--show-current')
 if ($branch -ne 'main') {
     throw "Quick release must run from main, not $branch."
 }
-if (-not [string]::IsNullOrWhiteSpace((Get-NativeText git status --porcelain))) {
+if (-not [string]::IsNullOrWhiteSpace((Get-NativeText -Command git -Arguments @('status', '--porcelain')))) {
     throw 'Quick release requires a clean worktree.'
 }
 
-$head = Get-NativeText git rev-parse HEAD
-$originMain = Get-NativeText git rev-parse origin/main
+$head = Get-NativeText -Command git -Arguments @('rev-parse', 'HEAD')
+$originMain = Get-NativeText -Command git -Arguments @('rev-parse', 'origin/main')
 if ($head -ne $originMain) {
     throw 'Quick release requires HEAD to match origin/main exactly.'
 }
@@ -84,14 +84,14 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Unable to inspect local release tags.'
 }
 if ($existingTag) {
-    $tagCommit = Get-NativeText git rev-list -n 1 $tag
+    $tagCommit = Get-NativeText -Command git -Arguments @('rev-list', '-n', '1', $tag)
     if ($tagCommit -ne $head) {
         throw "$tag already points to $tagCommit instead of HEAD $head."
     }
 }
 
 Write-Host "Building and installing NinjaSlayer $Version..."
-Invoke-Native dotnet msbuild .\NinjaSlayer.csproj '-t:InstallLocal' '-p:Configuration=Release' "-p:NinjaSlayerVersion=$Version" '-v:minimal'
+Invoke-Native -Command dotnet -Arguments @('msbuild', '.\NinjaSlayer.csproj', '-t:InstallLocal', '-p:Configuration=Release', "-p:NinjaSlayerVersion=$Version", '-v:minimal')
 
 $packageDirectory = Join-Path $repositoryRoot 'build\mods\NinjaSlayer'
 $requiredArtifacts = @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'SHA256SUMS')
@@ -119,13 +119,13 @@ foreach ($line in Get-Content -LiteralPath (Join-Path $packageDirectory 'SHA256S
 }
 
 if (-not $existingTag) {
-    Invoke-Native git tag -a $tag -m "NinjaSlayer $tag"
-    Invoke-Native git push origin $tag
+    Invoke-Native -Command git -Arguments @('tag', '-a', $tag, '-m', "NinjaSlayer $tag")
+    Invoke-Native -Command git -Arguments @('push', 'origin', $tag)
 }
 else {
-    $remoteTag = Get-NativeText git ls-remote --tags origin "refs/tags/$tag^{}"
+    $remoteTag = Get-NativeText -Command git -Arguments @('ls-remote', '--tags', 'origin', "refs/tags/$tag^{}")
     if ([string]::IsNullOrWhiteSpace($remoteTag)) {
-        Invoke-Native git push origin $tag
+        Invoke-Native -Command git -Arguments @('push', 'origin', $tag)
     }
 }
 
@@ -143,16 +143,16 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
     $false)
 
 if (-not $SkipGitHub) {
-    Invoke-Native gh auth status
+    Invoke-Native -Command gh -Arguments @('auth', 'status')
     & gh release view $tag *> $null
     if ($LASTEXITCODE -eq 0) {
-        Invoke-Native gh release edit $tag --title "NinjaSlayer $tag" --notes-file $releaseNotePath
+        Invoke-Native -Command gh -Arguments @('release', 'edit', $tag, '--title', "NinjaSlayer $tag", '--notes-file', $releaseNotePath)
     }
     else {
-        Invoke-Native gh release create $tag --verify-tag --draft --title "NinjaSlayer $tag" --notes-file $releaseNotePath
+        Invoke-Native -Command gh -Arguments @('release', 'create', $tag, '--verify-tag', '--draft', '--title', "NinjaSlayer $tag", '--notes-file', $releaseNotePath)
     }
-    Invoke-Native gh release upload $tag $archivePath --clobber
-    Invoke-Native gh release edit $tag --draft=false
+    Invoke-Native -Command gh -Arguments @('release', 'upload', $tag, $archivePath, '--clobber')
+    Invoke-Native -Command gh -Arguments @('release', 'edit', $tag, '--draft=false')
 }
 
 if (-not $SkipWorkshop) {
@@ -172,10 +172,10 @@ if (-not $SkipWorkshop) {
 
     [IO.Directory]::CreateDirectory($workshopDirectory) | Out-Null
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'Workshop\workshop.json') -Destination (Join-Path $workshopDirectory 'workshop.json') -Force
-    Invoke-Native dotnet msbuild .\NinjaSlayer.csproj '-t:StageWorkshop' '-p:Configuration=Release' "-p:NinjaSlayerVersion=$Version" "-p:WorkshopUploadRoot=$WorkshopUploadRoot" "-p:WorkshopContentDir=$workshopContentDirectory" '-v:minimal'
+    Invoke-Native -Command dotnet -Arguments @('msbuild', '.\NinjaSlayer.csproj', '-t:StageWorkshop', '-p:Configuration=Release', "-p:NinjaSlayerVersion=$Version", "-p:WorkshopUploadRoot=$WorkshopUploadRoot", "-p:WorkshopContentDir=$workshopContentDirectory", '-v:minimal')
     Push-Location $WorkshopUploadRoot
     try {
-        Invoke-Native $uploader upload -w NinjaSlayer
+        Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer')
     }
     finally {
         Pop-Location
