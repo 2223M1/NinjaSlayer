@@ -26,29 +26,30 @@ public static class NinjaSlayerXAttackSequence
             || NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
         Func<Action, Task> executeHits = async finishSpinEarly =>
         {
-            XAttackComboContext.Begin(hits);
-            try
+            using (XAttackComboContext.Enter(hits))
             {
-                for (int i = 0; i < hits; i++)
+                try
                 {
-                    XAttackComboContext.CurrentHitIndex = i;
-                    if (useSlowAttack)
+                    for (int i = 0; i < hits; i++)
                     {
-                        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
-                    }
+                        XAttackComboContext.CurrentHitIndex = i;
+                        if (useSlowAttack)
+                        {
+                            NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
+                        }
 
-                    bool targetKilled = await perHit(i);
-                    if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
-                    {
-                        finishSpinEarly();
-                        break;
+                        bool targetKilled = await perHit(i);
+                        if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+                        {
+                            finishSpinEarly();
+                            break;
+                        }
                     }
                 }
-            }
-            finally
-            {
-                await XAttackComboMovement.EndCombo(creature);
-                XAttackComboContext.End();
+                finally
+                {
+                    await XAttackComboMovement.EndCombo(creature);
+                }
             }
         };
 

@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.addons.mega_text;
+using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
@@ -26,23 +27,24 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
         CardModel? card = __instance.Holder?.CardNode?.Model;
         if (card == null)
         {
+            KaratePreviewScopeRegistry.Release(__instance);
             return;
         }
 
         Creature target = creature.Entity;
         if (!CanPreviewKarate(card, target))
         {
-            KarateCombatPreviewContext.Clear(card);
+            KaratePreviewScopeRegistry.Release(__instance);
             return;
         }
 
         if (target.GetPowerAmount<KaratePower>() <= 0)
         {
-            KarateCombatPreviewContext.Clear(card);
+            KaratePreviewScopeRegistry.Release(__instance);
             return;
         }
 
-        KarateCombatPreviewContext.Set(card, target);
+        KaratePreviewScopeRegistry.Replace(__instance, card, target);
     }
 
     private static bool CanPreviewKarate(CardModel card, Creature target) =>
@@ -68,7 +70,32 @@ public sealed class KarateCardPreviewClearPatch : IPatchMethod
 
     public static void Prefix(NCardPlay __instance)
     {
-        KarateCombatPreviewContext.Clear(__instance.Holder?.CardNode?.Model);
+        KaratePreviewScopeRegistry.Release(__instance);
+    }
+}
+
+internal static class KaratePreviewScopeRegistry
+{
+    private static readonly ConditionalWeakTable<NCardPlay, ScopeHolder> Scopes = new();
+
+    public static void Replace(NCardPlay cardPlay, CardModel card, Creature target)
+    {
+        Release(cardPlay);
+        Scopes.Add(cardPlay, new ScopeHolder(KarateCombatPreviewContext.Enter(card, target)));
+    }
+
+    public static void Release(NCardPlay cardPlay)
+    {
+        if (Scopes.TryGetValue(cardPlay, out ScopeHolder? holder))
+        {
+            Scopes.Remove(cardPlay);
+            holder.Dispose();
+        }
+    }
+
+    private sealed class ScopeHolder(IDisposable scope) : IDisposable
+    {
+        public void Dispose() => scope.Dispose();
     }
 }
 

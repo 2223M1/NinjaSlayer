@@ -143,6 +143,72 @@ public sealed class LifecycleTests
     }
 
     [Fact]
+    public void XAttackComboScopesRestoreNestedState()
+    {
+        Assert.False(XAttackComboContext.Active);
+        using (XAttackComboContext.Enter(3))
+        {
+            XAttackComboContext.CurrentHitIndex = 2;
+            using (XAttackComboContext.Enter(5))
+            {
+                Assert.True(XAttackComboContext.Active);
+                Assert.Equal(0, XAttackComboContext.CurrentHitIndex);
+                Assert.Equal(5, XAttackComboContext.TotalHits);
+                XAttackComboContext.CurrentHitIndex = 4;
+            }
+
+            Assert.True(XAttackComboContext.Active);
+            Assert.Equal(2, XAttackComboContext.CurrentHitIndex);
+            Assert.Equal(3, XAttackComboContext.TotalHits);
+        }
+
+        Assert.False(XAttackComboContext.Active);
+        Assert.Equal(0, XAttackComboContext.CurrentHitIndex);
+        Assert.Equal(0, XAttackComboContext.TotalHits);
+    }
+
+    [Fact]
+    public void XAttackScopesTolerateOutOfOrderDisposal()
+    {
+        IDisposable audioOuter = XAttackAudioContext.Suppress();
+        IDisposable audioInner = XAttackAudioContext.Suppress();
+        audioOuter.Dispose();
+        Assert.True(XAttackAudioContext.SuppressAutomaticSfx);
+        audioInner.Dispose();
+        Assert.False(XAttackAudioContext.SuppressAutomaticSfx);
+
+        IDisposable comboOuter = XAttackComboContext.Enter(3);
+        XAttackComboContext.CurrentHitIndex = 1;
+        IDisposable comboInner = XAttackComboContext.Enter(5);
+        XAttackComboContext.CurrentHitIndex = 4;
+        comboOuter.Dispose();
+        Assert.True(XAttackComboContext.Active);
+        Assert.Equal(4, XAttackComboContext.CurrentHitIndex);
+        Assert.Equal(5, XAttackComboContext.TotalHits);
+        comboInner.Dispose();
+        Assert.False(XAttackComboContext.Active);
+    }
+
+    [Fact]
+    public async Task XAttackComboHitStateIsIsolatedAcrossExecutionContexts()
+    {
+        using (XAttackComboContext.Enter(3))
+        {
+            XAttackComboContext.CurrentHitIndex = 2;
+            await Task.Run(() =>
+            {
+                Assert.Equal(2, XAttackComboContext.CurrentHitIndex);
+                XAttackComboContext.CurrentHitIndex = 1;
+                Assert.Equal(1, XAttackComboContext.CurrentHitIndex);
+            });
+
+            Assert.Equal(2, XAttackComboContext.CurrentHitIndex);
+        }
+
+        Assert.False(XAttackComboContext.Active);
+    }
+
+    [Fact]
     public void CinematicContractsRemainCalibratedAndDisposalIsIdempotent()
     {
         Assert.Equal(2f, CinematicTimingContract.BossMinimumCameraHoldSeconds);

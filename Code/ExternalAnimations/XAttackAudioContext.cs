@@ -1,30 +1,12 @@
+using NinjaSlayer.Code.Lifecycle;
+
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class XAttackAudioContext
 {
-    private static readonly AsyncLocal<int> SuppressionDepth = new();
+    private static readonly AsyncScopeDepth Suppression = new();
 
-    public static bool SuppressAutomaticSfx => SuppressionDepth.Value > 0;
+    public static bool SuppressAutomaticSfx => Suppression.IsActive;
 
-    public static IDisposable Suppress()
-    {
-        SuppressionDepth.Value++;
-        return new SuppressionLease();
-    }
-
-    private sealed class SuppressionLease : IDisposable
-    {
-        private bool _disposed;
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            SuppressionDepth.Value = Math.Max(0, SuppressionDepth.Value - 1);
-        }
-    }
+    public static IDisposable Suppress() => Suppression.Enter();
 }
