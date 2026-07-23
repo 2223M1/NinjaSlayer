@@ -5,10 +5,9 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 internal static class FinisherTimeline
 {
     public const float ImpactLeadSeconds = 0.04f;
-    public const float ImpactKnockbackRecoverySeconds = 0.06f;
     public const float DoomPoseSeconds = 0.3f;
     public const float ImpactRecoverySeconds = 0.1f;
-    public const float FinisherSettleSeconds = 0.1f;
+    public const float DeathKickSettleSeconds = CinematicTimingContract.FinisherDeathKickSettleSeconds;
     public const float ReturnSeconds = CinematicTimingContract.FinisherReturnSeconds;
     public const float SingleHitZoomSeconds = 0.1f;
     public const float MultiHitZoomSeconds = 0.2f;

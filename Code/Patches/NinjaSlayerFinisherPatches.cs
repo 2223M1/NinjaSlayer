@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -135,6 +136,24 @@ public sealed class NinjaSlayerFinisherCardVisualPatch : IPatchMethod
     public static void Postfix(NCard __instance)
     {
         FinisherCardVisualSuppression.OnCardEnteredTree(__instance);
+    }
+}
+
+public sealed class NinjaSlayerFinisherDeathStartPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_finisher_death_start";
+    public static string Description => "Apply finisher knockback on the first frame of the original death animation.";
+    public static bool IsCritical => true;
+
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(NCreature), nameof(NCreature.StartDeathAnim), [typeof(bool)])];
+
+    public static void Prefix(NCreature __instance)
+    {
+        if (__instance.DeathAnimationTask == null || __instance.DeathAnimationTask.IsCompleted)
+        {
+            NinjaSlayerFinisherCinematic.NotifyDeathAnimationStarting(__instance);
+        }
     }
 }
 

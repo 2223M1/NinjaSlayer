@@ -34,6 +34,7 @@ internal sealed class FinisherSession : IAsyncDisposable
     private readonly NCreature _focusNode;
     private readonly FinisherDamageLedger _ledger;
     private readonly Dictionary<Node2D, Vector2> _deathSquashOriginalScales = [];
+    private readonly Dictionary<NCreature, DeathKickVisual> _deathKickVisuals = [];
     private readonly CombatCinematicCameraLease _camera;
     private readonly NCombatRoom _room;
     private readonly Vector2 _ownerStartPosition;
@@ -50,6 +51,7 @@ internal sealed class FinisherSession : IAsyncDisposable
     private Task _backdropTransitionTask = Task.CompletedTask;
     private Task _enhancedImpactTask = Task.CompletedTask;
     private Task _cameraShakePumpTask = Task.CompletedTask;
+    private Task _returnToBaselineTask = Task.CompletedTask;
     private int _cameraTransitionGeneration;
     private int _backdropTransitionGeneration;
     private int _primaryAnimationsStarted;
@@ -61,6 +63,9 @@ internal sealed class FinisherSession : IAsyncDisposable
     private bool _enhancedImpactFailed;
     private bool _committing;
     private bool _deathCommitStarted;
+    private bool _returnTimelineStarted;
+    private bool _returnTimelineCompleted;
+    private float _returnTimelineProgress;
     private bool _disposed;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
@@ -215,6 +220,29 @@ internal sealed class FinisherSession : IAsyncDisposable
         }
 
         TryScheduleEnhancedImpact();
+    }
+
+    public void NotifyDeathAnimationStarting(NCreature creatureNode)
+    {
+        if (_disposed
+            || !_deathCommitStarted
+            || !_deathKickVisuals.TryGetValue(creatureNode, out DeathKickVisual? visual)
+            || visual.Triggered)
+        {
+            return;
+        }
+
+        visual.Triggered = true;
+        if (!GodotObject.IsInstanceValid(visual.Body) || _returnTimelineCompleted)
+        {
+            RestoreDeathKick(visual);
+            return;
+        }
+
+        visual.JoinedAtReturnProgress = _returnTimelineProgress;
+        visual.Body.Position = visual.Position
+            + Vector2.Right * visual.Direction * EnemyKnockbackPixels;
+        StartReturnTimeline(includeSettle: true);
     }
 
     public bool TryProtectLethalDamage(
@@ -372,7 +400,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         {
             FinisherLog.Warn(
                 $"Finisher session {SessionId} forecast did not match runtime damage; committing confirmed deaths without the pose.");
-            await KillDeferredDeathsOnce(toKill);
+            await KillDeferredDeathsOnce(toKill, useDeathKick: false);
             return false;
         }
 
@@ -383,7 +411,7 @@ internal sealed class FinisherSession : IAsyncDisposable
             .ToList();
         if (toKill.Count > 0 && targetNodes.Count == 0)
         {
-            await KillDeferredDeathsOnce(toKill);
+            await KillDeferredDeathsOnce(toKill, useDeathKick: false);
             return false;
         }
 
@@ -410,9 +438,9 @@ internal sealed class FinisherSession : IAsyncDisposable
             }
         }
 
-        if (await KillDeferredDeathsOnce(toKill))
+        if (await KillDeferredDeathsOnce(toKill, useDeathKick: true))
         {
-            await WaitSeconds(FinisherSettleSeconds);
+            StartReturnTimeline(includeSettle: true);
         }
 
         return true;
@@ -424,7 +452,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         _impactCancellation.Cancel();
         await _enhancedImpactTask;
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
-        await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths());
+        await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths(), useDeathKick: false);
     }
 
     private async Task CommitConfirmedDeathsEmergencyCore()
@@ -450,10 +478,12 @@ internal sealed class FinisherSession : IAsyncDisposable
                 $"Finisher session {SessionId} could not release every pending protection during fallback commit: {ex}");
         }
 
-        await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths());
+        await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths(), useDeathKick: false);
     }
 
-    private async Task<bool> KillDeferredDeathsOnce(IEnumerable<Creature> deferredDeaths)
+    private async Task<bool> KillDeferredDeathsOnce(
+        IEnumerable<Creature> deferredDeaths,
+        bool useDeathKick)
     {
         if (_deathCommitStarted || !IsCurrentCombatContext())
         {
@@ -475,6 +505,11 @@ internal sealed class FinisherSession : IAsyncDisposable
         {
             FinisherLog.Warn(
                 $"Finisher session {SessionId} could not restore a death squash before committing deaths: {ex}");
+        }
+
+        if (useDeathKick)
+        {
+            ArmDeathKicks(toKill);
         }
 
         _deathCommitStarted = true;
@@ -500,7 +535,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         await cleanup.CaptureAsync(() => _backdropTransitionTask);
         if (mayRestoreCurrentCombat)
         {
-            await cleanup.CaptureAsync(ReturnToBaseline);
+            await cleanup.CaptureAsync(EnsureReturnToBaseline);
         }
         await cleanup.CaptureAsync(() => _cameraShakePumpTask);
 
@@ -515,6 +550,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         _cardVisualSuppression = null;
         cleanup.Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
         cleanup.Capture(RestoreDeathSquashes);
+        cleanup.Capture(RestoreDeathKicks);
         cleanup.Capture(DisposeEnhancedPresentation);
         if (GodotObject.IsInstanceValid(_room))
         {
@@ -708,7 +744,6 @@ internal sealed class FinisherSession : IAsyncDisposable
             {
                 elapsed += await NextFrame();
                 float progress = EaseOut(Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f));
-                ApplyEnemyPosition(impactVisuals.Values, progress);
                 ApplyEnemyFlash(impactVisuals.Values, progress);
                 _camera.SetTransform(
                     cameraStartPosition.Lerp(punchPosition, progress),
@@ -716,13 +751,8 @@ internal sealed class FinisherSession : IAsyncDisposable
             }
 
             RestoreEnemyFlash(impactVisuals.Values);
-            await RecoverEnemyPositions(
-                impactVisuals.Values,
-                ImpactKnockbackRecoverySeconds,
-                NextFrame);
             float holdSeconds = DoomPoseSeconds
                 - ImpactLeadSeconds
-                - ImpactKnockbackRecoverySeconds
                 - ImpactRecoverySeconds;
             if (holdSeconds > 0f)
             {
@@ -802,7 +832,6 @@ internal sealed class FinisherSession : IAsyncDisposable
                 elapsed += await NextEnhancedFrame(cancellationToken);
                 float linearProgress = Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f);
                 float progress = EaseOut(linearProgress);
-                ApplyEnemyPosition(impactVisuals.Values, progress);
                 ApplyEnhancedEnemyFeedback(impactVisuals.Values, progress, flash: true);
                 presentation.SetImpactState(targetNodes, progress, Mathf.Sin(linearProgress * Mathf.Pi));
                 _camera.SetTransform(
@@ -812,13 +841,8 @@ internal sealed class FinisherSession : IAsyncDisposable
 
             RestoreEnemyFlash(impactVisuals.Values);
             presentation.SetImpactState(targetNodes, 1f, 0f);
-            await RecoverEnemyPositions(
-                impactVisuals.Values,
-                ImpactKnockbackRecoverySeconds,
-                () => NextEnhancedFrame(cancellationToken));
             float holdSeconds = DoomPoseSeconds
                 - ImpactLeadSeconds
-                - ImpactKnockbackRecoverySeconds
                 - ImpactRecoverySeconds;
             if (holdSeconds > 0f)
             {
@@ -1037,6 +1061,93 @@ internal sealed class FinisherSession : IAsyncDisposable
         _deathSquashOriginalScales.Clear();
     }
 
+    private void ArmDeathKicks(IEnumerable<Creature> targets)
+    {
+        _deathKickVisuals.Clear();
+        foreach (Creature target in targets)
+        {
+            NCreature? creatureNode = _room.GetCreatureNode(target);
+            if (creatureNode == null || !GodotObject.IsInstanceValid(creatureNode))
+            {
+                continue;
+            }
+
+            Node2D body = creatureNode.Visuals.GetCurrentBody();
+            if (!GodotObject.IsInstanceValid(body))
+            {
+                continue;
+            }
+
+            _deathKickVisuals[creatureNode] = new DeathKickVisual(
+                body,
+                body.Position,
+                ResolveImpactDirection(_ownerNode, creatureNode));
+        }
+    }
+
+    private void StartReturnTimeline(bool includeSettle)
+    {
+        if (_returnTimelineStarted)
+        {
+            return;
+        }
+
+        _returnTimelineStarted = true;
+        _returnToBaselineTask = RunReturnTimeline(includeSettle);
+    }
+
+    private async Task RunReturnTimeline(bool includeSettle)
+    {
+        if (includeSettle)
+        {
+            await WaitSeconds(DeathKickSettleSeconds);
+        }
+
+        await ReturnToBaseline();
+    }
+
+    private async Task EnsureReturnToBaseline()
+    {
+        StartReturnTimeline(includeSettle: false);
+        await _returnToBaselineTask;
+    }
+
+    private void ApplyDeathKickRecovery(float sharedProgress)
+    {
+        _returnTimelineProgress = Mathf.Clamp(sharedProgress, 0f, 1f);
+        foreach (DeathKickVisual visual in _deathKickVisuals.Values.Where(visual => visual.Triggered))
+        {
+            if (!GodotObject.IsInstanceValid(visual.Body))
+            {
+                continue;
+            }
+
+            float recovery = FinisherDeathKickTimeline.GetRecoveryProgress(
+                _returnTimelineProgress,
+                visual.JoinedAtReturnProgress);
+            visual.Body.Position = visual.Position
+                + Vector2.Right * visual.Direction * EnemyKnockbackPixels * (1f - recovery);
+        }
+    }
+
+    private void RestoreDeathKicks()
+    {
+        foreach (DeathKickVisual visual in _deathKickVisuals.Values)
+        {
+            RestoreDeathKick(visual);
+        }
+
+        _deathKickVisuals.Clear();
+    }
+
+    private static void RestoreDeathKick(DeathKickVisual visual)
+    {
+        if (GodotObject.IsInstanceValid(visual.Body))
+        {
+            visual.Body.Position = visual.Position;
+        }
+    }
+
     private Vector2 GetDeathSquashMultiplier() =>
         _usesJumpDeathSquash ? JumpDeathSquash : DefaultDeathSquash;
 
@@ -1121,17 +1232,6 @@ internal sealed class FinisherSession : IAsyncDisposable
         && node.IsInsideTree()
         && !node.IsQueuedForDeletion();
 
-    private static void ApplyEnemyPosition(
-        IEnumerable<ImpactVisualSnapshot> snapshots,
-        float amount)
-    {
-        foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
-        {
-            snapshot.Body.Position = snapshot.Position
-                + Vector2.Right * snapshot.Direction * EnemyKnockbackPixels * amount;
-        }
-    }
-
     private static void ApplyEnemyFlash(
         IEnumerable<ImpactVisualSnapshot> snapshots,
         float amount)
@@ -1142,22 +1242,6 @@ internal sealed class FinisherSession : IAsyncDisposable
                 new Color(1.8f, 1.8f, 1.8f, snapshot.SelfModulate.A),
                 amount);
         }
-    }
-
-    private static async Task RecoverEnemyPositions(
-        IReadOnlyCollection<ImpactVisualSnapshot> snapshots,
-        float duration,
-        Func<Task<float>> nextFrame)
-    {
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += await nextFrame();
-            float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / duration);
-            ApplyEnemyPosition(snapshots, 1f - progress);
-        }
-
-        ApplyEnemyPosition(snapshots, 0f);
     }
 
     private void ApplyEnhancedEnemyFeedback(
@@ -1205,6 +1289,8 @@ internal sealed class FinisherSession : IAsyncDisposable
     {
         if (!GodotObject.IsInstanceValid(_ownerNode))
         {
+            ApplyDeathKickRecovery(1f);
+            _returnTimelineCompleted = true;
             SetBackdropIntensity(0f);
             _camera.ResetToBaseline();
             return;
@@ -1218,7 +1304,9 @@ internal sealed class FinisherSession : IAsyncDisposable
         while (elapsed < ReturnSeconds)
         {
             elapsed += await NextFrame();
-            float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ReturnSeconds);
+            float linearProgress = Mathf.Clamp(elapsed / ReturnSeconds, 0f, 1f);
+            float progress = CombatCinematicCameraLease.EaseOutCubic(linearProgress);
+            ApplyDeathKickRecovery(linearProgress);
             _ownerNode.Position = ownerFrom.Lerp(_ownerStartPosition, progress);
             _camera.SetTransform(
                 cameraFrom.Lerp(_camera.BaselinePosition, progress),
@@ -1226,6 +1314,8 @@ internal sealed class FinisherSession : IAsyncDisposable
             SetBackdropIntensity(Mathf.Lerp(backdropFrom, 0f, progress));
         }
 
+        ApplyDeathKickRecovery(1f);
+        _returnTimelineCompleted = true;
         SetBackdropIntensity(0f);
     }
 
@@ -1331,6 +1421,15 @@ internal sealed class FinisherSession : IAsyncDisposable
         float Rotation,
         Color SelfModulate,
         float Direction);
+
+    private sealed class DeathKickVisual(Node2D body, Vector2 position, float direction)
+    {
+        public Node2D Body { get; } = body;
+        public Vector2 Position { get; } = position;
+        public float Direction { get; } = direction;
+        public bool Triggered { get; set; }
+        public float JoinedAtReturnProgress { get; set; }
+    }
 
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
 }

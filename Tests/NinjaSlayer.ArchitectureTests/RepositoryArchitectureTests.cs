@@ -672,6 +672,27 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("AsyncScopeDepth", cadence, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void FinisherDeathKickFailureOnlyDisablesPresentation()
+    {
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+        string patches = SourceText("Code/Patches/NinjaSlayerFinisherPatches.cs");
+        ClassDeclarationSyntax core = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "FinisherCorePatchGroup");
+        ClassDeclarationSyntax presentation = Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Single(declaration => declaration.Identifier.Text == "FinisherPresentationPatchGroup");
+        string compatibility = SourceText("Code/Compatibility/GameCompatibility.cs");
+
+        Assert.DoesNotContain("NinjaSlayerFinisherDeathStartPatch", core.ToFullString(), StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerFinisherDeathStartPatch", presentation.ToFullString(), StringComparison.Ordinal);
+        Assert.Contains("GetPresentationProbes", compatibility, StringComparison.Ordinal);
+        Assert.Contains("NCreature.start-death-animation", compatibility, StringComparison.Ordinal);
+        Assert.Contains("FinisherPresentationPatchGroup", groups, StringComparison.Ordinal);
+        Assert.Contains("DeathAnimationTask", patches, StringComparison.Ordinal);
+    }
+
     private static string SourceText(string relativePath) => Sources
         .Single(source => source.RelativePath == relativePath)
         .Root

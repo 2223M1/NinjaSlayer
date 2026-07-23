@@ -127,6 +127,7 @@ internal sealed class FinisherPresentationPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
     {
+        patcher.RegisterPatch<NinjaSlayerFinisherDeathStartPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
     }

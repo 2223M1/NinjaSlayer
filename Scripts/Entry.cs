@@ -137,7 +137,9 @@ public class Entry
             return;
         }
 
-        InstallCapability<FinisherPresentationPatchGroup>(NinjaSlayerCapabilityIds.FinisherPresentation);
+        InstallCapability<FinisherPresentationPatchGroup>(
+            NinjaSlayerCapabilityIds.FinisherPresentation,
+            GameCompatibility.Finisher.GetPresentationProbes());
         InstallCapability<FinisherCadencePatchGroup>(
             NinjaSlayerCapabilityIds.FinisherTornadoCadence,
             GameCompatibility.TornadoCadence.GetProbes());

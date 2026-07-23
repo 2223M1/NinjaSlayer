@@ -125,6 +125,11 @@ public static class NinjaSlayerFinisherCinematic
         FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
     }
 
+    internal static void NotifyDeathAnimationStarting(MegaCrit.Sts2.Core.Nodes.Combat.NCreature creature)
+    {
+        FinisherSessionRegistry.GetActiveSession()?.NotifyDeathAnimationStarting(creature);
+    }
+
     internal static bool TryInterceptAttackCommand(
         AttackCommand command,
         PlayerChoiceContext? choiceContext,

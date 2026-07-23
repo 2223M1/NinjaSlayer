@@ -213,6 +213,7 @@ public sealed class LifecycleTests
     {
         Assert.Equal(2f, CinematicTimingContract.BossMinimumCameraHoldSeconds);
         Assert.Equal(0.2f, CinematicTimingContract.BossCameraReturnSeconds);
+        Assert.Equal(0.1f, CinematicTimingContract.FinisherDeathKickSettleSeconds);
         Assert.Equal(0.2f, CinematicTimingContract.FinisherReturnSeconds);
         Assert.Equal(90f, CinematicTimingContract.FinisherWatchdogSeconds);
 
@@ -223,6 +224,19 @@ public sealed class LifecycleTests
         lifetime.Dispose();
         lifetime.Dispose();
         Assert.True(lifetime.IsDisposed);
+    }
+
+    [Fact]
+    public void FinisherDeathKickRecoveryUsesTheSharedCubicTimeline()
+    {
+        Assert.Equal(0f, FinisherDeathKickTimeline.GetRecoveryProgress(0f, 0f));
+        Assert.Equal(0.875f, FinisherDeathKickTimeline.GetRecoveryProgress(0.5f, 0f));
+        Assert.Equal(1f, FinisherDeathKickTimeline.GetRecoveryProgress(1f, 0f));
+
+        Assert.Equal(0f, FinisherDeathKickTimeline.GetRecoveryProgress(0.5f, 0.5f));
+        Assert.Equal(0.875f, FinisherDeathKickTimeline.GetRecoveryProgress(0.75f, 0.5f));
+        Assert.Equal(1f, FinisherDeathKickTimeline.GetRecoveryProgress(1f, 0.5f));
+        Assert.Equal(1f, FinisherDeathKickTimeline.GetRecoveryProgress(1f, 1f));
     }
 
     [Fact]
