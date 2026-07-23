@@ -18,6 +18,10 @@ Local distributable builds must compile against the `sts2.dll` and `0Harmony.dll
 ## Build Commands
 
 Ordinary builds only compile. They do not export a PCK, install files, or upload Workshop content.
+Version resolution and delivery commands are isolated under `eng/`; the project
+file itself owns only compilation settings and dependencies. CI runs the install,
+checksum, Workshop staging, and fail-fast publication gates entirely in a
+temporary directory.
 
 ```powershell
 dotnet restore .\NinjaSlayer.csproj
@@ -30,6 +34,7 @@ Run the public logic, architecture, and RitsuLib contract checks:
 dotnet test .\Tests\NinjaSlayer.LogicTests\NinjaSlayer.LogicTests.csproj -c Release
 dotnet test .\Tests\NinjaSlayer.ArchitectureTests\NinjaSlayer.ArchitectureTests.csproj -c Release
 node .\tools\validate-repository.mjs
+node .\tools\test-build-boundaries.mjs
 ```
 
 The RitsuLib Harmony contract requires an initialized Godot host and real game references. It is run by the protected workflow; locally, build its project and launch its `project.godot` with Godot 4.5.1 Mono in headless mode.
@@ -44,6 +49,8 @@ dotnet msbuild .\NinjaSlayer.csproj -t:InstallLocal -p:Configuration=Release
 ```
 
 `PackageMod` exports `NinjaSlayer.dll`, versioned `NinjaSlayer.json`, `NinjaSlayer.pck`, and `SHA256SUMS` under `build/mods/NinjaSlayer`. `InstallLocal` packages first, copies those files into the game Mods directory, and verifies every copied file by SHA-256.
+`StageWorkshop` is the non-uploading staging primitive used by build tests and
+`PublishWorkshop`; invoking it directly never calls the Workshop uploader.
 
 ## Versions And Releases
 

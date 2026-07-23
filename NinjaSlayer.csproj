@@ -1,4 +1,6 @@
 <Project Sdk="Godot.NET.Sdk/4.5.1">
+  <Import Project="eng\NinjaSlayer.Version.props" />
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>true</ImplicitUsings>
@@ -7,22 +9,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <NoWarn>$(NoWarn);MSB3270</NoWarn>
-    <NinjaSlayerVersionWasExplicit Condition="'$(NinjaSlayerVersion)' != ''">true</NinjaSlayerVersionWasExplicit>
-    <NinjaSlayerVersionWasExplicit Condition="'$(NinjaSlayerVersionWasExplicit)' == ''">false</NinjaSlayerVersionWasExplicit>
-    <NinjaSlayerVersion Condition="'$(NinjaSlayerVersion)' == ''">0.1.0-dev.0+unknown</NinjaSlayerVersion>
-    <Version>$(NinjaSlayerVersion)</Version>
-    <AssemblyVersion>$(NinjaSlayerVersion)</AssemblyVersion>
-    <FileVersion>$(NinjaSlayerVersion)</FileVersion>
-    <InformationalVersion>$(NinjaSlayerVersion)</InformationalVersion>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-
-    <!-- Build against the same game version you ship to players (Steam-update before release builds). -->
-    <PostBuildModDir>$(MSBuildProjectDirectory)\build\mods\$(MSBuildProjectName)\</PostBuildModDir>
-    <FmodDesktopBank>$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\desktop\NinjaSlayer.bank</FmodDesktopBank>
-    <FmodRootBank>$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\NinjaSlayer.bank</FmodRootBank>
-    <GeneratedManifest>$(IntermediateOutputPath)NinjaSlayer.json</GeneratedManifest>
-    <PackageHashManifest>$(PostBuildModDir)SHA256SUMS</PackageHashManifest>
-    <GodotExportPreset Condition="'$(GodotExportPreset)' == ''">Windows Desktop</GodotExportPreset>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -37,28 +23,19 @@
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
     <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">C:\Program Files (x86)\Steam\steamapps</SteamLibraryPath>
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)\common\Slay the Spire 2</Sts2Dir>
-    <GodotExe Condition="'$(GodotExe)' == ''">C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
-    <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)\mods\$(MSBuildProjectName)\</SteamModDir>
-    <WorkshopUploadRoot Condition="'$(WorkshopUploadRoot)' == ''">$(MSBuildProjectDirectory)\..\上传mod</WorkshopUploadRoot>
-    <WorkshopContentDir Condition="'$(WorkshopContentDir)' == ''">$(WorkshopUploadRoot)\$(MSBuildProjectName)\content\</WorkshopContentDir>
-    <WorkshopUploaderExe Condition="'$(WorkshopUploaderExe)' == ''">$(WorkshopUploadRoot)\ModUploader.exe</WorkshopUploaderExe>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsLinux)' == 'true'">
     <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/.local/share/Steam/steamapps</SteamLibraryPath>
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Dir>
-    <GodotExe Condition="'$(GodotExe)' == ''">$(SteamLibraryPath)/common/Godot Engine/godot.x11.opt.tools.64</GodotExe>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
-    <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)/mods/$(MSBuildProjectName)/</SteamModDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsOSX)' == 'true'">
     <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps</SteamLibraryPath>
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Dir>
-    <GodotExe Condition="'$(GodotExe)' == ''">$(HOME)/Applications/Godot_mono.app/Contents/MacOS/Godot</GodotExe>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</Sts2DataDir>
-    <SteamModDir Condition="'$(SteamModDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/$(MSBuildProjectName)/</SteamModDir>
   </PropertyGroup>
 
   <!-- RefLib carries generated Harmony/Godot compatibility types that also exist in this project. -->
@@ -81,223 +58,15 @@
                       Condition="!Exists('$(Sts2DataDir)/sts2.dll') and '$(UseSts2RefLib)' == 'true'"
                       PrivateAssets="all" />
 
-    <!-- NuGet package. -->
     <PackageReference Include="STS2.RitsuLib" Version="0.4.62">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="SmartFormat" Version="3.3.0" />
-    <!-- If you develop against another game version, specify the matching compatibility package. -->
-    <!-- <PackageReference Include=" STS2.RitsuLib.Compat.0.103.2 " Version="*" /> -->
+    <!-- Specify a matching compatibility package when developing against another game version. -->
+    <!-- <PackageReference Include="STS2.RitsuLib.Compat.0.103.2" Version="*" /> -->
   </ItemGroup>
 
-  <Target Name="ResolveNinjaSlayerVersion" BeforeTargets="PrepareForBuild;GenerateAssemblyInfo">
-    <Exec Command="git describe --tags --always --dirty --long --match &quot;v[0-9]*.[0-9]*.[0-9]*&quot;"
-          WorkingDirectory="$(MSBuildProjectDirectory)"
-          ConsoleToMSBuild="true"
-          IgnoreExitCode="true"
-          StandardOutputImportance="low"
-          Condition="'$(GitDescribe)' == ''">
-      <Output TaskParameter="ConsoleOutput" ItemName="_GitDescribeOutput" />
-    </Exec>
-    <PropertyGroup>
-      <GitDescribe Condition="'$(GitDescribe)' == ''">@(_GitDescribeOutput)</GitDescribe>
-      <_GitExactVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-0-g[0-9a-f]+$').Groups['version'].Value)</_GitExactVersion>
-      <_GitBaseVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-').Groups['version'].Value)</_GitBaseVersion>
-      <_GitBaseVersion Condition="'$(_GitBaseVersion)' == ''">0.1.0</_GitBaseVersion>
-      <_GitCommitCount>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v[0-9]+\.[0-9]+\.[0-9]+-(?&lt;count&gt;[0-9]+)-g').Groups['count'].Value)</_GitCommitCount>
-      <_GitCommitCount Condition="'$(_GitCommitCount)' == ''">0</_GitCommitCount>
-      <_GitSha>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '-g(?&lt;sha&gt;[0-9a-f]+)(-dirty)?$').Groups['sha'].Value)</_GitSha>
-      <_GitSha Condition="'$(_GitSha)' == ''">$([System.Text.RegularExpressions.Regex]::Replace('$(GitDescribe)', '-dirty$', ''))</_GitSha>
-      <_GitSha Condition="'$(_GitSha)' == ''">unknown</_GitSha>
-      <_GitDirtySuffix Condition="'$(GitDescribe)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitDescribe)', '-dirty$'))">.dirty</_GitDirtySuffix>
-      <IsExactReleaseTag Condition="'$(_GitExactVersion)' != ''">true</IsExactReleaseTag>
-      <IsExactReleaseTag Condition="'$(IsExactReleaseTag)' == ''">false</IsExactReleaseTag>
-      <GitTag Condition="'$(IsExactReleaseTag)' == 'true'">v$(_GitExactVersion)</GitTag>
-      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' == 'true'">$(_GitExactVersion)</NinjaSlayerVersion>
-      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' != 'true'">$(_GitBaseVersion)-dev.$(_GitCommitCount)+g$(_GitSha)$(_GitDirtySuffix)</NinjaSlayerVersion>
-      <Version>$(NinjaSlayerVersion)</Version>
-      <AssemblyVersion>$([System.Text.RegularExpressions.Regex]::Match('$(NinjaSlayerVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value).0</AssemblyVersion>
-      <FileVersion>$(AssemblyVersion)</FileVersion>
-      <InformationalVersion>$(NinjaSlayerVersion)</InformationalVersion>
-    </PropertyGroup>
-    <Message Text="NinjaSlayer version: $(NinjaSlayerVersion) ($(GitDescribe))" Importance="high" />
-  </Target>
-
-  <Target Name="SyncFmodBankForPackage">
-    <Copy SourceFiles="$(FmodDesktopBank)"
-          DestinationFiles="$(FmodRootBank)"
-          Condition="Exists('$(FmodDesktopBank)')"
-          SkipUnchangedFiles="true" />
-    <Error Text="FMOD bank not found at $(FmodRootBank). Build it in FMOD Studio before packaging."
-           Condition="!Exists('$(FmodDesktopBank)') and !Exists('$(FmodRootBank)')" />
-  </Target>
-
-  <Target Name="GenerateVersionedManifest" DependsOnTargets="ResolveNinjaSlayerVersion">
-    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedManifest)'))" />
-    <GenerateManifestWithVersion
-      SourceFile="$(MSBuildProjectDirectory)\NinjaSlayer.json"
-      DestinationFile="$(GeneratedManifest)"
-      Version="$(NinjaSlayerVersion)" />
-  </Target>
-
-  <Target Name="PreparePackageDirectory">
-    <RemoveDir Directories="$(PostBuildModDir)" Condition="Exists('$(PostBuildModDir)')" />
-    <MakeDir Directories="$(PostBuildModDir)" />
-  </Target>
-
-  <Target Name="ExportPckForPackage">
-    <Error Condition="!Exists('$(GodotExe)')" Text="Godot 4.5.1 Mono not found at $(GodotExe)." />
-    <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;$(GodotExportPreset)&quot; &quot;$(PostBuildModDir)$(MSBuildProjectName).pck&quot;"
-          WorkingDirectory="$(MSBuildProjectDirectory)"
-          EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1" />
-  </Target>
-
-  <Target Name="CopyPackageArtifacts">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PostBuildModDir)" />
-    <Copy SourceFiles="$(GeneratedManifest)" DestinationFolder="$(PostBuildModDir)" />
-  </Target>
-
-  <Target Name="ValidatePackageOutput">
-    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')"
-           Text="Packaging requires the target game's sts2.dll at $(Sts2DataDir)." />
-    <Error Condition="!Exists('$(PostBuildModDir)$(MSBuildProjectName).dll')"
-           Text="Package DLL is missing." />
-    <Error Condition="!Exists('$(PostBuildModDir)$(MSBuildProjectName).json')"
-           Text="Package manifest is missing." />
-    <Error Condition="!Exists('$(PostBuildModDir)$(MSBuildProjectName).pck')"
-           Text="Package PCK is missing." />
-  </Target>
-
-  <Target Name="GeneratePackageChecksums">
-    <ItemGroup>
-      <_PackageFiles Include="$(PostBuildModDir)$(MSBuildProjectName).dll" />
-      <_PackageFiles Include="$(PostBuildModDir)$(MSBuildProjectName).json" />
-      <_PackageFiles Include="$(PostBuildModDir)$(MSBuildProjectName).pck" />
-    </ItemGroup>
-    <GetFileHash Files="@(_PackageFiles)" Algorithm="SHA256">
-      <Output TaskParameter="Items" ItemName="_HashedPackageFiles" />
-    </GetFileHash>
-    <WriteLinesToFile File="$(PackageHashManifest)"
-                      Lines="@(_HashedPackageFiles->'%(FileHash) *%(Filename)%(Extension)')"
-                      Overwrite="true"
-                      Encoding="UTF-8" />
-  </Target>
-
-  <Target Name="PackageMod"
-          DependsOnTargets="Build;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums">
-    <Message Text="Package ready at $(PostBuildModDir)" Importance="high" />
-  </Target>
-
-  <Target Name="InstallLocal" DependsOnTargets="PackageMod">
-    <MakeDir Directories="$(SteamModDir)" />
-    <ItemGroup>
-      <_InstallFiles Include="$(PostBuildModDir)$(MSBuildProjectName).dll" />
-      <_InstallFiles Include="$(PostBuildModDir)$(MSBuildProjectName).json" />
-      <_InstallFiles Include="$(PostBuildModDir)$(MSBuildProjectName).pck" />
-      <_InstallFiles Include="$(PackageHashManifest)" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_InstallFiles)" DestinationFolder="$(SteamModDir)" SkipUnchangedFiles="false" />
-    <VerifyMatchingFiles SourceDirectory="$(PostBuildModDir)"
-                         DestinationDirectory="$(SteamModDir)"
-                         FileNames="$(MSBuildProjectName).dll;$(MSBuildProjectName).json;$(MSBuildProjectName).pck;SHA256SUMS" />
-    <Message Text="Installed NinjaSlayer to $(SteamModDir)" Importance="high" />
-  </Target>
-
-  <Target Name="PublishWorkshop" DependsOnTargets="PackageMod">
-    <Error Condition="'$(IsWindows)' != 'true'" Text="PublishWorkshop is supported only on Windows." />
-    <Error Condition="'$(Configuration)' != 'Release'" Text="PublishWorkshop requires Configuration=Release." />
-    <Error Condition="'$(PublishWorkshopConfirmed)' != 'true'" Text="Pass PublishWorkshopConfirmed=true to publish." />
-    <Error Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true'" Text="Pass NinjaSlayerVersion explicitly when publishing." />
-    <Error Condition="'$(IsExactReleaseTag)' != 'true' or '$(NinjaSlayerVersion)' != '$(_GitExactVersion)'"
-           Text="Workshop publishing requires a clean exact vX.Y.Z tag matching NinjaSlayerVersion." />
-    <Error Condition="!Exists('$(WorkshopUploaderExe)')" Text="Workshop uploader missing at $(WorkshopUploaderExe)." />
-    <Error Condition="!Exists('$(WorkshopUploadRoot)\$(MSBuildProjectName)\workshop.json')"
-           Text="Workshop metadata missing at $(WorkshopUploadRoot)\$(MSBuildProjectName)\workshop.json." />
-    <MakeDir Directories="$(WorkshopContentDir)" />
-    <ItemGroup>
-      <_WorkshopFiles Include="$(PostBuildModDir)$(MSBuildProjectName).dll" />
-      <_WorkshopFiles Include="$(PostBuildModDir)$(MSBuildProjectName).json" />
-      <_WorkshopFiles Include="$(PostBuildModDir)$(MSBuildProjectName).pck" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_WorkshopFiles)" DestinationFolder="$(WorkshopContentDir)" SkipUnchangedFiles="false" />
-    <VerifyMatchingFiles SourceDirectory="$(PostBuildModDir)"
-                         DestinationDirectory="$(WorkshopContentDir)"
-                         FileNames="$(MSBuildProjectName).dll;$(MSBuildProjectName).json;$(MSBuildProjectName).pck" />
-    <Exec Command="&quot;$(WorkshopUploaderExe)&quot; upload -w $(MSBuildProjectName)"
-          WorkingDirectory="$(WorkshopUploadRoot)" />
-  </Target>
-
-  <UsingTask
-    TaskName="GenerateManifestWithVersion"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <SourceFile ParameterType="System.String" Required="true" />
-      <DestinationFile ParameterType="System.String" Required="true" />
-      <Version ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Text" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        string content = File.ReadAllText(SourceFile, Encoding.UTF8);
-        content = content.Replace("VERSION_PLACEHOLDER", Version);
-        File.WriteAllText(DestinationFile, content, new UTF8Encoding(false));
-      ]]></Code>
-    </Task>
-  </UsingTask>
-
-  <UsingTask
-    TaskName="VerifyMatchingFiles"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <SourceDirectory ParameterType="System.String" Required="true" />
-      <DestinationDirectory ParameterType="System.String" Required="true" />
-      <FileNames ParameterType="System.String[]" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Security.Cryptography" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        foreach (string fileName in FileNames)
-        {
-            string source = Path.Combine(SourceDirectory, fileName);
-            string destination = Path.Combine(DestinationDirectory, fileName);
-            if (!File.Exists(source) || !File.Exists(destination))
-            {
-                Log.LogError($"Cannot verify {fileName}: source or destination is missing.");
-                continue;
-            }
-
-            byte[] sourceHash;
-            byte[] destinationHash;
-            using (FileStream sourceStream = File.OpenRead(source))
-            using (SHA256 sourceHasher = SHA256.Create())
-            {
-                sourceHash = sourceHasher.ComputeHash(sourceStream);
-            }
-
-            using (FileStream destinationStream = File.OpenRead(destination))
-            using (SHA256 destinationHasher = SHA256.Create())
-            {
-                destinationHash = destinationHasher.ComputeHash(destinationStream);
-            }
-
-            bool matches = sourceHash.Length == destinationHash.Length;
-            for (int i = 0; matches && i < sourceHash.Length; i++)
-            {
-                matches = sourceHash[i] == destinationHash[i];
-            }
-
-            if (!matches)
-            {
-                Log.LogError($"SHA-256 mismatch after copying {fileName}.");
-            }
-        }
-      ]]></Code>
-    </Task>
-  </UsingTask>
+  <Import Project="eng\NinjaSlayer.Version.targets" />
+  <Import Project="eng\NinjaSlayer.Packaging.targets" />
 </Project>

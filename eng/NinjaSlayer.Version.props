@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <NinjaSlayerVersionWasExplicit Condition="'$(NinjaSlayerVersion)' != ''">true</NinjaSlayerVersionWasExplicit>
+    <NinjaSlayerVersionWasExplicit Condition="'$(NinjaSlayerVersionWasExplicit)' == ''">false</NinjaSlayerVersionWasExplicit>
+    <NinjaSlayerVersion Condition="'$(NinjaSlayerVersion)' == ''">0.1.0-dev.0+unknown</NinjaSlayerVersion>
+    <Version>$(NinjaSlayerVersion)</Version>
+    <AssemblyVersion>$(NinjaSlayerVersion)</AssemblyVersion>
+    <FileVersion>$(NinjaSlayerVersion)</FileVersion>
+    <InformationalVersion>$(NinjaSlayerVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+</Project>

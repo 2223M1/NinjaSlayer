@@ -1,0 +1,34 @@
+<Project>
+  <Target Name="ResolveNinjaSlayerVersion" BeforeTargets="PrepareForBuild;GenerateAssemblyInfo">
+    <Exec Command="git describe --tags --always --dirty --long --match &quot;v[0-9]*.[0-9]*.[0-9]*&quot;"
+          WorkingDirectory="$(MSBuildProjectDirectory)"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="true"
+          StandardOutputImportance="low"
+          Condition="'$(GitDescribe)' == ''">
+      <Output TaskParameter="ConsoleOutput" ItemName="_GitDescribeOutput" />
+    </Exec>
+    <PropertyGroup>
+      <GitDescribe Condition="'$(GitDescribe)' == ''">@(_GitDescribeOutput)</GitDescribe>
+      <_GitExactVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-0-g[0-9a-f]+$').Groups['version'].Value)</_GitExactVersion>
+      <_GitBaseVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-').Groups['version'].Value)</_GitBaseVersion>
+      <_GitBaseVersion Condition="'$(_GitBaseVersion)' == ''">0.1.0</_GitBaseVersion>
+      <_GitCommitCount>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v[0-9]+\.[0-9]+\.[0-9]+-(?&lt;count&gt;[0-9]+)-g').Groups['count'].Value)</_GitCommitCount>
+      <_GitCommitCount Condition="'$(_GitCommitCount)' == ''">0</_GitCommitCount>
+      <_GitSha>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '-g(?&lt;sha&gt;[0-9a-f]+)(-dirty)?$').Groups['sha'].Value)</_GitSha>
+      <_GitSha Condition="'$(_GitSha)' == ''">$([System.Text.RegularExpressions.Regex]::Replace('$(GitDescribe)', '-dirty$', ''))</_GitSha>
+      <_GitSha Condition="'$(_GitSha)' == ''">unknown</_GitSha>
+      <_GitDirtySuffix Condition="'$(GitDescribe)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitDescribe)', '-dirty$'))">.dirty</_GitDirtySuffix>
+      <IsExactReleaseTag Condition="'$(_GitExactVersion)' != ''">true</IsExactReleaseTag>
+      <IsExactReleaseTag Condition="'$(IsExactReleaseTag)' == ''">false</IsExactReleaseTag>
+      <GitTag Condition="'$(IsExactReleaseTag)' == 'true'">v$(_GitExactVersion)</GitTag>
+      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' == 'true'">$(_GitExactVersion)</NinjaSlayerVersion>
+      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' != 'true'">$(_GitBaseVersion)-dev.$(_GitCommitCount)+g$(_GitSha)$(_GitDirtySuffix)</NinjaSlayerVersion>
+      <Version>$(NinjaSlayerVersion)</Version>
+      <AssemblyVersion>$([System.Text.RegularExpressions.Regex]::Match('$(NinjaSlayerVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value).0</AssemblyVersion>
+      <FileVersion>$(AssemblyVersion)</FileVersion>
+      <InformationalVersion>$(NinjaSlayerVersion)</InformationalVersion>
+    </PropertyGroup>
+    <Message Text="NinjaSlayer version: $(NinjaSlayerVersion) ($(GitDescribe))" Importance="high" />
+  </Target>
+</Project>
