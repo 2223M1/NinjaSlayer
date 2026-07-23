@@ -21,6 +21,12 @@ const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
 const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
 const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
+const ephemeralRunnerPath = join(
+  root,
+  'tools',
+  'private-contract',
+  'Start-EphemeralContractRunner.ps1',
+);
 
 function xml(value) {
   return value
@@ -68,6 +74,7 @@ for (const property of ['PostBuildModDir', 'SteamModDir', 'WorkshopContentDir', 
 const packagingTargets = readFileSync(packagingTargetsPath, 'utf8');
 const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
 const workshopWorkflow = readFileSync(workshopWorkflowPath, 'utf8');
+const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
 for (const source of [releaseWorkflow, workshopWorkflow]) {
   assert(
     source.includes('^v0\\.1\\.(0|[1-9][0-9]?)$'),
@@ -78,6 +85,45 @@ assert(releaseWorkflow.includes('environment: release-production'));
 assert(releaseWorkflow.includes('workflow_dispatch:'));
 assert(releaseWorkflow.includes('git rev-list -n 1 $env:RELEASE_TAG'));
 assert(releaseWorkflow.includes('gh release upload $env:RELEASE_TAG $env:RELEASE_ARCHIVE --clobber'));
+assert(
+  releaseWorkflow.includes('runs-on: [self-hosted, Windows, X64, ninjaslayer-release]'),
+  'Release packaging must run only on the dedicated ephemeral release runner.',
+);
+assert(releaseWorkflow.includes('if (-not $file.IsReadOnly)'));
+assert(releaseWorkflow.includes('must remain outside the repository workspace'));
+assert(releaseWorkflow.includes('NINJASLAYER_SPINE_DIR'));
+assert.equal(
+  releaseWorkflow.match(/\$workspace = \[IO\.Path\]::GetFullPath\(\$env:GITHUB_WORKSPACE\)/g)?.length,
+  2,
+  'Each PowerShell input-validation step must initialize its own workspace boundary.',
+);
+assert(
+  releaseWorkflow.includes('854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'),
+  'Release packaging must pin the verified Spine extension hash.',
+);
+for (const forbidden of [
+  'STS2_REFERENCE_BUNDLE_URL',
+  'STS2_REFERENCE_BUNDLE_TOKEN',
+  'UseSts2RefLib',
+  'windows-latest',
+]) {
+  assert(!releaseWorkflow.includes(forbidden), `Release workflow must not contain ${forbidden}.`);
+}
+for (const required of [
+  "[ValidateSet('Contract', 'Release')]",
+  "'Contract' { 'ninjaslayer-contract' }",
+  "'Release' { 'ninjaslayer-release' }",
+  "$env:NINJASLAYER_SPINE_DIR = $spineDirectory",
+  '$env:NINJASLAYER_SPINE_DIR = $previousSpineDirectory',
+  'Remove-SessionDirectory -Path $sessionRoot',
+]) {
+  assert(ephemeralRunner.includes(required), `Ephemeral runner launcher is missing: ${required}`);
+}
+assert(
+  ephemeralRunner.includes("if ($RunnerPurpose -eq 'Release')")
+    && ephemeralRunner.includes('(Get-Item -LiteralPath $destination).IsReadOnly = $true'),
+  'The release runner must isolate its Spine inputs as read-only files.',
+);
 assert(
   !packagingTargets.includes('BeforeTargets=') && !packagingTargets.includes('AfterTargets='),
   'Delivery targets must remain explicit and must not attach themselves to ordinary builds.',

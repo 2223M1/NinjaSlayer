@@ -17,8 +17,9 @@ permissions:
 
 jobs:
   release:
-    runs-on: windows-latest
+    runs-on: [self-hosted, Windows, X64, ninjaslayer-release]
     environment: release-production
+    timeout-minutes: 30
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
     steps:
@@ -63,38 +64,51 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Download target game reference bundle
-        shell: pwsh
-        env:
-          REFERENCE_BUNDLE_URL: ${{ secrets.STS2_REFERENCE_BUNDLE_URL }}
-          REFERENCE_BUNDLE_TOKEN: ${{ secrets.STS2_REFERENCE_BUNDLE_TOKEN }}
+      - name: Validate isolated release inputs
+        shell: powershell
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:REFERENCE_BUNDLE_URL)) {
-            throw "STS2_REFERENCE_BUNDLE_URL is required and must point to a private ZIP containing sts2.dll and 0Harmony.dll."
+          if ([string]::IsNullOrWhiteSpace($env:STS2_DATA_DIR)) {
+            throw 'The ephemeral release runner did not provide STS2_DATA_DIR.'
           }
-          $headers = @{}
-          if (-not [string]::IsNullOrWhiteSpace($env:REFERENCE_BUNDLE_TOKEN)) {
-            $headers.Authorization = "Bearer $env:REFERENCE_BUNDLE_TOKEN"
+          if ([string]::IsNullOrWhiteSpace($env:GODOT_EXE) -or -not (Test-Path -LiteralPath $env:GODOT_EXE -PathType Leaf)) {
+            throw 'The ephemeral release runner did not provide a valid GODOT_EXE.'
           }
-          $headers.Accept = 'application/octet-stream'
-          Invoke-WebRequest -Uri $env:REFERENCE_BUNDLE_URL -Headers $headers -OutFile "$env:RUNNER_TEMP\sts2-reference.zip"
-          Expand-Archive "$env:RUNNER_TEMP\sts2-reference.zip" "$env:RUNNER_TEMP\sts2-reference" -Force
-          $sts2 = Get-ChildItem "$env:RUNNER_TEMP\sts2-reference" -Recurse -Filter sts2.dll | Select-Object -First 1
-          $harmony = Get-ChildItem "$env:RUNNER_TEMP\sts2-reference" -Recurse -Filter 0Harmony.dll | Select-Object -First 1
-          if ($null -eq $sts2 -or $null -eq $harmony -or $sts2.DirectoryName -ne $harmony.DirectoryName) {
-            throw "The reference bundle must place sts2.dll and 0Harmony.dll in the same directory."
+          if ([string]::IsNullOrWhiteSpace($env:NINJASLAYER_SPINE_DIR)) {
+            throw 'The ephemeral release runner did not provide NINJASLAYER_SPINE_DIR.'
           }
-          "STS2_DATA_DIR=$($sts2.DirectoryName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $workspace = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
+          foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll')) {
+            $file = Get-Item -LiteralPath (Join-Path $env:STS2_DATA_DIR $fileName) -ErrorAction Stop
+            if (-not $file.IsReadOnly) { throw "$fileName must be mounted read-only by the ephemeral runner." }
+            if ($file.FullName.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$fileName must remain outside the repository workspace."
+            }
+          }
 
-      - name: Install Godot 4.5.1 Mono
-        shell: pwsh
+      - name: Install verified Spine extension
+        shell: powershell
         run: |
-          $url = 'https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_win64.zip'
-          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP\godot.zip"
-          Expand-Archive "$env:RUNNER_TEMP\godot.zip" "$env:RUNNER_TEMP\godot" -Force
-          $godot = Get-ChildItem "$env:RUNNER_TEMP\godot" -Recurse -Filter 'Godot_v4.5.1-stable_mono_win64.exe' | Select-Object -First 1
-          if ($null -eq $godot) { throw 'Godot executable was not found after extraction.' }
-          "GODOT_EXE=$($godot.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $expectedHash = '854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'
+          $workspace = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
+          $destination = Join-Path $env:GITHUB_WORKSPACE 'addons\spine\windows'
+          New-Item -ItemType Directory -Path $destination -Force | Out-Null
+          foreach ($fileName in @(
+            'libspine_godot.windows.editor.x86_64.dll',
+            'libspine_godot.windows.template_debug.x86_64.dll',
+            'libspine_godot.windows.template_release.x86_64.dll'
+          )) {
+            $source = Join-Path $env:NINJASLAYER_SPINE_DIR $fileName
+            $file = Get-Item -LiteralPath $source -ErrorAction Stop
+            if (-not $file.IsReadOnly) { throw "$fileName must be mounted read-only by the ephemeral runner." }
+            if ($file.FullName.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$fileName must remain outside the repository workspace."
+            }
+            $actualHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
+            if ($actualHash -ne $expectedHash) {
+              throw "Spine extension hash mismatch for $fileName."
+            }
+            Copy-Item -LiteralPath $source -Destination $destination
+          }
 
       - name: Validate resources and Spine extension
         shell: pwsh
