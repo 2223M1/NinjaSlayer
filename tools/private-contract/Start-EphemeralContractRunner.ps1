@@ -12,18 +12,23 @@ param(
     [ValidatePattern('^[0-9A-Fa-f]{64}$')]
     [string]$RunnerArchiveSha256,
 
+    [ValidateSet('Contract', 'Release')]
+    [string]$RunnerPurpose = 'Contract',
+
     [string]$RunnerArchivePath,
 
     [string]$RepositoryUrl = 'https://github.com/2223M1/NinjaSlayer',
 
     [string]$GameDataDirectory = 'C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64',
 
-    [string]$GodotExecutable = 'C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe'
+    [string]$GodotExecutable = 'C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe',
+
+    [string]$SpineExtensionDirectory = (Join-Path $PSScriptRoot '..\..\addons\spine\windows')
 )
 
 $ErrorActionPreference = 'Stop'
 
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+if ($RunnerPurpose -eq 'Contract' -and -not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
         [Security.Principal.WindowsBuiltInRole]::Administrator)) {
     throw 'Run this script from an elevated PowerShell session so the contract can enforce its outbound firewall rule.'
 }
@@ -39,18 +44,39 @@ if (-not (Test-Path -LiteralPath $GodotExecutable -PathType Leaf)) {
     throw "Godot 4.5.1 Mono was not found at $GodotExecutable"
 }
 
+$requiredSpineFiles = @(
+    'libspine_godot.windows.editor.x86_64.dll',
+    'libspine_godot.windows.template_debug.x86_64.dll',
+    'libspine_godot.windows.template_release.x86_64.dll'
+)
+if ($RunnerPurpose -eq 'Release') {
+    foreach ($fileName in $requiredSpineFiles) {
+        $source = Join-Path $SpineExtensionDirectory $fileName
+        if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+            throw "Missing Spine release input: $source"
+        }
+    }
+}
+
 $sessionId = [Guid]::NewGuid().ToString('N')
-$sessionRoot = Join-Path $env:TEMP "NinjaSlayer-ContractRunner-$sessionId"
+$purposeName = $RunnerPurpose.ToLowerInvariant()
+$sessionRoot = Join-Path $env:TEMP "NinjaSlayer-${RunnerPurpose}Runner-$sessionId"
 $runnerDirectory = Join-Path $sessionRoot 'runner'
 $referenceDirectory = Join-Path $sessionRoot 'references'
+$spineDirectory = Join-Path $sessionRoot 'spine'
 $dotnetRuntimeDirectory = Join-Path $sessionRoot 'dotnet-runtime'
 $workDirectory = Join-Path $sessionRoot 'work'
 $archive = Join-Path $sessionRoot 'actions-runner.zip'
-$runnerName = "ninjaslayer-contract-$env:COMPUTERNAME-$($sessionId.Substring(0, 8))"
+$runnerName = "ninjaslayer-$purposeName-$env:COMPUTERNAME-$($sessionId.Substring(0, 8))"
+$runnerLabel = switch ($RunnerPurpose) {
+    'Contract' { 'ninjaslayer-contract' }
+    'Release' { 'ninjaslayer-release' }
+}
 $downloadUrl = "https://github.com/actions/runner/releases/download/v$RunnerVersion/actions-runner-win-x64-$RunnerVersion.zip"
 $previousSts2DataDirectory = $env:STS2_DATA_DIR
 $previousGodotExecutable = $env:GODOT_EXE
 $previousContractDotnetRoot = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
+$previousSpineDirectory = $env:NINJASLAYER_SPINE_DIR
 
 function Copy-IsolatedDotnet9Runtime {
     param([Parameter(Mandatory)][string]$Destination)
@@ -93,7 +119,7 @@ function Remove-SessionDirectory {
         }
         catch {
             if ($attempt -eq 6) {
-                throw "Could not remove ephemeral contract directory after $attempt attempts: $Path. $($_.Exception.Message)"
+                throw "Could not remove ephemeral runner directory after $attempt attempts: $Path. $($_.Exception.Message)"
             }
 
             Start-Sleep -Milliseconds (250 * $attempt)
@@ -103,11 +129,21 @@ function Remove-SessionDirectory {
 
 try {
     New-Item -ItemType Directory -Path $runnerDirectory, $referenceDirectory, $workDirectory -Force | Out-Null
-    Copy-IsolatedDotnet9Runtime -Destination $dotnetRuntimeDirectory
+    if ($RunnerPurpose -eq 'Contract') {
+        Copy-IsolatedDotnet9Runtime -Destination $dotnetRuntimeDirectory
+    }
     foreach ($fileName in $requiredReferences) {
         $destination = Join-Path $referenceDirectory $fileName
         Copy-Item -LiteralPath (Join-Path $GameDataDirectory $fileName) -Destination $destination
         (Get-Item -LiteralPath $destination).IsReadOnly = $true
+    }
+    if ($RunnerPurpose -eq 'Release') {
+        New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null
+        foreach ($fileName in $requiredSpineFiles) {
+            $destination = Join-Path $spineDirectory $fileName
+            Copy-Item -LiteralPath (Join-Path $SpineExtensionDirectory $fileName) -Destination $destination
+            (Get-Item -LiteralPath $destination).IsReadOnly = $true
+        }
     }
 
     if ([string]::IsNullOrWhiteSpace($RunnerArchivePath)) {
@@ -129,7 +165,7 @@ try {
             --url $RepositoryUrl `
             --token $RegistrationToken `
             --name $runnerName `
-            --labels ninjaslayer-contract `
+            --labels $runnerLabel `
             --work $workDirectory
         if ($LASTEXITCODE -ne 0) {
             throw "GitHub Actions runner registration failed with exit code $LASTEXITCODE."
@@ -137,7 +173,14 @@ try {
 
         $env:STS2_DATA_DIR = $referenceDirectory
         $env:GODOT_EXE = $GodotExecutable
-        $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $dotnetRuntimeDirectory
+        if ($RunnerPurpose -eq 'Contract') {
+            $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $dotnetRuntimeDirectory
+            $env:NINJASLAYER_SPINE_DIR = $null
+        }
+        else {
+            $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $null
+            $env:NINJASLAYER_SPINE_DIR = $spineDirectory
+        }
         & .\run.cmd
         if ($LASTEXITCODE -ne 0) {
             throw "The ephemeral GitHub Actions runner exited with code $LASTEXITCODE."
@@ -151,5 +194,6 @@ finally {
     $env:STS2_DATA_DIR = $previousSts2DataDirectory
     $env:GODOT_EXE = $previousGodotExecutable
     $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $previousContractDotnetRoot
+    $env:NINJASLAYER_SPINE_DIR = $previousSpineDirectory
     Remove-SessionDirectory -Path $sessionRoot
 }

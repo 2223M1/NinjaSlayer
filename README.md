@@ -60,13 +60,28 @@ Packaging first refreshes the Debug editor assembly because Godot loads it befor
 - Normal commits produce `X.Y.Z-dev.N+gCOMMIT`; dirty trees include `.dirty`.
 - GitHub Release automation accepts only supported `v0.1.x` tags whose commit belongs to `main`.
 - A Release also requires a text-only attestation from the protected game-contract workflow for the exact tag commit.
-- The `release-production` environment must define `STS2_REFERENCE_BUNDLE_URL` for a private ZIP containing the target `sts2.dll` and `0Harmony.dll`; define `STS2_REFERENCE_BUNDLE_TOKEN` when the host requires a bearer token. The workflow never publishes either DLL and only uploads the allowlisted mod package.
+- Strict Release packaging runs only on a one-job self-hosted runner labeled `ninjaslayer-release`. The launcher supplies temporary read-only copies of the local game references and Spine binaries; no game DLL is uploaded, cached, or downloaded by the workflow.
 - Release publication is idempotent: rerunning a tag workflow replaces the matching ZIP asset when the Release already exists. The protected manual dispatch accepts an existing supported tag so an older failed run can be repaired using the trusted workflow currently on `main`.
 - GitHub Releases never publish Steam Workshop content.
 
-Create the `release-production` environment under repository **Settings > Environments** and require approval for it. Its reference ZIP may contain directories, but one directory must contain both `sts2.dll` and `0Harmony.dll`. Configure `STS2_REFERENCE_BUNDLE_URL` with a stable private HTTPS download URL and, when required, configure `STS2_REFERENCE_BUNDLE_TOKEN` with a read-only bearer credential. Do not store either DLL in this repository, a public Release, an Actions cache, or an Actions artifact.
+Create the `release-production` environment under repository **Settings > Environments** and require approval for it. This environment intentionally has no game-reference secrets. The required `sts2.dll`, `0Harmony.dll`, `GodotSharp.dll`, Godot executable, and Spine binaries remain on the release operator's machine. The launcher copies the private DLL inputs only into its ephemeral directory and invokes Godot from its installed location.
 
-To repair an existing release after configuring the environment, open **Actions > GitHub Release > Run workflow**, enter its existing tag such as `v0.1.0`, and approve the `release-production` deployment. The workflow validates the tag, `main` ancestry, and protected Contract attestation before replacing the ZIP asset.
+Use this sequence for each `v0.1.x` release:
+
+1. Dispatch **Protected game contract** for the exact commit already on `main`, approve `game-contract`, then start an elevated `Contract` runner as described under [Protected Contract](#protected-contract).
+2. After the Contract succeeds, create and push the supported tag, for example `git tag v0.1.1 <sha>` followed by `git push origin v0.1.1`.
+3. Approve the queued **GitHub Release** job in `release-production`.
+4. From a normal PowerShell session, start a fresh runner with `-RunnerPurpose Release`. Use the short-lived token, version, and archive SHA-256 from **Settings > Actions > Runners > New self-hosted runner**:
+
+```powershell
+.\tools\private-contract\Start-EphemeralContractRunner.ps1 `
+  -RunnerPurpose Release `
+  -RegistrationToken '<short-lived-token>' `
+  -RunnerVersion '<runner-version>' `
+  -RunnerArchiveSha256 '<official-archive-sha256>'
+```
+
+The release job validates the tag, `main` ancestry, Contract attestation, read-only inputs, and fixed Spine hashes before publishing the allowlisted ZIP. To repair an existing release, dispatch **GitHub Release** with its existing tag, approve `release-production`, and start a new `Release` runner; the existing ZIP asset is replaced.
 
 Local Workshop publishing is deliberately fail-closed:
 
@@ -100,6 +115,6 @@ This repository intentionally does not declare a license. Do not infer reuse rig
 
 The manual `Protected game contract` workflow accepts only a reviewed full SHA that is already on canonical `main`, then requires approval through the `game-contract` environment. Its workflow and build harness come from protected `main`; candidate project files, targets, tests, NuGet configuration, and workflows are never evaluated with the private game references mounted.
 
-The job runs only on an ephemeral self-hosted Windows runner labeled `ninjaslayer-contract`. From an elevated Windows PowerShell session, use `tools/private-contract/Start-EphemeralContractRunner.ps1` with the short-lived registration token, exact runner version, and archive SHA-256 shown by GitHub's **New self-hosted runner** page. The host must have a .NET 9 SDK/runtime and Godot 4.5.1 Mono installed. The optional `RunnerArchivePath` supports a pre-downloaded official archive when elevated network access is unreliable; its SHA-256 is still mandatory. The launcher creates an isolated read-only copy of `sts2.dll`, `0Harmony.dll`, and `GodotSharp.dll`, plus a temporary .NET 9-only runtime root for Godot; no private binary is uploaded to GitHub or placed in a cache.
+The job runs only on an ephemeral self-hosted Windows runner labeled `ninjaslayer-contract`. From an elevated Windows PowerShell session, call `tools/private-contract/Start-EphemeralContractRunner.ps1 -RunnerPurpose Contract` with the short-lived registration token, exact runner version, and archive SHA-256 shown by GitHub's **New self-hosted runner** page. The host must have a .NET 9 SDK/runtime and Godot 4.5.1 Mono installed. The optional `RunnerArchivePath` supports a pre-downloaded official archive when elevated network access is unreliable; its SHA-256 is still mandatory. The launcher creates an isolated read-only copy of `sts2.dll`, `0Harmony.dll`, and `GodotSharp.dll`, plus a temporary .NET 9-only runtime root for Godot; no private binary is uploaded to GitHub or placed in a cache.
 
 The job compiles candidate source through `tools/private-contract`, runs the trusted RitsuLib contracts with outbound `dotnet` traffic blocked, uploads only a small JSON attestation, and removes the candidate checkout, build output, and isolated NuGet folder. The ephemeral launcher then removes its runner, work directory, and private reference copy. The workflow must not be converted to `pull_request_target` or given access to fork commits.
