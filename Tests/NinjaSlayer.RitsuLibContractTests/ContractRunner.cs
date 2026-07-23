@@ -62,6 +62,9 @@ public partial class ContractRunner : Node
         Require(
             PreparedDrawTargetContract.TryValidate(out _, out _, out string reason),
             reason);
+        Require(
+            PreparedQueueCompatibility.TryValidate(out _, out string queueReason),
+            queueReason);
     }
 
     private static void VerifyNancyLoadedRunCompatibility()

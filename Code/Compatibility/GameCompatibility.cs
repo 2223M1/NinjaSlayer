@@ -161,12 +161,19 @@ internal static class GameCompatibility
                 out _,
                 out PreparedDrawTargetFingerprint fingerprint,
                 out string reason);
+            bool queueContractMatches = PreparedQueueCompatibility.TryValidate(
+                out PreparedQueueFingerprint queueFingerprint,
+                out string queueReason);
             return
             [
                 CapabilityProbe.Required(
-                    "CardPileCmd.draw-internal-contract",
+                    "CardPileCmd.draw-wrapper-and-internal-contract",
                     drawContractMatches,
                     drawContractMatches ? fingerprint.ToString() : reason),
+                CapabilityProbe.Required(
+                    "CardPile.prepared-queue-contract",
+                    queueContractMatches,
+                    queueContractMatches ? queueFingerprint.ToString() : queueReason),
                 RequiredMember("CardPileCmd.shuffle-ftue", ShuffleFtueCheck, "CardPileCmd.ShuffleFtueCheck()")
             ];
         }

@@ -146,6 +146,24 @@ public sealed class RepositoryArchitectureTests
             .Single(method => method.Identifier.Text == "CanPrepare");
         Assert.Contains("PreparedGameplayEnabled", canPrepare.ToFullString(), StringComparison.Ordinal);
 
+        string prepareCommand = Sources
+            .Single(source => source.RelativePath == "Code/Commands/PrepareCmd.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("PreparedQueueCompatibility.Reposition", prepareCommand, StringComparison.Ordinal);
+        Assert.DoesNotContain("RemoveInternal", prepareCommand, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddInternal", prepareCommand, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            Sources.Select(source => source.Root.ToFullString()),
+            source => source.Contains("PreparedQueueReorderContext", StringComparison.Ordinal));
+
+        string queueCompatibility = Sources
+            .Single(source => source.RelativePath == "Code/Compatibility/PreparedQueueCompatibility.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("ExpectedAddIlSha256", queueCompatibility, StringComparison.Ordinal);
+        Assert.Contains("ExpectedRemoveIlSha256", queueCompatibility, StringComparison.Ordinal);
+
         string entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root.ToFullString();
         Assert.True(
             entry.IndexOf("InstallCapability<PreparedSafetyPatchGroup>", StringComparison.Ordinal)

@@ -2,6 +2,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 
 namespace NinjaSlayer.Code.Commands;
@@ -46,11 +47,10 @@ public static class PrepareCmd
         }
 
         // Top insertion is LIFO; place the new card after the existing prepared queue.
-        using (PreparedQueueReorderContext.Enter())
-        {
-            drawPile.RemoveInternal(card);
-            drawPile.AddInternal(card, Math.Min(preparedAhead, drawPile.Cards.Count));
-        }
+        PreparedQueueCompatibility.Reposition(
+            drawPile,
+            card,
+            Math.Min(preparedAhead, drawPile.Cards.Count));
         return true;
     }
 }
