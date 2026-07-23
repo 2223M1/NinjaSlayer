@@ -50,6 +50,9 @@ jobs:
             -p:UseSts2RefLib=true \
             -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
 
+      - name: Build delivery boundaries
+        run: node tools/test-build-boundaries.mjs
+
       - name: Worker install and tests
         working-directory: Infrastructure/telemetry-worker
         run: |
