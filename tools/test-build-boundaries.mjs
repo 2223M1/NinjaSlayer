@@ -21,6 +21,7 @@ const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
 const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
 const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
+const quickReleasePath = join(root, 'tools', 'release', 'Publish-QuickRelease.ps1');
 const ephemeralRunnerPath = join(
   root,
   'tools',
@@ -74,6 +75,7 @@ for (const property of ['PostBuildModDir', 'SteamModDir', 'WorkshopContentDir', 
 const packagingTargets = readFileSync(packagingTargetsPath, 'utf8');
 const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
 const workshopWorkflow = readFileSync(workshopWorkflowPath, 'utf8');
+const quickRelease = readFileSync(quickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
 for (const source of [releaseWorkflow, workshopWorkflow]) {
   assert(
@@ -83,12 +85,24 @@ for (const source of [releaseWorkflow, workshopWorkflow]) {
 }
 assert(releaseWorkflow.includes('environment: release-production'));
 assert(releaseWorkflow.includes('workflow_dispatch:'));
+assert(!releaseWorkflow.includes("tags:\n      - 'v0.1.*'"), 'Tag pushes must not automatically queue the protected release path.');
 assert(releaseWorkflow.includes('git rev-list -n 1 $env:RELEASE_TAG'));
 assert(releaseWorkflow.includes('gh release upload $env:RELEASE_TAG $env:RELEASE_ARCHIVE --clobber'));
 assert(
   releaseWorkflow.includes('runs-on: [self-hosted, Windows, X64, ninjaslayer-release]'),
   'Release packaging must run only on the dedicated ephemeral release runner.',
 );
+for (const safeguard of [
+  "[ValidatePattern('^0\\.1\\.(0|[1-9][0-9]?)$')]",
+  "if (-not $Confirm)",
+  "if ($branch -ne 'main')",
+  "if ($head -ne $originMain)",
+  "SHA256SUMS",
+  'gh release upload $tag $archivePath --clobber',
+  'Invoke-Native $uploader upload -w NinjaSlayer',
+]) {
+  assert(quickRelease.includes(safeguard), `Quick release must retain safeguard: ${safeguard}`);
+}
 assert(releaseWorkflow.includes('if (-not $file.IsReadOnly)'));
 assert(releaseWorkflow.includes('must remain outside the repository workspace'));
 assert(releaseWorkflow.includes('NINJASLAYER_SPINE_DIR'));
