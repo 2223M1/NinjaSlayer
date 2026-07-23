@@ -66,6 +66,8 @@ Packaging first refreshes the Debug editor assembly because Godot loads it befor
 
 Create the `release-production` environment under repository **Settings > Environments** and require approval for it. Its reference ZIP may contain directories, but one directory must contain both `sts2.dll` and `0Harmony.dll`. Configure `STS2_REFERENCE_BUNDLE_URL` with a stable private HTTPS download URL and, when required, configure `STS2_REFERENCE_BUNDLE_TOKEN` with a read-only bearer credential. Do not store either DLL in this repository, a public Release, an Actions cache, or an Actions artifact.
 
+To repair an existing release after configuring the environment, open **Actions > GitHub Release > Run workflow**, enter its existing tag such as `v0.1.0`, and approve the `release-production` deployment. The workflow validates the tag, `main` ancestry, and protected Contract attestation before replacing the ZIP asset.
+
 Local Workshop publishing is deliberately fail-closed:
 
 ```powershell
