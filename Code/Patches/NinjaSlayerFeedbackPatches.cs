@@ -168,7 +168,10 @@ public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
             return true;
         }
 
-        __result = NinjaSlayerFeedbackClient.SendAsync(data, screenshotStream, logsMemoryStream);
+        __result = FeedbackStreamOwnership.SendAndCloseAsync(
+            () => NinjaSlayerFeedbackClient.SendAsync(data, screenshotStream, logsMemoryStream),
+            screenshotStream,
+            logsMemoryStream);
         return false;
     }
 }

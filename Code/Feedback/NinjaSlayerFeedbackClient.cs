@@ -14,13 +14,15 @@ namespace NinjaSlayer.Code.Feedback;
 public static class NinjaSlayerFeedbackClient
 {
     private const string FeedbackUrl = "https://ninja-slayer-telemetry.theonetrue2223.workers.dev/feedback";
-    private const int MaxAttempts = 3;
     private const long MaxScreenshotBytes = 5L * 1024 * 1024;
     private const long MaxLogsBytes = 16L * 1024 * 1024;
-    private const int MaxErrorResponseBytes = 4 * 1024;
-    private static readonly TimeSpan AttemptTimeout = TimeSpan.FromSeconds(10);
     private static readonly HttpClient HttpClient = new() { Timeout = Timeout.InfiniteTimeSpan };
-    private static readonly int[] RetryDelaysMs = [500, 1000];
+    private static readonly TimeProvider Clock = TimeProvider.System;
+    private static readonly FeedbackHttpClient Transport = new(
+        HttpClient,
+        new FeedbackHttpClientOptions(new Uri(FeedbackUrl)),
+        Clock,
+        SystemRetryDelayStrategy.Instance);
 
     public static async Task<bool> SendAsync(
         FeedbackData data,
@@ -29,80 +31,34 @@ public static class NinjaSlayerFeedbackClient
         CancellationToken cancellationToken = default)
     {
         string submissionId = Guid.NewGuid().ToString("D");
-        string submittedAtUtc = DateTimeOffset.UtcNow.ToString("O");
+        string submittedAtUtc = Clock.GetUtcNow().ToString("O");
 
-        try
+        if (!ValidateUploadStream(screenshotStream, MaxScreenshotBytes, "screenshot") ||
+            !ValidateUploadStream(logsStream, MaxLogsBytes, "logs"))
         {
-            if (!ValidateUploadStream(screenshotStream, MaxScreenshotBytes, "screenshot") ||
-                !ValidateUploadStream(logsStream, MaxLogsBytes, "logs"))
-            {
-                return false;
-            }
-
-            for (int attempt = 0; attempt < MaxAttempts; attempt++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                try
-                {
-                    screenshotStream.Position = 0;
-                    logsStream.Position = 0;
-                    using MultipartFormDataContent form = BuildMultipartContent(
-                        data,
-                        BuildModContext(submissionId, submittedAtUtc),
-                        screenshotStream,
-                        logsStream);
-                    using HttpRequestMessage request = new(HttpMethod.Put, FeedbackUrl) { Content = form };
-                    request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Feedback-Version", "1");
-                    request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Submission-Id", submissionId);
-                    using CancellationTokenSource attemptCancellation =
-                        CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    attemptCancellation.CancelAfter(AttemptTimeout);
-                    using HttpResponseMessage response = await HttpClient.SendAsync(
-                        request,
-                        HttpCompletionOption.ResponseHeadersRead,
-                        attemptCancellation.Token);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Entry.Logger.Info($"NinjaSlayer feedback {submissionId} uploaded successfully.");
-                        return true;
-                    }
-
-                    string responseBody = await ReadBoundedResponseAsync(response.Content, attemptCancellation.Token);
-                    int statusCode = (int)response.StatusCode;
-                    Entry.Logger.Warn(
-                        $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} rejected " +
-                        $"({response.StatusCode}): {responseBody}");
-                    if (statusCode is >= 400 and < 500 && statusCode != 429)
-                    {
-                        return false;
-                    }
-                }
-                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-                {
-                    Entry.Logger.Warn(
-                        $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} timed out after {AttemptTimeout.TotalSeconds:0}s.");
-                }
-                catch (HttpRequestException ex)
-                {
-                    Entry.Logger.Warn(
-                        $"NinjaSlayer feedback attempt {attempt + 1}/{MaxAttempts} failed: {ex}");
-                }
-
-                if (attempt < MaxAttempts - 1)
-                {
-                    await Task.Delay(RetryDelaysMs[attempt], cancellationToken);
-                }
-            }
-
-            Entry.Logger.Warn($"NinjaSlayer feedback {submissionId} failed after all retry attempts.");
             return false;
         }
-        finally
-        {
-            screenshotStream.Close();
-            logsStream.Close();
-        }
+
+        object modContext = BuildModContext(submissionId, submittedAtUtc);
+        FeedbackSendResult result = await Transport.SendAsync(
+            endpoint =>
+            {
+                screenshotStream.Position = 0;
+                logsStream.Position = 0;
+                MultipartFormDataContent form = BuildMultipartContent(
+                    data,
+                    modContext,
+                    screenshotStream,
+                    logsStream);
+                var request = new HttpRequestMessage(HttpMethod.Put, endpoint) { Content = form };
+                request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Feedback-Version", "1");
+                request.Headers.TryAddWithoutValidation("X-NinjaSlayer-Submission-Id", submissionId);
+                return request;
+            },
+            cancellationToken);
+
+        LogResult(submissionId, result);
+        return result.IsSuccess;
     }
 
     private static bool ValidateUploadStream(Stream stream, long maxBytes, string name)
@@ -123,25 +79,28 @@ public static class NinjaSlayerFeedbackClient
         return false;
     }
 
-    private static async Task<string> ReadBoundedResponseAsync(
-        HttpContent content,
-        CancellationToken cancellationToken)
+    private static void LogResult(string submissionId, FeedbackSendResult result)
     {
-        await using Stream stream = await content.ReadAsStreamAsync(cancellationToken);
-        byte[] buffer = new byte[MaxErrorResponseBytes];
-        int totalRead = 0;
-        while (totalRead < buffer.Length)
+        foreach (FeedbackAttemptDiagnostic diagnostic in result.Attempts)
         {
-            int read = await stream.ReadAsync(buffer.AsMemory(totalRead, buffer.Length - totalRead), cancellationToken);
-            if (read == 0)
+            if (diagnostic.Failure == FeedbackAttemptFailure.None)
             {
-                break;
+                continue;
             }
 
-            totalRead += read;
+            string reason = diagnostic.StatusCode is { } statusCode
+                ? $"{statusCode}: {diagnostic.Detail}"
+                : $"{diagnostic.Failure}: {diagnostic.Detail}";
+            Entry.Logger.Warn($"NinjaSlayer feedback attempt {diagnostic.Attempt} failed ({reason}).");
         }
 
-        return Encoding.UTF8.GetString(buffer, 0, totalRead);
+        if (result.IsSuccess)
+        {
+            Entry.Logger.Info($"NinjaSlayer feedback {submissionId} uploaded successfully.");
+            return;
+        }
+
+        Entry.Logger.Warn($"NinjaSlayer feedback {submissionId} ended with {result.Outcome}.");
     }
 
     private static MultipartFormDataContent BuildMultipartContent(
@@ -207,28 +166,8 @@ public static class NinjaSlayerFeedbackClient
         string mediaType,
         Stream stream)
     {
-        StreamContent content = new(new NonDisposingStream(stream));
+        StreamContent content = new(new FeedbackNonDisposingStream(stream));
         content.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
         form.Add(content, name, fileName);
-    }
-
-    private sealed class NonDisposingStream(Stream inner) : Stream
-    {
-        public override bool CanRead => inner.CanRead;
-        public override bool CanSeek => inner.CanSeek;
-        public override bool CanWrite => inner.CanWrite;
-        public override long Length => inner.Length;
-        public override long Position { get => inner.Position; set => inner.Position = value; }
-        public override void Flush() => inner.Flush();
-        public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
-        public override long Seek(long offset, SeekOrigin origin) => inner.Seek(offset, origin);
-        public override void SetLength(long value) => inner.SetLength(value);
-        public override void Write(byte[] buffer, int offset, int count) => inner.Write(buffer, offset, count);
-        public override Task FlushAsync(CancellationToken cancellationToken) => inner.FlushAsync(cancellationToken);
-        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
-            inner.ReadAsync(buffer, cancellationToken);
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>
-            inner.WriteAsync(buffer, cancellationToken);
-        protected override void Dispose(bool disposing) { }
     }
 }
