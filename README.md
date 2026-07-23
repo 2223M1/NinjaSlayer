@@ -55,19 +55,25 @@ Packaging first refreshes the Debug editor assembly because Godot loads it befor
 
 ## Versions And Releases
 
-- A clean exact `vX.Y.Z` tag produces version `X.Y.Z`.
+- Releases use `v0.1.x`, where `x` is `0` through `99` without leading zeroes; for example, `v0.1.9` and `v0.1.10` are valid, while `v0.1.01` and `v0.1.100` are not.
+- A clean exact supported tag produces the matching `0.1.x` package version.
 - Normal commits produce `X.Y.Z-dev.N+gCOMMIT`; dirty trees include `.dirty`.
-- GitHub Release automation accepts only strict `vX.Y.Z` tags whose commit belongs to `main`.
+- GitHub Release automation accepts only supported `v0.1.x` tags whose commit belongs to `main`.
 - A Release also requires a text-only attestation from the protected game-contract workflow for the exact tag commit.
-- The release workflow requires the `STS2_REFERENCE_BUNDLE_URL` secret to point to a private ZIP containing the target `sts2.dll` and `0Harmony.dll`.
+- The `release-production` environment must define `STS2_REFERENCE_BUNDLE_URL` for a private ZIP containing the target `sts2.dll` and `0Harmony.dll`; define `STS2_REFERENCE_BUNDLE_TOKEN` when the host requires a bearer token. The workflow never publishes either DLL and only uploads the allowlisted mod package.
+- Release publication is idempotent: rerunning a tag workflow replaces the matching ZIP asset when the Release already exists. The protected manual dispatch accepts an existing supported tag so an older failed run can be repaired using the trusted workflow currently on `main`.
 - GitHub Releases never publish Steam Workshop content.
+
+Create the `release-production` environment under repository **Settings > Environments** and require approval for it. Its reference ZIP may contain directories, but one directory must contain both `sts2.dll` and `0Harmony.dll`. Configure `STS2_REFERENCE_BUNDLE_URL` with a stable private HTTPS download URL and, when required, configure `STS2_REFERENCE_BUNDLE_TOKEN` with a read-only bearer credential. Do not store either DLL in this repository, a public Release, an Actions cache, or an Actions artifact.
+
+To repair an existing release after configuring the environment, open **Actions > GitHub Release > Run workflow**, enter its existing tag such as `v0.1.0`, and approve the `release-production` deployment. The workflow validates the tag, `main` ancestry, and protected Contract attestation before replacing the ZIP asset.
 
 Local Workshop publishing is deliberately fail-closed:
 
 ```powershell
 dotnet msbuild .\NinjaSlayer.csproj -t:PublishWorkshop `
   -p:Configuration=Release `
-  -p:NinjaSlayerVersion=X.Y.Z `
+  -p:NinjaSlayerVersion=0.1.x `
   -p:PublishWorkshopConfirmed=true
 ```
 

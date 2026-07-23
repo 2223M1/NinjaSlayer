@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Existing GitHub Release tag (vX.Y.Z)
+        description: Existing GitHub Release tag (v0.1.x, x = 0-99)
         required: true
         type: string
       confirmation:
@@ -24,7 +24,7 @@ jobs:
       - name: Validate manual confirmation
         shell: bash
         run: |
-          [[ '${{ inputs.release_tag }}' =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
+          [[ '${{ inputs.release_tag }}' =~ ^v0\.1\.(0|[1-9][0-9]?)$ ]] || { echo 'Release tag must be v0.1.x with x from 0 through 99 and no leading zeroes'; exit 1; }
           [[ '${{ inputs.confirmation }}' == 'PUBLISH_NINJASLAYER_3761570842' ]] || { echo 'Invalid confirmation string'; exit 1; }
 
       - name: Checkout release tag
