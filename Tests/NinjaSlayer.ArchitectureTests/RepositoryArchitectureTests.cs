@@ -72,6 +72,20 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void NormalAndDebugCharactersShareOneStartingDeckDefinition()
+    {
+        string entry = SourceText("Scripts/Entry.cs");
+
+        Assert.Contains("Character<NinjaSlayerCharacter>(ConfigureStartingDeck)", entry, StringComparison.Ordinal);
+        Assert.Contains("ConfigureStartingDeck(character);", entry, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(entry, "AddStartingCard<StrikeNinjaSlayer>"));
+        Assert.Equal(1, CountOccurrences(entry, "AddStartingCard<DefendNinjaSlayer>"));
+        Assert.Equal(1, CountOccurrences(entry, "AddStartingCard<Meditation>"));
+        Assert.Equal(1, CountOccurrences(entry, "AddStartingCard<KarateStraight>"));
+        Assert.Equal(1, CountOccurrences(entry, "AddStartingRelic<ChadoBreathingRelic>"));
+    }
+
+    [Fact]
     public void CapabilityIdsAreCentralizedAndUnique()
     {
         ClassDeclarationSyntax ids = Sources
@@ -815,6 +829,9 @@ public sealed class RepositoryArchitectureTests
         .Single(source => source.RelativePath == relativePath)
         .Root
         .ToFullString();
+
+    private static int CountOccurrences(string source, string value) =>
+        source.Split(value, StringSplitOptions.None).Length - 1;
 
     private static IEnumerable<(ClassDeclarationSyntax Declaration, INamedTypeSymbol Symbol)> DeclaredClasses()
     {
