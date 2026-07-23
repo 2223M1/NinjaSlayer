@@ -12,6 +12,45 @@ public static class FastAttackAnimation
     private const float OriginalAnimationDuration = 0.4f;
     private const float LungeDistance = NinjaSlayerCombatVisuals.AttackLungeDistance * OriginalAnimationDuration / AnimationDuration;
 
+    internal static async Task PlayOutwardLunge(Creature creature, float duration, float direction)
+    {
+        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (creatureNode == null)
+        {
+            return;
+        }
+
+        Vector2 originalPosition = creatureNode.Position;
+        float normalizedDirection = Mathf.Sign(direction);
+        if (Mathf.IsZeroApprox(normalizedDirection))
+        {
+            normalizedDirection = creature.IsPlayer ? 1f : -1f;
+        }
+
+        var tween = creatureNode.CreateTween();
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                {
+                    float xOffset = GetOutwardLungeOffset(progress) * normalizedDirection;
+                    creatureNode.Position = originalPosition + new Vector2(xOffset, 0f);
+                }),
+                0f,
+                1f,
+                duration)
+            .SetTrans(Tween.TransitionType.Linear);
+
+        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        creatureNode.Position = originalPosition
+            + new Vector2(NinjaSlayerCombatVisuals.AttackLungeDistance * normalizedDirection, 0f);
+    }
+
+    internal static float GetOutwardLungeOffset(float progress)
+    {
+        float p = Mathf.Clamp(progress, 0f, 1f);
+        float smoothStep = p * p * (3f - 2f * p);
+        return NinjaSlayerCombatVisuals.AttackLungeDistance * smoothStep;
+    }
+
     public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
         if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
