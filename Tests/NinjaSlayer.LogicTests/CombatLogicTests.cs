@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.LogicTests;
@@ -34,6 +36,81 @@ public sealed class CombatLogicTests
 
         Assert.Equal(MemoSearchLookup.BudgetExceeded, memo.Lookup("state", out _));
         Assert.Equal(0, memo.VisitedStates);
+    }
+
+    [Fact]
+    public void ScreenShakeSuppressionScopesRestoreNestedState()
+    {
+        Assert.False(ScreenShakeSuppressionContext.IsSuppressed);
+        using (ScreenShakeSuppressionContext.Suppress())
+        {
+            Assert.True(ScreenShakeSuppressionContext.IsSuppressed);
+            IDisposable inner = ScreenShakeSuppressionContext.Suppress();
+            Assert.True(ScreenShakeSuppressionContext.IsSuppressed);
+            inner.Dispose();
+            inner.Dispose();
+            Assert.True(ScreenShakeSuppressionContext.IsSuppressed);
+        }
+
+        Assert.False(ScreenShakeSuppressionContext.IsSuppressed);
+    }
+
+    [Fact]
+    public void ScreenShakeSuppressionScopesTolerateOutOfOrderDisposal()
+    {
+        IDisposable outer = ScreenShakeSuppressionContext.Suppress();
+        IDisposable inner = ScreenShakeSuppressionContext.Suppress();
+
+        outer.Dispose();
+        Assert.True(ScreenShakeSuppressionContext.IsSuppressed);
+
+        inner.Dispose();
+        Assert.False(ScreenShakeSuppressionContext.IsSuppressed);
+    }
+
+    [Fact]
+    public void KarateCombatPreviewScopesRestoreNestedState()
+    {
+        var outerCard = new CardModel();
+        var outerTarget = new Creature();
+        var innerCard = new CardModel();
+        var innerTarget = new Creature();
+
+        using (KarateCombatPreviewContext.Enter(outerCard, outerTarget))
+        {
+            Assert.Same(outerCard, KarateCombatPreviewContext.CurrentCard);
+            Assert.Same(outerTarget, KarateCombatPreviewContext.CurrentTarget);
+            using (KarateCombatPreviewContext.Enter(innerCard, innerTarget))
+            {
+                Assert.Same(innerCard, KarateCombatPreviewContext.CurrentCard);
+                Assert.Same(innerTarget, KarateCombatPreviewContext.CurrentTarget);
+            }
+
+            Assert.Same(outerCard, KarateCombatPreviewContext.CurrentCard);
+            Assert.Same(outerTarget, KarateCombatPreviewContext.CurrentTarget);
+        }
+
+        Assert.Null(KarateCombatPreviewContext.CurrentCard);
+        Assert.Null(KarateCombatPreviewContext.CurrentTarget);
+    }
+
+    [Fact]
+    public void KarateCombatPreviewScopesDoNotRestoreDisposedAncestors()
+    {
+        var outerCard = new CardModel();
+        var outerTarget = new Creature();
+        var innerCard = new CardModel();
+        var innerTarget = new Creature();
+        IDisposable outer = KarateCombatPreviewContext.Enter(outerCard, outerTarget);
+        IDisposable inner = KarateCombatPreviewContext.Enter(innerCard, innerTarget);
+
+        outer.Dispose();
+        Assert.Same(innerCard, KarateCombatPreviewContext.CurrentCard);
+        Assert.Same(innerTarget, KarateCombatPreviewContext.CurrentTarget);
+
+        inner.Dispose();
+        Assert.Null(KarateCombatPreviewContext.CurrentCard);
+        Assert.Null(KarateCombatPreviewContext.CurrentTarget);
     }
 
     [Fact]

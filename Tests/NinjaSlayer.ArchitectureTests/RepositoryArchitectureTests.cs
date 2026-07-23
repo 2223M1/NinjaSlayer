@@ -633,6 +633,50 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("new FinisherAttackSpec", adapter, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void FinisherRuntimeResponsibilitiesRemainSeparated()
+    {
+        string orchestrator = SourceText("Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs");
+        string session = SourceText("Code/ExternalAnimations/FinisherSession.cs");
+        string registry = SourceText("Code/ExternalAnimations/FinisherSessionRegistry.cs");
+        string eligibility = SourceText("Code/ExternalAnimations/FinisherEligibilityService.cs");
+        string protection = SourceText("Code/ExternalAnimations/FinisherProtectionService.cs");
+        string cleanup = SourceText("Code/ExternalAnimations/FinisherCleanupService.cs");
+        string forecast = SourceText("Code/ExternalAnimations/FinisherForecast.cs");
+
+        Assert.DoesNotContain("class FinisherSession", orchestrator, StringComparison.Ordinal);
+        Assert.DoesNotContain("SessionRegistrySync", orchestrator, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class FinisherForecast", orchestrator, StringComparison.Ordinal);
+        Assert.Contains("class FinisherSession", session, StringComparison.Ordinal);
+        Assert.Contains("static class FinisherSessionRegistry", registry, StringComparison.Ordinal);
+        Assert.Contains("static class FinisherEligibilityService", eligibility, StringComparison.Ordinal);
+        Assert.Contains("static class FinisherProtectionService", protection, StringComparison.Ordinal);
+        Assert.Contains("static class FinisherCleanupService", cleanup, StringComparison.Ordinal);
+        Assert.Contains("static class FinisherForecast", forecast, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void HighFrequencyContextsUseOwnedScopes()
+    {
+        string karatePatch = SourceText("Code/Patches/KarateHealthBarPreviewPatch.cs");
+        string combo = SourceText("Code/ExternalAnimations/XAttackComboContext.cs");
+        string audio = SourceText("Code/ExternalAnimations/XAttackAudioContext.cs");
+        string shake = SourceText("Code/Combat/ScreenShakeSuppressionContext.cs");
+        string cadence = SourceText("Code/Combat/TornadoFistFinisherCadenceContext.cs");
+
+        Assert.Contains("KaratePreviewScopeRegistry.Replace", karatePatch, StringComparison.Ordinal);
+        Assert.Contains("KaratePreviewScopeRegistry.Release", karatePatch, StringComparison.Ordinal);
+        Assert.Contains("AsyncLocal<State?>", combo, StringComparison.Ordinal);
+        Assert.Contains("AsyncScopeDepth", audio, StringComparison.Ordinal);
+        Assert.Contains("AsyncScopeDepth", shake, StringComparison.Ordinal);
+        Assert.Contains("AsyncScopeDepth", cadence, StringComparison.Ordinal);
+    }
+
+    private static string SourceText(string relativePath) => Sources
+        .Single(source => source.RelativePath == relativePath)
+        .Root
+        .ToFullString();
+
     private static IEnumerable<(ClassDeclarationSyntax Declaration, INamedTypeSymbol Symbol)> DeclaredClasses()
     {
         foreach (SourceDocument source in Sources)
