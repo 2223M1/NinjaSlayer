@@ -18,7 +18,7 @@ using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-internal sealed partial class ArchitectExecutionCinematic : Node
+public sealed partial class ArchitectExecutionCinematic : Node
 {
     private const string ControllerName = "NinjaSlayerArchitectExecution";
     private const string ArchitectHeadBone = "head";
