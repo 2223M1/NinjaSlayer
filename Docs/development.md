@@ -40,12 +40,24 @@ Godot loads a Debug editor assembly before Release export. The export-only build
 
 Releases use `v0.1.x`, where `x` is `0` through `99` without leading zeroes. A clean exact tag produces the matching package version; ordinary commits produce a development version derived from `git describe`.
 
+### Quick test release
+
+Frequent player-test builds can use the local quick path. It packages and installs the mod, creates or verifies the matching tag, uploads an idempotent GitHub Release, stages the Workshop content, and invokes the local Workshop uploader:
+
+```powershell
+.\tools\release\Publish-QuickRelease.ps1 -Version 0.1.2 -Confirm
+```
+
+The quick path deliberately skips tests, Contract, Smoke, protected environments, and self-hosted runners. It still requires a clean `main` whose commit already matches `origin/main`, a valid `0.1.x` version, a successful package export, and valid package checksums. The release note comes from `Workshop/change-note.md`. Use `-SkipGitHub` or `-SkipWorkshop` to retry one destination after a partial external failure.
+
+### Protected stable-candidate release
+
 The release flow is:
 
 1. Push the candidate commit to `main`.
 2. Run **Protected game contract** for the exact commit with an ephemeral `Contract` runner.
 3. Create and push the next `v0.1.x` tag.
-4. Approve **GitHub Release** and start an ephemeral `Release` runner.
+4. Manually dispatch **GitHub Release**, approve it, and start an ephemeral `Release` runner.
 5. Publish the matching GitHub Release to Workshop through the manual protected workflow or the guarded local target.
 
 The local Workshop target is:

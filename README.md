@@ -31,6 +31,12 @@ dotnet build .\NinjaSlayer.csproj --no-restore -v:minimal
 
 普通构建只编译代码。完整测试、打包、安装、版本发布和受保护实机验证流程见 [开发与发布指南](Docs/development.md)。
 
+测试版可从干净且已推送的 `main` 一键发布到 GitHub 和 Steam：
+
+```powershell
+.\tools\release\Publish-QuickRelease.ps1 -Version 0.1.2 -Confirm
+```
+
 ## Links
 
 - [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)
