@@ -49,6 +49,7 @@ dotnet msbuild .\NinjaSlayer.csproj -t:InstallLocal -p:Configuration=Release
 ```
 
 `PackageMod` exports `NinjaSlayer.dll`, versioned `NinjaSlayer.json`, `NinjaSlayer.pck`, and `SHA256SUMS` under `build/mods/NinjaSlayer`. `InstallLocal` packages first, copies those files into the game Mods directory, and verifies every copied file by SHA-256.
+Packaging first refreshes the Debug editor assembly because Godot loads it before starting a Release export. Local `sts2.dll` and `0Harmony.dll` references remain copy-local so Godot can resolve public script types that implement game interfaces; the package allowlist still includes only the NinjaSlayer DLL, JSON, PCK, and checksum manifest. Godot-reported managed exceptions and `ERROR:` lines fail packaging even when the editor exits with code zero.
 `StageWorkshop` is the non-uploading staging primitive used by build tests and
 `PublishWorkshop`; invoking it directly never calls the Workshop uploader.
 

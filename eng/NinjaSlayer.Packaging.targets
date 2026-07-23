@@ -8,7 +8,7 @@
     <GeneratedManifest Condition="'$(GeneratedManifest)' == ''">$(IntermediateOutputPath)NinjaSlayer.json</GeneratedManifest>
     <PackageHashManifest Condition="'$(PackageHashManifest)' == ''">$(PostBuildModDir)SHA256SUMS</PackageHashManifest>
     <GodotExportPreset Condition="'$(GodotExportPreset)' == ''">Windows Desktop</GodotExportPreset>
-    <PackageModDependsOn Condition="'$(PackageModDependsOn)' == ''">Build;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums</PackageModDependsOn>
+    <PackageModDependsOn Condition="'$(PackageModDependsOn)' == ''">BuildGodotEditorAssembly;Build;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums</PackageModDependsOn>
     <InstallLocalDependsOn Condition="'$(InstallLocalDependsOn)' == ''">PackageMod</InstallLocalDependsOn>
     <PublishWorkshopDependsOn Condition="'$(PublishWorkshopDependsOn)' == ''">ValidateWorkshopPublish;PackageMod;StageWorkshop</PublishWorkshopDependsOn>
   </PropertyGroup>
@@ -45,6 +45,13 @@
            Condition="!Exists('$(FmodDesktopBank)') and !Exists('$(FmodRootBank)')" />
   </Target>
 
+  <Target Name="BuildGodotEditorAssembly" Condition="'$(Configuration)' != 'Debug'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Build"
+             Properties="Configuration=Debug"
+             BuildInParallel="false" />
+  </Target>
+
   <Target Name="GenerateVersionedManifest" DependsOnTargets="ResolveNinjaSlayerVersion">
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedManifest)'))" />
     <GenerateManifestWithVersion
@@ -62,7 +69,8 @@
     <Error Condition="!Exists('$(GodotExe)')" Text="Godot 4.5.1 Mono not found at $(GodotExe)." />
     <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;$(GodotExportPreset)&quot; &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).pck&quot;"
           WorkingDirectory="$(MSBuildProjectDirectory)"
-          EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1" />
+          EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
+          CustomErrorRegularExpression="System\.[A-Za-z0-9_.]+Exception:|SCRIPT ERROR:|ERROR:" />
   </Target>
 
   <Target Name="CopyPackageArtifacts">
