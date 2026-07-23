@@ -26,6 +26,8 @@
     <Compile Include="..\..\Code\ExternalAnimations\CinematicTimingContract.cs" Link="CinematicTimingContract.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\CinematicSessionLifetime.cs" Link="CinematicSessionLifetime.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\FinisherCompletionProtocol.cs" Link="FinisherCompletionProtocol.cs" />
+    <Compile Include="..\..\Code\Feedback\FeedbackHttpClient.cs" Link="FeedbackHttpClient.cs" />
+    <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedSafetyPolicy.cs" Link="PreparedSafetyPolicy.cs" />

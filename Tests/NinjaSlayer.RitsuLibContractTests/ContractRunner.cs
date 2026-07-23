@@ -1,16 +1,20 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Net;
+using System.Net.Sockets;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
+using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Feedback;
 using NinjaSlayer.Content;
 using STS2RitsuLib;
 using STS2RitsuLib.Patching.Core;
@@ -31,6 +35,7 @@ public partial class ContractRunner : Node
             VerifyNancyLoadedRunCompatibility();
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
+            VerifyOriginalFeedbackStreamOwnership();
             VerifyRunDataSchemaCompatibility();
             VerifyFinisherProtectionTransaction();
             VerifyWorldVisualStylesAreIdempotent();
@@ -178,6 +183,93 @@ public partial class ContractRunner : Node
         Require(
             multiplayer.CompletedBossGreetingRoomKeys.Count == 6,
             "The multiplayer room-key payload did not survive RitsuLib's version 1 import.");
+    }
+
+    private static void VerifyOriginalFeedbackStreamOwnership()
+    {
+        string? previousUrl = System.Environment.GetEnvironmentVariable("STS2_FEEDBACK_URL");
+        int port = ReserveLoopbackPort();
+        string endpoint = $"http://127.0.0.1:{port}/feedback/";
+        System.Environment.SetEnvironmentVariable("STS2_FEEDBACK_URL", endpoint);
+        try
+        {
+            using var listener = new HttpListener();
+            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+            listener.Start();
+            Task responder = Task.Run(async () =>
+            {
+                HttpListenerContext context = await listener.GetContextAsync();
+                await context.Request.InputStream.CopyToAsync(Stream.Null);
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentLength64 = 0;
+                context.Response.Close();
+            });
+
+            var originalScreenshot = new SentinelStream([0x89, 0x50, 0x4e, 0x47]);
+            var originalLogs = new SentinelStream([0x50, 0x4b, 0x03, 0x04]);
+            MethodInfo originalSend = typeof(NSendFeedbackScreen).GetMethod(
+                "SendFeedback",
+                BindingFlags.Static | BindingFlags.NonPublic,
+                binder: null,
+                types: [typeof(FeedbackData), typeof(Stream), typeof(Stream)],
+                modifiers: null)
+                ?? throw new MissingMethodException(typeof(NSendFeedbackScreen).FullName, "SendFeedback");
+            var data = new FeedbackData
+            {
+                description = "NinjaSlayer ownership contract",
+                category = "bug",
+                gameVersion = "contract",
+                uniqueId = "contract",
+                commit = "contract",
+                platformBranch = "contract",
+                sessionId = "contract",
+                lang = "eng",
+            };
+            Task<bool> sendTask = Task.Run(async () =>
+            {
+                var originalTask = (Task<bool>)(originalSend.Invoke(
+                    null,
+                    [data, originalScreenshot, originalLogs])
+                    ?? throw new InvalidOperationException("Original feedback call returned null."));
+                return await originalTask.ConfigureAwait(false);
+            });
+
+            Require(sendTask.GetAwaiter().GetResult(), "The local original feedback fixture did not succeed.");
+            responder.GetAwaiter().GetResult();
+            Require(
+                originalScreenshot.IsClosed && originalLogs.IsClosed,
+                "The original feedback method no longer owns both upload streams.");
+
+            var replacementScreenshot = new SentinelStream([]);
+            var replacementLogs = new SentinelStream([]);
+            Require(
+                FeedbackStreamOwnership.SendAndCloseAsync(
+                    () => Task.FromResult(true),
+                    replacementScreenshot,
+                    replacementLogs).GetAwaiter().GetResult(),
+                "The replacement feedback ownership wrapper did not return its send result.");
+            Require(
+                replacementScreenshot.IsClosed && replacementLogs.IsClosed,
+                "The replacement feedback ownership wrapper does not match the original stream contract.");
+        }
+        finally
+        {
+            System.Environment.SetEnvironmentVariable("STS2_FEEDBACK_URL", previousUrl);
+        }
+    }
+
+    private static int ReserveLoopbackPort()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            return ((IPEndPoint)listener.LocalEndpoint).Port;
+        }
+        finally
+        {
+            listener.Stop();
+        }
     }
 
     private static NinjaSlayerRunState ImportRunDataFixture(
@@ -524,4 +616,15 @@ public partial class ContractRunner : Node
     }
 
     private sealed class RunOriginalState;
+
+    private sealed class SentinelStream(byte[] bytes) : MemoryStream(bytes)
+    {
+        public bool IsClosed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            IsClosed = true;
+            base.Dispose(disposing);
+        }
+    }
 }
