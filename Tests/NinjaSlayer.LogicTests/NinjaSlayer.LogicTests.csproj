@@ -30,5 +30,9 @@
     <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedSafetyPolicy.cs" Link="PreparedSafetyPolicy.cs" />
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />
+    <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
+    <None Include="..\Fixtures\RunData\*.json"
+          Link="Fixtures\RunData\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

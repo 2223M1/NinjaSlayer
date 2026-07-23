@@ -11,6 +11,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 - Transition owns one 30-second watchdog and must restore input, black screen, hover suppression, camera state, and loading state on every exit.
 - Prepared safety clears afflictions only after pile-change hooks confirm the card left the draw pile, and independently repairs invalid state at run-load and combat boundaries. Gameplay is pinned to `CardPileCmd.DrawInternal` in the supported 0.109.x build (`MVID a49d3537-5a42-4dcd-9877-663e394f2b44`, metadata token `0x060087F6`, IL SHA-256 `23ae995c9d6825f8ea24e7febce122641f2660fc3bea0667cf57c3d34b80c857`) and is disabled when either safety or that contract is unavailable.
 - The debug card pool keeps at least three candidates in every rarity/type bucket that `TheFutureOfPotions` can request, so its fixed three-card reward cannot stall after a debug catalog edit.
+- NinjaSlayer per-player RunData remains on schema 1. The former implicit RitsuLib 0.4.62 default and the explicit registration both resolve to version 1; de-identified fixtures preserve the state shapes from `ea3c6f9` and `a55e153`. Loaded room keys discard null/empty entries and ordinal duplicates while preserving first occurrence order.
 - Naraku has normal, new Naraku, fully released Naraku, and One Body One Soul visual policies; this roadmap does not change their abilities.
 - Boss framing holds for at least 2 seconds; boss and finisher camera recovery each remain 0.2 seconds.
 

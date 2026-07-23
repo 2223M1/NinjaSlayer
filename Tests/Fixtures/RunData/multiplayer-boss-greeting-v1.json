@@ -1,0 +1,30 @@
+{
+  "_ritsulib": {
+    "version": 1,
+    "run_saved_data": {
+      "NinjaSlayer": {
+        "ninja_slayer_run_state": {
+          "schema": 1,
+          "kind": "player",
+          "players": {
+            "1001": {
+              "PendingAncientEntranceAnimation": false,
+              "CompletedBossGreetingRoomKeys": [
+                "ACT1/BOSS",
+                "",
+                "ACT1/BOSS",
+                "act1/boss",
+                null,
+                "ACT2/BOSS"
+              ]
+            },
+            "1002": {
+              "PendingAncientEntranceAnimation": true,
+              "CompletedBossGreetingRoomKeys": null
+            }
+          }
+        }
+      }
+    }
+  }
+}
