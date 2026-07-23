@@ -4,6 +4,174 @@ namespace NinjaSlayer.LogicTests;
 
 public sealed class PreparedSafetyTests
 {
+    [Fact]
+    public void NotAppliedResultIsNeitherPreparedNorDegraded()
+    {
+        var result = new PreparedApplyResult(PreparedApplyStatus.NotApplied);
+
+        Assert.False(result.IsPrepared);
+        Assert.False(result.IsDegraded);
+        Assert.False(result.RequiresLifecycleRepair);
+    }
+
+    [Theory]
+    [InlineData(true, true, (int)PreparedCleanupStatus.NotRequired, (int)PreparedApplyStatus.Applied)]
+    [InlineData(false, true, (int)PreparedCleanupStatus.NotRequired, (int)PreparedApplyStatus.AppliedDegraded)]
+    [InlineData(false, false, (int)PreparedCleanupStatus.NotRequired, (int)PreparedApplyStatus.SafetyRepaired)]
+    [InlineData(false, false, (int)PreparedCleanupStatus.Cleared, (int)PreparedApplyStatus.SafetyRepaired)]
+    [InlineData(false, false, (int)PreparedCleanupStatus.Failed, (int)PreparedApplyStatus.SafetyRepairFailed)]
+    public void ApplyResultDistinguishesSuccessDegradationAndSafetyRepair(
+        bool repositionSucceeded,
+        bool stablePlacement,
+        int cleanupStatusValue,
+        int expectedValue)
+    {
+        var cleanupStatus = (PreparedCleanupStatus)cleanupStatusValue;
+        var expected = (PreparedApplyStatus)expectedValue;
+        PreparedApplyResult result = PreparedApplyPolicy.ResolveAfterReposition(
+            new PreparedQueueTransactionResult(
+                repositionSucceeded
+                    ? PreparedQueueTransactionStatus.Succeeded
+                    : PreparedQueueTransactionStatus.FailedUncertain,
+                repositionSucceeded ? null : new InvalidOperationException("reposition")),
+            stablePlacement,
+            new PreparedCleanupResult(
+                cleanupStatus,
+                cleanupStatus == PreparedCleanupStatus.Failed
+                    ? new InvalidOperationException("cleanup")
+                    : null),
+            "test failure");
+
+        Assert.Equal(expected, result.Status);
+        Assert.Equal(
+            expected is PreparedApplyStatus.Applied or PreparedApplyStatus.AppliedDegraded,
+            result.IsPrepared);
+        Assert.Equal(
+            expected is not PreparedApplyStatus.Applied and not PreparedApplyStatus.NotApplied,
+            result.IsDegraded);
+        Assert.Equal(expected == PreparedApplyStatus.SafetyRepairFailed, result.RequiresLifecycleRepair);
+    }
+
+    [Fact]
+    public void QueueTransactionMovesTheCardOnSuccess()
+    {
+        bool present = true;
+        int position = 0;
+
+        PreparedQueueTransactionResult result = PreparedQueueTransaction.Execute(
+            remove: () => present = false,
+            insertAtTarget: () =>
+            {
+                present = true;
+                position = 2;
+            },
+            restoreAtOriginal: () =>
+            {
+                present = true;
+                position = 0;
+            },
+            isPresent: () => present);
+
+        Assert.Equal(PreparedQueueTransactionStatus.Succeeded, result.Status);
+        Assert.Equal(2, position);
+    }
+
+    [Fact]
+    public void QueueTransactionRestoresAfterRemoveThrowsPostMutation()
+    {
+        bool present = true;
+        bool targetInsertCalled = false;
+
+        PreparedQueueTransactionResult result = PreparedQueueTransaction.Execute(
+            remove: () =>
+            {
+                present = false;
+                throw new InvalidOperationException("remove callback");
+            },
+            insertAtTarget: () => targetInsertCalled = true,
+            restoreAtOriginal: () => present = true,
+            isPresent: () => present);
+
+        Assert.Equal(PreparedQueueTransactionStatus.FailedStable, result.Status);
+        Assert.True(present);
+        Assert.False(targetInsertCalled);
+        Assert.NotNull(result.Error);
+    }
+
+    [Fact]
+    public void QueueTransactionDoesNotRollbackWhenRemoveFailsBeforeMutation()
+    {
+        bool present = true;
+        bool rollbackCalled = false;
+
+        PreparedQueueTransactionResult result = PreparedQueueTransaction.Execute(
+            remove: () => throw new InvalidOperationException("remove rejected"),
+            insertAtTarget: () => throw new InvalidOperationException("must not run"),
+            restoreAtOriginal: () => rollbackCalled = true,
+            isPresent: () => present);
+
+        Assert.Equal(PreparedQueueTransactionStatus.FailedStable, result.Status);
+        Assert.True(present);
+        Assert.False(rollbackCalled);
+    }
+
+    [Fact]
+    public void QueueTransactionDoesNotDuplicateACardWhenInsertThrowsAfterMutation()
+    {
+        bool present = true;
+        bool rollbackCalled = false;
+
+        PreparedQueueTransactionResult result = PreparedQueueTransaction.Execute(
+            remove: () => present = false,
+            insertAtTarget: () =>
+            {
+                present = true;
+                throw new InvalidOperationException("add callback");
+            },
+            restoreAtOriginal: () => rollbackCalled = true,
+            isPresent: () => present);
+
+        Assert.Equal(PreparedQueueTransactionStatus.FailedStable, result.Status);
+        Assert.True(present);
+        Assert.False(rollbackCalled);
+    }
+
+    [Fact]
+    public void QueueTransactionAcceptsRollbackThatThrowsAfterRestoringTheCard()
+    {
+        bool present = true;
+
+        PreparedQueueTransactionResult result = PreparedQueueTransaction.Execute(
+            remove: () => present = false,
+            insertAtTarget: () => throw new InvalidOperationException("target add"),
+            restoreAtOriginal: () =>
+            {
+                present = true;
+                throw new InvalidOperationException("rollback callback");
+            },
+            isPresent: () => present);
+
+        Assert.Equal(PreparedQueueTransactionStatus.FailedStable, result.Status);
+        Assert.True(present);
+        Assert.IsType<AggregateException>(result.Error);
+    }
+
+    [Fact]
+    public void QueueTransactionReportsUncertainWhenInsertAndRollbackLeaveTheCardMissing()
+    {
+        bool present = true;
+
+        PreparedQueueTransactionResult result = PreparedQueueTransaction.Execute(
+            remove: () => present = false,
+            insertAtTarget: () => throw new InvalidOperationException("target add"),
+            restoreAtOriginal: () => throw new InvalidOperationException("rollback"),
+            isPresent: () => present);
+
+        Assert.Equal(PreparedQueueTransactionStatus.FailedUncertain, result.Status);
+        Assert.False(present);
+        Assert.IsType<AggregateException>(result.Error);
+    }
+
     [Theory]
     [InlineData(1, true, false, true, false)]
     [InlineData(2, true, false, true, true)]

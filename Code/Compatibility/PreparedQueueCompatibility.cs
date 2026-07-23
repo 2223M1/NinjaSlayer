@@ -3,6 +3,7 @@ using System.Runtime.ExceptionServices;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Code.Prepared;
 
 namespace NinjaSlayer.Code.Compatibility;
 
@@ -63,43 +64,36 @@ internal static class PreparedQueueCompatibility
         return true;
     }
 
-    public static void Reposition(CardPile pile, CardModel card, int index)
+    public static PreparedQueueTransactionResult TryReposition(CardPile pile, CardModel card, int index)
     {
         if (AddInternal is null || RemoveInternal is null)
         {
-            throw new MissingMethodException("Prepared queue methods are unavailable.");
+            return new PreparedQueueTransactionResult(
+                ContainsReference(pile.Cards, card)
+                    ? PreparedQueueTransactionStatus.FailedStable
+                    : PreparedQueueTransactionStatus.FailedUncertain,
+                new MissingMethodException("Prepared queue methods are unavailable."));
         }
 
         int originalIndex = FindCardIndex(pile.Cards, card);
         if (originalIndex < 0)
         {
-            throw new InvalidOperationException($"Prepared queue does not contain {card}.");
+            return new PreparedQueueTransactionResult(
+                PreparedQueueTransactionStatus.FailedUncertain,
+                new InvalidOperationException($"Prepared queue does not contain {card}."));
         }
 
-        Invoke(RemoveInternal, pile, [card, false]);
-        try
-        {
-            Invoke(AddInternal, pile, [card, Math.Clamp(index, 0, pile.Cards.Count), false]);
-        }
-        catch (Exception repositionFailure)
-        {
-            try
-            {
-                if (!pile.Cards.Contains(card))
-                {
-                    Invoke(AddInternal, pile, [card, Math.Clamp(originalIndex, 0, pile.Cards.Count), false]);
-                }
-            }
-            catch (Exception rollbackFailure)
-            {
-                throw new AggregateException(
-                    "Prepared queue reposition and rollback both failed.",
-                    repositionFailure,
-                    rollbackFailure);
-            }
-
-            ExceptionDispatchInfo.Capture(repositionFailure).Throw();
-        }
+        return PreparedQueueTransaction.Execute(
+            remove: () => Invoke(RemoveInternal, pile, [card, false]),
+            insertAtTarget: () => Invoke(
+                AddInternal,
+                pile,
+                [card, Math.Clamp(index, 0, pile.Cards.Count), false]),
+            restoreAtOriginal: () => Invoke(
+                AddInternal,
+                pile,
+                [card, Math.Clamp(originalIndex, 0, pile.Cards.Count), false]),
+            isPresent: () => ContainsReference(pile.Cards, card));
     }
 
     private static void Invoke(MethodInfo method, object instance, object?[] arguments)
@@ -111,6 +105,7 @@ internal static class PreparedQueueCompatibility
         catch (TargetInvocationException exception) when (exception.InnerException is { } inner)
         {
             ExceptionDispatchInfo.Capture(inner).Throw();
+            throw;
         }
     }
 
@@ -126,6 +121,9 @@ internal static class PreparedQueueCompatibility
 
         return -1;
     }
+
+    private static bool ContainsReference(IReadOnlyList<CardModel> cards, CardModel card) =>
+        FindCardIndex(cards, card) >= 0;
 }
 
 internal readonly record struct PreparedQueueFingerprint(

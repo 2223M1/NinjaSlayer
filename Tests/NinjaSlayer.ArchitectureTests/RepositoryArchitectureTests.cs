@@ -150,7 +150,10 @@ public sealed class RepositoryArchitectureTests
             .Single(source => source.RelativePath == "Code/Commands/PrepareCmd.cs")
             .Root
             .ToFullString();
-        Assert.Contains("PreparedQueueCompatibility.Reposition", prepareCommand, StringComparison.Ordinal);
+        Assert.Contains("internal static class PrepareCmd", prepareCommand, StringComparison.Ordinal);
+        Assert.Contains("Task<PreparedApplyResult>", prepareCommand, StringComparison.Ordinal);
+        Assert.Contains("PreparedQueueCompatibility.TryReposition", prepareCommand, StringComparison.Ordinal);
+        Assert.Contains("RepairAfterApplyFailure", prepareCommand, StringComparison.Ordinal);
         Assert.DoesNotContain("RemoveInternal", prepareCommand, StringComparison.Ordinal);
         Assert.DoesNotContain("AddInternal", prepareCommand, StringComparison.Ordinal);
         Assert.DoesNotContain(
@@ -163,6 +166,18 @@ public sealed class RepositoryArchitectureTests
             .ToFullString();
         Assert.Contains("ExpectedAddIlSha256", queueCompatibility, StringComparison.Ordinal);
         Assert.Contains("ExpectedRemoveIlSha256", queueCompatibility, StringComparison.Ordinal);
+        Assert.Contains("PreparedQueueTransaction.Execute", queueCompatibility, StringComparison.Ordinal);
+
+        string actions = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerActions.cs")
+            .Root
+            .ToFullString();
+        string nextDiscard = Sources
+            .Single(source => source.RelativePath == "Powers/NextDiscardPreparedPower.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("_ = await PrepareCmd.Apply", actions, StringComparison.Ordinal);
+        Assert.Contains("_ = await PrepareCmd.Apply", nextDiscard, StringComparison.Ordinal);
 
         string entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root.ToFullString();
         Assert.True(
