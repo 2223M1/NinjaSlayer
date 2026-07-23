@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MegaCrit.Sts2.Core.Nodes;
 using NinjaSlayer.Code.Transition;
-using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -26,35 +25,38 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
 
     public static bool Prefix(NTransition __instance, ref Task __result, bool showTransition)
     {
-        var anim = NinjaSlayerTransitionGate.TakeAnimation();
-        if (anim == null)
+        if (!NinjaSlayerTransitionGate.TryClaimReveal(__instance, out NinjaSlayerTransitionSession? session))
         {
             return true;
         }
 
-        __result = DelayThenReveal(__instance, anim, showTransition);
+        __result = DelayThenReveal(__instance, session!, showTransition);
         return false;
     }
 
-    private static async Task DelayThenReveal(NTransition transition, Task anim, bool showTransition)
+    private static async Task DelayThenReveal(
+        NTransition transition,
+        NinjaSlayerTransitionSession session,
+        bool showTransition)
     {
         try
         {
-            try
-            {
-                await anim;
-            }
-            catch (Exception ex)
-            {
-                Entry.Logger.Warn($"NinjaSlayer transition animation faulted before RoomFadeIn: {ex}");
-            }
-
+            await session.WaitForAnimationAsync();
             await transition.RoomFadeIn(showTransition);
+            await session.CompleteAsync(TransitionCompletionStatus.Succeeded, forceRelease: false);
         }
-        finally
+        catch (OperationCanceledException)
         {
-            NinjaSlayerTransitionGate.CompleteAnimation(anim);
-            NinjaSlayerTransitionPatch.ReleaseTransitionInput(transition);
+            await session.CompleteAsync(
+                TransitionCompletionStatus.Cancelled,
+                forceRelease: true,
+                "RoomFadeIn was cancelled.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await session.CompleteAsync(TransitionCompletionStatus.Faulted, forceRelease: true, ex.ToString());
+            throw;
         }
     }
 }
@@ -76,35 +78,40 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
 
     public static bool Prefix(NTransition __instance, ref Task __result, float time, string transitionPath, CancellationToken? cancelToken)
     {
-        var anim = NinjaSlayerTransitionGate.TakeAnimation();
-        if (anim == null)
+        if (!NinjaSlayerTransitionGate.TryClaimReveal(__instance, out NinjaSlayerTransitionSession? session))
         {
             return true;
         }
 
-        __result = DelayThenReveal(__instance, anim, time, transitionPath, cancelToken);
+        __result = DelayThenReveal(__instance, session!, time, transitionPath, cancelToken);
         return false;
     }
 
-    private static async Task DelayThenReveal(NTransition transition, Task anim, float time, string transitionPath, CancellationToken? cancelToken)
+    private static async Task DelayThenReveal(
+        NTransition transition,
+        NinjaSlayerTransitionSession session,
+        float time,
+        string transitionPath,
+        CancellationToken? cancelToken)
     {
         try
         {
-            try
-            {
-                await anim;
-            }
-            catch (Exception ex)
-            {
-                Entry.Logger.Warn($"NinjaSlayer transition animation faulted before FadeIn: {ex}");
-            }
-
+            await session.WaitForAnimationAsync();
             await transition.FadeIn(time, transitionPath, cancelToken);
+            await session.CompleteAsync(TransitionCompletionStatus.Succeeded, forceRelease: false);
         }
-        finally
+        catch (OperationCanceledException)
         {
-            NinjaSlayerTransitionGate.CompleteAnimation(anim);
-            NinjaSlayerTransitionPatch.ReleaseTransitionInput(transition);
+            await session.CompleteAsync(
+                TransitionCompletionStatus.Cancelled,
+                forceRelease: true,
+                "FadeIn was cancelled.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await session.CompleteAsync(TransitionCompletionStatus.Faulted, forceRelease: true, ex.ToString());
+            throw;
         }
     }
 }
