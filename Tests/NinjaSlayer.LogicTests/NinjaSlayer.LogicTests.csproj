@@ -33,6 +33,7 @@
     <Compile Include="..\..\Code\ExternalAnimations\FinisherDeathKickTimeline.cs" Link="FinisherDeathKickTimeline.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackHttpClient.cs" Link="FeedbackHttpClient.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
+    <Compile Include="..\..\Code\Feedback\NinjaSlayerFeedbackSession.cs" Link="NinjaSlayerFeedbackSession.cs" />
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
