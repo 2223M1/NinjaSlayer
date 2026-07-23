@@ -4,13 +4,6 @@ using STS2RitsuLib.RunData;
 
 namespace NinjaSlayer.Content;
 
-public sealed class NinjaSlayerRunState
-{
-    public bool PendingAncientEntranceAnimation { get; set; }
-
-    public List<string> CompletedBossGreetingRoomKeys { get; set; } = [];
-}
-
 public static class NinjaSlayerRunData
 {
     public static PlayerRunSavedData<NinjaSlayerRunState> PlayerState { get; private set; } = null!;
@@ -23,8 +16,11 @@ public static class NinjaSlayerRunData
             defaultFactory: () => new NinjaSlayerRunState(),
             options: new RunSavedDataOptions
             {
+                SchemaVersion = 1,
                 WritePolicy = RunSavedDataWritePolicy.WhenNonDefault
             });
+
+        RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(evt => NormalizeLoadedStates(evt.RunState));
     }
 
     public static void MarkPendingAncientEntranceAnimation(Player player)
@@ -61,5 +57,22 @@ public static class NinjaSlayerRunData
 
             state.PendingAncientEntranceAnimation = false;
         });
+    }
+
+    private static void NormalizeLoadedStates(MegaCrit.Sts2.Core.Runs.RunState runState)
+    {
+        foreach (Player player in runState.Players)
+        {
+            if (!PlayerState.TryGet(runState, player.NetId, out NinjaSlayerRunState state)
+                || !NinjaSlayerRunStateNormalizer.TryNormalizeRoomKeys(state, out List<string> roomKeys))
+            {
+                continue;
+            }
+
+            PlayerState.Modify(
+                runState,
+                player.NetId,
+                loadedState => loadedState.CompletedBossGreetingRoomKeys = roomKeys);
+        }
     }
 }
