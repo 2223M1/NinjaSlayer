@@ -8,7 +8,8 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <NoWarn>$(NoWarn);MSB3270</NoWarn>
+    <!-- Godot generators and Harmony intentionally emit compatibility types also present in sts2.dll. -->
+    <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -36,11 +37,6 @@
     <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps</SteamLibraryPath>
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Dir>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</Sts2DataDir>
-  </PropertyGroup>
-
-  <!-- RefLib carries generated Harmony/Godot compatibility types that also exist in this project. -->
-  <PropertyGroup Condition="!Exists('$(Sts2DataDir)/sts2.dll') and '$(UseSts2RefLib)' == 'true'">
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

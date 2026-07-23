@@ -146,10 +146,50 @@ public sealed class RepositoryArchitectureTests
             .Single(method => method.Identifier.Text == "CanPrepare");
         Assert.Contains("PreparedGameplayEnabled", canPrepare.ToFullString(), StringComparison.Ordinal);
 
+        string prepareCommand = Sources
+            .Single(source => source.RelativePath == "Code/Commands/PrepareCmd.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("PreparedQueueCompatibility.Reposition", prepareCommand, StringComparison.Ordinal);
+        Assert.DoesNotContain("RemoveInternal", prepareCommand, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddInternal", prepareCommand, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            Sources.Select(source => source.Root.ToFullString()),
+            source => source.Contains("PreparedQueueReorderContext", StringComparison.Ordinal));
+
+        string queueCompatibility = Sources
+            .Single(source => source.RelativePath == "Code/Compatibility/PreparedQueueCompatibility.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("ExpectedAddIlSha256", queueCompatibility, StringComparison.Ordinal);
+        Assert.Contains("ExpectedRemoveIlSha256", queueCompatibility, StringComparison.Ordinal);
+
         string entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root.ToFullString();
         Assert.True(
             entry.IndexOf("InstallCapability<PreparedSafetyPatchGroup>", StringComparison.Ordinal)
             < entry.IndexOf("InstallCapability<PreparedGameplayPatchGroup>", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NextDiscardSourceProtectionUsesASerializedOneShotCardMarker()
+    {
+        string power = Sources
+            .Single(source => source.RelativePath == "Powers/NextDiscardPreparedPower.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("CardCmd.Afflict<NextDiscardSourceAffliction>", power, StringComparison.Ordinal);
+        Assert.Contains("CardCmd.ClearAffliction(card)", power, StringComparison.Ordinal);
+        Assert.DoesNotContain("CardPlayResolutionScope", power, StringComparison.Ordinal);
+        Assert.DoesNotContain("SourceProtectionState", power, StringComparison.Ordinal);
+
+        string marker = Sources
+            .Single(source => source.RelativePath == "Afflictions/NextDiscardSourceAffliction.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("[RegisterAffliction]", marker, StringComparison.Ordinal);
+        Assert.Contains("AfterCardChangedPilesLate", marker, StringComparison.Ordinal);
+        Assert.Contains("card.Pile?.Type != PileType.Play", marker, StringComparison.Ordinal);
+        Assert.DoesNotContain("AfflictionAssetProfile", marker, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -559,6 +599,23 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains(finalizer.DescendantNodes().OfType<CatchClauseSyntax>(), _ => true);
         Assert.Contains(finalizer.DescendantNodes().OfType<ReturnStatementSyntax>(),
             statement => statement.Expression?.ToString() == "__exception");
+    }
+
+    [Fact]
+    public void FinisherAttackAdaptationIsSeparatedFromTheCinematicOrchestrator()
+    {
+        string orchestrator = Sources
+            .Single(source => source.RelativePath == "Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs")
+            .Root
+            .ToFullString();
+        string adapter = Sources
+            .Single(source => source.RelativePath == "Code/ExternalAnimations/FinisherAttackCommandAdapter.cs")
+            .Root
+            .ToFullString();
+
+        Assert.DoesNotContain("class FinisherAttackCommandAdapter", orchestrator, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.Finisher.TryReadAttackCommand", adapter, StringComparison.Ordinal);
+        Assert.Contains("new FinisherAttackSpec", adapter, StringComparison.Ordinal);
     }
 
     private static IEnumerable<(ClassDeclarationSyntax Declaration, INamedTypeSymbol Symbol)> DeclaredClasses()

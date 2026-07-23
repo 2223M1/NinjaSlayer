@@ -228,6 +228,34 @@ test('telemetry rejects excessive JSON depth and streaming bodies over the limit
   assert.equal((await handleRequest(request, workerEnv())).status, 413);
 });
 
+test('invalid telemetry never consumes daily quota while valid telemetry does', async () => {
+  const env = workerEnv();
+  const headers = {
+    'Content-Type': 'application/json',
+    'CF-Connecting-IP': '203.0.113.7',
+  };
+  const malformed = new Request('https://worker.test/', {
+    method: 'POST',
+    headers,
+    body: '{"batch":',
+  });
+  assert.equal((await handleRequest(malformed, env)).status, 400);
+
+  const unsupported = structuredClone(RITSU_FIXTURE);
+  unsupported.batch[0].properties.unreviewed = 'not allowlisted';
+  assert.equal((await handleRequest(telemetryRequest(unsupported), env)).status, 400);
+  assert.equal(env.ANONYMOUS_QUOTAS.instances.size, 0);
+
+  await withSuccessfulPostHog(async () => {
+    assert.equal((await handleRequest(telemetryRequest(), env)).status, 200);
+  });
+  assert.equal(env.ANONYMOUS_QUOTAS.instances.size, 1);
+  const [quotaCoordinator] = env.ANONYMOUS_QUOTAS.instances.values();
+  const quota = quotaCoordinator.storage.objects.get('quota:telemetry');
+  assert.equal(quota.count, 1);
+  assert.equal(quota.bytes, new TextEncoder().encode(JSON.stringify(RITSU_FIXTURE)).byteLength);
+});
+
 test('telemetry forwards only validated fields and no IP header', async () => {
   const originalFetch = globalThis.fetch;
   let forwarded;

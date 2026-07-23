@@ -34,16 +34,19 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
             return true;
         }
 
-        bool wasPending = NinjaSlayerTransitionGate.Pending;
-        NinjaSlayerTransitionGate.Pending = false;
+        bool wasPending = NinjaSlayerTransitionGate.ConsumePendingRequest();
 
         // Start the transition video in the background and return immediately so the caller's
         // run/save asset loading overlaps the animation instead of producing a black hold
         // afterwards. The reveal patches (RoomFadeIn/FadeIn) await this task before showing.
-        NinjaSlayerTransitionGate.StartAnimation(
-            __instance,
-            cancelToken ?? CancellationToken.None,
-            token => BeginNinjaSlayerTransition(__instance, token));
+        if (!NinjaSlayerTransitionGate.TryStartSession(
+                __instance,
+                cancelToken ?? CancellationToken.None,
+                (session, token) => BeginNinjaSlayerTransition(session, __instance, token),
+                out _))
+        {
+            return true;
+        }
 
         float delay = wasPending
             ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
@@ -54,7 +57,10 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         return false;
     }
 
-    private static Task BeginNinjaSlayerTransition(NTransition transition, CancellationToken cancelToken)
+    private static Task BeginNinjaSlayerTransition(
+        NinjaSlayerTransitionSession session,
+        NTransition transition,
+        CancellationToken cancelToken)
     {
         if (SaveManager.Instance.PrefsSave.FastMode == FastModeType.Instant)
         {
@@ -79,63 +85,34 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
 
         var overlay = NinjaSlayerTransitionOverlay.GetOrCreate(transition);
+        session.OwnOverlay(overlay);
         if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
         {
-            NinjaSlayerTransitionLoadSmoothing.BeginAnimation();
+            session.BeginLoadSmoothing();
         }
-        return PlayOverlayAsync(overlay, simpleTransition, cancelToken);
+        return PlayOverlayAsync(session, overlay, simpleTransition, cancelToken);
     }
 
-    private static async Task PlayOverlayAsync(NinjaSlayerTransitionOverlay overlay, ColorRect simpleTransition, CancellationToken cancelToken)
+    private static async Task PlayOverlayAsync(
+        NinjaSlayerTransitionSession session,
+        NinjaSlayerTransitionOverlay overlay,
+        ColorRect simpleTransition,
+        CancellationToken cancelToken)
     {
         try
         {
             await overlay.PlayAsync(NinjaSlayerAudio.TransitionVisualSeconds, cancelToken);
         }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn($"NinjaSlayer transition animation failed: {ex}");
-        }
         finally
         {
             // Keep the screen covered with opaque black until the reveal patch clears/fades it.
-            if (GodotObject.IsInstanceValid(simpleTransition))
+            if (session.ShouldHoldBackdrop && GodotObject.IsInstanceValid(simpleTransition))
             {
                 simpleTransition.Color = Colors.Black;
                 simpleTransition.Modulate = new Color(1f, 1f, 1f, 1f);
             }
 
-            if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
-            {
-                NinjaSlayerTransitionLoadSmoothing.EndAnimationAndCollectDeferred();
-            }
+            session.EndLoadSmoothing();
         }
-    }
-
-    internal static void ReleaseTransitionInput(NTransition transition)
-    {
-        if (!GodotObject.IsInstanceValid(transition))
-        {
-            return;
-        }
-
-        transition.MouseFilter = Control.MouseFilterEnum.Ignore;
-        GameCompatibility.Transition.SetInTransition(transition, false);
-    }
-
-    internal static void ForceReleaseTransition(NTransition transition)
-    {
-        if (!GodotObject.IsInstanceValid(transition))
-        {
-            return;
-        }
-
-        if (transition.GetNodeOrNull<ColorRect>("SimpleTransition") is { } simpleTransition)
-        {
-            simpleTransition.Modulate = new Color(1f, 1f, 1f, 0f);
-        }
-
-        transition.Visible = false;
-        ReleaseTransitionInput(transition);
     }
 }

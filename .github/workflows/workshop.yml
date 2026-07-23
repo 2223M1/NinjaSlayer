@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   publish:
@@ -30,7 +31,19 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ inputs.release_tag }}
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Require the protected game contract for the release commit
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $candidateSha = (git rev-parse HEAD).Trim()
+          .\.github\scripts\verify-contract-attestation.ps1 `
+            -CandidateSha $candidateSha `
+            -Repository '${{ github.repository }}' `
+            -Token $env:GH_TOKEN `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP 'contract-attestation')
 
       - name: Download existing GitHub Release
         shell: bash

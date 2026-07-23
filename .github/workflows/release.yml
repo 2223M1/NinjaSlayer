@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   release:
@@ -34,27 +35,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $headers = @{
-            Authorization = "Bearer $env:GH_TOKEN"
-            Accept = 'application/vnd.github+json'
-            'X-GitHub-Api-Version' = '2022-11-28'
-          }
-          $name = "private-contract-$env:GITHUB_SHA"
-          $uri = "https://api.github.com/repos/${{ github.repository }}/actions/artifacts?name=$name&per_page=100"
-          $listing = Invoke-RestMethod -Uri $uri -Headers $headers
-          $artifact = $listing.artifacts |
-            Where-Object { -not $_.expired -and $_.name -eq $name } |
-            Sort-Object created_at -Descending |
-            Select-Object -First 1
-          if ($null -eq $artifact) { throw "No protected contract attestation exists for $env:GITHUB_SHA." }
-          $archive = Join-Path $env:RUNNER_TEMP 'contract-attestation.zip'
-          $directory = Join-Path $env:RUNNER_TEMP 'contract-attestation'
-          Invoke-WebRequest -Uri $artifact.archive_download_url -Headers $headers -OutFile $archive
-          Expand-Archive $archive $directory -Force
-          $attestation = Get-Content (Join-Path $directory 'attestation.json') -Raw | ConvertFrom-Json
-          if ($attestation.candidateSha -ne $env:GITHUB_SHA -or $attestation.result -ne 'passed') {
-            throw 'Protected contract attestation does not match this release commit.'
-          }
+          .\.github\scripts\verify-contract-attestation.ps1 `
+            -CandidateSha $env:GITHUB_SHA `
+            -Repository '${{ github.repository }}' `
+            -Token $env:GH_TOKEN `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP 'contract-attestation')
 
       - name: Setup .NET 9
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9

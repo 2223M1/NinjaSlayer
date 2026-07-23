@@ -1,4 +1,3 @@
-using System.Threading;
 using Godot;
 using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Combat;
@@ -22,35 +21,6 @@ using NinjaSlayer.Code.Prepared;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
-
-internal static class PreparedQueueReorderContext
-{
-    private static readonly AsyncLocal<int> Depth = new();
-
-    public static bool IsActive => Depth.Value > 0;
-
-    public static IDisposable Enter()
-    {
-        Depth.Value++;
-        return new Scope();
-    }
-
-    private sealed class Scope : IDisposable
-    {
-        private bool _disposed;
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            Depth.Value--;
-        }
-    }
-}
 
 internal static class PreparedDrawCompatibility
 {
@@ -108,7 +78,9 @@ internal static class PreparedDrawService
         Player player,
         bool fromHandDraw)
     {
-        if (CombatManager.Instance.IsOverOrEnding)
+        if (PreparedDrawPolicy.DecideStart(
+                !CombatManager.Instance.IsOverOrEnding,
+                drawAllowed: true) == PreparedDrawStartDecision.CombatEnded)
         {
             return [];
         }
@@ -118,7 +90,9 @@ internal static class PreparedDrawService
             return [];
         }
 
-        if (!Hook.ShouldDraw(combatState, player, fromHandDraw, out AbstractModel? modifier))
+        bool drawAllowed = Hook.ShouldDraw(combatState, player, fromHandDraw, out AbstractModel? modifier);
+        if (PreparedDrawPolicy.DecideStart(combatActive: true, drawAllowed)
+            == PreparedDrawStartDecision.Prevented)
         {
             if (modifier is not null)
             {
@@ -130,7 +104,7 @@ internal static class PreparedDrawService
         List<CardModel> result = [];
         CardPile hand = PileType.Hand.GetPile(player);
         CardPile drawPile = PileType.Draw.GetPile(player);
-        int drawsRequested = count > 0m ? (int)Math.Ceiling(count) : 0;
+        int drawsRequested = PreparedDrawPolicy.RequestedDraws(count);
         if (drawsRequested == 0)
         {
             return result;
@@ -161,7 +135,9 @@ internal static class PreparedDrawService
                 break;
             }
 
-            CardModel? card = drawPile.Cards.FirstOrDefault(candidate => !PrepareCmd.IsPrepared(candidate));
+            int drawableIndex = PreparedDrawPolicy.FindFirstDrawableIndex(
+                drawPile.Cards.Select(PrepareCmd.IsPrepared));
+            CardModel? card = drawableIndex >= 0 ? drawPile.Cards[drawableIndex] : null;
             if (card is null || hand.Cards.Count >= CardPile.MaxCardsInHand)
             {
                 break;
@@ -181,27 +157,27 @@ internal static class PreparedDrawService
 
     private static bool CheckIfFilteredDrawIsPossible(Player player)
     {
-        bool hasDrawableCard = PileType.Draw.GetPile(player).Cards.Any(card => !PrepareCmd.IsPrepared(card));
-        if (!hasDrawableCard && PileType.Discard.GetPile(player).Cards.Count == 0)
+        PreparedDrawDecision decision = CurrentDecision(player);
+        if (decision == PreparedDrawDecision.StopNoCards)
         {
             ThinkCmd.Play(new LocString("combat_messages", "NO_DRAW"), player.Creature, 2.0);
             return false;
         }
 
-        if (PileType.Hand.GetPile(player).Cards.Count >= CardPile.MaxCardsInHand)
+        if (decision == PreparedDrawDecision.StopHandFull)
         {
             ThinkCmd.Play(new LocString("combat_messages", "HAND_FULL"), player.Creature, 2.0);
             return false;
         }
 
-        return true;
+        return decision is PreparedDrawDecision.Draw or PreparedDrawDecision.Shuffle;
     }
 
     private static async Task ShuffleIfNecessary(PlayerChoiceContext choiceContext, Player player)
     {
         CardPile drawPile = PileType.Draw.GetPile(player);
         CardPile discardPile = PileType.Discard.GetPile(player);
-        if (drawPile.Cards.Any(card => !PrepareCmd.IsPrepared(card)) || discardPile.Cards.Count == 0)
+        if (CurrentDecision(player) != PreparedDrawDecision.Shuffle)
         {
             return;
         }
@@ -243,6 +219,14 @@ internal static class PreparedDrawService
             await Hook.AfterShuffle(combatState, choiceContext, player);
         }
     }
+
+    private static PreparedDrawDecision CurrentDecision(Player player) =>
+        PreparedDrawPolicy.DecideNext(
+            !CombatManager.Instance.IsOverOrEnding,
+            PileType.Hand.GetPile(player).Cards.Count,
+            CardPile.MaxCardsInHand,
+            PileType.Draw.GetPile(player).Cards.Count(card => !PrepareCmd.IsPrepared(card)),
+            PileType.Discard.GetPile(player).Cards.Count);
 }
 
 public sealed class PreparedPileChangeSafetyPatch : IPatchMethod

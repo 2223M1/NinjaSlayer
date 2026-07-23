@@ -1,5 +1,4 @@
 using MegaCrit.Sts2.Core.Nodes;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Transition;
@@ -7,115 +6,106 @@ namespace NinjaSlayer.Code.Transition;
 internal static class NinjaSlayerTransitionGate
 {
     private static readonly object SyncRoot = new();
-    private static CancellationTokenSource? _animationCancellation;
-    private static Task? _ownedAnimationTask;
-    internal static bool Pending { get; set; }
+    private static NinjaSlayerTransitionSession? _activeSession;
+    private static bool _pending;
+
+    internal static bool Pending
+    {
+        get
+        {
+            lock (SyncRoot)
+            {
+                return _pending;
+            }
+        }
+        set
+        {
+            lock (SyncRoot)
+            {
+                _pending = value;
+            }
+        }
+    }
 
     /// <summary>
-    /// The currently-playing transition video, started by the FadeOut patch and
-    /// awaited by the reveal (RoomFadeIn/FadeIn) patches so asset loading overlaps the
-    /// animation instead of producing a black hold afterwards.
+    /// Registers the session before its animation factory can mutate transition UI. A synchronous
+    /// start failure therefore still owns enough state to restore input and fall back to FadeOut.
     /// </summary>
-    internal static Task? AnimationTask { get; private set; }
-
-    internal static void StartAnimation(
+    internal static bool TryStartSession(
         NTransition transition,
         CancellationToken cancellationToken,
-        Func<CancellationToken, Task> startAnimation)
+        Func<NinjaSlayerTransitionSession, CancellationToken, Task> startAnimation,
+        out NinjaSlayerTransitionSession? session)
     {
-        CancellationTokenSource source;
-        Task task;
+        var next = new NinjaSlayerTransitionSession(transition, cancellationToken);
+        NinjaSlayerTransitionSession? previous;
         lock (SyncRoot)
         {
-            CancelAnimationLocked();
-            source = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            task = startAnimation(source.Token);
-            _animationCancellation = source;
-            _ownedAnimationTask = task;
-            AnimationTask = task;
+            previous = _activeSession;
+            _activeSession = next;
         }
 
-        _ = RunWatchdog(task, transition, source.Token);
-    }
-
-    internal static Task? TakeAnimation()
-    {
-        lock (SyncRoot)
+        if (previous != null)
         {
-            Task? task = AnimationTask;
-            AnimationTask = null;
-            return task;
+            _ = previous.CompleteAsync(
+                TransitionCompletionStatus.Superseded,
+                forceRelease: true,
+                "A newer transition session superseded this session.");
         }
-    }
 
-    internal static void CompleteAnimation(Task animationTask)
-    {
-        lock (SyncRoot)
-        {
-            if (!ReferenceEquals(_ownedAnimationTask, animationTask))
-            {
-                return;
-            }
-
-            CancelAnimationLocked();
-        }
-    }
-
-    internal static void CancelPendingRequest()
-    {
-        Pending = false;
-    }
-
-    private static async Task RunWatchdog(
-        Task animationTask,
-        NTransition transition,
-        CancellationToken cancellationToken)
-    {
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
-            lock (SyncRoot)
-            {
-                if (!ReferenceEquals(_ownedAnimationTask, animationTask))
-                {
-                    return;
-                }
-
-                Entry.Logger.Error("NinjaSlayer transition exceeded 30 seconds; forcing input and screen release.");
-                CancelAnimationLocked();
-            }
-
-            NinjaSlayerTransitionPatch.ForceReleaseTransition(transition);
-        }
-        catch (OperationCanceledException)
-        {
-            bool releaseTransition;
-            lock (SyncRoot)
-            {
-                releaseTransition = ReferenceEquals(_ownedAnimationTask, animationTask);
-                if (releaseTransition)
-                {
-                    CancelAnimationLocked();
-                }
-            }
-
-            if (releaseTransition)
-            {
-                NinjaSlayerTransitionPatch.ForceReleaseTransition(transition);
-            }
+            next.Start(startAnimation);
+            session = next;
+            return true;
         }
         catch (Exception ex)
         {
-            Entry.Logger.Error($"NinjaSlayer transition watchdog failed: {ex}");
+            Entry.Logger.Error($"NinjaSlayer transition failed during synchronous startup: {ex}");
+            _ = next.CompleteAsync(TransitionCompletionStatus.Faulted, forceRelease: true, ex.ToString());
+            session = null;
+            return false;
         }
     }
 
-    private static void CancelAnimationLocked()
+    internal static bool TryClaimReveal(NTransition transition, out NinjaSlayerTransitionSession? session)
     {
-        _animationCancellation?.Cancel();
-        _animationCancellation?.Dispose();
-        _animationCancellation = null;
-        _ownedAnimationTask = null;
-        AnimationTask = null;
+        lock (SyncRoot)
+        {
+            NinjaSlayerTransitionSession? active = _activeSession;
+            if (active != null
+                && ReferenceEquals(active.Transition, transition)
+                && active.TryClaimReveal())
+            {
+                session = active;
+                return true;
+            }
+
+            session = null;
+            return false;
+        }
+    }
+
+    internal static bool ConsumePendingRequest()
+    {
+        lock (SyncRoot)
+        {
+            bool pending = _pending;
+            _pending = false;
+            return pending;
+        }
+    }
+
+    internal static void CancelPendingRequest() => Pending = false;
+
+    internal static void OnSessionCompleted(NinjaSlayerTransitionSession session)
+    {
+        lock (SyncRoot)
+        {
+            if (ReferenceEquals(_activeSession, session))
+            {
+                _activeSession = null;
+            }
+        }
     }
 }

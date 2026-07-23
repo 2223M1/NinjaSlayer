@@ -33,9 +33,6 @@ async function handleTelemetry(request, env, ctx) {
     if (error instanceof BodyTooLargeError) return jsonResponse(413, { error: 'payload_too_large' });
     throw error;
   }
-  const quotaResponse = await consumeDailyQuota(env, rateLimit.clientKey, 'telemetry', bodyBytes.byteLength);
-  if (!quotaResponse.ok) return quotaResponse;
-
   let body;
   try {
     body = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bodyBytes));
@@ -44,6 +41,9 @@ async function handleTelemetry(request, env, ctx) {
   }
   const validationError = validateTelemetryBody(body, TELEMETRY_MAX_BATCH_SIZE);
   if (validationError) return jsonResponse(400, { error: 'invalid_format', message: validationError });
+
+  const quotaResponse = await consumeDailyQuota(env, rateLimit.clientKey, 'telemetry', bodyBytes.byteLength);
+  if (!quotaResponse.ok) return quotaResponse;
 
   const cleanBody = {
     api_key: env.POSTHOG_API_KEY,

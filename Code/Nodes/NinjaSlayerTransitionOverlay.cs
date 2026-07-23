@@ -88,6 +88,15 @@ public partial class NinjaSlayerTransitionOverlay : Control
         }
     }
 
+    public void StopPlayback()
+    {
+        if (videoPlayer != null && GodotObject.IsInstanceValid(videoPlayer))
+        {
+            videoPlayer.Stop();
+        }
+        Visible = false;
+    }
+
     public static NinjaSlayerTransitionOverlay GetOrCreate(NTransition transition)
     {
         CanvasLayer? canvasLayer = transition.GetNodeOrNull<CanvasLayer>(CanvasLayerName);
