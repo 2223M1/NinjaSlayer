@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Content;
-using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -34,16 +33,11 @@ public sealed class KarateFinish : NinjaSlayerCardTemplate
 
         decimal damage = amount * DynamicVars["Multiplier"].BaseValue;
         ValueProp props = ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move;
-        var finisherSpec = new FinisherAttackSpec(
-            this,
-            cardPlay,
-            _ => damage,
-            props,
-            1,
-            FinisherTargeting.Single);
-        await NinjaSlayerFinisherCinematic.ExecuteDirectWithFinisher(
+        await this.ExecuteDirectWithFinisher(
             choiceContext,
-            finisherSpec,
+            cardPlay,
+            damage,
+            props,
             async () =>
             {
                 NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target);

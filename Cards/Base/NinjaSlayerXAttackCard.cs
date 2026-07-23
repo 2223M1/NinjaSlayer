@@ -60,13 +60,10 @@ public abstract class NinjaSlayerXAttackCard : NinjaSlayerCardTemplate
             return;
         }
 
-        FinisherAttackSpec finisherSpec = FinisherAttackSpec.FromCard(
-            this,
-            cardPlay,
-            hitCountOverride: hits);
-        await NinjaSlayerFinisherCinematic.ExecuteSequenceWithFinisher(
+        await this.ExecuteSequenceWithFinisher(
             choiceContext,
-            finisherSpec,
+            cardPlay,
+            hits,
             () => NinjaSlayerXAttackSequence.Run(
                 Owner.Creature,
                 hits,

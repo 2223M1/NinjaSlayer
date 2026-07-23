@@ -35,7 +35,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         int hitIndex,
         int totalHits)
     {
-        if (NinjaSlayerFinisherCinematic.IsMovementOwned(Owner.Creature))
+        if (Owner.Creature.IsFinisherMovementOwned())
         {
             return await TornadoFistFinisherCadenceContext.Run(
                 () => ExecuteXHitCore(choiceContext, cardPlay, TornadoFistSpinAnimation.TurnSeconds));

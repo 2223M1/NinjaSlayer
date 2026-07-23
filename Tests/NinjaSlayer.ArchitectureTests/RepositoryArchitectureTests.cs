@@ -777,6 +777,24 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("static class ReporterPass", facade, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LeafCardsDoNotDependOnFinisherOrchestratorInternals()
+    {
+        string facadePath = Normalize("Cards/Base/FinisherAttackExtensions.cs");
+        SourceDocument[] leafCards = Sources
+            .Where(source => source.RelativePath.StartsWith("Cards/", StringComparison.Ordinal)
+                && Normalize(source.RelativePath) != facadePath)
+            .ToArray();
+
+        Assert.NotEmpty(leafCards);
+        foreach (SourceDocument card in leafCards)
+        {
+            string source = card.Root.ToFullString();
+            Assert.DoesNotContain("NinjaSlayerFinisherCinematic", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("FinisherAttackSpec", source, StringComparison.Ordinal);
+        }
+    }
+
     private static string SourceText(string relativePath) => Sources
         .Single(source => source.RelativePath == relativePath)
         .Root
