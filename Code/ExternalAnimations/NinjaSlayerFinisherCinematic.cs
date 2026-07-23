@@ -12,7 +12,7 @@ using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-public enum FinisherTargeting
+internal enum FinisherTargeting
 {
     Single,
     All,
@@ -26,7 +26,7 @@ internal enum FinisherPresentationMode
     Enhanced
 }
 
-public sealed record FinisherAttackSpec(
+internal sealed record FinisherAttackSpec(
     CardModel Card,
     CardPlay CardPlay,
     Func<Creature, decimal> Damage,
@@ -90,7 +90,7 @@ public sealed record FinisherAttackSpec(
     }
 }
 
-public static class NinjaSlayerFinisherCinematic
+internal static class NinjaSlayerFinisherCinematic
 {
     private static readonly AsyncLocal<CommandBypassFrame?> CommandBypass = new();
     private static readonly AsyncLocal<int> DirectDamageBypassDepth = new();
