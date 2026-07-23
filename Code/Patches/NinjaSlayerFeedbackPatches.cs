@@ -80,7 +80,9 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 
     public static void Postfix(NSendFeedbackScreen __instance)
     {
-        if (!NinjaSlayerFeedbackSession.IsActive)
+        if (!NinjaSlayerFeedbackSession.TryBindScreen(
+                __instance.GetInstanceId(),
+                out _))
         {
             return;
         }
@@ -104,17 +106,22 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 
     public static bool Prefix(NSendFeedbackScreen __instance, NButton _)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
-            !NinjaSlayerFeedbackSession.IsActive || NinjaSlayerFeedbackSession.IsConfirmed)
+        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled
+            || !NinjaSlayerFeedbackSession.TryGetCurrentToken(
+                __instance.GetInstanceId(),
+                out NinjaSlayerFeedbackSessionToken token)
+            || NinjaSlayerFeedbackSession.IsConfirmed(token))
         {
             return true;
         }
 
-        TaskHelper.RunSafely(ConfirmAndSend(__instance));
+        TaskHelper.RunSafely(ConfirmAndSend(__instance, token));
         return false;
     }
 
-    private static async Task ConfirmAndSend(NSendFeedbackScreen screen)
+    private static async Task ConfirmAndSend(
+        NSendFeedbackScreen screen,
+        NinjaSlayerFeedbackSessionToken token)
     {
         NGenericPopup? popup = NGenericPopup.Create();
         if (popup == null)
@@ -134,12 +141,14 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
             Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER"),
             Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL"),
             Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_SEND"));
-        if (!confirmed || !GodotObject.IsInstanceValid(screen) || !screen.Visible)
+        if (!confirmed
+            || !GodotObject.IsInstanceValid(screen)
+            || !screen.Visible
+            || !NinjaSlayerFeedbackSession.TryConfirm(token))
         {
             return;
         }
 
-        NinjaSlayerFeedbackSession.Confirm();
         GameCompatibility.Feedback.TrySelectSendButton(
             screen,
             screen.GetNode<NButton>("%SendButton"));
@@ -162,8 +171,8 @@ public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
         Stream logsMemoryStream,
         ref Task<bool> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
-            !NinjaSlayerFeedbackSession.IsActive || !NinjaSlayerFeedbackSession.IsConfirmed)
+        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled
+            || !NinjaSlayerFeedbackSession.TryGetConfirmedToken(out _))
         {
             return true;
         }
@@ -185,12 +194,11 @@ public sealed class NinjaSlayerFeedbackClosePatch : IPatchMethod
 
     public static void Postfix(NSendFeedbackScreen __instance)
     {
-        if (!NinjaSlayerFeedbackSession.IsActive)
+        if (!NinjaSlayerFeedbackSession.ResetForScreen(__instance.GetInstanceId()))
         {
             return;
         }
 
-        NinjaSlayerFeedbackSession.Reset();
         __instance.Relocalize();
     }
 }
