@@ -29,7 +29,21 @@ function readJson(path) {
 for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter((path) => path.endsWith('.json'))) {
   readJson(path);
 }
-readJson(join(root, 'NinjaSlayer.json'));
+const manifest = readJson(join(root, 'NinjaSlayer.json'));
+if (manifest) {
+  const project = readFileSync(join(root, 'NinjaSlayer.csproj'), 'utf8');
+  const packageVersion = project.match(
+    /<PackageReference Include="STS2\.RitsuLib" Version="([^"]+)"/,
+  )?.[1];
+  const manifestVersion = manifest.dependencies?.find(
+    (dependency) => dependency.id === 'STS2-RitsuLib',
+  )?.min_version;
+  if (!packageVersion || manifestVersion !== packageVersion) {
+    errors.push(
+      `NinjaSlayer.json must require the compiled STS2.RitsuLib version (${packageVersion ?? '<missing>'})`,
+    );
+  }
+}
 const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));
 if (warningAllowlist) {
   const entries = Array.isArray(warningAllowlist.entries) ? warningAllowlist.entries : [];
