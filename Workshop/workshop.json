@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer 人物拓展包",
   "description": "《杀戮尖塔 2》的忍者杀手角色 Mod，包含完整角色机制、卡牌、遗物、事件、动画与音效。",
   "visibility": "unlisted",
-  "changeNote": "新增受保护的实机冒烟测试与运行时健康诊断，并进一步提升 Prepared、处决和转场的异常恢复可靠性。",
+  "changeNote": "优化 Alabama Drop 演出：缩小抓取接触特效，叠加怪物材质坠地音，并按怪物体型缩放坠地火焰。",
   "tags": ["mod", "Simplified Chinese"],
   "dependencies": [3747602295],
   "contentDescriptors": []
