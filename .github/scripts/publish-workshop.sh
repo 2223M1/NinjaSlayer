@@ -6,6 +6,7 @@ set -euo pipefail
 : "${CONTENT_DIR:?CONTENT_DIR is required}"
 : "${PREVIEW_FILE:?PREVIEW_FILE is required}"
 : "${STEAMCMD:?STEAMCMD is required}"
+: "${CHANGE_NOTE_FILE:?CHANGE_NOTE_FILE is required}"
 
 for artifact in NinjaSlayer.dll NinjaSlayer.json NinjaSlayer.pck SHA256SUMS; do
   test -f "$CONTENT_DIR/$artifact" || { echo "Missing release artifact: $artifact"; exit 1; }
@@ -13,6 +14,10 @@ done
 test -f "$PREVIEW_FILE" || { echo "Missing Workshop preview image"; exit 1; }
 test "$(stat -c%s "$PREVIEW_FILE")" -le 1048576 || { echo "Workshop preview exceeds 1 MiB"; exit 1; }
 test -x "$STEAMCMD" || { echo "SteamCMD is unavailable"; exit 1; }
+test -f "$CHANGE_NOTE_FILE" || { echo "Workshop change note is unavailable"; exit 1; }
+
+CHANGE_NOTE="$(tr '\r\n' '  ' < "$CHANGE_NOTE_FILE" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
+test -n "$CHANGE_NOTE" || { echo "Workshop change note is empty"; exit 1; }
 
 steam_home="${STEAM_HOME:-$HOME/Steam}"
 mkdir -p "$steam_home/config"

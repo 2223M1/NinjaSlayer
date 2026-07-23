@@ -19,6 +19,7 @@ using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Diagnostics;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -370,11 +371,13 @@ internal sealed class FinisherSession : IAsyncDisposable
             {
                 FinisherSessionRegistry.UnregisterSession(this);
                 _completionProtocol.TryTransition(FinisherSessionPhase.Finished);
-                _completionProtocol.Finish(new FinisherCompletionResult(
+                var completionResult = new FinisherCompletionResult(
                     SessionId,
                     status,
                     mode,
-                    finalDiagnostic));
+                    finalDiagnostic);
+                NinjaSlayerRuntimeCounters.RecordFinisher(completionResult.Status);
+                _completionProtocol.Finish(completionResult);
             }
         }
 

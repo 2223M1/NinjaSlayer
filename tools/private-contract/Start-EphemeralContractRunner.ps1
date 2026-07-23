@@ -12,7 +12,7 @@ param(
     [ValidatePattern('^[0-9A-Fa-f]{64}$')]
     [string]$RunnerArchiveSha256,
 
-    [ValidateSet('Contract', 'Release')]
+    [ValidateSet('Contract', 'Release', 'Smoke')]
     [string]$RunnerPurpose = 'Contract',
 
     [string]$RunnerArchivePath,
@@ -21,6 +21,12 @@ param(
 
     [string]$GameDataDirectory = 'C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64',
 
+    [string]$GameRootDirectory = 'C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2',
+
+    [string]$RitsuLibModDirectory,
+
+    [string]$RitsuLibPackageDirectory = (Join-Path $env:USERPROFILE '.nuget\packages\sts2.ritsulib\0.4.62'),
+
     [string]$GodotExecutable = 'C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe',
 
     [string]$SpineExtensionDirectory = (Join-Path $PSScriptRoot '..\..\addons\spine\windows')
@@ -28,9 +34,29 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-if ($RunnerPurpose -eq 'Contract' -and -not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+if ($RunnerPurpose -in @('Contract', 'Smoke') -and -not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
         [Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    throw 'Run this script from an elevated PowerShell session so the contract can enforce its outbound firewall rule.'
+    throw "Run this script from an elevated PowerShell session so the $RunnerPurpose runner can enforce outbound firewall isolation."
+}
+
+if ($RunnerPurpose -eq 'Smoke') {
+    $smokeInputs = @(
+        (Join-Path $GameRootDirectory 'SlayTheSpire2.exe'),
+        (Join-Path $GameRootDirectory 'SlayTheSpire2.pck')
+    )
+    if ([string]::IsNullOrWhiteSpace($RitsuLibModDirectory)) {
+        $smokeInputs += (Join-Path $RitsuLibPackageDirectory 'lib\net9.0\STS2-RitsuLib.dll')
+        $smokeInputs += (Join-Path $RitsuLibPackageDirectory 'contentFiles\any\any\mod_manifest.json')
+    }
+    else {
+        $smokeInputs += (Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
+        $smokeInputs += (Join-Path $RitsuLibModDirectory 'mod_manifest.json')
+    }
+    foreach ($path in $smokeInputs) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw "Missing protected smoke input: $path"
+        }
+    }
 }
 
 $requiredReferences = @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll')
@@ -66,17 +92,21 @@ $referenceDirectory = Join-Path $sessionRoot 'references'
 $spineDirectory = Join-Path $sessionRoot 'spine'
 $dotnetRuntimeDirectory = Join-Path $sessionRoot 'dotnet-runtime'
 $workDirectory = Join-Path $sessionRoot 'work'
+$ritsuLibSmokeDirectory = Join-Path $sessionRoot 'ritsulib-mod'
 $archive = Join-Path $sessionRoot 'actions-runner.zip'
 $runnerName = "ninjaslayer-$purposeName-$env:COMPUTERNAME-$($sessionId.Substring(0, 8))"
 $runnerLabel = switch ($RunnerPurpose) {
     'Contract' { 'ninjaslayer-contract' }
     'Release' { 'ninjaslayer-release' }
+    'Smoke' { 'ninjaslayer-smoke' }
 }
 $downloadUrl = "https://github.com/actions/runner/releases/download/v$RunnerVersion/actions-runner-win-x64-$RunnerVersion.zip"
 $previousSts2DataDirectory = $env:STS2_DATA_DIR
 $previousGodotExecutable = $env:GODOT_EXE
 $previousContractDotnetRoot = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
 $previousSpineDirectory = $env:NINJASLAYER_SPINE_DIR
+$previousSmokeGameRoot = $env:NINJASLAYER_SMOKE_GAME_ROOT
+$previousRitsuLibModDirectory = $env:NINJASLAYER_RITSULIB_MOD_DIR
 
 function Copy-IsolatedDotnet9Runtime {
     param([Parameter(Mandatory)][string]$Destination)
@@ -129,6 +159,31 @@ function Remove-SessionDirectory {
 
 try {
     New-Item -ItemType Directory -Path $runnerDirectory, $referenceDirectory, $workDirectory -Force | Out-Null
+    if ($RunnerPurpose -eq 'Smoke') {
+        New-Item -ItemType Directory -Path $ritsuLibSmokeDirectory -Force | Out-Null
+        if ([string]::IsNullOrWhiteSpace($RitsuLibModDirectory)) {
+            Copy-Item -LiteralPath (Join-Path $RitsuLibPackageDirectory 'lib\net9.0\STS2-RitsuLib.dll') -Destination $ritsuLibSmokeDirectory
+            Copy-Item -LiteralPath (Join-Path $RitsuLibPackageDirectory 'contentFiles\any\any\mod_manifest.json') -Destination $ritsuLibSmokeDirectory
+            $viewer = Join-Path $RitsuLibPackageDirectory 'contentFiles\any\any\viewer'
+            if (Test-Path -LiteralPath $viewer -PathType Container) {
+                Copy-Item -LiteralPath $viewer -Destination $ritsuLibSmokeDirectory -Recurse
+            }
+        }
+        else {
+            Copy-Item -LiteralPath (Resolve-Path -LiteralPath $RitsuLibModDirectory).Path -Destination $ritsuLibSmokeDirectory -Recurse
+            $nested = Join-Path $ritsuLibSmokeDirectory (Split-Path -Leaf $RitsuLibModDirectory)
+            if (Test-Path -LiteralPath $nested -PathType Container) {
+                Get-ChildItem -LiteralPath $nested -Force | Move-Item -Destination $ritsuLibSmokeDirectory
+                Remove-Item -LiteralPath $nested -Force
+            }
+        }
+        $ritsuAssemblyVersion = [Reflection.AssemblyName]::GetAssemblyName((Join-Path $ritsuLibSmokeDirectory 'STS2-RitsuLib.dll')).Version
+        $ritsuManifest = Get-Content -LiteralPath (Join-Path $ritsuLibSmokeDirectory 'mod_manifest.json') -Raw | ConvertFrom-Json
+        if ($ritsuAssemblyVersion.Major -ne 0 -or $ritsuAssemblyVersion.Minor -ne 4 -or $ritsuAssemblyVersion.Build -ne 62 -or
+            [string]$ritsuManifest.version -ne '0.4.62') {
+            throw 'The protected smoke runner requires a complete RitsuLib 0.4.62 mod package.'
+        }
+    }
     if ($RunnerPurpose -eq 'Contract') {
         Copy-IsolatedDotnet9Runtime -Destination $dotnetRuntimeDirectory
     }
@@ -179,7 +234,15 @@ try {
         }
         else {
             $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $null
-            $env:NINJASLAYER_SPINE_DIR = $spineDirectory
+            $env:NINJASLAYER_SPINE_DIR = if ($RunnerPurpose -eq 'Release') { $spineDirectory } else { $null }
+        }
+        if ($RunnerPurpose -eq 'Smoke') {
+            $env:NINJASLAYER_SMOKE_GAME_ROOT = (Resolve-Path -LiteralPath $GameRootDirectory).Path
+            $env:NINJASLAYER_RITSULIB_MOD_DIR = $ritsuLibSmokeDirectory
+        }
+        else {
+            $env:NINJASLAYER_SMOKE_GAME_ROOT = $null
+            $env:NINJASLAYER_RITSULIB_MOD_DIR = $null
         }
         & .\run.cmd
         if ($LASTEXITCODE -ne 0) {
@@ -195,5 +258,7 @@ finally {
     $env:GODOT_EXE = $previousGodotExecutable
     $env:NINJASLAYER_CONTRACT_DOTNET_ROOT = $previousContractDotnetRoot
     $env:NINJASLAYER_SPINE_DIR = $previousSpineDirectory
+    $env:NINJASLAYER_SMOKE_GAME_ROOT = $previousSmokeGameRoot
+    $env:NINJASLAYER_RITSULIB_MOD_DIR = $previousRitsuLibModDirectory
     Remove-SessionDirectory -Path $sessionRoot
 }

@@ -48,7 +48,7 @@
   <Target Name="BuildGodotEditorAssembly" Condition="'$(Configuration)' != 'Debug'">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Build"
-             Properties="Configuration=Debug"
+             Properties="Configuration=Debug;GodotDisabledSourceGenerators=ScriptPathAttribute"
              BuildInParallel="false" />
   </Target>
 

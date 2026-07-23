@@ -41,9 +41,10 @@
 
   <ItemGroup>
     <Compile Remove="Tests\**\*.cs" />
+    <Compile Remove="tools\smoke-harness\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
-      <!-- Public Godot scripts implement game interfaces, so the editor load context needs this in the local build output. -->
+      <!-- Keep direct game references available to local build and test load contexts. -->
       <Private>true</Private>
     </Reference>
 

@@ -18,6 +18,7 @@
   <ItemGroup>
     <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
     <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityRegistry.cs" Link="NinjaSlayerCapabilityRegistry.cs" />
+    <Compile Include="..\..\Code\Diagnostics\NinjaSlayerRuntimeHealthModel.cs" Link="NinjaSlayerRuntimeHealthModel.cs" />
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />

@@ -1,0 +1,131 @@
+name: Protected real-game smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Reviewed full SHA already present on canonical main
+        required: true
+        type: string
+      mode:
+        description: Bounded release smoke or periodic full AutoSlay
+        required: true
+        default: FirstCombatRestart
+        type: choice
+        options:
+          - FirstCombatRestart
+          - FullAutoSlay
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, Windows, X64, ninjaslayer-smoke]
+    environment: game-smoke
+    timeout-minutes: 75
+    steps:
+      - name: Checkout trusted harness from protected main
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: main
+          fetch-depth: 0
+          path: trusted
+          persist-credentials: false
+          set-safe-directory: false
+
+      - name: Validate canonical candidate
+        id: candidate
+        shell: powershell
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          if ($env:CANDIDATE_SHA -notmatch '^[0-9a-fA-F]{40}$') { throw 'candidate_sha must be a full SHA.' }
+          git -C trusted remote set-url origin "https://github.com/${{ github.repository }}.git"
+          git -C trusted fetch origin main --no-tags
+          git -C trusted cat-file -e "$env:CANDIDATE_SHA^{commit}"
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate is not present in the canonical repository.' }
+          git -C trusted merge-base --is-ancestor $env:CANDIDATE_SHA origin/main
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate must already be an ancestor of canonical main.' }
+          "sha=$($env:CANDIDATE_SHA.ToLowerInvariant())" | Out-File $env:GITHUB_OUTPUT -Append
+
+      - name: Checkout candidate without credentials
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ steps.candidate.outputs.sha }}
+          fetch-depth: 0
+          path: candidate
+          persist-credentials: false
+          set-safe-directory: false
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Validate protected smoke inputs
+        shell: powershell
+        run: |
+          foreach ($variable in @('NINJASLAYER_SMOKE_GAME_ROOT', 'NINJASLAYER_RITSULIB_MOD_DIR', 'GODOT_EXE')) {
+            $value = [Environment]::GetEnvironmentVariable($variable)
+            if ([string]::IsNullOrWhiteSpace($value) -or -not (Test-Path -LiteralPath $value)) {
+              throw "The ephemeral smoke runner did not provide $variable."
+            }
+            if ([IO.Path]::GetFullPath($value).StartsWith([IO.Path]::GetFullPath($env:GITHUB_WORKSPACE), [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$variable must remain outside the repository workspace."
+            }
+          }
+          if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+              [Security.Principal.WindowsBuiltInRole]::Administrator)) {
+            throw 'The smoke runner must be elevated for process firewall isolation.'
+          }
+          "NUGET_PACKAGES=$env:RUNNER_TEMP\smoke-nuget" | Out-File $env:GITHUB_ENV -Append
+
+      - name: Restore candidate and trusted driver
+        shell: powershell
+        run: |
+          dotnet restore candidate/NinjaSlayer.csproj -p:Sts2Dir="$env:NINJASLAYER_SMOKE_GAME_ROOT"
+          dotnet restore trusted/tools/smoke-harness/NinjaSlayer.SmokeDriver/NinjaSlayer.SmokeDriver.csproj `
+            -p:Sts2DataDir="$env:NINJASLAYER_SMOKE_GAME_ROOT\data_sts2_windows_x86_64" `
+            -p:NinjaSlayerAssemblyPath="$env:GITHUB_WORKSPACE\candidate\.godot\mono\temp\bin\Release\NinjaSlayer.dll" `
+            -p:RitsuLibAssemblyPath="$env:NINJASLAYER_RITSULIB_MOD_DIR\STS2-RitsuLib.dll"
+
+      - name: Run isolated real-game smoke
+        shell: powershell
+        run: |
+          & trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1 `
+            -CandidateSha '${{ steps.candidate.outputs.sha }}' `
+            -CandidateRoot "$env:GITHUB_WORKSPACE\candidate" `
+            -TrustedRoot "$env:GITHUB_WORKSPACE\trusted" `
+            -GameRootDirectory "$env:NINJASLAYER_SMOKE_GAME_ROOT" `
+            -RitsuLibModDirectory "$env:NINJASLAYER_RITSULIB_MOD_DIR" `
+            -GodotExecutable "$env:GODOT_EXE" `
+            -OutputDirectory "$env:RUNNER_TEMP\smoke-result" `
+            -Mode '${{ inputs.mode }}' `
+            -Repository '${{ github.repository }}' `
+            -RunId '${{ github.run_id }}'
+
+      - name: Upload successful text-only attestation
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: game-smoke-${{ inputs.mode }}-${{ steps.candidate.outputs.sha }}
+          path: ${{ runner.temp }}/smoke-result/attestation.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload sanitized failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: game-smoke-failure-${{ inputs.mode }}-${{ steps.candidate.outputs.sha }}
+          path: ${{ runner.temp }}/smoke-result
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Scrub smoke workspace and caches
+        if: always()
+        shell: powershell
+        run: |
+          Remove-Item "$env:RUNNER_TEMP\smoke-*" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item candidate, trusted -Recurse -Force -ErrorAction SilentlyContinue

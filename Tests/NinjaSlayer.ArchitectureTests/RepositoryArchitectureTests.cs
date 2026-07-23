@@ -11,6 +11,70 @@ public sealed class RepositoryArchitectureTests
     private static readonly CSharpCompilation Compilation = CreateCompilation();
 
     [Fact]
+    public void SmokeDriverCannotEnterTheShippingAssemblyOrPackage()
+    {
+        string project = File.ReadAllText(Path.Combine(Root, "NinjaSlayer.csproj"));
+        string packaging = File.ReadAllText(Path.Combine(Root, "eng", "NinjaSlayer.Packaging.targets"));
+        string controller = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "NinjaSlayer.SmokeDriver",
+            "SmokeController.cs"));
+        string entry = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "NinjaSlayer.SmokeDriver",
+            "Entry.cs"));
+
+        Assert.Contains("<Compile Remove=\"tools\\smoke-harness\\**\\*.cs\" />", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("NinjaSlayer-SmokeDriver", packaging, StringComparison.Ordinal);
+        Assert.Contains("$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck", packaging, StringComparison.Ordinal);
+        Assert.DoesNotContain("SmokeController : Node", controller, StringComparison.Ordinal);
+        Assert.Contains("controller.Start();", entry, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SmokeWorkflowUsesTrustedMainAndProtectedCanonicalCandidates()
+    {
+        string workflow = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
+
+        Assert.Contains("environment: game-smoke", workflow, StringComparison.Ordinal);
+        Assert.Contains("ref: main", workflow, StringComparison.Ordinal);
+        Assert.Contains("persist-credentials: false", workflow, StringComparison.Ordinal);
+        Assert.Contains("merge-base --is-ancestor", workflow, StringComparison.Ordinal);
+        Assert.Contains("trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("FirstCombatRestart", workflow, StringComparison.Ordinal);
+        Assert.Contains("FullAutoSlay", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("pull_request_target", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SmokeLauncherPreservesSaveNetworkAndReleaseBoundaries()
+    {
+        string launcher = File.ReadAllText(Path.Combine(Root, "tools", "smoke-harness", "Invoke-NinjaSlayerSmoke.ps1"));
+        string release = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "release.yml"));
+
+        foreach (string required in new[]
+                 {
+                     "$env:APPDATA = $appDataDirectory",
+                     "$env:LOCALAPPDATA = $localAppDataDirectory",
+                     "--force-steam=off",
+                     "New-NetFirewallRule",
+                     "Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 20",
+                     "Invoke-SmokePhase -Phase Resume -ExpectedExitCode 0",
+                     "Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0",
+                     "Stop-SmokeProcesses -Root $isolatedGameRoot"
+                 })
+        {
+            Assert.Contains(required, launcher, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain("verify-smoke-attestation.ps1", release, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void EveryPatchBelongsToExactlyOneTypedCapabilityGroup()
     {
         Dictionary<string, INamedTypeSymbol> patches = DeclaredClasses()

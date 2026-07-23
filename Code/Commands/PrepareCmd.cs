@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.Diagnostics;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Scripts;
@@ -74,6 +75,10 @@ internal static class PrepareCmd
 
     private static PreparedApplyResult Report(CardModel card, PreparedApplyResult result)
     {
+        NinjaSlayerRuntimeCounters.RecordPrepared(
+            result.IsPrepared,
+            result.IsDegraded,
+            result.RequiresLifecycleRepair);
         if (!result.IsDegraded)
         {
             return result;

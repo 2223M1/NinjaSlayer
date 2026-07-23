@@ -145,6 +145,6 @@ jobs:
           }
           else {
             gh release create $env:RELEASE_TAG $env:RELEASE_ARCHIVE `
-              --verify-tag --generate-notes --title "NinjaSlayer $env:RELEASE_TAG"
+              --verify-tag --notes-file '.\Workshop\change-note.md' --title "NinjaSlayer $env:RELEASE_TAG"
           }
           if ($LASTEXITCODE -ne 0) { throw 'Creating or updating the GitHub Release failed.' }
