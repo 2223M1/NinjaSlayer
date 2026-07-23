@@ -4,6 +4,28 @@ namespace NinjaSlayer.LogicTests;
 
 public sealed class PreparedSafetyTests
 {
+    [Theory]
+    [InlineData(1, true, false, true, false)]
+    [InlineData(2, true, false, true, true)]
+    [InlineData(1, false, true, true, false)]
+    [InlineData(2, false, true, true, true)]
+    [InlineData(1, false, false, false, true)]
+    public void NextDiscardProtectionConsumesOnlyLayersOlderThanTheSourceCard(
+        int powerAmount,
+        bool hasMarker,
+        bool expectedSourceFromPlay,
+        bool expectedProtected,
+        bool expectedConsume)
+    {
+        NextDiscardProtectionDecision decision = NextDiscardProtectionPolicy.Resolve(
+            powerAmount,
+            hasMarker,
+            expectedSourceFromPlay);
+
+        Assert.Equal(expectedProtected, decision.IsProtectedSource);
+        Assert.Equal(expectedConsume, decision.ShouldConsumeLayer);
+    }
+
     [Fact]
     public void DrawStartFailsClosedForCombatEndAndDrawPrevention()
     {

@@ -32,6 +32,7 @@
     <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedSafetyPolicy.cs" Link="PreparedSafetyPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedDrawPolicy.cs" Link="PreparedDrawPolicy.cs" />
+    <Compile Include="..\..\Code\Prepared\NextDiscardProtectionPolicy.cs" Link="NextDiscardProtectionPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
     <Compile Include="..\..\Code\Telemetry\NinjaSlayerTelemetryIdentityTracker.cs" Link="NinjaSlayerTelemetryIdentityTracker.cs" />
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />

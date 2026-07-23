@@ -171,6 +171,28 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void NextDiscardSourceProtectionUsesASerializedOneShotCardMarker()
+    {
+        string power = Sources
+            .Single(source => source.RelativePath == "Powers/NextDiscardPreparedPower.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("CardCmd.Afflict<NextDiscardSourceAffliction>", power, StringComparison.Ordinal);
+        Assert.Contains("CardCmd.ClearAffliction(card)", power, StringComparison.Ordinal);
+        Assert.DoesNotContain("CardPlayResolutionScope", power, StringComparison.Ordinal);
+        Assert.DoesNotContain("SourceProtectionState", power, StringComparison.Ordinal);
+
+        string marker = Sources
+            .Single(source => source.RelativePath == "Afflictions/NextDiscardSourceAffliction.cs")
+            .Root
+            .ToFullString();
+        Assert.Contains("[RegisterAffliction]", marker, StringComparison.Ordinal);
+        Assert.Contains("AfterCardChangedPilesLate", marker, StringComparison.Ordinal);
+        Assert.Contains("card.Pile?.Type != PileType.Play", marker, StringComparison.Ordinal);
+        Assert.DoesNotContain("AfflictionAssetProfile", marker, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ChadoRulesDoNotOwnNodesAndPresentationCoversEveryBindingOrder()
     {
         string rules = Sources
