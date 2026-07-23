@@ -43,6 +43,10 @@ internal static class GameCompatibility
         private static readonly FieldInfo? CalculatedDamage = AccessTools.Field(typeof(AttackCommand), "_calculatedDamageVar");
         private static readonly FieldInfo? HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
         private static readonly FieldInfo? SingleTarget = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
+        private static readonly MethodInfo? StartDeathAnim = AccessTools.Method(
+            typeof(NCreature),
+            nameof(NCreature.StartDeathAnim),
+            [typeof(bool)]);
 
         public static IReadOnlyList<CapabilityProbe> GetProbes()
         {
@@ -59,6 +63,14 @@ internal static class GameCompatibility
                     lethalTargetAvailable ? "validated" : lethalReason)
             ];
         }
+
+        public static IReadOnlyList<CapabilityProbe> GetPresentationProbes() =>
+        [
+            RequiredMember(
+                "NCreature.start-death-animation",
+                StartDeathAnim,
+                "NCreature.StartDeathAnim(bool)")
+        ];
 
         public static bool CanProtectLethalDamage(out string reason)
         {
