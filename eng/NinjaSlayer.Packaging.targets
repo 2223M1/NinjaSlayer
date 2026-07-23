@@ -129,8 +129,10 @@
     <Error Condition="'$(Configuration)' != 'Release'" Text="PublishWorkshop requires Configuration=Release." />
     <Error Condition="'$(PublishWorkshopConfirmed)' != 'true'" Text="Pass PublishWorkshopConfirmed=true to publish." />
     <Error Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true'" Text="Pass NinjaSlayerVersion explicitly when publishing." />
+    <Error Condition="'$(IsSupportedReleaseTag)' != 'true'"
+           Text="Workshop publishing requires a v0.1.x tag, where x is 0 through 99 without leading zeroes." />
     <Error Condition="'$(IsExactReleaseTag)' != 'true' or '$(NinjaSlayerVersion)' != '$(_GitExactVersion)'"
-           Text="Workshop publishing requires a clean exact vX.Y.Z tag matching NinjaSlayerVersion." />
+           Text="Workshop publishing requires a clean exact v0.1.x tag matching NinjaSlayerVersion." />
     <Error Condition="!Exists('$(WorkshopUploaderExe)')" Text="Workshop uploader missing at $(WorkshopUploaderExe)." />
     <Error Condition="!Exists('$(WorkshopUploadRoot)\$(NinjaSlayerArtifactName)\workshop.json')"
            Text="Workshop metadata missing at $(WorkshopUploadRoot)\$(NinjaSlayerArtifactName)\workshop.json." />

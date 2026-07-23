@@ -22,6 +22,8 @@
       <IsExactReleaseTag Condition="'$(_GitExactVersion)' != ''">true</IsExactReleaseTag>
       <IsExactReleaseTag Condition="'$(IsExactReleaseTag)' == ''">false</IsExactReleaseTag>
       <GitTag Condition="'$(IsExactReleaseTag)' == 'true'">v$(_GitExactVersion)</GitTag>
+      <IsSupportedReleaseTag Condition="'$(IsExactReleaseTag)' == 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitTag)', '^v0\.1\.(0|[1-9][0-9]?)$'))">true</IsSupportedReleaseTag>
+      <IsSupportedReleaseTag Condition="'$(IsSupportedReleaseTag)' == ''">false</IsSupportedReleaseTag>
       <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' == 'true'">$(_GitExactVersion)</NinjaSlayerVersion>
       <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' != 'true'">$(_GitBaseVersion)-dev.$(_GitCommitCount)+g$(_GitSha)$(_GitDirtySuffix)</NinjaSlayerVersion>
       <Version>$(NinjaSlayerVersion)</Version>

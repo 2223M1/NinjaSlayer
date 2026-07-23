@@ -3,7 +3,13 @@ name: GitHub Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v0.1.*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing v0.1.x tag to rebuild or repair
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -12,23 +18,34 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
+    environment: release-production
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
     steps:
       - name: Checkout complete history
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
           fetch-depth: 0
 
       - name: Validate release tag and ancestry
         shell: pwsh
         run: |
-          if ($env:GITHUB_REF_NAME -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') {
-            throw "Release tags must use vX.Y.Z."
+          if ($env:RELEASE_TAG -notmatch '^v0\.1\.(0|[1-9][0-9]?)$') {
+            throw "Release tags must use v0.1.x, where x is 0 through 99 without leading zeroes."
+          }
+          git show-ref --verify --quiet "refs/tags/$env:RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) { throw "Release tag $env:RELEASE_TAG does not exist." }
+          $releaseSha = (git rev-list -n 1 $env:RELEASE_TAG).Trim().ToLowerInvariant()
+          if ((git rev-parse HEAD).Trim().ToLowerInvariant() -ne $releaseSha) {
+            throw 'The checked-out commit does not match the release tag.'
           }
           git fetch origin main --no-tags
-          git merge-base --is-ancestor $env:GITHUB_SHA origin/main
+          git merge-base --is-ancestor $releaseSha origin/main
           if ($LASTEXITCODE -ne 0) {
             throw "The release tag commit is not on origin/main."
           }
+          "RELEASE_SHA=$releaseSha" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Require a successful protected game contract
         shell: pwsh
@@ -36,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           .\.github\scripts\verify-contract-attestation.ps1 `
-            -CandidateSha $env:GITHUB_SHA `
+            -CandidateSha $env:RELEASE_SHA `
             -Repository '${{ github.repository }}' `
             -Token $env:GH_TOKEN `
             -OutputDirectory (Join-Path $env:RUNNER_TEMP 'contract-attestation')
@@ -59,6 +76,7 @@ jobs:
           if (-not [string]::IsNullOrWhiteSpace($env:REFERENCE_BUNDLE_TOKEN)) {
             $headers.Authorization = "Bearer $env:REFERENCE_BUNDLE_TOKEN"
           }
+          $headers.Accept = 'application/octet-stream'
           Invoke-WebRequest -Uri $env:REFERENCE_BUNDLE_URL -Headers $headers -OutFile "$env:RUNNER_TEMP\sts2-reference.zip"
           Expand-Archive "$env:RUNNER_TEMP\sts2-reference.zip" "$env:RUNNER_TEMP\sts2-reference" -Force
           $sts2 = Get-ChildItem "$env:RUNNER_TEMP\sts2-reference" -Recurse -Filter sts2.dll | Select-Object -First 1
@@ -91,19 +109,28 @@ jobs:
       - name: Package release
         shell: pwsh
         run: |
-          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $version = $env:RELEASE_TAG.Substring(1)
           dotnet msbuild .\NinjaSlayer.csproj -t:PackageMod `
             -p:Configuration=Release `
             -p:NinjaSlayerVersion=$version `
             -p:Sts2DataDir="$env:STS2_DATA_DIR" `
             -p:GodotExe="$env:GODOT_EXE"
           if ($LASTEXITCODE -ne 0) { throw 'PackageMod failed.' }
-          $archive = "NinjaSlayer-$env:GITHUB_REF_NAME.zip"
+          $archive = "NinjaSlayer-$env:RELEASE_TAG.zip"
           Compress-Archive -Path '.\build\mods\NinjaSlayer\*' -DestinationPath $archive -Force
           "RELEASE_ARCHIVE=$archive" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME $env:RELEASE_ARCHIVE --verify-tag --generate-notes --title "NinjaSlayer $env:GITHUB_REF_NAME"
+        run: |
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG $env:RELEASE_ARCHIVE --clobber
+          }
+          else {
+            gh release create $env:RELEASE_TAG $env:RELEASE_ARCHIVE `
+              --verify-tag --generate-notes --title "NinjaSlayer $env:RELEASE_TAG"
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Creating or updating the GitHub Release failed.' }

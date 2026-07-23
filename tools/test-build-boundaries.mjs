@@ -19,6 +19,8 @@ const projectPath = join(root, 'NinjaSlayer.csproj');
 const versionPropsPath = join(root, 'eng', 'NinjaSlayer.Version.props');
 const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
+const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
+const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
 
 function xml(value) {
   return value
@@ -64,6 +66,18 @@ for (const property of ['PostBuildModDir', 'SteamModDir', 'WorkshopContentDir', 
 }
 
 const packagingTargets = readFileSync(packagingTargetsPath, 'utf8');
+const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
+const workshopWorkflow = readFileSync(workshopWorkflowPath, 'utf8');
+for (const source of [releaseWorkflow, workshopWorkflow]) {
+  assert(
+    source.includes('^v0\\.1\\.(0|[1-9][0-9]?)$'),
+    'Release and Workshop workflows must enforce the v0.1.0 through v0.1.99 series.',
+  );
+}
+assert(releaseWorkflow.includes('environment: release-production'));
+assert(releaseWorkflow.includes('workflow_dispatch:'));
+assert(releaseWorkflow.includes('git rev-list -n 1 $env:RELEASE_TAG'));
+assert(releaseWorkflow.includes('gh release upload $env:RELEASE_TAG $env:RELEASE_ARCHIVE --clobber'));
 assert(
   !packagingTargets.includes('BeforeTargets=') && !packagingTargets.includes('AfterTargets='),
   'Delivery targets must remain explicit and must not attach themselves to ordinary builds.',
@@ -115,15 +129,18 @@ try {
   <Import Project="${xml(versionPropsPath)}" />
   <Import Project="${xml(versionTargetsPath)}" />
   <Target Name="CaptureVersion" DependsOnTargets="ResolveNinjaSlayerVersion">
-    <WriteLinesToFile File="$(CaptureFile)" Lines="$(NinjaSlayerVersion)|$(IsExactReleaseTag)|$(GitTag)" Overwrite="true" />
+    <WriteLinesToFile File="$(CaptureFile)" Lines="$(NinjaSlayerVersion)|$(IsExactReleaseTag)|$(IsSupportedReleaseTag)|$(GitTag)" Overwrite="true" />
   </Target>
 </Project>
 `.trimStart(), 'utf8');
   const versionCases = [
-    ['v2.3.4-0-gabcdef', '2.3.4|true|v2.3.4'],
-    ['v2.3.4-7-gabcdef', '2.3.4-dev.7+gabcdef|false|'],
-    ['v2.3.4-7-gabcdef-dirty', '2.3.4-dev.7+gabcdef.dirty|false|'],
-    ['abcdef', '0.1.0-dev.0+gabcdef|false|'],
+    ['v0.1.0-0-gabcdef', '0.1.0|true|true|v0.1.0'],
+    ['v0.1.99-0-gabcdef', '0.1.99|true|true|v0.1.99'],
+    ['v0.1.100-0-gabcdef', '0.1.100|true|false|v0.1.100'],
+    ['v2.3.4-0-gabcdef', '2.3.4|true|false|v2.3.4'],
+    ['v2.3.4-7-gabcdef', '2.3.4-dev.7+gabcdef|false|false|'],
+    ['v2.3.4-7-gabcdef-dirty', '2.3.4-dev.7+gabcdef.dirty|false|false|'],
+    ['abcdef', '0.1.0-dev.0+gabcdef|false|false|'],
   ];
   for (const [describe, expected] of versionCases) {
     const captureFile = join(sandbox, `version-${describe.replaceAll(/[^a-z0-9]/gi, '-')}.txt`);
@@ -141,8 +158,8 @@ try {
   const harness = `
 <Project>
   <PropertyGroup>
-    <NinjaSlayerVersion>1.2.3</NinjaSlayerVersion>
-    <GitDescribe>v1.2.3-0-gabcdef</GitDescribe>
+    <NinjaSlayerVersion>0.1.7</NinjaSlayerVersion>
+    <GitDescribe>v0.1.7-0-gabcdef</GitDescribe>
     <IsWindows>true</IsWindows>
     <Configuration>Debug</Configuration>
     <NinjaSlayerArtifactName>NinjaSlayer</NinjaSlayerArtifactName>
@@ -209,6 +226,19 @@ try {
   assert.match(`${guarded.stdout}\n${guarded.stderr}`, /requires Configuration=Release/);
   assert(!existsSync(guardPackageDir), 'Fail-fast publication must not package before validation.');
   assert(!existsSync(guardWorkshopDir), 'Fail-fast publication must not stage before validation.');
+
+  const unsupportedVersion = runMsbuild(harnessPath, 'PublishWorkshop', {
+    Configuration: 'Release',
+    GitDescribe: 'v0.1.100-0-gabcdef',
+    NinjaSlayerVersion: '0.1.100',
+    PublishWorkshopConfirmed: 'true',
+    PostBuildModDir: guardPackageDir,
+    WorkshopContentDir: guardWorkshopDir,
+  });
+  assert.notEqual(unsupportedVersion.status, 0, 'PublishWorkshop must reject v0.1.100.');
+  assert.match(`${unsupportedVersion.stdout}\n${unsupportedVersion.stderr}`, /requires a v0\.1\.x tag/);
+  assert(!existsSync(guardPackageDir), 'Unsupported versions must not package before validation.');
+  assert(!existsSync(guardWorkshopDir), 'Unsupported versions must not stage before validation.');
 } finally {
   rmSync(sandbox, { recursive: true, force: true });
 }
