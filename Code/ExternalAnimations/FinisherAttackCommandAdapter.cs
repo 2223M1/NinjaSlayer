@@ -49,11 +49,12 @@ internal static class FinisherAttackCommandAdapter
         spec = new FinisherAttackSpec(
             card,
             cardPlay,
-            damage,
-            command.DamageProps,
-            Math.Max(1, hitCount),
-            targeting.Value,
-            singleTarget);
+            new FinisherForecastDescriptor(
+                damage,
+                command.DamageProps,
+                Math.Max(1, hitCount),
+                targeting.Value,
+                singleTarget));
         return true;
     }
 }

@@ -58,10 +58,11 @@ internal static class FinisherAttackExtensions
         var spec = new FinisherAttackSpec(
             card,
             cardPlay,
-            _ => damage,
-            props,
-            1,
-            FinisherTargeting.Single);
+            new FinisherForecastDescriptor(
+                _ => damage,
+                props,
+                1,
+                FinisherTargeting.Single));
         return NinjaSlayerFinisherCinematic.ExecuteDirectWithFinisher(
             choiceContext,
             spec,

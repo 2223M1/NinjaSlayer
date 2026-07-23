@@ -29,12 +29,7 @@ internal enum FinisherPresentationMode
 internal sealed record FinisherAttackSpec(
     CardModel Card,
     CardPlay CardPlay,
-    Func<Creature, decimal> Damage,
-    ValueProp Props,
-    int HitCount,
-    FinisherTargeting Targeting,
-    Creature? SingleTarget = null,
-    IReadOnlyList<Creature>? FixedTargets = null)
+    FinisherForecastDescriptor Forecast)
 {
     public static FinisherAttackSpec FromCard(
         CardModel card,
@@ -74,11 +69,12 @@ internal sealed record FinisherAttackSpec(
         return new FinisherAttackSpec(
             card,
             cardPlay,
-            damage,
-            propsOverride ?? props,
-            Math.Max(1, hitCount),
-            targeting,
-            cardPlay.Target);
+            new FinisherForecastDescriptor(
+                damage,
+                propsOverride ?? props,
+                Math.Max(1, hitCount),
+                targeting,
+                cardPlay.Target));
     }
 
     private static ValueProp ResolveProps(CardModel card)
@@ -186,11 +182,12 @@ internal static class NinjaSlayerFinisherCinematic
         var spec = new FinisherAttackSpec(
             cardSource,
             cardPlay,
-            _ => amount,
-            props,
-            1,
-            FinisherTargeting.Fixed,
-            FixedTargets: targetList);
+            new FinisherForecastDescriptor(
+                _ => amount,
+                props,
+                1,
+                FinisherTargeting.Fixed,
+                FixedTargets: targetList));
         result = ExecuteDirectDamageWithFinisher(
             choiceContext,
             spec,
