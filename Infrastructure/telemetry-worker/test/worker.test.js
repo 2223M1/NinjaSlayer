@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
@@ -6,6 +7,10 @@ import {
   FeedbackSubmissionCoordinator,
   handleRequest,
 } from '../src/index.js';
+import {
+  parseFeedbackIndexMarker,
+  validateCompletedFeedbackMetadata,
+} from '../src/feedback-storage.js';
 
 const UUID = '9b3d6f32-f6d4-4ca4-9a34-128763c3154b';
 const SECOND_UUID = 'c4b7a218-e75c-4c4f-8df4-41bb741b44e2';
@@ -18,29 +23,56 @@ const RITSU_FIXTURE = JSON.parse(readFileSync(
 
 class MockStorage {
   objects = new Map();
+  alarm = null;
   async get(key) { return this.objects.get(key); }
   async put(key, value) { this.objects.set(key, structuredClone(value)); }
+  async delete(key) { this.objects.delete(key); }
+  async deleteAll() { this.objects.clear(); }
+  async setAlarm(value) { this.alarm = value; }
 }
 
 class MockKv {
   objects = new Map();
   options = new Map();
   writes = [];
+  writeRecords = [];
   failNextSuffix = null;
+  failNextKey = null;
+  blockedPut = null;
 
   async get(key) { return this.objects.get(key) ?? null; }
   async put(key, value, options) {
+    if (this.blockedPut && key.endsWith(this.blockedPut.suffix)) {
+      const blocked = this.blockedPut;
+      this.blockedPut = null;
+      blocked.startedResolve();
+      await blocked.released;
+    }
     if (this.failNextSuffix && key.endsWith(this.failNextSuffix)) {
       this.failNextSuffix = null;
       throw new Error('injected put failure');
     }
+    if (this.failNextKey === key) {
+      this.failNextKey = null;
+      throw new Error('injected marker failure');
+    }
     this.writes.push(key);
+    this.writeRecords.push({ key, value: structuredClone(value) });
     this.objects.set(key, value);
     this.options.set(key, options);
   }
   async delete(key) {
     this.objects.delete(key);
     this.options.delete(key);
+  }
+
+  blockNextSuffix(suffix) {
+    let startedResolve;
+    let release;
+    const started = new Promise((resolve) => { startedResolve = resolve; });
+    const released = new Promise((resolve) => { release = resolve; });
+    this.blockedPut = { suffix, startedResolve, released };
+    return { started, release };
   }
 }
 
@@ -64,14 +96,12 @@ class MockDurableObjectNamespace {
   idFromName(name) { return name; }
   get(id) {
     if (!this.instances.has(id)) {
-      const instance = new this.Type({ storage: new MockStorage() }, this.env);
-      let pending = Promise.resolve();
+      const storage = new MockStorage();
+      const instance = new this.Type({ storage }, this.env);
       this.instances.set(id, {
-        fetch(request) {
-          const operation = pending.then(() => instance.fetch(request));
-          pending = operation.catch(() => undefined);
-          return operation;
-        },
+        instance,
+        storage,
+        fetch: (request) => instance.fetch(request),
       });
     }
     return this.instances.get(id);
@@ -230,7 +260,7 @@ test('feedback rejects invalid schemas, MIME types, sizes, signatures, and misma
   assert.equal((await handleRequest(feedbackRequest({ logsBytes: new Uint8Array([1, 2, 3, 4]) }), workerEnv())).status, 400);
 });
 
-test('feedback uses server time, writes sequentially, and commits metadata last', async () => {
+test('feedback writes an attempt lease first and a hash-bound completion marker last', async () => {
   const kv = new MockKv();
   const logsBytes = new Uint8Array(4 * 1024 * 1024 + 1);
   logsBytes.set(ZIP);
@@ -238,38 +268,142 @@ test('feedback uses server time, writes sequentially, and commits metadata last'
   assert.equal(response.status, 200);
   const body = await response.json();
   assert(body.prefix.startsWith(`feedback/2030/08/2030-08-09T10-11-12-000Z-${UUID}`));
+  assert.match(body.attemptId, /^[0-9a-f-]{36}$/);
   assert.equal(kv.writes[0], `feedback-index/${UUID}`);
-  assert(kv.writes[1].endsWith('/screenshot.png'));
-  assert(kv.writes[2].endsWith('/logs/part-0000.bin'));
-  assert(kv.writes[3].endsWith('/logs/part-0001.bin'));
-  assert(kv.writes[4].endsWith('/metadata.json'));
+  assert(kv.writes[1].includes(`/attempts/${body.attemptId}/screenshot.png`));
+  assert(kv.writes[2].includes(`/attempts/${body.attemptId}/logs/part-0000.bin`));
+  assert(kv.writes[3].includes(`/attempts/${body.attemptId}/logs/part-0001.bin`));
+  assert(kv.writes[4].includes(`/attempts/${body.attemptId}/metadata.json`));
+  assert.equal(kv.writes[5], `feedback-index/${UUID}`);
+
+  const writingMarker = parseFeedbackIndexMarker(kv.writeRecords[0].value, UUID);
+  const completionMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
+  assert.equal(writingMarker.state, 'writing');
+  assert.equal(completionMarker.state, 'completed');
+  assert.equal(completionMarker.lease.attemptId, body.attemptId);
+  const metadataText = kv.objects.get(completionMarker.completion.metadataKey);
+  assert.equal(
+    createHash('sha256').update(metadataText, 'utf8').digest('hex'),
+    completionMarker.completion.metadataSha256,
+  );
+  assert(validateCompletedFeedbackMetadata(JSON.parse(metadataText), completionMarker));
   assert([...kv.options.values()].every((options) => options.expirationTtl === 180 * 24 * 60 * 60));
 });
 
-test('concurrent retries for one submission are serialized and idempotent', async () => {
+test('a concurrent retry observes the active lease without consuming a second write attempt', async () => {
   const kv = new MockKv();
   const env = workerEnv({ FEEDBACK_KV: kv });
-  const [first, second] = await Promise.all([
-    handleRequest(feedbackRequest(), env),
-    handleRequest(feedbackRequest(), env),
-  ]);
+  const barrier = kv.blockNextSuffix('/screenshot.png');
+  const firstPromise = handleRequest(feedbackRequest(), env);
+  await barrier.started;
+  const activeMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
+  const second = await handleRequest(feedbackRequest(), env);
+  assert.equal(second.status, 503);
+  const processing = await second.json();
+  assert.equal(processing.processing, true);
+  assert.equal(processing.attemptId, activeMarker.lease.attemptId);
+  const [quotaCoordinator] = env.ANONYMOUS_QUOTAS.instances.values();
+  assert.equal(quotaCoordinator.storage.objects.get('quota:feedback').count, 1);
+
+  barrier.release();
+  const first = await firstPromise;
   assert.equal(first.status, 200);
-  assert.equal(second.status, 200);
-  const responses = await Promise.all([first.json(), second.json()]);
-  assert.equal(responses[0].prefix, responses[1].prefix);
-  assert.equal(responses.filter((body) => body.idempotent === true).length, 1);
+  const completed = await first.json();
+  const retry = await handleRequest(feedbackRequest(), env);
+  assert.equal(retry.status, 200);
+  const idempotent = await retry.json();
+  assert.equal(idempotent.idempotent, true);
+  assert.equal(idempotent.attemptId, completed.attemptId);
   assert.equal([...kv.objects.keys()].filter((key) => key.endsWith('/metadata.json')).length, 1);
 });
 
-test('a failed upload cleans only its prefix and the next serialized retry succeeds', async () => {
+test('an expired attempt cannot overwrite a takeover that completes first', async () => {
+  const kv = new MockKv();
+  const env = workerEnv({ FEEDBACK_KV: kv });
+  const barrier = kv.blockNextSuffix('/screenshot.png');
+  const stalePromise = handleRequest(feedbackRequest(), env);
+  await barrier.started;
+  const staleMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
+
+  env.TEST_NOW = '2030-08-09T10:14:12.000Z';
+  const takeover = await handleRequest(feedbackRequest(), env);
+  assert.equal(takeover.status, 200);
+  const takeoverBody = await takeover.json();
+  assert.notEqual(takeoverBody.attemptId, staleMarker.lease.attemptId);
+
+  barrier.release();
+  const stale = await stalePromise;
+  assert.equal(stale.status, 200);
+  assert.equal((await stale.json()).attemptId, takeoverBody.attemptId);
+  const finalMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
+  assert.equal(finalMarker.lease.attemptId, takeoverBody.attemptId);
+  assert.equal([...kv.objects.keys()].some((key) => key.includes(staleMarker.lease.attemptId)), false);
+});
+
+test('a failed upload cleans only its attempt and the next retry succeeds', async () => {
   const kv = new MockKv();
   kv.failNextSuffix = 'part-0000.bin';
   const env = workerEnv({ FEEDBACK_KV: kv });
   const failed = await handleRequest(feedbackRequest(), env);
-  const succeeded = await handleRequest(feedbackRequest(), env);
   assert.equal(failed.status, 500);
+  assert.equal(kv.objects.has(`feedback-index/${UUID}`), false);
+  const succeeded = await handleRequest(feedbackRequest(), env);
   assert.equal(succeeded.status, 200);
   assert.equal([...kv.objects.keys()].filter((key) => key.endsWith('/metadata.json')).length, 1);
+});
+
+test('a crash after durable completion is repaired by an idempotent retry', async () => {
+  const kv = new MockKv();
+  const env = workerEnv({ FEEDBACK_KV: kv });
+  const barrier = kv.blockNextSuffix('/metadata.json');
+  const firstPromise = handleRequest(feedbackRequest(), env);
+  await barrier.started;
+  kv.failNextKey = `feedback-index/${UUID}`;
+  barrier.release();
+  const first = await firstPromise;
+  assert.equal(first.status, 500);
+  assert.equal((await first.json()).error, 'storage_commit_failed');
+  assert.equal([...kv.objects.keys()].filter((key) => key.endsWith('/metadata.json')).length, 1);
+
+  const retry = await handleRequest(feedbackRequest(), env);
+  assert.equal(retry.status, 200);
+  const retryBody = await retry.json();
+  assert.equal(retryBody.idempotent, true);
+  const marker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
+  assert.equal(marker.state, 'completed');
+  assert.equal(marker.lease.attemptId, retryBody.attemptId);
+});
+
+test('completion validation rejects mismatched attempts, metadata paths, and hashes', async () => {
+  const kv = new MockKv();
+  assert.equal((await handleRequest(feedbackRequest(), workerEnv({ FEEDBACK_KV: kv }))).status, 200);
+  const marker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
+  const metadata = JSON.parse(kv.objects.get(marker.completion.metadataKey));
+
+  const wrongAttempt = structuredClone(marker);
+  wrongAttempt.completion.attemptId = SECOND_UUID;
+  assert.equal(parseFeedbackIndexMarker(wrongAttempt, UUID), null);
+  const wrongHash = structuredClone(marker);
+  wrongHash.completion.metadataSha256 = '0'.repeat(64);
+  assert.notEqual(parseFeedbackIndexMarker(wrongHash, UUID), null);
+  const wrongMetadata = structuredClone(metadata);
+  wrongMetadata.storage.attemptId = SECOND_UUID;
+  assert.equal(validateCompletedFeedbackMetadata(wrongMetadata, marker), false);
+});
+
+test('an administrative tombstone prevents deleted submissions from being recreated', async () => {
+  const kv = new MockKv();
+  const env = workerEnv({ FEEDBACK_KV: kv });
+  assert.equal((await handleRequest(feedbackRequest(), env)).status, 200);
+  await kv.put(`feedback-tombstone/${UUID}`, JSON.stringify({ deletedAtUtc: env.TEST_NOW }), {
+    expirationTtl: 180 * 24 * 60 * 60,
+  });
+  await kv.delete(`feedback-index/${UUID}`);
+
+  const retry = await handleRequest(feedbackRequest(), env);
+  assert.equal(retry.status, 410);
+  assert.equal((await retry.json()).error, 'submission_deleted');
+  assert.equal(kv.objects.has(`feedback-index/${UUID}`), false);
 });
 
 test('legacy clients without a submission header remain serialized and supported', async () => {
@@ -277,13 +411,21 @@ test('legacy clients without a submission header remain serialized and supported
   assert.equal(response.status, 200);
 });
 
-test('daily feedback count quota is enforced independently of minute limiting', async () => {
+test('daily feedback quota remains atomic across concurrent submission coordinators', async () => {
   const env = workerEnv();
-  for (let index = 0; index < 5; index += 1) {
+  const requests = [];
+  for (let index = 0; index < 6; index += 1) {
     const id = `00000000-0000-4000-8000-${index.toString().padStart(12, '0')}`;
-    assert.equal((await handleRequest(feedbackRequest({ submissionId: id }), env)).status, 200);
+    requests.push(handleRequest(feedbackRequest({ submissionId: id }), env));
   }
-  assert.equal((await handleRequest(feedbackRequest({ submissionId: SECOND_UUID }), env)).status, 429);
+  const responses = await Promise.all(requests);
+  assert.deepEqual(responses.map((response) => response.status).sort(), [200, 200, 200, 200, 200, 429]);
+  const markers = [...env.FEEDBACK_KV.objects.entries()]
+    .filter(([key]) => key.startsWith('feedback-index/'))
+    .map(([, value]) => parseFeedbackIndexMarker(value))
+    .filter(Boolean);
+  assert.equal(markers.length, 5);
+  assert(markers.every((marker) => marker.state === 'completed'));
 });
 
 test('feedback enforces the streaming limit without Content-Length', async () => {

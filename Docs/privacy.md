@@ -18,6 +18,7 @@ NinjaSlayer can send two kinds of data after the player enables or confirms the 
 - PNG files are limited to 5 MiB, ZIP files to 16 MiB, and the complete request to 24 MiB.
 - Feedback objects expire after 180 days. Server receive time determines the storage path and retention window.
 - Each HMAC is limited to five accepted submissions and 96 MiB per UTC day.
-- A submission-scoped Durable Object serializes retries. A UUID index makes the first complete submission idempotent; attachments are written first and metadata is written last as the commit marker. A failed attempt deletes only objects under its own prefix.
+- A submission-scoped Durable Object owns a renewable two-minute writing lease. Attachments and metadata use an attempt-specific path, and the final UUID index binds the winning attempt to the SHA-256 of its metadata.
+- A valid lease returns a processing response; an expired lease can be taken over. Losing attempts can delete only their own paths, while administrative deletion leaves a retained UUID tombstone so retries cannot recreate removed feedback.
 
 The endpoints are anonymous but enforce server-side HMAC rate limits. No raw source IP or `X-Forwarded-For` value is sent to PostHog or stored in Workers KV.
