@@ -6,6 +6,12 @@
       "owner": "external-game-reference",
       "reason": "The target game and tooling can report an architecture mismatch while resolving third-party assemblies.",
       "suppressedIn": "NinjaSlayer.csproj"
+    },
+    {
+      "code": "CS0436",
+      "owner": "godot-harmony-generated-compatibility",
+      "reason": "Godot and Harmony generate compatibility types that intentionally duplicate types exported by the target game assembly.",
+      "suppressedIn": "NinjaSlayer.csproj"
     }
   ]
 }
