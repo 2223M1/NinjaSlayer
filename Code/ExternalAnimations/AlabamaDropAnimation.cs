@@ -15,9 +15,10 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class AlabamaDropAnimation
 {
-    private const float ApproachDuration = 0.1f;
-    private const float ChargeDuration = 0.1f;
-    private const float RiseDuration = 0.4f;
+    internal const float LungeDuration = 0.05f;
+    internal const float GrabHoldDuration = 0.1f;
+    internal const float CompressionDuration = 0.1f;
+    internal const float RiseDuration = 0.25f;
     private const float FallDuration = 0.6f;
     private const float StandUpDuration = 0.2f;
     private const float RiseDistance = 900f;
@@ -98,10 +99,17 @@ public static class AlabamaDropAnimation
         targetBodyProcessMode = targetRig.Body.ProcessMode;
         var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
+        BodyPivotCompensation ownerPivot = BodyPivotCompensation.Capture(ownerRig);
         BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
         Vector2 ownerStartPos = ownerRig.CreatureNode.Position;
         Vector2 targetStartPos = targetRig.CreatureNode.Position;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
+        Vector2 ownerChargeScale = new(
+            ownerSnapshot.BodyScale.X * LandingSquashScaleX,
+            ownerSnapshot.BodyScale.Y * LandingSquashScaleY);
+        Vector2 targetChargeScale = new(
+            targetSnapshot.BodyScale.X * LandingSquashScaleX,
+            targetSnapshot.BodyScale.Y * LandingSquashScaleY);
         Vector2 targetLandingScale = new(
             targetSnapshot.BodyScale.X * LandingSquashScaleX,
             targetSnapshot.BodyScale.Y * LandingSquashScaleY);
@@ -110,16 +118,29 @@ public static class AlabamaDropAnimation
 
         try
         {
-            await TweenNodePosition(
-                ownerRig.CreatureNode,
-                ownerLandingPos,
-                ApproachDuration,
-                Tween.EaseType.Out,
-                Tween.TransitionType.Quad);
+            float directionToTarget = Mathf.Sign(targetStartPos.X - ownerStartPos.X);
+            await FastAttackAnimation.PlayOutwardLunge(owner, LungeDuration, directionToTarget);
+            ownerRig.CreatureNode.Position = ownerLandingPos;
 
+            PlayGrabFeedback(target);
             NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
             doomPoseFrozen = DoomHurtPoseController.TryFreeze(targetRig.CreatureNode);
-            await Cmd.Wait(ChargeDuration);
+            await WaitTweenInterval(ownerRig.CreatureNode, GrabHoldDuration);
+
+            await TweenBodyScales(
+                ownerRig.CreatureNode,
+                ownerPivot,
+                ownerSnapshot.BodyRotationDegrees,
+                ownerSnapshot.BodyScale,
+                ownerChargeScale,
+                targetPivot,
+                targetSnapshot.BodyRotationDegrees,
+                targetSnapshot.BodyScale,
+                targetChargeScale,
+                CompressionDuration);
+
+            RestoreBodyTransform(ownerRig.Body, ownerSnapshot);
+            RestoreBodyTransform(targetRig.Body, targetSnapshot);
 
             await Task.WhenAll(
                 ByrdRiseAnimation.Play(
@@ -127,13 +148,13 @@ public static class AlabamaDropAnimation
                     RiseDistance,
                     RiseDuration,
                     Tween.EaseType.Out,
-                    Tween.TransitionType.Quart),
+                    Tween.TransitionType.Expo),
                 ByrdRiseAnimation.Play(
                     target,
                     RiseDistance,
                     RiseDuration,
                     Tween.EaseType.Out,
-                    Tween.TransitionType.Quart));
+                    Tween.TransitionType.Expo));
 
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
             targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
@@ -205,6 +226,25 @@ public static class AlabamaDropAnimation
         {
             Entry.Logger.Warn($"Failed to play Alabama Drop impact fire burst: {ex}");
         }
+    }
+
+    private static void PlayGrabFeedback(Creature target)
+    {
+        try
+        {
+            VfxCmd.PlayOnCreatureCenter(target, VfxCmd.bluntPath);
+            if (NCombatRoom.Instance is { } room)
+            {
+                room.CombatVfxContainer.AddChildSafely(
+                    NHitSparkVfx.Create(target, requireInteractable: false));
+            }
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn($"Failed to play Alabama Drop grab VFX: {ex}");
+        }
+
+        SfxCmd.PlayDamage(target.Monster, 0);
     }
 
     private static bool TryGetRig(Creature creature, out CreatureRig rig)
@@ -311,28 +351,49 @@ public static class AlabamaDropAnimation
         return scaleRatio < 0f ? -MinScaleRatio : MinScaleRatio;
     }
 
-    private static async Task TweenNodePosition(
-        NCreature creatureNode,
-        Vector2 target,
-        float duration,
-        Tween.EaseType ease,
-        Tween.TransitionType transition)
+    private static async Task TweenBodyScales(
+        NCreature tweenOwner,
+        BodyPivotCompensation ownerPivot,
+        float ownerRotationDegrees,
+        Vector2 ownerStartScale,
+        Vector2 ownerTargetScale,
+        BodyPivotCompensation targetPivot,
+        float targetRotationDegrees,
+        Vector2 targetStartScale,
+        Vector2 targetTargetScale,
+        float duration)
     {
-        Vector2 start = creatureNode.Position;
-        var tween = creatureNode.CreateTween();
+        var tween = tweenOwner.CreateTween();
         tween.TweenMethod(
             Callable.From<float>(progress =>
             {
-                creatureNode.Position = start.Lerp(target, progress);
+                ownerPivot.Apply(
+                    ownerRotationDegrees,
+                    ownerStartScale.Lerp(ownerTargetScale, progress));
+                targetPivot.Apply(
+                    targetRotationDegrees,
+                    targetStartScale.Lerp(targetTargetScale, progress));
             }),
             0f,
             1f,
             duration)
-            .SetEase(ease)
-            .SetTrans(transition);
+            .SetTrans(Tween.TransitionType.Linear);
 
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
-        creatureNode.Position = target;
+        await tweenOwner.ToSignal(tween, Tween.SignalName.Finished);
+        ownerPivot.Apply(ownerRotationDegrees, ownerTargetScale);
+        targetPivot.Apply(targetRotationDegrees, targetTargetScale);
+    }
+
+    private static void RestoreBodyTransform(Node2D body, CreatureVisualSnapshot snapshot)
+    {
+        if (!GodotObject.IsInstanceValid(body))
+        {
+            return;
+        }
+
+        body.Position = snapshot.BodyPosition;
+        body.RotationDegrees = snapshot.BodyRotationDegrees;
+        body.Scale = snapshot.BodyScale;
     }
 
     private static async Task TweenHopNodePosition(NCreature creatureNode, Vector2 target, float duration)
