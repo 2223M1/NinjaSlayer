@@ -2,6 +2,7 @@ using System.Linq;
 using System.Reflection;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
+using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
@@ -13,6 +14,7 @@ using STS2RitsuLib.Audio;
 using STS2RitsuLib.Interop;
 using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
+using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Scripts;
 
@@ -47,17 +49,12 @@ public class Entry
         NinjaSlayerBalanceTelemetry.Register();
 
         RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
-            .Character<NinjaSlayerCharacter>(character => character
-                .AddStartingCard<StrikeNinjaSlayer>(4, 0)
-                .AddStartingCard<DefendNinjaSlayer>(4, 1)
-                .AddStartingCard<Meditation>(1, 2)
-                .AddStartingCard<KarateStraight>(1, 3))
-            .Character<NinjaSlayerDebugCharacter>(character => character
-                .AddStartingCard<StrikeNinjaSlayer>(4, 0)
-                .AddStartingCard<DefendNinjaSlayer>(4, 1)
-                .AddStartingCard<Meditation>(1, 2)
-                .AddStartingCard<KarateStraight>(1, 3)
-                .AddStartingRelic<ChadoBreathingRelic>(1, 0))
+            .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
+            .Character<NinjaSlayerDebugCharacter>(character =>
+            {
+                ConfigureStartingDeck(character);
+                character.AddStartingRelic<ChadoBreathingRelic>(1, 0);
+            })
             .Apply();
 
         RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
@@ -69,6 +66,16 @@ public class Entry
         InstallCapability<TelemetryIdentityPatchGroup>(NinjaSlayerCapabilityIds.TelemetryIdentity);
 
         RegisterFmodBanksIfPresent();
+    }
+
+    private static void ConfigureStartingDeck<TCharacter>(CharacterRegistrationEntry<TCharacter> character)
+        where TCharacter : CharacterModel
+    {
+        character
+            .AddStartingCard<StrikeNinjaSlayer>(4, 0)
+            .AddStartingCard<DefendNinjaSlayer>(4, 1)
+            .AddStartingCard<Meditation>(1, 2)
+            .AddStartingCard<KarateStraight>(1, 3);
     }
 
     private static void InstallBaseCapabilities()
