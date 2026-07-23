@@ -66,6 +66,7 @@ public class Entry
         InstallFinisherCapability();
         InstallTransitionCapability();
         InstallFeedbackCapability();
+        InstallCapability<TelemetryIdentityPatchGroup>(NinjaSlayerCapabilityIds.TelemetryIdentity);
 
         RegisterFmodBanksIfPresent();
     }

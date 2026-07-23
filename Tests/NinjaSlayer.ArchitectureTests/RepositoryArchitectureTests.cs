@@ -483,6 +483,35 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void RunHistoryTelemetryUsesTheFailClosedLocalIdentityTracker()
+    {
+        string telemetry = Sources
+            .Single(source => source.RelativePath == "Content/NinjaSlayerBalanceTelemetry.cs")
+            .Root
+            .ToFullString();
+
+        Assert.Contains("captureFilter: ShouldCaptureRunHistory", telemetry, StringComparison.Ordinal);
+        Assert.Contains("IdentityTracker.TryCaptureCompletedRun", telemetry, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerPatchCapabilities.TelemetryIdentityEnabled", telemetry, StringComparison.Ordinal);
+        Assert.DoesNotContain("evt.Run.Players.Any", telemetry, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GodotNodeScriptsArePubliclyResolvableFromScriptPathAttributes()
+    {
+        foreach ((ClassDeclarationSyntax declaration, INamedTypeSymbol symbol) in DeclaredClasses())
+        {
+            bool isGodotScript = declaration.Modifiers.Any(SyntaxKind.PartialKeyword)
+                && declaration.BaseList?.Types.Any(type => type.Type.ToString() is
+                    "Node" or "Node2D" or "Control" or "Godot.Node" or "Godot.Node2D" or "Godot.Control") == true;
+            if (isGodotScript)
+            {
+                Assert.Equal(Accessibility.Public, symbol.DeclaredAccessibility);
+            }
+        }
+    }
+
+    [Fact]
     public void PatchIdsAreUniqueAndNonEmpty()
     {
         var ids = new Dictionary<string, string>(StringComparer.Ordinal);
