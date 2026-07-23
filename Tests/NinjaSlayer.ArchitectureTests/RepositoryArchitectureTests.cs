@@ -601,6 +601,23 @@ public sealed class RepositoryArchitectureTests
             statement => statement.Expression?.ToString() == "__exception");
     }
 
+    [Fact]
+    public void FinisherAttackAdaptationIsSeparatedFromTheCinematicOrchestrator()
+    {
+        string orchestrator = Sources
+            .Single(source => source.RelativePath == "Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs")
+            .Root
+            .ToFullString();
+        string adapter = Sources
+            .Single(source => source.RelativePath == "Code/ExternalAnimations/FinisherAttackCommandAdapter.cs")
+            .Root
+            .ToFullString();
+
+        Assert.DoesNotContain("class FinisherAttackCommandAdapter", orchestrator, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.Finisher.TryReadAttackCommand", adapter, StringComparison.Ordinal);
+        Assert.Contains("new FinisherAttackSpec", adapter, StringComparison.Ordinal);
+    }
+
     private static IEnumerable<(ClassDeclarationSyntax Declaration, INamedTypeSymbol Symbol)> DeclaredClasses()
     {
         foreach (SourceDocument source in Sources)
