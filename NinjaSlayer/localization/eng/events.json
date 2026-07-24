@@ -1,0 +1,10 @@
+{
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.title": "Xiao Ji So Cute",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.description": "You ran into Xiao Ji!",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.HUG_XIAO_JI.title": "Hug and take!",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.HUG_XIAO_JI.description": "Follows you for 5 combats.",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.ROB_XIAO_JI.title": "Rob!",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.ROB_XIAO_JI.description": "Gain [gold]{Gold}[/gold] gold.",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.HUGGED.description": "Xiao Ji temporarily joins your party!",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.ROBBED.description": "Xiao Ji runs away crying after being robbed!"
+}

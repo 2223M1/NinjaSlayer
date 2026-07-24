@@ -1,6 +1,5 @@
 {
   "NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER": "Describe the issue or suggestion for the NinjaSlayer mod author...",
-  "NINJA_SLAYER_FEEDBACK_SEND_BUTTON": "Send to NinjaSlayer Mod Author",
   "NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER": "Send to the mod author?",
   "NINJA_SLAYER_FEEDBACK_CONFIRM_BODY": "This feedback will not be sent to MegaCrit. Your feedback text, current screenshot, and a game log archive will be uploaded to the NinjaSlayer mod author. Logs may contain device, save, and installed mod information.",
   "NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL": "Cancel",

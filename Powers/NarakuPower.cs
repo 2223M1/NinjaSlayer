@@ -45,6 +45,7 @@ public sealed class NarakuPower : NinjaSlayerPowerTemplate
     public override Task AfterRemoved(Creature oldOwner)
     {
         NarakuVisualOverlay.Sync(oldOwner);
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback([oldOwner]);
         return Task.CompletedTask;
     }
 

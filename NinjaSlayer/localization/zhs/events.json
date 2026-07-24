@@ -23,5 +23,14 @@
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPT.options.SILENCE_NARAKU.title": "奈落闭嘴！",
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPT.options.SILENCE_NARAKU.description": "退出该事件。",
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPTED.description": "占位",
-  "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.SILENCED.description": "占位"
+  "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.SILENCED.description": "占位",
+
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.title": "小季小季好可爱",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.description": "你遇到了小季！",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.HUG_XIAO_JI.title": "抱走！",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.HUG_XIAO_JI.description": "跟随战斗五场。",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.ROB_XIAO_JI.title": "打劫！",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.INITIAL.options.ROB_XIAO_JI.description": "获得[gold]{Gold}[/gold]枚金币。",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.HUGGED.description": "小季临时加入了你的队伍！",
+  "NINJA_SLAYER_EVENT_XIAO_JI_CUTE_EVENT.pages.ROBBED.description": "小季被你抢劫哭着跑走了！"
 }
