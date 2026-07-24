@@ -62,7 +62,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SmartFormat" Version="3.3.0" />
+    <PackageReference Include="SmartFormat" Version="3.6.1" />
     <!-- Specify a matching compatibility package when developing against another game version. -->
     <!-- <PackageReference Include="STS2.RitsuLib.Compat.0.103.2" Version="*" /> -->
   </ItemGroup>
