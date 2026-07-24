@@ -56,7 +56,7 @@ public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
     public static string PatchId => "ninjaslayer_transition_preload_gc_deferral";
 
     public static string Description =>
-        "Defer forced run-asset garbage collection until the NinjaSlayer transition is covered by black.";
+        "Coalesce forced run-asset garbage collection across the active NinjaSlayer transition session.";
 
     public static bool IsCritical => true;
 

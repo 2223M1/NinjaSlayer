@@ -12,13 +12,21 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     private readonly CancellationTokenSource _lifetime;
     private readonly TransitionCompletionProtocol _protocol;
     private readonly ITransitionViewAdapter _view;
+    private readonly TransitionInvocationKind _invocationKind;
     private Task _animationTask = Task.CompletedTask;
     private int _loadSmoothingStarted;
+    private int _animationSmoothingEnded;
+    private int _loadSmoothingCompleted;
     private int _disposed;
+    private TransitionPerformanceTrace? _performanceTrace;
 
-    public NinjaSlayerTransitionSession(ITransitionViewAdapter view, CancellationToken externalCancellation)
+    public NinjaSlayerTransitionSession(
+        ITransitionViewAdapter view,
+        TransitionInvocationKind invocationKind,
+        CancellationToken externalCancellation)
     {
         _view = view;
+        _invocationKind = invocationKind;
         _externalCancellation = externalCancellation;
         _lifetime = CancellationTokenSource.CreateLinkedTokenSource(externalCancellation);
         _protocol = new TransitionCompletionProtocol(Interlocked.Increment(ref _nextSessionId));
@@ -50,7 +58,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
     public void PrepareInstantView() => _view.PrepareInstant();
 
-    public NinjaSlayerTransitionOverlay PrepareAnimatedView() => _view.PrepareAnimated();
+    public NinjaSlayerTransitionOverlay PrepareAnimatedView() => _view.PrepareAnimated(_performanceTrace);
 
     public void HoldBackdrop() => _view.HoldBackdrop();
 
@@ -58,15 +66,16 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     {
         if (Interlocked.CompareExchange(ref _loadSmoothingStarted, 1, 0) == 0)
         {
-            NinjaSlayerTransitionLoadSmoothing.BeginAnimation();
+            _performanceTrace = NinjaSlayerTransitionLoadSmoothing.BeginSession(SessionId, _invocationKind);
         }
     }
 
-    public void EndLoadSmoothing()
+    public void EndAnimationSmoothing()
     {
-        if (Interlocked.CompareExchange(ref _loadSmoothingStarted, 0, 1) == 1)
+        if (Volatile.Read(ref _loadSmoothingStarted) != 0
+            && Interlocked.CompareExchange(ref _animationSmoothingEnded, 1, 0) == 0)
         {
-            NinjaSlayerTransitionLoadSmoothing.EndAnimationAndCollectDeferred();
+            NinjaSlayerTransitionLoadSmoothing.EndAnimation(SessionId);
         }
     }
 
@@ -96,10 +105,23 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         }
 
         var cleanupFailures = new List<Exception>();
+        TransitionPerformanceTrace? performanceTrace = _performanceTrace;
+        TransitionGcCounts endingGcCounts = TransitionGcCounts.Capture();
+        TransitionGcFlushResult gcFlush = TransitionGcFlushResult.None;
         CaptureCleanup(cleanupFailures, _lifetime.Cancel);
         CaptureCleanup(cleanupFailures, _view.StopPlayback);
-        CaptureCleanup(cleanupFailures, EndLoadSmoothing);
+        CaptureCleanup(cleanupFailures, EndAnimationSmoothing);
         CaptureCleanup(cleanupFailures, () => RestoreTransition(forceRelease));
+        if (performanceTrace is not null)
+        {
+            CaptureCleanup(cleanupFailures, () => _view.DetachPerformanceTrace(performanceTrace));
+        }
+
+        CaptureCleanup(cleanupFailures, () =>
+        {
+            endingGcCounts = TransitionGcCounts.Capture();
+            gcFlush = CompleteLoadSmoothing();
+        });
 
         if (cleanupFailures.Count > 0)
         {
@@ -111,6 +133,18 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
             Entry.Logger.Error(
                 $"NinjaSlayer transition session {SessionId} cleanup failed: " +
                 string.Join(System.Environment.NewLine, cleanupFailures));
+        }
+
+        if (performanceTrace is not null)
+        {
+            TransitionPerformanceSnapshot snapshot = performanceTrace.Complete(status, endingGcCounts, gcFlush);
+            Entry.Logger.Info(snapshot.ToLogMessage());
+            if (gcFlush.Attempted && !gcFlush.Succeeded)
+            {
+                Entry.Logger.Warn(
+                    $"NinjaSlayer transition session {SessionId} could not request optimized non-blocking GC " +
+                    $"({gcFlush.ErrorType ?? "unknown"}); natural GC will reclaim the deferred assets.");
+            }
         }
 
         var result = new TransitionCompletionResult(SessionId, status, diagnostic);
@@ -185,6 +219,17 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     private void RestoreTransition(bool forceRelease)
     {
         _view.Restore(forceRelease);
+    }
+
+    private TransitionGcFlushResult CompleteLoadSmoothing()
+    {
+        if (Volatile.Read(ref _loadSmoothingStarted) == 0
+            || Interlocked.CompareExchange(ref _loadSmoothingCompleted, 1, 0) != 0)
+        {
+            return TransitionGcFlushResult.None;
+        }
+
+        return NinjaSlayerTransitionLoadSmoothing.CompleteSession(SessionId);
     }
 
     private static void CaptureCleanup(ICollection<Exception> failures, Action cleanup)
