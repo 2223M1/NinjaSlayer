@@ -22,6 +22,7 @@ const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
 const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
 const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
 const quickReleasePath = join(root, 'tools', 'release', 'Publish-QuickRelease.ps1');
+const oneClickReleasePath = join(root, 'tools', 'release', 'Invoke-OneClickRelease.ps1');
 const ephemeralRunnerPath = join(
   root,
   'tools',
@@ -76,6 +77,7 @@ const packagingTargets = readFileSync(packagingTargetsPath, 'utf8');
 const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
 const workshopWorkflow = readFileSync(workshopWorkflowPath, 'utf8');
 const quickRelease = readFileSync(quickReleasePath, 'utf8');
+const oneClickRelease = readFileSync(oneClickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
 for (const source of [releaseWorkflow, workshopWorkflow]) {
   assert(
@@ -103,6 +105,15 @@ for (const safeguard of [
   "Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer')",
 ]) {
   assert(quickRelease.includes(safeguard), `Quick release must retain safeguard: ${safeguard}`);
+}
+for (const operation of [
+  "@('add', '--all')",
+  "@('commit', '-m', \"Prepare NinjaSlayer v$version\")",
+  "@('push', '-u', 'origin', $releaseBranch)",
+  "@('pr', 'merge', $pullRequestUrl, '--admin', '--merge', '--delete-branch')",
+  "@('pull', '--ff-only', 'origin', 'main')",
+]) {
+  assert(oneClickRelease.includes(operation), `One-click release must retain operation: ${operation}`);
 }
 assert(releaseWorkflow.includes('if (-not $file.IsReadOnly)'));
 assert(releaseWorkflow.includes('must remain outside the repository workspace'));

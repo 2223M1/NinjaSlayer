@@ -17,6 +17,21 @@ internal static class NinjaSlayerDeathClassifier
     {
         DamageReceivedEntry? fatalEntry = FindFatalEntry(creature);
         var consumed = ConsumedEntries.GetOrCreateValue(creature);
+        IncomingCaptures.TryGetValue(creature, out IncomingDamageCapture? capture);
+        if (capture != null && IsValidEnemyDealer(creature, capture.Dealer))
+        {
+            if (fatalEntry != null)
+            {
+                consumed.Entry = fatalEntry;
+            }
+
+            return new NinjaSlayerDeathContext(
+                NinjaSlayerDeathKind.EnemyKill,
+                fatalEntry,
+                capture.Dealer,
+                capture.VfxBaselineChildIds);
+        }
+
         if (fatalEntry == null || ReferenceEquals(consumed.Entry, fatalEntry))
         {
             return new NinjaSlayerDeathContext(
@@ -28,12 +43,9 @@ internal static class NinjaSlayerDeathClassifier
 
         consumed.Entry = fatalEntry;
         Creature? dealer = fatalEntry.Dealer;
-        bool isEnemyKill = dealer != null
-            && dealer != creature
-            && dealer.Side != creature.Side
-            && NCombatRoom.Instance?.GetCreatureNode(dealer) != null;
+        bool isEnemyKill = IsValidEnemyDealer(creature, dealer);
         IReadOnlySet<ulong> baseline = isEnemyKill
-            && IncomingCaptures.TryGetValue(creature, out IncomingDamageCapture? capture)
+            && capture != null
             && capture.Dealer == dealer
                 ? capture.VfxBaselineChildIds
                 : new HashSet<ulong>();
@@ -71,14 +83,17 @@ internal static class NinjaSlayerDeathClassifier
             return null;
         }
 
+        var previousCaptures = new Dictionary<Creature, IncomingDamageCapture?>();
         var capture = new IncomingDamageCapture(
             dealer,
             room.CombatVfxContainer.GetChildren()
                 .Select(child => child.GetInstanceId())
                 .ToHashSet(),
-            ninjaSlayerTargets);
+            ninjaSlayerTargets,
+            previousCaptures);
         foreach (Creature target in ninjaSlayerTargets)
         {
+            previousCaptures[target] = IncomingCaptures.GetValueOrDefault(target);
             IncomingCaptures[target] = capture;
         }
 
@@ -100,26 +115,49 @@ internal static class NinjaSlayerDeathClassifier
         }
         finally
         {
+            capture.IsCompleted = true;
             foreach (Creature target in capture.Targets)
             {
                 if (IncomingCaptures.TryGetValue(target, out IncomingDamageCapture? active)
                     && ReferenceEquals(active, capture))
                 {
-                    IncomingCaptures.Remove(target);
+                    IncomingDamageCapture? previous = capture.PreviousCaptures.GetValueOrDefault(target);
+                    if (previous is { IsCompleted: false })
+                    {
+                        IncomingCaptures[target] = previous;
+                    }
+                    else
+                    {
+                        IncomingCaptures.Remove(target);
+                    }
                 }
             }
         }
     }
+
+    private static bool IsValidEnemyDealer(Creature creature, Creature? dealer) =>
+        dealer != null
+        && dealer != creature
+        && dealer.Side != creature.Side
+        && NCombatRoom.Instance?.GetCreatureNode(dealer) != null;
 
     private static DamageReceivedEntry? FindFatalEntry(Creature creature) =>
         CombatManager.Instance?.History.Entries
             .OfType<DamageReceivedEntry>()
             .LastOrDefault(entry => entry.Receiver == creature && entry.Result.WasTargetKilled);
 
-    private sealed record IncomingDamageCapture(
-        Creature Dealer,
-        IReadOnlySet<ulong> VfxBaselineChildIds,
-        IReadOnlyList<Creature> Targets);
+    private sealed class IncomingDamageCapture(
+        Creature dealer,
+        IReadOnlySet<ulong> vfxBaselineChildIds,
+        IReadOnlyList<Creature> targets,
+        IReadOnlyDictionary<Creature, IncomingDamageCapture?> previousCaptures)
+    {
+        public Creature Dealer { get; } = dealer;
+        public IReadOnlySet<ulong> VfxBaselineChildIds { get; } = vfxBaselineChildIds;
+        public IReadOnlyList<Creature> Targets { get; } = targets;
+        public IReadOnlyDictionary<Creature, IncomingDamageCapture?> PreviousCaptures { get; } = previousCaptures;
+        public bool IsCompleted { get; set; }
+    }
 
     private sealed class ConsumedFatalDamage
     {

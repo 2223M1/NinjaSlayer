@@ -1,5 +1,7 @@
 using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models.Events;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
@@ -50,5 +52,33 @@ internal sealed class ArchitectExecutionStartPatch : IPatchMethod
         {
             ArchitectExecutionCinematic.TryStart(__instance);
         }
+    }
+}
+
+internal sealed class ArchitectDeathAnimationPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_architect_death_animation";
+    public static string Description => "Keep the Architect alive visually for its synchronized ragdoll death.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NCreature), nameof(NCreature.StartDeathAnim), [typeof(bool)])
+    ];
+
+    public static bool Prefix(NCreature __instance, bool shouldRemove, ref float __result)
+    {
+        if (!ArchitectDeathPresentationSession.TryConsume(
+                __instance,
+                out ArchitectDeathPresentationSession? session))
+        {
+            return true;
+        }
+
+        Task deathTask = session!.StartDeathAnimation(shouldRemove);
+        __instance.DeathAnimationTask = deathTask;
+        TaskHelper.RunSafely(deathTask);
+        __result = ArchitectDeathPresentationSession.DurationSeconds;
+        return false;
     }
 }

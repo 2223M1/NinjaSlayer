@@ -54,7 +54,12 @@ if ($SkipGitHub -and $SkipWorkshop) {
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 Set-Location $repositoryRoot
 
-$releaseNotePath = [IO.Path]::GetFullPath((Join-Path $repositoryRoot $ReleaseNoteFile))
+$releaseNotePath = if ([IO.Path]::IsPathRooted($ReleaseNoteFile)) {
+    [IO.Path]::GetFullPath($ReleaseNoteFile)
+}
+else {
+    [IO.Path]::GetFullPath((Join-Path $repositoryRoot $ReleaseNoteFile))
+}
 if (-not (Test-Path -LiteralPath $releaseNotePath -PathType Leaf)) {
     throw "Release note file is missing: $releaseNotePath"
 }
@@ -165,7 +170,14 @@ if (-not $SkipGitHub) {
 
 if (-not $SkipWorkshop) {
     if ([string]::IsNullOrWhiteSpace($WorkshopUploadRoot)) {
-        $WorkshopUploadRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..\上传mod'))
+        $workspaceRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..'))
+        $uploadRoots = @(Get-ChildItem -LiteralPath $workspaceRoot -Directory | Where-Object {
+            Test-Path -LiteralPath (Join-Path $_.FullName 'ModUploader.exe') -PathType Leaf
+        })
+        if ($uploadRoots.Count -ne 1) {
+            throw 'Unable to identify one Workshop upload directory. Pass -WorkshopUploadRoot explicitly.'
+        }
+        $WorkshopUploadRoot = $uploadRoots[0].FullName
     }
     else {
         $WorkshopUploadRoot = [IO.Path]::GetFullPath($WorkshopUploadRoot)
@@ -179,7 +191,12 @@ if (-not $SkipWorkshop) {
     }
 
     [IO.Directory]::CreateDirectory($workshopDirectory) | Out-Null
-    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'Workshop\workshop.json') -Destination (Join-Path $workshopDirectory 'workshop.json') -Force
+    $workshopMetadata = Get-Content -LiteralPath (Join-Path $repositoryRoot 'Workshop\workshop.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $workshopMetadata.changeNote = $releaseNote
+    $workshopMetadataPath = Join-Path $releaseDirectory "workshop-$tag.json"
+    $workshopMetadataJson = $workshopMetadata | ConvertTo-Json -Depth 10
+    [IO.File]::WriteAllText($workshopMetadataPath, $workshopMetadataJson, [Text.UTF8Encoding]::new($false))
+    Copy-Item -LiteralPath $workshopMetadataPath -Destination (Join-Path $workshopDirectory 'workshop.json') -Force
     Invoke-Native -Command dotnet -Arguments @('msbuild', '.\NinjaSlayer.csproj', '-t:StageWorkshop', '-p:Configuration=Release', "-p:NinjaSlayerVersion=$Version", "-p:WorkshopUploadRoot=$WorkshopUploadRoot", "-p:WorkshopContentDir=$workshopContentDirectory", '-v:minimal')
     Push-Location $WorkshopUploadRoot
     try {

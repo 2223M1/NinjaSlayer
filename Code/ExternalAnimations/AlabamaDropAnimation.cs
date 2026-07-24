@@ -24,7 +24,6 @@ public static class AlabamaDropAnimation
     private const float RiseDistance = 900f;
     private const float ReturnHopHeight = 70f;
     private const float TumbleAngleCoefficient = 1800f;
-    private const float MinScaleRatio = 0.18f;
     private const float LandingSquashScaleX = 1.2f;
     private const float LandingSquashScaleY = 0.55f;
     private const float LandingSquashHoldDuration = 0.1f;
@@ -102,8 +101,10 @@ public static class AlabamaDropAnimation
 
         targetBody = targetRig.Body;
         targetBodyProcessMode = targetRig.Body.ProcessMode;
-        var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
+        var ownerRestoreSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
+        SoarSpinAnimation.SuspendForCinematic(owner);
+        var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         BodyPivotCompensation ownerPivot = BodyPivotCompensation.Capture(ownerRig);
         BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
         Vector2 ownerStartPos = ownerRig.CreatureNode.Position;
@@ -171,14 +172,6 @@ public static class AlabamaDropAnimation
                 PlayEntangledFall(
                     ownerRig,
                     targetRig,
-                    ownerSnapshot,
-                    targetSnapshot,
-                    ownerLandingPos,
-                    targetStartPos,
-                    ownerInvertedRotation,
-                    targetInvertedRotation,
-                    targetPivot,
-                    targetLandingScale,
                     FallDuration));
 
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
@@ -213,7 +206,7 @@ public static class AlabamaDropAnimation
             }
 
             targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
-            ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
+            ownerRestoreSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
         }
     }
 
@@ -321,64 +314,53 @@ public static class AlabamaDropAnimation
     private static async Task PlayEntangledFall(
         CreatureRig ownerRig,
         CreatureRig targetRig,
-        CreatureVisualSnapshot ownerSnapshot,
-        CreatureVisualSnapshot targetSnapshot,
-        Vector2 ownerLandingPos,
-        Vector2 targetLandingPos,
-        float ownerInvertedRotation,
-        float targetInvertedRotation,
-        BodyPivotCompensation targetPivot,
-        Vector2 targetLandingScale,
         float duration)
     {
-        float centerX = (ownerLandingPos.X + targetLandingPos.X) * 0.5f;
-        float ownerOffsetX = ownerLandingPos.X - centerX;
-        float targetOffsetX = targetLandingPos.X - centerX;
+        Vector2 ownerCenter = ResolveOwnerSpinCenter(ownerRig);
+        Vector2 targetCenter = targetRig.Visuals.Bounds.GetGlobalRect().GetCenter();
+        float sharedAxisX = (ownerCenter.X + targetCenter.X) * 0.5f;
+        var ownerProjection = VerticalAxisSpinProjection.CaptureCurrent(
+            ownerRig.Body,
+            sharedAxisX,
+            ownerCenter);
+        var targetProjection = VerticalAxisSpinProjection.CaptureCurrent(
+            targetRig.Body,
+            sharedAxisX,
+            targetCenter);
 
-        var tween = ownerRig.CreatureNode.CreateTween();
-        tween.TweenMethod(
-            Callable.From<float>(progress =>
-            {
-                float radians = Mathf.DegToRad(GetTumbleAngleDegrees(progress));
-                float orbitRatio = Mathf.Cos(radians);
-                float scaleRatio = ClampScaleRatio(orbitRatio);
+        try
+        {
+            await SoarSpinAnimation.PlayFiniteVerticalAxisProjection(
+                ownerRig.Creature,
+                duration,
+                progress =>
+                {
+                    float degrees = GetTumbleAngleDegrees(progress);
+                    ownerProjection.ApplyDegrees(degrees);
+                    targetProjection.ApplyDegrees(degrees);
+                });
 
-                ownerRig.CreatureNode.Position = new Vector2(centerX + ownerOffsetX * orbitRatio, ownerLandingPos.Y);
-                targetRig.CreatureNode.Position = new Vector2(centerX + targetOffsetX * orbitRatio, targetLandingPos.Y);
+            ownerProjection.ApplyDegrees(TotalTumbleDegrees);
+            targetProjection.ApplyDegrees(TotalTumbleDegrees);
+        }
+        finally
+        {
+            ownerProjection.Restore();
+            targetProjection.Restore();
+        }
+    }
 
-                ownerRig.Body.RotationDegrees = ownerInvertedRotation;
-                ownerRig.Body.Scale = new Vector2(ownerSnapshot.BodyScale.X * scaleRatio, ownerSnapshot.BodyScale.Y);
-                targetPivot.Apply(
-                    targetInvertedRotation,
-                    new Vector2(targetSnapshot.BodyScale.X * scaleRatio, targetSnapshot.BodyScale.Y));
-            }),
-            0f,
-            1f,
-            duration)
-            .SetTrans(Tween.TransitionType.Linear);
-
-        await ownerRig.CreatureNode.ToSignal(tween, Tween.SignalName.Finished);
-
-        ownerRig.CreatureNode.Position = ownerLandingPos;
-        targetRig.CreatureNode.Position = targetLandingPos;
-        ownerRig.Body.Scale = ownerSnapshot.BodyScale;
-        targetPivot.Apply(targetInvertedRotation, targetLandingScale);
+    private static Vector2 ResolveOwnerSpinCenter(CreatureRig ownerRig)
+    {
+        Node2D? focus = NinjaSlayerVisualRig.GetCinematicFocus(ownerRig.Visuals);
+        return focus?.GetGlobalTransformWithCanvas().Origin
+            ?? ownerRig.Visuals.Bounds.GetGlobalRect().GetCenter();
     }
 
     internal static float GetTumbleAngleDegrees(float progress)
     {
         float p = Mathf.Clamp(progress, 0f, 1f);
         return TumbleAngleCoefficient * (p + 1.2f * p * p + 0.2f * p * p * p);
-    }
-
-    private static float ClampScaleRatio(float scaleRatio)
-    {
-        if (Mathf.Abs(scaleRatio) >= MinScaleRatio)
-        {
-            return scaleRatio;
-        }
-
-        return scaleRatio < 0f ? -MinScaleRatio : MinScaleRatio;
     }
 
     private static async Task TweenBodyScales(
