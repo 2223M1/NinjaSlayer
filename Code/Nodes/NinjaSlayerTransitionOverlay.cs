@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
@@ -16,10 +17,16 @@ public partial class NinjaSlayerTransitionOverlay : Control
     private const float PlaybackTimeoutPaddingSeconds = 1f;
 
     private VideoStreamPlayer? videoPlayer;
+    private TransitionPerformanceTrace? performanceTrace;
 
     public override void _Ready()
     {
         EnsureInitialized();
+    }
+
+    public override void _Process(double delta)
+    {
+        performanceTrace?.RecordFrame(delta);
     }
 
     private void EnsureInitialized()
@@ -28,6 +35,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
         MouseFilter = MouseFilterEnum.Ignore;
         ZAsRelative = false;
         ZIndex = 100;
+        SetProcess(true);
 
         if (videoPlayer != null)
         {
@@ -64,16 +72,44 @@ public partial class NinjaSlayerTransitionOverlay : Control
         }
 
         using var hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
+        TransitionPerformanceTrace? trace = performanceTrace;
         try
         {
-            videoPlayer.Stream = NinjaSlayerTransitionVideo.GetStream();
+            long streamStartedAt = Stopwatch.GetTimestamp();
+            VideoStream stream;
+            try
+            {
+                stream = NinjaSlayerTransitionVideo.GetStream();
+            }
+            finally
+            {
+                trace?.RecordStreamAcquire(Stopwatch.GetElapsedTime(streamStartedAt));
+            }
+            videoPlayer.Stream = stream;
             Visible = true;
-            videoPlayer.Play();
+
+            long playStartedAt = Stopwatch.GetTimestamp();
+            try
+            {
+                videoPlayer.Play();
+            }
+            finally
+            {
+                trace?.RecordPlayCall(Stopwatch.GetElapsedTime(playStartedAt));
+            }
+            trace?.MarkVideoStarted();
+
             double elapsed = 0.0;
+            bool firstProcessFrame = true;
             float timeout = Math.Max(duration, 0f) + PlaybackTimeoutPaddingSeconds;
             while (videoPlayer.IsPlaying() && elapsed < timeout)
             {
                 elapsed += await this.AwaitProcessFrame(cancelToken);
+                if (firstProcessFrame)
+                {
+                    trace?.RecordFirstPostPlayFrame();
+                    firstProcessFrame = false;
+                }
             }
 
             if (videoPlayer.IsPlaying())
@@ -83,6 +119,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
         }
         finally
         {
+            trace?.MarkVideoStopped();
             videoPlayer.Stop();
             Visible = false;
         }
@@ -92,9 +129,24 @@ public partial class NinjaSlayerTransitionOverlay : Control
     {
         if (videoPlayer != null && GodotObject.IsInstanceValid(videoPlayer))
         {
+            performanceTrace?.MarkVideoStopped();
             videoPlayer.Stop();
         }
         Visible = false;
+    }
+
+    internal void AttachPerformanceTrace(TransitionPerformanceTrace trace)
+    {
+        ArgumentNullException.ThrowIfNull(trace);
+        performanceTrace = trace;
+    }
+
+    internal void DetachPerformanceTrace(TransitionPerformanceTrace trace)
+    {
+        if (ReferenceEquals(performanceTrace, trace))
+        {
+            performanceTrace = null;
+        }
     }
 
     public static NinjaSlayerTransitionOverlay GetOrCreate(NTransition transition)

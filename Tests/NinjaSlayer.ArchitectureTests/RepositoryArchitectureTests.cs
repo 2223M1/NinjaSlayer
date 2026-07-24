@@ -800,6 +800,26 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void TransitionSmoothingPreservesMediaTimingAndDefersOnlyItsGcFlush()
+    {
+        string audio = SourceText("Content/NinjaSlayerAudio.cs");
+        string smoothing = SourceText("Code/Transition/NinjaSlayerTransitionLoadSmoothing.cs");
+        string session = SourceText("Code/Transition/NinjaSlayerTransitionSession.cs");
+        string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
+
+        Assert.Contains("TransitionVisualSeconds = 2f", audio, StringComparison.Ordinal);
+        Assert.Contains("EmbarkLoadStartDelaySeconds = 0.2f", audio, StringComparison.Ordinal);
+        Assert.Contains("SaveLoadStartDelaySeconds = 0.6f", audio, StringComparison.Ordinal);
+        Assert.Contains("GCCollectionMode.Optimized", smoothing, StringComparison.Ordinal);
+        Assert.Contains("blocking: false", smoothing, StringComparison.Ordinal);
+        Assert.Contains("TransitionGcRequestExecutor.Execute", smoothing, StringComparison.Ordinal);
+        Assert.DoesNotContain("EndAnimationAndCollectDeferred", smoothing, StringComparison.Ordinal);
+        Assert.Contains("EndAnimationSmoothing", session, StringComparison.Ordinal);
+        Assert.Contains("CompleteLoadSmoothing", session, StringComparison.Ordinal);
+        Assert.Contains("RecordFrame(delta)", overlay, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void HighFrequencyContextsUseOwnedScopes()
     {
         string karatePatch = SourceText("Code/Patches/KarateHealthBarPreviewPatch.cs");

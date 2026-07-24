@@ -33,12 +33,16 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         }
 
         bool wasPending = NinjaSlayerTransitionGate.ConsumePendingRequest();
+        TransitionInvocationKind invocationKind = wasPending
+            ? TransitionInvocationKind.Embark
+            : TransitionInvocationKind.SaveLoad;
 
         // Start the transition video in the background and return immediately so the caller's
         // run/save asset loading overlaps the animation instead of producing a black hold
         // afterwards. The reveal patches (RoomFadeIn/FadeIn) await this task before showing.
         if (!NinjaSlayerTransitionGate.TryStartSession(
                 __instance,
+                invocationKind,
                 cancelToken ?? CancellationToken.None,
                 BeginNinjaSlayerTransition,
                 out _))
@@ -67,11 +71,11 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
         // Cover the screen synchronously before returning so the character select / menu never
         // flashes through while the video decoder produces its first frame.
-        NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
         if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
         {
             session.BeginLoadSmoothing();
         }
+        NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
         return PlayOverlayAsync(session, overlay, cancelToken);
     }
 
@@ -92,7 +96,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
                 session.HoldBackdrop();
             }
 
-            session.EndLoadSmoothing();
+            session.EndAnimationSmoothing();
         }
     }
 }

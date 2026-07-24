@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Transition;
@@ -7,66 +6,94 @@ public static class NinjaSlayerTransitionLoadSmoothing
 {
     internal const int FinalizeBatchSize = 1;
 
-    private static long animationStartedAt;
-    private static int finalizedResourceCount;
-    private static int finalizeBatchCount;
-    private static double longestFinalizeBatchMilliseconds;
-    private static int deferredCollectCount;
+    private static readonly object SyncRoot = new();
+    private static readonly TransitionGcDeferralState GcDeferral = new();
+    private static long animationSessionId;
+    private static TransitionPerformanceTrace? activeTrace;
 
-    internal static bool IsAnimationPlaying { get; private set; }
+    internal static bool IsAnimationPlaying => Volatile.Read(ref animationSessionId) != 0;
 
-    internal static void BeginAnimation()
+    internal static TransitionPerformanceTrace BeginSession(long sessionId, TransitionInvocationKind kind)
     {
-        animationStartedAt = Stopwatch.GetTimestamp();
-        finalizedResourceCount = 0;
-        finalizeBatchCount = 0;
-        longestFinalizeBatchMilliseconds = 0;
-        deferredCollectCount = 0;
-        IsAnimationPlaying = true;
+        var trace = new TransitionPerformanceTrace(sessionId, kind);
+        int carriedRequestCount = GcDeferral.Begin(sessionId);
+        lock (SyncRoot)
+        {
+            activeTrace = trace;
+            Volatile.Write(ref animationSessionId, sessionId);
+        }
+
+        if (carriedRequestCount > 0)
+        {
+            Entry.Logger.Warn(
+                $"NinjaSlayer transition session {sessionId} inherited {carriedRequestCount} deferred GC request(s) " +
+                "from an incompletely released session.");
+        }
+
+        return trace;
     }
 
     internal static void RecordFinalizeBatch(int count, TimeSpan elapsed)
     {
-        finalizedResourceCount += count;
-        if (count > 0)
+        long sessionId = Volatile.Read(ref animationSessionId);
+        if (sessionId != 0)
         {
-            finalizeBatchCount++;
-            longestFinalizeBatchMilliseconds = Math.Max(
-                longestFinalizeBatchMilliseconds,
-                elapsed.TotalMilliseconds);
+            GetActiveTrace(sessionId)?.RecordFinalizeBatch(count, elapsed);
         }
     }
 
     public static void CollectWhenSafe()
     {
-        if (IsAnimationPlaying)
+        if (GcDeferral.TryDefer(out long sessionId, out _))
         {
-            deferredCollectCount++;
+            GetActiveTrace(sessionId)?.RecordDeferredGc();
             return;
         }
 
         GC.Collect();
     }
 
-    internal static void EndAnimationAndCollectDeferred()
+    internal static void EndAnimation(long sessionId)
     {
-        IsAnimationPlaying = false;
+        Interlocked.CompareExchange(ref animationSessionId, 0, sessionId);
+    }
 
-        var elapsed = animationStartedAt == 0
-            ? TimeSpan.Zero
-            : Stopwatch.GetElapsedTime(animationStartedAt);
-        var collectionsToMerge = deferredCollectCount;
-        deferredCollectCount = 0;
-        animationStartedAt = 0;
-
-        Entry.Logger.Info(
-            $"NinjaSlayer transition load smoothing finished: duration={elapsed.TotalMilliseconds:F0}ms, " +
-            $"finalized={finalizedResourceCount}, batches={finalizeBatchCount}, " +
-            $"longest_batch={longestFinalizeBatchMilliseconds:F2}ms, deferred_gc={collectionsToMerge}.");
-
-        if (collectionsToMerge > 0)
+    internal static TransitionGcFlushResult CompleteSession(long sessionId)
+    {
+        EndAnimation(sessionId);
+        TransitionGcDeferralCompletion completion = GcDeferral.Complete(sessionId);
+        if (!completion.IsCurrentSession)
         {
-            GC.Collect();
+            return TransitionGcFlushResult.None;
         }
+
+        lock (SyncRoot)
+        {
+            if (activeTrace?.SessionId == sessionId)
+            {
+                activeTrace = null;
+            }
+        }
+
+        return TransitionGcRequestExecutor.Execute(
+            completion.DeferredRequestCount,
+            RequestOptimizedNonBlockingCollection);
+    }
+
+    private static TransitionPerformanceTrace? GetActiveTrace(long sessionId)
+    {
+        lock (SyncRoot)
+        {
+            return activeTrace?.SessionId == sessionId ? activeTrace : null;
+        }
+    }
+
+    private static void RequestOptimizedNonBlockingCollection()
+    {
+        GC.Collect(
+            GC.MaxGeneration,
+            GCCollectionMode.Optimized,
+            blocking: false,
+            compacting: false);
     }
 }

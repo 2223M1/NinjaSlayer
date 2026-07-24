@@ -9,9 +9,10 @@ internal interface ITransitionViewAdapter
 {
     NTransition Transition { get; }
     void PrepareInstant();
-    NinjaSlayerTransitionOverlay PrepareAnimated();
+    NinjaSlayerTransitionOverlay PrepareAnimated(TransitionPerformanceTrace? performanceTrace);
     void HoldBackdrop();
     void StopPlayback();
+    void DetachPerformanceTrace(TransitionPerformanceTrace performanceTrace);
     void Restore(bool forceRelease);
 }
 
@@ -30,7 +31,7 @@ internal sealed class TransitionViewAdapter(NTransition transition) : ITransitio
         Transition.Visible = false;
     }
 
-    public NinjaSlayerTransitionOverlay PrepareAnimated()
+    public NinjaSlayerTransitionOverlay PrepareAnimated(TransitionPerformanceTrace? performanceTrace)
     {
         EnsureValid();
         GameCompatibility.Transition.KillTween(Transition);
@@ -45,6 +46,10 @@ internal sealed class TransitionViewAdapter(NTransition transition) : ITransitio
         SetBackdrop(backdrop, opaque: true);
 
         _overlay = NinjaSlayerTransitionOverlay.GetOrCreate(Transition);
+        if (performanceTrace is not null)
+        {
+            _overlay.AttachPerformanceTrace(performanceTrace);
+        }
         return _overlay;
     }
 
@@ -61,6 +66,14 @@ internal sealed class TransitionViewAdapter(NTransition transition) : ITransitio
         if (_overlay is not null && GodotObject.IsInstanceValid(_overlay))
         {
             _overlay.StopPlayback();
+        }
+    }
+
+    public void DetachPerformanceTrace(TransitionPerformanceTrace performanceTrace)
+    {
+        if (_overlay is not null && GodotObject.IsInstanceValid(_overlay))
+        {
+            _overlay.DetachPerformanceTrace(performanceTrace);
         }
     }
 

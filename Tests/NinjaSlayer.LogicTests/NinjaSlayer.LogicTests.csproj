@@ -46,6 +46,8 @@
     <Compile Include="..\..\Code\Prepared\PreparedDrawPolicy.cs" Link="PreparedDrawPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\NextDiscardProtectionPolicy.cs" Link="NextDiscardProtectionPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionPerformanceTrace.cs" Link="TransitionPerformanceTrace.cs" />
     <Compile Include="..\..\Code\Telemetry\NinjaSlayerTelemetryIdentityTracker.cs" Link="NinjaSlayerTelemetryIdentityTracker.cs" />
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />
     <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
