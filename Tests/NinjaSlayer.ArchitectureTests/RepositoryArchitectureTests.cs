@@ -820,6 +820,26 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void TransitionDecoderPrewarmIsSilentAndYieldsBeforeFormalPlayback()
+    {
+        string prewarmPlayer = SourceText("Code/Nodes/NinjaSlayerTransitionPrewarmPlayer.cs");
+        string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
+        string preloadPatch = SourceText("Code/Patches/NinjaSlayerTransitionPreloadPatch.cs");
+
+        Assert.Contains("Volume = 0f", prewarmPlayer, StringComparison.Ordinal);
+        Assert.Contains("SelfModulate = Colors.Transparent", prewarmPlayer, StringComparison.Ordinal);
+        Assert.Contains("Stop();", prewarmPlayer, StringComparison.Ordinal);
+        Assert.Contains("Stream = null", prewarmPlayer, StringComparison.Ordinal);
+        Assert.Contains("characterModel is INinjaSlayerCharacter", preloadPatch, StringComparison.Ordinal);
+
+        int takeover = overlay.IndexOf(
+            "NinjaSlayerTransitionVideoPrewarmer.PrepareForPlayback()",
+            StringComparison.Ordinal);
+        int formalPlay = overlay.IndexOf("videoPlayer.Play()", StringComparison.Ordinal);
+        Assert.True(takeover >= 0 && takeover < formalPlay);
+    }
+
+    [Fact]
     public void HighFrequencyContextsUseOwnedScopes()
     {
         string karatePatch = SourceText("Code/Patches/KarateHealthBarPreviewPatch.cs");
