@@ -63,6 +63,10 @@ internal static class BossGreetingActionCatalog
                 "event:/sfx/enemy/enemy_attacks/test_subject/test_subject_bite",
                 0.25f),
             Aeonglass => new BossGreetingActionSpec("Cast", null, 0.4f),
+            HunterKiller => new BossGreetingActionSpec(
+                "Hit",
+                "event:/sfx/enemy/enemy_attacks/hunter_killer/hunter_killer_hurt",
+                0.4f),
             _ => new BossGreetingActionSpec(null, null, 0.8f)
         };
     }

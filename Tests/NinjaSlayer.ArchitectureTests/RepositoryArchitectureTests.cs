@@ -934,7 +934,6 @@ public sealed class RepositoryArchitectureTests
         foreach (string key in new[]
                  {
                      "NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER",
-                     "NINJA_SLAYER_FEEDBACK_SEND_BUTTON",
                      "NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER",
                      "NINJA_SLAYER_FEEDBACK_CONFIRM_BODY",
                      "NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL",
@@ -944,6 +943,10 @@ public sealed class RepositoryArchitectureTests
             Assert.Contains(key, zhs, StringComparison.Ordinal);
             Assert.Contains(key, eng, StringComparison.Ordinal);
         }
+
+        Assert.DoesNotContain("NINJA_SLAYER_FEEDBACK_SEND_BUTTON", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("NINJA_SLAYER_FEEDBACK_SEND_BUTTON", zhs, StringComparison.Ordinal);
+        Assert.DoesNotContain("NINJA_SLAYER_FEEDBACK_SEND_BUTTON", eng, StringComparison.Ordinal);
     }
 
     [Fact]

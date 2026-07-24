@@ -84,7 +84,8 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
     private const string LocTable = "settings_ui";
 
     public static string PatchId => "ninjaslayer_feedback_form_labels";
-    public static string Description => "Label NinjaSlayer F2 feedback with its actual recipient.";
+    public static string Description =>
+        "Mark NinjaSlayer F2 feedback with a mod-author placeholder while keeping the vanilla send button.";
     public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() => [new(typeof(NSendFeedbackScreen), nameof(NSendFeedbackScreen.Open))];
 
@@ -97,16 +98,18 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
             return;
         }
 
-        if (!TryText("NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER", out string placeholder)
-            || !TryText("NINJA_SLAYER_FEEDBACK_SEND_BUTTON", out string sendButton))
+        // Placeholder identifies the recipient; keep vanilla "Send!" / "发送！" on the button.
+        if (TryText("NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER", out string placeholder))
+        {
+            __instance.GetNode<NMegaTextEdit>("%DescriptionInput").PlaceholderText = placeholder;
+        }
+        else
         {
             Entry.Logger.Warn(
-                "NinjaSlayer feedback labels are missing from settings_ui; keeping the vanilla feedback form text.");
-            return;
+                "NinjaSlayer feedback placeholder is missing from settings_ui; keeping the vanilla feedback form text.");
         }
 
-        __instance.GetNode<NMegaTextEdit>("%DescriptionInput").PlaceholderText = placeholder;
-        __instance.GetNode<MegaLabel>("%SendButton/Label").SetTextAutoSize(sendButton);
+        NinjaSlayerFeedbackPresentation.Apply(__instance);
     }
 
     private static bool TryText(string key, out string text)
@@ -243,6 +246,7 @@ public sealed class NinjaSlayerFeedbackClosePatch : IPatchMethod
             return;
         }
 
+        NinjaSlayerFeedbackPresentation.Restore(__instance);
         __instance.Relocalize();
     }
 }

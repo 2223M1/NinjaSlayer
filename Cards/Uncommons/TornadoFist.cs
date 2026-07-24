@@ -19,7 +19,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
 
     protected override string AttackerAnimTrigger => TornadoFistSpinAnimation.TriggerName;
-    protected override float XAttackHitDelay => 0f;
+    protected override float XAttackHitDelay => TornadoFistSpinAnimation.TurnSeconds;
     protected override float XAttackAudioHitDuration => TornadoFistSpinAnimation.TurnSeconds;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [

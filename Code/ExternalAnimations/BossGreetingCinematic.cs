@@ -395,6 +395,12 @@ public static class BossGreetingCinematic
             return state.Enemies.FirstOrDefault();
         }
 
+        Creature? hunterKiller = state.Enemies.FirstOrDefault(creature => creature.Monster is HunterKiller);
+        if (hunterKiller != null)
+        {
+            return hunterKiller;
+        }
+
         Creature? kinPriest = state.Enemies.FirstOrDefault(creature => creature.Monster is KinPriest);
         return kinPriest ?? state.Enemies.FirstOrDefault(creature => creature.Monster is
             CeremonialBeast or Vantom or LagavulinMatriarch or WaterfallGiant or SoulFysh
@@ -437,10 +443,16 @@ public static class BossGreetingCinematic
         return ninjaSlayers[index];
     }
 
+    private static bool IsGreetingEligible(ICombatState combatState, CombatRoom room) =>
+        room.RoomType == RoomType.Boss
+        || combatState.Encounter is HunterKillerNormal;
+
     private static bool TryGetRoomKey(ICombatState combatState, out string roomKey)
     {
         IRunState runState = combatState.RunState;
-        if (runState.CurrentRoom is not CombatRoom room || room.RoomType != RoomType.Boss || combatState.Encounter == null)
+        if (runState.CurrentRoom is not CombatRoom room
+            || combatState.Encounter == null
+            || !IsGreetingEligible(combatState, room))
         {
             roomKey = string.Empty;
             return false;
