@@ -65,6 +65,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
 
     public async Task PlayAsync(float duration, CancellationToken cancelToken = default)
     {
+        NinjaSlayerTransitionVideoPrewarmer.PrepareForPlayback();
         EnsureInitialized();
         if (videoPlayer == null)
         {

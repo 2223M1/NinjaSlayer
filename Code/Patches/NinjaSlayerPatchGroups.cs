@@ -12,6 +12,7 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
+        patcher.RegisterPatch<NinjaSlayerOutsideCombatDeathFeedbackPatch>();
         patcher.RegisterPatch<BossDeathPresentationPatch>();
         patcher.RegisterPatch<BossDeathFadeStartPatch>();
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
@@ -91,6 +92,7 @@ internal sealed class CinematicInfrastructurePatchGroup : IModPatches
         patcher.RegisterPatch<ScreenRumbleCinematicSuppressionPatch>();
         patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionDecoderPrewarmPatch>();
     }
 }
 

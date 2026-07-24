@@ -1,5 +1,7 @@
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
+using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Transition;
+using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -22,5 +24,34 @@ public sealed class NinjaSlayerTransitionPreloadPatch : IPatchMethod
     public static void Postfix()
     {
         NinjaSlayerTransitionVideo.BeginPreload();
+    }
+}
+
+/// <summary>
+/// Starts a hidden decoder prewarm only after the player selects NinjaSlayer.
+/// </summary>
+public sealed class NinjaSlayerTransitionDecoderPrewarmPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_transition_video_decoder_prewarm";
+
+    public static string Description =>
+        "Decode hidden NinjaSlayer transition frames before the first formal playback.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(NCharacterSelectScreen),
+            nameof(NCharacterSelectScreen.SelectCharacter),
+            [typeof(NCharacterSelectButton), typeof(CharacterModel)])
+    ];
+
+    public static void Postfix(NCharacterSelectScreen __instance, CharacterModel characterModel)
+    {
+        if (characterModel is INinjaSlayerCharacter)
+        {
+            NinjaSlayerTransitionVideoPrewarmer.TryStart(__instance);
+        }
     }
 }
