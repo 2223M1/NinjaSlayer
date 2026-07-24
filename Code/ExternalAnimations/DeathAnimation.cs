@@ -475,8 +475,51 @@ public static class DeathAnimation
         camera?.ResetToBaseline();
     }
 
+    /// <summary>
+    /// Plays the Other death fall on combat-style visuals that are not attached to an
+    /// <see cref="NCombatRoom"/> node (e.g. Game Over recreates visuals outside combat).
+    /// </summary>
+    internal static async Task PlayOtherDeathFallOnVisuals(
+        NCreatureVisuals visuals,
+        Creature? creature,
+        bool playSuicideSfx = true)
+    {
+        if (!GodotObject.IsInstanceValid(visuals) || !visuals.IsInsideTree())
+        {
+            return;
+        }
+
+        Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals);
+        Sprite2D? body = NinjaSlayerVisualRig.GetBodySprite(visuals);
+        if (anchor == null || body == null)
+        {
+            return;
+        }
+
+        if (playSuicideSfx)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerSuicideEvent);
+        }
+
+        var state = DeathVisualState.Capture(anchor, body);
+        if (creature != null)
+        {
+            VisualStates.Remove(creature);
+            VisualStates.Add(creature, state);
+        }
+
+        try
+        {
+            await PlayOtherDeathFall(creature, visuals, anchor, body, state);
+        }
+        catch (OperationCanceledException) when (state.Cancellation.IsCancellationRequested
+            || !GodotObject.IsInstanceValid(visuals))
+        {
+        }
+    }
+
     private static async Task PlayOtherDeathFall(
-        Creature creature,
+        Creature? creature,
         Node creatureNode,
         Node2D anchor,
         Sprite2D body,
@@ -497,7 +540,10 @@ public static class DeathAnimation
         };
         pivot.AddChild(jitter);
         body.Reparent(jitter, keepGlobalTransform: true);
-        NarakuVisualOverlay.Sync(creature);
+        if (creature != null)
+        {
+            NarakuVisualOverlay.Sync(creature);
+        }
 
         state.Pivot = pivot;
         state.Jitter = jitter;

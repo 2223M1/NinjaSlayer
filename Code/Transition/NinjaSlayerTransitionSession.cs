@@ -19,6 +19,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     private int _loadSmoothingCompleted;
     private int _disposed;
     private TransitionPerformanceTrace? _performanceTrace;
+    private IDisposable? _assetPrefetchLease;
 
     public NinjaSlayerTransitionSession(
         ITransitionViewAdapter view,
@@ -48,6 +49,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
             throw new OperationCanceledException(_externalCancellation);
         }
 
+        _assetPrefetchLease = NinjaSlayerRunAssetPrefetcher.ClaimForTransition();
         _animationTask = animationFactory(this, _lifetime.Token)
             ?? throw new InvalidOperationException("Transition animation factory returned null.");
         _ = ObserveAnimationAsync();
@@ -107,7 +109,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         var cleanupFailures = new List<Exception>();
         TransitionPerformanceTrace? performanceTrace = _performanceTrace;
         TransitionGcCounts endingGcCounts = TransitionGcCounts.Capture();
-        TransitionGcFlushResult gcFlush = TransitionGcFlushResult.None;
+        TransitionLoadSmoothingCompletion loadSmoothing = TransitionLoadSmoothingCompletion.None;
         CaptureCleanup(cleanupFailures, _lifetime.Cancel);
         CaptureCleanup(cleanupFailures, _view.StopPlayback);
         CaptureCleanup(cleanupFailures, EndAnimationSmoothing);
@@ -120,8 +122,9 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         CaptureCleanup(cleanupFailures, () =>
         {
             endingGcCounts = TransitionGcCounts.Capture();
-            gcFlush = CompleteLoadSmoothing();
+            loadSmoothing = CompleteLoadSmoothing(endingGcCounts);
         });
+        CaptureCleanup(cleanupFailures, ReleaseAssetPrefetch);
 
         if (cleanupFailures.Count > 0)
         {
@@ -137,13 +140,17 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
         if (performanceTrace is not null)
         {
-            TransitionPerformanceSnapshot snapshot = performanceTrace.Complete(status, endingGcCounts, gcFlush);
+            TransitionPerformanceSnapshot snapshot = performanceTrace.Complete(
+                status,
+                endingGcCounts,
+                loadSmoothing.GcFlush,
+                loadSmoothing.NoGcRegion);
             Entry.Logger.Info(snapshot.ToLogMessage());
-            if (gcFlush.Attempted && !gcFlush.Succeeded)
+            if (loadSmoothing.GcFlush.Attempted && !loadSmoothing.GcFlush.Succeeded)
             {
                 Entry.Logger.Warn(
                     $"NinjaSlayer transition session {SessionId} could not request optimized non-blocking GC " +
-                    $"({gcFlush.ErrorType ?? "unknown"}); natural GC will reclaim the deferred assets.");
+                    $"({loadSmoothing.GcFlush.ErrorType ?? "unknown"}); natural GC will reclaim the deferred assets.");
             }
         }
 
@@ -221,15 +228,22 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         _view.Restore(forceRelease);
     }
 
-    private TransitionGcFlushResult CompleteLoadSmoothing()
+    private TransitionLoadSmoothingCompletion CompleteLoadSmoothing(
+        TransitionGcCounts endingGcCounts)
     {
         if (Volatile.Read(ref _loadSmoothingStarted) == 0
             || Interlocked.CompareExchange(ref _loadSmoothingCompleted, 1, 0) != 0)
         {
-            return TransitionGcFlushResult.None;
+            return TransitionLoadSmoothingCompletion.None;
         }
 
-        return NinjaSlayerTransitionLoadSmoothing.CompleteSession(SessionId);
+        return NinjaSlayerTransitionLoadSmoothing.CompleteSession(SessionId, endingGcCounts);
+    }
+
+    private void ReleaseAssetPrefetch()
+    {
+        IDisposable? lease = Interlocked.Exchange(ref _assetPrefetchLease, null);
+        lease?.Dispose();
     }
 
     private static void CaptureCleanup(ICollection<Exception> failures, Action cleanup)

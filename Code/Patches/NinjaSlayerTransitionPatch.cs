@@ -53,30 +53,50 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         float delay = wasPending
             ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
             : NinjaSlayerAudio.SaveLoadStartDelaySeconds;
-        __result = delay > 0f
-            ? Cmd.Wait(delay, cancelToken ?? CancellationToken.None)
-            : Task.CompletedTask;
+        __result = WaitForScenePrewarmAndLoadDelayAsync(
+            delay,
+            cancelToken ?? CancellationToken.None);
         return false;
     }
 
-    private static Task BeginNinjaSlayerTransition(
+    private static async Task BeginNinjaSlayerTransition(
         NinjaSlayerTransitionSession session,
         CancellationToken cancelToken)
     {
         if (SaveManager.Instance.PrefsSave.FastMode == FastModeType.Instant)
         {
             session.PrepareInstantView();
-            return Task.CompletedTask;
+            return;
         }
 
-        // Cover the screen synchronously before returning so the character select / menu never
-        // flashes through while the video decoder produces its first frame.
+        if (NinjaSlayerPatchCapabilities.TransitionAssetPrefetchEnabled)
+        {
+            await NinjaSlayerTransitionScenePrewarmer.AwaitReadyAsync(cancelToken);
+        }
+
+        // The shared prewarm completion keeps cold scene/GPU setup ahead of both playback and loading.
         if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
         {
             session.BeginLoadSmoothing();
         }
         NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
-        return PlayOverlayAsync(session, overlay, cancelToken);
+        await PlayOverlayAsync(session, overlay, cancelToken);
+    }
+
+    private static async Task WaitForScenePrewarmAndLoadDelayAsync(
+        float delay,
+        CancellationToken cancellationToken)
+    {
+        if (NinjaSlayerPatchCapabilities.TransitionAssetPrefetchEnabled
+            && SaveManager.Instance.PrefsSave.FastMode != FastModeType.Instant)
+        {
+            await NinjaSlayerTransitionScenePrewarmer.AwaitReadyAsync(cancellationToken);
+        }
+
+        if (delay > 0f)
+        {
+            await Cmd.Wait(delay, cancellationToken);
+        }
     }
 
     private static async Task PlayOverlayAsync(

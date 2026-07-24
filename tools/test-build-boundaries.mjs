@@ -218,8 +218,9 @@ try {
     ['v0.1.99-0-gabcdef', '0.1.99|true|true|v0.1.99'],
     ['v0.1.100-0-gabcdef', '0.1.100|true|false|v0.1.100'],
     ['v2.3.4-0-gabcdef', '2.3.4|true|false|v2.3.4'],
-    ['v2.3.4-7-gabcdef', '2.3.4-dev.7+gabcdef|false|false|'],
-    ['v2.3.4-7-gabcdef-dirty', '2.3.4-dev.7+gabcdef.dirty|false|false|'],
+    ['v0.1.7-0-gabcdef-dirty', '0.1.8-dev.0+gabcdef.dirty|false|false|'],
+    ['v2.3.4-7-gabcdef', '2.3.5-dev.7+gabcdef|false|false|'],
+    ['v2.3.4-7-gabcdef-dirty', '2.3.5-dev.7+gabcdef.dirty|false|false|'],
     ['abcdef', '0.1.0-dev.0+gabcdef|false|false|'],
   ];
   for (const [describe, expected] of versionCases) {

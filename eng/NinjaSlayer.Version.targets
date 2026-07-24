@@ -11,8 +11,15 @@
     <PropertyGroup>
       <GitDescribe Condition="'$(GitDescribe)' == ''">@(_GitDescribeOutput)</GitDescribe>
       <_GitExactVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-0-g[0-9a-f]+$').Groups['version'].Value)</_GitExactVersion>
-      <_GitBaseVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-').Groups['version'].Value)</_GitBaseVersion>
+      <_GitBaseTagVersion>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)-').Groups['version'].Value)</_GitBaseTagVersion>
+      <_GitBaseVersion>$(_GitBaseTagVersion)</_GitBaseVersion>
       <_GitBaseVersion Condition="'$(_GitBaseVersion)' == ''">0.1.0</_GitBaseVersion>
+      <_GitDevBaseVersion>$(_GitBaseVersion)</_GitDevBaseVersion>
+      <_GitBaseMajor Condition="'$(_GitBaseTagVersion)' != ''">$([System.Text.RegularExpressions.Regex]::Match('$(_GitBaseTagVersion)', '^(?&lt;value&gt;[0-9]+)\.').Groups['value'].Value)</_GitBaseMajor>
+      <_GitBaseMinor Condition="'$(_GitBaseTagVersion)' != ''">$([System.Text.RegularExpressions.Regex]::Match('$(_GitBaseTagVersion)', '^[0-9]+\.(?&lt;value&gt;[0-9]+)\.').Groups['value'].Value)</_GitBaseMinor>
+      <_GitBasePatch Condition="'$(_GitBaseTagVersion)' != ''">$([System.Text.RegularExpressions.Regex]::Match('$(_GitBaseTagVersion)', '\.(?&lt;value&gt;[0-9]+)$').Groups['value'].Value)</_GitBasePatch>
+      <_GitDevPatch Condition="'$(_GitBaseTagVersion)' != ''">$([MSBuild]::Add($(_GitBasePatch), 1))</_GitDevPatch>
+      <_GitDevBaseVersion Condition="'$(_GitBaseTagVersion)' != ''">$(_GitBaseMajor).$(_GitBaseMinor).$(_GitDevPatch)</_GitDevBaseVersion>
       <_GitCommitCount>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '^v[0-9]+\.[0-9]+\.[0-9]+-(?&lt;count&gt;[0-9]+)-g').Groups['count'].Value)</_GitCommitCount>
       <_GitCommitCount Condition="'$(_GitCommitCount)' == ''">0</_GitCommitCount>
       <_GitSha>$([System.Text.RegularExpressions.Regex]::Match('$(GitDescribe)', '-g(?&lt;sha&gt;[0-9a-f]+)(-dirty)?$').Groups['sha'].Value)</_GitSha>
@@ -25,7 +32,7 @@
       <IsSupportedReleaseTag Condition="'$(IsExactReleaseTag)' == 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitTag)', '^v0\.1\.(0|[1-9][0-9]?)$'))">true</IsSupportedReleaseTag>
       <IsSupportedReleaseTag Condition="'$(IsSupportedReleaseTag)' == ''">false</IsSupportedReleaseTag>
       <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' == 'true'">$(_GitExactVersion)</NinjaSlayerVersion>
-      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' != 'true'">$(_GitBaseVersion)-dev.$(_GitCommitCount)+g$(_GitSha)$(_GitDirtySuffix)</NinjaSlayerVersion>
+      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' != 'true'">$(_GitDevBaseVersion)-dev.$(_GitCommitCount)+g$(_GitSha)$(_GitDirtySuffix)</NinjaSlayerVersion>
       <Version>$(NinjaSlayerVersion)</Version>
       <AssemblyVersion>$([System.Text.RegularExpressions.Regex]::Match('$(NinjaSlayerVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value).0</AssemblyVersion>
       <FileVersion>$(AssemblyVersion)</FileVersion>

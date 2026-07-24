@@ -13,6 +13,8 @@ internal static class NinjaSlayerPatchCapabilities
     public static bool TransitionEnabled => IsOperational(NinjaSlayerCapabilityIds.TransitionCore);
     public static bool TransitionLoadSmoothingEnabled =>
         IsOperational(NinjaSlayerCapabilityIds.TransitionLoadSmoothing);
+    public static bool TransitionAssetPrefetchEnabled =>
+        IsOperational(NinjaSlayerCapabilityIds.TransitionAssetPrefetch);
     public static bool FeedbackEnabled => IsOperational(NinjaSlayerCapabilityIds.Feedback);
     public static bool TelemetryIdentityEnabled => IsOperational(NinjaSlayerCapabilityIds.TelemetryIdentity);
 

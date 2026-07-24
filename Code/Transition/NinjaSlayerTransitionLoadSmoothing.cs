@@ -5,18 +5,33 @@ namespace NinjaSlayer.Code.Transition;
 public static class NinjaSlayerTransitionLoadSmoothing
 {
     internal const int FinalizeBatchSize = 1;
+    internal const long NoGcRegionBudgetBytes = 256L * 1024 * 1024;
 
     private static readonly object SyncRoot = new();
     private static readonly TransitionGcDeferralState GcDeferral = new();
+    private static readonly TransitionNoGcRegionState NoGcRegion = new();
     private static long animationSessionId;
     private static TransitionPerformanceTrace? activeTrace;
 
     internal static bool IsAnimationPlaying => Volatile.Read(ref animationSessionId) != 0;
 
+    public static int GetConcurrentAssetLoadLimit() =>
+        TransitionLoadConcurrencyPolicy.Resolve(IsAnimationPlaying);
+
     internal static TransitionPerformanceTrace BeginSession(long sessionId, TransitionInvocationKind kind)
     {
-        var trace = new TransitionPerformanceTrace(sessionId, kind);
+        TransitionGcCounts beforeNoGcRequest = TransitionGcCounts.Capture();
         int carriedRequestCount = GcDeferral.Begin(sessionId);
+        NoGcRegion.Begin(
+            sessionId,
+            NoGcRegionBudgetBytes,
+            beforeNoGcRequest,
+            TryStartRuntimeNoGcRegion,
+            TransitionGcCounts.Capture);
+        var trace = new TransitionPerformanceTrace(
+            sessionId,
+            kind,
+            TransitionGcCounts.Capture());
         lock (SyncRoot)
         {
             activeTrace = trace;
@@ -42,6 +57,15 @@ public static class NinjaSlayerTransitionLoadSmoothing
         }
     }
 
+    internal static void RecordPhase(string name, TimeSpan elapsed)
+    {
+        long sessionId = Volatile.Read(ref animationSessionId);
+        if (sessionId != 0)
+        {
+            GetActiveTrace(sessionId)?.RecordPhase(name, elapsed);
+        }
+    }
+
     public static void CollectWhenSafe()
     {
         if (GcDeferral.TryDefer(out long sessionId, out _))
@@ -58,14 +82,22 @@ public static class NinjaSlayerTransitionLoadSmoothing
         Interlocked.CompareExchange(ref animationSessionId, 0, sessionId);
     }
 
-    internal static TransitionGcFlushResult CompleteSession(long sessionId)
+    internal static TransitionLoadSmoothingCompletion CompleteSession(
+        long sessionId,
+        TransitionGcCounts endingGcCounts)
     {
         EndAnimation(sessionId);
         TransitionGcDeferralCompletion completion = GcDeferral.Complete(sessionId);
         if (!completion.IsCurrentSession)
         {
-            return TransitionGcFlushResult.None;
+            return TransitionLoadSmoothingCompletion.None;
         }
+
+        TransitionNoGcRegionCompletion noGcRegion = NoGcRegion.Complete(
+            sessionId,
+            endingGcCounts,
+            TransitionNoGcRegionExecutor.IsRuntimeRegionActive,
+            GC.EndNoGCRegion);
 
         lock (SyncRoot)
         {
@@ -75,9 +107,10 @@ public static class NinjaSlayerTransitionLoadSmoothing
             }
         }
 
-        return TransitionGcRequestExecutor.Execute(
+        TransitionGcFlushResult gcFlush = TransitionGcRequestExecutor.Execute(
             completion.DeferredRequestCount,
             RequestOptimizedNonBlockingCollection);
+        return new TransitionLoadSmoothingCompletion(gcFlush, noGcRegion);
     }
 
     private static TransitionPerformanceTrace? GetActiveTrace(long sessionId)
@@ -96,4 +129,18 @@ public static class NinjaSlayerTransitionLoadSmoothing
             blocking: false,
             compacting: false);
     }
+
+    private static bool TryStartRuntimeNoGcRegion() =>
+        GC.TryStartNoGCRegion(
+            NoGcRegionBudgetBytes,
+            disallowFullBlockingGC: true);
+}
+
+internal readonly record struct TransitionLoadSmoothingCompletion(
+    TransitionGcFlushResult GcFlush,
+    TransitionNoGcRegionCompletion NoGcRegion)
+{
+    public static TransitionLoadSmoothingCompletion None { get; } = new(
+        TransitionGcFlushResult.None,
+        TransitionNoGcRegionCompletion.None);
 }

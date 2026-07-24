@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Nodes;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Scripts;
 
@@ -9,19 +10,20 @@ internal static class NinjaSlayerTransitionVideoPrewarmer
     private const int MaxAttempts = 2;
     private static readonly object SyncRoot = new();
     private static readonly TransitionVideoPrewarmState State = new(MaxAttempts);
-    private static NinjaSlayerTransitionPrewarmPlayer? _activePlayer;
+    private static NinjaSlayerTransitionOverlay? _prewarmedOverlay;
     private static int _failureLogged;
+    private static int _handoffLogged;
 
-    public static void TryStart(Node owner)
+    public static void TryStart()
     {
-        if (!GodotObject.IsInstanceValid(owner) || !owner.IsInsideTree())
+        NGame? game = NGame.Instance;
+        if (game is null || !GodotObject.IsInstanceValid(game.Transition))
         {
             return;
         }
 
         NinjaSlayerTransitionVideo.BeginPreload();
 
-        NinjaSlayerTransitionPrewarmPlayer player;
         long generation;
         lock (SyncRoot)
         {
@@ -29,76 +31,94 @@ internal static class NinjaSlayerTransitionVideoPrewarmer
             {
                 return;
             }
-
-            player = new NinjaSlayerTransitionPrewarmPlayer
-            {
-                Name = NinjaSlayerTransitionPrewarmPlayer.NodeName
-            };
-            player.Configure(generation);
-            _activePlayer = player;
         }
 
+        NinjaSlayerTransitionOverlay? overlay = null;
         try
         {
-            owner.AddChild(player);
+            overlay = NinjaSlayerTransitionOverlay.GetOrCreate(game.Transition);
+            lock (SyncRoot)
+            {
+                _prewarmedOverlay = overlay;
+            }
+
+            if (!overlay.TryStartDecoderPrewarm(generation))
+            {
+                Fail(overlay, generation, "the official transition player was already busy");
+                return;
+            }
+
+            Entry.Logger.Info("NinjaSlayer official transition player decoder prewarm started.");
         }
         catch (Exception ex)
         {
-            Fail(player, generation, $"could not attach the prewarm player: {ex.Message}");
+            Fail(overlay, generation, $"could not initialize the official transition player: {ex.Message}");
         }
     }
 
     public static void PrepareForPlayback()
     {
-        NinjaSlayerTransitionPrewarmPlayer? player = null;
+        NinjaSlayerTransitionOverlay? overlay;
+        TransitionVideoPrewarmPhase phase;
         lock (SyncRoot)
         {
-            long? interruptedGeneration = State.BeginPlayback();
-            if (interruptedGeneration.HasValue
-                && _activePlayer is { } active
-                && active.Generation == interruptedGeneration.Value)
-            {
-                player = active;
-                _activePlayer = null;
-            }
+            phase = State.Phase;
+            State.BeginPlayback();
+            overlay = _prewarmedOverlay;
+            _prewarmedOverlay = null;
         }
 
-        StopWithoutThrowing(player, "formal playback takeover");
-    }
-
-    internal static void Complete(NinjaSlayerTransitionPrewarmPlayer player, long generation)
-    {
-        bool completed;
-        lock (SyncRoot)
+        if (Interlocked.Exchange(ref _handoffLogged, 1) == 0)
         {
-            completed = ReferenceEquals(_activePlayer, player) && State.TryMarkWarmed(generation);
-            if (completed)
-            {
-                _activePlayer = null;
-            }
+            string detail = overlay is not null && GodotObject.IsInstanceValid(overlay)
+                ? overlay.GetDecoderPrewarmDiagnostic()
+                : "overlay=unavailable";
+            Entry.Logger.Info($"NinjaSlayer transition prewarm handoff: phase={phase}, {detail}.");
         }
 
-        if (!completed)
+        if (overlay is null || !GodotObject.IsInstanceValid(overlay))
         {
             return;
         }
 
-        StopWithoutThrowing(player, "prewarm completion");
-        Entry.Logger.Info("NinjaSlayer transition video decoder prewarm completed.");
+        try
+        {
+            overlay.StopDecoderPrewarmForPlayback();
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce($"could not hand the prewarmed player to formal playback: {ex.Message}");
+        }
+    }
+
+    internal static bool Complete(NinjaSlayerTransitionOverlay overlay, long generation)
+    {
+        bool completed;
+        lock (SyncRoot)
+        {
+            completed = ReferenceEquals(_prewarmedOverlay, overlay) && State.TryMarkWarmed(generation);
+        }
+
+        if (completed)
+        {
+            Entry.Logger.Info("NinjaSlayer official transition player completed a full decoder prewarm.");
+        }
+
+        return completed;
     }
 
     internal static void Fail(
-        NinjaSlayerTransitionPrewarmPlayer player,
+        NinjaSlayerTransitionOverlay? overlay,
         long generation,
         string diagnostic)
     {
         bool failed;
         lock (SyncRoot)
         {
-            failed = ReferenceEquals(_activePlayer, player) && State.TryReturnToIdle(generation);
+            failed = State.TryReturnToIdle(generation);
             if (failed)
             {
-                _activePlayer = null;
+                _prewarmedOverlay = null;
             }
         }
 
@@ -108,42 +128,31 @@ internal static class NinjaSlayerTransitionVideoPrewarmer
         }
 
         NinjaSlayerTransitionVideo.AllowPreloadRetry();
-        StopWithoutThrowing(player, "prewarm failure");
-        if (Interlocked.Exchange(ref _failureLogged, 1) == 0)
+        if (overlay is not null && GodotObject.IsInstanceValid(overlay))
         {
-            Entry.Logger.Warn($"NinjaSlayer transition video decoder prewarm failed; formal playback will continue normally ({diagnostic}).");
+            overlay.AbortDecoderPrewarm(clearStream: true);
         }
+        LogFailureOnce($"decoder prewarm failed; formal playback will continue normally ({diagnostic})");
     }
 
-    internal static void NotifyExited(NinjaSlayerTransitionPrewarmPlayer player, long generation)
+    internal static void NotifyOverlayExited(NinjaSlayerTransitionOverlay overlay, long generation)
     {
         lock (SyncRoot)
         {
-            if (!ReferenceEquals(_activePlayer, player) || !State.TryReturnToIdle(generation))
+            if (!ReferenceEquals(_prewarmedOverlay, overlay) || !State.TryReturnToIdle(generation))
             {
                 return;
             }
 
-            _activePlayer = null;
+            _prewarmedOverlay = null;
         }
     }
 
-    private static void StopWithoutThrowing(
-        NinjaSlayerTransitionPrewarmPlayer? player,
-        string reason)
+    private static void LogFailureOnce(string diagnostic)
     {
-        if (player is null || !GodotObject.IsInstanceValid(player))
+        if (Interlocked.Exchange(ref _failureLogged, 1) == 0)
         {
-            return;
-        }
-
-        try
-        {
-            player.StopAndRelease();
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn($"Could not stop NinjaSlayer transition decoder prewarm during {reason}: {ex}");
+            Entry.Logger.Warn($"NinjaSlayer transition video {diagnostic}.");
         }
     }
 }
