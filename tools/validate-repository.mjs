@@ -71,7 +71,7 @@ for (const workflow of filesUnder(join(root, '.github', 'workflows')).filter((pa
   }
 }
 
-for (const name of ['feedback.json', 'enchantments.json']) {
+for (const name of ['settings_ui.json', 'enchantments.json']) {
   const englishPath = join(root, 'NinjaSlayer', 'localization', 'eng', name);
   const chinesePath = join(root, 'NinjaSlayer', 'localization', 'zhs', name);
   const english = readJson(englishPath);

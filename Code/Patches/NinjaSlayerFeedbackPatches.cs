@@ -53,8 +53,15 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
 
     private static bool IsLocalNinjaSlayer()
     {
-        RunState? runState = RunManager.Instance.DebugOnlyGetState();
-        return runState != null && LocalContext.GetMe(runState)?.Character is INinjaSlayerCharacter;
+        try
+        {
+            RunState? runState = RunManager.Instance.DebugOnlyGetState();
+            return runState != null && LocalContext.GetMe(runState)?.Character is INinjaSlayerCharacter;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     private static async Task OpenFeedbackScreen(NFeedbackScreenOpener opener)
@@ -73,6 +80,9 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
 
 public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 {
+    // Must merge into a base-game LocManager table; mod-only tables like "feedback" are never loaded.
+    private const string LocTable = "settings_ui";
+
     public static string PatchId => "ninjaslayer_feedback_form_labels";
     public static string Description => "Label NinjaSlayer F2 feedback with its actual recipient.";
     public static bool IsCritical => true;
@@ -87,17 +97,35 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
             return;
         }
 
-        __instance.GetNode<NMegaTextEdit>("%DescriptionInput").PlaceholderText =
-            Text("NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER");
-        __instance.GetNode<MegaLabel>("%SendButton/Label").SetTextAutoSize(
-            Text("NINJA_SLAYER_FEEDBACK_SEND_BUTTON"));
+        if (!TryText("NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER", out string placeholder)
+            || !TryText("NINJA_SLAYER_FEEDBACK_SEND_BUTTON", out string sendButton))
+        {
+            Entry.Logger.Warn(
+                "NinjaSlayer feedback labels are missing from settings_ui; keeping the vanilla feedback form text.");
+            return;
+        }
+
+        __instance.GetNode<NMegaTextEdit>("%DescriptionInput").PlaceholderText = placeholder;
+        __instance.GetNode<MegaLabel>("%SendButton/Label").SetTextAutoSize(sendButton);
     }
 
-    private static string Text(string key) => new LocString("feedback", key).GetFormattedText();
+    private static bool TryText(string key, out string text)
+    {
+        if (!LocString.Exists(LocTable, key))
+        {
+            text = string.Empty;
+            return false;
+        }
+
+        text = new LocString(LocTable, key).GetFormattedText();
+        return true;
+    }
 }
 
 public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 {
+    private const string LocTable = "settings_ui";
+
     public static string PatchId => "ninjaslayer_feedback_confirmation";
     public static string Description => "Require informed confirmation before uploading NinjaSlayer F2 feedback.";
     public static bool IsCritical => true;
@@ -123,6 +151,16 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
         NSendFeedbackScreen screen,
         NinjaSlayerFeedbackSessionToken token)
     {
+        if (!TryLoc("NINJA_SLAYER_FEEDBACK_CONFIRM_BODY", out LocString body)
+            || !TryLoc("NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER", out LocString header)
+            || !TryLoc("NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL", out LocString cancel)
+            || !TryLoc("NINJA_SLAYER_FEEDBACK_CONFIRM_SEND", out LocString send))
+        {
+            Entry.Logger.Warn(
+                "NinjaSlayer feedback confirmation strings are missing from settings_ui; aborting the upload.");
+            return;
+        }
+
         NGenericPopup? popup = NGenericPopup.Create();
         if (popup == null)
         {
@@ -136,11 +174,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
         }
 
         game.AddChildSafely(popup);
-        bool confirmed = await popup.WaitForConfirmation(
-            Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_BODY"),
-            Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER"),
-            Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL"),
-            Loc("NINJA_SLAYER_FEEDBACK_CONFIRM_SEND"));
+        bool confirmed = await popup.WaitForConfirmation(body, header, cancel, send);
         if (!confirmed
             || !GodotObject.IsInstanceValid(screen)
             || !screen.Visible
@@ -154,7 +188,17 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
             screen.GetNode<NButton>("%SendButton"));
     }
 
-    private static LocString Loc(string key) => new("feedback", key);
+    private static bool TryLoc(string key, out LocString loc)
+    {
+        if (!LocString.Exists(LocTable, key))
+        {
+            loc = null!;
+            return false;
+        }
+
+        loc = new LocString(LocTable, key);
+        return true;
+    }
 }
 
 public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
