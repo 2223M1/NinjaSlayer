@@ -919,6 +919,34 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void FeedbackLocalizationMergesIntoBaseSettingsUiTable()
+    {
+        string patches = SourceText("Code/Patches/NinjaSlayerFeedbackPatches.cs");
+        string zhs = File.ReadAllText(Path.Combine(Root, "NinjaSlayer", "localization", "zhs", "settings_ui.json"));
+        string eng = File.ReadAllText(Path.Combine(Root, "NinjaSlayer", "localization", "eng", "settings_ui.json"));
+
+        Assert.Contains("private const string LocTable = \"settings_ui\"", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("LocString(\"feedback\"", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("new(\"feedback\"", patches, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(Root, "NinjaSlayer", "localization", "zhs", "feedback.json")));
+        Assert.False(File.Exists(Path.Combine(Root, "NinjaSlayer", "localization", "eng", "feedback.json")));
+
+        foreach (string key in new[]
+                 {
+                     "NINJA_SLAYER_FEEDBACK_DESCRIPTION_PLACEHOLDER",
+                     "NINJA_SLAYER_FEEDBACK_SEND_BUTTON",
+                     "NINJA_SLAYER_FEEDBACK_CONFIRM_HEADER",
+                     "NINJA_SLAYER_FEEDBACK_CONFIRM_BODY",
+                     "NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL",
+                     "NINJA_SLAYER_FEEDBACK_CONFIRM_SEND"
+                 })
+        {
+            Assert.Contains(key, zhs, StringComparison.Ordinal);
+            Assert.Contains(key, eng, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void LeafCardsDoNotDependOnFinisherOrchestratorInternals()
     {
         string facadePath = Normalize("Cards/Base/FinisherAttackExtensions.cs");
