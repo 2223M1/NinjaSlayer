@@ -34,7 +34,10 @@ public static class DeathAnimation
     private const float HitRotationDegrees = -15f;
     private const float DoomHitRotationDegrees = 15f;
     private const float FallRotationDegrees = -90f;
-    private static readonly Vector2 DeathFallPivotTextureOffset = new(
+    private static readonly Vector2 CombatTextureSize = new(
+        NinjaSlayerVisualRig.SpinTextureSize,
+        1080f);
+    private static readonly Vector2 CombatDeathFallPivotTextureOffset = new(
         NinjaSlayerVisualRig.SpinPivotDeltaX,
         260f);
     private const float FlightTargetHeightRatio = 0.28f;
@@ -518,6 +521,41 @@ public static class DeathAnimation
         }
     }
 
+    /// <summary>
+    /// Plays the same fall on procedural world visuals, whose root is not an <see cref="NCreatureVisuals"/>.
+    /// </summary>
+    internal static async Task PlayOtherDeathFallOnWorldVisual(
+        Node2D visualRoot,
+        bool playSuicideSfx = true)
+    {
+        if (!GodotObject.IsInstanceValid(visualRoot) || !visualRoot.IsInsideTree())
+        {
+            return;
+        }
+
+        Sprite2D? body = visualRoot.GetNodeOrNull<Sprite2D>("Visuals")
+            ?? FindDescendantBodySprite(visualRoot);
+        if (body == null)
+        {
+            return;
+        }
+
+        if (playSuicideSfx)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerSuicideEvent);
+        }
+
+        DeathVisualState state = DeathVisualState.Capture(visualRoot, body);
+        try
+        {
+            await PlayOtherDeathFall(null, visualRoot, visualRoot, body, state);
+        }
+        catch (OperationCanceledException) when (state.Cancellation.IsCancellationRequested
+            || !GodotObject.IsInstanceValid(visualRoot))
+        {
+        }
+    }
+
     private static async Task PlayOtherDeathFall(
         Creature? creature,
         Node creatureNode,
@@ -525,7 +563,7 @@ public static class DeathAnimation
         Sprite2D body,
         DeathVisualState state)
     {
-        Vector2 pivotPosition = body.Transform * DeathFallPivotTextureOffset;
+        Vector2 pivotPosition = body.Transform * GetDeathFallPivotTextureOffset(body);
 
         var pivot = new Node2D
         {
@@ -565,6 +603,38 @@ public static class DeathAnimation
             .SetTrans(Tween.TransitionType.Quad);
 
         await AwaitTween(tween, state.Cancellation.Token);
+    }
+
+    private static Vector2 GetDeathFallPivotTextureOffset(Sprite2D body)
+    {
+        Vector2 textureSize = body.Texture?.GetSize() ?? CombatTextureSize;
+        if (textureSize.X <= 0f || textureSize.Y <= 0f)
+        {
+            textureSize = CombatTextureSize;
+        }
+
+        return new Vector2(
+            textureSize.X * CombatDeathFallPivotTextureOffset.X / CombatTextureSize.X,
+            textureSize.Y * CombatDeathFallPivotTextureOffset.Y / CombatTextureSize.Y);
+    }
+
+    private static Sprite2D? FindDescendantBodySprite(Node root)
+    {
+        foreach (Node child in root.GetChildren())
+        {
+            if (child is Sprite2D body && body.Name == "Visuals")
+            {
+                return body;
+            }
+
+            Sprite2D? descendant = FindDescendantBodySprite(child);
+            if (descendant != null)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
     }
 
     private static float GetRightVisualExtent(Node2D anchor, Vector2 focusCanvasPosition, Sprite2D fallbackBody)

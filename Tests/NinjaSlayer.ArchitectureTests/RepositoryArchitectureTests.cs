@@ -952,15 +952,36 @@ public sealed class RepositoryArchitectureTests
         string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
 
         Assert.Contains("RunManager.Instance.IsAbandoned", patches, StringComparison.Ordinal);
-        Assert.Contains("&& NCombatRoom.Instance?.GetCreatureNode(creature) == null", patches, StringComparison.Ordinal);
+        Assert.Contains("&& !CombatManager.Instance.IsInProgress", patches, StringComparison.Ordinal);
         Assert.Contains("NinjaSlayerOutsideCombatDeathFeedback.TryMark(creature)", patches, StringComparison.Ordinal);
         Assert.Contains("await original;", patches, StringComparison.Ordinal);
         Assert.Contains("NinjaSlayerAudio.NinjaSlayerSuicideEvent", patches, StringComparison.Ordinal);
+        Assert.Contains("RegisterVisual(__result, __instance)", patches, StringComparison.Ordinal);
+        Assert.Contains("NMerchantCharacter.PlayAnimation", patches, StringComparison.Ordinal);
         Assert.Contains("MoveCreaturesToDifferentLayerAndDisableUi", patches, StringComparison.Ordinal);
         Assert.Contains("playSuicideSfx: false", patches, StringComparison.Ordinal);
-        Assert.Contains("ConditionalWeakTable<Creature, Marker>", patches, StringComparison.Ordinal);
+        Assert.Contains("EnumerateDescendants<NCreatureVisuals>", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("FindChildren", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("DebugOnlyGetState", patches, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<NinjaSlayerOutsideCombatDeathCapturePatch>", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerOutsideCombatVisualCreationPatch>", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerOutsideCombatMerchantDeathPatch>", groups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<NinjaSlayerOutsideCombatDeathFeedbackPatch>", groups, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NarakuLifeExtendsRightWithoutMovingTheVanillaBlockAnchor()
+    {
+        string patch = SourceText("Code/Patches/NarakuLifeHealthBarLayoutPatch.cs");
+        string layout = SourceText("Code/Combat/ExtendedHealthBarLayout.cs");
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+
+        Assert.Contains("HarmonyAfter(\"com.ritsukage.sts2-RitsuLib.framework-core\")", patch, StringComparison.Ordinal);
+        Assert.Contains("SetHpBarContainerSizeWithOffsetsImmediately", patch, StringComparison.Ordinal);
+        Assert.Contains("barPosition.X = layout.BarLeft", patch, StringComparison.Ordinal);
+        Assert.Contains("AnchorBlock(__instance, layout.BlockLeft)", patch, StringComparison.Ordinal);
+        Assert.Contains("barLeft + barWidth", layout, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NarakuLifeHealthBarLayoutPatch>", groups, StringComparison.Ordinal);
     }
 
     [Fact]
