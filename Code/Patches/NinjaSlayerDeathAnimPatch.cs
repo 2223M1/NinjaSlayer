@@ -22,6 +22,12 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
 
     public static void Prefix(NCreature __instance, out bool __state)
     {
+        if (ArchitectVictoryCleanup.TryConsume(__instance.Entity))
+        {
+            __state = false;
+            return;
+        }
+
         __state = IsNinjaSlayerNonSpine(__instance)
             && (__instance.DeathAnimationTask == null || __instance.DeathAnimationTask.IsCompleted);
     }
@@ -39,7 +45,9 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerSuicideEvent);
         }
 
-        TaskHelper.RunSafely(DeathAnimation.Play(__instance.Entity, context));
+        Task deathTask = DeathAnimation.Play(__instance.Entity, context);
+        __instance.DeathAnimationTask = deathTask;
+        TaskHelper.RunSafely(deathTask);
         __result = DeathAnimation.GetDuration(context.Kind);
     }
 

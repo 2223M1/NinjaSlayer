@@ -13,7 +13,6 @@ public static class SoarSpinAnimation
 {
     private const float XAttackDuration = 0.24f;
     private const float FullTurnDegrees = 360f;
-    private const float MinScaleRatio = 0.18f;
     private static readonly Dictionary<Creature, Tween> activeSpinTweens = new();
     private static readonly Dictionary<Creature, float> spinDegrees = new();
     private static readonly HashSet<Creature> activeVerticalSpins = [];
@@ -93,25 +92,45 @@ public static class SoarSpinAnimation
         Func<float, float> angleDegreesAtProgress,
         ICinematicAnimationContext? cinematicContext = null)
     {
+        VerticalAxisSpinProjection? projection = CreateNinjaSlayerProjection(creature);
+        if (projection == null)
+        {
+            return;
+        }
+
+        float startingDegrees = spinDegrees.GetValueOrDefault(creature);
+        await PlayFiniteVerticalAxisProjection(
+            creature,
+            duration,
+            progress =>
+            {
+                float currentDegrees = startingDegrees + angleDegreesAtProgress(progress);
+                spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
+                projection.ApplyDegrees(currentDegrees);
+            },
+            cinematicContext,
+            keepActivityAfterCompletion: true);
+    }
+
+    internal static async Task PlayFiniteVerticalAxisProjection(
+        Creature creature,
+        float duration,
+        Action<float> applyAtProgress,
+        ICinematicAnimationContext? cinematicContext = null,
+        bool keepActivityAfterCompletion = false)
+    {
         StopAirborneSpin(creature);
 
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        if (creatureNode == null || GetSpinVisual(creature) == null)
+        if (creatureNode == null)
         {
             return;
         }
 
         activeVerticalSpins.Add(creature);
-        float startingDegrees = spinDegrees.GetValueOrDefault(creature);
         var tween = creatureNode.CreateTween();
         tween.TweenMethod(
-                Callable.From<float>(progress =>
-                {
-                    float currentDegrees = startingDegrees
-                        + angleDegreesAtProgress(progress);
-                    spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
-                    ApplyVerticalSpin(creature, currentDegrees);
-                }),
+                Callable.From<float>(applyAtProgress),
                 0f,
                 1f,
                 duration)
@@ -139,6 +158,11 @@ public static class SoarSpinAnimation
                 {
                     tween.Kill();
                 }
+
+                if (!keepActivityAfterCompletion)
+                {
+                    activeVerticalSpins.Remove(creature);
+                }
             }
         }
     }
@@ -148,6 +172,24 @@ public static class SoarSpinAnimation
         if (activeSpinTweens.Remove(creature, out Tween? tween) && tween.IsValid())
         {
             tween.Kill();
+        }
+    }
+
+    internal static void SuspendForCinematic(Creature creature)
+    {
+        if (!IsSpinning(creature) && !IsVerticalSpinActive(creature))
+        {
+            return;
+        }
+
+        StopAirborneSpin(creature);
+        activeVerticalSpins.Remove(creature);
+        NinjaSlayerSpinMotionBlur.Get(creature)?.Reset();
+
+        Sprite2D? visuals = GetSpinVisual(creature);
+        if (visuals != null)
+        {
+            RestoreVerticalSpin(creature, visuals);
         }
     }
 
@@ -221,26 +263,19 @@ public static class SoarSpinAnimation
 
     private static void ApplyVerticalSpin(Creature creature, float degrees)
     {
+        CreateNinjaSlayerProjection(creature)?.ApplyDegrees(degrees);
+    }
+
+    private static VerticalAxisSpinProjection? CreateNinjaSlayerProjection(Creature creature)
+    {
         Sprite2D? visuals = GetSpinVisual(creature);
         Node2D? focus = GetSpinFocus(creature);
-        if (visuals == null || focus == null)
-        {
-            return;
-        }
-
-        float scaleRatio = Mathf.Cos(Mathf.DegToRad(degrees));
-        if (Mathf.Abs(scaleRatio) < MinScaleRatio)
-        {
-            scaleRatio = scaleRatio < 0f ? -MinScaleRatio : MinScaleRatio;
-        }
-
-        float scaleX = GetNormalScaleX(visuals) * scaleRatio;
-        visuals.RotationDegrees = 0f;
-        visuals.Offset = Vector2.Zero;
-        visuals.Scale = new Vector2(scaleX, visuals.Scale.Y);
-        visuals.Position = new Vector2(
-            focus.Position.X - NinjaSlayerVisualRig.SpinPivotDeltaX * scaleX,
-            visuals.Position.Y);
+        return visuals == null || focus == null
+            ? null
+            : VerticalAxisSpinProjection.CaptureNinjaSlayer(
+                visuals,
+                focus,
+                GetNormalScaleX(visuals));
     }
 
     private static Sprite2D? GetSpinVisual(Creature creature)
@@ -259,21 +294,17 @@ public static class SoarSpinAnimation
 
     private static void RestoreVerticalSpin(Creature creature, Node2D visuals)
     {
-        float scaleX = GetNormalScaleX(visuals);
-        visuals.Scale = new Vector2(scaleX, visuals.Scale.Y);
-        visuals.RotationDegrees = 0f;
-        if (visuals is not Sprite2D sprite)
+        if (visuals is not Sprite2D sprite || GetSpinFocus(creature) is not { } focus)
         {
             return;
         }
 
+        VerticalAxisSpinProjection.CaptureNinjaSlayer(
+                sprite,
+                focus,
+                GetNormalScaleX(visuals))
+            .ApplyDegrees(0f);
         sprite.Offset = Vector2.Zero;
-        if (GetSpinFocus(creature) is { } focus)
-        {
-            sprite.Position = new Vector2(
-                focus.Position.X - NinjaSlayerVisualRig.SpinPivotDeltaX * scaleX,
-                sprite.Position.Y);
-        }
     }
 
     private static float GetNormalScaleX(Node2D visuals)

@@ -16,6 +16,7 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<BossDeathFadeStartPatch>();
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
         patcher.RegisterPatch<ArchitectExecutionStartPatch>();
+        patcher.RegisterPatch<ArchitectDeathAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
         patcher.RegisterPatch<BlackFlameDamagePatch>();

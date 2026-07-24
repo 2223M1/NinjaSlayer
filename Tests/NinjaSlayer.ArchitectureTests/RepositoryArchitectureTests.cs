@@ -473,6 +473,22 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void AlabamaDropUsesTheSharedFixedAxisSpinProjection()
+    {
+        string alabamaDrop = SourceText("Code/ExternalAnimations/AlabamaDropAnimation.cs");
+        string soarSpin = SourceText("Code/ExternalAnimations/SoarSpinAnimation.cs");
+        string projection = SourceText("Code/ExternalAnimations/VerticalAxisSpinProjection.cs");
+
+        Assert.Contains("VerticalAxisSpinProjection.CaptureCurrent", alabamaDrop, StringComparison.Ordinal);
+        Assert.Contains("PlayFiniteVerticalAxisProjection", alabamaDrop, StringComparison.Ordinal);
+        Assert.DoesNotContain("ownerOffsetX", alabamaDrop, StringComparison.Ordinal);
+        Assert.DoesNotContain("targetOffsetX", alabamaDrop, StringComparison.Ordinal);
+        Assert.Contains("VerticalAxisSpinProjection.CaptureNinjaSlayer", soarSpin, StringComparison.Ordinal);
+        Assert.Contains("VerticalSpinMath.ProjectCoordinate", projection, StringComparison.Ordinal);
+        Assert.Contains("projectedMarker - _body.Transform.BasisXform(_markerBodyLocal)", projection, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void CharacterStatsAndAssetPathsMatchThePreSplitSnapshot()
     {
         CompilationUnitSyntax stats = Sources
@@ -819,6 +835,53 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("NCreature.start-death-animation", compatibility, StringComparison.Ordinal);
         Assert.Contains("FinisherPresentationPatchGroup", groups, StringComparison.Ordinal);
         Assert.Contains("DeathAnimationTask", patches, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NinjaSlayerEnemyDeathOwnsTheVanillaTaskAndUsesTheActiveDamageScope()
+    {
+        string patch = SourceText("Code/Patches/NinjaSlayerDeathAnimPatch.cs");
+        string classifier = SourceText("Code/ExternalAnimations/NinjaSlayerDeathClassifier.cs");
+
+        Assert.Contains("__instance.DeathAnimationTask = deathTask", patch, StringComparison.Ordinal);
+        Assert.Contains("capture != null && IsValidEnemyDealer(creature, capture.Dealer)", classifier, StringComparison.Ordinal);
+        Assert.Contains("previous is { IsCompleted: false }", classifier, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ArchitectExecutionSynchronizesLogicalDeathHeadFlightAndRagdoll()
+    {
+        string cinematic = SourceText("Code/ExternalAnimations/ArchitectExecutionCinematic.cs");
+        string deathSession = SourceText("Code/ExternalAnimations/ArchitectDeathPresentationSession.cs");
+        string ragdoll = SourceText("Code/ExternalAnimations/ArchitectRagdollDeathAnimation.cs");
+        string patch = SourceText("Code/Patches/ArchitectExecutionPatch.cs");
+
+        Assert.Contains("CreatureCmd.Kill(_architectNode.Entity, force: true)", cinematic, StringComparison.Ordinal);
+        Assert.Contains("WaitUntilDeathStarts(killTask", cinematic, StringComparison.Ordinal);
+        Assert.Contains("HeadFlightSeconds - NinjaSoulLeadSeconds", cinematic, StringComparison.Ordinal);
+        Assert.Contains("private const float NinjaSoulLeadSeconds = 1f", cinematic, StringComparison.Ordinal);
+        Assert.Contains("public const float DurationSeconds = 1.5f", deathSession, StringComparison.Ordinal);
+        Assert.Contains("public const float FallSeconds = 1f", ragdoll, StringComparison.Ordinal);
+        Assert.Contains("ResolveLandingCompensation", ragdoll, StringComparison.Ordinal);
+        Assert.Contains("__instance.DeathAnimationTask = deathTask", patch, StringComparison.Ordinal);
+        Assert.Contains("__result = ArchitectDeathPresentationSession.DurationSeconds", patch, StringComparison.Ordinal);
+        Assert.Contains("return false", patch, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ArchitectVictoryCleanupSuppressesOnlyTheMarkedNinjaSlayerDeath()
+    {
+        string cinematic = SourceText("Code/ExternalAnimations/ArchitectExecutionCinematic.cs");
+        string deathPatch = SourceText("Code/Patches/NinjaSlayerDeathAnimPatch.cs");
+        string cleanup = SourceText("Code/ExternalAnimations/ArchitectVictoryCleanup.cs");
+
+        int completed = cinematic.IndexOf("_completed = true;", StringComparison.Ordinal);
+        int mark = cinematic.IndexOf("ArchitectVictoryCleanup.Mark(_owner)", StringComparison.Ordinal);
+        int ready = cinematic.IndexOf("SetLocalPlayerReady()", mark, StringComparison.Ordinal);
+        Assert.True(completed >= 0 && mark > completed && ready > mark);
+        Assert.DoesNotContain("ArchitectVictoryCleanup.Clear", cinematic, StringComparison.Ordinal);
+        Assert.Contains("ArchitectVictoryCleanup.TryConsume(__instance.Entity)", deathPatch, StringComparison.Ordinal);
+        Assert.Contains("ConditionalWeakTable<Creature, Marker>", cleanup, StringComparison.Ordinal);
     }
 
     [Fact]
