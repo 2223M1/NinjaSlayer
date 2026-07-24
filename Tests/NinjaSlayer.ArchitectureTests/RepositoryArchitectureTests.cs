@@ -816,20 +816,23 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("EndAnimationAndCollectDeferred", smoothing, StringComparison.Ordinal);
         Assert.Contains("EndAnimationSmoothing", session, StringComparison.Ordinal);
         Assert.Contains("CompleteLoadSmoothing", session, StringComparison.Ordinal);
-        Assert.Contains("RecordFrame(delta)", overlay, StringComparison.Ordinal);
+        Assert.Contains("RecordFrame(delta, videoPosition)", overlay, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void TransitionDecoderPrewarmIsSilentAndYieldsBeforeFormalPlayback()
+    public void TransitionDecoderPrewarmReusesTheSilentOfficialPlayerBeforeFormalPlayback()
     {
-        string prewarmPlayer = SourceText("Code/Nodes/NinjaSlayerTransitionPrewarmPlayer.cs");
         string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
+        string prewarmer = SourceText("Code/Transition/NinjaSlayerTransitionVideoPrewarmer.cs");
         string preloadPatch = SourceText("Code/Patches/NinjaSlayerTransitionPreloadPatch.cs");
 
-        Assert.Contains("Volume = 0f", prewarmPlayer, StringComparison.Ordinal);
-        Assert.Contains("SelfModulate = Colors.Transparent", prewarmPlayer, StringComparison.Ordinal);
-        Assert.Contains("Stop();", prewarmPlayer, StringComparison.Ordinal);
-        Assert.Contains("Stream = null", prewarmPlayer, StringComparison.Ordinal);
+        Assert.Contains("videoPlayer.Volume = 0f", overlay, StringComparison.Ordinal);
+        Assert.Contains("videoPlayer.Modulate = Colors.Transparent", overlay, StringComparison.Ordinal);
+        Assert.Contains("videoPlayer.Stop()", overlay, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionOverlay.GetOrCreate(game.Transition)", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("StopDecoderPrewarmForPlayback", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("typeof(NMainMenu)", preloadPatch, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionVideoPrewarmer.TryStart();", preloadPatch, StringComparison.Ordinal);
         Assert.Contains("characterModel is INinjaSlayerCharacter", preloadPatch, StringComparison.Ordinal);
 
         int takeover = overlay.IndexOf(
@@ -837,6 +840,60 @@ public sealed class RepositoryArchitectureTests
             StringComparison.Ordinal);
         int formalPlay = overlay.IndexOf("videoPlayer.Play()", StringComparison.Ordinal);
         Assert.True(takeover >= 0 && takeover < formalPlay);
+    }
+
+    [Fact]
+    public void TransitionLoadSmoothingBoundsOnlyVisibleAssetConcurrency()
+    {
+        string patch = SourceText("Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs");
+        string policy = SourceText("Code/Transition/TransitionLoadConcurrencyPolicy.cs");
+
+        Assert.Contains("ProcessLoadingQueue", patch, StringComparison.Ordinal);
+        Assert.Contains("GetConcurrentAssetLoadLimit", patch, StringComparison.Ordinal);
+        Assert.Contains("replacements != 1", patch, StringComparison.Ordinal);
+        Assert.Contains("VisibleTransitionConcurrentLoadLimit = 8", policy, StringComparison.Ordinal);
+        Assert.Contains("VanillaConcurrentLoadLimit = 128", policy, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TransitionAssetPrefetchUsesAnAtomicScopedRetentionCapability()
+    {
+        string patches = SourceText("Code/Patches/NinjaSlayerTransitionAssetPrefetchPatch.cs");
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+        string session = SourceText("Code/Transition/NinjaSlayerTransitionSession.cs");
+        string prefetcher = SourceText("Code/Transition/NinjaSlayerRunAssetPrefetcher.cs");
+
+        Assert.Contains("TransitionAssetPrefetchPatchGroup", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerTransitionAssetRetentionPatch>", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerTransitionMainMenuAssetPrefetchPatch>", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerTransitionEmbarkAssetPrefetchPatch>", groups, StringComparison.Ordinal);
+        Assert.Contains("AssetCache.UnloadAssets", patches, StringComparison.Ordinal);
+        Assert.Contains("FilterAssetsToUnload", patches, StringComparison.Ordinal);
+        Assert.Contains("ClaimForTransition", session, StringComparison.Ordinal);
+        Assert.Contains("ReleaseAssetPrefetch", session, StringComparison.Ordinal);
+        Assert.Contains("PreloadManager.Cache.CreateSession", prefetcher, StringComparison.Ordinal);
+        Assert.DoesNotContain("LoadRunAssets(", prefetcher, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TransitionColdScenePrewarmIsOffscreenAndSharedWithLoadStart()
+    {
+        string prewarmer = SourceText("Code/Transition/NinjaSlayerTransitionScenePrewarmer.cs");
+        string transition = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
+
+        Assert.Contains("NRun.AssetPaths", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("NEventRoom.AssetPaths", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("NAncientEventLayout.ancientScenePath", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("NAncientNameBanner.Create(ModelDb.Event<Neow>())", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("TransitionManagedCodePrewarmer.Prepare", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("new TransitionScenePrewarmResult", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("SubViewport.UpdateMode.Always", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("GuiDisableInput = true", prewarmer, StringComparison.Ordinal);
+        Assert.DoesNotContain("SubViewportContainer", prewarmer, StringComparison.Ordinal);
+        Assert.Contains("AwaitReadyAsync(cancelToken)", transition, StringComparison.Ordinal);
+        Assert.Contains("WaitForScenePrewarmAndLoadDelayAsync", transition, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionRunSceneTracePatch", SourceText("Code/Patches/NinjaSlayerPatchGroups.cs"), StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionEventSceneTracePatch", SourceText("Code/Patches/NinjaSlayerPatchGroups.cs"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -886,6 +943,24 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("__instance.DeathAnimationTask = deathTask", patch, StringComparison.Ordinal);
         Assert.Contains("capture != null && IsValidEnemyDealer(creature, capture.Dealer)", classifier, StringComparison.Ordinal);
         Assert.Contains("previous is { IsCompleted: false }", classifier, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OutsideCombatAbandonDeathCapturesVisualsBeforeKillAndPlaysAudioAfterward()
+    {
+        string patches = SourceText("Code/Patches/NinjaSlayerOutsideCombatDeathFeedbackPatch.cs");
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+
+        Assert.Contains("RunManager.Instance.IsAbandoned", patches, StringComparison.Ordinal);
+        Assert.Contains("&& NCombatRoom.Instance?.GetCreatureNode(creature) == null", patches, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerOutsideCombatDeathFeedback.TryMark(creature)", patches, StringComparison.Ordinal);
+        Assert.Contains("await original;", patches, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerAudio.NinjaSlayerSuicideEvent", patches, StringComparison.Ordinal);
+        Assert.Contains("MoveCreaturesToDifferentLayerAndDisableUi", patches, StringComparison.Ordinal);
+        Assert.Contains("playSuicideSfx: false", patches, StringComparison.Ordinal);
+        Assert.Contains("ConditionalWeakTable<Creature, Marker>", patches, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerOutsideCombatDeathCapturePatch>", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerOutsideCombatDeathFeedbackPatch>", groups, StringComparison.Ordinal);
     }
 
     [Fact]

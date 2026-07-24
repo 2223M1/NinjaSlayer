@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
+using MegaCrit.Sts2.Core.Nodes.Screens.MainMenu;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Content;
@@ -7,28 +8,30 @@ using STS2RitsuLib.Patching.Models;
 namespace NinjaSlayer.Code.Patches;
 
 /// <summary>
-/// Warms the transition video resource in the background as soon as the character select
-/// screen is ready, so embarking does not pay the initial stream-open cost.
+/// Warms the transition resource and official player as soon as the main menu is ready.
+/// This covers both new runs and continuing a saved run.
 /// </summary>
 public sealed class NinjaSlayerTransitionPreloadPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_transition_video_preload";
 
-    public static string Description => "Preload the NinjaSlayer transition video when the character select screen opens.";
+    public static string Description =>
+        "Preload and decode the NinjaSlayer transition video when the main menu opens.";
 
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen._Ready))];
+        [new(typeof(NMainMenu), nameof(NMainMenu._Ready))];
 
     public static void Postfix()
     {
         NinjaSlayerTransitionVideo.BeginPreload();
+        NinjaSlayerTransitionVideoPrewarmer.TryStart();
     }
 }
 
 /// <summary>
-/// Starts a hidden decoder prewarm only after the player selects NinjaSlayer.
+/// Retries the hidden decoder prewarm after NinjaSlayer is selected if the main-menu attempt failed.
 /// </summary>
 public sealed class NinjaSlayerTransitionDecoderPrewarmPatch : IPatchMethod
 {
@@ -47,11 +50,11 @@ public sealed class NinjaSlayerTransitionDecoderPrewarmPatch : IPatchMethod
             [typeof(NCharacterSelectButton), typeof(CharacterModel)])
     ];
 
-    public static void Postfix(NCharacterSelectScreen __instance, CharacterModel characterModel)
+    public static void Postfix(CharacterModel characterModel)
     {
         if (characterModel is INinjaSlayerCharacter)
         {
-            NinjaSlayerTransitionVideoPrewarmer.TryStart(__instance);
+            NinjaSlayerTransitionVideoPrewarmer.TryStart();
         }
     }
 }

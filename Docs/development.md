@@ -38,7 +38,7 @@ Godot loads a Debug editor assembly before Release export. The export-only build
 
 ## Versions and releases
 
-Releases use `v0.1.x`, where `x` is `0` through `99` without leading zeroes. A clean exact tag produces the matching package version; ordinary commits produce a development version derived from `git describe`.
+Releases use `v0.1.x`, where `x` is `0` through `99` without leading zeroes. A clean exact tag produces the matching package version; work after that tag produces a development version for the next patch (for example, `v0.1.7` becomes `0.1.8-dev...`) so a local test build takes precedence over the installed Workshop release.
 
 ### Quick test release
 

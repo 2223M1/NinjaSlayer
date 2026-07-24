@@ -47,7 +47,10 @@
     <Compile Include="..\..\Code\Prepared\NextDiscardProtectionPolicy.cs" Link="NextDiscardProtectionPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
     <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionNoGcRegionState.cs" Link="TransitionNoGcRegionState.cs" />
     <Compile Include="..\..\Code\Transition\TransitionPerformanceTrace.cs" Link="TransitionPerformanceTrace.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionLoadConcurrencyPolicy.cs" Link="TransitionLoadConcurrencyPolicy.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionAssetPrefetchLeaseState.cs" Link="TransitionAssetPrefetchLeaseState.cs" />
     <Compile Include="..\..\Code\Transition\TransitionVideoPrewarmState.cs" Link="TransitionVideoPrewarmState.cs" />
     <Compile Include="..\..\Code\Telemetry\NinjaSlayerTelemetryIdentityTracker.cs" Link="NinjaSlayerTelemetryIdentityTracker.cs" />
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />

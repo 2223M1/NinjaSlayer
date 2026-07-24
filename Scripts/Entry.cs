@@ -163,9 +163,15 @@ public class Entry
             DisableByDependency(
                 NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
                 NinjaSlayerCapabilityIds.TransitionCore);
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.TransitionAssetPrefetch,
+                NinjaSlayerCapabilityIds.TransitionCore);
             return;
         }
 
+        InstallCapability<TransitionAssetPrefetchPatchGroup>(
+            NinjaSlayerCapabilityIds.TransitionAssetPrefetch,
+            GameCompatibility.AssetLoading.GetPrefetchProbes());
         InstallCapability<TransitionSmoothingPatchGroup>(
             NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
             GameCompatibility.AssetLoading.GetProbes());

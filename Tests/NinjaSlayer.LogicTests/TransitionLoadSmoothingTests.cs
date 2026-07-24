@@ -5,6 +5,20 @@ namespace NinjaSlayer.LogicTests;
 public sealed class TransitionLoadSmoothingTests
 {
     [Fact]
+    public void VisibleTransitionUsesBoundedAssetLoadConcurrency()
+    {
+        Assert.Equal(
+            TransitionLoadConcurrencyPolicy.VisibleTransitionConcurrentLoadLimit,
+            TransitionLoadConcurrencyPolicy.Resolve(transitionVisible: true));
+        Assert.Equal(
+            TransitionLoadConcurrencyPolicy.VanillaConcurrentLoadLimit,
+            TransitionLoadConcurrencyPolicy.Resolve(transitionVisible: false));
+        Assert.True(
+            TransitionLoadConcurrencyPolicy.VisibleTransitionConcurrentLoadLimit
+            < TransitionLoadConcurrencyPolicy.VanillaConcurrentLoadLimit);
+    }
+
+    [Fact]
     public void DeferredRequestsAreOwnedAndCoalescedBySession()
     {
         var state = new TransitionGcDeferralState();
@@ -72,6 +86,119 @@ public sealed class TransitionLoadSmoothingTests
     }
 
     [Fact]
+    public void NoGcRegionIsOwnedAndEndedExactlyOnceByItsSession()
+    {
+        var state = new TransitionNoGcRegionState();
+        var starts = 0;
+        var ends = 0;
+        var counts = new TransitionGcCounts(3, 2, 1);
+
+        TransitionNoGcRegionStartResult start = state.Begin(
+            31,
+            256L * 1024 * 1024,
+            counts,
+            () =>
+            {
+                starts++;
+                return true;
+            },
+            () => counts);
+        TransitionNoGcRegionCompletion completion = state.Complete(
+            31,
+            counts,
+            () => true,
+            () => ends++);
+
+        Assert.True(start.Started);
+        Assert.Equal(1, starts);
+        Assert.True(completion.IsCurrentSession);
+        Assert.True(completion.EndSucceeded);
+        Assert.Equal(1, ends);
+        Assert.False(state.Complete(31, counts, () => true, () => ends++).IsCurrentSession);
+        Assert.Equal(1, ends);
+    }
+
+    [Fact]
+    public void SupersedingSessionInheritsNoGcRegionAndStaleOwnerCannotEndIt()
+    {
+        var state = new TransitionNoGcRegionState();
+        var starts = 0;
+        var ends = 0;
+        var counts = new TransitionGcCounts(0, 0, 0);
+
+        state.Begin(40, 1024, counts, () =>
+        {
+            starts++;
+            return true;
+        }, () => counts);
+        TransitionNoGcRegionStartResult inherited = state.Begin(41, 1024, counts, () =>
+        {
+            starts++;
+            return true;
+        }, () => counts);
+
+        Assert.True(inherited.Started);
+        Assert.True(inherited.Inherited);
+        Assert.Equal(1, starts);
+        Assert.False(state.Complete(40, counts, () => true, () => ends++).IsCurrentSession);
+        Assert.Equal(0, ends);
+        Assert.True(state.Complete(41, counts, () => true, () => ends++).EndSucceeded);
+        Assert.Equal(1, ends);
+    }
+
+    [Fact]
+    public void CollectionDuringNoGcRegionMarksBudgetExhaustedWithoutEndingAnotherRegion()
+    {
+        var state = new TransitionNoGcRegionState();
+        var activeChecks = 0;
+        var ends = 0;
+        state.Begin(
+            50,
+            1024,
+            new TransitionGcCounts(1, 1, 0),
+            () => true,
+            () => new TransitionGcCounts(1, 1, 0));
+
+        TransitionNoGcRegionCompletion completion = state.Complete(
+            50,
+            new TransitionGcCounts(2, 1, 0),
+            () =>
+            {
+                activeChecks++;
+                return true;
+            },
+            () => ends++);
+
+        Assert.True(completion.CollectionObserved);
+        Assert.False(completion.EndAttempted);
+        Assert.Equal(0, activeChecks);
+        Assert.Equal(0, ends);
+    }
+
+    [Fact]
+    public void NoGcStartupCollectionBecomesTheProtectedIntervalBaseline()
+    {
+        var state = new TransitionNoGcRegionState();
+        var counts = new TransitionGcCounts(7, 4, 2);
+
+        TransitionNoGcRegionStartResult start = state.Begin(
+            51,
+            1024,
+            new TransitionGcCounts(6, 3, 1),
+            () => true,
+            () => counts);
+        TransitionNoGcRegionCompletion completion = state.Complete(
+            51,
+            counts,
+            () => true,
+            () => { });
+
+        Assert.Equal(counts, start.StartingGcCounts);
+        Assert.False(completion.CollectionObserved);
+        Assert.True(completion.EndSucceeded);
+    }
+
+    [Fact]
     public void FrameMetricsUseCumulativeSlowFrameThresholds()
     {
         var metrics = new TransitionFrameMetrics();
@@ -89,6 +216,26 @@ public sealed class TransitionLoadSmoothingTests
     }
 
     [Fact]
+    public void PerformanceTraceRecordsNamedPhaseTiming()
+    {
+        var trace = new TransitionPerformanceTrace(
+            sessionId: 12,
+            TransitionInvocationKind.Embark,
+            new TransitionGcCounts(0, 0, 0));
+
+        trace.RecordPhase("nrun_enter_tree", TimeSpan.FromMilliseconds(42));
+        TransitionPerformanceSnapshot snapshot = trace.Complete(
+            TransitionCompletionStatus.Succeeded,
+            new TransitionGcCounts(0, 0, 0),
+            TransitionGcFlushResult.None);
+
+        TransitionPhaseSample phase = Assert.Single(snapshot.PhaseSamples);
+        Assert.Equal("nrun_enter_tree", phase.Name);
+        Assert.Equal(42, phase.DurationMilliseconds, precision: 3);
+        Assert.Contains("phases=nrun_enter_tree@", snapshot.ToLogMessage(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PerformanceSnapshotIncludesVideoLoadingGcAndTerminalStatus()
     {
         var trace = new TransitionPerformanceTrace(
@@ -99,6 +246,7 @@ public sealed class TransitionLoadSmoothingTests
         trace.RecordPlayCall(TimeSpan.FromMilliseconds(2));
         trace.MarkVideoStarted();
         trace.RecordFrame(0.016);
+        trace.RecordFrame(0.061, videoPositionSeconds: 0.75);
         trace.RecordFirstPostPlayFrame();
         trace.RecordFinalizeBatch(1, TimeSpan.FromMilliseconds(0.2));
         trace.RecordDeferredGc();
@@ -114,8 +262,11 @@ public sealed class TransitionLoadSmoothingTests
         Assert.Equal(29, snapshot.SessionId);
         Assert.Equal(TransitionInvocationKind.SaveLoad, snapshot.Kind);
         Assert.Equal(TransitionCompletionStatus.Cancelled, snapshot.Status);
-        Assert.Equal(1, snapshot.SessionFrames.FrameCount);
-        Assert.Equal(1, snapshot.VideoFrames.FrameCount);
+        Assert.Equal(2, snapshot.SessionFrames.FrameCount);
+        Assert.Equal(2, snapshot.VideoFrames.FrameCount);
+        TransitionSlowFrameSample slowFrame = Assert.Single(snapshot.SlowFrameSamples);
+        Assert.Equal(61, slowFrame.DurationMilliseconds, precision: 6);
+        Assert.Equal(0.75, slowFrame.VideoPositionSeconds);
         Assert.Equal(1, snapshot.FinalizedResourceCount);
         Assert.Equal(2, snapshot.DeferredGcAtMilliseconds.Count);
         Assert.Equal(new TransitionGcCounts(3, 1, 1), snapshot.NaturalGcDelta);
@@ -129,7 +280,43 @@ public sealed class TransitionLoadSmoothingTests
         string message = snapshot.ToLogMessage();
         Assert.Contains("kind=saveload", message, StringComparison.Ordinal);
         Assert.Contains("status=Cancelled", message, StringComparison.Ordinal);
-        Assert.Contains("slow_frames=0/0/0", message, StringComparison.Ordinal);
+        Assert.Contains("slow_frames=1/1/1", message, StringComparison.Ordinal);
+        Assert.Contains("slow_frame_samples=", message, StringComparison.Ordinal);
+        Assert.Contains("@0.750", message, StringComparison.Ordinal);
+        Assert.Contains("asset_load_limit=8", message, StringComparison.Ordinal);
         Assert.Contains("gc_flush=optimized_nonblocking_ok", message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PerformanceSnapshotReportsCompletedNoGcRegion()
+    {
+        var counts = new TransitionGcCounts(2, 1, 0);
+        var trace = new TransitionPerformanceTrace(61, TransitionInvocationKind.Embark, counts);
+        var start = new TransitionNoGcRegionStartResult(
+            61,
+            256L * 1024 * 1024,
+            counts,
+            Attempted: true,
+            Started: true,
+            Inherited: false,
+            RequestMilliseconds: 0.5,
+            ErrorType: null);
+        var completion = new TransitionNoGcRegionCompletion(
+            IsCurrentSession: true,
+            start,
+            EndAttempted: true,
+            EndSucceeded: true,
+            CollectionObserved: false,
+            EndMilliseconds: 0.25,
+            EndErrorType: null);
+
+        TransitionPerformanceSnapshot snapshot = trace.Complete(
+            TransitionCompletionStatus.Succeeded,
+            counts,
+            TransitionGcFlushResult.None,
+            completion);
+
+        Assert.Contains("no_gc=completed:256MiB", snapshot.ToLogMessage(), StringComparison.Ordinal);
+        Assert.Contains("managed_alloc=", snapshot.ToLogMessage(), StringComparison.Ordinal);
     }
 }
