@@ -34,13 +34,6 @@ internal readonly record struct TransitionPhaseSample(
     double AtMilliseconds,
     double DurationMilliseconds);
 
-internal readonly record struct TransitionFrameDropSnapshot(
-    int CorrectionCount,
-    int SkippedFrameCount,
-    double MaxLagMilliseconds,
-    double LongestSeekMilliseconds,
-    string? DisabledReason);
-
 internal sealed class TransitionFrameMetrics
 {
     private readonly object _sync = new();
@@ -102,7 +95,6 @@ internal sealed record TransitionPerformanceSnapshot(
     double? FirstPostPlayFrameMilliseconds,
     TransitionFrameMetricsSnapshot SessionFrames,
     TransitionFrameMetricsSnapshot VideoFrames,
-    TransitionFrameDropSnapshot FrameDrop,
     IReadOnlyList<TransitionSlowFrameSample> SlowFrameSamples,
     IReadOnlyList<TransitionPhaseSample> PhaseSamples,
     int FinalizedResourceCount,
@@ -150,16 +142,11 @@ internal sealed record TransitionPerformanceSnapshot(
                 sample.AtMilliseconds.ToString("F0", CultureInfo.InvariantCulture),
                 '+',
                 sample.DurationMilliseconds.ToString("F1", CultureInfo.InvariantCulture))));
-        string frameDropStatus = string.IsNullOrWhiteSpace(FrameDrop.DisabledReason)
-            ? "enabled"
-            : $"disabled:{FrameDrop.DisabledReason}";
-
         return string.Concat(
             FormattableString.Invariant($"NinjaSlayer transition performance: session={SessionId}, kind={Kind.ToString().ToLowerInvariant()}, status={Status}, total={TotalMilliseconds:F0}ms, video={VideoMilliseconds:F0}ms, "),
             FormattableString.Invariant($"stream={StreamAcquireMilliseconds:F2}ms, play={PlayCallMilliseconds:F2}ms, first_process_frame={firstFrame}, frames={SessionFrames.FrameCount}, "),
             FormattableString.Invariant($"longest_frame={SessionFrames.LongestFrameMilliseconds:F2}ms, slow_frames={SessionFrames.Over25Milliseconds}/{SessionFrames.Over40Milliseconds}/{SessionFrames.Over60Milliseconds}, "),
             FormattableString.Invariant($"video_frames={VideoFrames.FrameCount}, video_longest_frame={VideoFrames.LongestFrameMilliseconds:F2}ms, video_slow_frames={VideoFrames.Over25Milliseconds}/{VideoFrames.Over40Milliseconds}/{VideoFrames.Over60Milliseconds}, "),
-            FormattableString.Invariant($"frame_drop={FrameDrop.CorrectionCount}/{FrameDrop.SkippedFrameCount}, max_drop_lag={FrameDrop.MaxLagMilliseconds:F2}ms, longest_seek={FrameDrop.LongestSeekMilliseconds:F2}ms, drop_status={frameDropStatus}, "),
             FormattableString.Invariant($"slow_frame_samples={slowFrameSamples}, phases={phaseSamples}, asset_load_limit={TransitionLoadConcurrencyPolicy.VisibleTransitionConcurrentLoadLimit}, "),
             FormattableString.Invariant($"finalized={FinalizedResourceCount}, batches={FinalizeBatchCount}, longest_batch={LongestFinalizeBatchMilliseconds:F2}ms, deferred_gc={GcFlush.DeferredRequestCount}, "),
             FormattableString.Invariant($"gc_at_ms={gcAt}, natural_gc={NaturalGcDelta.Generation0}/{NaturalGcDelta.Generation1}/{NaturalGcDelta.Generation2}, no_gc={noGcRegion}, managed_alloc={ManagedAllocatedBytes / 1048576.0:F1}MiB, "),
@@ -218,11 +205,6 @@ internal sealed class TransitionPerformanceTrace
     private double _streamAcquireMilliseconds;
     private double _playCallMilliseconds;
     private double? _firstPostPlayFrameMilliseconds;
-    private int _frameDropCorrectionCount;
-    private int _frameDropSkippedFrameCount;
-    private double _frameDropMaxLagMilliseconds;
-    private double _frameDropLongestSeekMilliseconds;
-    private string? _frameDropDisabledReason;
     private int _finalizedResourceCount;
     private int _finalizeBatchCount;
     private double _longestFinalizeBatchMilliseconds;
@@ -336,41 +318,6 @@ internal sealed class TransitionPerformanceTrace
         }
     }
 
-    public void RecordFrameDrop(
-        int skippedFrames,
-        double lagSeconds,
-        TimeSpan seekElapsed)
-    {
-        lock (_sync)
-        {
-            if (_completedSnapshot is not null)
-            {
-                return;
-            }
-
-            _frameDropCorrectionCount++;
-            _frameDropSkippedFrameCount += Math.Max(0, skippedFrames);
-            RecordFrameDropTiming(lagSeconds, seekElapsed);
-        }
-    }
-
-    public void RecordFrameDropDisabled(
-        string reason,
-        double lagSeconds,
-        TimeSpan seekElapsed)
-    {
-        lock (_sync)
-        {
-            if (_completedSnapshot is not null)
-            {
-                return;
-            }
-
-            RecordFrameDropTiming(lagSeconds, seekElapsed);
-            _frameDropDisabledReason ??= string.IsNullOrWhiteSpace(reason) ? "unknown" : reason;
-        }
-    }
-
     public void RecordFinalizeBatch(int count, TimeSpan elapsed)
     {
         lock (_sync)
@@ -454,12 +401,6 @@ internal sealed class TransitionPerformanceTrace
                 _firstPostPlayFrameMilliseconds,
                 _sessionFrames.Snapshot(),
                 _videoFrames.Snapshot(),
-                new TransitionFrameDropSnapshot(
-                    _frameDropCorrectionCount,
-                    _frameDropSkippedFrameCount,
-                    _frameDropMaxLagMilliseconds,
-                    _frameDropLongestSeekMilliseconds,
-                    _frameDropDisabledReason),
                 _slowFrameSamples.ToArray(),
                 _phaseSamples.ToArray(),
                 _finalizedResourceCount,
@@ -474,17 +415,4 @@ internal sealed class TransitionPerformanceTrace
         }
     }
 
-    private void RecordFrameDropTiming(double lagSeconds, TimeSpan seekElapsed)
-    {
-        if (double.IsFinite(lagSeconds))
-        {
-            _frameDropMaxLagMilliseconds = Math.Max(
-                _frameDropMaxLagMilliseconds,
-                Math.Max(0.0, lagSeconds * 1000.0));
-        }
-
-        _frameDropLongestSeekMilliseconds = Math.Max(
-            _frameDropLongestSeekMilliseconds,
-            Math.Max(0.0, seekElapsed.TotalMilliseconds));
-    }
 }

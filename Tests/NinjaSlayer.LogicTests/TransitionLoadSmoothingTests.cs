@@ -320,27 +320,4 @@ public sealed class TransitionLoadSmoothingTests
         Assert.Contains("managed_alloc=", snapshot.ToLogMessage(), StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void PerformanceTraceAggregatesFrameDropsAndKeepsTheFirstDisableReason()
-    {
-        var counts = new TransitionGcCounts(0, 0, 0);
-        var trace = new TransitionPerformanceTrace(73, TransitionInvocationKind.Embark, counts);
-        trace.RecordFrameDrop(3, 0.125, TimeSpan.FromMilliseconds(2));
-        trace.RecordFrameDrop(1, 0.25, TimeSpan.FromMilliseconds(4));
-        trace.RecordFrameDropDisabled("seek_slow", 0.2, TimeSpan.FromMilliseconds(50));
-        trace.RecordFrameDropDisabled("seek_exception:InvalidOperationException", 0.5, TimeSpan.FromMilliseconds(3));
-
-        TransitionPerformanceSnapshot snapshot = trace.Complete(
-            TransitionCompletionStatus.Succeeded,
-            counts,
-            TransitionGcFlushResult.None);
-
-        Assert.Equal(2, snapshot.FrameDrop.CorrectionCount);
-        Assert.Equal(4, snapshot.FrameDrop.SkippedFrameCount);
-        Assert.Equal(500, snapshot.FrameDrop.MaxLagMilliseconds, precision: 6);
-        Assert.Equal(50, snapshot.FrameDrop.LongestSeekMilliseconds, precision: 6);
-        Assert.Equal("seek_slow", snapshot.FrameDrop.DisabledReason);
-        Assert.Contains("frame_drop=2/4", snapshot.ToLogMessage(), StringComparison.Ordinal);
-        Assert.Contains("drop_status=disabled:seek_slow", snapshot.ToLogMessage(), StringComparison.Ordinal);
-    }
 }
