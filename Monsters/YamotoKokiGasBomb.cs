@@ -24,7 +24,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 {
     public const string ExplodeMoveId = "EXPLODE_MOVE";
     public const int ExplodeDamage = 4;
-    private const string VisualsPath =
+    private const string MissileVisualsPath =
         "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn";
 
     private bool _hasExploded;
@@ -32,7 +32,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     private bool _isApplyingIntrinsicPowers;
 
     public override MonsterAssetProfile AssetProfile =>
-        new(VisualsPath);
+        new(MissileVisualsPath);
 
     public override int MinInitialHp => 1;
     public override int MaxInitialHp => 1;
