@@ -546,7 +546,7 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("protected override string VisualsPath", monster, StringComparison.Ordinal);
         Assert.DoesNotContain("NinjaSlayerAssetProfile.VisualsPath", monster, StringComparison.Ordinal);
         Assert.DoesNotContain("BuildCombatAnimationStateMachine", monster, StringComparison.Ordinal);
-        Assert.Contains("scale = Vector2(0.492, 0.492)", scene, StringComparison.Ordinal);
+        Assert.Contains("scale = Vector2(0.5571, 0.5571)", scene, StringComparison.Ordinal);
         Assert.Contains("res://NinjaSlayer/images/monsters/yamoto_koki.png", scene, StringComparison.Ordinal);
 
         Assert.Contains("case \"Dodge\":", animations, StringComparison.Ordinal);
@@ -571,6 +571,69 @@ public sealed class RepositoryArchitectureTests
                  })
         {
             Assert.Contains(eventName, audio, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void YamotoKokiIaiUsesSelfContainedRecoloredGrandFinaleVfx()
+    {
+        string monster = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
+        string petals = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "scenes",
+            "vfx",
+            "yamoto_koki_iai",
+            "grand_finale",
+            "vfx_grand_finale_petals.tscn"));
+        string impact = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "scenes",
+            "vfx",
+            "yamoto_koki_iai",
+            "vfx_grand_finale_impact.tscn"));
+        string ribbon = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "materials",
+            "vfx",
+            "yamoto_koki_iai",
+            "ribbon_flipbook",
+            "vfx_ribbon_flipbook_1_2_silent.tres"));
+
+        Assert.Contains("PlayYamotoKokiIaiFeedback(Creature, enemies)", monster, StringComparison.Ordinal);
+        Assert.Contains("PreloadYamotoKokiIaiFeedback()", monster, StringComparison.Ordinal);
+        Assert.DoesNotContain("giantHorizontalSlashPath", monster, StringComparison.Ordinal);
+        Assert.Contains("0.9098039, 0.6117647, 0.9372549", petals, StringComparison.Ordinal);
+        Assert.Contains("0.9882353, 0.89411765, 0.99215686", impact, StringComparison.Ordinal);
+        Assert.Contains("0.9882353, 0.89411765, 0.99215686", ribbon, StringComparison.Ordinal);
+
+        string[] roots =
+        [
+            "NinjaSlayer/scenes/vfx/yamoto_koki_iai",
+            "NinjaSlayer/materials/vfx/yamoto_koki_iai",
+            "NinjaSlayer/shaders/vfx/yamoto_koki_iai"
+        ];
+        foreach (string root in roots)
+        {
+            foreach (string file in Directory.EnumerateFiles(
+                         Path.Combine(Root, root.Replace('/', Path.DirectorySeparatorChar)),
+                         "*",
+                         SearchOption.AllDirectories))
+            {
+                if (Path.GetExtension(file) is not (".tscn" or ".tres" or ".gdshader" or ".gdshaderinc"))
+                {
+                    continue;
+                }
+
+                string content = File.ReadAllText(file);
+                Assert.DoesNotContain("res://scenes/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://materials/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://images/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://shaders/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://src/Core/", content, StringComparison.Ordinal);
+            }
         }
     }
 

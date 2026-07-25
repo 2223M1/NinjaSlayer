@@ -1,0 +1,40 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Material" path="res://NinjaSlayer/materials/vfx/yamoto_koki_iai/common/vfx_small_impact.tres" id="1_snf6i"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/yamoto_koki_iai/common/common_impact_flare_flipbook.png" id="2_q4a4p"]
+
+[sub_resource type="Curve" id="Curve_ljjp2"]
+_limits = [0.0, 3.0, 0.0, 1.0]
+_data = [Vector2(0, 3), 0.0, -5.74391, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_2o5cn"]
+curve = SubResource("Curve_ljjp2")
+
+[sub_resource type="Curve" id="Curve_e2oqh"]
+_data = [Vector2(0, 1), 0.0, -2.41411, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_pn40c"]
+curve = SubResource("Curve_e2oqh")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yvbsr"]
+particle_flag_disable_z = true
+angle_min = -1000.0
+angle_max = 1000.0
+gravity = Vector3(0, 0, 0)
+scale_min = 2.0
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_pn40c")
+emission_curve = SubResource("CurveTexture_2o5cn")
+anim_offset_max = 1.0
+
+[node name="vfx_common_hit_flare" type="GPUParticles2D"]
+material = ExtResource("1_snf6i")
+emitting = false
+amount = 1
+texture = ExtResource("2_q4a4p")
+lifetime = 0.17
+one_shot = true
+fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_yvbsr")

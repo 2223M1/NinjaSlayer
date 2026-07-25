@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Vfx;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Content;
@@ -31,6 +32,36 @@ public static class NinjaSlayerCombatVfx
     {
         VfxCmd.PlayOnCreatureCenter(target, VfxCmd.bluntPath);
         NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack);
+    }
+
+    public static void PlayYamotoKokiIaiFeedback(Creature attacker, IEnumerable<Creature> targets)
+    {
+        NCombatRoom? room = NCombatRoom.Instance;
+        if (room == null)
+        {
+            return;
+        }
+
+        NYamotoKokiIaiPetalsVfx? petals = NYamotoKokiIaiPetalsVfx.Create(attacker);
+        if (petals != null)
+        {
+            room.CombatVfxContainer.AddChildSafely(petals);
+        }
+
+        foreach (Creature target in targets)
+        {
+            NYamotoKokiIaiImpactVfx? impact = NYamotoKokiIaiImpactVfx.Create(target);
+            if (impact != null)
+            {
+                room.CombatVfxContainer.AddChildSafely(impact);
+            }
+        }
+    }
+
+    public static void PreloadYamotoKokiIaiFeedback()
+    {
+        NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiIaiPetalsVfx.ScenePath);
+        NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiIaiImpactVfx.ScenePath);
     }
 
     public static void PlayBurnStatusFeedback(IEnumerable<Creature> targets)

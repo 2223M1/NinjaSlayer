@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://NinjaSlayer/shaders/vfx/yamoto_koki_iai/distortion/vfx_screen_distortion_outward_shader.gdshader" id="1_ejb5m"]
+
+[resource]
+shader = ExtResource("1_ejb5m")
+shader_parameter/distortion_base_intensity = 0.04

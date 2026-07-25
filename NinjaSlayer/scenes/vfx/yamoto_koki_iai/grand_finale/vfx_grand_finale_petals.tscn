@@ -1,0 +1,77 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://Code/Nodes/NYamotoKokiIaiPetalsVfx.cs" id="1_script"]
+[ext_resource type="Material" path="res://NinjaSlayer/materials/vfx/yamoto_koki_iai/grand_finale/vfx_grand_finale_petals.tres" id="1_re5kq"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/yamoto_koki_iai/grand_finale/grand_finale_petals.png" id="2_lo5yb"]
+
+[sub_resource type="Curve" id="Curve_71x6u"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -3.1934454, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_u1lcf"]
+curve = SubResource("Curve_71x6u")
+
+[sub_resource type="Curve" id="Curve_tfy6v"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_k4yba"]
+curve = SubResource("Curve_tfy6v")
+
+[sub_resource type="Gradient" id="Gradient_3j2cm"]
+colors = PackedColorArray(0.40941176, 0.27529412, 0.4217647, 1, 0.9098039, 0.6117647, 0.9372549, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_n0yko"]
+gradient = SubResource("Gradient_3j2cm")
+
+[sub_resource type="Curve" id="Curve_d5rxi"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_b8nia"]
+curve = SubResource("Curve_d5rxi")
+
+[sub_resource type="Curve" id="Curve_b8nia"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -3.2245061, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_71x6u"]
+curve = SubResource("Curve_b8nia")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_wcqih"]
+lifetime_randomness = 0.75
+particle_flag_disable_z = true
+particle_flag_damping_as_friction = true
+emission_shape = 3
+emission_box_extents = Vector3(1000, 600, 500)
+angle_min = 1.0728835e-05
+angle_max = 360.00003
+direction = Vector3(1, 0.25, 0)
+spread = 10.0
+initial_velocity_min = 2400.0
+initial_velocity_max = 4800.0
+angular_velocity_min = -90.000015
+angular_velocity_max = 89.999985
+angular_velocity_curve = SubResource("CurveTexture_k4yba")
+gravity = Vector3(490, 196, 0)
+damping_min = 1.0
+damping_max = 2.0
+damping_curve = SubResource("CurveTexture_b8nia")
+scale_min = 0.13
+scale_max = 0.19999999
+scale_curve = SubResource("CurveTexture_71x6u")
+color_initial_ramp = SubResource("GradientTexture1D_n0yko")
+alpha_curve = SubResource("CurveTexture_u1lcf")
+anim_offset_max = 1.0
+
+[node name="vfx_grand_finale_petals" type="GPUParticles2D"]
+script = ExtResource("1_script")
+material = ExtResource("1_re5kq")
+emitting = false
+amount = 18
+texture = ExtResource("2_lo5yb")
+lifetime = 3.0
+one_shot = true
+explosiveness = 0.95
+fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_wcqih")

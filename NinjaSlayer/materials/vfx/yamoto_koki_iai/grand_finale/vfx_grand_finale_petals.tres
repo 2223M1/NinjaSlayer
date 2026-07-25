@@ -1,0 +1,38 @@
+[gd_resource type="ShaderMaterial" load_steps=10 format=3]
+
+[ext_resource type="Shader" path="res://NinjaSlayer/shaders/vfx/yamoto_koki_iai/common/vfx_flipbook_shader.gdshader" id="1_hbwst"]
+
+[sub_resource type="Curve" id="Curve_piil5"]
+
+[sub_resource type="CurveTexture" id="CurveTexture_tmgwl"]
+curve = SubResource("Curve_piil5")
+
+[sub_resource type="Curve" id="Curve_6gbcc"]
+
+[sub_resource type="CurveTexture" id="CurveTexture_4oyhg"]
+curve = SubResource("Curve_6gbcc")
+
+[sub_resource type="Curve" id="Curve_lgks8"]
+
+[sub_resource type="CurveTexture" id="CurveTexture_yuvu1"]
+curve = SubResource("Curve_lgks8")
+
+[sub_resource type="Gradient" id="Gradient_82h7q"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qd68v"]
+gradient = SubResource("Gradient_82h7q")
+
+[resource]
+shader = ExtResource("1_hbwst")
+shader_parameter/pivot_offset = Vector2(0.5, 0)
+shader_parameter/lut = SubResource("GradientTexture1D_qd68v")
+shader_parameter/frame_count = 4.0
+shader_parameter/flipbook_size = Vector2(2, 2)
+shader_parameter/flipbook_curve = SubResource("CurveTexture_4oyhg")
+shader_parameter/use_erosion_texture = 0.0
+shader_parameter/erosion_curve = SubResource("CurveTexture_tmgwl")
+shader_parameter/erosion_offset = 0.1
+shader_parameter/use_hue_shift = 0.0
+shader_parameter/hue_shift_curve = SubResource("CurveTexture_yuvu1")

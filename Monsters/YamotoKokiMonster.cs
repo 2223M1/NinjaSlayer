@@ -49,6 +49,12 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         return (MoveState)machine.States[moveId];
     }
 
+    public override async Task AfterAddedToRoom()
+    {
+        await base.AfterAddedToRoom();
+        NinjaSlayerCombatVfx.PreloadYamotoKokiIaiFeedback();
+    }
+
     private async Task SummonBombMove(IReadOnlyList<Creature> _)
     {
         if (Creature.PetOwner is not { } owner)
@@ -78,7 +84,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
         await CreatureCmd.TriggerAnim(Creature, "SlowAttack", 0.25f);
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
-        VfxCmd.PlayOnCreatureCenters(enemies, VfxCmd.giantHorizontalSlashPath);
+        NinjaSlayerCombatVfx.PlayYamotoKokiIaiFeedback(Creature, enemies);
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),
             enemies,

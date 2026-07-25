@@ -1,0 +1,28 @@
+[gd_resource type="ShaderMaterial" load_steps=6 format=3]
+
+[ext_resource type="Shader" path="res://NinjaSlayer/shaders/vfx/yamoto_koki_iai/common/vfx_flipbook_shader.gdshader" id="1_fe50b"]
+
+[sub_resource type="Curve" id="Curve_5nmby"]
+_data = [Vector2(0, 0), 0.0, 1.0, 0, 1, Vector2(1, 1), 1.0, 0.0, 1, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_uhb32"]
+curve = SubResource("Curve_5nmby")
+
+[sub_resource type="Gradient" id="Gradient_hdauo"]
+offsets = PackedFloat32Array(0, 0.3557423, 1)
+colors = PackedColorArray(0.25666898, 0.8024549, 1, 1, 0, 0.5652399, 1, 1, 0.5591886, 0.8866955, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_3u3sn"]
+gradient = SubResource("Gradient_hdauo")
+
+[resource]
+shader = ExtResource("1_fe50b")
+shader_parameter/pivot_offset = Vector2(0, 0)
+shader_parameter/lut = SubResource("GradientTexture1D_3u3sn")
+shader_parameter/frame_count = 6.0
+shader_parameter/flipbook_size = Vector2(3, 2)
+shader_parameter/flipbook_curve = SubResource("CurveTexture_uhb32")
+shader_parameter/use_erosion_texture = 0.0
+shader_parameter/erosion_offset = 0.1
+shader_parameter/use_hue_shift = 0.0

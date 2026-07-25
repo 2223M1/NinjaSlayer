@@ -29,7 +29,9 @@ public class Entry
         typeof(NinjaSlayerShadowController),
         typeof(NarakuVisualOverlay),
         typeof(NinjaSlayerTransitionOverlay),
-        typeof(NNinjaSlayerGroundFireVfx)
+        typeof(NNinjaSlayerGroundFireVfx),
+        typeof(NYamotoKokiIaiPetalsVfx),
+        typeof(NYamotoKokiIaiImpactVfx)
     ];
 
     public static void Init()
