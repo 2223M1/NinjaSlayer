@@ -1,0 +1,51 @@
+gas_bomb.png
+size:864,609
+filter:Linear,Linear
+scale:0.665
+gas bomb center
+bounds:695,13,136,135
+offsets:0,0,136,136
+rotate:90
+gas_bomb_blast
+bounds:2,130,255,477
+offsets:3,3,261,483
+zap 2-1
+bounds:713,398,149,209
+offsets:59,19,265,239
+zap 2-2
+bounds:259,2,146,217
+offsets:59,14,265,239
+rotate:90
+zap 2-3
+bounds:707,179,143,217
+offsets:61,13,265,239
+zap 2-4
+bounds:259,150,146,221
+offsets:61,11,265,239
+rotate:90
+zap 2-5
+bounds:482,151,144,219
+offsets:62,12,265,239
+rotate:90
+zap1-1
+bounds:478,3,215,145
+offsets:27,74,265,239
+zap1-2
+bounds:259,454,226,153
+offsets:18,69,265,239
+zap1-3
+bounds:484,297,221,153
+offsets:20,68,265,239
+zap1-4
+bounds:259,298,223,154
+offsets:19,68,265,239
+zap1-5
+bounds:487,452,224,155
+offsets:19,67,265,239
+
+gas_bomb_2.png
+size:80,186
+filter:Linear,Linear
+scale:0.665
+smokeTex/smoke_tex
+bounds:2,2,76,182

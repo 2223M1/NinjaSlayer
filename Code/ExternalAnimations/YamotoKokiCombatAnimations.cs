@@ -18,8 +18,8 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellHoldSeconds = 0.2f;
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
-    private const float GroundOffsetFromPivot = 12.13f;
-    private static readonly Vector2 RightFootContactFromPivot = new(52.495f, 6.642f);
+    private const float GroundOffsetFromPivot = 8.625f;
+    private static readonly Vector2 RightFootContactFromPivot = new(52.495f, 3.137f);
 
     public static bool TryPlayTriggerAnim(
         Creature creature,

@@ -39,12 +39,6 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public override bool ShouldFadeAfterDeath => false;
     public override string DeathSfx => "event:/sfx/enemy/enemy_attacks/living_fog/living_fog_minion_die";
 
-    public override void SetupSkins(MegaSprite spine, MegaSkeleton skeleton)
-    {
-        base.SetupSkins(spine, skeleton);
-        YamotoKokiGasBombVisuals.RemoveStaticSmokeAttachment(skeleton);
-    }
-
     public int GetExplodeDamage() => YamotoKokiDamageMath.ScaleForParty(
         ExplodeDamage,
         Creature.PetOwner?.RunState.Players.Count ?? 1);

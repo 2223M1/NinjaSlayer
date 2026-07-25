@@ -1,0 +1,143 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://Code/Nodes/NYamotoKokiGasBombVisualsRoot.cs" id="1_root"]
+[ext_resource type="SpineSkeletonDataResource" path="res://NinjaSlayer/animations/monsters/yamoto_koki_missile/yamoto_koki_missile_skel_data.tres" id="2_skeleton"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/relics/YamotoKokiCuteRelic.png" id="3_crane"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/yamoto_koki_missile/short_rice_no_glow_particle.png" id="4_particle"]
+[ext_resource type="Script" path="res://Code/Nodes/NYamotoKokiGasBombVfx.cs" id="5_vfx"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_additive"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="Curve_dot_alpha"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.596059, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -5.93033, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_dot_alpha"]
+curve = SubResource("Curve_dot_alpha")
+
+[sub_resource type="Curve" id="Curve_dot_scale"]
+_data = [Vector2(0.00636943, 0.506789), 0.0, 9.53662, 0, 0, Vector2(0.059448, 0.859824), 3.08319, 3.08319, 0, 0, Vector2(0.144374, 1), 0.0, 0.0, 0, 0, Vector2(0.564756, 0.787141), -1.25758, -1.25758, 0, 0, Vector2(1, 0.335463), -0.582212, 0.0, 0, 0]
+point_count = 5
+
+[sub_resource type="CurveTexture" id="CurveTexture_dot_scale"]
+curve = SubResource("Curve_dot_scale")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_dot"]
+particle_flag_disable_z = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 20.0
+emission_ring_inner_radius = 0.0
+emission_ring_cone_angle = 90.0
+angle_min = 1.07288e-05
+angle_max = 1.07288e-05
+angular_velocity_min = -1.60933e-05
+angular_velocity_max = -1.60933e-05
+radial_velocity_min = 9.99998
+radial_velocity_max = 14.0
+gravity = Vector3(0, 0, 0)
+scale_max = 1.6
+scale_curve = SubResource("CurveTexture_dot_scale")
+color = Color(0.8, 0.656, 0.8, 1)
+alpha_curve = SubResource("CurveTexture_dot_alpha")
+anim_offset_max = 1.0
+
+[sub_resource type="Gradient" id="Gradient_bit_color"]
+colors = PackedColorArray(0.811213, 0.5759, 0.736698, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture_bit_color"]
+gradient = SubResource("Gradient_bit_color")
+
+[sub_resource type="Curve" id="Curve_bit_scale"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.622081, 0.870208), -0.666897, -0.666897, 0, 0, Vector2(1, 0), -3.06746, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_bit_scale"]
+curve = SubResource("Curve_bit_scale")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_bit"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 60.0
+initial_velocity_min = 400.0
+initial_velocity_max = 1300.0
+gravity = Vector3(0, 600, 0)
+scale_min = 0.1
+scale_max = 0.4
+scale_curve = SubResource("CurveTexture_bit_scale")
+color_ramp = SubResource("GradientTexture_bit_color")
+
+[node name="YamotoKokiMissile" type="Node2D"]
+script = ExtResource("1_root")
+metadata/_edit_group_ = true
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = ExtResource("2_skeleton")
+preview_skin = "Default"
+preview_animation = "idle_loop"
+unique_name_in_owner = true
+position = Vector2(-5, 14)
+scale = Vector2(0.5, 0.5)
+
+[node name="SmokeBallSlot" type="SpineSlotNode" parent="Visuals"]
+slot_name = "smoke_ball_attach"
+show_behind_parent = true
+position = Vector2(1.90544, -204.018)
+
+[node name="PaperKraneCore" type="Sprite2D" parent="Visuals/SmokeBallSlot"]
+show_behind_parent = true
+position = Vector2(-2.2, 0.55)
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("3_crane")
+flip_h = true
+
+[node name="DotParticles" type="GPUParticles2D" parent="Visuals/SmokeBallSlot"]
+show_behind_parent = true
+material = SubResource("CanvasItemMaterial_additive")
+position = Vector2(0.0944824, 0.0179443)
+amount = 2
+texture = ExtResource("4_particle")
+lifetime = 0.2
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_dot")
+
+[node name="BitParticles" type="GPUParticles2D" parent="Visuals/SmokeBallSlot"]
+position = Vector2(0.0944824, 66.0179)
+amount = 10
+texture = ExtResource("4_particle")
+lifetime = 1.2
+preprocess = 0.1
+speed_scale = 1.2
+explosiveness = 0.95
+trail_enabled = true
+trail_lifetime = 0.02
+trail_sections = 4
+trail_section_subdivisions = 2
+process_material = SubResource("ParticleProcessMaterial_bit")
+
+[node name="NYamotoKokiGasBombVfx" type="Node" parent="Visuals"]
+script = ExtResource("5_vfx")
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -77.0
+offset_top = -149.0
+offset_right = 87.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(3, -67)
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-2, -213)

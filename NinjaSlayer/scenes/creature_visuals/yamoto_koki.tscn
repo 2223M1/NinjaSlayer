@@ -8,16 +8,16 @@ metadata/_edit_group_ = true
 metadata/_edit_lock_ = true
 
 [node name="Shadow" type="Sprite2D" parent="."]
-position = Vector2(45, -12.13)
+position = Vector2(45, -20.625)
 scale = Vector2(0.3358, 0.3358)
 texture = ExtResource("2_shadow")
 
 [node name="Visuals" type="Node2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(45, -12.13)
+position = Vector2(45, -20.625)
 
 [node name="Sprite" type="Sprite2D" parent="Visuals"]
-position = Vector2(-45, -103.47)
+position = Vector2(-45, -106.975)
 scale = Vector2(0.4588, 0.4588)
 texture = ExtResource("1_yamoto_koki")
 
@@ -26,19 +26,19 @@ unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
 offset_left = -103.56
-offset_top = -231.24
+offset_top = -243.24
 offset_right = 103.56
-offset_bottom = 0.0
+offset_bottom = -12.0
 mouse_filter = 2
 
 [node name="CenterPos" type="Marker2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(0, -115.62)
+position = Vector2(0, -127.62)
 
 [node name="IntentPos" type="Marker2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(0, -263.08)
+position = Vector2(0, -275.08)
 
 [node name="TalkPos" type="Marker2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(16.79, -219.23)
+position = Vector2(16.79, -231.23)

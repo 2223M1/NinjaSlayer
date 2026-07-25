@@ -549,16 +549,44 @@ public sealed class RepositoryArchitectureTests
             "scenes",
             "creature_visuals",
             "yamoto_koki.tscn"));
+        string missileScene = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "scenes",
+            "creature_visuals",
+            "yamoto_koki_missile.tscn"));
+        string missileSkeletonData = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "animations",
+            "monsters",
+            "yamoto_koki_missile",
+            "yamoto_koki_missile_skel_data.tres"));
+        string missileAtlas = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "animations",
+            "monsters",
+            "yamoto_koki_missile",
+            "gas_bomb.spatlas"));
         Assert.Contains("res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn", monster, StringComparison.Ordinal);
         Assert.Contains("protected override string VisualsPath", monster, StringComparison.Ordinal);
         Assert.DoesNotContain("NinjaSlayerAssetProfile.VisualsPath", monster, StringComparison.Ordinal);
         Assert.DoesNotContain("BuildCombatAnimationStateMachine", monster, StringComparison.Ordinal);
         Assert.Contains("scale = Vector2(0.4588, 0.4588)", scene, StringComparison.Ordinal);
-        Assert.Contains("position = Vector2(45, -12.13)", scene, StringComparison.Ordinal);
+        Assert.Equal(2, CountOccurrences(scene, "position = Vector2(45, -20.625)"));
+        Assert.Contains("position = Vector2(-45, -106.975)", scene, StringComparison.Ordinal);
+        Assert.Contains("offset_top = -243.24", scene, StringComparison.Ordinal);
+        Assert.Contains("offset_bottom = -12.0", scene, StringComparison.Ordinal);
+        Assert.Contains("position = Vector2(0, -127.62)", scene, StringComparison.Ordinal);
+        Assert.Contains("position = Vector2(0, -275.08)", scene, StringComparison.Ordinal);
+        Assert.Contains("position = Vector2(16.79, -231.23)", scene, StringComparison.Ordinal);
         Assert.Contains("res://NinjaSlayer/images/monsters/yamoto_koki.png", scene, StringComparison.Ordinal);
 
         Assert.Contains("case \"Dodge\":", animations, StringComparison.Ordinal);
         Assert.Contains("case \"SlowAttack\":", animations, StringComparison.Ordinal);
+        Assert.Contains("GroundOffsetFromPivot = 8.625f", animations, StringComparison.Ordinal);
+        Assert.Contains("new(52.495f, 3.137f)", animations, StringComparison.Ordinal);
         Assert.Contains("PlaySummon", monster, StringComparison.Ordinal);
         Assert.Contains("SummonBombCount = 2", monster, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiFastAttackEvent", monster, StringComparison.Ordinal);
@@ -576,7 +604,7 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("ShouldAllowHitting", bomb, StringComparison.Ordinal);
         Assert.Contains("TryCreateCreatureVisuals()", bomb, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiGasBombVisuals.Create()", bomb, StringComparison.Ordinal);
-        Assert.Contains("RemoveStaticSmokeAttachment(skeleton)", bomb, StringComparison.Ordinal);
+        Assert.DoesNotContain("SetupSkins", bomb, StringComparison.Ordinal);
         Assert.Contains("StopAndReset()", bomb, StringComparison.Ordinal);
         Assert.Contains("new(ExplodeMoveId, ExplodeMove)", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("DeathBlowIntent", bomb, StringComparison.Ordinal);
@@ -584,29 +612,38 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("NGaseousImpactVfx", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("#402f45", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("DieForYouPower", bomb, StringComparison.Ordinal);
-        Assert.Contains("ModelDb.Monster<GasBomb>().CreateVisuals()", missileVisuals, StringComparison.Ordinal);
+        Assert.Contains("res://NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn", missileVisuals, StringComparison.Ordinal);
+        Assert.Contains("RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>", missileVisuals, StringComparison.Ordinal);
+        Assert.DoesNotContain("ModelDb.Monster<GasBomb>()", missileVisuals, StringComparison.Ordinal);
         Assert.Contains("SetScaleAndHue(MissileScale, 0f)", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("GetNodeOrNull(\"NGasBombVfx\")", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("SmokeTrailSlot", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("StaticSmokeSlotName = \"smoke_tex1\"", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("SetAttachmentMethod = \"set_attachment\"", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("PaperKraneScale = 0.7f", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("YamotoKokiCuteRelic.png", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("body.GetNode<Node2D>(\"SmokeBallSlot\")", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("FlipH = true", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("ShowBehindParent = true", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("ZIndex = -1", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("PuffParticles", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("ExplodePuffParticles", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("ProcessModeEnum.Disabled", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("new NYamotoKokiGasBombVfx", missileVisuals, StringComparison.Ordinal);
         Assert.Contains("new NYamotoKokiGasBombIdleBob", missileVisuals, StringComparison.Ordinal);
         Assert.Contains("UniqueNameInOwner = true", missileVisuals, StringComparison.Ordinal);
-        Assert.Contains("DotParticles", missileVfx, StringComparison.Ordinal);
-        Assert.Contains("BitParticles", missileVfx, StringComparison.Ordinal);
+        Assert.Contains("res://NinjaSlayer/animations/monsters/yamoto_koki_missile", missileScene, StringComparison.Ordinal);
+        Assert.Contains("res://NinjaSlayer/images/relics/YamotoKokiCuteRelic.png", missileScene, StringComparison.Ordinal);
+        Assert.Contains("res://NinjaSlayer/images/vfx/yamoto_koki_missile", missileScene, StringComparison.Ordinal);
+        Assert.Contains("position = Vector2(-2.2, 0.55)", missileScene, StringComparison.Ordinal);
+        Assert.Contains("scale = Vector2(1.1, 1.1)", missileScene, StringComparison.Ordinal);
+        Assert.Contains("flip_h = true", missileScene, StringComparison.Ordinal);
+        Assert.Contains("DotParticles", missileScene, StringComparison.Ordinal);
+        Assert.Contains("BitParticles", missileScene, StringComparison.Ordinal);
+        Assert.DoesNotContain("PuffParticles", missileScene, StringComparison.Ordinal);
+        Assert.DoesNotContain("ExplodePuffParticles", missileScene, StringComparison.Ordinal);
+        Assert.DoesNotContain("res://scenes/", missileScene, StringComparison.Ordinal);
+        Assert.DoesNotContain("res://animations/", missileScene, StringComparison.Ordinal);
+        Assert.DoesNotContain("res://images/", missileScene, StringComparison.Ordinal);
+        Assert.Contains("gas_bomb.spatlas", missileSkeletonData, StringComparison.Ordinal);
+        Assert.Contains("gas_bomb.spskel", missileSkeletonData, StringComparison.Ordinal);
+        Assert.Contains(
+            "res://NinjaSlayer/animations/monsters/yamoto_koki_missile/gas_bomb.atlas",
+            missileAtlas,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "res://animations/monsters/gas_bomb",
+            missileAtlas,
+            StringComparison.Ordinal);
         Assert.Contains("_megaSprite = new MegaSprite(body)", missileVfx, StringComparison.Ordinal);
         Assert.Contains("_bitParticles.Restart()", missileVfx, StringComparison.Ordinal);
-        Assert.DoesNotContain("ExplodePuffParticles", missileVfx, StringComparison.Ordinal);
+        Assert.Contains("case \"burst\":", missileVfx, StringComparison.Ordinal);
         Assert.DoesNotContain("PuffParticles", missileVfx, StringComparison.Ordinal);
         Assert.Contains("Amplitude = 10f", missileBob, StringComparison.Ordinal);
         Assert.Contains("PeriodSeconds = 2f", missileBob, StringComparison.Ordinal);
@@ -614,12 +651,50 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("_body!.Position = _bodyBasePosition + offset", missileBob, StringComparison.Ordinal);
         Assert.Contains("_damageAmount!.Position = _damageBasePosition + offset", missileBob, StringComparison.Ordinal);
         Assert.DoesNotContain("GetCreatureNode()", missileBob, StringComparison.Ordinal);
-        Assert.False(File.Exists(Path.Combine(
+        Assert.True(File.Exists(Path.Combine(
             Root,
             "NinjaSlayer",
             "scenes",
             "creature_visuals",
             "yamoto_koki_missile.tscn")));
+        Assert.True(File.Exists(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "animations",
+            "monsters",
+            "yamoto_koki_missile",
+            "gas_bomb.skel")));
+        Assert.True(File.Exists(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "animations",
+            "monsters",
+            "yamoto_koki_missile",
+            "gas_bomb.spskel")));
+        Assert.True(File.Exists(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "animations",
+            "monsters",
+            "yamoto_koki_missile",
+            "gas_bomb.spatlas")));
+        Assert.True(File.Exists(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "animations",
+            "monsters",
+            "yamoto_koki_missile",
+            "gas_bomb.png")));
+        Assert.InRange(
+            new FileInfo(Path.Combine(
+                Root,
+                "NinjaSlayer",
+                "animations",
+                "monsters",
+                "yamoto_koki_missile",
+                "gas_bomb_2.png")).Length,
+            1,
+            256);
         Assert.Contains("yamoto_koki_summon.png", intentPatch, StringComparison.Ordinal);
         Assert.Contains("yamoto_koki_iai_slash.png", intentPatch, StringComparison.Ordinal);
         Assert.DoesNotContain("Shader", intentPatch, StringComparison.Ordinal);

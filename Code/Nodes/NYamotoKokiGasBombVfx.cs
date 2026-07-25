@@ -14,7 +14,6 @@ public partial class NYamotoKokiGasBombVfx : Node
         Node2D body = GetParent<Node2D>();
         _dotParticles = GetNode<GpuParticles2D>("../SmokeBallSlot/DotParticles");
         _bitParticles = GetNode<GpuParticles2D>("../SmokeBallSlot/BitParticles");
-
         _dotParticles.Emitting = false;
         _bitParticles.Emitting = false;
         _bitParticles.OneShot = true;
