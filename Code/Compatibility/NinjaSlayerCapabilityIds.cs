@@ -18,8 +18,8 @@ internal static class NinjaSlayerCapabilityIds
     public const string FinisherPresentation = "finisher-presentation";
     public const string FinisherTornadoCadence = "finisher-tornado-cadence";
     public const string TransitionCore = "transition-core";
+    public const string TransitionPresentation = "transition-presentation";
     public const string TransitionLoadSmoothing = "transition-load-smoothing";
-    public const string TransitionAssetPrefetch = "transition-asset-prefetch";
     public const string Feedback = "feedback";
     public const string TelemetryIdentity = "telemetry-identity";
 
@@ -41,8 +41,8 @@ internal static class NinjaSlayerCapabilityIds
         FinisherPresentation,
         FinisherTornadoCadence,
         TransitionCore,
+        TransitionPresentation,
         TransitionLoadSmoothing,
-        TransitionAssetPrefetch,
         Feedback,
         TelemetryIdentity
     ];

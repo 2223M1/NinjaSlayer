@@ -14,21 +14,17 @@ internal enum TransitionVideoLoadPollResult
 internal static class NinjaSlayerTransitionVideo
 {
     private static VideoStream? cachedStream;
-    private static bool preloadRequested;
 
     public static void BeginPreload()
     {
-        if (cachedStream != null || preloadRequested)
+        if (cachedStream != null && GodotObject.IsInstanceValid(cachedStream))
         {
             return;
         }
 
-        preloadRequested = true;
-        Error error = ResourceLoader.LoadThreadedRequest(NinjaSlayerAssetProfile.TransitionVideoPath);
-        if (error != Error.Ok)
-        {
-            preloadRequested = false;
-        }
+        cachedStream = ResourceLoader.Load<VideoStream>(
+            NinjaSlayerAssetProfile.TransitionVideoPath,
+            cacheMode: ResourceLoader.CacheMode.Reuse);
     }
 
     internal static TransitionVideoLoadPollResult PollPreloadedStream(
@@ -42,51 +38,17 @@ internal static class NinjaSlayerTransitionVideo
             return TransitionVideoLoadPollResult.Loaded;
         }
 
-        if (!preloadRequested)
-        {
-            BeginPreload();
-        }
-
-        if (!preloadRequested)
+        BeginPreload();
+        if (cachedStream is not { } loadedStream || !GodotObject.IsInstanceValid(loadedStream))
         {
             stream = null;
-            diagnostic = "Godot rejected the threaded load request";
+            diagnostic = "the transition VideoStream resource was unavailable";
             return TransitionVideoLoadPollResult.Failed;
         }
 
-        string path = NinjaSlayerAssetProfile.TransitionVideoPath;
-        ResourceLoader.ThreadLoadStatus status = ResourceLoader.LoadThreadedGetStatus(path);
-        if (status == ResourceLoader.ThreadLoadStatus.InProgress)
-        {
-            stream = null;
-            diagnostic = null;
-            return TransitionVideoLoadPollResult.Waiting;
-        }
-
-        if (status != ResourceLoader.ThreadLoadStatus.Loaded)
-        {
-            stream = null;
-            diagnostic = $"threaded load ended with {status}";
-            return TransitionVideoLoadPollResult.Failed;
-        }
-
-        Resource resource = ResourceLoader.LoadThreadedGet(path);
-        if (resource is not VideoStream loadedStream)
-        {
-            stream = null;
-            diagnostic = $"resource type was {resource.GetType().Name} instead of VideoStream";
-            return TransitionVideoLoadPollResult.Failed;
-        }
-
-        cachedStream = loadedStream;
         stream = loadedStream;
         diagnostic = null;
         return TransitionVideoLoadPollResult.Loaded;
-    }
-
-    internal static void AllowPreloadRetry()
-    {
-        preloadRequested = false;
     }
 
     public static VideoStream GetStream()
@@ -96,18 +58,15 @@ internal static class NinjaSlayerTransitionVideo
             return cachedStream;
         }
 
-        string path = NinjaSlayerAssetProfile.TransitionVideoPath;
-        ResourceLoader.ThreadLoadStatus status = ResourceLoader.LoadThreadedGetStatus(path);
-        Resource? resource = status is ResourceLoader.ThreadLoadStatus.InProgress or ResourceLoader.ThreadLoadStatus.Loaded
-            ? ResourceLoader.LoadThreadedGet(path)
-            : ResourceLoader.Load(path, cacheMode: ResourceLoader.CacheMode.Reuse);
-        if (resource is not VideoStream stream)
+        BeginPreload();
+        if (cachedStream is not { } stream || !GodotObject.IsInstanceValid(stream))
         {
-            Entry.Logger.Warn($"Missing NinjaSlayer transition video resource: {path}");
-            throw new InvalidOperationException($"Missing NinjaSlayer transition video: {path}");
+            Entry.Logger.Warn(
+                $"Missing NinjaSlayer transition video resource: {NinjaSlayerAssetProfile.TransitionVideoPath}");
+            throw new InvalidOperationException(
+                $"Missing NinjaSlayer transition video: {NinjaSlayerAssetProfile.TransitionVideoPath}");
         }
 
-        cachedStream = stream;
         return stream;
     }
 }

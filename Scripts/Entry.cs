@@ -161,17 +161,17 @@ public class Entry
         if (!transition.IsOperational)
         {
             DisableByDependency(
-                NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
+                NinjaSlayerCapabilityIds.TransitionPresentation,
                 NinjaSlayerCapabilityIds.TransitionCore);
             DisableByDependency(
-                NinjaSlayerCapabilityIds.TransitionAssetPrefetch,
+                NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
                 NinjaSlayerCapabilityIds.TransitionCore);
             return;
         }
 
-        InstallCapability<TransitionAssetPrefetchPatchGroup>(
-            NinjaSlayerCapabilityIds.TransitionAssetPrefetch,
-            GameCompatibility.AssetLoading.GetPrefetchProbes());
+        InstallCapability<TransitionPresentationPatchGroup>(
+            NinjaSlayerCapabilityIds.TransitionPresentation,
+            GameCompatibility.TransitionPresentation.GetProbes());
         InstallCapability<TransitionSmoothingPatchGroup>(
             NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
             GameCompatibility.AssetLoading.GetProbes());

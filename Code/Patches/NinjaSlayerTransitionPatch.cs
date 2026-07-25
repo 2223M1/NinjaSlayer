@@ -37,15 +37,14 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
             ? TransitionInvocationKind.Embark
             : TransitionInvocationKind.SaveLoad;
 
-        // Start the transition video in the background and return immediately so the caller's
-        // run/save asset loading overlaps the animation instead of producing a black hold
-        // afterwards. The reveal patches (RoomFadeIn/FadeIn) await this task before showing.
+        // Start playback independently, then release loading at the established media cue.
+        // The reveal patches (RoomFadeIn/FadeIn) still await the full presentation task.
         if (!NinjaSlayerTransitionGate.TryStartSession(
                 __instance,
                 invocationKind,
                 cancelToken ?? CancellationToken.None,
                 BeginNinjaSlayerTransition,
-                out _))
+                out NinjaSlayerTransitionSession? session))
         {
             return true;
         }
@@ -53,10 +52,42 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         float delay = wasPending
             ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
             : NinjaSlayerAudio.SaveLoadStartDelaySeconds;
-        __result = WaitForScenePrewarmAndLoadDelayAsync(
-            delay,
-            cancelToken ?? CancellationToken.None);
+        if (NinjaSlayerPatchCapabilities.TransitionPresentationEnabled)
+        {
+            __result = WaitForViewReadyAndLoadDelayAsync(
+                session!,
+                delay,
+                cancelToken ?? CancellationToken.None);
+        }
+        else
+        {
+            __result = WaitForLoadDelayAsync(
+                delay,
+                cancelToken ?? CancellationToken.None);
+        }
         return false;
+    }
+
+    private static async Task WaitForViewReadyAndLoadDelayAsync(
+        NinjaSlayerTransitionSession session,
+        float delay,
+        CancellationToken cancellationToken)
+    {
+        await session.WaitForViewReadyAsync(cancellationToken);
+        if (delay > 0f)
+        {
+            await Cmd.Wait(delay, cancellationToken);
+        }
+    }
+
+    private static async Task WaitForLoadDelayAsync(
+        float delay,
+        CancellationToken cancellationToken)
+    {
+        if (delay > 0f)
+        {
+            await Cmd.Wait(delay, cancellationToken);
+        }
     }
 
     private static async Task BeginNinjaSlayerTransition(
@@ -69,34 +100,12 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
             return;
         }
 
-        if (NinjaSlayerPatchCapabilities.TransitionAssetPrefetchEnabled)
-        {
-            await NinjaSlayerTransitionScenePrewarmer.AwaitReadyAsync(cancelToken);
-        }
-
-        // The shared prewarm completion keeps cold scene/GPU setup ahead of both playback and loading.
         if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
         {
             session.BeginLoadSmoothing();
         }
         NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
         await PlayOverlayAsync(session, overlay, cancelToken);
-    }
-
-    private static async Task WaitForScenePrewarmAndLoadDelayAsync(
-        float delay,
-        CancellationToken cancellationToken)
-    {
-        if (NinjaSlayerPatchCapabilities.TransitionAssetPrefetchEnabled
-            && SaveManager.Instance.PrefsSave.FastMode != FastModeType.Instant)
-        {
-            await NinjaSlayerTransitionScenePrewarmer.AwaitReadyAsync(cancellationToken);
-        }
-
-        if (delay > 0f)
-        {
-            await Cmd.Wait(delay, cancellationToken);
-        }
     }
 
     private static async Task PlayOverlayAsync(

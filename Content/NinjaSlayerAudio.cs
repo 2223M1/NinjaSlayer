@@ -37,11 +37,12 @@ public static class NinjaSlayerAudio
     /// <summary>Visual transition video length; the FMOD event continues independently.</summary>
     public const float TransitionVisualSeconds = 2f;
 
-    /// <summary>Delay before run asset loading starts during the embark transition animation.</summary>
+    /// <summary>Delay before new-run loading starts after the Transition view takes over.</summary>
     public const float EmbarkLoadStartDelaySeconds = 0.2f;
 
-    /// <summary>Delay before run asset loading starts during the save-load transition animation.</summary>
+    /// <summary>Delay before saved-run loading starts after the Transition view takes over.</summary>
     public const float SaveLoadStartDelaySeconds = 0.6f;
+
     public const string NinjaSlayerIntroSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_intro_spin_attack";
     public const string NinjaSlayerLoopSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_loop_spin_attack";
     public const string NinjaSlayerOutroSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_outro_spin_attack";
