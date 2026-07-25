@@ -13,6 +13,10 @@ namespace NinjaSlayer.Events;
 [RegisterSharedEvent]
 public sealed class YamotoKokiCuteEvent : ModEventTemplate
 {
+    public override EventAssetProfile AssetProfile => new(
+        InitialPortraitPath: "res://NinjaSlayer/images/events/yamoto_koki_cute_event.png"
+    );
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         new GoldVar(50)
