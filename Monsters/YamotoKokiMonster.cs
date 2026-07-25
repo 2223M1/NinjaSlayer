@@ -17,6 +17,7 @@ namespace NinjaSlayer.Monsters;
 [RegisterMonster]
 public sealed class YamotoKokiMonster : ModMonsterTemplate
 {
+    public const int SummonBombCount = 2;
     public const string SummonBombMoveId = "SUMMON_BOMB";
     public const string IaiSlashMoveId = "IAI_SLASH";
     public const int IaiSlashDamage = 6;
@@ -64,10 +65,13 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
         await YamotoKokiCombatAnimations.PlaySummon(Creature, async () =>
         {
-            Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
-            if (bombCreature.Monster is YamotoKokiGasBomb bomb)
+            for (int i = 0; i < SummonBombCount; i++)
             {
-                await bomb.PrepareExplosionIntent(bombCreature);
+                Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
+                if (bombCreature.Monster is YamotoKokiGasBomb bomb)
+                {
+                    await bomb.PrepareExplosionIntent(bombCreature);
+                }
             }
         });
     }

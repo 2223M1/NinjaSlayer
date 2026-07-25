@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -25,6 +26,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public const int ExplodeDamage = 6;
 
     private bool _hasExploded;
+    private int _earliestExplosionTurn = int.MaxValue;
 
     public override MonsterAssetProfile AssetProfile =>
         new(SceneHelper.GetScenePath("creature_visuals/gas_bomb"));
@@ -45,6 +47,17 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         }
     }
 
+    [SavedProperty]
+    public int EarliestExplosionTurn
+    {
+        get => _earliestExplosionTurn;
+        private set
+        {
+            AssertMutable();
+            _earliestExplosionTurn = value;
+        }
+    }
+
     public override async Task AfterAddedToRoom()
     {
         await base.AfterAddedToRoom();
@@ -61,6 +74,8 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
     public async Task PrepareExplosionIntent(Creature bombCreature)
     {
+        EarliestExplosionTurn = bombCreature.PetOwner?.PlayerCombatState?.TurnNumber + 1
+            ?? int.MaxValue;
         if (MoveStateMachine == null)
         {
             SetUpForCombat();
@@ -74,6 +89,9 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
             await node.UpdateIntent(CombatState.HittableEnemies);
         }
     }
+
+    public bool CanExplodeOnTurn(int turnNumber) =>
+        !HasExploded && Creature.IsAlive && turnNumber >= EarliestExplosionTurn;
 
     public async Task ExecuteExplosion(Creature bombCreature)
     {

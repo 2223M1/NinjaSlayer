@@ -27,6 +27,8 @@
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />
     <Compile Include="..\..\Code\Combat\ScreenShakeSuppressionContext.cs" Link="ScreenShakeSuppressionContext.cs" />
+    <Compile Include="..\..\Code\Combat\YamotoKokiOrbitMath.cs" Link="YamotoKokiOrbitMath.cs" />
+    <Compile Include="..\..\Code\Combat\YamotoKokiGridLayoutMath.cs" Link="YamotoKokiGridLayoutMath.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackComboContext.cs" Link="XAttackComboContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\CinematicTimingContract.cs" Link="CinematicTimingContract.cs" />

@@ -6,21 +6,17 @@ using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Monsters;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-/// <summary>
-/// Places each <see cref="YamotoKokiMonster"/> in its own multiplayer-style slot instead of the foot pet band.
-/// </summary>
 public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_yamoto_koki_ally_layout";
-
-    public static string Description =>
-        "Lay out Yamoto Koki companions in independent multiplayer player slots.";
-
+    public static string Description => "Lay out Yamoto Koki as independent multiplayer slots.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
@@ -36,146 +32,92 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
             return true;
         }
 
-        PositionWithYamotoKokiSlots(creatureNodes, scaling, fullyCenterPlayers);
+        Apply(creatureNodes, scaling, fullyCenterPlayers);
         return false;
     }
 
-    private static void PositionWithYamotoKokiSlots(
+    internal static void Reflow(NCombatRoom room)
+    {
+        List<NCreature> allies = room.CreatureNodes
+            .Where(node => node.Entity.IsPlayer || node.Entity.PetOwner != null)
+            .ToList();
+        if (!allies.Any(node => node.Entity.Monster is YamotoKokiMonster))
+        {
+            return;
+        }
+
+        Creature? playerCreature = allies.FirstOrDefault(node => node.Entity.IsPlayer)?.Entity;
+        float scaling = playerCreature?.CombatState?.Encounter?.GetCameraScaling()
+            ?? room.SceneContainer.Scale.X;
+        bool fullyCenterPlayers = playerCreature?.CombatState?.Encounter?.FullyCenterPlayers ?? false;
+        Apply(allies, scaling, fullyCenterPlayers);
+    }
+
+    private static void Apply(
         List<NCreature> creatureNodes,
         float scaling,
         bool fullyCenterPlayers)
     {
+        List<Slot> playerSlots = creatureNodes
+            .Where(node => node.Entity.IsPlayer)
+            .Select(node => new Slot(node, node.Visuals.Bounds.Size.X))
+            .OrderByDescending(slot => LocalContext.IsMe(slot.Anchor.Entity))
+            .ToList();
+
         List<Slot> slots = [];
-        foreach (NCreature creatureNode in creatureNodes)
+        foreach (Slot playerSlot in playerSlots)
         {
-            if (!creatureNode.Entity.IsPlayer)
+            slots.Add(playerSlot);
+            foreach (NCreature yamotoKoki in creatureNodes.Where(node =>
+                         node.Entity.Monster is YamotoKokiMonster
+                         && node.Entity.PetOwner == playerSlot.Anchor.Entity.Player))
             {
-                continue;
-            }
-
-            Slot slot = new()
-            {
-                Anchor = creatureNode,
-                Pets = []
-            };
-            if (LocalContext.IsMe(creatureNode.Entity))
-            {
-                slots.Insert(0, slot);
-            }
-            else
-            {
-                slots.Add(slot);
+                // A companion reserves a full player footprint, so one player plus Yamoto Koki
+                // exactly follows the vanilla two-player spacing.
+                slots.Add(new Slot(yamotoKoki, playerSlot.Width));
             }
         }
 
-        foreach (NCreature creature in creatureNodes)
+        foreach (NCreature pet in creatureNodes.Where(node =>
+                     !node.Entity.IsPlayer
+                     && node.Entity.Monster is not YamotoKokiMonster
+                     && node.Entity.Monster is not YamotoKokiGasBomb))
         {
-            if (creature.Entity.IsPlayer)
-            {
-                continue;
-            }
-
-            if (creature.Entity.Monster is YamotoKokiMonster)
-            {
-                slots.Add(new Slot { Anchor = creature, Pets = [] });
-                continue;
-            }
-
-            Slot ownerSlot = slots.First(slot =>
-                slot.Anchor.Entity.IsPlayer
-                && slot.Anchor.Entity.Player == creature.Entity.PetOwner);
-            ownerSlot.Pets.Add(creature);
+            Slot? ownerSlot = playerSlots.FirstOrDefault(slot =>
+                slot.Anchor.Entity.Player == pet.Entity.PetOwner);
+            ownerSlot?.Pets.Add(pet);
         }
 
-        float viewportWidth = 960f / scaling;
-        float spacing = 70f;
-        int columns = (int)Math.Ceiling(Math.Sqrt(slots.Count));
-        int rows = (int)Math.Ceiling((double)slots.Count / columns);
-        float firstRowWidth = creatureNodes.Take(columns).Sum(n => n.Visuals.Bounds.Size.X);
-        float rowSpan = firstRowWidth + (columns - 1) * spacing;
-        float staggerX = firstRowWidth * 0.33f;
-        float rowXStep = rows > 1 ? staggerX / (rows - 1) : 0f;
-        float rowYStep = rows > 1 ? 120f / (rows - 1) : 0f;
-
-        float startX;
-        if (fullyCenterPlayers)
+        IReadOnlyList<YamotoKokiSlotPosition> positions = YamotoKokiGridLayoutMath.Calculate(
+            slots.Select(slot => slot.Width).ToList(),
+            scaling,
+            fullyCenterPlayers);
+        int currentRow = -1;
+        float rowFlowOffset = 0f;
+        for (int i = 0; i < slots.Count; i++)
         {
-            startX = creatureNodes.First(c => c.Entity.IsPlayer).Visuals.Bounds.Size.X * -0.5f;
-        }
-        else
-        {
-            startX = (viewportWidth - rowSpan) * 0.5f;
-            startX = Math.Max(startX, 150f);
-            if (slots.Count >= columns * 2)
+            Slot slot = slots[i];
+            YamotoKokiSlotPosition position = positions[i];
+            if (position.Row != currentRow)
             {
-                firstRowWidth += staggerX;
+                currentRow = position.Row;
+                rowFlowOffset = 0f;
             }
 
-            if (startX + rowSpan > viewportWidth)
+            Vector2 basePosition = new(position.X - rowFlowOffset, position.Y);
+            slot.Anchor.Position = basePosition;
+            bool shiftedForOsty = PositionLocalPlayerOsty(slot, basePosition);
+            PositionPets(slot, basePosition, shiftedForOsty);
+            if (shiftedForOsty)
             {
-                spacing = (viewportWidth - 150f - firstRowWidth) / (columns - 1);
-                rowSpan = firstRowWidth + (columns - 1) * spacing;
-                startX = (viewportWidth - rowSpan) * 0.5f;
+                rowFlowOffset += 100f;
             }
-        }
 
-        for (int row = 0; row < columns; row++)
-        {
-            float targetXPos = startX + rowXStep * row;
-            for (int col = 0; col < columns; col++)
+            Color tint = position.Row > 0 ? new Color(0.5f, 0.5f, 0.5f) : Colors.White;
+            slot.Anchor.Visuals.Modulate = tint;
+            foreach (NCreature pet in slot.Pets)
             {
-                int index = row * columns + col;
-                if (index >= slots.Count)
-                {
-                    break;
-                }
-
-                Slot slot = slots[index];
-                NCreature anchor = slot.Anchor;
-                List<NCreature> pets = slot.Pets;
-                anchor.Position = new Vector2(
-                    0f - targetXPos - anchor.Visuals.Bounds.Size.X * 0.5f,
-                    200f - rowYStep * row);
-
-                if (anchor.Entity.IsPlayer
-                    && LocalContext.IsMe(anchor.Entity)
-                    && anchor.Entity.Player!.Character is Necrobinder)
-                {
-                    NCreature? osty = null;
-                    for (int i = 0; i < pets.Count; i++)
-                    {
-                        if (pets[i].Entity.Monster is Osty)
-                        {
-                            osty = pets[i];
-                            pets.RemoveAt(i);
-                            break;
-                        }
-                    }
-
-                    PositionLocalPlayerOsty(ref targetXPos, anchor.Position.Y, anchor, osty);
-                }
-
-                float petStep = pets.Count > 1
-                    ? anchor.Visuals.Bounds.Size.X / (pets.Count - 1)
-                    : 0f;
-                for (int i = 0; i < pets.Count; i++)
-                {
-                    NCreature pet = pets[i];
-                    pet.Position = new Vector2(
-                        0f - targetXPos + 20f - i * petStep - pet.Visuals.Bounds.Size.X * 0.5f,
-                        anchor.Position.Y + 10f);
-                }
-
-                if (row > 0)
-                {
-                    anchor.Visuals.Modulate = new Color(0.5f, 0.5f, 0.5f);
-                    foreach (NCreature pet in pets)
-                    {
-                        pet.Visuals.Modulate = new Color(0.5f, 0.5f, 0.5f);
-                    }
-                }
-
-                targetXPos += anchor.Visuals.Bounds.Size.X + spacing;
+                pet.Visuals.Modulate = tint;
             }
         }
 
@@ -192,29 +134,71 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
                 }
             }
         }
+
+        if (NCombatRoom.Instance is { } room)
+        {
+            YamotoKokiBombOrbitController.Ensure(room).LayoutNow(snapNewBombs: true);
+        }
     }
 
-    private static void PositionLocalPlayerOsty(
-        ref float targetXPos,
-        float playerYPosition,
-        NCreature player,
-        NCreature? osty)
+    private static bool PositionLocalPlayerOsty(Slot slot, Vector2 basePosition)
     {
-        Vector2 position = player.Position;
-        position.X = player.Position.X - 150f;
-        player.Position = position;
+        NCreature anchor = slot.Anchor;
+        if (!anchor.Entity.IsPlayer
+            || !LocalContext.IsMe(anchor.Entity)
+            || anchor.Entity.Player!.Character is not Necrobinder)
+        {
+            return false;
+        }
+
+        NCreature? osty = slot.Pets.FirstOrDefault(pet => pet.Entity.Monster is Osty);
         if (osty != null)
         {
-            osty.Position = new Vector2(0f - targetXPos, playerYPosition)
+            slot.Pets.Remove(osty);
+            osty.Position = new Vector2(basePosition.X + slot.Width * 0.5f, basePosition.Y)
                 + NCreature.GetOstyOffsetFromPlayer(osty.Entity);
         }
 
-        targetXPos += 100f;
+        anchor.Position = basePosition + Vector2.Left * 150f;
+        return true;
     }
 
-    private sealed class Slot
+    private static void PositionPets(Slot slot, Vector2 basePosition, bool shiftedForOsty)
     {
-        public required NCreature Anchor { get; init; }
-        public required List<NCreature> Pets { get; init; }
+        List<NCreature> pets = slot.Pets;
+        float petStep = pets.Count > 1
+            ? slot.Width / (pets.Count - 1)
+            : 0f;
+        float ostyFlowOffset = shiftedForOsty ? 100f : 0f;
+        for (int i = 0; i < pets.Count; i++)
+        {
+            NCreature pet = pets[i];
+            pet.Position = new Vector2(
+                basePosition.X + slot.Width * 0.5f - ostyFlowOffset
+                    + 20f - i * petStep - pet.Visuals.Bounds.Size.X * 0.5f,
+                basePosition.Y + 10f);
+        }
     }
+
+    private sealed class Slot(NCreature anchor, float width)
+    {
+        public NCreature Anchor { get; } = anchor;
+        public float Width { get; } = width;
+        public List<NCreature> Pets { get; } = [];
+    }
+}
+
+public sealed class YamotoKokiDynamicAllyLayoutPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_yamoto_koki_dynamic_ally_layout";
+    public static string Description => "Reflow Yamoto Koki slots after allies are added or removed.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NCombatRoom), nameof(NCombatRoom.AddCreature)),
+        new(typeof(NCombatRoom), nameof(NCombatRoom.RemoveCreatureNode))
+    ];
+
+    public static void Postfix(NCombatRoom __instance) => YamotoKokiAllyLayoutPatch.Reflow(__instance);
 }
