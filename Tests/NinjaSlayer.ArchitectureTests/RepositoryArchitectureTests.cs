@@ -800,16 +800,24 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void TransitionSmoothingPreservesMediaTimingAndDefersOnlyItsGcFlush()
+    public void TransitionSmoothingPreservesMediaTimingAndReleasesLoadingAfterViewTakeover()
     {
         string audio = SourceText("Content/NinjaSlayerAudio.cs");
         string smoothing = SourceText("Code/Transition/NinjaSlayerTransitionLoadSmoothing.cs");
         string session = SourceText("Code/Transition/NinjaSlayerTransitionSession.cs");
         string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
+        string transition = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
 
         Assert.Contains("TransitionVisualSeconds = 2f", audio, StringComparison.Ordinal);
         Assert.Contains("EmbarkLoadStartDelaySeconds = 0.2f", audio, StringComparison.Ordinal);
         Assert.Contains("SaveLoadStartDelaySeconds = 0.6f", audio, StringComparison.Ordinal);
+        Assert.Contains("TransitionPresentationEnabled", transition, StringComparison.Ordinal);
+        Assert.Contains("WaitForViewReadyAndLoadDelayAsync", transition, StringComparison.Ordinal);
+        Assert.Contains("session.WaitForViewReadyAsync", transition, StringComparison.Ordinal);
+        Assert.Contains("WaitForLoadDelayAsync", transition, StringComparison.Ordinal);
+        Assert.DoesNotContain("AwaitReadyAsync", transition, StringComparison.Ordinal);
+        Assert.Contains("_viewReadiness.TryMarkReady()", session, StringComparison.Ordinal);
+        Assert.Contains("_viewReadiness.TryMarkUnavailable()", session, StringComparison.Ordinal);
         Assert.Contains("GCCollectionMode.Optimized", smoothing, StringComparison.Ordinal);
         Assert.Contains("blocking: false", smoothing, StringComparison.Ordinal);
         Assert.Contains("TransitionGcRequestExecutor.Execute", smoothing, StringComparison.Ordinal);
@@ -820,26 +828,47 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void TransitionDecoderPrewarmReusesTheSilentOfficialPlayerBeforeFormalPlayback()
+    public void TransitionVideoSeekPrimerIsOffscreenSilentAndNeverGatesPlayback()
     {
         string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
-        string prewarmer = SourceText("Code/Transition/NinjaSlayerTransitionVideoPrewarmer.cs");
+        string video = SourceText("Code/Transition/NinjaSlayerTransitionVideo.cs");
+        string primer = SourceText("Code/Transition/NinjaSlayerTransitionSeekPrimer.cs");
         string preloadPatch = SourceText("Code/Patches/NinjaSlayerTransitionPreloadPatch.cs");
+        string transition = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
 
-        Assert.Contains("videoPlayer.Volume = 0f", overlay, StringComparison.Ordinal);
-        Assert.Contains("videoPlayer.Modulate = Colors.Transparent", overlay, StringComparison.Ordinal);
-        Assert.Contains("videoPlayer.Stop()", overlay, StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerTransitionOverlay.GetOrCreate(game.Transition)", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("StopDecoderPrewarmForPlayback", prewarmer, StringComparison.Ordinal);
         Assert.Contains("typeof(NMainMenu)", preloadPatch, StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerTransitionVideoPrewarmer.TryStart();", preloadPatch, StringComparison.Ordinal);
-        Assert.Contains("characterModel is INinjaSlayerCharacter", preloadPatch, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionVideo.BeginPreload();", preloadPatch, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionSeekPrimer.TryStart();", preloadPatch, StringComparison.Ordinal);
+        Assert.Contains("ResourceLoader.Load<VideoStream>", video, StringComparison.Ordinal);
+        Assert.DoesNotContain("ResourceLoader.LoadThreaded", video, StringComparison.Ordinal);
+        Assert.Contains("SubViewport", primer, StringComparison.Ordinal);
+        Assert.Contains("Size = Vector2I.One", primer, StringComparison.Ordinal);
+        Assert.Contains("Volume = 0f", primer, StringComparison.Ordinal);
+        Assert.Contains("GuiDisableInput = true", primer, StringComparison.Ordinal);
+        Assert.DoesNotContain("SubViewportContainer", primer, StringComparison.Ordinal);
+        Assert.DoesNotContain("NinjaSlayerTransitionScenePrewarmer", primer, StringComparison.Ordinal);
+        Assert.Contains("TakeForPlayback", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("AwaitReadyAsync", transition, StringComparison.Ordinal);
+        Assert.DoesNotContain("Prewarm", overlay, StringComparison.OrdinalIgnoreCase);
+    }
 
-        int takeover = overlay.IndexOf(
-            "NinjaSlayerTransitionVideoPrewarmer.PrepareForPlayback()",
-            StringComparison.Ordinal);
-        int formalPlay = overlay.IndexOf("videoPlayer.Play()", StringComparison.Ordinal);
-        Assert.True(takeover >= 0 && takeover < formalPlay);
+    [Fact]
+    public void TransitionFrameDroppingIsOwnedOnlyByFormalPlayback()
+    {
+        string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
+        string frameDropClock = SourceText("Code/Transition/TransitionFrameDropClock.cs");
+        string primer = SourceText("Code/Transition/NinjaSlayerTransitionSeekPrimer.cs");
+        string bossGreeting = SourceText("Code/ExternalAnimations/BossGreetingCinematic.cs");
+
+        Assert.Contains("FrameRate = 24.0", frameDropClock, StringComparison.Ordinal);
+        Assert.Contains("SeekCooldownSeconds = FrameDurationSeconds * 2.0", frameDropClock, StringComparison.Ordinal);
+        Assert.Contains("ProcessPriority = 1", overlay, StringComparison.Ordinal);
+        Assert.Contains("formalFrameDropClock = playbackClock", overlay, StringComparison.Ordinal);
+        Assert.Contains("videoPlayer.StreamPosition = decision.TargetPositionSeconds", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("TransitionFrameDropClock.Evaluate", primer, StringComparison.Ordinal);
+
+        Assert.DoesNotContain("Prewarm", overlay, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("TransitionFrameDropClock", bossGreeting, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -856,44 +885,71 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void TransitionAssetPrefetchUsesAnAtomicScopedRetentionCapability()
+    public void TransitionDoesNotQueueCustomRunResourcePrefetches()
     {
-        string patches = SourceText("Code/Patches/NinjaSlayerTransitionAssetPrefetchPatch.cs");
+        string entry = SourceText("Scripts/Entry.cs");
         string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
-        string session = SourceText("Code/Transition/NinjaSlayerTransitionSession.cs");
-        string prefetcher = SourceText("Code/Transition/NinjaSlayerRunAssetPrefetcher.cs");
+        string transition = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
 
-        Assert.Contains("TransitionAssetPrefetchPatchGroup", groups, StringComparison.Ordinal);
-        Assert.Contains("RegisterPatch<NinjaSlayerTransitionAssetRetentionPatch>", groups, StringComparison.Ordinal);
-        Assert.Contains("RegisterPatch<NinjaSlayerTransitionMainMenuAssetPrefetchPatch>", groups, StringComparison.Ordinal);
-        Assert.Contains("RegisterPatch<NinjaSlayerTransitionEmbarkAssetPrefetchPatch>", groups, StringComparison.Ordinal);
-        Assert.Contains("AssetCache.UnloadAssets", patches, StringComparison.Ordinal);
-        Assert.Contains("FilterAssetsToUnload", patches, StringComparison.Ordinal);
-        Assert.Contains("ClaimForTransition", session, StringComparison.Ordinal);
-        Assert.Contains("ReleaseAssetPrefetch", session, StringComparison.Ordinal);
-        Assert.Contains("PreloadManager.Cache.CreateSession", prefetcher, StringComparison.Ordinal);
-        Assert.DoesNotContain("LoadRunAssets(", prefetcher, StringComparison.Ordinal);
+        Assert.DoesNotContain("TransitionAssetPrefetch", entry, StringComparison.Ordinal);
+        Assert.DoesNotContain("TransitionAssetPrefetch", groups, StringComparison.Ordinal);
+        Assert.DoesNotContain("NinjaSlayerTransitionScenePrewarmer", transition, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code",
+            "Patches",
+            "NinjaSlayerTransitionAssetPrefetchPatch.cs")));
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code",
+            "Transition",
+            "NinjaSlayerRunAssetPrefetcher.cs")));
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code",
+            "Transition",
+            "NinjaSlayerTransitionScenePrewarmer.cs")));
     }
 
     [Fact]
-    public void TransitionColdScenePrewarmIsOffscreenAndSharedWithLoadStart()
+    public void TransitionEarlyLoadingOwnsACompletePresentationBarrier()
     {
-        string prewarmer = SourceText("Code/Transition/NinjaSlayerTransitionScenePrewarmer.cs");
-        string transition = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
+        string session = SourceText("Code/Transition/NinjaSlayerTransitionSession.cs");
+        string barrier = SourceText("Code/Transition/TransitionPresentationBarrier.cs");
+        string lease = SourceText("Code/Transition/TransitionNodeProcessLease.cs");
+        string patches = SourceText("Code/Patches/NinjaSlayerTransitionPresentationPatch.cs");
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+        string entry = SourceText("Scripts/Entry.cs");
+        string reveal = SourceText("Code/Patches/NinjaSlayerTransitionRevealGatePatch.cs");
 
-        Assert.Contains("NRun.AssetPaths", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("NEventRoom.AssetPaths", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("NAncientEventLayout.ancientScenePath", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("NAncientNameBanner.Create(ModelDb.Event<Neow>())", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("TransitionManagedCodePrewarmer.Prepare", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("new TransitionScenePrewarmResult", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("SubViewport.UpdateMode.Always", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("GuiDisableInput = true", prewarmer, StringComparison.Ordinal);
-        Assert.DoesNotContain("SubViewportContainer", prewarmer, StringComparison.Ordinal);
-        Assert.Contains("AwaitReadyAsync(cancelToken)", transition, StringComparison.Ordinal);
-        Assert.Contains("WaitForScenePrewarmAndLoadDelayAsync", transition, StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerTransitionRunSceneTracePatch", SourceText("Code/Patches/NinjaSlayerPatchGroups.cs"), StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerTransitionEventSceneTracePatch", SourceText("Code/Patches/NinjaSlayerPatchGroups.cs"), StringComparison.Ordinal);
+        Assert.Contains("TransitionPresentationPatchGroup", groups, StringComparison.Ordinal);
+        Assert.Contains("InstallCapability<TransitionPresentationPatchGroup>", entry, StringComparison.Ordinal);
+        Assert.Contains("TransitionPresentationBarrier", session, StringComparison.Ordinal);
+        Assert.Contains("TransitionNodeProcessLease", session, StringComparison.Ordinal);
+        Assert.Contains("NodeAdded += OnNodeAdded", lease, StringComparison.Ordinal);
+        Assert.Contains("ProcessModeEnum.Disabled", lease, StringComparison.Ordinal);
+        Assert.DoesNotContain("CaptureAndDisable(_root)", lease, StringComparison.Ordinal);
+        Assert.Contains("TransitionPresentationDisposition.Discarded", barrier, StringComparison.Ordinal);
+        Assert.Contains("root.TreeExiting += OnPresentationRootTreeExiting", session, StringComparison.Ordinal);
+        Assert.Contains("ReleasePresentationRootLifetime", session, StringComparison.Ordinal);
+        Assert.Contains("TransitionCompletionStatus.Cancelled", session, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionTeardownPresentationPatch", groups, StringComparison.Ordinal);
+        Assert.Contains("A replacement NRun appeared", SourceText("Code/Transition/NinjaSlayerTransitionGate.cs"), StringComparison.Ordinal);
+        Assert.Contains("NGame.ReturnToMainMenu", patches, StringComparison.Ordinal);
+        Assert.Contains("NGame.ReturnToMainMenuWithInternalError", patches, StringComparison.Ordinal);
+        Assert.Contains("RunManager.CleanUp", patches, StringComparison.Ordinal);
+        Assert.Contains("CombatManager.AfterCombatRoomLoaded", patches, StringComparison.Ordinal);
+        Assert.Contains("NAncientEventLayout.OnSetupComplete", patches, StringComparison.Ordinal);
+        Assert.Contains("AncientHealVfx", patches, StringComparison.Ordinal);
+        Assert.Contains("victory.mp3", patches, StringComparison.Ordinal);
+        Assert.Contains("NRunMusicController.UpdateMusic", patches, StringComparison.Ordinal);
+        Assert.Contains("SfxCmd.PlayLoop", patches, StringComparison.Ordinal);
+
+        int release = reveal.IndexOf("session.ReleasePresentation();", StringComparison.Ordinal);
+        int roomFade = reveal.IndexOf("await transition.RoomFadeIn", StringComparison.Ordinal);
+        int fullFade = reveal.LastIndexOf("await transition.FadeIn", StringComparison.Ordinal);
+        Assert.True(release >= 0 && roomFade > release);
+        Assert.True(fullFade > reveal.LastIndexOf("session.ReleasePresentation();", StringComparison.Ordinal));
     }
 
     [Fact]

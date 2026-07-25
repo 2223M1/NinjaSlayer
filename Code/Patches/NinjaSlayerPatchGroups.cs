@@ -96,7 +96,6 @@ internal sealed class CinematicInfrastructurePatchGroup : IModPatches
         patcher.RegisterPatch<ScreenRumbleCinematicSuppressionPatch>();
         patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionDecoderPrewarmPatch>();
     }
 }
 
@@ -158,6 +157,22 @@ internal sealed class TransitionCorePatchGroup : IModPatches
     }
 }
 
+internal sealed class TransitionPresentationPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
+        patcher.RegisterPatch<NinjaSlayerTransitionRunPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionTeardownPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionCombatPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionAncientSetupPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionAncientHealPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionRewardSfxPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionRunMusicPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionParameterizedSfxPresentationPatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();
+    }
+}
+
 internal sealed class TransitionSmoothingPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
@@ -166,20 +181,9 @@ internal sealed class TransitionSmoothingPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionGcDeferralPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionRunSceneTracePatch>();
+        patcher.RegisterPatch<NinjaSlayerTransitionRunInitializationTracePatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionSceneTreeTracePatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionEventSceneTracePatch>();
-    }
-}
-
-internal sealed class TransitionAssetPrefetchPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerTransitionAssetRetentionPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionMainMenuAssetPrefetchPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionCharacterAssetPrefetchPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionEmbarkAssetPrefetchPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionSavedRunAssetPrefetchPatch>();
     }
 }
 

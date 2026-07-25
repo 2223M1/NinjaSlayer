@@ -17,22 +17,28 @@ public sealed class NinjaSlayerTransitionSfxPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(SfxCmd), nameof(SfxCmd.Play), [typeof(string), typeof(float)])];
 
-    public static bool Prefix(string sfx)
+    public static bool Prefix(string sfx, float volume)
     {
-        if (!NinjaSlayerPatchCapabilities.TransitionEnabled ||
-            sfx != NinjaSlayerAudio.NinjaSlayerTransitionEvent)
+        if (!NinjaSlayerPatchCapabilities.TransitionEnabled)
         {
             return true;
         }
 
-        if (NGame.Instance?.RootSceneContainer.CurrentScene is NRun)
+        if (sfx == NinjaSlayerAudio.NinjaSlayerTransitionEvent)
         {
-            NinjaSlayerTransitionGate.CancelPendingRequest();
-            SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerSelectEvent);
-            return false;
+            if (NGame.Instance?.RootSceneContainer.CurrentScene is NRun)
+            {
+                NinjaSlayerTransitionGate.CancelPendingRequest();
+                SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerSelectEvent);
+                return false;
+            }
+
+            NinjaSlayerTransitionGate.Pending = true;
+            return true;
         }
 
-        NinjaSlayerTransitionGate.Pending = true;
-        return true;
+        return !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+            || !NinjaSlayerTransitionGate.TryDeferPresentation(
+                () => SfxCmd.Play(sfx, volume));
     }
 }

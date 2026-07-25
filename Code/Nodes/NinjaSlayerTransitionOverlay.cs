@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Godot;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using NinjaSlayer.Code.Transition;
@@ -15,16 +16,13 @@ public partial class NinjaSlayerTransitionOverlay : Control
     private const string CanvasLayerName = "NinjaSlayerTransitionCanvasLayer";
     private const int CanvasLayerIndex = 100;
     private const float VideoAspectRatio = 16f / 9f;
-    private const float PlaybackTimeoutPaddingSeconds = 1f;
-    private const double DecoderPrewarmTimeoutSeconds = 8.0;
-    private const double DecoderPrewarmCompletionMarginSeconds = 1.0 / 24.0;
 
+    private AspectRatioContainer? aspectContainer;
     private VideoStreamPlayer? videoPlayer;
     private TransitionPerformanceTrace? performanceTrace;
-    private bool decoderPrewarmActive;
-    private bool decoderPrewarmPlaybackStarted;
-    private long decoderPrewarmGeneration;
-    private double decoderPrewarmElapsed;
+    private TransitionFrameDropClock? formalFrameDropClock;
+    private long formalPlaybackStartedAt;
+    private bool completedFormalPlayback;
 
     public override void _Ready()
     {
@@ -39,15 +37,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
                 ? videoPlayer.StreamPosition
                 : null;
         performanceTrace?.RecordFrame(delta, videoPosition);
-        ProcessDecoderPrewarm(delta);
-    }
-
-    public override void _ExitTree()
-    {
-        if (decoderPrewarmActive)
-        {
-            NinjaSlayerTransitionVideoPrewarmer.NotifyOverlayExited(this, decoderPrewarmGeneration);
-        }
+        ProcessFormalFrameDrop();
     }
 
     private void EnsureInitialized()
@@ -56,6 +46,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
         MouseFilter = MouseFilterEnum.Ignore;
         ZAsRelative = false;
         ZIndex = 100;
+        ProcessPriority = 1;
         SetProcess(true);
 
         if (videoPlayer != null)
@@ -63,7 +54,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
             return;
         }
 
-        var aspectContainer = new AspectRatioContainer
+        aspectContainer = new AspectRatioContainer
         {
             Name = "VideoAspectContainer",
             MouseFilter = MouseFilterEnum.Ignore,
@@ -86,8 +77,12 @@ public partial class NinjaSlayerTransitionOverlay : Control
 
     public async Task PlayAsync(float duration, CancellationToken cancelToken = default)
     {
-        NinjaSlayerTransitionVideoPrewarmer.PrepareForPlayback();
+        TransitionSeekPrimerHandoff primer = NinjaSlayerTransitionSeekPrimer.TakeForPlayback();
         EnsureInitialized();
+        if (primer.Player is not null)
+        {
+            AdoptPrimedPlayer(primer.Player);
+        }
         if (videoPlayer == null)
         {
             return;
@@ -95,6 +90,9 @@ public partial class NinjaSlayerTransitionOverlay : Control
 
         using var hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
         TransitionPerformanceTrace? trace = performanceTrace;
+        TransitionFrameDropClock? playbackClock = null;
+        long playStartedAt = 0;
+        bool playStarted = false;
         try
         {
             long streamStartedAt = Stopwatch.GetTimestamp();
@@ -113,10 +111,11 @@ public partial class NinjaSlayerTransitionOverlay : Control
             SelfModulate = Colors.White;
             Visible = true;
 
-            long playStartedAt = Stopwatch.GetTimestamp();
+            playStartedAt = Stopwatch.GetTimestamp();
             try
             {
                 videoPlayer.Play();
+                playStarted = true;
             }
             finally
             {
@@ -124,91 +123,157 @@ public partial class NinjaSlayerTransitionOverlay : Control
             }
             trace?.MarkVideoStarted();
 
-            double elapsed = 0.0;
-            bool firstProcessFrame = true;
-            float timeout = Math.Max(duration, 0f) + PlaybackTimeoutPaddingSeconds;
-            while (videoPlayer.IsPlaying() && elapsed < timeout)
+            if (primer.EnableFrameCorrection || completedFormalPlayback)
             {
-                elapsed += await this.AwaitProcessFrame(cancelToken);
+                playbackClock = new TransitionFrameDropClock(Math.Max(duration, 0f));
+                formalPlaybackStartedAt = playStartedAt;
+                formalFrameDropClock = playbackClock;
+            }
+            else
+            {
+                trace?.RecordFrameDropDisabled(
+                    $"seek_primer_{primer.Status}",
+                    0.0,
+                    TimeSpan.Zero);
+            }
+            bool firstProcessFrame = true;
+            while (videoPlayer.IsPlaying()
+                   && Stopwatch.GetElapsedTime(playStartedAt).TotalSeconds < Math.Max(duration, 0f))
+            {
+                await this.AwaitProcessFrame(cancelToken);
                 if (firstProcessFrame)
                 {
                     trace?.RecordFirstPostPlayFrame();
                     firstProcessFrame = false;
                 }
             }
-
-            if (videoPlayer.IsPlaying())
-            {
-                Entry.Logger.Warn($"NinjaSlayer transition video exceeded its {timeout:0.###}s playback timeout.");
-            }
         }
         finally
         {
+            ClearFormalFrameDrop(playbackClock, playStartedAt);
             trace?.MarkVideoStopped();
             videoPlayer.Stop();
             Visible = false;
+            completedFormalPlayback |= playStarted;
         }
     }
 
-    internal bool TryStartDecoderPrewarm(long generation)
+    private void AdoptPrimedPlayer(VideoStreamPlayer player)
     {
-        EnsureInitialized();
-        if (videoPlayer == null || decoderPrewarmActive || videoPlayer.IsPlaying())
+        if (aspectContainer is null || !GodotObject.IsInstanceValid(player))
         {
-            return false;
+            return;
         }
 
-        decoderPrewarmGeneration = generation;
-        decoderPrewarmElapsed = 0.0;
-        decoderPrewarmPlaybackStarted = false;
-        decoderPrewarmActive = true;
-        videoPlayer.Volume = 0f;
-        videoPlayer.Modulate = Colors.Transparent;
-        SelfModulate = Colors.White;
-        Visible = true;
-        return true;
-    }
-
-    internal void StopDecoderPrewarmForPlayback()
-    {
-        AbortDecoderPrewarm(clearStream: false);
-    }
-
-    internal string GetDecoderPrewarmDiagnostic()
-    {
-        double position = videoPlayer is not null && GodotObject.IsInstanceValid(videoPlayer)
-            ? videoPlayer.StreamPosition
-            : 0.0;
-        return $"active={decoderPrewarmActive}, playback_started={decoderPrewarmPlaybackStarted}, elapsed_ms={decoderPrewarmElapsed * 1000.0:0}, position={position:0.###}";
-    }
-
-    internal void AbortDecoderPrewarm(bool clearStream)
-    {
-        decoderPrewarmActive = false;
-        decoderPrewarmPlaybackStarted = false;
-        if (videoPlayer != null && GodotObject.IsInstanceValid(videoPlayer))
+        if (videoPlayer is not null
+            && GodotObject.IsInstanceValid(videoPlayer)
+            && !ReferenceEquals(videoPlayer, player))
         {
             videoPlayer.Stop();
-            videoPlayer.Volume = 1f;
-            videoPlayer.Modulate = Colors.White;
-            if (clearStream)
-            {
-                videoPlayer.Stream = null;
-            }
+            videoPlayer.GetParent()?.RemoveChild(videoPlayer);
+            videoPlayer.QueueFreeSafely();
         }
 
-        SelfModulate = Colors.White;
-        Visible = false;
+        player.Name = "VideoPlayer";
+        player.MouseFilter = MouseFilterEnum.Ignore;
+        player.Expand = true;
+        player.ProcessMode = Node.ProcessModeEnum.Inherit;
+        player.SetAnchorsPreset(LayoutPreset.FullRect);
+        if (player.GetParent() is null)
+        {
+            aspectContainer.AddChild(player);
+        }
+        else if (!ReferenceEquals(player.GetParent(), aspectContainer))
+        {
+            player.Reparent(aspectContainer);
+        }
+
+        videoPlayer = player;
     }
 
     public void StopPlayback()
     {
+        formalFrameDropClock = null;
+        formalPlaybackStartedAt = 0;
         if (videoPlayer != null && GodotObject.IsInstanceValid(videoPlayer))
         {
             performanceTrace?.MarkVideoStopped();
             videoPlayer.Stop();
         }
         Visible = false;
+    }
+
+    private void ProcessFormalFrameDrop()
+    {
+        TransitionFrameDropClock? clock = formalFrameDropClock;
+        if (clock == null
+            || formalPlaybackStartedAt == 0
+            || videoPlayer == null
+            || !GodotObject.IsInstanceValid(videoPlayer)
+            || !videoPlayer.IsPlaying())
+        {
+            return;
+        }
+
+        double wallElapsed = Stopwatch.GetElapsedTime(formalPlaybackStartedAt).TotalSeconds;
+        if (clock.HasEnded(wallElapsed))
+        {
+            return;
+        }
+
+        TransitionFrameDropDecision decision = clock.Evaluate(wallElapsed, videoPlayer.StreamPosition);
+        if (!decision.ShouldSeek)
+        {
+            return;
+        }
+
+        long seekStartedAt = Stopwatch.GetTimestamp();
+        try
+        {
+            videoPlayer.StreamPosition = decision.TargetPositionSeconds;
+            TimeSpan seekElapsed = Stopwatch.GetElapsedTime(seekStartedAt);
+            performanceTrace?.RecordFrameDrop(decision.SkippedFrames, decision.LagSeconds, seekElapsed);
+            if (seekElapsed.TotalSeconds > TransitionFrameDropClock.FrameDurationSeconds)
+            {
+                DisableFormalFrameDrop(clock, "seek_slow", decision.LagSeconds, seekElapsed);
+            }
+        }
+        catch (Exception ex)
+        {
+            DisableFormalFrameDrop(
+                clock,
+                $"seek_exception:{ex.GetType().Name}",
+                decision.LagSeconds,
+                Stopwatch.GetElapsedTime(seekStartedAt));
+        }
+    }
+
+    private void DisableFormalFrameDrop(
+        TransitionFrameDropClock clock,
+        string reason,
+        double lagSeconds,
+        TimeSpan seekElapsed)
+    {
+        if (!ReferenceEquals(formalFrameDropClock, clock))
+        {
+            return;
+        }
+
+        formalFrameDropClock = null;
+        performanceTrace?.RecordFrameDropDisabled(reason, lagSeconds, seekElapsed);
+    }
+
+    private void ClearFormalFrameDrop(TransitionFrameDropClock? clock, long startedAt)
+    {
+        if (clock == null
+            || (!ReferenceEquals(formalFrameDropClock, clock)
+                && (formalFrameDropClock != null || formalPlaybackStartedAt != startedAt)))
+        {
+            return;
+        }
+
+        formalFrameDropClock = null;
+        formalPlaybackStartedAt = 0;
     }
 
     internal void AttachPerformanceTrace(TransitionPerformanceTrace trace)
@@ -223,87 +288,6 @@ public partial class NinjaSlayerTransitionOverlay : Control
         {
             performanceTrace = null;
         }
-    }
-
-    private void ProcessDecoderPrewarm(double delta)
-    {
-        if (!decoderPrewarmActive || videoPlayer == null)
-        {
-            return;
-        }
-
-        decoderPrewarmElapsed += Math.Max(delta, 0.0);
-        try
-        {
-            if (!decoderPrewarmPlaybackStarted)
-            {
-                TransitionVideoLoadPollResult loadResult =
-                    NinjaSlayerTransitionVideo.PollPreloadedStream(out VideoStream? stream, out string? diagnostic);
-                if (loadResult == TransitionVideoLoadPollResult.Waiting)
-                {
-                    CheckDecoderPrewarmTimeout();
-                    return;
-                }
-
-                if (loadResult == TransitionVideoLoadPollResult.Failed || stream is null)
-                {
-                    FailDecoderPrewarm(diagnostic ?? "the preloaded stream was unavailable");
-                    return;
-                }
-
-                videoPlayer.Stream = stream;
-                _ = videoPlayer.GetVideoTexture();
-                videoPlayer.Play();
-                decoderPrewarmPlaybackStarted = true;
-                return;
-            }
-
-            _ = videoPlayer.GetVideoTexture();
-            double completionPosition = Math.Max(
-                NinjaSlayerAudio.TransitionVisualSeconds - DecoderPrewarmCompletionMarginSeconds,
-                0.0);
-            if (!videoPlayer.IsPlaying() || videoPlayer.StreamPosition >= completionPosition)
-            {
-                CompleteDecoderPrewarm();
-                return;
-            }
-
-            CheckDecoderPrewarmTimeout();
-        }
-        catch (Exception ex)
-        {
-            FailDecoderPrewarm(ex.Message);
-        }
-    }
-
-    private void CheckDecoderPrewarmTimeout()
-    {
-        if (decoderPrewarmElapsed >= DecoderPrewarmTimeoutSeconds)
-        {
-            FailDecoderPrewarm($"the {DecoderPrewarmTimeoutSeconds:0.#}s prewarm timeout elapsed");
-        }
-    }
-
-    private void CompleteDecoderPrewarm()
-    {
-        long generation = decoderPrewarmGeneration;
-        decoderPrewarmActive = false;
-        decoderPrewarmPlaybackStarted = false;
-        videoPlayer?.Stop();
-        if (videoPlayer != null)
-        {
-            videoPlayer.Volume = 1f;
-            videoPlayer.Modulate = Colors.White;
-        }
-        SelfModulate = Colors.White;
-        Visible = false;
-        _ = NinjaSlayerTransitionVideoPrewarmer.Complete(this, generation);
-    }
-
-    private void FailDecoderPrewarm(string diagnostic)
-    {
-        long generation = decoderPrewarmGeneration;
-        NinjaSlayerTransitionVideoPrewarmer.Fail(this, generation, diagnostic);
     }
 
     public static NinjaSlayerTransitionOverlay GetOrCreate(NTransition transition)

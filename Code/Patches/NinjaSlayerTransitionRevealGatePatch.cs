@@ -42,6 +42,7 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
         try
         {
             await session.WaitForAnimationAsync();
+            session.ReleasePresentation();
             await transition.RoomFadeIn(showTransition);
             await session.CompleteAsync(TransitionCompletionStatus.Succeeded, forceRelease: false);
         }
@@ -97,6 +98,7 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
         try
         {
             await session.WaitForAnimationAsync();
+            session.ReleasePresentation();
             await transition.FadeIn(time, transitionPath, cancelToken);
             await session.CompleteAsync(TransitionCompletionStatus.Succeeded, forceRelease: false);
         }

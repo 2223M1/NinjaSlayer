@@ -90,6 +90,59 @@ internal static class NinjaSlayerTransitionGate
         }
     }
 
+    internal static bool TryAttachPresentationRoot(NRun root)
+    {
+        NinjaSlayerTransitionSession? session;
+        lock (SyncRoot)
+        {
+            session = _activeSession;
+        }
+
+        if (session is null)
+        {
+            return false;
+        }
+
+        if (session.TryAttachPresentationRoot(root))
+        {
+            return true;
+        }
+
+        _ = session.CompleteAsync(
+            TransitionCompletionStatus.Cancelled,
+            forceRelease: true,
+            "A replacement NRun appeared before the staged Transition presentation completed.");
+        return false;
+    }
+
+    internal static bool TryDeferPresentation(Action operation)
+    {
+        NinjaSlayerTransitionSession? session;
+        lock (SyncRoot)
+        {
+            session = _activeSession;
+        }
+
+        return session?.TryDeferPresentation(operation) == true;
+    }
+
+    internal static bool TryDeferPresentation(Func<Task> operation, out Task completion)
+    {
+        NinjaSlayerTransitionSession? session;
+        lock (SyncRoot)
+        {
+            session = _activeSession;
+        }
+
+        if (session is not null && session.TryDeferPresentation(operation, out completion))
+        {
+            return true;
+        }
+
+        completion = Task.CompletedTask;
+        return false;
+    }
+
     internal static bool ConsumePendingRequest()
     {
         lock (SyncRoot)
@@ -101,6 +154,24 @@ internal static class NinjaSlayerTransitionGate
     }
 
     internal static void CancelPendingRequest() => Pending = false;
+
+    internal static void CancelActiveSession(string diagnostic)
+    {
+        NinjaSlayerTransitionSession? session;
+        lock (SyncRoot)
+        {
+            _pending = false;
+            session = _activeSession;
+        }
+
+        if (session is not null)
+        {
+            _ = session.CompleteAsync(
+                TransitionCompletionStatus.Cancelled,
+                forceRelease: true,
+                diagnostic);
+        }
+    }
 
     internal static (bool Active, bool Pending) GetHealthState()
     {

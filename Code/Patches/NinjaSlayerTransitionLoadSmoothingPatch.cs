@@ -7,8 +7,13 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Audio;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Events;
+using MegaCrit.Sts2.Core.Nodes.Multiplayer;
+using MegaCrit.Sts2.Core.Nodes.Relics;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens.Map;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
@@ -176,6 +181,50 @@ public sealed class NinjaSlayerTransitionRunSceneTracePatch : IPatchMethod
             NinjaSlayerTransitionLoadSmoothing.RecordPhase(
                 state.Name,
                 Stopwatch.GetElapsedTime(state.StartedAt));
+        }
+    }
+}
+
+public sealed class NinjaSlayerTransitionRunInitializationTracePatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_transition_run_initialization_trace";
+
+    public static string Description =>
+        "Measure the major NRun ready and global-UI initialization phases during a NinjaSlayer transition.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NRun), nameof(NRun._Ready), Type.EmptyTypes),
+        new(typeof(NGlobalUi), nameof(NGlobalUi._Ready), Type.EmptyTypes),
+        new(typeof(NGlobalUi), nameof(NGlobalUi.Initialize), [typeof(RunState)]),
+        new(typeof(NTopBar), nameof(NTopBar.Initialize), [typeof(IRunState)]),
+        new(
+            typeof(NMultiplayerPlayerStateContainer),
+            nameof(NMultiplayerPlayerStateContainer.Initialize),
+            [typeof(RunState)]),
+        new(typeof(NRelicInventory), nameof(NRelicInventory.Initialize), [typeof(RunState)]),
+        new(typeof(NMapScreen), nameof(NMapScreen.Initialize), [typeof(RunState)]),
+        new(typeof(NRunMusicController), nameof(NRunMusicController.SetRunState), [typeof(IRunState)]),
+        new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateMusic), Type.EmptyTypes)
+    ];
+
+    public static void Prefix(MethodBase __originalMethod, out TransitionPhasePatchState __state)
+    {
+        string typeName = __originalMethod.DeclaringType?.Name ?? "unknown";
+        __state = new TransitionPhasePatchState(
+            Stopwatch.GetTimestamp(),
+            $"{typeName}.{__originalMethod.Name}");
+    }
+
+    public static void Postfix(TransitionPhasePatchState __state)
+    {
+        if (__state.Name is not null)
+        {
+            NinjaSlayerTransitionLoadSmoothing.RecordPhase(
+                __state.Name,
+                Stopwatch.GetElapsedTime(__state.StartedAt));
         }
     }
 }
