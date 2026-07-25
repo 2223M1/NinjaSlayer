@@ -532,6 +532,9 @@ public sealed class RepositoryArchitectureTests
         string monster = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
         string animations = SourceText("Code/ExternalAnimations/YamotoKokiCombatAnimations.cs");
         string dodge = SourceText("Code/Patches/YamotoKokiDodgePatch.cs");
+        string layout = SourceText("Code/Patches/YamotoKokiAllyLayoutPatch.cs");
+        string orbit = SourceText("Code/Nodes/YamotoKokiBombOrbitController.cs");
+        string bomb = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiGasBomb.cs"));
         string relic = SourceText("Relics/YamotoKokiCuteRelic.cs");
         string eventModel = SourceText("Events/YamotoKokiCuteEvent.cs");
         string audio = SourceText("Content/NinjaSlayerAudio.cs");
@@ -546,20 +549,29 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("protected override string VisualsPath", monster, StringComparison.Ordinal);
         Assert.DoesNotContain("NinjaSlayerAssetProfile.VisualsPath", monster, StringComparison.Ordinal);
         Assert.DoesNotContain("BuildCombatAnimationStateMachine", monster, StringComparison.Ordinal);
-        Assert.Contains("scale = Vector2(0.5571, 0.5571)", scene, StringComparison.Ordinal);
+        Assert.Contains("scale = Vector2(0.4588, 0.4588)", scene, StringComparison.Ordinal);
         Assert.Contains("res://NinjaSlayer/images/monsters/yamoto_koki.png", scene, StringComparison.Ordinal);
 
         Assert.Contains("case \"Dodge\":", animations, StringComparison.Ordinal);
         Assert.Contains("case \"SlowAttack\":", animations, StringComparison.Ordinal);
         Assert.Contains("PlaySummon", monster, StringComparison.Ordinal);
+        Assert.Contains("SummonBombCount = 2", monster, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiFastAttackEvent", monster, StringComparison.Ordinal);
         Assert.Contains("target.Player ?? target.PetOwner", dodge, StringComparison.Ordinal);
+        Assert.Contains("nameof(NCombatRoom.AddCreature)", layout, StringComparison.Ordinal);
+        Assert.Contains("nameof(NCombatRoom.RemoveCreatureNode)", layout, StringComparison.Ordinal);
+        Assert.Contains("new Slot(yamotoKoki, playerSlot.Width)", layout, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiGasBomb", orbit, StringComparison.Ordinal);
+        Assert.Contains("BombVisualScale = 0.5f", orbit, StringComparison.Ordinal);
+        Assert.Contains("EarliestExplosionTurn", bomb, StringComparison.Ordinal);
 
         Assert.Contains("public bool HasPlayedEntrance", relic, StringComparison.Ordinal);
         Assert.Contains("public bool HasPlayedFarewell", relic, StringComparison.Ordinal);
         Assert.Contains("AfterCombatEnd(CombatRoom room)", relic, StringComparison.Ordinal);
         Assert.Contains("PlayEntrance(yamotoKoki)", relic, StringComparison.Ordinal);
         Assert.Contains("PlayFarewell(yamotoKoki)", relic, StringComparison.Ordinal);
+        Assert.Contains("bomb.CanExplodeOnTurn(turnNumber)", relic, StringComparison.Ordinal);
+        Assert.DoesNotContain("BeforeSideTurnStart", relic, StringComparison.Ordinal);
         Assert.Contains("AfterEventStarted()", eventModel, StringComparison.Ordinal);
 
         foreach (string eventName in new[]

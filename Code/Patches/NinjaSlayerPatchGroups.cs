@@ -31,6 +31,7 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
+        patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDodgePatch>();
     }
 }

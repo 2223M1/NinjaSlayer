@@ -120,6 +120,24 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             return;
         }
 
+        int turnNumber = Owner.PlayerCombatState?.TurnNumber ?? 0;
+        List<Creature> armedBombs = Owner.PlayerCombatState?.Pets
+            .Where(pet => pet.Monster is YamotoKokiGasBomb bomb
+                && bomb.CanExplodeOnTurn(turnNumber))
+            .ToList() ?? [];
+        foreach (Creature armedBomb in armedBombs)
+        {
+            if (armedBomb.Monster is YamotoKokiGasBomb bomb)
+            {
+                await bomb.ExecuteExplosion(armedBomb);
+            }
+
+            if (CombatManager.Instance.IsOverOrEnding)
+            {
+                return;
+            }
+        }
+
         Creature? yamotoKoki = Owner.PlayerCombatState?.GetPet<YamotoKokiMonster>();
         if (yamotoKoki == null || yamotoKoki.IsDead || yamotoKoki.Monster is not YamotoKokiMonster monster)
         {
@@ -137,26 +155,6 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         await monster.NextMove.PerformMove(enemies);
         monster.MoveStateMachine?.OnMovePerformed(monster.NextMove);
         await AssignRandomIntent(yamotoKoki);
-    }
-
-    public override async Task BeforeSideTurnStart(
-        PlayerChoiceContext choiceContext,
-        CombatSide side,
-        IReadOnlyList<Creature> participants,
-        ICombatState combatState)
-    {
-        if (side != CombatSide.Enemy || Owner.PlayerCombatState == null)
-        {
-            return;
-        }
-
-        foreach (Creature pet in Owner.PlayerCombatState.Pets.ToList())
-        {
-            if (pet.Monster is YamotoKokiGasBomb bomb && pet.IsAlive)
-            {
-                await bomb.ExecuteExplosion(pet);
-            }
-        }
     }
 
     private static async Task AssignRandomIntent(Creature yamotoKoki)
