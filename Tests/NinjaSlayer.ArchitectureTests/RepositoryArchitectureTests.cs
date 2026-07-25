@@ -828,45 +828,35 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void TransitionVideoSeekPrimerIsOffscreenSilentAndNeverGatesPlayback()
+    public void TransitionVideoPreloadCachesOnlyTheResource()
     {
         string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
         string video = SourceText("Code/Transition/NinjaSlayerTransitionVideo.cs");
-        string primer = SourceText("Code/Transition/NinjaSlayerTransitionSeekPrimer.cs");
         string preloadPatch = SourceText("Code/Patches/NinjaSlayerTransitionPreloadPatch.cs");
         string transition = SourceText("Code/Patches/NinjaSlayerTransitionPatch.cs");
 
         Assert.Contains("typeof(NMainMenu)", preloadPatch, StringComparison.Ordinal);
         Assert.Contains("NinjaSlayerTransitionVideo.BeginPreload();", preloadPatch, StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerTransitionSeekPrimer.TryStart();", preloadPatch, StringComparison.Ordinal);
         Assert.Contains("ResourceLoader.Load<VideoStream>", video, StringComparison.Ordinal);
         Assert.DoesNotContain("ResourceLoader.LoadThreaded", video, StringComparison.Ordinal);
-        Assert.Contains("SubViewport", primer, StringComparison.Ordinal);
-        Assert.Contains("Size = Vector2I.One", primer, StringComparison.Ordinal);
-        Assert.Contains("Volume = 0f", primer, StringComparison.Ordinal);
-        Assert.Contains("GuiDisableInput = true", primer, StringComparison.Ordinal);
-        Assert.DoesNotContain("SubViewportContainer", primer, StringComparison.Ordinal);
-        Assert.DoesNotContain("NinjaSlayerTransitionScenePrewarmer", primer, StringComparison.Ordinal);
-        Assert.Contains("TakeForPlayback", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("SubViewport", preloadPatch, StringComparison.Ordinal);
+        Assert.DoesNotContain("SeekPrimer", preloadPatch, StringComparison.Ordinal);
+        Assert.DoesNotContain("TakeForPlayback", overlay, StringComparison.Ordinal);
         Assert.DoesNotContain("AwaitReadyAsync", transition, StringComparison.Ordinal);
         Assert.DoesNotContain("Prewarm", overlay, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void TransitionFrameDroppingIsOwnedOnlyByFormalPlayback()
+    public void TransitionPlaybackPreservesNaturalDecoderOrder()
     {
         string overlay = SourceText("Code/Nodes/NinjaSlayerTransitionOverlay.cs");
-        string frameDropClock = SourceText("Code/Transition/TransitionFrameDropClock.cs");
-        string primer = SourceText("Code/Transition/NinjaSlayerTransitionSeekPrimer.cs");
         string bossGreeting = SourceText("Code/ExternalAnimations/BossGreetingCinematic.cs");
 
-        Assert.Contains("FrameRate = 24.0", frameDropClock, StringComparison.Ordinal);
-        Assert.Contains("SeekCooldownSeconds = FrameDurationSeconds * 2.0", frameDropClock, StringComparison.Ordinal);
-        Assert.Contains("ProcessPriority = 1", overlay, StringComparison.Ordinal);
-        Assert.Contains("formalFrameDropClock = playbackClock", overlay, StringComparison.Ordinal);
-        Assert.Contains("videoPlayer.StreamPosition = decision.TargetPositionSeconds", overlay, StringComparison.Ordinal);
-        Assert.DoesNotContain("TransitionFrameDropClock.Evaluate", primer, StringComparison.Ordinal);
-
+        Assert.Contains("PlaybackTimeoutPaddingSeconds = 1f", overlay, StringComparison.Ordinal);
+        Assert.Contains("elapsed += await this.AwaitProcessFrame", overlay, StringComparison.Ordinal);
+        Assert.Contains("while (videoPlayer.IsPlaying() && elapsed < timeout)", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("videoPlayer.StreamPosition =", overlay, StringComparison.Ordinal);
+        Assert.DoesNotContain("TransitionFrameDropClock", overlay, StringComparison.Ordinal);
         Assert.DoesNotContain("Prewarm", overlay, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("TransitionFrameDropClock", bossGreeting, StringComparison.Ordinal);
     }
