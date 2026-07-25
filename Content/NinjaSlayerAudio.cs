@@ -64,6 +64,8 @@ public static class NinjaSlayerAudio
     public const string YamotoKokiEvent = YamotoKokiRoot + "/yamoto_koki_event";
     public const string YamotoKokiFastAttackEvent = YamotoKokiRoot + "/yamoto_koki_fast_attack";
     public const string YamotoKokiGoEvent = YamotoKokiRoot + "/yamoto_koki_go";
+    public const string YamotoKokiMissileSummonEvent =
+        "event:/sfx/characters/defect/defect_dark_channel";
 
     /// <summary>FMOD clip length for ninja_slayer_intro_spin_attack.</summary>
     public const float IntroSpinAttackSeconds = 1.369f;

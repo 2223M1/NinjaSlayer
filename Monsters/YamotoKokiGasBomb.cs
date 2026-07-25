@@ -1,3 +1,4 @@
+using Godot;
 using MegaCrit.Sts2.Core.Animation;
 using MegaCrit.Sts2.Core.Audio;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
@@ -21,6 +22,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 {
     public const string ExplodeMoveId = "EXPLODE_MOVE";
     public const int ExplodeDamage = 4;
+    private const float LaunchSeconds = 0.16f;
 
     private bool _hasExploded;
     private int _earliestExplosionTurn = int.MaxValue;
@@ -38,6 +40,8 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public override DamageSfxType TakeDamageSfxType => DamageSfxType.Magic;
     public override bool ShouldFadeAfterDeath => false;
     public override string DeathSfx => "event:/sfx/enemy/enemy_attacks/living_fog/living_fog_minion_die";
+
+    public bool IsLaunching { get; private set; }
 
     public int GetExplodeDamage() => YamotoKokiDamageMath.ScaleForParty(
         ExplodeDamage,
@@ -132,9 +136,6 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         }
 
         HasExploded = true;
-        Creature.GetCreatureNode()?.Visuals
-            .GetNodeOrNull<NYamotoKokiGasBombIdleBob>(nameof(NYamotoKokiGasBombIdleBob))
-            ?.StopAndReset();
         IReadOnlyList<Creature> enemies = targets.Count > 0
             ? targets.Where(c => c.IsAlive && c.IsHittable).ToList()
             : CombatState.HittableEnemies;
@@ -147,19 +148,79 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
                 return;
             }
 
-            await CreatureCmd.TriggerAnim(Creature, "ExplodeTrigger", 0.1f);
-            SfxCmd.Play("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_explode");
-            await CreatureCmd.Damage(
-                new ThrowingPlayerChoiceContext(),
-                target,
-                GetExplodeDamage(),
-                ValueProp.Move,
-                Creature);
+            IsLaunching = true;
+            try
+            {
+                await LaunchAtTarget(target);
+                SfxCmd.Play("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_explode");
+                await CreatureCmd.TriggerAnim(Creature, "ExplodeTrigger", 0.1f);
+                Creature.GetCreatureNode()?.Visuals
+                    .GetNodeOrNull<NYamotoKokiGasBombVfx>(
+                        $"Visuals/{nameof(NYamotoKokiGasBombVfx)}")
+                    ?.EnsureBurst();
+                await CreatureCmd.Damage(
+                    new ThrowingPlayerChoiceContext(),
+                    target,
+                    GetExplodeDamage(),
+                    ValueProp.Move,
+                    Creature);
+                if (!Creature.IsDead)
+                {
+                    await CreatureCmd.Kill(Creature);
+                }
+            }
+            finally
+            {
+                IsLaunching = false;
+            }
+
+            return;
         }
 
         if (!Creature.IsDead)
         {
             await CreatureCmd.Kill(Creature);
+        }
+    }
+
+    private async Task LaunchAtTarget(Creature target)
+    {
+        NCreature? missileNode = Creature.GetCreatureNode();
+        if (missileNode == null)
+        {
+            return;
+        }
+
+        missileNode.Visuals
+            .GetNodeOrNull<NYamotoKokiGasBombIdleBob>(nameof(NYamotoKokiGasBombIdleBob))
+            ?.StopAndReset();
+        Label? damageAmount = missileNode.Visuals.GetNodeOrNull<Label>("%DamageAmount");
+        if (damageAmount != null)
+        {
+            damageAmount.Visible = false;
+        }
+
+        NCreature? targetNode = target.GetCreatureNode();
+        if (targetNode == null)
+        {
+            return;
+        }
+
+        Vector2 destination = missileNode.GlobalPosition
+            + targetNode.VfxSpawnPosition
+            - missileNode.VfxSpawnPosition;
+        Tween tween = missileNode.CreateTween();
+        tween.TweenProperty(
+                missileNode,
+                new NodePath("global_position"),
+                destination,
+                LaunchSeconds)
+            .SetEase(Tween.EaseType.In)
+            .SetTrans(Tween.TransitionType.Cubic);
+        await missileNode.ToSignal(tween, Tween.SignalName.Finished);
+        if (GodotObject.IsInstanceValid(missileNode))
+        {
+            missileNode.GlobalPosition = destination;
         }
     }
 

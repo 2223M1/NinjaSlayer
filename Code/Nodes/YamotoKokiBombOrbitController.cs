@@ -58,7 +58,8 @@ public partial class YamotoKokiBombOrbitController : Node
         _targets.Clear();
         List<NCreature> nodes = _room.CreatureNodes.ToList();
         foreach (IGrouping<MegaCrit.Sts2.Core.Entities.Players.Player?, NCreature> group in nodes
-                     .Where(node => node.Entity.Monster is YamotoKokiGasBomb && node.Entity.IsAlive)
+                     .Where(node => node.Entity.Monster is YamotoKokiGasBomb { IsLaunching: false }
+                         && node.Entity.IsAlive)
                      .GroupBy(node => node.Entity.PetOwner))
         {
             if (group.Key == null)

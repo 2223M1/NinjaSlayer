@@ -136,48 +136,91 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
         }
 
-        List<Task> bombDeathTasks = [];
+        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
+        YamotoKokiMonster? monster = yamotoKoki?.Monster as YamotoKokiMonster;
+        MoveState? scheduledMove = monster?.NextMove;
+        bool summonDuringLaunch = armedBombs.Count > 0
+            && scheduledMove?.StateId == YamotoKokiMonster.SummonBombMoveId;
+
+        List<(NCreature? Node, Task Explosion)> bombOperations = [];
         foreach (Creature armedBomb in armedBombs)
         {
             NCreature? bombNode = armedBomb.GetCreatureNode();
             if (armedBomb.Monster is YamotoKokiGasBomb bomb)
             {
-                await bomb.ExecuteExplosion(armedBomb);
+                bombOperations.Add((bombNode, bomb.ExecuteExplosion(armedBomb)));
             }
+        }
 
-            if (bombNode?.DeathAnimationTask is { } deathAnimationTask)
-            {
-                bombDeathTasks.Add(deathAnimationTask);
-            }
+        Task bombsTask = CompleteBombOperations(bombOperations);
+        if (yamotoKoki == null || yamotoKoki.IsDead || monster == null || scheduledMove == null)
+        {
+            await bombsTask;
+            return;
+        }
 
+        IReadOnlyList<Creature> enemies = yamotoKoki.CombatState?.HittableEnemies ?? [];
+        if (summonDuringLaunch)
+        {
+            Flash();
+            Task moveTask = PerformScheduledMove(
+                yamotoKoki,
+                scheduledMove,
+                enemies,
+                overlapIntentPresentation: true);
+            await Task.WhenAll(bombsTask, moveTask);
+        }
+        else
+        {
+            await bombsTask;
             if (CombatManager.Instance.IsOverOrEnding)
             {
                 return;
             }
+
+            Flash();
+            await PerformScheduledMove(
+                yamotoKoki,
+                scheduledMove,
+                enemies,
+                overlapIntentPresentation: false);
         }
 
-        if (bombDeathTasks.Count > 0)
-        {
-            await Task.WhenAll(bombDeathTasks);
-        }
+        monster.MoveStateMachine?.OnMovePerformed(scheduledMove);
+        await AssignRandomIntent(yamotoKoki);
+    }
 
-        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
-        if (yamotoKoki == null || yamotoKoki.IsDead || yamotoKoki.Monster is not YamotoKokiMonster monster)
+    private static async Task CompleteBombOperations(
+        IReadOnlyList<(NCreature? Node, Task Explosion)> operations)
+    {
+        await Task.WhenAll(operations.Select(operation => operation.Explosion));
+        Task[] deathAnimations = operations
+            .Select(operation => operation.Node?.DeathAnimationTask)
+            .OfType<Task>()
+            .ToArray();
+        if (deathAnimations.Length > 0)
         {
+            await Task.WhenAll(deathAnimations);
+        }
+    }
+
+    private static async Task PerformScheduledMove(
+        Creature yamotoKoki,
+        MoveState scheduledMove,
+        IReadOnlyList<Creature> enemies,
+        bool overlapIntentPresentation)
+    {
+        NCreature? node = yamotoKoki.GetCreatureNode();
+        Task intentTask = node?.PerformIntent() ?? Task.CompletedTask;
+        if (!overlapIntentPresentation)
+        {
+            await intentTask;
+            await scheduledMove.PerformMove(enemies);
             return;
         }
 
-        Flash();
-        IReadOnlyList<Creature> enemies = yamotoKoki.CombatState?.HittableEnemies ?? [];
-        NCreature? node = yamotoKoki.GetCreatureNode();
-        if (node != null)
-        {
-            await node.PerformIntent();
-        }
-
-        await monster.NextMove.PerformMove(enemies);
-        monster.MoveStateMachine?.OnMovePerformed(monster.NextMove);
-        await AssignRandomIntent(yamotoKoki);
+        Task moveTask = scheduledMove.PerformMove(enemies);
+        await Task.WhenAll(intentTask, moveTask);
     }
 
     private static async Task AssignRandomIntent(Creature yamotoKoki)

@@ -73,6 +73,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             for (int i = 0; i < SummonBombCount; i++)
             {
                 Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
+                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiMissileSummonEvent);
                 if (bombCreature.Monster is YamotoKokiGasBomb bomb)
                 {
                     await bomb.PrepareExplosionIntent(bombCreature);

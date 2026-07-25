@@ -595,6 +595,7 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("nameof(NCombatRoom.RemoveCreatureNode)", layout, StringComparison.Ordinal);
         Assert.Contains("new Slot(yamotoKoki, playerSlot.Width)", layout, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiGasBomb", orbit, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiGasBomb { IsLaunching: false }", orbit, StringComparison.Ordinal);
         Assert.DoesNotContain("SetScaleAndHue", orbit, StringComparison.Ordinal);
         Assert.Contains("%DamageAmount", orbit, StringComparison.Ordinal);
         Assert.Contains("GetExplodeDamage()", orbit, StringComparison.Ordinal);
@@ -606,6 +607,12 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("YamotoKokiGasBombVisuals.Create()", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("SetupSkins", bomb, StringComparison.Ordinal);
         Assert.Contains("StopAndReset()", bomb, StringComparison.Ordinal);
+        Assert.Contains("public bool IsLaunching", bomb, StringComparison.Ordinal);
+        Assert.Contains("LaunchAtTarget(target)", bomb, StringComparison.Ordinal);
+        Assert.Contains("new NodePath(\"global_position\")", bomb, StringComparison.Ordinal);
+        Assert.Contains("Tween.EaseType.In", bomb, StringComparison.Ordinal);
+        Assert.Contains("Tween.TransitionType.Cubic", bomb, StringComparison.Ordinal);
+        Assert.Contains("damageAmount.Visible = false", bomb, StringComparison.Ordinal);
         Assert.Contains("new(ExplodeMoveId, ExplodeMove)", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("DeathBlowIntent", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("PerformIntent()", bomb, StringComparison.Ordinal);
@@ -644,6 +651,8 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("_megaSprite = new MegaSprite(body)", missileVfx, StringComparison.Ordinal);
         Assert.Contains("_bitParticles.Restart()", missileVfx, StringComparison.Ordinal);
         Assert.Contains("case \"burst\":", missileVfx, StringComparison.Ordinal);
+        Assert.Contains("PaperKraneCore", missileVfx, StringComparison.Ordinal);
+        Assert.Contains("_paperKraneCore.Hide()", missileVfx, StringComparison.Ordinal);
         Assert.DoesNotContain("PuffParticles", missileVfx, StringComparison.Ordinal);
         Assert.Contains("Amplitude = 10f", missileBob, StringComparison.Ordinal);
         Assert.Contains("PeriodSeconds = 2f", missileBob, StringComparison.Ordinal);
@@ -719,7 +728,12 @@ public sealed class RepositoryArchitectureTests
                 relic,
                 "NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent)"));
         Assert.Contains("DeathAnimationTask", relic, StringComparison.Ordinal);
-        Assert.Contains("Task.WhenAll(bombDeathTasks)", relic, StringComparison.Ordinal);
+        Assert.Contains("CompleteBombOperations(bombOperations)", relic, StringComparison.Ordinal);
+        Assert.Contains("scheduledMove?.StateId == YamotoKokiMonster.SummonBombMoveId", relic, StringComparison.Ordinal);
+        Assert.Contains("Task.WhenAll(bombsTask, moveTask)", relic, StringComparison.Ordinal);
+        Assert.Contains("overlapIntentPresentation: true", relic, StringComparison.Ordinal);
+        Assert.Contains("Task.WhenAll(intentTask, moveTask)", relic, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(relic, "OnMovePerformed(scheduledMove)"));
         Assert.Contains("FindLivingPartyYamotoKoki(Owner.RunState)", relic, StringComparison.Ordinal);
         Assert.Contains("AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId)", relic, StringComparison.Ordinal);
         Assert.DoesNotContain("BeforeSideTurnStart", relic, StringComparison.Ordinal);
@@ -740,6 +754,8 @@ public sealed class RepositoryArchitectureTests
         {
             Assert.Contains(eventName, audio, StringComparison.Ordinal);
         }
+        Assert.Contains("defect/defect_dark_channel", audio, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiMissileSummonEvent", monster, StringComparison.Ordinal);
     }
 
     [Fact]
