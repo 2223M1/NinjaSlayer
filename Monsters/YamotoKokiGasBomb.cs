@@ -1,24 +1,18 @@
-using Godot;
 using MegaCrit.Sts2.Core.Animation;
 using MegaCrit.Sts2.Core.Audio;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
-using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Helpers;
-using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models.Powers;
-using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Nodes;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
-using STS2RitsuLib.Scaffolding.Godot;
 
 namespace NinjaSlayer.Monsters;
 
@@ -27,18 +21,16 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 {
     public const string ExplodeMoveId = "EXPLODE_MOVE";
     public const int ExplodeDamage = 4;
-    private const string MissileVisualsPath =
-        "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn";
 
     private bool _hasExploded;
     private int _earliestExplosionTurn = int.MaxValue;
     private bool _isApplyingIntrinsicPowers;
 
     public override MonsterAssetProfile AssetProfile =>
-        new(MissileVisualsPath);
+        new(YamotoKokiGasBombVisuals.VisualsPath);
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
-        RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(MissileVisualsPath);
+        YamotoKokiGasBombVisuals.Create();
 
     public override int MinInitialHp => 1;
     public override int MaxInitialHp => 1;
@@ -46,6 +38,12 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public override DamageSfxType TakeDamageSfxType => DamageSfxType.Magic;
     public override bool ShouldFadeAfterDeath => false;
     public override string DeathSfx => "event:/sfx/enemy/enemy_attacks/living_fog/living_fog_minion_die";
+
+    public override void SetupSkins(MegaSprite spine, MegaSkeleton skeleton)
+    {
+        base.SetupSkins(spine, skeleton);
+        YamotoKokiGasBombVisuals.RemoveStaticSmokeAttachment(skeleton);
+    }
 
     public int GetExplodeDamage() => YamotoKokiDamageMath.ScaleForParty(
         ExplodeDamage,
@@ -96,10 +94,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
-        MoveState explode = new(
-            ExplodeMoveId,
-            ExplodeMove,
-            new YamotoKokiMissileIntent(() => GetExplodeDamage()));
+        MoveState explode = new(ExplodeMoveId, ExplodeMove);
         explode.FollowUpState = explode;
         return new MonsterMoveStateMachine([explode], explode);
     }
@@ -132,12 +127,6 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
             return;
         }
 
-        NCreature? node = bombCreature.GetCreatureNode();
-        if (node != null)
-        {
-            await node.PerformIntent();
-        }
-
         await ExplodeMove(CombatState.HittableEnemies);
     }
 
@@ -149,6 +138,9 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         }
 
         HasExploded = true;
+        Creature.GetCreatureNode()?.Visuals
+            .GetNodeOrNull<NYamotoKokiGasBombIdleBob>(nameof(NYamotoKokiGasBombIdleBob))
+            ?.StopAndReset();
         IReadOnlyList<Creature> enemies = targets.Count > 0
             ? targets.Where(c => c.IsAlive && c.IsHittable).ToList()
             : CombatState.HittableEnemies;
@@ -163,8 +155,6 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
             await CreatureCmd.TriggerAnim(Creature, "ExplodeTrigger", 0.1f);
             SfxCmd.Play("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_explode");
-            target.GetVfxContainer()?.AddChildSafely(
-                NGaseousImpactVfx.Create(CombatSide.Enemy, CombatState, new Color("#402f45")));
             await CreatureCmd.Damage(
                 new ThrowingPlayerChoiceContext(),
                 target,
@@ -199,11 +189,4 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         return animator;
     }
 
-    private sealed class YamotoKokiMissileIntent(Func<decimal> damageCalc)
-        : DeathBlowIntent(damageCalc)
-    {
-        public override LocString GetIntentLabel(
-            IEnumerable<Creature> targets,
-            Creature owner) => new("intents", "FORMAT_EMPTY");
-    }
 }

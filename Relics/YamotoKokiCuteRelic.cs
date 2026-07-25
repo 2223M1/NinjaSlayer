@@ -32,7 +32,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
     public override int DisplayAmount => Math.Max(0, CombatsLeft);
 
     public override RelicAssetProfile AssetProfile =>
-        NinjaSlayerRelicAssets.FromCardImage("StrikeNinjaSlayer");
+        NinjaSlayerRelicAssets.For(this);
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
@@ -131,6 +131,11 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             .Where(pet => pet.Monster is YamotoKokiGasBomb bomb
                 && bomb.CanExplodeOnTurn(turnNumber))
             .ToList() ?? [];
+        if (armedBombs.Count > 0)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
+        }
+
         List<Task> bombDeathTasks = [];
         foreach (Creature armedBomb in armedBombs)
         {

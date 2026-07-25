@@ -11,7 +11,6 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class YamotoKokiBombOrbitController : Node
 {
     private const string NodeName = "YamotoKokiBombOrbitController";
-    private const float BombVisualScale = 0.5f;
     private const float FollowSpeed = 9f;
 
     private readonly HashSet<Creature> _knownBombs = [];
@@ -83,11 +82,6 @@ public partial class YamotoKokiBombOrbitController : Node
             {
                 NCreature bomb = bombs[i];
                 bool isNew = _knownBombs.Add(bomb.Entity);
-                if (!Mathf.IsEqualApprox(bomb.Visuals.DefaultScale, BombVisualScale))
-                {
-                    bomb.SetScaleAndHue(BombVisualScale, 0f);
-                }
-
                 if (bomb.Entity.Monster is YamotoKokiGasBomb missile)
                 {
                     Label? damageAmount = bomb.Visuals.GetNodeOrNull<Label>("%DamageAmount");
