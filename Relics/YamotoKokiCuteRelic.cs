@@ -86,7 +86,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
 
         Flash();
         Creature yamotoKoki = await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
-        await AssignRandomIntent(yamotoKoki);
+        await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId);
         if (!HasPlayedEntrance)
         {
             HasPlayedEntrance = true;
@@ -172,6 +172,32 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         MoveState next = YamotoKokiMonster.PickRandomMove(
             monster.MoveStateMachine!,
             yamotoKoki.PetOwner!.RunState.Rng.MonsterAi);
+        await AssignIntent(yamotoKoki, next);
+    }
+
+    private static async Task AssignIntent(Creature yamotoKoki, string moveId)
+    {
+        if (yamotoKoki.Monster is not YamotoKokiMonster monster)
+        {
+            return;
+        }
+
+        if (monster.MoveStateMachine == null)
+        {
+            monster.SetUpForCombat();
+        }
+
+        MoveState next = (MoveState)monster.MoveStateMachine!.States[moveId];
+        await AssignIntent(yamotoKoki, next);
+    }
+
+    private static async Task AssignIntent(Creature yamotoKoki, MoveState next)
+    {
+        if (yamotoKoki.Monster is not YamotoKokiMonster monster)
+        {
+            return;
+        }
+
         monster.SetMoveImmediate(next, forceTransition: true);
 
         NCreature? node = yamotoKoki.GetCreatureNode();

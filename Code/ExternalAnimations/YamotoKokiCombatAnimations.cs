@@ -18,6 +18,8 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellHoldSeconds = 0.2f;
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
+    private const float GroundOffsetFromPivot = 12.13f;
+    private static readonly Vector2 RightFootContactFromPivot = new(52.495f, 6.642f);
 
     public static bool TryPlayTriggerAnim(
         Creature creature,
@@ -58,17 +60,31 @@ internal static class YamotoKokiCombatAnimations
         }
 
         Node2D body = creatureNode.Body;
+        Vector2 originalBodyPosition = body.Position;
         float originalRotation = body.RotationDegrees;
         try
         {
-            await TweenRotation(body, originalRotation + TiltDegrees, SummonTiltSeconds);
+            await TweenTilt(
+                body,
+                originalBodyPosition,
+                originalRotation,
+                0f,
+                TiltDegrees,
+                SummonTiltSeconds);
             await summonAtPeak();
-            await TweenRotation(body, originalRotation, SummonReturnSeconds);
+            await TweenTilt(
+                body,
+                originalBodyPosition,
+                originalRotation,
+                TiltDegrees,
+                0f,
+                SummonReturnSeconds);
         }
         finally
         {
             if (GodotObject.IsInstanceValid(body))
             {
+                body.Position = originalBodyPosition;
                 body.RotationDegrees = originalRotation;
             }
         }
@@ -117,14 +133,27 @@ internal static class YamotoKokiCombatAnimations
 
         Node2D body = creatureNode.Body;
         Vector2 originalPosition = creatureNode.Position;
+        Vector2 originalBodyPosition = body.Position;
         float originalRotation = body.RotationDegrees;
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiByeEvent);
 
         try
         {
-            await TweenRotation(body, originalRotation + TiltDegrees, FarewellTiltSeconds);
+            await TweenTilt(
+                body,
+                originalBodyPosition,
+                originalRotation,
+                0f,
+                TiltDegrees,
+                FarewellTiltSeconds);
             await Cmd.Wait(FarewellHoldSeconds, ignoreCombatEnd: true);
-            await TweenRotation(body, originalRotation, FarewellReturnSeconds);
+            await TweenTilt(
+                body,
+                originalBodyPosition,
+                originalRotation,
+                TiltDegrees,
+                0f,
+                FarewellReturnSeconds);
             await TweenPosition(
                 creatureNode,
                 originalPosition + new Vector2(EntranceOffsetX, 0f),
@@ -137,6 +166,7 @@ internal static class YamotoKokiCombatAnimations
         {
             if (GodotObject.IsInstanceValid(body))
             {
+                body.Position = originalBodyPosition;
                 body.RotationDegrees = originalRotation;
             }
 
@@ -147,7 +177,13 @@ internal static class YamotoKokiCombatAnimations
         }
     }
 
-    private static async Task TweenRotation(Node2D node, float targetDegrees, float duration)
+    private static async Task TweenTilt(
+        Node2D node,
+        Vector2 basePosition,
+        float baseRotation,
+        float fromDegrees,
+        float toDegrees,
+        float duration)
     {
         if (!GodotObject.IsInstanceValid(node))
         {
@@ -155,7 +191,21 @@ internal static class YamotoKokiCombatAnimations
         }
 
         Tween tween = node.CreateTween();
-        tween.TweenProperty(node, new NodePath("rotation_degrees"), targetDegrees, duration)
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                {
+                    float tiltDegrees = Mathf.Lerp(fromDegrees, toDegrees, progress);
+                    node.RotationDegrees = baseRotation + tiltDegrees;
+                    Vector2 rotatedFoot = RightFootContactFromPivot.Rotated(
+                        Mathf.DegToRad(tiltDegrees));
+                    float groundY = basePosition.Y + GroundOffsetFromPivot;
+                    float footY = basePosition.Y + rotatedFoot.Y;
+                    float lift = Mathf.Max(0f, footY - groundY);
+                    node.Position = basePosition + Vector2.Up * lift;
+                }),
+                0f,
+                1f,
+                duration)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
         await node.ToSignal(tween, Tween.SignalName.Finished);

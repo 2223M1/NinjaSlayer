@@ -14,7 +14,8 @@ namespace NinjaSlayer.Code.Patches;
 public sealed class YamotoKokiDodgePatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_yamoto_koki_dodge";
-    public static string Description => "Make Yamoto Koki evade attacks aimed at her owner.";
+    public static string Description =>
+        "Make Yamoto Koki evade owner-targeted attacks and keep her missiles unhittable.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
@@ -38,13 +39,16 @@ public sealed class YamotoKokiDodgePatch : IPatchMethod
         ValueProp props,
         Creature? dealer)
     {
+        List<Creature> targetList = targets?
+            .Where(target => target.Monster is not YamotoKokiGasBomb)
+            .ToList() ?? [];
+        targets = targetList;
+
         if (dealer is not { IsMonster: true } || !props.IsCardOrMonsterMove())
         {
             return;
         }
 
-        List<Creature> targetList = targets?.ToList() ?? [];
-        targets = targetList;
         foreach (var player in targetList
                      .Where(target => target.Side != dealer.Side)
                      .Select(target => target.Player ?? target.PetOwner)

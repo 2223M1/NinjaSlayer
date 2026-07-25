@@ -70,7 +70,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                 Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
                 if (bombCreature.Monster is YamotoKokiGasBomb bomb)
                 {
-                    await bomb.PrepareExplosionIntent(bombCreature);
+                    bomb.ArmForNextTurn(bombCreature);
                 }
             }
         });
@@ -86,9 +86,10 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             return;
         }
 
+        NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
         await CreatureCmd.TriggerAnim(Creature, "SlowAttack", 0.25f);
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
-        NinjaSlayerCombatVfx.PlayYamotoKokiIaiFeedback(Creature, enemies);
+        NinjaSlayerCombatVfx.PlayYamotoKokiIaiImpact(enemies);
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),
             enemies,
