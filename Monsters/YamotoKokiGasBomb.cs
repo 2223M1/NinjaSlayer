@@ -162,7 +162,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
                     new ThrowingPlayerChoiceContext(),
                     target,
                     GetExplodeDamage(),
-                    ValueProp.Move,
+                    ValueProp.Move | ValueProp.Unpowered,
                     Creature);
                 if (!Creature.IsDead)
                 {

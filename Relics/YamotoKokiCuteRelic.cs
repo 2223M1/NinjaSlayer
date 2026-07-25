@@ -20,6 +20,9 @@ namespace NinjaSlayer.Relics;
 public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
 {
     private const string CombatsKey = "Combats";
+    private const float MissileAttackIntervalSeconds = 0.2f;
+    private const float MoveAfterMissilesDelaySeconds = 0.2f;
+    private readonly record struct BombOperation(NCreature? Node, Task Explosion);
     private int _combatsLeft = 5;
     private bool _hasPlayedEntrance;
     private bool _hasPlayedFarewell;
@@ -139,20 +142,9 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
         YamotoKokiMonster? monster = yamotoKoki?.Monster as YamotoKokiMonster;
         MoveState? scheduledMove = monster?.NextMove;
-        bool summonDuringLaunch = armedBombs.Count > 0
-            && scheduledMove?.StateId == YamotoKokiMonster.SummonBombMoveId;
 
-        List<(NCreature? Node, Task Explosion)> bombOperations = [];
-        foreach (Creature armedBomb in armedBombs)
-        {
-            NCreature? bombNode = armedBomb.GetCreatureNode();
-            if (armedBomb.Monster is YamotoKokiGasBomb bomb)
-            {
-                bombOperations.Add((bombNode, bomb.ExecuteExplosion(armedBomb)));
-            }
-        }
-
-        Task bombsTask = CompleteBombOperations(bombOperations);
+        Task<IReadOnlyList<BombOperation>> bombStartsTask = StartBombAttacksStaggered(armedBombs);
+        Task bombsTask = CompleteBombOperations(bombStartsTask);
         if (yamotoKoki == null || yamotoKoki.IsDead || monster == null || scheduledMove == null)
         {
             await bombsTask;
@@ -160,8 +152,16 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         }
 
         IReadOnlyList<Creature> enemies = yamotoKoki.CombatState?.HittableEnemies ?? [];
-        if (summonDuringLaunch)
+        if (armedBombs.Count > 0)
         {
+            await bombStartsTask;
+            await Cmd.Wait(MoveAfterMissilesDelaySeconds);
+            if (CombatManager.Instance.IsOverOrEnding || yamotoKoki.IsDead)
+            {
+                await bombsTask;
+                return;
+            }
+
             Flash();
             Task moveTask = PerformScheduledMove(
                 yamotoKoki,
@@ -190,9 +190,39 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         await AssignRandomIntent(yamotoKoki);
     }
 
-    private static async Task CompleteBombOperations(
-        IReadOnlyList<(NCreature? Node, Task Explosion)> operations)
+    private static async Task<IReadOnlyList<BombOperation>> StartBombAttacksStaggered(
+        IReadOnlyList<Creature> armedBombs)
     {
+        List<BombOperation> operations = [];
+        for (int i = 0; i < armedBombs.Count; i++)
+        {
+            if (i > 0)
+            {
+                await Cmd.Wait(MissileAttackIntervalSeconds);
+            }
+
+            if (CombatManager.Instance.IsOverOrEnding)
+            {
+                break;
+            }
+
+            Creature armedBomb = armedBombs[i];
+            NCreature? bombNode = armedBomb.GetCreatureNode();
+            if (armedBomb.Monster is YamotoKokiGasBomb bomb)
+            {
+                operations.Add(new BombOperation(
+                    bombNode,
+                    bomb.ExecuteExplosion(armedBomb)));
+            }
+        }
+
+        return operations;
+    }
+
+    private static async Task CompleteBombOperations(
+        Task<IReadOnlyList<BombOperation>> bombStartsTask)
+    {
+        IReadOnlyList<BombOperation> operations = await bombStartsTask;
         await Task.WhenAll(operations.Select(operation => operation.Explosion));
         Task[] deathAnimations = operations
             .Select(operation => operation.Node?.DeathAnimationTask)

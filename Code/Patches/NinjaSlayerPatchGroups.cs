@@ -32,6 +32,8 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
+        patcher.RegisterPatch<YamotoKokiDodgeAttackScopePatch>();
+        patcher.RegisterPatch<YamotoKokiDodgeAttackAnimationPatch>();
         patcher.RegisterPatch<YamotoKokiDodgePatch>();
         patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
         patcher.RegisterPatch<YamotoKokiIntentFramePatch>();

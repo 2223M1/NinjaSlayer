@@ -531,6 +531,7 @@ public sealed class RepositoryArchitectureTests
     {
         string monster = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
         string animations = SourceText("Code/ExternalAnimations/YamotoKokiCombatAnimations.cs");
+        string dodgeAnimation = SourceText("Code/ExternalAnimations/YamotoKokiDodgeAnimation.cs");
         string dodge = SourceText("Code/Patches/YamotoKokiDodgePatch.cs");
         string layout = SourceText("Code/Patches/YamotoKokiAllyLayoutPatch.cs");
         string orbit = SourceText("Code/Nodes/YamotoKokiBombOrbitController.cs");
@@ -584,13 +585,29 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("res://NinjaSlayer/images/monsters/yamoto_koki.png", scene, StringComparison.Ordinal);
 
         Assert.Contains("case \"Dodge\":", animations, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiDodgeAnimation.PlayImmediate(creature)", animations, StringComparison.Ordinal);
         Assert.Contains("case \"SlowAttack\":", animations, StringComparison.Ordinal);
         Assert.Contains("GroundOffsetFromPivot = 8.625f", animations, StringComparison.Ordinal);
         Assert.Contains("new(52.495f, 3.137f)", animations, StringComparison.Ordinal);
         Assert.Contains("PlaySummon", monster, StringComparison.Ordinal);
         Assert.Contains("SummonBombCount = 2", monster, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiFastAttackEvent", monster, StringComparison.Ordinal);
+        Assert.Contains("BeginSpawnBatch(owner, SummonBombCount)", monster, StringComparison.Ordinal);
+        Assert.Contains("EndSpawnBatch(owner)", monster, StringComparison.Ordinal);
         Assert.Contains("target.Player ?? target.PetOwner", dodge, StringComparison.Ordinal);
+        Assert.Contains("PreImpactLeadSeconds = 0.3f", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Contains("OutwardSeconds = 0.08f", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Contains("PostImpactHoldSeconds = 0.2f", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Contains("ReturnSeconds = 0.14f", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Contains("Tween.EaseType.In", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Contains("Tween.TransitionType.Cubic", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiDodgeAnimation.NotifyImpact(yamotoKoki)", dodge, StringComparison.Ordinal);
+        Assert.Contains("nameof(AttackCommand.Execute)", dodge, StringComparison.Ordinal);
+        Assert.Contains("nameof(CreatureCmd.TriggerAnim)", dodge, StringComparison.Ordinal);
+        Assert.Contains("override bool TryModifyPowerAmountReceived", monster, StringComparison.Ordinal);
+        Assert.Contains("applier.Side == target.Side", monster, StringComparison.Ordinal);
+        Assert.Contains("canonicalPower.GetTypeForAmount(amount) != PowerType.Debuff", monster, StringComparison.Ordinal);
+        Assert.Contains("modifiedAmount = 0m", monster, StringComparison.Ordinal);
         Assert.Contains("nameof(NCombatRoom.AddCreature)", layout, StringComparison.Ordinal);
         Assert.Contains("nameof(NCombatRoom.RemoveCreatureNode)", layout, StringComparison.Ordinal);
         Assert.Contains("new Slot(yamotoKoki, playerSlot.Width)", layout, StringComparison.Ordinal);
@@ -599,8 +616,18 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("SetScaleAndHue", orbit, StringComparison.Ordinal);
         Assert.Contains("%DamageAmount", orbit, StringComparison.Ordinal);
         Assert.Contains("GetExplodeDamage()", orbit, StringComparison.Ordinal);
+        Assert.Contains("_reservedBombCounts", orbit, StringComparison.Ordinal);
+        Assert.Contains("BeginSpawnBatch", orbit, StringComparison.Ordinal);
+        Assert.Contains("int layoutCount = Math.Max", orbit, StringComparison.Ordinal);
+        Assert.Contains("GetOffset(layoutCount, i)", orbit, StringComparison.Ordinal);
+        Assert.Contains("LayoutTweenSeconds = 0.45f", orbit, StringComparison.Ordinal);
+        Assert.Contains("Tween.EaseType.InOut", orbit, StringComparison.Ordinal);
+        Assert.Contains("Tween.TransitionType.Sine", orbit, StringComparison.Ordinal);
+        Assert.Contains("_layoutTweens.ContainsKey(bomb)", orbit, StringComparison.Ordinal);
+        Assert.Contains("StartLayoutTween(bomb)", orbit, StringComparison.Ordinal);
         Assert.Contains("EarliestExplosionTurn", bomb, StringComparison.Ordinal);
         Assert.Contains("ExplodeDamage = 4", bomb, StringComparison.Ordinal);
+        Assert.Contains("ValueProp.Move | ValueProp.Unpowered", bomb, StringComparison.Ordinal);
         Assert.Contains("IsHealthBarVisible => false", bomb, StringComparison.Ordinal);
         Assert.Contains("ShouldAllowHitting", bomb, StringComparison.Ordinal);
         Assert.Contains("TryCreateCreatureVisuals()", bomb, StringComparison.Ordinal);
@@ -711,6 +738,8 @@ public sealed class RepositoryArchitectureTests
         Assert.Equal((72, 72), ReadPngDimensions("NinjaSlayer/images/intents/yamoto_koki_iai_slash.png"));
         Assert.Contains("RegisterPatch<YamotoKokiIntentUpdatePatch>()", patchGroups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<YamotoKokiIntentFramePatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiDodgeAttackScopePatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiDodgeAttackAnimationPatch>()", patchGroups, StringComparison.Ordinal);
 
         Assert.Contains("NinjaSlayerRelicAssets.For(this)", relic, StringComparison.Ordinal);
         Assert.Equal((128, 128), ReadPngDimensions("NinjaSlayer/images/relics/YamotoKokiCuteRelic.png"));
@@ -728,11 +757,25 @@ public sealed class RepositoryArchitectureTests
                 relic,
                 "NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent)"));
         Assert.Contains("DeathAnimationTask", relic, StringComparison.Ordinal);
-        Assert.Contains("CompleteBombOperations(bombOperations)", relic, StringComparison.Ordinal);
-        Assert.Contains("scheduledMove?.StateId == YamotoKokiMonster.SummonBombMoveId", relic, StringComparison.Ordinal);
+        Assert.Contains("MissileAttackIntervalSeconds = 0.2f", relic, StringComparison.Ordinal);
+        Assert.Contains("StartBombAttacksStaggered(armedBombs)", relic, StringComparison.Ordinal);
+        Assert.Contains("Cmd.Wait(MissileAttackIntervalSeconds)", relic, StringComparison.Ordinal);
+        Assert.Contains("bomb.ExecuteExplosion(armedBomb)", relic, StringComparison.Ordinal);
+        Assert.Contains("CompleteBombOperations(bombStartsTask)", relic, StringComparison.Ordinal);
+        Assert.Contains("MoveAfterMissilesDelaySeconds = 0.2f", relic, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(relic, "Cmd.Wait(MoveAfterMissilesDelaySeconds)"));
+        Assert.DoesNotContain("summonDuringMissiles", relic, StringComparison.Ordinal);
+        Assert.DoesNotContain("PerformScheduledMoveAfterMissileDelay", relic, StringComparison.Ordinal);
+        Assert.Contains("await bombStartsTask", relic, StringComparison.Ordinal);
         Assert.Contains("Task.WhenAll(bombsTask, moveTask)", relic, StringComparison.Ordinal);
         Assert.Contains("overlapIntentPresentation: true", relic, StringComparison.Ordinal);
         Assert.Contains("Task.WhenAll(intentTask, moveTask)", relic, StringComparison.Ordinal);
+        Assert.Contains("for (int i = 0; i < SummonBombCount; i++)", monster, StringComparison.Ordinal);
+        Assert.Contains("await YamotoKokiCombatAnimations.PlaySummon", monster, StringComparison.Ordinal);
+        Assert.True(
+            monster.IndexOf("for (int i = 0; i < SummonBombCount; i++)", StringComparison.Ordinal)
+            < monster.IndexOf("await YamotoKokiCombatAnimations.PlaySummon", StringComparison.Ordinal));
+        Assert.Equal(1, CountOccurrences(monster, "PlayerCmd.AddPet<YamotoKokiGasBomb>"));
         Assert.Equal(1, CountOccurrences(relic, "OnMovePerformed(scheduledMove)"));
         Assert.Contains("FindLivingPartyYamotoKoki(Owner.RunState)", relic, StringComparison.Ordinal);
         Assert.Contains("AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId)", relic, StringComparison.Ordinal);

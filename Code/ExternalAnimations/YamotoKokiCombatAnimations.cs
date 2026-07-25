@@ -35,12 +35,11 @@ internal static class YamotoKokiCombatAnimations
         switch (triggerName)
         {
             case "Dodge":
+                result = YamotoKokiDodgeAnimation.PlayImmediate(creature);
+                return true;
             case "Hit":
             case "BlockedHit":
-                result = FastAttackAnimation.Play(
-                    creature,
-                    waitTime > 0f ? waitTime : 0.15f,
-                    reverseDirection: true);
+                result = YamotoKokiDodgeAnimation.PlayImmediate(creature);
                 return true;
             case "SlowAttack":
                 result = SlowAttackAnimation.Play(creature);
