@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -38,7 +39,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         MoveState slash = new(
             IaiSlashMoveId,
             IaiSlashMove,
-            new SingleAttackIntent(IaiSlashDamage));
+            new SingleAttackIntent(() => GetIaiSlashDamage()));
         summon.FollowUpState = summon;
         slash.FollowUpState = slash;
         return new MonsterMoveStateMachine([summon, slash], summon);
@@ -49,6 +50,10 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         string moveId = rng.NextBool() ? SummonBombMoveId : IaiSlashMoveId;
         return (MoveState)machine.States[moveId];
     }
+
+    public int GetIaiSlashDamage() => YamotoKokiDamageMath.ScaleForParty(
+        IaiSlashDamage,
+        Creature.PetOwner?.RunState.Players.Count ?? 1);
 
     public override async Task AfterAddedToRoom()
     {
@@ -70,7 +75,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                 Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
                 if (bombCreature.Monster is YamotoKokiGasBomb bomb)
                 {
-                    bomb.ArmForNextTurn(bombCreature);
+                    await bomb.PrepareExplosionIntent(bombCreature);
                 }
             }
         });
@@ -93,7 +98,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),
             enemies,
-            IaiSlashDamage,
+            GetIaiSlashDamage(),
             ValueProp.Move,
             Creature);
     }

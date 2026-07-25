@@ -41,7 +41,6 @@
     { "id": "relic-mother-unix", "kind": "relic-icon-set", "source": "Relics/MotherUnixRelic.cs", "currentAsset": "NinjaSlayer/images/relics/PortableIrcTerminalRelic*.png", "targetAsset": "NinjaSlayer/images/relics/MotherUnixRelic*.png", "releaseBlocking": false },
     { "id": "relic-nancy-zazen-drink", "kind": "relic-icon-set", "source": "Relics/NancyZazenDrinkRelic.cs", "currentAsset": "NinjaSlayer/images/relics/PortableIrcTerminalRelic*.png", "targetAsset": "NinjaSlayer/images/relics/NancyZazenDrinkRelic*.png", "releaseBlocking": false },
     { "id": "relic-reporter-pass", "kind": "relic-icon-set", "source": "Relics/ReporterPassRelic.cs", "currentAsset": "NinjaSlayer/images/relics/PortableIrcTerminalRelic*.png", "targetAsset": "NinjaSlayer/images/relics/ReporterPassRelic*.png", "releaseBlocking": false },
-    { "id": "power-default-fallback", "kind": "power-icon-fallback", "source": "Content/NinjaSlayerPowerAssets.cs", "currentAsset": "NinjaSlayer/images/powers/soar_power.png", "targetAsset": "NinjaSlayer/images/powers/{PowerClassName}.png", "releaseBlocking": false },
-    { "id": "yamoto-koki-missile", "kind": "companion-visual", "source": "Monsters/YamotoKokiGasBomb.cs", "currentAsset": "NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn", "targetAsset": "NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile_dedicated.tscn", "releaseBlocking": false }
+    { "id": "power-default-fallback", "kind": "power-icon-fallback", "source": "Content/NinjaSlayerPowerAssets.cs", "currentAsset": "NinjaSlayer/images/powers/soar_power.png", "targetAsset": "NinjaSlayer/images/powers/{PowerClassName}.png", "releaseBlocking": false }
   ]
 }

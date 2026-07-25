@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
@@ -14,8 +15,10 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Combat;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
+using STS2RitsuLib.Scaffolding.Godot;
 
 namespace NinjaSlayer.Monsters;
 
@@ -34,12 +37,19 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public override MonsterAssetProfile AssetProfile =>
         new(MissileVisualsPath);
 
+    protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
+        RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(MissileVisualsPath);
+
     public override int MinInitialHp => 1;
     public override int MaxInitialHp => 1;
     public override bool IsHealthBarVisible => false;
     public override DamageSfxType TakeDamageSfxType => DamageSfxType.Magic;
     public override bool ShouldFadeAfterDeath => false;
     public override string DeathSfx => "event:/sfx/enemy/enemy_attacks/living_fog/living_fog_minion_die";
+
+    public int GetExplodeDamage() => YamotoKokiDamageMath.ScaleForParty(
+        ExplodeDamage,
+        Creature.PetOwner?.RunState.Players.Count ?? 1);
 
     private bool HasExploded
     {
@@ -86,12 +96,15 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
-        MoveState explode = new(ExplodeMoveId, ExplodeMove, new HiddenIntent());
+        MoveState explode = new(
+            ExplodeMoveId,
+            ExplodeMove,
+            new YamotoKokiMissileIntent(() => GetExplodeDamage()));
         explode.FollowUpState = explode;
         return new MonsterMoveStateMachine([explode], explode);
     }
 
-    public void ArmForNextTurn(Creature bombCreature)
+    public async Task PrepareExplosionIntent(Creature bombCreature)
     {
         EarliestExplosionTurn = bombCreature.PetOwner?.PlayerCombatState?.TurnNumber + 1
             ?? int.MaxValue;
@@ -102,6 +115,11 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
         MoveState explode = (MoveState)MoveStateMachine!.States[ExplodeMoveId];
         SetMoveImmediate(explode, forceTransition: true);
+        NCreature? node = bombCreature.GetCreatureNode();
+        if (node != null && CombatState.IsLiveCombat())
+        {
+            await node.UpdateIntent(CombatState.HittableEnemies);
+        }
     }
 
     public bool CanExplodeOnTurn(int turnNumber) =>
@@ -112,6 +130,12 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         if (bombCreature.IsDead || HasExploded)
         {
             return;
+        }
+
+        NCreature? node = bombCreature.GetCreatureNode();
+        if (node != null)
+        {
+            await node.PerformIntent();
         }
 
         await ExplodeMove(CombatState.HittableEnemies);
@@ -144,7 +168,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
             await CreatureCmd.Damage(
                 new ThrowingPlayerChoiceContext(),
                 target,
-                ExplodeDamage,
+                GetExplodeDamage(),
                 ValueProp.Move,
                 Creature);
         }
@@ -173,5 +197,13 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         animator.AddAnyState("Hit", hurt);
         animator.AddAnyState("ExplodeTrigger", explode);
         return animator;
+    }
+
+    private sealed class YamotoKokiMissileIntent(Func<decimal> damageCalc)
+        : DeathBlowIntent(damageCalc)
+    {
+        public override LocString GetIntentLabel(
+            IEnumerable<Creature> targets,
+            Creature owner) => new("intents", "FORMAT_EMPTY");
     }
 }

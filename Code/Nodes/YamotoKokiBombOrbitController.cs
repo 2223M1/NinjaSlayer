@@ -1,4 +1,5 @@
 using Godot;
+using System.Globalization;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -85,6 +86,16 @@ public partial class YamotoKokiBombOrbitController : Node
                 if (!Mathf.IsEqualApprox(bomb.Visuals.DefaultScale, BombVisualScale))
                 {
                     bomb.SetScaleAndHue(BombVisualScale, 0f);
+                }
+
+                if (bomb.Entity.Monster is YamotoKokiGasBomb missile)
+                {
+                    Label? damageAmount = bomb.Visuals.GetNodeOrNull<Label>("%DamageAmount");
+                    if (damageAmount != null)
+                    {
+                        damageAmount.Text = missile.GetExplodeDamage()
+                            .ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
                 (float x, float y) = YamotoKokiOrbitMath.GetOffset(bombs.Count, i);

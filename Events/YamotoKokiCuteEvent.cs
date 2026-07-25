@@ -1,4 +1,6 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -49,13 +51,30 @@ public sealed class YamotoKokiCuteEvent : ModEventTemplate
 
     public override Task AfterEventStarted()
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiEvent);
+        if (Owner != null && LocalContext.IsMe(Owner))
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiEvent);
+        }
+
         return Task.CompletedTask;
     }
 
     private async Task HugYamotoKoki()
     {
-        await RelicCmd.Obtain<YamotoKokiCuteRelic>(Owner!);
+        Player? owner = Owner;
+        if (owner != null)
+        {
+            IRunState runState = owner.RunState;
+            Player? recipient = runState.Players.FirstOrDefault(
+                player => player.Character is INinjaSlayerCharacter);
+            bool partyAlreadyHasRelic = runState.Players.Any(
+                player => player.GetRelic<YamotoKokiCuteRelic>() != null);
+            if (ReferenceEquals(owner, recipient) && !partyAlreadyHasRelic)
+            {
+                await RelicCmd.Obtain<YamotoKokiCuteRelic>(owner);
+            }
+        }
+
         SetEventFinished(PageDescription("HUGGED"));
     }
 

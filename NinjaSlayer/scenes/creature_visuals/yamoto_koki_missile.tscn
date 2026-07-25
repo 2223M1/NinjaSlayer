@@ -187,6 +187,7 @@ position = Vector2(1.90544, -204.018)
 
 [node name="PuffParticles" type="GPUParticles2D" parent="Visuals/SmokeBallSlot"]
 visible = false
+modulate = Color(1, 1, 1, 0)
 emitting = false
 show_behind_parent = true
 material = SubResource("CanvasItemMaterial_lyqm6")
@@ -256,6 +257,7 @@ unique_name_in_owner = true
 position = Vector2(-2, -213)
 
 [node name="DamageAmount" type="Label" parent="."]
+unique_name_in_owner = true
 z_index = 20
 offset_left = 38.0
 offset_top = -104.0

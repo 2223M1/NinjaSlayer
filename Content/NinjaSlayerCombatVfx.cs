@@ -65,6 +65,8 @@ public static class NinjaSlayerCombatVfx
             {
                 room.CombatVfxContainer.AddChildSafely(impact);
             }
+
+            NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack);
         }
     }
 

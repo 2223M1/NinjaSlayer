@@ -33,6 +33,8 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDodgePatch>();
+        patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
+        patcher.RegisterPatch<YamotoKokiIntentFramePatch>();
     }
 }
 

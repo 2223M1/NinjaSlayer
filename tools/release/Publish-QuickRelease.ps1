@@ -51,6 +51,20 @@ if ($SkipGitHub -and $SkipWorkshop) {
     throw 'SkipGitHub and SkipWorkshop cannot both be selected.'
 }
 
+if ($SkipGitHub) {
+    $workshopParameters = @{
+        Version = $Version
+        ReleaseNoteFile = $ReleaseNoteFile
+        Confirm = $true
+    }
+    if (-not [string]::IsNullOrWhiteSpace($WorkshopUploadRoot)) {
+        $workshopParameters.WorkshopUploadRoot = $WorkshopUploadRoot
+    }
+
+    & (Join-Path $PSScriptRoot 'Publish-WorkshopQuickRelease.ps1') @workshopParameters
+    return
+}
+
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 Set-Location $repositoryRoot
 

@@ -535,6 +535,7 @@ public sealed class RepositoryArchitectureTests
         string layout = SourceText("Code/Patches/YamotoKokiAllyLayoutPatch.cs");
         string orbit = SourceText("Code/Nodes/YamotoKokiBombOrbitController.cs");
         string intentPatch = SourceText("Code/Patches/YamotoKokiIntentVisualPatch.cs");
+        string patchGroups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
         string bomb = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiGasBomb.cs"));
         string relic = SourceText("Relics/YamotoKokiCuteRelic.cs");
         string eventModel = SourceText("Events/YamotoKokiCuteEvent.cs");
@@ -545,6 +546,12 @@ public sealed class RepositoryArchitectureTests
             "scenes",
             "creature_visuals",
             "yamoto_koki.tscn"));
+        string missileScene = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "scenes",
+            "creature_visuals",
+            "yamoto_koki_missile.tscn"));
 
         Assert.Contains("res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn", monster, StringComparison.Ordinal);
         Assert.Contains("protected override string VisualsPath", monster, StringComparison.Ordinal);
@@ -565,15 +572,27 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("new Slot(yamotoKoki, playerSlot.Width)", layout, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiGasBomb", orbit, StringComparison.Ordinal);
         Assert.Contains("BombVisualScale = 0.5f", orbit, StringComparison.Ordinal);
+        Assert.Contains("%DamageAmount", orbit, StringComparison.Ordinal);
+        Assert.Contains("GetExplodeDamage()", orbit, StringComparison.Ordinal);
         Assert.Contains("EarliestExplosionTurn", bomb, StringComparison.Ordinal);
         Assert.Contains("ExplodeDamage = 4", bomb, StringComparison.Ordinal);
         Assert.Contains("IsHealthBarVisible => false", bomb, StringComparison.Ordinal);
         Assert.Contains("ShouldAllowHitting", bomb, StringComparison.Ordinal);
-        Assert.Contains("new HiddenIntent()", bomb, StringComparison.Ordinal);
+        Assert.Contains("TryCreateCreatureVisuals()", bomb, StringComparison.Ordinal);
+        Assert.Contains("RitsuGodotNodeFactories.CreateFromScenePath", bomb, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiMissileIntent", bomb, StringComparison.Ordinal);
+        Assert.Contains(": DeathBlowIntent", bomb, StringComparison.Ordinal);
+        Assert.Contains("PerformIntent()", bomb, StringComparison.Ordinal);
         Assert.DoesNotContain("DieForYouPower", bomb, StringComparison.Ordinal);
+        Assert.Contains("visible = false", missileScene, StringComparison.Ordinal);
+        Assert.Contains("modulate = Color(1, 1, 1, 0)", missileScene, StringComparison.Ordinal);
+        Assert.Contains("[node name=\"DamageAmount\"", missileScene, StringComparison.Ordinal);
+        Assert.Contains("unique_name_in_owner = true", missileScene, StringComparison.Ordinal);
         Assert.Contains("yamoto_koki_summon.png", intentPatch, StringComparison.Ordinal);
         Assert.Contains("yamoto_koki_iai_slash.png", intentPatch, StringComparison.Ordinal);
         Assert.DoesNotContain("Shader", intentPatch, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiIntentUpdatePatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiIntentFramePatch>()", patchGroups, StringComparison.Ordinal);
 
         Assert.Contains("public bool HasPlayedEntrance", relic, StringComparison.Ordinal);
         Assert.Contains("public bool HasPlayedFarewell", relic, StringComparison.Ordinal);
@@ -581,9 +600,14 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("PlayEntrance(yamotoKoki)", relic, StringComparison.Ordinal);
         Assert.Contains("PlayFarewell(yamotoKoki)", relic, StringComparison.Ordinal);
         Assert.Contains("bomb.CanExplodeOnTurn(turnNumber)", relic, StringComparison.Ordinal);
+        Assert.Contains("DeathAnimationTask", relic, StringComparison.Ordinal);
+        Assert.Contains("Task.WhenAll(bombDeathTasks)", relic, StringComparison.Ordinal);
+        Assert.Contains("FindLivingPartyYamotoKoki(Owner.RunState)", relic, StringComparison.Ordinal);
         Assert.Contains("AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId)", relic, StringComparison.Ordinal);
         Assert.DoesNotContain("BeforeSideTurnStart", relic, StringComparison.Ordinal);
         Assert.Contains("AfterEventStarted()", eventModel, StringComparison.Ordinal);
+        Assert.Contains("ReferenceEquals(owner, recipient)", eventModel, StringComparison.Ordinal);
+        Assert.Contains("player.Character is INinjaSlayerCharacter", eventModel, StringComparison.Ordinal);
         Assert.Contains("MapPointType.Treasure", eventModel, StringComparison.Ordinal);
         Assert.Contains("1 => passedFixedTreasure", eventModel, StringComparison.Ordinal);
         Assert.Contains("2 => !passedFixedTreasure", eventModel, StringComparison.Ordinal);
@@ -604,6 +628,7 @@ public sealed class RepositoryArchitectureTests
     public void YamotoKokiIaiUsesSelfContainedRecoloredGrandFinaleVfx()
     {
         string monster = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
+        string combatVfx = SourceText("Content/NinjaSlayerCombatVfx.cs");
         string petals = File.ReadAllText(Path.Combine(
             Root,
             "NinjaSlayer",
@@ -631,6 +656,7 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("PlayYamotoKokiIaiPetals(Creature)", monster, StringComparison.Ordinal);
         Assert.Contains("PlayYamotoKokiIaiImpact(enemies)", monster, StringComparison.Ordinal);
         Assert.Contains("PreloadYamotoKokiIaiFeedback()", monster, StringComparison.Ordinal);
+        Assert.Contains("NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack)", combatVfx, StringComparison.Ordinal);
         Assert.DoesNotContain("giantHorizontalSlashPath", monster, StringComparison.Ordinal);
         Assert.Contains("0.9098039, 0.6117647, 0.9372549", petals, StringComparison.Ordinal);
         Assert.Contains("0.9882353, 0.89411765, 0.99215686", impact, StringComparison.Ordinal);

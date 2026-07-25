@@ -40,15 +40,25 @@ Godot loads a Debug editor assembly before Release export. The export-only build
 
 Releases use `v0.1.x`, where `x` is `0` through `99` without leading zeroes. A clean exact tag produces the matching package version; work after that tag produces a development version for the next patch (for example, `v0.1.7` becomes `0.1.8-dev...`) so a local test build takes precedence over the installed Workshop release.
 
-### Quick test release
+### Workshop-only quick test release
 
-Frequent player-test builds can use the local quick path. It packages and installs the mod, creates or verifies the matching tag, uploads an idempotent GitHub Release, stages the Workshop content, and invokes the local Workshop uploader:
+Frequent player-test builds can use the desktop shortcut or the Workshop-only script. It includes the current working tree, automatically selects the next local `0.1.x` version, packages and installs the mod, stages Workshop content, and invokes the local uploader:
+
+```powershell
+.\tools\release\Invoke-OneClickRelease.ps1
+# Or explicitly:
+.\tools\release\Publish-WorkshopQuickRelease.ps1 -Confirm
+```
+
+This path deliberately skips tests, Contract, Smoke, protected environments, and self-hosted runners. It does not require a clean branch and performs no GitHub authentication, fetch, commit, tag, push, pull request, or Release operation. The next version is derived from local tags and completed Workshop markers under `build/releases`; a failed upload reuses the same version. The release note comes from `Workshop/change-note.md`.
+
+For an explicit combined GitHub and Workshop release from a clean `main`, use:
 
 ```powershell
 .\tools\release\Publish-QuickRelease.ps1 -Version 0.1.2 -Confirm
 ```
 
-The quick path deliberately skips tests, Contract, Smoke, protected environments, and self-hosted runners. It still requires a clean `main` whose commit already matches `origin/main`, a valid `0.1.x` version, a successful package export, and valid package checksums. The release note comes from `Workshop/change-note.md`. Use `-SkipGitHub` or `-SkipWorkshop` to retry one destination after a partial external failure.
+`Publish-QuickRelease.ps1 -SkipGitHub` delegates to the Workshop-only path and therefore performs no GitHub operation. `-SkipWorkshop` retains the GitHub-only recovery path.
 
 ### Protected stable-candidate release
 

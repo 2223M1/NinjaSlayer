@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
@@ -85,12 +86,17 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         }
 
         Flash();
-        Creature yamotoKoki = await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
-        await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId);
-        if (!HasPlayedEntrance)
+        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
+        bool created = yamotoKoki == null;
+        if (created)
         {
-            HasPlayedEntrance = true;
-            await YamotoKokiCombatAnimations.PlayEntrance(yamotoKoki);
+            yamotoKoki = await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
+            await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId);
+            if (!HasPlayedEntrance)
+            {
+                HasPlayedEntrance = true;
+                await YamotoKokiCombatAnimations.PlayEntrance(yamotoKoki);
+            }
         }
 
         CombatsLeft--;
@@ -103,7 +109,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             return;
         }
 
-        Creature? yamotoKoki = Owner.PlayerCombatState?.GetPet<YamotoKokiMonster>();
+        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
         if (yamotoKoki == null || yamotoKoki.IsDead)
         {
             return;
@@ -125,11 +131,18 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             .Where(pet => pet.Monster is YamotoKokiGasBomb bomb
                 && bomb.CanExplodeOnTurn(turnNumber))
             .ToList() ?? [];
+        List<Task> bombDeathTasks = [];
         foreach (Creature armedBomb in armedBombs)
         {
+            NCreature? bombNode = armedBomb.GetCreatureNode();
             if (armedBomb.Monster is YamotoKokiGasBomb bomb)
             {
                 await bomb.ExecuteExplosion(armedBomb);
+            }
+
+            if (bombNode?.DeathAnimationTask is { } deathAnimationTask)
+            {
+                bombDeathTasks.Add(deathAnimationTask);
             }
 
             if (CombatManager.Instance.IsOverOrEnding)
@@ -138,7 +151,12 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             }
         }
 
-        Creature? yamotoKoki = Owner.PlayerCombatState?.GetPet<YamotoKokiMonster>();
+        if (bombDeathTasks.Count > 0)
+        {
+            await Task.WhenAll(bombDeathTasks);
+        }
+
+        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
         if (yamotoKoki == null || yamotoKoki.IsDead || yamotoKoki.Monster is not YamotoKokiMonster monster)
         {
             return;
@@ -206,5 +224,20 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         {
             await node.UpdateIntent(combatState.HittableEnemies);
         }
+    }
+
+    private static Creature? FindLivingPartyYamotoKoki(IRunState runState)
+    {
+        foreach (Player player in runState.Players)
+        {
+            Creature? yamotoKoki = player.PlayerCombatState?.Pets.FirstOrDefault(
+                pet => pet.Monster is YamotoKokiMonster && pet.IsAlive);
+            if (yamotoKoki != null)
+            {
+                return yamotoKoki;
+            }
+        }
+
+        return null;
     }
 }

@@ -31,11 +31,13 @@ dotnet build .\NinjaSlayer.csproj --no-restore -v:minimal
 
 普通构建只编译代码。完整测试、打包、安装、版本发布和受保护实机验证流程见 [开发与发布指南](Docs/development.md)。
 
-测试版可从干净且已推送的 `main` 一键发布到 GitHub 和 Steam：
+桌面“一键上传”只会使用当前工作区构建并上传 Steam 创意工坊，不会提交、推送、打标签或创建 GitHub Release：
 
 ```powershell
-.\tools\release\Publish-QuickRelease.ps1 -Version 0.1.2 -Confirm
+.\tools\release\Invoke-OneClickRelease.ps1
 ```
+
+需要同时发布 GitHub Release 时，使用开发指南中的显式完整发布命令。
 
 ## Links
 
