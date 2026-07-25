@@ -1,24 +1,21 @@
-using Godot;
-using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Scaffolding.Godot;
-using STS2RitsuLib.Scaffolding.Visuals.StateMachine;
 
 namespace NinjaSlayer.Monsters;
 
 [RegisterMonster]
-public sealed class XiaoJiMonster : ModMonsterTemplate
+public sealed class YamotoKokiMonster : ModMonsterTemplate
 {
     public const string SummonBombMoveId = "SUMMON_BOMB";
     public const string IaiSlashMoveId = "IAI_SLASH";
@@ -28,21 +25,11 @@ public sealed class XiaoJiMonster : ModMonsterTemplate
     public override int MaxInitialHp => 9999;
     public override bool IsHealthBarVisible => false;
 
+    protected override string VisualsPath =>
+        "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn";
+
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
-        RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(NinjaSlayerAssetProfile.VisualsPath);
-
-    protected override ModAnimStateMachine? SetupCustomCombatAnimationStateMachine(
-        Node visualsRoot,
-        MonsterModel monster)
-    {
-        if (Creature.PetOwner?.Character is not CharacterModel character
-            || character is not INinjaSlayerCharacter)
-        {
-            return null;
-        }
-
-        return NinjaSlayerAnimations.BuildCombatAnimationStateMachine(visualsRoot, character);
-    }
+        RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(VisualsPath);
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
@@ -69,11 +56,14 @@ public sealed class XiaoJiMonster : ModMonsterTemplate
             return;
         }
 
-        Creature bombCreature = await PlayerCmd.AddPet<XiaoJiGasBomb>(owner);
-        if (bombCreature.Monster is XiaoJiGasBomb bomb)
+        await YamotoKokiCombatAnimations.PlaySummon(Creature, async () =>
         {
-            await bomb.PrepareExplosionIntent(bombCreature);
-        }
+            Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
+            if (bombCreature.Monster is YamotoKokiGasBomb bomb)
+            {
+                await bomb.PrepareExplosionIntent(bombCreature);
+            }
+        });
     }
 
     private async Task IaiSlashMove(IReadOnlyList<Creature> targets)
@@ -86,8 +76,8 @@ public sealed class XiaoJiMonster : ModMonsterTemplate
             return;
         }
 
-        await CreatureCmd.TriggerAnim(Creature, "Attack", 0.15f);
-        NDebugAudioManager.Instance?.Play(TmpSfx.slashAttack);
+        await CreatureCmd.TriggerAnim(Creature, "SlowAttack", 0.25f);
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
         VfxCmd.PlayOnCreatureCenters(enemies, VfxCmd.giantHorizontalSlashPath);
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),

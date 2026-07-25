@@ -19,7 +19,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Monsters;
 
 [RegisterMonster]
-public sealed class XiaoJiGasBomb : ModMonsterTemplate
+public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 {
     public const string ExplodeMoveId = "EXPLODE_MOVE";
     public const int ExplodeDamage = 6;

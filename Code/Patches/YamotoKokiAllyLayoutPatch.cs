@@ -12,14 +12,14 @@ using STS2RitsuLib.Patching.Models;
 namespace NinjaSlayer.Code.Patches;
 
 /// <summary>
-/// Places each <see cref="XiaoJiMonster"/> in its own multiplayer-style slot instead of the foot pet band.
+/// Places each <see cref="YamotoKokiMonster"/> in its own multiplayer-style slot instead of the foot pet band.
 /// </summary>
-public sealed class XiaoJiAllyLayoutPatch : IPatchMethod
+public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
 {
-    public static string PatchId => "ninjaslayer_xiao_ji_ally_layout";
+    public static string PatchId => "ninjaslayer_yamoto_koki_ally_layout";
 
     public static string Description =>
-        "Lay out Xiao Ji companions in independent multiplayer player slots.";
+        "Lay out Yamoto Koki companions in independent multiplayer player slots.";
 
     public static bool IsCritical => false;
 
@@ -31,16 +31,16 @@ public sealed class XiaoJiAllyLayoutPatch : IPatchMethod
 
     public static bool Prefix(List<NCreature> creatureNodes, float scaling, bool fullyCenterPlayers)
     {
-        if (!creatureNodes.Any(node => node.Entity.Monster is XiaoJiMonster))
+        if (!creatureNodes.Any(node => node.Entity.Monster is YamotoKokiMonster))
         {
             return true;
         }
 
-        PositionWithXiaoJiSlots(creatureNodes, scaling, fullyCenterPlayers);
+        PositionWithYamotoKokiSlots(creatureNodes, scaling, fullyCenterPlayers);
         return false;
     }
 
-    private static void PositionWithXiaoJiSlots(
+    private static void PositionWithYamotoKokiSlots(
         List<NCreature> creatureNodes,
         float scaling,
         bool fullyCenterPlayers)
@@ -75,7 +75,7 @@ public sealed class XiaoJiAllyLayoutPatch : IPatchMethod
                 continue;
             }
 
-            if (creature.Entity.Monster is XiaoJiMonster)
+            if (creature.Entity.Monster is YamotoKokiMonster)
             {
                 slots.Add(new Slot { Anchor = creature, Pets = [] });
                 continue;

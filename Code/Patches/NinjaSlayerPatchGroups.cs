@@ -30,7 +30,8 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<BossGreetingMusicPatch>();
         patcher.RegisterPatch<CardTransformShineSfxPatch>();
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
-        patcher.RegisterPatch<XiaoJiAllyLayoutPatch>();
+        patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
+        patcher.RegisterPatch<YamotoKokiDodgePatch>();
     }
 }
 

@@ -11,7 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Events;
 
 [RegisterSharedEvent]
-public sealed class XiaoJiCuteEvent : ModEventTemplate
+public sealed class YamotoKokiCuteEvent : ModEventTemplate
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
@@ -23,17 +23,23 @@ public sealed class XiaoJiCuteEvent : ModEventTemplate
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
     [
-        new EventOption(this, HugXiaoJi, InitialOptionKey("HUG_XIAO_JI"), HoverTipFactory.FromRelic<XiaoJiCuteRelic>()),
-        new EventOption(this, RobXiaoJi, InitialOptionKey("ROB_XIAO_JI"))
+        new EventOption(this, HugYamotoKoki, InitialOptionKey("HUG_YAMOTO_KOKI"), HoverTipFactory.FromRelic<YamotoKokiCuteRelic>()),
+        new EventOption(this, RobYamotoKoki, InitialOptionKey("ROB_YAMOTO_KOKI"))
     ];
 
-    private async Task HugXiaoJi()
+    public override Task AfterEventStarted()
     {
-        await RelicCmd.Obtain<XiaoJiCuteRelic>(Owner!);
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiEvent);
+        return Task.CompletedTask;
+    }
+
+    private async Task HugYamotoKoki()
+    {
+        await RelicCmd.Obtain<YamotoKokiCuteRelic>(Owner!);
         SetEventFinished(PageDescription("HUGGED"));
     }
 
-    private async Task RobXiaoJi()
+    private async Task RobYamotoKoki()
     {
         await PlayerCmd.GainGold(DynamicVars.Gold.BaseValue, Owner!);
         SetEventFinished(PageDescription("ROBBED"));
