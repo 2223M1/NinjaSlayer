@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -63,7 +64,8 @@ public static class FastAttackAnimation
         if (creatureNode == null) return;
 
         var originalPos = creatureNode.Position;
-        var direction = (creature.IsPlayer ? 1f : -1f) * (reverseDirection ? -1f : 1f);
+        var direction = (creature.Side == CombatSide.Player ? 1f : -1f)
+            * (reverseDirection ? -1f : 1f);
 
         var tween = creatureNode.CreateTween();
 

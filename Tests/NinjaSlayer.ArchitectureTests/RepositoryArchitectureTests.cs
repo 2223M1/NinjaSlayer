@@ -527,6 +527,54 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void YamotoKokiUsesDedicatedVisualsAudioAndSavedPresentationLifecycle()
+    {
+        string monster = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
+        string animations = SourceText("Code/ExternalAnimations/YamotoKokiCombatAnimations.cs");
+        string dodge = SourceText("Code/Patches/YamotoKokiDodgePatch.cs");
+        string relic = SourceText("Relics/YamotoKokiCuteRelic.cs");
+        string eventModel = SourceText("Events/YamotoKokiCuteEvent.cs");
+        string audio = SourceText("Content/NinjaSlayerAudio.cs");
+        string scene = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "scenes",
+            "creature_visuals",
+            "yamoto_koki.tscn"));
+
+        Assert.Contains("res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn", monster, StringComparison.Ordinal);
+        Assert.Contains("protected override string VisualsPath", monster, StringComparison.Ordinal);
+        Assert.DoesNotContain("NinjaSlayerAssetProfile.VisualsPath", monster, StringComparison.Ordinal);
+        Assert.DoesNotContain("BuildCombatAnimationStateMachine", monster, StringComparison.Ordinal);
+        Assert.Contains("scale = Vector2(0.492, 0.492)", scene, StringComparison.Ordinal);
+        Assert.Contains("res://NinjaSlayer/images/monsters/yamoto_koki.png", scene, StringComparison.Ordinal);
+
+        Assert.Contains("case \"Dodge\":", animations, StringComparison.Ordinal);
+        Assert.Contains("case \"SlowAttack\":", animations, StringComparison.Ordinal);
+        Assert.Contains("PlaySummon", monster, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiFastAttackEvent", monster, StringComparison.Ordinal);
+        Assert.Contains("target.Player ?? target.PetOwner", dodge, StringComparison.Ordinal);
+
+        Assert.Contains("public bool HasPlayedEntrance", relic, StringComparison.Ordinal);
+        Assert.Contains("public bool HasPlayedFarewell", relic, StringComparison.Ordinal);
+        Assert.Contains("AfterCombatEnd(CombatRoom room)", relic, StringComparison.Ordinal);
+        Assert.Contains("PlayEntrance(yamotoKoki)", relic, StringComparison.Ordinal);
+        Assert.Contains("PlayFarewell(yamotoKoki)", relic, StringComparison.Ordinal);
+        Assert.Contains("AfterEventStarted()", eventModel, StringComparison.Ordinal);
+
+        foreach (string eventName in new[]
+                 {
+                     "yamoto_koki_bye",
+                     "yamoto_koki_event",
+                     "yamoto_koki_fast_attack",
+                     "yamoto_koki_go"
+                 })
+        {
+            Assert.Contains(eventName, audio, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void WorldPresentationStylesUseAbsoluteCoordinates()
     {
         CompilationUnitSyntax world = Sources
