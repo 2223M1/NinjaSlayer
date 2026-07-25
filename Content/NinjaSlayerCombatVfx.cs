@@ -34,7 +34,7 @@ public static class NinjaSlayerCombatVfx
         NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack);
     }
 
-    public static void PlayYamotoKokiIaiFeedback(Creature attacker, IEnumerable<Creature> targets)
+    public static void PlayYamotoKokiIaiPetals(Creature attacker)
     {
         NCombatRoom? room = NCombatRoom.Instance;
         if (room == null)
@@ -46,6 +46,16 @@ public static class NinjaSlayerCombatVfx
         if (petals != null)
         {
             room.CombatVfxContainer.AddChildSafely(petals);
+        }
+
+    }
+
+    public static void PlayYamotoKokiIaiImpact(IEnumerable<Creature> targets)
+    {
+        NCombatRoom? room = NCombatRoom.Instance;
+        if (room == null)
+        {
+            return;
         }
 
         foreach (Creature target in targets)

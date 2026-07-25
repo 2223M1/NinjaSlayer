@@ -8,15 +8,16 @@ metadata/_edit_group_ = true
 metadata/_edit_lock_ = true
 
 [node name="Shadow" type="Sprite2D" parent="."]
-position = Vector2(0, -12.13)
+position = Vector2(45, -12.13)
 scale = Vector2(0.3358, 0.3358)
 texture = ExtResource("2_shadow")
 
 [node name="Visuals" type="Node2D" parent="."]
 unique_name_in_owner = true
+position = Vector2(45, -12.13)
 
 [node name="Sprite" type="Sprite2D" parent="Visuals"]
-position = Vector2(0, -115.6)
+position = Vector2(-45, -103.47)
 scale = Vector2(0.4588, 0.4588)
 texture = ExtResource("1_yamoto_koki")
 

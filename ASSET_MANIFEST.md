@@ -56,6 +56,12 @@ Relic assets live in `NinjaSlayer/images/relics/` and use `{RelicClassName}.png`
 
 The Nancy relics currently share the `PortableIrcTerminalRelic` icon set. Their target names are recorded in `Docs/placeholder-assets.json`.
 
+## Yamoto Koki
+
+Yamoto Koki's combat portrait and copied intent icons live under `NinjaSlayer/images/monsters/` and `NinjaSlayer/images/intents/`. The summon and Attack 1 icons preserve the original black details while mapping their colored peak to `#E89CEF`.
+
+Her temporary missile visuals are isolated in `NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn`. The scene copies the vanilla Gas Bomb resources so its dark trail can be removed without mutating the original game asset.
+
 ## Power Icons
 
 Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. The project currently ships both `OpeningPower.png` and `soar_power.png`. A power without dedicated art falls back to `soar_power.png`; this fallback is recorded in `Docs/placeholder-assets.json`.

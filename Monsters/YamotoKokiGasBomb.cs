@@ -23,16 +23,20 @@ namespace NinjaSlayer.Monsters;
 public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 {
     public const string ExplodeMoveId = "EXPLODE_MOVE";
-    public const int ExplodeDamage = 6;
+    public const int ExplodeDamage = 4;
+    private const string VisualsPath =
+        "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn";
 
     private bool _hasExploded;
     private int _earliestExplosionTurn = int.MaxValue;
+    private bool _isApplyingIntrinsicPowers;
 
     public override MonsterAssetProfile AssetProfile =>
-        new(SceneHelper.GetScenePath("creature_visuals/gas_bomb"));
+        new(VisualsPath);
 
-    public override int MinInitialHp => 3;
-    public override int MaxInitialHp => 3;
+    public override int MinInitialHp => 1;
+    public override int MaxInitialHp => 1;
+    public override bool IsHealthBarVisible => false;
     public override DamageSfxType TakeDamageSfxType => DamageSfxType.Magic;
     public override bool ShouldFadeAfterDeath => false;
     public override string DeathSfx => "event:/sfx/enemy/enemy_attacks/living_fog/living_fog_minion_die";
@@ -61,18 +65,33 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public override async Task AfterAddedToRoom()
     {
         await base.AfterAddedToRoom();
-        await PowerCmd.Apply<DieForYouPower>(new ThrowingPlayerChoiceContext(), Creature, 1m, null, null);
-        await PowerCmd.Apply<MinionPower>(new ThrowingPlayerChoiceContext(), Creature, 1m, Creature, null);
+        _isApplyingIntrinsicPowers = true;
+        try
+        {
+            await PowerCmd.Apply<MinionPower>(
+                new ThrowingPlayerChoiceContext(),
+                Creature,
+                1m,
+                Creature,
+                null);
+        }
+        finally
+        {
+            _isApplyingIntrinsicPowers = false;
+        }
     }
+
+    public override bool ShouldAllowHitting(Creature creature) =>
+        creature != Creature || _isApplyingIntrinsicPowers;
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
-        MoveState explode = new(ExplodeMoveId, ExplodeMove, new DeathBlowIntent(() => ExplodeDamage));
+        MoveState explode = new(ExplodeMoveId, ExplodeMove, new HiddenIntent());
         explode.FollowUpState = explode;
         return new MonsterMoveStateMachine([explode], explode);
     }
 
-    public async Task PrepareExplosionIntent(Creature bombCreature)
+    public void ArmForNextTurn(Creature bombCreature)
     {
         EarliestExplosionTurn = bombCreature.PetOwner?.PlayerCombatState?.TurnNumber + 1
             ?? int.MaxValue;
@@ -83,11 +102,6 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
         MoveState explode = (MoveState)MoveStateMachine!.States[ExplodeMoveId];
         SetMoveImmediate(explode, forceTransition: true);
-        NCreature? node = bombCreature.GetCreatureNode();
-        if (node != null && CombatState.IsLiveCombat())
-        {
-            await node.UpdateIntent(CombatState.HittableEnemies);
-        }
     }
 
     public bool CanExplodeOnTurn(int turnNumber) =>
@@ -98,12 +112,6 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         if (bombCreature.IsDead || HasExploded)
         {
             return;
-        }
-
-        NCreature? node = bombCreature.GetCreatureNode();
-        if (node != null)
-        {
-            await node.PerformIntent();
         }
 
         await ExplodeMove(CombatState.HittableEnemies);
