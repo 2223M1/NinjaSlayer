@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.title": "Summon",
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.description": "This ally intends to summon [blue]{Count}[/blue] [gold]Origami Missiles[/gold].",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.title": "Iai Slash",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.description": "This ally intends to [gold]attack[/gold] all enemies for [blue]{Damage}[/blue] damage."
+}

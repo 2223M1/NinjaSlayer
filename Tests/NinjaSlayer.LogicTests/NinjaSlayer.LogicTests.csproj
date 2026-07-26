@@ -18,17 +18,22 @@
   <ItemGroup>
     <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
     <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityRegistry.cs" Link="NinjaSlayerCapabilityRegistry.cs" />
+    <Compile Include="..\..\Code\Compatibility\StableMethodBodyContract.cs" Link="StableMethodBodyContract.cs" />
     <Compile Include="..\..\Code\Diagnostics\NinjaSlayerRuntimeHealthModel.cs" Link="NinjaSlayerRuntimeHealthModel.cs" />
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
+    <Compile Include="..\..\Code\Combat\FacingScaleMath.cs" Link="FacingScaleMath.cs" />
+    <Compile Include="..\..\Code\Combat\AttackIntentPreviewContext.cs" Link="AttackIntentPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />
     <Compile Include="..\..\Code\Combat\ScreenShakeSuppressionContext.cs" Link="ScreenShakeSuppressionContext.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiOrbitMath.cs" Link="YamotoKokiOrbitMath.cs" />
+    <Compile Include="..\..\Code\Combat\YamotoKokiFacingPolicy.cs" Link="YamotoKokiFacingPolicy.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiGridLayoutMath.cs" Link="YamotoKokiGridLayoutMath.cs" />
+    <Compile Include="..\..\Code\Combat\VisitedMapHistoryAlignment.cs" Link="VisitedMapHistoryAlignment.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiDamageMath.cs" Link="YamotoKokiDamageMath.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackComboContext.cs" Link="XAttackComboContext.cs" />

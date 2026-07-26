@@ -105,6 +105,9 @@ internal sealed class FinisherImpactPresentation : IDisposable
         return new FinisherImpactPresentation(room, impactCount);
     }
 
+    public static FinisherImpactPresentation CreateBackdropOnly(NCombatRoom room) =>
+        new(room, impactCount: 0);
+
     public void SetBackdropIntensity(float intensity)
     {
         if (_disposed || !GodotObject.IsInstanceValid(_backdrop))

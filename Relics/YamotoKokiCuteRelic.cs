@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Saves.Runs;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Scripts;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Relics;
@@ -22,7 +23,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
     private const string CombatsKey = "Combats";
     private const float MissileAttackIntervalSeconds = 0.2f;
     private const float MoveAfterMissilesDelaySeconds = 0.2f;
-    private readonly record struct BombOperation(NCreature? Node, Task Explosion);
+    private readonly record struct MissileOperation(NCreature? Node, Task Explosion);
     private int _combatsLeft = 5;
     private bool _hasPlayedEntrance;
     private bool _hasPlayedFarewell;
@@ -94,7 +95,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         if (created)
         {
             yamotoKoki = await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
-            await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonBombMoveId);
+            await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonMissileMoveId);
             if (!HasPlayedEntrance)
             {
                 HasPlayedEntrance = true;
@@ -129,12 +130,25 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             return;
         }
 
+        try
+        {
+            await PerformTurnStartActions();
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Error(
+                $"Yamoto Koki turn-start action failed; releasing the player turn instead of blocking card input: {ex}");
+        }
+    }
+
+    private async Task PerformTurnStartActions()
+    {
         int turnNumber = Owner.PlayerCombatState?.TurnNumber ?? 0;
-        List<Creature> armedBombs = Owner.PlayerCombatState?.Pets
-            .Where(pet => pet.Monster is YamotoKokiGasBomb bomb
-                && bomb.CanExplodeOnTurn(turnNumber))
+        List<Creature> armedMissiles = Owner.PlayerCombatState?.Pets
+            .Where(pet => pet.Monster is YamotoKokiOrigamiMissile missile
+                && missile.CanExplodeOnTurn(turnNumber))
             .ToList() ?? [];
-        if (armedBombs.Count > 0)
+        if (armedMissiles.Count > 0)
         {
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
         }
@@ -143,22 +157,23 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         YamotoKokiMonster? monster = yamotoKoki?.Monster as YamotoKokiMonster;
         MoveState? scheduledMove = monster?.NextMove;
 
-        Task<IReadOnlyList<BombOperation>> bombStartsTask = StartBombAttacksStaggered(armedBombs);
-        Task bombsTask = CompleteBombOperations(bombStartsTask);
+        IReadOnlyList<MissileOperation> missileOperations =
+            await StartMissileAttacksStaggered(armedMissiles);
         if (yamotoKoki == null || yamotoKoki.IsDead || monster == null || scheduledMove == null)
         {
-            await bombsTask;
+            await CompleteMissileOperations(missileOperations);
             return;
         }
 
         IReadOnlyList<Creature> enemies = yamotoKoki.CombatState?.HittableEnemies ?? [];
-        if (armedBombs.Count > 0)
+        if (armedMissiles.Count > 0)
         {
-            await bombStartsTask;
-            await Cmd.Wait(MoveAfterMissilesDelaySeconds);
+            Task postLaunchDelay = Cmd.Wait(MoveAfterMissilesDelaySeconds);
+            Task missileResolution = WaitForMissileResolutions(missileOperations);
+            await Task.WhenAll(postLaunchDelay, missileResolution);
             if (CombatManager.Instance.IsOverOrEnding || yamotoKoki.IsDead)
             {
-                await bombsTask;
+                await CompleteMissileOperations(missileOperations);
                 return;
             }
 
@@ -168,11 +183,11 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
                 scheduledMove,
                 enemies,
                 overlapIntentPresentation: true);
-            await Task.WhenAll(bombsTask, moveTask);
+            await Task.WhenAll(CompleteMissileOperations(missileOperations), moveTask);
         }
         else
         {
-            await bombsTask;
+            await CompleteMissileOperations(missileOperations);
             if (CombatManager.Instance.IsOverOrEnding)
             {
                 return;
@@ -190,11 +205,11 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         await AssignRandomIntent(yamotoKoki);
     }
 
-    private static async Task<IReadOnlyList<BombOperation>> StartBombAttacksStaggered(
-        IReadOnlyList<Creature> armedBombs)
+    private static async Task<IReadOnlyList<MissileOperation>> StartMissileAttacksStaggered(
+        IReadOnlyList<Creature> armedMissiles)
     {
-        List<BombOperation> operations = [];
-        for (int i = 0; i < armedBombs.Count; i++)
+        List<MissileOperation> operations = [];
+        for (int i = 0; i < armedMissiles.Count; i++)
         {
             if (i > 0)
             {
@@ -206,24 +221,26 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
                 break;
             }
 
-            Creature armedBomb = armedBombs[i];
-            NCreature? bombNode = armedBomb.GetCreatureNode();
-            if (armedBomb.Monster is YamotoKokiGasBomb bomb)
+            Creature armedMissile = armedMissiles[i];
+            NCreature? missileNode = armedMissile.GetCreatureNode();
+            if (armedMissile.Monster is YamotoKokiOrigamiMissile missile)
             {
-                operations.Add(new BombOperation(
-                    bombNode,
-                    bomb.ExecuteExplosion(armedBomb)));
+                operations.Add(new MissileOperation(
+                    missileNode,
+                    missile.ExecuteExplosion(armedMissile)));
             }
         }
 
         return operations;
     }
 
-    private static async Task CompleteBombOperations(
-        Task<IReadOnlyList<BombOperation>> bombStartsTask)
+    private static Task WaitForMissileResolutions(IReadOnlyList<MissileOperation> operations) =>
+        Task.WhenAll(operations.Select(operation => operation.Explosion));
+
+    private static async Task CompleteMissileOperations(
+        IReadOnlyList<MissileOperation> operations)
     {
-        IReadOnlyList<BombOperation> operations = await bombStartsTask;
-        await Task.WhenAll(operations.Select(operation => operation.Explosion));
+        await WaitForMissileResolutions(operations);
         Task[] deathAnimations = operations
             .Select(operation => operation.Node?.DeathAnimationTask)
             .OfType<Task>()

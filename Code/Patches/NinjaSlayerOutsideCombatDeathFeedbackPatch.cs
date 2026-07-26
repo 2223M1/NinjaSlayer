@@ -1,10 +1,10 @@
 using Godot;
 using System.Runtime.CompilerServices;
-using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen;
 using MegaCrit.Sts2.Core.Nodes.Screens.Shops;
 using MegaCrit.Sts2.Core.Runs;
@@ -17,15 +17,15 @@ using STS2RitsuLib.Patching.Models;
 namespace NinjaSlayer.Code.Patches;
 
 /// <summary>
-/// Marks an abandoned NinjaSlayer before the force-kill starts. Outside combat there is no
-/// <see cref="NCreature.StartDeathAnim"/> call, so this owns the suicide SFX frame.
+/// Marks an abandoned NinjaSlayer before the force-kill starts. The marker gives the Game Over
+/// presentation sole ownership of the custom fall and suicide SFX in every room type.
 /// </summary>
-public sealed class NinjaSlayerOutsideCombatDeathCapturePatch : IPatchMethod
+public sealed class NinjaSlayerAbandonDeathCapturePatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_outside_combat_death_capture";
 
     public static string Description =>
-        "Capture abandoned NinjaSlayer deaths that have no combat creature node.";
+        "Capture abandoned NinjaSlayer deaths before their forced kill.";
 
     public static bool IsCritical => false;
 
@@ -38,9 +38,13 @@ public sealed class NinjaSlayerOutsideCombatDeathCapturePatch : IPatchMethod
     {
         bool eligible = force
             && RunManager.Instance.IsAbandoned
-            && creature.Player?.Character is INinjaSlayerCharacter
-            && !CombatManager.Instance.IsInProgress;
-        __state = eligible && NinjaSlayerOutsideCombatDeathFeedback.TryMark(creature);
+            && creature.Player?.Character is INinjaSlayerCharacter;
+        __state = eligible && NinjaSlayerAbandonDeathFeedback.TryMark(creature);
+        if (__state
+            && NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals is { } existingVisuals)
+        {
+            NinjaSlayerAbandonDeathFeedback.RegisterVisual(existingVisuals, creature);
+        }
     }
 
     public static void Postfix(Creature creature, bool __state, ref Task __result)
@@ -63,12 +67,12 @@ public sealed class NinjaSlayerOutsideCombatDeathCapturePatch : IPatchMethod
             }
             else
             {
-                NinjaSlayerOutsideCombatDeathFeedback.Clear(creature);
+                NinjaSlayerAbandonDeathFeedback.Clear(creature);
             }
         }
         catch
         {
-            NinjaSlayerOutsideCombatDeathFeedback.Clear(creature);
+            NinjaSlayerAbandonDeathFeedback.Clear(creature);
             throw;
         }
     }
@@ -77,7 +81,7 @@ public sealed class NinjaSlayerOutsideCombatDeathCapturePatch : IPatchMethod
 /// <summary>
 /// Associates combat-style visuals recreated by Game Over with the creature that created them.
 /// </summary>
-public sealed class NinjaSlayerOutsideCombatVisualCreationPatch : IPatchMethod
+public sealed class NinjaSlayerAbandonVisualCreationPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_outside_combat_visual_creation";
 
@@ -95,7 +99,7 @@ public sealed class NinjaSlayerOutsideCombatVisualCreationPatch : IPatchMethod
     {
         if (__result != null)
         {
-            NinjaSlayerOutsideCombatDeathFeedback.RegisterVisual(__result, __instance);
+            NinjaSlayerAbandonDeathFeedback.RegisterVisual(__result, __instance);
         }
     }
 }
@@ -104,7 +108,7 @@ public sealed class NinjaSlayerOutsideCombatVisualCreationPatch : IPatchMethod
 /// Merchant and fake-merchant Game Over paths retain <see cref="NMerchantCharacter"/> roots rather than
 /// recreating <see cref="NCreatureVisuals"/>. Play the same fall directly on NinjaSlayer's procedural sprite.
 /// </summary>
-public sealed class NinjaSlayerOutsideCombatMerchantDeathPatch : IPatchMethod
+public sealed class NinjaSlayerAbandonMerchantDeathPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_outside_combat_merchant_death";
 
@@ -120,9 +124,9 @@ public sealed class NinjaSlayerOutsideCombatMerchantDeathPatch : IPatchMethod
 
     public static void Postfix(NMerchantCharacter __instance, string anim)
     {
-        if (!NinjaSlayerOutsideCombatDeathFeedback.IsDeathCue(anim)
-            || !NinjaSlayerOutsideCombatDeathFeedback.IsNinjaSlayerMerchantVisual(__instance)
-            || !NinjaSlayerOutsideCombatDeathFeedback.TryConsumeAny(out _))
+        if (!NinjaSlayerAbandonDeathFeedback.IsDeathCue(anim)
+            || !NinjaSlayerAbandonDeathFeedback.IsNinjaSlayerMerchantVisual(__instance)
+            || !NinjaSlayerAbandonDeathFeedback.TryConsumeAny(out _))
         {
             return;
         }
@@ -140,7 +144,7 @@ public sealed class NinjaSlayerOutsideCombatMerchantDeathPatch : IPatchMethod
 /// to visuals explicitly associated with the abandoned creature; the rig fallback covers compatibility patches
 /// that instantiate the character model directly rather than calling <see cref="Creature.CreateVisuals"/>.
 /// </summary>
-public sealed class NinjaSlayerOutsideCombatDeathFeedbackPatch : IPatchMethod
+public sealed class NinjaSlayerAbandonGameOverDeathFeedbackPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_outside_combat_death_feedback";
 
@@ -157,7 +161,7 @@ public sealed class NinjaSlayerOutsideCombatDeathFeedbackPatch : IPatchMethod
     public static void Postfix(NGameOverScreen __instance)
     {
         int started = 0;
-        foreach (NCreatureVisuals visuals in NinjaSlayerOutsideCombatDeathFeedback
+        foreach (NCreatureVisuals visuals in NinjaSlayerAbandonDeathFeedback
                      .EnumerateDescendants<NCreatureVisuals>(__instance))
         {
             if (!GodotObject.IsInstanceValid(visuals)
@@ -167,8 +171,8 @@ public sealed class NinjaSlayerOutsideCombatDeathFeedbackPatch : IPatchMethod
                 continue;
             }
 
-            if (!NinjaSlayerOutsideCombatDeathFeedback.TryConsumeVisual(visuals, out Creature? creature)
-                && !NinjaSlayerOutsideCombatDeathFeedback.TryConsumeAny(out creature))
+            if (!NinjaSlayerAbandonDeathFeedback.TryConsumeVisual(visuals, out Creature? creature)
+                && !NinjaSlayerAbandonDeathFeedback.TryConsumeAny(out creature))
             {
                 continue;
             }
@@ -181,7 +185,7 @@ public sealed class NinjaSlayerOutsideCombatDeathFeedbackPatch : IPatchMethod
             started++;
         }
 
-        int unmatched = NinjaSlayerOutsideCombatDeathFeedback.ClearRemaining();
+        int unmatched = NinjaSlayerAbandonDeathFeedback.ClearRemaining();
         if (started > 0)
         {
             Entry.Logger.Info(
@@ -196,7 +200,7 @@ public sealed class NinjaSlayerOutsideCombatDeathFeedbackPatch : IPatchMethod
     }
 }
 
-internal static class NinjaSlayerOutsideCombatDeathFeedback
+internal static class NinjaSlayerAbandonDeathFeedback
 {
     private static readonly object Sync = new();
     private static readonly HashSet<Creature> Pending = new(ReferenceEqualityComparer.Instance);

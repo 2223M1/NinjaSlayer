@@ -9,13 +9,14 @@ internal sealed class GameplayPatchGroup : IModPatches
     {
         patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
+        patcher.RegisterPatch<NinjaSlayerMapHistoryIconPatch>();
         patcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
         patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
-        patcher.RegisterPatch<NinjaSlayerOutsideCombatDeathCapturePatch>();
-        patcher.RegisterPatch<NinjaSlayerOutsideCombatVisualCreationPatch>();
-        patcher.RegisterPatch<NinjaSlayerOutsideCombatMerchantDeathPatch>();
-        patcher.RegisterPatch<NinjaSlayerOutsideCombatDeathFeedbackPatch>();
+        patcher.RegisterPatch<NinjaSlayerAbandonDeathCapturePatch>();
+        patcher.RegisterPatch<NinjaSlayerAbandonVisualCreationPatch>();
+        patcher.RegisterPatch<NinjaSlayerAbandonMerchantDeathPatch>();
+        patcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
         patcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
         patcher.RegisterPatch<BossDeathPresentationPatch>();
         patcher.RegisterPatch<BossDeathFadeStartPatch>();
@@ -32,11 +33,12 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
-        patcher.RegisterPatch<YamotoKokiDodgeAttackScopePatch>();
-        patcher.RegisterPatch<YamotoKokiDodgeAttackAnimationPatch>();
-        patcher.RegisterPatch<YamotoKokiDodgePatch>();
+        patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
+        patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
+        patcher.RegisterPatch<AllyDodgeImpactPatch>();
+        patcher.RegisterPatch<AttackIntentDamagePreviewPatch>();
         patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
-        patcher.RegisterPatch<YamotoKokiIntentFramePatch>();
+        patcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
     }
 }
 
@@ -134,6 +136,7 @@ internal sealed class FinisherCorePatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
+        patcher.RegisterPatch<NinjaSlayerDeathCompletionPatch>();
     }
 }
 

@@ -1,9 +1,11 @@
 using Godot;
+using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 
@@ -11,6 +13,8 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class NinjaSlayerFacingState
 {
+    private static readonly ConditionalWeakTable<Creature, FacingSnapshot> PersistentFacing = new();
+
     public static async Task SyncAfterBeforeCardPlayed(Task original, CardPlay cardPlay)
     {
         await original;
@@ -42,6 +46,8 @@ internal static class NinjaSlayerFacingState
             {
                 SyncFromSurroundedPower(creature, power);
             }
+
+            YamotoKokiAllyFacingController.SyncCurrentRoom();
         }
     }
 
@@ -77,6 +83,28 @@ internal static class NinjaSlayerFacingState
         }
     }
 
+    internal static bool ResolveFacingLeft(NCreature creatureNode)
+    {
+        Creature creature = creatureNode.Entity;
+        if (creature.Player?.Character is not INinjaSlayerCharacter)
+        {
+            return FacingScaleMath.IsFacingLeft(creatureNode.Body.Scale.X);
+        }
+
+        if (creature.GetPower<SurroundedPower>() is { } surrounded)
+        {
+            return surrounded.Facing == SurroundedPower.Direction.Left;
+        }
+
+        if (PersistentFacing.TryGetValue(creature, out FacingSnapshot? snapshot))
+        {
+            return snapshot.FaceLeft;
+        }
+
+        Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals);
+        return anchor != null && FacingScaleMath.IsFacingLeft(anchor.Scale.X);
+    }
+
     public static (Creature? Creature, float BodyScaleX, bool RestoreBodyScale) CaptureSurroundedBody(
         SurroundedPower power)
     {
@@ -107,13 +135,10 @@ internal static class NinjaSlayerFacingState
             return;
         }
 
-        float magnitude = Mathf.Abs(anchor.Scale.X);
-        if (magnitude <= 0.001f)
-        {
-            magnitude = 1f;
-        }
-
-        anchor.Scale = new Vector2(faceLeft ? -magnitude : magnitude, anchor.Scale.Y);
+        PersistentFacing.GetValue(creatureNode.Entity, static _ => new FacingSnapshot()).FaceLeft = faceLeft;
+        anchor.Scale = new Vector2(
+            FacingScaleMath.WithFacing(anchor.Scale.X, faceLeft),
+            anchor.Scale.Y);
     }
 
     private static void RestoreBodyScaleX(Creature creature, float scaleX)
@@ -123,5 +148,10 @@ internal static class NinjaSlayerFacingState
         {
             body.Scale = new Vector2(scaleX, body.Scale.Y);
         }
+    }
+
+    private sealed class FacingSnapshot
+    {
+        public bool FaceLeft { get; set; }
     }
 }

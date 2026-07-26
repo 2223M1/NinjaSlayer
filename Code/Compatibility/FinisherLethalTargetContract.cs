@@ -34,10 +34,13 @@ internal static class FinisherLethalTargetContract
             target.Module.ModuleVersionId,
             target.MetadataToken,
             Convert.ToHexString(SHA256.HashData(il)).ToLowerInvariant());
-        if (!string.Equals(fingerprint.AssemblyVersion, ExpectedAssemblyVersion, StringComparison.Ordinal)
-            || fingerprint.ModuleMvid != Guid.Parse(ExpectedModuleMvid)
-            || fingerprint.MetadataToken != ExpectedMetadataToken
-            || !string.Equals(fingerprint.IlSha256, ExpectedIlSha256, StringComparison.Ordinal))
+        if (!StableMethodBodyContract.Matches(
+                fingerprint.AssemblyVersion,
+                fingerprint.MetadataToken,
+                fingerprint.IlSha256,
+                ExpectedAssemblyVersion,
+                ExpectedMetadataToken,
+                ExpectedIlSha256))
         {
             reason = $"Creature.LoseHpInternal fingerprint mismatch ({fingerprint}).";
             return false;

@@ -1,11 +1,19 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
+
+internal enum YamotoKokiIaiApproachMode
+{
+    StandardLunge,
+    FinisherCloseRange
+}
 
 internal static class YamotoKokiCombatAnimations
 {
@@ -19,7 +27,9 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
     private const float GroundOffsetFromPivot = 8.625f;
-    private static readonly Vector2 RightFootContactFromPivot = new(52.495f, 3.137f);
+    private const float IaiApproachSeconds = 0.25f;
+    private const float IaiApproachDistance = 120f;
+    private static readonly Vector2 RightFootContactFromPivot = new(65.495f, 3.137f);
 
     public static bool TryPlayTriggerAnim(
         Creature creature,
@@ -35,11 +45,11 @@ internal static class YamotoKokiCombatAnimations
         switch (triggerName)
         {
             case "Dodge":
-                result = YamotoKokiDodgeAnimation.PlayImmediate(creature);
+                result = CombatDodgeAnimation.PlayImmediate(creature);
                 return true;
             case "Hit":
             case "BlockedHit":
-                result = YamotoKokiDodgeAnimation.PlayImmediate(creature);
+                result = CombatDodgeAnimation.PlayImmediate(creature);
                 return true;
             case "SlowAttack":
                 result = SlowAttackAnimation.Play(creature);
@@ -85,6 +95,64 @@ internal static class YamotoKokiCombatAnimations
             {
                 body.Position = originalBodyPosition;
                 body.RotationDegrees = originalRotation;
+            }
+        }
+    }
+
+    public static async Task PlayIaiSlash(
+        Creature creature,
+        NCreature targetNode,
+        Func<Task> approachStarted,
+        Func<Task> impactAtPeak,
+        YamotoKokiIaiApproachMode approachMode)
+    {
+        NCreature? creatureNode = creature.GetCreatureNode();
+        if (creatureNode == null)
+        {
+            await impactAtPeak();
+            return;
+        }
+
+        Vector2 originalPosition = creatureNode.Position;
+        bool isFinisherApproach = approachMode == YamotoKokiIaiApproachMode.FinisherCloseRange;
+        float direction = isFinisherApproach
+            ? Mathf.Sign(targetNode.Position.X - originalPosition.X)
+            : creature.Side == CombatSide.Player ? 1f : -1f;
+        if (Mathf.IsZeroApprox(direction))
+        {
+            direction = 1f;
+        }
+
+        Vector2 approachStart = originalPosition;
+        Vector2 impactPosition = originalPosition + Vector2.Right * direction * IaiApproachDistance;
+        if (isFinisherApproach)
+        {
+            float targetHalfWidth = targetNode.Visuals.Bounds.Size.X
+                * Mathf.Abs(targetNode.Visuals.Scale.X)
+                * 0.5f;
+            impactPosition = new Vector2(
+                targetNode.Position.X
+                    - direction * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap),
+                originalPosition.Y);
+            approachStart = impactPosition - Vector2.Right * direction * IaiApproachDistance;
+            creatureNode.Position = approachStart;
+        }
+
+        try
+        {
+            await approachStarted();
+            await TweenIaiApproach(creatureNode, approachStart, impactPosition);
+            await impactAtPeak();
+            if (!isFinisherApproach)
+            {
+                await TweenIaiReturn(creatureNode, impactPosition, originalPosition);
+            }
+        }
+        finally
+        {
+            if (!isFinisherApproach && GodotObject.IsInstanceValid(creatureNode))
+            {
+                creatureNode.Position = originalPosition;
             }
         }
     }
@@ -195,7 +263,11 @@ internal static class YamotoKokiCombatAnimations
                 {
                     float tiltDegrees = Mathf.Lerp(fromDegrees, toDegrees, progress);
                     node.RotationDegrees = baseRotation + tiltDegrees;
-                    Vector2 rotatedFoot = RightFootContactFromPivot.Rotated(
+                    float facingSign = FacingScaleMath.IsFacingLeft(node.Scale.X) ? -1f : 1f;
+                    Vector2 footContact = new(
+                        RightFootContactFromPivot.X * facingSign,
+                        RightFootContactFromPivot.Y);
+                    Vector2 rotatedFoot = footContact.Rotated(
                         Mathf.DegToRad(tiltDegrees));
                     float groundY = basePosition.Y + GroundOffsetFromPivot;
                     float footY = basePosition.Y + rotatedFoot.Y;
@@ -208,6 +280,50 @@ internal static class YamotoKokiCombatAnimations
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
         await node.ToSignal(tween, Tween.SignalName.Finished);
+    }
+
+    private static async Task TweenIaiApproach(
+        NCreature creatureNode,
+        Vector2 start,
+        Vector2 destination)
+    {
+        Tween tween = creatureNode.CreateTween();
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                {
+                    if (GodotObject.IsInstanceValid(creatureNode))
+                    {
+                        creatureNode.Position = start.Lerp(destination, Mathf.Pow(progress, 10f));
+                    }
+                }),
+                0f,
+                1f,
+                IaiApproachSeconds)
+            .SetTrans(Tween.TransitionType.Linear);
+        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+    }
+
+    private static async Task TweenIaiReturn(
+        NCreature creatureNode,
+        Vector2 start,
+        Vector2 destination)
+    {
+        Tween tween = creatureNode.CreateTween();
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                {
+                    if (GodotObject.IsInstanceValid(creatureNode))
+                    {
+                        creatureNode.Position = start.Lerp(
+                            destination,
+                            Mathf.SmoothStep(0f, 1f, progress));
+                    }
+                }),
+                0f,
+                1f,
+                IaiApproachSeconds)
+            .SetTrans(Tween.TransitionType.Linear);
+        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
     }
 
     private static async Task TweenPosition(

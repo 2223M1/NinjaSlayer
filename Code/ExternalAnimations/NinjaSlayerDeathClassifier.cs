@@ -2,8 +2,11 @@ using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -100,6 +103,84 @@ internal static class NinjaSlayerDeathClassifier
         return capture;
     }
 
+    public static bool TryStartReverseFinisher(Creature target, decimal amount)
+    {
+        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
+            || FinisherSessionRegistry.HasRegisteredSession()
+            || target.Player?.Character is not INinjaSlayerCharacter
+            || target.CombatState is not { } combatState
+            || target.CurrentHp <= 0
+            || amount < target.CurrentHp
+            || !IncomingCaptures.TryGetValue(target, out IncomingDamageCapture? capture)
+            || capture.IsCompleted
+            || capture.Session != null
+            || !IsValidEnemyDealer(target, capture.Dealer)
+            || !GameCompatibility.Finisher.CanProtectLethalDamage(out _)
+            || !Hook.ShouldDie(target.Player.RunState, combatState, target, out _)
+            || NCombatRoom.Instance is not { } room)
+        {
+            return false;
+        }
+
+        NCreature? dealerNode = room.GetCreatureNode(capture.Dealer);
+        NCreature? focusNode = room.GetCreatureNode(target);
+        List<Creature> victims = capture.Targets
+            .Where(candidate => candidate.IsAlive
+                && ReferenceEquals(candidate.CombatState, combatState)
+                && room.GetCreatureNode(candidate) != null)
+            .Distinct()
+            .ToList();
+        if (dealerNode == null
+            || focusNode == null
+            || victims.Count == 0
+            || !CombatCinematicCameraLease.TryAcquire(
+                room,
+                "NinjaSlayer reverse finisher",
+                out CombatCinematicCameraLease? camera))
+        {
+            return false;
+        }
+
+        if (!FinisherSessionRegistry.TryRegisterSession(
+                new FinisherSessionRequest(
+                    FinisherScenarioKind.EnemyExecutesNinjaSlayer,
+                    FinisherCompletionCondition.AnyCandidateLethal,
+                    capture.Dealer,
+                    dealerNode,
+                    focusNode,
+                    victims,
+                    camera!,
+                    CardPlay: null,
+                    RequiresAfterCardPlayed: false,
+                    ResolvedHits: 1,
+                    capture.VfxBaselineChildIds),
+                combatState,
+                room,
+                out FinisherSession? session))
+        {
+            camera!.Dispose();
+            return false;
+        }
+
+        try
+        {
+            session!.Begin().GetAwaiter().GetResult();
+            capture.Session = session;
+            FinisherLog.Info(
+                $"Reverse finisher session {session.SessionId} started: dealer={capture.Dealer}, victims={victims.Count}.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            FinisherLog.Warn($"Could not begin reverse finisher session {session!.SessionId}: {ex}");
+            _ = session.CompleteAsync(
+                FinisherCompletionStatus.Faulted,
+                FinisherCompletionMode.ReleaseOnly,
+                ex.Message);
+            return false;
+        }
+    }
+
     public static async Task<IEnumerable<DamageResult>> CompleteIncomingDamageCapture(
         Task<IEnumerable<DamageResult>> damageTask,
         object? state)
@@ -111,7 +192,27 @@ internal static class NinjaSlayerDeathClassifier
 
         try
         {
-            return await damageTask;
+            IEnumerable<DamageResult> results = await damageTask;
+            if (capture.Session is { } session)
+            {
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Succeeded,
+                    FinisherCompletionMode.PlayPose);
+            }
+
+            return results;
+        }
+        catch
+        {
+            if (capture.Session is { } session)
+            {
+                await session.CompleteAsync(
+                    FinisherCompletionStatus.Faulted,
+                    FinisherCompletionMode.CommitWithoutPose,
+                    "Incoming damage resolution failed during a reverse finisher.");
+            }
+
+            throw;
         }
         finally
         {
@@ -156,6 +257,7 @@ internal static class NinjaSlayerDeathClassifier
         public IReadOnlySet<ulong> VfxBaselineChildIds { get; } = vfxBaselineChildIds;
         public IReadOnlyList<Creature> Targets { get; } = targets;
         public IReadOnlyDictionary<Creature, IncomingDamageCapture?> PreviousCaptures { get; } = previousCaptures;
+        public FinisherSession? Session { get; set; }
         public bool IsCompleted { get; set; }
     }
 

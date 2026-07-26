@@ -3,12 +3,13 @@ using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 
 namespace NinjaSlayer.Code.Nodes;
 
-public partial class NYamotoKokiGasBombVfx : Node
+public partial class NYamotoKokiOrigamiMissileVfx : Node
 {
     private MegaSprite _megaSprite = null!;
     private GpuParticles2D _bitParticles = null!;
     private GpuParticles2D _dotParticles = null!;
     private Sprite2D _paperKraneCore = null!;
+    private Sprite2D _origamiGlow = null!;
     private bool _hasBurst;
 
     public override void _Ready()
@@ -17,6 +18,7 @@ public partial class NYamotoKokiGasBombVfx : Node
         _dotParticles = GetNode<GpuParticles2D>("../SmokeBallSlot/DotParticles");
         _bitParticles = GetNode<GpuParticles2D>("../SmokeBallSlot/BitParticles");
         _paperKraneCore = GetNode<Sprite2D>("../SmokeBallSlot/PaperKraneCore");
+        _origamiGlow = GetNode<Sprite2D>("../SmokeBallSlot/OrigamiGlow");
         _dotParticles.Emitting = false;
         _bitParticles.Emitting = false;
         _bitParticles.OneShot = true;
@@ -58,6 +60,7 @@ public partial class NYamotoKokiGasBombVfx : Node
 
         _hasBurst = true;
         _paperKraneCore.Hide();
+        _origamiGlow.Hide();
         _dotParticles.Emitting = false;
         _bitParticles.Restart();
     }

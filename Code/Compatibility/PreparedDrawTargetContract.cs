@@ -114,8 +114,11 @@ internal static class PreparedMethodContract
         string moduleMvid,
         int metadataToken,
         string ilSha256) =>
-        string.Equals(fingerprint.AssemblyVersion, assemblyVersion, StringComparison.Ordinal)
-        && fingerprint.ModuleMvid == Guid.Parse(moduleMvid)
-        && fingerprint.MetadataToken == metadataToken
-        && string.Equals(fingerprint.IlSha256, ilSha256, StringComparison.Ordinal);
+        StableMethodBodyContract.Matches(
+            fingerprint.AssemblyVersion,
+            fingerprint.MetadataToken,
+            fingerprint.IlSha256,
+            assemblyVersion,
+            metadataToken,
+            ilSha256);
 }

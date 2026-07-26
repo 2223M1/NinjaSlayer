@@ -14,7 +14,13 @@ internal static class FinisherProtectionService
         token = null;
         if (NinjaSlayerPatchCapabilities.FinisherEnabled)
         {
-            FinisherSessionRegistry.GetActiveSession()?.TryProtectLethalDamage(target, ref amount, out token);
+            FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
+            if (session == null && NinjaSlayerDeathClassifier.TryStartReverseFinisher(target, amount))
+            {
+                session = FinisherSessionRegistry.GetActiveSession();
+            }
+
+            session?.TryProtectLethalDamage(target, ref amount, out token);
         }
     }
 

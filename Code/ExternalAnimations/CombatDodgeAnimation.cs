@@ -10,10 +10,11 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-internal static class YamotoKokiDodgeAnimation
+internal static class CombatDodgeAnimation
 {
     internal const float PreImpactLeadSeconds = 0.3f;
     private const float OutwardSeconds = 0.08f;
@@ -171,7 +172,7 @@ internal static class YamotoKokiDodgeAnimation
     }
 }
 
-internal static class YamotoKokiDodgeAttackContext
+internal static class EnemyAttackDodgeContext
 {
     private static readonly FieldInfo? AttackerAnimName =
         AccessTools.Field(typeof(AttackCommand), "_attackerAnimName");
@@ -209,17 +210,28 @@ internal static class YamotoKokiDodgeAttackContext
             return null;
         }
 
-        Creature[] companions = targets
-            .Where(target => target.IsAlive && target.Side != attacker.Side)
-            .Select(target => target.Player ?? target.PetOwner)
-            .OfType<MegaCrit.Sts2.Core.Entities.Players.Player>()
-            .Distinct()
-            .Select(player => player.PlayerCombatState?.Pets.FirstOrDefault(pet =>
-                pet.Monster is YamotoKokiMonster && pet.IsAlive))
-            .OfType<Creature>()
-            .Distinct()
-            .ToArray();
-        if (companions.Length == 0)
+        var dodgers = new HashSet<Creature>(ReferenceEqualityComparer.Instance);
+        foreach (MegaCrit.Sts2.Core.Entities.Players.Player player in targets
+                     .Where(target => target.IsAlive && target.Side != attacker.Side)
+                     .Select(target => target.Player ?? target.PetOwner)
+                     .OfType<MegaCrit.Sts2.Core.Entities.Players.Player>()
+                     .Distinct())
+        {
+            if (player.Creature is { IsAlive: true } owner
+                && owner.GetPower<EvasionPower>() is { Amount: > 0 })
+            {
+                dodgers.Add(owner);
+            }
+
+            Creature? yamotoKoki = player.PlayerCombatState?.Pets.FirstOrDefault(pet =>
+                pet.Monster is YamotoKokiMonster && pet.IsAlive);
+            if (yamotoKoki != null)
+            {
+                dodgers.Add(yamotoKoki);
+            }
+        }
+
+        if (dodgers.Count == 0)
         {
             return null;
         }
@@ -227,7 +239,7 @@ internal static class YamotoKokiDodgeAttackContext
         float[] hitWaits = WaitBeforeHit?.GetValue(command) as float[] ?? [-1f, -1f];
         Frame frame = new(
             Current.Value,
-            companions,
+            dodgers.ToArray(),
             VisualAttacker?.GetValue(command) as Creature ?? attacker,
             triggerName,
             Math.Max(0f, hitWaits.ElementAtOrDefault(0)),
@@ -271,26 +283,26 @@ internal static class YamotoKokiDodgeAttackContext
             + frame.FastHitWait;
         float standardDelay = Math.Max(
             0f,
-            standardUntilImpact - YamotoKokiDodgeAnimation.PreImpactLeadSeconds);
+            standardUntilImpact - CombatDodgeAnimation.PreImpactLeadSeconds);
         float fastDelay = Math.Max(
             0f,
-            fastUntilImpact - YamotoKokiDodgeAnimation.PreImpactLeadSeconds);
-        foreach (Creature companion in frame.Companions)
+            fastUntilImpact - CombatDodgeAnimation.PreImpactLeadSeconds);
+        foreach (Creature dodger in frame.Dodgers)
         {
-            _ = YamotoKokiDodgeAnimation.Schedule(companion, fastDelay, standardDelay);
+            _ = CombatDodgeAnimation.Schedule(dodger, fastDelay, standardDelay);
         }
     }
 
     internal sealed class Frame(
         Frame? previous,
-        IReadOnlyList<Creature> companions,
+        IReadOnlyList<Creature> dodgers,
         Creature visualAttacker,
         string triggerName,
         float fastHitWait,
         float standardHitWait)
     {
         public Frame? Previous { get; } = previous;
-        public IReadOnlyList<Creature> Companions { get; } = companions;
+        public IReadOnlyList<Creature> Dodgers { get; } = dodgers;
         public Creature VisualAttacker { get; } = visualAttacker;
         public string TriggerName { get; } = triggerName;
         public float FastHitWait { get; } = fastHitWait;

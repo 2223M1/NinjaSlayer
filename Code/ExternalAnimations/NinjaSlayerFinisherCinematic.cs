@@ -91,7 +91,7 @@ internal static class NinjaSlayerFinisherCinematic
     private static readonly AsyncLocal<CommandBypassFrame?> CommandBypass = new();
     private static readonly AsyncLocal<int> DirectDamageBypassDepth = new();
 
-    public static bool IsMovementOwned(Creature creature) => FinisherSessionRegistry.GetActiveSession()?.Owner == creature;
+    public static bool IsMovementOwned(Creature creature) => FinisherSessionRegistry.GetActiveSession()?.Actor == creature;
 
     internal static void TryProtectLethalDamage(
         Creature target,

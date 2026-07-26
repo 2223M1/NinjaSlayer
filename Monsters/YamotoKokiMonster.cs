@@ -22,8 +22,8 @@ namespace NinjaSlayer.Monsters;
 [RegisterMonster]
 public sealed class YamotoKokiMonster : ModMonsterTemplate
 {
-    public const int SummonBombCount = 2;
-    public const string SummonBombMoveId = "SUMMON_BOMB";
+    public const int SummonMissileCount = 2;
+    public const string SummonMissileMoveId = "SUMMON_ORIGAMI_MISSILE";
     public const string IaiSlashMoveId = "IAI_SLASH";
     public const int IaiSlashDamage = 6;
 
@@ -39,11 +39,11 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
-        MoveState summon = new(SummonBombMoveId, SummonBombMove, new SummonIntent());
+        MoveState summon = new(SummonMissileMoveId, SummonMissileMove, new YamotoKokiSummonIntent());
         MoveState slash = new(
             IaiSlashMoveId,
             IaiSlashMove,
-            new SingleAttackIntent(() => GetIaiSlashDamage()));
+            new YamotoKokiIaiSlashIntent(() => GetIaiSlashDamage()));
         summon.FollowUpState = summon;
         slash.FollowUpState = slash;
         return new MonsterMoveStateMachine([summon, slash], summon);
@@ -51,7 +51,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
     public static MoveState PickRandomMove(MonsterMoveStateMachine machine, Rng rng)
     {
-        string moveId = rng.NextBool() ? SummonBombMoveId : IaiSlashMoveId;
+        string moveId = rng.NextBool() ? SummonMissileMoveId : IaiSlashMoveId;
         return (MoveState)machine.States[moveId];
     }
 
@@ -85,28 +85,28 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         NinjaSlayerCombatVfx.PreloadYamotoKokiIaiFeedback();
     }
 
-    private async Task SummonBombMove(IReadOnlyList<Creature> _)
+    private async Task SummonMissileMove(IReadOnlyList<Creature> _)
     {
         if (Creature.PetOwner is not { } owner)
         {
             return;
         }
 
-        YamotoKokiBombOrbitController? orbitController = NCombatRoom.Instance is { } room
-            ? YamotoKokiBombOrbitController.Ensure(room)
+        YamotoKokiOrigamiMissileOrbitController? orbitController = NCombatRoom.Instance is { } room
+            ? YamotoKokiOrigamiMissileOrbitController.Ensure(room)
             : null;
-        orbitController?.BeginSpawnBatch(owner, SummonBombCount);
+        orbitController?.BeginSpawnBatch(owner, SummonMissileCount);
         try
         {
-            for (int i = 0; i < SummonBombCount; i++)
+            for (int i = 0; i < SummonMissileCount; i++)
             {
                 await YamotoKokiCombatAnimations.PlaySummon(Creature, async () =>
                 {
-                    Creature bombCreature = await PlayerCmd.AddPet<YamotoKokiGasBomb>(owner);
+                    Creature missileCreature = await PlayerCmd.AddPet<YamotoKokiOrigamiMissile>(owner);
                     NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiMissileSummonEvent);
-                    if (bombCreature.Monster is YamotoKokiGasBomb bomb)
+                    if (missileCreature.Monster is YamotoKokiOrigamiMissile missile)
                     {
-                        await bomb.PrepareExplosionIntent(bombCreature);
+                        await missile.PrepareExplosionIntent(missileCreature);
                     }
                 });
             }
@@ -117,18 +117,98 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         }
     }
 
-    private async Task IaiSlashMove(IReadOnlyList<Creature> targets)
+    private async Task IaiSlashMove(IReadOnlyList<Creature> _)
     {
-        IReadOnlyList<Creature> enemies = targets.Count > 0
-            ? targets.Where(c => c.IsAlive && c.IsHittable).ToList()
-            : CombatState.HittableEnemies;
+        IReadOnlyList<Creature> enemies = GetCurrentIaiTargets();
         if (enemies.Count == 0)
         {
             return;
         }
 
-        NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
-        await CreatureCmd.TriggerAnim(Creature, "SlowAttack", 0.25f);
+        NCreature? ownerNode = Creature.GetCreatureNode();
+        NCreature? focusNode = ownerNode == null
+            ? null
+            : enemies
+                .Select((enemy, index) => (Enemy: enemy, Index: index, Node: enemy.GetCreatureNode()))
+                .Where(candidate => candidate.Node != null)
+                .OrderBy(candidate => Math.Abs(
+                    candidate.Node!.Visuals.Bounds.GetGlobalRect().GetCenter().X
+                    - ownerNode.Visuals.Bounds.GetGlobalRect().GetCenter().X))
+                .ThenBy(candidate => candidate.Index)
+                .Select(candidate => candidate.Node)
+                .FirstOrDefault();
+        FinisherSession? finisher = null;
+        if (ownerNode != null && focusNode != null)
+        {
+            FinisherEligibilityService.TryCreateYamotoKokiSession(
+                Creature,
+                ownerNode,
+                focusNode,
+                enemies,
+                _ => GetIaiSlashDamage(),
+                out finisher);
+        }
+
+        try
+        {
+            if (focusNode == null)
+            {
+                NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
+                if (finisher != null)
+                {
+                    await finisher.Begin();
+                }
+
+                await PlayIaiImpact();
+            }
+            else
+            {
+                await YamotoKokiCombatAnimations.PlayIaiSlash(
+                    Creature,
+                    focusNode,
+                    async () =>
+                    {
+                        NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
+                        if (finisher != null)
+                        {
+                            await finisher.Begin();
+                        }
+                    },
+                    PlayIaiImpact,
+                    finisher == null
+                        ? YamotoKokiIaiApproachMode.StandardLunge
+                        : YamotoKokiIaiApproachMode.FinisherCloseRange);
+            }
+
+            if (finisher != null)
+            {
+                await finisher.CompleteAsync(
+                    FinisherCompletionStatus.Succeeded,
+                    FinisherCompletionMode.PlayPose);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (finisher != null)
+            {
+                await finisher.CompleteAsync(
+                    FinisherCompletionStatus.Faulted,
+                    FinisherCompletionMode.CommitWithoutPose,
+                    ex.Message);
+            }
+
+            throw;
+        }
+    }
+
+    private async Task PlayIaiImpact()
+    {
+        IReadOnlyList<Creature> enemies = GetCurrentIaiTargets();
+        if (enemies.Count == 0)
+        {
+            return;
+        }
+
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
         NinjaSlayerCombatVfx.PlayYamotoKokiIaiImpact(enemies);
         await CreatureCmd.Damage(
@@ -137,5 +217,19 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             GetIaiSlashDamage(),
             ValueProp.Move,
             Creature);
+    }
+
+    private IReadOnlyList<Creature> GetCurrentIaiTargets()
+    {
+        if (Creature.CombatState is not { } combatState || !combatState.IsLiveCombat())
+        {
+            return [];
+        }
+
+        return combatState.HittableEnemies
+            .Where(enemy => enemy.IsAlive
+                && enemy.IsHittable
+                && ReferenceEquals(enemy.CombatState, combatState))
+            .ToList();
     }
 }

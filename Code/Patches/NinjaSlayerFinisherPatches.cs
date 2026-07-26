@@ -9,9 +9,12 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
@@ -284,5 +287,42 @@ public sealed class NinjaSlayerFinisherCardPlayCleanupPatch : IPatchMethod
     public static void Postfix(CardModel __instance, ref Task __result)
     {
         __result = NinjaSlayerFinisherCinematic.WrapCardPlay(__result, __instance);
+    }
+}
+
+public sealed class NinjaSlayerDeathCompletionPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_death_completion_wait";
+    public static string Description => "Wait for NinjaSlayer custom death visuals before combat loss processing.";
+    public static bool IsCritical => true;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(Hook),
+            nameof(Hook.AfterDeath),
+            [typeof(IRunState), typeof(ICombatState), typeof(Creature), typeof(bool), typeof(float)])
+    ];
+
+    public static void Postfix(Creature creature, ref Task __result)
+    {
+        if (creature.Player?.Character is not INinjaSlayerCharacter)
+        {
+            return;
+        }
+
+        NCreature? creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (creatureNode?.DeathAnimationTask is not { } deathAnimationTask)
+        {
+            return;
+        }
+
+        __result = AwaitDeathAnimation(__result, deathAnimationTask);
+    }
+
+    private static async Task AwaitDeathAnimation(Task original, Task deathAnimationTask)
+    {
+        await deathAnimationTask;
+        await original;
     }
 }

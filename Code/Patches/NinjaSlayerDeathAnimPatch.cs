@@ -28,6 +28,12 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             return;
         }
 
+        if (NinjaSlayerAbandonDeathFeedback.IsPending(__instance.Entity))
+        {
+            __state = false;
+            return;
+        }
+
         __state = IsNinjaSlayerNonSpine(__instance)
             && (__instance.DeathAnimationTask == null || __instance.DeathAnimationTask.IsCompleted);
     }
@@ -36,6 +42,15 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
     {
         if (!__state)
         {
+            return;
+        }
+
+        if (FinisherDeathContinuationRegistry.TryConsumeReverseFlight(__instance.Entity))
+        {
+            Task reverseFlightTask = DeathAnimation.PlayEnemyFinisherFlightOnly(__instance.Entity);
+            __instance.DeathAnimationTask = reverseFlightTask;
+            TaskHelper.RunSafely(reverseFlightTask);
+            __result = DeathAnimation.EnemyKillDurationSeconds;
             return;
         }
 

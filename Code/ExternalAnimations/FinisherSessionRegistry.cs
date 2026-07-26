@@ -61,19 +61,12 @@ internal static class FinisherSessionRegistry
     {
         lock (SessionRegistrySync)
         {
-            return _pendingAfterCardPlayed?.CardPlay.Card == card ? _pendingAfterCardPlayed : null;
+            return _pendingAfterCardPlayed?.CardPlay?.Card == card ? _pendingAfterCardPlayed : null;
         }
     }
 
     internal static bool TryRegisterSession(
-        Creature owner,
-        NCreature ownerNode,
-        NCreature focusNode,
-        IEnumerable<Creature> victims,
-        CombatCinematicCameraLease camera,
-        CardPlay cardPlay,
-        bool requiresAfterCardPlayed,
-        int resolvedHits,
+        FinisherSessionRequest request,
         ICombatState combatState,
         NCombatRoom room,
         out FinisherSession? session)
@@ -103,14 +96,7 @@ internal static class FinisherSessionRegistry
                     registryGeneration,
                     combatState,
                     room,
-                    owner,
-                    ownerNode,
-                    focusNode,
-                    victims,
-                    camera,
-                    cardPlay,
-                    requiresAfterCardPlayed,
-                    resolvedHits);
+                    request);
             }
             catch (Exception ex)
             {

@@ -4,11 +4,13 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
+using NinjaSlayer.Monsters;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -74,14 +76,17 @@ internal static class FinisherEligibilityService
         }
 
         if (!FinisherSessionRegistry.TryRegisterSession(
-                owner,
-                ownerNode,
-                focusNode,
-                enemies,
-                camera!,
-                spec.CardPlay,
-                forecast.RequiresAfterCardPlayed,
-                forecast.ResolvedHits,
+                new FinisherSessionRequest(
+                    FinisherScenarioKind.NinjaSlayerAttack,
+                    FinisherCompletionCondition.AllCandidatesLethal,
+                    owner,
+                    ownerNode,
+                    focusNode,
+                    enemies,
+                    camera!,
+                    spec.CardPlay,
+                    forecast.RequiresAfterCardPlayed,
+                    forecast.ResolvedHits),
                 combatState,
                 room,
                 out session))
@@ -92,6 +97,66 @@ internal static class FinisherEligibilityService
 
         FinisherLog.Info(
             $"NinjaSlayer finisher session {session!.SessionId} started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Forecast.Targeting}, hits={forecast.ResolvedHits}.");
+        return true;
+    }
+
+    internal static bool TryCreateYamotoKokiSession(
+        Creature owner,
+        NCreature ownerNode,
+        NCreature focusNode,
+        IReadOnlyList<Creature> enemies,
+        Func<Creature, decimal> damage,
+        out FinisherSession? session)
+    {
+        session = null;
+        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
+            || FinisherSessionRegistry.HasRegisteredSession()
+            || owner.Monster is not YamotoKokiMonster
+            || owner.CombatState is not { } combatState
+            || NCombatRoom.Instance is not { } room
+            || enemies.Count == 0
+            || !GameCompatibility.Finisher.CanProtectLethalDamage(out _))
+        {
+            return false;
+        }
+
+        var descriptor = new FinisherActionForecastDescriptor(
+            damage,
+            ValueProp.Move,
+            HitCount: 1,
+            FinisherTargeting.All);
+        if (FinisherForecast.EvaluateAction(owner, enemies, descriptor, out FinisherForecastResult forecast)
+            != FinisherForecastOutcome.Guaranteed
+            || !CombatCinematicCameraLease.TryAcquire(
+                room,
+                "Yamoto Koki finisher",
+                out CombatCinematicCameraLease? camera))
+        {
+            return false;
+        }
+
+        if (!FinisherSessionRegistry.TryRegisterSession(
+                new FinisherSessionRequest(
+                    FinisherScenarioKind.YamotoKokiIaiSlash,
+                    FinisherCompletionCondition.AllCandidatesLethal,
+                    owner,
+                    ownerNode,
+                    focusNode,
+                    enemies,
+                    camera!,
+                    CardPlay: null,
+                    RequiresAfterCardPlayed: false,
+                    forecast.ResolvedHits),
+                combatState,
+                room,
+                out session))
+        {
+            camera!.Dispose();
+            return false;
+        }
+
+        FinisherLog.Info(
+            $"Yamoto Koki finisher session {session!.SessionId} started: victims={enemies.Count}.");
         return true;
     }
 }

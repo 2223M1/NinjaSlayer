@@ -81,7 +81,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         foreach (NCreature pet in creatureNodes.Where(node =>
                      !node.Entity.IsPlayer
                      && node.Entity.Monster is not YamotoKokiMonster
-                     && node.Entity.Monster is not YamotoKokiGasBomb))
+                     && node.Entity.Monster is not YamotoKokiOrigamiMissile))
         {
             Slot? ownerSlot = playerSlots.FirstOrDefault(slot =>
                 slot.Anchor.Entity.Player == pet.Entity.PetOwner);
@@ -137,7 +137,8 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
 
         if (NCombatRoom.Instance is { } room)
         {
-            YamotoKokiBombOrbitController.Ensure(room).LayoutNow(snapNewBombs: true);
+            YamotoKokiAllyFacingController.Ensure(room).SyncNow();
+            YamotoKokiOrigamiMissileOrbitController.Ensure(room).LayoutNow(snapNewMissiles: true);
         }
     }
 

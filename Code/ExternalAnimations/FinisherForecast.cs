@@ -88,7 +88,10 @@ internal static class FinisherForecast
         result = default;
         FinisherForecastDescriptor descriptor = spec.Forecast;
         ICombatState? combatState = owner.CombatState;
-        if (combatState == null || enemies.Any(enemy => !Hook.ShouldDie(owner.Player!.RunState, combatState, enemy, out _)))
+        IRunState? runState = ResolveRunState(owner);
+        if (combatState == null
+            || runState == null
+            || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _)))
         {
             return FinisherForecastOutcome.NotGuaranteed;
         }
@@ -206,6 +209,125 @@ internal static class FinisherForecast
         return outcome;
     }
 
+    public static FinisherForecastOutcome EvaluateAction(
+        Creature owner,
+        IReadOnlyList<Creature> enemies,
+        FinisherActionForecastDescriptor descriptor,
+        out FinisherForecastResult result)
+    {
+        result = new FinisherForecastResult(Math.Max(1, descriptor.HitCount), false);
+        ICombatState? combatState = owner.CombatState;
+        IRunState? runState = ResolveRunState(owner);
+        if (combatState == null
+            || runState == null
+            || descriptor.HitCount <= 0
+            || enemies.Count == 0
+            || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _)))
+        {
+            return FinisherForecastOutcome.NotGuaranteed;
+        }
+
+        var enemyIndices = enemies
+            .Select((enemy, index) => (enemy, index))
+            .ToDictionary(pair => pair.enemy, pair => pair.index);
+        int? singleTargetIndex = descriptor.SingleTarget != null
+            && enemyIndices.TryGetValue(descriptor.SingleTarget, out int singleIndex)
+                ? singleIndex
+                : null;
+        int[]? fixedTargets = descriptor.FixedTargets?
+            .Where(enemyIndices.ContainsKey)
+            .Select(target => enemyIndices[target])
+            .ToArray();
+        FinisherForecastTargeting targeting = descriptor.Targeting switch
+        {
+            FinisherTargeting.Single => FinisherForecastTargeting.Single,
+            FinisherTargeting.All => FinisherForecastTargeting.All,
+            FinisherTargeting.Random => FinisherForecastTargeting.Random,
+            FinisherTargeting.Fixed => FinisherForecastTargeting.Fixed,
+            _ => throw new ArgumentOutOfRangeException(nameof(descriptor.Targeting), descriptor.Targeting, null)
+        };
+        if (targeting == FinisherForecastTargeting.Single && singleTargetIndex == null
+            || targeting == FinisherForecastTargeting.Fixed
+            && (fixedTargets is not { Length: > 0 }
+                || fixedTargets.Length != descriptor.FixedTargets!.Count))
+        {
+            return FinisherForecastOutcome.NotGuaranteed;
+        }
+
+        ForecastState[] states = enemies.Select(enemy => new ForecastState(
+            enemy.CurrentHp,
+            enemy.Block,
+            enemy.GetPowerAmount<KaratePower>())).ToArray();
+        decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
+        var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
+            states,
+            descriptor.HitCount,
+            targeting,
+            state => state.Hp > 0,
+            state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
+            (current, targets, _) =>
+            {
+                List<(int Target, bool TriggerKarate)> primaryResults = [];
+                foreach (int targetIndex in targets)
+                {
+                    if (current[targetIndex].Hp <= 0)
+                    {
+                        continue;
+                    }
+
+                    bool dealtDamage = ApplyDamage(
+                        owner,
+                        enemies,
+                        current,
+                        targetIndex,
+                        damageByTarget[targetIndex],
+                        descriptor.Props,
+                        owner,
+                        descriptor.CardSource,
+                        descriptor.CardPlay);
+                    primaryResults.Add((targetIndex, dealtDamage));
+                }
+
+                foreach ((int targetIndex, bool triggerKarate) in primaryResults)
+                {
+                    ForecastState state = current[targetIndex];
+                    if (!descriptor.TriggersKarate
+                        || !triggerKarate
+                        || state.Hp <= 0
+                        || state.Karate <= 0
+                        || !descriptor.Props.IsPoweredAttack()
+                        || !KarateTriggerRules.CanTriggerFromCardSource(descriptor.CardSource))
+                    {
+                        continue;
+                    }
+
+                    ApplyDamage(
+                        owner,
+                        enemies,
+                        current,
+                        targetIndex,
+                        state.Karate,
+                        ValueProp.Unpowered,
+                        owner,
+                        null,
+                        null);
+                    ForecastState afterKarate = current[targetIndex];
+                    if (afterKarate.Hp > 0)
+                    {
+                        current[targetIndex] = afterKarate with
+                        {
+                            Karate = Math.Max(0, afterKarate.Karate - 1)
+                        };
+                    }
+                }
+
+                return true;
+            },
+            singleTargetIndex,
+            fixedTargets);
+        return FinisherForecastEngine.Evaluate(simulation);
+    }
+
     private static void ApplyHit(
         Creature owner,
         IReadOnlyList<Creature> enemies,
@@ -306,8 +428,14 @@ internal static class FinisherForecast
         }
 
         Creature target = enemies[targetIndex];
+        IRunState? runState = ResolveRunState(owner);
+        if (runState == null)
+        {
+            return false;
+        }
+
         decimal modified = Hook.ModifyDamage(
-            owner.Player!.RunState,
+            runState,
             owner.CombatState,
             target,
             dealer,
@@ -323,7 +451,7 @@ internal static class FinisherForecast
             ? 0
             : Math.Min(state.Block, Math.Max(0, (int)modified));
         decimal hpLoss = Hook.ModifyHpLost(
-            owner.Player.RunState,
+            runState,
             owner.CombatState,
             target,
             Math.Max(modified - blocked, 0m),
@@ -342,6 +470,9 @@ internal static class FinisherForecast
 
     private static IEnumerable<int> AliveTargets(IReadOnlyList<ForecastState> states) =>
         Enumerable.Range(0, states.Count).Where(index => states[index].Hp > 0);
+
+    private static IRunState? ResolveRunState(Creature owner) =>
+        owner.Player?.RunState ?? owner.PetOwner?.RunState;
 
     private sealed record ForecastState(int Hp, int Block, int Karate);
     private readonly record struct ForecastStateKey(int Hp, int Block, int Karate);

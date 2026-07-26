@@ -146,6 +146,46 @@ public static class DeathAnimation
         }
     }
 
+    internal static async Task PlayEnemyFinisherFlightOnly(Creature creature)
+    {
+        NCombatRoom? room = NCombatRoom.Instance;
+        NCreature? creatureNode = room?.GetCreatureNode(creature);
+        if (room == null || creatureNode == null)
+        {
+            return;
+        }
+
+        RestoreVisual(creature, markCurrentFatalDamageConsumed: false);
+        StaggerAnimation.Reset(creature);
+        SoarSpinAnimation.ResetSpinVisual(creature);
+        if (SoarVisualState.IsAirborne(creature))
+        {
+            SoarVisualState.ResetVisualsToGround(creature);
+        }
+
+        Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals);
+        Sprite2D? body = NinjaSlayerVisualRig.GetBodySprite(creatureNode.Visuals);
+        creatureNode.SetAnimationTrigger("Dead");
+        if (anchor == null || body == null)
+        {
+            await creatureNode.ToSignal(
+                creatureNode.GetTree().CreateTimer(EnemyKillDurationSeconds),
+                SceneTreeTimer.SignalName.Timeout);
+            return;
+        }
+
+        var state = DeathVisualState.Capture(anchor, body);
+        VisualStates.Add(creature, state);
+        try
+        {
+            await PlayEnemyKillFlight(creatureNode, anchor, body, state);
+        }
+        catch (OperationCanceledException) when (state.Cancellation.IsCancellationRequested
+            || !GodotObject.IsInstanceValid(room))
+        {
+        }
+    }
+
     private static async Task PlayEnemyKillFallback(
         Creature creature,
         NCreature creatureNode,
@@ -209,7 +249,7 @@ public static class DeathAnimation
             {
                 try
                 {
-                    presentation = FinisherImpactPresentation.Create(room, 1);
+                    presentation = FinisherImpactPresentation.CreateBackdropOnly(room);
                 }
                 catch (Exception ex)
                 {

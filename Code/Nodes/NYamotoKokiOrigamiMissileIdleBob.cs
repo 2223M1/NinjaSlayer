@@ -3,15 +3,15 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 
 namespace NinjaSlayer.Code.Nodes;
 
-public partial class NYamotoKokiGasBombIdleBob : Node
+public partial class NYamotoKokiOrigamiMissileIdleBob : Node
 {
     internal const float Amplitude = 10f;
     internal const float PeriodSeconds = 2f;
 
     private Node2D? _body;
-    private Control? _damageAmount;
+    private Control? _damageLabelContainer;
     private Vector2 _bodyBasePosition;
-    private Vector2 _damageBasePosition;
+    private Vector2 _damageLabelBasePosition;
     private float _elapsed;
     private bool _isActive;
 
@@ -19,9 +19,9 @@ public partial class NYamotoKokiGasBombIdleBob : Node
     {
         NCreatureVisuals visuals = GetParent<NCreatureVisuals>();
         _body = visuals.GetNode<Node2D>("%Visuals");
-        _damageAmount = visuals.GetNodeOrNull<Control>("%DamageAmount");
+        _damageLabelContainer = visuals.GetNodeOrNull<Control>("%DamageLabelContainer");
         _bodyBasePosition = _body.Position;
-        _damageBasePosition = _damageAmount?.Position ?? Vector2.Zero;
+        _damageLabelBasePosition = _damageLabelContainer?.Position ?? Vector2.Zero;
         _isActive = true;
     }
 
@@ -59,9 +59,9 @@ public partial class NYamotoKokiGasBombIdleBob : Node
             _body!.Position = _bodyBasePosition + offset;
         }
 
-        if (GodotObject.IsInstanceValid(_damageAmount))
+        if (GodotObject.IsInstanceValid(_damageLabelContainer))
         {
-            _damageAmount!.Position = _damageBasePosition + offset;
+            _damageLabelContainer!.Position = _damageLabelBasePosition + offset;
         }
     }
 
@@ -72,9 +72,9 @@ public partial class NYamotoKokiGasBombIdleBob : Node
             _body!.Position = _bodyBasePosition;
         }
 
-        if (GodotObject.IsInstanceValid(_damageAmount))
+        if (GodotObject.IsInstanceValid(_damageLabelContainer))
         {
-            _damageAmount!.Position = _damageBasePosition;
+            _damageLabelContainer!.Position = _damageLabelBasePosition;
         }
     }
 }

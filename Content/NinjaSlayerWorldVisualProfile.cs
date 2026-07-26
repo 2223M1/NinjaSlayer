@@ -15,8 +15,10 @@ public static class NinjaSlayerWorldVisualProfile
     public static class Merchant
     {
         public const float BodyScale = 1.1f;
-        public const float BodyPositionX = -40f;
-        public const float BodyPositionY = -100f;
+        public const float BodyPositionX = 0f;
+        private const float TextureHeight = 500f;
+        private const float BottomBaselineY = 40f;
+        public const float BodyPositionY = BottomBaselineY - TextureHeight * BodyScale * 0.5f;
         public const string IdleTexturePath =
             "res://NinjaSlayer/images/characters/ninja_slayer/merchant/ninja_slayer_merchant_idle.png";
 

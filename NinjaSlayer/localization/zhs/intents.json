@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.title": "召唤",
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.description": "这个友方将要召唤[blue]{Count}[/blue]枚[gold]折纸飞弹[/gold]。",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.title": "居合斩",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.description": "这个友方将要[gold]攻击[/gold]所有敌人，造成[blue]{Damage}[/blue]点伤害。"
+}

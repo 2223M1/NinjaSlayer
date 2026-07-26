@@ -5,7 +5,7 @@ using STS2RitsuLib.Scaffolding.Godot;
 
 namespace NinjaSlayer.Code.Nodes;
 
-internal static class YamotoKokiGasBombVisuals
+internal static class YamotoKokiOrigamiMissileVisuals
 {
     public const string VisualsPath =
         "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki_missile.tscn";
@@ -18,11 +18,11 @@ internal static class YamotoKokiGasBombVisuals
     {
         NCreatureVisuals visuals =
             RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(VisualsPath)
-            ?? throw new InvalidOperationException("Could not create Yamoto Koki missile visuals.");
+            ?? throw new InvalidOperationException("Could not create Yamoto Koki origami missile visuals.");
         AddDamageAmount(visuals);
-        visuals.AddChild(new NYamotoKokiGasBombIdleBob
+        visuals.AddChild(new NYamotoKokiOrigamiMissileIdleBob
         {
-            Name = nameof(NYamotoKokiGasBombIdleBob)
+            Name = nameof(NYamotoKokiOrigamiMissileIdleBob)
         });
         visuals.SetScaleAndHue(MissileScale, 0f);
         return visuals;
@@ -30,18 +30,25 @@ internal static class YamotoKokiGasBombVisuals
 
     private static void AddDamageAmount(NCreatureVisuals visuals)
     {
-        Label damageAmount = new()
+        VBoxContainer labelContainer = new()
         {
-            Name = "DamageAmount",
+            Name = "DamageLabelContainer",
             UniqueNameInOwner = true,
-            ZIndex = 20,
             OffsetLeft = 8f,
             OffsetTop = -104f,
             OffsetRight = 48f,
             OffsetBottom = -64f,
             Scale = Vector2.One * 2f,
             MouseFilter = Control.MouseFilterEnum.Ignore,
-            Text = YamotoKokiGasBomb.ExplodeDamage.ToString(),
+            Alignment = BoxContainer.AlignmentMode.End
+        };
+        Label damageAmount = new()
+        {
+            Name = "DamageAmount",
+            UniqueNameInOwner = true,
+            CustomMinimumSize = new Vector2(40f, 40f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            Text = YamotoKokiOrigamiMissile.ExplodeDamage.ToString(),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         };
@@ -54,7 +61,9 @@ internal static class YamotoKokiGasBombVisuals
         damageAmount.AddThemeFontOverride("font", GD.Load<Font>(DamageFontPath));
         damageAmount.AddThemeFontSizeOverride("font_size", 24);
 
-        visuals.AddChild(damageAmount);
+        visuals.AddChild(labelContainer);
+        labelContainer.Owner = visuals;
+        labelContainer.AddChild(damageAmount);
         damageAmount.Owner = visuals;
     }
 }

@@ -18,7 +18,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Monsters;
 
 [RegisterMonster]
-public sealed class YamotoKokiGasBomb : ModMonsterTemplate
+public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
 {
     public const string ExplodeMoveId = "EXPLODE_MOVE";
     public const int ExplodeDamage = 4;
@@ -29,10 +29,10 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     private bool _isApplyingIntrinsicPowers;
 
     public override MonsterAssetProfile AssetProfile =>
-        new(YamotoKokiGasBombVisuals.VisualsPath);
+        new(YamotoKokiOrigamiMissileVisuals.VisualsPath);
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
-        YamotoKokiGasBombVisuals.Create();
+        YamotoKokiOrigamiMissileVisuals.Create();
 
     public override int MinInitialHp => 1;
     public override int MaxInitialHp => 1;
@@ -97,9 +97,9 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         return new MonsterMoveStateMachine([explode], explode);
     }
 
-    public async Task PrepareExplosionIntent(Creature bombCreature)
+    public async Task PrepareExplosionIntent(Creature missileCreature)
     {
-        EarliestExplosionTurn = bombCreature.PetOwner?.PlayerCombatState?.TurnNumber + 1
+        EarliestExplosionTurn = missileCreature.PetOwner?.PlayerCombatState?.TurnNumber + 1
             ?? int.MaxValue;
         if (MoveStateMachine == null)
         {
@@ -108,7 +108,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
 
         MoveState explode = (MoveState)MoveStateMachine!.States[ExplodeMoveId];
         SetMoveImmediate(explode, forceTransition: true);
-        NCreature? node = bombCreature.GetCreatureNode();
+        NCreature? node = missileCreature.GetCreatureNode();
         if (node != null && CombatState.IsLiveCombat())
         {
             await node.UpdateIntent(CombatState.HittableEnemies);
@@ -118,9 +118,9 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
     public bool CanExplodeOnTurn(int turnNumber) =>
         !HasExploded && Creature.IsAlive && turnNumber >= EarliestExplosionTurn;
 
-    public async Task ExecuteExplosion(Creature bombCreature)
+    public async Task ExecuteExplosion(Creature missileCreature)
     {
-        if (bombCreature.IsDead || HasExploded)
+        if (missileCreature.IsDead || HasExploded)
         {
             return;
         }
@@ -155,8 +155,8 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
                 SfxCmd.Play("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_explode");
                 await CreatureCmd.TriggerAnim(Creature, "ExplodeTrigger", 0.1f);
                 Creature.GetCreatureNode()?.Visuals
-                    .GetNodeOrNull<NYamotoKokiGasBombVfx>(
-                        $"Visuals/{nameof(NYamotoKokiGasBombVfx)}")
+                    .GetNodeOrNull<NYamotoKokiOrigamiMissileVfx>(
+                        $"Visuals/{nameof(NYamotoKokiOrigamiMissileVfx)}")
                     ?.EnsureBurst();
                 await CreatureCmd.Damage(
                     new ThrowingPlayerChoiceContext(),
@@ -192,7 +192,7 @@ public sealed class YamotoKokiGasBomb : ModMonsterTemplate
         }
 
         missileNode.Visuals
-            .GetNodeOrNull<NYamotoKokiGasBombIdleBob>(nameof(NYamotoKokiGasBombIdleBob))
+            .GetNodeOrNull<NYamotoKokiOrigamiMissileIdleBob>(nameof(NYamotoKokiOrigamiMissileIdleBob))
             ?.StopAndReset();
         Label? damageAmount = missileNode.Visuals.GetNodeOrNull<Label>("%DamageAmount");
         if (damageAmount != null)

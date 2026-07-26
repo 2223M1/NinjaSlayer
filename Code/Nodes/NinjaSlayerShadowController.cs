@@ -7,7 +7,7 @@ public partial class NinjaSlayerShadowController : Node
 {
     private const float AirborneFadeDistance = 300f;
     private const float MinimumAirborneScale = 0.18f;
-    private const float FallenShadowWidthMultiplier = 2f;
+    private const float FallenShadowWidthMultiplier = 1.25f;
     private const float FallenShadowHeightMultiplier = 0.65f;
 
     private Sprite2D? _shadow;
