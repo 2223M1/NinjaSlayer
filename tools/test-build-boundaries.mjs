@@ -23,6 +23,12 @@ const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
 const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
 const quickReleasePath = join(root, 'tools', 'release', 'Publish-QuickRelease.ps1');
 const oneClickReleasePath = join(root, 'tools', 'release', 'Invoke-OneClickRelease.ps1');
+const workshopQuickReleasePath = join(
+  root,
+  'tools',
+  'release',
+  'Publish-WorkshopQuickRelease.ps1',
+);
 const ephemeralRunnerPath = join(
   root,
   'tools',
@@ -78,6 +84,7 @@ const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
 const workshopWorkflow = readFileSync(workshopWorkflowPath, 'utf8');
 const quickRelease = readFileSync(quickReleasePath, 'utf8');
 const oneClickRelease = readFileSync(oneClickReleasePath, 'utf8');
+const workshopQuickRelease = readFileSync(workshopQuickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
 for (const source of [releaseWorkflow, workshopWorkflow]) {
   assert(
@@ -106,14 +113,75 @@ for (const safeguard of [
 ]) {
   assert(quickRelease.includes(safeguard), `Quick release must retain safeguard: ${safeguard}`);
 }
-for (const operation of [
-  "@('add', '--all')",
-  "@('commit', '-m', \"Prepare NinjaSlayer v$version\")",
-  "@('push', '-u', 'origin', $releaseBranch)",
-  "@('pr', 'merge', $pullRequestUrl, '--admin', '--merge', '--delete-branch')",
-  "@('pull', '--ff-only', 'origin', 'main')",
+// The desktop one-click path is Workshop-only: it builds the current working tree and uploads it,
+// and must never commit, tag, push, open a pull request, or touch a GitHub Release. It owns no
+// logic of its own beyond delegating to the guarded Workshop publisher.
+assert(
+  oneClickRelease.includes("Join-Path $PSScriptRoot 'Publish-WorkshopQuickRelease.ps1'"),
+  'One-click release must delegate to the Workshop-only publisher.',
+);
+assert(
+  oneClickRelease.includes('& $publisher -Confirm'),
+  'One-click release must invoke the Workshop publisher with -Confirm.',
+);
+assert(
+  oneClickRelease.includes('No GitHub operation was attempted'),
+  'One-click release must state that no GitHub operation was attempted on failure.',
+);
+for (const forbidden of [
+  "'add'",
+  "'commit'",
+  "'push'",
+  "'tag'",
+  "'pr'",
+  "'merge'",
+  "'pull'",
+  'gh ',
 ]) {
-  assert(oneClickRelease.includes(operation), `One-click release must retain operation: ${operation}`);
+  assert(
+    !oneClickRelease.includes(forbidden),
+    `One-click release must not perform the repository operation: ${forbidden}`,
+  );
+}
+
+// The Workshop publisher may read local tags to pick the next version, but nothing it does may
+// mutate the repository or reach GitHub.
+assert(
+  workshopQuickRelease.includes("if (-not $Confirm)"),
+  'Workshop quick release must stay disabled without -Confirm.',
+);
+assert(
+  workshopQuickRelease.includes("[ValidatePattern('^0\\.1\\.(0|[1-9][0-9]?)$')]"),
+  'Workshop quick release must enforce the v0.1.0 through v0.1.99 series.',
+);
+assert(
+  workshopQuickRelease.includes('Package checksum mismatch'),
+  'Workshop quick release must verify SHA256SUMS before upload.',
+);
+assert(
+  workshopQuickRelease.includes(
+    "Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer')",
+  ),
+  'Workshop quick release must upload through the local uploader.',
+);
+assert(
+  workshopQuickRelease.includes(
+    'GitHub commits, tags, pushes, pull requests, and Releases are disabled for this path.',
+  ),
+  'Workshop quick release must declare its GitHub boundary.',
+);
+for (const forbidden of [
+  "Invoke-Native -Command gh",
+  "Invoke-Native -Command git",
+  "@('add'",
+  "@('commit'",
+  "@('push'",
+  "@('tag'",
+]) {
+  assert(
+    !workshopQuickRelease.includes(forbidden),
+    `Workshop quick release must not perform the repository operation: ${forbidden}`,
+  );
 }
 assert(releaseWorkflow.includes('if (-not $file.IsReadOnly)'));
 assert(releaseWorkflow.includes('must remain outside the repository workspace'));
