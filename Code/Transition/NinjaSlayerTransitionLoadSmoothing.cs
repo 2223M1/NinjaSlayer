@@ -4,7 +4,16 @@ namespace NinjaSlayer.Code.Transition;
 
 public static class NinjaSlayerTransitionLoadSmoothing
 {
-    internal const int FinalizeBatchSize = 1;
+    /// <summary>
+    /// Always finalize at least one queued resource so the drain cannot stall, then keep going
+    /// while the batch stays inside <see cref="FinalizeBatchBudget"/>. A fixed count could not do
+    /// both jobs: one cheap resource per call left most of the queue to drain in a burst at the
+    /// reveal, while a larger count would let a single expensive resource overrun the frame.
+    /// </summary>
+    internal const int FinalizeBatchMinimum = 1;
+
+    internal static readonly TimeSpan FinalizeBatchBudget = TimeSpan.FromMilliseconds(2);
+
     internal const long NoGcRegionBudgetBytes = 256L * 1024 * 1024;
 
     private static readonly object SyncRoot = new();

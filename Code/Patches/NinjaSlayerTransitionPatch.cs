@@ -125,7 +125,10 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
                 session.HoldBackdrop();
             }
 
-            session.EndAnimationSmoothing();
+            // Load smoothing deliberately stays armed past the end of the video. Dropping it here
+            // restored the vanilla 128-wide asset concurrency and unbounded finalize drain in the
+            // same frames as the fade-in, which is exactly where the hitch was visible. The
+            // session ends it during CompleteAsync, after the reveal has finished.
         }
     }
 }

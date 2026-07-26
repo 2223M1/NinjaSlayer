@@ -95,8 +95,10 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 
         long batchStartedAt = Stopwatch.GetTimestamp();
         var finalized = 0;
-        while (finalized < NinjaSlayerTransitionLoadSmoothing.FinalizeBatchSize &&
-               finalizing.TryDequeue(out string? path))
+        while ((finalized < NinjaSlayerTransitionLoadSmoothing.FinalizeBatchMinimum
+                || Stopwatch.GetElapsedTime(batchStartedAt)
+                    < NinjaSlayerTransitionLoadSmoothing.FinalizeBatchBudget)
+               && finalizing.TryDequeue(out string? path))
         {
             Resource? resource = ResourceLoader.LoadThreadedGet(path);
             GameCompatibility.AssetLoading.Cache(__instance, resource, path);
@@ -210,12 +212,35 @@ public sealed class NinjaSlayerTransitionRunInitializationTracePatch : IPatchMet
         new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateMusic), Type.EmptyTypes)
     ];
 
+    // NRunMusicController.UpdateMusic and SetRunState are also called far outside transitions, and
+    // RecordPhase discards the name when no session is armed. Building it unconditionally cost two
+    // string allocations per call for a value that was thrown away.
+    private static readonly Dictionary<MethodBase, string> PhaseNames = [];
+
     public static void Prefix(MethodBase __originalMethod, out TransitionPhasePatchState __state)
     {
-        string typeName = __originalMethod.DeclaringType?.Name ?? "unknown";
-        __state = new TransitionPhasePatchState(
-            Stopwatch.GetTimestamp(),
-            $"{typeName}.{__originalMethod.Name}");
+        if (!NinjaSlayerTransitionLoadSmoothing.IsAnimationPlaying)
+        {
+            __state = default;
+            return;
+        }
+
+        __state = new TransitionPhasePatchState(Stopwatch.GetTimestamp(), GetPhaseName(__originalMethod));
+    }
+
+    private static string GetPhaseName(MethodBase method)
+    {
+        lock (PhaseNames)
+        {
+            if (PhaseNames.TryGetValue(method, out string? name))
+            {
+                return name;
+            }
+
+            name = $"{method.DeclaringType?.Name ?? "unknown"}.{method.Name}";
+            PhaseNames[method] = name;
+            return name;
+        }
     }
 
     public static void Postfix(TransitionPhasePatchState __state)

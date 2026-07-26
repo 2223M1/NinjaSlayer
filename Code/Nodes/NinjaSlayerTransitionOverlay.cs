@@ -26,6 +26,14 @@ public partial class NinjaSlayerTransitionOverlay : Control
 
     public override void _Process(double delta)
     {
+        // The overlay outlives every session under the persistent NTransition. Without an early
+        // exit its three interop calls ran on every frame of the game for nothing.
+        if (performanceTrace is null)
+        {
+            SetProcess(false);
+            return;
+        }
+
         double? videoPosition = videoPlayer is not null
             && GodotObject.IsInstanceValid(videoPlayer)
             && videoPlayer.IsPlaying()
@@ -40,7 +48,6 @@ public partial class NinjaSlayerTransitionOverlay : Control
         MouseFilter = MouseFilterEnum.Ignore;
         ZAsRelative = false;
         ZIndex = 100;
-        SetProcess(true);
 
         if (videoPlayer != null)
         {
@@ -78,6 +85,7 @@ public partial class NinjaSlayerTransitionOverlay : Control
 
         using var hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
         TransitionPerformanceTrace? trace = performanceTrace;
+        SetProcess(true);
         try
         {
             long streamStartedAt = Stopwatch.GetTimestamp();
@@ -90,7 +98,13 @@ public partial class NinjaSlayerTransitionOverlay : Control
             {
                 trace?.RecordStreamAcquire(Stopwatch.GetElapsedTime(streamStartedAt));
             }
-            videoPlayer.Stream = stream;
+
+            // Assigning Stream instantiates the Theora decoder on the main thread. The overlay is
+            // reused across sessions, so only the first transition of a process pays for it.
+            if (!ReferenceEquals(videoPlayer.Stream, stream))
+            {
+                videoPlayer.Stream = stream;
+            }
             videoPlayer.Volume = 1f;
             videoPlayer.Modulate = Colors.White;
             SelfModulate = Colors.White;
@@ -127,9 +141,10 @@ public partial class NinjaSlayerTransitionOverlay : Control
         }
         finally
         {
+            // MarkVideoStopped is idempotent; the local trace also covers the case where the
+            // session detached it before this task unwound.
             trace?.MarkVideoStopped();
-            videoPlayer.Stop();
-            Visible = false;
+            StopPlayback();
         }
     }
 
@@ -140,7 +155,11 @@ public partial class NinjaSlayerTransitionOverlay : Control
             performanceTrace?.MarkVideoStopped();
             videoPlayer.Stop();
         }
-        Visible = false;
+
+        if (GodotObject.IsInstanceValid(this))
+        {
+            Visible = false;
+        }
     }
 
     internal void AttachPerformanceTrace(TransitionPerformanceTrace trace)

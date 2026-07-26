@@ -37,7 +37,10 @@ public sealed class NinjaSlayerTransitionSfxPatch : IPatchMethod
             return true;
         }
 
-        return !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        // The volatile session probe runs first so ordinary combat SFX never allocate the
+        // deferral closure or take the capability-registry lock.
+        return !NinjaSlayerTransitionGate.HasActiveSession
+            || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
             || !NinjaSlayerTransitionGate.TryDeferPresentation(
                 () => SfxCmd.Play(sfx, volume));
     }

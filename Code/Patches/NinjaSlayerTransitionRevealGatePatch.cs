@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using NinjaSlayer.Code.Transition;
 using STS2RitsuLib.Patching.Models;
 
@@ -43,6 +44,10 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
         {
             await session.WaitForAnimationAsync();
             session.ReleasePresentation();
+            // ReleasePresentation unpauses the whole staged run tree and flushes every deferred
+            // combat/audio operation at once. The backdrop is still opaque black here, so spend
+            // that spike on an invisible frame instead of the first frame of the fade-in.
+            await transition.AwaitProcessFrame();
             await transition.RoomFadeIn(showTransition);
             await session.CompleteAsync(TransitionCompletionStatus.Succeeded, forceRelease: false);
         }
@@ -99,6 +104,9 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
         {
             await session.WaitForAnimationAsync();
             session.ReleasePresentation();
+            // Same reasoning as the embark path: absorb the unpause and deferred-operation flush
+            // on a black frame before the fade-in starts animating.
+            await transition.AwaitProcessFrame();
             await transition.FadeIn(time, transitionPath, cancelToken);
             await session.CompleteAsync(TransitionCompletionStatus.Succeeded, forceRelease: false);
         }
