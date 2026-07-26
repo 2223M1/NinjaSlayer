@@ -4,8 +4,11 @@ namespace NinjaSlayer.Code.Transition;
 
 internal sealed class TransitionNodeProcessLease : IDisposable
 {
-    private readonly Dictionary<Node, Node.ProcessModeEnum> _overrides =
-        new(ReferenceEqualityComparer.Instance);
+    // Captures are restored children-before-parents, so they are kept in a list and walked
+    // backwards. The set only dedupes. Reversing the dictionary with LINQ used to buffer the whole
+    // staged node map into a temporary array on the reveal frame.
+    private readonly List<(Node Node, Node.ProcessModeEnum ProcessMode)> _overrides = [];
+    private readonly HashSet<Node> _captured = new(ReferenceEqualityComparer.Instance);
     private readonly Node _root;
     private readonly SceneTree _tree;
     private int _disposed;
@@ -18,9 +21,10 @@ internal sealed class TransitionNodeProcessLease : IDisposable
         _tree.NodeAdded += OnNodeAdded;
         try
         {
-            foreach (Node child in _root.GetChildren())
+            int childCount = _root.GetChildCount();
+            for (int index = 0; index < childCount; index++)
             {
-                DisablePresentationSubtree(child);
+                DisablePresentationSubtree(_root.GetChild(index));
             }
         }
         catch
@@ -78,50 +82,67 @@ internal sealed class TransitionNodeProcessLease : IDisposable
             return;
         }
 
+        // Godot emits node_added for a parent and then for every descendant, so each node in a
+        // freshly instantiated branch arrives on its own event. Recursing here re-walked the same
+        // subtree once per level while the staged run was being built.
         if (ReferenceEquals(node.GetParent(), _root))
         {
-            DisablePresentationSubtree(node);
+            // Direct children are forced Disabled even when they inherit, which is what actually
+            // freezes the staged presentation.
+            CaptureAndDisable(node);
             return;
         }
 
-        DisableExplicitProcessOverrides(node);
+        DisableExplicitProcessOverride(node);
     }
 
     private void DisablePresentationSubtree(Node node)
     {
         CaptureAndDisable(node);
-        foreach (Node child in node.GetChildren())
+        int childCount = node.GetChildCount();
+        for (int index = 0; index < childCount; index++)
         {
-            DisableExplicitProcessOverrides(child);
+            DisableExplicitProcessOverrides(node.GetChild(index));
         }
     }
 
+    /// <summary>
+    /// Walks an existing subtree at lease creation. Nodes that appear later arrive through
+    /// <see cref="OnNodeAdded"/> instead and are handled one at a time.
+    /// </summary>
     private void DisableExplicitProcessOverrides(Node node)
+    {
+        DisableExplicitProcessOverride(node);
+        int childCount = node.GetChildCount();
+        for (int index = 0; index < childCount; index++)
+        {
+            DisableExplicitProcessOverrides(node.GetChild(index));
+        }
+    }
+
+    private void DisableExplicitProcessOverride(Node node)
     {
         if (node.ProcessMode is not Node.ProcessModeEnum.Inherit
             and not Node.ProcessModeEnum.Disabled)
         {
             CaptureAndDisable(node);
         }
-
-        foreach (Node child in node.GetChildren())
-        {
-            DisableExplicitProcessOverrides(child);
-        }
     }
 
     private void CaptureAndDisable(Node node)
     {
-        if (_overrides.TryAdd(node, node.ProcessMode))
+        if (_captured.Add(node))
         {
+            _overrides.Add((node, node.ProcessMode));
             node.ProcessMode = Node.ProcessModeEnum.Disabled;
         }
     }
 
     private void RestoreOverrides(ICollection<Exception>? failures = null)
     {
-        foreach ((Node node, Node.ProcessModeEnum processMode) in _overrides.Reverse())
+        for (int index = _overrides.Count - 1; index >= 0; index--)
         {
+            (Node node, Node.ProcessModeEnum processMode) = _overrides[index];
             try
             {
                 if (GodotObject.IsInstanceValid(node))
@@ -136,5 +157,6 @@ internal sealed class TransitionNodeProcessLease : IDisposable
         }
 
         _overrides.Clear();
+        _captured.Clear();
     }
 }

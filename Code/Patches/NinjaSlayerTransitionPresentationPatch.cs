@@ -82,7 +82,8 @@ public sealed class NinjaSlayerTransitionCombatPresentationPatch : IPatchMethod
         [new(typeof(CombatManager), nameof(CombatManager.AfterCombatRoomLoaded))];
 
     public static bool Prefix(CombatManager __instance) =>
-        !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        !NinjaSlayerTransitionGate.HasActiveSession
+        || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
         || !NinjaSlayerTransitionGate.TryDeferPresentation(__instance.AfterCombatRoomLoaded);
 }
 
@@ -99,7 +100,8 @@ public sealed class NinjaSlayerTransitionAncientSetupPresentationPatch : IPatchM
         [new(typeof(NAncientEventLayout), nameof(NAncientEventLayout.OnSetupComplete))];
 
     public static bool Prefix(NAncientEventLayout __instance) =>
-        !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        !NinjaSlayerTransitionGate.HasActiveSession
+        || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
         || !NinjaSlayerTransitionGate.TryDeferPresentation(__instance.OnSetupComplete);
 }
 
@@ -124,7 +126,8 @@ public sealed class NinjaSlayerTransitionAncientHealPresentationPatch : IPatchMe
         MethodBase __originalMethod,
         ref Task __result)
     {
-        if (!NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        if (!NinjaSlayerTransitionGate.HasActiveSession
+            || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
             || !NinjaSlayerTransitionGate.TryDeferPresentation(
                 () => InvokeTask(__originalMethod, __instance, [player, healAmount]),
                 out Task deferred))
@@ -177,6 +180,7 @@ public sealed class NinjaSlayerTransitionRewardSfxPresentationPatch : IPatchMeth
         ref int __result)
     {
         if (streamName != "victory.mp3"
+            || !NinjaSlayerTransitionGate.HasActiveSession
             || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
             || !NinjaSlayerTransitionGate.TryDeferPresentation(
                 () => __instance.Play(streamName, volume, variance)))
@@ -207,7 +211,8 @@ public sealed class NinjaSlayerTransitionRunMusicPresentationPatch : IPatchMetho
     ];
 
     public static bool Prefix(NRunMusicController __instance, MethodBase __originalMethod) =>
-        !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        !NinjaSlayerTransitionGate.HasActiveSession
+        || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
         || !NinjaSlayerTransitionGate.TryDeferPresentation(
             () => __originalMethod.Invoke(__instance, null));
 }
@@ -230,7 +235,8 @@ public sealed class NinjaSlayerTransitionParameterizedSfxPresentationPatch : IPa
     ];
 
     public static bool Prefix(MethodBase __originalMethod, object[] __args) =>
-        !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        !NinjaSlayerTransitionGate.HasActiveSession
+        || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
         || !NinjaSlayerTransitionGate.TryDeferPresentation(
             () => __originalMethod.Invoke(null, __args));
 }
@@ -258,7 +264,8 @@ public sealed class NinjaSlayerTransitionLoopSfxPresentationPatch : IPatchMethod
     ];
 
     public static bool Prefix(MethodBase __originalMethod, object[] __args) =>
-        !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
+        !NinjaSlayerTransitionGate.HasActiveSession
+        || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
         || !NinjaSlayerTransitionGate.TryDeferPresentation(
             () => __originalMethod.Invoke(null, __args));
 }

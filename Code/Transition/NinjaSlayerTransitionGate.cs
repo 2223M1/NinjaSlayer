@@ -8,6 +8,15 @@ internal static class NinjaSlayerTransitionGate
     private static readonly object SyncRoot = new();
     private static NinjaSlayerTransitionSession? _activeSession;
     private static bool _pending;
+    private static int _activeSessionPresent;
+
+    /// <summary>
+    /// Lock-free mirror of <c>_activeSession != null</c>. The presentation-barrier patches sit on
+    /// audio entry points that fire many times per second during ordinary combat; without this a
+    /// closure allocation and a global lock were paid on every one of them, even though no
+    /// transition was running and the deferral could never succeed.
+    /// </summary>
+    internal static bool HasActiveSession => Volatile.Read(ref _activeSessionPresent) != 0;
 
     internal static bool Pending
     {
@@ -47,6 +56,7 @@ internal static class NinjaSlayerTransitionGate
         {
             previous = _activeSession;
             _activeSession = next;
+            Volatile.Write(ref _activeSessionPresent, 1);
         }
 
         if (previous != null)
@@ -117,6 +127,11 @@ internal static class NinjaSlayerTransitionGate
 
     internal static bool TryDeferPresentation(Action operation)
     {
+        if (!HasActiveSession)
+        {
+            return false;
+        }
+
         NinjaSlayerTransitionSession? session;
         lock (SyncRoot)
         {
@@ -128,6 +143,12 @@ internal static class NinjaSlayerTransitionGate
 
     internal static bool TryDeferPresentation(Func<Task> operation, out Task completion)
     {
+        if (!HasActiveSession)
+        {
+            completion = Task.CompletedTask;
+            return false;
+        }
+
         NinjaSlayerTransitionSession? session;
         lock (SyncRoot)
         {
@@ -188,6 +209,7 @@ internal static class NinjaSlayerTransitionGate
             if (ReferenceEquals(_activeSession, session))
             {
                 _activeSession = null;
+                Volatile.Write(ref _activeSessionPresent, 0);
             }
         }
     }

@@ -4,13 +4,6 @@ using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Transition;
 
-internal enum TransitionVideoLoadPollResult
-{
-    Waiting,
-    Loaded,
-    Failed
-}
-
 internal static class NinjaSlayerTransitionVideo
 {
     private static VideoStream? cachedStream;
@@ -25,30 +18,6 @@ internal static class NinjaSlayerTransitionVideo
         cachedStream = ResourceLoader.Load<VideoStream>(
             NinjaSlayerAssetProfile.TransitionVideoPath,
             cacheMode: ResourceLoader.CacheMode.Reuse);
-    }
-
-    internal static TransitionVideoLoadPollResult PollPreloadedStream(
-        out VideoStream? stream,
-        out string? diagnostic)
-    {
-        if (cachedStream != null && GodotObject.IsInstanceValid(cachedStream))
-        {
-            stream = cachedStream;
-            diagnostic = null;
-            return TransitionVideoLoadPollResult.Loaded;
-        }
-
-        BeginPreload();
-        if (cachedStream is not { } loadedStream || !GodotObject.IsInstanceValid(loadedStream))
-        {
-            stream = null;
-            diagnostic = "the transition VideoStream resource was unavailable";
-            return TransitionVideoLoadPollResult.Failed;
-        }
-
-        stream = loadedStream;
-        diagnostic = null;
-        return TransitionVideoLoadPollResult.Loaded;
     }
 
     public static VideoStream GetStream()
