@@ -474,7 +474,10 @@ internal static class FinisherForecast
     private static IRunState? ResolveRunState(Creature owner) =>
         owner.Player?.RunState ?? owner.PetOwner?.RunState;
 
-    private sealed record ForecastState(int Hp, int Block, int Karate);
+    // A value type: the search mutates state through `with` expressions on up to
+    // FinisherForecastEngine.DefaultMaximumSearchStates nodes, and as a record class every one of
+    // those was a heap allocation during targeting.
+    private readonly record struct ForecastState(int Hp, int Block, int Karate);
     private readonly record struct ForecastStateKey(int Hp, int Block, int Karate);
     private readonly record struct CachedForecast(
         FinisherForecastOutcome Outcome,

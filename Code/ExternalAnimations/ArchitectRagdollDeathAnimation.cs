@@ -13,6 +13,12 @@ internal sealed class ArchitectRagdollDeathAnimation : IDisposable
     private const float BodyLift = 20f;
     private const float BodyRotationDegrees = 70f;
 
+    // Apply() is wired to ConnectBeforeWorldTransformsChange, so it fires on every rendered frame
+    // for five bones. Marshalling these names per call cost 15 string conversions a frame.
+    private static readonly StringName SetXMethod = new("set_x");
+    private static readonly StringName SetYMethod = new("set_y");
+    private static readonly StringName SetRotationMethod = new("set_rotation");
+
     private static readonly BoneMotionSpec[] BoneSpecs =
     [
         new("shoulder_b", -6f, 5f, 3f, -58f),
@@ -239,14 +245,14 @@ internal sealed class ArchitectRagdollDeathAnimation : IDisposable
             }
 
             GodotObject native = _bone.BoundObject;
-            native.Call("set_x", _x + direction * _spec.OffsetX * eased);
+            native.Call(SetXMethod, _x + direction * _spec.OffsetX * eased);
             native.Call(
-                "set_y",
+                SetYMethod,
                 _y + ArchitectRagdollMath.ParabolicOffset(
                     progress,
                     _spec.Lift,
                     _spec.DropY));
-            native.Call("set_rotation", _rotation + direction * _spec.RotationDegrees * eased);
+            native.Call(SetRotationMethod, _rotation + direction * _spec.RotationDegrees * eased);
             GC.KeepAlive(_bone);
         }
 
@@ -261,9 +267,9 @@ internal sealed class ArchitectRagdollDeathAnimation : IDisposable
             if (restore && GodotObject.IsInstanceValid(_bone.BoundObject))
             {
                 GodotObject native = _bone.BoundObject;
-                native.Call("set_x", _x);
-                native.Call("set_y", _y);
-                native.Call("set_rotation", _rotation);
+                native.Call(SetXMethod, _x);
+                native.Call(SetYMethod, _y);
+                native.Call(SetRotationMethod, _rotation);
                 GC.KeepAlive(_bone);
             }
 

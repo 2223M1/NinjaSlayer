@@ -16,6 +16,18 @@ public partial class NarakuVisualOverlay : Sprite2D
     private Sprite2D? source;
     private string? activeTexturePath;
 
+    // UpdateVisual runs every frame. The texture path only changes when the presentation or the
+    // source sprite's own texture changes, and for the synchronized idle sequence resolving it
+    // rebuilt an interpolated "...0000.png" string every frame.
+    private NinjaSlayerFormPresentation? resolvedPresentation;
+    private Texture2D? resolvedSourceTexture;
+    private Color mirroredModulate = Colors.White;
+    private Color mirroredSelfModulate = Colors.White;
+    private Material? mirroredMaterial;
+    private bool mirroredFlipH;
+    private bool mirroredFlipV;
+    private bool hasMirroredState;
+
     public static void Sync(Creature creature)
     {
         try
@@ -84,14 +96,23 @@ public partial class NarakuVisualOverlay : Sprite2D
             return;
         }
 
-        string texturePath = NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath(
-            presentation,
-            source.Texture?.ResourcePath)
-            ?? throw new InvalidOperationException("Overlay form presentation did not resolve a texture path.");
-        if (activeTexturePath != texturePath)
+        Texture2D? sourceTexture = source.Texture;
+        if (activeTexturePath is null
+            || !ReferenceEquals(resolvedSourceTexture, sourceTexture)
+            || resolvedPresentation != presentation)
         {
-            Texture = PreloadManager.Cache.GetTexture2D(texturePath);
-            activeTexturePath = texturePath;
+            string texturePath = NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath(
+                presentation,
+                sourceTexture?.ResourcePath)
+                ?? throw new InvalidOperationException("Overlay form presentation did not resolve a texture path.");
+            if (activeTexturePath != texturePath)
+            {
+                Texture = PreloadManager.Cache.GetTexture2D(texturePath);
+                activeTexturePath = texturePath;
+            }
+
+            resolvedSourceTexture = sourceTexture;
+            resolvedPresentation = presentation;
         }
 
         if (presentation.BodyTransformMode == NinjaSlayerBodyTransformMode.Source)
@@ -103,11 +124,52 @@ public partial class NarakuVisualOverlay : Sprite2D
             ApplyLegacyFormTransform(presentation);
         }
 
-        Modulate = source.Modulate;
-        SelfModulate = source.SelfModulate;
-        Material = source.Material;
-        FlipH = source.FlipH;
-        FlipV = source.FlipV;
+        MirrorSourceAppearance();
+    }
+
+    /// <summary>
+    /// Copies the source sprite's appearance, writing across the Godot interop boundary only for
+    /// the properties that actually changed since the previous frame.
+    /// </summary>
+    private void MirrorSourceAppearance()
+    {
+        Color modulate = source!.Modulate;
+        Color selfModulate = source.SelfModulate;
+        Material? material = source.Material;
+        bool flipH = source.FlipH;
+        bool flipV = source.FlipV;
+
+        if (!hasMirroredState || mirroredModulate != modulate)
+        {
+            Modulate = modulate;
+            mirroredModulate = modulate;
+        }
+
+        if (!hasMirroredState || mirroredSelfModulate != selfModulate)
+        {
+            SelfModulate = selfModulate;
+            mirroredSelfModulate = selfModulate;
+        }
+
+        if (!hasMirroredState || !ReferenceEquals(mirroredMaterial, material))
+        {
+            Material = material;
+            mirroredMaterial = material;
+        }
+
+        if (!hasMirroredState || mirroredFlipH != flipH)
+        {
+            FlipH = flipH;
+            mirroredFlipH = flipH;
+        }
+
+        if (!hasMirroredState || mirroredFlipV != flipV)
+        {
+            FlipV = flipV;
+            mirroredFlipV = flipV;
+        }
+
+        hasMirroredState = true;
     }
 
     private void CopySourceTransform()

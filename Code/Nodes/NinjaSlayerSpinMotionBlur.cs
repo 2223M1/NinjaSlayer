@@ -19,10 +19,16 @@ public partial class NinjaSlayerSpinMotionBlur : Node
     private static readonly StringName BlurStrengthParam = new("blur_strength");
     private static readonly StringName BlurSignParam = new("blur_sign");
 
+    // The template resource is loaded once per process; each creature keeps its own duplicated
+    // instance for the lifetime of its body sprite. Re-duplicating on every spin threshold
+    // crossing swapped a live sprite's material several times per second.
+    private static ShaderMaterial? blurMaterialTemplate;
+
     private Sprite2D? body;
     private Creature? creature;
     private Material? originalBodyMaterial;
     private ShaderMaterial? blurMaterialInstance;
+    private bool blurArmed;
     private float lastScaleX;
     private bool hasLastScaleX;
 
@@ -68,7 +74,7 @@ public partial class NinjaSlayerSpinMotionBlur : Node
 
         if (intensity <= 0f)
         {
-            Reset();
+            Disarm();
             lastScaleX = currentScaleX;
             hasLastScaleX = true;
             return;
@@ -88,13 +94,27 @@ public partial class NinjaSlayerSpinMotionBlur : Node
 
     public void Reset()
     {
+        Disarm();
+        blurMaterialInstance = null;
+        hasLastScaleX = false;
+    }
+
+    /// <summary>
+    /// Detaches the blur without discarding the duplicated material, so re-arming on the next
+    /// spin costs a single material assignment instead of another <c>Duplicate()</c>.
+    /// </summary>
+    private void Disarm()
+    {
+        if (!blurArmed)
+        {
+            return;
+        }
+
+        blurArmed = false;
         if (body != null && GodotObject.IsInstanceValid(body))
         {
             body.Material = originalBodyMaterial;
         }
-
-        blurMaterialInstance = null;
-        hasLastScaleX = false;
     }
 
     public static NinjaSlayerSpinMotionBlur? Get(Creature creature)
@@ -111,20 +131,38 @@ public partial class NinjaSlayerSpinMotionBlur : Node
 
     private void EnsureBlurMaterial()
     {
-        if (body == null || blurMaterialInstance != null)
+        if (body == null)
         {
             return;
         }
 
-        originalBodyMaterial = body.Material;
-        var template = GD.Load<ShaderMaterial>(BlurMaterialPath);
-        if (template == null)
+        if (blurMaterialInstance == null)
         {
-            return;
+            if (blurMaterialTemplate == null || !GodotObject.IsInstanceValid(blurMaterialTemplate))
+            {
+                blurMaterialTemplate = GD.Load<ShaderMaterial>(BlurMaterialPath);
+            }
+
+            if (blurMaterialTemplate == null)
+            {
+                return;
+            }
+
+            blurMaterialInstance = (ShaderMaterial)blurMaterialTemplate.Duplicate();
         }
 
-        blurMaterialInstance = (ShaderMaterial)template.Duplicate();
-        body.Material = blurMaterialInstance;
+        if (!blurArmed)
+        {
+            // Re-read the sprite's own material on every arm, so a material another system
+            // installed between spins is still the one restored on disarm.
+            if (!ReferenceEquals(body.Material, blurMaterialInstance))
+            {
+                originalBodyMaterial = body.Material;
+            }
+
+            blurArmed = true;
+            body.Material = blurMaterialInstance;
+        }
     }
 
     private Creature? FindCreature()
