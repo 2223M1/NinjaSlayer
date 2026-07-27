@@ -99,7 +99,7 @@ flip_h = true
 show_behind_parent = true
 material = SubResource("CanvasItemMaterial_additive")
 position = Vector2(-2.2, 0.55)
-scale = Vector2(2.175, 2.175)
+scale = Vector2(2.9, 2.9)
 modulate = Color(0.91, 0.61, 0.94, 0.82)
 texture = ExtResource("6_glow")
 

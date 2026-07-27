@@ -127,6 +127,38 @@ public sealed class NinjaSlayerFinisherDamageNumberPatch : IPatchMethod
     }
 }
 
+public sealed class YamotoKokiOrigamiMissileHitSparkPatch : IPatchMethod
+{
+    public static string PatchId => "yamoto_koki_origami_missile_hit_spark";
+    public static string Description => "Use the project-local pink HitSpark for origami missile damage.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(NHitSparkVfx),
+            nameof(NHitSparkVfx.Create),
+            [typeof(Creature), typeof(bool)])
+    ];
+
+    public static bool Prefix(
+        Creature target,
+        bool requireInteractable,
+        ref NHitSparkVfx? __result)
+    {
+        if (!YamotoKokiOrigamiMissileHitSparkScope.TryCreate(
+                target,
+                requireInteractable,
+                out NHitSparkVfx? hitSpark))
+        {
+            return true;
+        }
+
+        __result = hitSpark;
+        return false;
+    }
+}
+
 public sealed class NinjaSlayerFinisherCardVisualPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_finisher_card_visual_suppression";
@@ -247,6 +279,48 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
     public static void Postfix(ref Task<IEnumerable<DamageResult>> __result, object? __state)
     {
         __result = DeathAnimation.CompleteIncomingDamageCapture(__result, __state);
+    }
+}
+
+public sealed class NinjaSlayerEnemyAttackVfxBaselinePatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_enemy_attack_vfx_baseline";
+    public static string Description => "Capture enemy attack VFX before attacker and hit effects are created.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(
+            typeof(AttackCommand),
+            nameof(AttackCommand.Execute),
+            [typeof(PlayerChoiceContext)])
+    ];
+
+    public static void Prefix(AttackCommand __instance, out object? __state)
+    {
+        __state = FinisherAttackVfxBaselineContext.Enter(__instance);
+    }
+
+    public static void Postfix(ref Task<AttackCommand> __result, object? __state)
+    {
+        if (__state is not FinisherAttackVfxBaselineContext.Frame frame)
+        {
+            return;
+        }
+
+        FinisherAttackVfxBaselineContext.RestoreCaller(frame);
+        __result = FinisherAttackVfxBaselineContext.Complete(__result, frame);
+    }
+
+    public static Exception? Finalizer(Exception? __exception, object? __state)
+    {
+        if (__exception != null && __state is FinisherAttackVfxBaselineContext.Frame frame)
+        {
+            FinisherAttackVfxBaselineContext.RestoreCaller(frame);
+            frame.IsActive = false;
+        }
+
+        return __exception;
     }
 }
 

@@ -556,6 +556,8 @@ public sealed class RepositoryArchitectureTests
         string missileBob = SourceText("Code/Nodes/NYamotoKokiOrigamiMissileIdleBob.cs");
         string intents = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiIntents.cs"));
         string intentAnimation = SourceText("Code/Patches/YamotoKokiIntentAnimationPatch.cs");
+        string intentLifecycle = SourceText("Code/Combat/YamotoKokiIntentLifecycle.cs");
+        string forecast = SourceText("Code/ExternalAnimations/FinisherForecast.cs");
         string patchGroups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
         string missile = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiOrigamiMissile.cs"));
         string relic = SourceText("Relics/YamotoKokiCuteRelic.cs");
@@ -715,7 +717,7 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("flip_h = true", missileScene, StringComparison.Ordinal);
         Assert.Contains("name=\"OrigamiGlow\"", missileScene.Replace(" ", string.Empty), StringComparison.Ordinal);
         Assert.Contains("res://NinjaSlayer/images/vfx/common/common_glow.png", missileScene, StringComparison.Ordinal);
-        Assert.Contains("scale = Vector2(2.175, 2.175)", missileScene, StringComparison.Ordinal);
+        Assert.Contains("scale = Vector2(2.9, 2.9)", missileScene, StringComparison.Ordinal);
         Assert.Contains("modulate = Color(0.91, 0.61, 0.94, 0.82)", missileScene, StringComparison.Ordinal);
         Assert.True(
             missileScene.IndexOf("name=\"PaperKraneCore\"", StringComparison.Ordinal)
@@ -821,6 +823,10 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("YamotoKokiGasBomb", string.Join('\n', Sources.Select(source => source.Root.ToFullString())), StringComparison.Ordinal);
         Assert.DoesNotContain("YamotoKokiIntentFramePatch", patchGroups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<YamotoKokiIntentUpdatePatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiIntentGenerationPatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiLastEnemyDeathIntentPatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>()", patchGroups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>()", patchGroups, StringComparison.Ordinal);
         Assert.DoesNotContain("YamotoKokiIntentFrameCountPatch", patchGroups, StringComparison.Ordinal);
         Assert.DoesNotContain("YamotoKokiIntentFramePathPatch", patchGroups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<EnemyAttackDodgeScopePatch>()", patchGroups, StringComparison.Ordinal);
@@ -834,8 +840,23 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("public bool HasPlayedEntrance", relic, StringComparison.Ordinal);
         Assert.Contains("public bool HasPlayedFarewell", relic, StringComparison.Ordinal);
         Assert.Contains("AfterCombatEnd(CombatRoom room)", relic, StringComparison.Ordinal);
-        Assert.Contains("PlayEntrance(yamotoKoki)", relic, StringComparison.Ordinal);
+        Assert.Contains("TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayEntrance", relic, StringComparison.Ordinal);
         Assert.Contains("PlayFarewell(yamotoKoki)", relic, StringComparison.Ordinal);
+        Assert.Contains("TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayFarewell", relic, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiIntentLifecycle.BeginCombat", relic, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiIntentLifecycle.Invalidate", relic, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiIntentGeneration generation", relic, StringComparison.Ordinal);
+        Assert.Contains("EvaluateYamotoKokiNextTurn", relic, StringComparison.Ordinal);
+        Assert.Contains("missile.CanExplodeOnTurn(nextTurn)", relic, StringComparison.Ordinal);
+        Assert.Contains("FinisherForecastBranchQuantifier.AnyBranch", forecast, StringComparison.Ordinal);
+        Assert.Contains("ConditionalWeakTable<Creature, GenerationState>", intentLifecycle, StringComparison.Ordinal);
+        Assert.Contains("container.Visible = false", intentLifecycle, StringComparison.Ordinal);
+        Assert.Contains("container.RemoveChild(child)", intentLifecycle, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiIntentLifecycle.InvalidateCombat", intentAnimation, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiIntentLifecycle.IsActive", intentAnimation, StringComparison.Ordinal);
+        Assert.Contains("if (!shouldRemove", intentAnimation, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerAudio.YamotoKokiByeEvent", relic, StringComparison.Ordinal);
+        Assert.DoesNotContain("NinjaSlayerAudio.YamotoKokiByeEvent", animations, StringComparison.Ordinal);
         Assert.Contains("missile.CanExplodeOnTurn(turnNumber)", relic, StringComparison.Ordinal);
         Assert.Equal(
             1,
@@ -872,7 +893,7 @@ public sealed class RepositoryArchitectureTests
         Assert.Equal(1, CountOccurrences(monster, "PlayerCmd.AddPet<YamotoKokiOrigamiMissile>"));
         Assert.Equal(1, CountOccurrences(relic, "OnMovePerformed(scheduledMove)"));
         Assert.Contains("FindLivingPartyYamotoKoki(Owner.RunState)", relic, StringComparison.Ordinal);
-        Assert.Contains("AssignIntent(yamotoKoki, YamotoKokiMonster.SummonMissileMoveId)", relic, StringComparison.Ordinal);
+        Assert.Contains("YamotoKokiMonster.SummonMissileMoveId", relic, StringComparison.Ordinal);
         Assert.DoesNotContain("BeforeSideTurnStart", relic, StringComparison.Ordinal);
         Assert.Contains("AfterEventStarted()", eventModel, StringComparison.Ordinal);
         Assert.Contains("ReferenceEquals(owner, recipient)", eventModel, StringComparison.Ordinal);
@@ -928,6 +949,14 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("PlayYamotoKokiIaiImpact(enemies)", monster, StringComparison.Ordinal);
         Assert.Contains("PreloadYamotoKokiIaiFeedback()", monster, StringComparison.Ordinal);
         Assert.Contains("NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack)", combatVfx, StringComparison.Ordinal);
+        Assert.Equal(
+            2,
+            CountOccurrences(combatVfx, "NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack)"));
+        Assert.True(
+            combatVfx.IndexOf("if (playedImpact)", StringComparison.Ordinal)
+            < combatVfx.LastIndexOf(
+                "NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack)",
+                StringComparison.Ordinal));
         Assert.DoesNotContain("giantHorizontalSlashPath", monster, StringComparison.Ordinal);
         Assert.Contains("0.9098039, 0.6117647, 0.9372549", petals, StringComparison.Ordinal);
         Assert.Contains("0.9882353, 0.89411765, 0.99215686", impact, StringComparison.Ordinal);
@@ -938,6 +967,63 @@ public sealed class RepositoryArchitectureTests
             "NinjaSlayer/scenes/vfx/yamoto_koki_iai",
             "NinjaSlayer/materials/vfx/yamoto_koki_iai",
             "NinjaSlayer/shaders/vfx/yamoto_koki_iai"
+        ];
+        foreach (string root in roots)
+        {
+            foreach (string file in Directory.EnumerateFiles(
+                         Path.Combine(Root, root.Replace('/', Path.DirectorySeparatorChar)),
+                         "*",
+                         SearchOption.AllDirectories))
+            {
+                if (Path.GetExtension(file) is not (".tscn" or ".tres" or ".gdshader" or ".gdshaderinc"))
+                {
+                    continue;
+                }
+
+                string content = File.ReadAllText(file);
+                Assert.DoesNotContain("res://scenes/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://materials/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://images/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://shaders/vfx/", content, StringComparison.Ordinal);
+                Assert.DoesNotContain("res://src/Core/", content, StringComparison.Ordinal);
+            }
+        }
+    }
+
+    [Fact]
+    public void OrigamiMissileUsesOneScopedProjectLocalPinkHitSpark()
+    {
+        string missile = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiOrigamiMissile.cs"));
+        string scope = SourceText("Code/ExternalAnimations/YamotoKokiOrigamiMissileHitSparkScope.cs");
+        string node = SourceText("Code/Nodes/NYamotoKokiOrigamiMissileHitSparkVfx.cs");
+        string patches = SourceText("Code/Patches/NinjaSlayerFinisherPatches.cs");
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+        string scene = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "scenes",
+            "vfx",
+            "yamoto_koki_missile_hit_spark",
+            "hit_spark_vfx.tscn"));
+
+        Assert.Contains("YamotoKokiOrigamiMissileHitSparkScope.Enter(target)", missile, StringComparison.Ordinal);
+        Assert.Contains("frame.Consumed = true", scope, StringComparison.Ordinal);
+        Assert.Contains("frame.Target != target", scope, StringComparison.Ordinal);
+        Assert.Contains("NYamotoKokiOrigamiMissileHitSparkVfx.Create", scope, StringComparison.Ordinal);
+        Assert.Contains("res://NinjaSlayer/scenes/vfx/yamoto_koki_missile_hit_spark", node, StringComparison.Ordinal);
+        Assert.Contains("GetNodeOrNull<GpuParticles2D>(nodePath)", node, StringComparison.Ordinal);
+        Assert.DoesNotContain("[Export]", node, StringComparison.Ordinal);
+        Assert.Contains("nameof(NHitSparkVfx.Create)", patches, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("0.909804, 0.611765, 0.937255", scene, StringComparison.Ordinal);
+        Assert.DoesNotContain("_missileParticles", scene, StringComparison.Ordinal);
+        Assert.DoesNotContain("_missileSpecks", scene, StringComparison.Ordinal);
+
+        string[] roots =
+        [
+            "NinjaSlayer/scenes/vfx/yamoto_koki_missile_hit_spark",
+            "NinjaSlayer/materials/vfx/yamoto_koki_missile_hit_spark",
+            "NinjaSlayer/shaders/vfx/yamoto_koki_missile_hit_spark"
         ];
         foreach (string root in roots)
         {
@@ -1476,6 +1562,9 @@ public sealed class RepositoryArchitectureTests
         string deathPatch = SourceText("Code/Patches/NinjaSlayerDeathAnimPatch.cs");
         string finisherPatches = SourceText("Code/Patches/NinjaSlayerFinisherPatches.cs");
         string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+        string adapters = SourceText("Code/ExternalAnimations/FinisherActionAdapters.cs");
+        string freezeLease = SourceText("Code/ExternalAnimations/FinisherImpactVfxFreezeLease.cs");
+        string cinematic = SourceText("Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs");
         string yamotoKoki = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
         string yamotoAnimations = SourceText("Code/ExternalAnimations/YamotoKokiCombatAnimations.cs");
 
@@ -1485,6 +1574,21 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("AllCandidatesLethal", request, StringComparison.Ordinal);
         Assert.Contains("AnyCandidateLethal", request, StringComparison.Ordinal);
         Assert.Contains("FinisherSessionRequest request", session, StringComparison.Ordinal);
+        Assert.Contains("IFinisherActionAdapter ActionAdapter", request, StringComparison.Ordinal);
+        Assert.Contains("FinisherActionAdapters.YamotoKokiIai", eligibility, StringComparison.Ordinal);
+        Assert.Contains("FinisherActionAdapters.Stationary", classifier, StringComparison.Ordinal);
+        Assert.Contains("IFinisherActionAdapter Fast", adapters, StringComparison.Ordinal);
+        Assert.Contains("IFinisherActionAdapter Slow", adapters, StringComparison.Ordinal);
+        Assert.Contains("IFinisherActionAdapter Combo", adapters, StringComparison.Ordinal);
+        Assert.Contains("record struct FinisherActionContext", adapters, StringComparison.Ordinal);
+        Assert.Contains("Dictionary<string, IFinisherActionAdapter> TriggerRegistry", adapters, StringComparison.Ordinal);
+        Assert.Contains("internal static void Register", adapters, StringComparison.Ordinal);
+        Assert.Contains("CreateContext(NCreature actor, NCreature focus)", adapters, StringComparison.Ordinal);
+        Assert.Contains("_actionAdapter.GetTravelProgress", session, StringComparison.Ordinal);
+        Assert.Contains("_actionAdapter.CreateContext", session, StringComparison.Ordinal);
+        Assert.Contains("EnsureActionPeakCore", session, StringComparison.Ordinal);
+        Assert.Contains("!commandState.ShouldPlayAnimation", cinematic, StringComparison.Ordinal);
+        Assert.Contains("await session.EnsureActionPeak()", cinematic, StringComparison.Ordinal);
         Assert.Contains("UsesNinjaSlayerSignatureImpact", request, StringComparison.Ordinal);
         Assert.Contains(
             "Scenario == FinisherScenarioKind.NinjaSlayerAttack",
@@ -1521,6 +1625,13 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("static class FinisherDeathContinuationRegistry", continuation, StringComparison.Ordinal);
         Assert.Contains("PlayEnemyFinisherFlightOnly", death, StringComparison.Ordinal);
         Assert.Contains("FreezeReverseVictimVisuals", session, StringComparison.Ordinal);
+        Assert.Contains("FinisherImpactVfxFreezeLease.Acquire", session, StringComparison.Ordinal);
+        Assert.Contains("FinisherImpactVfxFreezeLease.Acquire", death, StringComparison.Ordinal);
+        Assert.Contains("ContainsVisualNearTargets", freezeLease, StringComparison.Ordinal);
+        Assert.Contains("target.Entity.GetVfxContainer()", freezeLease, StringComparison.Ordinal);
+        Assert.Contains("CaptureBaseline", freezeLease, StringComparison.Ordinal);
+        Assert.Contains("FinisherAttackVfxBaselineContext", freezeLease, StringComparison.Ordinal);
+        Assert.Contains("player.Character is not INinjaSlayerCharacter", freezeLease, StringComparison.Ordinal);
 
         Assert.Contains("class NinjaSlayerDeathCompletionPatch", finisherPatches, StringComparison.Ordinal);
         Assert.Contains("nameof(Hook.AfterDeath)", finisherPatches, StringComparison.Ordinal);
@@ -1587,6 +1698,31 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("AnchorBlock(__instance, layout.BlockLeft)", patch, StringComparison.Ordinal);
         Assert.Contains("barLeft + barWidth", layout, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<NarakuLifeHealthBarLayoutPatch>", groups, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BossFragmentsRemainOnTheGroundForTwoSeconds()
+    {
+        string presentation = SourceText("Code/ExternalAnimations/BossDismembermentPresentation.cs");
+        string controller = SourceText("Code/ExternalAnimations/BossDeathPresentationController.cs");
+
+        Assert.Contains("private const float GroundHoldSeconds = 2f", presentation, StringComparison.Ordinal);
+        Assert.Contains("fragment.LandedSeconds += seconds", presentation, StringComparison.Ordinal);
+        Assert.Contains("fragment.LandedSeconds >= GroundHoldSeconds", presentation, StringComparison.Ordinal);
+        Assert.Contains("LandFragment(fragment, maximumY)", presentation, StringComparison.Ordinal);
+        Assert.Contains("|| _elapsed >= MaximumFlightSeconds", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "IsFullyOutsideScene(fragment) || _elapsed >= MaximumFlightSeconds",
+            presentation,
+            StringComparison.Ordinal);
+        int fragmentAdded = presentation.IndexOf("anchor.AddChild(duplicate)", StringComparison.Ordinal);
+        int fragmentRefrozen = presentation.IndexOf(
+            "PrepareVisualClone(duplicate, isRoot: true)",
+            fragmentAdded,
+            StringComparison.Ordinal);
+        Assert.True(fragmentAdded >= 0);
+        Assert.True(fragmentRefrozen > fragmentAdded);
+        Assert.Contains("await _dismembermentTask", controller, StringComparison.Ordinal);
     }
 
     [Fact]

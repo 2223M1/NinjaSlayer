@@ -27,6 +27,7 @@ internal static class FinisherEligibilityService
         FinisherAttackSpec spec,
         AttackCommand? command,
         string entryPoint,
+        IFinisherActionAdapter? actionAdapter,
         out FinisherSession? session)
     {
         session = null;
@@ -75,6 +76,16 @@ internal static class FinisherEligibilityService
             return false;
         }
 
+        bool jumpActive = JumpAnimation.IsActive(owner);
+        actionAdapter ??= command != null
+            && GameCompatibility.Finisher.TryReadAttackCommand(
+                command,
+                out GameCompatibility.AttackCommandState commandState)
+                ? FinisherActionAdapters.Resolve(commandState, jumpActive)
+                : jumpActive
+                    ? FinisherActionAdapters.Fast
+                    : FinisherActionAdapters.Stationary;
+
         if (!FinisherSessionRegistry.TryRegisterSession(
                 new FinisherSessionRequest(
                     FinisherScenarioKind.NinjaSlayerAttack,
@@ -84,6 +95,7 @@ internal static class FinisherEligibilityService
                     focusNode,
                     enemies,
                     camera!,
+                    actionAdapter,
                     spec.CardPlay,
                     forecast.RequiresAfterCardPlayed,
                     forecast.ResolvedHits),
@@ -124,7 +136,7 @@ internal static class FinisherEligibilityService
             damage,
             ValueProp.Move,
             HitCount: 1,
-            FinisherTargeting.All);
+            Targeting: FinisherTargeting.All);
         if (FinisherForecast.EvaluateAction(owner, enemies, descriptor, out FinisherForecastResult forecast)
             != FinisherForecastOutcome.Guaranteed
             || !CombatCinematicCameraLease.TryAcquire(
@@ -144,9 +156,10 @@ internal static class FinisherEligibilityService
                     focusNode,
                     enemies,
                     camera!,
+                    FinisherActionAdapters.YamotoKokiIai,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
-                    forecast.ResolvedHits),
+                    ResolvedHits: forecast.ResolvedHits),
                 combatState,
                 room,
                 out session))

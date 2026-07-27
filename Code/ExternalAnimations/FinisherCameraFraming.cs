@@ -13,16 +13,22 @@ internal static class FinisherCameraFraming
         CombatCinematicCameraLease camera,
         CanvasItem ownerFocus,
         IEnumerable<NCreature> candidates,
+        float maximumScale) =>
+        SelectTargets(camera, camera.GetLocalCenter(ownerFocus), candidates, maximumScale);
+
+    public static FinisherCameraFrame SelectTargets(
+        CombatCinematicCameraLease camera,
+        Vector2 ownerFocusPoint,
+        IEnumerable<NCreature> candidates,
         float maximumScale)
     {
-        Vector2 focusPoint = camera.GetLocalCenter(ownerFocus);
         List<NCreature> ordered = candidates
             .Where(IsNodeActive)
             .Select((target, index) => new
             {
                 Target = target,
                 Index = index,
-                Distance = Mathf.Abs(camera.GetLocalCenter(target.Visuals.Bounds).X - focusPoint.X)
+                Distance = Mathf.Abs(camera.GetLocalCenter(target.Visuals.Bounds).X - ownerFocusPoint.X)
             })
             .OrderBy(item => item.Distance)
             .ThenBy(item => item.Index)
@@ -37,7 +43,7 @@ internal static class FinisherCameraFraming
         foreach (NCreature target in ordered)
         {
             List<NCreature> trial = [.. selected, target];
-            if (!CanFrame(camera, ownerFocus, trial, maximumScale, useTargetCentersOnly: false))
+            if (!CanFrame(camera, ownerFocusPoint, trial, maximumScale, useTargetCentersOnly: false))
             {
                 break;
             }
@@ -59,9 +65,26 @@ internal static class FinisherCameraFraming
         CanvasItem ownerFocus,
         FinisherCameraFrame frame,
         float scale,
+        float requestedHorizontalScreenOffset = 0f) =>
+        ResolveCenter(
+            camera,
+            camera.GetLocalCenter(ownerFocus),
+            frame,
+            scale,
+            requestedHorizontalScreenOffset);
+
+    public static Vector2 ResolveCenter(
+        CombatCinematicCameraLease camera,
+        Vector2 ownerFocusPoint,
+        FinisherCameraFrame frame,
+        float scale,
         float requestedHorizontalScreenOffset = 0f)
     {
-        Rect2 subjects = GetSubjectBounds(camera, ownerFocus, frame.Targets, frame.UseTargetCentersOnly);
+        Rect2 subjects = GetSubjectBounds(
+            camera,
+            ownerFocusPoint,
+            frame.Targets,
+            frame.UseTargetCentersOnly);
         Vector2 halfViewport = GetHalfViewport(camera, scale);
         Vector2 halfContent = GetHalfContent(camera, scale);
         Vector2 minimum = halfViewport;
@@ -80,12 +103,12 @@ internal static class FinisherCameraFraming
 
     private static bool CanFrame(
         CombatCinematicCameraLease camera,
-        CanvasItem ownerFocus,
+        Vector2 ownerFocusPoint,
         IReadOnlyList<NCreature> targets,
         float scale,
         bool useTargetCentersOnly)
     {
-        Rect2 subjects = GetSubjectBounds(camera, ownerFocus, targets, useTargetCentersOnly);
+        Rect2 subjects = GetSubjectBounds(camera, ownerFocusPoint, targets, useTargetCentersOnly);
         Vector2 halfViewport = GetHalfViewport(camera, scale);
         Vector2 halfContent = GetHalfContent(camera, scale);
         if (subjects.Size.X > halfContent.X * 2f || subjects.Size.Y > halfContent.Y * 2f)
@@ -103,12 +126,11 @@ internal static class FinisherCameraFraming
 
     private static Rect2 GetSubjectBounds(
         CombatCinematicCameraLease camera,
-        CanvasItem ownerFocus,
+        Vector2 ownerFocusPoint,
         IReadOnlyList<NCreature> targets,
         bool useTargetCentersOnly)
     {
-        Vector2 focusPoint = camera.GetLocalCenter(ownerFocus);
-        Rect2 bounds = new(focusPoint, Vector2.Zero);
+        Rect2 bounds = new(ownerFocusPoint, Vector2.Zero);
         foreach (NCreature target in targets.Where(IsNodeActive))
         {
             Rect2 targetBounds = useTargetCentersOnly

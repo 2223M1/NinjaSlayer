@@ -26,8 +26,10 @@ public sealed partial class BossDeathPresentationController : Node, IDeathDelaye
     private CombatCinematicCameraLease? _camera;
     private CancellationTokenSource? _cancelSource;
     private Task? _presentationTask;
+    private Task _dismembermentTask = Task.CompletedTask;
     private float _estimatedDisappearSeconds;
     private bool _exploded;
+    private bool _replacesOriginalFade;
 
     internal static BossDeathPresentationController Attach(
         NCreature boss,
@@ -46,12 +48,17 @@ public sealed partial class BossDeathPresentationController : Node, IDeathDelaye
         return controller;
     }
 
-    public static void NotifyDisappearanceStarted(NCreature boss)
+    public static bool NotifyDisappearanceStarted(NCreature boss, out Task replacementTask)
     {
         if (Active.TryGetValue(boss.GetInstanceId(), out BossDeathPresentationController? controller))
         {
             controller.StartDisappearance();
+            replacementTask = controller._dismembermentTask;
+            return controller._replacesOriginalFade;
         }
+
+        replacementTask = Task.CompletedTask;
+        return false;
     }
 
     public void Begin(float estimatedDisappearSeconds)
@@ -118,6 +125,7 @@ public sealed partial class BossDeathPresentationController : Node, IDeathDelaye
 
             StartDisappearance();
             await flightAndCameraTask;
+            await _dismembermentTask;
         }
         catch (OperationCanceledException)
         {
@@ -144,6 +152,7 @@ public sealed partial class BossDeathPresentationController : Node, IDeathDelaye
         Vector2 velocity = BossDeathPresentationConfig.GetVelocity(spec);
         float elapsed = 0f;
         while (!cancelToken.IsCancellationRequested
+               && !_exploded
                && elapsed < spec.MaximumFlightSeconds
                && IsRuntimeValid())
         {
@@ -170,12 +179,6 @@ public sealed partial class BossDeathPresentationController : Node, IDeathDelaye
             }
         }
 
-        if (!cancelToken.IsCancellationRequested
-            && elapsed >= spec.MaximumFlightSeconds
-            && !IsOutsideScene(flight.GlobalCenter))
-        {
-            flight.MarkDisappeared();
-        }
     }
 
     private async Task RunPartFlightAndRestoreCamera(
@@ -194,9 +197,27 @@ public sealed partial class BossDeathPresentationController : Node, IDeathDelaye
         }
 
         _exploded = true;
-        Vector2 center = _partFlight?.GlobalCenter ?? _boss.Visuals.Bounds.GetGlobalRect().GetCenter();
-        SfxCmd.Play(BossDeathExplosionVfx.TemporaryExplosionSfx);
-        BossDeathExplosionVfx.Play(_room, center);
+        Rect2 bounds = _boss.Visuals.Bounds.GetGlobalRect();
+        Vector2 bodyCenter = bounds.GetCenter();
+        Vector2? partCenter = _partFlight?.GlobalCenter;
+        BossDismembermentSpawn dismemberment = BossDismembermentPresentation.TrySpawn(
+            _room,
+            _boss,
+            bodyCenter,
+            _partFlight == null ? null : _partSpec?.BoneName,
+            partCenter);
+        _dismembermentTask = dismemberment.Completion;
+        _replacesOriginalFade = dismemberment.Spawned;
+
+        Vector2[] explosionCenters = partCenter.HasValue
+            ? [partCenter.Value, bodyCenter]
+            : [bodyCenter];
+        BossDeathExplosionVfx.PlayBurst(
+            _room,
+            explosionCenters,
+            bounds.Size.X,
+            _boss.ZIndex);
+        _partFlight?.MarkDisappeared();
     }
 
     private async Task RestoreCamera(CancellationToken cancelToken)

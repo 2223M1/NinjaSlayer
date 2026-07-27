@@ -54,6 +54,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private Vector2 _architectBodyScale;
     private float _architectBodyRotation;
     private Color _architectBodyModulate;
+    private Vector2 _architectBodyLocalCenter;
     private bool _doomFrozen;
     private bool _completed;
     private bool _headExploded;
@@ -111,6 +112,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _architectBodyScale = _architectNode.Body.Scale;
         _architectBodyRotation = _architectNode.Body.Rotation;
         _architectBodyModulate = _architectNode.Body.SelfModulate;
+        _architectBodyLocalCenter = _architectNode.Body.GetGlobalTransformWithCanvas()
+            .AffineInverse()
+            * _architectNode.Visuals.Bounds.GetGlobalRect().GetCenter();
         _cancelSource = new CancellationTokenSource();
         TaskHelper.RunSafely(Run(_cancelSource.Token));
     }
@@ -341,19 +345,33 @@ public sealed partial class ArchitectExecutionCinematic : Node
             FollowHead(cameraStart, targetSceneLocal, 1f, cameraScale);
         }
 
-        Vector2 explosionCenter = _room.SceneContainer.GetGlobalTransform() * finalHeadPosition;
+        Vector2 headExplosionCenter = _room.SceneContainer.GetGlobalTransformWithCanvas()
+            * finalHeadPosition;
+        Vector2 bodyExplosionCenter = _architectNode.Body.GetGlobalTransformWithCanvas()
+            * _architectBodyLocalCenter;
+        BossDismembermentPresentation.TrySpawn(
+            _room,
+            _architectNode,
+            bodyExplosionCenter,
+            _headFlight == null ? null : ArchitectHeadBone,
+            _headFlight == null ? null : headExplosionCenter);
         _headFlight?.MarkDisappeared();
         _ragdoll?.CommitDisappearance();
-        ExplodeAt(explosionCenter);
+        ExplodeAt(headExplosionCenter, bodyExplosionCenter, includeHead: _headFlight != null);
         _deathSession.CompleteVisuals();
         await killTask;
     }
 
-    private void ExplodeAt(Vector2 globalCenter)
+    private void ExplodeAt(Vector2 headCenter, Vector2 bodyCenter, bool includeHead)
     {
         _headExploded = true;
-        SfxCmd.Play(BossDeathExplosionVfx.TemporaryExplosionSfx);
-        BossDeathExplosionVfx.Play(_room, globalCenter);
+        Rect2 bounds = _architectNode.Visuals.Bounds.GetGlobalRect();
+        Vector2[] centers = includeHead ? [headCenter, bodyCenter] : [bodyCenter];
+        BossDeathExplosionVfx.PlayBurst(
+            _room,
+            centers,
+            bounds.Size.X,
+            _architectNode.ZIndex);
         if (_doomFrozen && !_architectDeathCommitted)
         {
             DoomHurtPoseController.Resume(_architectNode);

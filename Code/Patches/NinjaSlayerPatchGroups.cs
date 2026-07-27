@@ -38,6 +38,10 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<AllyDodgeImpactPatch>();
         patcher.RegisterPatch<AttackIntentDamagePreviewPatch>();
         patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
+        patcher.RegisterPatch<YamotoKokiIntentGenerationPatch>();
+        patcher.RegisterPatch<YamotoKokiLastEnemyDeathIntentPatch>();
+        patcher.RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>();
+        patcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
         patcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
     }
 }

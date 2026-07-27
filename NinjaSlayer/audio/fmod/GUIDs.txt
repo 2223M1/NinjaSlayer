@@ -43,6 +43,7 @@
 {618017ad-c42d-42ec-9ec8-ed766627a7cd} event:/NinjaSlayerAudio/sfx/yamoto_koki/yamoto_koki_event
 {0e218cb6-679e-48ee-8e4a-4abd6401640f} event:/NinjaSlayerAudio/sfx/yamoto_koki/yamoto_koki_fast_attack
 {1ed6e64e-43e7-4388-ae4a-2748a7f1a380} event:/NinjaSlayerAudio/sfx/yamoto_koki/yamoto_koki_go
+{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed} event:/NinjaSlayerAudio/sfx/yamoto_koki/yamoto_koki_slow_attack
 {06cefc2c-7055-44b5-af2e-7652cd2414d6} parameter:/Progress
 {a36ba432-c5b1-44ff-b5e4-12f654cfa067} parameter:/sfx_duck
 {9fd4e212-6c2e-4b45-8a4b-942284c71171} parameter:/sfx_duck_big

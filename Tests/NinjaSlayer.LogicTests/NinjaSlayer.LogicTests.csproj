@@ -21,11 +21,13 @@
     <Compile Include="..\..\Code\Compatibility\StableMethodBodyContract.cs" Link="StableMethodBodyContract.cs" />
     <Compile Include="..\..\Code\Diagnostics\NinjaSlayerRuntimeHealthModel.cs" Link="NinjaSlayerRuntimeHealthModel.cs" />
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
+    <Compile Include="..\..\Code\Combat\BossDismembermentMath.cs" Link="BossDismembermentMath.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
     <Compile Include="..\..\Code\Combat\FacingScaleMath.cs" Link="FacingScaleMath.cs" />
     <Compile Include="..\..\Code\Combat\AttackIntentPreviewContext.cs" Link="AttackIntentPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
+    <Compile Include="..\..\Code\Combat\FinisherActionTrajectory.cs" Link="FinisherActionTrajectory.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />

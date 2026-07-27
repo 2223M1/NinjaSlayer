@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -158,12 +159,15 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
                     .GetNodeOrNull<NYamotoKokiOrigamiMissileVfx>(
                         $"Visuals/{nameof(NYamotoKokiOrigamiMissileVfx)}")
                     ?.EnsureBurst();
-                await CreatureCmd.Damage(
-                    new ThrowingPlayerChoiceContext(),
-                    target,
-                    GetExplodeDamage(),
-                    ValueProp.Move | ValueProp.Unpowered,
-                    Creature);
+                using (YamotoKokiOrigamiMissileHitSparkScope.Enter(target))
+                {
+                    await CreatureCmd.Damage(
+                        new ThrowingPlayerChoiceContext(),
+                        target,
+                        GetExplodeDamage(),
+                        ValueProp.Move | ValueProp.Unpowered,
+                        Creature);
+                }
                 if (!Creature.IsDead)
                 {
                     await CreatureCmd.Kill(Creature);

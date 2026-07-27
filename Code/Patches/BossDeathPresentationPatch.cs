@@ -1,5 +1,6 @@
 using System.Reflection;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
@@ -74,16 +75,31 @@ internal sealed class BossDeathFadeStartPatch : IPatchMethod
         new(typeof(NMonsterDeathVfx), nameof(NMonsterDeathVfx.PlayVfx))
     ];
 
-    public static void Prefix(NMonsterDeathVfx __instance)
+    public static bool Prefix(NMonsterDeathVfx __instance, ref Task __result)
     {
         if (CreatureNodesField?.GetValue(__instance) is not IEnumerable<NCreature> creatures)
         {
-            return;
+            return true;
         }
 
-        foreach (NCreature creature in creatures)
+        NCreature[] nodes = creatures.ToArray();
+        var replacementTasks = new List<Task>(nodes.Length);
+        bool replaceOriginal = nodes.Length > 0;
+        foreach (NCreature creature in nodes)
         {
-            BossDeathPresentationController.NotifyDisappearanceStarted(creature);
+            replaceOriginal &= BossDeathPresentationController.NotifyDisappearanceStarted(
+                creature,
+                out Task replacementTask);
+            replacementTasks.Add(replacementTask);
         }
+
+        if (!replaceOriginal)
+        {
+            return true;
+        }
+
+        __instance.QueueFreeSafely();
+        __result = Task.WhenAll(replacementTasks);
+        return false;
     }
 }

@@ -240,6 +240,138 @@ public sealed class CombatLogicTests
         Assert.Equal(FinisherForecastOutcome.IndeterminateBudget, result);
     }
 
+    [Fact]
+    public void FinisherForecastCanAcceptAnySuccessfulRandomBranch()
+    {
+        FinisherForecastSimulation<ForecastTestState, ForecastTestState> simulation =
+            CreateRandomHitThenAllEffectForecast([new(5, 0, 0), new(10, 0, 0)], 5, 5);
+
+        Assert.Equal(
+            FinisherForecastOutcome.NotGuaranteed,
+            FinisherForecastEngine.Evaluate(
+                simulation,
+                maximumSearchTime: TimeSpan.MaxValue,
+                branchQuantifier: FinisherForecastBranchQuantifier.AllBranches));
+        Assert.Equal(
+            FinisherForecastOutcome.Guaranteed,
+            FinisherForecastEngine.Evaluate(
+                simulation,
+                maximumSearchTime: TimeSpan.MaxValue,
+                branchQuantifier: FinisherForecastBranchQuantifier.AnyBranch));
+    }
+
+    [Fact]
+    public void FinisherForecastAnyBranchFailsWhenNoAssignmentClears()
+    {
+        FinisherForecastSimulation<ForecastTestState, ForecastTestState> simulation =
+            CreateRandomHitThenAllEffectForecast([new(11, 0, 0), new(11, 0, 0)], 5, 5);
+
+        Assert.Equal(
+            FinisherForecastOutcome.NotGuaranteed,
+            FinisherForecastEngine.Evaluate(
+                simulation,
+                maximumSearchTime: TimeSpan.MaxValue,
+                branchQuantifier: FinisherForecastBranchQuantifier.AnyBranch));
+    }
+
+    [Fact]
+    public void FinisherForecastAnyBranchPreservesBudgetIndeterminacy()
+    {
+        FinisherForecastOutcome result = FinisherForecastEngine.Evaluate(
+            CreateForecast(
+                [new ForecastTestState(10, 0, 0), new ForecastTestState(10, 0, 0)],
+                20,
+                FinisherForecastTargeting.Random,
+                0),
+            maximumSearchStates: 1,
+            maximumSearchTime: TimeSpan.FromSeconds(1),
+            branchQuantifier: FinisherForecastBranchQuantifier.AnyBranch);
+
+        Assert.Equal(FinisherForecastOutcome.IndeterminateBudget, result);
+    }
+
+    [Fact]
+    public void FinisherForecastAllowsPostEffectOnlySimulation()
+    {
+        FinisherForecastSimulation<ForecastTestState, ForecastTestState> simulation =
+            CreateRandomHitThenAllEffectForecast([new(5, 0, 0)], 0, 5, hitCount: 0);
+
+        Assert.Equal(
+            FinisherForecastOutcome.Guaranteed,
+            FinisherForecastEngine.Evaluate(
+                simulation,
+                maximumSearchTime: TimeSpan.MaxValue,
+                branchQuantifier: FinisherForecastBranchQuantifier.AnyBranch));
+    }
+
+    [Fact]
+    public void FinisherActionTrajectoriesKeepTheirAuthoredTimingAndEndpoints()
+    {
+        Assert.Equal(90f, FinisherActionTrajectory.FastTravelPixels);
+        Assert.Equal(0.15f, FinisherActionTrajectory.FastTravelSeconds);
+        Assert.Equal(0f, FinisherActionTrajectory.FastProgress(-1f));
+        Assert.Equal(0.5f, FinisherActionTrajectory.FastProgress(0.5f), 5);
+        Assert.Equal(1f, FinisherActionTrajectory.FastProgress(2f));
+
+        Assert.Equal(120f, FinisherActionTrajectory.SlowTravelPixels);
+        Assert.Equal(0.25f, FinisherActionTrajectory.SlowTravelSeconds);
+        Assert.Equal(0f, FinisherActionTrajectory.SlowProgress(-1f));
+        Assert.Equal(MathF.Pow(0.5f, 10f), FinisherActionTrajectory.SlowProgress(0.5f), 8);
+        Assert.Equal(1f, FinisherActionTrajectory.SlowProgress(2f));
+    }
+
+    [Fact]
+    public void BossDismembermentBuildsDeterministicGaplessVoronoiCells()
+    {
+        var bounds = new BossFragmentRect(-180f, -240f, 360f, 480f);
+
+        IReadOnlyList<BossFragmentCell> first =
+            BossDismembermentMath.BuildVoronoiCells(bounds, 7, 12345UL);
+        IReadOnlyList<BossFragmentCell> second =
+            BossDismembermentMath.BuildVoronoiCells(bounds, 7, 12345UL);
+
+        Assert.Equal(7, first.Count);
+        Assert.Equal(first.Select(cell => cell.Seed), second.Select(cell => cell.Seed));
+        Assert.Equal(bounds.Width * bounds.Height, first.Sum(cell => cell.Area), 1);
+        Assert.All(first, cell =>
+        {
+            Assert.InRange(cell.Centroid.X, bounds.X, bounds.X + bounds.Width);
+            Assert.InRange(cell.Centroid.Y, bounds.Y, bounds.Y + bounds.Height);
+        });
+    }
+
+    [Fact]
+    public void BossDismembermentUsesMoreFragmentsForLargeBodiesAndCapsDetachedParts()
+    {
+        Assert.Equal(5, BossDismembermentMath.ResolvePieceCount(360f, 360f, 20, detachedPart: false));
+        Assert.Equal(8, BossDismembermentMath.ResolvePieceCount(720f, 720f, 20, detachedPart: false));
+        Assert.Equal(4, BossDismembermentMath.ResolvePieceCount(360f, 360f, 20, detachedPart: true));
+        Assert.Equal(2, BossDismembermentMath.ResolvePieceCount(360f, 360f, 2, detachedPart: true));
+    }
+
+    [Fact]
+    public void BossDismembermentLaunchesOutwardAndSmallerPiecesFaster()
+    {
+        BossFragmentLaunch small = BossDismembermentMath.ResolveLaunch(
+            new BossFragmentPoint(100f, 0f),
+            new BossFragmentPoint(0f, 0f),
+            areaRatio: 0.3f,
+            randomA: 0.25f,
+            randomB: 0.75f);
+        BossFragmentLaunch large = BossDismembermentMath.ResolveLaunch(
+            new BossFragmentPoint(100f, 0f),
+            new BossFragmentPoint(0f, 0f),
+            areaRatio: 2f,
+            randomA: 0.25f,
+            randomB: 0.75f);
+
+        Assert.True(small.VelocityX > 0f);
+        Assert.True(small.VelocityY < 0f);
+        Assert.True(MathF.Sqrt(small.VelocityX * small.VelocityX + small.VelocityY * small.VelocityY)
+            > MathF.Sqrt(large.VelocityX * large.VelocityX + large.VelocityY * large.VelocityY));
+        Assert.True(MathF.Abs(small.AngularVelocityDegrees) > MathF.Abs(large.AngularVelocityDegrees));
+    }
+
     private static FinisherForecastOutcome EvaluateForecastForCorrectness<TState>(
         FinisherForecastSimulation<TState, TState> simulation)
         where TState : notnull =>
@@ -299,6 +431,51 @@ public sealed class CombatLogicTests
                 return true;
             },
             singleTarget);
+    }
+
+    private static FinisherForecastSimulation<ForecastTestState, ForecastTestState>
+        CreateRandomHitThenAllEffectForecast(
+            IReadOnlyList<ForecastTestState> states,
+            int randomDamage,
+            int allDamage,
+            int hitCount = 1)
+    {
+        FinisherForecastPostEffect<ForecastTestState>[] effects =
+        [
+            new(
+                FinisherForecastEffectTargeting.All,
+                (current, targets) =>
+                {
+                    foreach (int target in targets)
+                    {
+                        current[target] = current[target] with
+                        {
+                            Hp = current[target].Hp - allDamage
+                        };
+                    }
+
+                    return true;
+                })
+        ];
+        return new FinisherForecastSimulation<ForecastTestState, ForecastTestState>(
+            states,
+            hitCount,
+            FinisherForecastTargeting.Random,
+            state => state.Hp > 0,
+            state => state,
+            (current, targets, _) =>
+            {
+                foreach (int target in targets)
+                {
+                    current[target] = current[target] with
+                    {
+                        Hp = current[target].Hp - randomDamage
+                    };
+                }
+
+                return true;
+            },
+            PostEffects: effects);
     }
 
     private readonly record struct ForecastTestState(int Hp, int Block, int Karate);
