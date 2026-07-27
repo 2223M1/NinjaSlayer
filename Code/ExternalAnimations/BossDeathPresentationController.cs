@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
@@ -17,15 +18,17 @@ public sealed partial class BossDeathPresentationController : Node
     private const float CameraReturnSeconds = 0.2f;
     private const float SceneExitMargin = 96f;
 
-    private readonly TaskCompletionSource _completion = new();
+    private readonly TaskCompletionSource _completion =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
     private NCreature _boss = null!;
     private NCombatRoom _room = null!;
+    private string _bossId = "unknown";
     private BossDeathPartSpec? _partSpec;
     private SpineBoneFlight? _partFlight;
     private BossDismembermentSnapshot? _dismembermentSnapshot;
     private CombatCinematicCameraLease? _camera;
-    private CancellationTokenSource? _cancelSource;
-    private Task? _presentationTask;
+    private readonly CinematicSessionLifetime _lifetime = new();
+    private int _started;
 
     internal static BossDeathPresentationController Attach(
         NCreature boss,
@@ -37,10 +40,29 @@ public sealed partial class BossDeathPresentationController : Node
             Name = "NinjaSlayerBossDeathPresentation",
             _boss = boss,
             _room = room,
+            _bossId = boss.Entity.Monster?.Id.Entry ?? boss.Name.ToString(),
             _partSpec = partSpec
         };
-        boss.AddChild(controller);
-        return controller;
+        try
+        {
+            boss.AddChildSafely(controller);
+            if (!GodotObject.IsInstanceValid(controller) || !controller.IsInsideTree())
+            {
+                throw new InvalidOperationException(
+                    "The Boss death presentation controller could not enter the creature scene tree.");
+            }
+
+            return controller;
+        }
+        catch
+        {
+            if (GodotObject.IsInstanceValid(controller))
+            {
+                controller.QueueFreeSafely();
+            }
+
+            throw;
+        }
     }
 
     internal float StartDeathAnimation(bool shouldRemove)
@@ -51,7 +73,7 @@ public sealed partial class BossDeathPresentationController : Node
             intent.SetFrozen(isFrozen: true);
         }
 
-        _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(_boss);
+        _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(_room, _boss);
 
         if (_boss.HasSpineAnimation)
         {
@@ -84,7 +106,7 @@ public sealed partial class BossDeathPresentationController : Node
 
     private void Begin()
     {
-        if (_presentationTask != null)
+        if (Interlocked.Exchange(ref _started, 1) != 0)
         {
             return;
         }
@@ -104,19 +126,32 @@ public sealed partial class BossDeathPresentationController : Node
 
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
             _room,
-            new BossBurstParticipant(_boss, SpawnFragments));
-        _cancelSource = new CancellationTokenSource();
-        _presentationTask = RunPresentation(registration, _cancelSource.Token);
-        TaskHelper.RunSafely(_presentationTask);
+            new BossBurstParticipant(
+                _boss.Entity.Monster?.Id.Entry ?? _boss.Name.ToString(),
+                SpawnFragments));
+        Task presentationTask = RunPresentation(registration, _lifetime.Token);
+        TaskHelper.RunSafely(presentationTask);
     }
 
     public override void _ExitTree()
     {
-        _cancelSource?.Cancel();
+        _lifetime.Dispose();
         DisposeDismembermentSnapshot();
         _partFlight?.Dispose();
         _camera?.Dispose();
         _completion.TrySetResult();
+    }
+
+    internal void AbortSetup()
+    {
+        _lifetime.Dispose();
+        DisposeDismembermentSnapshot();
+        _partFlight?.Dispose();
+        _partFlight = null;
+        _camera?.Dispose();
+        _camera = null;
+        _completion.TrySetResult();
+        this.QueueFreeSafely();
     }
 
     private async Task WaitForPresentationAndRemove(bool shouldRemove)
@@ -140,7 +175,7 @@ public sealed partial class BossDeathPresentationController : Node
             await registration.Cue.WaitAsync(cancelToken);
             await flightTask;
             await RestoreCamera(cancelToken);
-            await registration.Completion.WaitAsync(cancelToken);
+            await registration.CombatRelease.WaitAsync(cancelToken);
         }
         catch (OperationCanceledException)
         {
@@ -148,7 +183,7 @@ public sealed partial class BossDeathPresentationController : Node
         catch (Exception exception)
         {
             Entry.Logger.Error(
-                $"Boss death presentation failed for {_boss.Entity.Monster?.Id.Entry}: {exception}");
+                $"Boss death presentation failed for {_bossId}: {exception}");
         }
         finally
         {
@@ -157,6 +192,7 @@ public sealed partial class BossDeathPresentationController : Node
             _partFlight = null;
             _camera?.Dispose();
             _camera = null;
+            _lifetime.Dispose();
             _completion.TrySetResult();
         }
     }
@@ -212,11 +248,13 @@ public sealed partial class BossDeathPresentationController : Node
 
             if (snapshot == null)
             {
-                return BossDismembermentPresentation.StartOriginalFadeFallback(_boss);
+                return BossDismembermentPresentation.CompleteWithoutFragments(
+                    _boss,
+                    "the pre-death visual snapshot is unavailable");
             }
 
-            Vector2 bodyCenter = snapshot.BodyGlobalBounds.GetCenter();
-            Vector2? partCenter = _partFlight?.GlobalCenter;
+            Vector2 bodyCenter = snapshot.BodyGlobalCenter;
+            Vector2? partCenter = TryGetPartCenter();
             BossDismembermentSpawn dismemberment = BossDismembermentPresentation.TrySpawn(
                 _room,
                 _boss,
@@ -227,7 +265,7 @@ public sealed partial class BossDeathPresentationController : Node
                 BossBurstPresentationCoordinator.FragmentZIndex);
             if (dismemberment.Spawned)
             {
-                _partFlight?.MarkDisappeared();
+                TryHidePartFlight();
             }
 
             return dismemberment;
@@ -235,6 +273,39 @@ public sealed partial class BossDeathPresentationController : Node
         finally
         {
             snapshot?.Dispose();
+        }
+    }
+
+    private Vector2? TryGetPartCenter()
+    {
+        if (_partFlight == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return _partFlight.GlobalCenter;
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn(
+                $"Boss part position became unavailable for {_bossId}; "
+                + $"using the body burst origin instead: {exception.Message}");
+            return null;
+        }
+    }
+
+    private void TryHidePartFlight()
+    {
+        try
+        {
+            _partFlight?.MarkDisappeared();
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn(
+                $"Boss detached part could not be hidden for {_bossId}: {exception.Message}");
         }
     }
 

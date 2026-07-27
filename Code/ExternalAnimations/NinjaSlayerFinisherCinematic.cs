@@ -156,7 +156,6 @@ internal static class NinjaSlayerFinisherCinematic
     {
         result = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || FinisherSessionRegistry.HasRegisteredSession()
             || IsCommandBypassed(command)
             || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
             || spec == null
@@ -185,7 +184,6 @@ internal static class NinjaSlayerFinisherCinematic
     {
         result = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || FinisherSessionRegistry.HasRegisteredSession()
             || DirectDamageBypassDepth.Value > 0
             || dealer?.Player?.Character is not INinjaSlayerCharacter
             || cardSource?.Type != CardType.Attack

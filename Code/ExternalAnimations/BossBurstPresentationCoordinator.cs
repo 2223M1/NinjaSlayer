@@ -1,5 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -14,10 +13,13 @@ using STS2RitsuLib.Audio;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-internal readonly record struct BossBurstRegistration(Task Cue, Task Completion);
+internal readonly record struct BossBurstRegistration(
+    Task Cue,
+    Task CombatRelease,
+    Task Completion);
 
 internal readonly record struct BossBurstParticipant(
-    NCreature Creature,
+    string MonsterId,
     Func<BossDismembermentSpawn> SpawnFragments);
 
 public sealed partial class BossBurstPresentationCoordinator : Node
@@ -31,13 +33,16 @@ public sealed partial class BossBurstPresentationCoordinator : Node
 
     private const float VideoAspectRatio = 16f / 9f;
     private const float MaximumFrameDelta = 0.05f;
+    private const float MaximumVideoOverrun = 0.25f;
+    private const int FmodPlaybackStateStopped = 2;
 
     private static readonly Dictionary<ulong, BossBurstPresentationCoordinator> Active = [];
 
-    private readonly CancellationTokenSource _lifetime = new();
+    private readonly CinematicSessionLifetime _lifetime = new();
     private readonly List<BurstBatch> _batches = [];
     private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
     private NCombatRoom _room = null!;
+    private ulong _roomInstanceId;
     private BurstBatch? _joiningBatch;
     private int _activeVideoLayers;
 
@@ -49,14 +54,17 @@ public sealed partial class BossBurstPresentationCoordinator : Node
     {
         if (!GodotObject.IsInstanceValid(room) || !room.IsInsideTree())
         {
-            return new BossBurstRegistration(Task.CompletedTask, Task.CompletedTask);
+            return new BossBurstRegistration(
+                Task.CompletedTask,
+                Task.CompletedTask,
+                Task.CompletedTask);
         }
 
         BossBurstPresentationCoordinator coordinator = GetOrCreate(room);
         return coordinator.RegisterParticipant(participant);
     }
 
-    internal static async Task WaitForActivePresentations()
+    internal static async Task WaitForCombatRelease()
     {
         NCombatRoom? room = NCombatRoom.Instance;
         if (room == null
@@ -66,22 +74,40 @@ public sealed partial class BossBurstPresentationCoordinator : Node
             return;
         }
 
-        while (coordinator._batches.Count > 0)
+        while (GodotObject.IsInstanceValid(coordinator)
+               && ReferenceEquals(NCombatRoom.Instance, room))
         {
-            Task[] completions = coordinator._batches
-                .Select(batch => batch.CompletionSource.Task)
+            Task[] releases = coordinator._batches
+                .Where(batch => !batch.CombatReleaseSource.Task.IsCompleted)
+                .Select(batch => batch.CombatReleaseSource.Task)
                 .ToArray();
-            await Task.WhenAll(completions);
+            if (releases.Length == 0)
+            {
+                return;
+            }
+
+            await Task.WhenAll(releases);
         }
     }
 
     internal static bool IsPresentationPaused(NCombatRoom room)
     {
-        if (room.GetTree().Paused || room.ProcessMode == ProcessModeEnum.Disabled)
+        if (!Active.TryGetValue(
+                room.GetInstanceId(),
+                out BossBurstPresentationCoordinator? coordinator)
+            || !GodotObject.IsInstanceValid(coordinator))
         {
-            return true;
+            return room.GetTree().Paused;
         }
 
+        bool hasUnreleasedPresentation = coordinator._batches.Any(
+            batch => !batch.CombatReleaseSource.Task.IsCompleted);
+        return hasUnreleasedPresentation
+            && (room.GetTree().Paused || IsBlockingUiOpen());
+    }
+
+    private static bool IsBlockingUiOpen()
+    {
         if (!RunManager.Instance.IsSingleplayerOrFakeMultiplayer)
         {
             return false;
@@ -97,17 +123,22 @@ public sealed partial class BossBurstPresentationCoordinator : Node
 
     public override void _ExitTree()
     {
-        Active.Remove(_room?.GetInstanceId() ?? 0);
-        _lifetime.Cancel();
-        RestorePresentationLayers();
+        bool ownsRegistration = Active.TryGetValue(
+                _roomInstanceId,
+                out BossBurstPresentationCoordinator? active)
+            && ReferenceEquals(active, this);
+        if (ownsRegistration)
+        {
+            Active.Remove(_roomInstanceId);
+            BossBurstParticipationRegistry.Clear(_room);
+        }
+        _lifetime.Dispose();
         foreach (BurstBatch batch in _batches.ToArray())
         {
-            StopAndReleaseAudio(batch, stopPlayback: true);
-            FreeVideo(batch);
-            batch.CueSource.TrySetResult();
-            batch.CompletionSource.TrySetResult();
+            FinalizeBatch(batch, stopPlayback: true);
         }
 
+        RestorePresentationLayers();
         _batches.Clear();
         _joiningBatch = null;
     }
@@ -122,15 +153,36 @@ public sealed partial class BossBurstPresentationCoordinator : Node
             return existing;
         }
 
+        Active.Remove(roomId);
+
         var coordinator = new BossBurstPresentationCoordinator
         {
             Name = "NinjaSlayerBossBurstCoordinator",
             ProcessMode = ProcessModeEnum.Always,
-            _room = room
+            _room = room,
+            _roomInstanceId = roomId
         };
-        room.AddChildSafely(coordinator);
-        Active[roomId] = coordinator;
-        return coordinator;
+        try
+        {
+            room.AddChildSafely(coordinator);
+            if (!GodotObject.IsInstanceValid(coordinator) || !coordinator.IsInsideTree())
+            {
+                throw new InvalidOperationException(
+                    "The Boss burst coordinator could not enter the combat room scene tree.");
+            }
+
+            Active[roomId] = coordinator;
+            return coordinator;
+        }
+        catch
+        {
+            if (GodotObject.IsInstanceValid(coordinator))
+            {
+                coordinator.QueueFreeSafely();
+            }
+
+            throw;
+        }
     }
 
     private BossBurstRegistration RegisterParticipant(BossBurstParticipant participant)
@@ -139,7 +191,10 @@ public sealed partial class BossBurstPresentationCoordinator : Node
             ? _joiningBatch
             : StartBatch();
         batch.Participants.Add(participant);
-        return new BossBurstRegistration(batch.CueSource.Task, batch.CompletionSource.Task);
+        return new BossBurstRegistration(
+            batch.CueSource.Task,
+            batch.CombatReleaseSource.Task,
+            batch.CompletionSource.Task);
     }
 
     private BurstBatch StartBatch()
@@ -185,7 +240,7 @@ public sealed partial class BossBurstPresentationCoordinator : Node
                 {
                     Entry.Logger.Warn(
                         $"Boss burst fragments failed for "
-                        + $"{participant.Creature.Entity.Monster?.Id.Entry}: {exception}");
+                        + $"{participant.MonsterId}: {exception}");
                 }
             }
 
@@ -203,31 +258,17 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         }
         finally
         {
-            batch.CueFired = true;
-            batch.CueSource.TrySetResult();
-            if (batch.HasLayerLease)
-            {
-                batch.HasLayerLease = false;
-                ReleasePresentationLayers();
-            }
-
-            StopAndReleaseAudio(batch, stopPlayback: cancelToken.IsCancellationRequested);
-            FreeVideo(batch);
-            batch.CompletionSource.TrySetResult();
-            _batches.Remove(batch);
-            if (ReferenceEquals(_joiningBatch, batch))
-            {
-                _joiningBatch = null;
-            }
+            FinalizeBatch(batch, stopPlayback: cancelToken.IsCancellationRequested);
         }
     }
 
     private async Task PlayVideoTimeline(BurstBatch batch, CancellationToken cancelToken)
     {
         float videoElapsed = 0f;
+        bool playbackObserved = false;
         try
         {
-            while (videoElapsed < BossBurstTimeline.VideoSeconds)
+            while (true)
             {
                 float delta = await NextPresentationFrame(batch, cancelToken);
                 if (delta <= 0f)
@@ -235,9 +276,10 @@ public sealed partial class BossBurstPresentationCoordinator : Node
                     continue;
                 }
 
-                videoElapsed = Math.Min(videoElapsed + delta, BossBurstTimeline.VideoSeconds);
+                videoElapsed = Math.Min(
+                    videoElapsed + delta,
+                    BossBurstTimeline.VideoSeconds + MaximumVideoOverrun);
                 float videoPosition = GetVideoPosition(batch, videoElapsed);
-
                 if (batch.VideoRoot != null)
                 {
                     Color modulate = batch.VideoRoot.Modulate;
@@ -245,9 +287,21 @@ public sealed partial class BossBurstPresentationCoordinator : Node
                     batch.VideoRoot.Modulate = modulate;
                 }
 
-                if (batch.VideoPlayer != null
-                    && !batch.VideoPlayer.IsPlaying()
-                    && videoElapsed >= BossBurstTimeline.VideoSeconds - MaximumFrameDelta)
+                if (batch.VideoPlayer == null
+                    || !GodotObject.IsInstanceValid(batch.VideoPlayer))
+                {
+                    if (videoElapsed >= BossBurstTimeline.VideoSeconds)
+                    {
+                        break;
+                    }
+                    continue;
+                }
+
+                bool isPlaying = batch.VideoPlayer.IsPlaying();
+                playbackObserved |= isPlaying || batch.VideoPlayer.StreamPosition > 0d;
+                if ((playbackObserved && !isPlaying)
+                    || (!playbackObserved && videoElapsed >= BossBurstTimeline.VideoSeconds)
+                    || videoElapsed >= BossBurstTimeline.VideoSeconds + MaximumVideoOverrun)
                 {
                     break;
                 }
@@ -262,15 +316,81 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         }
         finally
         {
-            if (batch.VideoPlayer != null && GodotObject.IsInstanceValid(batch.VideoPlayer))
+            try
             {
-                batch.VideoPlayer.Stop();
+                FreeVideo(batch);
+            }
+            catch (Exception exception)
+            {
+                Entry.Logger.Warn($"Boss burst video release failed: {exception.Message}");
             }
 
+            try
+            {
+                if (batch.HasLayerLease)
+                {
+                    batch.HasLayerLease = false;
+                    ReleasePresentationLayers();
+                }
+            }
+            catch (Exception exception)
+            {
+                Entry.Logger.Warn($"Boss burst layer restoration failed: {exception.Message}");
+            }
+            finally
+            {
+                batch.CombatReleaseSource.TrySetResult();
+            }
+        }
+    }
+
+    private void FinalizeBatch(BurstBatch batch, bool stopPlayback)
+    {
+        if (Interlocked.Exchange(ref batch.Finalized, 1) != 0)
+        {
+            return;
+        }
+
+        batch.CueFired = true;
+        try
+        {
             if (batch.HasLayerLease)
             {
                 batch.HasLayerLease = false;
                 ReleasePresentationLayers();
+            }
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn($"Boss burst final layer cleanup failed: {exception.Message}");
+        }
+
+        try
+        {
+            StopAndReleaseAudio(batch, stopPlayback);
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn($"Boss burst final audio cleanup failed: {exception.Message}");
+        }
+
+        try
+        {
+            FreeVideo(batch);
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn($"Boss burst final video cleanup failed: {exception.Message}");
+        }
+        finally
+        {
+            batch.CueSource.TrySetResult();
+            batch.CombatReleaseSource.TrySetResult();
+            batch.CompletionSource.TrySetResult();
+            _batches.Remove(batch);
+            if (ReferenceEquals(_joiningBatch, batch))
+            {
+                _joiningBatch = null;
             }
         }
     }
@@ -340,9 +460,11 @@ public sealed partial class BossBurstPresentationCoordinator : Node
                     Pitch = 1f,
                     Scope = AudioLifecycleScope.Manual
                 });
-            if (audioEvent != null && audioEvent.TryPlay())
+            if (TryStartNinjaSoul(audioEvent, out string playbackState))
             {
                 batch.AudioHandle = audioEvent;
+                Entry.Logger.Info(
+                    $"Boss burst Ninja Soul started: playback_state={playbackState}.");
                 return;
             }
 
@@ -353,58 +475,118 @@ public sealed partial class BossBurstPresentationCoordinator : Node
             Entry.Logger.Warn($"Could not create Ninja Soul playback handle: {exception.Message}");
         }
 
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerNinjaSoulEvent);
+        try
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerNinjaSoulEvent);
+            Entry.Logger.Warn("Boss burst Ninja Soul used the combat-audio fallback.");
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn($"Boss burst Ninja Soul fallback failed: {exception.Message}");
+        }
+    }
+
+    private static bool TryStartNinjaSoul(
+        AudioEventHandle? audioEvent,
+        out string playbackState)
+    {
+        playbackState = "unavailable";
+        GodotObject? rawInstance = audioEvent?.RawInstance;
+        if (rawInstance == null
+            || !GodotObject.IsInstanceValid(rawInstance)
+            || !rawInstance.HasMethod("start"))
+        {
+            return false;
+        }
+
+        try
+        {
+            rawInstance.Call("start");
+            if (!rawInstance.HasMethod("get_playback_state"))
+            {
+                return true;
+            }
+
+            int state = rawInstance.Call("get_playback_state").AsInt32();
+            playbackState = state.ToString();
+            return state != FmodPlaybackStateStopped;
+        }
+        catch (Exception exception)
+        {
+            playbackState = $"error:{exception.GetType().Name}";
+            Entry.Logger.Warn($"Could not start Ninja Soul FMOD event: {exception.Message}");
+            return false;
+        }
     }
 
     private void PrepareVideo(BurstBatch batch)
     {
-        NGlobalUi? globalUi = NRun.Instance?.GlobalUi;
-        VideoStream? stream = ResourceLoader.Load<VideoStream>(
-            VideoPath,
-            cacheMode: ResourceLoader.CacheMode.Reuse);
-        if (globalUi == null || stream == null)
+        AspectRatioContainer? root = null;
+        try
         {
-            Entry.Logger.Warn($"Boss burst video is unavailable: {VideoPath}");
-            return;
-        }
+            NGlobalUi? globalUi = NRun.Instance?.GlobalUi;
+            VideoStream? stream = ResourceLoader.Load<VideoStream>(
+                VideoPath,
+                cacheMode: ResourceLoader.CacheMode.Reuse);
+            if (globalUi == null
+                || !GodotObject.IsInstanceValid(globalUi)
+                || stream == null)
+            {
+                Entry.Logger.Warn($"Boss burst video is unavailable: {VideoPath}");
+                return;
+            }
 
-        var root = new AspectRatioContainer
-        {
-            Name = "NinjaSlayerBossBurstVideo",
-            Ratio = VideoAspectRatio,
-            StretchMode = AspectRatioContainer.StretchModeEnum.Cover,
-            ClipContents = true,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            ZAsRelative = false,
-            ZIndex = VideoZIndex,
-            Visible = false
-        };
-        var player = new VideoStreamPlayer
-        {
-            Name = "VideoPlayer",
-            Stream = stream,
-            Expand = true,
-            Volume = 0f,
-            MouseFilter = Control.MouseFilterEnum.Ignore
-        };
-        globalUi.AddChildSafely(root);
-        if (!GodotObject.IsInstanceValid(root) || !root.IsInsideTree())
-        {
-            root.QueueFreeSafely();
-            return;
-        }
+            root = new AspectRatioContainer
+            {
+                Name = "NinjaSlayerBossBurstVideo",
+                Ratio = VideoAspectRatio,
+                StretchMode = AspectRatioContainer.StretchModeEnum.Cover,
+                ClipContents = true,
+                MouseFilter = Control.MouseFilterEnum.Ignore,
+                ZAsRelative = false,
+                ZIndex = VideoZIndex,
+                Visible = false
+            };
+            var player = new VideoStreamPlayer
+            {
+                Name = "VideoPlayer",
+                Stream = stream,
+                Expand = true,
+                Volume = 0f,
+                MouseFilter = Control.MouseFilterEnum.Ignore
+            };
+            globalUi.AddChildSafely(root);
+            if (!GodotObject.IsInstanceValid(root) || !root.IsInsideTree())
+            {
+                root.QueueFreeSafely();
+                return;
+            }
 
-        root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        root.AddChild(player);
-        player.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        batch.VideoRoot = root;
-        batch.VideoPlayer = player;
+            root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            root.AddChildSafely(player);
+            if (!GodotObject.IsInstanceValid(player) || !player.IsInsideTree())
+            {
+                throw new InvalidOperationException(
+                    "The Boss burst video player could not enter the overlay scene tree.");
+            }
+
+            player.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            batch.VideoRoot = root;
+            batch.VideoPlayer = player;
+        }
+        catch (Exception exception)
+        {
+            root?.QueueFreeSafely();
+            batch.VideoRoot = null;
+            batch.VideoPlayer = null;
+            Entry.Logger.Warn($"Boss burst video setup failed; using the timed fallback: {exception.Message}");
+        }
     }
 
     private void AcquirePresentationLayers()
     {
         _activeVideoLayers++;
-        RaiseFriendlyVisuals();
+        RaiseActorBodies();
         if (_activeVideoLayers > 1)
         {
             return;
@@ -433,14 +615,33 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         }
     }
 
-    private void RaiseFriendlyVisuals()
+    private void RaiseActorBodies()
     {
         foreach (NCreature creature in _room.CreatureNodes)
         {
-            if (creature.Entity.Side != CombatSide.Enemy)
+            if (GodotObject.IsInstanceValid(creature.Visuals))
             {
-                SetLayer(creature.Visuals, ActorZIndex);
+                LowerShadows(creature.Visuals);
+                Node2D body = creature.Visuals.GetCurrentBody();
+                if (GodotObject.IsInstanceValid(body))
+                {
+                    SetLayer(body, ActorZIndex);
+                }
             }
+        }
+    }
+
+    private void LowerShadows(Node root)
+    {
+        foreach (Node child in root.GetChildren())
+        {
+            if (child is CanvasItem canvas
+                && child.Name.ToString().Contains("shadow", StringComparison.OrdinalIgnoreCase))
+            {
+                SetLayer(canvas, VideoZIndex - 1);
+            }
+
+            LowerShadows(child);
         }
     }
 
@@ -489,10 +690,11 @@ public sealed partial class BossBurstPresentationCoordinator : Node
             return fallback;
         }
 
-        return Mathf.Clamp(
-            Math.Max((float)batch.VideoPlayer.StreamPosition, fallback),
-            0f,
-            BossBurstTimeline.VideoSeconds);
+        float streamPosition = (float)batch.VideoPlayer.StreamPosition;
+        float position = batch.VideoPlayer.IsPlaying() || streamPosition > 0f
+            ? streamPosition
+            : fallback;
+        return Mathf.Clamp(position, 0f, BossBurstTimeline.VideoSeconds);
     }
 
     private static void StopAndReleaseAudio(BurstBatch batch, bool stopPlayback)
@@ -533,6 +735,8 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         public List<BossBurstParticipant> Participants { get; } = [];
         public TaskCompletionSource CueSource { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource CombatReleaseSource { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource CompletionSource { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
         public AudioEventHandle? AudioHandle { get; set; }
@@ -541,6 +745,7 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         public bool CueFired { get; set; }
         public bool Paused { get; set; }
         public bool HasLayerLease { get; set; }
+        public int Finalized;
     }
 
     private readonly record struct LayerSnapshot(int ZIndex, bool ZAsRelative);

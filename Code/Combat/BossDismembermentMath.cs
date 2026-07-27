@@ -17,10 +17,18 @@ internal readonly record struct BossFragmentLaunch(
     float VelocityY,
     float AngularVelocityDegrees);
 
+internal readonly record struct BossFragmentLink(
+    int FirstIndex,
+    int SecondIndex);
+
+internal readonly record struct BossFragmentAllocation(
+    int BodyPieces,
+    int DetachedPieces);
+
 internal static class BossDismembermentMath
 {
-    private const int MaximumPieces = 9;
-    private const int CandidateCount = 72;
+    public const int MaximumPieces = 16;
+    private const int CandidateCount = 128;
 
     public static int ResolvePieceCount(float width, float height, int availableParts, bool detachedPart)
     {
@@ -30,11 +38,145 @@ internal static class BossDismembermentMath
         }
 
         float metric = MathF.Sqrt(width * height);
-        int minimum = detachedPart ? 2 : 5;
-        int maximum = detachedPart ? 4 : 8;
-        int divisor = detachedPart ? 72 : 90;
+        int minimum = detachedPart ? 3 : 8;
+        int maximum = detachedPart ? 6 : MaximumPieces;
+        int divisor = detachedPart ? 56 : 58;
         int desired = Math.Clamp((int)MathF.Round(metric / divisor), minimum, maximum);
         return Math.Clamp(desired, 1, Math.Min(availableParts, MaximumPieces));
+    }
+
+    public static int ResolveSpinePieceCount(int visibleSlots, bool detachedPart)
+    {
+        if (visibleSlots <= 0)
+        {
+            return 0;
+        }
+
+        int maximum = detachedPart ? 6 : MaximumPieces;
+        return Math.Min(visibleSlots, maximum);
+    }
+
+    public static BossFragmentAllocation AllocateSpinePieces(
+        int bodySlots,
+        int detachedSlots)
+    {
+        int detached = ResolveSpinePieceCount(detachedSlots, detachedPart: true);
+        int body = ResolveSpinePieceCount(bodySlots, detachedPart: false);
+        body = Math.Min(body, MaximumPieces - detached);
+        return new BossFragmentAllocation(body, detached);
+    }
+
+    public static IReadOnlyList<BossFragmentLink> BuildRagdollLinks(
+        IReadOnlyList<BossFragmentPoint> points,
+        int maximumClusterSize = 3)
+    {
+        int count = Math.Min(points.Count, MaximumPieces);
+        if (count < 2)
+        {
+            return [];
+        }
+
+        var connected = new HashSet<int> { 0 };
+        var candidates = new List<BossFragmentLink>(count - 1);
+        while (connected.Count < count)
+        {
+            int bestFirst = -1;
+            int bestSecond = -1;
+            float bestDistance = float.PositiveInfinity;
+            foreach (int first in connected.Order())
+            {
+                for (int second = 0; second < count; second++)
+                {
+                    if (connected.Contains(second))
+                    {
+                        continue;
+                    }
+
+                    float dx = points[second].X - points[first].X;
+                    float dy = points[second].Y - points[first].Y;
+                    float distance = MathF.Sqrt(dx * dx + dy * dy);
+                    if (distance < bestDistance
+                        || (MathF.Abs(distance - bestDistance) <= 0.001f
+                            && (first < bestFirst
+                                || (first == bestFirst && second < bestSecond))))
+                    {
+                        bestFirst = first;
+                        bestSecond = second;
+                        bestDistance = distance;
+                    }
+                }
+            }
+
+            candidates.Add(new BossFragmentLink(bestFirst, bestSecond));
+            connected.Add(bestSecond);
+        }
+
+        maximumClusterSize = Math.Clamp(maximumClusterSize, 2, count);
+        int[] parents = Enumerable.Range(0, count).ToArray();
+        int[] sizes = Enumerable.Repeat(1, count).ToArray();
+        var links = new List<BossFragmentLink>(count - 1);
+        foreach (BossFragmentLink candidate in candidates)
+        {
+            int firstRoot = FindRoot(parents, candidate.FirstIndex);
+            int secondRoot = FindRoot(parents, candidate.SecondIndex);
+            if (firstRoot == secondRoot
+                || sizes[firstRoot] + sizes[secondRoot] > maximumClusterSize)
+            {
+                continue;
+            }
+
+            parents[secondRoot] = firstRoot;
+            sizes[firstRoot] += sizes[secondRoot];
+            links.Add(candidate);
+        }
+
+        return links;
+    }
+
+    public static float ResolveCollisionPadding(float visibleArea)
+    {
+        if (!float.IsFinite(visibleArea) || visibleArea <= 0f)
+        {
+            return 18f;
+        }
+
+        return Math.Clamp(MathF.Sqrt(visibleArea) * 0.08f, 18f, 42f);
+    }
+
+    public static BossFragmentPoint ResolveBurstDirection(
+        int index,
+        int count,
+        float rotationRadians,
+        float jitter)
+    {
+        count = Math.Max(1, count);
+        index = Math.Clamp(index, 0, count - 1);
+        jitter = Math.Clamp(jitter, -1f, 1f);
+        float sector = MathF.Tau / count;
+        float angle = rotationRadians + sector * index + sector * jitter * 0.42f;
+        return new BossFragmentPoint(MathF.Cos(angle), MathF.Sin(angle));
+    }
+
+    public static ulong ResolveMotionSeed(
+        ulong snapshotSeed,
+        ulong runtimeEntropy,
+        ulong presentationInstanceId) =>
+        snapshotSeed
+        ^ runtimeEntropy
+        ^ (presentationInstanceId * 0x9E3779B97F4A7C15UL);
+
+    public static ulong StableHash64(string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        ulong hash = 14695981039346656037UL;
+        foreach (char character in value)
+        {
+            hash ^= character;
+            hash = unchecked(hash * 1099511628211UL);
+        }
+
+        return hash;
     }
 
     public static IReadOnlyList<BossFragmentCell> BuildVoronoiCells(
@@ -49,8 +191,31 @@ internal static class BossDismembermentMath
         }
 
         IReadOnlyList<BossFragmentPoint> seeds = BuildDistributedSeeds(bounds, count, seed);
-        var cells = new List<BossFragmentCell>(seeds.Count);
-        for (int i = 0; i < seeds.Count; i++)
+        return BuildVoronoiCells(bounds, seeds);
+    }
+
+    public static IReadOnlyList<BossFragmentCell> BuildVoronoiCells(
+        BossFragmentRect bounds,
+        IReadOnlyList<BossFragmentPoint> requestedSeeds)
+    {
+        if (bounds.Width <= 1f || bounds.Height <= 1f)
+        {
+            return [];
+        }
+
+        BossFragmentPoint[] seeds = requestedSeeds
+            .Take(MaximumPieces)
+            .Select(seedPoint => new BossFragmentPoint(
+                Math.Clamp(seedPoint.X, bounds.X + 0.5f, bounds.X + bounds.Width - 0.5f),
+                Math.Clamp(seedPoint.Y, bounds.Y + 0.5f, bounds.Y + bounds.Height - 0.5f)))
+            .ToArray();
+        if (seeds.Length == 0)
+        {
+            return [];
+        }
+
+        var cells = new List<BossFragmentCell>(seeds.Length);
+        for (int i = 0; i < seeds.Length; i++)
         {
             BossFragmentPoint seedPoint = seeds[i];
             List<BossFragmentPoint> polygon =
@@ -61,7 +226,7 @@ internal static class BossDismembermentMath
                 new(bounds.X, bounds.Y + bounds.Height)
             ];
 
-            for (int j = 0; j < seeds.Count && polygon.Count > 0; j++)
+            for (int j = 0; j < seeds.Length && polygon.Count > 0; j++)
             {
                 if (i == j)
                 {
@@ -99,9 +264,9 @@ internal static class BossDismembermentMath
         float radialLength = MathF.Sqrt(radialX * radialX + radialY * radialY);
         if (radialLength <= 0.001f)
         {
-            float angle = MathF.PI * (0.2f + 0.6f * randomA);
+            float angle = MathF.Tau * randomA;
             radialX = MathF.Cos(angle);
-            radialY = -MathF.Sin(angle);
+            radialY = MathF.Sin(angle);
         }
         else
         {
@@ -109,18 +274,19 @@ internal static class BossDismembermentMath
             radialY /= radialLength;
         }
 
-        float tangent = (randomB - 0.5f) * 0.5f;
-        float directionX = radialX - radialY * tangent;
-        float directionY = radialY * 0.3f + radialX * tangent - (0.62f + 0.28f * randomA);
-        directionY = MathF.Min(directionY, -0.18f);
+        float tangent = (randomB - 0.5f) * 1.4f;
+        float radialWeight = 0.9f + randomA * 0.45f;
+        float upwardImpulse = 0.08f + (1f - randomA) * 0.34f;
+        float directionX = radialX * radialWeight - radialY * tangent;
+        float directionY = radialY * radialWeight + radialX * tangent - upwardImpulse;
         float directionLength = MathF.Sqrt(directionX * directionX + directionY * directionY);
         directionX /= directionLength;
         directionY /= directionLength;
 
         float massScale = MathF.Sqrt(Math.Clamp(areaRatio, 0.2f, 3f));
-        float speed = Math.Clamp(770f / massScale, 520f, 1050f) * (0.9f + randomB * 0.2f);
-        float spinMagnitude = Math.Clamp(540f / massScale, 220f, 840f)
-            * (0.82f + randomA * 0.28f);
+        float speed = Math.Clamp(860f / massScale, 560f, 1240f) * (0.76f + randomB * 0.48f);
+        float spinMagnitude = Math.Clamp(680f / massScale, 260f, 1080f)
+            * (0.7f + randomA * 0.62f);
         float spinSign = randomB < 0.5f ? -1f : 1f;
         return new BossFragmentLaunch(
             directionX * speed,
@@ -298,4 +464,16 @@ internal static class BossDismembermentMath
         value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
         return value ^ (value >> 31);
     }
+
+    private static int FindRoot(int[] parents, int index)
+    {
+        while (parents[index] != index)
+        {
+            parents[index] = parents[parents[index]];
+            index = parents[index];
+        }
+
+        return index;
+    }
+
 }

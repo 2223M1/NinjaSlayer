@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
@@ -32,12 +33,16 @@ internal static class FinisherEligibilityService
     {
         session = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || FinisherSessionRegistry.HasRegisteredSession()
             || IsExcludedAttackCard(spec.Card)
             || spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room)
+        {
+            return false;
+        }
+
+        if (FinisherSessionRegistry.HasRegisteredSessionForCombat(combatState, room))
         {
             return false;
         }
@@ -55,9 +60,18 @@ internal static class FinisherEligibilityService
         }
 
         List<Creature> enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToList();
-        if (enemies.Count == 0
-            || FinisherForecast.Evaluate(owner, enemies, spec, command, out FinisherForecastResult forecast)
-                != FinisherForecastOutcome.Guaranteed)
+        if (enemies.Count == 0)
+        {
+            return false;
+        }
+
+        FinisherForecastOutcome forecastOutcome = FinisherForecast.Evaluate(
+            owner,
+            enemies,
+            spec,
+            command,
+            out FinisherForecastResult forecast);
+        if (forecastOutcome != FinisherForecastOutcome.Guaranteed)
         {
             return false;
         }
@@ -122,12 +136,16 @@ internal static class FinisherEligibilityService
     {
         session = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || FinisherSessionRegistry.HasRegisteredSession()
             || owner.Monster is not YamotoKokiMonster
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
             || enemies.Count == 0
             || !GameCompatibility.Finisher.CanProtectLethalDamage(out _))
+        {
+            return false;
+        }
+
+        if (FinisherSessionRegistry.HasRegisteredSessionForCombat(combatState, room))
         {
             return false;
         }
@@ -172,4 +190,5 @@ internal static class FinisherEligibilityService
             $"Yamoto Koki finisher session {session!.SessionId} started: victims={enemies.Count}.");
         return true;
     }
+
 }

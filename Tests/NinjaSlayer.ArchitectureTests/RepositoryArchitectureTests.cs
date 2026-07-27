@@ -559,7 +559,6 @@ public sealed class RepositoryArchitectureTests
         string intentLifecycle = SourceText("Code/Combat/YamotoKokiIntentLifecycle.cs");
         string partyState = SourceText("Code/Combat/YamotoKokiPartyState.cs");
         string restore = SourceText("Code/Patches/YamotoKokiFinishedCombatRestorePatch.cs");
-        string victorySfx = SourceText("Code/Patches/NinjaSlayerVictoryRewardSfxPatch.cs");
         string forecast = SourceText("Code/ExternalAnimations/FinisherForecast.cs");
         string patchGroups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
         string missile = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiOrigamiMissile.cs"));
@@ -830,7 +829,6 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("RegisterPatch<YamotoKokiLastEnemyDeathIntentPatch>()", patchGroups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>()", patchGroups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<YamotoKokiFinishedCombatRestorePatch>()", patchGroups, StringComparison.Ordinal);
-        Assert.Contains("RegisterPatch<NinjaSlayerVictoryRewardSfxPatch>()", patchGroups, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>()", patchGroups, StringComparison.Ordinal);
         Assert.DoesNotContain("YamotoKokiIntentFrameCountPatch", patchGroups, StringComparison.Ordinal);
         Assert.DoesNotContain("YamotoKokiIntentFramePathPatch", patchGroups, StringComparison.Ordinal);
@@ -927,9 +925,6 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("room.AddCreature(companion)", restore, StringComparison.Ordinal);
         Assert.DoesNotContain("PlayerCmd.AddPet", restore, StringComparison.Ordinal);
         Assert.DoesNotContain("CreateCreature", restore, StringComparison.Ordinal);
-        Assert.Contains("streamName", victorySfx, StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerVictorySfxPolicy.ShouldSuppress", victorySfx, StringComparison.Ordinal);
-        Assert.Contains("__result = -1", victorySfx, StringComparison.Ordinal);
 
         foreach (string eventName in new[]
                  {
@@ -1309,12 +1304,35 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("class FinisherSession", orchestrator, StringComparison.Ordinal);
         Assert.DoesNotContain("SessionRegistrySync", orchestrator, StringComparison.Ordinal);
         Assert.DoesNotContain("static class FinisherForecast", orchestrator, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "FinisherSessionRegistry.HasRegisteredSession()",
+            orchestrator,
+            StringComparison.Ordinal);
         Assert.Contains("class FinisherSession", session, StringComparison.Ordinal);
         Assert.Contains("static class FinisherSessionRegistry", registry, StringComparison.Ordinal);
+        Assert.Contains("HasRegisteredSessionForCombat", registry, StringComparison.Ordinal);
+        Assert.Contains("FinisherCompletionMode.ReleaseOnly", registry, StringComparison.Ordinal);
+        Assert.Contains(
+            "FinisherSessionRegistry.HasRegisteredSessionForCombat(combatState, room)",
+            eligibility,
+            StringComparison.Ordinal);
         Assert.Contains("static class FinisherEligibilityService", eligibility, StringComparison.Ordinal);
         Assert.Contains("static class FinisherProtectionService", protection, StringComparison.Ordinal);
         Assert.Contains("static class FinisherCleanupService", cleanup, StringComparison.Ordinal);
         Assert.Contains("static class FinisherForecast", forecast, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CinematicCameraLeaseCannotSurviveCombatRoomReplacement()
+    {
+        string lease = SourceText(
+            "Code/ExternalAnimations/CombatCinematicCameraLease.cs");
+
+        Assert.Contains("_room.TreeExiting += OnRoomTreeExiting", lease, StringComparison.Ordinal);
+        Assert.Contains("_room.TreeExiting -= OnRoomTreeExiting", lease, StringComparison.Ordinal);
+        Assert.Contains("_active.IsCurrentRoomLease()", lease, StringComparison.Ordinal);
+        Assert.Contains("_active.Dispose()", lease, StringComparison.Ordinal);
+        Assert.Contains("ReferenceEquals(NCombatRoom.Instance, _room)", lease, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1471,7 +1489,6 @@ public sealed class RepositoryArchitectureTests
         string barrier = SourceText("Code/Transition/TransitionPresentationBarrier.cs");
         string lease = SourceText("Code/Transition/TransitionNodeProcessLease.cs");
         string patches = SourceText("Code/Patches/NinjaSlayerTransitionPresentationPatch.cs");
-        string victorySfx = SourceText("Code/Patches/NinjaSlayerVictoryRewardSfxPatch.cs");
         string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
         string entry = SourceText("Scripts/Entry.cs");
         string reveal = SourceText("Code/Patches/NinjaSlayerTransitionRevealGatePatch.cs");
@@ -1496,7 +1513,12 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("NAncientEventLayout.OnSetupComplete", patches, StringComparison.Ordinal);
         Assert.Contains("AncientHealVfx", patches, StringComparison.Ordinal);
         Assert.DoesNotContain("victory.mp3", patches, StringComparison.Ordinal);
-        Assert.Contains("NinjaSlayerVictorySfxPolicy.ShouldSuppress", victorySfx, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code/Patches/NinjaSlayerVictoryRewardSfxPatch.cs")));
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code/Combat/NinjaSlayerVictorySfxPolicy.cs")));
         Assert.Contains("NRunMusicController.UpdateMusic", patches, StringComparison.Ordinal);
         Assert.Contains("SfxCmd.PlayLoop", patches, StringComparison.Ordinal);
 
@@ -1732,70 +1754,261 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void BossFragmentsFlyOutWithoutLandingAndUseTheCinematicLayer()
+    public void BossFragmentsUseCapturedMeshesAndFourByFourXpbdSoftBodies()
     {
         string presentation = SourceText("Code/ExternalAnimations/BossDismembermentPresentation.cs");
+        string body = SourceText("Code/Combat/SoftFragmentBody.cs");
+        string solver = SourceText("Code/Combat/BossSoftBodySolver.cs");
+        string broadphase = SourceText("Code/Combat/SoftCollisionBroadphase.cs");
+        string ragdollLink = SourceText("Code/Combat/SoftRagdollLink.cs");
+        string surface = SourceText(
+            "Code/ExternalAnimations/BossCapturedFragmentRenderSurface.cs");
+        string capture = SourceText("Code/ExternalAnimations/BossVisualCapture.cs");
+        string partitioner = SourceText("Code/ExternalAnimations/BossFragmentPartitioner.cs");
+        string pose = SourceText("Code/Combat/SoftBodyRenderPose.cs");
+        string shader = File.ReadAllText(Path.Combine(
+            Root,
+            "NinjaSlayer",
+            "shaders",
+            "vfx",
+            "boss_dismemberment_clip.gdshader"));
         string controller = SourceText("Code/ExternalAnimations/BossDeathPresentationController.cs");
 
-        Assert.DoesNotContain("GroundHoldSeconds", presentation, StringComparison.Ordinal);
-        Assert.DoesNotContain("LandFragment", presentation, StringComparison.Ordinal);
-        Assert.DoesNotContain("IsLanded", presentation, StringComparison.Ordinal);
+        Assert.Contains("private const float PhysicsStep = 1f / 60f", presentation, StringComparison.Ordinal);
+        Assert.Contains("catchUpSteps < MaximumCatchUpSteps", presentation, StringComparison.Ordinal);
+        Assert.Contains("private const int MaximumCatchUpSteps = 4", presentation, StringComparison.Ordinal);
+        Assert.Contains("IsFullyOutsideScene(fragment.Body)", presentation, StringComparison.Ordinal);
+        Assert.Contains("BuildRagdollLinks", presentation, StringComparison.Ordinal);
+        Assert.Contains("Time.GetTicksUsec()", presentation, StringComparison.Ordinal);
+        Assert.Contains("private const float CompressionSeconds = 0.1f", presentation, StringComparison.Ordinal);
+        Assert.Contains("private const float PumpOpenSeconds = 0.06f", presentation, StringComparison.Ordinal);
+        Assert.Contains("PinCompressed", presentation, StringComparison.Ordinal);
+        Assert.Contains("TriggerArchitectBurst", presentation, StringComparison.Ordinal);
+        Assert.Contains("SolveSoftBodies(seconds, _floorY)", presentation, StringComparison.Ordinal);
+        Assert.Contains("SoftFragmentBody", presentation, StringComparison.Ordinal);
+        Assert.Contains("BossSoftBodySolver", presentation, StringComparison.Ordinal);
+        Assert.Contains("BossCapturedFragmentRenderSurface", surface, StringComparison.Ordinal);
+        Assert.Contains("private const int RenderGridSize = 10", surface, StringComparison.Ordinal);
+        Assert.Contains("SoftBodyRenderPoseResolver.TryResolve", surface, StringComparison.Ordinal);
+        Assert.Contains("control_offsets", surface, StringComparison.Ordinal);
         Assert.Contains(
-            "IsFullyOutsideScene(fragment) || _elapsed >= MaximumFlightSeconds",
-            presentation,
+            "Godot.Collections.Array<Vector2> _controlOffsets",
+            surface,
             StringComparison.Ordinal);
+        Assert.Contains("StringName ControlOffsetsParameter", surface, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Vector2[] _controlOffsets",
+            surface,
+            StringComparison.Ordinal);
+        Assert.Contains("parent.AddChildSafely(anchor)", surface, StringComparison.Ordinal);
+        Assert.Contains("anchor.AddChildSafely(meshNode)", surface, StringComparison.Ordinal);
+        Assert.Contains("!anchor.IsInsideTree()", surface, StringComparison.Ordinal);
+        Assert.Contains("!meshNode.IsInsideTree()", surface, StringComparison.Ordinal);
+        Assert.Contains("!_meshNode.IsInsideTree()", surface, StringComparison.Ordinal);
+        Assert.Contains("render binding failed", surface, StringComparison.Ordinal);
+        Assert.Contains("public const int GridSize = 4", body, StringComparison.Ordinal);
+        Assert.Contains("public const int ParticleCount = GridSize * GridSize", body, StringComparison.Ordinal);
+        Assert.Contains("BuildAreaConstraints", body, StringComparison.Ordinal);
+        Assert.Contains("orientation", body, StringComparison.Ordinal);
+        Assert.Contains("SolveCorotationalShape", body, StringComparison.Ordinal);
+        Assert.Contains("public const int Substeps = 2", solver, StringComparison.Ordinal);
+        Assert.Contains("public const int ConstraintIterations = 6", solver, StringComparison.Ordinal);
+        Assert.Contains("SolveContactVelocity", solver, StringComparison.Ordinal);
+        Assert.Contains("_cellPool", broadphase, StringComparison.Ordinal);
+        Assert.Contains("_cells.Clear()", broadphase, StringComparison.Ordinal);
+        Assert.Contains("MaximumCellsPerAxis", broadphase, StringComparison.Ordinal);
+        Assert.Contains("float.IsFinite(minimum.X)", broadphase, StringComparison.Ordinal);
+        Assert.Contains("CanBreak", ragdollLink, StringComparison.Ordinal);
+        Assert.Contains("GetParticleInverseMass", ragdollLink, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(Root, "Code/Combat/BossSoftBodyPhysics.cs")));
+        Assert.DoesNotContain("ApplyDirectionalDeformation", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("FragmentState", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("JellyDeformation", presentation, StringComparison.Ordinal);
+        Assert.Contains("uniform vec2 control_offsets[16]", shader, StringComparison.Ordinal);
+        Assert.Contains("VERTEX += mix(top, bottom, blend.y)", shader, StringComparison.Ordinal);
+        Assert.Contains("COLOR = texture(TEXTURE, UV) * COLOR", shader, StringComparison.Ordinal);
+        Assert.Contains("SubViewport", capture, StringComparison.Ordinal);
+        Assert.Contains("SubViewport.UpdateMode.Once", capture, StringComparison.Ordinal);
+        Assert.Contains("Node.DuplicateFlags.Groups", capture, StringComparison.Ordinal);
+        Assert.Contains("duplicate.TopLevel = false", capture, StringComparison.Ordinal);
+        Assert.Contains("Boss capture bounds must be finite", capture, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetImage", capture, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetData", capture, StringComparison.Ordinal);
+        Assert.Contains("SetupElapsedTicks", capture, StringComparison.Ordinal);
+        Assert.Contains("root.AddChildSafely(viewport)", capture, StringComparison.Ordinal);
+        Assert.Contains("viewport.AddChildSafely(duplicate)", capture, StringComparison.Ordinal);
+        Assert.Contains("!viewport.IsInsideTree()", capture, StringComparison.Ordinal);
+        Assert.Contains("!duplicate.IsInsideTree()", capture, StringComparison.Ordinal);
+        Assert.Contains("BossFragmentPartitioner.Build", presentation, StringComparison.Ordinal);
+        Assert.Contains("partition.DetachedCellIndices.Contains(index)", presentation, StringComparison.Ordinal);
+        Assert.Contains("fragment.CompressionOrigin", presentation, StringComparison.Ordinal);
+        Assert.Contains("ToLocalPoint(detachedExplosionCenter.Value)", presentation, StringComparison.Ordinal);
+        Assert.Contains("TryGetPartCenter()", controller, StringComparison.Ordinal);
+        Assert.Contains("return _partFlight.GlobalCenter", controller, StringComparison.Ordinal);
+        Assert.Contains("TryHidePartFlight()", controller, StringComparison.Ordinal);
+        Assert.Contains("seedIndices", partitioner, StringComparison.Ordinal);
+        Assert.DoesNotContain("seeds.Contains(candidate)", partitioner, StringComparison.Ordinal);
+        Assert.Contains("Unwrap", pose, StringComparison.Ordinal);
+        Assert.Contains("MaximumResidual", pose, StringComparison.Ordinal);
+        Assert.Contains("ProcessMode = ProcessModeEnum.Always", presentation, StringComparison.Ordinal);
+        Assert.Contains("ResolveBurstDirection", presentation, StringComparison.Ordinal);
         Assert.Contains("ZAsRelative = false", presentation, StringComparison.Ordinal);
         Assert.Contains("BossBurstPresentationCoordinator.FragmentZIndex", presentation, StringComparison.Ordinal);
         Assert.Contains(
             "BossBurstPresentationCoordinator.IsPresentationPaused(_room)",
             presentation,
             StringComparison.Ordinal);
-        Assert.Contains("StartOriginalFadeFallback(creature)", presentation, StringComparison.Ordinal);
-        int fragmentAdded = presentation.IndexOf("anchor.AddChild(duplicate)", StringComparison.Ordinal);
-        int fragmentRefrozen = presentation.IndexOf(
-            "PrepareVisualClone(duplicate, isRoot: true)",
-            fragmentAdded,
-            StringComparison.Ordinal);
-        Assert.True(fragmentAdded >= 0);
-        Assert.True(fragmentRefrozen > fragmentAdded);
+        Assert.Contains("public override void _ExitTree()", presentation, StringComparison.Ordinal);
+        Assert.Contains("Boss soft-body presentation failed", presentation, StringComparison.Ordinal);
+        Assert.Contains("SetProcess(false);", presentation, StringComparison.Ordinal);
+        Assert.Contains("ClearFragments();", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("StartOriginalFadeFallback", presentation, StringComparison.Ordinal);
         Assert.Contains("BossBurstPresentationCoordinator.Register", controller, StringComparison.Ordinal);
-        Assert.Contains("await registration.Completion.WaitAsync", controller, StringComparison.Ordinal);
+        Assert.Contains("await registration.CombatRelease.WaitAsync", controller, StringComparison.Ordinal);
         int snapshotCapture = controller.IndexOf(
-            "_dismembermentSnapshot = BossDismembermentPresentation.TryCapture(_boss)",
+            "_dismembermentSnapshot = BossDismembermentPresentation.TryCapture(_room, _boss)",
             StringComparison.Ordinal);
         int deadTrigger = controller.IndexOf("_boss.SetAnimationTrigger(\"Dead\")", StringComparison.Ordinal);
         Assert.True(snapshotCapture >= 0 && deadTrigger > snapshotCapture);
-        Assert.Contains("_sourceBody = snapshot.VisualTemplate", presentation, StringComparison.Ordinal);
-        Assert.Contains("DuplicateVisualBody(_sourceBody)", presentation, StringComparison.Ordinal);
-        Assert.DoesNotContain("creature.Body.Duplicate", presentation, StringComparison.Ordinal);
+        Assert.Contains("BossVisualCapture.TryCreate", presentation, StringComparison.Ordinal);
+        Assert.Contains("capture.Texture", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("duplicate.Material", presentation, StringComparison.Ordinal);
         Assert.Contains("snapshot?.Dispose()", controller, StringComparison.Ordinal);
         Assert.Contains("snapshot == null", controller, StringComparison.Ordinal);
-        Assert.Contains("StartOriginalFadeFallback(_boss)", controller, StringComparison.Ordinal);
+        Assert.Contains("CompleteWithoutFragments", controller, StringComparison.Ordinal);
+        Assert.Contains("boss.AddChildSafely(controller)", controller, StringComparison.Ordinal);
+        Assert.Contains("!controller.IsInsideTree()", controller, StringComparison.Ordinal);
+        Assert.DoesNotContain("StartOriginalFadeFallback", controller, StringComparison.Ordinal);
         Assert.True(CountOccurrences(controller, "DisposeDismembermentSnapshot()") >= 3);
     }
 
     [Fact]
-    public void ArchitectExecutionSynchronizesLogicalDeathHeadFlightAndRagdoll()
+    public void BossBurstAtomicallyOwnsCombatEndMusicAndDeathFade()
+    {
+        string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
+        string entry = SourceText("Scripts/Entry.cs");
+        string patches = SourceText("Code/Patches/BossBurstPresentationPatches.cs");
+        string compatibility = SourceText("Code/Compatibility/GameCompatibility.BossBurst.cs");
+        string registry = SourceText(
+            "Code/ExternalAnimations/BossBurstParticipationRegistry.cs");
+        string fadeRegistry = SourceText(
+            "Code/ExternalAnimations/BossBurstDeathFadeRegistry.cs");
+        string coordinator = SourceText(
+            "Code/ExternalAnimations/BossBurstPresentationCoordinator.cs");
+        string musicSession = SourceText(
+            "Code/ExternalAnimations/BossBurstMusicSession.cs");
+        string deathPatch = SourceText("Code/Patches/BossDeathPresentationPatch.cs");
+
+        Assert.Contains("class BossBurstPresentationPatchGroup", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<BossDeathPresentationPatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<BossBurstCombatEndMusicPatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<BossBurstSingleDeathFadePatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<BossBurstGroupedDeathFadePatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("RegisterPatch<BossBurstDeathFadePlaybackPatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("InstallCapability<BossBurstPresentationPatchGroup>", entry, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.BossBurst.GetProbes()", entry, StringComparison.Ordinal);
+        Assert.Contains("nameof(NRunMusicController.UpdateTrack)", patches, StringComparison.Ordinal);
+        Assert.Contains(
+            "BossBurstParticipationRegistry.ShouldSuppressCombatEndMusicAfterFailure()",
+            patches,
+            StringComparison.Ordinal);
+        Assert.Contains("typeof(List<NCreature>)", patches, StringComparison.Ordinal);
+        Assert.Contains("Prefix(NCreature creatureNode", patches, StringComparison.Ordinal);
+        Assert.Contains("Prefix(ref List<NCreature> creatureNodes", patches, StringComparison.Ordinal);
+        Assert.DoesNotContain("object[] __args", patches, StringComparison.Ordinal);
+        Assert.Contains(
+            "BossBurstPresentationPolicy.ResolveGroupedDeathFade",
+            patches,
+            StringComparison.Ordinal);
+        Assert.Contains("creatureNodes = remaining", patches, StringComparison.Ordinal);
+        Assert.Contains("BossBurstDeathFadeRegistry.MarkPlaybackSuppressed", patches, StringComparison.Ordinal);
+        Assert.Contains("BossBurstDeathFadeRegistry.ConsumePlaybackSuppression", patches, StringComparison.Ordinal);
+        Assert.Contains("__result = Task.CompletedTask", patches, StringComparison.Ordinal);
+        Assert.Contains("ConditionalWeakTable<NMonsterDeathVfx", fadeRegistry, StringComparison.Ordinal);
+        Assert.Contains("musicEvent.Call(\"stop\", 1)", compatibility, StringComparison.Ordinal);
+        Assert.Contains(
+            "proxy.Set(\"_musicEv\", default(Variant))",
+            compatibility,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("__instance.StopMusic()", patches, StringComparison.Ordinal);
+        Assert.Contains(
+            "proxy.Call(\"update_global_parameter\", \"Progress\", 0f)",
+            compatibility,
+            StringComparison.Ordinal);
+        Assert.Contains("NRunMusicController.ResolveMusic", compatibility, StringComparison.Ordinal);
+        Assert.Contains("nameof(NMonsterDeathVfx.PlayVfx)", compatibility, StringComparison.Ordinal);
+        Assert.Contains("CurrentTrack?.SetValue", compatibility, StringComparison.Ordinal);
+        Assert.Contains("TryStopBossMusicImmediately", musicSession, StringComparison.Ordinal);
+        int musicBegin = deathPatch.IndexOf("BossBurstMusicSession.Begin(room)", StringComparison.Ordinal);
+        int deathAnimation = deathPatch.IndexOf("controller.StartDeathAnimation(shouldRemove)", StringComparison.Ordinal);
+        Assert.True(musicBegin >= 0 && deathAnimation > musicBegin);
+        Assert.Contains("BossBurstPresentationPolicy.ShouldRollbackMusic", deathPatch, StringComparison.Ordinal);
+        Assert.Contains("ConditionalWeakTable<NCreature", registry, StringComparison.Ordinal);
+        Assert.Contains("ConditionalWeakTable<NCombatRoom", registry, StringComparison.Ordinal);
+        Assert.Contains("Rooms.Remove(sceneRoom)", registry, StringComparison.Ordinal);
+        Assert.Contains("rawInstance.Call(\"start\")", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain("audioEvent.TryPlay()", coordinator, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code/Patches/NinjaSlayerVictoryRewardSfxPatch.cs")));
+    }
+
+    [Fact]
+    public void ArchitectExecutionUsesTheSharedSoftBodyLeadAndConcurrentExit()
     {
         string cinematic = SourceText("Code/ExternalAnimations/ArchitectExecutionCinematic.cs");
         string deathSession = SourceText("Code/ExternalAnimations/ArchitectDeathPresentationSession.cs");
-        string ragdoll = SourceText("Code/ExternalAnimations/ArchitectRagdollDeathAnimation.cs");
+        string presentation = SourceText("Code/ExternalAnimations/BossDismembermentPresentation.cs");
         string patch = SourceText("Code/Patches/ArchitectExecutionPatch.cs");
 
         Assert.Contains("CreatureCmd.Kill(_architectNode.Entity, force: true)", cinematic, StringComparison.Ordinal);
         Assert.Contains("WaitUntilDeathStarts(killTask", cinematic, StringComparison.Ordinal);
+        int capture = cinematic.IndexOf(
+            "BossDismembermentPresentation.TryCapture(",
+            StringComparison.Ordinal);
+        int kill = cinematic.IndexOf(
+            "CreatureCmd.Kill(_architectNode.Entity, force: true)",
+            StringComparison.Ordinal);
+        Assert.True(capture >= 0 && kill > capture);
+        Assert.Contains("TrySpawnArchitectLead", cinematic, StringComparison.Ordinal);
         Assert.Contains("BossBurstPresentationCoordinator.Register", cinematic, StringComparison.Ordinal);
         Assert.Contains("await registration.Cue.WaitAsync", cinematic, StringComparison.Ordinal);
+        Assert.Contains("registration.CombatRelease.WaitAsync", cinematic, StringComparison.Ordinal);
+        Assert.DoesNotContain("registration.Completion.WaitAsync", cinematic, StringComparison.Ordinal);
+        Assert.Contains("private const float ExitSpeedPixelsPerSecond = 840f", cinematic, StringComparison.Ordinal);
+        int logicalDeath = cinematic.IndexOf("_deathSession.CompleteVisuals()", StringComparison.Ordinal);
+        int exitStart = cinematic.IndexOf("StartExitScene()", StringComparison.Ordinal);
+        Assert.True(logicalDeath >= 0 && exitStart > logicalDeath);
+        Assert.Contains("private CinematicSessionLifetime? _exitLifetime", cinematic, StringComparison.Ordinal);
+        Assert.Contains("private async Task RunExitScene", cinematic, StringComparison.Ordinal);
+        Assert.Contains("room.AddChildSafely(controller)", cinematic, StringComparison.Ordinal);
+        Assert.Contains("private bool _initialized", cinematic, StringComparison.Ordinal);
+        Assert.DoesNotContain("CancellationTokenSource", cinematic, StringComparison.Ordinal);
         Assert.DoesNotContain("NinjaSlayerNinjaSoulEvent", cinematic, StringComparison.Ordinal);
         Assert.Contains(
             "public const float DurationSeconds = BossBurstTimeline.LeadSeconds",
             deathSession,
             StringComparison.Ordinal);
+        Assert.Contains("private readonly ulong _architectInstanceId", deathSession, StringComparison.Ordinal);
+        Assert.DoesNotContain("_architect.GetInstanceId()", deathSession, StringComparison.Ordinal);
+        Assert.Contains("PresentationMode.ArchitectLead", presentation, StringComparison.Ordinal);
+        Assert.Contains("SolveSoftBodies(seconds, _floorY)", presentation, StringComparison.Ordinal);
+        Assert.Contains("maximumClusterSize", presentation, StringComparison.Ordinal);
+        Assert.Contains("CanBreak = canBreak", presentation, StringComparison.Ordinal);
+        Assert.Contains("_joints.Clear();", presentation, StringComparison.Ordinal);
         Assert.Contains(
-            "public const float FallSeconds = BossBurstTimeline.LeadSeconds",
-            ragdoll,
+            "BuildRagdollLinks(maximumClusterSize: 3, canBreak: true)",
+            presentation,
             StringComparison.Ordinal);
-        Assert.Contains("ResolveLandingCompensation", ragdoll, StringComparison.Ordinal);
+        Assert.Contains("fragment.Body.PinCompressed", presentation, StringComparison.Ordinal);
+        Assert.Contains("ApplyRenderFrame();", presentation, StringComparison.Ordinal);
+        Assert.Contains(
+            "SetCollisionEnvelope(hullScale: 1f, marginScale: 0f)",
+            presentation,
+            StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code/ExternalAnimations/ArchitectRagdollDeathAnimation.cs")));
         Assert.Contains("__instance.DeathAnimationTask = deathTask", patch, StringComparison.Ordinal);
         Assert.Contains("__result = ArchitectDeathPresentationSession.DurationSeconds", patch, StringComparison.Ordinal);
         Assert.Contains("return false", patch, StringComparison.Ordinal);
@@ -1811,13 +2024,40 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("public const int VideoZIndex = 100", coordinator, StringComparison.Ordinal);
         Assert.Contains("public const int TopBarZIndex = 110", coordinator, StringComparison.Ordinal);
         Assert.Contains("SetLayer(globalUi.TopBar, TopBarZIndex)", coordinator, StringComparison.Ordinal);
-        Assert.Contains("SetLayer(creature.Visuals, ActorZIndex)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("creature.Visuals.GetCurrentBody()", coordinator, StringComparison.Ordinal);
+        Assert.Contains("LowerShadows(creature.Visuals)", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain("SetLayer(creature.Visuals, ActorZIndex)", coordinator, StringComparison.Ordinal);
         Assert.Contains("Volume = 0f", coordinator, StringComparison.Ordinal);
         Assert.Contains(
             "BossBurstTimeline.ResolveFadeAlpha(videoPosition)",
             coordinator,
             StringComparison.Ordinal);
-        Assert.DoesNotContain("get_playback_state", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain("CombatReleaseSeconds", coordinator, StringComparison.Ordinal);
+        int videoTimeline = coordinator.IndexOf(
+            "private async Task PlayVideoTimeline",
+            StringComparison.Ordinal);
+        int videoStop = coordinator.IndexOf(
+            "FreeVideo(batch)",
+            videoTimeline,
+            StringComparison.Ordinal);
+        int combatRelease = coordinator.IndexOf(
+            "batch.CombatReleaseSource.TrySetResult()",
+            videoStop,
+            StringComparison.Ordinal);
+        Assert.True(videoTimeline >= 0 && videoStop > videoTimeline && combatRelease > videoStop);
+        Assert.Contains("rawInstance.HasMethod(\"get_playback_state\")", coordinator, StringComparison.Ordinal);
+        Assert.Contains("hasUnreleasedPresentation", coordinator, StringComparison.Ordinal);
+        Assert.Contains("!batch.CombatReleaseSource.Task.IsCompleted", coordinator, StringComparison.Ordinal);
+        Assert.Contains("private ulong _roomInstanceId", coordinator, StringComparison.Ordinal);
+        Assert.Contains("ReferenceEquals(active, this)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("if (ownsRegistration)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("FinalizeBatch(batch", coordinator, StringComparison.Ordinal);
+        Assert.Contains("Interlocked.Exchange(ref batch.Finalized, 1)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("room.GetTree().Paused || IsBlockingUiOpen()", coordinator, StringComparison.Ordinal);
+        Assert.Contains("using the timed fallback", coordinator, StringComparison.Ordinal);
+        Assert.Contains("root.AddChildSafely(player)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("!player.IsInsideTree()", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain("room.ProcessMode == ProcessModeEnum.Disabled", coordinator, StringComparison.Ordinal);
         Assert.DoesNotContain("Input.IsKeyPressed", coordinator, StringComparison.Ordinal);
         Assert.DoesNotContain("Key.Space", coordinator, StringComparison.Ordinal);
         Assert.Contains("__instance.Entity.IsPrimaryEnemy", patch, StringComparison.Ordinal);
@@ -1839,11 +2079,13 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("IDeathDelayer", controller, StringComparison.Ordinal);
         Assert.Contains("controller.StartDeathAnimation(shouldRemove)", patch, StringComparison.Ordinal);
         Assert.Contains("return false", patch, StringComparison.Ordinal);
-        Assert.Contains("WaitForActivePresentations", coordinator, StringComparison.Ordinal);
+        Assert.Contains("WaitForCombatRelease", coordinator, StringComparison.Ordinal);
         Assert.Contains(
-            "await BossBurstPresentationCoordinator.WaitForActivePresentations()",
+            "await BossBurstPresentationCoordinator.WaitForCombatRelease()",
             feedback,
             StringComparison.Ordinal);
+        Assert.Contains("registration.CombatRelease.WaitAsync", controller, StringComparison.Ordinal);
+        Assert.DoesNotContain("registration.Completion.WaitAsync", controller, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1896,7 +2138,8 @@ public sealed class RepositoryArchitectureTests
             "GameCompatibility.KarateHealthBar.cs",
             "GameCompatibility.AssetLoading.cs",
             "GameCompatibility.TornadoCadence.cs",
-            "GameCompatibility.ReporterPass.cs"
+            "GameCompatibility.ReporterPass.cs",
+            "GameCompatibility.BossBurst.cs"
         ];
 
         Assert.Contains("partial class GameCompatibility", facade, StringComparison.Ordinal);
@@ -1914,6 +2157,7 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("static class AssetLoading", facade, StringComparison.Ordinal);
         Assert.DoesNotContain("static class TornadoCadence", facade, StringComparison.Ordinal);
         Assert.DoesNotContain("static class ReporterPass", facade, StringComparison.Ordinal);
+        Assert.DoesNotContain("static class BossBurst", facade, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -18,7 +18,6 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerAbandonMerchantDeathPatch>();
         patcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
         patcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
-        patcher.RegisterPatch<BossDeathPresentationPatch>();
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
         patcher.RegisterPatch<ArchitectExecutionStartPatch>();
         patcher.RegisterPatch<ArchitectDeathAnimationPatch>();
@@ -33,7 +32,6 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
-        patcher.RegisterPatch<NinjaSlayerVictoryRewardSfxPatch>();
         patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
         patcher.RegisterPatch<AllyDodgeImpactPatch>();
@@ -44,6 +42,18 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>();
         patcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
         patcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
+    }
+}
+
+internal sealed class BossBurstPresentationPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
+        patcher.RegisterPatch<BossDeathPresentationPatch>();
+        patcher.RegisterPatch<BossBurstCombatEndMusicPatch>();
+        patcher.RegisterPatch<BossBurstSingleDeathFadePatch>();
+        patcher.RegisterPatch<BossBurstGroupedDeathFadePatch>();
+        patcher.RegisterPatch<BossBurstDeathFadePlaybackPatch>();
     }
 }
 

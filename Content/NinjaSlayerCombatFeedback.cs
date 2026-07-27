@@ -61,7 +61,7 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
     public override async Task AfterCombatEnd(CombatRoom room)
     {
         _lowHealthLinePlayed = false;
-        await BossBurstPresentationCoordinator.WaitForActivePresentations();
+        await BossBurstPresentationCoordinator.WaitForCombatRelease();
     }
 
     public override Task AfterPowerAmountChanged(
