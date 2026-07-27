@@ -30,7 +30,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private const float ImpactPunchSeconds = 0.04f;
     private const float ImpactRecoveryStartSeconds = 0.2f;
     private const float HeadFlightSeconds = ArchitectDeathPresentationSession.DurationSeconds;
-    private const float NinjaSoulLeadSeconds = 1f;
     private const float HeadExplosionScreenMargin = 72f;
     private const float CameraScaleMultiplier = 2f;
     private const float ImpactScaleMultiplier = 2.12f;
@@ -57,7 +56,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private Vector2 _architectBodyLocalCenter;
     private bool _doomFrozen;
     private bool _completed;
-    private bool _headExploded;
+    private bool _headDisappeared;
     private bool _architectDeathCommitted;
 
     public static bool TryStart(TheArchitect eventModel)
@@ -134,7 +133,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
             await ChargeArchitect(cancelToken);
             await PlayImpact(cancelToken);
             await PlayArchitectDeath(cancelToken);
-            await RestoreCameraAndBackdrop(cancelToken);
             await ExitScene(cancelToken);
 
             _completed = true;
@@ -304,12 +302,21 @@ public sealed partial class ArchitectExecutionCinematic : Node
         await _deathSession.WaitUntilDeathStarts(killTask, cancelToken);
         _architectDeathCommitted = true;
 
+        BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
+            _room,
+            new BossBurstParticipant(
+                _architectNode,
+                () => SpawnArchitectFragments(
+                    targetSceneLocal,
+                    cameraStart,
+                    cameraScale,
+                    fallDirection)));
+
         float elapsed = 0f;
-        bool playedNinjaSoul = false;
-        while (elapsed < HeadFlightSeconds)
+        while (!registration.Cue.IsCompleted && elapsed < HeadFlightSeconds)
         {
             float delta = await NextFrame(cancelToken);
-            elapsed += delta;
+            elapsed = Math.Min(elapsed + delta, HeadFlightSeconds);
             float progress = Mathf.Clamp(elapsed / HeadFlightSeconds, 0f, 1f);
             float ragdollProgress = Mathf.Clamp(
                 elapsed / ArchitectRagdollDeathAnimation.FallSeconds,
@@ -329,54 +336,57 @@ public sealed partial class ArchitectExecutionCinematic : Node
                 FollowHead(cameraStart, headPosition, progress, cameraScale);
             }
             _camera?.Advance(delta);
+        }
 
-            if (!playedNinjaSoul && elapsed >= HeadFlightSeconds - NinjaSoulLeadSeconds)
-            {
-                playedNinjaSoul = true;
-                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerNinjaSoulEvent);
-            }
+        await registration.Cue.WaitAsync(cancelToken);
+        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
+        await Task.WhenAll(cameraRestore, registration.Completion.WaitAsync(cancelToken));
+        if (!_headDisappeared)
+        {
+            _deathSession.CompleteVisuals();
+        }
+
+        await killTask;
+    }
+
+    private BossDismembermentSpawn SpawnArchitectFragments(
+        Vector2 targetSceneLocal,
+        Vector2 cameraStart,
+        float cameraScale,
+        float fallDirection)
+    {
+        if (!IsRuntimeValid() || !GodotObject.IsInstanceValid(_architectNode))
+        {
+            return new BossDismembermentSpawn(false, Task.CompletedTask);
         }
 
         _ragdoll?.SetProgress(1f, fallDirection);
-        Vector2 finalHeadPosition = _headFlight == null ? startSceneLocal : targetSceneLocal;
         if (_headFlight != null)
         {
             _headFlight.SetSceneTransform(_room.SceneContainer, targetSceneLocal, 360f);
             FollowHead(cameraStart, targetSceneLocal, 1f, cameraScale);
         }
 
-        Vector2 headExplosionCenter = _room.SceneContainer.GetGlobalTransformWithCanvas()
-            * finalHeadPosition;
-        Vector2 bodyExplosionCenter = _architectNode.Body.GetGlobalTransformWithCanvas()
+        Vector2 headCenter = _room.SceneContainer.GetGlobalTransformWithCanvas()
+            * targetSceneLocal;
+        Vector2 bodyCenter = _architectNode.Body.GetGlobalTransformWithCanvas()
             * _architectBodyLocalCenter;
-        BossDismembermentPresentation.TrySpawn(
+        BossDismembermentSpawn dismemberment = BossDismembermentPresentation.TrySpawn(
             _room,
             _architectNode,
-            bodyExplosionCenter,
+            bodyCenter,
             _headFlight == null ? null : ArchitectHeadBone,
-            _headFlight == null ? null : headExplosionCenter);
-        _headFlight?.MarkDisappeared();
-        _ragdoll?.CommitDisappearance();
-        ExplodeAt(headExplosionCenter, bodyExplosionCenter, includeHead: _headFlight != null);
-        _deathSession.CompleteVisuals();
-        await killTask;
-    }
-
-    private void ExplodeAt(Vector2 headCenter, Vector2 bodyCenter, bool includeHead)
-    {
-        _headExploded = true;
-        Rect2 bounds = _architectNode.Visuals.Bounds.GetGlobalRect();
-        Vector2[] centers = includeHead ? [headCenter, bodyCenter] : [bodyCenter];
-        BossDeathExplosionVfx.PlayBurst(
-            _room,
-            centers,
-            bounds.Size.X,
-            _architectNode.ZIndex);
-        if (_doomFrozen && !_architectDeathCommitted)
+            _headFlight == null ? null : headCenter,
+            BossBurstPresentationCoordinator.FragmentZIndex);
+        if (dismemberment.Spawned)
         {
-            DoomHurtPoseController.Resume(_architectNode);
-            _doomFrozen = false;
+            _headDisappeared = true;
+            _headFlight?.MarkDisappeared();
+            _ragdoll?.CommitDisappearance();
+            _deathSession?.CompleteVisuals();
         }
+
+        return dismemberment;
     }
 
     private async Task RestoreCameraAndBackdrop(CancellationToken cancelToken)
@@ -537,7 +547,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
             _architectNode.Body.SelfModulate = _architectBodyModulate;
         }
 
-        if (!_headExploded)
+        if (!_headDisappeared)
         {
             _headFlight?.Dispose();
             _headFlight = null;

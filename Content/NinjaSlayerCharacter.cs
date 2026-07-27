@@ -39,7 +39,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
     public override string CharacterSelectSfx => NinjaSlayerAudio.NinjaSlayerSelectEvent;
     public override string CharacterTransitionSfx => NinjaSlayerAudio.NinjaSlayerTransitionEvent;
     protected override IEnumerable<string> ExtraAssetPaths =>
-        BossDeathExplosionVfx.AssetPaths.Concat(BossDismembermentPresentation.AssetPaths);
+        BossBurstPresentationCoordinator.AssetPaths.Concat(BossDismembermentPresentation.AssetPaths);
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
         RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(NinjaSlayerAssetProfile.VisualsPath);

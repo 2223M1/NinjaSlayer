@@ -372,6 +372,24 @@ public sealed class CombatLogicTests
         Assert.True(MathF.Abs(small.AngularVelocityDegrees) > MathF.Abs(large.AngularVelocityDegrees));
     }
 
+    [Fact]
+    public void BossBurstFadeStartsAtOnePointFiveSecondsAndReachesZeroOnTheLastFrame()
+    {
+        Assert.Equal(0.9f, BossBurstTimeline.LeadSeconds);
+        Assert.Equal(1.875f, BossBurstTimeline.VideoSeconds);
+        Assert.Equal(1.5f, BossBurstTimeline.FadeStartSeconds);
+        Assert.Equal(
+            1f,
+            BossBurstTimeline.ResolveFadeAlpha(BossBurstTimeline.FadeStartSeconds));
+        Assert.InRange(
+            BossBurstTimeline.ResolveFadeAlpha(1.75f),
+            0f,
+            1f);
+        Assert.Equal(
+            0f,
+            BossBurstTimeline.ResolveFadeAlpha(BossBurstTimeline.VideoSeconds));
+    }
+
     private static FinisherForecastOutcome EvaluateForecastForCorrectness<TState>(
         FinisherForecastSimulation<TState, TState> simulation)
         where TState : notnull =>

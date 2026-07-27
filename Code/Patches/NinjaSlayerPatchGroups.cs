@@ -19,7 +19,6 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
         patcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
         patcher.RegisterPatch<BossDeathPresentationPatch>();
-        patcher.RegisterPatch<BossDeathFadeStartPatch>();
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
         patcher.RegisterPatch<ArchitectExecutionStartPatch>();
         patcher.RegisterPatch<ArchitectDeathAnimationPatch>();

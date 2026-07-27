@@ -1,13 +1,14 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal sealed class ArchitectRagdollDeathAnimation : IDisposable
 {
-    public const float FallSeconds = 1f;
+    public const float FallSeconds = BossBurstTimeline.LeadSeconds;
 
     private const float BodyTravel = 42f;
     private const float BodyLift = 20f;

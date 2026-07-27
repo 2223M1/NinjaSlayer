@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -21,7 +22,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private const float AirDrag = 0.08f;
     private const float SceneMargin = 128f;
     private const float MaximumFlightSeconds = 4f;
-    private const float GroundHoldSeconds = 2f;
     private const float MinimumBoundsSize = 12f;
     private const int MaximumHierarchyDepth = 128;
 
@@ -35,7 +35,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private Transform2D _canvasToPresentation;
     private Rect2 _bodyLocalBounds;
     private Rect2 _sceneBounds;
-    private float _floorY;
     private float _elapsed;
     private ulong _seed;
 
@@ -46,7 +45,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
         NCreature creature,
         Vector2 bodyExplosionCenter,
         string? detachedBoneName = null,
-        Vector2? detachedExplosionCenter = null)
+        Vector2? detachedExplosionCenter = null,
+        int zIndex = BossBurstPresentationCoordinator.FragmentZIndex)
     {
         if (!GodotObject.IsInstanceValid(room)
             || !GodotObject.IsInstanceValid(creature)
@@ -59,6 +59,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
         var presentation = new BossDismembermentPresentation
         {
             Name = "NinjaSlayerBossDismemberment",
+            ZAsRelative = false,
+            ZIndex = zIndex,
             _room = room,
             _sourceBody = creature.Body,
             _sourceCanvasTransform = creature.Body.GetGlobalTransformWithCanvas(),
@@ -67,7 +69,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
         room.CombatVfxContainer.AddChildSafely(presentation);
         if (!GodotObject.IsInstanceValid(presentation) || !presentation.IsInsideTree())
         {
-            return new BossDismembermentSpawn(false, Task.CompletedTask);
+            return StartOriginalFadeFallback(creature);
         }
 
         try
@@ -91,7 +93,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
             if (!spawned)
             {
                 presentation.QueueFreeSafely();
-                return new BossDismembermentSpawn(false, Task.CompletedTask);
+                return StartOriginalFadeFallback(creature);
             }
 
             presentation.InitializeLaunches();
@@ -106,8 +108,45 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 + $"{creature.Entity.Monster?.Id.Entry}: {exception}");
             presentation.ClearFragments();
             presentation.QueueFreeSafely();
-            return new BossDismembermentSpawn(false, Task.CompletedTask);
+            return StartOriginalFadeFallback(creature);
         }
+    }
+
+    private static BossDismembermentSpawn StartOriginalFadeFallback(NCreature creature)
+    {
+        try
+        {
+            if (creature.Entity.Monster is not { ShouldFadeAfterDeath: true }
+                || !GodotObject.IsInstanceValid(creature.Body)
+                || !creature.Body.IsVisibleInTree())
+            {
+                return new BossDismembermentSpawn(false, Task.CompletedTask);
+            }
+
+            NMonsterDeathVfx? fade = NMonsterDeathVfx.Create(
+                creature,
+                creature.DeathAnimCancelToken.Token);
+            Node? parent = creature.GetParent();
+            if (fade == null || parent == null)
+            {
+                return new BossDismembermentSpawn(false, Task.CompletedTask);
+            }
+
+            parent.AddChildSafely(fade);
+            if (GodotObject.IsInstanceValid(fade) && fade.IsInsideTree())
+            {
+                parent.MoveChildSafely(fade, creature.GetIndex());
+                return new BossDismembermentSpawn(false, fade.PlayVfx());
+            }
+
+            fade.QueueFreeSafely();
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn($"Boss death fade fallback failed: {exception.Message}");
+        }
+
+        return new BossDismembermentSpawn(false, Task.CompletedTask);
     }
 
     public override void _Ready() => SetProcess(false);
@@ -122,6 +161,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
             return;
         }
 
+        if (BossBurstPresentationCoordinator.IsPresentationPaused(_room))
+        {
+            return;
+        }
+
         float seconds = Math.Min((float)delta, 0.05f);
         if (seconds <= 0f)
         {
@@ -133,36 +177,16 @@ public sealed partial class BossDismembermentPresentation : Node2D
         for (int i = _fragments.Count - 1; i >= 0; i--)
         {
             FragmentState fragment = _fragments[i];
-            if (fragment.IsLanded)
-            {
-                fragment.LandedSeconds += seconds;
-                if (fragment.LandedSeconds >= GroundHoldSeconds)
-                {
-                    fragment.Anchor.QueueFreeSafely();
-                    _fragments.RemoveAt(i);
-                }
-
-                continue;
-            }
-
             fragment.Velocity = new Vector2(
                 fragment.Velocity.X * drag,
                 fragment.Velocity.Y + Gravity * seconds);
             fragment.Anchor.Position += fragment.Velocity * seconds;
             fragment.Anchor.RotationDegrees += fragment.AngularVelocityDegrees * seconds;
 
-            if (IsFullyOutsideScene(fragment))
+            if (IsFullyOutsideScene(fragment) || _elapsed >= MaximumFlightSeconds)
             {
                 fragment.Anchor.QueueFreeSafely();
                 _fragments.RemoveAt(i);
-                continue;
-            }
-
-            float maximumY = GetMaximumY(fragment);
-            if ((fragment.Velocity.Y > 0f && maximumY >= _floorY)
-                || _elapsed >= MaximumFlightSeconds)
-            {
-                LandFragment(fragment, maximumY);
             }
         }
 
@@ -181,7 +205,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
         Vector2[] globalCorners = RectCorners(globalBounds);
         Transform2D canvasToBody = _sourceCanvasTransform.AffineInverse();
         _bodyLocalBounds = BoundsOf(globalCorners.Select(point => canvasToBody * point));
-        _floorY = (_canvasToPresentation * new Vector2(globalBounds.GetCenter().X, globalBounds.End.Y)).Y;
 
         Transform2D sceneToCanvas = _room.SceneContainer.GetGlobalTransformWithCanvas();
         Vector2 sceneSize = _room.SceneContainer.Size;
@@ -751,20 +774,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     private Vector2 ToLocalPoint(Vector2 canvasPoint) => _canvasToPresentation * canvasPoint;
 
-    private float GetMaximumY(FragmentState fragment) => fragment.LocalHull.Max(point =>
-    {
-        Vector2 transformed = point.Rotated(fragment.Anchor.Rotation) + fragment.Anchor.Position;
-        return transformed.Y;
-    });
-
-    private void LandFragment(FragmentState fragment, float maximumY)
-    {
-        fragment.Anchor.Position += Vector2.Down * (_floorY - maximumY);
-        fragment.Velocity = Vector2.Zero;
-        fragment.IsLanded = true;
-        fragment.LandedSeconds = 0f;
-    }
-
     private bool IsFullyOutsideScene(FragmentState fragment)
     {
         Vector2[] points = fragment.LocalHull
@@ -869,7 +878,5 @@ public sealed partial class BossDismembermentPresentation : Node2D
         public IReadOnlyList<Vector2> LocalHull { get; } = localHull;
         public Vector2 Velocity { get; set; } = velocity;
         public float AngularVelocityDegrees { get; } = angularVelocityDegrees;
-        public bool IsLanded { get; set; }
-        public float LandedSeconds { get; set; }
     }
 }

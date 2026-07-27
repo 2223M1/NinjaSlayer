@@ -1701,20 +1701,25 @@ public sealed class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void BossFragmentsRemainOnTheGroundForTwoSeconds()
+    public void BossFragmentsFlyOutWithoutLandingAndUseTheCinematicLayer()
     {
         string presentation = SourceText("Code/ExternalAnimations/BossDismembermentPresentation.cs");
         string controller = SourceText("Code/ExternalAnimations/BossDeathPresentationController.cs");
 
-        Assert.Contains("private const float GroundHoldSeconds = 2f", presentation, StringComparison.Ordinal);
-        Assert.Contains("fragment.LandedSeconds += seconds", presentation, StringComparison.Ordinal);
-        Assert.Contains("fragment.LandedSeconds >= GroundHoldSeconds", presentation, StringComparison.Ordinal);
-        Assert.Contains("LandFragment(fragment, maximumY)", presentation, StringComparison.Ordinal);
-        Assert.Contains("|| _elapsed >= MaximumFlightSeconds", presentation, StringComparison.Ordinal);
-        Assert.DoesNotContain(
+        Assert.DoesNotContain("GroundHoldSeconds", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("LandFragment", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("IsLanded", presentation, StringComparison.Ordinal);
+        Assert.Contains(
             "IsFullyOutsideScene(fragment) || _elapsed >= MaximumFlightSeconds",
             presentation,
             StringComparison.Ordinal);
+        Assert.Contains("ZAsRelative = false", presentation, StringComparison.Ordinal);
+        Assert.Contains("BossBurstPresentationCoordinator.FragmentZIndex", presentation, StringComparison.Ordinal);
+        Assert.Contains(
+            "BossBurstPresentationCoordinator.IsPresentationPaused(_room)",
+            presentation,
+            StringComparison.Ordinal);
+        Assert.Contains("StartOriginalFadeFallback(creature)", presentation, StringComparison.Ordinal);
         int fragmentAdded = presentation.IndexOf("anchor.AddChild(duplicate)", StringComparison.Ordinal);
         int fragmentRefrozen = presentation.IndexOf(
             "PrepareVisualClone(duplicate, isRoot: true)",
@@ -1722,7 +1727,8 @@ public sealed class RepositoryArchitectureTests
             StringComparison.Ordinal);
         Assert.True(fragmentAdded >= 0);
         Assert.True(fragmentRefrozen > fragmentAdded);
-        Assert.Contains("await _dismembermentTask", controller, StringComparison.Ordinal);
+        Assert.Contains("BossBurstPresentationCoordinator.Register", controller, StringComparison.Ordinal);
+        Assert.Contains("await registration.Completion.WaitAsync", controller, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1735,14 +1741,86 @@ public sealed class RepositoryArchitectureTests
 
         Assert.Contains("CreatureCmd.Kill(_architectNode.Entity, force: true)", cinematic, StringComparison.Ordinal);
         Assert.Contains("WaitUntilDeathStarts(killTask", cinematic, StringComparison.Ordinal);
-        Assert.Contains("HeadFlightSeconds - NinjaSoulLeadSeconds", cinematic, StringComparison.Ordinal);
-        Assert.Contains("private const float NinjaSoulLeadSeconds = 1f", cinematic, StringComparison.Ordinal);
-        Assert.Contains("public const float DurationSeconds = 1.5f", deathSession, StringComparison.Ordinal);
-        Assert.Contains("public const float FallSeconds = 1f", ragdoll, StringComparison.Ordinal);
+        Assert.Contains("BossBurstPresentationCoordinator.Register", cinematic, StringComparison.Ordinal);
+        Assert.Contains("await registration.Cue.WaitAsync", cinematic, StringComparison.Ordinal);
+        Assert.DoesNotContain("NinjaSlayerNinjaSoulEvent", cinematic, StringComparison.Ordinal);
+        Assert.Contains(
+            "public const float DurationSeconds = BossBurstTimeline.LeadSeconds",
+            deathSession,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "public const float FallSeconds = BossBurstTimeline.LeadSeconds",
+            ragdoll,
+            StringComparison.Ordinal);
         Assert.Contains("ResolveLandingCompensation", ragdoll, StringComparison.Ordinal);
         Assert.Contains("__instance.DeathAnimationTask = deathTask", patch, StringComparison.Ordinal);
         Assert.Contains("__result = ArchitectDeathPresentationSession.DurationSeconds", patch, StringComparison.Ordinal);
         Assert.Contains("return false", patch, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BossBurstVideoCannotBeSkippedAndKeepsGlobalStatusUiAboveIt()
+    {
+        string coordinator = SourceText(
+            "Code/ExternalAnimations/BossBurstPresentationCoordinator.cs");
+        string patch = SourceText("Code/Patches/BossDeathPresentationPatch.cs");
+
+        Assert.Contains("public const int VideoZIndex = 100", coordinator, StringComparison.Ordinal);
+        Assert.Contains("public const int TopBarZIndex = 110", coordinator, StringComparison.Ordinal);
+        Assert.Contains("SetLayer(globalUi.TopBar, TopBarZIndex)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("SetLayer(creature.Visuals, ActorZIndex)", coordinator, StringComparison.Ordinal);
+        Assert.Contains("Volume = 0f", coordinator, StringComparison.Ordinal);
+        Assert.Contains(
+            "BossBurstTimeline.ResolveFadeAlpha(videoPosition)",
+            coordinator,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("get_playback_state", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain("Input.IsKeyPressed", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain("Key.Space", coordinator, StringComparison.Ordinal);
+        Assert.Contains("__instance.Entity.IsPrimaryEnemy", patch, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BossBurstOwnsTheDeathTaskAndBlocksCombatEndInInstantMode()
+    {
+        string controller = SourceText(
+            "Code/ExternalAnimations/BossDeathPresentationController.cs");
+        string patch = SourceText("Code/Patches/BossDeathPresentationPatch.cs");
+        string coordinator = SourceText(
+            "Code/ExternalAnimations/BossBurstPresentationCoordinator.cs");
+        string feedback = SourceText("Content/NinjaSlayerCombatFeedback.cs");
+
+        Assert.Contains("internal float StartDeathAnimation(bool shouldRemove)", controller, StringComparison.Ordinal);
+        Assert.Contains("_boss.DeathAnimationTask = deathTask", controller, StringComparison.Ordinal);
+        Assert.Contains("return BossBurstTimeline.LeadSeconds", controller, StringComparison.Ordinal);
+        Assert.DoesNotContain("IDeathDelayer", controller, StringComparison.Ordinal);
+        Assert.Contains("controller.StartDeathAnimation(shouldRemove)", patch, StringComparison.Ordinal);
+        Assert.Contains("return false", patch, StringComparison.Ordinal);
+        Assert.Contains("WaitForActivePresentations", coordinator, StringComparison.Ordinal);
+        Assert.Contains(
+            "await BossBurstPresentationCoordinator.WaitForActivePresentations()",
+            feedback,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BossBurstUsesOnlyNinjaSoulAndTheProjectVideo()
+    {
+        string coordinator = SourceText(
+            "Code/ExternalAnimations/BossBurstPresentationCoordinator.cs");
+        string character = SourceText("Content/NinjaSlayerCharacter.cs");
+        string architect = SourceText("Code/ExternalAnimations/ArchitectExecutionCinematic.cs");
+        string controller = SourceText(
+            "Code/ExternalAnimations/BossDeathPresentationController.cs");
+
+        Assert.Contains("ninja_slayer_boss_burst.ogv", coordinator, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerNinjaSoulEvent", coordinator, StringComparison.Ordinal);
+        Assert.Contains("BossBurstPresentationCoordinator.AssetPaths", character, StringComparison.Ordinal);
+        Assert.DoesNotContain("BossDeathExplosionVfx", architect, StringComparison.Ordinal);
+        Assert.DoesNotContain("BossDeathExplosionVfx", controller, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code/ExternalAnimations/BossDeathExplosionVfx.cs")));
     }
 
     [Fact]
