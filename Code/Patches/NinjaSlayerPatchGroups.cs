@@ -32,6 +32,8 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
+        patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
+        patcher.RegisterPatch<NinjaSlayerVictoryRewardSfxPatch>();
         patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
         patcher.RegisterPatch<AllyDodgeImpactPatch>();
@@ -178,7 +180,6 @@ internal sealed class TransitionPresentationPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerTransitionCombatPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAncientSetupPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAncientHealPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionRewardSfxPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionRunMusicPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionParameterizedSfxPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();

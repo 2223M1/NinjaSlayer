@@ -44,9 +44,11 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
 
     public bool IsLaunching { get; private set; }
 
-    public int GetExplodeDamage() => YamotoKokiDamageMath.ScaleForParty(
+    public int GetExplodeDamage() => YamotoKokiDamageMath.ScaleForActiveRelics(
         ExplodeDamage,
-        Creature.PetOwner?.RunState.Players.Count ?? 1);
+        Creature.PetOwner is { } owner
+            ? YamotoKokiPartyState.GetActiveRelicCount(owner.RunState)
+            : 1);
 
     private bool HasExploded
     {

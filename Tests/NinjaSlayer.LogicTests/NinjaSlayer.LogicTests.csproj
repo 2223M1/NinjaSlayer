@@ -38,6 +38,9 @@
     <Compile Include="..\..\Code\Combat\YamotoKokiGridLayoutMath.cs" Link="YamotoKokiGridLayoutMath.cs" />
     <Compile Include="..\..\Code\Combat\VisitedMapHistoryAlignment.cs" Link="VisitedMapHistoryAlignment.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiDamageMath.cs" Link="YamotoKokiDamageMath.cs" />
+    <Compile Include="..\..\Code\Combat\YamotoKokiCompanionRestorePolicy.cs" Link="YamotoKokiCompanionRestorePolicy.cs" />
+    <Compile Include="..\..\Code\Combat\YamotoKokiRelicLifetimePolicy.cs" Link="YamotoKokiRelicLifetimePolicy.cs" />
+    <Compile Include="..\..\Code\Combat\NinjaSlayerVictorySfxPolicy.cs" Link="NinjaSlayerVictorySfxPolicy.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackComboContext.cs" Link="XAttackComboContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\CinematicTimingContract.cs" Link="CinematicTimingContract.cs" />

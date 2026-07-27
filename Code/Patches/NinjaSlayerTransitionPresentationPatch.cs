@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Godot;
-using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -10,7 +9,6 @@ using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Audio;
 using MegaCrit.Sts2.Core.Nodes.Events;
 using MegaCrit.Sts2.Core.Nodes.Screens;
-using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
@@ -152,45 +150,6 @@ public sealed class NinjaSlayerTransitionAncientHealPresentationPatch : IPatchMe
             ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
             throw;
         }
-    }
-}
-
-public sealed class NinjaSlayerTransitionRewardSfxPresentationPatch : IPatchMethod
-{
-    public static string PatchId => "ninjaslayer_transition_reward_sfx_presentation_barrier";
-
-    public static string Description =>
-        "Defer the loaded reward-screen cue until the NinjaSlayer transition reveal begins.";
-
-    public static bool IsCritical => true;
-
-    public static ModPatchTarget[] GetTargets() =>
-    [
-        new(
-            typeof(NDebugAudioManager),
-            nameof(NDebugAudioManager.Play),
-            [typeof(string), typeof(float), typeof(PitchVariance)])
-    ];
-
-    public static bool Prefix(
-        NDebugAudioManager __instance,
-        string streamName,
-        float volume,
-        PitchVariance variance,
-        ref int __result)
-    {
-        if (streamName != "victory.mp3"
-            || !NinjaSlayerTransitionGate.HasActiveSession
-            || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
-            || !NinjaSlayerTransitionGate.TryDeferPresentation(
-                () => __instance.Play(streamName, volume, variance)))
-        {
-            return true;
-        }
-
-        // NRewardsScreen ignores this one-shot handle.
-        __result = -1;
-        return false;
     }
 }
 

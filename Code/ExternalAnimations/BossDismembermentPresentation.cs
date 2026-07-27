@@ -14,6 +14,49 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal readonly record struct BossDismembermentSpawn(bool Spawned, Task Completion);
 
+internal sealed class BossDismembermentSnapshot : IDisposable
+{
+    private Node2D? _visualTemplate;
+
+    public BossDismembermentSnapshot(
+        Node2D visualTemplate,
+        Transform2D sourceCanvasTransform,
+        Rect2 bodyLocalBounds,
+        Rect2 bodyGlobalBounds,
+        bool canSplitSpine,
+        ulong seed,
+        string monsterId)
+    {
+        _visualTemplate = visualTemplate;
+        SourceCanvasTransform = sourceCanvasTransform;
+        BodyLocalBounds = bodyLocalBounds;
+        BodyGlobalBounds = bodyGlobalBounds;
+        CanSplitSpine = canSplitSpine;
+        Seed = seed;
+        MonsterId = monsterId;
+    }
+
+    public Node2D? VisualTemplate =>
+        _visualTemplate is { } template && GodotObject.IsInstanceValid(template)
+            ? template
+            : null;
+    public Transform2D SourceCanvasTransform { get; }
+    public Rect2 BodyLocalBounds { get; }
+    public Rect2 BodyGlobalBounds { get; }
+    public bool CanSplitSpine { get; }
+    public ulong Seed { get; }
+    public string MonsterId { get; }
+
+    public void Dispose()
+    {
+        Node2D? template = Interlocked.Exchange(ref _visualTemplate, null);
+        if (template != null && GodotObject.IsInstanceValid(template))
+        {
+            template.Free();
+        }
+    }
+}
+
 public sealed partial class BossDismembermentPresentation : Node2D
 {
     private const string ClipShaderPath =
@@ -37,8 +80,57 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private Rect2 _sceneBounds;
     private float _elapsed;
     private ulong _seed;
+    private bool _canSplitSpine;
+    private string _monsterId = "unknown";
 
     public static IEnumerable<string> AssetPaths => [ClipShaderPath];
+
+    internal static BossDismembermentSnapshot? TryCapture(NCreature creature)
+    {
+        if (!GodotObject.IsInstanceValid(creature)
+            || !GodotObject.IsInstanceValid(creature.Body))
+        {
+            return null;
+        }
+
+        Node2D? template = null;
+        try
+        {
+            template = DuplicateVisualBody(creature.Body);
+            if (template == null)
+            {
+                return null;
+            }
+
+            Transform2D sourceCanvasTransform = creature.Body.GetGlobalTransformWithCanvas();
+            Rect2 globalBounds = creature.Visuals.Bounds.GetGlobalRect();
+            Transform2D canvasToBody = sourceCanvasTransform.AffineInverse();
+            Rect2 localBounds = BoundsOf(
+                RectCorners(globalBounds).Select(point => canvasToBody * point));
+            var snapshot = new BossDismembermentSnapshot(
+                template,
+                sourceCanvasTransform,
+                localBounds,
+                globalBounds,
+                creature.HasSpineAnimation && !creature.Visuals.IsUsingPhobiaModeBody,
+                CreateSeed(creature),
+                creature.Entity.Monster?.Id.Entry ?? creature.Name.ToString());
+            template = null;
+            return snapshot;
+        }
+        catch (Exception exception)
+        {
+            if (template != null && GodotObject.IsInstanceValid(template))
+            {
+                template.Free();
+            }
+
+            Entry.Logger.Warn(
+                $"Boss dismemberment snapshot capture failed for "
+                + $"{creature.Entity.Monster?.Id.Entry}: {exception}");
+            return null;
+        }
+    }
 
     internal static BossDismembermentSpawn TrySpawn(
         NCombatRoom room,
@@ -48,12 +140,36 @@ public sealed partial class BossDismembermentPresentation : Node2D
         Vector2? detachedExplosionCenter = null,
         int zIndex = BossBurstPresentationCoordinator.FragmentZIndex)
     {
+        using BossDismembermentSnapshot? snapshot = TryCapture(creature);
+        return TrySpawn(
+            room,
+            creature,
+            snapshot,
+            bodyExplosionCenter,
+            detachedBoneName,
+            detachedExplosionCenter,
+            zIndex);
+    }
+
+    internal static BossDismembermentSpawn TrySpawn(
+        NCombatRoom room,
+        NCreature creature,
+        BossDismembermentSnapshot? snapshot,
+        Vector2 bodyExplosionCenter,
+        string? detachedBoneName = null,
+        Vector2? detachedExplosionCenter = null,
+        int zIndex = BossBurstPresentationCoordinator.FragmentZIndex)
+    {
         if (!GodotObject.IsInstanceValid(room)
             || !GodotObject.IsInstanceValid(creature)
-            || !GodotObject.IsInstanceValid(creature.Body)
             || !room.IsInsideTree())
         {
             return new BossDismembermentSpawn(false, Task.CompletedTask);
+        }
+
+        if (snapshot?.VisualTemplate == null)
+        {
+            return StartOriginalFadeFallback(creature);
         }
 
         var presentation = new BossDismembermentPresentation
@@ -62,28 +178,32 @@ public sealed partial class BossDismembermentPresentation : Node2D
             ZAsRelative = false,
             ZIndex = zIndex,
             _room = room,
-            _sourceBody = creature.Body,
-            _sourceCanvasTransform = creature.Body.GetGlobalTransformWithCanvas(),
-            _seed = CreateSeed(creature)
+            _sourceBody = snapshot.VisualTemplate,
+            _sourceCanvasTransform = snapshot.SourceCanvasTransform,
+            _bodyLocalBounds = snapshot.BodyLocalBounds,
+            _seed = snapshot.Seed,
+            _canSplitSpine = snapshot.CanSplitSpine,
+            _monsterId = snapshot.MonsterId
         };
         room.CombatVfxContainer.AddChildSafely(presentation);
         if (!GodotObject.IsInstanceValid(presentation) || !presentation.IsInsideTree())
         {
+            presentation.QueueFreeSafely();
             return StartOriginalFadeFallback(creature);
         }
 
         try
         {
-            presentation.InitializeGeometry(creature);
+            presentation.InitializeGeometry();
             Vector2 bodyCenter = presentation.ToLocalPoint(bodyExplosionCenter);
             Vector2? detachedCenter = detachedExplosionCenter.HasValue
                 ? presentation.ToLocalPoint(detachedExplosionCenter.Value)
                 : null;
-            bool spawned = presentation.TryCreateSpineFragments(
-                creature,
+            bool usedSpine = presentation.TryCreateSpineFragments(
                 bodyCenter,
                 detachedBoneName,
                 detachedCenter);
+            bool spawned = usedSpine;
             if (!spawned)
             {
                 presentation.ClearFragments();
@@ -97,7 +217,15 @@ public sealed partial class BossDismembermentPresentation : Node2D
             }
 
             presentation.InitializeLaunches();
-            creature.Body.Visible = false;
+            if (GodotObject.IsInstanceValid(creature.Body))
+            {
+                creature.Body.Visible = false;
+            }
+
+            Entry.Logger.Info(
+                $"Boss dismemberment spawned: boss={presentation._monsterId}, "
+                + $"source={(usedSpine ? "spine" : "clipped")}, "
+                + $"fragments={presentation._fragments.Count}.");
             presentation.SetProcess(true);
             return new BossDismembermentSpawn(true, presentation._completion.Task);
         }
@@ -112,7 +240,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
         }
     }
 
-    private static BossDismembermentSpawn StartOriginalFadeFallback(NCreature creature)
+    internal static BossDismembermentSpawn StartOriginalFadeFallback(NCreature creature)
     {
         try
         {
@@ -198,14 +326,9 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     public override void _ExitTree() => _completion.TrySetResult();
 
-    private void InitializeGeometry(NCreature creature)
+    private void InitializeGeometry()
     {
         _canvasToPresentation = GetGlobalTransformWithCanvas().AffineInverse();
-        Rect2 globalBounds = creature.Visuals.Bounds.GetGlobalRect();
-        Vector2[] globalCorners = RectCorners(globalBounds);
-        Transform2D canvasToBody = _sourceCanvasTransform.AffineInverse();
-        _bodyLocalBounds = BoundsOf(globalCorners.Select(point => canvasToBody * point));
-
         Transform2D sceneToCanvas = _room.SceneContainer.GetGlobalTransformWithCanvas();
         Vector2 sceneSize = _room.SceneContainer.Size;
         Vector2[] sceneCorners =
@@ -219,12 +342,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
     }
 
     private bool TryCreateSpineFragments(
-        NCreature creature,
         Vector2 bodyExplosionCenter,
         string? detachedBoneName,
         Vector2? detachedExplosionCenter)
     {
-        if (!creature.HasSpineAnimation || creature.Visuals.IsUsingPhobiaModeBody)
+        if (!_canSplitSpine)
         {
             return false;
         }
@@ -593,12 +715,14 @@ public sealed partial class BossDismembermentPresentation : Node2D
         duplicate.Material = material;
     }
 
-    private Node2D? DuplicateVisualBody()
+    private Node2D? DuplicateVisualBody() => DuplicateVisualBody(_sourceBody);
+
+    private static Node2D? DuplicateVisualBody(Node2D source)
     {
         Node.DuplicateFlags flags = Node.DuplicateFlags.Groups
             | Node.DuplicateFlags.Scripts
             | Node.DuplicateFlags.UseInstantiation;
-        if (_sourceBody.Duplicate((int)flags) is not Node2D duplicate)
+        if (source.Duplicate((int)flags) is not Node2D duplicate)
         {
             return null;
         }

@@ -22,6 +22,7 @@ public sealed partial class BossDeathPresentationController : Node
     private NCombatRoom _room = null!;
     private BossDeathPartSpec? _partSpec;
     private SpineBoneFlight? _partFlight;
+    private BossDismembermentSnapshot? _dismembermentSnapshot;
     private CombatCinematicCameraLease? _camera;
     private CancellationTokenSource? _cancelSource;
     private Task? _presentationTask;
@@ -49,6 +50,8 @@ public sealed partial class BossDeathPresentationController : Node
         {
             intent.SetFrozen(isFrozen: true);
         }
+
+        _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(_boss);
 
         if (_boss.HasSpineAnimation)
         {
@@ -110,6 +113,7 @@ public sealed partial class BossDeathPresentationController : Node
     public override void _ExitTree()
     {
         _cancelSource?.Cancel();
+        DisposeDismembermentSnapshot();
         _partFlight?.Dispose();
         _camera?.Dispose();
         _completion.TrySetResult();
@@ -148,6 +152,7 @@ public sealed partial class BossDeathPresentationController : Node
         }
         finally
         {
+            DisposeDismembermentSnapshot();
             _partFlight?.Dispose();
             _partFlight = null;
             _camera?.Dispose();
@@ -196,27 +201,48 @@ public sealed partial class BossDeathPresentationController : Node
 
     private BossDismembermentSpawn SpawnFragments()
     {
-        if (!IsRuntimeValid())
+        BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
+        _dismembermentSnapshot = null;
+        try
         {
-            return new BossDismembermentSpawn(false, Task.CompletedTask);
-        }
+            if (!IsRuntimeValid())
+            {
+                return new BossDismembermentSpawn(false, Task.CompletedTask);
+            }
 
-        Rect2 bounds = _boss.Visuals.Bounds.GetGlobalRect();
-        Vector2 bodyCenter = bounds.GetCenter();
-        Vector2? partCenter = _partFlight?.GlobalCenter;
-        BossDismembermentSpawn dismemberment = BossDismembermentPresentation.TrySpawn(
-            _room,
-            _boss,
-            bodyCenter,
-            _partFlight == null ? null : _partSpec?.BoneName,
-            partCenter,
-            BossBurstPresentationCoordinator.FragmentZIndex);
-        if (dismemberment.Spawned)
+            if (snapshot == null)
+            {
+                return BossDismembermentPresentation.StartOriginalFadeFallback(_boss);
+            }
+
+            Vector2 bodyCenter = snapshot.BodyGlobalBounds.GetCenter();
+            Vector2? partCenter = _partFlight?.GlobalCenter;
+            BossDismembermentSpawn dismemberment = BossDismembermentPresentation.TrySpawn(
+                _room,
+                _boss,
+                snapshot,
+                bodyCenter,
+                _partFlight == null ? null : _partSpec?.BoneName,
+                partCenter,
+                BossBurstPresentationCoordinator.FragmentZIndex);
+            if (dismemberment.Spawned)
+            {
+                _partFlight?.MarkDisappeared();
+            }
+
+            return dismemberment;
+        }
+        finally
         {
-            _partFlight?.MarkDisappeared();
+            snapshot?.Dispose();
         }
+    }
 
-        return dismemberment;
+    private void DisposeDismembermentSnapshot()
+    {
+        BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
+        _dismembermentSnapshot = null;
+        snapshot?.Dispose();
     }
 
     private async Task RestoreCamera(CancellationToken cancelToken)
