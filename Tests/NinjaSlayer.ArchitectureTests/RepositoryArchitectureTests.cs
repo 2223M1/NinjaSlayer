@@ -663,6 +663,10 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("SetScaleAndHue", orbit, StringComparison.Ordinal);
         Assert.Contains("%DamageAmount", orbit, StringComparison.Ordinal);
         Assert.Contains("GetExplodeDamage()", orbit, StringComparison.Ordinal);
+        Assert.Contains("damageAmount == null", orbit, StringComparison.Ordinal);
+        Assert.Contains("!GodotObject.IsInstanceValid(damageAmount)", orbit, StringComparison.Ordinal);
+        Assert.Contains("!missileNode.Visuals.IsAncestorOf(damageAmount)", orbit, StringComparison.Ordinal);
+        Assert.Contains("DamageText", orbit, StringComparison.Ordinal);
         Assert.Contains("_reservedMissileCounts", orbit, StringComparison.Ordinal);
         Assert.Contains("BeginSpawnBatch", orbit, StringComparison.Ordinal);
         Assert.Contains("int layoutCount = Math.Max", orbit, StringComparison.Ordinal);
@@ -1196,6 +1200,19 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("static class FinisherProtectionService", protection, StringComparison.Ordinal);
         Assert.Contains("static class FinisherCleanupService", cleanup, StringComparison.Ordinal);
         Assert.Contains("static class FinisherForecast", forecast, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FinisherCardVisualMonitorStaysIdleUntilItsDrainStarts()
+    {
+        string suppression = SourceText("Code/ExternalAnimations/FinisherCardVisualSuppression.cs");
+        int addChild = suppression.IndexOf("room.AddChild(_monitor)", StringComparison.Ordinal);
+        int disableProcess = suppression.IndexOf("_monitor.SetProcess(false)", StringComparison.Ordinal);
+        int enableProcess = suppression.IndexOf("_monitor.SetProcess(true)", StringComparison.Ordinal);
+
+        Assert.True(addChild >= 0);
+        Assert.True(disableProcess > addChild);
+        Assert.True(enableProcess > disableProcess);
     }
 
     [Fact]

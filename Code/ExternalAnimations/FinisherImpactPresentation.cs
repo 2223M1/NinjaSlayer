@@ -41,6 +41,24 @@ internal sealed class FinisherImpactPresentation : IDisposable
     private static readonly StringName IntensityParameter = new("intensity");
     private static readonly StringName FlashParameter = new("flash");
 
+    // One compiled program for the whole process. Every impact used to build its own Shader from
+    // the same source, so a finisher against N victims paid N shader compiles on the frame the
+    // cinematic started. Uniforms live on the ShaderMaterial, so sharing the Shader keeps each
+    // impact independent.
+    private static Shader? sharedImpactShader;
+
+    private static Shader GetSharedImpactShader()
+    {
+        if (sharedImpactShader is { } cached && GodotObject.IsInstanceValid(cached))
+        {
+            return cached;
+        }
+
+        var shader = new Shader { Code = ImpactShaderCode };
+        sharedImpactShader = shader;
+        return shader;
+    }
+
     private readonly NCombatRoom _room;
     private readonly CanvasLayer _layer;
     private readonly ColorRect _backdrop;
@@ -69,10 +87,10 @@ internal sealed class FinisherImpactPresentation : IDisposable
             _backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             room.SceneContainer.MoveChild(_backdrop, backgroundContainer.GetIndex() + 1);
 
+            Shader impactShader = GetSharedImpactShader();
             for (int i = 0; i < impactCount; i++)
             {
-                var shader = new Shader { Code = ImpactShaderCode };
-                var material = new ShaderMaterial { Shader = shader };
+                var material = new ShaderMaterial { Shader = impactShader };
                 var rays = new ColorRect
                 {
                     Name = $"ImpactRays{i + 1}",

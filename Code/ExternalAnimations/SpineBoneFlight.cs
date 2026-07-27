@@ -7,6 +7,21 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal sealed class SpineBoneFlight : IDisposable
 {
+    // The setters run on every Spine world-transform update and the parent-transform accessors run
+    // on every frame of the head flight, so the names are marshalled once rather than per call.
+    private static readonly StringName SetXMethod = new("set_x");
+    private static readonly StringName SetYMethod = new("set_y");
+    private static readonly StringName SetRotationMethod = new("set_rotation");
+    private static readonly StringName GetAMethod = new("get_a");
+    private static readonly StringName GetBMethod = new("get_b");
+    private static readonly StringName GetCMethod = new("get_c");
+    private static readonly StringName GetDMethod = new("get_d");
+    private static readonly StringName GetWorldXMethod = new("get_world_x");
+    private static readonly StringName GetWorldYMethod = new("get_world_y");
+
+    private static readonly StringName[] ParentTransformMethods =
+        [GetAMethod, GetBMethod, GetCMethod, GetDMethod, GetWorldXMethod, GetWorldYMethod];
+
     private readonly MegaSprite _sprite;
     private readonly MegaBone _bone;
     private readonly GodotObject? _parentBone;
@@ -18,6 +33,8 @@ internal sealed class SpineBoneFlight : IDisposable
     private readonly float _originalScaleX;
     private readonly float _originalScaleY;
     private readonly Vector2 _originalWorldPosition;
+    private readonly bool _parentSupportsWorldTransform;
+    private readonly bool _boneSupportsWorldPosition;
     private float _x;
     private float _y;
     private float _rotation;
@@ -43,6 +60,10 @@ internal sealed class SpineBoneFlight : IDisposable
         _sprite = sprite;
         _bone = bone;
         _parentBone = parentBone;
+        _parentSupportsWorldTransform = parentBone != null
+            && Array.TrueForAll(ParentTransformMethods, parentBone.HasMethod);
+        _boneSupportsWorldPosition = bone.BoundObject.HasMethod(GetWorldXMethod)
+            && bone.BoundObject.HasMethod(GetWorldYMethod);
         _body = body;
         _x = _originalX = x;
         _y = _originalY = y;
@@ -67,10 +88,10 @@ internal sealed class SpineBoneFlight : IDisposable
         get
         {
             GodotObject native = _bone.BoundObject;
-            if (native.HasMethod("get_world_x") && native.HasMethod("get_world_y"))
+            if (_boneSupportsWorldPosition)
             {
-                float worldX = native.Call("get_world_x").AsSingle();
-                float worldY = native.Call("get_world_y").AsSingle();
+                float worldX = native.Call(GetWorldXMethod).AsSingle();
+                float worldY = native.Call(GetWorldYMethod).AsSingle();
                 GC.KeepAlive(_bone);
                 return _body.ToGlobal(new Vector2(worldX, worldY));
             }
@@ -235,9 +256,9 @@ internal sealed class SpineBoneFlight : IDisposable
     private void SetNative(float x, float y, float rotation)
     {
         GodotObject native = _bone.BoundObject;
-        native.Call("set_x", x);
-        native.Call("set_y", y);
-        native.Call("set_rotation", rotation);
+        native.Call(SetXMethod, x);
+        native.Call(SetYMethod, y);
+        native.Call(SetRotationMethod, rotation);
         GC.KeepAlive(_bone);
     }
 
@@ -249,18 +270,19 @@ internal sealed class SpineBoneFlight : IDisposable
             return false;
         }
 
-        string[] methods = ["get_a", "get_b", "get_c", "get_d", "get_world_x", "get_world_y"];
-        if (methods.Any(method => !_parentBone.HasMethod(method)))
+        // A bound Spine object's class is fixed once the skeleton exists, so the capability is
+        // probed once in TryCreate instead of six HasMethod lookups on every frame.
+        if (!_parentSupportsWorldTransform)
         {
             return false;
         }
 
-        float a = _parentBone.Call("get_a").AsSingle();
-        float b = _parentBone.Call("get_b").AsSingle();
-        float c = _parentBone.Call("get_c").AsSingle();
-        float d = _parentBone.Call("get_d").AsSingle();
-        float worldX = _parentBone.Call("get_world_x").AsSingle();
-        float worldY = _parentBone.Call("get_world_y").AsSingle();
+        float a = _parentBone.Call(GetAMethod).AsSingle();
+        float b = _parentBone.Call(GetBMethod).AsSingle();
+        float c = _parentBone.Call(GetCMethod).AsSingle();
+        float d = _parentBone.Call(GetDMethod).AsSingle();
+        float worldX = _parentBone.Call(GetWorldXMethod).AsSingle();
+        float worldY = _parentBone.Call(GetWorldYMethod).AsSingle();
         float determinant = a * d - b * c;
         if (Mathf.IsZeroApprox(determinant))
         {
@@ -276,13 +298,13 @@ internal sealed class SpineBoneFlight : IDisposable
 
     private static Vector2 ReadWorldPosition(GodotObject native, Vector2 fallback)
     {
-        if (!native.HasMethod("get_world_x") || !native.HasMethod("get_world_y"))
+        if (!native.HasMethod(GetWorldXMethod) || !native.HasMethod(GetWorldYMethod))
         {
             return fallback;
         }
 
         return new Vector2(
-            native.Call("get_world_x").AsSingle(),
-            native.Call("get_world_y").AsSingle());
+            native.Call(GetWorldXMethod).AsSingle(),
+            native.Call(GetWorldYMethod).AsSingle());
     }
 }

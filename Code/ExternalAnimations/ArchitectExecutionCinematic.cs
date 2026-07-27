@@ -245,6 +245,8 @@ public sealed partial class ArchitectExecutionCinematic : Node
             NGame.Instance?.ScreenShake(ShakeStrength.TooMuch, ShakeDuration.Short);
         }
 
+        // Hoisted for the same reason as the enemy finisher impact loop.
+        NCreature[] impactTargets = [_architectNode];
         float elapsed = 0f;
         while (elapsed < ImpactSeconds)
         {
@@ -262,10 +264,10 @@ public sealed partial class ArchitectExecutionCinematic : Node
                     0f,
                     1f);
             float flash = 1f - Mathf.Clamp(elapsed / ImpactPunchSeconds, 0f, 1f);
-            _presentation?.SetImpactState([_architectNode], rays, flash);
+            _presentation?.SetImpactState(impactTargets, rays, flash);
         }
 
-        _presentation?.SetImpactState([_architectNode], 0f, 0f);
+        _presentation?.SetImpactState(impactTargets, 0f, 0f);
         _architectNode.Body.Position = _architectBodyPosition;
         _architectNode.Body.Scale = _architectBodyScale;
         _architectNode.Body.Rotation = _architectBodyRotation;

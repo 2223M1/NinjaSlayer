@@ -15,6 +15,14 @@ public static class NinjaSlayerVisualRig
     public const float SpinTextureSize = 1800f;
     public const float SpinPivotX = 1480f;
 
+    // Cinematics resolve these rig nodes every frame, so the paths are built once instead of
+    // re-interpolating a string and allocating a NodePath on each lookup.
+    private static readonly NodePath AirborneAnchorPath = new(AirborneAnchorName);
+    private static readonly NodePath BodySpritePath = new("%Visuals");
+    private static readonly NodePath CinematicFocusPath = new("%" + CinematicFocusName);
+    private static readonly NodePath ShadowPath = new(ShadowNodeName);
+    private static readonly NodePath ShadowControllerPath = new(ShadowControllerNodeName);
+
     public static float SpinPivotDeltaX => SpinPivotX - SpinTextureSize / 2f;
 
     /// <summary>
@@ -24,30 +32,30 @@ public static class NinjaSlayerVisualRig
 
     public static Node2D? GetAirborneAnchor(NCreatureVisuals? visuals)
     {
-        return visuals?.GetNodeOrNull<Node2D>(AirborneAnchorName);
+        return visuals?.GetNodeOrNull<Node2D>(AirborneAnchorPath);
     }
 
     public static Sprite2D? GetBodySprite(NCreatureVisuals? visuals)
     {
-        return visuals?.GetNodeOrNull<Sprite2D>("%Visuals");
+        return visuals?.GetNodeOrNull<Sprite2D>(BodySpritePath);
     }
 
     public static Node2D? GetCinematicFocus(NCreatureVisuals? visuals)
     {
-        return visuals?.GetNodeOrNull<Node2D>($"%{CinematicFocusName}");
+        return visuals?.GetNodeOrNull<Node2D>(CinematicFocusPath);
     }
 
     public static void SyncShadowScale(Creature creature)
     {
         var visuals = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
-        var shadow = visuals?.GetNodeOrNull<Sprite2D>(ShadowNodeName);
+        var shadow = visuals?.GetNodeOrNull<Sprite2D>(ShadowPath);
         if (shadow == null)
         {
             return;
         }
 
         float scale = NinjaSlayerCombatVisuals.GetShadowScale(creature);
-        var controller = visuals?.GetNodeOrNull<NinjaSlayerShadowController>(ShadowControllerNodeName);
+        var controller = visuals?.GetNodeOrNull<NinjaSlayerShadowController>(ShadowControllerPath);
         if (controller != null)
         {
             controller.SetBaseScale(scale);

@@ -14,6 +14,7 @@ internal sealed class FinisherCardVisualSuppression : IDisposable
     private readonly Player _player;
     private readonly HashSet<ulong> _baselineCardIds;
     private readonly Dictionary<NCard, bool> _hiddenCards = new(ReferenceEqualityComparer.Instance);
+    private readonly List<NCard> _drainBuffer = [];
     private readonly FinisherCardVisualMonitor _monitor;
     private bool _accepting = true;
     private bool _disposed;
@@ -32,6 +33,9 @@ internal sealed class FinisherCardVisualSuppression : IDisposable
         };
         _monitor.Initialize(this);
         room.AddChild(_monitor);
+        // AddChild enables _Process before _Ready, so disable it only after the node enters the tree.
+        // ProcessHiddenCards does no work until disposal starts the drain.
+        _monitor.SetProcess(false);
 
         NCard? playedCard = NCard.FindOnTable(cardPlay.Card);
         if (playedCard != null)
@@ -68,6 +72,12 @@ internal sealed class FinisherCardVisualSuppression : IDisposable
         }
 
         RestoreCardsInHand();
+        if (GodotObject.IsInstanceValid(_monitor))
+        {
+            // The drain starts here, so the monitor only needs frames from this point on.
+            _monitor.SetProcess(true);
+        }
+
         FinishMonitorIfIdle();
     }
 
@@ -78,7 +88,10 @@ internal sealed class FinisherCardVisualSuppression : IDisposable
             return;
         }
 
-        foreach (NCard card in _hiddenCards.Keys.ToList())
+        // Reused across the drain so the frame callback does not allocate a fresh List per frame.
+        _drainBuffer.Clear();
+        _drainBuffer.AddRange(_hiddenCards.Keys);
+        foreach (NCard card in _drainBuffer)
         {
             if (!GodotObject.IsInstanceValid(card) || !card.IsInsideTree())
             {
@@ -92,6 +105,7 @@ internal sealed class FinisherCardVisualSuppression : IDisposable
             }
         }
 
+        _drainBuffer.Clear();
         FinishMonitorIfIdle();
     }
 

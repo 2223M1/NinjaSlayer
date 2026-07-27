@@ -104,7 +104,7 @@ internal static class FinisherForecastEngine
         for (int hit = 0; hit < simulation.HitCount; hit++)
         {
             IReadOnlyList<int> targets = resolveTargetsEachHit
-                ? targetSets[0].Where(target => simulation.IsAlive(states[target])).ToArray()
+                ? FilterAlive(targetSets[0], states, simulation.IsAlive)
                 : targetSets[Math.Min(hit, targetSets.Count - 1)];
             if (targets.Count == 0)
             {
@@ -197,7 +197,7 @@ internal static class FinisherForecastEngine
         IReadOnlyList<FinisherForecastPostEffect<TState>> effects = simulation.PostEffects ?? [];
         if (effectIndex >= effects.Count)
         {
-            return states.All(state => !simulation.IsAlive(state))
+            return AllDefeated(states, simulation.IsAlive)
                 ? FinisherForecastOutcome.Guaranteed
                 : FinisherForecastOutcome.NotGuaranteed;
         }
@@ -262,8 +262,83 @@ internal static class FinisherForecastEngine
         return result;
     }
 
-    private static int[] AliveTargets<TState>(TState[] states, Func<TState, bool> isAlive) =>
-        Enumerable.Range(0, states.Length).Where(index => isAlive(states[index])).ToArray();
+    // Called once per expanded search node, so it is written as plain loops: the LINQ form
+    // allocated a capturing closure, a range iterator, a where iterator and a growth buffer every
+    // time, against a 25,000-state budget.
+    private static int[] AliveTargets<TState>(TState[] states, Func<TState, bool> isAlive)
+    {
+        var aliveCount = 0;
+        for (var index = 0; index < states.Length; index++)
+        {
+            if (isAlive(states[index]))
+            {
+                aliveCount++;
+            }
+        }
+
+        if (aliveCount == 0)
+        {
+            return [];
+        }
+
+        var alive = new int[aliveCount];
+        var next = 0;
+        for (var index = 0; index < states.Length; index++)
+        {
+            if (isAlive(states[index]))
+            {
+                alive[next++] = index;
+            }
+        }
+
+        return alive;
+    }
+
+    private static int[] FilterAlive<TState>(
+        IReadOnlyList<int> candidates,
+        TState[] states,
+        Func<TState, bool> isAlive)
+    {
+        var aliveCount = 0;
+        for (var index = 0; index < candidates.Count; index++)
+        {
+            if (isAlive(states[candidates[index]]))
+            {
+                aliveCount++;
+            }
+        }
+
+        if (aliveCount == 0)
+        {
+            return [];
+        }
+
+        var alive = new int[aliveCount];
+        var next = 0;
+        for (var index = 0; index < candidates.Count; index++)
+        {
+            int candidate = candidates[index];
+            if (isAlive(states[candidate]))
+            {
+                alive[next++] = candidate;
+            }
+        }
+
+        return alive;
+    }
+
+    private static bool AllDefeated<TState>(TState[] states, Func<TState, bool> isAlive)
+    {
+        for (var index = 0; index < states.Length; index++)
+        {
+            if (isAlive(states[index]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private sealed class SearchContext<TState, TStateKey>(
         Func<TState, TStateKey> stateKey,
