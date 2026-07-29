@@ -38,7 +38,10 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
     public override bool RequiresEpochAndTimeline => NinjaSlayerCharacterStats.RequiresEpochAndTimeline;
     public override string CharacterSelectSfx => NinjaSlayerAudio.NinjaSlayerSelectEvent;
     public override string CharacterTransitionSfx => NinjaSlayerAudio.NinjaSlayerTransitionEvent;
-    protected override IEnumerable<string> ExtraAssetPaths => BossDeathExplosionVfx.AssetPaths;
+    protected override IEnumerable<string> ExtraAssetPaths =>
+        BossBurstPresentationCoordinator.AssetPaths
+            .Concat(BossDismembermentPresentation.AssetPaths)
+            .Concat(BossDeathWhiteoutLease.AssetPaths);
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
         RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(NinjaSlayerAssetProfile.VisualsPath);

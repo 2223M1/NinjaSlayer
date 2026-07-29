@@ -2,6 +2,6 @@ namespace NinjaSlayer.Code.Combat;
 
 public static class YamotoKokiDamageMath
 {
-    public static int ScaleForParty(int baseDamage, int playerCount) =>
-        checked(baseDamage * Math.Max(1, playerCount));
+    public static int ScaleForActiveRelics(int baseDamage, int activeRelicCount) =>
+        checked(baseDamage * Math.Max(0, activeRelicCount));
 }

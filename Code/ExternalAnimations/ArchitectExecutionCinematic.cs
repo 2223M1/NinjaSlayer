@@ -21,7 +21,6 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public sealed partial class ArchitectExecutionCinematic : Node
 {
     private const string ControllerName = "NinjaSlayerArchitectExecution";
-    private const string ArchitectHeadBone = "head";
     private const float InitialPauseSeconds = 0.5f;
     private const float FacingPauseSeconds = 0.5f;
     private const float FacingTurnSeconds = 0.15f;
@@ -29,13 +28,10 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private const float ImpactSeconds = 0.3f;
     private const float ImpactPunchSeconds = 0.04f;
     private const float ImpactRecoveryStartSeconds = 0.2f;
-    private const float HeadFlightSeconds = ArchitectDeathPresentationSession.DurationSeconds;
-    private const float NinjaSoulLeadSeconds = 1f;
-    private const float HeadExplosionScreenMargin = 72f;
     private const float CameraScaleMultiplier = 2f;
     private const float ImpactScaleMultiplier = 2.12f;
     private const float CameraReturnSeconds = 0.2f;
-    private const float ExitSpeedPixelsPerSecond = 420f;
+    private const float ExitSpeedPixelsPerSecond = 840f;
     private const float ExitMargin = 160f;
 
     private TheArchitect _eventModel = null!;
@@ -43,11 +39,13 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private NCreature _ownerNode = null!;
     private NCreature _architectNode = null!;
     private NCombatRoom _room = null!;
-    private CancellationTokenSource? _cancelSource;
+    private readonly CinematicSessionLifetime _runLifetime = new();
+    private CinematicSessionLifetime? _exitLifetime;
+    private Task? _exitTask;
     private CombatCinematicCameraLease? _camera;
     private FinisherImpactPresentation? _presentation;
-    private SpineBoneFlight? _headFlight;
-    private ArchitectRagdollDeathAnimation? _ragdoll;
+    private BossDismembermentSnapshot? _dismembermentSnapshot;
+    private ArchitectBossSoftBodyLead? _softBodyLead;
     private ArchitectDeathPresentationSession? _deathSession;
     private Vector2 _ownerStartPosition;
     private Vector2 _architectBodyPosition;
@@ -55,8 +53,8 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private float _architectBodyRotation;
     private Color _architectBodyModulate;
     private bool _doomFrozen;
+    private bool _initialized;
     private bool _completed;
-    private bool _headExploded;
     private bool _architectDeathCommitted;
 
     public static bool TryStart(TheArchitect eventModel)
@@ -84,20 +82,39 @@ public sealed partial class ArchitectExecutionCinematic : Node
             _architectNode = architectNode,
             _room = room
         };
-        room.AddChild(controller);
-        controller.Begin();
-        return true;
+        try
+        {
+            room.AddChildSafely(controller);
+            if (!GodotObject.IsInstanceValid(controller) || !controller.IsInsideTree())
+            {
+                controller.QueueFreeSafely();
+                return false;
+            }
+
+            controller.Begin();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Error($"Architect execution setup failed: {exception}");
+            controller.QueueFreeSafely();
+            return false;
+        }
     }
 
     public override void _ExitTree()
     {
-        _cancelSource?.Cancel();
+        _runLifetime.Dispose();
+        Interlocked.Exchange(ref _exitLifetime, null)?.Dispose();
         _deathSession?.CompleteVisuals();
         _deathSession?.Dispose();
-        _ragdoll?.Dispose();
-        RestoreTemporaryState(restoreOwnerPosition: !_completed);
-        _headFlight?.Dispose();
-        _headFlight = null;
+        _softBodyLead?.Dispose();
+        _softBodyLead = null;
+        DisposeDismembermentSnapshot();
+        if (_initialized)
+        {
+            RestoreTemporaryState(restoreOwnerPosition: !_completed);
+        }
         _presentation?.Dispose();
         _presentation = null;
         _camera?.Dispose();
@@ -111,8 +128,11 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _architectBodyScale = _architectNode.Body.Scale;
         _architectBodyRotation = _architectNode.Body.Rotation;
         _architectBodyModulate = _architectNode.Body.SelfModulate;
-        _cancelSource = new CancellationTokenSource();
-        TaskHelper.RunSafely(Run(_cancelSource.Token));
+        _initialized = true;
+        _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(
+            _room,
+            _architectNode);
+        TaskHelper.RunSafely(Run(_runLifetime.Token));
     }
 
     private async Task Run(CancellationToken cancelToken)
@@ -130,8 +150,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
             await ChargeArchitect(cancelToken);
             await PlayImpact(cancelToken);
             await PlayArchitectDeath(cancelToken);
-            await RestoreCameraAndBackdrop(cancelToken);
-            await ExitScene(cancelToken);
 
             _completed = true;
             CompleteEvent();
@@ -150,16 +168,23 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
         finally
         {
+            if (!_completed)
+            {
+                _exitLifetime?.Cancel();
+            }
+
             _deathSession?.CompleteVisuals();
             _deathSession?.Dispose();
             _deathSession = null;
-            _ragdoll?.Dispose();
-            _ragdoll = null;
+            _softBodyLead?.Dispose();
+            _softBodyLead = null;
+            DisposeDismembermentSnapshot();
             RestoreTemporaryState(restoreOwnerPosition: !_completed);
             _presentation?.Dispose();
             _presentation = null;
             _camera?.Dispose();
             _camera = null;
+            _runLifetime.Dispose();
         }
     }
 
@@ -276,19 +301,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private async Task PlayArchitectDeath(CancellationToken cancelToken)
     {
-        _headFlight = SpineBoneFlight.TryCreate(
-            _architectNode,
-            ArchitectHeadBone,
-            _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT");
-        _ragdoll = ArchitectRagdollDeathAnimation.TryCreate(_architectNode);
-        float cameraScale = GetCameraScale(CameraScaleMultiplier);
-        Vector2 startSceneLocal = _headFlight?.GetScenePosition(_room.SceneContainer)
-            ?? _room.SceneContainer.GetGlobalTransform().AffineInverse()
-                * _architectNode.Visuals.Bounds.GetGlobalRect().GetCenter();
-        Vector2 targetSceneLocal = new(
-            startSceneLocal.X,
-            HeadExplosionScreenMargin / Mathf.Max(cameraScale, 0.0001f));
-        Vector2 cameraStart = _camera?.CurrentPosition ?? Vector2.Zero;
         float fallDirection = Mathf.Sign(_architectNode.Position.X - _ownerNode.Position.X);
         if (Mathf.IsZeroApprox(fallDirection))
         {
@@ -300,64 +312,77 @@ public sealed partial class ArchitectExecutionCinematic : Node
         await _deathSession.WaitUntilDeathStarts(killTask, cancelToken);
         _architectDeathCommitted = true;
 
-        float elapsed = 0f;
-        bool playedNinjaSoul = false;
-        while (elapsed < HeadFlightSeconds)
+        BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
+        _dismembermentSnapshot = null;
+        try
         {
-            float delta = await NextFrame(cancelToken);
-            elapsed += delta;
-            float progress = Mathf.Clamp(elapsed / HeadFlightSeconds, 0f, 1f);
-            float ragdollProgress = Mathf.Clamp(
-                elapsed / ArchitectRagdollDeathAnimation.FallSeconds,
-                0f,
-                1f);
-            _ragdoll?.SetProgress(ragdollProgress, fallDirection);
-
-            Vector2 headPosition = _headFlight == null
-                ? startSceneLocal
-                : startSceneLocal.Lerp(targetSceneLocal, progress);
-            if (_headFlight != null)
-            {
-                _headFlight.SetSceneTransform(
-                    _room.SceneContainer,
-                    headPosition,
-                    360f * progress);
-                FollowHead(cameraStart, headPosition, progress, cameraScale);
-            }
-            _camera?.Advance(delta);
-
-            if (!playedNinjaSoul && elapsed >= HeadFlightSeconds - NinjaSoulLeadSeconds)
-            {
-                playedNinjaSoul = true;
-                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerNinjaSoulEvent);
-            }
+            _softBodyLead = BossDismembermentPresentation.TrySpawnArchitectLead(
+                _room,
+                _architectNode,
+                snapshot,
+                fallDirection,
+                BossBurstPresentationCoordinator.FragmentZIndex);
+        }
+        finally
+        {
+            snapshot?.Dispose();
         }
 
-        _ragdoll?.SetProgress(1f, fallDirection);
-        Vector2 finalHeadPosition = _headFlight == null ? startSceneLocal : targetSceneLocal;
-        if (_headFlight != null)
-        {
-            _headFlight.SetSceneTransform(_room.SceneContainer, targetSceneLocal, 360f);
-            FollowHead(cameraStart, targetSceneLocal, 1f, cameraScale);
-        }
-
-        Vector2 explosionCenter = _room.SceneContainer.GetGlobalTransform() * finalHeadPosition;
-        _headFlight?.MarkDisappeared();
-        _ragdoll?.CommitDisappearance();
-        ExplodeAt(explosionCenter);
+        string monsterId = _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT";
         _deathSession.CompleteVisuals();
+
+        BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
+            _room,
+            new BossBurstParticipant(
+                monsterId,
+                SpawnArchitectBurst));
+        StartExitScene();
+
+        await registration.Cue.WaitAsync(cancelToken);
+        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
+        await Task.WhenAll(
+            cameraRestore,
+            registration.CombatRelease.WaitAsync(cancelToken));
         await killTask;
     }
 
-    private void ExplodeAt(Vector2 globalCenter)
+    private BossDismembermentSpawn SpawnArchitectBurst()
     {
-        _headExploded = true;
-        SfxCmd.Play(BossDeathExplosionVfx.TemporaryExplosionSfx);
-        BossDeathExplosionVfx.Play(_room, globalCenter);
-        if (_doomFrozen && !_architectDeathCommitted)
+        ArchitectBossSoftBodyLead? lead = Interlocked.Exchange(ref _softBodyLead, null);
+        return lead?.TriggerBurst()
+            ?? new BossDismembermentSpawn(false, Task.CompletedTask);
+    }
+
+    private void StartExitScene()
+    {
+        if (_exitTask != null)
         {
-            DoomHurtPoseController.Resume(_architectNode);
-            _doomFrozen = false;
+            return;
+        }
+
+        var lifetime = new CinematicSessionLifetime();
+        _exitLifetime = lifetime;
+        _exitTask = RunExitScene(lifetime);
+        TaskHelper.RunSafely(_exitTask);
+    }
+
+    private async Task RunExitScene(CinematicSessionLifetime lifetime)
+    {
+        try
+        {
+            await ExitScene(lifetime.Token);
+        }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested || !IsRuntimeValid())
+        {
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn($"Architect exit movement ended early: {exception.Message}");
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref _exitLifetime, null, lifetime);
+            lifetime.Dispose();
         }
     }
 
@@ -453,27 +478,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         return _camera!.GetCameraPosition(center, scale, _camera.ViewportSize * 0.5f);
     }
 
-    private void FollowHead(
-        Vector2 cameraStart,
-        Vector2 scenePosition,
-        float progress,
-        float scale)
-    {
-        if (_camera == null)
-        {
-            return;
-        }
-
-        Vector2 clampedCenter = _camera.ClampTarget(scenePosition, scale);
-        Vector2 followPosition = _camera.GetCameraPosition(
-            clampedCenter,
-            scale,
-            _camera.ViewportSize * 0.5f);
-        float handoff = CombatCinematicCameraLease.EaseOutCubic(
-            Mathf.Clamp(progress / 0.12f, 0f, 1f));
-        _camera.SetTransform(cameraStart.Lerp(followPosition, handoff), scale);
-    }
-
     private float ResolveImpactScale(float elapsed)
     {
         if (elapsed <= ImpactPunchSeconds)
@@ -519,11 +523,13 @@ public sealed partial class ArchitectExecutionCinematic : Node
             _architectNode.Body.SelfModulate = _architectBodyModulate;
         }
 
-        if (!_headExploded)
-        {
-            _headFlight?.Dispose();
-            _headFlight = null;
-        }
+    }
+
+    private void DisposeDismembermentSnapshot()
+    {
+        BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
+        _dismembermentSnapshot = null;
+        snapshot?.Dispose();
     }
 
     private void CompleteEvent()

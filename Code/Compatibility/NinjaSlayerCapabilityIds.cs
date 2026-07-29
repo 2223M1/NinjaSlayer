@@ -11,6 +11,7 @@ internal static class NinjaSlayerCapabilityIds
     public const string Typography = "typography";
     public const string ChadoPresentation = "chado-presentation";
     public const string CinematicInfrastructure = "cinematic-infrastructure";
+    public const string BossBurstPresentation = "boss-burst-presentation";
     public const string PreparedSafety = "prepared-safety";
     public const string PreparedGameplay = "prepared-gameplay";
     public const string PreparedUi = "prepared-ui";
@@ -34,6 +35,7 @@ internal static class NinjaSlayerCapabilityIds
         Typography,
         ChadoPresentation,
         CinematicInfrastructure,
+        BossBurstPresentation,
         PreparedSafety,
         PreparedGameplay,
         PreparedUi,

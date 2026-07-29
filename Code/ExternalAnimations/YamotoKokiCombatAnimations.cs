@@ -115,9 +115,26 @@ internal static class YamotoKokiCombatAnimations
 
         Vector2 originalPosition = creatureNode.Position;
         bool isFinisherApproach = approachMode == YamotoKokiIaiApproachMode.FinisherCloseRange;
-        float direction = isFinisherApproach
-            ? Mathf.Sign(targetNode.Position.X - originalPosition.X)
-            : creature.Side == CombatSide.Player ? 1f : -1f;
+        if (isFinisherApproach)
+        {
+            await approachStarted();
+            if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
+                    creature,
+                    IaiApproachSeconds,
+                    out Task action))
+            {
+                await action;
+            }
+            else
+            {
+                await Cmd.Wait(IaiApproachSeconds);
+            }
+
+            await impactAtPeak();
+            return;
+        }
+
+        float direction = creature.Side == CombatSide.Player ? 1f : -1f;
         if (Mathf.IsZeroApprox(direction))
         {
             direction = 1f;
@@ -125,32 +142,17 @@ internal static class YamotoKokiCombatAnimations
 
         Vector2 approachStart = originalPosition;
         Vector2 impactPosition = originalPosition + Vector2.Right * direction * IaiApproachDistance;
-        if (isFinisherApproach)
-        {
-            float targetHalfWidth = targetNode.Visuals.Bounds.Size.X
-                * Mathf.Abs(targetNode.Visuals.Scale.X)
-                * 0.5f;
-            impactPosition = new Vector2(
-                targetNode.Position.X
-                    - direction * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap),
-                originalPosition.Y);
-            approachStart = impactPosition - Vector2.Right * direction * IaiApproachDistance;
-            creatureNode.Position = approachStart;
-        }
 
         try
         {
             await approachStarted();
             await TweenIaiApproach(creatureNode, approachStart, impactPosition);
             await impactAtPeak();
-            if (!isFinisherApproach)
-            {
-                await TweenIaiReturn(creatureNode, impactPosition, originalPosition);
-            }
+            await TweenIaiReturn(creatureNode, impactPosition, originalPosition);
         }
         finally
         {
-            if (!isFinisherApproach && GodotObject.IsInstanceValid(creatureNode))
+            if (GodotObject.IsInstanceValid(creatureNode))
             {
                 creatureNode.Position = originalPosition;
             }
@@ -202,7 +204,6 @@ internal static class YamotoKokiCombatAnimations
         Vector2 originalPosition = creatureNode.Position;
         Vector2 originalBodyPosition = body.Position;
         float originalRotation = body.RotationDegrees;
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiByeEvent);
 
         try
         {
@@ -293,7 +294,9 @@ internal static class YamotoKokiCombatAnimations
                 {
                     if (GodotObject.IsInstanceValid(creatureNode))
                     {
-                        creatureNode.Position = start.Lerp(destination, Mathf.Pow(progress, 10f));
+                        creatureNode.Position = start.Lerp(
+                            destination,
+                            FinisherActionTrajectory.SlowProgress(progress));
                     }
                 }),
                 0f,

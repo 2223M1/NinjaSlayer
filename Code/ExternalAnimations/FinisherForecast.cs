@@ -21,6 +21,7 @@ using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
+using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Scripts;
 using static NinjaSlayer.Code.ExternalAnimations.FinisherTimeline;
@@ -267,65 +268,174 @@ internal static class FinisherForecast
             state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
             (current, targets, _) =>
             {
-                List<(int Target, bool TriggerKarate)> primaryResults = [];
-                foreach (int targetIndex in targets)
-                {
-                    if (current[targetIndex].Hp <= 0)
-                    {
-                        continue;
-                    }
-
-                    bool dealtDamage = ApplyDamage(
-                        owner,
-                        enemies,
-                        current,
-                        targetIndex,
-                        damageByTarget[targetIndex],
-                        descriptor.Props,
-                        owner,
-                        descriptor.CardSource,
-                        descriptor.CardPlay);
-                    primaryResults.Add((targetIndex, dealtDamage));
-                }
-
-                foreach ((int targetIndex, bool triggerKarate) in primaryResults)
-                {
-                    ForecastState state = current[targetIndex];
-                    if (!descriptor.TriggersKarate
-                        || !triggerKarate
-                        || state.Hp <= 0
-                        || state.Karate <= 0
-                        || !descriptor.Props.IsPoweredAttack()
-                        || !KarateTriggerRules.CanTriggerFromCardSource(descriptor.CardSource))
-                    {
-                        continue;
-                    }
-
-                    ApplyDamage(
-                        owner,
-                        enemies,
-                        current,
-                        targetIndex,
-                        state.Karate,
-                        ValueProp.Unpowered,
-                        owner,
-                        null,
-                        null);
-                    ForecastState afterKarate = current[targetIndex];
-                    if (afterKarate.Hp > 0)
-                    {
-                        current[targetIndex] = afterKarate with
-                        {
-                            Karate = Math.Max(0, afterKarate.Karate - 1)
-                        };
-                    }
-                }
+                ApplyActionDamage(
+                    owner,
+                    enemies,
+                    current,
+                    targets,
+                    damageByTarget,
+                    descriptor.Props,
+                    owner,
+                    descriptor.CardSource,
+                    descriptor.CardPlay,
+                    descriptor.TriggersKarate);
 
                 return true;
             },
             singleTargetIndex,
             fixedTargets);
         return FinisherForecastEngine.Evaluate(simulation);
+    }
+
+    public static FinisherForecastOutcome EvaluateYamotoKokiNextTurn(
+        Creature owner,
+        IReadOnlyList<Creature> enemies,
+        IReadOnlyList<Creature> missiles)
+    {
+        ICombatState? combatState = owner.CombatState;
+        IRunState? runState = ResolveRunState(owner);
+        if (owner.Monster is not YamotoKokiMonster yamotoKoki
+            || combatState == null
+            || runState == null
+            || enemies.Count == 0
+            || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _))
+            || missiles.Any(missile => missile.Monster is not YamotoKokiOrigamiMissile))
+        {
+            return FinisherForecastOutcome.NotGuaranteed;
+        }
+
+        ForecastState[] states = enemies.Select(enemy => new ForecastState(
+            enemy.CurrentHp,
+            enemy.Block,
+            enemy.GetPowerAmount<KaratePower>())).ToArray();
+        Creature[] missileDealers = [.. missiles];
+        decimal[] missileDamage = missileDealers
+            .Select(missile => (decimal)((YamotoKokiOrigamiMissile)missile.Monster!).GetExplodeDamage())
+            .ToArray();
+        decimal[] iaiDamage = Enumerable.Repeat(
+                (decimal)yamotoKoki.GetIaiSlashDamage(),
+                enemies.Count)
+            .ToArray();
+        FinisherForecastPostEffect<ForecastState>[] postEffects =
+        [
+            new(
+                FinisherForecastEffectTargeting.All,
+                (current, targets) =>
+                {
+                    ApplyActionDamage(
+                        owner,
+                        enemies,
+                        current,
+                        targets,
+                        iaiDamage,
+                        ValueProp.Move,
+                        owner,
+                        cardSource: null,
+                        cardPlay: null,
+                        triggersKarate: true);
+                    return true;
+                })
+        ];
+        var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
+            states,
+            missileDealers.Length,
+            FinisherForecastTargeting.Random,
+            state => state.Hp > 0,
+            state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
+            (current, targets, hitIndex) =>
+            {
+                if (hitIndex < 0 || hitIndex >= missileDealers.Length)
+                {
+                    return false;
+                }
+
+                foreach (int targetIndex in targets)
+                {
+                    ApplyDamage(
+                        owner,
+                        enemies,
+                        current,
+                        targetIndex,
+                        missileDamage[hitIndex],
+                        ValueProp.Move | ValueProp.Unpowered,
+                        missileDealers[hitIndex],
+                        cardSource: null,
+                        cardPlay: null);
+                }
+
+                return true;
+            },
+            PostEffects: postEffects);
+        return FinisherForecastEngine.Evaluate(
+            simulation,
+            branchQuantifier: FinisherForecastBranchQuantifier.AnyBranch);
+    }
+
+    private static void ApplyActionDamage(
+        Creature owner,
+        IReadOnlyList<Creature> enemies,
+        ForecastState[] states,
+        IReadOnlyList<int> targets,
+        IReadOnlyList<decimal> damageByTarget,
+        ValueProp props,
+        Creature dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay,
+        bool triggersKarate)
+    {
+        List<(int Target, bool TriggerKarate)> primaryResults = [];
+        foreach (int targetIndex in targets)
+        {
+            if (states[targetIndex].Hp <= 0)
+            {
+                continue;
+            }
+
+            bool dealtDamage = ApplyDamage(
+                owner,
+                enemies,
+                states,
+                targetIndex,
+                damageByTarget[targetIndex],
+                props,
+                dealer,
+                cardSource,
+                cardPlay);
+            primaryResults.Add((targetIndex, dealtDamage));
+        }
+
+        foreach ((int targetIndex, bool triggerKarate) in primaryResults)
+        {
+            ForecastState state = states[targetIndex];
+            if (!triggersKarate
+                || !triggerKarate
+                || state.Hp <= 0
+                || state.Karate <= 0
+                || !props.IsPoweredAttack()
+                || !KarateTriggerRules.CanTriggerFromCardSource(cardSource))
+            {
+                continue;
+            }
+
+            ApplyDamage(
+                owner,
+                enemies,
+                states,
+                targetIndex,
+                state.Karate,
+                ValueProp.Unpowered,
+                dealer,
+                cardSource: null,
+                cardPlay: null);
+            ForecastState afterKarate = states[targetIndex];
+            if (afterKarate.Hp > 0)
+            {
+                states[targetIndex] = afterKarate with
+                {
+                    Karate = Math.Max(0, afterKarate.Karate - 1)
+                };
+            }
+        }
     }
 
     private static void ApplyHit(

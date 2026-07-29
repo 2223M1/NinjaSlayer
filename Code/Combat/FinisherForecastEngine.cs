@@ -7,6 +7,12 @@ internal enum FinisherForecastOutcome
     IndeterminateBudget
 }
 
+internal enum FinisherForecastBranchQuantifier
+{
+    AllBranches,
+    AnyBranch
+}
+
 internal enum FinisherForecastTargeting
 {
     Single,
@@ -51,10 +57,12 @@ internal static class FinisherForecastEngine
     public static FinisherForecastOutcome Evaluate<TState, TStateKey>(
         FinisherForecastSimulation<TState, TStateKey> simulation,
         int maximumSearchStates = DefaultMaximumSearchStates,
-        TimeSpan? maximumSearchTime = null)
+        TimeSpan? maximumSearchTime = null,
+        FinisherForecastBranchQuantifier branchQuantifier =
+            FinisherForecastBranchQuantifier.AllBranches)
         where TStateKey : notnull
     {
-        if (simulation.HitCount <= 0 || simulation.InitialStates.Count == 0)
+        if (simulation.HitCount < 0 || simulation.InitialStates.Count == 0)
         {
             return FinisherForecastOutcome.NotGuaranteed;
         }
@@ -65,29 +73,44 @@ internal static class FinisherForecastEngine
             maximumSearchTime ?? DefaultMaximumSearchTime);
         TState[] states = [.. simulation.InitialStates];
 
+        if (simulation.HitCount == 0)
+        {
+            return simulation.PostEffects is { Count: > 0 }
+                ? ApplyPostEffects(simulation, states, effectIndex: 0, search, branchQuantifier)
+                : FinisherForecastOutcome.NotGuaranteed;
+        }
+
         return simulation.Targeting switch
         {
             FinisherForecastTargeting.Single when simulation.SingleTarget is int target
                 && target >= 0
-                && target < states.Length => SimulateFixed(simulation, states, [[target]], search),
+                && target < states.Length => SimulateFixed(
+                    simulation,
+                    states,
+                    [[target]],
+                    search,
+                    branchQuantifier),
             FinisherForecastTargeting.All => SimulateFixed(
                 simulation,
                 states,
                 [AliveTargets(states, simulation.IsAlive)],
                 search,
+                branchQuantifier,
                 resolveTargetsEachHit: true),
             FinisherForecastTargeting.Random => SimulateRandom(
                 simulation,
                 states,
                 hitIndex: 0,
                 simulation.HitCount,
-                search),
+                search,
+                branchQuantifier),
             FinisherForecastTargeting.Fixed when simulation.FixedTargets is { Count: > 0 } fixedTargets
                 && fixedTargets.All(target => target >= 0 && target < states.Length) => SimulateFixed(
                     simulation,
                     states,
                     [fixedTargets],
                     search,
+                    branchQuantifier,
                     resolveTargetsEachHit: true),
             _ => FinisherForecastOutcome.NotGuaranteed
         };
@@ -98,6 +121,7 @@ internal static class FinisherForecastEngine
         TState[] states,
         IReadOnlyList<IReadOnlyList<int>> targetSets,
         SearchContext<TState, TStateKey> search,
+        FinisherForecastBranchQuantifier branchQuantifier,
         bool resolveTargetsEachHit = false)
         where TStateKey : notnull
     {
@@ -117,7 +141,7 @@ internal static class FinisherForecastEngine
             }
         }
 
-        return ApplyPostEffects(simulation, states, effectIndex: 0, search);
+        return ApplyPostEffects(simulation, states, effectIndex: 0, search, branchQuantifier);
     }
 
     private static FinisherForecastOutcome SimulateRandom<TState, TStateKey>(
@@ -125,18 +149,19 @@ internal static class FinisherForecastEngine
         TState[] states,
         int hitIndex,
         int hitsRemaining,
-        SearchContext<TState, TStateKey> search)
+        SearchContext<TState, TStateKey> search,
+        FinisherForecastBranchQuantifier branchQuantifier)
         where TStateKey : notnull
     {
         if (hitsRemaining == 0)
         {
-            return ApplyPostEffects(simulation, states, effectIndex: 0, search);
+            return ApplyPostEffects(simulation, states, effectIndex: 0, search, branchQuantifier);
         }
 
         int[] alive = AliveTargets(states, simulation.IsAlive);
         if (alive.Length == 0)
         {
-            return ApplyPostEffects(simulation, states, effectIndex: 0, search);
+            return ApplyPostEffects(simulation, states, effectIndex: 0, search, branchQuantifier);
         }
 
         FinisherForecastSearchKey<TStateKey> key = search.CreateKey(
@@ -159,19 +184,19 @@ internal static class FinisherForecastEngine
         foreach (int target in alive)
         {
             TState[] branch = (TState[])states.Clone();
-            if (!simulation.TryApplyHit(branch, [target], hitIndex))
-            {
-                search.Store(key, FinisherForecastOutcome.NotGuaranteed);
-                return FinisherForecastOutcome.NotGuaranteed;
-            }
-
-            FinisherForecastOutcome branchResult = SimulateRandom(
-                simulation,
-                branch,
-                hitIndex + 1,
-                hitsRemaining - 1,
-                search);
-            if (branchResult == FinisherForecastOutcome.NotGuaranteed)
+            FinisherForecastOutcome branchResult = simulation.TryApplyHit(branch, [target], hitIndex)
+                ? SimulateRandom(
+                    simulation,
+                    branch,
+                    hitIndex + 1,
+                    hitsRemaining - 1,
+                    search,
+                    branchQuantifier)
+                : FinisherForecastOutcome.NotGuaranteed;
+            if (branchQuantifier == FinisherForecastBranchQuantifier.AllBranches
+                && branchResult == FinisherForecastOutcome.NotGuaranteed
+                || branchQuantifier == FinisherForecastBranchQuantifier.AnyBranch
+                && branchResult == FinisherForecastOutcome.Guaranteed)
             {
                 search.Store(key, branchResult);
                 return branchResult;
@@ -182,7 +207,9 @@ internal static class FinisherForecastEngine
 
         FinisherForecastOutcome result = indeterminate
             ? FinisherForecastOutcome.IndeterminateBudget
-            : FinisherForecastOutcome.Guaranteed;
+            : branchQuantifier == FinisherForecastBranchQuantifier.AllBranches
+                ? FinisherForecastOutcome.Guaranteed
+                : FinisherForecastOutcome.NotGuaranteed;
         search.Store(key, result);
         return result;
     }
@@ -191,7 +218,8 @@ internal static class FinisherForecastEngine
         FinisherForecastSimulation<TState, TStateKey> simulation,
         TState[] states,
         int effectIndex,
-        SearchContext<TState, TStateKey> search)
+        SearchContext<TState, TStateKey> search,
+        FinisherForecastBranchQuantifier branchQuantifier)
         where TStateKey : notnull
     {
         IReadOnlyList<FinisherForecastPostEffect<TState>> effects = simulation.PostEffects ?? [];
@@ -216,7 +244,12 @@ internal static class FinisherForecastEngine
                 return FinisherForecastOutcome.NotGuaranteed;
             }
 
-            return ApplyPostEffects(simulation, states, effectIndex + 1, search);
+            return ApplyPostEffects(
+                simulation,
+                states,
+                effectIndex + 1,
+                search,
+                branchQuantifier);
         }
 
         FinisherForecastSearchKey<TStateKey> key = search.CreateKey(
@@ -239,14 +272,18 @@ internal static class FinisherForecastEngine
         foreach (int target in alive)
         {
             TState[] branch = (TState[])states.Clone();
-            if (!effect.TryApply(branch, [target]))
-            {
-                search.Store(key, FinisherForecastOutcome.NotGuaranteed);
-                return FinisherForecastOutcome.NotGuaranteed;
-            }
-
-            FinisherForecastOutcome branchResult = ApplyPostEffects(simulation, branch, effectIndex + 1, search);
-            if (branchResult == FinisherForecastOutcome.NotGuaranteed)
+            FinisherForecastOutcome branchResult = effect.TryApply(branch, [target])
+                ? ApplyPostEffects(
+                    simulation,
+                    branch,
+                    effectIndex + 1,
+                    search,
+                    branchQuantifier)
+                : FinisherForecastOutcome.NotGuaranteed;
+            if (branchQuantifier == FinisherForecastBranchQuantifier.AllBranches
+                && branchResult == FinisherForecastOutcome.NotGuaranteed
+                || branchQuantifier == FinisherForecastBranchQuantifier.AnyBranch
+                && branchResult == FinisherForecastOutcome.Guaranteed)
             {
                 search.Store(key, branchResult);
                 return branchResult;
@@ -257,7 +294,9 @@ internal static class FinisherForecastEngine
 
         FinisherForecastOutcome result = indeterminate
             ? FinisherForecastOutcome.IndeterminateBudget
-            : FinisherForecastOutcome.Guaranteed;
+            : branchQuantifier == FinisherForecastBranchQuantifier.AllBranches
+                ? FinisherForecastOutcome.Guaranteed
+                : FinisherForecastOutcome.NotGuaranteed;
         search.Store(key, result);
         return result;
     }

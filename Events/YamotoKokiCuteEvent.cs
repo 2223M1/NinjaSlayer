@@ -62,17 +62,9 @@ public sealed class YamotoKokiCuteEvent : ModEventTemplate
     private async Task HugYamotoKoki()
     {
         Player? owner = Owner;
-        if (owner != null)
+        if (owner != null && owner.Relics.All(relic => relic is not YamotoKokiCuteRelic))
         {
-            IRunState runState = owner.RunState;
-            Player? recipient = runState.Players.FirstOrDefault(
-                player => player.Character is INinjaSlayerCharacter);
-            bool partyAlreadyHasRelic = runState.Players.Any(
-                player => player.GetRelic<YamotoKokiCuteRelic>() != null);
-            if (ReferenceEquals(owner, recipient) && !partyAlreadyHasRelic)
-            {
-                await RelicCmd.Obtain<YamotoKokiCuteRelic>(owner);
-            }
+            await RelicCmd.Obtain<YamotoKokiCuteRelic>(owner);
         }
 
         SetEventFinished(PageDescription("HUGGED"));
