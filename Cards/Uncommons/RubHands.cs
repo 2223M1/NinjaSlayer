@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class RubHands : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(RubHands), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "ShurikenThrow");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(RubHands), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
 
 
 

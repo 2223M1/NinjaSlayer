@@ -13,10 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class MasochisticBliss : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(MasochisticBliss), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BloodTears");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(MasochisticBliss), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
 
-    // ponytail: reuse debuff-themed art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new VigorAmountVar(3)

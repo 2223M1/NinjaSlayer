@@ -15,10 +15,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(HalfMoonCompassKick), 0, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true, "SweepKick");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(HalfMoonCompassKick), 0, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true);
 
 
-    // ponytail: reuse sweep-kick art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(4, ValueProp.Move),

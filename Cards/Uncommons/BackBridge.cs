@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BackBridge : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BackBridge), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "KarateFinish");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BackBridge), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
-    // ponytail: reuse karate finish art until Back Bridge gets dedicated card art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

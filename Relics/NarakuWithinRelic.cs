@@ -10,8 +10,6 @@ public sealed class NarakuWithinRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
 
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.FromCardImage("NarakuWithin");
-
     public override async Task BeforeCombatStart()
     {
         Flash();

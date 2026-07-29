@@ -10,10 +10,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class OmnidirectionalThrow : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OmnidirectionalThrow), 1, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "ShurikenSpread");
-
-
-    // ponytail: reuse shuriken art until this card gets dedicated art.
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OmnidirectionalThrow), 1, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new ShurikenVar(3)

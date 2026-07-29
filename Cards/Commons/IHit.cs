@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IHit : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IHit), 2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "StrikeNinjaSlayer");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IHit), 2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
 
 
 

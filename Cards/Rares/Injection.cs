@@ -12,10 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Injection : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Injection), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "ShurikenThrow");
-
-
-    // ponytail: reuse shuriken-throw art until this card gets dedicated art.
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Injection), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new PowerVar<InjectionPower>(2)

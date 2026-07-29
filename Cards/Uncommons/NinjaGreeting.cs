@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaGreeting : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaGreeting), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "ForgoStrength");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaGreeting), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
 

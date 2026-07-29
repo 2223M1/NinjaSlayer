@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaApathy : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaApathy), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaApathy), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true);
 
 
     public override bool GainsBlock => true;

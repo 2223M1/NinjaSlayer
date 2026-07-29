@@ -24,10 +24,10 @@ public sealed class NancyLee : ModAncientEventTemplate
     );
 
     public override AncientEventPresentationAssetProfile AncientPresentationAssetProfile => new(
-        MapIconPath: "res://icon.svg",
-        MapIconOutlinePath: "res://icon.svg",
-        RunHistoryIconPath: "res://icon.svg",
-        RunHistoryIconOutlinePath: "res://icon.svg"
+        MapIconPath: "res://NinjaSlayer/images/ancients/NancyLeeMapIcon.png",
+        MapIconOutlinePath: "res://NinjaSlayer/images/ancients/NancyLeeMapIcon_outline.png",
+        RunHistoryIconPath: "res://NinjaSlayer/images/ancients/NancyLeeRunHistoryIcon.png",
+        RunHistoryIconOutlinePath: "res://NinjaSlayer/images/ancients/NancyLeeRunHistoryIcon_outline.png"
     );
 
     private IReadOnlyList<EventOption> Pool1 => [

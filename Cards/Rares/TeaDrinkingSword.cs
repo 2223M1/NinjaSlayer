@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaDrinkingSword : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaDrinkingSword), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "ShurikenThrow");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaDrinkingSword), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
 
-    // ponytail: reuse shuriken-throw art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("ShurikenThreshold", 5)

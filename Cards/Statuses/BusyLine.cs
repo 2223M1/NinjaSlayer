@@ -10,13 +10,12 @@ namespace NinjaSlayer.Cards;
 [RegisterCard(typeof(StatusCardPool))]
 public sealed class BusyLine : NinjaSlayerStandaloneCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BusyLine), 1, CardType.Status, CardRarity.Status, TargetType.None, false, "IrcTerminal");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BusyLine), 1, CardType.Status, CardRarity.Status, TargetType.None, false);
 
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
 
-    // ponytail: reuse terminal card art until Busy Line gets dedicated art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Retain,

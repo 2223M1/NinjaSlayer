@@ -14,10 +14,9 @@ namespace NinjaSlayer.Cards;
 [RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class ZazenDrink : NinjaSlayerStandaloneCardTemplate, IDrawCastSkillCard
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ZazenDrink), 0, CardType.Skill, CardRarity.Ancient, TargetType.Self, true, "ChadoCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ZazenDrink), 0, CardType.Skill, CardRarity.Ancient, TargetType.Self, true);
 
 
-    // ponytail: reuse tea art until Zazen Drink gets dedicated card art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

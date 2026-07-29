@@ -50,12 +50,27 @@ The foundational shared portraits include:
 
 New cards should use a `{ClassName}.png`. Temporary aliases must also be recorded in `Docs/placeholder-assets.json`; replacing an alias with dedicated art requires removing both its `AssetName` and inventory entry.
 
-## Relic And Potion Images
+All 93 current card classes now resolve to dedicated class-name portraits. `Docs/placeholder-assets.json` contains no outstanding card-art aliases.
+
+Of these portraits, 88 standard cards use `1000x760` and the 3 Ancient cards use `606x852`. `KarateStraight.png` remains at its restored source size of `1438x1093`, and the unchanged Shuriken Token `ShurikenCard.png` remains at `1439x1093`, as explicit source-art exceptions.
+
+## Relic, Potion, Ancient, And Enchantment Images
 
 Relic assets live in `NinjaSlayer/images/relics/` and use `{RelicClassName}.png`, `{RelicClassName}_outline.png`, and `{RelicClassName}_large.png`. Potion assets live in `NinjaSlayer/images/potions/` and use `{PotionClassName}.png` plus `{PotionClassName}_outline.png`.
 
-The Nancy relics currently share the `PortableIrcTerminalRelic` icon set. Their target names are recorded in `Docs/placeholder-assets.json`.
+All current relic classes use dedicated class-name icon sets.
+
+`ZbrAmpoulePotion.png` is a dedicated `256x256` transparent potion icon and `ZbrAmpoulePotion_outline.png` is its pure-white silhouette. Its Naraku contents follow the burning VFX palette: black `#000000`, bright violet `#ff31ff`, and deep violet `#2b00ff`.
+
+Nancy Lee uses dedicated Ancient presentation assets:
+
+- `NinjaSlayer/images/ancients/NancyLeeMapIcon.png` and `NancyLeeMapIcon_outline.png` at `278x278`
+- `NinjaSlayer/images/ancients/NancyLeeRunHistoryIcon.png` and `NancyLeeRunHistoryIcon_outline.png` at `128x128`
+
+Her authoritative identity sheet is archived at `../output/ancillary-art/references/NancyLee-character-reference.webp`; generated Nancy assets preserve its blonde high bun, long side lock, paired dark hair sticks, cyan eyes, and black/navy armored ninja suit with cyan piping.
+
+`NinjaSlayer/images/enchantments/BlackFlameEnchantment.png` is a dedicated `64x64` transparent icon using the same black and vivid-violet Naraku palette.
 
 ## Power Icons
 
-Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. The project currently ships both `OpeningPower.png` and `soar_power.png`. A power without dedicated art falls back to `soar_power.png`; this fallback is recorded in `Docs/placeholder-assets.json`.
+Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. All 41 concrete mod Power classes have dedicated 256x256 transparent PNGs; no shared fallback icon remains.

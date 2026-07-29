@@ -15,9 +15,6 @@ public sealed class NancyZazenDrinkRelic : NinjaSlayerRelicTemplate
     public override RelicRarity Rarity => RelicRarity.Ancient;
     public override bool HasUponPickupEffect => true;
 
-    // ponytail: reuse the existing terminal relic art until Nancy gets dedicated icons.
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For<PortableIrcTerminalRelic>();
-
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         HoverTipFactory.FromCardWithCardHoverTips<ZazenDrink>()
             .Concat(HoverTipFactory.FromCardWithCardHoverTips<PoorSleep>());

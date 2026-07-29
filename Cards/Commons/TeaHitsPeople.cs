@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaHitsPeople), 1, CardType.Attack, CardRarity.Common, TargetType.AllEnemies, true, "ChadoCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaHitsPeople), 1, CardType.Attack, CardRarity.Common, TargetType.AllEnemies, true);
 
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [

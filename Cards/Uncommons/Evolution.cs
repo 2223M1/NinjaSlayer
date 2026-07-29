@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class Evolution : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Evolution), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(Evolution), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
 
 

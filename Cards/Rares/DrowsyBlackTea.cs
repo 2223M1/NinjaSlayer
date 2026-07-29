@@ -11,10 +11,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DrowsyBlackTea : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DrowsyBlackTea), 2, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "ChadoCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DrowsyBlackTea), 2, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
 
 
-    // ponytail: reuse tea art until this card gets dedicated art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

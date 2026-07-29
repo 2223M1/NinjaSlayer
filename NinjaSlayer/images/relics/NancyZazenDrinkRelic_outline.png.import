@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c1qotim3ra6qi"
-path="res://.godot/imported/soar_power.png-47b1c949e1b2b5fa3499dbbc75eb475c.ctex"
+uid="uid://jodteitmjqse"
+path="res://.godot/imported/NancyZazenDrinkRelic_outline.png-3071a5b2a9c7b5f9785f224f4e630531.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/powers/soar_power.png"
-dest_files=["res://.godot/imported/soar_power.png-47b1c949e1b2b5fa3499dbbc75eb475c.ctex"]
+source_file="res://NinjaSlayer/images/relics/NancyZazenDrinkRelic_outline.png"
+dest_files=["res://.godot/imported/NancyZazenDrinkRelic_outline.png-3071a5b2a9c7b5f9785f224f4e630531.ctex"]
 
 [params]
 

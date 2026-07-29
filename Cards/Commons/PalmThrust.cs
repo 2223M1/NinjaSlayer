@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class PalmThrust : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PalmThrust), 1, CardType.Attack, CardRarity.Common, TargetType.RandomEnemy, true, "Chop");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PalmThrust), 1, CardType.Attack, CardRarity.Common, TargetType.RandomEnemy, true);
 
 
-    // ponytail: reuse karate art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),

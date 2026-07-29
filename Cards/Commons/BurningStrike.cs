@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BurningStrike : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BurningStrike), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "BurningCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BurningStrike), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
 
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [

@@ -15,10 +15,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BangBangFist : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BangBangFist), 1, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy, true, "ComboFist");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BangBangFist), 1, CardType.Attack, CardRarity.Rare, TargetType.AnyEnemy, true);
 
 
-    // ponytail: reuse combo fist art until Bang Bang Fist gets dedicated card art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(4, ValueProp.Move),

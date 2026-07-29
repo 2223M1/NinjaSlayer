@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IyaIronSlashWave : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IyaIronSlashWave), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "ShurikenThrow");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IyaIronSlashWave), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
 

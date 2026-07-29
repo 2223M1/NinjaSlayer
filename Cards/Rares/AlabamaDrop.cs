@@ -13,10 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class AlabamaDrop : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(AlabamaDrop), 2, CardType.Skill, CardRarity.Rare, TargetType.AnyEnemy, true, "KarateStraight");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(AlabamaDrop), 2, CardType.Skill, CardRarity.Rare, TargetType.AnyEnemy, true);
 
 
-    // ponytail: reuse karate art until this card gets dedicated card art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("SelfKarate", 6),

@@ -14,12 +14,11 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IBlock : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IBlock), 2, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IBlock), 2, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
     public override bool GainsBlock => true;
 
-    // ponytail: reuse defend art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(12, ValueProp.Move)

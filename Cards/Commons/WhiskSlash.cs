@@ -13,10 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class WhiskSlash : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(WhiskSlash), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "BrewTea");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(WhiskSlash), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
 
 
-    // ponytail: reuse tea art until this card gets dedicated art.
 
     protected override bool ShouldGlowGoldInternal =>
         NinjaSlayerActions.ChadoInHandCount(Owner) > 0;

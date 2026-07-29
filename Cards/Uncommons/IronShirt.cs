@@ -13,12 +13,11 @@ namespace NinjaSlayer.Cards;
 
 public sealed class IronShirt : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IronShirt), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(IronShirt), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
     public override bool GainsBlock => true;
 
-    // ponytail: reuse karate art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(8, ValueProp.Move),

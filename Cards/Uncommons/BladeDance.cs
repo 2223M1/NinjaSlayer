@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaSlayerBladeDance : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaSlayerBladeDance), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "BladeDance");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaSlayerBladeDance), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
 
 
 
