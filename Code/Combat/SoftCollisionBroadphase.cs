@@ -27,12 +27,20 @@ internal sealed class SoftCollisionBroadphase(float cellSize = 180f)
         for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
         {
             SoftFragmentBody body = bodies[bodyIndex];
-            if (!body.HasFiniteState || body.CollisionHullScale <= 0f)
+            if (!body.CanCollide)
             {
                 continue;
             }
 
             (BossFragmentPoint minimum, BossFragmentPoint maximum) = body.ResolveCollisionAabb();
+            (BossFragmentPoint previousMinimum, BossFragmentPoint previousMaximum) =
+                body.ResolvePreviousCollisionAabb();
+            minimum = new BossFragmentPoint(
+                Math.Min(minimum.X, previousMinimum.X),
+                Math.Min(minimum.Y, previousMinimum.Y));
+            maximum = new BossFragmentPoint(
+                Math.Max(maximum.X, previousMaximum.X),
+                Math.Max(maximum.Y, previousMaximum.Y));
             if (!TryResolveCellRange(minimum, maximum,
                     out int minimumX,
                     out int maximumX,

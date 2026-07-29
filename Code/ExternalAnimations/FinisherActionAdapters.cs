@@ -9,37 +9,38 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal readonly record struct FinisherActionContext(
     Vector2 OriginalPosition,
-    Vector2 PreparationPosition,
+    Vector2 TravelStartPosition,
+    Vector2 TravelEndPosition,
     Vector2 ImpactPosition)
 {
     public static FinisherActionContext Stationary(NCreature actor) =>
-        new(actor.Position, actor.Position, actor.Position);
+        new(actor.Position, actor.Position, actor.Position, actor.Position);
 
     public static FinisherActionContext CloseRange(
         NCreature actor,
         NCreature target,
-        float travelPixels)
+        float travelPixels,
+        FinisherApproachMode approachMode,
+        Vector2 squashMultiplier)
     {
         Vector2 originalPosition = actor.Position;
-        float direction = Mathf.Sign(target.Position.X - originalPosition.X);
-        if (Mathf.IsZeroApprox(direction))
-        {
-            direction = actor.Entity.Side == CombatSide.Player ? 1f : -1f;
-        }
-
-        float targetHalfWidth = target.Visuals.Bounds.Size.X
-            * Mathf.Abs(target.Visuals.Scale.X)
-            * 0.5f;
-        Vector2 impactPosition = new(
-            target.Position.X
-                - direction * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap),
-            originalPosition.Y);
-        Vector2 preparationPosition = impactPosition
-            - Vector2.Right * direction * travelPixels;
+        float fallbackDirection = actor.Entity.Side == CombatSide.Player ? 1f : -1f;
+        float impactX = FinisherImpactPositionResolver.ResolveImpactX(
+            actor,
+            target,
+            squashMultiplier,
+            NinjaSlayerCombatVisuals.CloseRangeApproachGap);
+        FinisherApproachPath path = FinisherApproachPath.CreateToImpact(
+            approachMode,
+            originalPosition.X,
+            impactX,
+            travelPixels,
+            fallbackDirection);
         return new FinisherActionContext(
             originalPosition,
-            preparationPosition,
-            impactPosition);
+            new Vector2(path.TravelStartX, originalPosition.Y),
+            new Vector2(path.TravelEndX, originalPosition.Y),
+            new Vector2(path.ImpactX, originalPosition.Y));
     }
 }
 
@@ -49,8 +50,14 @@ internal interface IFinisherActionAdapter
     float TravelPixels { get; }
     float TravelSeconds { get; }
     float ReturnSeconds { get; }
-    bool MovesActor { get; }
-    FinisherActionContext CreateContext(NCreature actor, NCreature focus);
+    bool RequiresPositioning { get; }
+    bool HasContinuousTravel { get; }
+    FinisherApproachMode ApproachMode { get; }
+    FinisherActionContext CreateContext(
+        NCreature actor,
+        NCreature focus,
+        Vector2 squashMultiplier);
+    bool IsPeakTrigger(string triggerName);
     float GetTravelProgress(float progress);
 }
 
@@ -65,35 +72,54 @@ internal static class FinisherActionAdapters
         0f,
         0f,
         FinisherTimeline.ReturnSeconds,
-        static _ => 1f);
+        FinisherApproachMode.Stationary,
+        static _ => 1f,
+        PeakTriggerName: null);
+
+    public static IFinisherActionAdapter TeleportAtPeak { get; } = new FinisherActionAdapter(
+        "teleport-at-peak",
+        0f,
+        0f,
+        FinisherTimeline.ReturnSeconds,
+        FinisherApproachMode.TeleportAtPeak,
+        static _ => 1f,
+        PeakTriggerName: null);
 
     public static IFinisherActionAdapter Fast { get; } = new FinisherActionAdapter(
         "fast",
         FinisherActionTrajectory.FastTravelPixels,
         FinisherActionTrajectory.FastTravelSeconds,
         FinisherTimeline.ReturnSeconds,
-        FinisherActionTrajectory.FastProgress);
+        FinisherApproachMode.ContinuousToImpact,
+        FinisherActionTrajectory.FastProgress,
+        PeakTriggerName: null);
 
     public static IFinisherActionAdapter Slow { get; } = new FinisherActionAdapter(
         "slow",
         FinisherActionTrajectory.SlowTravelPixels,
         FinisherActionTrajectory.SlowTravelSeconds,
         FinisherActionTrajectory.SlowTravelSeconds,
-        FinisherActionTrajectory.SlowProgress);
+        FinisherApproachMode.ContinuousToImpact,
+        FinisherActionTrajectory.SlowProgress,
+        PeakTriggerName: null);
 
     public static IFinisherActionAdapter Combo { get; } = new FinisherActionAdapter(
         "combo",
         FinisherActionTrajectory.SlowTravelPixels,
         FinisherActionTrajectory.SlowTravelSeconds,
         FinisherTimeline.ReturnSeconds,
-        FinisherActionTrajectory.SlowProgress);
+        FinisherApproachMode.ContinuousToImpact,
+        FinisherActionTrajectory.SlowProgress,
+        PeakTriggerName: null);
 
     public static IFinisherActionAdapter YamotoKokiIai { get; } = new FinisherActionAdapter(
         "yamoto-koki-iai",
         FinisherActionTrajectory.SlowTravelPixels,
         FinisherActionTrajectory.SlowTravelSeconds,
         FinisherActionTrajectory.SlowTravelSeconds,
-        FinisherActionTrajectory.SlowProgress);
+        FinisherApproachMode.PrepositionThenLunge,
+        FinisherActionTrajectory.SlowProgress,
+        PeakTriggerName: null);
 
     static FinisherActionAdapters()
     {
@@ -124,7 +150,7 @@ internal static class FinisherActionAdapters
 
         if (!command.ShouldPlayAnimation || string.IsNullOrWhiteSpace(command.AttackerAnimName))
         {
-            return Stationary;
+            return TeleportAtPeak;
         }
 
         lock (TriggerRegistry)
@@ -142,11 +168,19 @@ internal static class FinisherActionAdapters
             if (UnknownTriggers.Add(triggerName))
             {
                 FinisherLog.Warn(
-                    $"No finisher action adapter is registered for TriggerAnim '{triggerName}'; the finisher will remain stationary.");
+                    $"No continuous finisher action is registered for TriggerAnim '{triggerName}'; "
+                    + "the finisher will teleport at that animation's peak.");
             }
         }
 
-        return Stationary;
+        return new FinisherActionAdapter(
+            $"teleport-at-peak:{triggerName}",
+            0f,
+            0f,
+            FinisherTimeline.ReturnSeconds,
+            FinisherApproachMode.TeleportAtPeak,
+            static _ => 1f,
+            triggerName);
     }
 
     private sealed record FinisherActionAdapter(
@@ -154,14 +188,33 @@ internal static class FinisherActionAdapters
         float TravelPixels,
         float TravelSeconds,
         float ReturnSeconds,
-        Func<float, float> Progress) : IFinisherActionAdapter
+        FinisherApproachMode ApproachMode,
+        Func<float, float> Progress,
+        string? PeakTriggerName) : IFinisherActionAdapter
     {
-        public bool MovesActor => TravelPixels > 0f && TravelSeconds > 0f;
+        public bool RequiresPositioning => ApproachMode != FinisherApproachMode.Stationary;
 
-        public FinisherActionContext CreateContext(NCreature actor, NCreature focus) =>
-            MovesActor
-                ? FinisherActionContext.CloseRange(actor, focus, TravelPixels)
+        public bool HasContinuousTravel =>
+            ApproachMode is FinisherApproachMode.ContinuousToImpact
+                or FinisherApproachMode.PrepositionThenLunge;
+
+        public FinisherActionContext CreateContext(
+            NCreature actor,
+            NCreature focus,
+            Vector2 squashMultiplier) =>
+            RequiresPositioning
+                ? FinisherActionContext.CloseRange(
+                    actor,
+                    focus,
+                    TravelPixels,
+                    ApproachMode,
+                    squashMultiplier)
                 : FinisherActionContext.Stationary(actor);
+
+        public bool IsPeakTrigger(string triggerName) =>
+            ApproachMode == FinisherApproachMode.TeleportAtPeak
+            && PeakTriggerName != null
+            && string.Equals(PeakTriggerName, triggerName, StringComparison.Ordinal);
 
         public float GetTravelProgress(float progress) => Progress(progress);
     }

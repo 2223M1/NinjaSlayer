@@ -21,8 +21,10 @@ uniform vec2 seed_14 = vec2(0.0);
 uniform vec2 seed_15 = vec2(0.0);
 uniform vec2 cell_bounds_min = vec2(-1.0);
 uniform vec2 cell_bounds_size = vec2(2.0);
-uniform vec2 texture_bounds_min = vec2(-1.0);
-uniform vec2 texture_bounds_size = vec2(2.0);
+uniform vec2 part_bounds_min = vec2(-1.0);
+uniform vec2 part_bounds_size = vec2(2.0);
+uniform vec2 atlas_content_min = vec2(0.0);
+uniform vec2 atlas_content_size = vec2(1.0);
 uniform vec2 control_offsets[16];
 
 varying vec2 capture_position;
@@ -32,7 +34,11 @@ vec2 control_offset_at(int index) {
 }
 
 void vertex() {
-    capture_position = texture_bounds_min + UV * texture_bounds_size;
+    vec2 part_uv = clamp(
+        (UV - atlas_content_min) / max(atlas_content_size, vec2(0.000001)),
+        vec2(0.0),
+        vec2(1.0));
+    capture_position = part_bounds_min + part_uv * part_bounds_size;
     vec2 normalized = clamp(
         (capture_position - cell_bounds_min) / max(cell_bounds_size, vec2(0.001)),
         vec2(0.0),
@@ -75,6 +81,5 @@ void fragment() {
     if (belongs_to_other_cell(seed_13, 13, own_distance)) { discard; }
     if (belongs_to_other_cell(seed_14, 14, own_distance)) { discard; }
     if (belongs_to_other_cell(seed_15, 15, own_distance)) { discard; }
-
     COLOR = texture(TEXTURE, UV) * COLOR;
 }

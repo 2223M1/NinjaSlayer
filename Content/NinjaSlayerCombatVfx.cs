@@ -79,7 +79,7 @@ public static class NinjaSlayerCombatVfx
     {
         NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiIaiPetalsVfx.ScenePath);
         NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiIaiImpactVfx.ScenePath);
-        NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiOrigamiMissileHitSparkVfx.ScenePath);
+        NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiOrigamiMissileHitSparkVfx.ResourceScenePath);
     }
 
     public static void PlayBurnStatusFeedback(IEnumerable<Creature> targets)

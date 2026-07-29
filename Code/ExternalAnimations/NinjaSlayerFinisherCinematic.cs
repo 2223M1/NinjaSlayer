@@ -116,6 +116,17 @@ internal static class NinjaSlayerFinisherCinematic
         return session?.Actor == creature ? session.EnsureActionPeak() : Task.CompletedTask;
     }
 
+    internal static Task WrapOwnedTriggerAtActionPeak(
+        Creature creature,
+        string triggerName,
+        Task original)
+    {
+        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
+        return session?.Actor == creature
+            ? session.WrapTriggerAtActionPeak(creature, triggerName, original)
+            : original;
+    }
+
     internal static void TryProtectLethalDamage(
         Creature target,
         ref decimal amount,
@@ -269,7 +280,8 @@ internal static class NinjaSlayerFinisherCinematic
             if (GameCompatibility.Finisher.TryReadAttackCommand(
                     command,
                     out GameCompatibility.AttackCommandState commandState)
-                && !commandState.ShouldPlayAnimation)
+                && (!commandState.ShouldPlayAnimation
+                    || string.IsNullOrWhiteSpace(commandState.AttackerAnimName)))
             {
                 await session.EnsureActionPeak();
             }

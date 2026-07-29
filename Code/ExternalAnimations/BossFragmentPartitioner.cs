@@ -1,351 +1,961 @@
 using Godot;
-using Godot.Collections;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
+internal sealed record BossSemanticPartDefinition(
+    ulong PrimaryBoneId,
+    string PrimaryBoneName,
+    IReadOnlyList<ulong> AncestorBoneIds,
+    IReadOnlyList<int> SlotIndices,
+    Rect2 SourceBounds,
+    int DrawOrder,
+    bool BelongsToDetachedPart);
+
+internal sealed record BossAtlasSemanticPart(
+    BossSemanticPartDefinition Definition,
+    Rect2 AtlasUvRect);
+
+internal sealed record BossCapturedFragmentDescriptor(
+    int FragmentIndex,
+    BossFragmentCell Cell,
+    IReadOnlyList<BossFragmentPoint> AllSeeds,
+    BossSemanticPartDefinition Part,
+    Rect2 AtlasUvRect,
+    float BodyAreaRatio,
+    bool IsLocalSplit);
+
 internal sealed record BossFragmentPartition(
-    IReadOnlyList<BossFragmentCell> Cells,
-    IReadOnlySet<int> DetachedCellIndices);
+    IReadOnlyList<BossCapturedFragmentDescriptor> Fragments,
+    BossFragmentRect SourceBounds,
+    int SemanticPartCount,
+    int MergedPartCount,
+    int SplitFragmentCount);
 
-internal static class BossFragmentPartitioner
+internal sealed class BossSemanticPartBuilder
 {
-    private const int MaximumHierarchyDepth = 128;
+    private const float TinyAreaRatio = 0.015f;
+    private const float TinySpanRatio = 0.04f;
+    private const float BoundsPadding = 2f;
 
-    public static BossFragmentPartition Build(
-        Node2D? capturedVisual,
-        Rect2 bodyLocalBounds,
-        bool canSplitSpine,
-        ulong seed,
+    private readonly Node2D _template;
+    private readonly Rect2 _bodyBounds;
+    private readonly List<PartDraft> _parts;
+    private int _measurementIndex;
+    private IReadOnlyList<BossSemanticPartDefinition>? _completedParts;
+
+    private BossSemanticPartBuilder(
+        Node2D template,
+        Rect2 bodyBounds,
+        List<PartDraft> parts)
+    {
+        _template = template;
+        _bodyBounds = bodyBounds;
+        _parts = parts;
+    }
+
+    public bool IsMeasured => _measurementIndex >= _parts.Count;
+    public int MergedPartCount { get; private set; }
+
+    public static bool TryCreate(
+        Node2D template,
+        Rect2 bodyBounds,
         string? detachedBoneName,
-        bool hasDetachedBurst)
+        out BossSemanticPartBuilder? builder,
+        out string failureReason)
     {
-        BossFragmentRect bounds = new(
-            bodyLocalBounds.Position.X,
-            bodyLocalBounds.Position.Y,
-            bodyLocalBounds.Size.X,
-            bodyLocalBounds.Size.Y);
-        SpineSource? source = canSplitSpine
-            ? ReadSpineSource(capturedVisual, bodyLocalBounds, detachedBoneName)
-            : null;
-        if (source != null && source.Slots.Count >= 2)
-        {
-            SpineSlotRecord[] bodySlots = source.Slots
-                .Where(slot => !slot.BelongsToDetachedPart)
-                .ToArray();
-            SpineSlotRecord[] detachedSlots = source.Slots
-                .Where(slot => slot.BelongsToDetachedPart)
-                .ToArray();
-            BossFragmentAllocation allocation = BossDismembermentMath.AllocateSpinePieces(
-                bodySlots.Length,
-                hasDetachedBurst ? detachedSlots.Length : 0);
-            var seeds = new List<BossFragmentPoint>(BossDismembermentMath.MaximumPieces);
-            AddClusterSeeds(seeds, bodySlots, allocation.BodyPieces, source.Bounds);
-            int detachedSeedStart = seeds.Count;
-            if (hasDetachedBurst)
-            {
-                AddClusterSeeds(seeds, detachedSlots, allocation.DetachedPieces, source.Bounds);
-            }
-
-            EnsureDistinctSeeds(seeds);
-            IReadOnlyList<BossFragmentCell> semanticCells =
-                BossDismembermentMath.BuildVoronoiCells(bounds, seeds);
-            if (semanticCells.Count >= 2)
-            {
-                return new BossFragmentPartition(
-                    semanticCells,
-                    ResolveDetachedCells(semanticCells, seeds, detachedSeedStart));
-            }
-        }
-
-        int count = BossDismembermentMath.ResolvePieceCount(
-            bodyLocalBounds.Size.X,
-            bodyLocalBounds.Size.Y,
-            BossDismembermentMath.MaximumPieces,
-            detachedPart: false);
-        return new BossFragmentPartition(
-            BossDismembermentMath.BuildVoronoiCells(bounds, count, seed),
-            new HashSet<int>());
-    }
-
-    private static IReadOnlySet<int> ResolveDetachedCells(
-        IReadOnlyList<BossFragmentCell> cells,
-        IReadOnlyList<BossFragmentPoint> seeds,
-        int detachedSeedStart)
-    {
-        var detached = new HashSet<int>();
-        if (detachedSeedStart >= seeds.Count)
-        {
-            return detached;
-        }
-
-        for (int cellIndex = 0; cellIndex < cells.Count; cellIndex++)
-        {
-            BossFragmentPoint cellSeed = cells[cellIndex].Seed;
-            int nearestSeed = Enumerable.Range(0, seeds.Count)
-                .OrderBy(index => DistanceSquared(cellSeed, seeds[index]))
-                .ThenBy(index => index)
-                .First();
-            if (nearestSeed >= detachedSeedStart)
-            {
-                detached.Add(cellIndex);
-            }
-        }
-
-        return detached;
-    }
-
-    private static SpineSource? ReadSpineSource(
-        Node2D? visual,
-        Rect2 bodyLocalBounds,
-        string? detachedBoneName)
-    {
-        if (visual == null)
-        {
-            return null;
-        }
-
+        builder = null;
+        failureReason = string.Empty;
         try
         {
-            var sprite = new MegaSprite(Variant.CreateFrom(visual));
-            using MegaSkeleton? skeleton = sprite.GetSkeleton();
-            if (skeleton == null || !skeleton.BoundObject.HasMethod("get_slots"))
-            {
-                return null;
-            }
-
-            ulong? detachedBoneId = null;
-            if (!string.IsNullOrWhiteSpace(detachedBoneName))
-            {
-                using MegaBone? detachedBone = skeleton.FindBone(detachedBoneName);
-                if (detachedBone != null)
+            IReadOnlyList<SpineSlotSample> slots = ReadVisibleSlots(
+                template,
+                detachedBoneName);
+            List<PartDraft> parts = slots
+                .GroupBy(slot => slot.BoneId)
+                .Select(group =>
                 {
-                    detachedBoneId = detachedBone.BoundObject.GetInstanceId();
-                }
+                    SpineSlotSample primary = group
+                        .OrderBy(slot => slot.DrawOrder)
+                        .First();
+                    return new PartDraft(
+                        primary.BoneId,
+                        primary.BoneName,
+                        primary.AncestorBoneIds,
+                        group.Select(slot => slot.SetupIndex).Distinct().Order().ToList(),
+                        default,
+                        group.Min(slot => slot.DrawOrder),
+                        group.Any(slot => slot.BelongsToDetachedPart));
+                })
+                .OrderBy(part => part.DrawOrder)
+                .ToList();
+            if (parts.Count < 2)
+            {
+                failureReason = "the Spine death pose contains fewer than two visible bone parts";
+                return false;
             }
 
-            Rect2 bounds = ValidateBounds(skeleton.GetBounds(), bodyLocalBounds);
-            Array<GodotObject> slots = skeleton.BoundObject.Call("get_slots").AsGodotArray<GodotObject>();
-            var records = new List<SpineSlotRecord>(slots.Count);
+            builder = new BossSemanticPartBuilder(template, bodyBounds, parts);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            failureReason = $"Spine topology extraction failed: {exception.Message}";
+            Entry.Logger.Warn($"Boss semantic part extraction failed: {exception}");
+            return false;
+        }
+    }
+
+    public int MeasureNext(int maximumParts)
+    {
+        if (maximumParts <= 0 || IsMeasured)
+        {
+            return 0;
+        }
+
+        int measured = 0;
+        using MegaSkeleton skeleton = GetSkeleton(_template);
+        Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
+        try
+        {
+            while (_measurementIndex < _parts.Count && measured < maximumParts)
+            {
+                PartDraft part = _parts[_measurementIndex++];
+                part.SourceBounds = MeasureIsolatedBounds(
+                    skeleton,
+                    slots,
+                    part.SlotIndices);
+                measured++;
+            }
+        }
+        finally
+        {
+            DisposeObjects(slots);
+        }
+
+        return measured;
+    }
+
+    public IReadOnlyList<BossSemanticPartDefinition> Complete()
+    {
+        if (_completedParts != null)
+        {
+            return _completedParts;
+        }
+
+        if (!IsMeasured)
+        {
+            throw new InvalidOperationException(
+                "Semantic Spine bounds were requested before measurement completed.");
+        }
+
+        _parts.RemoveAll(part => !IsValidBounds(part.SourceBounds));
+        if (_parts.Count < 2)
+        {
+            throw new InvalidOperationException(
+                "Fewer than two visible Spine bone parts produced valid bounds.");
+        }
+
+        MergeTinyParts();
+        while (_parts.Count > BossDismembermentMath.MaximumPieces)
+        {
+            PartDraft source = _parts
+                .OrderBy(Area)
+                .ThenBy(part => part.DrawOrder)
+                .First();
+            PartDraft? target = FindRelatedMergeTarget(source, _parts);
+            if (target == null)
+            {
+                throw new InvalidOperationException(
+                    "The Spine contains more than sixteen unrelated visible bone branches.");
+            }
+
+            MergeInto(target, source);
+            _parts.Remove(source);
+            MergedPartCount++;
+        }
+
+        _completedParts = _parts
+            .OrderBy(part => part.DrawOrder)
+            .Select(ToDefinition)
+            .ToArray();
+        return _completedParts;
+    }
+
+    private void MergeTinyParts()
+    {
+        float bodyArea = Math.Max(1f, _bodyBounds.Size.X * _bodyBounds.Size.Y);
+        bool merged;
+        do
+        {
+            merged = false;
+            PartDraft[] candidates = _parts
+                .Where(part => IsTiny(part, bodyArea, _bodyBounds))
+                .OrderBy(Area)
+                .ThenBy(part => part.DrawOrder)
+                .ToArray();
+            foreach (PartDraft source in candidates)
+            {
+                if (!_parts.Contains(source) || _parts.Count <= 2)
+                {
+                    continue;
+                }
+
+                PartDraft? target = FindRelatedMergeTarget(source, _parts);
+                if (target == null)
+                {
+                    continue;
+                }
+
+                MergeInto(target, source);
+                _parts.Remove(source);
+                MergedPartCount++;
+                merged = true;
+            }
+        }
+        while (merged);
+    }
+
+    private static Rect2 MeasureIsolatedBounds(
+        MegaSkeleton skeleton,
+        Godot.Collections.Array<GodotObject> slots,
+        IReadOnlyList<int> visibleSlotIndices)
+    {
+        var visible = new HashSet<int>(visibleSlotIndices);
+        var attachments = new Variant[slots.Count];
+        var canRestore = new bool[slots.Count];
+        try
+        {
             for (int index = 0; index < slots.Count; index++)
             {
                 GodotObject slot = slots[index];
+                if (!slot.HasMethod("get_attachment")
+                    || !slot.HasMethod("set_attachment"))
+                {
+                    continue;
+                }
+
+                attachments[index] = slot.Call("get_attachment");
+                canRestore[index] = true;
+                if (!visible.Contains(index))
+                {
+                    slot.Call("set_attachment", default(Variant));
+                }
+            }
+
+            Rect2 bounds = skeleton.GetBounds();
+            return IsValidBounds(bounds) ? bounds.Grow(BoundsPadding) : default;
+        }
+        finally
+        {
+            for (int index = 0; index < slots.Count; index++)
+            {
+                if (canRestore[index]
+                    && GodotObject.IsInstanceValid(slots[index])
+                    && slots[index].HasMethod("set_attachment"))
+                {
+                    slots[index].Call("set_attachment", attachments[index]);
+                }
+            }
+        }
+    }
+
+    private static IReadOnlyList<SpineSlotSample> ReadVisibleSlots(
+        Node2D template,
+        string? detachedBoneName)
+    {
+        using MegaSkeleton skeleton = GetSkeleton(template);
+        Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
+        try
+        {
+            IReadOnlyDictionary<string, BoneTopology> bones = ReadBoneTopology(
+                skeleton,
+                slots);
+            IReadOnlyDictionary<string, int> drawOrder = ReadDrawOrder(skeleton);
+            var result = new List<SpineSlotSample>(slots.Count);
+            for (int setupIndex = 0; setupIndex < slots.Count; setupIndex++)
+            {
+                GodotObject slot = slots[setupIndex];
                 if (!IsSlotVisible(slot))
                 {
                     continue;
                 }
 
-                GodotObject? bone = GetSlotBone(slot);
-                records.Add(new SpineSlotRecord(
-                    ReadBonePoint(bone, bounds.GetCenter()),
-                    detachedBoneId.HasValue && IsBoneDescendantOf(bone, detachedBoneId.Value)));
-            }
-
-            return new SpineSource(records, bounds);
-        }
-        catch (Exception exception)
-        {
-            Entry.Logger.Warn(
-                $"Spine partition seeds are unavailable; using spatial cells: {exception.Message}");
-            return null;
-        }
-    }
-
-    private static void AddClusterSeeds(
-        ICollection<BossFragmentPoint> destination,
-        IReadOnlyList<SpineSlotRecord> slots,
-        int desired,
-        Rect2 bounds)
-    {
-        IReadOnlyList<IReadOnlyList<SpineSlotRecord>> groups = ClusterSlots(slots, desired, bounds);
-        foreach (IReadOnlyList<SpineSlotRecord> group in groups)
-        {
-            if (group.Count == 0)
-            {
-                continue;
-            }
-
-            destination.Add(new BossFragmentPoint(
-                group.Average(slot => slot.Position.X),
-                group.Average(slot => slot.Position.Y)));
-        }
-    }
-
-    private static IReadOnlyList<IReadOnlyList<SpineSlotRecord>> ClusterSlots(
-        IReadOnlyList<SpineSlotRecord> slots,
-        int desired,
-        Rect2 bounds)
-    {
-        desired = Math.Min(Math.Max(0, desired), slots.Count);
-        if (desired <= 0 || slots.Count == 0)
-        {
-            return [];
-        }
-
-        if (desired == 1 || slots.Count == 1)
-        {
-            return [slots];
-        }
-
-        int firstSeed = Enumerable.Range(0, slots.Count)
-            .OrderBy(index => slots[index].Position.DistanceSquaredTo(bounds.GetCenter()))
-            .ThenBy(index => index)
-            .First();
-        var seedIndices = new List<int>(desired) { firstSeed };
-        var selected = new HashSet<int> { firstSeed };
-        while (seedIndices.Count < desired)
-        {
-            int next = Enumerable.Range(0, slots.Count)
-                .Where(index => !selected.Contains(index))
-                .OrderByDescending(index => seedIndices.Min(seedIndex => NormalizedDistanceSquared(
-                    slots[index].Position,
-                    slots[seedIndex].Position,
-                    bounds)))
-                .ThenBy(index => index)
-                .First();
-            seedIndices.Add(next);
-            selected.Add(next);
-        }
-
-        List<SpineSlotRecord>[] groups = Enumerable.Range(0, seedIndices.Count)
-            .Select(_ => new List<SpineSlotRecord>())
-            .ToArray();
-        for (int slotIndex = 0; slotIndex < slots.Count; slotIndex++)
-        {
-            int group = Enumerable.Range(0, seedIndices.Count)
-                .OrderBy(index => NormalizedDistanceSquared(
-                    slots[slotIndex].Position,
-                    slots[seedIndices[index]].Position,
-                    bounds))
-                .ThenBy(index => index)
-                .First();
-            groups[group].Add(slots[slotIndex]);
-        }
-
-        return groups
-            .Where(group => group.Count > 0)
-            .Cast<IReadOnlyList<SpineSlotRecord>>()
-            .ToArray();
-    }
-
-    private static void EnsureDistinctSeeds(IList<BossFragmentPoint> seeds)
-    {
-        for (int index = 0; index < seeds.Count; index++)
-        {
-            BossFragmentPoint seed = seeds[index];
-            for (int attempt = 0; attempt < seeds.Count; attempt++)
-            {
-                bool overlaps = false;
-                for (int previous = 0; previous < index; previous++)
+                GodotObject? bone = CallObject(slot, "get_bone");
+                GodotObject? attachment = CallObject(slot, "get_attachment");
+                GodotObject? slotData = CallObject(slot, "get_data");
+                try
                 {
-                    float dx = seed.X - seeds[previous].X;
-                    float dy = seed.Y - seeds[previous].Y;
-                    if (dx * dx + dy * dy >= 1f)
+                    string boneName = ReadBoneName(bone);
+                    string slotName = ReadString(slotData, "get_slot_name", "get_name");
+                    string attachmentName = ReadString(attachment, "get_name");
+                    if (IsShadow(slotName, attachmentName, boneName)
+                        || string.IsNullOrWhiteSpace(boneName)
+                        || !bones.TryGetValue(boneName, out BoneTopology? topology))
                     {
                         continue;
                     }
 
-                    overlaps = true;
-                    break;
+                    bool detached = !string.IsNullOrWhiteSpace(detachedBoneName)
+                        && (string.Equals(
+                                topology.Name,
+                                detachedBoneName,
+                                StringComparison.OrdinalIgnoreCase)
+                            || topology.AncestorNames.Contains(
+                                detachedBoneName,
+                                StringComparer.OrdinalIgnoreCase));
+                    int order = !string.IsNullOrWhiteSpace(slotName)
+                        && drawOrder.TryGetValue(slotName, out int resolvedOrder)
+                            ? resolvedOrder
+                            : setupIndex;
+                    result.Add(new SpineSlotSample(
+                        setupIndex,
+                        order,
+                        topology.Id,
+                        topology.Name,
+                        topology.AncestorIds,
+                        detached));
                 }
-
-                if (!overlaps)
+                finally
                 {
-                    break;
+                    slotData?.Dispose();
+                    attachment?.Dispose();
+                    bone?.Dispose();
                 }
-
-                float angle = (index + attempt * 0.61803398875f) * 2.39996323f;
-                float radius = 2f + attempt;
-                seed = new BossFragmentPoint(
-                    seed.X + MathF.Cos(angle) * radius,
-                    seed.Y + MathF.Sin(angle) * radius);
             }
 
-            seeds[index] = seed;
+            return result;
         }
+        finally
+        {
+            DisposeObjects(slots);
+        }
+    }
+
+    private static IReadOnlyDictionary<string, BoneTopology> ReadBoneTopology(
+        MegaSkeleton skeleton,
+        Godot.Collections.Array<GodotObject> slots)
+    {
+        var raw = new List<RawBoneTopology>();
+        if (skeleton.BoundObject.HasMethod("get_bones"))
+        {
+            Godot.Collections.Array<GodotObject> bones = skeleton.BoundObject
+                .Call("get_bones")
+                .AsGodotArray<GodotObject>();
+            try
+            {
+                for (int index = 0; index < bones.Count; index++)
+                {
+                    AddRawBone(raw, bones[index], index);
+                }
+            }
+            finally
+            {
+                DisposeObjects(bones);
+            }
+        }
+
+        if (raw.Count == 0)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            for (int index = 0; index < slots.Count; index++)
+            {
+                GodotObject? bone = CallObject(slots[index], "get_bone");
+                try
+                {
+                    AddBoneAndParents(raw, names, bone);
+                }
+                finally
+                {
+                    bone?.Dispose();
+                }
+            }
+        }
+
+        var rawByName = raw
+            .Where(bone => !string.IsNullOrWhiteSpace(bone.Name))
+            .GroupBy(bone => bone.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var result = new Dictionary<string, BoneTopology>(StringComparer.Ordinal);
+        foreach (RawBoneTopology bone in rawByName.Values.OrderBy(bone => bone.Index))
+        {
+            var ancestorIds = new List<ulong>();
+            var ancestorNames = new List<string>();
+            string? parentName = bone.ParentName;
+            var visited = new HashSet<string>(StringComparer.Ordinal);
+            while (!string.IsNullOrWhiteSpace(parentName)
+                   && visited.Add(parentName)
+                   && rawByName.TryGetValue(parentName, out RawBoneTopology? parent))
+            {
+                ancestorIds.Add(ToBoneId(parent.Index));
+                ancestorNames.Add(parent.Name);
+                parentName = parent.ParentName;
+            }
+
+            result[bone.Name] = new BoneTopology(
+                ToBoneId(bone.Index),
+                bone.Name,
+                ancestorIds,
+                ancestorNames);
+        }
+
+        return result;
+    }
+
+    private static void AddRawBone(
+        ICollection<RawBoneTopology> bones,
+        GodotObject bone,
+        int index)
+    {
+        string name = ReadBoneName(bone);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        GodotObject? parent = CallParentObject(bone);
+        try
+        {
+            bones.Add(new RawBoneTopology(index, name, ReadBoneName(parent)));
+        }
+        finally
+        {
+            parent?.Dispose();
+        }
+    }
+
+    private static void AddBoneAndParents(
+        ICollection<RawBoneTopology> bones,
+        ISet<string> names,
+        GodotObject? bone)
+    {
+        GodotObject? current = bone;
+        bool ownsCurrent = false;
+        try
+        {
+            while (current != null)
+            {
+                string name = ReadBoneName(current);
+                GodotObject? parent = CallParentObject(current);
+                string parentName = ReadBoneName(parent);
+                if (!string.IsNullOrWhiteSpace(name) && names.Add(name))
+                {
+                    bones.Add(new RawBoneTopology(bones.Count, name, parentName));
+                }
+
+                if (ownsCurrent)
+                {
+                    current.Dispose();
+                }
+
+                current = parent;
+                ownsCurrent = true;
+            }
+        }
+        finally
+        {
+            if (ownsCurrent)
+            {
+                current?.Dispose();
+            }
+        }
+    }
+
+    private static IReadOnlyDictionary<string, int> ReadDrawOrder(MegaSkeleton skeleton)
+    {
+        if (!skeleton.BoundObject.HasMethod("get_draw_order"))
+        {
+            return new Dictionary<string, int>(StringComparer.Ordinal);
+        }
+
+        Godot.Collections.Array<GodotObject> slots = skeleton.BoundObject
+            .Call("get_draw_order")
+            .AsGodotArray<GodotObject>();
+        try
+        {
+            var result = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int index = 0; index < slots.Count; index++)
+            {
+                GodotObject? data = CallObject(slots[index], "get_data");
+                try
+                {
+                    string name = ReadString(data, "get_slot_name", "get_name");
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        result.TryAdd(name, index);
+                    }
+                }
+                finally
+                {
+                    data?.Dispose();
+                }
+            }
+
+            return result;
+        }
+        finally
+        {
+            DisposeObjects(slots);
+        }
+    }
+
+    private static MegaSkeleton GetSkeleton(Node2D visual)
+    {
+        var sprite = new MegaSprite(Variant.CreateFrom(visual));
+        return sprite.GetSkeleton()
+            ?? throw new InvalidOperationException("The duplicated Spine skeleton is not ready.");
+    }
+
+    private static Godot.Collections.Array<GodotObject> GetSlots(MegaSkeleton skeleton)
+    {
+        if (!skeleton.BoundObject.HasMethod("get_slots"))
+        {
+            throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");
+        }
+
+        Godot.Collections.Array<GodotObject> slots = skeleton.BoundObject
+            .Call("get_slots")
+            .AsGodotArray<GodotObject>();
+        if (slots.Count == 0)
+        {
+            DisposeObjects(slots);
+            throw new InvalidOperationException("The Spine skeleton has no accessible slots.");
+        }
+
+        return slots;
     }
 
     private static bool IsSlotVisible(GodotObject slot)
     {
-        if (slot.HasMethod("get_color") && slot.Call("get_color").AsColor().A <= 0.01f)
+        if (slot.HasMethod("get_color")
+            && slot.Call("get_color").AsColor().A <= 0.01f)
         {
             return false;
         }
 
-        if (!slot.HasMethod("get_attachment"))
+        GodotObject? attachment = CallObject(slot, "get_attachment");
+        try
         {
-            return true;
+            return attachment != null;
         }
-
-        Variant attachment = slot.Call("get_attachment");
-        return attachment.VariantType != Variant.Type.Nil
-            && (attachment.VariantType != Variant.Type.Object || attachment.AsGodotObject() != null);
+        finally
+        {
+            attachment?.Dispose();
+        }
     }
 
-    private static GodotObject? GetSlotBone(GodotObject slot)
+    private static bool IsShadow(params string[] names) => names.Any(name =>
+        name.Contains("floor_shadow", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("ground_shadow", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("shadow", StringComparison.OrdinalIgnoreCase));
+
+    private static string ReadBoneName(GodotObject? bone)
     {
-        if (!slot.HasMethod("get_bone"))
+        if (bone == null)
+        {
+            return string.Empty;
+        }
+
+        GodotObject? data = CallObject(bone, "get_data");
+        try
+        {
+            string name = ReadString(data, "get_bone_name", "get_name");
+            return string.IsNullOrWhiteSpace(name)
+                ? ReadString(bone, "get_bone_name", "get_name")
+                : name;
+        }
+        finally
+        {
+            data?.Dispose();
+        }
+    }
+
+    private static string ReadString(GodotObject? owner, params string[] methods)
+    {
+        if (owner == null)
+        {
+            return string.Empty;
+        }
+
+        foreach (string method in methods)
+        {
+            if (!owner.HasMethod(method))
+            {
+                continue;
+            }
+
+            Variant value = owner.Call(method);
+            string text = value.AsString();
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return text;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static GodotObject? CallObject(GodotObject owner, string method)
+    {
+        if (!owner.HasMethod(method))
         {
             return null;
         }
 
-        Variant value = slot.Call("get_bone");
+        Variant value = owner.Call(method);
         return value.VariantType == Variant.Type.Object ? value.AsGodotObject() : null;
     }
 
-    private static Vector2 ReadBonePoint(GodotObject? bone, Vector2 fallback)
+    private static GodotObject? CallParentObject(GodotObject owner)
     {
-        if (bone == null || !bone.HasMethod("get_world_x") || !bone.HasMethod("get_world_y"))
+        GodotObject? parent = CallObject(owner, "get_parent");
+        if (parent != null)
         {
-            return fallback;
+            return parent;
         }
 
-        return new Vector2(
-            bone.Call("get_world_x").AsSingle(),
-            bone.Call("get_world_y").AsSingle());
+        GodotObject? data = CallObject(owner, "get_data");
+        try
+        {
+            return data == null ? null : CallObject(data, "get_parent");
+        }
+        finally
+        {
+            data?.Dispose();
+        }
     }
 
-    private static bool IsBoneDescendantOf(GodotObject? bone, ulong ancestorId)
+    private static ulong ToBoneId(int boneIndex) => checked((ulong)boneIndex + 1UL);
+
+    private static void DisposeObjects(Godot.Collections.Array<GodotObject> objects)
     {
-        GodotObject? current = bone;
-        for (int depth = 0; depth < MaximumHierarchyDepth && current != null; depth++)
+        foreach (GodotObject item in objects)
         {
-            if (current.GetInstanceId() == ancestorId)
-            {
-                return true;
-            }
+            item.Dispose();
+        }
+    }
 
-            if (!current.HasMethod("get_parent"))
-            {
-                break;
-            }
+    private static bool IsTiny(PartDraft part, float bodyArea, Rect2 bodyBounds)
+    {
+        float areaRatio = Area(part) / bodyArea;
+        float spanRatio = Math.Max(
+            part.SourceBounds.Size.X / Math.Max(1f, bodyBounds.Size.X),
+            part.SourceBounds.Size.Y / Math.Max(1f, bodyBounds.Size.Y));
+        return areaRatio < TinyAreaRatio || spanRatio < TinySpanRatio;
+    }
 
-            Variant parent = current.Call("get_parent");
-            current = parent.VariantType == Variant.Type.Object ? parent.AsGodotObject() : null;
+    private static PartDraft? FindRelatedMergeTarget(
+        PartDraft source,
+        IReadOnlyList<PartDraft> parts)
+    {
+        foreach (ulong ancestorId in source.AncestorBoneIds)
+        {
+            PartDraft? ancestor = parts.FirstOrDefault(part =>
+                !ReferenceEquals(part, source)
+                && part.PrimaryBoneId == ancestorId);
+            if (ancestor != null)
+            {
+                return ancestor;
+            }
         }
 
-        return false;
+        return parts
+            .Where(part => !ReferenceEquals(part, source))
+            .Select(part => new
+            {
+                Part = part,
+                CommonDepth = CommonAncestorDepth(source, part)
+            })
+            .Where(candidate => candidate.CommonDepth >= 0)
+            .OrderByDescending(candidate => candidate.CommonDepth)
+            .ThenBy(candidate => Math.Abs(candidate.Part.DrawOrder - source.DrawOrder))
+            .ThenBy(candidate => Area(candidate.Part))
+            .Select(candidate => candidate.Part)
+            .FirstOrDefault();
     }
 
-    private static Rect2 ValidateBounds(Rect2 candidate, Rect2 fallback) =>
-        candidate.Size.X >= 12f && candidate.Size.Y >= 12f ? candidate : fallback;
-
-    private static float NormalizedDistanceSquared(Vector2 first, Vector2 second, Rect2 bounds)
+    private static int CommonAncestorDepth(PartDraft first, PartDraft second)
     {
-        float dx = (first.X - second.X) / Math.Max(bounds.Size.X, 1f);
-        float dy = (first.Y - second.Y) / Math.Max(bounds.Size.Y, 1f);
-        return dx * dx + dy * dy;
+        if (first.AncestorBoneIds.Contains(second.PrimaryBoneId))
+        {
+            return int.MaxValue;
+        }
+
+        if (second.AncestorBoneIds.Contains(first.PrimaryBoneId))
+        {
+            return int.MaxValue - 1;
+        }
+
+        for (int firstIndex = 0; firstIndex < first.AncestorBoneIds.Count; firstIndex++)
+        {
+            for (int secondIndex = 0;
+                 secondIndex < second.AncestorBoneIds.Count;
+                 secondIndex++)
+            {
+                if (second.AncestorBoneIds[secondIndex]
+                    == first.AncestorBoneIds[firstIndex])
+                {
+                    return 10_000 - firstIndex - secondIndex;
+                }
+            }
+        }
+
+        return -1;
     }
 
-    private static float DistanceSquared(BossFragmentPoint first, BossFragmentPoint second)
+    private static void MergeInto(PartDraft target, PartDraft source)
     {
-        float dx = first.X - second.X;
-        float dy = first.Y - second.Y;
-        return dx * dx + dy * dy;
+        target.SlotIndices.AddRange(source.SlotIndices);
+        target.SlotIndices.Sort();
+        target.SlotIndices = target.SlotIndices.Distinct().ToList();
+        target.SourceBounds = target.SourceBounds.Merge(source.SourceBounds);
+        target.DrawOrder = Math.Min(target.DrawOrder, source.DrawOrder);
+        target.BelongsToDetachedPart |= source.BelongsToDetachedPart;
     }
 
-    private sealed record SpineSource(IReadOnlyList<SpineSlotRecord> Slots, Rect2 Bounds);
-    private sealed record SpineSlotRecord(Vector2 Position, bool BelongsToDetachedPart);
+    private static BossSemanticPartDefinition ToDefinition(PartDraft part) => new(
+        part.PrimaryBoneId,
+        part.PrimaryBoneName,
+        part.AncestorBoneIds.ToArray(),
+        part.SlotIndices.ToArray(),
+        part.SourceBounds,
+        part.DrawOrder,
+        part.BelongsToDetachedPart);
+
+    private static float Area(PartDraft part) =>
+        Math.Max(0f, part.SourceBounds.Size.X * part.SourceBounds.Size.Y);
+
+    private static bool IsValidBounds(Rect2 bounds) =>
+        float.IsFinite(bounds.Position.X)
+        && float.IsFinite(bounds.Position.Y)
+        && float.IsFinite(bounds.Size.X)
+        && float.IsFinite(bounds.Size.Y)
+        && bounds.Size.X > 1f
+        && bounds.Size.Y > 1f;
+
+    private sealed class PartDraft(
+        ulong primaryBoneId,
+        string primaryBoneName,
+        IReadOnlyList<ulong> ancestorBoneIds,
+        List<int> slotIndices,
+        Rect2 sourceBounds,
+        int drawOrder,
+        bool belongsToDetachedPart)
+    {
+        public ulong PrimaryBoneId { get; } = primaryBoneId;
+        public string PrimaryBoneName { get; } = primaryBoneName;
+        public IReadOnlyList<ulong> AncestorBoneIds { get; } = ancestorBoneIds;
+        public List<int> SlotIndices { get; set; } = slotIndices;
+        public Rect2 SourceBounds { get; set; } = sourceBounds;
+        public int DrawOrder { get; set; } = drawOrder;
+        public bool BelongsToDetachedPart { get; set; } = belongsToDetachedPart;
+    }
+
+    private sealed record SpineSlotSample(
+        int SetupIndex,
+        int DrawOrder,
+        ulong BoneId,
+        string BoneName,
+        IReadOnlyList<ulong> AncestorBoneIds,
+        bool BelongsToDetachedPart);
+
+    private sealed record RawBoneTopology(int Index, string Name, string ParentName);
+
+    private sealed record BoneTopology(
+        ulong Id,
+        string Name,
+        IReadOnlyList<ulong> AncestorIds,
+        IReadOnlyList<string> AncestorNames);
+}
+
+internal static class BossFragmentPartitioner
+{
+    private const float OversizedAreaRatio = 0.22f;
+    private const float OversizedSpanRatio = 0.45f;
+
+    public static BossFragmentPartition BuildSemanticPartition(
+        IReadOnlyList<BossAtlasSemanticPart> atlasParts,
+        Rect2 bodyLocalBounds,
+        ulong seed,
+        int mergedPartCount)
+    {
+        if (atlasParts.Count < 2)
+        {
+            throw new InvalidOperationException(
+                "A semantic boss partition requires at least two atlas parts.");
+        }
+
+        float bodyArea = Math.Max(1f, bodyLocalBounds.Size.X * bodyLocalBounds.Size.Y);
+        int availableFragments = BossDismembermentMath.MaximumPieces - atlasParts.Count;
+        var splitCounts = atlasParts.ToDictionary(part => part, _ => 1);
+        foreach (BossAtlasSemanticPart part in atlasParts
+                     .OrderByDescending(part => ResolveOversizedScore(
+                         part.Definition.SourceBounds,
+                         bodyLocalBounds)))
+        {
+            int desired = ResolveLocalSplitCount(part.Definition.SourceBounds, bodyLocalBounds);
+            int additional = Math.Min(Math.Max(0, desired - 1), availableFragments);
+            splitCounts[part] += additional;
+            availableFragments -= additional;
+        }
+
+        var descriptors = new List<BossCapturedFragmentDescriptor>(
+            BossDismembermentMath.MaximumPieces);
+        int splitFragmentCount = 0;
+        foreach (BossAtlasSemanticPart atlasPart in atlasParts
+                     .OrderBy(part => part.Definition.DrawOrder))
+        {
+            BossSemanticPartDefinition part = atlasPart.Definition;
+            int splitCount = splitCounts[atlasPart];
+            IReadOnlyList<BossFragmentCell> cells = splitCount == 1
+                ? [BuildRectangleCell(part.SourceBounds)]
+                : BossDismembermentMath.BuildVoronoiCells(
+                    ToFragmentRect(part.SourceBounds),
+                    splitCount,
+                    seed ^ part.PrimaryBoneId);
+            BossFragmentPoint[] seeds = splitCount == 1
+                ? []
+                : cells.Select(cell => cell.Seed).ToArray();
+            splitFragmentCount += Math.Max(0, cells.Count - 1);
+            foreach (BossFragmentCell cell in cells)
+            {
+                descriptors.Add(new BossCapturedFragmentDescriptor(
+                    descriptors.Count,
+                    cell,
+                    seeds,
+                    part,
+                    atlasPart.AtlasUvRect,
+                    Math.Clamp(cell.Area / bodyArea, 0.0001f, 1f),
+                    splitCount > 1));
+            }
+        }
+
+        return new BossFragmentPartition(
+            descriptors,
+            ToFragmentRect(bodyLocalBounds),
+            atlasParts.Count,
+            mergedPartCount,
+            splitFragmentCount);
+    }
+
+    public static bool TryMergeSmallestRelatedPart(
+        IReadOnlyList<BossSemanticPartDefinition> source,
+        out IReadOnlyList<BossSemanticPartDefinition> merged)
+    {
+        merged = source;
+        if (source.Count <= 2)
+        {
+            return false;
+        }
+
+        BossSemanticPartDefinition smallest = source
+            .OrderBy(part => part.SourceBounds.Size.X * part.SourceBounds.Size.Y)
+            .ThenBy(part => part.DrawOrder)
+            .First();
+        BossSemanticPartDefinition? target = FindRelatedTarget(smallest, source);
+        if (target == null)
+        {
+            return false;
+        }
+
+        var replacement = target with
+        {
+            SlotIndices = target.SlotIndices
+                .Concat(smallest.SlotIndices)
+                .Distinct()
+                .Order()
+                .ToArray(),
+            SourceBounds = target.SourceBounds.Merge(smallest.SourceBounds),
+            DrawOrder = Math.Min(target.DrawOrder, smallest.DrawOrder),
+            BelongsToDetachedPart = target.BelongsToDetachedPart
+                || smallest.BelongsToDetachedPart
+        };
+        merged = source
+            .Where(part => !ReferenceEquals(part, smallest)
+                && !ReferenceEquals(part, target))
+            .Append(replacement)
+            .OrderBy(part => part.DrawOrder)
+            .ToArray();
+        return true;
+    }
+
+    internal static int ResolveLocalSplitCount(Rect2 partBounds, Rect2 bodyBounds)
+    {
+        float areaRatio = partBounds.Size.X * partBounds.Size.Y
+            / Math.Max(1f, bodyBounds.Size.X * bodyBounds.Size.Y);
+        float spanRatio = Math.Max(
+            partBounds.Size.X / Math.Max(1f, bodyBounds.Size.X),
+            partBounds.Size.Y / Math.Max(1f, bodyBounds.Size.Y));
+        if (areaRatio <= OversizedAreaRatio && spanRatio <= OversizedSpanRatio)
+        {
+            return 1;
+        }
+
+        return Math.Clamp(
+            Math.Max(
+                Mathf.CeilToInt(areaRatio / 0.18f),
+                Mathf.CeilToInt(spanRatio / 0.38f)),
+            2,
+            4);
+    }
+
+    private static float ResolveOversizedScore(Rect2 partBounds, Rect2 bodyBounds)
+    {
+        float areaRatio = partBounds.Size.X * partBounds.Size.Y
+            / Math.Max(1f, bodyBounds.Size.X * bodyBounds.Size.Y);
+        float spanRatio = Math.Max(
+            partBounds.Size.X / Math.Max(1f, bodyBounds.Size.X),
+            partBounds.Size.Y / Math.Max(1f, bodyBounds.Size.Y));
+        return Math.Max(
+            areaRatio / OversizedAreaRatio,
+            spanRatio / OversizedSpanRatio);
+    }
+
+    private static BossSemanticPartDefinition? FindRelatedTarget(
+        BossSemanticPartDefinition source,
+        IReadOnlyList<BossSemanticPartDefinition> parts)
+    {
+        foreach (ulong ancestorId in source.AncestorBoneIds)
+        {
+            BossSemanticPartDefinition? ancestor = parts.FirstOrDefault(part =>
+                !ReferenceEquals(part, source)
+                && part.PrimaryBoneId == ancestorId);
+            if (ancestor != null)
+            {
+                return ancestor;
+            }
+        }
+
+        return parts
+            .Where(part => !ReferenceEquals(part, source))
+            .Where(part => part.AncestorBoneIds.Intersect(source.AncestorBoneIds).Any()
+                || part.AncestorBoneIds.Contains(source.PrimaryBoneId)
+                || source.AncestorBoneIds.Contains(part.PrimaryBoneId))
+            .OrderBy(part => Math.Abs(part.DrawOrder - source.DrawOrder))
+            .ThenBy(part => part.SourceBounds.Size.X * part.SourceBounds.Size.Y)
+            .FirstOrDefault();
+    }
+
+    private static BossFragmentCell BuildRectangleCell(Rect2 bounds)
+    {
+        BossFragmentPoint[] vertices =
+        [
+            new(bounds.Position.X, bounds.Position.Y),
+            new(bounds.End.X, bounds.Position.Y),
+            new(bounds.End.X, bounds.End.Y),
+            new(bounds.Position.X, bounds.End.Y)
+        ];
+        Vector2 center = bounds.GetCenter();
+        return new BossFragmentCell(
+            new BossFragmentPoint(center.X, center.Y),
+            vertices);
+    }
+
+    private static BossFragmentRect ToFragmentRect(Rect2 bounds) => new(
+        bounds.Position.X,
+        bounds.Position.Y,
+        bounds.Size.X,
+        bounds.Size.Y);
 }

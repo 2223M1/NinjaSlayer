@@ -11,7 +11,7 @@ namespace NinjaSlayer.Code.Nodes;
 
 public partial class NYamotoKokiOrigamiMissileHitSparkVfx : NHitSparkVfx
 {
-    public const string ScenePath =
+    public const string ResourceScenePath =
         "res://NinjaSlayer/scenes/vfx/yamoto_koki_missile_hit_spark/hit_spark_vfx.tscn";
 
     private static readonly string[] ParticleNodePaths =
@@ -35,7 +35,7 @@ public partial class NYamotoKokiOrigamiMissileHitSparkVfx : NHitSparkVfx
         }
 
         NYamotoKokiOrigamiMissileHitSparkVfx? vfx =
-            NinjaSlayerVfxUtil.TryGenModVfxNode<NYamotoKokiOrigamiMissileHitSparkVfx>(ScenePath);
+            NinjaSlayerVfxUtil.TryGenModVfxNode<NYamotoKokiOrigamiMissileHitSparkVfx>(ResourceScenePath);
         if (vfx != null)
         {
             vfx._targetNode = targetNode;

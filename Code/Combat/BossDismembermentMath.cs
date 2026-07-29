@@ -4,6 +4,20 @@ internal readonly record struct BossFragmentPoint(float X, float Y);
 
 internal readonly record struct BossFragmentRect(float X, float Y, float Width, float Height);
 
+internal readonly record struct BossFragmentBoundsCalibration(
+    float UniformScale,
+    float TranslationX,
+    float TranslationY,
+    float RawWidthRatio,
+    float RawHeightRatio,
+    float CorrectedWidthRatio,
+    float CorrectedHeightRatio)
+{
+    public bool IsIdentity => MathF.Abs(UniformScale - 1f) <= 0.0001f
+        && MathF.Abs(TranslationX) <= 0.001f
+        && MathF.Abs(TranslationY) <= 0.001f;
+}
+
 internal sealed record BossFragmentCell(
     BossFragmentPoint Seed,
     IReadOnlyList<BossFragmentPoint> Vertices)
@@ -12,59 +26,14 @@ internal sealed record BossFragmentCell(
     public BossFragmentPoint Centroid => BossDismembermentMath.PolygonCentroid(Vertices);
 }
 
-internal readonly record struct BossFragmentLaunch(
-    float VelocityX,
-    float VelocityY,
-    float AngularVelocityDegrees);
-
 internal readonly record struct BossFragmentLink(
     int FirstIndex,
     int SecondIndex);
-
-internal readonly record struct BossFragmentAllocation(
-    int BodyPieces,
-    int DetachedPieces);
 
 internal static class BossDismembermentMath
 {
     public const int MaximumPieces = 16;
     private const int CandidateCount = 128;
-
-    public static int ResolvePieceCount(float width, float height, int availableParts, bool detachedPart)
-    {
-        if (width <= 1f || height <= 1f || availableParts <= 0)
-        {
-            return 0;
-        }
-
-        float metric = MathF.Sqrt(width * height);
-        int minimum = detachedPart ? 3 : 8;
-        int maximum = detachedPart ? 6 : MaximumPieces;
-        int divisor = detachedPart ? 56 : 58;
-        int desired = Math.Clamp((int)MathF.Round(metric / divisor), minimum, maximum);
-        return Math.Clamp(desired, 1, Math.Min(availableParts, MaximumPieces));
-    }
-
-    public static int ResolveSpinePieceCount(int visibleSlots, bool detachedPart)
-    {
-        if (visibleSlots <= 0)
-        {
-            return 0;
-        }
-
-        int maximum = detachedPart ? 6 : MaximumPieces;
-        return Math.Min(visibleSlots, maximum);
-    }
-
-    public static BossFragmentAllocation AllocateSpinePieces(
-        int bodySlots,
-        int detachedSlots)
-    {
-        int detached = ResolveSpinePieceCount(detachedSlots, detachedPart: true);
-        int body = ResolveSpinePieceCount(bodySlots, detachedPart: false);
-        body = Math.Min(body, MaximumPieces - detached);
-        return new BossFragmentAllocation(body, detached);
-    }
 
     public static IReadOnlyList<BossFragmentLink> BuildRagdollLinks(
         IReadOnlyList<BossFragmentPoint> points,
@@ -143,20 +112,6 @@ internal static class BossDismembermentMath
         return Math.Clamp(MathF.Sqrt(visibleArea) * 0.08f, 18f, 42f);
     }
 
-    public static BossFragmentPoint ResolveBurstDirection(
-        int index,
-        int count,
-        float rotationRadians,
-        float jitter)
-    {
-        count = Math.Max(1, count);
-        index = Math.Clamp(index, 0, count - 1);
-        jitter = Math.Clamp(jitter, -1f, 1f);
-        float sector = MathF.Tau / count;
-        float angle = rotationRadians + sector * index + sector * jitter * 0.42f;
-        return new BossFragmentPoint(MathF.Cos(angle), MathF.Sin(angle));
-    }
-
     public static ulong ResolveMotionSeed(
         ulong snapshotSeed,
         ulong runtimeEntropy,
@@ -177,6 +132,136 @@ internal static class BossDismembermentMath
         }
 
         return hash;
+    }
+
+    public static bool TryResolveUniformBoundsCalibration(
+        BossFragmentRect expected,
+        BossFragmentRect actual,
+        out BossFragmentBoundsCalibration calibration)
+    {
+        calibration = default;
+        if (!IsValidBounds(expected) || !IsValidBounds(actual))
+        {
+            return false;
+        }
+
+        float rawWidthRatio = actual.Width / expected.Width;
+        float rawHeightRatio = actual.Height / expected.Height;
+        if (!float.IsFinite(rawWidthRatio)
+            || !float.IsFinite(rawHeightRatio)
+            || rawWidthRatio is < 0.95f or > 1.05f
+            || rawHeightRatio is < 0.95f or > 1.05f)
+        {
+            return false;
+        }
+
+        float uniformScale;
+        float correctedWidthRatio;
+        float correctedHeightRatio;
+        if (rawWidthRatio is >= 0.98f and <= 1.02f
+            && rawHeightRatio is >= 0.98f and <= 1.02f)
+        {
+            uniformScale = 1f;
+            correctedWidthRatio = rawWidthRatio;
+            correctedHeightRatio = rawHeightRatio;
+        }
+        else
+        {
+            float widthScale = expected.Width / actual.Width;
+            float heightScale = expected.Height / actual.Height;
+            uniformScale = MathF.Sqrt(widthScale * heightScale);
+            correctedWidthRatio = rawWidthRatio * uniformScale;
+            correctedHeightRatio = rawHeightRatio * uniformScale;
+            if (!float.IsFinite(uniformScale)
+                || uniformScale <= 0f
+                || correctedWidthRatio is < 0.98f or > 1.02f
+                || correctedHeightRatio is < 0.98f or > 1.02f)
+            {
+                return false;
+            }
+        }
+
+        float expectedCenterX = expected.X + expected.Width * 0.5f;
+        float expectedCenterY = expected.Y + expected.Height * 0.5f;
+        float actualCenterX = actual.X + actual.Width * 0.5f;
+        float actualCenterY = actual.Y + actual.Height * 0.5f;
+        float translationX = expectedCenterX - actualCenterX * uniformScale;
+        float translationY = expectedCenterY - actualCenterY * uniformScale;
+        if (!float.IsFinite(translationX) || !float.IsFinite(translationY))
+        {
+            return false;
+        }
+
+        calibration = new BossFragmentBoundsCalibration(
+            uniformScale,
+            translationX,
+            translationY,
+            rawWidthRatio,
+            rawHeightRatio,
+            correctedWidthRatio,
+            correctedHeightRatio);
+        return true;
+    }
+
+    public static bool ConvexPolygonsOverlap(
+        IReadOnlyList<BossFragmentPoint> first,
+        IReadOnlyList<BossFragmentPoint> second,
+        float separationEpsilon = 0.001f)
+    {
+        if (first.Count < 3
+            || second.Count < 3
+            || first.Any(point => !IsFinite(point))
+            || second.Any(point => !IsFinite(point)))
+        {
+            return false;
+        }
+
+        separationEpsilon = Math.Max(0f, separationEpsilon);
+        return HasNoSeparatingAxis(first, second, separationEpsilon)
+            && HasNoSeparatingAxis(second, first, separationEpsilon);
+    }
+
+    public static IReadOnlyList<BossFragmentPoint> BuildConvexHull(
+        IReadOnlyList<BossFragmentPoint> points)
+    {
+        BossFragmentPoint[] sorted = points
+            .Where(IsFinite)
+            .Distinct()
+            .OrderBy(point => point.X)
+            .ThenBy(point => point.Y)
+            .ToArray();
+        if (sorted.Length <= 2)
+        {
+            return sorted;
+        }
+
+        var lower = new List<BossFragmentPoint>(sorted.Length);
+        foreach (BossFragmentPoint point in sorted)
+        {
+            while (lower.Count >= 2 && Cross(lower[^2], lower[^1], point) <= 0f)
+            {
+                lower.RemoveAt(lower.Count - 1);
+            }
+
+            lower.Add(point);
+        }
+
+        var upper = new List<BossFragmentPoint>(sorted.Length);
+        for (int index = sorted.Length - 1; index >= 0; index--)
+        {
+            BossFragmentPoint point = sorted[index];
+            while (upper.Count >= 2 && Cross(upper[^2], upper[^1], point) <= 0f)
+            {
+                upper.RemoveAt(upper.Count - 1);
+            }
+
+            upper.Add(point);
+        }
+
+        lower.RemoveAt(lower.Count - 1);
+        upper.RemoveAt(upper.Count - 1);
+        lower.AddRange(upper);
+        return lower;
     }
 
     public static IReadOnlyList<BossFragmentCell> BuildVoronoiCells(
@@ -203,11 +288,47 @@ internal static class BossDismembermentMath
             return [];
         }
 
+        BossFragmentPoint[] polygon =
+        [
+            new(bounds.X, bounds.Y),
+            new(bounds.X + bounds.Width, bounds.Y),
+            new(bounds.X + bounds.Width, bounds.Y + bounds.Height),
+            new(bounds.X, bounds.Y + bounds.Height)
+        ];
+        return BuildVoronoiCells(polygon, requestedSeeds);
+    }
+
+    public static IReadOnlyList<BossFragmentCell> BuildVoronoiCells(
+        IReadOnlyList<BossFragmentPoint> convexBounds,
+        int requestedCount,
+        ulong seed)
+    {
+        int count = Math.Clamp(requestedCount, 1, MaximumPieces);
+        if (convexBounds.Count < 3 || PolygonArea(convexBounds) <= 1f)
+        {
+            return [];
+        }
+
+        IReadOnlyList<BossFragmentPoint> seeds = BuildDistributedSeeds(
+            convexBounds,
+            count,
+            seed);
+        return BuildVoronoiCells(convexBounds, seeds);
+    }
+
+    public static IReadOnlyList<BossFragmentCell> BuildVoronoiCells(
+        IReadOnlyList<BossFragmentPoint> convexBounds,
+        IReadOnlyList<BossFragmentPoint> requestedSeeds)
+    {
+        if (convexBounds.Count < 3 || PolygonArea(convexBounds) <= 1f)
+        {
+            return [];
+        }
+
+        BossFragmentRect bounds = BoundsOf(convexBounds);
         BossFragmentPoint[] seeds = requestedSeeds
             .Take(MaximumPieces)
-            .Select(seedPoint => new BossFragmentPoint(
-                Math.Clamp(seedPoint.X, bounds.X + 0.5f, bounds.X + bounds.Width - 0.5f),
-                Math.Clamp(seedPoint.Y, bounds.Y + 0.5f, bounds.Y + bounds.Height - 0.5f)))
+            .Where(seedPoint => IsFinite(seedPoint) && ContainsPoint(convexBounds, seedPoint))
             .ToArray();
         if (seeds.Length == 0)
         {
@@ -218,13 +339,7 @@ internal static class BossDismembermentMath
         for (int i = 0; i < seeds.Length; i++)
         {
             BossFragmentPoint seedPoint = seeds[i];
-            List<BossFragmentPoint> polygon =
-            [
-                new(bounds.X, bounds.Y),
-                new(bounds.X + bounds.Width, bounds.Y),
-                new(bounds.X + bounds.Width, bounds.Y + bounds.Height),
-                new(bounds.X, bounds.Y + bounds.Height)
-            ];
+            List<BossFragmentPoint> polygon = [.. convexBounds];
 
             for (int j = 0; j < seeds.Length && polygon.Count > 0; j++)
             {
@@ -250,48 +365,26 @@ internal static class BossDismembermentMath
         return cells;
     }
 
-    public static BossFragmentLaunch ResolveLaunch(
-        BossFragmentPoint pieceCenter,
-        BossFragmentPoint explosionCenter,
-        float areaRatio,
-        float randomA,
-        float randomB)
+    public static BossFragmentRect BoundsOf(IReadOnlyList<BossFragmentPoint> points)
     {
-        randomA = Math.Clamp(randomA, 0f, 1f);
-        randomB = Math.Clamp(randomB, 0f, 1f);
-        float radialX = pieceCenter.X - explosionCenter.X;
-        float radialY = pieceCenter.Y - explosionCenter.Y;
-        float radialLength = MathF.Sqrt(radialX * radialX + radialY * radialY);
-        if (radialLength <= 0.001f)
+        if (points.Count == 0)
         {
-            float angle = MathF.Tau * randomA;
-            radialX = MathF.Cos(angle);
-            radialY = MathF.Sin(angle);
-        }
-        else
-        {
-            radialX /= radialLength;
-            radialY /= radialLength;
+            return default;
         }
 
-        float tangent = (randomB - 0.5f) * 1.4f;
-        float radialWeight = 0.9f + randomA * 0.45f;
-        float upwardImpulse = 0.08f + (1f - randomA) * 0.34f;
-        float directionX = radialX * radialWeight - radialY * tangent;
-        float directionY = radialY * radialWeight + radialX * tangent - upwardImpulse;
-        float directionLength = MathF.Sqrt(directionX * directionX + directionY * directionY);
-        directionX /= directionLength;
-        directionY /= directionLength;
+        float minX = points[0].X;
+        float minY = points[0].Y;
+        float maxX = minX;
+        float maxY = minY;
+        for (int index = 1; index < points.Count; index++)
+        {
+            minX = Math.Min(minX, points[index].X);
+            minY = Math.Min(minY, points[index].Y);
+            maxX = Math.Max(maxX, points[index].X);
+            maxY = Math.Max(maxY, points[index].Y);
+        }
 
-        float massScale = MathF.Sqrt(Math.Clamp(areaRatio, 0.2f, 3f));
-        float speed = Math.Clamp(860f / massScale, 560f, 1240f) * (0.76f + randomB * 0.48f);
-        float spinMagnitude = Math.Clamp(680f / massScale, 260f, 1080f)
-            * (0.7f + randomA * 0.62f);
-        float spinSign = randomB < 0.5f ? -1f : 1f;
-        return new BossFragmentLaunch(
-            directionX * speed,
-            directionY * speed,
-            spinMagnitude * spinSign);
+        return new BossFragmentRect(minX, minY, maxX - minX, maxY - minY);
     }
 
     internal static float PolygonArea(IReadOnlyList<BossFragmentPoint> polygon)
@@ -392,6 +485,165 @@ internal static class BossDismembermentMath
         return selected;
     }
 
+    private static IReadOnlyList<BossFragmentPoint> BuildDistributedSeeds(
+        IReadOnlyList<BossFragmentPoint> convexBounds,
+        int count,
+        ulong seed)
+    {
+        BossFragmentRect bounds = BoundsOf(convexBounds);
+        BossFragmentPoint centroid = PolygonCentroid(convexBounds);
+        var candidates = new List<BossFragmentPoint>(CandidateCount + 1) { centroid };
+        int offset = (int)(Mix(seed) % 997UL) + 1;
+        for (int index = 0; index < CandidateCount; index++)
+        {
+            int sequence = offset + index;
+            BossFragmentPoint candidate = new(
+                bounds.X + bounds.Width * RadicalInverse(sequence, 2),
+                bounds.Y + bounds.Height * RadicalInverse(sequence, 3));
+            if (ContainsPoint(convexBounds, candidate))
+            {
+                candidates.Add(candidate);
+            }
+        }
+
+        if (candidates.Count < count)
+        {
+            for (int index = 0; index < convexBounds.Count; index++)
+            {
+                BossFragmentPoint candidate = new(
+                    (convexBounds[index].X + centroid.X) * 0.5f,
+                    (convexBounds[index].Y + centroid.Y) * 0.5f);
+                if (ContainsPoint(convexBounds, candidate))
+                {
+                    candidates.Add(candidate);
+                }
+            }
+        }
+
+        count = Math.Min(count, candidates.Count);
+        var selected = new List<BossFragmentPoint>(count) { candidates[0] };
+        var used = new HashSet<int> { 0 };
+        while (selected.Count < count)
+        {
+            int bestIndex = -1;
+            float bestDistance = float.NegativeInfinity;
+            for (int index = 1; index < candidates.Count; index++)
+            {
+                if (used.Contains(index))
+                {
+                    continue;
+                }
+
+                float nearest = selected.Min(point =>
+                    NormalizedDistanceSquared(candidates[index], point, bounds));
+                if (nearest > bestDistance)
+                {
+                    bestDistance = nearest;
+                    bestIndex = index;
+                }
+            }
+
+            if (bestIndex < 0)
+            {
+                break;
+            }
+
+            used.Add(bestIndex);
+            selected.Add(candidates[bestIndex]);
+        }
+
+        return selected;
+    }
+
+    private static bool ContainsPoint(
+        IReadOnlyList<BossFragmentPoint> convexPolygon,
+        BossFragmentPoint point)
+    {
+        float orientation = 0f;
+        for (int index = 0; index < convexPolygon.Count; index++)
+        {
+            BossFragmentPoint first = convexPolygon[index];
+            BossFragmentPoint second = convexPolygon[(index + 1) % convexPolygon.Count];
+            float cross = (second.X - first.X) * (point.Y - first.Y)
+                - (second.Y - first.Y) * (point.X - first.X);
+            if (MathF.Abs(cross) <= 0.001f)
+            {
+                continue;
+            }
+
+            float sign = MathF.Sign(cross);
+            if (orientation == 0f)
+            {
+                orientation = sign;
+            }
+            else if (sign != orientation)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsFinite(BossFragmentPoint point) =>
+        float.IsFinite(point.X) && float.IsFinite(point.Y);
+
+    private static bool HasNoSeparatingAxis(
+        IReadOnlyList<BossFragmentPoint> axesSource,
+        IReadOnlyList<BossFragmentPoint> other,
+        float separationEpsilon)
+    {
+        for (int index = 0; index < axesSource.Count; index++)
+        {
+            BossFragmentPoint first = axesSource[index];
+            BossFragmentPoint second = axesSource[(index + 1) % axesSource.Count];
+            float edgeX = second.X - first.X;
+            float edgeY = second.Y - first.Y;
+            float length = MathF.Sqrt(edgeX * edgeX + edgeY * edgeY);
+            if (length <= 0.0001f)
+            {
+                continue;
+            }
+
+            float axisX = -edgeY / length;
+            float axisY = edgeX / length;
+            Project(axesSource, axisX, axisY, out float sourceMinimum, out float sourceMaximum);
+            Project(other, axisX, axisY, out float otherMinimum, out float otherMaximum);
+            if (MathF.Min(sourceMaximum, otherMaximum)
+                - MathF.Max(sourceMinimum, otherMinimum) <= separationEpsilon)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static void Project(
+        IReadOnlyList<BossFragmentPoint> points,
+        float axisX,
+        float axisY,
+        out float minimum,
+        out float maximum)
+    {
+        minimum = Dot(points[0], axisX, axisY);
+        maximum = minimum;
+        for (int index = 1; index < points.Count; index++)
+        {
+            float projection = Dot(points[index], axisX, axisY);
+            minimum = Math.Min(minimum, projection);
+            maximum = Math.Max(maximum, projection);
+        }
+    }
+
+    private static bool IsValidBounds(BossFragmentRect bounds) =>
+        float.IsFinite(bounds.X)
+        && float.IsFinite(bounds.Y)
+        && float.IsFinite(bounds.Width)
+        && float.IsFinite(bounds.Height)
+        && bounds.Width > 1f
+        && bounds.Height > 1f;
+
     private static List<BossFragmentPoint> ClipToHalfPlane(
         IReadOnlyList<BossFragmentPoint> polygon,
         float normalX,
@@ -431,6 +683,13 @@ internal static class BossDismembermentMath
     }
 
     private static float Dot(BossFragmentPoint point, float x, float y) => point.X * x + point.Y * y;
+
+    private static float Cross(
+        BossFragmentPoint origin,
+        BossFragmentPoint first,
+        BossFragmentPoint second) =>
+        (first.X - origin.X) * (second.Y - origin.Y)
+        - (first.Y - origin.Y) * (second.X - origin.X);
 
     private static float NormalizedDistanceSquared(
         BossFragmentPoint first,

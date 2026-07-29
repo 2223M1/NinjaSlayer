@@ -2,16 +2,25 @@ namespace NinjaSlayer.Code.Combat;
 
 internal sealed class BossSoftBodySolver
 {
-    public const int Substeps = 2;
+    public const int MinimumSubsteps = 2;
+    public const int MaximumSubsteps = 4;
     public const int ConstraintIterations = 6;
-
-    private const float FrameShapeMatchingStrength = 0.34f;
-    private const float Restitution = 0.48f;
-    private const float Friction = 0.22f;
+    public const float DefaultMaximumCenterSpeed = 620f;
 
     private readonly SoftCollisionBroadphase _broadphase = new();
-    private readonly Dictionary<SoftFragmentBody, BossFragmentPoint[]> _hullBuffers = [];
-    private readonly List<SoftContact> _contacts = [];
+    private readonly SoftContactManifoldBuilder _manifoldBuilder = new();
+    private readonly SoftBoundaryContactSolver _boundarySolver = new();
+    private readonly SoftBodyEnergyAudit _energyAudit = new();
+    private readonly List<SoftContactManifold> _velocityManifolds = [];
+    private readonly HashSet<(int First, int Second)> _velocityPairKeys = [];
+    private readonly List<SoftBoundaryContactManifold> _boundaryVelocityManifolds = [];
+    private readonly HashSet<(int Body, SoftBoundarySide Side)> _boundaryVelocityKeys = [];
+    private readonly HashSet<SoftFragmentBody> _acceptedBodies = [];
+    private readonly HashSet<SoftFragmentBody> _steppedBodies = [];
+    private readonly Dictionary<SoftFragmentBody, float> _sweptFractions = [];
+    private readonly Dictionary<(int First, int Second), SweptOrdering> _sweptOrderings = [];
+    private readonly HashSet<SoftFragmentBody> _activeBodies = [];
+    private readonly List<(int First, int Second)> _expiredSweptOrderings = [];
 
     public SoftBodyStepMetrics Step(
         IReadOnlyList<SoftFragmentBody> bodies,
@@ -19,65 +28,150 @@ internal sealed class BossSoftBodySolver
         float seconds,
         float gravity,
         float airDrag,
-        float? floorY = null)
+        float? floorY = null,
+        float quadraticAirDrag = 0f,
+        IReadOnlyList<SoftBodyLaunchActuator>? launchActuators = null,
+        float centerSpeedLimit = DefaultMaximumCenterSpeed,
+        SoftHorizontalBoundary? horizontalBoundary = null)
     {
         if (!float.IsFinite(seconds) || seconds <= 0f)
         {
             return default;
         }
 
-        int contacts = 0;
+        int manifolds = 0;
+        int contactPoints = 0;
+        int contactStarts = 0;
+        int visibleBounces = 0;
+        int sweptContacts = 0;
+        int leftWallContacts = 0;
+        int rightWallContacts = 0;
+        int wallBounces = 0;
         int brokenLinks = 0;
-        float substepSeconds = seconds / Substeps;
-        float frameStrength = 1f - MathF.Pow(
-            1f - FrameShapeMatchingStrength,
-            Math.Max(seconds, 0f) * 60f);
-        float shapeStrength = 1f - MathF.Pow(
-            1f - frameStrength,
-            1f / (Substeps * ConstraintIterations));
-        for (int substep = 0; substep < Substeps; substep++)
+        int rollbacks = 0;
+        int inversions = 0;
+        int safetyProjections = 0;
+        int wobbleZeroCrossings = 0;
+        int limitedContacts = 0;
+        int limitedCenterSpeeds = 0;
+        float maximumPenetration = 0f;
+        float maximumCenterSpeed = 0f;
+        float maximumObservedCenterSpeed = 0f;
+        float contactEnergyBefore = 0f;
+        float contactEnergyAfter = 0f;
+        PruneSweptOrderings(bodies);
+        centerSpeedLimit = Math.Max(1f, centerSpeedLimit);
+        int substeps = ResolveSubstepCount(
+            bodies,
+            seconds,
+            centerSpeedLimit,
+            launchActuators);
+        float substepSeconds = seconds / substeps;
+        for (int substep = 0; substep < substeps; substep++)
         {
+            _steppedBodies.Clear();
+            if (launchActuators != null)
+            {
+                for (int actuatorIndex = 0; actuatorIndex < launchActuators.Count; actuatorIndex++)
+                {
+                    launchActuators[actuatorIndex].Advance(substepSeconds);
+                }
+            }
+
             for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
             {
-                if (!bodies[bodyIndex].HasFiniteState)
+                SoftFragmentBody body = bodies[bodyIndex];
+                if (!body.HasFiniteState)
                 {
                     continue;
                 }
 
-                bodies[bodyIndex].BeginSubstep();
-                bodies[bodyIndex].Predict(substepSeconds, gravity, airDrag);
+                body.CaptureSubstepState();
+                _steppedBodies.Add(body);
+                body.BeginSubstep();
+                body.Predict(substepSeconds, gravity, airDrag, quadraticAirDrag);
             }
 
             for (int linkIndex = 0; linkIndex < links.Count; linkIndex++)
             {
-                links[linkIndex].BeginSubstep();
+                if (links[linkIndex].BeginSubstep(substepSeconds))
+                {
+                    brokenLinks++;
+                }
             }
 
+            _manifoldBuilder.BeginSubstep(links);
+            _velocityManifolds.Clear();
+            _velocityPairKeys.Clear();
+            _boundaryVelocityManifolds.Clear();
+            _boundaryVelocityKeys.Clear();
             IReadOnlyList<(SoftFragmentBody First, SoftFragmentBody Second)> pairs =
                 _broadphase.BuildPairs(bodies);
+            IReadOnlyList<SoftContactManifold> currentManifolds = [];
             for (int iteration = 0; iteration < ConstraintIterations; iteration++)
             {
                 for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
                 {
                     if (bodies[bodyIndex].HasFiniteState)
                     {
-                        bodies[bodyIndex].SolveInternalConstraints(substepSeconds, shapeStrength);
+                        bodies[bodyIndex].SolveInternalConstraints(substepSeconds);
                     }
                 }
 
                 for (int linkIndex = 0; linkIndex < links.Count; linkIndex++)
                 {
-                    if (links[linkIndex].Solve(substepSeconds))
-                    {
-                        brokenLinks++;
-                    }
+                    links[linkIndex].Solve(substepSeconds);
                 }
 
-                BuildContacts(pairs);
-                contacts += _contacts.Count;
-                for (int contactIndex = 0; contactIndex < _contacts.Count; contactIndex++)
+                currentManifolds = _manifoldBuilder.Build(
+                    pairs,
+                    enableTemporalSampling: substeps == MaximumSubsteps && iteration == 0);
+                if (iteration == 0)
                 {
-                    SolveContactPosition(_contacts[contactIndex]);
+                    RewindSweptBodies(currentManifolds);
+                }
+                for (int manifoldIndex = 0; manifoldIndex < currentManifolds.Count; manifoldIndex++)
+                {
+                    SoftContactManifold manifold = currentManifolds[manifoldIndex];
+                    (int First, int Second) key = PairKey(manifold.First, manifold.Second);
+                    if (_velocityPairKeys.Add(key))
+                    {
+                        _velocityManifolds.Add(manifold);
+                    }
+
+                    maximumPenetration = Math.Max(
+                        maximumPenetration,
+                        manifold.MaximumPenetration);
+                }
+
+                for (int manifoldIndex = 0; manifoldIndex < currentManifolds.Count; manifoldIndex++)
+                {
+                    SoftContactSolver.SolvePositions(currentManifolds[manifoldIndex]);
+                }
+
+                ProjectSweptOrderings();
+
+                if (horizontalBoundary is { IsValid: true } boundary)
+                {
+                    IReadOnlyList<SoftBoundaryContactManifold> boundaryManifolds =
+                        _boundarySolver.Build(bodies, boundary);
+                    for (int manifoldIndex = 0;
+                        manifoldIndex < boundaryManifolds.Count;
+                        manifoldIndex++)
+                    {
+                        SoftBoundaryContactManifold manifold = boundaryManifolds[manifoldIndex];
+                        (int Body, SoftBoundarySide Side) key =
+                            (manifold.Body.Id, manifold.Side);
+                        if (_boundaryVelocityKeys.Add(key))
+                        {
+                            _boundaryVelocityManifolds.Add(manifold);
+                        }
+
+                        maximumPenetration = Math.Max(
+                            maximumPenetration,
+                            manifold.MaximumPenetration);
+                        SoftBoundaryContactSolver.SolvePositions(manifold);
+                    }
                 }
 
                 if (floorY.HasValue)
@@ -86,38 +180,121 @@ internal sealed class BossSoftBodySolver
                     {
                         if (bodies[bodyIndex].HasFiniteState)
                         {
-                            contacts += bodies[bodyIndex].ConstrainToFloor(floorY.Value);
+                            _ = bodies[bodyIndex].ConstrainToFloor(floorY.Value);
                         }
                     }
                 }
+
             }
 
-            for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
+            manifolds += _velocityManifolds.Count;
+            for (int manifoldIndex = 0; manifoldIndex < _velocityManifolds.Count; manifoldIndex++)
             {
-                if (bodies[bodyIndex].HasFiniteState)
+                SoftContactManifold manifold = _velocityManifolds[manifoldIndex];
+                contactPoints += manifold.PointCount;
+                contactStarts += manifold.IsNewContact ? 1 : 0;
+                sweptContacts += manifold.IsSwept ? 1 : 0;
+            }
+
+            for (int manifoldIndex = 0;
+                manifoldIndex < _boundaryVelocityManifolds.Count;
+                manifoldIndex++)
+            {
+                SoftBoundaryContactManifold manifold =
+                    _boundaryVelocityManifolds[manifoldIndex];
+                if (manifold.Side == SoftBoundarySide.Left)
                 {
-                    bodies[bodyIndex].FinalizeVelocities(substepSeconds);
+                    leftWallContacts++;
+                }
+                else
+                {
+                    rightWallContacts++;
                 }
             }
 
-            for (int contactIndex = 0; contactIndex < _contacts.Count; contactIndex++)
+            _acceptedBodies.Clear();
+            for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
             {
-                SolveContactVelocity(_contacts[contactIndex]);
-            }
-
-            for (int contactIndex = 0; contactIndex < _contacts.Count; contactIndex++)
-            {
-                SoftContact contact = _contacts[contactIndex];
-                if (contactIndex > 0
-                    && ReferenceEquals(_contacts[contactIndex - 1].First, contact.First)
-                    && ReferenceEquals(_contacts[contactIndex - 1].Second, contact.Second))
+                SoftFragmentBody body = bodies[bodyIndex];
+                if (!_steppedBodies.Contains(body))
                 {
                     continue;
                 }
 
-                SolveCenterVelocity(contact);
+                body.ProjectSafetyConstraints(substepSeconds);
+                SoftBodyCommitResult commit = body.TryCommitSubstep(substepSeconds);
+                if (commit.SafetyProjected)
+                {
+                    safetyProjections++;
+                }
+                if (commit.Accepted)
+                {
+                    if (floorY.HasValue)
+                    {
+                        _ = body.ConstrainToFloor(floorY.Value);
+                        body.FinalizeVelocities(substepSeconds);
+                    }
+
+                    _acceptedBodies.Add(body);
+                }
+                else
+                {
+                    rollbacks++;
+                    if (commit.Inverted)
+                    {
+                        inversions++;
+                    }
+                }
             }
 
+            for (int manifoldIndex = 0; manifoldIndex < _velocityManifolds.Count; manifoldIndex++)
+            {
+                SoftContactManifold manifold = _velocityManifolds[manifoldIndex];
+                if (!_acceptedBodies.Contains(manifold.First)
+                    || !_acceptedBodies.Contains(manifold.Second))
+                {
+                    continue;
+                }
+
+                _energyAudit.Capture(manifold);
+                SoftContactVelocityResult velocityResult =
+                    SoftContactSolver.SolveVelocities(manifold);
+                visibleBounces += velocityResult.Bounced ? 1 : 0;
+                SoftBodyEnergyAuditResult energy = _energyAudit.LimitContactEnergy(manifold);
+                contactEnergyBefore += energy.Before;
+                contactEnergyAfter += energy.After;
+                if (energy.Limited)
+                {
+                    limitedContacts++;
+                }
+            }
+
+            for (int manifoldIndex = 0;
+                manifoldIndex < _boundaryVelocityManifolds.Count;
+                manifoldIndex++)
+            {
+                SoftBoundaryContactManifold manifold =
+                    _boundaryVelocityManifolds[manifoldIndex];
+                if (!_acceptedBodies.Contains(manifold.Body))
+                {
+                    continue;
+                }
+
+                _energyAudit.Capture(manifold.Body);
+                SoftBoundaryVelocityResult velocityResult =
+                    SoftBoundaryContactSolver.SolveVelocities(manifold);
+                wallBounces += velocityResult.Bounced ? 1 : 0;
+                SoftBodyEnergyAuditResult energy =
+                    _energyAudit.LimitBoundaryEnergy(manifold.Body);
+                contactEnergyBefore += energy.Before;
+                contactEnergyAfter += energy.After;
+                if (energy.Limited)
+                {
+                    limitedContacts++;
+                }
+            }
+
+            _manifoldBuilder.EndSubstep();
             if (floorY.HasValue)
             {
                 for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
@@ -128,350 +305,239 @@ internal sealed class BossSoftBodySolver
                     }
                 }
             }
+
+            for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
+            {
+                SoftFragmentBody body = bodies[bodyIndex];
+                if (!body.HasFiniteState)
+                {
+                    continue;
+                }
+
+                maximumObservedCenterSpeed = Math.Max(
+                    maximumObservedCenterSpeed,
+                    body.ResolveCenterSpeed());
+                if (body.ClampCenterSpeed(centerSpeedLimit))
+                {
+                    limitedCenterSpeeds++;
+                }
+
+                wobbleZeroCrossings += body.UpdateDeformationMetrics(substepSeconds);
+                maximumCenterSpeed = Math.Max(maximumCenterSpeed, body.ResolveCenterSpeed());
+            }
         }
 
-        return new SoftBodyStepMetrics(contacts, brokenLinks);
+        return new SoftBodyStepMetrics(
+            manifolds,
+            contactPoints,
+            contactStarts,
+            visibleBounces,
+            sweptContacts,
+            leftWallContacts,
+            rightWallContacts,
+            wallBounces,
+            brokenLinks,
+            rollbacks,
+            inversions,
+            safetyProjections,
+            wobbleZeroCrossings,
+            maximumCenterSpeed,
+            maximumObservedCenterSpeed,
+            contactEnergyBefore,
+            contactEnergyAfter,
+            limitedContacts,
+            limitedCenterSpeeds,
+            maximumPenetration,
+            substeps);
     }
 
-    private void BuildContacts(
-        IReadOnlyList<(SoftFragmentBody First, SoftFragmentBody Second)> pairs)
+    private static int ResolveSubstepCount(
+        IReadOnlyList<SoftFragmentBody> bodies,
+        float seconds,
+        float maximumCenterSpeed,
+        IReadOnlyList<SoftBodyLaunchActuator>? launchActuators)
     {
-        _contacts.Clear();
-        for (int pairIndex = 0; pairIndex < pairs.Count; pairIndex++)
+        float shortest = float.PositiveInfinity;
+        float fastest = 0f;
+        for (int index = 0; index < bodies.Count; index++)
         {
-            (SoftFragmentBody first, SoftFragmentBody second) = pairs[pairIndex];
-            BossFragmentPoint[] firstHull = GetHullBuffer(first);
-            BossFragmentPoint[] secondHull = GetHullBuffer(second);
-            first.CopyCollisionHull(firstHull);
-            second.CopyCollisionHull(secondHull);
-            if (!TryResolveCollision(
-                    first,
-                    second,
-                    firstHull,
-                    secondHull,
-                    out BossFragmentPoint normal,
-                    out float penetration))
+            SoftFragmentBody body = bodies[index];
+            if (!body.HasFiniteState)
             {
                 continue;
             }
 
-            ResolveSupportIndices(firstHull, normal, maximize: true, out int firstA, out int firstB);
-            ResolveSupportIndices(secondHull, normal, maximize: false, out int secondA, out int secondB);
-            AddContact(first, second, firstA, secondA, normal, penetration * 0.5f);
-            if (firstB != firstA || secondB != secondA)
+            shortest = Math.Min(shortest, body.ShortDimension);
+            fastest = Math.Max(fastest, body.ResolveCenterSpeed());
+        }
+
+        if (launchActuators != null)
+        {
+            for (int index = 0; index < launchActuators.Count; index++)
             {
-                AddContact(first, second, firstB, secondB, normal, penetration * 0.5f);
+                if (launchActuators[index].IsComplete)
+                {
+                    continue;
+                }
+
+                BossFragmentPoint velocity = launchActuators[index].TargetVelocity;
+                fastest = Math.Max(
+                    fastest,
+                    MathF.Sqrt(velocity.X * velocity.X + velocity.Y * velocity.Y));
+            }
+        }
+
+        fastest = Math.Min(Math.Max(fastest, 0f), maximumCenterSpeed);
+        if (!float.IsFinite(shortest) || shortest <= 0f || fastest <= 0f)
+        {
+            return MinimumSubsteps;
+        }
+
+        float maximumTravel = Math.Max(1f, shortest * 0.25f);
+        int required = (int)MathF.Ceiling(fastest * seconds / maximumTravel);
+        return Math.Clamp(required, MinimumSubsteps, MaximumSubsteps);
+    }
+
+    private void RewindSweptBodies(IReadOnlyList<SoftContactManifold> manifolds)
+    {
+        _sweptFractions.Clear();
+        for (int index = 0; index < manifolds.Count; index++)
+        {
+            SoftContactManifold manifold = manifolds[index];
+            if (!manifold.IsSwept)
+            {
+                continue;
+            }
+
+            AddEarliest(manifold.First, manifold.TimeOfImpact);
+            AddEarliest(manifold.Second, manifold.TimeOfImpact);
+        }
+
+        foreach ((SoftFragmentBody body, float fraction) in _sweptFractions)
+        {
+            body.RewindToSubstepFraction(fraction);
+        }
+
+        for (int index = 0; index < manifolds.Count; index++)
+        {
+            SoftContactManifold manifold = manifolds[index];
+            if (!manifold.IsSwept)
+            {
+                continue;
+            }
+
+            BossFragmentPoint delta = new(
+                manifold.Second.Center.X - manifold.First.Center.X,
+                manifold.Second.Center.Y - manifold.First.Center.Y);
+            float separation = Math.Max(
+                0.1f,
+                delta.X * manifold.Normal.X + delta.Y * manifold.Normal.Y);
+            (int First, int Second) key = PairKey(manifold.First, manifold.Second);
+            _sweptOrderings.TryAdd(
+                key,
+                new SweptOrdering(
+                    manifold.First,
+                    manifold.Second,
+                    manifold.Normal,
+                    separation));
+        }
+
+        void AddEarliest(SoftFragmentBody body, float fraction)
+        {
+            if (!_sweptFractions.TryGetValue(body, out float current)
+                || fraction < current)
+            {
+                _sweptFractions[body] = fraction;
             }
         }
     }
 
-    private void AddContact(
+    private void ProjectSweptOrderings()
+    {
+        foreach (SweptOrdering ordering in _sweptOrderings.Values)
+        {
+            BossFragmentPoint delta = new(
+                ordering.Second.Center.X - ordering.First.Center.X,
+                ordering.Second.Center.Y - ordering.First.Center.Y);
+            float signedSeparation = delta.X * ordering.Normal.X
+                + delta.Y * ordering.Normal.Y;
+            if (!float.IsFinite(signedSeparation)
+                || signedSeparation >= ordering.MinimumSignedSeparation)
+            {
+                continue;
+            }
+
+            float firstInverseMass = 1f / ordering.First.Mass;
+            float secondInverseMass = 1f / ordering.Second.Mass;
+            float totalInverseMass = firstInverseMass + secondInverseMass;
+            float correction = (ordering.MinimumSignedSeparation - signedSeparation)
+                / Math.Max(0.0001f, totalInverseMass);
+            ordering.First.TranslateForContinuousCollision(new BossFragmentPoint(
+                -ordering.Normal.X * correction * firstInverseMass,
+                -ordering.Normal.Y * correction * firstInverseMass));
+            ordering.Second.TranslateForContinuousCollision(new BossFragmentPoint(
+                ordering.Normal.X * correction * secondInverseMass,
+                ordering.Normal.Y * correction * secondInverseMass));
+        }
+    }
+
+    private void PruneSweptOrderings(IReadOnlyList<SoftFragmentBody> bodies)
+    {
+        _activeBodies.Clear();
+        for (int index = 0; index < bodies.Count; index++)
+        {
+            _activeBodies.Add(bodies[index]);
+        }
+
+        _expiredSweptOrderings.Clear();
+        foreach (((int First, int Second) key, SweptOrdering ordering) in _sweptOrderings)
+        {
+            if (!_activeBodies.Contains(ordering.First)
+                || !_activeBodies.Contains(ordering.Second)
+                || !ordering.First.HasFiniteState
+                || !ordering.Second.HasFiniteState)
+            {
+                _expiredSweptOrderings.Add(key);
+                continue;
+            }
+
+            ordering.First.ResolveDeformedProjection(
+                ordering.Normal,
+                out _,
+                out float firstMaximum);
+            ordering.Second.ResolveDeformedProjection(
+                ordering.Normal,
+                out float secondMinimum,
+                out _);
+            float releaseGap = Math.Min(
+                ordering.First.ShortDimension,
+                ordering.Second.ShortDimension) * 0.05f;
+            BossFragmentPoint relativeVelocity = new(
+                ordering.Second.CenterVelocity.X - ordering.First.CenterVelocity.X,
+                ordering.Second.CenterVelocity.Y - ordering.First.CenterVelocity.Y);
+            float separationSpeed = relativeVelocity.X * ordering.Normal.X
+                + relativeVelocity.Y * ordering.Normal.Y;
+            if (secondMinimum - firstMaximum >= releaseGap
+                && separationSpeed >= 0f)
+            {
+                _expiredSweptOrderings.Add(key);
+            }
+        }
+
+        for (int index = 0; index < _expiredSweptOrderings.Count; index++)
+        {
+            _sweptOrderings.Remove(_expiredSweptOrderings[index]);
+        }
+    }
+
+    private static (int First, int Second) PairKey(
         SoftFragmentBody first,
-        SoftFragmentBody second,
-        int firstHullIndex,
-        int secondHullIndex,
-        BossFragmentPoint normal,
-        float penetration)
-    {
-        SoftBodyHullPoint firstPoint = first.GetHullPoint(firstHullIndex);
-        SoftBodyHullPoint secondPoint = second.GetHullPoint(secondHullIndex);
-        BossFragmentPoint relativeVelocity = Subtract(
-            second.GetVelocityAt(secondPoint.U, secondPoint.V),
-            first.GetVelocityAt(firstPoint.U, firstPoint.V));
-        BossFragmentPoint relativeCenterVelocity = Subtract(
-            second.CenterVelocity,
-            first.CenterVelocity);
-        _contacts.Add(new SoftContact(
-            first,
-            second,
-            firstPoint.U,
-            firstPoint.V,
-            secondPoint.U,
-            secondPoint.V,
-            normal,
-            Math.Min(Math.Max(0f, penetration), 72f),
-            Dot(relativeVelocity, normal),
-            Dot(relativeCenterVelocity, normal)));
-    }
+        SoftFragmentBody second) =>
+        first.Id < second.Id ? (first.Id, second.Id) : (second.Id, first.Id);
 
-    private static void SolveContactPosition(SoftContact contact)
-    {
-        float firstInverseMass = contact.First.GetEffectiveInverseMass(contact.FirstU, contact.FirstV);
-        float secondInverseMass = contact.Second.GetEffectiveInverseMass(contact.SecondU, contact.SecondV);
-        float denominator = firstInverseMass + secondInverseMass;
-        if (denominator <= 0.0001f || contact.Penetration <= 0f)
-        {
-            return;
-        }
-
-        float lambda = contact.Penetration * 0.72f / denominator;
-        contact.First.ApplyContactPositionImpulse(
-            contact.FirstU,
-            contact.FirstV,
-            Multiply(contact.Normal, -1f),
-            lambda);
-        contact.Second.ApplyContactPositionImpulse(
-            contact.SecondU,
-            contact.SecondV,
-            contact.Normal,
-            lambda);
-    }
-
-    private static void SolveContactVelocity(SoftContact contact)
-    {
-        BossFragmentPoint firstVelocity = contact.First.GetVelocityAt(contact.FirstU, contact.FirstV);
-        BossFragmentPoint secondVelocity = contact.Second.GetVelocityAt(contact.SecondU, contact.SecondV);
-        BossFragmentPoint relative = Subtract(secondVelocity, firstVelocity);
-        float normalSpeed = Dot(relative, contact.Normal);
-        if (!float.IsFinite(normalSpeed)
-            || !float.IsFinite(contact.PreSolveNormalSpeed))
-        {
-            return;
-        }
-
-        float firstInverseMass = contact.First.GetEffectiveInverseMass(contact.FirstU, contact.FirstV);
-        float secondInverseMass = contact.Second.GetEffectiveInverseMass(contact.SecondU, contact.SecondV);
-        float denominator = firstInverseMass + secondInverseMass;
-        if (denominator <= 0.0001f)
-        {
-            return;
-        }
-
-        float targetNormalSpeed = contact.PreSolveNormalSpeed < -0.5f
-            ? -Restitution * contact.PreSolveNormalSpeed
-            : Math.Max(0f, contact.PreSolveNormalSpeed);
-        float normalImpulse = (targetNormalSpeed - normalSpeed) / denominator;
-        if (!float.IsFinite(normalImpulse))
-        {
-            return;
-        }
-
-        if (MathF.Abs(normalImpulse) > 0.0001f)
-        {
-            ApplyImpulsePair(contact, contact.Normal, normalImpulse);
-        }
-
-        BossFragmentPoint tangentVelocity = Subtract(
-            relative,
-            Multiply(contact.Normal, Dot(relative, contact.Normal)));
-        float tangentLength = Length(tangentVelocity);
-        if (tangentLength <= 0.001f)
-        {
-            return;
-        }
-
-        BossFragmentPoint tangent = Multiply(tangentVelocity, 1f / tangentLength);
-        float tangentImpulse = Math.Clamp(
-            -Dot(relative, tangent) / denominator,
-            -Friction * MathF.Abs(normalImpulse),
-            Friction * MathF.Abs(normalImpulse));
-        ApplyImpulsePair(contact, tangent, tangentImpulse);
-    }
-
-    private static void ApplyImpulsePair(
-        SoftContact contact,
-        BossFragmentPoint direction,
-        float impulse)
-    {
-        contact.First.ApplyVelocityImpulse(
-            contact.FirstU,
-            contact.FirstV,
-            direction,
-            -impulse);
-        contact.Second.ApplyVelocityImpulse(
-            contact.SecondU,
-            contact.SecondV,
-            direction,
-            impulse);
-    }
-
-    private static void SolveCenterVelocity(SoftContact contact)
-    {
-        BossFragmentPoint relative = Subtract(
-            contact.Second.CenterVelocity,
-            contact.First.CenterVelocity);
-        float normalSpeed = Dot(relative, contact.Normal);
-        if (!float.IsFinite(normalSpeed)
-            || !float.IsFinite(contact.PreSolveCenterNormalSpeed))
-        {
-            return;
-        }
-
-        float targetNormalSpeed = contact.PreSolveCenterNormalSpeed < -0.5f
-            ? -Restitution * contact.PreSolveCenterNormalSpeed
-            : Math.Max(0f, contact.PreSolveCenterNormalSpeed);
-        float inverseMass = 1f / contact.First.Mass + 1f / contact.Second.Mass;
-        float impulse = (targetNormalSpeed - normalSpeed) / inverseMass;
-        if (!float.IsFinite(impulse) || MathF.Abs(impulse) <= 0.0001f)
-        {
-            return;
-        }
-
-        contact.First.ApplyCenterVelocityImpulse(contact.Normal, -impulse);
-        contact.Second.ApplyCenterVelocityImpulse(contact.Normal, impulse);
-    }
-
-    private static bool TryResolveCollision(
-        SoftFragmentBody first,
-        SoftFragmentBody second,
-        IReadOnlyList<BossFragmentPoint> firstHull,
-        IReadOnlyList<BossFragmentPoint> secondHull,
-        out BossFragmentPoint normal,
-        out float penetration)
-    {
-        penetration = float.PositiveInfinity;
-        normal = default;
-        float margin = first.CollisionMargin * first.CollisionMarginScale
-            + second.CollisionMargin * second.CollisionMarginScale;
-        if (!TestAxes(firstHull, secondHull, margin, ref penetration, ref normal)
-            || !TestAxes(secondHull, firstHull, margin, ref penetration, ref normal))
-        {
-            return false;
-        }
-
-        BossFragmentPoint direction = Subtract(second.Center, first.Center);
-        if (LengthSquared(direction) <= 0.01f)
-        {
-            direction = Subtract(second.CenterVelocity, first.CenterVelocity);
-        }
-
-        if (LengthSquared(direction) <= 0.01f)
-        {
-            float angle = (first.Id * 0.754877666f + second.Id * 0.569840296f) * MathF.Tau;
-            direction = new BossFragmentPoint(MathF.Cos(angle), MathF.Sin(angle));
-        }
-
-        if (Dot(normal, direction) < 0f)
-        {
-            normal = Multiply(normal, -1f);
-        }
-
-        return float.IsFinite(penetration) && penetration > 0f;
-    }
-
-    private static bool TestAxes(
-        IReadOnlyList<BossFragmentPoint> axesSource,
-        IReadOnlyList<BossFragmentPoint> other,
-        float margin,
-        ref float minimumOverlap,
-        ref BossFragmentPoint minimumAxis)
-    {
-        for (int index = 0; index < axesSource.Count; index++)
-        {
-            BossFragmentPoint current = axesSource[index];
-            BossFragmentPoint next = axesSource[(index + 1) % axesSource.Count];
-            BossFragmentPoint edge = Subtract(next, current);
-            float length = Length(edge);
-            if (length <= 0.001f)
-            {
-                continue;
-            }
-
-            BossFragmentPoint axis = new(-edge.Y / length, edge.X / length);
-            Project(axesSource, axis, out float firstMinimum, out float firstMaximum);
-            Project(other, axis, out float secondMinimum, out float secondMaximum);
-            float overlap = MathF.Min(firstMaximum, secondMaximum)
-                - MathF.Max(firstMinimum, secondMinimum)
-                + margin;
-            if (overlap <= 0f)
-            {
-                return false;
-            }
-
-            if (overlap < minimumOverlap)
-            {
-                minimumOverlap = overlap;
-                minimumAxis = axis;
-            }
-        }
-
-        return float.IsFinite(minimumOverlap);
-    }
-
-    private static void Project(
-        IReadOnlyList<BossFragmentPoint> polygon,
-        BossFragmentPoint axis,
-        out float minimum,
-        out float maximum)
-    {
-        minimum = Dot(polygon[0], axis);
-        maximum = minimum;
-        for (int index = 1; index < polygon.Count; index++)
-        {
-            float projection = Dot(polygon[index], axis);
-            minimum = Math.Min(minimum, projection);
-            maximum = Math.Max(maximum, projection);
-        }
-    }
-
-    private static void ResolveSupportIndices(
-        IReadOnlyList<BossFragmentPoint> hull,
-        BossFragmentPoint normal,
-        bool maximize,
-        out int best,
-        out int second)
-    {
-        best = 0;
-        second = 0;
-        float bestProjection = maximize ? float.NegativeInfinity : float.PositiveInfinity;
-        float secondProjection = bestProjection;
-        for (int index = 0; index < hull.Count; index++)
-        {
-            float projection = Dot(hull[index], normal);
-            bool isBetter = maximize ? projection > bestProjection : projection < bestProjection;
-            if (isBetter)
-            {
-                second = best;
-                secondProjection = bestProjection;
-                best = index;
-                bestProjection = projection;
-                continue;
-            }
-
-            bool isSecond = maximize ? projection > secondProjection : projection < secondProjection;
-            if (isSecond)
-            {
-                second = index;
-                secondProjection = projection;
-            }
-        }
-    }
-
-    private BossFragmentPoint[] GetHullBuffer(SoftFragmentBody body)
-    {
-        if (!_hullBuffers.TryGetValue(body, out BossFragmentPoint[]? hull)
-            || hull.Length != body.HullPointCount)
-        {
-            hull = new BossFragmentPoint[body.HullPointCount];
-            _hullBuffers[body] = hull;
-        }
-
-        return hull;
-    }
-
-    private static BossFragmentPoint Subtract(BossFragmentPoint first, BossFragmentPoint second) =>
-        new(first.X - second.X, first.Y - second.Y);
-
-    private static BossFragmentPoint Multiply(BossFragmentPoint point, float value) =>
-        new(point.X * value, point.Y * value);
-
-    private static float Dot(BossFragmentPoint first, BossFragmentPoint second) =>
-        first.X * second.X + first.Y * second.Y;
-
-    private static float Length(BossFragmentPoint point) => MathF.Sqrt(LengthSquared(point));
-
-    private static float LengthSquared(BossFragmentPoint point) =>
-        point.X * point.X + point.Y * point.Y;
-
-    private readonly record struct SoftContact(
+    private readonly record struct SweptOrdering(
         SoftFragmentBody First,
         SoftFragmentBody Second,
-        float FirstU,
-        float FirstV,
-        float SecondU,
-        float SecondV,
         BossFragmentPoint Normal,
-        float Penetration,
-        float PreSolveNormalSpeed,
-        float PreSolveCenterNormalSpeed);
+        float MinimumSignedSeparation);
 }

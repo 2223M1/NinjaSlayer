@@ -22,12 +22,23 @@
     <Compile Include="..\..\Code\Diagnostics\NinjaSlayerRuntimeHealthModel.cs" Link="NinjaSlayerRuntimeHealthModel.cs" />
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
     <Compile Include="..\..\Code\Combat\BossDismembermentMath.cs" Link="BossDismembermentMath.cs" />
+    <Compile Include="..\..\Code\Combat\BossFountainLaunchProfile.cs" Link="BossFountainLaunchProfile.cs" />
+    <Compile Include="..\..\Code\Combat\SoftBodyMaterialProfile.cs" Link="SoftBodyMaterialProfile.cs" />
+    <Compile Include="..\..\Code\Combat\SoftBodyDeformationExciter.cs" Link="SoftBodyDeformationExciter.cs" />
+    <Compile Include="..\..\Code\Combat\SoftBodyLaunchActuator.cs" Link="SoftBodyLaunchActuator.cs" />
     <Compile Include="..\..\Code\Combat\SoftFragmentBody.cs" Link="SoftFragmentBody.cs" />
     <Compile Include="..\..\Code\Combat\SoftRagdollLink.cs" Link="SoftRagdollLink.cs" />
     <Compile Include="..\..\Code\Combat\SoftCollisionBroadphase.cs" Link="SoftCollisionBroadphase.cs" />
+    <Compile Include="..\..\Code\Combat\SoftContactManifold.cs" Link="SoftContactManifold.cs" />
+    <Compile Include="..\..\Code\Combat\SoftContactManifoldBuilder.cs" Link="SoftContactManifoldBuilder.cs" />
+    <Compile Include="..\..\Code\Combat\SoftContactSolver.cs" Link="SoftContactSolver.cs" />
+    <Compile Include="..\..\Code\Combat\SoftBoundaryContactSolver.cs" Link="SoftBoundaryContactSolver.cs" />
+    <Compile Include="..\..\Code\Combat\SoftBodyEnergyAudit.cs" Link="SoftBodyEnergyAudit.cs" />
+    <Compile Include="..\..\Code\Combat\SoftBodyResidualStatistics.cs" Link="SoftBodyResidualStatistics.cs" />
     <Compile Include="..\..\Code\Combat\BossSoftBodySolver.cs" Link="BossSoftBodySolver.cs" />
     <Compile Include="..\..\Code\Combat\SoftBodyRenderPose.cs" Link="SoftBodyRenderPose.cs" />
     <Compile Include="..\..\Code\Combat\BossBurstTimeline.cs" Link="BossBurstTimeline.cs" />
+    <Compile Include="..\..\Code\Combat\BossBurstCompressionLayout.cs" Link="BossBurstCompressionLayout.cs" />
     <Compile Include="..\..\Code\Combat\BossBurstPresentationPolicy.cs" Link="BossBurstPresentationPolicy.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
@@ -35,6 +46,8 @@
     <Compile Include="..\..\Code\Combat\AttackIntentPreviewContext.cs" Link="AttackIntentPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
     <Compile Include="..\..\Code\Combat\FinisherActionTrajectory.cs" Link="FinisherActionTrajectory.cs" />
+    <Compile Include="..\..\Code\Combat\FinisherApproachPath.cs" Link="FinisherApproachPath.cs" />
+    <Compile Include="..\..\Code\Combat\FinisherSquashAnchorPolicy.cs" Link="FinisherSquashAnchorPolicy.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />

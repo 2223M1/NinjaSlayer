@@ -27,6 +27,7 @@ public sealed partial class BossDeathPresentationController : Node
     private SpineBoneFlight? _partFlight;
     private BossDismembermentSnapshot? _dismembermentSnapshot;
     private CombatCinematicCameraLease? _camera;
+    private BossDeathWhiteoutLease? _whiteout;
     private readonly CinematicSessionLifetime _lifetime = new();
     private int _started;
 
@@ -67,13 +68,17 @@ public sealed partial class BossDeathPresentationController : Node
 
     internal float StartDeathAnimation(bool shouldRemove)
     {
+        if (_dismembermentSnapshot == null)
+        {
+            throw new InvalidOperationException(
+                "Boss death presentation started before its visual snapshot was prepared.");
+        }
+
         _boss.DisableInteractionForDeath();
         foreach (NIntent intent in _boss.IntentContainer.GetChildren().OfType<NIntent>())
         {
             intent.SetFrozen(isFrozen: true);
         }
-
-        _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(_room, _boss);
 
         if (_boss.HasSpineAnimation)
         {
@@ -102,6 +107,20 @@ public sealed partial class BossDeathPresentationController : Node
         _boss.DeathAnimationTask = deathTask;
         TaskHelper.RunSafely(deathTask);
         return BossBurstTimeline.LeadSeconds;
+    }
+
+    internal bool TryPrepareDeathAnimation()
+    {
+        if (_dismembermentSnapshot != null)
+        {
+            return true;
+        }
+
+        _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(
+            _room,
+            _boss,
+            _partSpec?.BoneName);
+        return _dismembermentSnapshot != null;
     }
 
     private void Begin()
@@ -139,6 +158,7 @@ public sealed partial class BossDeathPresentationController : Node
         DisposeDismembermentSnapshot();
         _partFlight?.Dispose();
         _camera?.Dispose();
+        DisposeWhiteout();
         _completion.TrySetResult();
     }
 
@@ -150,6 +170,7 @@ public sealed partial class BossDeathPresentationController : Node
         _partFlight = null;
         _camera?.Dispose();
         _camera = null;
+        DisposeWhiteout();
         _completion.TrySetResult();
         this.QueueFreeSafely();
     }
@@ -172,8 +193,9 @@ public sealed partial class BossDeathPresentationController : Node
             Task flightTask = _partFlight == null
                 ? Task.CompletedTask
                 : RunPartFlightUntilCue(_partFlight, registration.Cue, cancelToken);
+            Task whiteoutTask = RunWhiteoutUntilCue(registration.Cue, cancelToken);
             await registration.Cue.WaitAsync(cancelToken);
-            await flightTask;
+            await Task.WhenAll(flightTask, whiteoutTask);
             await RestoreCamera(cancelToken);
             await registration.CombatRelease.WaitAsync(cancelToken);
         }
@@ -192,8 +214,65 @@ public sealed partial class BossDeathPresentationController : Node
             _partFlight = null;
             _camera?.Dispose();
             _camera = null;
+            DisposeWhiteout();
             _lifetime.Dispose();
             _completion.TrySetResult();
+        }
+    }
+
+    private async Task RunWhiteoutUntilCue(Task cue, CancellationToken cancelToken)
+    {
+        try
+        {
+            float elapsed = 0f;
+            while (!cue.IsCompleted
+                   && !cancelToken.IsCancellationRequested
+                   && IsRuntimeValid())
+            {
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                cancelToken.ThrowIfCancellationRequested();
+                float delta = (float)GetProcessDeltaTime();
+                if (delta <= 0f)
+                {
+                    continue;
+                }
+
+                elapsed += delta;
+                if (elapsed < BossBurstTimeline.WhiteoutStartSeconds)
+                {
+                    continue;
+                }
+
+                if (_whiteout == null
+                    && !BossDeathWhiteoutLease.TryAcquire(
+                        _boss,
+                        out _whiteout,
+                        out string failureReason))
+                {
+                    Entry.Logger.Warn(
+                        $"Boss death whiteout was unavailable for {_bossId}: {failureReason}.");
+                    return;
+                }
+
+                _whiteout?.SetMix(BossBurstTimeline.ResolveWhiteoutMix(elapsed));
+            }
+
+            if (cue.IsCompleted && !cancelToken.IsCancellationRequested)
+            {
+                _whiteout?.SetMix(1f);
+            }
+        }
+        catch (OperationCanceledException) when (cancelToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn(
+                $"Boss death whiteout failed for {_bossId}: {exception.Message}");
+        }
+        finally
+        {
+            DisposeWhiteout();
         }
     }
 
@@ -254,7 +333,7 @@ public sealed partial class BossDeathPresentationController : Node
             }
 
             Vector2 bodyCenter = snapshot.BodyGlobalCenter;
-            Vector2? partCenter = TryGetPartCenter();
+            Vector2? partCenter = TryGetPartCenter(snapshot);
             BossDismembermentSpawn dismemberment = BossDismembermentPresentation.TrySpawn(
                 _room,
                 _boss,
@@ -276,7 +355,7 @@ public sealed partial class BossDeathPresentationController : Node
         }
     }
 
-    private Vector2? TryGetPartCenter()
+    private Vector2? TryGetPartCenter(BossDismembermentSnapshot snapshot)
     {
         if (_partFlight == null)
         {
@@ -285,7 +364,12 @@ public sealed partial class BossDeathPresentationController : Node
 
         try
         {
-            return _partFlight.GlobalCenter;
+            Vector2 currentGlobalCenter = _partFlight.GlobalCenter;
+            Vector2 sceneLocalCenter = _room.SceneContainer
+                .GetGlobalTransform()
+                .AffineInverse()
+                * currentGlobalCenter;
+            return snapshot.BaselineSceneToGlobal * sceneLocalCenter;
         }
         catch (Exception exception)
         {
@@ -314,6 +398,12 @@ public sealed partial class BossDeathPresentationController : Node
         BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
         _dismembermentSnapshot = null;
         snapshot?.Dispose();
+    }
+
+    private void DisposeWhiteout()
+    {
+        BossDeathWhiteoutLease? whiteout = Interlocked.Exchange(ref _whiteout, null);
+        whiteout?.Dispose();
     }
 
     private async Task RestoreCamera(CancellationToken cancelToken)

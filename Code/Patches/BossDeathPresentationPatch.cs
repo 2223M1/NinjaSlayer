@@ -47,6 +47,16 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
                 monster.Id.Entry,
                 out BossDeathPartSpec? spec);
             controller = BossDeathPresentationController.Attach(__instance, room, spec);
+            if (!controller.TryPrepareDeathAnimation())
+            {
+                controller.AbortSetup();
+                controller = null;
+                Entry.Logger.Warn(
+                    $"Boss death presentation capture was unavailable for {monster.Id.Entry}; "
+                    + "using the original death animation.");
+                return true;
+            }
+
             BossBurstParticipationRegistry.Mark(
                 __instance,
                 room,

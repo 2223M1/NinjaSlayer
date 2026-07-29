@@ -11,36 +11,39 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
 
     private readonly MeshInstance2D _meshNode;
     private readonly ShaderMaterial _material;
-    private readonly BossFragmentPoint[] _residuals = new BossFragmentPoint[SoftFragmentBody.ParticleCount];
-    // Godot shader uniform arrays require a Variant Array, not a packed Vector2 array.
+    private readonly BossFragmentPoint[] _residuals =
+        new BossFragmentPoint[SoftFragmentBody.ParticleCount];
     private readonly Godot.Collections.Array<Vector2> _controlOffsets =
         new(new Vector2[SoftFragmentBody.ParticleCount]);
     private float _previousRotation;
     private int _applyFailureLogged;
+    private int _consecutivePoseFailures;
     private bool _disposed;
 
     private BossCapturedFragmentRenderSurface(
         Node2D anchor,
         MeshInstance2D meshNode,
         ShaderMaterial material,
-        SoftFragmentBody body)
+        SoftFragmentBody body,
+        BossCapturedFragmentDescriptor descriptor)
     {
         Anchor = anchor;
         _meshNode = meshNode;
         _material = material;
         Body = body;
+        Descriptor = descriptor;
     }
 
     public Node2D Anchor { get; }
     public SoftFragmentBody Body { get; }
+    public BossCapturedFragmentDescriptor Descriptor { get; }
     public float MaximumResidual { get; private set; }
+    public float RmsResidual { get; private set; }
+    public float RmsResidualRatio => RmsResidual / Math.Max(1f, Body.ShortDimension);
 
     public static bool TryCreate(
         Node parent,
-        int id,
-        BossFragmentCell cell,
-        IReadOnlyList<BossFragmentPoint> allSeeds,
-        Rect2 textureBounds,
+        BossCapturedFragmentDescriptor descriptor,
         Transform2D bodyToPresentation,
         Texture2D captureTexture,
         Shader shader,
@@ -55,8 +58,20 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         Node2D? anchor = null;
         try
         {
-            Rect2 cellBounds = BoundsOf(cell.Vertices);
-            if (cellBounds.Size.X <= 1f || cellBounds.Size.Y <= 1f)
+            BossFragmentCell cell = descriptor.Cell;
+            Rect2 cellBounds = ToRect2(BossDismembermentMath.BoundsOf(cell.Vertices));
+            Rect2 partBounds = descriptor.Part.SourceBounds;
+            Rect2 renderBounds = descriptor.IsLocalSplit
+                ? Intersect(cellBounds, partBounds)
+                : partBounds;
+            if (cellBounds.Size.X <= 1f
+                || cellBounds.Size.Y <= 1f
+                || renderBounds.Size.X <= 1f
+                || renderBounds.Size.Y <= 1f
+                || partBounds.Size.X <= 1f
+                || partBounds.Size.Y <= 1f
+                || descriptor.AtlasUvRect.Size.X <= 0f
+                || descriptor.AtlasUvRect.Size.Y <= 0f)
             {
                 return false;
             }
@@ -74,7 +89,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
                 .ToArray();
             BossFragmentPoint restCenter = Average(restGrid);
             var body = new SoftFragmentBody(
-                id,
+                descriptor.FragmentIndex,
                 restGrid,
                 restHull,
                 initialCenter ?? restCenter,
@@ -84,35 +99,42 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
 
             anchor = new Node2D
             {
-                Name = "BossBodyFragment",
+                Name = $"BossBodyFragment_{descriptor.FragmentIndex}",
                 ZAsRelative = false,
-                ZIndex = zIndex,
+                ZIndex = zIndex + Math.Clamp(descriptor.Part.DrawOrder, 0, 48),
                 Visible = false
             };
             parent.AddChildSafely(anchor);
-            if (!GodotObject.IsInstanceValid(anchor) || !anchor.IsInsideTree())
-            {
-                throw new InvalidOperationException("The captured fragment anchor could not enter the scene tree.");
-            }
+            EnsureInsideTree(anchor, "captured fragment anchor");
 
             var material = new ShaderMaterial { Shader = shader };
-            ConfigureMaterial(material, cell, allSeeds, cellBounds, textureBounds);
+            ConfigureMaterial(
+                material,
+                descriptor,
+                cellBounds);
             var meshNode = new MeshInstance2D
             {
                 Name = "CapturedFragmentMesh",
-                Mesh = BuildMesh(cellBounds, textureBounds, bodyToPresentation, body.RestCenter),
+                Mesh = BuildMesh(
+                    renderBounds,
+                    partBounds,
+                    descriptor.AtlasUvRect,
+                    bodyToPresentation,
+                    body.RestCenter),
                 Texture = captureTexture,
                 Material = material,
                 ZAsRelative = true,
                 ZIndex = 0
             };
             anchor.AddChildSafely(meshNode);
-            if (!GodotObject.IsInstanceValid(meshNode) || !meshNode.IsInsideTree())
-            {
-                throw new InvalidOperationException("The captured fragment mesh could not enter the scene tree.");
-            }
+            EnsureInsideTree(meshNode, "captured fragment mesh");
 
-            var created = new BossCapturedFragmentRenderSurface(anchor, meshNode, material, body);
+            var created = new BossCapturedFragmentRenderSurface(
+                anchor,
+                meshNode,
+                material,
+                body,
+                descriptor);
             if (!created.ApplyFrame())
             {
                 created.Dispose();
@@ -130,7 +152,8 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
                 anchor.QueueFreeSafely();
             }
 
-            Scripts.Entry.Logger.Warn($"Captured boss fragment initialization failed: {exception.Message}");
+            Scripts.Entry.Logger.Warn(
+                $"Captured boss fragment initialization failed: {exception.Message}");
             return false;
         }
     }
@@ -141,42 +164,51 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
             || !GodotObject.IsInstanceValid(Anchor)
             || !Anchor.IsInsideTree()
             || !GodotObject.IsInstanceValid(_meshNode)
-            || !_meshNode.IsInsideTree()
-            || !SoftBodyRenderPoseResolver.TryResolve(
+            || !_meshNode.IsInsideTree())
+        {
+            return false;
+        }
+
+        if (!SoftBodyRenderPoseResolver.TryResolve(
                 Body,
                 _previousRotation,
                 _residuals,
                 out SoftBodyRenderPose pose))
         {
-            return false;
+            _consecutivePoseFailures++;
+            return _consecutivePoseFailures < 3;
         }
 
         try
         {
+            _consecutivePoseFailures = 0;
             _previousRotation = pose.RotationRadians;
             Anchor.Position = new Vector2(pose.Position.X, pose.Position.Y);
             Anchor.Rotation = pose.RotationRadians;
             Anchor.Scale = Vector2.One * pose.UniformScale;
             MaximumResidual = pose.MaximumResidual;
+            double residualSquared = 0d;
             for (int index = 0; index < _residuals.Length; index++)
             {
                 _controlOffsets[index] = new Vector2(_residuals[index].X, _residuals[index].Y);
+                residualSquared += _residuals[index].X * _residuals[index].X
+                    + _residuals[index].Y * _residuals[index].Y;
             }
 
-            _material.SetShaderParameter(
-                ControlOffsetsParameter,
-                _controlOffsets);
+            RmsResidual = (float)Math.Sqrt(residualSquared / _residuals.Length);
+            _material.SetShaderParameter(ControlOffsetsParameter, _controlOffsets);
             return true;
         }
         catch (Exception exception)
         {
+            _consecutivePoseFailures++;
             if (Interlocked.Exchange(ref _applyFailureLogged, 1) == 0)
             {
                 Scripts.Entry.Logger.Warn(
                     $"Captured boss fragment {Body.Id} render binding failed: {exception.Message}");
             }
 
-            return false;
+            return _consecutivePoseFailures < 3;
         }
     }
 
@@ -207,7 +239,8 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
                 float v = row / (float)(SoftFragmentBody.GridSize - 1);
                 Vector2 bodyPoint = cellBounds.Position + cellBounds.Size * new Vector2(u, v);
                 Vector2 mapped = bodyToPresentation * bodyPoint;
-                result[row * SoftFragmentBody.GridSize + column] = new BossFragmentPoint(mapped.X, mapped.Y);
+                result[row * SoftFragmentBody.GridSize + column] =
+                    new BossFragmentPoint(mapped.X, mapped.Y);
             }
         }
 
@@ -215,8 +248,9 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
     }
 
     private static ArrayMesh BuildMesh(
-        Rect2 cellBounds,
-        Rect2 textureBounds,
+        Rect2 renderBounds,
+        Rect2 partBounds,
+        Rect2 atlasUvRect,
         Transform2D bodyToPresentation,
         BossFragmentPoint restCenter)
     {
@@ -228,13 +262,14 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
             {
                 float u = column / (float)(RenderGridSize - 1);
                 float v = row / (float)(RenderGridSize - 1);
-                Vector2 bodyPoint = cellBounds.Position + cellBounds.Size * new Vector2(u, v);
+                Vector2 bodyPoint = renderBounds.Position + renderBounds.Size * new Vector2(u, v);
                 Vector2 mapped = bodyToPresentation * bodyPoint;
                 int index = row * RenderGridSize + column;
                 vertices[index] = mapped - new Vector2(restCenter.X, restCenter.Y);
-                uvs[index] = new Vector2(
-                    (bodyPoint.X - textureBounds.Position.X) / textureBounds.Size.X,
-                    (bodyPoint.Y - textureBounds.Position.Y) / textureBounds.Size.Y);
+                Vector2 partUv = new(
+                    (bodyPoint.X - partBounds.Position.X) / partBounds.Size.X,
+                    (bodyPoint.Y - partBounds.Position.Y) / partBounds.Size.Y);
+                uvs[index] = atlasUvRect.Position + partUv * atlasUvRect.Size;
             }
         }
 
@@ -267,42 +302,43 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         return mesh;
     }
 
+    private static Rect2 Intersect(Rect2 first, Rect2 second)
+    {
+        Vector2 minimum = new(
+            Math.Max(first.Position.X, second.Position.X),
+            Math.Max(first.Position.Y, second.Position.Y));
+        Vector2 maximum = new(
+            Math.Min(first.End.X, second.End.X),
+            Math.Min(first.End.Y, second.End.Y));
+        Vector2 size = maximum - minimum;
+        return size.X > 0f && size.Y > 0f
+            ? new Rect2(minimum, size)
+            : default;
+    }
+
     private static void ConfigureMaterial(
         ShaderMaterial material,
-        BossFragmentCell cell,
-        IReadOnlyList<BossFragmentPoint> allSeeds,
-        Rect2 cellBounds,
-        Rect2 textureBounds)
+        BossCapturedFragmentDescriptor descriptor,
+        Rect2 cellBounds)
     {
-        material.SetShaderParameter("seed_count", Math.Min(allSeeds.Count, BossDismembermentMath.MaximumPieces));
-        material.SetShaderParameter("cell_seed", ToVector2(cell.Seed));
+        IReadOnlyList<BossFragmentPoint> seeds = descriptor.AllSeeds;
+        int seedCount = descriptor.IsLocalSplit
+            ? Math.Min(seeds.Count, BossDismembermentMath.MaximumPieces)
+            : 0;
+        material.SetShaderParameter("seed_count", seedCount);
+        material.SetShaderParameter("cell_seed", ToVector2(descriptor.Cell.Seed));
         material.SetShaderParameter("cell_bounds_min", cellBounds.Position);
         material.SetShaderParameter("cell_bounds_size", cellBounds.Size);
-        material.SetShaderParameter("texture_bounds_min", textureBounds.Position);
-        material.SetShaderParameter("texture_bounds_size", textureBounds.Size);
+        material.SetShaderParameter("part_bounds_min", descriptor.Part.SourceBounds.Position);
+        material.SetShaderParameter("part_bounds_size", descriptor.Part.SourceBounds.Size);
+        material.SetShaderParameter("atlas_content_min", descriptor.AtlasUvRect.Position);
+        material.SetShaderParameter("atlas_content_size", descriptor.AtlasUvRect.Size);
         for (int index = 0; index < BossDismembermentMath.MaximumPieces; index++)
         {
             material.SetShaderParameter(
                 $"seed_{index}",
-                index < allSeeds.Count ? ToVector2(allSeeds[index]) : Vector2.Zero);
+                index < seeds.Count ? ToVector2(seeds[index]) : Vector2.Zero);
         }
-    }
-
-    private static Rect2 BoundsOf(IReadOnlyList<BossFragmentPoint> points)
-    {
-        float minX = points[0].X;
-        float minY = points[0].Y;
-        float maxX = minX;
-        float maxY = minY;
-        for (int index = 1; index < points.Count; index++)
-        {
-            minX = Math.Min(minX, points[index].X);
-            minY = Math.Min(minY, points[index].Y);
-            maxX = Math.Max(maxX, points[index].X);
-            maxY = Math.Max(maxY, points[index].Y);
-        }
-
-        return new Rect2(minX, minY, maxX - minX, maxY - minY);
     }
 
     private static BossFragmentPoint Average(IReadOnlyList<BossFragmentPoint> points)
@@ -319,5 +355,16 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         return new BossFragmentPoint(x * inverseCount, y * inverseCount);
     }
 
+    private static Rect2 ToRect2(BossFragmentRect rect) =>
+        new(rect.X, rect.Y, rect.Width, rect.Height);
+
     private static Vector2 ToVector2(BossFragmentPoint point) => new(point.X, point.Y);
+
+    private static void EnsureInsideTree(Node node, string label)
+    {
+        if (!GodotObject.IsInstanceValid(node) || !node.IsInsideTree())
+        {
+            throw new InvalidOperationException($"The {label} could not enter the scene tree.");
+        }
+    }
 }

@@ -51,22 +51,27 @@ internal sealed class BossDismembermentSnapshot : IDisposable
     public BossDismembermentSnapshot(
         BossVisualCapture capture,
         Rect2 bodyLocalBounds,
-        bool canSplitSpine,
         ulong seed,
         string monsterId)
     {
         _capture = capture;
         BodyLocalBounds = bodyLocalBounds;
-        BodyGlobalTransform = capture.BodyGlobalTransform;
-        CanSplitSpine = canSplitSpine;
+        BodyToSceneContainer = capture.BodyToSceneContainer;
+        BaselineSceneToGlobal = capture.BaselineSceneToGlobal;
+        BaselineSceneScale = capture.BaselineSceneScale;
+        BodyBaselineScreenBounds = capture.BodyBaselineScreenBounds;
         Seed = seed;
         MonsterId = monsterId;
     }
 
     public Rect2 BodyLocalBounds { get; }
-    public Transform2D BodyGlobalTransform { get; }
+    public Transform2D BodyToSceneContainer { get; }
+    public Transform2D BaselineSceneToGlobal { get; }
+    public Vector2 BaselineSceneScale { get; }
+    public Rect2 BodyBaselineScreenBounds { get; }
+    public Transform2D BodyGlobalTransform =>
+        BaselineSceneToGlobal * BodyToSceneContainer;
     public Vector2 BodyGlobalCenter => BodyGlobalTransform * BodyLocalBounds.GetCenter();
-    public bool CanSplitSpine { get; }
     public ulong Seed { get; }
     public string MonsterId { get; }
 
@@ -86,25 +91,30 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private const string FragmentShaderPath =
         "res://NinjaSlayer/shaders/vfx/boss_dismemberment_clip.gdshader";
     private const float PhysicsStep = 1f / 60f;
-    private const float Gravity = 860f;
     private const float CompressionSeconds = 0.1f;
     private const float PumpOpenSeconds = 0.06f;
     private const float CompressionSlideRadius = 2f;
-    private const float AirDrag = 0.08f;
     private const int MaximumCatchUpSteps = 4;
     private const float SceneMargin = 128f;
     private const float MaximumFlightSeconds = 4f;
+    private const float SettlementBottomFraction = 0.85f;
 
     private readonly TaskCompletionSource _completion =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly List<SoftFragmentRuntime> _fragments = [];
     private readonly List<SoftFragmentBody> _bodies = [];
     private readonly List<SoftRagdollLink> _joints = [];
+    private readonly List<SoftBodyLaunchActuator> _launchActuators = [];
+    private readonly Dictionary<int, int> _wobbleCrossingsByFragment = [];
+    private readonly List<float> _jointBreakTimes = [];
+    private readonly HashSet<SoftRagdollLink> _recordedBrokenJoints = [];
     private readonly BossSoftBodySolver _solver = new();
+    private readonly SoftBodyResidualStatistics _residualStatistics = new();
     private BossVisualCapture? _capture;
     private NCombatRoom _room = null!;
     private Transform2D _bodyToPresentation;
     private Rect2 _bodyLocalBounds;
+    private Rect2 _visibleSceneBounds;
     private Rect2 _sceneBounds;
     private Vector2 _burstOrigin;
     private float? _floorY;
@@ -112,6 +122,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private float _burstElapsed;
     private float _physicsAccumulator;
     private float _droppedSimulationSeconds;
+    private float _gravity = BossFountainLaunchProfile.Gravity;
+    private float _centerSpeedLimit = BossSoftBodySolver.DefaultMaximumCenterSpeed;
     private ulong _seed;
     private ulong _motionSeed;
     private PresentationMode _mode;
@@ -125,16 +137,69 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private int _solverSteps;
     private int _renderFrames;
     private int _contactCount;
+    private int _contactPointCount;
+    private int _contactStartCount;
+    private int _visibleBounceCount;
+    private int _sweptContactCount;
+    private int _leftWallContactCount;
+    private int _rightWallContactCount;
+    private int _wallBounceCount;
+    private int _limitedContactCount;
+    private int _limitedCenterSpeedCount;
     private int _brokenLinkCount;
     private int _spawnedFragmentCount;
     private int _spawnedJointCount;
+    private int _spawnedConstraintCount;
     private float _minimumAreaRatio = 1f;
     private float _maximumStretch = 1f;
     private float _maximumResidual;
+    private double _contactEnergyBefore;
+    private double _contactEnergyAfter;
+    private int _rollbackCount;
+    private int _inversionCount;
+    private int _safetyProjectionCount;
+    private int _wobbleZeroCrossings;
+    private float _maximumLaunchCenterSpeed;
+    private float _maximumObservedCenterSpeed;
+    private float _maximumPenetration;
+    private int _maximumAdaptiveSubsteps;
+    private int _removedBelowBottomCount;
+    private int _settlementBottomBandCount;
+    private int _settlementBelowBottomCount;
+    private int _settlementDescendingCount;
+    private bool _settlementRecorded;
+    private float _maximumTetherAge;
+    private float _firstFragmentContactSeconds = -1f;
+    private int _upwardLaunchCount;
+    private int _horizontalLaunchCount;
+    private int _downwardLaunchCount;
     private long _captureSetupTicks;
-    private long _captureReadyAgeTicks;
+    private long _captureReadyElapsedTicks;
     private bool _completed;
-    private bool _canSplitSpine;
+    private float _fragmentRawWidthRatio = 1f;
+    private float _fragmentRawHeightRatio = 1f;
+    private float _fragmentCalibrationScale = 1f;
+    private float _fragmentWidthRatio = 1f;
+    private float _fragmentHeightRatio = 1f;
+    private Vector2 _originalBossScreenSize;
+    private Vector2 _fragmentUnionScreenSize;
+    private float _medianFragmentArea;
+    private float _maximumFragmentArea;
+    private float _launchSpeedP50;
+    private float _launchSpeedP90;
+    private float _launchHorizontalDrift;
+    private bool _dispersionRecorded;
+    private int _sectorCoverage035;
+    private float _spatialDispersion035;
+    private int _capturePixelWidth;
+    private int _capturePixelHeight;
+    private long _captureTextureBytes;
+    private int _semanticPartCount;
+    private int _mergedPartCount;
+    private int _splitFragmentCount;
+    private float _atlasDensity;
+    private float _baselineSceneScale;
+    private float _currentSceneScale;
     private string _monsterId = "unknown";
 
     public static IEnumerable<string> AssetPaths => [FragmentShaderPath];
@@ -143,35 +208,57 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     internal static BossDismembermentSnapshot? TryCapture(
         NCombatRoom room,
-        NCreature creature)
+        NCreature creature,
+        string? detachedBoneName = null)
     {
         if (!GodotObject.IsInstanceValid(room)
             || !room.IsInsideTree()
-            || !GodotObject.IsInstanceValid(creature)
-            || !GodotObject.IsInstanceValid(creature.Body))
+            || !GodotObject.IsInstanceValid(creature))
         {
             return null;
         }
 
         try
         {
-            Node? presentationParent = creature.GetParent();
-            if (presentationParent == null || !GodotObject.IsInstanceValid(presentationParent))
+            Node2D sourceBody = creature.Body;
+            if (!GodotObject.IsInstanceValid(sourceBody))
             {
-                throw new InvalidOperationException(
-                    "The creature has no persistent visual parent for dismemberment.");
+                return null;
             }
 
-            Transform2D bodyToGlobal = creature.Body.GlobalTransform;
-            Transform2D boundsToGlobal = creature.Visuals.Bounds.GetGlobalTransform();
-            Transform2D globalToBody = bodyToGlobal.AffineInverse();
-            Rect2 localBounds = BoundsOf(
-                RectCorners(new Rect2(Vector2.Zero, creature.Visuals.Bounds.Size))
-                    .Select(point => globalToBody * (boundsToGlobal * point)));
+            Node presentationParent = room.CombatVfxContainer;
+            if (!GodotObject.IsInstanceValid(presentationParent)
+                || !presentationParent.IsInsideTree())
+            {
+                throw new InvalidOperationException(
+                    "The combat VFX container is unavailable for dismemberment.");
+            }
+
+            if (!CombatCinematicCameraLease.TryResolveBaseline(
+                    room,
+                    out CombatSceneBaseline baseline))
+            {
+                throw new InvalidOperationException(
+                    "The complete-battle camera baseline is unavailable.");
+            }
+
+            Transform2D bodyToSceneContainer = room.SceneContainer
+                .GetGlobalTransform()
+                .AffineInverse()
+                * sourceBody.GlobalTransform;
+            Rect2 fallbackBounds = ResolveFallbackCaptureBounds(creature, sourceBody);
+            ulong seed = CreateSeed(creature);
+            bool canSplitSpine = creature.HasSpineAnimation
+                && !creature.Visuals.IsUsingPhobiaModeBody;
             BossVisualCapture? capture = BossVisualCapture.TryCreate(
                 presentationParent,
-                creature.Body,
-                localBounds);
+                sourceBody,
+                fallbackBounds,
+                bodyToSceneContainer,
+                baseline,
+                canSplitSpine,
+                seed,
+                detachedBoneName);
             if (capture == null)
             {
                 return null;
@@ -179,9 +266,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
             return new BossDismembermentSnapshot(
                 capture,
-                localBounds,
-                creature.HasSpineAnimation && !creature.Visuals.IsUsingPhobiaModeBody,
-                CreateSeed(creature),
+                capture.BodyLocalBounds,
+                seed,
                 creature.Entity.Monster?.Id.Entry ?? creature.Name.ToString());
         }
         catch (Exception exception)
@@ -191,25 +277,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 + $"{creature.Entity.Monster?.Id.Entry}: {exception}");
             return null;
         }
-    }
-
-    internal static BossDismembermentSpawn TrySpawn(
-        NCombatRoom room,
-        NCreature creature,
-        Vector2 bodyExplosionCenter,
-        string? detachedBoneName = null,
-        Vector2? detachedExplosionCenter = null,
-        int zIndex = BossBurstPresentationCoordinator.FragmentZIndex)
-    {
-        using BossDismembermentSnapshot? snapshot = TryCapture(room, creature);
-        return TrySpawn(
-            room,
-            creature,
-            snapshot,
-            bodyExplosionCenter,
-            detachedBoneName,
-            detachedExplosionCenter,
-            zIndex);
     }
 
     internal static BossDismembermentSpawn TrySpawn(
@@ -299,15 +366,21 @@ public sealed partial class BossDismembermentPresentation : Node2D
             return null;
         }
 
-        if (!capture.IsReady || capture.Texture == null)
+        if (!capture.IsReady
+            || capture.Texture == null
+            || capture.Partition == null)
         {
+            string reason = string.IsNullOrWhiteSpace(capture.FailureReason)
+                ? "the GPU capture did not finish before the presentation began"
+                : capture.FailureReason;
             capture.Dispose();
-            failureReason = "the GPU capture did not finish before the presentation began";
+            failureReason = reason;
             return null;
         }
 
-        Node? presentationParent = capture.PresentationParent;
-        if (presentationParent == null || !GodotObject.IsInstanceValid(presentationParent))
+        Node presentationParent = room.CombatVfxContainer;
+        if (!GodotObject.IsInstanceValid(presentationParent)
+            || !presentationParent.IsInsideTree())
         {
             capture.Dispose();
             failureReason = "the capture parent is unavailable";
@@ -324,13 +397,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
             _room = room,
             _bodyLocalBounds = snapshot.BodyLocalBounds,
             _seed = snapshot.Seed,
-            _canSplitSpine = snapshot.CanSplitSpine,
             _monsterId = snapshot.MonsterId,
             _mode = mode,
             _burstTriggered = mode == PresentationMode.CompressedBurst,
             _captureSetupTicks = capture.SetupElapsedTicks,
-            _captureReadyAgeTicks = System.Diagnostics.Stopwatch.GetTimestamp()
-                - capture.CaptureStartedTicks
+            _captureReadyElapsedTicks = capture.ReadyElapsedTicks
         };
         try
         {
@@ -343,16 +414,30 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
             presentation._fragmentShader = ResourceLoader.Load<Shader>(FragmentShaderPath)
                 ?? throw new InvalidOperationException("The captured fragment shader is unavailable.");
-            presentation.InitializeGeometry(snapshot.BodyGlobalTransform);
-            presentation._burstOrigin = presentation.ToLocalPoint(bodyExplosionCenter);
-            BossFragmentPartition partition = presentation.BuildFragmentCells(
-                detachedBoneName,
-                detachedExplosionCenter.HasValue);
-            if (partition.Cells.Count < 2)
+            presentation.InitializeGeometry(
+                snapshot.BodyToSceneContainer,
+                snapshot.BaselineSceneToGlobal);
+            BossFragmentPartition partition = capture.Partition;
+            if (partition.Fragments.Count < 2)
             {
-                throw new InvalidOperationException("the captured body produced fewer than two cells");
+                throw new InvalidOperationException(
+                    "the captured body produced fewer than two semantic fragments");
             }
 
+            Vector2I captureSize = capture.PixelSize;
+            presentation._capturePixelWidth = captureSize.X;
+            presentation._capturePixelHeight = captureSize.Y;
+            presentation._captureTextureBytes = capture.EstimatedTextureBytes;
+            presentation._semanticPartCount = partition.SemanticPartCount;
+            presentation._mergedPartCount = partition.MergedPartCount;
+            presentation._splitFragmentCount = partition.SplitFragmentCount;
+            presentation._atlasDensity = capture.AtlasDensity;
+            presentation._baselineSceneScale = snapshot.BaselineSceneScale.X;
+            presentation._currentSceneScale = room.SceneContainer.Scale.X;
+            presentation.ValidateBaselineFragmentGeometry(
+                partition,
+                snapshot.BodyBaselineScreenBounds);
+            presentation._burstOrigin = presentation.ToLocalPoint(bodyExplosionCenter);
             presentation.InitializeSoftBodies(
                 partition,
                 zIndex,
@@ -363,17 +448,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
             {
                 creature.Body.Visible = false;
             }
-
-            Vector2I captureSize = capture.PixelSize;
-            Entry.Logger.Info(
-                $"Boss dismemberment spawned: boss={presentation._monsterId}, source=capture-mesh, "
-                + $"capture={captureSize.X}x{captureSize.Y}, "
-                + $"capture_bytes={capture.EstimatedTextureBytes}, "
-                + $"fragments={presentation._fragments.Count}, "
-                + $"particles={presentation._fragments.Count * SoftFragmentBody.ParticleCount}, "
-                + $"constraints={presentation._bodies.Sum(body => body.ConstraintCount)}, "
-                + $"joints={presentation._joints.Count}, mode={mode}, "
-                + $"motion_seed={presentation._motionSeed}.");
             presentation.SetProcess(true);
             return presentation;
         }
@@ -397,15 +471,10 @@ public sealed partial class BossDismembermentPresentation : Node2D
         NCreature creature,
         string reason)
     {
-        if (GodotObject.IsInstanceValid(creature)
-            && GodotObject.IsInstanceValid(creature.Body))
-        {
-            creature.Body.Visible = false;
-        }
-
         Entry.Logger.Warn(
             $"Boss dismemberment completed without fragments for "
-            + $"{creature.Entity.Monster?.Id.Entry}: {reason}.");
+            + $"{creature.Entity.Monster?.Id.Entry}: {reason}; "
+            + "keeping the original death pose visible.");
         return new BossDismembermentSpawn(false, Task.CompletedTask);
     }
 
@@ -481,35 +550,26 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _completion.TrySetResult();
     }
 
-    private void InitializeGeometry(Transform2D bodyGlobalTransform)
+    private void InitializeGeometry(
+        Transform2D bodyToSceneContainer,
+        Transform2D baselineSceneToGlobal)
     {
-        _bodyToPresentation = GlobalTransform.AffineInverse() * bodyGlobalTransform;
-        _floorY = RectCorners(_bodyLocalBounds)
-            .Select(point => (_bodyToPresentation * point).Y)
-            .Max();
-        Transform2D sceneToGlobal = _room.SceneContainer.GetGlobalTransform();
-        Vector2 sceneSize = _room.SceneContainer.Size;
         Transform2D globalToPresentation = GlobalTransform.AffineInverse();
+        _bodyToPresentation = globalToPresentation
+            * baselineSceneToGlobal
+            * bodyToSceneContainer;
+        Transform2D vfxToGlobal = _room.CombatVfxContainer.GetGlobalTransform();
+        Vector2 sceneSize = _room.CombatVfxContainer.Size;
         Vector2[] sceneCorners =
         [
-            globalToPresentation * (sceneToGlobal * Vector2.Zero),
-            globalToPresentation * (sceneToGlobal * new Vector2(sceneSize.X, 0f)),
-            globalToPresentation * (sceneToGlobal * sceneSize),
-            globalToPresentation * (sceneToGlobal * new Vector2(0f, sceneSize.Y))
+            globalToPresentation * (vfxToGlobal * Vector2.Zero),
+            globalToPresentation * (vfxToGlobal * new Vector2(sceneSize.X, 0f)),
+            globalToPresentation * (vfxToGlobal * sceneSize),
+            globalToPresentation * (vfxToGlobal * new Vector2(0f, sceneSize.Y))
         ];
-        _sceneBounds = BoundsOf(sceneCorners).Grow(SceneMargin);
+        _visibleSceneBounds = BoundsOf(sceneCorners);
+        _sceneBounds = _visibleSceneBounds.Grow(SceneMargin);
     }
-
-    private BossFragmentPartition BuildFragmentCells(
-        string? detachedBoneName,
-        bool hasDetachedBurst) =>
-        BossFragmentPartitioner.Build(
-            _capture?.Visual,
-            _bodyLocalBounds,
-            _canSplitSpine,
-            _seed,
-            detachedBoneName,
-            hasDetachedBurst);
 
     private void InitializeSoftBodies(
         BossFragmentPartition partition,
@@ -518,51 +578,56 @@ public sealed partial class BossDismembermentPresentation : Node2D
         float architectFallDirection,
         Vector2? detachedExplosionCenter)
     {
-        IReadOnlyList<BossFragmentCell> cells = partition.Cells;
+        IReadOnlyList<BossCapturedFragmentDescriptor> descriptors = partition.Fragments;
         Texture2D texture = _capture?.Texture
             ?? throw new InvalidOperationException("The captured boss texture expired before fragment creation.");
-        Rect2 textureBounds = _capture.TextureBounds;
-        float[] mappedAreas = cells.Select(ResolveMappedArea).ToArray();
-        float averageArea = Math.Max(1f, mappedAreas.Average());
+        float[] mappedAreas = descriptors
+            .Select(descriptor => ResolveMappedArea(descriptor.Cell))
+            .ToArray();
+        float[] massWeights = descriptors
+            .Select(descriptor => Math.Max(0.0001f, descriptor.BodyAreaRatio))
+            .ToArray();
+        float averageMassWeight = Math.Max(0.0001f, massWeights.Average());
         _motionSeed = BossDismembermentMath.ResolveMotionSeed(
             _seed,
             Time.GetTicksUsec(),
             GetInstanceId());
         var rng = new RandomNumberGenerator { Seed = _motionSeed };
-        int[] sectors = Enumerable.Range(0, cells.Count).ToArray();
-        for (int index = sectors.Length - 1; index > 0; index--)
-        {
-            int swap = rng.RandiRange(0, index);
-            (sectors[index], sectors[swap]) = (sectors[swap], sectors[index]);
-        }
+        float[] massRatios = massWeights
+            .Select(weight => Math.Clamp(weight / averageMassWeight, 0.25f, 3f))
+            .ToArray();
 
-        BossFragmentPoint[] seeds = cells.Select(cell => cell.Seed).ToArray();
         Vector2 detachedOrigin = detachedExplosionCenter.HasValue
             ? ToLocalPoint(detachedExplosionCenter.Value)
             : _burstOrigin;
-        float burstRotation = rng.Randf() * MathF.Tau;
-        for (int index = 0; index < cells.Count; index++)
+        BossFragmentPoint bodyDomainRestCenter = ToBossFragmentPoint(
+            _bodyToPresentation * _bodyLocalBounds.GetCenter());
+        BossFragmentPoint detachedDomainRestCenter = ResolveDomainRestCenter(
+            descriptors,
+            massWeights,
+            belongsToDetachedPart: true,
+            bodyDomainRestCenter);
+        for (int index = 0; index < descriptors.Count; index++)
         {
-            BossFragmentCell cell = cells[index];
-            Vector2 compressionOrigin = partition.DetachedCellIndices.Contains(index)
+            BossCapturedFragmentDescriptor descriptor = descriptors[index];
+            Vector2 domainBurstOrigin = descriptor.Part.BelongsToDetachedPart
                 ? detachedOrigin
                 : _burstOrigin;
-            BossFragmentPoint direction = BossDismembermentMath.ResolveBurstDirection(
-                sectors[index],
-                cells.Count,
-                burstRotation,
-                rng.RandfRange(-1f, 1f));
-            BossFragmentLaunch launch = BossDismembermentMath.ResolveLaunch(
-                new BossFragmentPoint(
-                    compressionOrigin.X + direction.X,
-                    compressionOrigin.Y + direction.Y),
-                new BossFragmentPoint(compressionOrigin.X, compressionOrigin.Y),
-                mappedAreas[index] / averageArea,
-                rng.Randf(),
-                rng.Randf());
+            BossFragmentPoint restCenter = ResolveDescriptorRestCenter(descriptor);
+            BossFragmentPoint domainRestCenter = descriptor.Part.BelongsToDetachedPart
+                ? detachedDomainRestCenter
+                : bodyDomainRestCenter;
+            BossFragmentPoint restOffset = new(
+                restCenter.X - domainRestCenter.X,
+                restCenter.Y - domainRestCenter.Y);
+            BossFragmentPoint packedOrigin = BossBurstCompressionLayout.ResolvePackedOrigin(
+                ToBossFragmentPoint(domainBurstOrigin),
+                restOffset);
+            Vector2 compressionOrigin = ToVector2(packedOrigin);
             float compressedArea = rng.RandfRange(0.45f, 0.6f);
             float compressedScale = MathF.Sqrt(compressedArea);
             float phase = rng.Randf() * MathF.Tau;
+            float squashAmount = rng.RandfRange(0.18f, 0.26f);
             BossFragmentPoint compressedCenter = new(
                 compressionOrigin.X + MathF.Cos(phase) * CompressionSlideRadius,
                 compressionOrigin.Y + MathF.Sin(phase) * CompressionSlideRadius);
@@ -572,16 +637,13 @@ public sealed partial class BossDismembermentPresentation : Node2D
             float initialScale = mode == PresentationMode.ArchitectLead ? 1f : compressedScale;
             if (!BossCapturedFragmentRenderSurface.TryCreate(
                     this,
-                    index,
-                    cell,
-                    seeds,
-                    textureBounds,
+                    descriptor,
                     _bodyToPresentation,
                     texture,
                     _fragmentShader,
                     initialCenter,
                     initialScale,
-                    Math.Clamp(mappedAreas[index] / averageArea, 0.25f, 3f),
+                    massRatios[index],
                     BossDismembermentMath.ResolveCollisionPadding(mappedAreas[index]),
                     zIndex,
                     out BossCapturedFragmentRenderSurface? surface)
@@ -590,14 +652,32 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 continue;
             }
 
+            SoftFragmentBody body = surface.Body;
+            body.SetMaterial(mode == PresentationMode.ArchitectLead
+                ? SoftBodyMaterialProfile.ArchitectLead
+                : SoftBodyMaterialProfile.FountainJelly);
+            body.ConfigureDeformation(
+                _motionSeed ^ unchecked((ulong)(index + 1) * 0x9E3779B97F4A7C15UL));
+            if (mode != PresentationMode.ArchitectLead)
+            {
+                body.PinCompressed(
+                    compressedCenter,
+                    compressedScale,
+                    phase,
+                    slideRadius: 0f,
+                    squashAmount: squashAmount);
+                surface.ApplyFrame();
+            }
+
             var runtime = new SoftFragmentRuntime(
                 surface,
-                new Vector2(launch.VelocityX, launch.VelocityY),
-                launch.AngularVelocityDegrees,
+                mappedAreas[index],
                 compressedScale,
+                squashAmount,
                 phase,
                 rng.RandfRange(34f, 58f),
-                compressionOrigin);
+                compressionOrigin,
+                restOffset);
             _fragments.Add(runtime);
             _bodies.Add(surface.Body);
             if (mode == PresentationMode.ArchitectLead)
@@ -622,30 +702,160 @@ public sealed partial class BossDismembermentPresentation : Node2D
             throw new InvalidOperationException("fewer than two captured soft fragments initialized successfully");
         }
 
-        BalanceHorizontalMomentum();
-        BuildRagdollLinks(
-            mode == PresentationMode.ArchitectLead ? _bodies.Count : 3,
-            canBreak: mode != PresentationMode.ArchitectLead);
+        AssignFountainLaunches();
+
+        if (mode == PresentationMode.ArchitectLead)
+        {
+            BuildRagdollLinks(_bodies.Count, canBreak: false);
+        }
+        else
+        {
+            ApplyFountainPlan();
+        }
+
+        RecordSpawnDiagnostics();
+        CountLaunchLanes();
         _spawnedFragmentCount = _fragments.Count;
         _spawnedJointCount = _joints.Count;
+        _spawnedConstraintCount = _bodies.Sum(body => body.ConstraintCount);
     }
 
-    private void BalanceHorizontalMomentum()
+    private void ValidateBaselineFragmentGeometry(
+        BossFragmentPartition partition,
+        Rect2 originalBossScreenBounds)
     {
-        float totalMass = 0f;
-        float horizontalMomentum = 0f;
-        for (int index = 0; index < _fragments.Count; index++)
+        Transform2D globalToPresentation = GlobalTransform.AffineInverse();
+        Rect2 expected = BoundsOf(RectCorners(originalBossScreenBounds)
+            .Select(point => globalToPresentation * point));
+        Rect2 actual = BoundsOf(partition.Fragments
+            .SelectMany(fragment => fragment.Cell.Vertices)
+            .Select(point => _bodyToPresentation * ToVector2(point)));
+        if (!IsValidBounds(expected) || !IsValidBounds(actual))
         {
-            SoftFragmentRuntime fragment = _fragments[index];
-            totalMass += fragment.Body.Mass;
-            horizontalMomentum += fragment.Body.Mass * fragment.LaunchVelocity.X;
+            throw new InvalidOperationException(
+                "the battle-view fragment bounds are invalid");
         }
 
-        float averageVelocity = totalMass <= 0.001f ? 0f : horizontalMomentum / totalMass;
+        _originalBossScreenSize = expected.Size;
+        _fragmentUnionScreenSize = actual.Size;
+        _fragmentRawWidthRatio = actual.Size.X / expected.Size.X;
+        _fragmentRawHeightRatio = actual.Size.Y / expected.Size.Y;
+        _fragmentWidthRatio = _fragmentRawWidthRatio;
+        _fragmentHeightRatio = _fragmentRawHeightRatio;
+        if (!BossDismembermentMath.TryResolveUniformBoundsCalibration(
+                new BossFragmentRect(
+                    expected.Position.X,
+                    expected.Position.Y,
+                    expected.Size.X,
+                    expected.Size.Y),
+                new BossFragmentRect(
+                    actual.Position.X,
+                    actual.Position.Y,
+                    actual.Size.X,
+                    actual.Size.Y),
+                out BossFragmentBoundsCalibration calibration))
+        {
+            throw new InvalidOperationException(
+                $"semantic fragments cannot be uniformly calibrated to the frozen battle-view boss size "
+                + $"({_fragmentRawWidthRatio:F3}x{_fragmentRawHeightRatio:F3})");
+        }
+
+        _fragmentCalibrationScale = calibration.UniformScale;
+        if (!calibration.IsIdentity)
+        {
+            var correction = new Transform2D(
+                new Vector2(calibration.UniformScale, 0f),
+                new Vector2(0f, calibration.UniformScale),
+                new Vector2(calibration.TranslationX, calibration.TranslationY));
+            _bodyToPresentation = correction * _bodyToPresentation;
+            actual = BoundsOf(partition.Fragments
+                .SelectMany(fragment => fragment.Cell.Vertices)
+                .Select(point => _bodyToPresentation * ToVector2(point)));
+        }
+
+        _fragmentUnionScreenSize = actual.Size;
+        _fragmentWidthRatio = actual.Size.X / expected.Size.X;
+        _fragmentHeightRatio = actual.Size.Y / expected.Size.Y;
+        if (_fragmentWidthRatio is < 0.98f or > 1.02f
+            || _fragmentHeightRatio is < 0.98f or > 1.02f)
+        {
+            throw new InvalidOperationException(
+                $"uniformly calibrated semantic fragments still do not match the frozen battle-view boss size "
+                + $"({_fragmentWidthRatio:F3}x{_fragmentHeightRatio:F3})");
+        }
+
+        _floorY = RectCorners(_bodyLocalBounds)
+            .Select(point => (_bodyToPresentation * point).Y)
+            .Max();
+    }
+
+    private void AssignFountainLaunches()
+    {
+        IReadOnlyList<BossFountainLaunch> launches = BossFountainLaunchProfile.Create(
+            _fragments.Select(fragment => fragment.Body.Mass).ToArray(),
+            _motionSeed ^ 0x464F554E5441494EUL);
+        if (launches.Count != _fragments.Count)
+        {
+            throw new InvalidOperationException(
+                "the fountain launch plan does not match the initialized fragment count");
+        }
+
         for (int index = 0; index < _fragments.Count; index++)
         {
-            _fragments[index].LaunchVelocity -= new Vector2(averageVelocity, 0f);
+            BossFountainLaunch launch = launches[index];
+            SoftFragmentRuntime fragment = _fragments[index];
+            fragment.LaunchVelocity = new Vector2(
+                launch.Velocity.X,
+                launch.Velocity.Y);
+            fragment.LaunchAngularVelocityDegrees = launch.AngularVelocityDegrees;
+            fragment.LaunchLane = launch.Lane;
         }
+    }
+
+    private void RecordSpawnDiagnostics()
+    {
+        float[] areas = _fragments
+            .Select(fragment => fragment.MappedArea)
+            .Order()
+            .ToArray();
+        _medianFragmentArea = Percentile(areas, 0.5f);
+        _maximumFragmentArea = areas.Length == 0 ? 0f : areas[^1];
+
+        float[] launchSpeeds = _fragments
+            .Select(fragment => fragment.LaunchVelocity.Length())
+            .Order()
+            .ToArray();
+        _launchSpeedP50 = Percentile(launchSpeeds, 0.5f);
+        _launchSpeedP90 = Percentile(launchSpeeds, 0.9f);
+        float totalMass = _fragments.Sum(fragment => fragment.Body.Mass);
+        _launchHorizontalDrift = totalMass <= 0.001f
+            ? 0f
+            : _fragments.Sum(fragment =>
+                fragment.LaunchVelocity.X * fragment.Body.Mass) / totalMass;
+    }
+
+    private void ApplyFountainPlan()
+    {
+        BossFountainLaunch[] launches = _fragments
+            .Select(fragment => new BossFountainLaunch(
+                new BossFragmentPoint(
+                    fragment.LaunchVelocity.X,
+                    fragment.LaunchVelocity.Y),
+                fragment.LaunchAngularVelocityDegrees,
+                fragment.LaunchLane))
+            .ToArray();
+        BossFountainLaunchPlan plan = BossFountainLaunchProfile.CreatePlan(launches);
+        int count = Math.Min(_fragments.Count, plan.Launches.Count);
+        for (int index = 0; index < count; index++)
+        {
+            BossFountainLaunch launch = plan.Launches[index];
+            _fragments[index].LaunchVelocity = new Vector2(
+                launch.Velocity.X,
+                launch.Velocity.Y);
+        }
+
+        _gravity = plan.Gravity;
+        _centerSpeedLimit = plan.MaximumCenterSpeed;
     }
 
     private void BuildRagdollLinks(int maximumClusterSize, bool canBreak)
@@ -669,12 +879,22 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 firstParticle,
                 second,
                 secondParticle,
-                Math.Clamp(particleRestLength, 0.5f, 72f))
+                Math.Max(particleRestLength, 0.5f))
             {
                 CanBreak = canBreak
             };
             _joints.Add(joint);
         }
+    }
+
+    private void CountLaunchLanes()
+    {
+        _upwardLaunchCount = _fragments.Count(
+            fragment => fragment.LaunchLane == BossFountainLaunchLane.Upward);
+        _horizontalLaunchCount = _fragments.Count(
+            fragment => fragment.LaunchLane == BossFountainLaunchLane.Horizontal);
+        _downwardLaunchCount = _fragments.Count(
+            fragment => fragment.LaunchLane == BossFountainLaunchLane.Downward);
     }
 
     internal bool TriggerArchitectBurst()
@@ -693,34 +913,52 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _elapsed = 0f;
         _physicsAccumulator = 0f;
         _floorY = null;
-        BossFragmentPoint center = default;
+        _removedBelowBottomCount = 0;
+        _settlementBottomBandCount = 0;
+        _settlementBelowBottomCount = 0;
+        _settlementDescendingCount = 0;
+        _settlementRecorded = false;
+        BossFragmentPoint weightedCenter = default;
+        float totalMass = 0f;
         for (int index = 0; index < _bodies.Count; index++)
         {
-            center = new BossFragmentPoint(
-                center.X + _bodies[index].Center.X,
-                center.Y + _bodies[index].Center.Y);
+            SoftFragmentBody body = _bodies[index];
+            weightedCenter = new BossFragmentPoint(
+                weightedCenter.X + body.Center.X * body.Mass,
+                weightedCenter.Y + body.Center.Y * body.Mass);
+            totalMass += body.Mass;
         }
 
-        float inverseCount = 1f / Math.Max(1, _bodies.Count);
-        _burstOrigin = new Vector2(center.X * inverseCount, center.Y * inverseCount);
+        float inverseMass = 1f / Math.Max(0.001f, totalMass);
+        _burstOrigin = new Vector2(
+            weightedCenter.X * inverseMass,
+            weightedCenter.Y * inverseMass);
         for (int index = 0; index < _fragments.Count; index++)
         {
             SoftFragmentRuntime fragment = _fragments[index];
-            fragment.CompressionOrigin = _burstOrigin;
+            fragment.Body.SetMaterial(SoftBodyMaterialProfile.FountainJelly);
+            fragment.Body.ConfigureDeformation(
+                _motionSeed ^ unchecked((ulong)(index + 1) * 0x9E3779B97F4A7C15UL));
+            fragment.CompressionOrigin = ToVector2(
+                BossBurstCompressionLayout.ResolvePackedOrigin(
+                    ToBossFragmentPoint(_burstOrigin),
+                    fragment.RestCenterOffset));
             float phase = fragment.CompressionPhase;
+            Vector2 compressionOrigin = fragment.CompressionOrigin;
             BossFragmentPoint compressedCenter = new(
-                _burstOrigin.X + MathF.Cos(phase) * CompressionSlideRadius,
-                _burstOrigin.Y + MathF.Sin(phase) * CompressionSlideRadius);
+                compressionOrigin.X + MathF.Cos(phase) * CompressionSlideRadius,
+                compressionOrigin.Y + MathF.Sin(phase) * CompressionSlideRadius);
             fragment.Body.PinCompressed(
                 compressedCenter,
                 fragment.CompressedScale,
                 phase,
-                slideRadius: 0f);
+                slideRadius: 0f,
+                squashAmount: fragment.SquashAmount);
         }
 
+        RecordJointDiagnostics();
         _joints.Clear();
-        BuildRagdollLinks(maximumClusterSize: 3, canBreak: true);
-        _spawnedJointCount += _joints.Count;
+        ApplyFountainPlan();
 
         // Upload the compressed pose immediately so the first visible burst frame
         // cannot expose the settled ragdoll positions.
@@ -752,7 +990,12 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 BossFragmentPoint center = new(
                     origin.X + MathF.Cos(phase) * CompressionSlideRadius * progress,
                     origin.Y + MathF.Sin(phase * 1.37f) * CompressionSlideRadius * progress * 0.7f);
-                fragment.Body.PinCompressed(center, scale, phase, slideRadius: 0.8f);
+                fragment.Body.PinCompressed(
+                    center,
+                    scale,
+                    phase,
+                    slideRadius: 0.8f,
+                    squashAmount: fragment.SquashAmount);
             }
 
             _burstElapsed += seconds;
@@ -762,17 +1005,22 @@ public sealed partial class BossDismembermentPresentation : Node2D
         if (!_burstReleased)
         {
             _burstReleased = true;
+            _launchActuators.Clear();
             for (int index = 0; index < _fragments.Count; index++)
             {
                 SoftFragmentRuntime fragment = _fragments[index];
-                fragment.Body.Release(
+                var actuator = new SoftBodyLaunchActuator(
+                    fragment.Body,
                     new BossFragmentPoint(fragment.LaunchVelocity.X, fragment.LaunchVelocity.Y),
                     Mathf.DegToRad(fragment.LaunchAngularVelocityDegrees));
+                actuator.Begin();
+                _launchActuators.Add(actuator);
             }
         }
 
+        float flightSeconds = Math.Max(0f, _burstElapsed - CompressionSeconds);
         float pumpProgress = Math.Clamp(
-            (_burstElapsed - CompressionSeconds) / PumpOpenSeconds,
+            flightSeconds / PumpOpenSeconds,
             0f,
             1f);
         pumpProgress = pumpProgress * pumpProgress * (3f - 2f * pumpProgress);
@@ -780,31 +1028,83 @@ public sealed partial class BossDismembermentPresentation : Node2D
         {
             SoftFragmentRuntime fragment = _fragments[index];
             fragment.Body.TargetLinearScale = Lerp(fragment.CompressedScale, 1f, pumpProgress);
+            float hullScale = 1f;
+            float marginScale = BossFountainLaunchProfile.ResolveCollisionMarginScale(
+                flightSeconds,
+                hullScale);
             fragment.Body.SetCollisionEnvelope(
-                hullScale: Lerp(0.06f, 1f, pumpProgress),
-                marginScale: pumpProgress);
+                hullScale,
+                marginScale);
         }
 
         SolveSoftBodies(seconds, floorY: null);
+        RecordDispersionIfDue(flightSeconds + seconds);
         _burstElapsed += seconds;
+        RecordSettlementIfDue(_burstElapsed);
     }
 
     private void SolveSoftBodies(float seconds, float? floorY)
     {
         long started = System.Diagnostics.Stopwatch.GetTimestamp();
+        bool architectLead = _mode == PresentationMode.ArchitectLead && !_burstTriggered;
+        float flightSeconds = Math.Max(0f, _burstElapsed - CompressionSeconds);
+        SoftHorizontalBoundary? horizontalBoundary = !architectLead
+            && _burstReleased
+            && flightSeconds >= 0.1f
+            ? new SoftHorizontalBoundary(
+                _visibleSceneBounds.Position.X,
+                _visibleSceneBounds.End.X)
+            : null;
         SoftBodyStepMetrics metrics = _solver.Step(
             _bodies,
             _joints,
             seconds,
-            Gravity,
-            AirDrag,
-            floorY);
+            architectLead ? 860f : _gravity,
+            architectLead ? 0.08f : BossFountainLaunchProfile.LinearAirDrag,
+            floorY,
+            architectLead ? 0f : BossFountainLaunchProfile.QuadraticAirDrag,
+            _burstReleased ? _launchActuators : null,
+            _centerSpeedLimit,
+            horizontalBoundary);
         long elapsedTicks = System.Diagnostics.Stopwatch.GetTimestamp() - started;
         _solverTicks += elapsedTicks;
         _longestSolverTicks = Math.Max(_longestSolverTicks, elapsedTicks);
         _solverSteps++;
         _contactCount += metrics.Contacts;
+        _contactPointCount += metrics.ContactPoints;
+        _contactStartCount += metrics.ContactStarts;
+        _visibleBounceCount += metrics.VisibleBounces;
+        _sweptContactCount += metrics.SweptContacts;
+        _leftWallContactCount += metrics.LeftWallContacts;
+        _rightWallContactCount += metrics.RightWallContacts;
+        _wallBounceCount += metrics.WallBounces;
+        _contactEnergyBefore += metrics.ContactEnergyBefore;
+        _contactEnergyAfter += metrics.ContactEnergyAfter;
+        _limitedContactCount += metrics.LimitedContacts;
+        _limitedCenterSpeedCount += metrics.LimitedCenterSpeeds;
+        _maximumPenetration = Math.Max(_maximumPenetration, metrics.MaximumPenetration);
+        _maximumAdaptiveSubsteps = Math.Max(_maximumAdaptiveSubsteps, metrics.Substeps);
         _brokenLinkCount += metrics.BrokenLinks;
+        _rollbackCount += metrics.Rollbacks;
+        _inversionCount += metrics.Inversions;
+        _safetyProjectionCount += metrics.SafetyProjections;
+        _wobbleZeroCrossings += metrics.WobbleZeroCrossings;
+        if (_burstReleased
+            && _firstFragmentContactSeconds < 0f
+            && metrics.ContactStarts > 0)
+        {
+            _firstFragmentContactSeconds = flightSeconds;
+        }
+        if (_burstReleased && flightSeconds <= 0.7f)
+        {
+            _maximumLaunchCenterSpeed = Math.Max(
+                _maximumLaunchCenterSpeed,
+                metrics.MaximumCenterSpeed);
+            _maximumObservedCenterSpeed = Math.Max(
+                _maximumObservedCenterSpeed,
+                metrics.MaximumObservedCenterSpeed);
+        }
+        RecordJointDiagnostics();
         for (int index = 0; index < _bodies.Count; index++)
         {
             SoftFragmentBody body = _bodies[index];
@@ -815,6 +1115,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
             _minimumAreaRatio = Math.Min(_minimumAreaRatio, body.ResolveMinimumCellAreaRatio());
             _maximumStretch = Math.Max(_maximumStretch, body.ResolveMaximumStretch());
+            RecordBodyDiagnostics(body);
         }
 
     }
@@ -832,12 +1133,85 @@ public sealed partial class BossDismembermentPresentation : Node2D
             }
 
             _maximumResidual = Math.Max(_maximumResidual, fragment.Surface.MaximumResidual);
+            float residualRatio = fragment.Surface.RmsResidualRatio;
+            float flightSeconds = Math.Max(0f, _burstElapsed - CompressionSeconds);
+            if (_burstReleased && flightSeconds is >= 0.2f and <= 1.8f)
+            {
+                _residualStatistics.Add(residualRatio);
+            }
         }
 
         long elapsedTicks = System.Diagnostics.Stopwatch.GetTimestamp() - started;
         _renderTicks += elapsedTicks;
         _longestRenderTicks = Math.Max(_longestRenderTicks, elapsedTicks);
         _renderFrames++;
+    }
+
+    private void RecordSettlementIfDue(float burstTimelineSeconds, bool force = false)
+    {
+        if (_settlementRecorded
+            || !force && burstTimelineSeconds < BossBurstTimeline.VideoSeconds
+            || _visibleSceneBounds.Size.Y <= 1f)
+        {
+            return;
+        }
+
+        _settlementRecorded = true;
+        float bottomBand = _visibleSceneBounds.Position.Y
+            + _visibleSceneBounds.Size.Y * SettlementBottomFraction;
+        float visibleBottom = _visibleSceneBounds.End.Y;
+        int bottomBandCount = 0;
+        int belowBottomCount = _removedBelowBottomCount;
+        int descendingCount = 0;
+        for (int index = 0; index < _fragments.Count; index++)
+        {
+            SoftFragmentBody body = _fragments[index].Body;
+            BossFragmentPoint center = body.Center;
+            if (center.Y >= visibleBottom)
+            {
+                belowBottomCount++;
+            }
+            else if (center.Y >= bottomBand)
+            {
+                bottomBandCount++;
+            }
+            else if (body.CenterVelocity.Y > 0f)
+            {
+                descendingCount++;
+            }
+        }
+
+        _settlementBottomBandCount = bottomBandCount;
+        _settlementBelowBottomCount = belowBottomCount;
+        _settlementDescendingCount = descendingCount;
+    }
+
+    private void RecordDispersionIfDue(float flightSeconds)
+    {
+        if (_dispersionRecorded || flightSeconds < 0.35f || _bodies.Count == 0)
+        {
+            return;
+        }
+
+        _dispersionRecorded = true;
+        var sectors = new HashSet<int>();
+        double squaredDistance = 0d;
+        for (int index = 0; index < _bodies.Count; index++)
+        {
+            BossFragmentPoint center = _bodies[index].Center;
+            float x = center.X - _burstOrigin.X;
+            float y = center.Y - _burstOrigin.Y;
+            float angle = MathF.Atan2(y, x) + MathF.PI;
+            int sector = Math.Clamp(
+                (int)MathF.Floor(angle / MathF.Tau * 12f),
+                0,
+                11);
+            sectors.Add(sector);
+            squaredDistance += x * x + y * y;
+        }
+
+        _sectorCoverage035 = sectors.Count;
+        _spatialDispersion035 = (float)Math.Sqrt(squaredDistance / _bodies.Count);
     }
 
     private void RemoveOffscreenFragments()
@@ -851,7 +1225,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 continue;
             }
 
-            RemoveFragmentAt(index);
+            bool exitedBelow = fragment.Body.Center.Y >= _visibleSceneBounds.End.Y;
+            RemoveFragmentAt(index, exitedBelow);
         }
     }
 
@@ -871,12 +1246,19 @@ public sealed partial class BossDismembermentPresentation : Node2D
         return false;
     }
 
-    private void RemoveFragmentAt(int index)
+    private void RemoveFragmentAt(int index, bool exitedBelow = false)
     {
         SoftFragmentRuntime fragment = _fragments[index];
+        if (exitedBelow)
+        {
+            _removedBelowBottomCount++;
+        }
+        RecordBodyDiagnostics(fragment.Body);
+        RecordJointDiagnostics();
         _joints.RemoveAll(joint =>
             ReferenceEquals(joint.First, fragment.Body)
             || ReferenceEquals(joint.Second, fragment.Body));
+        _launchActuators.RemoveAll(actuator => ReferenceEquals(actuator.Body, fragment.Body));
         _bodies.Remove(fragment.Body);
         _fragments.RemoveAt(index);
         fragment.Surface.Dispose();
@@ -932,6 +1314,12 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     private void ClearFragments()
     {
+        for (int index = 0; index < _bodies.Count; index++)
+        {
+            RecordBodyDiagnostics(_bodies[index]);
+        }
+
+        RecordJointDiagnostics();
         for (int index = _fragments.Count - 1; index >= 0; index--)
         {
             _fragments[index].Surface.Dispose();
@@ -940,6 +1328,25 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _fragments.Clear();
         _bodies.Clear();
         _joints.Clear();
+        _launchActuators.Clear();
+    }
+
+    private void RecordBodyDiagnostics(SoftFragmentBody body)
+    {
+        _wobbleCrossingsByFragment[body.Id] = body.WobbleZeroCrossings;
+    }
+
+    private void RecordJointDiagnostics()
+    {
+        for (int index = 0; index < _joints.Count; index++)
+        {
+            SoftRagdollLink joint = _joints[index];
+            _maximumTetherAge = Math.Max(_maximumTetherAge, joint.AgeSeconds);
+            if (joint.Broken && _recordedBrokenJoints.Add(joint))
+            {
+                _jointBreakTimes.Add(joint.BreakTimeSeconds);
+            }
+        }
     }
 
     private void CompleteAndFree()
@@ -951,23 +1358,98 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
         _completed = true;
         SetProcess(false);
+        RecordSettlementIfDue(
+            _burstElapsed,
+            force: _fragments.Count == 0);
         double averageSolverMilliseconds = ResolveAverageMilliseconds(_solverTicks, _solverSteps);
         double longestSolverMilliseconds = ResolveMilliseconds(_longestSolverTicks);
         double averageRenderMilliseconds = ResolveAverageMilliseconds(_renderTicks, _renderFrames);
         double longestRenderMilliseconds = ResolveMilliseconds(_longestRenderTicks);
+        for (int index = 0; index < _bodies.Count; index++)
+        {
+            RecordBodyDiagnostics(_bodies[index]);
+        }
+
+        RecordJointDiagnostics();
+        string breakTimes = string.Join(",", _jointBreakTimes
+            .Order()
+            .Select(seconds => $"{seconds:F3}"));
+        string wobbleCounts = string.Join(",", _wobbleCrossingsByFragment
+            .OrderBy(entry => entry.Key)
+            .Select(entry => entry.Value.ToString(
+                System.Globalization.CultureInfo.InvariantCulture)));
         Entry.Logger.Info(
             $"Boss soft-body summary: boss={_monsterId}, motion_seed={_motionSeed}, "
             + $"fragments={_spawnedFragmentCount}, "
+            + $"capture={_capturePixelWidth}x{_capturePixelHeight}, "
+            + $"capture_bytes={_captureTextureBytes}, "
+            + $"semantic_parts={_semanticPartCount}, "
+            + $"merged_parts={_mergedPartCount}, "
+            + $"local_splits={_splitFragmentCount}, "
+            + $"atlas_density={_atlasDensity:F3}, "
+            + $"baseline_scene_scale={_baselineSceneScale:F3}, "
+            + $"spawn_scene_scale={_currentSceneScale:F3}, "
+            + $"boss_screen_size="
+            + $"({_originalBossScreenSize.X:F3},{_originalBossScreenSize.Y:F3}), "
+            + $"fragment_union_size="
+            + $"({_fragmentUnionScreenSize.X:F3},{_fragmentUnionScreenSize.Y:F3}), "
+            + $"fragment_raw_width_ratio={_fragmentRawWidthRatio:F3}, "
+            + $"fragment_raw_height_ratio={_fragmentRawHeightRatio:F3}, "
+            + $"fragment_calibration_scale={_fragmentCalibrationScale:F3}, "
+            + $"fragment_width_ratio={_fragmentWidthRatio:F3}, "
+            + $"fragment_height_ratio={_fragmentHeightRatio:F3}, "
+            + $"fragment_area_p50={_medianFragmentArea:F3}, "
+            + $"fragment_area_max={_maximumFragmentArea:F3}, "
             + $"particles={_spawnedFragmentCount * SoftFragmentBody.ParticleCount}, "
-            + $"joints={_spawnedJointCount}, contacts={_contactCount}, "
+            + $"constraints={_spawnedConstraintCount}, joints={_spawnedJointCount}, "
+            + $"contact_manifolds={_contactCount}, "
+            + $"contact_points={_contactPointCount}, "
+            + $"contact_starts={_contactStartCount}, visible_bounces={_visibleBounceCount}, "
+            + $"swept_contacts={_sweptContactCount}, "
+            + $"left_wall_contacts={_leftWallContactCount}, "
+            + $"right_wall_contacts={_rightWallContactCount}, "
+            + $"wall_bounces={_wallBounceCount}, maximum_penetration={_maximumPenetration:F3}, "
             + $"broken_joints={_brokenLinkCount}, minimum_area_ratio={_minimumAreaRatio:F3}, "
             + $"maximum_stretch={_maximumStretch:F3}, maximum_residual={_maximumResidual:F3}, "
+            + $"rms_residual_average={_residualStatistics.Average:F3}, "
+            + $"rms_residual_p50={_residualStatistics.Percentile(0.5f):F3}, "
+            + $"rms_residual_p90={_residualStatistics.Percentile(0.9f):F3}, "
+            + $"rms_residual_maximum={_residualStatistics.Maximum:F3}, "
+            + $"rms_visible_fraction={_residualStatistics.VisibleFraction:F3}, "
+            + $"launch_max_speed={_maximumLaunchCenterSpeed:F3}, "
+            + $"launch_observed_max_speed={_maximumObservedCenterSpeed:F3}, "
+            + $"launch_speed_p50={_launchSpeedP50:F3}, "
+            + $"launch_speed_p90={_launchSpeedP90:F3}, "
+            + $"launch_horizontal_drift={_launchHorizontalDrift:F3}, "
+            + $"launch_up={_upwardLaunchCount}, "
+            + $"launch_horizontal={_horizontalLaunchCount}, "
+            + $"launch_down={_downwardLaunchCount}, "
+            + $"sector_coverage_035={_sectorCoverage035}, "
+            + $"spatial_dispersion_035={_spatialDispersion035:F3}, "
+            + $"fountain_gravity={_gravity:F3}, "
+            + $"center_speed_limit={_centerSpeedLimit:F3}, "
+            + $"settlement_bottom_band={_settlementBottomBandCount}, "
+            + $"settlement_below_bottom={_settlementBelowBottomCount}, "
+            + $"settlement_fraction={(_spawnedFragmentCount <= 0 ? 0f : (_settlementBottomBandCount + _settlementBelowBottomCount) / (float)_spawnedFragmentCount):F3}, "
+            + $"settlement_remaining_descending={_settlementDescendingCount}, "
+            + $"contact_energy_before={_contactEnergyBefore:F3}, "
+            + $"contact_energy_after={_contactEnergyAfter:F3}, "
+            + $"limited_contacts={_limitedContactCount}, "
+            + $"limited_center_speeds={_limitedCenterSpeedCount}, "
+            + $"first_fragment_contact_ms={(_firstFragmentContactSeconds < 0f ? -1f : _firstFragmentContactSeconds * 1000f):F1}, "
+            + $"rollbacks={_rollbackCount}, inversions={_inversionCount}, "
+            + $"safety_projections={_safetyProjectionCount}, "
+            + $"wobble_zero_crossings={_wobbleZeroCrossings}, "
+            + $"wobble_crossings_by_fragment=[{wobbleCounts}], "
+            + $"joint_break_seconds=[{breakTimes}], "
+            + $"maximum_tether_seconds={_maximumTetherAge:F3}, "
             + $"capture_setup_ms={ResolveMilliseconds(_captureSetupTicks):F3}, "
-            + $"capture_ready_age_ms={ResolveMilliseconds(_captureReadyAgeTicks):F3}, "
+            + $"capture_total_ms={ResolveMilliseconds(_captureReadyElapsedTicks):F3}, "
             + $"solver_average_ms={averageSolverMilliseconds:F3}, "
             + $"solver_longest_ms={longestSolverMilliseconds:F3}, "
             + $"render_average_ms={averageRenderMilliseconds:F3}, "
             + $"render_longest_ms={longestRenderMilliseconds:F3}, "
+            + $"adaptive_substeps_max={_maximumAdaptiveSubsteps}, "
             + $"dropped_simulation_ms={_droppedSimulationSeconds * 1000f:F2}.");
         ClearFragments();
         _capture?.Dispose();
@@ -982,6 +1464,20 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private static double ResolveMilliseconds(long ticks) =>
         ticks * 1000d / System.Diagnostics.Stopwatch.Frequency;
 
+    private static float Percentile(IReadOnlyList<float> sortedValues, float percentile)
+    {
+        if (sortedValues.Count == 0)
+        {
+            return 0f;
+        }
+
+        int index = Math.Clamp(
+            (int)MathF.Round((sortedValues.Count - 1) * Math.Clamp(percentile, 0f, 1f)),
+            0,
+            sortedValues.Count - 1);
+        return sortedValues[index];
+    }
+
     private static float Lerp(float from, float to, float weight) =>
         from + (to - from) * Math.Clamp(weight, 0f, 1f);
 
@@ -992,6 +1488,33 @@ public sealed partial class BossDismembermentPresentation : Node2D
             creature.Entity.Monster?.Id.Entry ?? creature.Name.ToString());
         return combatId * 0x9E3779B97F4A7C15UL ^ modelHash ^ 0x4E534255525354UL;
     }
+
+    private static Rect2 ResolveFallbackCaptureBounds(
+        NCreature creature,
+        Node2D sourceBody)
+    {
+        Transform2D bodyToGlobal = sourceBody.GlobalTransform;
+        Transform2D boundsToGlobal = creature.Visuals.Bounds.GetGlobalTransform();
+        Transform2D globalToBody = bodyToGlobal.AffineInverse();
+        Rect2 localBounds = BoundsOf(
+            RectCorners(new Rect2(Vector2.Zero, creature.Visuals.Bounds.Size))
+                .Select(point => globalToBody * (boundsToGlobal * point)));
+        if (!IsValidBounds(localBounds))
+        {
+            throw new InvalidOperationException(
+                "The boss visual bounds are unavailable for dismemberment capture.");
+        }
+
+        return localBounds;
+    }
+
+    private static bool IsValidBounds(Rect2 bounds) =>
+        float.IsFinite(bounds.Position.X)
+        && float.IsFinite(bounds.Position.Y)
+        && float.IsFinite(bounds.Size.X)
+        && float.IsFinite(bounds.Size.Y)
+        && bounds.Size.X > 1f
+        && bounds.Size.Y > 1f;
 
     private static Rect2 BoundsOf(IEnumerable<Vector2> points)
     {
@@ -1006,6 +1529,25 @@ public sealed partial class BossDismembermentPresentation : Node2D
         float maxX = values.Max(point => point.X);
         float maxY = values.Max(point => point.Y);
         return new Rect2(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    private static BossFragmentRect MergeBounds(IEnumerable<BossFragmentRect> bounds)
+    {
+        BossFragmentRect[] values = bounds.ToArray();
+        if (values.Length == 0)
+        {
+            return default;
+        }
+
+        float minimumX = values.Min(value => value.X);
+        float minimumY = values.Min(value => value.Y);
+        float maximumX = values.Max(value => value.X + value.Width);
+        float maximumY = values.Max(value => value.Y + value.Height);
+        return new BossFragmentRect(
+            minimumX,
+            minimumY,
+            maximumX - minimumX,
+            maximumY - minimumY);
     }
 
     private static Vector2[] RectCorners(Rect2 rect) =>
@@ -1031,22 +1573,68 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     private static Vector2 ToVector2(BossFragmentPoint point) => new(point.X, point.Y);
 
+    private static BossFragmentPoint ToBossFragmentPoint(Vector2 point) => new(point.X, point.Y);
+
+    private BossFragmentPoint ResolveDescriptorRestCenter(
+        BossCapturedFragmentDescriptor descriptor)
+    {
+        BossFragmentRect bounds = BossDismembermentMath.BoundsOf(descriptor.Cell.Vertices);
+        Vector2 center = _bodyToPresentation
+            * new Vector2(
+                bounds.X + bounds.Width * 0.5f,
+                bounds.Y + bounds.Height * 0.5f);
+        return ToBossFragmentPoint(center);
+    }
+
+    private BossFragmentPoint ResolveDomainRestCenter(
+        IReadOnlyList<BossCapturedFragmentDescriptor> descriptors,
+        IReadOnlyList<float> massWeights,
+        bool belongsToDetachedPart,
+        BossFragmentPoint fallback)
+    {
+        float weightedX = 0f;
+        float weightedY = 0f;
+        float totalWeight = 0f;
+        for (int index = 0; index < descriptors.Count; index++)
+        {
+            if (descriptors[index].Part.BelongsToDetachedPart != belongsToDetachedPart)
+            {
+                continue;
+            }
+
+            BossFragmentPoint center = ResolveDescriptorRestCenter(descriptors[index]);
+            float weight = Math.Max(0.0001f, massWeights[index]);
+            weightedX += center.X * weight;
+            weightedY += center.Y * weight;
+            totalWeight += weight;
+        }
+
+        return totalWeight > 0.0001f
+            ? new BossFragmentPoint(weightedX / totalWeight, weightedY / totalWeight)
+            : fallback;
+    }
+
     private sealed class SoftFragmentRuntime(
         BossCapturedFragmentRenderSurface surface,
-        Vector2 launchVelocity,
-        float launchAngularVelocityDegrees,
+        float mappedArea,
         float compressedScale,
+        float squashAmount,
         float compressionPhase,
         float compressionSpeed,
-        Vector2 compressionOrigin)
+        Vector2 compressionOrigin,
+        BossFragmentPoint restCenterOffset)
     {
         public BossCapturedFragmentRenderSurface Surface { get; } = surface;
         public SoftFragmentBody Body => Surface.Body;
-        public Vector2 LaunchVelocity { get; set; } = launchVelocity;
-        public float LaunchAngularVelocityDegrees { get; } = launchAngularVelocityDegrees;
+        public float MappedArea { get; } = mappedArea;
+        public Vector2 LaunchVelocity { get; set; }
+        public float LaunchAngularVelocityDegrees { get; set; }
+        public BossFountainLaunchLane LaunchLane { get; set; }
         public float CompressedScale { get; } = compressedScale;
+        public float SquashAmount { get; } = squashAmount;
         public float CompressionPhase { get; } = compressionPhase;
         public float CompressionSpeed { get; } = compressionSpeed;
         public Vector2 CompressionOrigin { get; set; } = compressionOrigin;
+        public BossFragmentPoint RestCenterOffset { get; } = restCenterOffset;
     }
 }
