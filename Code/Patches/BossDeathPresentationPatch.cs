@@ -1,9 +1,8 @@
-using System.Reflection;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -14,76 +13,76 @@ namespace NinjaSlayer.Code.Patches;
 internal sealed class BossDeathPresentationPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_boss_death_presentation";
-    public static string Description => "Add NinjaSlayer party boss death audio, explosion, and configured part flights.";
-    public static bool IsCritical => false;
+    public static string Description =>
+        "Add NinjaSlayer party boss death video, dismemberment, and configured part flights.";
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
     [
         new(typeof(NCreature), nameof(NCreature.StartDeathAnim), [typeof(bool)])
     ];
 
-    public static void Prefix(NCreature __instance, bool shouldRemove, out BossDeathPresentationController? __state)
+    public static bool Prefix(NCreature __instance, bool shouldRemove, ref float __result)
     {
-        __state = null;
         MonsterModel? monster = __instance.Entity.Monster;
         NCombatRoom? room = NCombatRoom.Instance;
-        if (!shouldRemove
+        if (!NinjaSlayerPatchCapabilities.BossBurstPresentationEnabled
+            || !shouldRemove
             || monster == null
             || room == null
+            || !__instance.Entity.IsPrimaryEnemy
             || __instance.DeathAnimationTask is { IsCompleted: false }
-            || monster.CombatState?.RunState.CurrentRoom is not CombatRoom { RoomType: RoomType.Boss }
+            || monster.CombatState?.RunState.CurrentRoom is not CombatRoom
+                { RoomType: RoomType.Boss } modelRoom
             || monster.CombatState.Players.All(player => player.Character is not INinjaSlayerCharacter))
         {
-            return;
+            return true;
         }
 
-        BossDeathPresentationConfig.TryGetPartSpec(monster.Id.Entry, out BossDeathPartSpec? spec);
-        __state = BossDeathPresentationController.Attach(__instance, room, spec);
-    }
-
-    public static void Postfix(NCreature __instance, BossDeathPresentationController? __state)
-    {
-        if (__state == null)
+        BossDeathPresentationController? controller = null;
+        bool ownsMusicTransition = false;
+        try
         {
-            return;
+            BossDeathPresentationConfig.TryGetPartSpec(
+                monster.Id.Entry,
+                out BossDeathPartSpec? spec);
+            controller = BossDeathPresentationController.Attach(__instance, room, spec);
+            if (!controller.TryPrepareDeathAnimation())
+            {
+                controller.AbortSetup();
+                controller = null;
+                Entry.Logger.Warn(
+                    $"Boss death presentation capture was unavailable for {monster.Id.Entry}; "
+                    + "using the original death animation.");
+                return true;
+            }
+
+            BossBurstParticipationRegistry.Mark(
+                __instance,
+                room,
+                modelRoom,
+                monster.CombatState.RunState);
+            ownsMusicTransition = BossBurstMusicSession.Begin(room);
+            __result = controller.StartDeathAnimation(shouldRemove);
+            Entry.Logger.Info(
+                $"Boss death presentation started: {monster.Id.Entry}, "
+                + $"part={spec?.BoneName ?? "none"}.");
+            return false;
         }
-
-        float disappearDelay = __instance.HasSpineAnimation
-            ? Math.Min(__instance.GetCurrentAnimationTimeRemaining() + 0.5f, 20f)
-            : __instance.Entity.Monster is { HasDeathAnimLengthOverride: true } monster
-                ? monster.DeathAnimLengthOverride
-                : 0f;
-        __state.Begin(disappearDelay);
-        Entry.Logger.Info(
-            $"Boss death presentation started: {__instance.Entity.Monster?.Id.Entry}, "
-            + $"part={(BossDeathPresentationConfig.TryGetPartSpec(__instance.Entity.Monster!.Id.Entry, out BossDeathPartSpec? spec) ? spec.BoneName : "none")}.");
-    }
-}
-
-internal sealed class BossDeathFadeStartPatch : IPatchMethod
-{
-    private static readonly FieldInfo? CreatureNodesField = typeof(NMonsterDeathVfx)
-        .GetField("_creatureNodes", BindingFlags.Instance | BindingFlags.NonPublic);
-
-    public static string PatchId => "ninjaslayer_boss_death_fade_start";
-    public static string Description => "Synchronize NinjaSlayer boss explosions with the original fade start.";
-    public static bool IsCritical => false;
-
-    public static ModPatchTarget[] GetTargets() =>
-    [
-        new(typeof(NMonsterDeathVfx), nameof(NMonsterDeathVfx.PlayVfx))
-    ];
-
-    public static void Prefix(NMonsterDeathVfx __instance)
-    {
-        if (CreatureNodesField?.GetValue(__instance) is not IEnumerable<NCreature> creatures)
+        catch (Exception exception)
         {
-            return;
-        }
-
-        foreach (NCreature creature in creatures)
-        {
-            BossDeathPresentationController.NotifyDisappearanceStarted(creature);
+            controller?.AbortSetup();
+            bool hasRemainingParticipants =
+                BossBurstParticipationRegistry.Unmark(__instance, room);
+            if (BossBurstPresentationPolicy.ShouldRollbackMusic(
+                    ownsMusicTransition,
+                    hasRemainingParticipants))
+            {
+                BossBurstMusicSession.Rollback(modelRoom, monster.CombatState.RunState);
+            }
+            Entry.Logger.Error(
+                $"Boss death presentation setup failed for {monster.Id.Entry}: {exception}");
+            return true;
         }
     }
 }

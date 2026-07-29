@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -22,6 +23,11 @@ public static class XAttackComboMovement
     {
         if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
         {
+            _ = NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
+                creature,
+                ApproachDuration,
+                out Task action);
+            _ = action;
             return;
         }
 
@@ -54,7 +60,7 @@ public static class XAttackComboMovement
         tween.TweenMethod(
             Callable.From<float>(progress =>
             {
-                float easedT = Mathf.Pow(progress, 10f);
+                float easedT = FinisherActionTrajectory.SlowProgress(progress);
                 float xOffset = Mathf.Lerp(0f, LungeDistance, easedT);
                 state.CreatureNode.Position = new Vector2(
                     state.BasePosition.X + xOffset * direction,
@@ -78,6 +84,7 @@ public static class XAttackComboMovement
     {
         if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
         {
+            await NinjaSlayerFinisherCinematic.WaitForOwnedActionPeak(creature);
             return;
         }
 

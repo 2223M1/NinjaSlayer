@@ -55,9 +55,11 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         return (MoveState)machine.States[moveId];
     }
 
-    public int GetIaiSlashDamage() => YamotoKokiDamageMath.ScaleForParty(
+    public int GetIaiSlashDamage() => YamotoKokiDamageMath.ScaleForActiveRelics(
         IaiSlashDamage,
-        Creature.PetOwner?.RunState.Players.Count ?? 1);
+        Creature.PetOwner is { } owner
+            ? YamotoKokiPartyState.GetActiveRelicCount(owner.RunState)
+            : 1);
 
     public override bool TryModifyPowerAmountReceived(
         PowerModel canonicalPower,

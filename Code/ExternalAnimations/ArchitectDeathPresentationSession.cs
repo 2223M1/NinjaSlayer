@@ -1,16 +1,18 @@
 using Godot;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal sealed class ArchitectDeathPresentationSession : IDisposable
 {
-    public const float DurationSeconds = 1.5f;
+    public const float DurationSeconds = BossBurstTimeline.LeadSeconds;
 
     private static readonly Dictionary<ulong, ArchitectDeathPresentationSession> Pending = [];
 
     private readonly NCreature _architect;
+    private readonly ulong _architectInstanceId;
     private readonly TaskCompletionSource _deathStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _visualsCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _disposed;
@@ -18,6 +20,7 @@ internal sealed class ArchitectDeathPresentationSession : IDisposable
     private ArchitectDeathPresentationSession(NCreature architect)
     {
         _architect = architect;
+        _architectInstanceId = architect.GetInstanceId();
     }
 
     public static ArchitectDeathPresentationSession Register(NCreature architect)
@@ -77,11 +80,10 @@ internal sealed class ArchitectDeathPresentationSession : IDisposable
         }
 
         _disposed = true;
-        ulong id = _architect.GetInstanceId();
-        if (Pending.TryGetValue(id, out ArchitectDeathPresentationSession? pending)
+        if (Pending.TryGetValue(_architectInstanceId, out ArchitectDeathPresentationSession? pending)
             && ReferenceEquals(pending, this))
         {
-            Pending.Remove(id);
+            Pending.Remove(_architectInstanceId);
         }
 
         _deathStarted.TrySetCanceled();

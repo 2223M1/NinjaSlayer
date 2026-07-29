@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -43,10 +44,57 @@ internal static class FinisherSessionRegistry
 
     internal static bool HasRegisteredSession()
     {
+        FinisherSession? staleSession = null;
         lock (SessionRegistrySync)
         {
-            return _active != null || _pendingAfterCardPlayed != null;
+            if (_active == null && _pendingAfterCardPlayed == null)
+            {
+                return false;
+            }
+
+            NCombatRoom? currentRoom = NCombatRoom.Instance;
+            if (currentRoom != null && ReferenceEquals(_epochRoom, currentRoom))
+            {
+                return true;
+            }
+
+            staleSession = DetachRegisteredSession(
+                combatState: null,
+                currentRoom);
         }
+
+        ReleaseStaleSession(
+            staleSession,
+            "The active combat room changed before this finisher completed.");
+        return false;
+    }
+
+    internal static bool HasRegisteredSessionForCombat(
+        ICombatState combatState,
+        NCombatRoom room)
+    {
+        FinisherSession? staleSession = null;
+        lock (SessionRegistrySync)
+        {
+            if (_active == null && _pendingAfterCardPlayed == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(_epochCombatState, combatState)
+                && ReferenceEquals(_epochRoom, room))
+            {
+                return true;
+            }
+
+            staleSession = DetachRegisteredSession(combatState, room);
+        }
+
+        ReleaseStaleSession(
+            staleSession,
+            "A new combat replaced this finisher session before its normal cleanup completed.");
+
+        return false;
     }
 
     internal static FinisherSession? GetPendingSession(CardPlay cardPlay)
@@ -152,5 +200,34 @@ internal static class FinisherSessionRegistry
                 _registryGeneration++;
             }
         }
+    }
+
+    private static FinisherSession? DetachRegisteredSession(
+        ICombatState? combatState,
+        NCombatRoom? room)
+    {
+        FinisherSession? staleSession = _active ?? _pendingAfterCardPlayed;
+        _active = null;
+        _pendingAfterCardPlayed = null;
+        _epochCombatState = combatState;
+        _epochRoom = room;
+        _combatEpoch++;
+        _registryGeneration++;
+        return staleSession;
+    }
+
+    private static void ReleaseStaleSession(FinisherSession? session, string reason)
+    {
+        if (session == null)
+        {
+            return;
+        }
+
+        FinisherLog.Warn(
+            $"Released stale finisher session {session.SessionId} before entering a new combat epoch.");
+        TaskHelper.RunSafely(session.CompleteAsync(
+            FinisherCompletionStatus.Cancelled,
+            FinisherCompletionMode.ReleaseOnly,
+            reason));
     }
 }

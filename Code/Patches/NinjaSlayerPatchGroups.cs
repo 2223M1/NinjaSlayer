@@ -18,8 +18,6 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerAbandonMerchantDeathPatch>();
         patcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
         patcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
-        patcher.RegisterPatch<BossDeathPresentationPatch>();
-        patcher.RegisterPatch<BossDeathFadeStartPatch>();
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
         patcher.RegisterPatch<ArchitectExecutionStartPatch>();
         patcher.RegisterPatch<ArchitectDeathAnimationPatch>();
@@ -33,12 +31,29 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
+        patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
         patcher.RegisterPatch<AllyDodgeImpactPatch>();
         patcher.RegisterPatch<AttackIntentDamagePreviewPatch>();
         patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
+        patcher.RegisterPatch<YamotoKokiIntentGenerationPatch>();
+        patcher.RegisterPatch<YamotoKokiLastEnemyDeathIntentPatch>();
+        patcher.RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>();
+        patcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
         patcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
+    }
+}
+
+internal sealed class BossBurstPresentationPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
+        patcher.RegisterPatch<BossDeathPresentationPatch>();
+        patcher.RegisterPatch<BossBurstCombatEndMusicPatch>();
+        patcher.RegisterPatch<BossBurstSingleDeathFadePatch>();
+        patcher.RegisterPatch<BossBurstGroupedDeathFadePatch>();
+        patcher.RegisterPatch<BossBurstDeathFadePlaybackPatch>();
     }
 }
 
@@ -175,7 +190,6 @@ internal sealed class TransitionPresentationPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerTransitionCombatPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAncientSetupPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAncientHealPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionRewardSfxPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionRunMusicPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionParameterizedSfxPresentationPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();

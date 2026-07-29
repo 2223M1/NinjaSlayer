@@ -237,7 +237,7 @@ public static class DeathAnimation
         ProcessModeSnapshot anchorMode = new(anchor, anchor.ProcessMode);
         Node2D dealerBody = dealerNode.Visuals.GetCurrentBody();
         ProcessModeSnapshot dealerMode = new(dealerBody, dealerBody.ProcessMode);
-        List<ProcessModeSnapshot> frozenVfx = [];
+        FinisherImpactVfxFreezeLease? frozenVfx = null;
         var clock = new CinematicFrameClock();
 
         try
@@ -274,7 +274,11 @@ public static class DeathAnimation
 
             anchor.RotationDegrees = state.AnchorRotationDegrees + DoomHitRotationDegrees;
             anchor.Scale = state.AnchorScale;
-            frozenVfx = FreezeImpactVfx(room, creatureNode, vfxBaselineChildIds);
+            frozenVfx = FinisherImpactVfxFreezeLease.Acquire(
+                room,
+                [creatureNode],
+                vfxBaselineChildIds,
+                ImpactVfxTargetMargin);
             anchor.ProcessMode = Node.ProcessModeEnum.Disabled;
             dealerBody.ProcessMode = Node.ProcessModeEnum.Disabled;
 
@@ -312,7 +316,7 @@ public static class DeathAnimation
         {
             RestoreProcessMode(anchorMode);
             RestoreProcessMode(dealerMode);
-            RestoreProcessModes(frozenVfx);
+            frozenVfx?.Dispose();
             if (GodotObject.IsInstanceValid(anchor))
             {
                 anchor.RotationDegrees = state.AnchorRotationDegrees;
@@ -724,74 +728,6 @@ public static class DeathAnimation
         return inverse * inverse * start
             + 2f * inverse * progress * control
             + progress * progress * end;
-    }
-
-    private static List<ProcessModeSnapshot> FreezeImpactVfx(
-        NCombatRoom room,
-        NCreature target,
-        IReadOnlySet<ulong> baselineChildIds)
-    {
-        if (baselineChildIds.Count == 0 || !GodotObject.IsInstanceValid(room.CombatVfxContainer))
-        {
-            return [];
-        }
-
-        Rect2 targetRegion = target.Hitbox.GetGlobalRect().Grow(ImpactVfxTargetMargin);
-        List<ProcessModeSnapshot> snapshots = [];
-        foreach (Node vfxRoot in room.CombatVfxContainer.GetChildren())
-        {
-            if (baselineChildIds.Contains(vfxRoot.GetInstanceId())
-                || !IsNodeActive(vfxRoot)
-                || !IsVfxNearTarget(vfxRoot, targetRegion))
-            {
-                continue;
-            }
-
-            CaptureProcessModes(vfxRoot, snapshots);
-        }
-
-        foreach (ProcessModeSnapshot snapshot in snapshots)
-        {
-            if (IsNodeActive(snapshot.Node))
-            {
-                snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
-            }
-        }
-
-        return snapshots;
-    }
-
-    private static bool IsVfxNearTarget(Node vfxRoot, Rect2 targetRegion)
-    {
-        Vector2? position = vfxRoot switch
-        {
-            Control control => control.GetGlobalRect().GetCenter(),
-            Node2D node => node.GlobalPosition,
-            _ => null
-        };
-        return position.HasValue && targetRegion.HasPoint(position.Value);
-    }
-
-    private static void CaptureProcessModes(Node node, ICollection<ProcessModeSnapshot> snapshots)
-    {
-        if (!IsNodeActive(node))
-        {
-            return;
-        }
-
-        snapshots.Add(new ProcessModeSnapshot(node, node.ProcessMode));
-        foreach (Node child in node.GetChildren())
-        {
-            CaptureProcessModes(child, snapshots);
-        }
-    }
-
-    private static void RestoreProcessModes(IEnumerable<ProcessModeSnapshot> snapshots)
-    {
-        foreach (ProcessModeSnapshot snapshot in snapshots)
-        {
-            RestoreProcessMode(snapshot);
-        }
     }
 
     private static void RestoreProcessMode(ProcessModeSnapshot snapshot)

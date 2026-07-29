@@ -161,6 +161,7 @@ const patchBodies = new Map(patchDeclarations.map((match, index) => [
 for (const groupName of [
   'CardResolutionPatchGroup',
   'PreparedGameplayPatchGroup',
+  'BossBurstPresentationPatchGroup',
   'FinisherCorePatchGroup',
   'TransitionCorePatchGroup',
 ]) {

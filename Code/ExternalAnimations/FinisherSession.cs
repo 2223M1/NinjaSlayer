@@ -34,17 +34,20 @@ internal sealed class FinisherSession : IAsyncDisposable
     private readonly NCreature _actorNode;
     private readonly NCreature _focusNode;
     private readonly FinisherDamageLedger _ledger;
-    private readonly Dictionary<Node2D, Vector2> _deathSquashOriginalScales = [];
+    private readonly Dictionary<Node2D, DeathSquashVisualState> _deathSquashStates = [];
     private readonly Dictionary<NCreature, DeathKickVisual> _deathKickVisuals = [];
     private readonly CombatCinematicCameraLease _camera;
     private readonly NCombatRoom _room;
     private readonly Vector2 _actorStartPosition;
+    private readonly IFinisherActionAdapter _actionAdapter;
+    private readonly object _actionSync = new();
     private readonly HashSet<ulong> _vfxBaselineChildIds;
     private readonly bool _usesJumpDeathSquash;
     private readonly bool _usesNinjaSlayerSignatureImpact;
     private readonly FinisherCompletionProtocol _completionProtocol;
     private FinisherCameraFrame _cameraFrame = new([], false);
     private readonly CinematicSessionLifetime _impactCancellation = new();
+    private readonly CinematicSessionLifetime _actionCancellation = new();
     private readonly CinematicSessionLifetime _watchdogCancellation = new();
     private ulong _lastFrameMsec;
     private ulong _lastDeltaFrame = ulong.MaxValue;
@@ -54,6 +57,7 @@ internal sealed class FinisherSession : IAsyncDisposable
     private Task _enhancedImpactTask = Task.CompletedTask;
     private Task _cameraShakePumpTask = Task.CompletedTask;
     private Task _returnToBaselineTask = Task.CompletedTask;
+    private Task _actionPeakTask = Task.CompletedTask;
     private int _cameraTransitionGeneration;
     private int _backdropTransitionGeneration;
     private int _primaryAnimationsStarted;
@@ -70,8 +74,12 @@ internal sealed class FinisherSession : IAsyncDisposable
     private bool _returnTimelineCompleted;
     private float _returnTimelineProgress;
     private bool _disposed;
+    private bool _actionStarted;
+    private bool _actionPeakReached;
+    private FinisherActionContext _actionContext;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
+    private FinisherActorLayerLease? _actorLayerLease;
     private FinisherImpactPresentation? _presentation;
 
     public FinisherSession(
@@ -93,6 +101,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         _actorNode = request.ActorNode;
         _focusNode = request.FocusNode;
         _camera = request.Camera;
+        _actionAdapter = request.ActionAdapter;
         _completionProtocol = new FinisherCompletionProtocol(sessionId);
         _ledger = new FinisherDamageLedger(
             request.Victims,
@@ -101,10 +110,10 @@ internal sealed class FinisherSession : IAsyncDisposable
             combatState,
             IsCurrentCombatContext);
         _actorStartPosition = request.ActorNode.Position;
+        _actionContext = FinisherActionContext.Stationary(request.ActorNode);
+        _actionPeakReached = !_actionAdapter.RequiresPositioning;
         _vfxBaselineChildIds = request.VfxBaselineChildIds?.ToHashSet()
-            ?? _room.CombatVfxContainer.GetChildren()
-                .Select(child => child.GetInstanceId())
-                .ToHashSet();
+            ?? FinisherImpactVfxFreezeLease.CaptureBaseline(_room).ToHashSet();
         _room.TreeExiting += OnRoomTreeExiting;
         _lastFrameMsec = Time.GetTicksMsec();
         _usesJumpDeathSquash = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
@@ -159,23 +168,41 @@ internal sealed class FinisherSession : IAsyncDisposable
             }
         }
 
-        if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
-        {
-            Vector2 destination = ResolveApproachPosition(_actorNode, _focusNode);
-            _actorNode.Position = destination;
-        }
-        CanvasItem cameraFocus = GetCameraFocus();
         List<NCreature> framingCandidates = _ledger.Victims
             .Select(victim => _room.GetCreatureNode(victim))
             .Where(node => node != null)
             .Cast<NCreature>()
             .ToList();
+        try
+        {
+            _actorLayerLease = FinisherActorLayerLease.TryAcquire(
+                _actorNode,
+                framingCandidates);
+        }
+        catch (Exception exception)
+        {
+            FinisherLog.Warn(
+                $"Finisher actor layer could not be raised above its victims: {exception.Message}");
+        }
+
+        if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer
+            && _actionAdapter.RequiresPositioning)
+        {
+            _actionContext = _actionAdapter.CreateContext(
+                _actorNode,
+                _focusNode,
+                GetDeathSquashMultiplier());
+            if (_actionAdapter.ApproachMode == FinisherApproachMode.PrepositionThenLunge)
+            {
+                _actorNode.Position = _actionContext.TravelStartPosition;
+            }
+        }
         float maximumScale = _camera.BaselineScale.X
             * FinalHitZoomMultiplier
             * CameraPunchScaleMultiplier;
         _cameraFrame = FinisherCameraFraming.SelectTargets(
             _camera,
-            cameraFocus,
+            GetCameraFocusPoint(),
             framingCandidates,
             maximumScale);
         _cameraShakePumpTask = RunCameraShakePump();
@@ -193,6 +220,49 @@ internal sealed class FinisherSession : IAsyncDisposable
         }
 
         return Task.CompletedTask;
+    }
+
+    public Task PlayActionToPeak(Creature creature, float repeatWaitSeconds)
+    {
+        if (_disposed || creature != Actor || !_actionAdapter.RequiresPositioning)
+        {
+            return Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
+        }
+
+        bool startedNow;
+        Task actionTask;
+        lock (_actionSync)
+        {
+            startedNow = !_actionStarted;
+            if (startedNow)
+            {
+                _actionStarted = true;
+                _actionPeakTask = RunActionToPeak();
+            }
+
+            actionTask = _actionPeakTask;
+        }
+
+        return startedNow
+            ? actionTask
+            : Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
+    }
+
+    public Task EnsureActionPeak() => EnsureActionPeakCore();
+
+    public Task WrapTriggerAtActionPeak(
+        Creature creature,
+        string triggerName,
+        Task original)
+    {
+        if (_disposed
+            || creature != Actor
+            || !_actionAdapter.IsPeakTrigger(triggerName))
+        {
+            return original;
+        }
+
+        return CompleteTriggerAtActionPeak(original);
     }
 
     public bool TryAwaitPostCard() => _completionProtocol.TryAwaitPostCard();
@@ -286,6 +356,12 @@ internal sealed class FinisherSession : IAsyncDisposable
             && !_committing
             && Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
         {
+            if (CompletionCondition == FinisherCompletionCondition.AllCandidatesLethal
+                && IsCompletionConditionSatisfied())
+            {
+                YamotoKokiIntentLifecycle.InvalidateCombat(_combatState);
+            }
+
             TryScheduleEnhancedImpact();
         }
     }
@@ -415,6 +491,7 @@ internal sealed class FinisherSession : IAsyncDisposable
 
     private async Task<bool> CommitDeathsWithPoseCore()
     {
+        await EnsureActionPeakCore();
         _committing = true;
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
         bool guaranteedClearMatchedRuntime = IsCompletionConditionSatisfied();
@@ -425,6 +502,11 @@ internal sealed class FinisherSession : IAsyncDisposable
                 $"Finisher session {SessionId} forecast did not match runtime damage; committing confirmed deaths without the pose.");
             await KillDeferredDeathsOnce(toKill, useDeathKick: false);
             return false;
+        }
+
+        if (CompletionCondition == FinisherCompletionCondition.AllCandidatesLethal)
+        {
+            YamotoKokiIntentLifecycle.InvalidateCombat(_combatState);
         }
 
         List<NCreature> targetNodes = toKill
@@ -481,6 +563,7 @@ internal sealed class FinisherSession : IAsyncDisposable
     private async Task CommitDeferredDeathsWithoutPoseCore()
     {
         _committing = true;
+        _actionCancellation.Cancel();
         _impactCancellation.Cancel();
         await _enhancedImpactTask;
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
@@ -564,7 +647,9 @@ internal sealed class FinisherSession : IAsyncDisposable
         _disposed = true;
         var cleanup = new FinisherCleanupAccumulator();
         cleanup.Capture(_watchdogCancellation.Cancel);
+        cleanup.Capture(_actionCancellation.Cancel);
         cleanup.Capture(_impactCancellation.Cancel);
+        await cleanup.CaptureAsync(() => _actionPeakTask);
         await cleanup.CaptureAsync(() => _enhancedImpactTask);
         _cameraTransitionGeneration++;
         _backdropTransitionGeneration++;
@@ -585,6 +670,8 @@ internal sealed class FinisherSession : IAsyncDisposable
         _hoverTipSuppression = null;
         cleanup.Capture(() => _cardVisualSuppression?.Dispose());
         _cardVisualSuppression = null;
+        cleanup.Capture(() => _actorLayerLease?.Dispose());
+        _actorLayerLease = null;
         cleanup.Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
         cleanup.Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
         cleanup.Capture(RestoreDeathSquashes);
@@ -595,6 +682,7 @@ internal sealed class FinisherSession : IAsyncDisposable
             cleanup.Capture(() => _room.TreeExiting -= OnRoomTreeExiting);
         }
         cleanup.Capture(_impactCancellation.Dispose);
+        cleanup.Capture(_actionCancellation.Dispose);
         cleanup.Capture(_watchdogCancellation.Dispose);
         cleanup.Capture(_camera.Dispose);
         cleanup.ThrowIfAny(
@@ -691,6 +779,7 @@ internal sealed class FinisherSession : IAsyncDisposable
             || _enhancedImpactScheduled
             || _enhancedImpactFailed
             || _disposed
+            || !_actionPeakReached
             || !IsFinalPrimaryHitReady()
             || !IsCompletionConditionSatisfied())
         {
@@ -760,7 +849,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         List<ReverseVictimVisualSnapshot> reverseVictims = CaptureReverseVictimVisuals(targetNodes);
         ApplyDeathSquashes(impactVisuals.Values);
         List<NCreature> frozenHurtTracks = [];
-        List<ProcessModeSnapshot> frozenImpactVfx = [];
+        FinisherImpactVfxFreezeLease? frozenImpactVfx = null;
         Node actorFreezeNode = GetActorFreezeNode();
         ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(actorFreezeNode)
             ? new ProcessModeSnapshot(actorFreezeNode, actorFreezeNode.ProcessMode)
@@ -768,7 +857,11 @@ internal sealed class FinisherSession : IAsyncDisposable
 
         try
         {
-            frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
+            frozenImpactVfx = FinisherImpactVfxFreezeLease.Acquire(
+                _room,
+                targetNodes,
+                _vfxBaselineChildIds,
+                ImpactVfxTargetMargin);
             foreach (NCreature targetNode in targetNodes)
             {
                 if (DoomHurtPoseController.TryFreeze(targetNode))
@@ -814,8 +907,8 @@ internal sealed class FinisherSession : IAsyncDisposable
             while (elapsed < ImpactRecoverySeconds)
             {
                 elapsed += await NextFrame();
-            float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ImpactRecoverySeconds);
-            _camera.SetTransform(
+                float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / ImpactRecoverySeconds);
+                _camera.SetTransform(
                     punchPosition.Lerp(cameraStartPosition, progress),
                     Mathf.Lerp(punchScale, cameraStartScale, progress));
             }
@@ -827,7 +920,7 @@ internal sealed class FinisherSession : IAsyncDisposable
                 snapshot.Node.ProcessMode = snapshot.Mode;
             }
 
-            RestoreProcessModes(frozenImpactVfx);
+            frozenImpactVfx?.Dispose();
             DoomHurtPoseController.Resume(frozenHurtTracks);
             RestoreReverseVictimVisuals(reverseVictims);
             RestoreImpactVisuals(impactVisuals.Values);
@@ -852,7 +945,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         List<ReverseVictimVisualSnapshot> reverseVictims = CaptureReverseVictimVisuals(targetNodes);
         ApplyDeathSquashes(impactVisuals.Values);
         List<NCreature> frozenHurtTracks = [];
-        List<ProcessModeSnapshot> frozenImpactVfx = [];
+        FinisherImpactVfxFreezeLease? frozenImpactVfx = null;
         Node actorFreezeNode = GetActorFreezeNode();
         ProcessModeSnapshot? ownerSnapshot = GodotObject.IsInstanceValid(actorFreezeNode)
             ? new ProcessModeSnapshot(actorFreezeNode, actorFreezeNode.ProcessMode)
@@ -862,7 +955,11 @@ internal sealed class FinisherSession : IAsyncDisposable
 
         try
         {
-            frozenImpactVfx.AddRange(FreezeImpactVfx(targetNodes));
+            frozenImpactVfx = FinisherImpactVfxFreezeLease.Acquire(
+                _room,
+                targetNodes,
+                _vfxBaselineChildIds,
+                ImpactVfxTargetMargin);
             foreach (NCreature targetNode in targetNodes)
             {
                 if (DoomHurtPoseController.TryFreeze(targetNode))
@@ -936,7 +1033,7 @@ internal sealed class FinisherSession : IAsyncDisposable
                 snapshot.Node.ProcessMode = snapshot.Mode;
             }
 
-            RestoreProcessModes(frozenImpactVfx);
+            frozenImpactVfx?.Dispose();
             DoomHurtPoseController.Resume(frozenHurtTracks);
             RestoreReverseVictimVisuals(reverseVictims);
             RestoreImpactVisuals(impactVisuals.Values);
@@ -948,6 +1045,74 @@ internal sealed class FinisherSession : IAsyncDisposable
         float delta = await NextFrame();
         cancellationToken.ThrowIfCancellationRequested();
         return delta;
+    }
+
+    private async Task EnsureActionPeakCore()
+    {
+        if (!_actionAdapter.RequiresPositioning || _actionPeakReached)
+        {
+            return;
+        }
+
+        Task actionTask;
+        lock (_actionSync)
+        {
+            if (!_actionStarted)
+            {
+                _actionStarted = true;
+                _actionPeakTask = RunActionToPeak();
+            }
+
+            actionTask = _actionPeakTask;
+        }
+
+        await actionTask;
+    }
+
+    private async Task RunActionToPeak()
+    {
+        try
+        {
+            if (!GodotObject.IsInstanceValid(_actorNode))
+            {
+                throw new InvalidOperationException("The finisher actor node was released before its approach began.");
+            }
+
+            if (_actionAdapter.HasContinuousTravel)
+            {
+                float elapsed = 0f;
+                while (elapsed < _actionAdapter.TravelSeconds)
+                {
+                    elapsed += await NextFrame();
+                    _actionCancellation.Token.ThrowIfCancellationRequested();
+                    float progress = _actionAdapter.GetTravelProgress(
+                        elapsed / _actionAdapter.TravelSeconds);
+                    _actorNode.Position = _actionContext.TravelStartPosition.Lerp(
+                        _actionContext.TravelEndPosition,
+                        progress);
+                }
+
+                _actorNode.Position = _actionContext.TravelEndPosition;
+            }
+            else if (_actionAdapter.ApproachMode == FinisherApproachMode.TeleportAtPeak)
+            {
+                _actorNode.Position = _actionContext.ImpactPosition;
+            }
+
+            _actionPeakReached = true;
+            TryScheduleEnhancedImpact();
+        }
+        catch (OperationCanceledException) when (_actionCancellation.IsCancellationRequested
+            || _disposed
+            || !GodotObject.IsInstanceValid(_room))
+        {
+        }
+    }
+
+    private async Task CompleteTriggerAtActionPeak(Task original)
+    {
+        await original;
+        await EnsureActionPeakCore();
     }
 
     private void SetSignatureImpactState(
@@ -1088,13 +1253,14 @@ internal sealed class FinisherSession : IAsyncDisposable
             Node2D body = creatureNode.Visuals.GetCurrentBody();
             if (!snapshots.ContainsKey(body))
             {
-                Vector2 originalScale = _deathSquashOriginalScales.GetValueOrDefault(body, body.Scale);
+                DeathSquashVisualState? squashState = _deathSquashStates.GetValueOrDefault(body);
                 snapshots.Add(body, new ImpactVisualSnapshot(
                     body,
-                    body.Position,
-                    originalScale,
+                    squashState?.OriginalPosition ?? body.Position,
+                    squashState?.OriginalScale ?? body.Scale,
                     body.Rotation,
                     body.SelfModulate,
+                    creatureNode.Visuals.Bounds,
                     ResolveImpactDirection(_actorNode, creatureNode)));
             }
         }
@@ -1110,11 +1276,22 @@ internal sealed class FinisherSession : IAsyncDisposable
     {
         Vector2 center = FinisherCameraFraming.ResolveCenter(
             _camera,
-            GetCameraFocus(),
+            GetCameraFocusPoint(),
             _cameraFrame,
             scale,
             horizontalScreenOffset);
         return _camera.GetCameraPosition(center, scale, _camera.ViewportSize * 0.5f);
+    }
+
+    private Vector2 GetCameraFocusPoint()
+    {
+        Vector2 focusPoint = _camera.GetLocalCenter(GetCameraFocus());
+        if (_actionAdapter.RequiresPositioning && GodotObject.IsInstanceValid(_actorNode))
+        {
+            focusPoint += _actionContext.ImpactPosition - _actorNode.Position;
+        }
+
+        return focusPoint;
     }
 
     private void ApplyDeathSquashes(IEnumerable<ImpactVisualSnapshot> snapshots)
@@ -1122,22 +1299,137 @@ internal sealed class FinisherSession : IAsyncDisposable
         Vector2 multiplier = GetDeathSquashMultiplier();
         foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
         {
-            _deathSquashOriginalScales.TryAdd(snapshot.Body, snapshot.Scale);
-            snapshot.Body.Scale = snapshot.Scale * multiplier;
+            if (!_deathSquashStates.TryGetValue(snapshot.Body, out DeathSquashVisualState? state))
+            {
+                state = CaptureDeathSquashState(snapshot, multiplier);
+                _deathSquashStates.Add(snapshot.Body, state);
+            }
+
+            ApplyDeathSquashTransform(state, multiplier, snapshot.Rotation);
         }
     }
 
     private void RestoreDeathSquashes()
     {
-        foreach ((Node2D body, Vector2 scale) in _deathSquashOriginalScales)
+        foreach ((Node2D body, DeathSquashVisualState state) in _deathSquashStates)
         {
             if (GodotObject.IsInstanceValid(body))
             {
-                body.Scale = scale;
+                body.Scale = state.OriginalScale;
+                body.Position = state.OriginalPosition;
             }
         }
 
-        _deathSquashOriginalScales.Clear();
+        _deathSquashStates.Clear();
+    }
+
+    private static DeathSquashVisualState CaptureDeathSquashState(
+        ImpactVisualSnapshot snapshot,
+        Vector2 multiplier)
+    {
+        Node2D body = snapshot.Body;
+        var fallback = new DeathSquashVisualState(
+            body,
+            snapshot.Position,
+            snapshot.Scale,
+            Parent: null,
+            AnchorInBody: default,
+            AnchorInParent: default,
+            WasTopLevel: body.TopLevel,
+            HasAnchorCompensation: false);
+        FinisherSquashAnchorKind anchorKind = FinisherSquashAnchorPolicy.Resolve(
+            multiplier.X,
+            multiplier.Y);
+        if (anchorKind == FinisherSquashAnchorKind.Center
+            || !GodotObject.IsInstanceValid(snapshot.Bounds))
+        {
+            return fallback;
+        }
+
+        try
+        {
+            Rect2 bounds = snapshot.Bounds.GetGlobalRect();
+            if (!bounds.Position.IsFinite()
+                || !bounds.Size.IsFinite()
+                || bounds.Size.X <= 0f
+                || bounds.Size.Y <= 0f)
+            {
+                return fallback;
+            }
+
+            Vector2 center = bounds.GetCenter();
+            Vector2 anchorGlobal = anchorKind switch
+            {
+                FinisherSquashAnchorKind.BottomCenter => new Vector2(center.X, bounds.Position.Y + bounds.Size.Y),
+                _ => center
+            };
+            bool wasTopLevel = body.TopLevel;
+            CanvasItem? parent = wasTopLevel ? null : body.GetParent() as CanvasItem;
+            if (!wasTopLevel && (parent == null || !GodotObject.IsInstanceValid(parent)))
+            {
+                return fallback;
+            }
+
+            Vector2 anchorInBody = body.GetGlobalTransform().AffineInverse() * anchorGlobal;
+            Vector2 anchorInParent = wasTopLevel
+                ? anchorGlobal
+                : parent!.GetGlobalTransform().AffineInverse() * anchorGlobal;
+            if (!anchorInBody.IsFinite() || !anchorInParent.IsFinite())
+            {
+                return fallback;
+            }
+
+            return new DeathSquashVisualState(
+                body,
+                snapshot.Position,
+                snapshot.Scale,
+                parent,
+                anchorInBody,
+                anchorInParent,
+                wasTopLevel,
+                HasAnchorCompensation: true);
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static void ApplyDeathSquashTransform(
+        DeathSquashVisualState state,
+        Vector2 multiplier,
+        float rotation)
+    {
+        Node2D body = state.Body;
+        if (!GodotObject.IsInstanceValid(body))
+        {
+            return;
+        }
+
+        body.Position = state.OriginalPosition;
+        body.Scale = state.OriginalScale * multiplier;
+        body.Rotation = rotation;
+        if (!state.HasAnchorCompensation
+            || body.TopLevel != state.WasTopLevel
+            || (!state.WasTopLevel
+                && (state.Parent == null
+                    || !GodotObject.IsInstanceValid(state.Parent)
+                    || !ReferenceEquals(body.GetParent(), state.Parent))))
+        {
+            return;
+        }
+
+        Transform2D transform = body.Transform;
+        FinisherAnchorPoint position = FinisherSquashAnchorPolicy.ResolveCompensatedPosition(
+            new FinisherAnchorPoint(state.AnchorInParent.X, state.AnchorInParent.Y),
+            new FinisherAnchorPoint(state.AnchorInBody.X, state.AnchorInBody.Y),
+            new FinisherAnchorPoint(transform.X.X, transform.X.Y),
+            new FinisherAnchorPoint(transform.Y.X, transform.Y.Y));
+        Vector2 compensated = new(position.X, position.Y);
+        if (compensated.IsFinite())
+        {
+            body.Position = compensated;
+        }
     }
 
     private void ArmDeathKicks(IEnumerable<Creature> targets)
@@ -1233,87 +1525,6 @@ internal sealed class FinisherSession : IAsyncDisposable
         _ => _usesJumpDeathSquash ? JumpDeathSquash : DefaultDeathSquash
     };
 
-    private List<ProcessModeSnapshot> FreezeImpactVfx(IReadOnlyList<NCreature> targetNodes)
-    {
-        if (!GodotObject.IsInstanceValid(_room.CombatVfxContainer))
-        {
-            return [];
-        }
-
-        List<Rect2> targetRegions = targetNodes
-            .Where(GodotObject.IsInstanceValid)
-            .Select(target => target.Hitbox.GetGlobalRect().Grow(ImpactVfxTargetMargin))
-            .ToList();
-        if (targetRegions.Count == 0)
-        {
-            return [];
-        }
-
-        List<ProcessModeSnapshot> snapshots = [];
-        foreach (Node vfxRoot in _room.CombatVfxContainer.GetChildren())
-        {
-            if (_vfxBaselineChildIds.Contains(vfxRoot.GetInstanceId())
-                || !IsNodeActive(vfxRoot)
-                || !IsVfxNearTargets(vfxRoot, targetRegions))
-            {
-                continue;
-            }
-
-            CaptureProcessModes(vfxRoot, snapshots);
-        }
-
-        foreach (ProcessModeSnapshot snapshot in snapshots)
-        {
-            if (IsNodeActive(snapshot.Node))
-            {
-                snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
-            }
-        }
-
-        return snapshots;
-    }
-
-    private static bool IsVfxNearTargets(Node vfxRoot, IReadOnlyList<Rect2> targetRegions)
-    {
-        Vector2? position = vfxRoot switch
-        {
-            Control control => control.GetGlobalRect().GetCenter(),
-            Node2D node => node.GlobalPosition,
-            _ => null
-        };
-        return position.HasValue && targetRegions.Any(region => region.HasPoint(position.Value));
-    }
-
-    private static void CaptureProcessModes(Node node, ICollection<ProcessModeSnapshot> snapshots)
-    {
-        if (!IsNodeActive(node))
-        {
-            return;
-        }
-
-        snapshots.Add(new ProcessModeSnapshot(node, node.ProcessMode));
-        foreach (Node child in node.GetChildren())
-        {
-            CaptureProcessModes(child, snapshots);
-        }
-    }
-
-    private static void RestoreProcessModes(IEnumerable<ProcessModeSnapshot> snapshots)
-    {
-        foreach (ProcessModeSnapshot snapshot in snapshots)
-        {
-            if (IsNodeActive(snapshot.Node))
-            {
-                snapshot.Node.ProcessMode = snapshot.Mode;
-            }
-        }
-    }
-
-    private static bool IsNodeActive(Node node) =>
-        GodotObject.IsInstanceValid(node)
-        && node.IsInsideTree()
-        && !node.IsQueuedForDeletion();
-
     private static void ApplyEnemyFlash(
         IEnumerable<ImpactVisualSnapshot> snapshots,
         float amount)
@@ -1336,10 +1547,18 @@ internal sealed class FinisherSession : IAsyncDisposable
         Vector2 squashMultiplier = GetDeathSquashMultiplier();
         foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
         {
-            snapshot.Body.Scale = snapshot.Scale * squashMultiplier;
-            snapshot.Body.Rotation = Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer
+            float rotation = Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer
                 ? snapshot.Rotation
                 : snapshot.Rotation + Mathf.DegToRad(EnhancedEnemyTiltDegrees * snapshot.Direction * amount);
+            if (_deathSquashStates.TryGetValue(snapshot.Body, out DeathSquashVisualState? state))
+            {
+                ApplyDeathSquashTransform(state, squashMultiplier, rotation);
+            }
+            else
+            {
+                snapshot.Body.Scale = snapshot.Scale * squashMultiplier;
+                snapshot.Body.Rotation = rotation;
+            }
             snapshot.Body.SelfModulate = flash
                 ? snapshot.SelfModulate.Lerp(
                     new Color(1.8f, 1.8f, 1.8f, snapshot.SelfModulate.A),
@@ -1430,11 +1649,16 @@ internal sealed class FinisherSession : IAsyncDisposable
         Vector2 squashMultiplier = GetDeathSquashMultiplier();
         foreach (ImpactVisualSnapshot snapshot in snapshots.Where(snapshot => GodotObject.IsInstanceValid(snapshot.Body)))
         {
-            snapshot.Body.Position = snapshot.Position;
-            snapshot.Body.Scale = _deathSquashOriginalScales.ContainsKey(snapshot.Body)
-                ? snapshot.Scale * squashMultiplier
-                : snapshot.Scale;
-            snapshot.Body.Rotation = snapshot.Rotation;
+            if (_deathSquashStates.TryGetValue(snapshot.Body, out DeathSquashVisualState? state))
+            {
+                ApplyDeathSquashTransform(state, squashMultiplier, snapshot.Rotation);
+            }
+            else
+            {
+                snapshot.Body.Position = snapshot.Position;
+                snapshot.Body.Scale = snapshot.Scale;
+                snapshot.Body.Rotation = snapshot.Rotation;
+            }
             snapshot.Body.SelfModulate = snapshot.SelfModulate;
         }
     }
@@ -1454,7 +1678,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         Vector2 cameraFrom = _camera.CurrentPosition;
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
-        float actorReturnSeconds = Scenario == FinisherScenarioKind.YamotoKokiIaiSlash ? 0.25f : ReturnSeconds;
+        float actorReturnSeconds = _actionAdapter.ReturnSeconds;
         float totalReturnSeconds = Math.Max(ReturnSeconds, actorReturnSeconds);
         float elapsed = 0f;
         while (elapsed < totalReturnSeconds)
@@ -1549,20 +1773,6 @@ internal sealed class FinisherSession : IAsyncDisposable
         }
     }
 
-    private static Vector2 ResolveApproachPosition(NCreature owner, NCreature target)
-    {
-        float direction = Mathf.Sign(target.Position.X - owner.Position.X);
-        if (Mathf.IsZeroApprox(direction))
-        {
-            direction = 1f;
-        }
-
-        float targetHalfWidth = target.Visuals.Bounds.Size.X * Mathf.Abs(target.Visuals.Scale.X) * 0.5f;
-        return new Vector2(
-            target.Position.X - direction * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap),
-            owner.Position.Y);
-    }
-
     private static float ResolveImpactDirection(NCreature owner, NCreature target)
     {
         float direction = Mathf.Sign(target.GlobalPosition.X - owner.GlobalPosition.X);
@@ -1584,6 +1794,7 @@ internal sealed class FinisherSession : IAsyncDisposable
         Vector2 Scale,
         float Rotation,
         Color SelfModulate,
+        Control Bounds,
         float Direction);
     private readonly record struct ReverseVictimVisualSnapshot(
         Node2D Anchor,
@@ -1598,6 +1809,16 @@ internal sealed class FinisherSession : IAsyncDisposable
         public bool Triggered { get; set; }
         public float JoinedAtReturnProgress { get; set; }
     }
+
+    private sealed record DeathSquashVisualState(
+        Node2D Body,
+        Vector2 OriginalPosition,
+        Vector2 OriginalScale,
+        CanvasItem? Parent,
+        Vector2 AnchorInBody,
+        Vector2 AnchorInParent,
+        bool WasTopLevel,
+        bool HasAnchorCompensation);
 
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
 }

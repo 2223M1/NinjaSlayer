@@ -87,11 +87,11 @@ internal static class NinjaSlayerDeathClassifier
         }
 
         var previousCaptures = new Dictionary<Creature, IncomingDamageCapture?>();
+        IReadOnlySet<ulong> baseline = FinisherAttackVfxBaselineContext.GetBaseline(dealer)
+            ?? FinisherImpactVfxFreezeLease.CaptureBaseline(room);
         var capture = new IncomingDamageCapture(
             dealer,
-            room.CombatVfxContainer.GetChildren()
-                .Select(child => child.GetInstanceId())
-                .ToHashSet(),
+            baseline,
             ninjaSlayerTargets,
             previousCaptures);
         foreach (Creature target in ninjaSlayerTargets)
@@ -106,7 +106,6 @@ internal static class NinjaSlayerDeathClassifier
     public static bool TryStartReverseFinisher(Creature target, decimal amount)
     {
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || FinisherSessionRegistry.HasRegisteredSession()
             || target.Player?.Character is not INinjaSlayerCharacter
             || target.CombatState is not { } combatState
             || target.CurrentHp <= 0
@@ -118,6 +117,11 @@ internal static class NinjaSlayerDeathClassifier
             || !GameCompatibility.Finisher.CanProtectLethalDamage(out _)
             || !Hook.ShouldDie(target.Player.RunState, combatState, target, out _)
             || NCombatRoom.Instance is not { } room)
+        {
+            return false;
+        }
+
+        if (FinisherSessionRegistry.HasRegisteredSessionForCombat(combatState, room))
         {
             return false;
         }
@@ -150,6 +154,7 @@ internal static class NinjaSlayerDeathClassifier
                     focusNode,
                     victims,
                     camera!,
+                    FinisherActionAdapters.Stationary,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: 1,

@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -46,17 +47,14 @@ public static class FastAttackAnimation
     }
 
     internal static float GetOutwardLungeOffset(float progress)
-    {
-        float p = Mathf.Clamp(progress, 0f, 1f);
-        float smoothStep = p * p * (3f - 2f * p);
-        return NinjaSlayerCombatVisuals.AttackLungeDistance * smoothStep;
-    }
+        => NinjaSlayerCombatVisuals.AttackLungeDistance
+            * FinisherActionTrajectory.FastProgress(progress);
 
     public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
-        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, waitTime, out Task action))
         {
-            await Cmd.Wait(waitTime);
+            await action;
             return;
         }
 

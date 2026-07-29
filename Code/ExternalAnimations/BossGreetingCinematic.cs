@@ -284,11 +284,11 @@ public static class BossGreetingCinematic
 
         if (targetCameraPosition is { } cameraPosition)
         {
-            await context.TweenCameraTo(cameraPosition, targetZoom, BossCameraMoveSeconds);
+            await context.TweenCameraToClamped(cameraPosition, targetZoom, BossCameraMoveSeconds);
         }
         else
         {
-            await context.TweenCameraTo(bossFocus, targetZoom, BossCameraMoveSeconds);
+            await context.TweenCameraToClamped(bossFocus, targetZoom, BossCameraMoveSeconds);
         }
 
         if (bubble != null)
@@ -695,15 +695,6 @@ public static class BossGreetingCinematic
             _camera.FrameOnDelayed(target, scale, elapsed, delay);
         }
 
-        public async Task TweenCameraTo(CanvasItem target, float targetScale, float duration)
-        {
-            Vector2 startPosition = _camera.CurrentPosition;
-            float startScale = _camera.CurrentScale;
-            Vector2 localTarget = _camera.GetLocalCenter(target);
-            Vector2 targetPosition = _camera.GetCameraPosition(localTarget, targetScale, ViewportSize * 0.5f);
-            await TweenCamera(startPosition, startScale, targetPosition, targetScale, duration);
-        }
-
         public async Task TweenCameraToClamped(
             CanvasItem target,
             float targetScale,
@@ -724,8 +715,14 @@ public static class BossGreetingCinematic
             }
         }
 
-        public Task TweenCameraTo(Vector2 targetPosition, float targetScale, float duration) =>
-            TweenCamera(_camera.CurrentPosition, _camera.CurrentScale, targetPosition, targetScale, duration);
+        public Task TweenCameraToClamped(Vector2 targetPosition, float targetScale, float duration) =>
+            TweenCamera(
+                _camera.CurrentPosition,
+                _camera.CurrentScale,
+                targetPosition,
+                targetScale,
+                duration,
+                clampToScene: true);
 
         public bool TryFrameBossAndBubble(
             Control bossBounds,
@@ -861,7 +858,8 @@ public static class BossGreetingCinematic
             Vector2 targetPosition,
             float targetScale,
             float duration,
-            Func<float, float>? easing = null)
+            Func<float, float>? easing = null,
+            bool clampToScene = false)
         {
             float elapsed = 0f;
             while (elapsed < duration)
@@ -869,9 +867,11 @@ public static class BossGreetingCinematic
                 elapsed += await NextFrame();
                 float normalized = Mathf.Clamp(elapsed / duration, 0f, 1f);
                 float progress = easing?.Invoke(normalized) ?? EaseOut(normalized);
+                float scale = Mathf.Lerp(startScale, targetScale, progress);
+                Vector2 position = startPosition.Lerp(targetPosition, progress);
                 _camera.SetTransform(
-                    startPosition.Lerp(targetPosition, progress),
-                    Mathf.Lerp(startScale, targetScale, progress));
+                    clampToScene ? _camera.ClampPosition(position, scale) : position,
+                    scale);
             }
         }
 

@@ -8,6 +8,11 @@ using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
+internal readonly record struct CombatSceneBaseline(
+    Transform2D SceneToGlobal,
+    Vector2 Position,
+    Vector2 Scale);
+
 /// <summary>Owns the combat scene transform while a short cinematic is active.</summary>
 public sealed class CombatCinematicCameraLease : IDisposable
 {
@@ -15,6 +20,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
 
     private readonly NCombatRoom _room;
     private readonly Control _sceneContainer;
+    private readonly Transform2D _baselineSceneToGlobal;
     private readonly List<CameraSample> _followSamples = [];
     private bool _disposed;
     private bool _screenShakeTargetSuspended;
@@ -35,9 +41,11 @@ public sealed class CombatCinematicCameraLease : IDisposable
         OwnerName = ownerName;
         BaselinePosition = _sceneContainer.Position;
         BaselineScale = _sceneContainer.Scale;
+        _baselineSceneToGlobal = _sceneContainer.GetGlobalTransform();
         _cameraPosition = BaselinePosition;
         _cameraScale = BaselineScale.X;
         ViewportSize = room.GetViewportRect().Size;
+        _room.TreeExiting += OnRoomTreeExiting;
 
         NGame? game = NGame.Instance;
         if (game != null && ReferenceEquals(game.ScreenshakeTarget, _sceneContainer))
@@ -57,12 +65,51 @@ public sealed class CombatCinematicCameraLease : IDisposable
     public Vector2 CurrentPosition => _cameraPosition;
     internal static bool IsControllingCamera => _active is { _disposed: false };
 
+    internal static bool TryResolveBaseline(
+        NCombatRoom room,
+        out CombatSceneBaseline baseline)
+    {
+        CombatCinematicCameraLease? active = _active;
+        if (active != null
+            && active.IsCurrentRoomLease()
+            && ReferenceEquals(active._room, room))
+        {
+            baseline = new CombatSceneBaseline(
+                active._baselineSceneToGlobal,
+                active.BaselinePosition,
+                active.BaselineScale);
+            return true;
+        }
+
+        if (!GodotObject.IsInstanceValid(room)
+            || !GodotObject.IsInstanceValid(room.SceneContainer)
+            || !room.IsInsideTree())
+        {
+            baseline = default;
+            return false;
+        }
+
+        Control scene = room.SceneContainer;
+        baseline = new CombatSceneBaseline(
+            scene.GetGlobalTransform(),
+            scene.Position,
+            scene.Scale);
+        return true;
+    }
+
     public static bool TryAcquire(NCombatRoom room, string ownerName, out CombatCinematicCameraLease? lease)
     {
         if (_active != null && !_active._disposed)
         {
-            lease = null;
-            return false;
+            if (_active.IsCurrentRoomLease())
+            {
+                lease = null;
+                return false;
+            }
+
+            Entry.Logger.Warn(
+                $"Released stale {_active.OwnerName} camera lease before {ownerName} acquired the current combat room.");
+            _active.Dispose();
         }
 
         lease = new CombatCinematicCameraLease(room, ownerName);
@@ -202,6 +249,18 @@ public sealed class CombatCinematicCameraLease : IDisposable
                 : _sceneContainer.Size.Y * 0.5f);
     }
 
+    public Vector2 ClampPosition(Vector2 position, float scale)
+    {
+        if (!float.IsFinite(scale) || scale <= 0f)
+        {
+            return position;
+        }
+
+        Vector2 screenCenter = ViewportSize * 0.5f;
+        Vector2 center = GetCameraCenter(position, scale, screenCenter);
+        return GetCameraPosition(ClampTarget(center, scale), scale, screenCenter);
+    }
+
     public void FrameOnLocalPoint(Vector2 localTarget, float scale)
     {
         SetTransform(GetCameraPosition(localTarget, scale, ViewportSize * 0.5f), scale);
@@ -257,6 +316,11 @@ public sealed class CombatCinematicCameraLease : IDisposable
         }
 
         _disposed = true;
+        if (GodotObject.IsInstanceValid(_room))
+        {
+            _room.TreeExiting -= OnRoomTreeExiting;
+        }
+
         ResetToBaseline();
         if (ReferenceEquals(_active, this))
         {
@@ -270,6 +334,20 @@ public sealed class CombatCinematicCameraLease : IDisposable
         }
 
         RestoreScreenShakeTarget();
+    }
+
+    private bool IsCurrentRoomLease() =>
+        !_disposed
+        && GodotObject.IsInstanceValid(_room)
+        && _room.IsInsideTree()
+        && ReferenceEquals(NCombatRoom.Instance, _room);
+
+    private void OnRoomTreeExiting()
+    {
+        // The room is leaving, so its scene container must not be restored as the
+        // global screen-shake target while the next room is being created.
+        _screenShakeTargetSuspended = false;
+        Dispose();
     }
 
     private bool BeginResponsiveLayoutAdjustment(NCombatRoom room)

@@ -4,12 +4,13 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Rooms;
-using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -53,10 +54,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             _combatsLeft = value;
             DynamicVars[CombatsKey].BaseValue = _combatsLeft;
             InvokeDisplayAmountChanged();
-            if (IsUsedUp)
-            {
-                Status = RelicStatus.Disabled;
-            }
+            Status = IsUsedUp ? RelicStatus.Disabled : RelicStatus.Normal;
         }
     }
 
@@ -84,48 +82,59 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
 
     public override async Task BeforeCombatStart()
     {
-        if (IsUsedUp)
+        if (IsUsedUp || !YamotoKokiPartyState.IsController(this))
         {
             return;
         }
 
         Flash();
-        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
+        Creature? yamotoKoki = YamotoKokiPartyState.FindLivingCompanion(Owner.RunState);
         bool created = yamotoKoki == null;
         if (created)
         {
             yamotoKoki = await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
-            await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonMissileMoveId);
-            if (!HasPlayedEntrance)
-            {
-                HasPlayedEntrance = true;
-                await YamotoKokiCombatAnimations.PlayEntrance(yamotoKoki);
-            }
         }
 
-        CombatsLeft--;
+        YamotoKokiIntentLifecycle.BeginCombat(yamotoKoki!);
+        await AssignIntent(yamotoKoki!, YamotoKokiMonster.SummonMissileMoveId);
+        if (created && !YamotoKokiPartyState.HasPlayedEntrance(Owner.RunState))
+        {
+            HasPlayedEntrance = true;
+            _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayEntrance(yamotoKoki!));
+        }
     }
 
-    public override async Task AfterCombatEnd(CombatRoom room)
+    public override Task AfterCombatEnd(CombatRoom room)
     {
-        if (!IsUsedUp || HasPlayedFarewell)
+        if (IsUsedUp || IsMelted)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
+        CombatsLeft = YamotoKokiRelicLifetimePolicy.CompleteCombat(CombatsLeft);
+        if (!YamotoKokiRelicLifetimePolicy.ShouldPlayFarewell(
+                YamotoKokiPartyState.GetActiveRelicCount(Owner.RunState),
+                YamotoKokiPartyState.HasPlayedFarewell(Owner.RunState)))
+        {
+            return Task.CompletedTask;
+        }
+
+        Creature? yamotoKoki = YamotoKokiPartyState.FindLivingCompanion(Owner.RunState);
         if (yamotoKoki == null || yamotoKoki.IsDead)
         {
-            return;
+            return Task.CompletedTask;
         }
 
+        YamotoKokiIntentLifecycle.Invalidate(yamotoKoki);
         HasPlayedFarewell = true;
-        await YamotoKokiCombatAnimations.PlayFarewell(yamotoKoki);
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiByeEvent);
+        _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayFarewell(yamotoKoki));
+        return Task.CompletedTask;
     }
 
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
-        if (player != Owner)
+        if (player != Owner || !YamotoKokiPartyState.IsController(this))
         {
             return;
         }
@@ -153,7 +162,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
         }
 
-        Creature? yamotoKoki = FindLivingPartyYamotoKoki(Owner.RunState);
+        Creature? yamotoKoki = YamotoKokiPartyState.FindLivingCompanion(Owner.RunState);
         YamotoKokiMonster? monster = yamotoKoki?.Monster as YamotoKokiMonster;
         MoveState? scheduledMove = monster?.NextMove;
 
@@ -202,6 +211,12 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         }
 
         monster.MoveStateMachine?.OnMovePerformed(scheduledMove);
+        if (CombatManager.Instance.IsOverOrEnding)
+        {
+            YamotoKokiIntentLifecycle.Invalidate(yamotoKoki);
+            return;
+        }
+
         await AssignRandomIntent(yamotoKoki);
     }
 
@@ -282,10 +297,32 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             monster.SetUpForCombat();
         }
 
-        MoveState next = YamotoKokiMonster.PickRandomMove(
-            monster.MoveStateMachine!,
-            yamotoKoki.PetOwner!.RunState.Rng.MonsterAi);
-        await AssignIntent(yamotoKoki, next);
+        YamotoKokiIntentGeneration generation = YamotoKokiIntentLifecycle.Capture(yamotoKoki);
+        if (!CanChooseNextIntent(generation))
+        {
+            return;
+        }
+
+        ICombatState combatState = yamotoKoki.CombatState!;
+        IReadOnlyList<Creature> enemies = combatState.HittableEnemies
+            .Where(enemy => enemy.IsAlive && enemy.IsHittable)
+            .ToList();
+        int nextTurn = (yamotoKoki.PetOwner?.PlayerCombatState?.TurnNumber ?? 0) + 1;
+        IReadOnlyList<Creature> nextTurnMissiles = yamotoKoki.PetOwner?.PlayerCombatState?.Pets
+            .Where(pet => pet.Monster is YamotoKokiOrigamiMissile missile
+                && missile.CanExplodeOnTurn(nextTurn))
+            .ToList() ?? [];
+        bool forceIai = FinisherForecast.EvaluateYamotoKokiNextTurn(
+                yamotoKoki,
+                enemies,
+                nextTurnMissiles)
+            == FinisherForecastOutcome.Guaranteed;
+        MoveState next = forceIai
+            ? (MoveState)monster.MoveStateMachine!.States[YamotoKokiMonster.IaiSlashMoveId]
+            : YamotoKokiMonster.PickRandomMove(
+                monster.MoveStateMachine!,
+                yamotoKoki.PetOwner!.RunState.Rng.MonsterAi);
+        await AssignIntent(yamotoKoki, next, generation);
     }
 
     private static async Task AssignIntent(Creature yamotoKoki, string moveId)
@@ -301,12 +338,20 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         }
 
         MoveState next = (MoveState)monster.MoveStateMachine!.States[moveId];
-        await AssignIntent(yamotoKoki, next);
+        await AssignIntent(yamotoKoki, next, YamotoKokiIntentLifecycle.Capture(yamotoKoki));
     }
 
-    private static async Task AssignIntent(Creature yamotoKoki, MoveState next)
+    private static async Task AssignIntent(
+        Creature yamotoKoki,
+        MoveState next,
+        YamotoKokiIntentGeneration generation)
     {
         if (yamotoKoki.Monster is not YamotoKokiMonster monster)
+        {
+            return;
+        }
+
+        if (!CanSetMove(generation))
         {
             return;
         }
@@ -315,24 +360,33 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
 
         NCreature? node = yamotoKoki.GetCreatureNode();
         ICombatState? combatState = yamotoKoki.CombatState;
-        if (node != null && combatState != null && combatState.IsLiveCombat())
+        if (node != null
+            && combatState != null
+            && combatState.IsLiveCombat()
+            && combatState.HittableEnemies.Any(enemy => enemy.IsAlive && enemy.IsHittable)
+            && YamotoKokiIntentLifecycle.PrepareContainerForWrite(generation))
         {
             await node.UpdateIntent(combatState.HittableEnemies);
-        }
-    }
-
-    private static Creature? FindLivingPartyYamotoKoki(IRunState runState)
-    {
-        foreach (Player player in runState.Players)
-        {
-            Creature? yamotoKoki = player.PlayerCombatState?.Pets.FirstOrDefault(
-                pet => pet.Monster is YamotoKokiMonster && pet.IsAlive);
-            if (yamotoKoki != null)
+            if (!YamotoKokiIntentLifecycle.IsCurrent(generation))
             {
-                return yamotoKoki;
+                YamotoKokiIntentLifecycle.RehideIfInactive(generation);
             }
         }
-
-        return null;
     }
+
+    private static bool CanSetMove(YamotoKokiIntentGeneration generation)
+    {
+        Creature yamotoKoki = generation.Creature;
+        return YamotoKokiIntentLifecycle.IsCurrent(generation)
+            && !yamotoKoki.IsDead
+            && yamotoKoki.CombatState != null
+            && !CombatManager.Instance.IsOverOrEnding;
+    }
+
+    private static bool CanChooseNextIntent(YamotoKokiIntentGeneration generation) =>
+        CanSetMove(generation)
+        && generation.Creature.CombatState is { } combatState
+        && combatState.IsLiveCombat()
+        && combatState.HittableEnemies.Any(enemy => enemy.IsAlive && enemy.IsHittable);
+
 }

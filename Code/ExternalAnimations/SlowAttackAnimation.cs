@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -15,9 +16,9 @@ public static class SlowAttackAnimation
 
     public static async Task Play(Creature creature)
     {
-        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, ActionDuration, out Task action))
         {
-            await Cmd.Wait(ActionDuration);
+            await action;
             return;
         }
 
@@ -35,7 +36,7 @@ public static class SlowAttackAnimation
                 float xOffset;
                 if (t < 0.5f)
                 {
-                    var easedT = Mathf.Pow(t * 2f, 10f);
+                    float easedT = FinisherActionTrajectory.SlowProgress(t * 2f);
                     xOffset = Mathf.Lerp(0f, LungeDistance, easedT);
                 }
                 else

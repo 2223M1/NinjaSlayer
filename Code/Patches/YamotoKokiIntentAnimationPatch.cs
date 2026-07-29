@@ -1,7 +1,9 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Monsters;
 using STS2RitsuLib.Patching.Models;
 
@@ -73,4 +75,56 @@ public sealed class YamotoKokiIntentUpdatePatch : IPatchMethod
         IEnumerable<Creature> targets,
         Creature owner) =>
         YamotoKokiIntentVisuals.Update(__instance, intent, targets, owner);
+}
+
+public sealed class YamotoKokiIntentGenerationPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_yamoto_koki_intent_generation";
+    public static string Description => "Block stale Yamoto Koki intent writes after combat resolution.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NCreature), nameof(NCreature.UpdateIntent), [typeof(IEnumerable<Creature>)])
+    ];
+
+    public static bool Prefix(NCreature __instance, ref Task __result)
+    {
+        if (__instance.Entity.Monster is not YamotoKokiMonster
+            || YamotoKokiIntentLifecycle.IsActive(__instance.Entity))
+        {
+            return true;
+        }
+
+        YamotoKokiIntentLifecycle.Invalidate(__instance.Entity);
+        __result = Task.CompletedTask;
+        return false;
+    }
+}
+
+public sealed class YamotoKokiLastEnemyDeathIntentPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_yamoto_koki_last_enemy_intent_cleanup";
+    public static string Description => "Hide Yamoto Koki's intent when the final enemy starts dying.";
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NCreature), nameof(NCreature.StartDeathAnim), [typeof(bool)])
+    ];
+
+    public static void Prefix(NCreature __instance, bool shouldRemove)
+    {
+        Creature dying = __instance.Entity;
+        ICombatState? combatState = dying.CombatState;
+        if (!shouldRemove
+            || dying.Side != CombatSide.Enemy
+            || combatState == null
+            || combatState.Enemies.Any(enemy => enemy != dying && enemy.IsAlive))
+        {
+            return;
+        }
+
+        YamotoKokiIntentLifecycle.InvalidateCombat(combatState);
+    }
 }

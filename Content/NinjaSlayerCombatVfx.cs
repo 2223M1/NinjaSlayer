@@ -58,14 +58,19 @@ public static class NinjaSlayerCombatVfx
             return;
         }
 
+        bool playedImpact = false;
         foreach (Creature target in targets)
         {
             NYamotoKokiIaiImpactVfx? impact = NYamotoKokiIaiImpactVfx.Create(target);
             if (impact != null)
             {
                 room.CombatVfxContainer.AddChildSafely(impact);
+                playedImpact = true;
             }
+        }
 
+        if (playedImpact)
+        {
             NDebugAudioManager.Instance?.Play(TmpSfx.bluntAttack);
         }
     }
@@ -74,6 +79,7 @@ public static class NinjaSlayerCombatVfx
     {
         NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiIaiPetalsVfx.ScenePath);
         NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiIaiImpactVfx.ScenePath);
+        NinjaSlayerVfxUtil.PreloadModVfxScene(NYamotoKokiOrigamiMissileHitSparkVfx.ResourceScenePath);
     }
 
     public static void PlayBurnStatusFeedback(IEnumerable<Creature> targets)
