@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class RestGuard : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(RestGuard), 0, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(RestGuard), 0, CardType.Skill, CardRarity.Common, TargetType.Self, true);
 
 
 

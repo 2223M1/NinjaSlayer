@@ -13,9 +13,6 @@ public sealed class ElectricBoobyTrapRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
 
-    // ponytail: reuse the existing terminal relic art until Nancy gets dedicated icons.
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For<PortableIrcTerminalRelic>();
-
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (Owner is not { } owner || player != owner || owner.PlayerCombatState?.TurnNumber != 1)

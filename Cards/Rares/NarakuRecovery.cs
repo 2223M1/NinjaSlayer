@@ -13,12 +13,11 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NarakuRecovery : NarakuThemedCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NarakuRecovery), 2, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NarakuRecovery), 2, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
 
 
     public override bool GainsBlock => true;
 
-    // ponytail: reuse naraku art until this card gets dedicated art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

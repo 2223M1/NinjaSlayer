@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BeatPeopleChado : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BeatPeopleChado), 1, CardType.Power, CardRarity.Rare, TargetType.Self, true, "ChadoCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BeatPeopleChado), 1, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
 
 

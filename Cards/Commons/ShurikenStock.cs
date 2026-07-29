@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenStock : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenStock), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenStock), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true);
 
 
 

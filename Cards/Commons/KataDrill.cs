@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class KataDrill : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KataDrill), 1, CardType.Skill, CardRarity.Common, TargetType.AnyEnemy, true, "KarateStraight");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KataDrill), 1, CardType.Skill, CardRarity.Common, TargetType.AnyEnemy, true);
 
 
-    // ponytail: reuse karate art until this card gets dedicated art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

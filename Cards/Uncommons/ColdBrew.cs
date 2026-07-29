@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ColdBrew : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ColdBrew), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "SmokeRead");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ColdBrew), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
-    // ponytail: reuse tea art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(3),

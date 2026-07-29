@@ -15,7 +15,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ThrowKunai : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ThrowKunai), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "ShurikenThrow");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ThrowKunai), 1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
 
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [

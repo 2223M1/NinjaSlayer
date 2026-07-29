@@ -15,10 +15,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SpitWater : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SpitWater), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "KarateFinish");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SpitWater), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
-    // ponytail: reuse back-bridge art until this card gets dedicated art.
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [
         CardKeyword.Exhaust

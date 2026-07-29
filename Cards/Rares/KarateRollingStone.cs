@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class KarateRollingStone : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KarateRollingStone), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "KataDrill");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(KarateRollingStone), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
 
-    // ponytail: reuse karate art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new KarateVar(4)

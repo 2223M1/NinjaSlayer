@@ -14,10 +14,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SweepKick : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SweepKick), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true, "KarateFinish");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SweepKick), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true);
 
 
-    // ponytail: reuse karate art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(7, ValueProp.Move),

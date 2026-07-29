@@ -15,7 +15,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class PerfectChop : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PerfectChop), 2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true, "Chop");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(PerfectChop), 2, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy, true);
 
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [

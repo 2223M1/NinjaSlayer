@@ -14,10 +14,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenCleave : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenCleave), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true, "ShurikenBarrage");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenCleave), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AllEnemies, true);
 
 
-    // ponytail: reuse barrage art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(10),

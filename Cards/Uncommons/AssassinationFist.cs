@@ -14,10 +14,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class AssassinationFist : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(AssassinationFist), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "ComboFist");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(AssassinationFist), 1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
 
 
-    // ponytail: reuse combo fist art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(5),

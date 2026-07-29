@@ -14,13 +14,12 @@ namespace NinjaSlayer.Cards;
 
 public sealed class MurderFist : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(MurderFist), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true, "ComboFist");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(MurderFist), 2, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy, true);
 
 
     protected override bool ShouldGlowGoldInternal =>
         CombatState?.HittableEnemies.Any(IsAtOrBelowHalfHp) ?? false;
 
-    // ponytail: reuse combo fist art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(14, ValueProp.Move)

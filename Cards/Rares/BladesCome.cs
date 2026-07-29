@@ -11,10 +11,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class BladesCome : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BladesCome), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "ShurikenThrow");
-
-
-    // ponytail: reuse shuriken throw art until this card gets dedicated art.
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(BladesCome), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromCard<ShurikenCard>()

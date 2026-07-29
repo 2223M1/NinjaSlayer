@@ -11,12 +11,11 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShurikenGuard : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenGuard), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShurikenGuard), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
 
     public override bool GainsBlock => true;
 
-    // ponytail: reuse shuriken art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new BlockVar(9, ValueProp.Move),

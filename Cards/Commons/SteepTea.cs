@@ -11,10 +11,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SteepTea : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SteepTea), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BrewTea");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SteepTea), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true);
 
 
-    // ponytail: reuse tea art until this card gets dedicated art.
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromCard<ChadoCard>()

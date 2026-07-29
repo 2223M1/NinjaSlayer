@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DrinkTea : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DrinkTea), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "ChadoCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DrinkTea), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
 
 

@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class DiscardDefense : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DiscardDefense), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(DiscardDefense), 1, CardType.Skill, CardRarity.Common, TargetType.Self, true);
 
     public override bool GainsBlock => true;
 

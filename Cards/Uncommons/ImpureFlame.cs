@@ -12,10 +12,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ImpureFlame : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ImpureFlame), 2, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BurningCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ImpureFlame), 2, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
 
-    // ponytail: reuse burning art until this card gets dedicated card art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1)

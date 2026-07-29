@@ -13,10 +13,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class SenchaStorm : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SenchaStorm), 2, CardType.Attack, CardRarity.Rare, TargetType.AllEnemies, true, "Meditation");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(SenchaStorm), 2, CardType.Attack, CardRarity.Rare, TargetType.AllEnemies, true);
 
 
-    // ponytail: reuse tea art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CalculationBaseVar(8),

@@ -14,10 +14,7 @@ namespace NinjaSlayer.Cards;
 [RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(CollapseFist), 2, CardType.Attack, CardRarity.Ancient, TargetType.AnyEnemy, true, "KarateStraight");
-
-
-    // ponytail: reuse straight-punch art until this card gets dedicated art.
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(CollapseFist), 2, CardType.Attack, CardRarity.Ancient, TargetType.AnyEnemy, true);
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(20, ValueProp.Move),

@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class HellTornado : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(HellTornado), 3, CardType.Skill, CardRarity.Rare, TargetType.Self, true, "DragonTornado");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(HellTornado), 3, CardType.Skill, CardRarity.Rare, TargetType.Self, true);
 
 
 

@@ -11,10 +11,9 @@ namespace NinjaSlayer.Cards;
 
 public sealed class TeaSamadhi : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaSamadhi), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true, "GreatUke");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(TeaSamadhi), 2, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
 
-    // ponytail: reuse tea art until this card gets dedicated art.
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new CardsVar(1)

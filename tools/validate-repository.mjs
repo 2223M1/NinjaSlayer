@@ -26,6 +26,17 @@ function readJson(path) {
   }
 }
 
+function readPngSize(path) {
+  if (!existsSync(path)) return null;
+  const png = readFileSync(path);
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (png.length < 24 || !png.subarray(0, 8).equals(signature)) {
+    errors.push(`${relative(root, path)} is not a readable PNG`);
+    return null;
+  }
+  return [png.readUInt32BE(16), png.readUInt32BE(20)];
+}
+
 for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter((path) => path.endsWith('.json'))) {
   readJson(path);
 }
@@ -248,6 +259,10 @@ const concreteCardSources = filesUnder(join(root, 'Cards'))
   .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
   .filter(({ source }) => /public\s+sealed\s+class\s+\w+/.test(source));
 const cardSpecPattern = /private\s+static\s+readonly\s+NinjaSlayerCardSpec\s+CardSpec\s*=\s*new\s*\(\s*nameof\((\w+)\)/g;
+const cardPortraitSizeOverrides = new Map([
+  ['KarateStraight', [1438, 1093]],
+  ['ShurikenCard', [1439, 1093]],
+]);
 let cardSpecCount = 0;
 for (const { path, source } of concreteCardSources) {
   const className = /public\s+sealed\s+class\s+(\w+)/.exec(source)?.[1];
@@ -265,6 +280,23 @@ for (const { path, source } of concreteCardSources) {
   const constructorPattern = new RegExp(`public\\s+${className}\\(\\)\\s*:\\s*base\\(CardSpec\\)`);
   if (!constructorPattern.test(source)) {
     errors.push(`${relative(root, path)} constructor must delegate to base(CardSpec)`);
+  }
+  if (/\bAssetName\s*:/.test(source)) {
+    errors.push(`${relative(root, path)} must use its dedicated class-name portrait instead of AssetName`);
+  }
+
+  const portraitPath = join(root, 'NinjaSlayer', 'images', 'cards', `${className}.png`);
+  const portraitSize = readPngSize(portraitPath);
+  if (!portraitSize) {
+    if (!existsSync(portraitPath)) errors.push(`Missing dedicated card portrait: ${className}.png`);
+    continue;
+  }
+  const expectedSize = cardPortraitSizeOverrides.get(className)
+    ?? (/CardRarity\.Ancient/.test(source) ? [606, 852] : [1000, 760]);
+  if (portraitSize[0] !== expectedSize[0] || portraitSize[1] !== expectedSize[1]) {
+    errors.push(
+      `${className}.png must be ${expectedSize[0]}x${expectedSize[1]}, found ${portraitSize[0]}x${portraitSize[1]}`,
+    );
   }
 }
 if (cardSpecCount !== 93) {
@@ -322,8 +354,57 @@ const assetManifest = readFileSync(join(root, 'ASSET_MANIFEST.md'), 'utf8');
 if (!assetManifest.includes('NinjaSlayer_idle_0022.png') || assetManifest.includes('NinjaSlayer_idle_0030.png')) {
   errors.push('ASSET_MANIFEST.md does not describe the 22-frame idle animation');
 }
-for (const icon of ['OpeningPower.png', 'soar_power.png']) {
-  if (!assetManifest.includes(icon)) errors.push(`ASSET_MANIFEST.md is missing power icon ${icon}`);
+const powerClassNames = filesUnder(join(root, 'Powers'))
+  .filter((path) => path.endsWith('.cs'))
+  .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/public\s+sealed\s+class\s+(\w+Power)\b/g)])
+  .map((match) => match[1]);
+if (powerClassNames.length !== 41) {
+  errors.push(`Expected 41 concrete power classes, found ${powerClassNames.length}`);
+}
+for (const powerClassName of powerClassNames) {
+  const iconPath = join(root, 'NinjaSlayer', 'images', 'powers', `${powerClassName}.png`);
+  if (!existsSync(iconPath)) errors.push(`Missing dedicated power icon: ${powerClassName}.png`);
+}
+const riffleStrengthDownSource = readFileSync(join(root, 'Powers', 'RiffleStrengthDownPower.cs'), 'utf8');
+if (
+  !riffleStrengthDownSource.includes('IModPowerAssetOverrides')
+  || !riffleStrengthDownSource.includes('NinjaSlayerPowerAssets.For(GetType())')
+) {
+  errors.push('RiffleStrengthDownPower must expose its dedicated icon through RitsuLib asset overrides');
+}
+if (existsSync(join(root, 'NinjaSlayer', 'images', 'powers', 'soar_power.png'))) {
+  errors.push('Shared soar_power.png fallback should not remain after dedicated power art is complete');
+}
+if (!assetManifest.includes('All 41 concrete mod Power classes')) {
+  errors.push('ASSET_MANIFEST.md does not describe the dedicated power icon set');
+}
+
+const ancillaryArt = [
+  ['NinjaSlayer/images/ancients/NancyLeeMapIcon.png', 278, 278],
+  ['NinjaSlayer/images/ancients/NancyLeeMapIcon_outline.png', 278, 278],
+  ['NinjaSlayer/images/ancients/NancyLeeRunHistoryIcon.png', 128, 128],
+  ['NinjaSlayer/images/ancients/NancyLeeRunHistoryIcon_outline.png', 128, 128],
+  ['NinjaSlayer/images/potions/ZbrAmpoulePotion.png', 256, 256],
+  ['NinjaSlayer/images/potions/ZbrAmpoulePotion_outline.png', 256, 256],
+  ['NinjaSlayer/images/enchantments/BlackFlameEnchantment.png', 64, 64],
+];
+for (const [assetPath, expectedWidth, expectedHeight] of ancillaryArt) {
+  const path = join(root, ...assetPath.split('/'));
+  const size = readPngSize(path);
+  if (!size) {
+    if (!existsSync(path)) errors.push(`Missing dedicated ancillary art: ${assetPath}`);
+    continue;
+  }
+  if (size[0] !== expectedWidth || size[1] !== expectedHeight) {
+    errors.push(`${assetPath} must be ${expectedWidth}x${expectedHeight}, found ${size[0]}x${size[1]}`);
+  }
+}
+const nancyLeeSource = readFileSync(join(root, 'Ancients', 'NancyLee.cs'), 'utf8');
+if (/res:\/\/icon\.svg/.test(nancyLeeSource)) {
+  errors.push('NancyLee must not use the project icon.svg as an Ancient presentation asset');
+}
+if (!assetManifest.includes('BlackFlameEnchantment.png') || !assetManifest.includes('NancyLeeMapIcon.png')) {
+  errors.push('ASSET_MANIFEST.md does not describe the dedicated ancillary art set');
 }
 
 if (errors.length > 0) {

@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class ShieldFromNothing : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShieldFromNothing), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ShieldFromNothing), 1, CardType.Power, CardRarity.Uncommon, TargetType.Self, true);
 
 
 

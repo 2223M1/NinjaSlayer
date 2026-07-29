@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class NinjaSlayerFootwork : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaSlayerFootwork), 3, CardType.Power, CardRarity.Rare, TargetType.Self, true, "Footwork");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(NinjaSlayerFootwork), 3, CardType.Power, CardRarity.Rare, TargetType.Self, true);
 
 
 

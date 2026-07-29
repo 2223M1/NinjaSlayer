@@ -20,9 +20,6 @@ public sealed class HackerMotokoRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
 
-    // ponytail: reuse the existing terminal relic art until Nancy gets dedicated icons.
-    public override RelicAssetProfile AssetProfile => NinjaSlayerRelicAssets.For<PortableIrcTerminalRelic>();
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DynamicVar("DebuffBonus", 2)
     ];

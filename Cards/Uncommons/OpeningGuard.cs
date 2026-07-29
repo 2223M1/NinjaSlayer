@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards;
 
 public sealed class OpeningGuard : NinjaSlayerCardTemplate
 {
-    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OpeningGuard), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true, "BlockCard");
+    private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OpeningGuard), 1, CardType.Skill, CardRarity.Uncommon, TargetType.Self, true);
 
     public override bool GainsBlock => true;
 
