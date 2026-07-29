@@ -330,7 +330,7 @@ internal static class NinjaSlayerFinisherCinematic
                 spec,
                 command: null,
                 entryPoint: "explicit-sequence",
-                actionAdapter: FinisherActionAdapters.Combo,
+                actionAdapter: FinisherActionAdapters.Instant,
                 out FinisherSession? session))
         {
             await sequence();
@@ -393,7 +393,7 @@ internal static class NinjaSlayerFinisherCinematic
                 spec,
                 command: null,
                 entryPoint: entryPoint,
-                actionAdapter: FinisherActionAdapters.Fast,
+                actionAdapter: FinisherActionAdapters.Instant,
                 out FinisherSession? session))
         {
             await damageAction();

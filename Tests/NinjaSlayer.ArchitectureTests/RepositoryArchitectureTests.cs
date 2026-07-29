@@ -1656,6 +1656,8 @@ public sealed class RepositoryArchitectureTests
         string animationPatch = SourceText("Code/Patches/NinjaSlayerAnimationPatch.cs");
         string freezeLease = SourceText("Code/ExternalAnimations/FinisherImpactVfxFreezeLease.cs");
         string cinematic = SourceText("Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs");
+        string fastAttack = SourceText("Code/ExternalAnimations/FastAttackAnimation.cs");
+        string slowAttack = SourceText("Code/ExternalAnimations/SlowAttackAnimation.cs");
         string yamotoKoki = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
         string yamotoAnimations = SourceText("Code/ExternalAnimations/YamotoKokiCombatAnimations.cs");
 
@@ -1668,10 +1670,12 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("IFinisherActionAdapter ActionAdapter", request, StringComparison.Ordinal);
         Assert.Contains("FinisherActionAdapters.YamotoKokiIai", eligibility, StringComparison.Ordinal);
         Assert.Contains("FinisherActionAdapters.Stationary", classifier, StringComparison.Ordinal);
+        Assert.Contains("IFinisherActionAdapter Instant", adapters, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter Fast", adapters, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter Slow", adapters, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter Combo", adapters, StringComparison.Ordinal);
         Assert.Contains("record struct FinisherActionContext", adapters, StringComparison.Ordinal);
+        Assert.Contains("FinisherApproachMode.TeleportAtStart", adapters, StringComparison.Ordinal);
         Assert.Contains("FinisherApproachMode.ContinuousToImpact", adapters, StringComparison.Ordinal);
         Assert.Contains("FinisherApproachMode.TeleportAtPeak", adapters, StringComparison.Ordinal);
         Assert.Contains("FinisherApproachMode.PrepositionThenLunge", adapters, StringComparison.Ordinal);
@@ -1679,6 +1683,16 @@ public sealed class RepositoryArchitectureTests
         Assert.DoesNotContain("TravelThenSnap", approach, StringComparison.Ordinal);
         Assert.Contains("Dictionary<string, IFinisherActionAdapter> TriggerRegistry", adapters, StringComparison.Ordinal);
         Assert.Contains("internal static void Register", adapters, StringComparison.Ordinal);
+        Assert.Contains("Register(\"Attack\", Instant);", adapters, StringComparison.Ordinal);
+        Assert.Contains("Register(\"SlowAttack\", Instant);", adapters, StringComparison.Ordinal);
+        Assert.Contains("Register(\"XAttack\", Instant);", adapters, StringComparison.Ordinal);
+        Assert.Contains("Register(TornadoFistSpinAnimation.TriggerName, Instant);", adapters, StringComparison.Ordinal);
+        Assert.DoesNotContain("Register(\"Attack\", Fast);", adapters, StringComparison.Ordinal);
+        Assert.DoesNotContain("Register(\"SlowAttack\", Slow);", adapters, StringComparison.Ordinal);
+        Assert.DoesNotContain("Register(\"XAttack\", Combo);", adapters, StringComparison.Ordinal);
+        Assert.DoesNotContain("Register(TornadoFistSpinAnimation.TriggerName, Combo);", adapters, StringComparison.Ordinal);
+        Assert.Contains("if (jumpActive)", adapters, StringComparison.Ordinal);
+        Assert.Contains("ResolveWithoutCommand()", eligibility, StringComparison.Ordinal);
         Assert.Contains("bool RequiresPositioning", adapters, StringComparison.Ordinal);
         Assert.Contains("bool HasContinuousTravel", adapters, StringComparison.Ordinal);
         Assert.Contains("Vector2 squashMultiplier", adapters, StringComparison.Ordinal);
@@ -1687,6 +1701,15 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("_actionContext.TravelStartPosition.Lerp", session, StringComparison.Ordinal);
         Assert.Contains("_actionContext.TravelEndPosition", session, StringComparison.Ordinal);
         Assert.Contains("_actorNode.Position = _actionContext.ImpactPosition", session, StringComparison.Ordinal);
+        int instantTeleport = session.IndexOf(
+            "_actionAdapter.ApproachMode == FinisherApproachMode.TeleportAtStart",
+            StringComparison.Ordinal);
+        int cameraFraming = session.IndexOf(
+            "_cameraFrame = FinisherCameraFraming.SelectTargets",
+            StringComparison.Ordinal);
+        Assert.True(instantTeleport >= 0 && instantTeleport < cameraFraming);
+        Assert.Contains("_actionStarted = true", session, StringComparison.Ordinal);
+        Assert.Contains("_actionPeakReached = true", session, StringComparison.Ordinal);
         Assert.Contains("FinisherImpactPositionResolver.ResolveImpactX", adapters, StringComparison.Ordinal);
         Assert.Contains("FinisherSquashAnchorPolicy.Resolve", impactPosition, StringComparison.Ordinal);
         Assert.Contains("GetGlobalTransformWithCanvas", impactPosition, StringComparison.Ordinal);
@@ -1698,6 +1721,9 @@ public sealed class RepositoryArchitectureTests
         Assert.Contains("EnsureActionPeakCore", session, StringComparison.Ordinal);
         Assert.Contains("!commandState.ShouldPlayAnimation", cinematic, StringComparison.Ordinal);
         Assert.Contains("await session.EnsureActionPeak()", cinematic, StringComparison.Ordinal);
+        Assert.True(CountOccurrences(cinematic, "actionAdapter: FinisherActionAdapters.Instant") >= 2);
+        Assert.Contains("TryPlayOwnedAction(creature, waitTime", fastAttack, StringComparison.Ordinal);
+        Assert.Contains("TryPlayOwnedAction(creature, ActionDuration", slowAttack, StringComparison.Ordinal);
         Assert.Contains("UsesNinjaSlayerSignatureImpact", request, StringComparison.Ordinal);
         Assert.Contains(
             "Scenario == FinisherScenarioKind.NinjaSlayerAttack",

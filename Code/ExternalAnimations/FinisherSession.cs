@@ -196,6 +196,16 @@ internal sealed class FinisherSession : IAsyncDisposable
             {
                 _actorNode.Position = _actionContext.TravelStartPosition;
             }
+            else if (_actionAdapter.ApproachMode == FinisherApproachMode.TeleportAtStart)
+            {
+                _actorNode.Position = _actionContext.ImpactPosition;
+                lock (_actionSync)
+                {
+                    _actionStarted = true;
+                    _actionPeakReached = true;
+                    _actionPeakTask = Task.CompletedTask;
+                }
+            }
         }
         float maximumScale = _camera.BaselineScale.X
             * FinalHitZoomMultiplier
