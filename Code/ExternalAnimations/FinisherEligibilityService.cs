@@ -96,9 +96,7 @@ internal static class FinisherEligibilityService
                 command,
                 out GameCompatibility.AttackCommandState commandState)
                 ? FinisherActionAdapters.Resolve(commandState, jumpActive)
-                : jumpActive
-                    ? FinisherActionAdapters.Fast
-                    : FinisherActionAdapters.Stationary;
+                : FinisherActionAdapters.ResolveWithoutCommand();
 
         if (!FinisherSessionRegistry.TryRegisterSession(
                 new FinisherSessionRequest(

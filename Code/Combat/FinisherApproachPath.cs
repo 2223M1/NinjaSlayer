@@ -3,6 +3,7 @@ namespace NinjaSlayer.Code.Combat;
 internal enum FinisherApproachMode
 {
     Stationary,
+    TeleportAtStart,
     TeleportAtPeak,
     ContinuousToImpact,
     PrepositionThenLunge,
@@ -65,6 +66,15 @@ internal readonly record struct FinisherApproachPath(
         float travel = float.IsFinite(authoredTravel)
             ? MathF.Max(0f, authoredTravel)
             : 0f;
+
+        if (mode == FinisherApproachMode.TeleportAtStart)
+        {
+            return new FinisherApproachPath(
+                actorX,
+                resolvedImpactX,
+                resolvedImpactX,
+                resolvedImpactX);
+        }
 
         if (mode == FinisherApproachMode.PrepositionThenLunge)
         {

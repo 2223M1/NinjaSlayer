@@ -76,6 +76,15 @@ internal static class FinisherActionAdapters
         static _ => 1f,
         PeakTriggerName: null);
 
+    public static IFinisherActionAdapter Instant { get; } = new FinisherActionAdapter(
+        "instant",
+        0f,
+        0f,
+        FinisherTimeline.ReturnSeconds,
+        FinisherApproachMode.TeleportAtStart,
+        static _ => 1f,
+        PeakTriggerName: null);
+
     public static IFinisherActionAdapter TeleportAtPeak { get; } = new FinisherActionAdapter(
         "teleport-at-peak",
         0f,
@@ -123,10 +132,10 @@ internal static class FinisherActionAdapters
 
     static FinisherActionAdapters()
     {
-        Register("Attack", Fast);
-        Register("SlowAttack", Slow);
-        Register("XAttack", Combo);
-        Register(TornadoFistSpinAnimation.TriggerName, Combo);
+        Register("Attack", Instant);
+        Register("SlowAttack", Instant);
+        Register("XAttack", Instant);
+        Register(TornadoFistSpinAnimation.TriggerName, Instant);
     }
 
     internal static void Register(string triggerName, IFinisherActionAdapter adapter)
@@ -145,12 +154,12 @@ internal static class FinisherActionAdapters
     {
         if (jumpActive)
         {
-            return Fast;
+            return Instant;
         }
 
         if (!command.ShouldPlayAnimation || string.IsNullOrWhiteSpace(command.AttackerAnimName))
         {
-            return TeleportAtPeak;
+            return Instant;
         }
 
         lock (TriggerRegistry)
@@ -161,6 +170,8 @@ internal static class FinisherActionAdapters
         }
     }
 
+    public static IFinisherActionAdapter ResolveWithoutCommand() => Instant;
+
     private static IFinisherActionAdapter ResolveUnknown(string triggerName)
     {
         lock (UnknownTriggers)
@@ -168,19 +179,12 @@ internal static class FinisherActionAdapters
             if (UnknownTriggers.Add(triggerName))
             {
                 FinisherLog.Warn(
-                    $"No continuous finisher action is registered for TriggerAnim '{triggerName}'; "
-                    + "the finisher will teleport at that animation's peak.");
+                    $"No finisher action is registered for TriggerAnim '{triggerName}'; "
+                    + "the finisher will use an instantaneous entrance.");
             }
         }
 
-        return new FinisherActionAdapter(
-            $"teleport-at-peak:{triggerName}",
-            0f,
-            0f,
-            FinisherTimeline.ReturnSeconds,
-            FinisherApproachMode.TeleportAtPeak,
-            static _ => 1f,
-            triggerName);
+        return Instant;
     }
 
     private sealed record FinisherActionAdapter(

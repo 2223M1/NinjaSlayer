@@ -372,6 +372,24 @@ public sealed class CombatLogicTests
         Assert.Equal(expectedImpactX, path.ImpactX);
     }
 
+    [Theory]
+    [InlineData(20f, 430f)]
+    [InlineData(430f, 20f)]
+    public void InstantFinisherStartsAtImpactWithoutTravel(float actorX, float impactX)
+    {
+        FinisherApproachPath path = FinisherApproachPath.CreateToImpact(
+            FinisherApproachMode.TeleportAtStart,
+            actorX,
+            impactX,
+            authoredTravel: FinisherActionTrajectory.FastTravelPixels,
+            fallbackDirection: impactX >= actorX ? 1f : -1f);
+
+        Assert.Equal(actorX, path.OriginalX);
+        Assert.Equal(impactX, path.TravelStartX);
+        Assert.Equal(impactX, path.TravelEndX);
+        Assert.Equal(impactX, path.ImpactX);
+    }
+
     [Fact]
     public void FinisherWithoutContinuousMovementTeleportsOnlyAtItsPeak()
     {
