@@ -3,14 +3,11 @@ using MegaCrit.Sts2.Core.Models;
 
 namespace NinjaSlayer.Code.Prepared;
 
-internal interface ICombatStateAccessor
+internal static class CardCombatStateAccessor
 {
-    CombatStateAccessResult<ICombatState> Resolve(CardModel card, ICombatState? suppliedState);
-}
-
-internal sealed class CardCombatStateAccessor : ICombatStateAccessor
-{
-    public CombatStateAccessResult<ICombatState> Resolve(CardModel card, ICombatState? suppliedState)
+    public static CombatStateAccessResult<ICombatState> Resolve(
+        CardModel card,
+        ICombatState? suppliedState)
     {
         ICombatState? cardState = card.CombatState ?? card.Owner?.Creature.CombatState;
         return CombatStateAccessPolicy.Resolve(suppliedState, cardState);

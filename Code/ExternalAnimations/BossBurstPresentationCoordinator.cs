@@ -1,10 +1,12 @@
 using Godot;
+using System.Globalization;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
@@ -114,8 +116,10 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         }
 
         NGlobalUi? globalUi = NRun.Instance?.GlobalUi;
+        bool hasBlockingOverlay = globalUi?.Overlays.ScreenCount > 0
+            && globalUi.Overlays.Peek() is not NRewardsScreen;
         return globalUi != null
-            && (globalUi.Overlays.ScreenCount > 0
+            && (hasBlockingOverlay
                 || globalUi.CapstoneContainer.InUse
                 || globalUi.MapScreen.IsOpen
                 || NModalContainer.Instance?.OpenModal != null);
@@ -446,7 +450,7 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         return paused ? 0f : Math.Min((float)GetProcessDeltaTime(), MaximumFrameDelta);
     }
 
-    private void StartNinjaSoul(BurstBatch batch)
+    private static void StartNinjaSoul(BurstBatch batch)
     {
         try
         {
@@ -508,7 +512,7 @@ public sealed partial class BossBurstPresentationCoordinator : Node
             }
 
             int state = rawInstance.Call("get_playback_state").AsInt32();
-            playbackState = state.ToString();
+            playbackState = state.ToString(CultureInfo.InvariantCulture);
             return state != FmodPlaybackStateStopped;
         }
         catch (Exception exception)
@@ -519,7 +523,7 @@ public sealed partial class BossBurstPresentationCoordinator : Node
         }
     }
 
-    private void PrepareVideo(BurstBatch batch)
+    private static void PrepareVideo(BurstBatch batch)
     {
         AspectRatioContainer? root = null;
         try

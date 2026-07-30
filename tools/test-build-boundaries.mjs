@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import {
   chmodSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -11,11 +12,12 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const projectPath = join(root, 'NinjaSlayer.csproj');
+const privateProjectPath = join(root, 'tools', 'private-contract', 'NinjaSlayer.PrivateBuild.csproj');
 const versionPropsPath = join(root, 'eng', 'NinjaSlayer.Version.props');
 const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
@@ -58,6 +60,33 @@ function requireSuccess(result, operation) {
   );
 }
 
+function evaluateCompileFiles(project, properties = {}) {
+  const args = ['msbuild', project, '-nologo', '-getItem:Compile'];
+  for (const [name, value] of Object.entries(properties)) args.push(`-p:${name}=${value}`);
+  const result = spawnSync('dotnet', args, { cwd: root, encoding: 'utf8' });
+  requireSuccess(result, `Compile item evaluation for ${project}`);
+
+  let evaluation;
+  try {
+    evaluation = JSON.parse(result.stdout);
+  } catch (error) {
+    assert.fail(`MSBuild returned invalid Compile item JSON for ${project}: ${error.message}`);
+  }
+
+  return (evaluation.Items?.Compile ?? []).map((item) => {
+    const fullPath = resolve(
+      item.FullPath
+        ?? (isAbsolute(item.Identity) ? item.Identity : join(dirname(project), item.Identity)),
+    );
+    const repositoryPath = relative(root, fullPath).replaceAll('\\', '/');
+    assert(
+      repositoryPath !== '..' && !repositoryPath.startsWith('../'),
+      `${project} compiles a source outside the candidate repository: ${fullPath}`,
+    );
+    return repositoryPath;
+  }).sort();
+}
+
 function fileHash(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex').toUpperCase();
 }
@@ -86,10 +115,11 @@ const quickRelease = readFileSync(quickReleasePath, 'utf8');
 const oneClickRelease = readFileSync(oneClickReleasePath, 'utf8');
 const workshopQuickRelease = readFileSync(workshopQuickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
+const stableTagPattern = '^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$';
 for (const source of [releaseWorkflow, workshopWorkflow]) {
   assert(
-    source.includes('^v0\\.1\\.(0|[1-9][0-9]?)$'),
-    'Release and Workshop workflows must enforce the v0.1.0 through v0.1.99 series.',
+    source.includes(stableTagPattern),
+    'Release and Workshop workflows must enforce stable SemVer tags.',
   );
 }
 assert(releaseWorkflow.includes('environment: release-production'));
@@ -102,7 +132,7 @@ assert(
   'Release packaging must run only on the dedicated ephemeral release runner.',
 );
 for (const safeguard of [
-  "[ValidatePattern('^0\\.1\\.(0|[1-9][0-9]?)$')]",
+  "[ValidatePattern('^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$')]",
   "if (-not $Confirm)",
   "if ($branch -ne 'main')",
   "if ($head -ne $originMain)",
@@ -151,8 +181,8 @@ assert(
   'Workshop quick release must stay disabled without -Confirm.',
 );
 assert(
-  workshopQuickRelease.includes("[ValidatePattern('^0\\.1\\.(0|[1-9][0-9]?)$')]"),
-  'Workshop quick release must enforce the v0.1.0 through v0.1.99 series.',
+  workshopQuickRelease.includes("[ValidatePattern('^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$')]"),
+  'Workshop quick release must enforce stable SemVer.',
 );
 assert(
   workshopQuickRelease.includes('Package checksum mismatch'),
@@ -268,9 +298,44 @@ assert(
     && harmonyReference.includes('<Private>true</Private>'),
   'Local game references must be present in the Godot editor dependency context.',
 );
+assert.deepEqual(
+  evaluateCompileFiles(privateProjectPath, { CandidateRoot: root }),
+  evaluateCompileFiles(projectPath),
+  'The private contract must compile exactly the shipping project source set.',
+);
 
 const sandbox = mkdtempSync(join(tmpdir(), 'ninjaslayer-build-boundaries-'));
 try {
+  const privateReferenceDir = join(sandbox, 'private-references');
+  mkdirSync(privateReferenceDir);
+  writeFileSync(join(privateReferenceDir, 'sts2.dll'), 'contract-fixture', 'utf8');
+  writeFileSync(join(privateReferenceDir, '0Harmony.dll'), 'contract-fixture', 'utf8');
+
+  const emptyCandidate = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
+    Sts2DataDir: privateReferenceDir,
+  });
+  assert.notEqual(emptyCandidate.status, 0, 'An empty CandidateRoot must fail validation.');
+  const emptyCandidateOutput = `${emptyCandidate.stdout}\n${emptyCandidate.stderr}`;
+  assert.match(
+    emptyCandidateOutput,
+    /CandidateRoot is required and must point to a checked-out NinjaSlayer repository\./,
+  );
+  assert.doesNotMatch(
+    emptyCandidateOutput,
+    /MSB4184/,
+    'An empty CandidateRoot must not reach Path.GetFullPath.',
+  );
+
+  const invalidCandidate = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
+    CandidateRoot: sandbox,
+    Sts2DataDir: privateReferenceDir,
+  });
+  assert.notEqual(invalidCandidate.status, 0, 'An invalid CandidateRoot must fail validation.');
+  assert.match(
+    `${invalidCandidate.stdout}\n${invalidCandidate.stderr}`,
+    /does not contain NinjaSlayer\.csproj\./,
+  );
+
   const versionHarnessPath = join(sandbox, 'VersionHarness.proj');
   writeFileSync(versionHarnessPath, `
 <Project>
@@ -282,21 +347,24 @@ try {
 </Project>
 `.trimStart(), 'utf8');
   const versionCases = [
-    ['v0.1.0-0-gabcdef', '0.1.0|true|true|v0.1.0'],
-    ['v0.1.99-0-gabcdef', '0.1.99|true|true|v0.1.99'],
-    ['v0.1.100-0-gabcdef', '0.1.100|true|false|v0.1.100'],
-    ['v2.3.4-0-gabcdef', '2.3.4|true|false|v2.3.4'],
-    ['v0.1.7-0-gabcdef-dirty', '0.1.8-dev.0+gabcdef.dirty|false|false|'],
-    ['v2.3.4-7-gabcdef', '2.3.5-dev.7+gabcdef|false|false|'],
-    ['v2.3.4-7-gabcdef-dirty', '2.3.5-dev.7+gabcdef.dirty|false|false|'],
-    ['abcdef', '0.1.0-dev.0+gabcdef|false|false|'],
+    ['v0.1.0-0-gabcdef', '', '0.1.0|true|true|v0.1.0'],
+    ['v0.1.100-0-gabcdef', '', '0.1.100|true|true|v0.1.100'],
+    ['v2.3.4-0-gabcdef', '', '2.3.4|true|true|v2.3.4'],
+    ['v0.1.7-0-gabcdef-dirty', '', '0.1.8-dev.0+gabcdef.dirty|false|false|'],
+    ['v2.3.4-7-gabcdef', '', '2.3.5-dev.7+gabcdef|false|false|'],
+    ['v2.3.4-7-gabcdef-dirty', '', '2.3.5-dev.7+gabcdef.dirty|false|false|'],
+    ['v0.1.20-7-gabcdef', 'v0.1.27|v0.1.24|v0.1.20', '0.1.28-dev.7+gabcdef|false|false|'],
+    ['v01.2.3-0-gabcdef', '', '0.1.0-dev.0+gabcdef|false|false|'],
+    ['abcdef', '', '0.1.0-dev.0+gabcdef|false|false|'],
   ];
-  for (const [describe, expected] of versionCases) {
+  for (const [describe, releaseTags, expected] of versionCases) {
     const captureFile = join(sandbox, `version-${describe.replaceAll(/[^a-z0-9]/gi, '-')}.txt`);
-    requireSuccess(runMsbuild(versionHarnessPath, 'CaptureVersion', {
+    const properties = {
       CaptureFile: captureFile,
       GitDescribe: describe,
-    }), `version resolution for ${describe}`);
+    };
+    if (releaseTags) properties.GitReleaseTags = releaseTags;
+    requireSuccess(runMsbuild(versionHarnessPath, 'CaptureVersion', properties), `version resolution for ${describe}`);
     assert.equal(readFileSync(captureFile, 'utf8').trim(), expected);
   }
 
@@ -378,14 +446,14 @@ try {
 
   const unsupportedVersion = runMsbuild(harnessPath, 'PublishWorkshop', {
     Configuration: 'Release',
-    GitDescribe: 'v0.1.100-0-gabcdef',
-    NinjaSlayerVersion: '0.1.100',
+    GitDescribe: 'v01.1.0-0-gabcdef',
+    NinjaSlayerVersion: '01.1.0',
     PublishWorkshopConfirmed: 'true',
     PostBuildModDir: guardPackageDir,
     WorkshopContentDir: guardWorkshopDir,
   });
-  assert.notEqual(unsupportedVersion.status, 0, 'PublishWorkshop must reject v0.1.100.');
-  assert.match(`${unsupportedVersion.stdout}\n${unsupportedVersion.stderr}`, /requires a v0\.1\.x tag/);
+  assert.notEqual(unsupportedVersion.status, 0, 'PublishWorkshop must reject non-SemVer tags.');
+  assert.match(`${unsupportedVersion.stdout}\n${unsupportedVersion.stderr}`, /requires a clean stable SemVer tag/);
   assert(!existsSync(guardPackageDir), 'Unsupported versions must not package before validation.');
   assert(!existsSync(guardWorkshopDir), 'Unsupported versions must not stage before validation.');
 } finally {

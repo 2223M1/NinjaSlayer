@@ -71,8 +71,11 @@ public static class XAttackComboMovement
             ApproachDuration
         ).SetTrans(Tween.TransitionType.Linear);
 
-        await state.CreatureNode.ToSignal(tween, Tween.SignalName.Finished);
-        if (GodotObject.IsInstanceValid(state.CreatureNode))
+        bool completed = await TweenPlayback.AwaitCompletion(tween, state.CreatureNode);
+        if (completed
+            && ComboStates.TryGetValue(creature, out ComboMovementState? currentState)
+            && ReferenceEquals(currentState, state)
+            && GodotObject.IsInstanceValid(state.CreatureNode))
         {
             state.CreatureNode.Position = new Vector2(
                 state.BasePosition.X + LungeDistance * direction,
@@ -96,7 +99,9 @@ public static class XAttackComboMovement
         try
         {
             await state.ApproachTask;
-            if (!GodotObject.IsInstanceValid(state.CreatureNode))
+            if (!ComboStates.TryGetValue(creature, out ComboMovementState? currentState)
+                || !ReferenceEquals(currentState, state)
+                || !GodotObject.IsInstanceValid(state.CreatureNode))
             {
                 return;
             }
@@ -115,7 +120,7 @@ public static class XAttackComboMovement
                 ReturnDuration
             ).SetTrans(Tween.TransitionType.Linear);
 
-            await state.CreatureNode.ToSignal(tween, Tween.SignalName.Finished);
+            await TweenPlayback.AwaitCompletion(tween, state.CreatureNode);
         }
         finally
         {
@@ -123,9 +128,8 @@ public static class XAttackComboMovement
                 && ReferenceEquals(currentState, state))
             {
                 ComboStates.Remove(creature);
+                state.StopAndRestore();
             }
-
-            state.StopAndRestore();
         }
     }
 

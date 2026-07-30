@@ -40,6 +40,6 @@ The workflow and SmokeDriver come from protected `main`; the candidate checkout 
 
 ## Periodic Full AutoSlay
 
-Dispatch the same workflow with `mode=FullAutoSlay` for the periodic/manual advisory run. This mode forces NinjaSlayer selection, otherwise leaves the original AutoSlayer room and combat handlers intact, and checks runtime ownership immediately before AutoSlayer exits. Its one-hour default timeout and unrelated vanilla randomness make it unsuitable for every `v0.1.x` release.
+Dispatch the same workflow with `mode=FullAutoSlay` for the periodic/manual advisory run. This mode forces NinjaSlayer selection, otherwise leaves the original AutoSlayer room and combat handlers intact, and checks runtime ownership immediately before AutoSlayer exits. Its one-hour default timeout and unrelated vanilla randomness make it unsuitable for every stable release.
 
 Multiplayer smoke remains deferred until the single-player harness has stable field history.

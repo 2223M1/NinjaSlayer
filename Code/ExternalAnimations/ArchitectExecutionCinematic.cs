@@ -478,7 +478,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         return _camera!.GetCameraPosition(center, scale, _camera.ViewportSize * 0.5f);
     }
 
-    private float ResolveImpactScale(float elapsed)
+    private static float ResolveImpactScale(float elapsed)
     {
         if (elapsed <= ImpactPunchSeconds)
         {

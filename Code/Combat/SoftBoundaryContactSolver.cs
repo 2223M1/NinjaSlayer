@@ -171,7 +171,7 @@ internal sealed class SoftBoundaryContactSolver
 
     private void AddSide(
         SoftFragmentBody body,
-        IReadOnlyList<SoftCollisionVertex> hull,
+        SoftCollisionVertex[] hull,
         SoftBoundarySide side,
         float boundary)
     {
@@ -180,7 +180,7 @@ internal sealed class SoftBoundaryContactSolver
         float firstPenetration = 0f;
         float secondPenetration = 0f;
         float sidePenetration = float.NegativeInfinity;
-        for (int index = 0; index < hull.Count; index++)
+        for (int index = 0; index < hull.Length; index++)
         {
             float penetration = side == SoftBoundarySide.Left
                 ? boundary - hull[index].Position.X

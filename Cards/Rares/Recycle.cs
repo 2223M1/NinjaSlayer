@@ -36,7 +36,8 @@ public sealed class Recycle : NinjaSlayerCardTemplate
             .Targeting(cardPlay.Target)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
-        CardModel? copySource = PileType.Discard.GetPile(Owner).Cards.LastOrDefault();
+        IReadOnlyList<CardModel> discardPile = PileType.Discard.GetPile(Owner).Cards;
+        CardModel? copySource = discardPile.Count > 0 ? discardPile[^1] : null;
         if (copySource != null)
         {
             CardModel copy = copySource.CreateClone();

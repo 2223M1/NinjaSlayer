@@ -80,12 +80,15 @@ internal static class CombatDodgeAnimation
             baseline = node.Position;
             state.Node = node;
             float direction = state.Creature.Side == CombatSide.Player ? -1f : 1f;
-            await TweenPosition(
+            if (!await TweenPosition(
                 state,
                 baseline + Vector2.Right * DodgeDistance * direction,
                 OutwardSeconds,
                 Tween.EaseType.Out,
-                Tween.TransitionType.Expo);
+                Tween.TransitionType.Expo))
+            {
+                return;
+            }
 
             Task timeout = Cmd.Wait(MissingImpactTimeoutSeconds, ignoreCombatEnd: true);
             if (await Task.WhenAny(state.FirstImpact, timeout) == state.FirstImpact)
@@ -122,7 +125,7 @@ internal static class CombatDodgeAnimation
         }
     }
 
-    private static async Task TweenPosition(
+    private static async Task<bool> TweenPosition(
         DodgeState state,
         Vector2 target,
         float duration,
@@ -132,7 +135,7 @@ internal static class CombatDodgeAnimation
         NCreature? node = state.Node;
         if (node == null || !GodotObject.IsInstanceValid(node))
         {
-            return;
+            return false;
         }
 
         Tween tween = node.CreateTween();
@@ -140,7 +143,10 @@ internal static class CombatDodgeAnimation
         tween.TweenProperty(node, new NodePath("position"), target, duration)
             .SetEase(ease)
             .SetTrans(transition);
-        await node.ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TweenPlayback.AwaitCompletion(tween, node))
+        {
+            return false;
+        }
         if (GodotObject.IsInstanceValid(node))
         {
             node.Position = target;
@@ -150,6 +156,8 @@ internal static class CombatDodgeAnimation
         {
             state.ActiveTween = null;
         }
+
+        return true;
     }
 
     private sealed class DodgeState(Creature creature)

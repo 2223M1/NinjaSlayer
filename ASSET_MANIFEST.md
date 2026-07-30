@@ -67,7 +67,7 @@ Nancy Lee uses dedicated Ancient presentation assets:
 - `NinjaSlayer/images/ancients/NancyLeeMapIcon.png` and `NancyLeeMapIcon_outline.png` at `278x278`
 - `NinjaSlayer/images/ancients/NancyLeeRunHistoryIcon.png` and `NancyLeeRunHistoryIcon_outline.png` at `128x128`
 
-Her authoritative identity sheet is archived at `../output/ancillary-art/references/NancyLee-character-reference.webp`; generated Nancy assets preserve its blonde high bun, long side lock, paired dark hair sticks, cyan eyes, and black/navy armored ninja suit with cyan piping.
+Her authoritative identity sheet is archived at `../art-production/output/ancillary-art/references/NancyLee-character-reference.webp`; generated Nancy assets preserve its blonde high bun, long side lock, paired dark hair sticks, cyan eyes, and black/navy armored ninja suit with cyan piping.
 
 `NinjaSlayer/images/enchantments/BlackFlameEnchantment.png` is a dedicated `64x64` transparent icon using the same black and vivid-violet Naraku palette.
 

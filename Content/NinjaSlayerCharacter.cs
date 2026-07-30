@@ -14,10 +14,6 @@ using STS2RitsuLib.Scaffolding.Visuals.StateMachine;
 
 namespace NinjaSlayer.Content;
 
-public interface INinjaSlayerCharacter
-{
-}
-
 public abstract class NinjaSlayerCharacterTemplate<TCardPool>
     : ModCharacterTemplate<TCardPool, NinjaSlayerRelicPool, NinjaSlayerPotionPool>, INinjaSlayerCharacter
     where TCardPool : CardPoolModel

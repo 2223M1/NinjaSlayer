@@ -14,7 +14,7 @@ internal static class BossDeathPresentationConfig
 {
     // Add verified boss bone specifications here. An empty registry intentionally leaves every
     // boss on its original death pose for the shared 0.9-second soul/video lead-in.
-    private static readonly IReadOnlyDictionary<string, BossDeathPartSpec> PartSpecs =
+    private static readonly Dictionary<string, BossDeathPartSpec> PartSpecs =
         new Dictionary<string, BossDeathPartSpec>(StringComparer.Ordinal);
 
     public static bool TryGetPartSpec(string monsterId, out BossDeathPartSpec spec) =>

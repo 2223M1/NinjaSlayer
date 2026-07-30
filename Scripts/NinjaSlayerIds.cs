@@ -1,4 +1,4 @@
-﻿namespace NinjaSlayer.Scripts;
+namespace NinjaSlayer.Scripts;
 
 public static class NinjaSlayerIds
 {

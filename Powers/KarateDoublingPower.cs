@@ -12,7 +12,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class KarateDoublingPower : NinjaSlayerPowerTemplate
 {
-    private class Data
+    private sealed class Data
     {
         public int AppliedTurnNumber = -1;
         public bool SkipRemovalOnce;

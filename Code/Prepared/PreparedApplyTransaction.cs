@@ -206,6 +206,6 @@ internal static class PreparedQueueTransaction
         }
     }
 
-    private static Exception Combine(Exception primary, Exception secondary) =>
+    private static AggregateException Combine(Exception primary, Exception secondary) =>
         new AggregateException(primary, secondary);
 }

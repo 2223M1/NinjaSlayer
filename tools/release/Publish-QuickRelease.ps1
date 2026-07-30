@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^0\.1\.(0|[1-9][0-9]?)$')]
+    [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string] $Version,
 
     [string] $ReleaseNoteFile = 'Workshop\change-note.md',

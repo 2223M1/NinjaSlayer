@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -12,76 +12,60 @@ public static class StaggerAnimation
     private const float StaggerDistance = 20f;
     private const float StaggerRotationDegrees = -15f;
 
-    private static readonly Dictionary<Creature, Vector2> OriginalPositions = new();
-    private static readonly Dictionary<Creature, float> OriginalBodyRotations = new();
-    private static readonly Dictionary<Creature, Tween> ActiveTweens = new();
+    private static readonly Dictionary<Creature, StaggerState> ActiveStates = [];
 
-    public static bool IsActive(Creature creature) => ActiveTweens.ContainsKey(creature);
+    public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature);
 
     public static async Task Play(Creature creature)
     {
+        if (ActiveStates.Remove(creature, out StaggerState? previous))
+        {
+            previous.StopAndRestore();
+        }
+
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null)
+        {
             return;
+        }
 
         var visuals = creatureNode.Visuals;
         var bodyAnchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals)
             ?? NinjaSlayerVisualRig.GetBodySprite(visuals);
-
-        // Kill any active tween and reset before capturing position
-        if (ActiveTweens.TryGetValue(creature, out var existing) && existing.IsValid())
-        {
-            existing.Kill();
-            if (OriginalPositions.TryGetValue(creature, out var savedPos))
-                creatureNode.Position = savedPos;
-            if (bodyAnchor != null && OriginalBodyRotations.TryGetValue(creature, out var savedRotation))
-                bodyAnchor.RotationDegrees = savedRotation;
-        }
-
-        // Only store the true origin if we don't already have one mid-stagger
-        if (!OriginalPositions.ContainsKey(creature))
-            OriginalPositions[creature] = creatureNode.Position;
-        if (bodyAnchor != null && !OriginalBodyRotations.ContainsKey(creature))
-            OriginalBodyRotations[creature] = bodyAnchor.RotationDegrees;
-
-        var originalPos = OriginalPositions[creature];
-        var originalRotation = bodyAnchor == null ? 0f : OriginalBodyRotations[creature];
-        var direction = creature.IsPlayer ? -1f : 1f;
-
         var tween = creatureNode.CreateTween();
-        ActiveTweens[creature] = tween;
+        var state = new StaggerState(
+            tween,
+            creatureNode,
+            bodyAnchor,
+            creatureNode.Position,
+            bodyAnchor?.RotationDegrees ?? 0f,
+            creature.IsPlayer ? -1f : 1f);
+        ActiveStates[creature] = state;
 
-        tween.TweenMethod(
-            Callable.From<float>(t =>
+        try
+        {
+            tween.TweenMethod(
+                Callable.From<float>(state.Apply),
+                0f,
+                1f,
+                StaggerDuration
+            ).SetTrans(Tween.TransitionType.Linear);
+            await TweenPlayback.AwaitCompletion(tween, creatureNode);
+        }
+        finally
+        {
+            if (ActiveStates.TryGetValue(creature, out StaggerState? active)
+                && ReferenceEquals(active, state))
             {
-                var easedT = t * t;
-                var xOffset = Mathf.Lerp(StaggerDistance, 0f, easedT) * direction;
-                creatureNode.Position = new Vector2(originalPos.X + xOffset, originalPos.Y);
-                if (bodyAnchor != null)
-                    bodyAnchor.RotationDegrees = originalRotation + Mathf.Lerp(StaggerRotationDegrees, 0f, easedT);
-            }),
-            0f,
-            1f,
-            StaggerDuration
-        ).SetTrans(Tween.TransitionType.Linear);
-
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
-
-        creatureNode.Position = originalPos;
-        if (bodyAnchor != null)
-            bodyAnchor.RotationDegrees = originalRotation;
-        OriginalPositions.Remove(creature);
-        OriginalBodyRotations.Remove(creature);
-        ActiveTweens.Remove(creature);
+                ActiveStates.Remove(creature);
+                state.StopAndRestore();
+            }
+        }
     }
-    
+
     public static void Reset()
     {
-        foreach (Creature creature in ActiveTweens.Keys
-                     .Concat(OriginalPositions.Keys)
-                     .Concat(OriginalBodyRotations.Keys)
-                     .Distinct()
-                     .ToArray())
+        foreach (Creature creature in ActiveStates.Keys.ToArray())
         {
             Reset(creature);
         }
@@ -89,27 +73,68 @@ public static class StaggerAnimation
 
     public static void Reset(Creature creature)
     {
-        if (ActiveTweens.Remove(creature, out Tween? tween) && tween.IsValid())
+        if (ActiveStates.Remove(creature, out StaggerState? state))
         {
-            tween.Kill();
+            state.StopAndRestore();
+        }
+    }
+
+    private sealed class StaggerState(
+        Tween tween,
+        Control creatureNode,
+        Node2D? bodyAnchor,
+        Vector2 originalPosition,
+        float originalBodyRotation,
+        float direction)
+    {
+        private bool _stopped;
+
+        public Tween Tween { get; } = tween;
+
+        public void Apply(float progress)
+        {
+            if (_stopped || !GodotObject.IsInstanceValid(creatureNode))
+            {
+                return;
+            }
+
+            float easedProgress = progress * progress;
+            float xOffset = Mathf.Lerp(StaggerDistance, 0f, easedProgress) * direction;
+            creatureNode.Position = new Vector2(originalPosition.X + xOffset, originalPosition.Y);
+            if (bodyAnchor != null && GodotObject.IsInstanceValid(bodyAnchor))
+            {
+                bodyAnchor.RotationDegrees = originalBodyRotation
+                    + Mathf.Lerp(StaggerRotationDegrees, 0f, easedProgress);
+            }
         }
 
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        if (creatureNode != null && OriginalPositions.Remove(creature, out Vector2 originalPosition))
+        public void StopAndRestore()
         {
-            creatureNode.Position = originalPosition;
-        }
+            if (_stopped)
+            {
+                return;
+            }
 
-        Node2D? bodyAnchor = creatureNode == null
-            ? null
-            : NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals)
-                ?? NinjaSlayerVisualRig.GetBodySprite(creatureNode.Visuals);
-        if (bodyAnchor != null && OriginalBodyRotations.Remove(creature, out float originalRotation))
-        {
-            bodyAnchor.RotationDegrees = originalRotation;
-        }
+            _stopped = true;
+            try
+            {
+                if (GodotObject.IsInstanceValid(Tween) && Tween.IsValid())
+                {
+                    Tween.Kill();
+                }
+            }
+            finally
+            {
+                if (GodotObject.IsInstanceValid(creatureNode))
+                {
+                    creatureNode.Position = originalPosition;
+                }
 
-        OriginalPositions.Remove(creature);
-        OriginalBodyRotations.Remove(creature);
+                if (bodyAnchor != null && GodotObject.IsInstanceValid(bodyAnchor))
+                {
+                    bodyAnchor.RotationDegrees = originalBodyRotation;
+                }
+            }
+        }
     }
 }

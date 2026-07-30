@@ -70,7 +70,7 @@ internal sealed class BossSemanticPartBuilder
         failureReason = string.Empty;
         try
         {
-            IReadOnlyList<SpineSlotSample> slots = ReadVisibleSlots(
+            List<SpineSlotSample> slots = ReadVisibleSlots(
                 template,
                 detachedBoneName);
             List<PartDraft> parts = slots
@@ -262,7 +262,7 @@ internal sealed class BossSemanticPartBuilder
         }
     }
 
-    private static IReadOnlyList<SpineSlotSample> ReadVisibleSlots(
+    private static List<SpineSlotSample> ReadVisibleSlots(
         Node2D template,
         string? detachedBoneName)
     {
@@ -270,10 +270,10 @@ internal sealed class BossSemanticPartBuilder
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {
-            IReadOnlyDictionary<string, BoneTopology> bones = ReadBoneTopology(
+            Dictionary<string, BoneTopology> bones = ReadBoneTopology(
                 skeleton,
                 slots);
-            IReadOnlyDictionary<string, int> drawOrder = ReadDrawOrder(skeleton);
+            Dictionary<string, int> drawOrder = ReadDrawOrder(skeleton);
             var result = new List<SpineSlotSample>(slots.Count);
             for (int setupIndex = 0; setupIndex < slots.Count; setupIndex++)
             {
@@ -334,7 +334,7 @@ internal sealed class BossSemanticPartBuilder
         }
     }
 
-    private static IReadOnlyDictionary<string, BoneTopology> ReadBoneTopology(
+    private static Dictionary<string, BoneTopology> ReadBoneTopology(
         MegaSkeleton skeleton,
         Godot.Collections.Array<GodotObject> slots)
     {
@@ -428,7 +428,7 @@ internal sealed class BossSemanticPartBuilder
 
     private static void AddBoneAndParents(
         ICollection<RawBoneTopology> bones,
-        ISet<string> names,
+        HashSet<string> names,
         GodotObject? bone)
     {
         GodotObject? current = bone;
@@ -463,7 +463,7 @@ internal sealed class BossSemanticPartBuilder
         }
     }
 
-    private static IReadOnlyDictionary<string, int> ReadDrawOrder(MegaSkeleton skeleton)
+    private static Dictionary<string, int> ReadDrawOrder(MegaSkeleton skeleton)
     {
         if (!skeleton.BoundObject.HasMethod("get_draw_order"))
         {

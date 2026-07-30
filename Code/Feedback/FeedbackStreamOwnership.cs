@@ -48,7 +48,8 @@ public sealed class FeedbackNonDisposingStream(Stream inner) : Stream
         inner.WriteAsync(buffer, cancellationToken);
     protected override void Dispose(bool disposing)
     {
+        base.Dispose(disposing);
     }
 
-    public override ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public override ValueTask DisposeAsync() => base.DisposeAsync();
 }

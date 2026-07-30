@@ -51,7 +51,8 @@ public sealed class ZazenDrink : NinjaSlayerStandaloneCardTemplate, IDrawCastSki
         while (MissingCardsInHand() > 0)
         {
             await CardPileCmd.ShuffleIfNecessary(choiceContext, Owner);
-            CardModel? nextCard = PileType.Draw.GetPile(Owner).Cards.FirstOrDefault();
+            IReadOnlyList<CardModel> drawPile = PileType.Draw.GetPile(Owner).Cards;
+            CardModel? nextCard = drawPile.Count > 0 ? drawPile[0] : null;
             if (nextCard == null)
             {
                 break;

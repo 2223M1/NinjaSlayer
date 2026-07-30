@@ -49,10 +49,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         {
             throw new InvalidOperationException($"Transition session {SessionId} was already started.");
         }
-        if (_externalCancellation.IsCancellationRequested)
-        {
-            throw new OperationCanceledException(_externalCancellation);
-        }
+        _externalCancellation.ThrowIfCancellationRequested();
 
         _animationTask = animationFactory(this, _lifetime.Token)
             ?? throw new InvalidOperationException("Transition animation factory returned null.");
@@ -296,7 +293,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         _lifetime.Dispose();
     }
 
-    private async Task ObserveDeferredPresentationAsync(Task completion)
+    private static async Task ObserveDeferredPresentationAsync(Task completion)
     {
         try
         {
@@ -445,7 +442,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         return NinjaSlayerTransitionLoadSmoothing.CompleteSession(SessionId, endingGcCounts);
     }
 
-    private static void CaptureCleanup(ICollection<Exception> failures, Action cleanup)
+    private static void CaptureCleanup(List<Exception> failures, Action cleanup)
     {
         try
         {

@@ -13,8 +13,6 @@ namespace NinjaSlayer.Code.Prepared;
 
 internal static class PreparedSafetyService
 {
-    private static readonly ICombatStateAccessor CombatStateAccessor = new CardCombatStateAccessor();
-
     public static async Task<PreparedCleanupResult> CompletePileChangeAfter(
         Task original,
         ICombatState? suppliedCombatState,
@@ -27,7 +25,8 @@ internal static class PreparedSafetyService
             return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
         }
 
-        CombatStateAccessResult<ICombatState> access = CombatStateAccessor.Resolve(card, suppliedCombatState);
+        CombatStateAccessResult<ICombatState> access =
+            CardCombatStateAccessor.Resolve(card, suppliedCombatState);
         if (!access.Succeeded)
         {
             return new PreparedCleanupResult(

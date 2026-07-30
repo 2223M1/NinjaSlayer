@@ -3,6 +3,7 @@ namespace NinjaSlayer.Code.Compatibility;
 internal static class NinjaSlayerCapabilityIds
 {
     public const string Gameplay = "gameplay";
+    public const string OrobasSeaGlass = "orobas-sea-glass";
     public const string CardResolution = "card-resolution";
     public const string ReporterPass = "reporter-pass";
     public const string NancyCandidateFilter = "nancy-candidate-filter";
@@ -27,6 +28,7 @@ internal static class NinjaSlayerCapabilityIds
     public static IReadOnlyList<string> All { get; } =
     [
         Gameplay,
+        OrobasSeaGlass,
         CardResolution,
         ReporterPass,
         NancyCandidateFilter,

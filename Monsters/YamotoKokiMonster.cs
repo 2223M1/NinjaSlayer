@@ -121,7 +121,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
     private async Task IaiSlashMove(IReadOnlyList<Creature> _)
     {
-        IReadOnlyList<Creature> enemies = GetCurrentIaiTargets();
+        List<Creature> enemies = GetCurrentIaiTargets();
         if (enemies.Count == 0)
         {
             return;
@@ -205,7 +205,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
     private async Task PlayIaiImpact()
     {
-        IReadOnlyList<Creature> enemies = GetCurrentIaiTargets();
+        List<Creature> enemies = GetCurrentIaiTargets();
         if (enemies.Count == 0)
         {
             return;
@@ -221,7 +221,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             Creature);
     }
 
-    private IReadOnlyList<Creature> GetCurrentIaiTargets()
+    private List<Creature> GetCurrentIaiTargets()
     {
         if (Creature.CombatState is not { } combatState || !combatState.IsLiveCombat())
         {

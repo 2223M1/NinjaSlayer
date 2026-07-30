@@ -6,6 +6,8 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal sealed class BossCapturedFragmentRenderSurface : IDisposable
 {
+    internal const string ShaderPath =
+        "res://NinjaSlayer/shaders/vfx/boss_dismemberment_clip.gdshader";
     private const int RenderGridSize = 10;
     private static readonly StringName ControlOffsetsParameter = new("control_offsets");
 
@@ -41,6 +43,160 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
     public float RmsResidual { get; private set; }
     public float RmsResidualRatio => RmsResidual / Math.Max(1f, Body.ShortDimension);
 
+    internal sealed class PreparedResource : IDisposable
+    {
+        private int _consumed;
+        private int _disposed;
+
+        internal PreparedResource(
+            BossCapturedFragmentDescriptor descriptor,
+            SoftFragmentBody body,
+            ArrayMesh mesh,
+            ShaderMaterial material,
+            float mappedArea)
+        {
+            Descriptor = descriptor;
+            Body = body;
+            Mesh = mesh;
+            Material = material;
+            MappedArea = mappedArea;
+        }
+
+        internal BossCapturedFragmentDescriptor Descriptor { get; }
+        internal SoftFragmentBody Body { get; }
+        internal ArrayMesh Mesh { get; }
+        internal ShaderMaterial Material { get; }
+        internal float MappedArea { get; }
+
+        internal void MarkConsumed() => Interlocked.Exchange(ref _consumed, 1);
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0
+                || Volatile.Read(ref _consumed) != 0)
+            {
+                return;
+            }
+
+            Material.Dispose();
+            Mesh.Dispose();
+        }
+    }
+
+    internal static bool TryPrepare(
+        BossCapturedFragmentDescriptor descriptor,
+        Transform2D bodyToPresentation,
+        Shader shader,
+        float mass,
+        float collisionMargin,
+        float mappedArea,
+        out PreparedResource? prepared)
+    {
+        prepared = null;
+        ArrayMesh? mesh = null;
+        ShaderMaterial? material = null;
+        try
+        {
+            BossFragmentCell cell = descriptor.Cell;
+            Rect2 cellBounds = ToRect2(BossDismembermentMath.BoundsOf(cell.Vertices));
+            Rect2 partBounds = descriptor.Part.SourceBounds;
+            Rect2 renderBounds = descriptor.IsLocalSplit
+                ? Intersect(cellBounds, partBounds)
+                : partBounds;
+            if (!HasRenderableBounds(descriptor, cellBounds, partBounds, renderBounds))
+            {
+                return false;
+            }
+
+            BossFragmentPoint[] restGrid = BuildRestGrid(cellBounds, bodyToPresentation);
+            SoftBodyHullPoint[] restHull = BuildRestHull(cell, cellBounds, bodyToPresentation);
+            BossFragmentPoint restCenter = Average(restGrid);
+            var body = new SoftFragmentBody(
+                descriptor.FragmentIndex,
+                restGrid,
+                restHull,
+                restCenter,
+                compressedScale: 1f,
+                mass,
+                collisionMargin);
+
+            material = new ShaderMaterial { Shader = shader };
+            ConfigureMaterial(material, descriptor, cellBounds);
+            mesh = BuildMesh(
+                renderBounds,
+                partBounds,
+                descriptor.AtlasUvRect,
+                bodyToPresentation,
+                body.RestCenter);
+            prepared = new PreparedResource(descriptor, body, mesh, material, mappedArea);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            material?.Dispose();
+            mesh?.Dispose();
+            Scripts.Entry.Logger.Warn(
+                $"Captured boss fragment preparation failed: {exception.Message}");
+            return false;
+        }
+    }
+
+    internal static bool TryInstantiate(
+        Node parent,
+        PreparedResource prepared,
+        Texture2D captureTexture,
+        int zIndex,
+        out BossCapturedFragmentRenderSurface? surface)
+    {
+        surface = null;
+        Node2D? anchor = null;
+        try
+        {
+            BossCapturedFragmentDescriptor descriptor = prepared.Descriptor;
+            anchor = new Node2D
+            {
+                Name = $"BossBodyFragment_{descriptor.FragmentIndex}",
+                ZAsRelative = false,
+                ZIndex = zIndex + Math.Clamp(descriptor.Part.DrawOrder, 0, 48),
+                Visible = false
+            };
+            parent.AddChildSafely(anchor);
+            EnsureInsideTree(anchor, "captured fragment anchor");
+
+            var meshNode = new MeshInstance2D
+            {
+                Name = "CapturedFragmentMesh",
+                Mesh = prepared.Mesh,
+                Texture = captureTexture,
+                Material = prepared.Material,
+                ZAsRelative = true,
+                ZIndex = 0
+            };
+            anchor.AddChildSafely(meshNode);
+            EnsureInsideTree(meshNode, "captured fragment mesh");
+
+            surface = new BossCapturedFragmentRenderSurface(
+                anchor,
+                meshNode,
+                prepared.Material,
+                prepared.Body,
+                descriptor);
+            prepared.MarkConsumed();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            if (anchor != null && GodotObject.IsInstanceValid(anchor))
+            {
+                anchor.QueueFreeSafely();
+            }
+
+            Scripts.Entry.Logger.Warn(
+                $"Captured boss fragment instantiation failed: {exception.Message}");
+            return false;
+        }
+    }
+
     public static bool TryCreate(
         Node parent,
         BossCapturedFragmentDescriptor descriptor,
@@ -55,106 +211,46 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         out BossCapturedFragmentRenderSurface? surface)
     {
         surface = null;
-        Node2D? anchor = null;
-        try
-        {
-            BossFragmentCell cell = descriptor.Cell;
-            Rect2 cellBounds = ToRect2(BossDismembermentMath.BoundsOf(cell.Vertices));
-            Rect2 partBounds = descriptor.Part.SourceBounds;
-            Rect2 renderBounds = descriptor.IsLocalSplit
-                ? Intersect(cellBounds, partBounds)
-                : partBounds;
-            if (cellBounds.Size.X <= 1f
-                || cellBounds.Size.Y <= 1f
-                || renderBounds.Size.X <= 1f
-                || renderBounds.Size.Y <= 1f
-                || partBounds.Size.X <= 1f
-                || partBounds.Size.Y <= 1f
-                || descriptor.AtlasUvRect.Size.X <= 0f
-                || descriptor.AtlasUvRect.Size.Y <= 0f)
-            {
-                return false;
-            }
-
-            BossFragmentPoint[] restGrid = BuildRestGrid(cellBounds, bodyToPresentation);
-            SoftBodyHullPoint[] restHull = cell.Vertices
-                .Select(point =>
-                {
-                    Vector2 mapped = bodyToPresentation * ToVector2(point);
-                    return new SoftBodyHullPoint(
-                        new BossFragmentPoint(mapped.X, mapped.Y),
-                        Math.Clamp((point.X - cellBounds.Position.X) / cellBounds.Size.X, 0f, 1f),
-                        Math.Clamp((point.Y - cellBounds.Position.Y) / cellBounds.Size.Y, 0f, 1f));
-                })
-                .ToArray();
-            BossFragmentPoint restCenter = Average(restGrid);
-            var body = new SoftFragmentBody(
-                descriptor.FragmentIndex,
-                restGrid,
-                restHull,
-                initialCenter ?? restCenter,
-                initialScale,
-                mass,
-                collisionMargin);
-
-            anchor = new Node2D
-            {
-                Name = $"BossBodyFragment_{descriptor.FragmentIndex}",
-                ZAsRelative = false,
-                ZIndex = zIndex + Math.Clamp(descriptor.Part.DrawOrder, 0, 48),
-                Visible = false
-            };
-            parent.AddChildSafely(anchor);
-            EnsureInsideTree(anchor, "captured fragment anchor");
-
-            var material = new ShaderMaterial { Shader = shader };
-            ConfigureMaterial(
-                material,
+        if (!TryPrepare(
                 descriptor,
-                cellBounds);
-            var meshNode = new MeshInstance2D
-            {
-                Name = "CapturedFragmentMesh",
-                Mesh = BuildMesh(
-                    renderBounds,
-                    partBounds,
-                    descriptor.AtlasUvRect,
-                    bodyToPresentation,
-                    body.RestCenter),
-                Texture = captureTexture,
-                Material = material,
-                ZAsRelative = true,
-                ZIndex = 0
-            };
-            anchor.AddChildSafely(meshNode);
-            EnsureInsideTree(meshNode, "captured fragment mesh");
+                bodyToPresentation,
+                shader,
+                mass,
+                collisionMargin,
+                ResolveMappedArea(descriptor.Cell, bodyToPresentation),
+                out PreparedResource? prepared)
+            || prepared == null)
+        {
+            return false;
+        }
 
-            var created = new BossCapturedFragmentRenderSurface(
-                anchor,
-                meshNode,
-                material,
-                body,
-                descriptor);
-            if (!created.ApplyFrame())
+        using (prepared)
+        {
+            if (!TryInstantiate(parent, prepared, captureTexture, zIndex, out surface)
+                || surface == null)
             {
-                created.Dispose();
                 return false;
             }
 
-            anchor.Visible = true;
-            surface = created;
-            return true;
-        }
-        catch (Exception exception)
-        {
-            if (anchor != null && GodotObject.IsInstanceValid(anchor))
+            if (initialCenter.HasValue || !Mathf.IsEqualApprox(initialScale, 1f))
             {
-                anchor.QueueFreeSafely();
+                surface.Body.PinCompressed(
+                    initialCenter ?? surface.Body.RestCenter,
+                    initialScale,
+                    phase: 0f,
+                    slideRadius: 0f,
+                    squashAmount: 0f);
             }
 
-            Scripts.Entry.Logger.Warn(
-                $"Captured boss fragment initialization failed: {exception.Message}");
-            return false;
+            if (!surface.ApplyFrame())
+            {
+                surface.Dispose();
+                surface = null;
+                return false;
+            }
+
+            surface.Anchor.Visible = true;
+            return true;
         }
     }
 
@@ -245,6 +341,56 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         }
 
         return result;
+    }
+
+    private static SoftBodyHullPoint[] BuildRestHull(
+        BossFragmentCell cell,
+        Rect2 cellBounds,
+        Transform2D bodyToPresentation) =>
+        cell.Vertices
+            .Select(point =>
+            {
+                Vector2 mapped = bodyToPresentation * ToVector2(point);
+                return new SoftBodyHullPoint(
+                    new BossFragmentPoint(mapped.X, mapped.Y),
+                    Math.Clamp((point.X - cellBounds.Position.X) / cellBounds.Size.X, 0f, 1f),
+                    Math.Clamp((point.Y - cellBounds.Position.Y) / cellBounds.Size.Y, 0f, 1f));
+            })
+            .ToArray();
+
+    private static bool HasRenderableBounds(
+        BossCapturedFragmentDescriptor descriptor,
+        Rect2 cellBounds,
+        Rect2 partBounds,
+        Rect2 renderBounds) =>
+        cellBounds.Size.X > 1f
+        && cellBounds.Size.Y > 1f
+        && renderBounds.Size.X > 1f
+        && renderBounds.Size.Y > 1f
+        && partBounds.Size.X > 1f
+        && partBounds.Size.Y > 1f
+        && descriptor.AtlasUvRect.Size.X > 0f
+        && descriptor.AtlasUvRect.Size.Y > 0f;
+
+    private static float ResolveMappedArea(
+        BossFragmentCell cell,
+        Transform2D bodyToPresentation)
+    {
+        if (cell.Vertices.Count < 3)
+        {
+            return 0f;
+        }
+
+        double twiceArea = 0d;
+        for (int index = 0; index < cell.Vertices.Count; index++)
+        {
+            Vector2 current = bodyToPresentation * ToVector2(cell.Vertices[index]);
+            Vector2 next = bodyToPresentation
+                * ToVector2(cell.Vertices[(index + 1) % cell.Vertices.Count]);
+            twiceArea += current.X * next.Y - next.X * current.Y;
+        }
+
+        return (float)Math.Abs(twiceArea * 0.5d);
     }
 
     private static ArrayMesh BuildMesh(
@@ -341,17 +487,17 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         }
     }
 
-    private static BossFragmentPoint Average(IReadOnlyList<BossFragmentPoint> points)
+    private static BossFragmentPoint Average(BossFragmentPoint[] points)
     {
         float x = 0f;
         float y = 0f;
-        for (int index = 0; index < points.Count; index++)
+        for (int index = 0; index < points.Length; index++)
         {
             x += points[index].X;
             y += points[index].Y;
         }
 
-        float inverseCount = 1f / Math.Max(1, points.Count);
+        float inverseCount = 1f / Math.Max(1, points.Length);
         return new BossFragmentPoint(x * inverseCount, y * inverseCount);
     }
 

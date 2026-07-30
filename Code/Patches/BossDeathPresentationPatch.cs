@@ -33,7 +33,7 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
             || !__instance.Entity.IsPrimaryEnemy
             || __instance.DeathAnimationTask is { IsCompleted: false }
             || monster.CombatState?.RunState.CurrentRoom is not CombatRoom
-                { RoomType: RoomType.Boss } modelRoom
+            { RoomType: RoomType.Boss } modelRoom
             || monster.CombatState.Players.All(player => player.Character is not INinjaSlayerCharacter))
         {
             return true;

@@ -345,7 +345,7 @@ public static class AncientEntranceAnimation
     {
         if (cinematicContext == null)
         {
-            await owner.ToSignal(tween, Tween.SignalName.Finished);
+            await TweenPlayback.AwaitCompletion(tween, owner);
             return;
         }
 

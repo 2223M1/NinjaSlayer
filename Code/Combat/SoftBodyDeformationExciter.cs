@@ -106,7 +106,7 @@ internal sealed class SoftBodyDeformationExciter
 
     private static float Project(
         ReadOnlySpan<BossFragmentPoint> values,
-        IReadOnlyList<BossFragmentPoint> pattern)
+        BossFragmentPoint[] pattern)
     {
         float numerator = 0f;
         float denominator = 0f;
@@ -205,7 +205,7 @@ internal sealed class SoftBodyDeformationExciter
 
     private static void Orthogonalize(
         BossFragmentPoint[] pattern,
-        IReadOnlyList<BossFragmentPoint> basis)
+        BossFragmentPoint[] basis)
     {
         float projection = 0f;
         float denominator = 0f;

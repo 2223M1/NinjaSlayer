@@ -105,11 +105,11 @@ internal sealed class SoftBodyEnergyAudit
 
     private static float ResolveSnapshotEnergy(
         SoftFragmentBody body,
-        IReadOnlyList<BossFragmentPoint> velocities)
+        BossFragmentPoint[] velocities)
     {
         double particleMass = body.Mass / SoftFragmentBody.ParticleCount;
         double sum = 0d;
-        for (int index = 0; index < velocities.Count; index++)
+        for (int index = 0; index < velocities.Length; index++)
         {
             sum += velocities[index].X * velocities[index].X
                 + velocities[index].Y * velocities[index].Y;
@@ -123,12 +123,12 @@ internal sealed class SoftBodyEnergyAudit
 
     private static float ResolveBlendedEnergy(
         SoftFragmentBody body,
-        IReadOnlyList<BossFragmentPoint> before,
+        BossFragmentPoint[] before,
         float amount)
     {
         double particleMass = body.Mass / SoftFragmentBody.ParticleCount;
         double sum = 0d;
-        for (int index = 0; index < before.Count; index++)
+        for (int index = 0; index < before.Length; index++)
         {
             BossFragmentPoint current = body.GetParticleVelocity(index);
             float x = before[index].X + (current.X - before[index].X) * amount;

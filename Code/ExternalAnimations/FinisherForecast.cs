@@ -139,7 +139,7 @@ internal static class FinisherForecast
             FinisherTargeting.All => FinisherForecastTargeting.All,
             FinisherTargeting.Random => FinisherForecastTargeting.Random,
             FinisherTargeting.Fixed => FinisherForecastTargeting.Fixed,
-            _ => throw new ArgumentOutOfRangeException(nameof(descriptor.Targeting), descriptor.Targeting, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(spec), descriptor.Targeting, null)
         };
         if (targeting == FinisherForecastTargeting.Single && (enemies.Count != 1 || singleTargetIndex == null)
             || targeting == FinisherForecastTargeting.Fixed
@@ -245,7 +245,7 @@ internal static class FinisherForecast
             FinisherTargeting.All => FinisherForecastTargeting.All,
             FinisherTargeting.Random => FinisherForecastTargeting.Random,
             FinisherTargeting.Fixed => FinisherForecastTargeting.Fixed,
-            _ => throw new ArgumentOutOfRangeException(nameof(descriptor.Targeting), descriptor.Targeting, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(descriptor), descriptor.Targeting, null)
         };
         if (targeting == FinisherForecastTargeting.Single && singleTargetIndex == null
             || targeting == FinisherForecastTargeting.Fixed
@@ -376,7 +376,7 @@ internal static class FinisherForecast
         IReadOnlyList<Creature> enemies,
         ForecastState[] states,
         IReadOnlyList<int> targets,
-        IReadOnlyList<decimal> damageByTarget,
+        decimal[] damageByTarget,
         ValueProp props,
         Creature dealer,
         CardModel? cardSource,
@@ -443,7 +443,7 @@ internal static class FinisherForecast
         IReadOnlyList<Creature> enemies,
         ForecastState[] states,
         FinisherAttackSpec spec,
-        IReadOnlyList<decimal> damageByTarget,
+        decimal[] damageByTarget,
         decimal? narakuHpLoss,
         IReadOnlyList<int> targets,
         int hitIndex)

@@ -38,11 +38,11 @@ Godot loads a Debug editor assembly before Release export. The export-only build
 
 ## Versions and releases
 
-Releases use `v0.1.x`, where `x` is `0` through `99` without leading zeroes. A clean exact tag produces the matching package version; work after that tag produces a development version for the next patch (for example, `v0.1.7` becomes `0.1.8-dev...`) so a local test build takes precedence over the installed Workshop release.
+Releases use stable SemVer tags in the form `vMAJOR.MINOR.PATCH`, without leading zeroes. A clean exact tag produces the matching package version. Development builds use the next patch after the repository's highest stable release tag, including tags retained on archived history, so a cleaned main branch cannot regress below an already published version.
 
 ### Workshop-only quick test release
 
-Frequent player-test builds can use the desktop shortcut or the Workshop-only script. It includes the current working tree, automatically selects the next local `0.1.x` version, packages and installs the mod, stages Workshop content, and invokes the local uploader:
+Frequent player-test builds can use the desktop shortcut or the Workshop-only script. It includes the current working tree, automatically selects the next local patch version, packages and installs the mod, stages Workshop content, and invokes the local uploader:
 
 ```powershell
 .\tools\release\Invoke-OneClickRelease.ps1
@@ -66,7 +66,7 @@ The release flow is:
 
 1. Push the candidate commit to `main`.
 2. Run **Protected game contract** for the exact commit with an ephemeral `Contract` runner.
-3. Create and push the next `v0.1.x` tag.
+3. Create and push the next stable SemVer tag.
 4. Manually dispatch **GitHub Release**, approve it, and start an ephemeral `Release` runner.
 5. Publish the matching GitHub Release to Workshop through the manual protected workflow or the guarded local target.
 
@@ -75,7 +75,7 @@ The local Workshop target is:
 ```powershell
 dotnet msbuild .\NinjaSlayer.csproj -t:PublishWorkshop `
   -p:Configuration=Release `
-  -p:NinjaSlayerVersion=0.1.x `
+  -p:NinjaSlayerVersion=MAJOR.MINOR.PATCH `
   -p:PublishWorkshopConfirmed=true
 ```
 

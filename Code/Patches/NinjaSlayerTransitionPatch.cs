@@ -42,8 +42,8 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         if (!NinjaSlayerTransitionGate.TryStartSession(
                 __instance,
                 invocationKind,
-                cancelToken ?? CancellationToken.None,
                 BeginNinjaSlayerTransition,
+                cancelToken ?? CancellationToken.None,
                 out NinjaSlayerTransitionSession? session))
         {
             return true;

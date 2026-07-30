@@ -1,48 +1,82 @@
-# NinjaSlayer
+<div align="center">
+  <img src="Workshop/image.png" width="256" alt="NinjaSlayer 项目图标">
+  <h1>忍者杀手 NinjaSlayer</h1>
+  <p>《杀戮尖塔 2》的忍者杀手角色 Mod</p>
+  <p><strong>简体中文</strong> | <a href="README_EN.md">English</a></p>
+  <p>
+    <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
+    <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
+    <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.109.x-B51F24" alt="Slay the Spire 2 0.109.x">
+    <img src="https://img.shields.io/badge/RitsuLib-0.4.62-2D7D9A" alt="RitsuLib 0.4.62">
+    <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
+  </p>
+</div>
 
-《杀戮尖塔 2》的忍者杀手角色 Mod，包含完整角色机制、卡牌、遗物、事件、动画与 FMOD 音效。
+NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围绕空手道、手里剑、茶道、奈落与忍者之魂构建完整的可玩角色体验。项目基于 RitsuLib，包含自定义机制、演出、事件、音频与配套内容。
+
+## 项目特色
+
+- 以连贯的角色机制和多种战斗路线还原忍者杀手主题。
+- 包含自定义处决、角色动画、Boss 死亡演出、伙伴表现与 FMOD 音频。
+- 为存档、多人游戏、版本契约和 Mod 兼容性设置了明确的防护与验证流程。
+- 持续维护独立的[卡牌目录](Docs/card-catalog.md)，首页不重复展开内容清单。
 
 ## 安装
 
+### Steam 创意工坊
+
 1. 订阅并启用 [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
-2. 在 Steam 创意工坊订阅 NinjaSlayer，或从 [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) 下载最新版本并解压到游戏的 `mods` 目录。
-3. 启动游戏，在 Mod 管理器中启用 `STS2-RitsuLib` 和 `NinjaSlayer`。
+2. 订阅 [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)。
+3. 启动游戏，在 Mod 管理器中启用 `STS2-RitsuLib` 与 `NinjaSlayer`。
 
-## 兼容性
+### 手动安装
 
-- Slay the Spire 2: `0.109.x`
-- RitsuLib: `0.4.62` 或更高兼容版本
-- 当前提供简体中文本地化
+1. 从 [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) 下载最新构建。
+2. 将压缩包内容解压到《杀戮尖塔 2》的 `mods` 目录。
+3. 单独安装并启用兼容版本的 RitsuLib，然后启用 NinjaSlayer。
 
-## Development
+## 兼容性与语言
 
-**Prerequisites**
+| 组件 | 支持范围 |
+|---|---|
+| Slay the Spire 2 | `0.109.x`，最低 `0.109.0` |
+| RitsuLib | `0.4.62` |
+| .NET | `9.0` |
+| Godot | `4.5.1 Mono` |
+| 游戏内语言 | 目前主要提供简体中文 |
 
-- [.NET SDK 9](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/)
-- Slay the Spire 2 `0.109.x`
+英文 README 仅用于项目文档与安装说明，不代表游戏内已提供完整英文文本。
+
+## 开发构建
+
+需要 [.NET SDK 9](https://dotnet.microsoft.com/download/dotnet/9.0)、[Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/) 和对应版本的游戏文件。
 
 ```powershell
 git clone https://github.com/2223M1/NinjaSlayer.git
 cd NinjaSlayer
 dotnet restore .\NinjaSlayer.csproj
-dotnet build .\NinjaSlayer.csproj --no-restore -v:minimal
+dotnet build .\NinjaSlayer.csproj --no-restore -c Release -v:minimal
 ```
 
-普通构建只编译代码。完整测试、打包、安装、版本发布和受保护实机验证流程见 [开发与发布指南](Docs/development.md)。
+普通构建不会自动安装或发布 Mod。测试、真实游戏契约、打包、本地安装及发布边界见[开发与发布指南](Docs/development.md)。
 
-桌面“一键上传”只会使用当前工作区构建并上传 Steam 创意工坊，不会提交、推送、打标签或创建 GitHub Release：
+## 相关链接
 
-```powershell
-.\tools\release\Invoke-OneClickRelease.ps1
-```
+- [Steam 创意工坊](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)
+- [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases)
+- [问题反馈](https://github.com/2223M1/NinjaSlayer/issues)
+- [卡牌目录](Docs/card-catalog.md)
+- [隐私说明](Docs/privacy.md)
 
-需要同时发布 GitHub Release 时，使用开发指南中的显式完整发布命令。
+## 作者与鸣谢
 
-## Links
+项目由 [2223M1](https://github.com/2223M1) 维护。
 
-- [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)
-- [Card Catalog](Docs/card-catalog.md)
-- [Privacy](Docs/privacy.md)
+感谢 [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) 的维护者、STS2 Modding 教程与社区参与者提供的框架、文档和技术交流。
 
-本仓库未声明开源许可证。
+## 权利说明
+
+本项目是非官方同人 Mod。《杀戮尖塔 2》、《忍者杀手》及相关名称、角色、美术和其他第三方内容的权利归各自权利人所有。
+
+本仓库未声明开源许可证。源码可公开查看不等于授予复制、修改、再发布或制作衍生版本的许可；如需使用本项目内容，请先取得维护者及相关权利人的明确授权。

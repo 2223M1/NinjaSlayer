@@ -141,7 +141,7 @@ public static class SoarSpinAnimation
         {
             if (cinematicContext == null)
             {
-                await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+                await TweenPlayback.AwaitCompletion(tween, creatureNode);
             }
             else
             {
@@ -252,7 +252,10 @@ public static class SoarSpinAnimation
             duration,
             duration);
 
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TweenPlayback.AwaitCompletion(tween, creatureNode))
+        {
+            return;
+        }
 
         if (!accelerating)
         {

@@ -50,14 +50,16 @@ public class Entry
 
         NinjaSlayerBalanceTelemetry.Register();
 
-        RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
-            .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
-            .Character<NinjaSlayerDebugCharacter>(character =>
-            {
-                ConfigureStartingDeck(character);
-                character.AddStartingRelic<ChadoBreathingRelic>(1, 0);
-            })
-            .Apply();
+        ModContentPackBuilder contentPack = RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
+            .Character<NinjaSlayerCharacter>(ConfigureStartingDeck);
+#if NINJA_SLAYER_DEBUG_CONTENT
+        contentPack.Character<NinjaSlayerDebugCharacter>(character =>
+        {
+            ConfigureStartingDeck(character);
+            character.AddStartingRelic<ChadoBreathingRelic>(1, 0);
+        });
+#endif
+        contentPack.Apply();
 
         RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
 
@@ -83,6 +85,9 @@ public class Entry
     private static void InstallBaseCapabilities()
     {
         InstallCapability<GameplayPatchGroup>(NinjaSlayerCapabilityIds.Gameplay);
+        InstallCapability<OrobasSeaGlassPatchGroup>(
+            NinjaSlayerCapabilityIds.OrobasSeaGlass,
+            GameCompatibility.OrobasSeaGlass.GetProbes());
         InstallCapability<CardResolutionPatchGroup>(NinjaSlayerCapabilityIds.CardResolution);
         InstallCapability<ReporterPassPatchGroup>(
             NinjaSlayerCapabilityIds.ReporterPass,

@@ -115,10 +115,7 @@ internal sealed class FinisherImpactPresentation : IDisposable
 
     public static FinisherImpactPresentation Create(NCombatRoom room, int impactCount)
     {
-        if (impactCount <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(impactCount));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(impactCount);
 
         return new FinisherImpactPresentation(room, impactCount);
     }

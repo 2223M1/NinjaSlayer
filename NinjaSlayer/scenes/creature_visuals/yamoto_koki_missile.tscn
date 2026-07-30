@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Code/Nodes/NYamotoKokiOrigamiMissileVisualsRoot.cs" id="1_root"]
 [ext_resource type="SpineSkeletonDataResource" path="res://NinjaSlayer/animations/monsters/yamoto_koki_missile/yamoto_koki_missile_skel_data.tres" id="2_skeleton"]
-[ext_resource type="Texture2D" path="res://NinjaSlayer/images/relics/YamotoKokiCuteRelic.png" id="3_crane"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/yamoto_koki_origami_missile.png" id="3_crane"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/yamoto_koki_missile/short_rice_no_glow_particle.png" id="4_particle"]
 [ext_resource type="Script" path="res://Code/Nodes/NYamotoKokiOrigamiMissileVfx.cs" id="5_vfx"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/vfx/common/common_glow.png" id="6_glow"]
@@ -88,13 +88,6 @@ slot_name = "smoke_ball_attach"
 show_behind_parent = true
 position = Vector2(1.90544, -204.018)
 
-[node name="PaperKraneCore" type="Sprite2D" parent="Visuals/SmokeBallSlot"]
-show_behind_parent = true
-position = Vector2(-2.2, 0.55)
-scale = Vector2(1.1, 1.1)
-texture = ExtResource("3_crane")
-flip_h = true
-
 [node name="OrigamiGlow" type="Sprite2D" parent="Visuals/SmokeBallSlot"]
 show_behind_parent = true
 material = SubResource("CanvasItemMaterial_additive")
@@ -102,6 +95,13 @@ position = Vector2(-2.2, 0.55)
 scale = Vector2(2.9, 2.9)
 modulate = Color(0.91, 0.61, 0.94, 0.82)
 texture = ExtResource("6_glow")
+
+[node name="PaperKraneCore" type="Sprite2D" parent="Visuals/SmokeBallSlot"]
+show_behind_parent = true
+position = Vector2(-2.2, 0.55)
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("3_crane")
+flip_h = true
 
 [node name="DotParticles" type="GPUParticles2D" parent="Visuals/SmokeBallSlot"]
 show_behind_parent = true

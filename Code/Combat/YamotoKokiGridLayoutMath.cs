@@ -36,7 +36,7 @@ internal static class YamotoKokiGridLayoutMath
         List<YamotoKokiSlotPosition> result = new(widths.Count);
         for (int row = 0; row < rows; row++)
         {
-            IReadOnlyList<float> rowWidths = widths.Skip(row * columns).Take(columns).ToList();
+            List<float> rowWidths = widths.Skip(row * columns).Take(columns).ToList();
             float widthTotal = rowWidths.Sum();
             float spacing = DefaultSpacing;
             float rowSpan = widthTotal + Math.Max(0, rowWidths.Count - 1) * spacing;

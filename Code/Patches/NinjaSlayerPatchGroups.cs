@@ -45,6 +45,12 @@ internal sealed class GameplayPatchGroup : IModPatches
     }
 }
 
+internal sealed class OrobasSeaGlassPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher) =>
+        patcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
+}
+
 internal sealed class BossBurstPresentationPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)

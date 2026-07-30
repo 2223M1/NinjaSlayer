@@ -1,4 +1,5 @@
 using Godot;
+using System.Globalization;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Monsters;
 using STS2RitsuLib.Scaffolding.Godot;
@@ -48,7 +49,7 @@ internal static class YamotoKokiOrigamiMissileVisuals
             UniqueNameInOwner = true,
             CustomMinimumSize = new Vector2(40f, 40f),
             MouseFilter = Control.MouseFilterEnum.Ignore,
-            Text = YamotoKokiOrigamiMissile.ExplodeDamage.ToString(),
+            Text = YamotoKokiOrigamiMissile.ExplodeDamage.ToString(CultureInfo.InvariantCulture),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         };

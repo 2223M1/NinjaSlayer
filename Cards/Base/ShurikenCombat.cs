@@ -33,7 +33,12 @@ internal static class ShurikenCombat
 
         if (HasSoarSpread(card))
         {
-            Creature? vfxTarget = cardPlay.Target ?? combatState?.HittableEnemies.LastOrDefault();
+            Creature? vfxTarget = cardPlay.Target;
+            if (vfxTarget == null && combatState?.HittableEnemies is { Count: > 0 } enemies)
+            {
+                vfxTarget = enemies[^1];
+            }
+
             return command
                 .TargetingAllOpponents(combatState ?? throw new InvalidOperationException("Shuriken attacks require combat."))
                 .WithHitVfxNode(_ => vfxTarget == null ? null : NShivThrowVfx.Create(card.Owner!.Creature, vfxTarget, Colors.Green));

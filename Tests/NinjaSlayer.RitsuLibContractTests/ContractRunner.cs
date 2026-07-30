@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
+using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -15,6 +16,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Feedback;
+using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using STS2RitsuLib;
 using STS2RitsuLib.Patching.Core;
@@ -33,6 +35,7 @@ public partial class ContractRunner : Node
             VerifyOriginalLethalTargetFingerprint();
             VerifyOriginalPreparedDrawTargetFingerprint();
             VerifyNancyLoadedRunCompatibility();
+            VerifyOrobasSeaGlassPatchContract();
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyOriginalFeedbackStreamOwnership();
@@ -84,6 +87,48 @@ public partial class ContractRunner : Node
         Require(
             NancyCompatibility.TryGetRooms(act, out RoomSet? resolved) && ReferenceEquals(rooms, resolved),
             "The Nancy compatibility adapter did not return the loaded act room set.");
+    }
+
+    private static void VerifyOrobasSeaGlassPatchContract()
+    {
+        Require(
+            GameCompatibility.OrobasSeaGlass.GetProbes().All(probe => probe.IsAvailable),
+            "The Orobas Sea Glass target contract is unavailable.");
+
+        MethodInfo target = AccessTools.Method(
+            typeof(Orobas),
+            GameCompatibility.OrobasSeaGlass.TargetMethodName,
+            Type.EmptyTypes)
+            ?? throw new MissingMethodException(
+                typeof(Orobas).FullName,
+                GameCompatibility.OrobasSeaGlass.TargetMethodName);
+        Require(
+            target.ReturnType == typeof(IReadOnlyList<MegaCrit.Sts2.Core.Events.EventOption>),
+            "Orobas.GenerateInitialOptions() no longer returns IReadOnlyList<EventOption>.");
+
+        ModPatcher patcher = CreatePatcher("orobas-sea-glass-contract");
+        patcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
+        try
+        {
+            Require(patcher.PatchAll(), "ModPatcher rejected the production Orobas Sea Glass patch.");
+            Patches info = Harmony.GetPatchInfo(target)
+                ?? throw new InvalidOperationException("Harmony did not report the Orobas Sea Glass patch.");
+            Patch postfix = info.Postfixes.Single(item => item.owner == patcher.PatcherId);
+            Require(
+                postfix.PatchMethod.DeclaringType == typeof(OrobasSeaGlassCharacterPatch)
+                && postfix.PatchMethod.Name == nameof(OrobasSeaGlassCharacterPatch.Postfix),
+                "Harmony bound an unexpected Orobas Sea Glass Postfix.");
+        }
+        finally
+        {
+            patcher.UnpatchAll();
+            patcher.UnpatchAll();
+        }
+
+        Patches? remaining = Harmony.GetPatchInfo(target);
+        Require(
+            !(remaining?.Owners.Contains(patcher.PatcherId) ?? false),
+            "Orobas Sea Glass patch ownership remained after idempotent unload.");
     }
 
     private static void VerifyFinalizerOrderingAndTypedState()

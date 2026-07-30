@@ -130,9 +130,9 @@
     <Error Condition="'$(PublishWorkshopConfirmed)' != 'true'" Text="Pass PublishWorkshopConfirmed=true to publish." />
     <Error Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true'" Text="Pass NinjaSlayerVersion explicitly when publishing." />
     <Error Condition="'$(IsSupportedReleaseTag)' != 'true'"
-           Text="Workshop publishing requires a v0.1.x tag, where x is 0 through 99 without leading zeroes." />
+           Text="Workshop publishing requires a clean stable SemVer tag (vMAJOR.MINOR.PATCH)." />
     <Error Condition="'$(IsExactReleaseTag)' != 'true' or '$(NinjaSlayerVersion)' != '$(_GitExactVersion)'"
-           Text="Workshop publishing requires a clean exact v0.1.x tag matching NinjaSlayerVersion." />
+           Text="Workshop publishing requires a clean exact SemVer tag matching NinjaSlayerVersion." />
     <Error Condition="!Exists('$(WorkshopUploaderExe)')" Text="Workshop uploader missing at $(WorkshopUploaderExe)." />
     <Error Condition="!Exists('$(WorkshopUploadRoot)\$(NinjaSlayerArtifactName)\workshop.json')"
            Text="Workshop metadata missing at $(WorkshopUploadRoot)\$(NinjaSlayerArtifactName)\workshop.json." />

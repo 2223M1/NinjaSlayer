@@ -41,7 +41,10 @@ public static class ByrdFallAnimation
 
         if (cinematicContext == null)
         {
-            await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+            if (!await TweenPlayback.AwaitCompletion(tween, creatureNode))
+            {
+                return;
+            }
         }
         else
         {

@@ -275,7 +275,7 @@ internal static class BossDismembermentMath
             return [];
         }
 
-        IReadOnlyList<BossFragmentPoint> seeds = BuildDistributedSeeds(bounds, count, seed);
+        List<BossFragmentPoint> seeds = BuildDistributedSeeds(bounds, count, seed);
         return BuildVoronoiCells(bounds, seeds);
     }
 
@@ -309,7 +309,7 @@ internal static class BossDismembermentMath
             return [];
         }
 
-        IReadOnlyList<BossFragmentPoint> seeds = BuildDistributedSeeds(
+        List<BossFragmentPoint> seeds = BuildDistributedSeeds(
             convexBounds,
             count,
             seed);
@@ -436,7 +436,7 @@ internal static class BossDismembermentMath
         return new BossFragmentPoint((float)(xSum / divisor), (float)(ySum / divisor));
     }
 
-    private static IReadOnlyList<BossFragmentPoint> BuildDistributedSeeds(
+    private static List<BossFragmentPoint> BuildDistributedSeeds(
         BossFragmentRect bounds,
         int count,
         ulong seed)
@@ -485,7 +485,7 @@ internal static class BossDismembermentMath
         return selected;
     }
 
-    private static IReadOnlyList<BossFragmentPoint> BuildDistributedSeeds(
+    private static List<BossFragmentPoint> BuildDistributedSeeds(
         IReadOnlyList<BossFragmentPoint> convexBounds,
         int count,
         ulong seed)
@@ -645,7 +645,7 @@ internal static class BossDismembermentMath
         && bounds.Height > 1f;
 
     private static List<BossFragmentPoint> ClipToHalfPlane(
-        IReadOnlyList<BossFragmentPoint> polygon,
+        List<BossFragmentPoint> polygon,
         float normalX,
         float normalY,
         float limit)

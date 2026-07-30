@@ -48,7 +48,7 @@ internal static class PlanarPivotSpinAnimation
 
         try
         {
-            await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+            await TweenPlayback.AwaitCompletion(tween, creatureNode);
         }
         finally
         {

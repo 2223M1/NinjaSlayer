@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const errors = [];
@@ -37,22 +37,120 @@ function readPngSize(path) {
   return [png.readUInt32BE(16), png.readUInt32BE(20)];
 }
 
+const retiredCardArtTools = [
+  'tools/build-card-art-manifest.mjs',
+  'tools/process-card-art.py',
+  'tools/record-card-art-review.mjs',
+  'tools/generate-card-art-contact-sheets.py',
+];
+for (const relativePath of retiredCardArtTools) {
+  if (existsSync(join(root, ...relativePath.split('/')))) {
+    errors.push(`${relativePath} belongs in the external art-production workspace`);
+  }
+}
+
+function validateReadme(relativePath, counterpart, language) {
+  const path = join(root, relativePath);
+  if (!existsSync(path)) {
+    errors.push(`Missing ${relativePath}`);
+    return;
+  }
+
+  const source = readFileSync(path, 'utf8');
+  if (!source.includes('src="Workshop/image.png" width="256"')) {
+    errors.push(`${relativePath} must use the 256px Workshop project image`);
+  }
+  if (!source.includes(`href="${counterpart}"`)) {
+    errors.push(`${relativePath} must link to ${counterpart}`);
+  }
+  for (const badge of ['C%23', '.NET-9.0', 'Godot-4.5.1', 'Spire%202-0.109.x', 'RitsuLib-0.4.62', 'github/v/release']) {
+    if (!source.includes(badge)) errors.push(`${relativePath} is missing the ${badge} badge`);
+  }
+
+  const prohibitedHeadings = language === 'zhs'
+    ? ['角色概览', '卡牌列表', 'Power 列表', '遗物列表']
+    : ['Character Overview', 'Card List', 'Power List', 'Relic List'];
+  const headings = new Set(
+    [...source.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)].map((match) => match[1]),
+  );
+  for (const heading of prohibitedHeadings) {
+    if (headings.has(heading)) errors.push(`${relativePath} must not include the ${heading} section`);
+  }
+
+  const localTargets = new Set();
+  for (const match of source.matchAll(/!?\[[^\]]*\]\(([^)]+)\)/g)) localTargets.add(match[1]);
+  for (const match of source.matchAll(/(?:href|src)="([^"]+)"/g)) localTargets.add(match[1]);
+  for (const rawTarget of localTargets) {
+    const target = rawTarget.replace(/^<|>$/g, '').split(/[?#]/, 1)[0];
+    if (!target || target.startsWith('#') || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
+    const localPath = resolve(dirname(path), decodeURIComponent(target));
+    if (!existsSync(localPath)) {
+      errors.push(`${relativePath} references missing local path ${target}`);
+    }
+  }
+}
+
+validateReadme('README.md', 'README_EN.md', 'zhs');
+validateReadme('README_EN.md', 'README.md', 'eng');
+
 for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter((path) => path.endsWith('.json'))) {
   readJson(path);
 }
 const manifest = readJson(join(root, 'NinjaSlayer.json'));
 if (manifest) {
-  const project = readFileSync(join(root, 'NinjaSlayer.csproj'), 'utf8');
-  const packageVersion = project.match(
-    /<PackageReference Include="STS2\.RitsuLib" Version="([^"]+)"/,
+  const dependencyProps = readFileSync(
+    join(root, 'eng', 'NinjaSlayer.Dependencies.props'),
+    'utf8',
+  );
+  const ritsuLibVersion = dependencyProps.match(
+    /<NinjaSlayerRitsuLibVersion>([^<]+)<\/NinjaSlayerRitsuLibVersion>/,
   )?.[1];
+  const refLibVersion = dependencyProps.match(
+    /<NinjaSlayerRefLibVersion>([^<]+)<\/NinjaSlayerRefLibVersion>/,
+  )?.[1];
+  const smartFormatVersion = dependencyProps.match(
+    /<NinjaSlayerSmartFormatVersion>([^<]+)<\/NinjaSlayerSmartFormatVersion>/,
+  )?.[1];
+  const project = readFileSync(join(root, 'NinjaSlayer.csproj'), 'utf8');
   const manifestVersion = manifest.dependencies?.find(
     (dependency) => dependency.id === 'STS2-RitsuLib',
   )?.min_version;
-  if (!packageVersion || manifestVersion !== packageVersion) {
+  if (!ritsuLibVersion || manifestVersion !== ritsuLibVersion) {
     errors.push(
-      `NinjaSlayer.json must require the compiled STS2.RitsuLib version (${packageVersion ?? '<missing>'})`,
+      `NinjaSlayer.json must require the compiled STS2.RitsuLib version (${ritsuLibVersion ?? '<missing>'})`,
     );
+  }
+  for (const [dependency, property] of [
+    ['STS2.RitsuLib', 'NinjaSlayerRitsuLibVersion'],
+    ['Book.StS2.RefLib', 'NinjaSlayerRefLibVersion'],
+    ['SmartFormat', 'NinjaSlayerSmartFormatVersion'],
+  ]) {
+    if (!project.includes(`PackageReference Include="${dependency}"`)
+        || !project.includes(`Version="$(${property})"`)) {
+      errors.push(`NinjaSlayer.csproj must source ${dependency} from ${property}`);
+    }
+  }
+  for (const [name, value] of [
+    ['NinjaSlayerRitsuLibVersion', ritsuLibVersion],
+    ['NinjaSlayerRefLibVersion', refLibVersion],
+    ['NinjaSlayerSmartFormatVersion', smartFormatVersion],
+  ]) {
+    if (!value) errors.push(`eng/NinjaSlayer.Dependencies.props is missing ${name}`);
+  }
+
+  const pinnedRitsuLibFiles = [
+    ['.github/workflows/contract.yml', /ritsuLibVersion = '([^']+)'/],
+    ['.github/scripts/verify-contract-attestation.ps1', /ExpectedRitsuLibVersion = '([^']+)'/],
+    ['.github/scripts/verify-smoke-attestation.ps1', /attestation\.ritsuLibVersion\) '([^']+)'/],
+    ['tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1', /ritsuLibVersion = '([^']+)'/],
+    ['tools/smoke-harness/NinjaSlayer.SmokeDriver/NinjaSlayer-SmokeDriver.json', /"STS2-RitsuLib", "min_version": "([^"]+)"/],
+  ];
+  for (const [relativePath, pattern] of pinnedRitsuLibFiles) {
+    const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
+    const pinnedVersion = source.match(pattern)?.[1];
+    if (pinnedVersion !== ritsuLibVersion) {
+      errors.push(`${relativePath} must pin STS2.RitsuLib ${ritsuLibVersion ?? '<missing>'}`);
+    }
   }
 }
 const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));

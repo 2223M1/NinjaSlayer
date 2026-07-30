@@ -32,7 +32,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         FinisherAttackSpec spec,
         AttackCommand? command,
         IReadOnlyList<Creature> enemies,
-        IReadOnlyList<decimal> damageByTarget,
+        decimal[] damageByTarget,
         decimal? narakuHpLoss,
         int hits,
         Creature? singleTarget,
@@ -101,15 +101,14 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
 
     public override int GetHashCode() => _hashCode;
 
-    private static bool ReferenceSequenceEqual<T>(IReadOnlyList<T> left, IReadOnlyList<T> right)
-        where T : class
+    private static bool ReferenceSequenceEqual(Creature[] left, Creature[] right)
     {
-        if (left.Count != right.Count)
+        if (left.Length != right.Length)
         {
             return false;
         }
 
-        for (int index = 0; index < left.Count; index++)
+        for (int index = 0; index < left.Length; index++)
         {
             if (!ReferenceEquals(left[index], right[index]))
             {
@@ -120,10 +119,9 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         return true;
     }
 
-    private static void AddReferenceSequenceHash<T>(ref HashCode hash, IReadOnlyList<T> values)
-        where T : class
+    private static void AddReferenceSequenceHash(ref HashCode hash, Creature[] values)
     {
-        foreach (T value in values)
+        foreach (Creature value in values)
         {
             hash.Add(RuntimeHelpers.GetHashCode(value));
         }

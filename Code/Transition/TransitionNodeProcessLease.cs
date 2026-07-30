@@ -138,7 +138,7 @@ internal sealed class TransitionNodeProcessLease : IDisposable
         }
     }
 
-    private void RestoreOverrides(ICollection<Exception>? failures = null)
+    private void RestoreOverrides(List<Exception>? failures = null)
     {
         for (int index = _overrides.Count - 1; index >= 0; index--)
         {

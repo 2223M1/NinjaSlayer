@@ -27,6 +27,7 @@
     <Compile Include="..\..\Code\Combat\SoftBodyDeformationExciter.cs" Link="SoftBodyDeformationExciter.cs" />
     <Compile Include="..\..\Code\Combat\SoftBodyLaunchActuator.cs" Link="SoftBodyLaunchActuator.cs" />
     <Compile Include="..\..\Code\Combat\SoftFragmentBody.cs" Link="SoftFragmentBody.cs" />
+    <Compile Include="..\..\Code\Combat\SoftFragmentBody.Constraints.cs" Link="SoftFragmentBody.Constraints.cs" />
     <Compile Include="..\..\Code\Combat\SoftRagdollLink.cs" Link="SoftRagdollLink.cs" />
     <Compile Include="..\..\Code\Combat\SoftCollisionBroadphase.cs" Link="SoftCollisionBroadphase.cs" />
     <Compile Include="..\..\Code\Combat\SoftContactManifold.cs" Link="SoftContactManifold.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
+    <Compile Include="..\..\Code\Compatibility\OrobasSeaGlassCandidatePolicy.cs" Link="OrobasSeaGlassCandidatePolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedSafetyPolicy.cs" Link="PreparedSafetyPolicy.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedApplyTransaction.cs" Link="PreparedApplyTransaction.cs" />
     <Compile Include="..\..\Code\Prepared\CombatStateAccessPolicy.cs" Link="CombatStateAccessPolicy.cs" />

@@ -1,4 +1,5 @@
 <Project Sdk="Godot.NET.Sdk/4.5.1">
+  <Import Project="..\..\eng\NinjaSlayer.Dependencies.props" />
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -18,6 +19,9 @@
     <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
     <Compile Include="..\..\Code\Compatibility\FinisherLethalTargetContract.cs" Link="FinisherLethalTargetContract.cs" />
     <Compile Include="..\..\Code\Compatibility\NancyCompatibility.cs" Link="NancyCompatibility.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameCompatibility.cs" Link="GameCompatibility.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameCompatibility.OrobasSeaGlass.cs" Link="GameCompatibility.OrobasSeaGlass.cs" />
+    <Compile Include="..\..\Code\Compatibility\OrobasSeaGlassCandidatePolicy.cs" Link="OrobasSeaGlassCandidatePolicy.cs" />
     <Compile Include="..\..\Code\Compatibility\PreparedDrawTargetContract.cs" Link="PreparedDrawTargetContract.cs" />
     <Compile Include="..\..\Code\Compatibility\PreparedQueueCompatibility.cs" Link="PreparedQueueCompatibility.cs" />
     <Compile Include="..\..\Code\Compatibility\StableMethodBodyContract.cs" Link="StableMethodBodyContract.cs" />
@@ -25,6 +29,8 @@
     <Compile Include="..\..\Code\ExternalAnimations\FinisherDamageLedger.cs" Link="FinisherDamageLedger.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedApplyTransaction.cs" Link="PreparedApplyTransaction.cs" />
+    <Compile Include="..\..\Code\Patches\OrobasSeaGlassCharacterPatch.cs" Link="OrobasSeaGlassCharacterPatch.cs" />
+    <Compile Include="..\..\Content\INinjaSlayerCharacter.cs" Link="INinjaSlayerCharacter.cs" />
     <Compile Include="..\..\Content\NinjaSlayerWorldVisualProfile.cs" Link="NinjaSlayerWorldVisualProfile.cs" />
     <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
     <None Include="..\Fixtures\RunData\*.json"
@@ -42,6 +48,6 @@
       <HintPath>$(Sts2DataDir)/GodotSharp.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <PackageReference Include="STS2.RitsuLib" Version="0.4.62" PrivateAssets="all" />
+    <PackageReference Include="STS2.RitsuLib" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
   </ItemGroup>
 </Project>

@@ -34,7 +34,7 @@ public static class BossGreetingCinematic
     private const string VideoPath = "res://NinjaSlayer/videos/ninja_slayer_domo.ogv";
     private const int FmodPlaybackStateStopped = 2;
     private const float DefaultBossZoomMultiplier = 1.5f;
-    private static readonly HashSet<string> ProcessedRoomKeys = [];
+    private static readonly ConditionalWeakTable<IRunState, ProcessedRoomState> ProcessedRooms = new();
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
     public static bool ShouldStage(Player player)
@@ -52,15 +52,15 @@ public static class BossGreetingCinematic
             return false;
         }
 
-        string processRoomKey = GetProcessRoomKey(combatState.RunState, roomKey);
         NCombatRoom? room = NCombatRoom.Instance;
         NRun? run = NRun.Instance;
-        if (room == null || run?.GlobalUi == null)
+        if (room == null
+            || run?.GlobalUi == null
+            || !TryMarkProcessed(combatState.RunState, roomKey))
         {
             return false;
         }
 
-        ProcessedRoomKeys.Add(processRoomKey);
         foreach (Player player in ninjaSlayers)
         {
             NinjaSlayerRunData.MarkBossGreetingCompleted(player, roomKey);
@@ -390,9 +390,10 @@ public static class BossGreetingCinematic
 
     private static Creature? SelectBoss(ICombatState state)
     {
+        Creature? firstEnemy = state.Enemies.Count > 0 ? state.Enemies[0] : null;
         if (state.Encounter is KaiserCrabBoss)
         {
-            return state.Enemies.FirstOrDefault();
+            return firstEnemy;
         }
 
         Creature? hunterKiller = state.Enemies.FirstOrDefault(creature => creature.Monster is HunterKiller);
@@ -405,7 +406,7 @@ public static class BossGreetingCinematic
         return kinPriest ?? state.Enemies.FirstOrDefault(creature => creature.Monster is
             CeremonialBeast or Vantom or LagavulinMatriarch or WaterfallGiant or SoulFysh
             or TheInsatiable or KnowledgeDemon or Queen or TestSubject or Aeonglass)
-            ?? state.Enemies.FirstOrDefault();
+            ?? firstEnemy;
     }
 
     private static CanvasItem? GetBossFocus(NCombatRoom room, Creature boss, NCreature? bossNode)
@@ -477,8 +478,7 @@ public static class BossGreetingCinematic
             return false;
         }
 
-        string processRoomKey = GetProcessRoomKey(combatState.RunState, roomKey);
-        if (ProcessedRoomKeys.Contains(processRoomKey))
+        if (WasProcessed(combatState.RunState, roomKey))
         {
             return false;
         }
@@ -490,8 +490,27 @@ public static class BossGreetingCinematic
             || !ninjaSlayers.All(player => NinjaSlayerRunData.HasCompletedBossGreeting(player, completedRoomKey));
     }
 
-    private static string GetProcessRoomKey(IRunState runState, string roomKey) =>
-        $"{RuntimeHelpers.GetHashCode(runState)}:{roomKey}";
+    private static bool TryMarkProcessed(IRunState runState, string roomKey)
+    {
+        ProcessedRoomState state = ProcessedRooms.GetOrCreateValue(runState);
+        lock (state.Gate)
+        {
+            return state.RoomKeys.Add(roomKey);
+        }
+    }
+
+    private static bool WasProcessed(IRunState runState, string roomKey)
+    {
+        if (!ProcessedRooms.TryGetValue(runState, out ProcessedRoomState? state))
+        {
+            return false;
+        }
+
+        lock (state.Gate)
+        {
+            return state.RoomKeys.Contains(roomKey);
+        }
+    }
 
     private static uint StableHash(string value)
     {
@@ -517,6 +536,12 @@ public static class BossGreetingCinematic
     }
 
     private static float EaseOut(float value) => 1f - (1f - value) * (1f - value);
+
+    private sealed class ProcessedRoomState
+    {
+        public Lock Gate { get; } = new();
+        public HashSet<string> RoomKeys { get; } = [];
+    }
 
     private sealed class BossGreetingSession : ICinematicAnimationContext, IDisposable
     {

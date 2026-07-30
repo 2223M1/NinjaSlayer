@@ -40,7 +40,7 @@ public sealed class SpitWater : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        IReadOnlyList<Creature> enemies = CombatState?.HittableEnemies.ToList() ?? [];
+        List<Creature> enemies = CombatState?.HittableEnemies.ToList() ?? [];
 
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
 
@@ -54,7 +54,7 @@ public sealed class SpitWater : NinjaSlayerCardTemplate
                 this);
         }
 
-        IReadOnlyList<Creature> karateEnemies = enemies
+        List<Creature> karateEnemies = enemies
             .Where(e => e.HasPower<KaratePower>())
             .ToList();
 

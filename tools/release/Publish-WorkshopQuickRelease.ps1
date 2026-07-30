@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^0\.1\.(0|[1-9][0-9]?)$')]
+    [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string] $Version,
 
     [string] $ReleaseNoteFile = 'Workshop\change-note.md',
@@ -26,37 +26,38 @@ function Invoke-Native {
 }
 
 function Get-NextWorkshopVersion([string] $releaseDirectory) {
-    $patchVersions = [Collections.Generic.List[int]]::new()
-    $tags = & git tag --list 'v0.1.*'
+    $versions = [Collections.Generic.List[version]]::new()
+    $tags = & git tag --list 'v*'
     if ($LASTEXITCODE -ne 0) {
         throw 'Unable to inspect local release tags.'
     }
 
     foreach ($tag in $tags) {
-        if ($tag -match '^v0\.1\.(0|[1-9][0-9]?)$') {
-            $patchVersions.Add([int] $Matches[1])
+        if ($tag -match '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
+            $versions.Add([version]::new(
+                [int] $Matches[1],
+                [int] $Matches[2],
+                [int] $Matches[3]))
         }
     }
 
     if (Test-Path -LiteralPath $releaseDirectory -PathType Container) {
         foreach ($marker in Get-ChildItem -LiteralPath $releaseDirectory -File) {
-            if ($marker.Name -match '^workshop-v0\.1\.(0|[1-9][0-9]?)\.json$') {
-                $patchVersions.Add([int] $Matches[1])
+            if ($marker.Name -match '^workshop-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.json$') {
+                $versions.Add([version]::new(
+                    [int] $Matches[1],
+                    [int] $Matches[2],
+                    [int] $Matches[3]))
             }
         }
     }
 
-    $nextPatch = if ($patchVersions.Count -eq 0) {
-        0
-    }
-    else {
-        ($patchVersions | Measure-Object -Maximum).Maximum + 1
-    }
-    if ($nextPatch -gt 99) {
-        throw 'The v0.1.x release series is exhausted.'
+    if ($versions.Count -eq 0) {
+        return '0.1.0'
     }
 
-    return "0.1.$nextPatch"
+    [version] $latest = $versions | Sort-Object -Descending | Select-Object -First 1
+    return "$($latest.Major).$($latest.Minor).$($latest.Build + 1)"
 }
 
 if (-not $Confirm) {

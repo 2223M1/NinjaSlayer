@@ -22,8 +22,8 @@ internal static class BossFountainLaunchProfile
     public const float LaunchActuatorSeconds = 0.06f;
     public const float MaximumDeformationSpeed = 520f;
     public const float MinimumLaunchSpeed = 860f;
-    public const float MaximumLaunchSpeed = 1380f;
-    public const float UpwardMinimumLaunchSpeed = 990f;
+    public const float MaximumLaunchSpeed = 1500f;
+    public const float UpwardMinimumLaunchSpeed = 1100f;
     public const float HorizontalMaximumLaunchSpeed = 1160f;
     public const float DownwardMaximumLaunchSpeed = 1050f;
     public const float Gravity = 1650f;
@@ -73,21 +73,21 @@ internal static class BossFountainLaunchProfile
             switch (lane)
             {
                 case BossFountainLaunchLane.Horizontal:
-                {
-                    float sign = horizontalIndex++ % 2 == 0 ? -1f : 1f;
-                    angleDegrees = sign * random.Range(82f, 98f);
-                    minimumSpeed = MinimumLaunchSpeed;
-                    maximumSpeed = HorizontalMaximumLaunchSpeed;
-                    break;
-                }
+                    {
+                        float sign = horizontalIndex++ % 2 == 0 ? -1f : 1f;
+                        angleDegrees = sign * random.Range(82f, 98f);
+                        minimumSpeed = MinimumLaunchSpeed;
+                        maximumSpeed = HorizontalMaximumLaunchSpeed;
+                        break;
+                    }
                 case BossFountainLaunchLane.Downward:
-                {
-                    float sign = downwardIndex++ % 2 == 0 ? -1f : 1f;
-                    angleDegrees = sign * random.Range(115f, 145f);
-                    minimumSpeed = MinimumLaunchSpeed;
-                    maximumSpeed = DownwardMaximumLaunchSpeed;
-                    break;
-                }
+                    {
+                        float sign = downwardIndex++ % 2 == 0 ? -1f : 1f;
+                        angleDegrees = sign * random.Range(115f, 145f);
+                        minimumSpeed = MinimumLaunchSpeed;
+                        maximumSpeed = DownwardMaximumLaunchSpeed;
+                        break;
+                    }
                 default:
                     angleDegrees = upwardAngles[upwardIndex++];
                     minimumSpeed = UpwardMinimumLaunchSpeed;

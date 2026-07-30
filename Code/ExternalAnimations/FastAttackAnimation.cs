@@ -41,7 +41,10 @@ public static class FastAttackAnimation
                 duration)
             .SetTrans(Tween.TransitionType.Linear);
 
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TweenPlayback.AwaitCompletion(tween, creatureNode))
+        {
+            return;
+        }
         creatureNode.Position = originalPosition
             + new Vector2(NinjaSlayerCombatVisuals.AttackLungeDistance * normalizedDirection, 0f);
     }

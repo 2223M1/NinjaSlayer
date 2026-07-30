@@ -12,12 +12,12 @@ public static class JumpAnimation
     private const float AnimationDuration = 0.7f;
     private const float ActionDuration = 0.25f;
     private const float JumpHeight = 150f;
-    private static readonly Dictionary<Creature, Tween> ActiveTweens = [];
+    private static readonly Dictionary<Creature, JumpState> ActiveTweens = [];
 
     internal static bool IsActive(Creature creature) =>
-        ActiveTweens.TryGetValue(creature, out Tween? tween)
-        && tween.IsValid()
-        && tween.IsRunning();
+        ActiveTweens.TryGetValue(creature, out JumpState? state)
+        && state.Tween.IsValid()
+        && state.Tween.IsRunning();
 
     public static async Task Play(Creature creature)
     {
@@ -34,6 +34,11 @@ public static class JumpAnimation
         }
 
         Node2D target = NinjaSlayerVisualRig.GetAirborneAnchor(visuals) ?? visuals;
+        if (ActiveTweens.Remove(creature, out JumpState? previous))
+        {
+            previous.StopAndRestore();
+        }
+
         Vector2 originalPos = target.Position;
         var tween = creatureNode.CreateTween();
         tween.TweenMethod(
@@ -47,23 +52,48 @@ public static class JumpAnimation
                 AnimationDuration)
             .SetTrans(Tween.TransitionType.Linear);
 
-        ActiveTweens[creature] = tween;
-        _ = TaskHelper.RunSafely(ClearWhenFinished(creature, creatureNode, tween));
+        var state = new JumpState(tween, target, originalPos);
+        ActiveTweens[creature] = state;
+        _ = TaskHelper.RunSafely(ClearWhenFinished(creature, creatureNode, state));
         await Cmd.Wait(ActionDuration);
     }
 
-    private static async Task ClearWhenFinished(Creature creature, Node owner, Tween tween)
+    private static async Task ClearWhenFinished(Creature creature, Node owner, JumpState state)
     {
         try
         {
-            await owner.ToSignal(tween, Tween.SignalName.Finished);
+            await TweenPlayback.AwaitCompletion(state.Tween, owner);
         }
         finally
         {
-            if (ActiveTweens.TryGetValue(creature, out Tween? activeTween)
-                && ReferenceEquals(activeTween, tween))
+            if (ActiveTweens.TryGetValue(creature, out JumpState? active)
+                && ReferenceEquals(active, state))
             {
                 ActiveTweens.Remove(creature);
+                state.Restore();
+            }
+        }
+    }
+
+    private sealed class JumpState(Tween tween, Node2D target, Vector2 originalPosition)
+    {
+        public Tween Tween { get; } = tween;
+
+        public void StopAndRestore()
+        {
+            if (Tween.IsValid())
+            {
+                Tween.Kill();
+            }
+
+            Restore();
+        }
+
+        public void Restore()
+        {
+            if (GodotObject.IsInstanceValid(target))
+            {
+                target.Position = originalPosition;
             }
         }
     }

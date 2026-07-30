@@ -80,7 +80,7 @@ public partial class YamotoKokiAllyFacingController : Node
         }
     }
 
-    private bool ResolveCompanionFacing(NCreature ownerNode)
+    private static bool ResolveCompanionFacing(NCreature ownerNode)
     {
         bool ownerFacesLeft = NinjaSlayerFacingState.ResolveFacingLeft(ownerNode);
         bool hasEnemyOnLeft = false;

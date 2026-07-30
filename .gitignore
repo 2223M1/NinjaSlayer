@@ -7,6 +7,7 @@ addons/spine/windows/~*.TMP
 # .NET build output
 bin/
 obj/
+.build/
 
 # Node/Worker development dependencies
 node_modules/

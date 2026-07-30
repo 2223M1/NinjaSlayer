@@ -280,7 +280,7 @@ internal static class YamotoKokiCombatAnimations
                 duration)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
-        await node.ToSignal(tween, Tween.SignalName.Finished);
+        await TweenPlayback.AwaitCompletion(tween, node);
     }
 
     private static async Task TweenIaiApproach(
@@ -303,7 +303,7 @@ internal static class YamotoKokiCombatAnimations
                 1f,
                 IaiApproachSeconds)
             .SetTrans(Tween.TransitionType.Linear);
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        await TweenPlayback.AwaitCompletion(tween, creatureNode);
     }
 
     private static async Task TweenIaiReturn(
@@ -326,7 +326,7 @@ internal static class YamotoKokiCombatAnimations
                 1f,
                 IaiApproachSeconds)
             .SetTrans(Tween.TransitionType.Linear);
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        await TweenPlayback.AwaitCompletion(tween, creatureNode);
     }
 
     private static async Task TweenPosition(
@@ -345,6 +345,6 @@ internal static class YamotoKokiCombatAnimations
         tween.TweenProperty(node, new NodePath("position"), target, duration)
             .SetEase(ease)
             .SetTrans(transition);
-        await node.ToSignal(tween, Tween.SignalName.Finished);
+        await TweenPlayback.AwaitCompletion(tween, node);
     }
 }

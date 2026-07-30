@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\eng\NinjaSlayer.Dependencies.props" />
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -7,7 +8,7 @@
     <AssemblyName>NinjaSlayer-SmokeDriver</AssemblyName>
     <RootNamespace>NinjaSlayer.SmokeDriver</RootNamespace>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <RitsuLibAssemblyPath Condition="'$(RitsuLibAssemblyPath)' == ''">$(UserProfile)\.nuget\packages\sts2.ritsulib\0.4.62\lib\net9.0\STS2-RitsuLib.dll</RitsuLibAssemblyPath>
+    <RitsuLibAssemblyPath Condition="'$(RitsuLibAssemblyPath)' == ''">$(UserProfile)\.nuget\packages\sts2.ritsulib\$(NinjaSlayerRitsuLibVersion)\lib\net9.0\STS2-RitsuLib.dll</RitsuLibAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="sts2">

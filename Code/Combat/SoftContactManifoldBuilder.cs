@@ -447,12 +447,12 @@ internal sealed class SoftContactManifoldBuilder
     }
 
     private static void InterpolateHull(
-        IReadOnlyList<SoftCollisionVertex> previous,
-        IReadOnlyList<SoftCollisionVertex> current,
+        SoftCollisionVertex[] previous,
+        SoftCollisionVertex[] current,
         float amount,
         SoftCollisionVertex[] destination)
     {
-        int count = Math.Min(destination.Length, Math.Min(previous.Count, current.Count));
+        int count = Math.Min(destination.Length, Math.Min(previous.Length, current.Length));
         for (int index = 0; index < count; index++)
         {
             destination[index] = new SoftCollisionVertex(

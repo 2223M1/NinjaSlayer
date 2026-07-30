@@ -391,7 +391,10 @@ public static class AlabamaDropAnimation
             duration)
             .SetTrans(Tween.TransitionType.Linear);
 
-        await tweenOwner.ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TweenPlayback.AwaitCompletion(tween, tweenOwner))
+        {
+            return;
+        }
         ownerPivot.Apply(ownerRotationDegrees, ownerTargetScale);
         targetPivot.Apply(targetRotationDegrees, targetTargetScale);
     }
@@ -425,7 +428,10 @@ public static class AlabamaDropAnimation
             duration)
             .SetTrans(Tween.TransitionType.Linear);
 
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TweenPlayback.AwaitCompletion(tween, creatureNode))
+        {
+            return;
+        }
         creatureNode.Position = target;
     }
 
@@ -433,7 +439,7 @@ public static class AlabamaDropAnimation
     {
         var tween = owner.CreateTween();
         tween.TweenInterval(duration);
-        await owner.ToSignal(tween, Tween.SignalName.Finished);
+        await TweenPlayback.AwaitCompletion(tween, owner);
     }
 
     private static async Task TweenBodyRotation(
@@ -469,7 +475,10 @@ public static class AlabamaDropAnimation
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
 
-        await body.ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TweenPlayback.AwaitCompletion(tween, body))
+        {
+            return;
+        }
         if (pivotCompensation is { } compensation)
         {
             compensation.Apply(targetDegrees, targetScale ?? body.Scale);

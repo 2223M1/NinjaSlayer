@@ -123,17 +123,27 @@ public static class NinjaSlayerBalanceTelemetry
         IEnumerable<SerializablePlayer> players)
     {
         ModelId officialId = ModelDb.Character<NinjaSlayerCharacter>().Id;
-        ModelId debugId = ModelDb.Character<NinjaSlayerDebugCharacter>().Id;
+        ModelId? debugId = ResolveRegisteredDebugCharacterId();
         return players.Select(player => new NinjaSlayerTelemetryPlayerIdentity(
                 player.NetId,
                 player.CharacterId switch
                 {
                     null => NinjaSlayerTelemetryCharacterKind.Unknown,
                     { } characterId when characterId == officialId => NinjaSlayerTelemetryCharacterKind.Official,
-                    { } characterId when characterId == debugId => NinjaSlayerTelemetryCharacterKind.Debug,
+                    { } characterId when debugId is { } registeredDebugId
+                        && characterId == registeredDebugId => NinjaSlayerTelemetryCharacterKind.Debug,
                     _ => NinjaSlayerTelemetryCharacterKind.Other
                 }))
             .ToArray();
+    }
+
+    private static ModelId? ResolveRegisteredDebugCharacterId()
+    {
+#if NINJA_SLAYER_DEBUG_CONTENT
+        return ModelDb.Character<NinjaSlayerDebugCharacter>().Id;
+#else
+        return null;
+#endif
     }
 
     public class NinjaSlayerBalanceContributionProvider : ITelemetryContributionProvider

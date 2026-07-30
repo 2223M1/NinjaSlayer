@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -145,7 +146,9 @@ public static class NinjaSlayerFeedbackClient
             actId = runState?.Act.Id.ToString(),
             actFloor = runState?.ActFloor,
             totalFloor = runState?.TotalFloor,
-            room = runState?.CurrentRoom?.Id.ToString(),
+            room = runState?.CurrentRoom is { } currentRoom
+                ? Convert.ToString(currentRoom.Id, CultureInfo.InvariantCulture)
+                : null,
             roomType = runState?.CurrentRoom?.GetType().Name,
             ascensionLevel = runState?.AscensionLevel,
             gameMode = runState?.GameMode.ToString(),

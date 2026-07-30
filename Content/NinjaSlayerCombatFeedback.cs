@@ -23,7 +23,7 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
     {
         _lowHealthLinePlayed = false;
 
-        ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
+        CombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
         if (combatState == null)
         {
             return;

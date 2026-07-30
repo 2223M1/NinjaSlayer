@@ -39,7 +39,7 @@ public static class ByrdRiseAnimation
             .SetEase(ease)
             .SetTrans(transition);
 
-        await creatureNode.ToSignal(tween, Tween.SignalName.Finished);
+        await TweenPlayback.AwaitCompletion(tween, creatureNode);
     }
 
     private static Node2D? GetVerticalTarget(NCreatureVisuals visuals, out bool usesAirborneAnchor)

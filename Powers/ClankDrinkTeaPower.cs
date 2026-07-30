@@ -15,7 +15,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ClankDrinkTeaPower : NinjaSlayerPowerTemplate
 {
-    private class Data
+    private sealed class Data
     {
         public int ChadoConsumedThisTurn;
     }

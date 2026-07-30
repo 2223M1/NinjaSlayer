@@ -1,15 +1,21 @@
 <Project Sdk="Godot.NET.Sdk/4.5.1">
   <Import Project="eng\NinjaSlayer.Version.props" />
+  <Import Project="eng\NinjaSlayer.Dependencies.props" />
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>true</ImplicitUsings>
     <LangVersion>13.0</LangVersion>
     <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <!-- Godot generators and Harmony intentionally emit compatibility types also present in sts2.dll. -->
     <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
+    <EnableNinjaSlayerDebugContent Condition="'$(EnableNinjaSlayerDebugContent)' == ''">false</EnableNinjaSlayerDebugContent>
+    <DefineConstants Condition="'$(EnableNinjaSlayerDebugContent)' == 'true'">$(DefineConstants);NINJA_SLAYER_DEBUG_CONTENT</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -54,15 +60,15 @@
     </Reference>
 
     <PackageReference Include="Book.StS2.RefLib"
-                      Version="0.109.0-beta"
+                      Version="$(NinjaSlayerRefLibVersion)"
                       Condition="!Exists('$(Sts2DataDir)/sts2.dll') and '$(UseSts2RefLib)' == 'true'"
                       PrivateAssets="all" />
 
-    <PackageReference Include="STS2.RitsuLib" Version="0.4.62">
+    <PackageReference Include="STS2.RitsuLib" Version="$(NinjaSlayerRitsuLibVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SmartFormat" Version="3.3.0" />
+    <PackageReference Include="SmartFormat" Version="$(NinjaSlayerSmartFormatVersion)" />
     <!-- Specify a matching compatibility package when developing against another game version. -->
     <!-- <PackageReference Include="STS2.RitsuLib.Compat.0.103.2" Version="*" /> -->
   </ItemGroup>

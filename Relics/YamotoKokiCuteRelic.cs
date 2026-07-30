@@ -221,7 +221,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
     }
 
     private static async Task<IReadOnlyList<MissileOperation>> StartMissileAttacksStaggered(
-        IReadOnlyList<Creature> armedMissiles)
+        List<Creature> armedMissiles)
     {
         List<MissileOperation> operations = [];
         for (int i = 0; i < armedMissiles.Count; i++)

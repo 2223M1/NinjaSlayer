@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Helpers;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -8,9 +9,11 @@ public sealed partial class BossVisualCapture : Node, IDisposable
 {
     private enum CaptureState
     {
+        Initializing,
         MeasuringParts,
         BuildingAtlas,
         WaitingForFrame,
+        WaitingForPreparedResources,
         Ready,
         Failed,
         Disposed
@@ -22,7 +25,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private const int AtlasGutterPixels = 4;
     private const int MaximumAtlasPixels = 4096;
 
-    private readonly List<Node2D> _atlasVisuals = [];
+    private readonly List<BossCapturedFragmentRenderSurface.PreparedResource> _preparedFragments = [];
     private CaptureState _state;
     private SubViewport? _viewport;
     private Node2D? _template;
@@ -30,6 +33,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private IReadOnlyList<BossSemanticPartDefinition>? _semanticParts;
     private IReadOnlyList<AtlasPlacement>? _atlasPlacements;
     private int _nextAtlasPart;
+    private int _nextPreparedFragment;
     private int _atlasMergeCount;
     private float _atlasDensity;
     private ulong _readyAfterFrame;
@@ -37,6 +41,17 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private long _readyElapsedTicks;
     private int _disposeStarted;
     private ulong _seed;
+    private string? _detachedBoneName;
+    private Color[]? _templateSlotColors;
+    private Shader? _fragmentShader;
+    private Transform2D _bodyToPresentation;
+    private float[]? _mappedAreas;
+    private float[]? _massRatios;
+    private bool _atlasComplete;
+    private long _measurementCpuTicks;
+    private long _atlasCpuTicks;
+    private long _fragmentPreparationCpuTicks;
+    private long _maximumCpuFrameTicks;
 
     private BossVisualCapture()
     {
@@ -55,6 +70,10 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     public long CaptureStartedTicks { get; private set; }
     public long SetupElapsedTicks { get; private set; }
     public long ReadyElapsedTicks => _readyElapsedTicks;
+    public long MeasurementCpuTicks => _measurementCpuTicks;
+    public long AtlasCpuTicks => _atlasCpuTicks;
+    public long FragmentPreparationCpuTicks => _fragmentPreparationCpuTicks;
+    public long MaximumCpuFrameTicks => _maximumCpuFrameTicks;
     public string FailureReason { get; private set; } = string.Empty;
     internal BossFragmentPartition? Partition { get; private set; }
 
@@ -93,6 +112,20 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
     }
 
+    internal IReadOnlyList<BossCapturedFragmentRenderSurface.PreparedResource>
+        TakePreparedFragments()
+    {
+        if (!IsReady || Partition == null || _preparedFragments.Count != Partition.Fragments.Count)
+        {
+            return [];
+        }
+
+        BossCapturedFragmentRenderSurface.PreparedResource[] result =
+            _preparedFragments.ToArray();
+        _preparedFragments.Clear();
+        return result;
+    }
+
     internal static BossVisualCapture? TryCreate(
         Node presentationParent,
         Node2D sourceBody,
@@ -122,7 +155,8 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                 BaselineScenePosition = baseline.Position,
                 BaselineSceneScale = baseline.Scale,
                 _seed = seed,
-                _state = CaptureState.MeasuringParts
+                _detachedBoneName = detachedBoneName,
+                _state = CaptureState.Initializing
             };
             presentationParent.AddChildSafely(capture);
             EnsureInsideTree(capture, "boss capture root");
@@ -151,20 +185,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                 capture.BodyBaselineGlobalTransform);
             ValidateBounds(capture.BodyBaselineScreenBounds);
 
-            if (!BossSemanticPartBuilder.TryCreate(
-                    template,
-                    capture.BodyLocalBounds,
-                    detachedBoneName,
-                    out BossSemanticPartBuilder? builder,
-                    out string failureReason)
-                || builder == null)
-            {
-                throw new InvalidOperationException(failureReason);
-            }
-
-            capture._semanticBuilder = builder;
             capture._lastWorkFrame = Engine.GetProcessFrames();
-            builder.MeasureNext(PartsPerFrame);
             capture.SetupElapsedTicks =
                 System.Diagnostics.Stopwatch.GetTimestamp() - setupStarted;
             capture.SetProcess(true);
@@ -193,10 +214,15 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
 
         _lastWorkFrame = frame;
+        CaptureState stateAtFrameStart = _state;
+        long frameStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
             switch (_state)
             {
+                case CaptureState.Initializing:
+                    AdvanceInitialization();
+                    break;
                 case CaptureState.MeasuringParts:
                     AdvanceMeasurements();
                     break;
@@ -206,12 +232,38 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                 case CaptureState.WaitingForFrame:
                     CompleteAtlasCapture(frame);
                     break;
+                case CaptureState.WaitingForPreparedResources:
+                    break;
             }
+
+            if (Partition != null
+                && _nextPreparedFragment < Partition.Fragments.Count)
+            {
+                AdvanceFragmentPreparation();
+            }
+
+            TryMarkReady();
         }
         catch (Exception exception)
         {
             Fail($"semantic atlas capture failed: {exception.Message}");
             Scripts.Entry.Logger.Warn($"Boss visual capture failed: {exception}");
+        }
+        finally
+        {
+            long elapsed = System.Diagnostics.Stopwatch.GetTimestamp() - frameStarted;
+            _maximumCpuFrameTicks = Math.Max(_maximumCpuFrameTicks, elapsed);
+            switch (stateAtFrameStart)
+            {
+                case CaptureState.Initializing:
+                case CaptureState.MeasuringParts:
+                    _measurementCpuTicks += elapsed;
+                    break;
+                case CaptureState.BuildingAtlas:
+                case CaptureState.WaitingForFrame:
+                    _atlasCpuTicks += elapsed;
+                    break;
+            }
         }
     }
 
@@ -219,6 +271,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     {
         SetProcess(false);
         ReleaseTemporaryVisuals();
+        ReleasePreparedFragments();
         ReleaseViewport();
         Partition = null;
         _semanticBuilder = null;
@@ -243,6 +296,25 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         {
             this.QueueFreeSafely();
         }
+    }
+
+    private void AdvanceInitialization()
+    {
+        Node2D template = _template
+            ?? throw new InvalidOperationException("The semantic capture template expired.");
+        if (!BossSemanticPartBuilder.TryCreate(
+                template,
+                BodyLocalBounds,
+                _detachedBoneName,
+                out BossSemanticPartBuilder? builder,
+                out string failureReason)
+            || builder == null)
+        {
+            throw new InvalidOperationException(failureReason);
+        }
+
+        _semanticBuilder = builder;
+        _state = CaptureState.MeasuringParts;
     }
 
     private void AdvanceMeasurements()
@@ -295,6 +367,8 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                     BodyLocalBounds,
                     _seed,
                     (_semanticBuilder?.MergedPartCount ?? 0) + _atlasMergeCount);
+                PrepareFragmentResources();
+                MoveTemplateIntoViewport();
                 return;
             }
 
@@ -311,6 +385,110 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
     }
 
+    private void PrepareFragmentResources()
+    {
+        BossFragmentPartition partition = Partition
+            ?? throw new InvalidOperationException("The semantic fragment partition is unavailable.");
+        if (GetParent() is not CanvasItem presentationParent)
+        {
+            throw new InvalidOperationException(
+                "The combat VFX container cannot provide a canvas transform.");
+        }
+
+        _bodyToPresentation = presentationParent.GetGlobalTransform().AffineInverse()
+            * BaselineSceneToGlobal
+            * BodyToSceneContainer;
+        _fragmentShader = ResourceLoader.Load<Shader>(
+            BossCapturedFragmentRenderSurface.ShaderPath)
+            ?? throw new InvalidOperationException("The captured fragment shader is unavailable.");
+        _mappedAreas = partition.Fragments
+            .Select(descriptor => ResolveMappedArea(descriptor.Cell, _bodyToPresentation))
+            .ToArray();
+        float[] massWeights = partition.Fragments
+            .Select(descriptor => Math.Max(0.0001f, descriptor.BodyAreaRatio))
+            .ToArray();
+        float averageMassWeight = Math.Max(0.0001f, massWeights.Average());
+        _massRatios = massWeights
+            .Select(weight => Math.Clamp(weight / averageMassWeight, 0.25f, 3f))
+            .ToArray();
+    }
+
+    private void MoveTemplateIntoViewport()
+    {
+        Node2D template = _template
+            ?? throw new InvalidOperationException("The semantic capture template expired.");
+        SubViewport viewport = _viewport
+            ?? throw new InvalidOperationException("The semantic atlas viewport expired.");
+        template.Reparent(viewport, keepGlobalTransform: false);
+        EnsureInsideTree(template, "reusable isolated Spine atlas part");
+        template.TopLevel = false;
+        template.Position = Vector2.Zero;
+        template.Rotation = 0f;
+        template.Scale = Vector2.One;
+        template.Skew = 0f;
+        template.Visible = false;
+        _templateSlotColors = CaptureSlotColors(template);
+    }
+
+    private void AdvanceFragmentPreparation()
+    {
+        long started = System.Diagnostics.Stopwatch.GetTimestamp();
+        try
+        {
+            BossFragmentPartition partition = Partition
+                ?? throw new InvalidOperationException("The semantic fragment partition expired.");
+            Shader shader = _fragmentShader
+                ?? throw new InvalidOperationException("The captured fragment shader expired.");
+            float[] mappedAreas = _mappedAreas
+                ?? throw new InvalidOperationException("The mapped fragment areas expired.");
+            float[] massRatios = _massRatios
+                ?? throw new InvalidOperationException("The fragment mass ratios expired.");
+            if (_nextPreparedFragment >= partition.Fragments.Count)
+            {
+                return;
+            }
+
+            int index = _nextPreparedFragment;
+            BossCapturedFragmentDescriptor descriptor = partition.Fragments[index];
+            if (!BossCapturedFragmentRenderSurface.TryPrepare(
+                    descriptor,
+                    _bodyToPresentation,
+                    shader,
+                    massRatios[index],
+                    BossDismembermentMath.ResolveCollisionPadding(mappedAreas[index]),
+                    mappedAreas[index],
+                    out BossCapturedFragmentRenderSurface.PreparedResource? prepared)
+                || prepared == null)
+            {
+                throw new InvalidOperationException(
+                    $"fragment {descriptor.FragmentIndex} could not be prepared");
+            }
+
+            _preparedFragments.Add(prepared);
+            _nextPreparedFragment++;
+        }
+        finally
+        {
+            _fragmentPreparationCpuTicks +=
+                System.Diagnostics.Stopwatch.GetTimestamp() - started;
+        }
+    }
+
+    private void TryMarkReady()
+    {
+        if (!_atlasComplete
+            || Partition == null
+            || _preparedFragments.Count != Partition.Fragments.Count)
+        {
+            return;
+        }
+
+        _readyElapsedTicks =
+            System.Diagnostics.Stopwatch.GetTimestamp() - CaptureStartedTicks;
+        _state = CaptureState.Ready;
+        SetProcess(false);
+    }
+
     private void AdvanceAtlasBuild()
     {
         if (_viewport == null
@@ -321,38 +499,30 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             throw new InvalidOperationException("The semantic atlas build state expired.");
         }
 
-        int built = 0;
-        while (_nextAtlasPart < _atlasPlacements.Count && built < PartsPerFrame)
+        if (_nextAtlasPart >= _atlasPlacements.Count)
         {
-            AtlasPlacement placement = _atlasPlacements[_nextAtlasPart++];
-            Node2D clone = DuplicateVisualOnly(_template)
-                ?? throw new InvalidOperationException(
-                    $"Spine part '{placement.Part.PrimaryBoneName}' could not be duplicated.");
-            PrepareVisualClone(clone);
-            clone.Visible = false;
-            _viewport.AddChildSafely(clone);
-            EnsureInsideTree(clone, "isolated Spine atlas part");
-            clone.TopLevel = false;
-            FreezeSpineAnimation(clone);
-            IsolateSlots(clone, placement.Part.SlotIndices);
-            clone.Position = placement.ContentPixels.Position
-                - placement.Part.SourceBounds.Position * _atlasDensity;
-            clone.Rotation = 0f;
-            clone.Scale = Vector2.One * _atlasDensity;
-            clone.Skew = 0f;
-            clone.Visible = true;
-            _atlasVisuals.Add(clone);
-            built++;
-        }
-
-        if (_nextAtlasPart < _atlasPlacements.Count)
-        {
+            _atlasComplete = true;
+            _state = CaptureState.WaitingForPreparedResources;
             return;
         }
 
-        ReleaseTemplate();
+        AtlasPlacement placement = _atlasPlacements[_nextAtlasPart];
+        ApplySlotIsolation(
+            _template,
+            placement.Part.SlotIndices,
+            _templateSlotColors
+                ?? throw new InvalidOperationException("The Spine slot-color snapshot expired."));
+        _template.Position = placement.ContentPixels.Position
+            - placement.Part.SourceBounds.Position * _atlasDensity;
+        _template.Rotation = 0f;
+        _template.Scale = Vector2.One * _atlasDensity;
+        _template.Skew = 0f;
+        _template.Visible = true;
+        _viewport.RenderTargetClearMode = _nextAtlasPart == 0
+            ? SubViewport.ClearMode.Once
+            : SubViewport.ClearMode.Never;
         _viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
-        _readyAfterFrame = Engine.GetProcessFrames() + 2UL;
+        _readyAfterFrame = Engine.GetProcessFrames() + 1UL;
         _state = CaptureState.WaitingForFrame;
     }
 
@@ -377,11 +547,21 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
 
         _viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
-        ReleaseAtlasVisuals();
-        _readyElapsedTicks =
-            System.Diagnostics.Stopwatch.GetTimestamp() - CaptureStartedTicks;
-        _state = CaptureState.Ready;
-        SetProcess(false);
+        _nextAtlasPart++;
+        if (_nextAtlasPart >= (_atlasPlacements?.Count ?? 0))
+        {
+            _atlasComplete = true;
+            if (_template is { } template && GodotObject.IsInstanceValid(template))
+            {
+                template.Visible = false;
+            }
+            ReleaseTemplate();
+            _state = CaptureState.WaitingForPreparedResources;
+            return;
+        }
+
+        _state = CaptureState.BuildingAtlas;
+        AdvanceAtlasBuild();
     }
 
     private static bool TryPackAtlas(
@@ -570,9 +750,46 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         animation?.SetTimeScale(0f);
     }
 
-    private static void IsolateSlots(
+    private static Color[] CaptureSlotColors(Node2D visual)
+    {
+        var sprite = new MegaSprite(Variant.CreateFrom(visual));
+        using MegaSkeleton skeleton = sprite.GetSkeleton()
+            ?? throw new InvalidOperationException(
+                "The isolated Spine clone has no skeleton.");
+        if (!skeleton.BoundObject.HasMethod("get_slots"))
+        {
+            throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");
+        }
+
+        Godot.Collections.Array<GodotObject> slots = skeleton.BoundObject
+            .Call("get_slots")
+            .AsGodotArray<GodotObject>();
+        try
+        {
+            var colors = new Color[slots.Count];
+            for (int index = 0; index < slots.Count; index++)
+            {
+                GodotObject slot = slots[index];
+                colors[index] = slot.HasMethod("get_color")
+                    ? slot.Call("get_color").AsColor()
+                    : Colors.White;
+            }
+
+            return colors;
+        }
+        finally
+        {
+            foreach (GodotObject slot in slots)
+            {
+                slot.Dispose();
+            }
+        }
+    }
+
+    private static void ApplySlotIsolation(
         Node2D visual,
-        IReadOnlyList<int> visibleSlotIndices)
+        IReadOnlyList<int> visibleSlotIndices,
+        Color[] originalColors)
     {
         var sprite = new MegaSprite(Variant.CreateFrom(visual));
         using MegaSkeleton skeleton = sprite.GetSkeleton()
@@ -589,13 +806,14 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         var visible = new HashSet<int>(visibleSlotIndices);
         try
         {
+            if (slots.Count != originalColors.Length)
+            {
+                throw new InvalidOperationException(
+                    "The Spine slot list changed while the semantic atlas was captured.");
+            }
+
             for (int index = 0; index < slots.Count; index++)
             {
-                if (visible.Contains(index))
-                {
-                    continue;
-                }
-
                 GodotObject slot = slots[index];
                 if (!slot.HasMethod("set_color"))
                 {
@@ -603,10 +821,12 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                         "SpineSlot.set_color is unavailable for semantic isolation.");
                 }
 
-                Color color = slot.HasMethod("get_color")
-                    ? slot.Call("get_color").AsColor()
-                    : Colors.White;
-                color.A = 0f;
+                Color color = originalColors[index];
+                if (!visible.Contains(index))
+                {
+                    color.A = 0f;
+                }
+
                 slot.Call("set_color", color);
             }
         }
@@ -666,6 +886,29 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             maximumY - minimumY);
     }
 
+    private static float ResolveMappedArea(
+        BossFragmentCell cell,
+        Transform2D bodyToPresentation)
+    {
+        if (cell.Vertices.Count < 3)
+        {
+            return 0f;
+        }
+
+        double twiceArea = 0d;
+        for (int index = 0; index < cell.Vertices.Count; index++)
+        {
+            Vector2 current = bodyToPresentation * ToVector2(cell.Vertices[index]);
+            Vector2 next = bodyToPresentation
+                * ToVector2(cell.Vertices[(index + 1) % cell.Vertices.Count]);
+            twiceArea += current.X * next.Y - next.X * current.Y;
+        }
+
+        return (float)Math.Abs(twiceArea * 0.5d);
+    }
+
+    private static Vector2 ToVector2(BossFragmentPoint point) => new(point.X, point.Y);
+
     private static Rect2 ToUvRect(Rect2I pixels, Vector2I atlasSize) => new(
         pixels.Position.X / (float)atlasSize.X,
         pixels.Position.Y / (float)atlasSize.Y,
@@ -704,6 +947,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         _state = CaptureState.Failed;
         SetProcess(false);
         ReleaseTemporaryVisuals();
+        ReleasePreparedFragments();
         ReleaseViewport();
         Partition = null;
     }
@@ -711,7 +955,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private void ReleaseTemporaryVisuals()
     {
         ReleaseTemplate();
-        ReleaseAtlasVisuals();
     }
 
     private void ReleaseTemplate()
@@ -724,18 +967,14 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
     }
 
-    private void ReleaseAtlasVisuals()
+    private void ReleasePreparedFragments()
     {
-        for (int index = _atlasVisuals.Count - 1; index >= 0; index--)
+        for (int index = _preparedFragments.Count - 1; index >= 0; index--)
         {
-            Node2D visual = _atlasVisuals[index];
-            if (GodotObject.IsInstanceValid(visual))
-            {
-                visual.QueueFreeSafely();
-            }
+            _preparedFragments[index].Dispose();
         }
 
-        _atlasVisuals.Clear();
+        _preparedFragments.Clear();
     }
 
     private void ReleaseViewport()
