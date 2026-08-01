@@ -109,6 +109,15 @@ public sealed partial class RepositoryArchitectureTests
                 verifier,
                 StringComparison.Ordinal);
         }
+
+        Assert.DoesNotContain(
+            "$depsText.Contains(('\"' + [string]$fileName + '\"'), [StringComparison]::Ordinal)",
+            contract,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "$depsText.IndexOf(('\"' + [string]$fileName + '\"'), [StringComparison]::Ordinal) -lt 0",
+            contract,
+            StringComparison.Ordinal);
     }
 
     [Fact]

@@ -286,7 +286,7 @@ jobs:
                   if (-not (Test-Path -LiteralPath (Join-Path $contractOutput $fileName) -PathType Leaf)) {
                     throw "$channel Contract output is missing runtime assembly $fileName."
                   }
-                  if (-not $depsText.Contains(('"' + [string]$fileName + '"'), [StringComparison]::Ordinal)) {
+                  if ($depsText.IndexOf(('"' + [string]$fileName + '"'), [StringComparison]::Ordinal) -lt 0) {
                     throw "$channel Contract deps file is missing runtime assembly $fileName."
                   }
                 }
