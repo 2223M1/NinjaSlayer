@@ -1,5 +1,7 @@
 Set-StrictMode -Version Latest
 
+. (Join-Path $PSScriptRoot 'file-hash.ps1')
+
 function Read-NinjaSlayerCompatibility {
     [CmdletBinding()]
     param(
@@ -70,7 +72,7 @@ function Get-NinjaSlayerCompatibilitySha256 {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Path)
 
-    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    return Get-NinjaSlayerFileSha256 -Path $Path
 }
 
 function Get-NinjaSlayerGameModuleMvid {

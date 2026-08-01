@@ -245,6 +245,14 @@ for (const required of [
   assert(processNetworkIsolationTest.includes(required), `Process firewall tests are missing: ${required}`);
 }
 assert(ciWorkflow.includes('./tools/test-process-network-isolation.ps1'));
+assert(ciWorkflow.includes('./tools/test-compatibility-powershell.ps1'));
+assert(ciWorkflow.includes('powershell-compatibility:'));
+assert(ciWorkflow.includes('runs-on: windows-latest'));
+assert(ciWorkflow.includes('shell: powershell'));
+assert(ciWorkflow.includes('needs: powershell-compatibility'));
+assert(ciWorkflow.includes('if: ${{ always() }}'));
+assert(ciWorkflow.includes("if: ${{ needs.powershell-compatibility.result != 'success' }}"));
+assert(ciWorkflow.includes('PowerShell 5.1 compatibility job must succeed.'));
 assert(ciWorkflow.includes('Tests/NinjaSlayer.NetworkIsolationProbe/NinjaSlayer.NetworkIsolationProbe.csproj'));
 assert(networkProbeProject.includes('<UseAppHost>false</UseAppHost>'));
 assert(privateRunnerReadme.includes('| Contract | `4` |'));

@@ -302,7 +302,7 @@ try {
         $resolvedArchive = (Resolve-Path -LiteralPath $RunnerArchivePath -ErrorAction Stop).Path
         Copy-Item -LiteralPath $resolvedArchive -Destination $archive
     }
-    $actualArchiveHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
+    $actualArchiveHash = Get-NinjaSlayerFileSha256 -Path $archive
     if ($actualArchiveHash -ne $RunnerArchiveSha256) {
         throw "GitHub Actions runner archive SHA-256 mismatch: expected $RunnerArchiveSha256, got $actualArchiveHash."
     }

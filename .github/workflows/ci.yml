@@ -10,9 +10,27 @@ permissions:
   contents: read
 
 jobs:
+  powershell-compatibility:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+
+      - name: PowerShell compatibility contracts
+        shell: powershell
+        run: ./tools/test-compatibility-powershell.ps1
+
   validate:
+    if: ${{ always() }}
+    needs: powershell-compatibility
     runs-on: ubuntu-latest
     steps:
+      - name: Require PowerShell 5.1 compatibility
+        if: ${{ needs.powershell-compatibility.result != 'success' }}
+        run: |
+          echo 'PowerShell 5.1 compatibility job must succeed.' >&2
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
