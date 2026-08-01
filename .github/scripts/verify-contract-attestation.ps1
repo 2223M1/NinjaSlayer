@@ -52,7 +52,7 @@ foreach ($artifact in $artifacts) {
         $verifiedDirectory = Join-Path $OutputDirectory 'verified'
         New-Item -ItemType Directory -Path $verifiedDirectory -Force | Out-Null
         foreach ($channelName in $channelNames) {
-            $host = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
+            $channelProfile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
             $attestationPath = Join-Path $attemptDirectory "$channelName\attestation.json"
             if (-not (Test-Path -LiteralPath $attestationPath -PathType Leaf)) {
                 throw "Artifact does not contain the $channelName Contract attestation."
@@ -65,10 +65,10 @@ foreach ($artifact in $artifacts) {
             Assert-NinjaSlayerEqual ([string]$attestation.candidateSha).ToLowerInvariant() $candidate "$channelName.candidateSha"
             Assert-NinjaSlayerEqual ([string]$attestation.repository) $Repository "$channelName.repository"
             Assert-NinjaSlayerEqual ([string]$attestation.channel) $channelName "$channelName.channel"
-            Assert-NinjaSlayerEqual ([string]$attestation.gameApiVersion) ([string]$host.gameApiVersion) "$channelName.gameApiVersion"
-            Assert-NinjaSlayerEqual ([string]$attestation.gameAssemblyVersion) ([string]$host.hostContract.assemblyVersion) "$channelName.gameAssemblyVersion"
-            Assert-NinjaSlayerEqual ([string]$attestation.gameModuleMvid).ToLowerInvariant() ([string]$host.hostContract.moduleMvid).ToLowerInvariant() "$channelName.gameModuleMvid"
-            Assert-NinjaSlayerEqual ([string]$attestation.ritsuLibPackageId) ([string]$host.ritsuLibPackageId) "$channelName.ritsuLibPackageId"
+            Assert-NinjaSlayerEqual ([string]$attestation.gameApiVersion) ([string]$channelProfile.gameApiVersion) "$channelName.gameApiVersion"
+            Assert-NinjaSlayerEqual ([string]$attestation.gameAssemblyVersion) ([string]$channelProfile.hostContract.assemblyVersion) "$channelName.gameAssemblyVersion"
+            Assert-NinjaSlayerEqual ([string]$attestation.gameModuleMvid).ToLowerInvariant() ([string]$channelProfile.hostContract.moduleMvid).ToLowerInvariant() "$channelName.gameModuleMvid"
+            Assert-NinjaSlayerEqual ([string]$attestation.ritsuLibPackageId) ([string]$channelProfile.ritsuLibPackageId) "$channelName.ritsuLibPackageId"
             Assert-NinjaSlayerEqual ([string]$attestation.ritsuLibVersion) ([string]$compatibility.ritsuLibVersion) "$channelName.ritsuLibVersion"
             Assert-NinjaSlayerEqual ([string]$attestation.compatibilityManifestSha256).ToLowerInvariant() $compatibilitySha "$channelName.compatibilityManifestSha256"
             Assert-NinjaSlayerEqual ([string]$attestation.mode) 'contract' "$channelName.mode"

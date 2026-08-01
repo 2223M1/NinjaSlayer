@@ -278,7 +278,7 @@ assert(
 );
 assert(!releaseWorkflow.includes('--clobber'));
 assert(!releaseWorkflow.includes("@('release', 'upload'"));
-assert(releaseWorkflow.includes('$channel-sts2-$($host.gameApiVersion).zip'));
+assert(releaseWorkflow.includes('$channel-sts2-$($channelHost.gameApiVersion).zip'));
 assert(workshopWorkflow.includes("'${{ github.ref }}' -cne 'refs/heads/main'"));
 assert(workshopWorkflow.includes('verify-release-attestation.ps1'));
 assert(workshopWorkflow.includes('The public GitHub Release asset does not match'));
