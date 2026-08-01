@@ -143,7 +143,8 @@ jobs:
       - name: Restore trusted projects before isolation
         shell: powershell
         run: |
-          foreach ($hostContract in @($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)) {
+          $contractHosts = ConvertFrom-Json -InputObject $env:CONTRACT_HOSTS_JSON
+          foreach ($hostContract in $contractHosts) {
             $channel = [string]$hostContract.channel
             dotnet restore trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj --force-evaluate `
               -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
@@ -252,7 +253,8 @@ jobs:
                 $env:NINJASLAYER_CONTRACT_NETWORK_PROBE_PORT
               if ($LASTEXITCODE -ne 0) { throw 'dotnet.exe retained non-loopback network access.' }
 
-              foreach ($hostContract in @($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)) {
+              $contractHosts = ConvertFrom-Json -InputObject $env:CONTRACT_HOSTS_JSON
+              foreach ($hostContract in $contractHosts) {
                 $channel = [string]$hostContract.channel
                 $godotOutput = Join-Path $env:GITHUB_WORKSPACE `
                   'trusted\Tests\NinjaSlayer.RitsuLibContractTests\.godot\mono\temp\bin'
@@ -319,7 +321,8 @@ jobs:
         run: |
           . .\trusted\.github\scripts\compatibility.ps1
           $root = Join-Path $env:RUNNER_TEMP 'contract-attestation'
-          foreach ($hostContract in @($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)) {
+          $contractHosts = ConvertFrom-Json -InputObject $env:CONTRACT_HOSTS_JSON
+          foreach ($hostContract in $contractHosts) {
             $channel = [string]$hostContract.channel
             $assemblyPath = Join-Path $hostContract.dataDirectory 'sts2.dll'
             $gameName = [Reflection.AssemblyName]::GetAssemblyName($assemblyPath)

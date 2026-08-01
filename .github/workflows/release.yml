@@ -164,7 +164,8 @@ jobs:
           if (-not (Test-Path '.\addons\spine\windows\libspine_godot.windows.editor.x86_64.dll')) {
             throw 'The Godot 4.5.1 Spine GDExtension is missing.'
           }
-          $preview = @($env:RELEASE_HOSTS_JSON | ConvertFrom-Json) | Where-Object channel -eq 'preview'
+          $releaseHosts = ConvertFrom-Json -InputObject $env:RELEASE_HOSTS_JSON
+          $preview = $releaseHosts | Where-Object channel -eq 'preview'
           $previousDataDir = $env:Sts2DataDir
           $previousChannel = $env:NinjaSlayerHostChannel
           try {
@@ -191,17 +192,18 @@ jobs:
           New-Item -ItemType Directory -Path $protectedRoot -Force | Out-Null
           $archives = [Collections.Generic.List[string]]::new()
           $archivesByChannel = @{}
-          foreach ($host in @($env:RELEASE_HOSTS_JSON | ConvertFrom-Json)) {
-            $channel = [string]$host.channel
+          $releaseHosts = ConvertFrom-Json -InputObject $env:RELEASE_HOSTS_JSON
+          foreach ($channelHost in $releaseHosts) {
+            $channel = [string]$channelHost.channel
             & .\tools\release\Invoke-NinjaSlayerChannelBuild.ps1 `
               -Channel $channel `
               -Version $version `
-              -Sts2DataDir "$($host.dataDirectory)" `
+              -Sts2DataDir "$($channelHost.dataDirectory)" `
               -Target PackageMod `
               -GodotExe "$env:GODOT_EXE" `
               -BuildRoot $buildRoot
 
-            $archive = "NinjaSlayer-$env:RELEASE_TAG-$channel-sts2-$($host.gameApiVersion).zip"
+            $archive = "NinjaSlayer-$env:RELEASE_TAG-$channel-sts2-$($channelHost.gameApiVersion).zip"
             $archivePath = Join-Path $protectedRoot $archive
             $packageDirectory = Join-Path $buildRoot "$channel\package\NinjaSlayer"
             Compress-Archive -Path (Join-Path $packageDirectory '*') -DestinationPath $archivePath

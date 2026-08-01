@@ -125,13 +125,14 @@ jobs:
       - name: Run isolated stable and preview smoke
         shell: powershell
         run: |
-          foreach ($host in @($env:SMOKE_HOSTS_JSON | ConvertFrom-Json)) {
-            $channel = [string]$host.channel
+          $smokeHosts = ConvertFrom-Json -InputObject $env:SMOKE_HOSTS_JSON
+          foreach ($channelHost in $smokeHosts) {
+            $channel = [string]$channelHost.channel
             & trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1 `
               -CandidateSha '${{ steps.candidate.outputs.sha }}' `
               -CandidateRoot "$env:GITHUB_WORKSPACE\candidate" `
               -TrustedRoot "$env:GITHUB_WORKSPACE\trusted" `
-              -GameRootDirectory "$($host.gameRoot)" `
+              -GameRootDirectory "$($channelHost.gameRoot)" `
               -RitsuLibModDirectory "$env:NINJASLAYER_RITSULIB_MOD_DIR" `
               -GodotExecutable "$env:GODOT_EXE" `
               -OutputDirectory "$env:RUNNER_TEMP\smoke-result\$channel" `

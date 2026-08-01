@@ -61,6 +61,57 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void ProtectedWorkflowsEnumerateTopLevelHostArraysOnWindowsPowerShell()
+    {
+        string contract = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "contract.yml"));
+        string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
+        string release = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "release.yml"));
+        string contractVerifier = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "verify-contract-attestation.ps1"));
+        string smokeVerifier = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "verify-smoke-attestation.ps1"));
+
+        Assert.DoesNotContain("@($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)", contract, StringComparison.Ordinal);
+        Assert.DoesNotContain("@($env:SMOKE_HOSTS_JSON | ConvertFrom-Json)", smoke, StringComparison.Ordinal);
+        Assert.DoesNotContain("@($env:RELEASE_HOSTS_JSON | ConvertFrom-Json)", release, StringComparison.Ordinal);
+
+        Assert.Equal(
+            3,
+            CountOccurrences(contract, "$contractHosts = ConvertFrom-Json -InputObject $env:CONTRACT_HOSTS_JSON"));
+        Assert.Equal(3, CountOccurrences(contract, "foreach ($hostContract in $contractHosts)"));
+        Assert.Equal(
+            1,
+            CountOccurrences(smoke, "$smokeHosts = ConvertFrom-Json -InputObject $env:SMOKE_HOSTS_JSON"));
+        Assert.Equal(1, CountOccurrences(smoke, "foreach ($channelHost in $smokeHosts)"));
+        Assert.Equal(
+            2,
+            CountOccurrences(release, "$releaseHosts = ConvertFrom-Json -InputObject $env:RELEASE_HOSTS_JSON"));
+        Assert.Equal(1, CountOccurrences(release, "foreach ($channelHost in $releaseHosts)"));
+
+        foreach (string source in new[] { smoke, release })
+        {
+            Assert.DoesNotContain("foreach ($host ", source, StringComparison.OrdinalIgnoreCase);
+        }
+        foreach (string verifier in new[] { contractVerifier, smokeVerifier })
+        {
+            Assert.DoesNotContain(
+                "$host = Get-NinjaSlayerCompatibilityChannel",
+                verifier,
+                StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(
+                "$channelProfile = Get-NinjaSlayerCompatibilityChannel",
+                verifier,
+                StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void SmokeLauncherPreservesSaveNetworkAndReleaseBoundaries()
     {
         string launcher = File.ReadAllText(Path.Combine(Root, "tools", "smoke-harness", "Invoke-NinjaSlayerSmoke.ps1"));
