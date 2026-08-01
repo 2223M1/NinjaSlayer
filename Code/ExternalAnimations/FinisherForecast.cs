@@ -544,7 +544,7 @@ internal static class FinisherForecast
             return false;
         }
 
-        decimal modified = Hook.ModifyDamage(
+        decimal modified = GameCompatibility.Damage.Modify(
             runState,
             owner.CombatState,
             target,

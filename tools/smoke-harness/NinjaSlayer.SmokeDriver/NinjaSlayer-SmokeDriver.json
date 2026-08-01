@@ -4,12 +4,18 @@
   "author": "NinjaSlayer maintainers",
   "description": "Protected real-game smoke test driver. Never distribute with the mod.",
   "version": "1.0.0",
-  "min_game_version": "0.109.0",
+  "min_game_version": "0.107.1",
   "has_pck": false,
   "has_dll": true,
   "dependencies": [
-    { "id": "STS2-RitsuLib", "min_version": "0.4.62" },
-    { "id": "NinjaSlayer", "min_version": "0.0.0" }
+    {
+      "id": "STS2-RitsuLib",
+      "min_version": "0.5.1"
+    },
+    {
+      "id": "NinjaSlayer",
+      "min_version": "0.0.0"
+    }
   ],
   "affects_gameplay": true
 }

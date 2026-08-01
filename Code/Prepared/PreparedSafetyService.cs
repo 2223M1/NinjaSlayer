@@ -13,13 +13,11 @@ namespace NinjaSlayer.Code.Prepared;
 
 internal static class PreparedSafetyService
 {
-    public static async Task<PreparedCleanupResult> CompletePileChangeAfter(
-        Task original,
+    public static PreparedCleanupResult CompletePileChange(
         ICombatState? suppliedCombatState,
         CardModel card,
         PileType oldPile)
     {
-        await original;
         if (!NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
         {
             return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);

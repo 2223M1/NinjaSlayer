@@ -81,9 +81,3 @@ public static void PlayVfx(Vector2 position, string path, Control? vfxContainer)
 注意事项：
 - 修改含有Material的特效时需要复制Material，不然修改一个特效会影响所有的特效
 - 对特效大小进行调整时，粒子特效不会生效，需要修改其相对位置参数
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-07-game-builtin-vfx/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

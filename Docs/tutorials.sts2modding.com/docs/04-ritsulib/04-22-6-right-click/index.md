@@ -156,9 +156,3 @@ public readonly record struct ModRightClickContext(
 
 >
 同步执行阶段使用的是 `ModRightClickExecutionContext`，它多了 `PlayerChoiceContext` 和 `Action` 两个字段。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-22-6-right-click/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

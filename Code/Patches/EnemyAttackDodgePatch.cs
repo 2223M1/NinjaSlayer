@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
@@ -82,15 +83,7 @@ public sealed class AllyDodgeImpactPatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            [
-                typeof(PlayerChoiceContext),
-                typeof(IEnumerable<Creature>),
-                typeof(decimal),
-                typeof(ValueProp),
-                typeof(Creature),
-                typeof(CardModel),
-                typeof(CardPlay)
-            ])
+            GameCompatibility.Damage.CommandParameterTypes)
     ];
 
     public static void Prefix(

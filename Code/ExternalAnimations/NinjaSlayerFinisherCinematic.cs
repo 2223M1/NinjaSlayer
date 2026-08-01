@@ -155,6 +155,14 @@ internal static class NinjaSlayerFinisherCinematic
         FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
     }
 
+    internal static CardPlay? ResolveActiveCardPlay(Creature? dealer, CardModel? cardSource)
+    {
+        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
+        return session != null && session.Actor == dealer && session.CardPlay?.Card == cardSource
+            ? session.CardPlay
+            : null;
+    }
+
     internal static void NotifyDeathAnimationStarting(MegaCrit.Sts2.Core.Nodes.Combat.NCreature creature)
     {
         FinisherSessionRegistry.GetActiveSession()?.NotifyDeathAnimationStarting(creature);
@@ -494,7 +502,7 @@ internal static class NinjaSlayerFinisherCinematic
         DirectDamageBypassDepth.Value++;
         try
         {
-            return await CreatureCmd.Damage(
+            return await GameCompatibility.Damage.Deal(
                 choiceContext,
                 targets,
                 amount,

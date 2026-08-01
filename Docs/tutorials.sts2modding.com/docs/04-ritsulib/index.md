@@ -168,9 +168,3 @@ RitsuLibFramework.CreateContentPack(ModId)
 - `[AutoTimelineSlotBeforeEpochColumn]` / `[AutoTimelineSlotAfterEpochColumn]` / `[AutoTimelineSlotInEpochColumn]` — 时间线定位
 - `[RegisterEpochRelicsFromPool]` — 将指定遗物池里的所有遗物注册为该时期的解锁内容
 - `[RequireAllCardsInPool]` — 要求整个池的卡都被发现才能解锁该时期
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Existing stable SemVer tag to rebuild or repair
+        description: New stable SemVer tag at the current origin/main HEAD
         required: true
         type: string
 
@@ -16,21 +16,25 @@ jobs:
   release:
     runs-on: [self-hosted, Windows, X64, ninjaslayer-release]
     environment: release-production
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
       - name: Checkout complete history
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
+          ref: ${{ inputs.release_tag }}
           fetch-depth: 0
 
-      - name: Validate release tag and ancestry
+      - name: Validate new release tag at origin/main HEAD
+        id: release
         shell: pwsh
         run: |
+          if ('${{ github.ref }}' -cne 'refs/heads/main') {
+            throw 'The protected Release workflow must be dispatched from main.'
+          }
           if ($env:RELEASE_TAG -notmatch '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
-            throw "Release tags must use stable SemVer: vMAJOR.MINOR.PATCH without leading zeroes."
+            throw 'Release tags must use stable SemVer: vMAJOR.MINOR.PATCH without leading zeroes.'
           }
           git show-ref --verify --quiet "refs/tags/$env:RELEASE_TAG"
           if ($LASTEXITCODE -ne 0) { throw "Release tag $env:RELEASE_TAG does not exist." }
@@ -39,13 +43,33 @@ jobs:
             throw 'The checked-out commit does not match the release tag.'
           }
           git fetch origin main --no-tags
-          git merge-base --is-ancestor $releaseSha origin/main
-          if ($LASTEXITCODE -ne 0) {
-            throw "The release tag commit is not on origin/main."
+          $originMain = (git rev-parse origin/main).Trim().ToLowerInvariant()
+          if ($releaseSha -ne $originMain) {
+            throw "Release tag $env:RELEASE_TAG must point to current origin/main HEAD $originMain."
           }
-          "RELEASE_SHA=$releaseSha" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $workflowSha = '${{ github.sha }}'.ToLowerInvariant()
+          if ($workflowSha -ne $releaseSha) {
+            throw "The workflow head $workflowSha does not match release commit $releaseSha."
+          }
+          "RELEASE_SHA=$releaseSha" | Out-File $env:GITHUB_ENV -Append
+          "release_sha=$releaseSha" | Out-File $env:GITHUB_OUTPUT -Append
 
-      - name: Require a successful protected game contract
+      - name: Require an immutable new GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . .\.github\scripts\actions-provenance.ps1
+          $context = New-NinjaSlayerGitHubApiContext `
+            -Repository '${{ github.repository }}' `
+            -Token $env:GH_TOKEN
+          Assert-NinjaSlayerImmutableReleasesEnabled -Context $context | Out-Null
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "GitHub Release $env:RELEASE_TAG already exists and is immutable."
+          }
+
+      - name: Require protected dual-host Contract and smoke
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -55,18 +79,22 @@ jobs:
             -Repository '${{ github.repository }}' `
             -Token $env:GH_TOKEN `
             -OutputDirectory (Join-Path $env:RUNNER_TEMP 'contract-attestation')
+          .\.github\scripts\verify-smoke-attestation.ps1 `
+            -CandidateSha $env:RELEASE_SHA `
+            -Repository '${{ github.repository }}' `
+            -Token $env:GH_TOKEN `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP 'smoke-attestation') `
+            -ExpectedMode FirstCombatRestart
 
       - name: Setup .NET 9
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           dotnet-version: 9.0.x
 
-      - name: Validate isolated release inputs
+      - name: Validate isolated dual-host release inputs
         shell: powershell
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:STS2_DATA_DIR)) {
-            throw 'The ephemeral release runner did not provide STS2_DATA_DIR.'
-          }
+          . .\.github\scripts\compatibility.ps1
           if ([string]::IsNullOrWhiteSpace($env:GODOT_EXE) -or -not (Test-Path -LiteralPath $env:GODOT_EXE -PathType Leaf)) {
             throw 'The ephemeral release runner did not provide a valid GODOT_EXE.'
           }
@@ -74,13 +102,36 @@ jobs:
             throw 'The ephemeral release runner did not provide NINJASLAYER_SPINE_DIR.'
           }
           $workspace = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
-          foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll')) {
-            $file = Get-Item -LiteralPath (Join-Path $env:STS2_DATA_DIR $fileName) -ErrorAction Stop
-            if (-not $file.IsReadOnly) { throw "$fileName must be mounted read-only by the ephemeral runner." }
-            if ($file.FullName.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
-              throw "$fileName must remain outside the repository workspace."
+          $compatibility = Read-NinjaSlayerCompatibility -Path '.\eng\compatibility.json'
+          $roots = @{
+            stable = $env:NINJASLAYER_STS2_STABLE_DATA_DIR
+            preview = $env:NINJASLAYER_STS2_PREVIEW_DATA_DIR
+          }
+          $hosts = foreach ($channelName in @($compatibility.channels.PSObject.Properties.Name)) {
+            $profile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
+            $dataDirectory = $roots[$channelName]
+            if ([string]::IsNullOrWhiteSpace($dataDirectory)) {
+              throw "The ephemeral release runner did not provide $channelName references."
+            }
+            $resolved = [IO.Path]::GetFullPath($dataDirectory)
+            if ($resolved.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$channelName references must remain outside the repository workspace."
+            }
+            foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll') + @($profile.runtimeAssemblies)) {
+              $file = Get-Item -LiteralPath (Join-Path $resolved $fileName) -ErrorAction Stop
+              if (-not $file.IsReadOnly) { throw "$channelName/$fileName must be mounted read-only." }
+            }
+            $actualMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $resolved 'sts2.dll')
+            if ($actualMvid -ne [string]$profile.hostContract.moduleMvid) {
+              throw "$channelName release host MVID does not match compatibility.json."
+            }
+            [ordered]@{
+              channel = $channelName
+              gameApiVersion = [string]$profile.gameApiVersion
+              dataDirectory = $resolved
             }
           }
+          "RELEASE_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress)" | Out-File $env:GITHUB_ENV -Append
 
       - name: Install verified Spine extension
         shell: powershell
@@ -96,52 +147,102 @@ jobs:
           )) {
             $source = Join-Path $env:NINJASLAYER_SPINE_DIR $fileName
             $file = Get-Item -LiteralPath $source -ErrorAction Stop
-            if (-not $file.IsReadOnly) { throw "$fileName must be mounted read-only by the ephemeral runner." }
-            if ($file.FullName.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
-              throw "$fileName must remain outside the repository workspace."
+            if (-not $file.IsReadOnly -or $file.FullName.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$fileName must be a read-only input outside the workspace."
             }
-            $actualHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
-            if ($actualHash -ne $expectedHash) {
+            if ((Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $expectedHash) {
               throw "Spine extension hash mismatch for $fileName."
             }
             Copy-Item -LiteralPath $source -Destination $destination
           }
 
-      - name: Validate resources and Spine extension
+      - name: Validate resources and import with preview host
         shell: pwsh
         run: |
+          node .\tools\sync-compatibility.mjs --check
           node .\tools\validate-repository.mjs
           if (-not (Test-Path '.\addons\spine\windows\libspine_godot.windows.editor.x86_64.dll')) {
             throw 'The Godot 4.5.1 Spine GDExtension is missing.'
           }
-          & $env:GODOT_EXE --headless --editor --quit --path . --import
-          if ($LASTEXITCODE -ne 0) { throw 'Godot resource import failed.' }
+          $preview = @($env:RELEASE_HOSTS_JSON | ConvertFrom-Json) | Where-Object channel -eq 'preview'
+          $previousDataDir = $env:Sts2DataDir
+          $previousChannel = $env:NinjaSlayerHostChannel
+          try {
+            $env:Sts2DataDir = [string]$preview.dataDirectory
+            $env:NinjaSlayerHostChannel = 'preview'
+            & $env:GODOT_EXE --headless --editor --quit --path . --import
+            if ($LASTEXITCODE -ne 0) { throw 'Godot resource import failed.' }
+          }
+          finally {
+            $env:Sts2DataDir = $previousDataDir
+            $env:NinjaSlayerHostChannel = $previousChannel
+          }
 
-      - name: Package release
+      - name: Package stable and preview release archives
+        id: package
         shell: pwsh
         run: |
           $version = $env:RELEASE_TAG.Substring(1)
-          dotnet msbuild .\NinjaSlayer.csproj -t:PackageMod `
-            -p:Configuration=Release `
-            -p:NinjaSlayerVersion=$version `
-            -p:Sts2DataDir="$env:STS2_DATA_DIR" `
-            -p:GodotExe="$env:GODOT_EXE"
-          if ($LASTEXITCODE -ne 0) { throw 'PackageMod failed.' }
-          $archive = "NinjaSlayer-$env:RELEASE_TAG.zip"
-          Compress-Archive -Path '.\build\mods\NinjaSlayer\*' -DestinationPath $archive -Force
-          "RELEASE_ARCHIVE=$archive" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $buildRoot = Join-Path $env:RUNNER_TEMP 'release-channel-build'
+          $protectedRoot = Join-Path $env:RUNNER_TEMP 'protected-release'
+          if (Test-Path -LiteralPath $protectedRoot) {
+            Remove-Item -LiteralPath $protectedRoot -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $protectedRoot -Force | Out-Null
+          $archives = [Collections.Generic.List[string]]::new()
+          $archivesByChannel = @{}
+          foreach ($host in @($env:RELEASE_HOSTS_JSON | ConvertFrom-Json)) {
+            $channel = [string]$host.channel
+            & .\tools\release\Invoke-NinjaSlayerChannelBuild.ps1 `
+              -Channel $channel `
+              -Version $version `
+              -Sts2DataDir "$($host.dataDirectory)" `
+              -Target PackageMod `
+              -GodotExe "$env:GODOT_EXE" `
+              -BuildRoot $buildRoot
 
-      - name: Create or update GitHub Release
+            $archive = "NinjaSlayer-$env:RELEASE_TAG-$channel-sts2-$($host.gameApiVersion).zip"
+            $archivePath = Join-Path $protectedRoot $archive
+            $packageDirectory = Join-Path $buildRoot "$channel\package\NinjaSlayer"
+            Compress-Archive -Path (Join-Path $packageDirectory '*') -DestinationPath $archivePath
+            $archives.Add($archivePath)
+            $archivesByChannel[$channel] = $archivePath
+          }
+          & .\.github\scripts\new-release-attestation.ps1 `
+            -Repository '${{ github.repository }}' `
+            -CandidateSha $env:RELEASE_SHA `
+            -Tag $env:RELEASE_TAG `
+            -WorkflowRunId '${{ github.run_id }}' `
+            -StableArchivePath $archivesByChannel.stable `
+            -PreviewArchivePath $archivesByChannel.preview `
+            -OutputPath (Join-Path $protectedRoot 'release-attestation.json')
+          "RELEASE_ARCHIVES=$($archives -join ';')" | Out-File $env:GITHUB_ENV -Append
+          "PROTECTED_RELEASE_DIR=$protectedRoot" | Out-File $env:GITHUB_ENV -Append
+          "protected_release_dir=$protectedRoot" | Out-File $env:GITHUB_OUTPUT -Append
+
+      - name: Upload protected dual-host release artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: protected-release-${{ env.RELEASE_TAG }}-${{ steps.release.outputs.release_sha }}
+          path: ${{ steps.package.outputs.protected_release_dir }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Create immutable GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          $archives = $env:RELEASE_ARCHIVES.Split(';', [StringSplitOptions]::RemoveEmptyEntries)
+          if ($archives.Count -ne 2) { throw 'Exactly two release archives are required.' }
           gh release view $env:RELEASE_TAG *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $env:RELEASE_TAG $env:RELEASE_ARCHIVE --clobber
+            throw "GitHub Release $env:RELEASE_TAG appeared during the build and will not be overwritten."
           }
-          else {
-            gh release create $env:RELEASE_TAG $env:RELEASE_ARCHIVE `
-              --verify-tag --notes-file '.\Workshop\change-note.md' --title "NinjaSlayer $env:RELEASE_TAG"
-          }
-          if ($LASTEXITCODE -ne 0) { throw 'Creating or updating the GitHub Release failed.' }
+          $arguments = @('release', 'create', $env:RELEASE_TAG) + $archives + @(
+            '--verify-tag',
+            '--notes-file', '.\Workshop\change-note.md',
+            '--title', "NinjaSlayer $env:RELEASE_TAG"
+          )
+          & gh @arguments
+          if ($LASTEXITCODE -ne 0) { throw 'Creating the immutable GitHub Release failed.' }

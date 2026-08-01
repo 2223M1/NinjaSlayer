@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -116,7 +117,8 @@ internal sealed class BossSemanticPartBuilder
         }
 
         int measured = 0;
-        using MegaSkeleton skeleton = GetSkeleton(_template);
+        MegaSkeleton skeleton = GetSkeleton(_template);
+        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {
@@ -266,7 +268,8 @@ internal sealed class BossSemanticPartBuilder
         Node2D template,
         string? detachedBoneName)
     {
-        using MegaSkeleton skeleton = GetSkeleton(template);
+        MegaSkeleton skeleton = GetSkeleton(template);
+        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {
@@ -558,13 +561,16 @@ internal sealed class BossSemanticPartBuilder
             return string.Empty;
         }
 
+        string directName = ReadString(bone, "get_bone_name", "get_name");
+        if (!string.IsNullOrWhiteSpace(directName))
+        {
+            return directName;
+        }
+
         GodotObject? data = CallObject(bone, "get_data");
         try
         {
-            string name = ReadString(data, "get_bone_name", "get_name");
-            return string.IsNullOrWhiteSpace(name)
-                ? ReadString(bone, "get_bone_name", "get_name")
-                : name;
+            return ReadString(data, "get_bone_name", "get_name");
         }
         finally
         {
@@ -777,7 +783,6 @@ internal static class BossFragmentPartitioner
 
     public static BossFragmentPartition BuildSemanticPartition(
         IReadOnlyList<BossAtlasSemanticPart> atlasParts,
-        Rect2 bodyLocalBounds,
         ulong seed,
         int mergedPartCount)
     {
@@ -787,15 +792,22 @@ internal static class BossFragmentPartitioner
                 "A semantic boss partition requires at least two atlas parts.");
         }
 
-        float bodyArea = Math.Max(1f, bodyLocalBounds.Size.X * bodyLocalBounds.Size.Y);
+        Rect2 semanticSourceBounds = atlasParts
+            .Select(part => part.Definition.SourceBounds)
+            .Aggregate((current, next) => current.Merge(next));
+        float bodyArea = Math.Max(
+            1f,
+            semanticSourceBounds.Size.X * semanticSourceBounds.Size.Y);
         int availableFragments = BossDismembermentMath.MaximumPieces - atlasParts.Count;
         var splitCounts = atlasParts.ToDictionary(part => part, _ => 1);
         foreach (BossAtlasSemanticPart part in atlasParts
                      .OrderByDescending(part => ResolveOversizedScore(
-                         part.Definition.SourceBounds,
-                         bodyLocalBounds)))
+                          part.Definition.SourceBounds,
+                          semanticSourceBounds)))
         {
-            int desired = ResolveLocalSplitCount(part.Definition.SourceBounds, bodyLocalBounds);
+            int desired = ResolveLocalSplitCount(
+                part.Definition.SourceBounds,
+                semanticSourceBounds);
             int additional = Math.Min(Math.Max(0, desired - 1), availableFragments);
             splitCounts[part] += additional;
             availableFragments -= additional;
@@ -834,7 +846,7 @@ internal static class BossFragmentPartitioner
 
         return new BossFragmentPartition(
             descriptors,
-            ToFragmentRect(bodyLocalBounds),
+            ToFragmentRect(semanticSourceBounds),
             atlasParts.Count,
             mergedPartCount,
             splitFragmentCount);

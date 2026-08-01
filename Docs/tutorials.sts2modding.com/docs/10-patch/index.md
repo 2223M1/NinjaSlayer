@@ -983,9 +983,3 @@ class PatchBarModB
 不要滥用 Transpiler 和bool prefix跳过代码。请保证你的patch的健壮性，不要和其他mod冲突。
 -
 如果使用ritsulib，可通过其patch封装系统进行补丁，具体逻辑类似。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/10-patch/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

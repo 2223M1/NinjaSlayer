@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -49,7 +50,7 @@ internal sealed class ArchitectDeathPresentationSession : IDisposable
 
     public Task StartDeathAnimation(bool shouldRemove)
     {
-        _architect.DisableInteractionForDeath();
+        GameCompatibility.CreaturePresentation.DisableInteractionForDeath(_architect);
         _architect.AnimHideIntent();
         _architect.AnimDisableUi();
         Task task = WaitForVisualsAndRemove(shouldRemove);

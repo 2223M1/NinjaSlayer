@@ -23,6 +23,7 @@ using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
 using STS2RitsuLib.RunData;
 using STS2RitsuLib.Scaffolding.Visuals.Definition;
+using STS2RitsuLib.Utils.HarmonyIl;
 
 namespace NinjaSlayer.RitsuLibContractTests;
 
@@ -32,10 +33,19 @@ public partial class ContractRunner : Node
     {
         try
         {
+            VerifyOutboundNetworkIsolation();
+            if (!RitsuLibFramework.IsInitialized)
+            {
+                RitsuLibFramework.Initialize();
+            }
+            VerifySelectedHostContract();
+            VerifyPreparedLifecyclePublishers();
             VerifyOriginalLethalTargetFingerprint();
             VerifyOriginalPreparedDrawTargetFingerprint();
             VerifyNancyLoadedRunCompatibility();
             VerifyOrobasSeaGlassPatchContract();
+            VerifyBlackFlameDamagePatchContract();
+            VerifyProductionDynamicPatchContracts();
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyOriginalFeedbackStreamOwnership();
@@ -43,6 +53,7 @@ public partial class ContractRunner : Node
             VerifyFinisherProtectionTransaction();
             VerifyWorldVisualStylesAreIdempotent();
             VerifyCriticalRollback();
+            WriteSuccessMarker();
             GD.Print("NinjaSlayer RitsuLib contracts passed.");
             GetTree().Quit(0);
         }
@@ -51,6 +62,111 @@ public partial class ContractRunner : Node
             GD.PushError($"NinjaSlayer RitsuLib contract failed: {ex}");
             GetTree().Quit(1);
         }
+    }
+
+    private static void VerifyOutboundNetworkIsolation()
+    {
+        if (!string.Equals(
+                System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION"),
+                "1",
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        string addressText = System.Environment.GetEnvironmentVariable(
+                "NINJASLAYER_CONTRACT_NETWORK_PROBE_ADDRESS")
+            ?? throw new InvalidOperationException("The protected Contract did not provide a network probe address.");
+        string portText = System.Environment.GetEnvironmentVariable(
+                "NINJASLAYER_CONTRACT_NETWORK_PROBE_PORT")
+            ?? throw new InvalidOperationException("The protected Contract did not provide a network probe port.");
+        if (!IPAddress.TryParse(addressText, out IPAddress? address) || IPAddress.IsLoopback(address))
+        {
+            throw new InvalidOperationException(
+                "The protected Contract network probe address must be a non-loopback IP address.");
+        }
+        Require(
+            int.TryParse(portText, out int port) && port is >= 1 and <= 65535,
+            "The protected Contract network probe port is invalid.");
+
+        using var client = new TcpClient(address.AddressFamily);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try
+        {
+            client.ConnectAsync(address, port, timeout.Token).AsTask().GetAwaiter().GetResult();
+        }
+        catch (SocketException)
+        {
+            return;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException("The Godot Contract process retained non-loopback network access.");
+    }
+
+    private static void WriteSuccessMarker()
+    {
+        string? markerPath = System.Environment.GetEnvironmentVariable(
+            "NINJASLAYER_CONTRACT_SUCCESS_MARKER");
+        if (string.IsNullOrWhiteSpace(markerPath))
+        {
+            return;
+        }
+
+        string fullPath = Path.GetFullPath(markerPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        System.IO.File.WriteAllText(fullPath, "passed\n");
+    }
+
+    private static void VerifySelectedHostContract()
+    {
+        IReadOnlyDictionary<string, string> metadata = Assembly.GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .ToDictionary(attribute => attribute.Key, attribute => attribute.Value ?? string.Empty);
+        string selectedChannel = GetRequiredMetadata(metadata, "NinjaSlayerHostChannel");
+        string selectedApi = GetRequiredMetadata(metadata, "NinjaSlayerGameApiVersion");
+        string selectedPackage = GetRequiredMetadata(metadata, "NinjaSlayerRitsuLibPackageId");
+        string selectedRitsuVersion = GetRequiredMetadata(metadata, "NinjaSlayerRitsuLibVersion");
+
+        Assembly gameAssembly = typeof(Orobas).Assembly;
+        string gameAssemblyVersion = gameAssembly.GetName().Version?.ToString() ?? "unknown";
+        Guid gameMvid = gameAssembly.ManifestModule.ModuleVersionId;
+        GameHostContractProfile[] matchingProfiles = GameHostContractProfile.Supported
+            .Where(profile =>
+                string.Equals(profile.AssemblyVersion, gameAssemblyVersion, StringComparison.Ordinal)
+                && profile.ModuleMvid == gameMvid)
+            .ToArray();
+        Require(matchingProfiles.Length == 1, $"The protected host is unknown: {gameAssemblyVersion}/{gameMvid:D}.");
+        Require(
+            string.Equals(matchingProfiles[0].Channel, selectedChannel, StringComparison.Ordinal),
+            $"Selected channel {selectedChannel} does not match protected host {matchingProfiles[0].Id}.");
+        Require(
+            string.Equals(matchingProfiles[0].GameVersion, selectedApi, StringComparison.Ordinal),
+            $"Selected game API {selectedApi} does not match protected host {matchingProfiles[0].Id}.");
+        Require(
+            string.Equals(selectedPackage, matchingProfiles[0].RitsuLibPackageId, StringComparison.Ordinal),
+            $"Selected RitsuLib package {selectedPackage} does not match {matchingProfiles[0].Id}.");
+        Require(
+            string.Equals(selectedRitsuVersion, matchingProfiles[0].RitsuLibVersion, StringComparison.Ordinal),
+            $"Selected RitsuLib version {selectedRitsuVersion} does not match {matchingProfiles[0].Id}.");
+        Version loadedRitsuVersion = typeof(RitsuLibFramework).Assembly.GetName().Version
+            ?? throw new InvalidOperationException("The loaded RitsuLib assembly has no version.");
+        Require(
+            string.Equals(loadedRitsuVersion.ToString(3), selectedRitsuVersion, StringComparison.Ordinal),
+            $"The contract runner loaded RitsuLib {loadedRitsuVersion}, expected {selectedRitsuVersion}.");
+    }
+
+    private static string GetRequiredMetadata(
+        IReadOnlyDictionary<string, string> metadata,
+        string key)
+    {
+        Require(
+            metadata.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value),
+            $"Missing contract assembly metadata: {key}.");
+        return value!;
     }
 
     private static void VerifyOriginalLethalTargetFingerprint()
@@ -68,6 +184,113 @@ public partial class ContractRunner : Node
         Require(
             PreparedQueueCompatibility.TryValidate(out _, out string queueReason),
             queueReason);
+    }
+
+    private static void VerifyPreparedLifecyclePublishers()
+    {
+        Require(RitsuLibFramework.IsInitialized, "RitsuLib did not complete framework initialization.");
+        Type[] eventTypes =
+        [
+            typeof(CardMovedBetweenPilesEvent),
+            typeof(RunLoadedEvent),
+            typeof(CombatStartingEvent)
+        ];
+
+        IDisposable[] subscriptions =
+        [
+            RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(static _ => { }, false),
+            RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(static _ => { }, false),
+            RitsuLibFramework.SubscribeLifecycle<CombatStartingEvent>(static _ => { }, false)
+        ];
+        try
+        {
+            Require(subscriptions.Length == eventTypes.Length, "Prepared lifecycle subscriptions were not created.");
+        }
+        finally
+        {
+            foreach (IDisposable subscription in subscriptions.Reverse())
+            {
+                subscription.Dispose();
+                subscription.Dispose();
+            }
+        }
+
+        Assembly ritsuAssembly = typeof(RitsuLibFramework).Assembly;
+        foreach (Type eventType in eventTypes)
+        {
+            Type publisherPatch = ResolveLifecyclePublisherPatch(ritsuAssembly, eventType);
+            MethodInfo getTargets = publisherPatch.GetMethod(
+                "GetTargets",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+                ?? throw new MissingMethodException(publisherPatch.FullName, nameof(IPatchMethod.GetTargets));
+            var targets = (ModPatchTarget[]?)(getTargets.Invoke(null, null))
+                ?? throw new InvalidOperationException($"{publisherPatch.FullName}.GetTargets() returned null.");
+            Require(targets.Length > 0, $"{eventType.Name} publisher does not declare any patch targets.");
+
+            foreach (ModPatchTarget target in targets)
+            {
+                Require(
+                    target.HarmonyMethodType == MethodType.Normal,
+                    $"{eventType.Name} publisher uses an unsupported Harmony target type.");
+                MethodInfo? original = target.ParameterTypes is null
+                    ? AccessTools.Method(target.TargetType, target.MethodName)
+                    : AccessTools.Method(target.TargetType, target.MethodName, target.ParameterTypes);
+                Require(original is not null, $"Unable to resolve {eventType.Name} publisher target {target}.");
+                Patches patchInfo = Harmony.GetPatchInfo(original!)
+                    ?? throw new InvalidOperationException(
+                        $"Harmony did not report the {eventType.Name} publisher target {target}.");
+                Patch[] matching = patchInfo.Prefixes
+                    .Concat(patchInfo.Postfixes)
+                    .Concat(patchInfo.Transpilers)
+                    .Concat(patchInfo.Finalizers)
+                    .Where(patch =>
+                        patch.PatchMethod.DeclaringType == publisherPatch
+                        && patch.PatchMethod.Module.Assembly == ritsuAssembly)
+                    .ToArray();
+                Require(
+                    matching.Length == 1,
+                    $"{eventType.Name} publisher target {target} has {matching.Length} matching RitsuLib bindings.");
+            }
+        }
+    }
+
+    private static Type ResolveLifecyclePublisherPatch(Assembly ritsuAssembly, Type eventType)
+    {
+        Type[] matches = ritsuAssembly.GetTypes()
+            .Where(type =>
+                !type.IsAbstract
+                && typeof(IPatchMethod).IsAssignableFrom(type)
+                && TypeTreeCreatesEvent(type, eventType))
+            .ToArray();
+        Require(
+            matches.Length == 1,
+            $"Expected one RitsuLib IPatchMethod publisher for {eventType.Name}, found {matches.Length}.");
+        return matches[0];
+    }
+
+    private static bool TypeTreeCreatesEvent(Type type, Type eventType)
+    {
+        foreach (MethodBase method in type.GetMethods(
+                     BindingFlags.Public | BindingFlags.NonPublic |
+                     BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+        {
+            if (method.GetMethodBody() is null)
+            {
+                continue;
+            }
+
+            HarmonyIlMethodBody body = method.GetOriginalIl(resolveAsync: false);
+            if (body.Instructions.Any(instruction =>
+                    instruction.opcode == System.Reflection.Emit.OpCodes.Newobj
+                    && instruction.operand is ConstructorInfo constructor
+                    && constructor.DeclaringType == eventType))
+            {
+                return true;
+            }
+        }
+
+        return type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
+            .Any(nested => TypeTreeCreatesEvent(nested, eventType));
     }
 
     private static void VerifyNancyLoadedRunCompatibility()
@@ -129,6 +352,113 @@ public partial class ContractRunner : Node
         Require(
             !(remaining?.Owners.Contains(patcher.PatcherId) ?? false),
             "Orobas Sea Glass patch ownership remained after idempotent unload.");
+    }
+
+    private static void VerifyBlackFlameDamagePatchContract()
+    {
+        ModPatchTarget descriptor = BlackFlameDamagePatch.GetTargets().Single();
+        MethodInfo target = AccessTools.Method(
+            descriptor.TargetType,
+            descriptor.MethodName,
+            descriptor.ParameterTypes)
+            ?? throw new MissingMethodException(
+                descriptor.TargetType.FullName,
+                descriptor.MethodName);
+        Require(
+            target.ReturnType == typeof(Task<IEnumerable<DamageResult>>),
+            "The final CreatureCmd.Damage entry no longer returns Task<IEnumerable<DamageResult>>.");
+
+        ModPatcher patcher = CreatePatcher("black-flame-final-damage-contract");
+        patcher.RegisterPatch<BlackFlameDamagePatch>();
+        try
+        {
+            Require(patcher.PatchAll(), "ModPatcher rejected the production Black Flame damage patch.");
+            Patches info = Harmony.GetPatchInfo(target)
+                ?? throw new InvalidOperationException("Harmony did not report the Black Flame damage patch.");
+            Patch postfix = info.Postfixes.Single(item => item.owner == patcher.PatcherId);
+            Require(
+                postfix.PatchMethod.DeclaringType == typeof(BlackFlameDamagePatch)
+                && postfix.PatchMethod.Name == nameof(BlackFlameDamagePatch.Postfix),
+                "Harmony bound an unexpected Black Flame damage Postfix.");
+        }
+        finally
+        {
+            patcher.UnpatchAll();
+            patcher.UnpatchAll();
+        }
+
+        Patches? remaining = Harmony.GetPatchInfo(target);
+        Require(
+            !(remaining?.Owners.Contains(patcher.PatcherId) ?? false),
+            "Black Flame damage patch ownership remained after idempotent unload.");
+    }
+
+    private static void VerifyProductionDynamicPatchContracts()
+    {
+        VerifyProductionDynamicPatchSet(
+            "transition-gc-contract",
+            NinjaSlayerTransitionGcDeferralPatch.CreateDynamicPatches(),
+            expectedCount: 3,
+            typeof(NinjaSlayerTransitionGcDeferralPatch));
+        VerifyProductionDynamicPatchSet(
+            "tornado-cadence-contract",
+            TornadoFistFinisherCadencePatch.CreateDynamicPatches(),
+            expectedCount: 3,
+            typeof(TornadoFistFinisherCadencePatch));
+    }
+
+    private static void VerifyProductionDynamicPatchSet(
+        string capability,
+        DynamicPatchInfo[] dynamicPatches,
+        int expectedCount,
+        Type expectedPatchType)
+    {
+        Require(
+            dynamicPatches.Length == expectedCount,
+            $"{capability} resolved {dynamicPatches.Length} targets instead of {expectedCount}.");
+        Require(
+            dynamicPatches.Select(patch => patch.Id).Distinct(StringComparer.Ordinal).Count() == expectedCount,
+            $"{capability} returned duplicate dynamic patch IDs.");
+        Require(
+            dynamicPatches.All(patch => patch.IsCritical && patch.OriginalMethod.Name == "MoveNext"),
+            $"{capability} did not resolve critical async MoveNext targets.");
+
+        ModPatcher patcher = CreatePatcher(capability);
+        try
+        {
+            Require(
+                patcher.ApplyDynamicPatches(dynamicPatches, rollbackOnCriticalFailure: true),
+                $"RitsuLib rejected the production {capability} dynamic patches.");
+            Require(
+                patcher.RegisteredDynamicPatchCount == expectedCount
+                && patcher.AppliedPatchCount == expectedCount,
+                $"{capability} did not apply every registered dynamic patch.");
+
+            foreach (DynamicPatchInfo dynamicPatch in dynamicPatches)
+            {
+                Patches info = Harmony.GetPatchInfo(dynamicPatch.OriginalMethod)
+                    ?? throw new InvalidOperationException(
+                        $"Harmony did not report {capability} target {dynamicPatch.Id}.");
+                Patch transpiler = info.Transpilers.Single(item => item.owner == patcher.PatcherId);
+                Require(
+                    transpiler.PatchMethod.DeclaringType == expectedPatchType
+                    && transpiler.PatchMethod.Name == "Transpiler",
+                    $"Harmony bound an unexpected transpiler for {dynamicPatch.Id}.");
+            }
+        }
+        finally
+        {
+            patcher.UnpatchAll();
+            patcher.UnpatchAll();
+        }
+
+        foreach (DynamicPatchInfo dynamicPatch in dynamicPatches)
+        {
+            Patches? remaining = Harmony.GetPatchInfo(dynamicPatch.OriginalMethod);
+            Require(
+                !(remaining?.Owners.Contains(patcher.PatcherId) ?? false),
+                $"{dynamicPatch.Id} retained Harmony ownership after idempotent unload.");
+        }
     }
 
     private static void VerifyFinalizerOrderingAndTypedState()

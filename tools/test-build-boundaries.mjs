@@ -21,6 +21,16 @@ const privateProjectPath = join(root, 'tools', 'private-contract', 'NinjaSlayer.
 const versionPropsPath = join(root, 'eng', 'NinjaSlayer.Version.props');
 const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
+const compatibilityPath = join(root, 'eng', 'compatibility.json');
+const contractProjectPath = join(
+  root,
+  'Tests',
+  'NinjaSlayer.RitsuLibContractTests',
+  'NinjaSlayer.RitsuLibContractTests.csproj',
+);
+const contractWorkflowPath = join(root, '.github', 'workflows', 'contract.yml');
+const smokeWorkflowPath = join(root, '.github', 'workflows', 'smoke.yml');
+const ciWorkflowPath = join(root, '.github', 'workflows', 'ci.yml');
 const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
 const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
 const quickReleasePath = join(root, 'tools', 'release', 'Publish-QuickRelease.ps1');
@@ -31,12 +41,49 @@ const workshopQuickReleasePath = join(
   'release',
   'Publish-WorkshopQuickRelease.ps1',
 );
+const channelBuildPath = join(
+  root,
+  'tools',
+  'release',
+  'Invoke-NinjaSlayerChannelBuild.ps1',
+);
 const ephemeralRunnerPath = join(
   root,
   'tools',
   'private-contract',
   'Start-EphemeralContractRunner.ps1',
 );
+const processNetworkIsolationPath = join(
+  root,
+  '.github',
+  'scripts',
+  'process-network-isolation.ps1',
+);
+const processNetworkIsolationTestPath = join(root, 'tools', 'test-process-network-isolation.ps1');
+const smokeLauncherPath = join(root, 'tools', 'smoke-harness', 'Invoke-NinjaSlayerSmoke.ps1');
+const privateRunnerReadmePath = join(root, 'tools', 'private-contract', 'README.md');
+const contractVerifierPath = join(root, '.github', 'scripts', 'verify-contract-attestation.ps1');
+const smokeVerifierPath = join(root, '.github', 'scripts', 'verify-smoke-attestation.ps1');
+const networkProbeProjectPath = join(
+  root,
+  'Tests',
+  'NinjaSlayer.NetworkIsolationProbe',
+  'NinjaSlayer.NetworkIsolationProbe.csproj',
+);
+const compatibility = JSON.parse(readFileSync(compatibilityPath, 'utf8'));
+const contractProject = readFileSync(contractProjectPath, 'utf8');
+const contractWorkflow = readFileSync(contractWorkflowPath, 'utf8');
+const smokeWorkflow = readFileSync(smokeWorkflowPath, 'utf8');
+const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
+const processNetworkIsolation = readFileSync(processNetworkIsolationPath, 'utf8');
+const processNetworkIsolationTest = readFileSync(processNetworkIsolationTestPath, 'utf8');
+const smokeLauncher = readFileSync(smokeLauncherPath, 'utf8');
+const privateRunnerReadme = readFileSync(privateRunnerReadmePath, 'utf8');
+const contractVerifier = readFileSync(contractVerifierPath, 'utf8');
+const smokeVerifier = readFileSync(smokeVerifierPath, 'utf8');
+const networkProbeProject = readFileSync(networkProbeProjectPath, 'utf8');
+const defaultChannel = compatibility.defaultBuildChannel;
+const channelBuild = readFileSync(channelBuildPath, 'utf8');
 
 function xml(value) {
   return value
@@ -87,6 +134,19 @@ function evaluateCompileFiles(project, properties = {}) {
   }).sort();
 }
 
+function evaluateProperties(project, names, properties = {}) {
+  const args = ['msbuild', project, '-nologo', `-getProperty:${names.join(',')}`];
+  for (const [name, value] of Object.entries(properties)) args.push(`-p:${name}=${value}`);
+  const result = spawnSync('dotnet', args, { cwd: root, encoding: 'utf8' });
+  requireSuccess(result, `Property evaluation for ${project}`);
+
+  try {
+    return JSON.parse(result.stdout).Properties;
+  } catch (error) {
+    assert.fail(`MSBuild returned invalid property JSON for ${project}: ${error.message}`);
+  }
+}
+
 function fileHash(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex').toUpperCase();
 }
@@ -104,6 +164,25 @@ assert(project.includes('<Import Project="eng\\NinjaSlayer.Packaging.targets" />
 assert(!project.includes('<Target '), 'NinjaSlayer.csproj must not own executable delivery targets.');
 assert(!project.includes('<UsingTask'), 'NinjaSlayer.csproj must not own delivery task implementations.');
 assert(!project.includes('AfterTargets='), 'Ordinary builds must not trigger delivery through AfterTargets.');
+assert(
+  project.includes('<Compile Remove="build\\**\\*.cs" />'),
+  'Channel-local generated sources under build/ must never enter the shipping compilation.',
+);
+const isolatedPathRoot = join(tmpdir(), 'ninjaslayer-isolated-output-contract');
+const evaluatedPaths = evaluateProperties(
+  projectPath,
+  ['OutputPath', 'IntermediateOutputPath'],
+  {
+    Configuration: 'Release',
+    NinjaSlayerIsolatedOutputRoot: join(isolatedPathRoot, 'bin'),
+    NinjaSlayerIsolatedIntermediateRoot: join(isolatedPathRoot, 'obj'),
+  },
+);
+assert.equal(resolve(evaluatedPaths.OutputPath), resolve(isolatedPathRoot, 'bin', 'Release'));
+assert.equal(
+  resolve(evaluatedPaths.IntermediateOutputPath),
+  resolve(isolatedPathRoot, 'obj', 'Release'),
+);
 for (const property of ['PostBuildModDir', 'SteamModDir', 'WorkshopContentDir', 'WorkshopUploaderExe']) {
   assert(!project.includes(`<${property}`), `${property} belongs in the packaging import.`);
 }
@@ -116,6 +195,63 @@ const oneClickRelease = readFileSync(oneClickReleasePath, 'utf8');
 const workshopQuickRelease = readFileSync(workshopQuickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
 const stableTagPattern = '^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$';
+for (const [channelName, channel] of Object.entries(compatibility.channels)) {
+  for (const assembly of ['SmartFormat.dll', 'SmartFormat.ZString.dll', 'Steamworks.NET.dll']) {
+    assert(
+      channel.runtimeAssemblies.includes(assembly),
+      `${channelName}.runtimeAssemblies must include ${assembly}.`,
+    );
+  }
+}
+assert(contractProject.includes('<_NinjaSlayerRuntimeReference Include="$(NinjaSlayerRuntimeAssemblies)" />'));
+assert(contractProject.includes('<HintPath>$(Sts2DataDir)/%(Identity)</HintPath>'));
+assert(!contractProject.includes('<Reference Include="Sentry"'));
+for (const workflow of [contractWorkflow, smokeWorkflow]) {
+  assert(workflow.includes('ref: ${{ github.sha }}'));
+  assert(workflow.includes('WORKFLOW_SHA: ${{ github.sha }}'));
+  assert(workflow.includes('$candidateSha -cne $workflowSha'));
+  assert(!workflow.includes('ref: main'));
+}
+assert(contractWorkflow.includes('$programs = @($dotnet, $godot)'));
+assert(contractWorkflow.includes('must be elevated for process firewall isolation'));
+assert(contractWorkflow.includes('-RemoteScope NonLoopback'));
+assert(contractWorkflow.includes('NINJASLAYER_CONTRACT_DOTNET_EXE'));
+assert(contractWorkflow.includes('NinjaSlayer.NetworkIsolationProbe.dll'));
+assert(contractWorkflow.includes("NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = '1'"));
+assert(!contractWorkflow.includes('New-NetFirewallRule'));
+assert(!contractWorkflow.includes('$rule = "NinjaSlayer-Contract'));
+assert(smokeWorkflow.includes('Invoke-NinjaSlayerSmoke.ps1'));
+assert(smokeLauncher.includes('New-NinjaSlayerProcessFirewallLease'));
+assert(smokeLauncher.includes('-RemoteScope All'));
+assert(smokeLauncher.includes('Remove-NinjaSlayerProcessFirewallLease'));
+assert(!smokeLauncher.includes('New-NetFirewallRule'));
+for (const required of [
+  '0.0.0.0-126.255.255.255',
+  '128.0.0.0-255.255.255.255',
+  '::-::',
+  '::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+  '[Collections.Generic.List[object]]::new()',
+  'for ($index = $ruleNames.Count - 1; $index -ge 0; $index--)',
+  'Get-NetFirewallRule -Name $ruleName',
+]) {
+  assert(processNetworkIsolation.includes(required), `Process firewall helper is missing: ${required}`);
+}
+for (const required of [
+  'Duplicate executable paths must produce one firewall rule.',
+  'Injected firewall creation failure',
+  'Injected isolated action failure.',
+  'cleanup must remove rules in reverse order.',
+]) {
+  assert(processNetworkIsolationTest.includes(required), `Process firewall tests are missing: ${required}`);
+}
+assert(ciWorkflow.includes('./tools/test-process-network-isolation.ps1'));
+assert(ciWorkflow.includes('Tests/NinjaSlayer.NetworkIsolationProbe/NinjaSlayer.NetworkIsolationProbe.csproj'));
+assert(networkProbeProject.includes('<UseAppHost>false</UseAppHost>'));
+assert(privateRunnerReadme.includes('| Contract | `4` |'));
+assert(privateRunnerReadme.includes('| Smoke | `3` |'));
+assert(contractVerifier.includes('$attestation.schemaVersion) 4'));
+assert(smokeVerifier.includes('$attestation.schemaVersion) 3'));
+assert(!privateRunnerReadme.includes('Contract and Smoke artifacts contain only schema 3'));
 for (const source of [releaseWorkflow, workshopWorkflow]) {
   assert(
     source.includes(stableTagPattern),
@@ -123,10 +259,29 @@ for (const source of [releaseWorkflow, workshopWorkflow]) {
   );
 }
 assert(releaseWorkflow.includes('environment: release-production'));
+assert(releaseWorkflow.includes('Assert-NinjaSlayerImmutableReleasesEnabled'));
 assert(releaseWorkflow.includes('workflow_dispatch:'));
 assert(!releaseWorkflow.includes("tags:\n      - 'v0.1.*'"), 'Tag pushes must not automatically queue the protected release path.');
 assert(releaseWorkflow.includes('git rev-list -n 1 $env:RELEASE_TAG'));
-assert(releaseWorkflow.includes('gh release upload $env:RELEASE_TAG $env:RELEASE_ARCHIVE --clobber'));
+assert(releaseWorkflow.includes('Exactly two release archives are required.'));
+assert(releaseWorkflow.includes('$releaseSha -ne $originMain'));
+assert(releaseWorkflow.includes("'${{ github.ref }}' -cne 'refs/heads/main'"));
+assert(releaseWorkflow.includes("$workflowSha = '${{ github.sha }}'.ToLowerInvariant()"));
+assert(releaseWorkflow.includes('Invoke-NinjaSlayerChannelBuild.ps1'));
+assert(releaseWorkflow.includes('new-release-attestation.ps1'));
+assert(
+  releaseWorkflow.includes(
+    'protected-release-${{ env.RELEASE_TAG }}-${{ steps.release.outputs.release_sha }}',
+  )
+    && releaseWorkflow.includes('path: ${{ steps.package.outputs.protected_release_dir }}'),
+  'The protected artifact name and path must use explicit step outputs.',
+);
+assert(!releaseWorkflow.includes('--clobber'));
+assert(!releaseWorkflow.includes("@('release', 'upload'"));
+assert(releaseWorkflow.includes('$channel-sts2-$($host.gameApiVersion).zip'));
+assert(workshopWorkflow.includes("'${{ github.ref }}' -cne 'refs/heads/main'"));
+assert(workshopWorkflow.includes('verify-release-attestation.ps1'));
+assert(workshopWorkflow.includes('The public GitHub Release asset does not match'));
 assert(
   releaseWorkflow.includes('runs-on: [self-hosted, Windows, X64, ninjaslayer-release]'),
   'Release packaging must run only on the dedicated ephemeral release runner.',
@@ -136,12 +291,30 @@ for (const safeguard of [
   "if (-not $Confirm)",
   "if ($branch -ne 'main')",
   "if ($head -ne $originMain)",
-  "SHA256SUMS",
-  "Invoke-Native -Command gh -Arguments @('release', 'upload', $tag, $archivePath, '--clobber')",
-  "$releaseExists = $LASTEXITCODE -eq 0",
-  "Invoke-Native -Command $uploader -Arguments @('upload', '-w', 'NinjaSlayer')",
+  "if (-not $SkipWorkshop)",
+  "'workflow'",
+  "'release.yml'",
+  '"release_tag=$tag"',
 ]) {
   assert(quickRelease.includes(safeguard), `Quick release must retain safeguard: ${safeguard}`);
+}
+for (const forbidden of [
+  "@('release', 'create'",
+  "@('release', 'upload'",
+  'Compress-Archive',
+  'CreateFromDirectory',
+]) {
+  assert(!quickRelease.includes(forbidden), `Quick release must not bypass protected Release with ${forbidden}.`);
+}
+for (const forwardedParameter of [
+  '$workshopParameters.Sts2DataDir = $Sts2DataDir',
+  '$workshopParameters.SteamModDir = $SteamModDir',
+  '$workshopParameters.GodotExe = $GodotExe',
+]) {
+  assert(
+    quickRelease.includes(forwardedParameter),
+    `Quick release must forward the local stable build parameter: ${forwardedParameter}`,
+  );
 }
 // The desktop one-click path is Workshop-only: it builds the current working tree and uploads it,
 // and must never commit, tag, push, open a pull request, or touch a GitHub Release. It owns no
@@ -187,6 +360,12 @@ assert(
 assert(
   workshopQuickRelease.includes('Package checksum mismatch'),
   'Workshop quick release must verify SHA256SUMS before upload.',
+);
+assert(
+  workshopQuickRelease.includes('NINJASLAYER_STS2_STABLE_DATA_DIR')
+    && workshopQuickRelease.includes('Invoke-NinjaSlayerChannelBuild.ps1')
+    && workshopQuickRelease.includes("Target = 'InstallLocalAndStageWorkshop'"),
+  'Workshop quick release must use the isolated explicit stable channel build.',
 );
 assert(
   workshopQuickRelease.includes(
@@ -238,10 +417,18 @@ for (const required of [
   "'Contract' { 'ninjaslayer-contract' }",
   "'Release' { 'ninjaslayer-release' }",
   "'Smoke' { 'ninjaslayer-smoke' }",
-  "$env:NINJASLAYER_SPINE_DIR = if ($RunnerPurpose -eq 'Release') { $spineDirectory } else { $null }",
-  '$env:NINJASLAYER_SPINE_DIR = $previousSpineDirectory',
-  '$env:NINJASLAYER_SMOKE_GAME_ROOT = $previousSmokeGameRoot',
-  '$env:NINJASLAYER_RITSULIB_MOD_DIR = $previousRitsuLibModDirectory',
+  "Set-RunnerEnvironment -Name 'NINJASLAYER_SPINE_DIR'",
+  'Set-RunnerEnvironment -Name $name -Value $previousEnvironment[$name]',
+  '[string]$GameDataDirectoryStable',
+  '[string]$GameDataDirectoryPreview',
+  '[string]$GameRootDirectoryStable',
+  '[string]$GameRootDirectoryPreview',
+  "'NINJASLAYER_STS2_STABLE_DATA_DIR'",
+  "'NINJASLAYER_STS2_PREVIEW_DATA_DIR'",
+  "'NINJASLAYER_SMOKE_STABLE_GAME_ROOT'",
+  "'NINJASLAYER_SMOKE_PREVIEW_GAME_ROOT'",
+  "Read-NinjaSlayerCompatibility -Path (Join-Path $repositoryRoot 'eng\\compatibility.json')",
+  'must be at least $minimumRitsuVersion',
   'Remove-SessionDirectory -Path $sessionRoot',
 ]) {
   assert(ephemeralRunner.includes(required), `Ephemeral runner launcher is missing: ${required}`);
@@ -256,7 +443,9 @@ assert(
   'Delivery targets must remain explicit and must not attach themselves to ordinary builds.',
 );
 for (const target of [
+  'ValidatePackageHost',
   'BuildGodotEditorAssembly',
+  'ResolveLocalInstallVersion',
   'PackageMod',
   'InstallLocal',
   'ValidateWorkshopPublish',
@@ -284,9 +473,31 @@ assert(
 );
 assert(editorBuildTarget.includes('BuildInParallel="false"'));
 assert(
+  packagingTargets.includes(
+    '<InstallLocalDependsOn Condition="\'$(InstallLocalDependsOn)\' == \'\'">ResolveLocalInstallVersion;PackageMod</InstallLocalDependsOn>',
+  ),
+  'Local installation must resolve a Workshop-safe local version before packaging.',
+);
+assert(
   packagingTargets.includes('ValidateWorkshopPublish;PackageMod;StageWorkshop'),
   'Workshop publication must validate before packaging or staging.',
 );
+for (const required of [
+  "[ValidateSet('stable', 'preview')]",
+  "[ValidateSet('PackageMod', 'InstallLocal', 'StageWorkshop', 'InstallLocalAndStageWorkshop')]",
+  "'BaseIntermediateOutputPath'",
+  "'MSBuildProjectExtensionsPath'",
+  "'BaseOutputPath'",
+  "'NinjaSlayerIsolatedIntermediateRoot'",
+  "'NinjaSlayerIsolatedOutputRoot'",
+  "'PostBuildModDir'",
+  "'project.assets.json'",
+  '$expectedPackageIdentity',
+  'compatibility.ritsuLibVersion',
+  "Get-NinjaSlayerGameModuleMvid",
+]) {
+  assert(channelBuild.includes(required), `Channel build entry is missing: ${required}`);
+}
 assert(
   packagingTargets.includes('CustomErrorRegularExpression="System\\.[A-Za-z0-9_.]+Exception:|SCRIPT ERROR:|ERROR:"'),
   'Godot export must fail when the editor reports a managed or Godot error with exit code zero.',
@@ -299,8 +510,11 @@ assert(
   'Local game references must be present in the Godot editor dependency context.',
 );
 assert.deepEqual(
-  evaluateCompileFiles(privateProjectPath, { CandidateRoot: root }),
-  evaluateCompileFiles(projectPath),
+  evaluateCompileFiles(privateProjectPath, {
+    CandidateRoot: root,
+    NinjaSlayerHostChannel: defaultChannel,
+  }),
+  evaluateCompileFiles(projectPath, { NinjaSlayerHostChannel: defaultChannel }),
   'The private contract must compile exactly the shipping project source set.',
 );
 
@@ -311,8 +525,19 @@ try {
   writeFileSync(join(privateReferenceDir, 'sts2.dll'), 'contract-fixture', 'utf8');
   writeFileSync(join(privateReferenceDir, '0Harmony.dll'), 'contract-fixture', 'utf8');
 
+  const missingChannel = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
+    CandidateRoot: root,
+    Sts2DataDir: privateReferenceDir,
+  });
+  assert.notEqual(missingChannel.status, 0, 'The private build must require an explicit channel.');
+  assert.match(
+    `${missingChannel.stdout}\n${missingChannel.stderr}`,
+    /requires an explicit NinjaSlayerHostChannel=stable\|preview/,
+  );
+
   const emptyCandidate = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
     Sts2DataDir: privateReferenceDir,
+    NinjaSlayerHostChannel: defaultChannel,
   });
   assert.notEqual(emptyCandidate.status, 0, 'An empty CandidateRoot must fail validation.');
   const emptyCandidateOutput = `${emptyCandidate.stdout}\n${emptyCandidate.stderr}`;
@@ -329,6 +554,7 @@ try {
   const invalidCandidate = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
     CandidateRoot: sandbox,
     Sts2DataDir: privateReferenceDir,
+    NinjaSlayerHostChannel: defaultChannel,
   });
   assert.notEqual(invalidCandidate.status, 0, 'An invalid CandidateRoot must fail validation.');
   assert.match(
@@ -341,8 +567,12 @@ try {
 <Project>
   <Import Project="${xml(versionPropsPath)}" />
   <Import Project="${xml(versionTargetsPath)}" />
+  <Import Project="${xml(packagingTargetsPath)}" />
   <Target Name="CaptureVersion" DependsOnTargets="ResolveNinjaSlayerVersion">
     <WriteLinesToFile File="$(CaptureFile)" Lines="$(NinjaSlayerVersion)|$(IsExactReleaseTag)|$(IsSupportedReleaseTag)|$(GitTag)" Overwrite="true" />
+  </Target>
+  <Target Name="CaptureLocalInstallVersion" DependsOnTargets="ResolveLocalInstallVersion">
+    <WriteLinesToFile File="$(CaptureFile)" Lines="$(NinjaSlayerVersion)" Overwrite="true" />
   </Target>
 </Project>
 `.trimStart(), 'utf8');
@@ -368,6 +598,20 @@ try {
     assert.equal(readFileSync(captureFile, 'utf8').trim(), expected);
   }
 
+  const localVersionCapture = join(sandbox, 'version-local-install.txt');
+  requireSuccess(
+    runMsbuild(versionHarnessPath, 'CaptureLocalInstallVersion', {
+      CaptureFile: localVersionCapture,
+      GitDescribe: 'v0.1.28-0-gabcdef-dirty',
+      GitReleaseTags: 'v0.1.28|v0.1.27',
+    }),
+    'local install version resolution',
+  );
+  assert.equal(
+    readFileSync(localVersionCapture, 'utf8').trim(),
+    '0.1.29+local.gabcdef.dirty',
+  );
+
   const packageDir = join(sandbox, 'package');
   const installDir = join(sandbox, 'installed');
   const workshopDir = join(sandbox, 'workshop');
@@ -379,6 +623,9 @@ try {
     <GitDescribe>v0.1.7-0-gabcdef</GitDescribe>
     <IsWindows>true</IsWindows>
     <Configuration>Debug</Configuration>
+    <NinjaSlayerHostChannel>stable</NinjaSlayerHostChannel>
+    <NinjaSlayerHostChannelWasExplicit>true</NinjaSlayerHostChannelWasExplicit>
+    <NinjaSlayerDistributionChannel>public</NinjaSlayerDistributionChannel>
     <NinjaSlayerArtifactName>NinjaSlayer</NinjaSlayerArtifactName>
     <PostBuildModDir>${xml(packageDir)}</PostBuildModDir>
     <SteamModDir>${xml(installDir)}</SteamModDir>
@@ -386,6 +633,7 @@ try {
     <WorkshopUploadRoot>${xml(sandbox)}</WorkshopUploadRoot>
     <WorkshopUploaderExe>${xml(join(sandbox, 'must-not-run.exe'))}</WorkshopUploaderExe>
     <PackageModDependsOn>PrepareBuildTestPackage;GeneratePackageChecksums</PackageModDependsOn>
+    <StageWorkshopDependsOn>PrepareBuildTestPackage;GeneratePackageChecksums;RequireExplicitPackageHostChannel</StageWorkshopDependsOn>
   </PropertyGroup>
   <Import Project="${xml(versionPropsPath)}" />
   <Import Project="${xml(versionTargetsPath)}" />
@@ -427,9 +675,12 @@ try {
     assert(checksumLines.includes(`${fileHash(join(packageDir, name))} *${name}`));
   }
 
+  mkdirSync(workshopDir, { recursive: true });
+  writeFileSync(join(workshopDir, 'stale-preview.dll'), 'must be removed', 'utf8');
   requireSuccess(runMsbuild(harnessPath, 'StageWorkshop'), 'temporary StageWorkshop');
-  assert.deepEqual(readdirSync(workshopDir).sort(), artifactNames.sort());
-  for (const name of artifactNames) {
+  const stagedNames = [...artifactNames, 'SHA256SUMS'];
+  assert.deepEqual(readdirSync(workshopDir).sort(), stagedNames.sort());
+  for (const name of stagedNames) {
     assert.equal(fileHash(join(packageDir, name)), fileHash(join(workshopDir, name)));
   }
 

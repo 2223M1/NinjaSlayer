@@ -1,16 +1,16 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Enchantments;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-public sealed class BlackFlameDamagePatch : IPatchMethod
+public sealed partial class BlackFlameDamagePatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_black_flame_damage_results";
     public static string Description => "Track actual damage receivers for Black Flame enchanted attacks.";
@@ -21,36 +21,40 @@ public sealed class BlackFlameDamagePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            [
-                typeof(PlayerChoiceContext),
-                typeof(IEnumerable<Creature>),
-                typeof(decimal),
-                typeof(ValueProp),
-                typeof(Creature),
-                typeof(CardModel),
-                typeof(CardPlay)
-            ])
+            GameCompatibility.Damage.CommandParameterTypes)
     ];
 
-    public static void Postfix(
+    private static void TrackResults(
         CardModel? cardSource,
-        CardPlay? cardPlay,
-        ref Task<IEnumerable<DamageResult>> __result)
+        CardPlay? suppliedCardPlay,
+        ref Task<IEnumerable<DamageResult>> resultTask)
     {
-        if (cardPlay == null || cardSource != cardPlay.Card || cardSource.Enchantment is not BlackFlameEnchantment)
+        if (cardSource?.Enchantment is not IBlackFlameEnchantment)
         {
             return;
         }
 
-        __result = RecordResults(__result, cardPlay);
+        CardPlay? cardPlay = suppliedCardPlay;
+        if (cardPlay is null
+            && !CardPlayResolutionScope.TryResolveCurrentPlay(cardSource, out cardPlay))
+        {
+            return;
+        }
+        if (cardPlay is null || !ReferenceEquals(cardSource, cardPlay.Card))
+        {
+            return;
+        }
+
+        resultTask = RecordResults(resultTask, cardPlay);
     }
 
     private static async Task<IEnumerable<DamageResult>> RecordResults(
         Task<IEnumerable<DamageResult>> damageTask,
         CardPlay cardPlay)
     {
-        List<DamageResult> results = (await damageTask).ToList();
-        BlackFlameHitTracker.Record(cardPlay, results);
-        return results;
+        IEnumerable<DamageResult> results = await damageTask;
+        List<DamageResult> snapshot = results.ToList();
+        BlackFlameHitTracker.Record(cardPlay, snapshot);
+        return snapshot;
     }
 }

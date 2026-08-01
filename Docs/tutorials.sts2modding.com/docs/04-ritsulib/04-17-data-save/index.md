@@ -177,8 +177,3 @@ if (!store.HasExistingData("mod_progress"))
     // 执行给予见面礼物等初始化逻辑...
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-17-data-save/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -4,12 +4,12 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 
 ## Runtime contracts
 
-- Supported game line: `0.109.x`; RitsuLib: `0.4.62`; public RefLib: `0.109.0-beta`.
+- Supported game hosts are the rolling `stable` and `preview` entries in `eng/compatibility.json`. RitsuLib uses one exact compile baseline and minimum manifest dependency; players receive the current Workshop runtime.
 - Finisher capability owns attack interception, lethal protection, primary damage observation, post-card commit, and card-play cleanup. Presentation and Tornado cadence are separate optional capabilities.
-- Enhanced lethal protection is pinned to `Creature.LoseHpInternal` in the supported 0.109.x build (`MVID a49d3537-5a42-4dcd-9877-663e394f2b44`, metadata token `0x06008438`, IL SHA-256 `9c1b0e229a97c39866dcebe88c742175b9d41b27b2d507ed4ca31bfee4f61fc6`). A mismatch or a foreign skipping/result-replacing Harmony patch disables the enhancement and keeps the original attack path.
+- Enhanced lethal protection is pinned through `GameHostContractProfile` to the exact `Creature.LoseHpInternal` body for each supported host. Assembly version, MVID, metadata token, and IL SHA-256 must all match; a mismatch or a foreign skipping/result-replacing Harmony patch disables the enhancement and keeps the original attack path.
 - Finisher search limits are 25,000 states and 8 ms; the active-time watchdog is 90 seconds.
 - Transition owns one 30-second watchdog and must restore input, black screen, hover suppression, camera state, and loading state on every exit.
-- Prepared safety clears afflictions only after pile-change hooks confirm the card left the draw pile, and independently repairs invalid state at run-load and combat boundaries. Gameplay is pinned to both the public `CardPileCmd.Draw` wrapper (`0x060087F4`, `a73e4a4eadb503a8fe18e35e0115581208d946c40c225e4aef0beb3a7a3f529f`) and `DrawInternal` (`0x060087F6`, `23ae995c9d6825f8ea24e7febce122641f2660fc3bea0667cf57c3d34b80c857`) in the supported 0.109.x build (`MVID a49d3537-5a42-4dcd-9877-663e394f2b44`). Prepared FIFO positioning is isolated behind a separately fingerprinted queue adapter, and gameplay is disabled when safety or either contract is unavailable.
+- Prepared safety clears afflictions only after pile-change hooks confirm the card left the draw pile, and independently repairs invalid state at run-load and combat boundaries. Direct-async and wrapper-plus-internal `CardPileCmd.Draw` layouts are selected by generated host contracts; each validates the actual async `MoveNext()` body. Prepared FIFO positioning remains behind separately fingerprinted `CardPile.AddInternal` and `RemoveInternal` adapters. Gameplay is disabled when safety or the selected host contract is unavailable.
 - The debug card pool keeps at least three candidates in every rarity/type bucket that `TheFutureOfPotions` can request, so its fixed three-card reward cannot stall after a debug catalog edit.
 - NinjaSlayer per-player RunData remains on schema 1. The former implicit RitsuLib 0.4.62 default and the explicit registration both resolve to version 1; de-identified fixtures preserve the state shapes from `ea3c6f9` and `a55e153`. Loaded room keys discard null/empty entries and ordinal duplicates while preserving first occurrence order.
 - F2 feedback uses at most three 10-second attempts within a 35-second total budget. Only network errors, timeouts, HTTP 408/429, and 5xx responses retry; `Retry-After` is capped at 5 seconds. The transport never owns caller streams, while the Harmony replacement preserves the original method's close-on-every-exit contract.
@@ -19,7 +19,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 
 ## Verification boundaries
 
-- Public CI may use project assets and RefLib only.
+- Public CI uses project assets and package references only; real game assemblies remain confined to protected runners.
 - Private game references are allowed only in the protected contract and release environments.
 - Project-owned compiler, nullable, analyzer, test, and Godot import warnings must remain at zero.
 - `MSB3270` is the only explicitly suppressed external reference warning at this baseline; adding another suppression requires an allowlist entry and rationale.

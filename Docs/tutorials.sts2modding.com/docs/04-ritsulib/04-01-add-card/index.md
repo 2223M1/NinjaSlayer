@@ -72,6 +72,7 @@ public class TestCard : ModCardTemplate
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this)
+            // .FromCard(this, cardPlay) // 测试版
             .Targeting(cardPlay.Target!)
             .Execute(choiceContext);
     }
@@ -127,7 +128,7 @@ public abstract class TestCardModel : ModCardTemplate
     public override CardAssetProfile AssetProfile => new(
         PortraitPath: $"res://RitsuTest/images/cards/{GetType().Name}.png",
         // 根据不同类型设置不同卡框
-        FramePath: type switch
+        FramePath: Type switch
         {
             CardType.Attack => "res://RitsuTest/images/card_frame_attack.png",
             CardType.Skill => "res://RitsuTest/images/card_frame_skill.png",
@@ -187,8 +188,3 @@ Test (你的项目文件夹)
         └── zhs
             └── cards.json
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-01-add-card/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

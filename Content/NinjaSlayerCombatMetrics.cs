@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Content;
@@ -112,7 +113,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         {
             EnsureTurn(metrics, state);
             metrics.AddFinishedCard(
-                cardPlay.Player,
+                GameCompatibility.CardPlays.GetPlayer(cardPlay),
                 cardPlay.Card.Type == CardType.Attack,
                 KarateTriggerRules.IsMeleeAttack(cardPlay.Card));
         }
@@ -218,7 +219,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         foreach (Player player in combatState.Players)
         {
             CardPlayFinishedEntry? previous = CombatManager.Instance.History.CardPlaysFinished
-                .LastOrDefault(entry => entry.CardPlay.Player == player);
+                .LastOrDefault(entry => GameCompatibility.CardPlays.GetPlayer(entry.CardPlay) == player);
             if (previous is not null)
             {
                 snapshot.AddFinishedCard(player, previous.CardPlay.Card.Type == CardType.Attack, isMelee: false);
@@ -229,7 +230,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
                      .Where(entry => entry.HappenedThisTurn(combatState)))
         {
             snapshot.AddFinishedCard(
-                entry.CardPlay.Player,
+                GameCompatibility.CardPlays.GetPlayer(entry.CardPlay),
                 entry.CardPlay.Card.Type == CardType.Attack,
                 KarateTriggerRules.IsMeleeAttack(entry.CardPlay.Card));
         }

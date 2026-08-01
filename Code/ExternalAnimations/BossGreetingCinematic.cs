@@ -268,8 +268,7 @@ public static class BossGreetingCinematic
                 context.TrackNode(bubble);
                 await context.NextFrame();
 
-                if (context.TryFrameBossAndBubble(
-                    bossNode.Visuals.Bounds,
+                if (context.TryFrameBossFocusAndBubble(
                     bossFocus,
                     bubble,
                     finalBubbleScale,
@@ -749,8 +748,7 @@ public static class BossGreetingCinematic
                 duration,
                 clampToScene: true);
 
-        public bool TryFrameBossAndBubble(
-            Control bossBounds,
+        public bool TryFrameBossFocusAndBubble(
             CanvasItem bossFocus,
             NSpeechBubbleVfx bubble,
             Vector2 finalBubbleScale,
@@ -776,8 +774,7 @@ public static class BossGreetingCinematic
                 bubbleSprite.Scale = finalBubbleScale;
                 bubble.Rotation = 0f;
 
-                Rect2 composition = GetSceneLocalRect(bossBounds);
-                composition = composition.Merge(GetSceneLocalPointRect(bossFocus));
+                Rect2 composition = GetSceneLocalPointRect(bossFocus);
                 composition = composition.Merge(GetSceneLocalRect(bubbleSprite));
                 composition = composition.Merge(GetSceneLocalRect(shadow));
                 composition = composition.Merge(GetSceneLocalRect(text));

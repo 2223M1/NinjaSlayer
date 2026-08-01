@@ -405,8 +405,3 @@ ModSettingsText.Dynamic(() => $"已导出 {TestExportState.Count} 张图片");
 ## 更多功能
 
 此外还有子页面、可见性、复杂数据结构等高级功能，如有需要自行查看 `RitsuLib` 的文档和其游戏中的设置。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-02-custom-config/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

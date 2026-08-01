@@ -18,6 +18,7 @@ using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
 using STS2RitsuLib.Patching.Models;
+using STS2RitsuLib.Utils.HarmonyIl;
 
 namespace NinjaSlayer.Code.Patches;
 
@@ -37,32 +38,21 @@ public sealed class NinjaSlayerTransitionAssetLoadConcurrencyPatch : IPatchMetho
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        List<CodeInstruction> rewritten = instructions.ToList();
+        const string operation = "NinjaSlayer transition asset concurrency limit";
+        var rewriter = HarmonyIlRewriter.From(instructions);
         MethodInfo replacement = GameCompatibility.AssetLoading.ConcurrentAssetLoadLimit
             ?? throw new MissingMethodException(
                 typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
                 nameof(NinjaSlayerTransitionLoadSmoothing.GetConcurrentAssetLoadLimit));
-
-        var replacements = 0;
-        foreach (CodeInstruction instruction in rewritten)
-        {
-            if (!instruction.LoadsConstant(TransitionLoadConcurrencyPolicy.VanillaConcurrentLoadLimit))
-            {
-                continue;
-            }
-
-            instruction.opcode = OpCodes.Call;
-            instruction.operand = replacement;
-            replacements++;
-        }
-
-        if (replacements != 1)
-        {
-            throw new InvalidOperationException(
-                $"Expected one vanilla asset concurrency limit, found {replacements}.");
-        }
-
-        return rewritten;
+        HarmonyIlRewriteReport report = rewriter.ReplaceEach(
+            operation,
+            (code, index) => GameCompatibility.AssetLoading.IsLoadingCountLimitSite(
+                code,
+                index,
+                TransitionLoadConcurrencyPolicy.VanillaConcurrentLoadLimit),
+            (_, _) => [HarmonyIl.Call(replacement)],
+            code => code.Any(HarmonyIl.IsCall(replacement)));
+        return rewriter.InstructionsChecked(report);
     }
 }
 
@@ -112,48 +102,46 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
     }
 }
 
-public sealed class NinjaSlayerTransitionGcDeferralPatch : IPatchMethod
+public static class NinjaSlayerTransitionGcDeferralPatch
 {
-    public static string PatchId => "ninjaslayer_transition_preload_gc_deferral";
+    private const string PatchIdPrefix = "ninjaslayer_transition_preload_gc_deferral";
 
-    public static string Description =>
-        "Coalesce forced run-asset garbage collection across the active NinjaSlayer transition session.";
+    public static DynamicPatchInfo[] CreateDynamicPatches()
+    {
+        if (!GameCompatibility.AssetLoading.TryResolvePreloadStateMachines(
+                out GameCompatibility.RuntimePatchTarget[] targets,
+                out string missingMember))
+        {
+            throw new MissingMethodException(missingMember);
+        }
 
-    public static bool IsCritical => true;
-
-    public static ModPatchTarget[] GetTargets() => TryResolveTargets(out ModPatchTarget[] targets, out _)
-        ? targets
-        : [];
+        var harmonyTranspiler = new HarmonyMethod(
+            typeof(NinjaSlayerTransitionGcDeferralPatch),
+            nameof(Transpiler));
+        return targets.Select(target => new DynamicPatchInfo(
+                $"{PatchIdPrefix}_{target.IdSuffix}",
+                target.Method,
+                transpiler: harmonyTranspiler,
+                isCritical: true,
+                description: $"Defer forced GC in PreloadManager {target.IdSuffix}."))
+            .ToArray();
+    }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        foreach (CodeInstruction instruction in instructions)
-        {
-            if (GameCompatibility.AssetLoading.GcCollect is { } gcCollect
-                && GameCompatibility.AssetLoading.SafeCollect is { } safeCollect
-                && instruction.Calls(gcCollect))
-            {
-                instruction.operand = safeCollect;
-            }
-
-            yield return instruction;
-        }
-    }
-
-    private static bool TryResolveTargets(out ModPatchTarget[] targets, out string missingMember)
-    {
-        if (!GameCompatibility.AssetLoading.TryResolvePreloadStateMachines(
-                out Type[] stateMachines,
-                out missingMember))
-        {
-            targets = [];
-            return false;
-        }
-
-        targets = stateMachines
-            .Select(stateMachine => new ModPatchTarget(stateMachine, "MoveNext"))
-            .ToArray();
-        return true;
+        const string operation = "NinjaSlayer transition GC deferral";
+        MethodInfo gcCollect = GameCompatibility.AssetLoading.GcCollect
+            ?? throw new MissingMethodException(typeof(GC).FullName, nameof(GC.Collect));
+        MethodInfo safeCollect = GameCompatibility.AssetLoading.SafeCollect
+            ?? throw new MissingMethodException(
+                typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
+                nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
+        var rewriter = HarmonyIlRewriter.From(instructions);
+        HarmonyIlRewriteReport report = rewriter.RedirectCalls(
+            operation,
+            called => called == gcCollect ? safeCollect : null,
+            code => code.Any(HarmonyIl.IsCall(safeCollect)));
+        return rewriter.InstructionsChecked(report);
     }
 }
 

@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -103,12 +104,13 @@ internal sealed class SpineBoneFlight : IDisposable
     public static SpineBoneFlight? TryCreate(NCreature creature, string boneName, string ownerId)
     {
         MegaSprite? sprite = creature.Visuals.SpineBody;
-        using MegaSkeleton? skeleton = sprite?.GetSkeleton();
+        MegaSkeleton? skeleton = sprite?.GetSkeleton();
+        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
         MegaBone? bone = skeleton?.FindBone(boneName);
         if (sprite == null || bone == null)
         {
             Entry.Logger.Warn($"Spine bone flight skipped: bone '{boneName}' was not found on {ownerId}.");
-            bone?.Dispose();
+            GameCompatibility.NativeHandles.Dispose(bone);
             return null;
         }
 
@@ -121,7 +123,7 @@ internal sealed class SpineBoneFlight : IDisposable
         if (methods.Any(method => !native.HasMethod(method)))
         {
             Entry.Logger.Warn($"Spine bone methods are unavailable for {ownerId}/{boneName}.");
-            bone.Dispose();
+            GameCompatibility.NativeHandles.Dispose(bone);
             return null;
         }
 
@@ -161,7 +163,7 @@ internal sealed class SpineBoneFlight : IDisposable
         catch
         {
             parentBone?.Dispose();
-            bone.Dispose();
+            GameCompatibility.NativeHandles.Dispose(bone);
             throw;
         }
     }
@@ -236,7 +238,7 @@ internal sealed class SpineBoneFlight : IDisposable
         }
 
         _parentBone?.Dispose();
-        _bone.Dispose();
+        GameCompatibility.NativeHandles.Dispose(_bone);
     }
 
     private void Apply()

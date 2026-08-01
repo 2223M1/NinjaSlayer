@@ -297,8 +297,7 @@ Godot支持命令行导出pck（首先你需要添加一个导出配置），例
 ## mac支持（可选）
 
 用文本编辑器打开`export_presets.cfg`，将`binary_format/architecture="x86_64"`改为`binary_format/architecture="msil"`。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
 
-[English](/en/docs/01-env-setup/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)
+## mod图片（可选）
+
+在你mod根目录下创建一个和你modid同名的文件夹，里面放一个`mod_image.png`。

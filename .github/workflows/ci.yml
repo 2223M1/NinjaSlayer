@@ -31,7 +31,12 @@ jobs:
           cache-dependency-path: Infrastructure/telemetry-worker/package-lock.json
 
       - name: Repository consistency
-        run: node tools/validate-repository.mjs
+        run: |
+          node tools/sync-compatibility.mjs --check
+          node tools/validate-repository.mjs
+
+      - name: Tutorial mirror contracts
+        run: python3 tools/test-tutorial-sync.py
 
       - name: Pure logic tests
         run: dotnet test Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj -c Release -v:minimal
@@ -39,20 +44,18 @@ jobs:
       - name: Roslyn architecture tests
         run: dotnet test Tests/NinjaSlayer.ArchitectureTests/NinjaSlayer.ArchitectureTests.csproj -c Release -v:minimal
 
-      - name: RefLib compatibility compile
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/sts2-empty"
-          dotnet restore NinjaSlayer.csproj \
-            -p:UseSts2RefLib=true \
-            -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
-          dotnet build NinjaSlayer.csproj --no-restore -v:minimal \
-            -p:UseSts2RefLib=true \
-            -p:Sts2DataDir="$RUNNER_TEMP/sts2-empty"
-
       - name: Build delivery boundaries
         run: node tools/test-build-boundaries.mjs
+
+      - name: Process network isolation contracts
+        shell: pwsh
+        run: |
+          dotnet build Tests/NinjaSlayer.NetworkIsolationProbe/NinjaSlayer.NetworkIsolationProbe.csproj -c Release -v:minimal
+          ./tools/test-process-network-isolation.ps1
+
+      - name: Release artifact contracts
+        shell: pwsh
+        run: ./tools/test-release-artifacts.ps1
 
       - name: Worker install and tests
         working-directory: Infrastructure/telemetry-worker

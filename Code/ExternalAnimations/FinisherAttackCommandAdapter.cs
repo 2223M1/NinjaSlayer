@@ -17,7 +17,8 @@ internal static class FinisherAttackCommandAdapter
                 command,
                 out GameCompatibility.AttackCommandState commandState)
             || command.ModelSource is not CardModel { Type: CardType.Attack } card
-            || command.CardPlay is not { } cardPlay
+            || !GameCompatibility.AttackCommands.TryGetCardPlay(command, out CardPlay? cardPlay)
+            || cardPlay == null
             || command.Attacker == null
             || card.Owner?.Creature != command.Attacker)
         {

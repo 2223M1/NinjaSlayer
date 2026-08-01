@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { dirname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -37,6 +38,26 @@ function readPngSize(path) {
   return [png.readUInt32BE(16), png.readUInt32BE(20)];
 }
 
+const compatibilityPath = join(root, 'eng', 'compatibility.json');
+const compatibility = readJson(compatibilityPath);
+const activeChannels = compatibility
+  ? Object.entries(compatibility.channels ?? {})
+  : [];
+if (activeChannels.map(([name]) => name).join(',') !== 'stable,preview') {
+  errors.push('eng/compatibility.json must contain exactly stable and preview, in that order');
+}
+
+const compatibilitySync = spawnSync(
+  process.execPath,
+  [join(root, 'tools', 'sync-compatibility.mjs'), '--check'],
+  { cwd: root, encoding: 'utf8' },
+);
+if (compatibilitySync.status !== 0) {
+  errors.push(
+    `Compatibility-derived files are stale: ${compatibilitySync.stderr || compatibilitySync.stdout}`.trim(),
+  );
+}
+
 const retiredCardArtTools = [
   'tools/build-card-art-manifest.mjs',
   'tools/process-card-art.py',
@@ -63,7 +84,14 @@ function validateReadme(relativePath, counterpart, language) {
   if (!source.includes(`href="${counterpart}"`)) {
     errors.push(`${relativePath} must link to ${counterpart}`);
   }
-  for (const badge of ['C%23', '.NET-9.0', 'Godot-4.5.1', 'Spire%202-0.109.x', 'RitsuLib-0.4.62', 'github/v/release']) {
+  const badgeFragments = ['C%23', '.NET-9.0', 'Godot-4.5.1', 'github/v/release'];
+  if (compatibility) {
+    badgeFragments.push(
+      `Spire%202-${compatibility.channels.stable.gameApiVersion}%20%7C%20${compatibility.channels.preview.gameApiVersion}`,
+      `RitsuLib-${compatibility.ritsuLibVersion}`,
+    );
+  }
+  for (const badge of badgeFragments) {
     if (!source.includes(badge)) errors.push(`${relativePath} is missing the ${badge} badge`);
   }
 
@@ -98,31 +126,31 @@ for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter(
 }
 const manifest = readJson(join(root, 'NinjaSlayer.json'));
 if (manifest) {
+  if (manifest.version !== 'VERSION_PLACEHOLDER'
+      || manifest.min_game_version !== 'MIN_GAME_VERSION_PLACEHOLDER') {
+    errors.push('NinjaSlayer.json must retain build-time version placeholders');
+  }
+  const manifestRitsuDependencies = manifest.dependencies?.filter(
+    (dependency) => dependency.id === 'STS2-RitsuLib',
+  ) ?? [];
+  if (manifestRitsuDependencies.length !== 1
+      || manifestRitsuDependencies[0].min_version !== 'RITSULIB_VERSION_PLACEHOLDER') {
+    errors.push('NinjaSlayer.json must retain one build-time RitsuLib dependency placeholder');
+  }
+
   const dependencyProps = readFileSync(
     join(root, 'eng', 'NinjaSlayer.Dependencies.props'),
     'utf8',
   );
-  const ritsuLibVersion = dependencyProps.match(
-    /<NinjaSlayerRitsuLibVersion>([^<]+)<\/NinjaSlayerRitsuLibVersion>/,
-  )?.[1];
-  const refLibVersion = dependencyProps.match(
-    /<NinjaSlayerRefLibVersion>([^<]+)<\/NinjaSlayerRefLibVersion>/,
-  )?.[1];
   const smartFormatVersion = dependencyProps.match(
     /<NinjaSlayerSmartFormatVersion>([^<]+)<\/NinjaSlayerSmartFormatVersion>/,
   )?.[1];
   const project = readFileSync(join(root, 'NinjaSlayer.csproj'), 'utf8');
-  const manifestVersion = manifest.dependencies?.find(
-    (dependency) => dependency.id === 'STS2-RitsuLib',
-  )?.min_version;
-  if (!ritsuLibVersion || manifestVersion !== ritsuLibVersion) {
-    errors.push(
-      `NinjaSlayer.json must require the compiled STS2.RitsuLib version (${ritsuLibVersion ?? '<missing>'})`,
-    );
+  if (!dependencyProps.includes('<Import Project="NinjaSlayer.Compatibility.g.props" />')) {
+    errors.push('NinjaSlayer.Dependencies.props must import the generated compatibility props');
   }
   for (const [dependency, property] of [
-    ['STS2.RitsuLib', 'NinjaSlayerRitsuLibVersion'],
-    ['Book.StS2.RefLib', 'NinjaSlayerRefLibVersion'],
+    ['$(NinjaSlayerRitsuLibPackageId)', 'NinjaSlayerRitsuLibVersion'],
     ['SmartFormat', 'NinjaSlayerSmartFormatVersion'],
   ]) {
     if (!project.includes(`PackageReference Include="${dependency}"`)
@@ -130,27 +158,84 @@ if (manifest) {
       errors.push(`NinjaSlayer.csproj must source ${dependency} from ${property}`);
     }
   }
-  for (const [name, value] of [
-    ['NinjaSlayerRitsuLibVersion', ritsuLibVersion],
-    ['NinjaSlayerRefLibVersion', refLibVersion],
-    ['NinjaSlayerSmartFormatVersion', smartFormatVersion],
+  if (!smartFormatVersion) errors.push('NinjaSlayer.Dependencies.props is missing SmartFormat');
+  if (project.includes('Book.StS2.RefLib') || project.includes('UseSts2RefLib')) {
+    errors.push('NinjaSlayer.csproj must not retain the retired RefLib build target');
+  }
+  for (const metadataName of [
+    'NinjaSlayerHostChannel',
+    'NinjaSlayerGameApiVersion',
+    'NinjaSlayerRitsuLibPackageId',
+    'NinjaSlayerRitsuLibVersion',
   ]) {
-    if (!value) errors.push(`eng/NinjaSlayer.Dependencies.props is missing ${name}`);
+    if (!project.includes(`<AssemblyMetadata Include="${metadataName}"`)) {
+      errors.push(`NinjaSlayer.csproj is missing assembly metadata ${metadataName}`);
+    }
+  }
+}
+
+if (compatibility) {
+  const generatedProps = readFileSync(join(root, 'eng', 'NinjaSlayer.Compatibility.g.props'), 'utf8');
+  for (const [channelName, channel] of activeChannels) {
+    for (const expected of [
+      `<NinjaSlayerGameApiVersion>${channel.gameApiVersion}</NinjaSlayerGameApiVersion>`,
+      `<NinjaSlayerRitsuLibPackageId>${channel.ritsuLibPackageId}</NinjaSlayerRitsuLibPackageId>`,
+      `<NinjaSlayerHostModuleMvid>${channel.hostContract.moduleMvid}</NinjaSlayerHostModuleMvid>`,
+    ]) {
+      if (!generatedProps.includes(expected)) {
+        errors.push(`Generated compatibility props are missing ${channelName}: ${expected}`);
+      }
+    }
   }
 
-  const pinnedRitsuLibFiles = [
-    ['.github/workflows/contract.yml', /ritsuLibVersion = '([^']+)'/],
-    ['.github/scripts/verify-contract-attestation.ps1', /ExpectedRitsuLibVersion = '([^']+)'/],
-    ['.github/scripts/verify-smoke-attestation.ps1', /attestation\.ritsuLibVersion\) '([^']+)'/],
-    ['tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1', /ritsuLibVersion = '([^']+)'/],
-    ['tools/smoke-harness/NinjaSlayer.SmokeDriver/NinjaSlayer-SmokeDriver.json', /"STS2-RitsuLib", "min_version": "([^"]+)"/],
-  ];
-  for (const [relativePath, pattern] of pinnedRitsuLibFiles) {
-    const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
-    const pinnedVersion = source.match(pattern)?.[1];
-    if (pinnedVersion !== ritsuLibVersion) {
-      errors.push(`${relativePath} must pin STS2.RitsuLib ${ritsuLibVersion ?? '<missing>'}`);
+  const smokeManifest = readJson(join(
+    root,
+    'tools',
+    'smoke-harness',
+    'NinjaSlayer.SmokeDriver',
+    'NinjaSlayer-SmokeDriver.json',
+  ));
+  if (smokeManifest) {
+    const smokeRitsu = smokeManifest.dependencies?.find(
+      dependency => dependency.id === 'STS2-RitsuLib',
+    );
+    if (smokeManifest.min_game_version !== compatibility.channels.stable.gameApiVersion
+        || smokeRitsu?.min_version !== compatibility.ritsuLibVersion) {
+      errors.push('SmokeDriver manifest must be generated from compatibility.json');
     }
+  }
+
+  const hardcodeFiles = [
+    ...filesUnder(join(root, '.github', 'workflows')).filter(path => path.endsWith('.yml')),
+    ...filesUnder(join(root, '.github', 'scripts')).filter(path => path.endsWith('.ps1')),
+    ...filesUnder(join(root, 'tools', 'private-contract')).filter(path => /\.(?:ps1|csproj)$/.test(path)),
+    ...filesUnder(join(root, 'tools', 'smoke-harness')).filter(path => /\.(?:ps1|cs|csproj)$/.test(path)),
+    ...filesUnder(join(root, 'Tests', 'NinjaSlayer.RitsuLibContractTests')).filter(
+      path => /\.(?:cs|csproj)$/.test(path),
+    ),
+  ];
+  const activeLiterals = new Set([
+    compatibility.ritsuLibVersion,
+    ...activeChannels.flatMap(([, channel]) => [
+      channel.gameApiVersion,
+      channel.ritsuLibPackageId === 'STS2.RitsuLib' ? null : channel.ritsuLibPackageId,
+    ]).filter(Boolean),
+  ]);
+  for (const path of hardcodeFiles) {
+    const source = readFileSync(path, 'utf8');
+    for (const literal of activeLiterals) {
+      if (source.includes(literal)) {
+        errors.push(`${relative(root, path)} hardcodes active compatibility value ${literal}`);
+      }
+    }
+  }
+}
+
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Code/Compatibility/')) continue;
+  if (/^\s*#(?:if|elif).*NINJASLAYER_(?:STS2|CHANNEL|LEGACY)/m.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains a host conditional outside Code/Compatibility`);
   }
 }
 const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));
@@ -176,6 +261,51 @@ for (const workflow of filesUnder(join(root, '.github', 'workflows')).filter((pa
     const revision = action.slice(action.lastIndexOf('@') + 1);
     if (!/^[0-9a-f]{40}$/.test(revision)) {
       errors.push(`${relative(root, workflow)} must pin ${action} to a full commit SHA`);
+    }
+  }
+}
+
+const workshopWorkflow = readFileSync(join(root, '.github', 'workflows', 'workshop.yml'), 'utf8');
+const workshopPublisher = readFileSync(join(root, '.github', 'scripts', 'publish-workshop.sh'), 'utf8');
+for (const required of [
+  'Get-NinjaSlayerCompatibilityChannel',
+  'workshopItemId',
+  'has not been provisioned in compatibility.json',
+  'verify-contract-attestation.ps1',
+  'verify-smoke-attestation.ps1',
+  'verify-release-attestation.ps1',
+  'FirstCombatRestart',
+  'protected-release',
+  'public GitHub Release asset does not match the protected Release artifact',
+  'WORKSHOP_CHANNEL',
+  'WORKSHOP_ITEM_ID',
+  'WORKSHOP_VISIBILITY',
+]) {
+  if (!workshopWorkflow.includes(required)) {
+    errors.push(`Workshop workflow is missing channel isolation guard: ${required}`);
+  }
+}
+for (const required of ['$WORKSHOP_ITEM_ID', '$WORKSHOP_VISIBILITY']) {
+  if (!workshopPublisher.includes(required)) {
+    errors.push(`Workshop publisher is missing manifest-derived value ${required}`);
+  }
+}
+if (compatibility?.channels?.stable?.workshopItemId
+    && workshopPublisher.includes(compatibility.channels.stable.workshopItemId)) {
+  errors.push('Workshop publisher must not hardcode the public item id');
+}
+const localWorkshopManifest = readJson(join(root, 'Workshop', 'workshop.json'));
+if (localWorkshopManifest?.visibility !== 'public') {
+  errors.push('The local Workshop uploader is stable-only, so Workshop/workshop.json must remain public');
+}
+
+const retiredHostVersion = ['0', '109', '0'].join('.');
+for (const directory of ['.github', 'Code', 'Tests', 'tools', 'eng']) {
+  for (const path of filesUnder(join(root, directory)).filter(path => /\.(?:cs|csproj|json|mjs|ps1|sh|yml)$/.test(path))) {
+    const repositoryPath = relative(root, path).replaceAll('\\', '/');
+    if (repositoryPath.startsWith('Infrastructure/telemetry-worker/test/fixtures/')) continue;
+    if (readFileSync(path, 'utf8').includes(retiredHostVersion)) {
+      errors.push(`${repositoryPath} retains the retired intermediate host ${retiredHostVersion}`);
     }
   }
 }
@@ -250,7 +380,7 @@ for (const visualClass of ['Merchant', 'RestSite']) {
     errors.push(`NinjaSlayerWorldVisualProfile.${visualClass}.BodyStyle must use idempotent absolute positioning`);
   }
 }
-const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+class\s+(\w+)\s*:\s*IPatchMethod/g)]
+const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)]
   .map((match) => match[1]);
 const patchRegistrations = [...patchGroupSource.matchAll(/RegisterPatch<(\w+)>/g)]
   .map((match) => match[1]);
@@ -262,7 +392,7 @@ for (const registered of patchRegistrations) {
   if (!patchClasses.includes(registered)) errors.push(`Typed patch group references unknown patch ${registered}`);
 }
 
-const patchDeclarations = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+class\s+(\w+)\s*:\s*IPatchMethod/g)];
+const patchDeclarations = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)];
 const patchBodies = new Map(patchDeclarations.map((match, index) => [
   match[1],
   patchSources.slice(match.index, patchDeclarations[index + 1]?.index ?? patchSources.length),
@@ -296,7 +426,9 @@ if (patchIds.length !== patchClasses.length) {
 const patchGroups = [...patchGroupSource.matchAll(/sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
   .map((match) => match[1]);
 for (const patchGroup of patchGroups) {
-  const installationCount = [...entrySource.matchAll(new RegExp(`InstallCapability<${patchGroup}>`, 'g'))].length;
+  const installationCount = [...entrySource.matchAll(
+    new RegExp(`(?:InstallCapability|TryInstallRequiredCapability)<${patchGroup}>`, 'g'),
+  )].length;
   if (installationCount !== 1) {
     errors.push(`Entry.cs must install typed patch group ${patchGroup} exactly once (found ${installationCount})`);
   }
@@ -332,23 +464,29 @@ for (const capabilityId of new Set(capabilityIds)) {
   const count = capabilityIds.filter((candidate) => candidate === capabilityId).length;
   if (count !== 1) errors.push(`Capability id ${capabilityId} is declared ${count} times`);
 }
-if (capabilityIds.length !== patchGroups.length) {
+const nonPatchCapabilityNames = ['CoreContent', 'PreparedSafety'];
+if (capabilityIds.length !== patchGroups.length + nonPatchCapabilityNames.length) {
   errors.push(
-    `Expected one capability id per typed patch group (${patchGroups.length} groups, ${capabilityIds.length} ids)`,
+    `Expected one capability id per typed patch group plus core content and Prepared lifecycle (${patchGroups.length} groups, ${capabilityIds.length} ids)`,
   );
 }
-if (/InstallCapability<[^>]+>\(\s*"/.test(entrySource)) {
+if (/(?:InstallCapability|TryInstallRequiredCapability)<[^>]+>\(\s*"/.test(entrySource)) {
   errors.push('Entry.cs must use NinjaSlayerCapabilityIds for every capability installation');
 }
 const installedCapabilityNames = [
   ...entrySource.matchAll(/InstallCapability<[^>]+>\(\s*NinjaSlayerCapabilityIds\.(\w+)/g),
 ].map((match) => match[1]);
+installedCapabilityNames.push(
+  ...[...entrySource.matchAll(/failedCapabilityId\s*=\s*NinjaSlayerCapabilityIds\.(\w+)/g)]
+    .map((match) => match[1]),
+  'CoreContent',
+);
 const declaredCapabilityNames = [
   ...capabilityIdSource.matchAll(/const\s+string\s+(\w+)\s*=\s*"[^"]+"/g),
 ].map((match) => match[1]);
-if (
-  [...installedCapabilityNames].sort().join('\n') !== [...declaredCapabilityNames].sort().join('\n')
-) {
+if (new Set(installedCapabilityNames).size !== installedCapabilityNames.length
+    || [...installedCapabilityNames].sort().join('\n')
+      !== [...declaredCapabilityNames].sort().join('\n')) {
   errors.push('Every declared capability id must be installed exactly once by Entry.cs');
 }
 
@@ -454,7 +592,7 @@ if (!assetManifest.includes('NinjaSlayer_idle_0022.png') || assetManifest.includ
 }
 const powerClassNames = filesUnder(join(root, 'Powers'))
   .filter((path) => path.endsWith('.cs'))
-  .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/public\s+sealed\s+class\s+(\w+Power)\b/g)])
+  .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/public\s+sealed\s+(?:partial\s+)?class\s+(\w+Power)\b/g)])
   .map((match) => match[1]);
 if (powerClassNames.length !== 41) {
   errors.push(`Expected 41 concrete power classes, found ${powerClassNames.length}`);

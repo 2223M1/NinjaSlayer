@@ -1,5 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -85,20 +86,25 @@ internal static class FinisherCameraFraming
             ownerFocusPoint,
             frame.Targets,
             frame.UseTargetCentersOnly);
-        Vector2 halfViewport = GetHalfViewport(camera, scale);
-        Vector2 halfContent = GetHalfContent(camera, scale);
-        Vector2 minimum = halfViewport;
-        Vector2 maximum = camera.SceneSize - halfViewport;
-        Vector2 subjectMinimum = subjects.End - halfContent;
-        Vector2 subjectMaximum = subjects.Position + halfContent;
-        minimum = new Vector2(Mathf.Max(minimum.X, subjectMinimum.X), Mathf.Max(minimum.Y, subjectMinimum.Y));
-        maximum = new Vector2(Mathf.Min(maximum.X, subjectMaximum.X), Mathf.Min(maximum.Y, subjectMaximum.Y));
-
         Vector2 desired = subjects.GetCenter()
             + Vector2.Right * requestedHorizontalScreenOffset / Mathf.Max(scale, 0.0001f);
         return new Vector2(
-            ClampOrMidpoint(desired.X, minimum.X, maximum.X),
-            ClampOrMidpoint(desired.Y, minimum.Y, maximum.Y));
+            CinematicCameraContainment.ResolveSubjectAwareCenter(
+                desired.X,
+                camera.ViewportSize.X,
+                scale,
+                camera.SceneSize.X,
+                subjects.Position.X,
+                subjects.End.X,
+                SafeMarginPixels),
+            CinematicCameraContainment.ResolveSubjectAwareCenter(
+                desired.Y,
+                camera.ViewportSize.Y,
+                scale,
+                camera.SceneSize.Y,
+                subjects.Position.Y,
+                subjects.End.Y,
+                SafeMarginPixels));
     }
 
     private static bool CanFrame(
@@ -153,9 +159,6 @@ internal static class FinisherCameraFraming
             Mathf.Max(0f, halfViewport.X - margin.X),
             Mathf.Max(0f, halfViewport.Y - margin.Y));
     }
-
-    private static float ClampOrMidpoint(float value, float minimum, float maximum) =>
-        minimum <= maximum ? Mathf.Clamp(value, minimum, maximum) : (minimum + maximum) * 0.5f;
 
     private static bool IsNodeActive(NCreature node) =>
         GodotObject.IsInstanceValid(node) && node.IsInsideTree() && !node.IsQueuedForDeletion();

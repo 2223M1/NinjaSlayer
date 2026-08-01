@@ -1,10 +1,9 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Lifecycle;
 
-internal static class CardPlayResolutionScope
+internal static partial class CardPlayResolutionScope
 {
     private static readonly ResolutionScopeRegistry<CardModel, CardResolution> CardScopes =
         new(ReportThreadViolation);
@@ -38,6 +37,24 @@ internal static class CardPlayResolutionScope
                     ? state
                     : null;
     }
+
+    public static bool TryResolveCurrentPlay(CardModel card, out CardPlay? cardPlay)
+    {
+        if (CardScopes.TryGetLatestScope(card, out CardResolution? resolution)
+            && resolution is not null
+            && PlayScopes.TryGetLatestScope(resolution, out cardPlay)
+            && cardPlay is not null)
+        {
+            return true;
+        }
+
+        cardPlay = null;
+        return false;
+    }
+
+    public static bool TryTakePlayState<TState>(CardPlay cardPlay, object owner, out TState? state)
+        where TState : class =>
+        PlayScopes.TryTakeState(cardPlay, owner, out state);
 
     public static bool TryGetLatestPlayState<TState>(CardModel card, object owner, out TState? state)
         where TState : class
@@ -107,12 +124,13 @@ internal static class CardPlayResolutionScope
         int cardCount = CardScopes.ForceClear();
         if (playCount > 0 || cardCount > 0)
         {
-            Entry.Logger.Warn(
-                $"Force-cleared resolution scopes at {boundary}: card={cardCount}, play={playCount}.");
+            WriteWarning($"Force-cleared resolution scopes at {boundary}: card={cardCount}, play={playCount}.");
         }
     }
 
-    private static void ReportThreadViolation(string message) => Entry.Logger.Warn(message);
+    private static void ReportThreadViolation(string message) => WriteWarning(message);
+
+    static partial void WriteWarning(string message);
 
     internal sealed class CardResolution(CardModel card)
     {

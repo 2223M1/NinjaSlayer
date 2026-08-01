@@ -459,8 +459,3 @@ void fragment() {
 可以参考游戏中的储君攻击_受击特效starry_impact 和 尖叫 scream:
 我们注意到这里的vfx_distortion相关 就是一个屏幕扭曲处理, 它表现为一块区域的扭曲。
 shader是纯代码，AI友好的，这意味着我们需要仿照类似效果时，只需要把他的gdshader源码偷出来喂给AI，让AI实现你需要的效果即可。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-06-shader/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

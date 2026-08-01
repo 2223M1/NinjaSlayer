@@ -315,8 +315,3 @@ ModUnlockRegistry.For(ModId).UnlockEpochAfterRunAs<Silent, TestEpoch>(); // 在�
   "TEST_ASCENSION_ONE_EPOCH.unlockText": "解锁[blue]戈多[/blue]的更多卡牌。"
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-09-add-timeline/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

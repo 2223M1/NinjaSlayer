@@ -1,14 +1,30 @@
 # Ephemeral protected runners
 
-This project is the trusted build entry used by the protected game-contract workflow. It compiles candidate C# sources against private game references without evaluating the candidate repository's project, targets, NuGet configuration, tests, or workflows.
+This directory contains the trusted entry points for protected Contract, Release, and real-game Smoke jobs. Candidate source is compiled without evaluating its project, targets, NuGet configuration, tests, or workflows.
 
-Changes to dependencies or top-level source directories must update this harness on protected `main` before a later candidate can consume them. The harness never packages or runs candidate code and its output is deleted at the end of every workflow run.
+`eng/compatibility.json` defines the two rolling hosts. The launcher reads that manifest and accepts semantic paths only:
 
-`Start-EphemeralContractRunner.ps1` creates one of two purpose-specific, one-job Windows runners:
+- `-RunnerPurpose Contract`: pass `GameDataDirectoryStable` and `GameDataDirectoryPreview`. The launcher copies both reference sets read-only and creates an isolated .NET 9 runtime. Run from elevated PowerShell so the job can block non-loopback traffic from both dotnet and Godot while retaining the local Contract fixture.
+- `-RunnerPurpose Release`: pass the same two data directories. The launcher also isolates the fixed-hash Spine GDExtension files used by `PackageMod`.
+- `-RunnerPurpose Smoke`: pass `GameRootDirectoryStable`, `GameRootDirectoryPreview`, and `RitsuLibModDirectory`. The RitsuLib directory must be a complete current Workshop installation whose manifest and assembly are at least the pinned compile baseline. Run from elevated PowerShell.
 
-- `-RunnerPurpose Contract` registers `ninjaslayer-contract`. It must run from elevated PowerShell because the protected Contract enforces an outbound firewall rule. The launcher isolates `sts2.dll`, `0Harmony.dll`, and `GodotSharp.dll` as read-only files and creates a temporary .NET 9-only runtime root so Godot cannot roll Harmony forward to an unsupported .NET 10 runtime.
-- `-RunnerPurpose Release` registers `ninjaslayer-release` and can run from a normal PowerShell session. It isolates the same game references plus the three fixed-hash Spine GDExtension DLLs used by strict `PackageMod` export. The GitHub Release workflow uploads only the final allowlisted mod ZIP.
+Example:
 
-Both modes require the short-lived registration token, exact runner version, and archive SHA-256 shown by GitHub's **New self-hosted runner** page. The host must have a .NET 9 SDK/runtime and Godot 4.5.1 Mono installed. For unreliable network environments, download the official runner archive first and pass its path with `RunnerArchivePath`; the required SHA-256 is still verified before extraction.
+```powershell
+.\tools\private-contract\Start-EphemeralContractRunner.ps1 `
+  -RunnerPurpose Contract `
+  -RegistrationToken <short-lived-token> `
+  -RunnerVersion <actions-runner-version> `
+  -RunnerArchiveSha256 <official-sha256> `
+  -GameDataDirectoryStable C:\hosts\stable\data_sts2_windows_x86_64 `
+  -GameDataDirectoryPreview C:\hosts\preview\data_sts2_windows_x86_64
+```
 
-The launcher copies all private inputs to a temporary directory, marks them read-only, restores inherited environment variables, and removes the runner, work directory, references, Spine inputs, and isolated runtime after its single job. Neither mode stores game DLLs in GitHub Secrets, Actions caches, or artifacts.
+The runner version, registration token, and archive SHA-256 come from GitHub's **New self-hosted runner** page. `RunnerArchivePath` can point to a pre-downloaded official archive; its hash is still verified.
+
+Every private input must match the MVID and runtime assembly list in the compatibility manifest. The launcher restores inherited environment variables and removes the runner, work directory, references, Spine inputs, RitsuLib copy, and isolated runtime after its single job. Contract and Smoke artifacts contain only text attestations, one per active channel.
+
+| Attestation | Schema |
+| --- | ---: |
+| Contract | `4` |
+| Smoke | `3` |

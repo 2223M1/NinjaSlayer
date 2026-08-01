@@ -41,42 +41,50 @@ internal static partial class GameCompatibility
             ];
         }
 
-        public static bool TryResolveStateMachines(out Type[] stateMachines, out string missingMember)
+        public static bool TryResolveStateMachines(
+            out RuntimePatchTarget[] targets,
+            out string missingMember)
         {
-            var signatures = new (Type DeclaringType, string Name, Type[] Parameters)[]
+            var signatures = new (string IdSuffix, Type DeclaringType, string Name, Type[] Parameters)[]
             {
-                (typeof(CreatureCmd), nameof(CreatureCmd.Damage),
+                ("creature-damage", typeof(CreatureCmd), nameof(CreatureCmd.Damage),
                 [
                     typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal),
-                    typeof(ValueProp), typeof(Creature), typeof(CardModel), typeof(CardPlay)
+                    typeof(ValueProp), typeof(Creature), typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , typeof(CardPlay)
+#endif
                 ]),
-                (typeof(PowerCmd), nameof(PowerCmd.Apply),
+                ("power-apply", typeof(PowerCmd), nameof(PowerCmd.Apply),
                 [
                     typeof(PlayerChoiceContext), typeof(PowerModel), typeof(Creature), typeof(decimal),
                     typeof(Creature), typeof(CardModel), typeof(bool)
                 ]),
-                (typeof(PowerCmd), nameof(PowerCmd.ModifyAmount),
+                ("power-modify-amount", typeof(PowerCmd), nameof(PowerCmd.ModifyAmount),
                 [
                     typeof(PlayerChoiceContext), typeof(PowerModel), typeof(decimal), typeof(Creature),
                     typeof(CardModel), typeof(bool)
                 ])
             };
-            var resolved = new List<Type>(signatures.Length);
-            foreach ((Type declaringType, string methodName, Type[] parameterTypes) in signatures)
+            var resolved = new List<RuntimePatchTarget>(signatures.Length);
+            foreach ((string idSuffix, Type declaringType, string methodName, Type[] parameterTypes) in signatures)
             {
                 MethodInfo? method = AccessTools.Method(declaringType, methodName, parameterTypes);
                 Type? stateMachine = method?.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType;
-                if (stateMachine == null)
+                MethodInfo? moveNext = stateMachine is null
+                    ? null
+                    : AccessTools.Method(stateMachine, "MoveNext", Type.EmptyTypes);
+                if (moveNext == null)
                 {
-                    stateMachines = [];
+                    targets = [];
                     missingMember = $"{declaringType.FullName}.{methodName} async state machine";
                     return false;
                 }
 
-                resolved.Add(stateMachine);
+                resolved.Add(new RuntimePatchTarget(idSuffix, moveNext));
             }
 
-            stateMachines = resolved.ToArray();
+            targets = resolved.ToArray();
             missingMember = string.Empty;
             return true;
         }

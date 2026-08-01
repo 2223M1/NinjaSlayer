@@ -78,6 +78,34 @@ public sealed class BossFountainSoftBodyTests
         }
     }
 
+    [Theory]
+    [InlineData(2, 1, 0, 1)]
+    [InlineData(3, 1, 1, 1)]
+    [InlineData(4, 2, 1, 1)]
+    [InlineData(7, 5, 1, 1)]
+    [InlineData(8, 6, 1, 1)]
+    [InlineData(16, 12, 2, 2)]
+    public void EveryMultiFragmentBurstKeepsAtLeastOneDownwardLane(
+        int count,
+        int expectedUpward,
+        int expectedHorizontal,
+        int expectedDownward)
+    {
+        float[] masses = Enumerable.Repeat(1f, count).ToArray();
+        IReadOnlyList<BossFountainLaunch> launches =
+            BossFountainLaunchProfile.Create(masses, seed: 0xD0A1UL);
+
+        Assert.Equal(expectedUpward, launches.Count(launch =>
+            launch.Lane == BossFountainLaunchLane.Upward));
+        Assert.Equal(expectedHorizontal, launches.Count(launch =>
+            launch.Lane == BossFountainLaunchLane.Horizontal));
+        Assert.Equal(expectedDownward, launches.Count(launch =>
+            launch.Lane == BossFountainLaunchLane.Downward));
+        Assert.All(
+            launches.Where(launch => launch.Lane == BossFountainLaunchLane.Downward),
+            launch => Assert.True(launch.Velocity.Y > 0f));
+    }
+
     [Fact]
     public void BodyBurstLaunchProfileKeepsSpeedAndDriftContractsForEveryFragmentCount()
     {
@@ -110,7 +138,9 @@ public sealed class BossFountainSoftBodyTests
     [Fact]
     public void FasterRigidLaunchKeepsDeformationExcitationAtTheReferenceSpeed()
     {
-        var requested = new BossFragmentPoint(1_600f, -1_200f);
+        var requested = new BossFragmentPoint(
+            0f,
+            -BossFountainLaunchProfile.MaximumLaunchSpeed);
         float requestedSpeed = Length(requested);
         BossFragmentPoint reference = Multiply(
             requested,

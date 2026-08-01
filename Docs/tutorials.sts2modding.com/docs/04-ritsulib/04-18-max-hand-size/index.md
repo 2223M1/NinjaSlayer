@@ -33,9 +33,3 @@ public class TestPower : ModPowerTemplate, IMaxHandSizeModifier // 添加该接�
 返回的值是修改后的手牌上限。如果你想设置成一个固定值建议用`ModifyMaxHandSizeLate`。注意Hook的顺序（例如每日特效和单例会在最后触发，查看`IterateHookListeners`了解）
 -
 不会少于0，最后会兜底。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-18-max-hand-size/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

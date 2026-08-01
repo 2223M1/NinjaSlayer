@@ -108,7 +108,6 @@ TestRunData.Challenge.Modify(runState, data =>
     data.ElitesKilled += 1; // 增加精英击杀数
 });
 ```
-`Modify` 是非常推荐的做法。它不仅可以让你用闭包直接修改数据，还会自动打上“已修改”标记，向引擎宣告这部分数据需要保存到硬盘。
 
 ### 访问玩家独立数据
 
@@ -257,8 +256,3 @@ Challenge = store.Register(
         Migrations = new[] { new ChallengeV1ToV2Migration() },
     });
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-22-3-in-run-data/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

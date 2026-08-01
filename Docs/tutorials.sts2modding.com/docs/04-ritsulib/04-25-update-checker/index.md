@@ -230,9 +230,3 @@ RitsuLibFramework.RegisterModUpdateCheck(new()
 
 >
 提醒：release page也需要自己写，如果你暂时不需要`ReleasePageUri`就写自己仓库主页。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-25-update-checker/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

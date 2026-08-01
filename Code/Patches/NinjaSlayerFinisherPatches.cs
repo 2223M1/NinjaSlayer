@@ -14,6 +14,7 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
@@ -192,7 +193,7 @@ public sealed class NinjaSlayerFinisherDeathStartPatch : IPatchMethod
     }
 }
 
-public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
+public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_finisher_primary_damage";
     public static string Description => "Advance staged finisher camera zoom from primary attack hits.";
@@ -203,18 +204,10 @@ public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            [
-                typeof(PlayerChoiceContext),
-                typeof(IEnumerable<Creature>),
-                typeof(decimal),
-                typeof(ValueProp),
-                typeof(Creature),
-                typeof(CardModel),
-                typeof(CardPlay)
-            ])
+            GameCompatibility.Damage.CommandParameterTypes)
     ];
 
-    public static bool Prefix(
+    private static bool PrefixCore(
         PlayerChoiceContext choiceContext,
         ref IEnumerable<Creature>? targets,
         decimal amount,
@@ -222,7 +215,7 @@ public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         Creature? dealer,
         CardModel? cardSource,
         CardPlay? cardPlay,
-        ref Task<IEnumerable<DamageResult>> __result)
+        ref Task<IEnumerable<DamageResult>> resultTask)
     {
         NinjaSlayerFinisherCinematic.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
         if (!NinjaSlayerFinisherCinematic.TryInterceptDirectDamage(
@@ -238,7 +231,7 @@ public sealed class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
             return true;
         }
 
-        __result = result!;
+        resultTask = result!;
         return false;
     }
 
@@ -255,15 +248,7 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            [
-                typeof(PlayerChoiceContext),
-                typeof(IEnumerable<Creature>),
-                typeof(decimal),
-                typeof(ValueProp),
-                typeof(Creature),
-                typeof(CardModel),
-                typeof(CardPlay)
-            ])
+            GameCompatibility.Damage.CommandParameterTypes)
     ];
 
     public static void Prefix(

@@ -128,8 +128,3 @@ public static class ExternalCatalogInterop
 }
 ```
 框架自动区分：类型名里含 `,`（逗号）→ 走 `AssemblyInterop` 路径；不含逗号 → 走 `ModInterop` 路径。所以两种模式可以共存在同一个项目里，互不干扰。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-30-mod-integration/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

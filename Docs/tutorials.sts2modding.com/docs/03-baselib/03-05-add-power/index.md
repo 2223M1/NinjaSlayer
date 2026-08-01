@@ -33,8 +33,3 @@ public class TestPower : CustomPowerModel
 }
 ```
 然后使用`PowerCmd.Apply<TestPower>(...)`给予即可。或者使用控制台`power TEST-TEST_POWER 1 0`。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-05-add-power/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

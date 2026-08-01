@@ -77,8 +77,3 @@ ModContentRegistry.For(ModId)
     "REME_MOD_POOLFILTER_REME_MULTICLASS_SHARED_POOL": "多职业共享池。"
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-15-1-add-card-pool/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

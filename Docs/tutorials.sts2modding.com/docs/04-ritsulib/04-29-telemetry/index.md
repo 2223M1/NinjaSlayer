@@ -502,8 +502,3 @@ TelemetryRegistry.RegisterApplicant(new()
 
 然后接受发送遥测数据的用户的信息就能来到你的posthog里了。具体怎么分析数据不在本教程范畴内。
 简单来说，在posthog控制台左侧点击`Apps - Product analytics - My insights - New insight`，`Series`选择事件类型，`Breakdown`添加`Country name`，右上角图表类型选择`Bar chart`即可查看每日启动你的mod的用户的国家分布。你可以保存这个图表之后快速启动本分析。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-29-telemetry/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

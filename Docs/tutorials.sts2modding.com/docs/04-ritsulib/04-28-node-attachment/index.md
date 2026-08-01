@@ -174,8 +174,3 @@ setup 在加入树前还是加入树后执行
 `IncludeDerivedParentTypes`
 父类型的子类是否也应用该 attachment，默认 true
 `ChildIndex`、`InsertBeforeName`、`InsertAfterName` 三者只能选一个。只要 `DuplicatePolicy` 不是 `AllowDuplicateName`，就必须设置 `Name` / `NodeName`。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-28-node-attachment/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

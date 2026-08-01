@@ -8,7 +8,8 @@
     <AssemblyName>NinjaSlayer-SmokeDriver</AssemblyName>
     <RootNamespace>NinjaSlayer.SmokeDriver</RootNamespace>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <RitsuLibAssemblyPath Condition="'$(RitsuLibAssemblyPath)' == ''">$(UserProfile)\.nuget\packages\sts2.ritsulib\$(NinjaSlayerRitsuLibVersion)\lib\net9.0\STS2-RitsuLib.dll</RitsuLibAssemblyPath>
+    <NinjaSlayerRitsuLibPackagePathId>$(NinjaSlayerRitsuLibPackageId.ToLowerInvariant())</NinjaSlayerRitsuLibPackagePathId>
+    <RitsuLibAssemblyPath Condition="'$(RitsuLibAssemblyPath)' == ''">$(UserProfile)\.nuget\packages\$(NinjaSlayerRitsuLibPackagePathId)\$(NinjaSlayerRitsuLibVersion)\lib\net9.0\STS2-RitsuLib.dll</RitsuLibAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="sts2">

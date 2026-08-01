@@ -1,6 +1,4 @@
-using System.Reflection;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Map;
@@ -9,6 +7,7 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Runs.History;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
@@ -16,9 +15,6 @@ namespace NinjaSlayer.Code.Patches;
 
 public sealed class NinjaSlayerMapHistoryIconPatch : IPatchMethod
 {
-    private static readonly FieldInfo? RunStateField =
-        AccessTools.Field(typeof(NMapPoint), "_runState");
-
     public static string PatchId => "ninjaslayer_map_history_icon";
     public static string Description =>
         "Align traveled unknown-room icons with NinjaSlayer's visited map coordinates.";
@@ -33,7 +29,8 @@ public sealed class NinjaSlayerMapHistoryIconPatch : IPatchMethod
     {
         if (__instance.Point.PointType != MapPointType.Unknown
             || __instance.State != MapPointState.Traveled
-            || RunStateField?.GetValue(__instance) is not RunState runState
+            || !GameCompatibility.MapHistory.TryGetRunState(__instance, out RunState? runState)
+            || runState is null
             || LocalContext.GetMe(runState)?.Character is not INinjaSlayerCharacter
             || runState.CurrentActIndex < 0
             || runState.CurrentActIndex >= runState.MapPointHistory.Count)

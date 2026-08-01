@@ -37,8 +37,3 @@ ModCardHandOutlineRegistry.Register<TestCard>(ModCardHandOutlineRules.Dynamic(
     card => card.Owner.Creature.CurrentHp <= 5 ? Colors.Red : Colors.Orange // 决定该是什么颜色
 ));
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-19-hand-outline/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -19,8 +19,3 @@
 垂直数量：图集中一共有几行
 勾选 “裁切” 可自动去除空白边缘。
 比如这个图我们需要选择水平3，垂直2，并且依次点击6次，然后添加即可。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-02-texture-atlas/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

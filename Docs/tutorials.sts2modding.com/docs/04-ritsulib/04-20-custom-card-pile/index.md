@@ -191,8 +191,3 @@ ID格式为`{MODID}_CARDPILE_{LOCALSTEM}`，例如这里会变成`TEST_CARDPILE_
   "TEST_CARDPILE_VOID_PILE.empty": "虚空堆是空的。"
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-20-custom-card-pile/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -1,6 +1,4 @@
-using System.Reflection;
 using Godot;
-using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -182,12 +180,6 @@ internal static class CombatDodgeAnimation
 
 internal static class EnemyAttackDodgeContext
 {
-    private static readonly FieldInfo? AttackerAnimName =
-        AccessTools.Field(typeof(AttackCommand), "_attackerAnimName");
-    private static readonly FieldInfo? VisualAttacker =
-        AccessTools.Field(typeof(AttackCommand), "_visualAttacker");
-    private static readonly FieldInfo? WaitBeforeHit =
-        AccessTools.Field(typeof(AttackCommand), "_waitBeforeHit");
     private static readonly AsyncLocal<Frame?> Current = new();
 
     public static Frame? Enter(AttackCommand command)
@@ -195,7 +187,10 @@ internal static class EnemyAttackDodgeContext
         if (command.Attacker is not { IsMonster: true, Side: CombatSide.Enemy } attacker
             || command.IsRandomlyTargeted
             || !command.DamageProps.IsCardOrMonsterMove()
-            || AttackerAnimName?.GetValue(command) is not string triggerName)
+            || !GameCompatibility.EnemyAttackDodge.TryReadPresentation(
+                command,
+                attacker,
+                out GameCompatibility.EnemyAttackPresentation presentation))
         {
             return null;
         }
@@ -244,14 +239,13 @@ internal static class EnemyAttackDodgeContext
             return null;
         }
 
-        float[] hitWaits = WaitBeforeHit?.GetValue(command) as float[] ?? [-1f, -1f];
         Frame frame = new(
             Current.Value,
             dodgers.ToArray(),
-            VisualAttacker?.GetValue(command) as Creature ?? attacker,
-            triggerName,
-            Math.Max(0f, hitWaits.ElementAtOrDefault(0)),
-            Math.Max(0f, hitWaits.ElementAtOrDefault(1)));
+            presentation.VisualAttacker,
+            presentation.TriggerName,
+            presentation.FastHitWait,
+            presentation.StandardHitWait);
         Current.Value = frame;
         return frame;
     }

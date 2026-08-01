@@ -1,7 +1,6 @@
 <Project>
+  <Import Project="NinjaSlayer.Compatibility.g.props" />
   <PropertyGroup>
-    <NinjaSlayerRitsuLibVersion>0.4.62</NinjaSlayerRitsuLibVersion>
-    <NinjaSlayerRefLibVersion>0.109.0-beta</NinjaSlayerRefLibVersion>
     <NinjaSlayerSmartFormatVersion>3.3.0</NinjaSlayerSmartFormatVersion>
   </PropertyGroup>
 </Project>

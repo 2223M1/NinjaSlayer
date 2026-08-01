@@ -1,16 +1,24 @@
-# STS2 Modding Tutorial Mirror
+# STS2 Modding Tutorial Mirrors
 
-Source: https://tutorials.sts2modding.com/
-Repository: https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials
-Manifest: [tutorials.sts2modding.com/_sync_manifest.json](tutorials.sts2modding.com/_sync_manifest.json)
+Update from WSL or Linux with:
 
-Update with:
+```bash
+python3 Docs/_sync_tutorials.py
+```
+
+On Windows, the existing wrapper remains available:
 
 ```powershell
 .\Docs\Sync-Sts2Tutorials.ps1
 ```
 
-## Pages
+## Slay the Spire 2 Modding Tutorials
+
+Source: https://tutorials.sts2modding.com/
+Repository: https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials
+Manifest: [tutorials.sts2modding.com/_sync_manifest.json](tutorials.sts2modding.com/_sync_manifest.json)
+
+### Pages
 
 - [01 环境配置](tutorials.sts2modding.com/docs/01-env-setup/index.md)
 - [02 常见问题](tutorials.sts2modding.com/docs/02-install-view-source-and-patch/index.md)
@@ -91,3 +99,39 @@ Update with:
 - [05 全局环境光照](tutorials.sts2modding.com/docs/09-05-world-environment/index.md)
 - [06 Shader](tutorials.sts2modding.com/docs/09-06-shader/index.md)
 - [07 游戏本体特效](tutorials.sts2modding.com/docs/09-07-game-builtin-vfx/index.md)
+
+## RitsuLib Guide
+
+Source: https://sts2-ritsulib.ritsukage.com/
+Repository: https://github.com/BAKAOLC/STS2-RitsuLib
+Manifest: [sts2-ritsulib.ritsukage.com/_sync_manifest.json](sts2-ritsulib.ritsukage.com/_sync_manifest.json)
+
+### Pages
+
+- [RitsuLib](sts2-ritsulib.ritsukage.com/index.md)
+- [文档 / Documentation](sts2-ritsulib.ritsukage.com/guide/index.md)
+- [资源配置与回退 / Asset Profiles And Fallbacks](sts2-ritsulib.ritsukage.com/guide/asset-profiles-and-fallbacks/index.md)
+- [卡牌动态变量 / Card Dynamic Variables](sts2-ritsulib.ritsukage.com/guide/card-dynamic-var-toolkit/index.md)
+- [角色与解锁脚手架 / Character And Unlock Scaffolding](sts2-ritsulib.ritsukage.com/guide/character-and-unlock-scaffolding/index.md)
+- [内容编写 / Content Authoring](sts2-ritsulib.ritsukage.com/guide/content-authoring-toolkit/index.md)
+- [内容包与注册器 / Content Packs And Registries](sts2-ritsulib.ritsukage.com/guide/content-packs-and-registries/index.md)
+- [生物视觉与动画 / Creature Visuals And Animation](sts2-ritsulib.ritsukage.com/guide/creature-visuals-and-animation/index.md)
+- [自定义事件 / Custom Events](sts2-ritsulib.ritsukage.com/guide/custom-events/index.md)
+- [调试日志查看器 / Debug Log Viewer](sts2-ritsulib.ritsukage.com/guide/debug-log-viewer/index.md)
+- [诊断与兼容 / Diagnostics And Compatibility](sts2-ritsulib.ritsukage.com/guide/diagnostics-and-compatibility/index.md)
+- [FMOD 与音频 / FMOD And Audio](sts2-ritsulib.ritsukage.com/guide/fmod-and-audio/index.md)
+- [框架组织方式 / How RitsuLib Is Organized](sts2-ritsulib.ritsukage.com/guide/framework-design/index.md)
+- [快速入门 / Getting Started](sts2-ritsulib.ritsukage.com/guide/getting-started/index.md)
+- [Godot 场景编写 / Godot Scene Authoring](sts2-ritsulib.ritsukage.com/guide/godot-scene-authoring/index.md)
+- [生命周期事件 / Lifecycle Events](sts2-ritsulib.ritsukage.com/guide/lifecycle-events/index.md)
+- [LocString 占位符 / LocString Placeholders](sts2-ritsulib.ritsukage.com/guide/loc-string-placeholder-resolution/index.md)
+- [本地化与关键词 / Localization And Keywords](sts2-ritsulib.ritsukage.com/guide/localization-and-keywords/index.md)
+- [Mod 设置 / Mod Settings](sts2-ritsulib.ritsukage.com/guide/mod-settings/index.md)
+- [补丁系统 / Patching](sts2-ritsulib.ritsukage.com/guide/patching-guide/index.md)
+- [持久化 / Persistence](sts2-ritsulib.ritsukage.com/guide/persistence-guide/index.md)
+- [次级资源 / Secondary Resources](sts2-ritsulib.ritsukage.com/guide/secondary-resources/index.md)
+- [运行时 UI 与 Shell 主题 / Runtime UI And Shell Theme](sts2-ritsulib.ritsukage.com/guide/shell-theme/index.md)
+- [遥测后端 / Telemetry backend](sts2-ritsulib.ritsukage.com/guide/telemetry-backend/index.md)
+- [术语 / Terminology](sts2-ritsulib.ritsukage.com/guide/terminology/index.md)
+- [时间线与解锁 / Timeline And Unlocks](sts2-ritsulib.ritsukage.com/guide/timeline-and-unlocks/index.md)
+- [更新检查 / Update Checks](sts2-ritsulib.ritsukage.com/guide/update-checks/index.md)

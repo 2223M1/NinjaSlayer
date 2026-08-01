@@ -3,14 +3,16 @@
   <h1>NinjaSlayer</h1>
   <p>A Ninja Slayer character mod for Slay the Spire 2</p>
   <p><a href="README.md">简体中文</a> | <strong>English</strong></p>
+  <!-- compatibility-badges:start -->
   <p>
     <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
     <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.109.x-B51F24" alt="Slay the Spire 2 0.109.x">
-    <img src="https://img.shields.io/badge/RitsuLib-0.4.62-2D7D9A" alt="RitsuLib 0.4.62">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.110.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.110.0">
+    <img src="https://img.shields.io/badge/RitsuLib-0.5.1-2D7D9A" alt="RitsuLib 0.5.1">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
+  <!-- compatibility-badges:end -->
 </div>
 
 NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built on RitsuLib, it delivers a complete playable character experience centered on karate, shuriken, chado, Naraku, and Ninja Soul, together with custom presentation, events, and audio.
@@ -38,13 +40,17 @@ NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built o
 
 ## Compatibility And Language
 
+<!-- compatibility:start -->
 | Component | Supported version |
 |---|---|
-| Slay the Spire 2 | `0.109.x`, minimum `0.109.0` |
-| RitsuLib | `0.4.62` |
+| Slay the Spire 2 | stable public `0.107.1`; preview beta `0.110.0` |
+| RitsuLib | build baseline and minimum dependency `0.5.1`; Workshop installs receive its current release automatically |
 | .NET | `9.0` |
 | Godot | `4.5.1 Mono` |
 | In-game language | Primarily Simplified Chinese at present |
+
+Each GitHub Release contains separate host-specific stable and preview archives. The public Workshop item always receives stable; a preview item link will be added after its one-time creation. Never enable both NinjaSlayer items together.
+<!-- compatibility:end -->
 
 This English README documents the project and installation process. It does not indicate complete English localization in the game.
 

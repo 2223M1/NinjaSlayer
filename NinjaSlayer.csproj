@@ -14,9 +14,24 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <!-- Godot generators and Harmony intentionally emit compatibility types also present in sts2.dll. -->
     <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
-    <EnableNinjaSlayerDebugContent Condition="'$(EnableNinjaSlayerDebugContent)' == ''">false</EnableNinjaSlayerDebugContent>
+    <EnableNinjaSlayerDebugContent Condition="'$(EnableNinjaSlayerDebugContent)' == ''">true</EnableNinjaSlayerDebugContent>
     <DefineConstants Condition="'$(EnableNinjaSlayerDebugContent)' == 'true'">$(DefineConstants);NINJA_SLAYER_DEBUG_CONTENT</DefineConstants>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NinjaSlayerIsolatedOutputRoot)' != ''">
+    <OutputPath>$([MSBuild]::NormalizeDirectory('$(NinjaSlayerIsolatedOutputRoot)', '$(Configuration)'))</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NinjaSlayerIsolatedIntermediateRoot)' != ''">
+    <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(NinjaSlayerIsolatedIntermediateRoot)', '$(Configuration)'))</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="$(NinjaSlayerHostChannel)" />
+    <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="$(NinjaSlayerGameApiVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="$(NinjaSlayerRitsuLibPackageId)" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="$(NinjaSlayerRitsuLibVersion)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <IsWindows>false</IsWindows>
@@ -46,7 +61,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="build\**\*.cs" />
     <Compile Remove="Tests\**\*.cs" />
+    <Compile Remove="tools\artifact-contract\**\*.cs" />
+    <Compile Remove="tools\host-contract\**\*.cs" />
     <Compile Remove="tools\smoke-harness\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
@@ -59,18 +77,11 @@
       <Private>true</Private>
     </Reference>
 
-    <PackageReference Include="Book.StS2.RefLib"
-                      Version="$(NinjaSlayerRefLibVersion)"
-                      Condition="!Exists('$(Sts2DataDir)/sts2.dll') and '$(UseSts2RefLib)' == 'true'"
-                      PrivateAssets="all" />
-
-    <PackageReference Include="STS2.RitsuLib" Version="$(NinjaSlayerRitsuLibVersion)">
+    <PackageReference Include="$(NinjaSlayerRitsuLibPackageId)" Version="$(NinjaSlayerRitsuLibVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="SmartFormat" Version="$(NinjaSlayerSmartFormatVersion)" />
-    <!-- Specify a matching compatibility package when developing against another game version. -->
-    <!-- <PackageReference Include="STS2.RitsuLib.Compat.0.103.2" Version="*" /> -->
   </ItemGroup>
 
   <Import Project="eng\NinjaSlayer.Version.targets" />

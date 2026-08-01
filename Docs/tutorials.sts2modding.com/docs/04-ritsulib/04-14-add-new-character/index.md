@@ -848,8 +848,3 @@ shader = SubResource("Shader_wjwex")
 shader_parameter/transitionTex = ExtResource("1_2pnya")
 shader_parameter/threshold = 0.0
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-14-add-new-character/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)
