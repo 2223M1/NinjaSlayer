@@ -6,7 +6,7 @@
 | Channel | Game API | RitsuLib compile package | Distribution |
 |---|---|---|---|
 | `stable` | `0.107.1` | `STS2.RitsuLib.Compat.0.107.1 0.5.1` | `public` |
-| `preview` | `0.110.0` | `STS2.RitsuLib 0.5.1` | `beta` |
+| `preview` | `0.110.1` | `STS2.RitsuLib 0.5.1` | `beta` |
 
 Only these two rolling channels are active. Runtime players receive the current RitsuLib Workshop build; `0.5.1` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
 <!-- compatibility:end -->

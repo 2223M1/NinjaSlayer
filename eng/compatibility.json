@@ -191,7 +191,7 @@
       }
     },
     "preview": {
-      "gameApiVersion": "0.110.0",
+      "gameApiVersion": "0.110.1",
       "ritsuLibPackageId": "STS2.RitsuLib",
       "distributionChannel": "beta",
       "workshopItemId": null,
@@ -206,7 +206,7 @@
       "hostContract": {
         "buildVariant": "public-test",
         "assemblyVersion": "0.1.0.0",
-        "moduleMvid": "fc7d1cd0-3eb8-4bc1-be64-afffa905aab8",
+        "moduleMvid": "c0f649b8-8d57-4a9c-8b07-21aece97dca0",
         "lethalDamage": {
           "metadataToken": "0x0600522F",
           "ilSha256": "8ef02d18f507abaf34438d126c58b86dcf892e271304ab878d7363a79a8b6fcf"
@@ -219,11 +219,11 @@
           },
           "internalMethod": {
             "metadataToken": "0x060055F9",
-            "ilSha256": "b726e5642156570e55f57c904fef4e3c131eb38eeafef8a96ae75c3a7d125490"
+            "ilSha256": "e4b5eeaa5eaa3ebc953b80f66cf19c5bcebffed54516f32f6e713b884632e4df"
           },
           "asyncMoveNext": {
-            "metadataToken": "0x0600B20D",
-            "ilSha256": "13c039a91ebfd37ae47c4feba87d9f7c2641130ed245e739d942e9c8621ad8fc"
+            "metadataToken": "0x0600B20E",
+            "ilSha256": "e708542e1f0e31e6427962848d2847a0bbf1782772b8469c9f4392bfdfabac1b"
           }
         },
         "preparedQueueAdd": {
@@ -239,102 +239,102 @@
             "id": "boss.start-death-animation",
             "signature": "MegaCrit.Sts2.Core.Nodes.Combat.NCreature.StartDeathAnim(System.Boolean)",
             "capture": "Method",
-            "metadataToken": "0x06008909",
-            "ilSha256": "036e35ee77310af69fcc9dccf5ec920d929bad7e672fa91ee62e8b26b5d0f6fe"
+            "metadataToken": "0x0600890A",
+            "ilSha256": "1ed44fa0380c2bae62d6d53a5521d5368d2a57f139ff57f8242d69b2ec16f517"
           },
           {
             "id": "boss.update-music-track",
             "signature": "MegaCrit.Sts2.Core.Nodes.Audio.NRunMusicController.UpdateTrack()",
             "capture": "Method",
-            "metadataToken": "0x06008DBC",
-            "ilSha256": "bf0e50e11361cb430368046faf85cf132a34a45efc324ba3060580fe69be60e8"
+            "metadataToken": "0x06008DBD",
+            "ilSha256": "1c530080d14beb0aa207ac91d04a52ad99947ffc5992fb10fece6fd7a7faf7ce"
           },
           {
             "id": "boss.create-single-death-vfx",
             "signature": "MegaCrit.Sts2.Core.Nodes.Vfx.NMonsterDeathVfx.Create(MegaCrit.Sts2.Core.Nodes.Combat.NCreature,System.Threading.CancellationToken)",
             "capture": "Method",
-            "metadataToken": "0x060060E2",
-            "ilSha256": "9f3e544a4794a7e5e11cec4bd12a81ef6e566f7be76484abd12d67f57c1e217b"
+            "metadataToken": "0x060060E3",
+            "ilSha256": "b25633402d7301480d731fdbe1402ccf4b7629659a634fcb7e214538abac7be8"
           },
           {
             "id": "boss.create-grouped-death-vfx",
             "signature": "MegaCrit.Sts2.Core.Nodes.Vfx.NMonsterDeathVfx.Create(System.Collections.Generic.List<MegaCrit.Sts2.Core.Nodes.Combat.NCreature>)",
             "capture": "Method",
-            "metadataToken": "0x060060E3",
-            "ilSha256": "9c074d88faea8e8557835bbc7db1debd516e5a29a1eac0c9fa90d8d5cbb26aab"
+            "metadataToken": "0x060060E4",
+            "ilSha256": "77bad85eecb5a518f32f8135be909bcd281088bc4c86928cd7295a44299d5697"
           },
           {
             "id": "boss.play-death-vfx",
             "signature": "MegaCrit.Sts2.Core.Nodes.Vfx.NMonsterDeathVfx.PlayVfx()",
             "capture": "Method",
-            "metadataToken": "0x060060E4",
-            "ilSha256": "56febe71dc0b97223d5d9b9110f60767fec486c7defc75f741ed76414e579911"
+            "metadataToken": "0x060060E5",
+            "ilSha256": "fc5a7408ba6cfa66d41287aee2a1c1d188b69cce2d299bbb2a3971fcd69af91f"
           },
           {
             "id": "asset-loading.add-to-cache",
             "signature": "MegaCrit.Sts2.Core.Assets.AssetLoadingSession.AddToCache(Godot.Resource,System.String)",
             "capture": "Method",
-            "metadataToken": "0x060059F0",
-            "ilSha256": "0f3ea326bb3702cb9a6687ea3f275a66a88d008739352c931d8873a95a179c96"
+            "metadataToken": "0x060059F1",
+            "ilSha256": "0607eb70c795302e7d8097c990852889cd07a672298cd1c7351099fb4b1941fd"
           },
           {
             "id": "asset-loading.finalize",
             "signature": "MegaCrit.Sts2.Core.Assets.AssetLoadingSession.FinalizeLoading()",
             "capture": "Method",
-            "metadataToken": "0x060059EF",
-            "ilSha256": "6c4a6cfc0f5c856eaf4e5389f15d944f10319917f4dc34703813512eaaba5b7e"
+            "metadataToken": "0x060059F0",
+            "ilSha256": "db5dc9c53ad3ca3459cb519112bdc11bfd0a4660eea3c188cd1216029aa7979a"
           },
           {
             "id": "asset-loading.process-queue",
             "signature": "MegaCrit.Sts2.Core.Assets.AssetLoadingSession.ProcessLoadingQueue()",
             "capture": "Method",
-            "metadataToken": "0x060059F1",
-            "ilSha256": "56ea1d64b5a8ee32f1a989f5c7fdc53b258941ac578aead6431ebff76e778837"
+            "metadataToken": "0x060059F2",
+            "ilSha256": "706dfd90ceb37c34df09ff41436a6947c7b5ae11b30097a68325461741b468d7"
           },
           {
             "id": "preload.load-run-assets",
             "signature": "MegaCrit.Sts2.Core.Assets.PreloadManager.LoadRunAssets(System.Collections.Generic.IEnumerable<MegaCrit.Sts2.Core.Models.CharacterModel>)",
             "capture": "AsyncMoveNext",
             "stateMachineType": "MegaCrit.Sts2.Core.Assets.PreloadManager+<LoadRunAssets>d__11",
-            "metadataToken": "0x0600B4ED",
-            "ilSha256": "2872a663e77813abc88aeaa0d628e264bdca5507b5e2494828b66cdad93b6dac"
+            "metadataToken": "0x0600B4F1",
+            "ilSha256": "8b6473d57c60f231ffabee4454faf055095b5c80929e1e74f035770f93f60922"
           },
           {
             "id": "preload.load-act-assets",
             "signature": "MegaCrit.Sts2.Core.Assets.PreloadManager.LoadActAssets(MegaCrit.Sts2.Core.Models.ActModel)",
             "capture": "AsyncMoveNext",
             "stateMachineType": "MegaCrit.Sts2.Core.Assets.PreloadManager+<LoadActAssets>d__12",
-            "metadataToken": "0x0600B4D5",
-            "ilSha256": "7a4bdb5be8c5a3ccb9f2e7bcea85d6a11c4d0f7808f9fff010768be4a75a0398"
+            "metadataToken": "0x0600B4D9",
+            "ilSha256": "5a70f250aa3f4c721ea04ea70e017e6244fd13a5ce4ea0d9afbf1a18d765adb9"
           },
           {
             "id": "preload.load-room-assets",
             "signature": "MegaCrit.Sts2.Core.Assets.PreloadManager.LoadRoomAssets(System.String,System.Collections.Generic.IEnumerable<System.String>)",
             "capture": "AsyncMoveNext",
             "stateMachineType": "MegaCrit.Sts2.Core.Assets.PreloadManager+<LoadRoomAssets>d__18",
-            "metadataToken": "0x0600B4E1",
-            "ilSha256": "87fb16da27468eac6595ab0778c884d541cc3c731feb610e1ddb35b39a908db7"
+            "metadataToken": "0x0600B4E5",
+            "ilSha256": "8af78cb7c87ddfecd8fa46b79b1ce0e8bdecdc61495425e05df084efc3e408c4"
           },
           {
             "id": "feedback.send-button-selected",
             "signature": "MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen.NSendFeedbackScreen.SendButtonSelected(MegaCrit.Sts2.Core.Nodes.GodotExtensions.NButton)",
             "capture": "Method",
-            "metadataToken": "0x06007700",
-            "ilSha256": "c958a240652c62dc55dea4923f9ed351cf896ab0cc63cb606c055d276752cf39"
+            "metadataToken": "0x06007701",
+            "ilSha256": "8c148c3e99bf0ce637803843e41954774a2aef17917a768f54d4469e82338190"
           },
           {
             "id": "orobas.generate-initial-options",
             "signature": "MegaCrit.Sts2.Core.Models.Events.Orobas.GenerateInitialOptions()",
             "capture": "Method",
             "metadataToken": "0x0600363C",
-            "ilSha256": "87ff8240194bc1a510c1248dcce46ee90732e78832ab2cd1e39a2ad2ae0188b5"
+            "ilSha256": "3369f5cac10ca125fdd67c7234000da1924db10d4a7600a8ef33c634dc5cdfb9"
           },
           {
             "id": "prepared.shuffle-ftue",
             "signature": "MegaCrit.Sts2.Core.Commands.CardPileCmd.ShuffleFtueCheck()",
             "capture": "Method",
             "metadataToken": "0x060055FD",
-            "ilSha256": "66b036ebad0096199c37c5ae5d6782725a9e5eeff0dda175de8a1a3653fedf5b"
+            "ilSha256": "f4db19ea11cff9a1320c227cdba28a82ef9cd416fe9d82bebbacf02c0472520b"
           },
           {
             "id": "reporter-pass.set-event-finished",
@@ -347,32 +347,32 @@
             "id": "transition.ancient-heal-vfx",
             "signature": "MegaCrit.Sts2.Core.Nodes.Events.NAncientEventLayout.PlayHealVfxAfterFadeIn(MegaCrit.Sts2.Core.Entities.Players.Player,System.Decimal)",
             "capture": "Method",
-            "metadataToken": "0x0600834C",
-            "ilSha256": "aa13391b890896d90143119ecff26eb47f5530c9d239b237faa951fef7fdd295"
+            "metadataToken": "0x0600834D",
+            "ilSha256": "bc130ce58dde69eca7b6347ddb78c8eb15d2e2a0d6c17135fd660f4bfa3138e9"
           },
           {
             "id": "tornado.creature-damage",
             "signature": "MegaCrit.Sts2.Core.Commands.CreatureCmd.Damage(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext,System.Collections.Generic.IEnumerable<MegaCrit.Sts2.Core.Entities.Creatures.Creature>,System.Decimal,MegaCrit.Sts2.Core.ValueProps.ValueProp,MegaCrit.Sts2.Core.Entities.Creatures.Creature,MegaCrit.Sts2.Core.Models.CardModel,MegaCrit.Sts2.Core.Entities.Cards.CardPlay)",
             "capture": "AsyncMoveNext",
             "stateMachineType": "MegaCrit.Sts2.Core.Commands.CreatureCmd+<Damage>d__12",
-            "metadataToken": "0x0600B28C",
-            "ilSha256": "0df7032b94118c5fec37e99cc8091b6d01b1caa24fe98fbdb9d165f607b908da"
+            "metadataToken": "0x0600B28D",
+            "ilSha256": "16a8caab5eadb9319ca86060ddbb175a88bcea3353c34bcefd471b8548909ca0"
           },
           {
             "id": "tornado.power-apply",
             "signature": "MegaCrit.Sts2.Core.Commands.PowerCmd.Apply(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext,MegaCrit.Sts2.Core.Models.PowerModel,MegaCrit.Sts2.Core.Entities.Creatures.Creature,System.Decimal,MegaCrit.Sts2.Core.Entities.Creatures.Creature,MegaCrit.Sts2.Core.Models.CardModel,System.Boolean)",
             "capture": "AsyncMoveNext",
             "stateMachineType": "MegaCrit.Sts2.Core.Commands.PowerCmd+<Apply>d__2",
-            "metadataToken": "0x0600B2EE",
-            "ilSha256": "98a5d321a31f3b328501a78c0f920ad7cb3c155ce6351680b5ad68270fe8bd65"
+            "metadataToken": "0x0600B2EF",
+            "ilSha256": "b57fdd326fb559eea58402551e6b53e986f32cf8e620cbbb80a1c68083bc1943"
           },
           {
             "id": "tornado.power-modify-amount",
             "signature": "MegaCrit.Sts2.Core.Commands.PowerCmd.ModifyAmount(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext,MegaCrit.Sts2.Core.Models.PowerModel,System.Decimal,MegaCrit.Sts2.Core.Entities.Creatures.Creature,MegaCrit.Sts2.Core.Models.CardModel,System.Boolean)",
             "capture": "AsyncMoveNext",
             "stateMachineType": "MegaCrit.Sts2.Core.Commands.PowerCmd+<ModifyAmount>d__6",
-            "metadataToken": "0x0600B2F2",
-            "ilSha256": "87463421cafd9d27a6d53cc76ea2fb1c77fe775ce242ca74784fc85583188b69"
+            "metadataToken": "0x0600B2F3",
+            "ilSha256": "94caa79fc9e1cb72ee15b1109616a31df4fec86d84e71c3ffd2f5f1be48f4ecc"
           }
         ]
       }

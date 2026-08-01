@@ -23,18 +23,18 @@ internal static class GeneratedGameHostContracts
             new(0x060081C9, "29107e0818dd19bddf4281a9070478c8990728fef97ea02e0a11eda5cbf85f19")),
         new(
             "preview",
-            "0.110.0",
+            "0.110.1",
             "STS2.RitsuLib",
             "0.5.1",
             "public-test",
             "0.1.0.0",
-            Guid.Parse("fc7d1cd0-3eb8-4bc1-be64-afffa905aab8"),
+            Guid.Parse("c0f649b8-8d57-4a9c-8b07-21aece97dca0"),
             new(0x0600522F, "8ef02d18f507abaf34438d126c58b86dcf892e271304ab878d7363a79a8b6fcf"),
             new(
                 PreparedDrawHostLayout.WrapperWithAsyncInternal,
                 new(0x060055F7, "c441fbd17225889f4d7af6bf5ca2e0ca25a572c3946bcef6e218d991314d9a58"),
-                new(0x060055F9, "b726e5642156570e55f57c904fef4e3c131eb38eeafef8a96ae75c3a7d125490"),
-                new(0x0600B20D, "13c039a91ebfd37ae47c4feba87d9f7c2641130ed245e739d942e9c8621ad8fc")),
+                new(0x060055F9, "e4b5eeaa5eaa3ebc953b80f66cf19c5bcebffed54516f32f6e713b884632e4df"),
+                new(0x0600B20E, "e708542e1f0e31e6427962848d2847a0bbf1782772b8469c9f4392bfdfabac1b")),
             new(0x060052AC, "30a9338c827ca52914c892372e1a21f133dd02300f49dbddf9f9abaf959751bc"),
             new(0x060052AD, "a28a8b361c7e433cc5254b54645155b5448468d132ace669b19e16fc59c45afd"))
     ];

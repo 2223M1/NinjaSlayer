@@ -57,7 +57,7 @@ const documentReplacements = [
 ];
 
 for (const replacement of documentReplacements) {
-  const source = fs.readFileSync(replacement.file, 'utf8');
+  const source = outputs.get(replacement.file) ?? fs.readFileSync(replacement.file, 'utf8');
   outputs.set(replacement.file, replaceMarkedSection(source, replacement));
 }
 
