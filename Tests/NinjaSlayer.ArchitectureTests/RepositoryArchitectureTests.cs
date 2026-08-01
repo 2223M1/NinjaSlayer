@@ -61,6 +61,38 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void SmokeLauncherUsesPowerShell51SafeArgumentsAndHelpers()
+    {
+        string launcher = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "Invoke-NinjaSlayerSmoke.ps1"));
+
+        Assert.DoesNotContain("& dotnet build", launcher, StringComparison.Ordinal);
+        Assert.DoesNotContain("-p:Sts2DataDir=(Join-Path", launcher, StringComparison.Ordinal);
+        Assert.Contains("$packageArguments = [Collections.Generic.List[string]]::new()", launcher, StringComparison.Ordinal);
+        Assert.Contains("Add-MsBuildProperty $packageArguments 'Sts2DataDir' $gameDataDirectory", launcher, StringComparison.Ordinal);
+        Assert.Contains("Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray()", launcher, StringComparison.Ordinal);
+        Assert.Contains("$driverArguments = [Collections.Generic.List[string]]::new()", launcher, StringComparison.Ordinal);
+        Assert.Contains("Add-MsBuildProperty $driverArguments 'Sts2DataDir' $gameDataDirectory", launcher, StringComparison.Ordinal);
+        Assert.Contains("Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray()", launcher, StringComparison.Ordinal);
+        Assert.DoesNotContain("[IO.Path]::GetRelativePath", launcher, StringComparison.Ordinal);
+        Assert.Contains("function Get-RelativeChildPath", launcher, StringComparison.Ordinal);
+        Assert.Contains("$childPath.Substring($sourcePrefix.Length)", launcher, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "$content.Replace($replacement[0], $replacement[1], [StringComparison]::OrdinalIgnoreCase)",
+            launcher,
+            StringComparison.Ordinal);
+        Assert.Contains("function Replace-OrdinalIgnoreCase", launcher, StringComparison.Ordinal);
+        Assert.Contains("[Text.StringBuilder]::new()", launcher, StringComparison.Ordinal);
+        Assert.Contains(
+            "$Text.IndexOf($OldValue, $searchIndex, [StringComparison]::OrdinalIgnoreCase)",
+            launcher,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ProtectedWorkflowsEnumerateTopLevelHostArraysOnWindowsPowerShell()
     {
         string contract = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "contract.yml"));
