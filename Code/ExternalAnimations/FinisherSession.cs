@@ -185,8 +185,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 $"Finisher actor layer could not be raised above its victims: {exception.Message}");
         }
 
-        if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer
-            && _actionAdapter.RequiresPositioning)
+        if (_actionAdapter.RequiresPositioning)
         {
             _actionContext = _actionAdapter.CreateContext(
                 _actorNode,
@@ -532,10 +531,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         if (targetNodes.Count > 0)
         {
-            if (Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
-            {
-                StartBackdropDarkening();
-            }
+            await PrepareReverseImpactLead();
 
             if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Enhanced)
             {
@@ -547,7 +543,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 || !_enhancedImpactScheduled
                 || _enhancedImpactFailed)
             {
-                if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Enhanced)
+                if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Enhanced
+                    && Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
                 {
                     _finalZoomStarted = false;
                 }

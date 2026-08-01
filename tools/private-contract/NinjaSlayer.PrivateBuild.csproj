@@ -11,6 +11,10 @@
     <CandidateRoot Condition="'$(CandidateRoot)' != ''">$([System.IO.Path]::GetFullPath('$(CandidateRoot)'))</CandidateRoot>
   </PropertyGroup>
   <Target Name="ValidateTrustedInputs" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(NinjaSlayerHostChannelWasExplicit)' != 'true'"
+           Text="The private contract requires an explicit NinjaSlayerHostChannel=stable|preview." />
+    <Error Condition="'$(NinjaSlayerRitsuLibPackageId)' == ''"
+           Text="NinjaSlayerRitsuLibPackageId was not resolved for channel '$(NinjaSlayerHostChannel)'." />
     <Error Condition="'$(CandidateRoot)' == ''"
            Text="CandidateRoot is required and must point to a checked-out NinjaSlayer repository." />
     <Error Condition="'$(CandidateRoot)' != '' and !Exists('$(CandidateRoot)/NinjaSlayer.csproj')"
@@ -41,7 +45,7 @@
       <HintPath>$(Sts2DataDir)\0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <PackageReference Include="STS2.RitsuLib" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
+    <PackageReference Include="$(NinjaSlayerRitsuLibPackageId)" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
     <PackageReference Include="SmartFormat" Version="$(NinjaSlayerSmartFormatVersion)" />
   </ItemGroup>
 </Project>

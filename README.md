@@ -3,14 +3,16 @@
   <h1>忍者杀手 NinjaSlayer</h1>
   <p>《杀戮尖塔 2》的忍者杀手角色 Mod</p>
   <p><strong>简体中文</strong> | <a href="README_EN.md">English</a></p>
+  <!-- compatibility-badges:start -->
   <p>
     <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
     <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.109.x-B51F24" alt="Slay the Spire 2 0.109.x">
-    <img src="https://img.shields.io/badge/RitsuLib-0.4.62-2D7D9A" alt="RitsuLib 0.4.62">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.110.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.110.0">
+    <img src="https://img.shields.io/badge/RitsuLib-0.5.1-2D7D9A" alt="RitsuLib 0.5.1">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
+  <!-- compatibility-badges:end -->
 </div>
 
 NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围绕空手道、手里剑、茶道、奈落与忍者之魂构建完整的可玩角色体验。项目基于 RitsuLib，包含自定义机制、演出、事件、音频与配套内容。
@@ -38,13 +40,17 @@ NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围
 
 ## 兼容性与语言
 
+<!-- compatibility:start -->
 | 组件 | 支持范围 |
 |---|---|
-| Slay the Spire 2 | `0.109.x`，最低 `0.109.0` |
-| RitsuLib | `0.4.62` |
+| Slay the Spire 2 | stable 正式版 `0.107.1`；preview 测试版 `0.110.0` |
+| RitsuLib | 编译基线与最低依赖 `0.5.1`；Workshop 运行时使用自动更新的最新版 |
 | .NET | `9.0` |
 | Godot | `4.5.1 Mono` |
 | 游戏内语言 | 目前主要提供简体中文 |
+
+GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。公开 Workshop item 只发布 stable；preview 测试 item 建立后会在此补充链接，两个 NinjaSlayer item 不得同时启用。
+<!-- compatibility:end -->
 
 英文 README 仅用于项目文档与安装说明，不代表游戏内已提供完整英文文本。
 

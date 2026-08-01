@@ -69,6 +69,8 @@ public sealed partial class BossDismembermentPresentation
             + $"spawn_scene_scale={_currentSceneScale:F3}, "
             + $"boss_screen_size="
             + $"({_originalBossScreenSize.X:F3},{_originalBossScreenSize.Y:F3}), "
+            + $"semantic_source_size="
+            + $"({_semanticSourceScreenSize.X:F3},{_semanticSourceScreenSize.Y:F3}), "
             + $"fragment_union_size="
             + $"({_fragmentUnionScreenSize.X:F3},{_fragmentUnionScreenSize.Y:F3}), "
             + $"fragment_raw_width_ratio={_fragmentRawWidthRatio:F3}, "

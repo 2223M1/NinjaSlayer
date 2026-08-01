@@ -157,9 +157,3 @@
 如果你进不了游戏提示不通过steam，记得在根目录创建一个`steam_appid.txt`，里面写`2868840`。
 -
 你还可以进行断点调试。点击一行代码左侧小红点即可。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/07-quick-debug-and-hot-reload/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

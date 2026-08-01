@@ -59,8 +59,3 @@ public sealed class TestModConfig : SimpleModConfig
 }
 ```
 更多请参考`baselib`的`BaseLib.Config`下的类。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-02-mod-config/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

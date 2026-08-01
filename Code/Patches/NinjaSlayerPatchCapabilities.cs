@@ -4,7 +4,9 @@ namespace NinjaSlayer.Code.Patches;
 
 internal static class NinjaSlayerPatchCapabilities
 {
+    public static bool CoreContentEnabled => IsOperational(NinjaSlayerCapabilityIds.CoreContent);
     public static bool GameplayEnabled => IsOperational(NinjaSlayerCapabilityIds.Gameplay);
+    public static bool OrobasSeaGlassEnabled => IsOperational(NinjaSlayerCapabilityIds.OrobasSeaGlass);
     public static bool CardResolutionEnabled => IsOperational(NinjaSlayerCapabilityIds.CardResolution);
     public static bool BossBurstPresentationEnabled =>
         IsOperational(NinjaSlayerCapabilityIds.BossBurstPresentation);

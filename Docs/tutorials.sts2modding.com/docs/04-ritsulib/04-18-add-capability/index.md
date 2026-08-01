@@ -356,8 +356,3 @@ this.AddCapability(cap); // 叠加。使用SubtractCapability移除层数
 // ❌ 不会叠加：GetOrCreate 只创建一次
 this.GetOrCreateCapability<StackableBuffCapability>();
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-18-add-capability/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -7,7 +7,7 @@ namespace NinjaSlayer.Code.Compatibility;
 
 internal static class NancyCompatibility
 {
-    // RitsuLib 0.4.62 appends registered act ancients in this Harmony owner.
+    // RitsuLib appends registered act ancients in this Harmony owner.
     public const string RitsuLibContentRegistryHarmonyId =
         "com.ritsukage.sts2-RitsuLib.framework-content-registry";
 

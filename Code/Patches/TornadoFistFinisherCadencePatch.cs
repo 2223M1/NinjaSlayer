@@ -1,3 +1,4 @@
+using System.Reflection;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -10,59 +11,51 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using STS2RitsuLib.Patching.Models;
+using STS2RitsuLib.Utils.HarmonyIl;
 
 namespace NinjaSlayer.Code.Patches;
 
-public sealed class TornadoFistFinisherCadencePatch : IPatchMethod
+public static class TornadoFistFinisherCadencePatch
 {
-    public static string PatchId => "ninjaslayer_tornado_fist_finisher_cadence";
-    public static string Description => "Remove only generic damage and power pacing waits from Tornado Fist finishers.";
-    public static bool IsCritical => true;
+    private const string PatchIdPrefix = "ninjaslayer_tornado_fist_finisher_cadence";
 
-    public static ModPatchTarget[] GetTargets() => TryResolveTargets(out ModPatchTarget[] targets, out _)
-        ? targets
-        : [];
-
-    private static bool TryResolveTargets(out ModPatchTarget[] targets, out string missingMember)
+    public static DynamicPatchInfo[] CreateDynamicPatches()
     {
         if (!GameCompatibility.TornadoCadence.TryResolveStateMachines(
-                out Type[] stateMachines,
-                out missingMember))
+                out GameCompatibility.RuntimePatchTarget[] targets,
+                out string missingMember))
         {
-            targets = [];
-            return false;
+            throw new MissingMethodException(missingMember);
         }
 
-        targets = stateMachines
-            .Select(stateMachine => new ModPatchTarget(stateMachine, "MoveNext"))
+        var harmonyTranspiler = new HarmonyMethod(
+            typeof(TornadoFistFinisherCadencePatch),
+            nameof(Transpiler));
+        return targets.Select(target => new DynamicPatchInfo(
+                $"{PatchIdPrefix}_{target.IdSuffix}",
+                target.Method,
+                transpiler: harmonyTranspiler,
+                isCritical: true,
+                description: $"Remove generic pacing from Tornado Fist {target.IdSuffix}."))
             .ToArray();
-        return true;
     }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        List<CodeInstruction> rewritten = instructions.ToList();
-        int replacements = 0;
-        foreach (CodeInstruction instruction in rewritten)
-        {
-            if (GameCompatibility.TornadoCadence.CustomWait is not { } customWait
-                || GameCompatibility.TornadoCadence.ScopedWait is not { } scopedWait
-                || !instruction.Calls(customWait))
-            {
-                continue;
-            }
-
-            instruction.operand = scopedWait;
-            replacements++;
-        }
-
-        if (replacements != 1)
-        {
-            throw new InvalidOperationException(
-                $"Expected exactly one pacing wait in the patched async method, found {replacements}.");
-        }
-
-        return rewritten;
+        const string operation = "NinjaSlayer Tornado Fist awaited pacing redirect";
+        MethodInfo customWait = GameCompatibility.TornadoCadence.CustomWait
+            ?? throw new MissingMethodException(typeof(Cmd).FullName, nameof(Cmd.CustomScaledWait));
+        MethodInfo scopedWait = GameCompatibility.TornadoCadence.ScopedWait
+            ?? throw new MissingMethodException(
+                typeof(TornadoFistFinisherCadenceContext).FullName,
+                nameof(TornadoFistFinisherCadenceContext.WaitUnlessActive));
+        var rewriter = HarmonyIlRewriter.From(instructions);
+        HarmonyIlRewriteReport report = HarmonyAsyncIl.RedirectAwaitedCalls(
+            rewriter,
+            operation,
+            customWait,
+            scopedWait,
+            code => code.Any(HarmonyIl.IsCall(scopedWait)));
+        return rewriter.InstructionsChecked(report);
     }
-
 }

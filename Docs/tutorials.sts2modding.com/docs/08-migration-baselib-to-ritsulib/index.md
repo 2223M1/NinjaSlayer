@@ -240,8 +240,3 @@ public static void Init()
 
 `baselib`已支持大部分场景自动转换，即你不需要挂载任何脚本或唯一化命名。
 `ritsulib`支持半自动转换，例如角色类里重载`TryCreateCreatureVisuals`。能量表盘全自动转换。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/08-migration-baselib-to-ritsulib/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

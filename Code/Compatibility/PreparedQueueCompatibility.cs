@@ -9,13 +9,6 @@ namespace NinjaSlayer.Code.Compatibility;
 
 internal static class PreparedQueueCompatibility
 {
-    private const string ExpectedAssemblyVersion = "0.1.0.0";
-    private const string ExpectedModuleMvid = "a49d3537-5a42-4dcd-9877-663e394f2b44";
-    private const int ExpectedAddMetadataToken = 0x060084B5;
-    private const string ExpectedAddIlSha256 = "95bd1d75151afad1eea28fae26d0d99404f8cea672f186f2206fd96610524d37";
-    private const int ExpectedRemoveMetadataToken = 0x060084B6;
-    private const string ExpectedRemoveIlSha256 = "7ea0ab7d874440c7901b965c2c7c534f38a328197728bdda1bf2da232b663b3d";
-
     private static readonly MethodInfo? AddInternal = AccessTools.Method(
         typeof(CardPile),
         nameof(CardPile.AddInternal),
@@ -27,39 +20,43 @@ internal static class PreparedQueueCompatibility
 
     public static bool TryValidate(out PreparedQueueFingerprint fingerprint, out string reason)
     {
-        if (!PreparedMethodContract.TryCapture(AddInternal, out PreparedMethodFingerprint add, out reason))
+        if (!MethodBodyFingerprintCapture.TryCapture(
+                AddInternal,
+                out MethodBodyFingerprint add,
+                out reason))
         {
             fingerprint = default;
             return false;
         }
-        if (!PreparedMethodContract.TryCapture(RemoveInternal, out PreparedMethodFingerprint remove, out reason))
+        if (!MethodBodyFingerprintCapture.TryCapture(
+                RemoveInternal,
+                out MethodBodyFingerprint remove,
+                out reason))
         {
             fingerprint = default;
             return false;
         }
 
-        fingerprint = new PreparedQueueFingerprint(add, remove);
-        if (!PreparedMethodContract.Matches(
-                add,
-                ExpectedAssemblyVersion,
-                ExpectedModuleMvid,
-                ExpectedAddMetadataToken,
-                ExpectedAddIlSha256))
+        if (!GameHostContractProfile.TryResolve(add, out GameHostContractProfile profile))
         {
-            reason = $"CardPile.AddInternal fingerprint mismatch ({add}).";
+            fingerprint = default;
+            reason = $"Unsupported CardPile.AddInternal host ({add}).";
             return false;
         }
-        if (!PreparedMethodContract.Matches(
-                remove,
-                ExpectedAssemblyVersion,
-                ExpectedModuleMvid,
-                ExpectedRemoveMetadataToken,
-                ExpectedRemoveIlSha256))
+        if (!StableMethodBodyContract.Matches(add, profile, profile.PreparedQueueAdd))
         {
-            reason = $"CardPile.RemoveInternal fingerprint mismatch ({remove}).";
+            fingerprint = default;
+            reason = $"CardPile.AddInternal fingerprint mismatch for {profile.Id} ({add}).";
+            return false;
+        }
+        if (!StableMethodBodyContract.Matches(remove, profile, profile.PreparedQueueRemove))
+        {
+            fingerprint = default;
+            reason = $"CardPile.RemoveInternal fingerprint mismatch for {profile.Id} ({remove}).";
             return false;
         }
 
+        fingerprint = new PreparedQueueFingerprint(profile.Id, add, remove);
         reason = string.Empty;
         return true;
     }
@@ -127,8 +124,10 @@ internal static class PreparedQueueCompatibility
 }
 
 internal readonly record struct PreparedQueueFingerprint(
-    PreparedMethodFingerprint AddInternal,
-    PreparedMethodFingerprint RemoveInternal)
+    string HostProfile,
+    MethodBodyFingerprint AddInternal,
+    MethodBodyFingerprint RemoveInternal)
 {
-    public override string ToString() => $"add=[{AddInternal}], remove=[{RemoveInternal}]";
+    public override string ToString() =>
+        $"host={HostProfile}, add=[{AddInternal}], remove=[{RemoveInternal}]";
 }

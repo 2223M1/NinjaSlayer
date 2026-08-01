@@ -86,9 +86,3 @@
 - tags无法在工坊改，先看有哪些常用tag。
 - 不要忘了更改可见性。
 - 建议写个cmd,bat,sh等脚本来自动化上传。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/02-install-view-source-and-patch/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

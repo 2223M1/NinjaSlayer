@@ -288,6 +288,24 @@ public sealed class LifecycleTests
     }
 
     [Fact]
+    public void ResolutionScopesAtomicallyTakeOwnedState()
+    {
+        object subject = new();
+        object scope = new();
+        object owner = new();
+        var scopes = new ResolutionScopeRegistry<object, object>();
+        Assert.True(scopes.Begin(subject, scope));
+        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int> { 3 }, out _));
+
+        Assert.True(scopes.TryTakeState(scope, owner, out List<int>? taken));
+        Assert.Equal([3], taken);
+        Assert.False(scopes.TryTakeState(scope, owner, out List<int>? secondTake));
+        Assert.Null(secondTake);
+        Assert.True(scopes.TryGetLatestScope(subject, out object? activeScope));
+        Assert.Same(scope, activeScope);
+    }
+
+    [Fact]
     public async Task ResolutionScopesRejectForeignThreadMutationAndReportOnceInReleaseMode()
     {
         var reports = new List<string>();

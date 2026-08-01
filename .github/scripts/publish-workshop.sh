@@ -7,6 +7,17 @@ set -euo pipefail
 : "${PREVIEW_FILE:?PREVIEW_FILE is required}"
 : "${STEAMCMD:?STEAMCMD is required}"
 : "${CHANGE_NOTE_FILE:?CHANGE_NOTE_FILE is required}"
+: "${WORKSHOP_CHANNEL:?WORKSHOP_CHANNEL is required}"
+: "${WORKSHOP_ITEM_ID:?WORKSHOP_ITEM_ID is required}"
+: "${WORKSHOP_VISIBILITY:?WORKSHOP_VISIBILITY is required}"
+
+[[ "$WORKSHOP_CHANNEL" == "stable" || "$WORKSHOP_CHANNEL" == "preview" ]] || {
+  echo "WORKSHOP_CHANNEL must be stable or preview"; exit 1;
+}
+[[ "$WORKSHOP_ITEM_ID" =~ ^[0-9]+$ ]] || { echo "WORKSHOP_ITEM_ID must be numeric"; exit 1; }
+[[ "$WORKSHOP_VISIBILITY" == "0" || "$WORKSHOP_VISIBILITY" == "3" ]] || {
+  echo "WORKSHOP_VISIBILITY must be public (0) or unlisted (3)"; exit 1;
+}
 
 for artifact in NinjaSlayer.dll NinjaSlayer.json NinjaSlayer.pck SHA256SUMS; do
   test -f "$CONTENT_DIR/$artifact" || { echo "Missing release artifact: $artifact"; exit 1; }
@@ -29,9 +40,10 @@ escaped_note=${CHANGE_NOTE//\"/\\\"}
 {
   printf '"workshopitem"\n{\n'
   printf '    "appid" "2868840"\n'
-  printf '    "publishedfileid" "3761570842"\n'
+  printf '    "publishedfileid" "%s"\n' "$WORKSHOP_ITEM_ID"
   printf '    "contentfolder" "%s"\n' "$CONTENT_DIR"
   printf '    "previewfile" "%s"\n' "$PREVIEW_FILE"
+  printf '    "visibility" "%s"\n' "$WORKSHOP_VISIBILITY"
   printf '    "changenote" "%s"\n' "$escaped_note"
   printf '}\n'
 } > "$manifest"

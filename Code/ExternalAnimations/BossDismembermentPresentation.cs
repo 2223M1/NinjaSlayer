@@ -184,6 +184,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private float _fragmentWidthRatio = 1f;
     private float _fragmentHeightRatio = 1f;
     private Vector2 _originalBossScreenSize;
+    private Vector2 _semanticSourceScreenSize;
     private Vector2 _fragmentUnionScreenSize;
     private float _medianFragmentArea;
     private float _maximumFragmentArea;
@@ -251,8 +252,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 _physicsAccumulator = retained;
             }
 
-            ApplyRenderFrame();
             RemoveOffscreenFragments();
+            ApplyRenderFrame();
             if (_elapsed >= MaximumFlightSeconds)
             {
                 ClearFragments();
@@ -455,18 +456,28 @@ public sealed partial class BossDismembermentPresentation : Node2D
         Rect2 originalBossScreenBounds)
     {
         Transform2D globalToPresentation = GlobalTransform.AffineInverse();
-        Rect2 expected = BoundsOf(RectCorners(originalBossScreenBounds)
+        Rect2 fullBossBounds = BoundsOf(RectCorners(originalBossScreenBounds)
             .Select(point => globalToPresentation * point));
+        var semanticSourceBounds = new Rect2(
+            partition.SourceBounds.X,
+            partition.SourceBounds.Y,
+            partition.SourceBounds.Width,
+            partition.SourceBounds.Height);
+        Rect2 expected = BoundsOf(RectCorners(semanticSourceBounds)
+            .Select(point => _bodyToPresentation * point));
         Rect2 actual = BoundsOf(partition.Fragments
             .SelectMany(fragment => fragment.Cell.Vertices)
             .Select(point => _bodyToPresentation * ToVector2(point)));
-        if (!IsValidBounds(expected) || !IsValidBounds(actual))
+        if (!IsValidBounds(fullBossBounds)
+            || !IsValidBounds(expected)
+            || !IsValidBounds(actual))
         {
             throw new InvalidOperationException(
                 "the battle-view fragment bounds are invalid");
         }
 
-        _originalBossScreenSize = expected.Size;
+        _originalBossScreenSize = fullBossBounds.Size;
+        _semanticSourceScreenSize = expected.Size;
         _fragmentUnionScreenSize = actual.Size;
         _fragmentRawWidthRatio = actual.Size.X / expected.Size.X;
         _fragmentRawHeightRatio = actual.Size.Y / expected.Size.Y;
@@ -486,7 +497,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 out BossFragmentBoundsCalibration calibration))
         {
             throw new InvalidOperationException(
-                $"semantic fragments cannot be uniformly calibrated to the frozen battle-view boss size "
+                $"semantic fragments cannot be uniformly calibrated to their frozen visible source bounds "
                 + $"({_fragmentRawWidthRatio:F3}x{_fragmentRawHeightRatio:F3})");
         }
 
@@ -510,7 +521,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
             || _fragmentHeightRatio is < 0.98f or > 1.02f)
         {
             throw new InvalidOperationException(
-                $"uniformly calibrated semantic fragments still do not match the frozen battle-view boss size "
+                $"uniformly calibrated semantic fragments still do not match their frozen visible source bounds "
                 + $"({_fragmentWidthRatio:F3}x{_fragmentHeightRatio:F3})");
         }
 
@@ -949,7 +960,9 @@ public sealed partial class BossDismembermentPresentation : Node2D
         for (int index = _fragments.Count - 1; index >= 0; index--)
         {
             SoftFragmentRuntime fragment = _fragments[index];
-            if (!IsFullyOutsideScene(fragment.Body)
+            (BossFragmentPoint minimum, BossFragmentPoint maximum) =
+                fragment.Body.ResolveDeformedBounds();
+            if (!IsFullyOutsideScene(minimum, maximum)
                 || HasLiveJoint(fragment.Body))
             {
                 continue;
@@ -994,9 +1007,10 @@ public sealed partial class BossDismembermentPresentation : Node2D
         fragment.Surface.Dispose();
     }
 
-    private bool IsFullyOutsideScene(SoftFragmentBody body)
+    private bool IsFullyOutsideScene(
+        BossFragmentPoint minimum,
+        BossFragmentPoint maximum)
     {
-        (BossFragmentPoint minimum, BossFragmentPoint maximum) = body.ResolveDeformedBounds();
         Rect2 bounds = new(
             minimum.X,
             minimum.Y,

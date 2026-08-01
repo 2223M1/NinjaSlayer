@@ -158,9 +158,3 @@ Test (你的项目文件夹)
 你的基础攻击好防御需要添加对应的tag，例如 `public override IEnumerable<CardTag> Tags => [CardTag.Defend];`。
 -
 如果你是一张防御牌，需要设置 `public override bool GainsBlock => true;`，否则无法被相关抚摸作为可识别对象。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-01-add-card/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

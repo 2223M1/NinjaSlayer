@@ -118,8 +118,3 @@ public class TestCard : CustomCardModel
 }
 ```
 如果要判断，使用`if (Card.Tags.Contains(MyCardTags.Test)) {}`即可。`Card`需要是个`CardModel`类型。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-04-card-properties/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

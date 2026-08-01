@@ -188,8 +188,3 @@ int xFac = facingRight ? 1 : -1;
 Vector2 position = Creature.VfxSpawnPosition + new Vector2(100f * xFac, 0f);
 //播放特效...
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-03-vfx-instantiation/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

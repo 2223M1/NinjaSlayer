@@ -164,8 +164,3 @@ sentry测试
 多人模式
 `multiplayer`
 打开多人游戏菜单。加参数`test`打开测试场景。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-console-commands/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

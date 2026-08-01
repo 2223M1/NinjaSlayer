@@ -39,9 +39,3 @@ public class TestSingleton : CustomSingletonModel
 然后你可以向上面一样重载`AbstractModel`下的虚函数来监听游戏事件了，和遗物、药水等的接口一致。
 -
 你可以反编译原版的`Hook.cs`看看有哪些接口。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-15-add-singleton/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -55,8 +55,3 @@ if (ModManager.GetLoadedMods().Any(m => string.Equals(m.manifest?.id, "test")))
     TestInterop.Register("JustAnotherModId");
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-10-mod-integration/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

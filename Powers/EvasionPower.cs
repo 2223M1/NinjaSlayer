@@ -12,12 +12,16 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class EvasionPower : NinjaSlayerPowerTemplate
+public sealed partial class EvasionPower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageCap(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+    private decimal ModifyDamageCapCore(
+        Creature? target,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource)
     {
         if (target != Owner || Amount <= 0)
         {

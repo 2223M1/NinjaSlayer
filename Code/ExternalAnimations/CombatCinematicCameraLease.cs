@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Screens.Settings;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Saves;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -238,15 +239,17 @@ public sealed class CombatCinematicCameraLease : IDisposable
             return _sceneContainer.Size * 0.5f;
         }
 
-        Vector2 halfViewport = ViewportSize / (2f * scale);
-        Vector2 maximum = _sceneContainer.Size - halfViewport;
         return new Vector2(
-            halfViewport.X <= maximum.X
-                ? Mathf.Clamp(localTarget.X, halfViewport.X, maximum.X)
-                : _sceneContainer.Size.X * 0.5f,
-            halfViewport.Y <= maximum.Y
-                ? Mathf.Clamp(localTarget.Y, halfViewport.Y, maximum.Y)
-                : _sceneContainer.Size.Y * 0.5f);
+            CinematicCameraContainment.ClampCenter(
+                localTarget.X,
+                ViewportSize.X,
+                scale,
+                _sceneContainer.Size.X),
+            CinematicCameraContainment.ClampCenter(
+                localTarget.Y,
+                ViewportSize.Y,
+                scale,
+                _sceneContainer.Size.Y));
     }
 
     public Vector2 ClampPosition(Vector2 position, float scale)
@@ -292,7 +295,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
 
     public void SetTransform(Vector2 position, float scale)
     {
-        _cameraPosition = position;
+        _cameraPosition = ClampPosition(position, scale);
         _cameraScale = scale;
         ApplyTransform();
     }
@@ -305,7 +308,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
         _shakeOffset = Vector2.Zero;
         _cameraPosition = BaselinePosition;
         _cameraScale = BaselineScale.X;
-        ApplyTransform();
+        ApplyTransform(containToScene: false);
     }
 
     public void Dispose()
@@ -419,7 +422,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
         Entry.Logger.Info($"Restored combat screen shake target after {OwnerName} camera reset.");
     }
 
-    private void ApplyTransform()
+    private void ApplyTransform(bool containToScene = true)
     {
         if (!GodotObject.IsInstanceValid(_sceneContainer))
         {
@@ -427,7 +430,10 @@ public sealed class CombatCinematicCameraLease : IDisposable
         }
 
         _sceneContainer.Scale = Vector2.One * _cameraScale;
-        _sceneContainer.Position = _cameraPosition + _shakeOffset;
+        Vector2 position = _cameraPosition + _shakeOffset;
+        _sceneContainer.Position = containToScene
+            ? ClampPosition(position, _cameraScale)
+            : position;
     }
 
     private void AddFollowSample(float elapsed, Vector2 position)

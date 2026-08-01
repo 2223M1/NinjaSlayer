@@ -193,8 +193,3 @@ protected override ModAnimStateMachine? SetupCustomCombatAnimationStateMachine(
     return builder.BuildForVisualsRoot(visualsRoot, character); // 创建帧动画。
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-15-2-character-animation/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -13,8 +13,11 @@ internal static partial class GameCompatibility
 {
     internal static class AssetLoading
     {
+        private static readonly FieldInfo? Loading = AccessTools.Field(typeof(AssetLoadingSession), "_loading");
         private static readonly FieldInfo? Finalizing = AccessTools.Field(typeof(AssetLoadingSession), "_finalizing");
         private static readonly MethodInfo? AddToCache = AccessTools.Method(typeof(AssetLoadingSession), "AddToCache");
+        public static MethodInfo? LoadingCount { get; } =
+            AccessTools.PropertyGetter(typeof(Queue<string>), nameof(Queue<string>.Count));
         public static MethodInfo? FinalizeLoading { get; } =
             AccessTools.Method(typeof(AssetLoadingSession), "FinalizeLoading");
         public static MethodInfo? ProcessLoadingQueue { get; } =
@@ -34,6 +37,8 @@ internal static partial class GameCompatibility
             bool stateMachinesAvailable = TryResolvePreloadStateMachines(out _, out string stateMachineReason);
             return
             [
+                RequiredMember("AssetLoadingSession.loading", Loading, "AssetLoadingSession._loading"),
+                RequiredMember("Queue.loading-count", LoadingCount, "Queue<string>.Count"),
                 RequiredMember("AssetLoadingSession.finalizing", Finalizing, "AssetLoadingSession._finalizing"),
                 RequiredMember("AssetLoadingSession.add-to-cache", AddToCache, "AssetLoadingSession.AddToCache"),
                 RequiredMember(
@@ -75,30 +80,49 @@ internal static partial class GameCompatibility
         public static void Cache(AssetLoadingSession session, Resource? resource, string path) =>
             AddToCache?.Invoke(session, [resource, path]);
 
-        public static bool TryResolvePreloadStateMachines(out Type[] stateMachines, out string missingMember)
+        public static bool IsLoadingCountLimitSite(
+            IReadOnlyList<CodeInstruction> code,
+            int index,
+            int expectedLimit)
         {
-            var signatures = new (string Name, Type[] Parameters)[]
+            return Loading is not null
+                && LoadingCount is not null
+                && index >= 3
+                && code[index].LoadsConstant(expectedLimit)
+                && HarmonyLib.CodeInstructionExtensions.IsLdarg(code[index - 3], 0)
+                && code[index - 2].LoadsField(Loading)
+                && code[index - 1].Calls(LoadingCount);
+        }
+
+        public static bool TryResolvePreloadStateMachines(
+            out RuntimePatchTarget[] targets,
+            out string missingMember)
+        {
+            var signatures = new (string IdSuffix, string Name, Type[] Parameters)[]
             {
-                (nameof(PreloadManager.LoadRunAssets), [typeof(IEnumerable<CharacterModel>)]),
-                (nameof(PreloadManager.LoadActAssets), [typeof(ActModel)]),
-                ("LoadRoomAssets", [typeof(string), typeof(IEnumerable<string>)])
+                ("load-run-assets", nameof(PreloadManager.LoadRunAssets), [typeof(IEnumerable<CharacterModel>)]),
+                ("load-act-assets", nameof(PreloadManager.LoadActAssets), [typeof(ActModel)]),
+                ("load-room-assets", "LoadRoomAssets", [typeof(string), typeof(IEnumerable<string>)])
             };
-            var resolved = new List<Type>(signatures.Length);
-            foreach ((string methodName, Type[] parameterTypes) in signatures)
+            var resolved = new List<RuntimePatchTarget>(signatures.Length);
+            foreach ((string idSuffix, string methodName, Type[] parameterTypes) in signatures)
             {
                 MethodInfo? method = AccessTools.Method(typeof(PreloadManager), methodName, parameterTypes);
                 Type? stateMachine = method?.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType;
-                if (stateMachine == null)
+                MethodInfo? moveNext = stateMachine is null
+                    ? null
+                    : AccessTools.Method(stateMachine, "MoveNext", Type.EmptyTypes);
+                if (moveNext == null)
                 {
-                    stateMachines = [];
+                    targets = [];
                     missingMember = $"{typeof(PreloadManager).FullName}.{methodName} async state machine";
                     return false;
                 }
 
-                resolved.Add(stateMachine);
+                resolved.Add(new RuntimePatchTarget(idSuffix, moveNext));
             }
 
-            stateMachines = resolved.ToArray();
+            targets = resolved.ToArray();
             missingMember = string.Empty;
             return true;
         }

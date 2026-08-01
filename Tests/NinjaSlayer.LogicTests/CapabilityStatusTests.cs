@@ -83,4 +83,18 @@ public sealed class CapabilityStatusTests
         Assert.DoesNotContain("second", firstSnapshot.Keys);
         Assert.Equal(2, registry.Snapshot().Count);
     }
+
+    [Fact]
+    public void RolledBackStatusNamesTheCapabilityThatAbortedCoreActivation()
+    {
+        CapabilityStatus status = CapabilityStatusEvaluator.RolledBack(
+            "prepared-gameplay",
+            [CapabilityProbe.Optional("diagnostic", false, "missing")]);
+
+        Assert.Equal(CapabilityState.Disabled, status.State);
+        Assert.False(status.IsOperational);
+        Assert.Equal(0, status.InstalledPatchCount);
+        Assert.Contains("prepared-gameplay", status.Reason, StringComparison.Ordinal);
+        Assert.Single(status.Probes);
+    }
 }

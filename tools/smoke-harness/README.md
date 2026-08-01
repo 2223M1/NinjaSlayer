@@ -19,24 +19,26 @@ Failures capture a screenshot when a viewport exists. JSONL checkpoints include 
 
 `Invoke-NinjaSlayerSmoke.ps1` requires an elevated Windows host with:
 
-- Slay the Spire 2 `0.109.x` installed on the same volume as `RUNNER_TEMP`.
+- Both rolling Slay the Spire 2 hosts listed in `eng/compatibility.json`, installed on the same volume as `RUNNER_TEMP`.
 - Godot 4.5.1 Mono and .NET 9.
-- The locked RitsuLib `0.4.62` NuGet package, or an explicit complete mod directory whose DLL and manifest both report `0.4.62`.
+- A complete current Workshop RitsuLib mod directory. Its manifest and assembly must be at least the pinned compile baseline; newer Workshop releases are expected and supported.
 - An ephemeral GitHub Actions runner created with `-RunnerPurpose Smoke`.
 
 The launcher builds the candidate package, creates a hard-linked temporary game root without copying installed `mods`, stages exactly three mods, seeds a temporary settings file, redirects both Windows application-data roots, forces Steam off, and blocks outbound traffic for the temporary game executable and crash handler. A process-tree watchdog terminates either phase after five minutes. Cleanup removes firewall rules and the complete session tree.
 
 Do not invoke the game manually from the staged directory and do not point the launcher at the real Mods directory. Successful and failed artifacts are written only to the explicit output directory.
 
+Each host is tested with its own host-specific NinjaSlayer DLL and isolated game mirror. A Contract pass cannot compensate for a dependency that fails during type discovery before the mod loads.
+
 ## GitHub Operation
 
 1. Configure the `game-smoke` Environment with required approval.
 2. Dispatch **Protected real-game smoke** with a full SHA already merged to `main`.
 3. Approve the Environment.
-4. From elevated PowerShell, register one ephemeral `ninjaslayer-smoke` runner with `Start-EphemeralContractRunner.ps1`.
+4. From elevated PowerShell, register one ephemeral `ninjaslayer-smoke` runner with both game roots and the current RitsuLib Workshop directory.
 5. Review the text-only attestation or sanitized failure evidence; the runner removes itself after one job.
 
-The workflow and SmokeDriver come from protected `main`; the candidate checkout has no credentials. Smoke is not a Release requirement during the observation period. Promotion requires five consecutive successful candidate runs over at least two runner sessions and a separate change adding `verify-smoke-attestation.ps1` to Release.
+The workflow and SmokeDriver come from protected `main`; the candidate checkout has no credentials. Both stable and preview `FirstCombatRestart` attestations are required for Release and Workshop publication.
 
 ## Periodic Full AutoSlay
 

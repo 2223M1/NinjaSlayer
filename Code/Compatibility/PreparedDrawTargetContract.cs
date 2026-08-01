@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Security.Cryptography;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
@@ -9,13 +8,6 @@ namespace NinjaSlayer.Code.Compatibility;
 
 internal static class PreparedDrawTargetContract
 {
-    public const string ExpectedAssemblyVersion = "0.1.0.0";
-    public const string ExpectedModuleMvid = "a49d3537-5a42-4dcd-9877-663e394f2b44";
-    public const int ExpectedWrapperMetadataToken = 0x060087F4;
-    public const string ExpectedWrapperIlSha256 = "a73e4a4eadb503a8fe18e35e0115581208d946c40c225e4aef0beb3a7a3f529f";
-    public const int ExpectedInternalMetadataToken = 0x060087F6;
-    public const string ExpectedInternalIlSha256 = "23ae995c9d6825f8ea24e7febce122641f2660fc3bea0667cf57c3d34b80c857";
-
     public static bool TryValidate(
         out MethodInfo? target,
         out PreparedDrawTargetFingerprint fingerprint,
@@ -30,95 +22,106 @@ internal static class PreparedDrawTargetContract
             typeof(CardPileCmd),
             "DrawInternal",
             signature);
-        if (!PreparedMethodContract.TryCapture(target, out PreparedMethodFingerprint wrapper, out reason))
-        {
-            fingerprint = default;
-            return false;
-        }
-        if (!PreparedMethodContract.TryCapture(drawInternal, out PreparedMethodFingerprint inner, out reason))
+        if (!MethodBodyFingerprintCapture.TryCapture(
+                target,
+                out MethodBodyFingerprint publicMethod,
+                out reason))
         {
             fingerprint = default;
             return false;
         }
 
-        fingerprint = new PreparedDrawTargetFingerprint(wrapper, inner);
-        if (!PreparedMethodContract.Matches(
-                wrapper,
-                ExpectedAssemblyVersion,
-                ExpectedModuleMvid,
-                ExpectedWrapperMetadataToken,
-                ExpectedWrapperIlSha256))
+        if (!GameHostContractProfile.TryResolve(publicMethod, out GameHostContractProfile profile))
         {
-            reason = $"CardPileCmd.Draw wrapper fingerprint mismatch ({wrapper}).";
+            fingerprint = default;
+            reason = $"Unsupported CardPileCmd.Draw host ({publicMethod}).";
             return false;
         }
-        if (!PreparedMethodContract.Matches(
-                inner,
-                ExpectedAssemblyVersion,
-                ExpectedModuleMvid,
-                ExpectedInternalMetadataToken,
-                ExpectedInternalIlSha256))
+        if (!StableMethodBodyContract.Matches(
+                publicMethod,
+                profile,
+                profile.PreparedDraw.PublicMethod))
         {
-            reason = $"CardPileCmd.DrawInternal fingerprint mismatch ({inner}).";
+            fingerprint = default;
+            reason = $"CardPileCmd.Draw fingerprint mismatch for {profile.Id} ({publicMethod}).";
             return false;
         }
 
+        MethodInfo implementation;
+        MethodBodyFingerprint? internalMethod = null;
+        if (profile.PreparedDraw.Layout == PreparedDrawHostLayout.DirectAsync)
+        {
+            if (drawInternal is not null || profile.PreparedDraw.InternalMethod is not null)
+            {
+                fingerprint = default;
+                reason = $"CardPileCmd.Draw layout mismatch for {profile.Id}: expected direct async Draw.";
+                return false;
+            }
+
+            implementation = target!;
+        }
+        else
+        {
+            if (profile.PreparedDraw.InternalMethod is not { } expectedInternal
+                || !MethodBodyFingerprintCapture.TryCapture(
+                    drawInternal,
+                    out MethodBodyFingerprint capturedInternal,
+                    out reason))
+            {
+                fingerprint = default;
+                return false;
+            }
+            if (!StableMethodBodyContract.Matches(
+                    capturedInternal,
+                    profile,
+                    expectedInternal))
+            {
+                fingerprint = default;
+                reason = $"CardPileCmd.DrawInternal fingerprint mismatch for {profile.Id} ({capturedInternal}).";
+                return false;
+            }
+
+            implementation = drawInternal!;
+            internalMethod = capturedInternal;
+        }
+
+        if (!MethodBodyFingerprintCapture.TryCaptureAsyncMoveNext(
+                implementation,
+                out MethodBodyFingerprint moveNext,
+                out reason))
+        {
+            fingerprint = default;
+            return false;
+        }
+        if (!StableMethodBodyContract.Matches(
+                moveNext,
+                profile,
+                profile.PreparedDraw.AsyncMoveNext))
+        {
+            fingerprint = default;
+            reason = $"CardPileCmd draw MoveNext fingerprint mismatch for {profile.Id} ({moveNext}).";
+            return false;
+        }
+
+        fingerprint = new PreparedDrawTargetFingerprint(
+            profile.Id,
+            profile.PreparedDraw.Layout,
+            publicMethod,
+            internalMethod,
+            moveNext);
         reason = string.Empty;
         return true;
     }
 }
 
 internal readonly record struct PreparedDrawTargetFingerprint(
-    PreparedMethodFingerprint Wrapper,
-    PreparedMethodFingerprint Internal)
-{
-    public override string ToString() => $"wrapper=[{Wrapper}], internal=[{Internal}]";
-}
-
-internal readonly record struct PreparedMethodFingerprint(
-    string AssemblyVersion,
-    Guid ModuleMvid,
-    int MetadataToken,
-    string IlSha256)
+    string HostProfile,
+    PreparedDrawHostLayout Layout,
+    MethodBodyFingerprint PublicMethod,
+    MethodBodyFingerprint? InternalMethod,
+    MethodBodyFingerprint AsyncMoveNext)
 {
     public override string ToString() =>
-        $"assembly={AssemblyVersion}, mvid={ModuleMvid:D}, token=0x{MetadataToken:X8}, il={IlSha256}";
-}
-
-internal static class PreparedMethodContract
-{
-    public static bool TryCapture(
-        MethodInfo? method,
-        out PreparedMethodFingerprint fingerprint,
-        out string reason)
-    {
-        if (method?.GetMethodBody()?.GetILAsByteArray() is not { } il)
-        {
-            fingerprint = default;
-            reason = $"{method?.DeclaringType?.FullName ?? "Unknown"}.{method?.Name ?? "Unknown"} IL is unavailable.";
-            return false;
-        }
-
-        fingerprint = new PreparedMethodFingerprint(
-            method.Module.Assembly.GetName().Version?.ToString() ?? "unknown",
-            method.Module.ModuleVersionId,
-            method.MetadataToken,
-            Convert.ToHexString(SHA256.HashData(il)).ToLowerInvariant());
-        reason = string.Empty;
-        return true;
-    }
-
-    public static bool Matches(
-        PreparedMethodFingerprint fingerprint,
-        string assemblyVersion,
-        string moduleMvid,
-        int metadataToken,
-        string ilSha256) =>
-        StableMethodBodyContract.Matches(
-            fingerprint.AssemblyVersion,
-            fingerprint.MetadataToken,
-            fingerprint.IlSha256,
-            assemblyVersion,
-            metadataToken,
-            ilSha256);
+        $"host={HostProfile}, layout={Layout}, public=[{PublicMethod}], "
+        + $"internal=[{InternalMethod?.ToString() ?? "none"}], moveNext=[{AsyncMoveNext}]";
 }

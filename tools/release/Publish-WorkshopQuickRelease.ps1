@@ -5,6 +5,9 @@ param(
 
     [string] $ReleaseNoteFile = 'Workshop\change-note.md',
     [string] $WorkshopUploadRoot,
+    [string] $Sts2DataDir,
+    [string] $SteamModDir,
+    [string] $GodotExe,
     [switch] $Confirm
 )
 
@@ -109,22 +112,56 @@ if (-not (Test-Path -LiteralPath $uploader -PathType Leaf)) {
     throw "Workshop uploader is missing: $uploader"
 }
 
+$stableDataDirectory = if (-not [string]::IsNullOrWhiteSpace($Sts2DataDir)) {
+    [IO.Path]::GetFullPath($Sts2DataDir)
+}
+elseif (-not [string]::IsNullOrWhiteSpace($env:NINJASLAYER_STS2_STABLE_DATA_DIR)) {
+    [IO.Path]::GetFullPath($env:NINJASLAYER_STS2_STABLE_DATA_DIR)
+}
+else {
+    throw 'Stable Workshop publication requires -Sts2DataDir or NINJASLAYER_STS2_STABLE_DATA_DIR.'
+}
+$localInstallDirectory = if (-not [string]::IsNullOrWhiteSpace($SteamModDir)) {
+    [IO.Path]::GetFullPath($SteamModDir)
+}
+else {
+    Join-Path (Split-Path -Parent $stableDataDirectory) 'mods\NinjaSlayer'
+}
+
 Write-Host ''
 Write-Host "Publishing NinjaSlayer $tag to Steam Workshop only" -ForegroundColor Cyan
 Write-Host "Release note: $releaseNote"
 Write-Host 'GitHub commits, tags, pushes, pull requests, and Releases are disabled for this path.'
 Write-Host ''
 
-Invoke-Native -Command dotnet -Arguments @(
-    'msbuild',
-    '.\NinjaSlayer.csproj',
-    '-t:InstallLocal',
-    '-p:Configuration=Release',
-    "-p:NinjaSlayerVersion=$Version",
-    '-v:minimal'
-)
+[IO.Directory]::CreateDirectory($workshopDirectory) | Out-Null
+$workshopMetadata = Get-Content -LiteralPath (Join-Path $repositoryRoot 'Workshop\workshop.json') `
+    -Raw -Encoding UTF8 | ConvertFrom-Json
+$workshopMetadata.changeNote = $releaseNote
+$pendingMetadataPath = Join-Path $releaseDirectory "workshop-pending-$tag.json"
+$completedMetadataPath = Join-Path $releaseDirectory "workshop-$tag.json"
+$workshopMetadataJson = $workshopMetadata | ConvertTo-Json -Depth 10
+[IO.File]::WriteAllText(
+    $pendingMetadataPath,
+    $workshopMetadataJson,
+    [Text.UTF8Encoding]::new($false))
+Copy-Item -LiteralPath $pendingMetadataPath -Destination (Join-Path $workshopDirectory 'workshop.json') -Force
 
-$packageDirectory = Join-Path $repositoryRoot 'build\mods\NinjaSlayer'
+$channelBuildParameters = @{
+    Channel = 'stable'
+    Version = $Version
+    Sts2DataDir = $stableDataDirectory
+    Target = 'InstallLocalAndStageWorkshop'
+    SteamModDir = $localInstallDirectory
+    WorkshopContentDir = $workshopContentDirectory
+    BuildRoot = (Join-Path $repositoryRoot 'build\channel-build')
+}
+if (-not [string]::IsNullOrWhiteSpace($GodotExe)) {
+    $channelBuildParameters.GodotExe = $GodotExe
+}
+& (Join-Path $PSScriptRoot 'Invoke-NinjaSlayerChannelBuild.ps1') @channelBuildParameters
+
+$packageDirectory = Join-Path $repositoryRoot 'build\channel-build\stable\package\NinjaSlayer'
 $requiredArtifacts = @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'SHA256SUMS')
 foreach ($artifact in $requiredArtifacts) {
     if (-not (Test-Path -LiteralPath (Join-Path $packageDirectory $artifact) -PathType Leaf)) {
@@ -149,30 +186,6 @@ foreach ($line in Get-Content -LiteralPath (Join-Path $packageDirectory 'SHA256S
         throw "Package checksum mismatch for $($Matches[2])."
     }
 }
-
-[IO.Directory]::CreateDirectory($workshopDirectory) | Out-Null
-$workshopMetadata = Get-Content -LiteralPath (Join-Path $repositoryRoot 'Workshop\workshop.json') `
-    -Raw -Encoding UTF8 | ConvertFrom-Json
-$workshopMetadata.changeNote = $releaseNote
-$pendingMetadataPath = Join-Path $releaseDirectory "workshop-pending-$tag.json"
-$completedMetadataPath = Join-Path $releaseDirectory "workshop-$tag.json"
-$workshopMetadataJson = $workshopMetadata | ConvertTo-Json -Depth 10
-[IO.File]::WriteAllText(
-    $pendingMetadataPath,
-    $workshopMetadataJson,
-    [Text.UTF8Encoding]::new($false))
-Copy-Item -LiteralPath $pendingMetadataPath -Destination (Join-Path $workshopDirectory 'workshop.json') -Force
-
-Invoke-Native -Command dotnet -Arguments @(
-    'msbuild',
-    '.\NinjaSlayer.csproj',
-    '-t:StageWorkshop',
-    '-p:Configuration=Release',
-    "-p:NinjaSlayerVersion=$Version",
-    "-p:WorkshopUploadRoot=$WorkshopUploadRoot",
-    "-p:WorkshopContentDir=$workshopContentDirectory",
-    '-v:minimal'
-)
 
 Push-Location $WorkshopUploadRoot
 try {

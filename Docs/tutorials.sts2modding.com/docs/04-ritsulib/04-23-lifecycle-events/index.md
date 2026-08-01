@@ -304,8 +304,3 @@ RitsuLib 框架初始化完成
 `ProfileDataInvalidatedEvent`
 删档等导致 mod 数据上下文失效
 `ProfileId`、`Reason`
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-23-lifecycle-events/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

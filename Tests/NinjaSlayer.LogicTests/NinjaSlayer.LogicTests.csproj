@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\eng\NinjaSlayer.Compatibility.g.props" />
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -18,9 +19,12 @@
   <ItemGroup>
     <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
     <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityRegistry.cs" Link="NinjaSlayerCapabilityRegistry.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.cs" Link="GameHostContractProfile.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.g.cs" Link="GameHostContractProfile.g.cs" />
     <Compile Include="..\..\Code\Compatibility\StableMethodBodyContract.cs" Link="StableMethodBodyContract.cs" />
     <Compile Include="..\..\Code\Diagnostics\NinjaSlayerRuntimeHealthModel.cs" Link="NinjaSlayerRuntimeHealthModel.cs" />
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
+    <Compile Include="..\..\Code\Combat\BlackFlameDamageReceiverSet.cs" Link="BlackFlameDamageReceiverSet.cs" />
     <Compile Include="..\..\Code\Combat\BossDismembermentMath.cs" Link="BossDismembermentMath.cs" />
     <Compile Include="..\..\Code\Combat\BossFountainLaunchProfile.cs" Link="BossFountainLaunchProfile.cs" />
     <Compile Include="..\..\Code\Combat\SoftBodyMaterialProfile.cs" Link="SoftBodyMaterialProfile.cs" />
@@ -41,6 +45,7 @@
     <Compile Include="..\..\Code\Combat\BossBurstTimeline.cs" Link="BossBurstTimeline.cs" />
     <Compile Include="..\..\Code\Combat\BossBurstCompressionLayout.cs" Link="BossBurstCompressionLayout.cs" />
     <Compile Include="..\..\Code\Combat\BossBurstPresentationPolicy.cs" Link="BossBurstPresentationPolicy.cs" />
+    <Compile Include="..\..\Code\Combat\CinematicCameraContainment.cs" Link="CinematicCameraContainment.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
     <Compile Include="..\..\Code\Combat\FacingScaleMath.cs" Link="FacingScaleMath.cs" />

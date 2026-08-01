@@ -45,6 +45,17 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         StartBackdropDarkening();
     }
 
+    private async Task PrepareReverseImpactLead()
+    {
+        if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+        {
+            return;
+        }
+
+        StartFinalZoom();
+        await Task.WhenAll(_cameraTransitionTask, _backdropTransitionTask);
+    }
+
     private void StartBackdropDarkening()
     {
         if (FinisherPresentationSettings.Mode != FinisherPresentationMode.Enhanced
@@ -585,10 +596,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             float cameraProgress = CombatCinematicCameraLease.EaseOutCubic(cameraLinearProgress);
             float actorProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f));
             ApplyDeathKickRecovery(cameraLinearProgress);
-            if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
-            {
-                _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
-            }
+            _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
             _camera.SetTransform(
                 cameraFrom.Lerp(_camera.BaselinePosition, cameraProgress),
                 Mathf.Lerp(scaleFrom, _camera.BaselineScale.X, cameraProgress));

@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using STS2RitsuLib.Interop.AutoRegistration;
 using NinjaSlayer.Content;
@@ -72,7 +73,7 @@ public sealed class NarakuPower : NinjaSlayerPowerTemplate
 
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies);
 
-        await CreatureCmd.Damage(
+        await GameCompatibility.Damage.Deal(
             choiceContext,
             enemies,
             DynamicVars.HpLoss.BaseValue,

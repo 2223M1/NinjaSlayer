@@ -32,9 +32,3 @@
 - tags无法在工坊改，先看有哪些常用tag。（常用：`Characters`,`QoL`, `Cards`, `Relics`, `schinese`(简体中文), `English`等）
 - 不要忘了更改可见性。
 - json里所有的设置都会覆盖工坊的内容，除非你不写或者删除。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/11-upload-workshop/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

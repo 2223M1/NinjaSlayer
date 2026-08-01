@@ -122,8 +122,3 @@ public sealed class TestIntent : AbstractIntent, IIntentExtraCornerAmountLabelsP
 }
 ```
 意图图标会随战斗 UI 刷新重新读取；如果你的意图角标只在某个外部状态变化时刷新，可以实现 `IIntentExtraCornerAmountLabelsChangeSource` 并触发 `IntentExtraCornerAmountLabelsInvalidated`。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-22-1-extra-badge/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

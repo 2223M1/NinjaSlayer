@@ -75,8 +75,3 @@ alpha_curve = SubResource("CurveTexture_kk5o2")     ; 透明度淡出曲线
 // 实例化后手动触发
 VFXUtil.PlaySimple("res://YourMod/scenes/vfx/burst.tscn", _targetPosition);
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-04-particle-vfx/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

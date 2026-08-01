@@ -51,9 +51,3 @@
 - 角色的衣物不应该穿着的太多（字面意思，别想歪了）。因为后续需要对原画进行拆解绑定制作动画。而衣服与头发需要使用物理模拟，过多的毛发与过长的衣物会消耗大量精力进行调试。
 - 所以说设计角色可以搞一些紧身衣或者是机甲风格
 - 绘画过程中不要太专注于绘制光影，塔2的游戏内很少有强烈的光影关系，明暗对比强烈反倒会产生违和感。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/06-style-art-drawing/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

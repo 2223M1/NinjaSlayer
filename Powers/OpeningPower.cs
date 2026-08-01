@@ -9,19 +9,18 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class OpeningPower : NinjaSlayerPowerTemplate
+public sealed partial class OpeningPower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Debuff;
 
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageMultiplicative(
+    private decimal ModifyDamageMultiplicativeCore(
         Creature? target,
         decimal amount,
         ValueProp props,
         Creature? dealer,
-        CardModel? cardSource,
-        CardPlay? cardPlay)
+        CardModel? cardSource)
     {
         if (Amount <= 0
             || target != Owner

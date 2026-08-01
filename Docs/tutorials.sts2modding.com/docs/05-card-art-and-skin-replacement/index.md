@@ -50,9 +50,3 @@ public static class CardModel_GetPortrait_Patch
 - 创建一个继承`NCreatureVisuals`的类，把它挂载到你新建的`Node2D`场景中。参考`添加新人物`的`自定义人物背景`这一节。现在不需要脚本了
 - 该场景需要有唯一化命名（%）的`Visuals(Node2D)`，`Bounds(Control)`，`IntentPos(Marker2D)`，`CenterPos(Marker2D)`。
 - 如果想使用3d模型，新建`subviewportcontainer→subviewport`的层级结构，然后在`subviewport`中添加`camera3d`和任意3d模型，在3d视图中调整视角至2d视图正常显示。最后设置`subviewport`的`transparent`为`true`。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/05-card-art-and-skin-replacement/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

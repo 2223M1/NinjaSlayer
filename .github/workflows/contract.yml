@@ -17,10 +17,10 @@ jobs:
     environment: game-contract
     timeout-minutes: 30
     steps:
-      - name: Checkout trusted harness from protected main
+      - name: Checkout trusted harness at workflow SHA
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
           path: trusted
           persist-credentials: false
@@ -31,15 +31,21 @@ jobs:
         shell: powershell
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
         run: |
           if ($env:CANDIDATE_SHA -notmatch '^[0-9a-fA-F]{40}$') { throw 'candidate_sha must be a full SHA.' }
+          $candidateSha = $env:CANDIDATE_SHA.ToLowerInvariant()
+          $workflowSha = $env:WORKFLOW_SHA.ToLowerInvariant()
+          if ($candidateSha -cne $workflowSha) {
+            throw "candidate_sha $candidateSha must match the workflow SHA $workflowSha."
+          }
           git -C trusted remote set-url origin "https://github.com/${{ github.repository }}.git"
           git -C trusted fetch origin main --no-tags
-          git -C trusted cat-file -e "$env:CANDIDATE_SHA^{commit}"
+          git -C trusted cat-file -e "$candidateSha^{commit}"
           if ($LASTEXITCODE -ne 0) { throw 'Candidate commit is not present in the canonical repository.' }
-          git -C trusted merge-base --is-ancestor $env:CANDIDATE_SHA origin/main
+          git -C trusted merge-base --is-ancestor $candidateSha origin/main
           if ($LASTEXITCODE -ne 0) { throw 'Candidate must already be an ancestor of canonical main.' }
-          "sha=$($env:CANDIDATE_SHA.ToLowerInvariant())" | Out-File $env:GITHUB_OUTPUT -Append
+          "sha=$candidateSha" | Out-File $env:GITHUB_OUTPUT -Append
 
       - name: Checkout candidate sources without credentials
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -55,14 +61,17 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Validate isolated runner inputs
+      - name: Validate isolated dual-host inputs
         shell: powershell
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:STS2_DATA_DIR)) {
-            throw 'The ephemeral runner did not provide STS2_DATA_DIR.'
+          . .\trusted\.github\scripts\compatibility.ps1
+          . .\trusted\.github\scripts\process-network-isolation.ps1
+          if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+              [Security.Principal.WindowsBuiltInRole]::Administrator)) {
+            throw 'The Contract runner must be elevated for process firewall isolation.'
           }
-          if ([string]::IsNullOrWhiteSpace($env:GODOT_EXE) -or -not (Test-Path -LiteralPath $env:GODOT_EXE -PathType Leaf)) {
-            throw 'The ephemeral runner did not provide a valid GODOT_EXE.'
+          if ([string]::IsNullOrWhiteSpace($env:GODOT_EXE)) {
+            throw 'The ephemeral runner did not provide GODOT_EXE.'
           }
           if ([string]::IsNullOrWhiteSpace($env:NINJASLAYER_CONTRACT_DOTNET_ROOT)) {
             throw 'The ephemeral runner did not provide an isolated .NET 9 runtime.'
@@ -73,85 +82,274 @@ jobs:
               $contractHostFxrs.Count -ne 1 -or $contractHostFxrs[0].Name -notmatch '^9\.') {
             throw 'The isolated Contract runtime must contain only one .NET 9 runtime and hostfxr.'
           }
+
           $workspace = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
-          $referenceDirectory = [IO.Path]::GetFullPath($env:STS2_DATA_DIR)
+          $godot = Resolve-NinjaSlayerProtectedExecutable `
+            -Path $env:GODOT_EXE `
+            -ForbiddenRoot $workspace
+          $dotnetCommand = Get-Command dotnet -CommandType Application -ErrorAction Stop
+          $dotnet = Resolve-NinjaSlayerProtectedExecutable `
+            -Path $dotnetCommand.Source `
+            -ForbiddenRoot $workspace
           $contractDotnetRoot = [IO.Path]::GetFullPath($env:NINJASLAYER_CONTRACT_DOTNET_ROOT)
-          if ($referenceDirectory.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
-            throw 'Private references must be mounted outside the repository workspace.'
-          }
           if ($contractDotnetRoot.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
             throw 'The isolated .NET runtime must be mounted outside the repository workspace.'
           }
-          foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll')) {
-            $file = Get-Item -LiteralPath (Join-Path $referenceDirectory $fileName) -ErrorAction Stop
-            if (-not $file.IsReadOnly) {
-              throw "$fileName must be mounted read-only by the ephemeral runner."
+          "GODOT_EXE=$godot" | Out-File $env:GITHUB_ENV -Append
+          "NINJASLAYER_CONTRACT_DOTNET_EXE=$dotnet" | Out-File $env:GITHUB_ENV -Append
+
+          $compatibilityPath = Join-Path $env:GITHUB_WORKSPACE 'candidate\eng\compatibility.json'
+          $trustedCompatibilityPath = Join-Path $env:GITHUB_WORKSPACE 'trusted\eng\compatibility.json'
+          if ((Get-NinjaSlayerCompatibilitySha256 -Path $compatibilityPath) -ne
+              (Get-NinjaSlayerCompatibilitySha256 -Path $trustedCompatibilityPath)) {
+            throw 'Candidate compatibility.json must match the protected main harness.'
+          }
+          $compatibility = Read-NinjaSlayerCompatibility -Path $compatibilityPath
+          $roots = @{
+            stable = $env:NINJASLAYER_STS2_STABLE_DATA_DIR
+            preview = $env:NINJASLAYER_STS2_PREVIEW_DATA_DIR
+          }
+          $hosts = foreach ($channelName in @($compatibility.channels.PSObject.Properties.Name)) {
+            $profile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
+            $dataDirectory = $roots[$channelName]
+            if ([string]::IsNullOrWhiteSpace($dataDirectory)) {
+              throw "The ephemeral runner did not provide references for $channelName."
+            }
+            $referenceDirectory = [IO.Path]::GetFullPath($dataDirectory)
+            if ($referenceDirectory.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "Private $channelName references must remain outside the repository workspace."
+            }
+            foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll') + @($profile.runtimeAssemblies)) {
+              $file = Get-Item -LiteralPath (Join-Path $referenceDirectory $fileName) -ErrorAction Stop
+              if (-not $file.IsReadOnly) { throw "$channelName/$fileName must be mounted read-only." }
+            }
+            $actualMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $referenceDirectory 'sts2.dll')
+            if ($actualMvid -ne [string]$profile.hostContract.moduleMvid) {
+              throw "$channelName sts2.dll MVID does not match compatibility.json."
+            }
+            [ordered]@{
+              channel = $channelName
+              gameApiVersion = [string]$profile.gameApiVersion
+              ritsuLibPackageId = [string]$profile.ritsuLibPackageId
+              ritsuLibVersion = [string]$compatibility.ritsuLibVersion
+              runtimeAssemblies = @($profile.runtimeAssemblies | ForEach-Object { [string]$_ })
+              dataDirectory = $referenceDirectory
             }
           }
+          "CONTRACT_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress -Depth 5)" | Out-File $env:GITHUB_ENV -Append
+          "COMPATIBILITY_MANIFEST_SHA256=$(Get-NinjaSlayerCompatibilitySha256 -Path $compatibilityPath)" | Out-File $env:GITHUB_ENV -Append
           "NUGET_PACKAGES=$env:RUNNER_TEMP\private-contract-nuget" | Out-File $env:GITHUB_ENV -Append
 
       - name: Restore trusted projects before isolation
         shell: powershell
         run: |
-          dotnet restore trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj `
-            -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
-            -p:Sts2DataDir="$env:STS2_DATA_DIR"
-          dotnet restore trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj `
-            -p:Sts2DataDir="$env:STS2_DATA_DIR"
+          foreach ($hostContract in @($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)) {
+            $channel = [string]$hostContract.channel
+            dotnet restore trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj --force-evaluate `
+              -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
+              -p:Sts2DataDir="$($hostContract.dataDirectory)" `
+              -p:NinjaSlayerHostChannel=$channel `
+              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\private\"
+            if ($LASTEXITCODE -ne 0) { throw "Private restore failed for $channel." }
+
+            dotnet restore trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj --force-evaluate `
+              -p:Sts2DataDir="$($hostContract.dataDirectory)" `
+              -p:NinjaSlayerHostChannel=$channel `
+              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\runner\"
+            if ($LASTEXITCODE -ne 0) { throw "Contract restore failed for $channel." }
+          }
+
+      - name: Prepare trusted network isolation probe
+        shell: powershell
+        run: |
+          $probeProject = 'trusted/Tests/NinjaSlayer.NetworkIsolationProbe/NinjaSlayer.NetworkIsolationProbe.csproj'
+          $probeOutput = Join-Path $env:RUNNER_TEMP 'contract-network-probe'
+          dotnet restore $probeProject --force-evaluate `
+            -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\network-probe\"
+          if ($LASTEXITCODE -ne 0) { throw 'Network isolation probe restore failed.' }
+          dotnet build $probeProject --no-restore -c Release -v:minimal -o $probeOutput `
+            -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\network-probe\"
+          if ($LASTEXITCODE -ne 0) { throw 'Network isolation probe build failed.' }
+
+          $probeAddress = $null
+          $probePort = 443
+          foreach ($candidateAddress in @([Net.Dns]::GetHostAddresses('api.github.com') |
+              Where-Object AddressFamily -eq ([Net.Sockets.AddressFamily]::InterNetwork))) {
+            $client = [Net.Sockets.TcpClient]::new($candidateAddress.AddressFamily)
+            try {
+              $connection = $client.ConnectAsync($candidateAddress, $probePort)
+              if ($connection.Wait(5000) -and $client.Connected) {
+                $probeAddress = $candidateAddress.ToString()
+                break
+              }
+            }
+            catch {
+              # Try the next resolved GitHub address.
+            }
+            finally {
+              $client.Dispose()
+            }
+          }
+          if ([string]::IsNullOrWhiteSpace($probeAddress)) {
+            throw 'No reachable non-loopback TCP endpoint was available for the firewall probe.'
+          }
+          $probeDll = Join-Path $probeOutput 'NinjaSlayer.NetworkIsolationProbe.dll'
+          if (-not (Test-Path -LiteralPath $probeDll -PathType Leaf)) {
+            throw 'The trusted network isolation probe DLL was not produced.'
+          }
+          "NINJASLAYER_CONTRACT_NETWORK_PROBE_ADDRESS=$probeAddress" | Out-File $env:GITHUB_ENV -Append
+          "NINJASLAYER_CONTRACT_NETWORK_PROBE_PORT=$probePort" | Out-File $env:GITHUB_ENV -Append
+          "NINJASLAYER_CONTRACT_NETWORK_PROBE_DLL=$probeDll" | Out-File $env:GITHUB_ENV -Append
 
       - name: Compile candidate and run trusted contracts without network
         shell: powershell
         run: |
-          $dotnet = (Get-Command dotnet).Source
-          $rule = "NinjaSlayer-Contract-$env:GITHUB_RUN_ID"
+          . .\trusted\.github\scripts\process-network-isolation.ps1
+          $dotnet = $env:NINJASLAYER_CONTRACT_DOTNET_EXE
+          $godot = $env:GODOT_EXE
+          $programs = @($dotnet, $godot)
+          $forbiddenRoots = @($env:GITHUB_WORKSPACE)
+          $cleanupProbeObserved = $false
           try {
-            New-NetFirewallRule -DisplayName $rule -Direction Outbound -Action Block -Program $dotnet | Out-Null
+            Invoke-NinjaSlayerProcessNetworkIsolation `
+              -ProgramPath $programs `
+              -RemoteScope NonLoopback `
+              -RulePrefix "NinjaSlayer-Contract-Cleanup-$env:GITHUB_RUN_ID" `
+              -ForbiddenRoot $forbiddenRoots `
+              -Action { throw 'NinjaSlayer expected firewall cleanup probe.' }
+          }
+          catch {
+            if ($_.Exception.Message -cne 'NinjaSlayer expected firewall cleanup probe.') { throw }
+            $cleanupProbeObserved = $true
+          }
+          if (-not $cleanupProbeObserved) { throw 'The firewall cleanup probe did not execute.' }
+
+          Invoke-NinjaSlayerProcessNetworkIsolation `
+            -ProgramPath $programs `
+            -RemoteScope NonLoopback `
+            -RulePrefix "NinjaSlayer-Contract-$env:GITHUB_RUN_ID" `
+            -ForbiddenRoot $forbiddenRoots `
+            -Action {
+            $previousHttpProxy = $env:HTTP_PROXY
+            $previousHttpsProxy = $env:HTTPS_PROXY
+            $previousAllProxy = $env:ALL_PROXY
+            $previousNoProxy = $env:NO_PROXY
             $env:HTTP_PROXY = 'http://127.0.0.1:9'
             $env:HTTPS_PROXY = 'http://127.0.0.1:9'
-            dotnet build trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj --no-restore -v:minimal `
-              -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
-              -p:Sts2DataDir="$env:STS2_DATA_DIR" `
-              -p:BaseOutputPath="$env:RUNNER_TEMP\private-contract-output\"
-            if ($LASTEXITCODE -ne 0) { throw 'Sanitized candidate compile failed.' }
-            dotnet build trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj `
-              --no-restore -c Debug -v:minimal -p:Sts2DataDir="$env:STS2_DATA_DIR"
-            if ($LASTEXITCODE -ne 0) { throw 'RitsuLib contract runner failed to build.' }
+            $env:ALL_PROXY = 'http://127.0.0.1:9'
+            $env:NO_PROXY = '127.0.0.1,localhost,::1'
             $previousDotnetRoot = $env:DOTNET_ROOT
+            $previousMultilevelLookup = $env:DOTNET_MULTILEVEL_LOOKUP
+            $previousSuccessMarker = $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER
+            $previousIsolationRequirement = $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION
             try {
               $env:DOTNET_ROOT = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
-              & $env:GODOT_EXE --headless --path trusted/Tests/NinjaSlayer.RitsuLibContractTests
-              if ($LASTEXITCODE -ne 0) { throw 'RitsuLib contract runner failed.' }
+              $env:DOTNET_MULTILEVEL_LOOKUP = '0'
+              $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = '1'
+              & $dotnet `
+                $env:NINJASLAYER_CONTRACT_NETWORK_PROBE_DLL `
+                $env:NINJASLAYER_CONTRACT_NETWORK_PROBE_ADDRESS `
+                $env:NINJASLAYER_CONTRACT_NETWORK_PROBE_PORT
+              if ($LASTEXITCODE -ne 0) { throw 'dotnet.exe retained non-loopback network access.' }
+
+              foreach ($hostContract in @($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)) {
+                $channel = [string]$hostContract.channel
+                $godotOutput = Join-Path $env:GITHUB_WORKSPACE `
+                  'trusted\Tests\NinjaSlayer.RitsuLibContractTests\.godot\mono\temp\bin'
+                Remove-Item -LiteralPath $godotOutput -Recurse -Force -ErrorAction SilentlyContinue
+                & $dotnet build trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj --no-restore -v:minimal `
+                  -c Release `
+                  -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
+                  -p:Sts2DataDir="$($hostContract.dataDirectory)" `
+                  -p:NinjaSlayerHostChannel=$channel `
+                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\private\" `
+                  -p:BaseOutputPath="$env:RUNNER_TEMP\private-contract-output\$channel\"
+                if ($LASTEXITCODE -ne 0) { throw "Sanitized candidate compile failed for $channel." }
+
+                & $dotnet build trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj `
+                  --no-restore -c Debug -v:minimal `
+                  -p:Sts2DataDir="$($hostContract.dataDirectory)" `
+                  -p:NinjaSlayerHostChannel=$channel `
+                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\runner\"
+                if ($LASTEXITCODE -ne 0) { throw "RitsuLib Contract runner failed to build for $channel." }
+
+                $contractOutput = Join-Path $godotOutput 'Debug'
+                $depsPath = Get-ChildItem -LiteralPath $contractOutput -Filter '*.deps.json' -File |
+                  Select-Object -First 1 -ExpandProperty FullName
+                if ([string]::IsNullOrWhiteSpace($depsPath)) {
+                  throw "RitsuLib Contract runner did not produce a deps file for $channel."
+                }
+                $depsText = Get-Content -LiteralPath $depsPath -Raw -Encoding utf8
+                foreach ($fileName in @($hostContract.runtimeAssemblies)) {
+                  if (-not (Test-Path -LiteralPath (Join-Path $contractOutput $fileName) -PathType Leaf)) {
+                    throw "$channel Contract output is missing runtime assembly $fileName."
+                  }
+                  if (-not $depsText.Contains(('"' + [string]$fileName + '"'), [StringComparison]::Ordinal)) {
+                    throw "$channel Contract deps file is missing runtime assembly $fileName."
+                  }
+                }
+
+                $marker = Join-Path $env:RUNNER_TEMP "contract-markers\$channel.passed"
+                Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
+                $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $marker
+                & $godot --headless --path trusted/Tests/NinjaSlayer.RitsuLibContractTests
+                $godotExitCode = $LASTEXITCODE
+                for ($attempt = 0; $attempt -lt 50 -and -not (Test-Path -LiteralPath $marker -PathType Leaf); $attempt++) {
+                  Start-Sleep -Milliseconds 100
+                }
+                if ($godotExitCode -ne 0 -or -not (Test-Path -LiteralPath $marker -PathType Leaf)) {
+                  throw "RitsuLib Contract runner failed for $channel."
+                }
+              }
             }
             finally {
               $env:DOTNET_ROOT = $previousDotnetRoot
+              $env:DOTNET_MULTILEVEL_LOOKUP = $previousMultilevelLookup
+              $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $previousSuccessMarker
+              $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = $previousIsolationRequirement
+              $env:HTTP_PROXY = $previousHttpProxy
+              $env:HTTPS_PROXY = $previousHttpsProxy
+              $env:ALL_PROXY = $previousAllProxy
+              $env:NO_PROXY = $previousNoProxy
             }
           }
-          finally {
-            Remove-NetFirewallRule -DisplayName $rule -ErrorAction SilentlyContinue
-          }
 
-      - name: Create allowlisted contract attestation
+      - name: Create dual-host contract attestation
         shell: powershell
         run: |
-          $gameName = [Reflection.AssemblyName]::GetAssemblyName((Join-Path $env:STS2_DATA_DIR 'sts2.dll'))
-          $attestation = [ordered]@{
-            schemaVersion = 1
-            candidateSha = '${{ steps.candidate.outputs.sha }}'
-            repository = '${{ github.repository }}'
-            gameAssemblyVersion = $gameName.Version.ToString()
-            ritsuLibVersion = '0.4.62'
-            result = 'passed'
-            runId = '${{ github.run_id }}'
+          . .\trusted\.github\scripts\compatibility.ps1
+          $root = Join-Path $env:RUNNER_TEMP 'contract-attestation'
+          foreach ($hostContract in @($env:CONTRACT_HOSTS_JSON | ConvertFrom-Json)) {
+            $channel = [string]$hostContract.channel
+            $assemblyPath = Join-Path $hostContract.dataDirectory 'sts2.dll'
+            $gameName = [Reflection.AssemblyName]::GetAssemblyName($assemblyPath)
+            $channelDirectory = Join-Path $root $channel
+            New-Item -ItemType Directory -Path $channelDirectory -Force | Out-Null
+            [ordered]@{
+              schemaVersion = 4
+              candidateSha = '${{ steps.candidate.outputs.sha }}'
+              repository = '${{ github.repository }}'
+              channel = $channel
+              gameApiVersion = [string]$hostContract.gameApiVersion
+              gameAssemblyVersion = $gameName.Version.ToString()
+              gameModuleMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath $assemblyPath
+              ritsuLibPackageId = [string]$hostContract.ritsuLibPackageId
+              ritsuLibVersion = [string]$hostContract.ritsuLibVersion
+              compatibilityManifestSha256 = $env:COMPATIBILITY_MANIFEST_SHA256
+              mode = 'contract'
+              result = 'passed'
+              workflowRunId = '${{ github.run_id }}'
+              verifiedContracts = @('prepared-lifecycle-publishers')
+            } | ConvertTo-Json | Set-Content `
+              -LiteralPath (Join-Path $channelDirectory 'attestation.json') `
+              -Encoding utf8
           }
-          $directory = Join-Path $env:RUNNER_TEMP 'contract-attestation'
-          New-Item -ItemType Directory -Path $directory -Force | Out-Null
-          $attestation | ConvertTo-Json | Set-Content (Join-Path $directory 'attestation.json') -Encoding utf8
 
       - name: Upload text-only attestation
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: private-contract-${{ steps.candidate.outputs.sha }}
-          path: ${{ runner.temp }}/contract-attestation/attestation.json
+          path: ${{ runner.temp }}/contract-attestation
           if-no-files-found: error
           retention-days: 30
 
@@ -160,5 +358,6 @@ jobs:
         shell: powershell
         run: |
           Remove-Item "$env:RUNNER_TEMP\private-contract-*" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "$env:RUNNER_TEMP\contract-*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item candidate -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item trusted -Recurse -Force -ErrorAction SilentlyContinue

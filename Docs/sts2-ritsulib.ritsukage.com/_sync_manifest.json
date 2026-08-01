@@ -1,0 +1,201 @@
+{
+  "source": "https://sts2-ritsulib.ritsukage.com/",
+  "sourceRepository": "https://github.com/BAKAOLC/STS2-RitsuLib",
+  "sourceMode": "repository-markdown",
+  "syncedAt": "2026-07-31T16:00:47+08:00",
+  "pageCount": 27,
+  "pages": [
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/",
+      "route": "",
+      "title": "RitsuLib",
+      "path": "sts2-ritsulib.ritsukage.com/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/index.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/",
+      "route": "guide/",
+      "title": "文档 / Documentation",
+      "path": "sts2-ritsulib.ritsukage.com/guide/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/index.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/asset-profiles-and-fallbacks/",
+      "route": "guide/asset-profiles-and-fallbacks/",
+      "title": "资源配置与回退 / Asset Profiles And Fallbacks",
+      "path": "sts2-ritsulib.ritsukage.com/guide/asset-profiles-and-fallbacks/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/asset-profiles-and-fallbacks.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/card-dynamic-var-toolkit/",
+      "route": "guide/card-dynamic-var-toolkit/",
+      "title": "卡牌动态变量 / Card Dynamic Variables",
+      "path": "sts2-ritsulib.ritsukage.com/guide/card-dynamic-var-toolkit/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/card-dynamic-var-toolkit.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/character-and-unlock-scaffolding/",
+      "route": "guide/character-and-unlock-scaffolding/",
+      "title": "角色与解锁脚手架 / Character And Unlock Scaffolding",
+      "path": "sts2-ritsulib.ritsukage.com/guide/character-and-unlock-scaffolding/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/character-and-unlock-scaffolding.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/content-authoring-toolkit/",
+      "route": "guide/content-authoring-toolkit/",
+      "title": "内容编写 / Content Authoring",
+      "path": "sts2-ritsulib.ritsukage.com/guide/content-authoring-toolkit/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/content-authoring-toolkit.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/content-packs-and-registries/",
+      "route": "guide/content-packs-and-registries/",
+      "title": "内容包与注册器 / Content Packs And Registries",
+      "path": "sts2-ritsulib.ritsukage.com/guide/content-packs-and-registries/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/content-packs-and-registries.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/creature-visuals-and-animation/",
+      "route": "guide/creature-visuals-and-animation/",
+      "title": "生物视觉与动画 / Creature Visuals And Animation",
+      "path": "sts2-ritsulib.ritsukage.com/guide/creature-visuals-and-animation/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/creature-visuals-and-animation.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/custom-events/",
+      "route": "guide/custom-events/",
+      "title": "自定义事件 / Custom Events",
+      "path": "sts2-ritsulib.ritsukage.com/guide/custom-events/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/custom-events.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/debug-log-viewer/",
+      "route": "guide/debug-log-viewer/",
+      "title": "调试日志查看器 / Debug Log Viewer",
+      "path": "sts2-ritsulib.ritsukage.com/guide/debug-log-viewer/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/debug-log-viewer.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/diagnostics-and-compatibility/",
+      "route": "guide/diagnostics-and-compatibility/",
+      "title": "诊断与兼容 / Diagnostics And Compatibility",
+      "path": "sts2-ritsulib.ritsukage.com/guide/diagnostics-and-compatibility/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/diagnostics-and-compatibility.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/fmod-and-audio/",
+      "route": "guide/fmod-and-audio/",
+      "title": "FMOD 与音频 / FMOD And Audio",
+      "path": "sts2-ritsulib.ritsukage.com/guide/fmod-and-audio/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/fmod-and-audio.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/framework-design/",
+      "route": "guide/framework-design/",
+      "title": "框架组织方式 / How RitsuLib Is Organized",
+      "path": "sts2-ritsulib.ritsukage.com/guide/framework-design/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/framework-design.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/getting-started/",
+      "route": "guide/getting-started/",
+      "title": "快速入门 / Getting Started",
+      "path": "sts2-ritsulib.ritsukage.com/guide/getting-started/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/getting-started.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/godot-scene-authoring/",
+      "route": "guide/godot-scene-authoring/",
+      "title": "Godot 场景编写 / Godot Scene Authoring",
+      "path": "sts2-ritsulib.ritsukage.com/guide/godot-scene-authoring/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/godot-scene-authoring.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/lifecycle-events/",
+      "route": "guide/lifecycle-events/",
+      "title": "生命周期事件 / Lifecycle Events",
+      "path": "sts2-ritsulib.ritsukage.com/guide/lifecycle-events/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/lifecycle-events.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/loc-string-placeholder-resolution/",
+      "route": "guide/loc-string-placeholder-resolution/",
+      "title": "LocString 占位符 / LocString Placeholders",
+      "path": "sts2-ritsulib.ritsukage.com/guide/loc-string-placeholder-resolution/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/loc-string-placeholder-resolution.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/localization-and-keywords/",
+      "route": "guide/localization-and-keywords/",
+      "title": "本地化与关键词 / Localization And Keywords",
+      "path": "sts2-ritsulib.ritsukage.com/guide/localization-and-keywords/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/localization-and-keywords.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/mod-settings/",
+      "route": "guide/mod-settings/",
+      "title": "Mod 设置 / Mod Settings",
+      "path": "sts2-ritsulib.ritsukage.com/guide/mod-settings/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/mod-settings.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/patching-guide/",
+      "route": "guide/patching-guide/",
+      "title": "补丁系统 / Patching",
+      "path": "sts2-ritsulib.ritsukage.com/guide/patching-guide/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/patching-guide.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/persistence-guide/",
+      "route": "guide/persistence-guide/",
+      "title": "持久化 / Persistence",
+      "path": "sts2-ritsulib.ritsukage.com/guide/persistence-guide/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/persistence-guide.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/secondary-resources/",
+      "route": "guide/secondary-resources/",
+      "title": "次级资源 / Secondary Resources",
+      "path": "sts2-ritsulib.ritsukage.com/guide/secondary-resources/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/secondary-resources.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/shell-theme/",
+      "route": "guide/shell-theme/",
+      "title": "运行时 UI 与 Shell 主题 / Runtime UI And Shell Theme",
+      "path": "sts2-ritsulib.ritsukage.com/guide/shell-theme/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/shell-theme.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/telemetry-backend/",
+      "route": "guide/telemetry-backend/",
+      "title": "遥测后端 / Telemetry backend",
+      "path": "sts2-ritsulib.ritsukage.com/guide/telemetry-backend/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/telemetry-backend.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/terminology/",
+      "route": "guide/terminology/",
+      "title": "术语 / Terminology",
+      "path": "sts2-ritsulib.ritsukage.com/guide/terminology/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/terminology.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/timeline-and-unlocks/",
+      "route": "guide/timeline-and-unlocks/",
+      "title": "时间线与解锁 / Timeline And Unlocks",
+      "path": "sts2-ritsulib.ritsukage.com/guide/timeline-and-unlocks/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/timeline-and-unlocks.md"
+    },
+    {
+      "url": "https://sts2-ritsulib.ritsukage.com/guide/update-checks/",
+      "route": "guide/update-checks/",
+      "title": "更新检查 / Update Checks",
+      "path": "sts2-ritsulib.ritsukage.com/guide/update-checks/index.md",
+      "sourceUrl": "https://github.com/BAKAOLC/STS2-RitsuLib/blob/94e3d6b62067960b1865a860952ecd13f75234e7/docs/pages/guide/update-checks.md"
+    }
+  ],
+  "failureCount": 0,
+  "failures": [],
+  "sourceRevision": "94e3d6b62067960b1865a860952ecd13f75234e7"
+}

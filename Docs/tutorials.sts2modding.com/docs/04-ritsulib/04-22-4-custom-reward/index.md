@@ -195,9 +195,3 @@ Payload 中只能放 JSON 可序列化的数据（`int`、`string`、`record str
 所以确保你的 `OnSelect()` 中执行的逻辑：
 - 严格确定：用 `RunState.Rng` 等所有客户端共享的随机序列，或所有计算因子两边完全对等。
 - 走原版同步：直接派发已被开发组封装好的网络指令，例如 `PlayerCmd.GainGold`、`PlayerCmd.GainRelic` 等。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-22-4-custom-reward/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

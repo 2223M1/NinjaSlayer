@@ -86,8 +86,3 @@ protected static bool IsTypeSupported(Type t) =>
     SupportedTypes.Contains(t) || t.IsEnum || (t.IsArray && t.GetElementType()!.IsEnum);
 ```
 此外你也可以使用`SpireField<TType, TVal>`为一个类添加新的变量，无法保存。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-09-run-save/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

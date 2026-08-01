@@ -145,6 +145,32 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
         return false;
     }
 
+    public bool TryTakeState<TState>(TScope scope, object owner, out TState? state)
+        where TState : class
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(owner);
+        if (!CheckThreadAffinity(nameof(TryTakeState)))
+        {
+            state = null;
+            return false;
+        }
+
+        lock (_sync)
+        {
+            if (_entriesByScope.TryGetValue(scope, out ScopeEntry? entry)
+                && entry.States.Remove(new StateKey(owner, typeof(TState)), out object? existing)
+                && existing is TState typed)
+            {
+                state = typed;
+                return true;
+            }
+        }
+
+        state = null;
+        return false;
+    }
+
     public bool Complete(TScope scope)
     {
         ArgumentNullException.ThrowIfNull(scope);

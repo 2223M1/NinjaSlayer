@@ -7,6 +7,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$GodotExecutable,
     [Parameter(Mandatory)][string]$OutputDirectory,
+    [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
     [ValidateSet('FirstCombatRestart', 'FullAutoSlay')][string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -16,6 +17,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot '..\..\.github\scripts\compatibility.ps1')
 
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
         [Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -144,6 +146,18 @@ $GameRootDirectory = Resolve-RequiredPath $GameRootDirectory
 $RitsuLibModDirectory = Resolve-RequiredPath $RitsuLibModDirectory
 $GodotExecutable = Resolve-RequiredPath $GodotExecutable -Leaf
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
+$networkIsolationScript = Join-Path $TrustedRoot '.github\scripts\process-network-isolation.ps1'
+if (-not (Test-Path -LiteralPath $networkIsolationScript -PathType Leaf)) {
+    throw "Trusted process network isolation helper was not found: $networkIsolationScript"
+}
+. $networkIsolationScript
+$compatibilityManifestPath = Join-Path $CandidateRoot 'eng\compatibility.json'
+$compatibility = Read-NinjaSlayerCompatibility -Path $compatibilityManifestPath
+$hostCompatibility = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $Channel
+$GameApiVersion = [string]$hostCompatibility.gameApiVersion
+$RitsuLibPackageId = [string]$hostCompatibility.ritsuLibPackageId
+$RitsuLibVersion = [string]$compatibility.ritsuLibVersion
+$compatibilityManifestSha256 = Get-NinjaSlayerCompatibilitySha256 -Path $compatibilityManifestPath
 
 foreach ($required in @(
     (Join-Path $GameRootDirectory 'SlayTheSpire2.exe'),
@@ -163,7 +177,7 @@ else {
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 }
 $temporaryRoot = if ([string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) { $env:TEMP } else { $env:RUNNER_TEMP }
-$sessionRoot = Join-Path $temporaryRoot "NinjaSlayer-Smoke-$($CandidateSha.Substring(0, 12))-$([Guid]::NewGuid().ToString('N'))"
+$sessionRoot = Join-Path $temporaryRoot "NinjaSlayer-Smoke-$Channel-$($CandidateSha.Substring(0, 12))-$([Guid]::NewGuid().ToString('N'))"
 $isolatedGameRoot = Join-Path $sessionRoot 'game'
 $appDataDirectory = Join-Path $sessionRoot 'appdata'
 $localAppDataDirectory = Join-Path $sessionRoot 'localappdata'
@@ -171,7 +185,7 @@ $packageDirectory = Join-Path $sessionRoot 'package\NinjaSlayer'
 $driverOutput = Join-Path $sessionRoot 'driver'
 $configurationPath = Join-Path $sessionRoot 'smoke-config.json'
 $checkpointPath = Join-Path $OutputDirectory 'checkpoints.jsonl'
-$firewallRules = [Collections.Generic.List[string]]::new()
+$firewallLease = $null
 $succeeded = $false
 $effectivePhaseTimeoutSeconds = if ($PhaseTimeoutSeconds -gt 0) {
     $PhaseTimeoutSeconds
@@ -187,6 +201,7 @@ try {
     & dotnet build (Join-Path $CandidateRoot 'NinjaSlayer.csproj') -c Release -t:PackageMod -v:minimal `
         -p:Sts2Dir=$GameRootDirectory `
         -p:Sts2DataDir=(Join-Path $GameRootDirectory 'data_sts2_windows_x86_64') `
+        -p:NinjaSlayerHostChannel=$Channel `
         -p:GodotExe=$GodotExecutable `
         -p:PostBuildModDir="$packageDirectory\"
     if ($LASTEXITCODE -ne 0) { throw 'Candidate PackageMod failed.' }
@@ -195,6 +210,7 @@ try {
     & dotnet build (Join-Path $TrustedRoot 'tools\smoke-harness\NinjaSlayer.SmokeDriver\NinjaSlayer.SmokeDriver.csproj') `
         -c Release -v:minimal -o $driverOutput `
         -p:Sts2DataDir=(Join-Path $GameRootDirectory 'data_sts2_windows_x86_64') `
+        -p:NinjaSlayerHostChannel=$Channel `
         -p:NinjaSlayerAssemblyPath=$candidateAssembly `
         -p:RitsuLibAssemblyPath=(Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
     if ($LASTEXITCODE -ne 0) { throw 'Trusted SmokeDriver build failed.' }
@@ -237,13 +253,13 @@ try {
     $settings | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $settingsDirectory 'settings.save') -Encoding utf8
 
     $gameExecutable = Join-Path $isolatedGameRoot 'SlayTheSpire2.exe'
-    foreach ($program in @($gameExecutable, (Join-Path $isolatedGameRoot 'crashpad_handler.exe'))) {
-        if (Test-Path -LiteralPath $program -PathType Leaf) {
-            $rule = "NinjaSlayer-Smoke-$([Guid]::NewGuid().ToString('N'))"
-            New-NetFirewallRule -DisplayName $rule -Direction Outbound -Action Block -Program $program | Out-Null
-            $firewallRules.Add($rule)
-        }
-    }
+    $protectedPrograms = @($gameExecutable, (Join-Path $isolatedGameRoot 'crashpad_handler.exe')) |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Leaf }
+    $firewallLease = New-NinjaSlayerProcessFirewallLease `
+        -ProgramPath $protectedPrograms `
+        -RemoteScope All `
+        -RulePrefix "NinjaSlayer-Smoke-$Channel-$($CandidateSha.Substring(0, 12))" `
+        -ForbiddenRoot @($CandidateRoot, $TrustedRoot)
 
     if ($Mode -eq 'FullAutoSlay') {
         Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0
@@ -265,40 +281,64 @@ try {
         throw "Smoke checkpoints were incomplete or failed: $($missing -join ', ')"
     }
 
-    $gameVersion = [Reflection.AssemblyName]::GetAssemblyName((Join-Path $GameRootDirectory 'data_sts2_windows_x86_64\sts2.dll')).Version.ToString()
+    $gameAssemblyPath = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64\sts2.dll'
+    $gameVersion = [Reflection.AssemblyName]::GetAssemblyName($gameAssemblyPath).Version.ToString()
     [ordered]@{
-        schemaVersion = 1
+        schemaVersion = 3
         candidateSha = $CandidateSha.ToLowerInvariant()
         result = 'passed'
+        channel = $Channel
+        gameApiVersion = $GameApiVersion
         gameAssemblyVersion = $gameVersion
-        ritsuLibVersion = '0.4.62'
+        gameModuleMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath $gameAssemblyPath
+        ritsuLibPackageId = $RitsuLibPackageId
+        ritsuLibVersion = $RitsuLibVersion
+        compatibilityManifestSha256 = $compatibilityManifestSha256
         mode = if ($Mode -eq 'FullAutoSlay') { 'singleplayer-full-autoslay' } else { 'singleplayer-first-combat-restart' }
         repository = $Repository
-        runId = $RunId
+        workflowRunId = $RunId
         completedAtUtc = [DateTimeOffset]::UtcNow.ToString('O')
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'attestation.json') -Encoding utf8
     $succeeded = $true
 }
 finally {
-    Stop-SmokeProcesses -Root $isolatedGameRoot
-    foreach ($rule in $firewallRules) {
-        Remove-NetFirewallRule -DisplayName $rule -ErrorAction SilentlyContinue
+    $cleanupFailures = [Collections.Generic.List[string]]::new()
+    try {
+        Stop-SmokeProcesses -Root $isolatedGameRoot
     }
-    $gameLogs = Join-Path $appDataDirectory 'SlayTheSpire2\logs'
-    if (Test-Path -LiteralPath $gameLogs -PathType Container) {
-        foreach ($log in Get-ChildItem -LiteralPath $gameLogs -File | Select-Object -Last 3) {
-            Copy-SanitizedTextArtifact -Source $log.FullName -Destination (Join-Path $OutputDirectory "game-$($log.Name)")
+    catch {
+        $cleanupFailures.Add("Failed to stop isolated smoke processes: $($_.Exception.Message)")
+    }
+    try {
+        if ($null -ne $firewallLease) {
+            Remove-NinjaSlayerProcessFirewallLease -Lease $firewallLease
         }
     }
-    foreach ($log in Get-ChildItem -LiteralPath $OutputDirectory -Filter 'autoslay-*.log' -File -ErrorAction SilentlyContinue) {
-        Copy-SanitizedTextArtifact -Source $log.FullName -Destination "$($log.FullName).sanitized"
-        Move-Item -LiteralPath "$($log.FullName).sanitized" -Destination $log.FullName -Force
+    catch {
+        $cleanupFailures.Add($_.Exception.Message)
     }
-    if (Test-Path -LiteralPath $checkpointPath -PathType Leaf) {
-        Copy-SanitizedTextArtifact -Source $checkpointPath -Destination "$checkpointPath.sanitized"
-        Move-Item -LiteralPath "$checkpointPath.sanitized" -Destination $checkpointPath -Force
+    try {
+        $gameLogs = Join-Path $appDataDirectory 'SlayTheSpire2\logs'
+        if (Test-Path -LiteralPath $gameLogs -PathType Container) {
+            foreach ($log in Get-ChildItem -LiteralPath $gameLogs -File | Select-Object -Last 3) {
+                Copy-SanitizedTextArtifact -Source $log.FullName -Destination (Join-Path $OutputDirectory "game-$($log.Name)")
+            }
+        }
+        foreach ($log in Get-ChildItem -LiteralPath $OutputDirectory -Filter 'autoslay-*.log' -File -ErrorAction SilentlyContinue) {
+            Copy-SanitizedTextArtifact -Source $log.FullName -Destination "$($log.FullName).sanitized"
+            Move-Item -LiteralPath "$($log.FullName).sanitized" -Destination $log.FullName -Force
+        }
+        if (Test-Path -LiteralPath $checkpointPath -PathType Leaf) {
+            Copy-SanitizedTextArtifact -Source $checkpointPath -Destination "$checkpointPath.sanitized"
+            Move-Item -LiteralPath "$checkpointPath.sanitized" -Destination $checkpointPath -Force
+        }
     }
-    Remove-Item -LiteralPath $sessionRoot -Recurse -Force -ErrorAction SilentlyContinue
+    finally {
+        Remove-Item -LiteralPath $sessionRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    if ($cleanupFailures.Count -gt 0) {
+        throw "NinjaSlayer smoke cleanup failed. $($cleanupFailures -join ' | ')"
+    }
 }
 
 if (-not $succeeded) { throw 'NinjaSlayer smoke did not complete.' }

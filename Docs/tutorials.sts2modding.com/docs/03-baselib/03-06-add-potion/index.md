@@ -56,8 +56,3 @@ public class TestPotion : CustomPotionModel
     "TEST-TEST_POTION.description": "将[blue]{Cards}[/blue]张[gold]灵魂[/gold]加入你的[gold]手牌[/gold]。"
 }
 ```
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/03-baselib/03-06-add-potion/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

@@ -1,17 +1,31 @@
 <Project>
   <PropertyGroup>
     <NinjaSlayerArtifactName Condition="'$(NinjaSlayerArtifactName)' == ''">$(MSBuildProjectName)</NinjaSlayerArtifactName>
-    <PostBuildModDir Condition="'$(PostBuildModDir)' == ''">$(MSBuildProjectDirectory)\build\mods\$(NinjaSlayerArtifactName)</PostBuildModDir>
+    <PostBuildModDir Condition="'$(PostBuildModDir)' == ''">$(MSBuildProjectDirectory)\build\mods\$(NinjaSlayerHostChannel)\$(NinjaSlayerArtifactName)</PostBuildModDir>
     <PostBuildModDir>$([MSBuild]::EnsureTrailingSlash('$(PostBuildModDir)'))</PostBuildModDir>
     <FmodDesktopBank Condition="'$(FmodDesktopBank)' == ''">$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\desktop\NinjaSlayer.bank</FmodDesktopBank>
     <FmodRootBank Condition="'$(FmodRootBank)' == ''">$(MSBuildProjectDirectory)\NinjaSlayer\audio\fmod\NinjaSlayer.bank</FmodRootBank>
-    <GeneratedManifest Condition="'$(GeneratedManifest)' == ''">$(IntermediateOutputPath)NinjaSlayer.json</GeneratedManifest>
+    <GeneratedManifest Condition="'$(GeneratedManifest)' == ''">$(IntermediateOutputPath)$(NinjaSlayerHostChannel)\NinjaSlayer.json</GeneratedManifest>
     <PackageHashManifest Condition="'$(PackageHashManifest)' == ''">$(PostBuildModDir)SHA256SUMS</PackageHashManifest>
     <GodotExportPreset Condition="'$(GodotExportPreset)' == ''">Windows Desktop</GodotExportPreset>
-    <PackageModDependsOn Condition="'$(PackageModDependsOn)' == ''">BuildGodotEditorAssembly;Build;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums</PackageModDependsOn>
-    <InstallLocalDependsOn Condition="'$(InstallLocalDependsOn)' == ''">PackageMod</InstallLocalDependsOn>
+    <NodeExe Condition="'$(NodeExe)' == ''">node</NodeExe>
+    <DotNetExe Condition="'$(DotNetExe)' == ''">dotnet</DotNetExe>
+    <PackageModDependsOn Condition="'$(PackageModDependsOn)' == ''">RequireExplicitPackageHostChannel;ValidatePackageHost;BuildGodotEditorAssembly;Build;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums</PackageModDependsOn>
+    <InstallLocalDependsOn Condition="'$(InstallLocalDependsOn)' == ''">ResolveLocalInstallVersion;PackageMod</InstallLocalDependsOn>
     <PublishWorkshopDependsOn Condition="'$(PublishWorkshopDependsOn)' == ''">ValidateWorkshopPublish;PackageMod;StageWorkshop</PublishWorkshopDependsOn>
+    <StageWorkshopDependsOn Condition="'$(StageWorkshopDependsOn)' == ''">RequireExplicitPackageHostChannel;ValidatePackageOutput</StageWorkshopDependsOn>
   </PropertyGroup>
+
+  <Target Name="RequireExplicitPackageHostChannel">
+    <Error Condition="'$(NinjaSlayerHostChannelWasExplicit)' != 'true'"
+           Text="Packaging requires an explicit NinjaSlayerHostChannel=stable|preview." />
+  </Target>
+
+  <Target Name="ValidatePackageHost">
+    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')"
+           Text="Packaging requires the selected channel's sts2.dll at $(Sts2DataDir)." />
+    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-host --assembly &quot;$(Sts2DataDir)/sts2.dll&quot; --module-mvid &quot;$(NinjaSlayerHostModuleMvid)&quot;" />
+  </Target>
 
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
     <GodotExe Condition="'$(GodotExe)' == ''">C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe</GodotExe>
@@ -52,12 +66,23 @@
              BuildInParallel="false" />
   </Target>
 
+  <Target Name="ResolveLocalInstallVersion" DependsOnTargets="ResolveNinjaSlayerVersion">
+    <PropertyGroup>
+      <_LocalInstallVersionCore>$([System.Text.RegularExpressions.Regex]::Match('$(NinjaSlayerVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value)</_LocalInstallVersionCore>
+      <NinjaSlayerVersion Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true' and '$(IsExactReleaseTag)' != 'true'">$(_LocalInstallVersionCore)+local.g$(_GitSha)$(_GitDirtySuffix)</NinjaSlayerVersion>
+      <Version>$(NinjaSlayerVersion)</Version>
+      <AssemblyVersion>$([System.Text.RegularExpressions.Regex]::Match('$(NinjaSlayerVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value).0</AssemblyVersion>
+      <FileVersion>$(AssemblyVersion)</FileVersion>
+      <InformationalVersion>$(NinjaSlayerVersion)</InformationalVersion>
+    </PropertyGroup>
+    <Error Condition="'$(_LocalInstallVersionCore)' == ''"
+           Text="InstallLocal could not derive a stable SemVer core from $(NinjaSlayerVersion)." />
+    <Message Text="NinjaSlayer local install version: $(NinjaSlayerVersion)" Importance="high" />
+  </Target>
+
   <Target Name="GenerateVersionedManifest" DependsOnTargets="ResolveNinjaSlayerVersion">
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedManifest)'))" />
-    <GenerateManifestWithVersion
-      SourceFile="$(MSBuildProjectDirectory)\NinjaSlayer.json"
-      DestinationFile="$(GeneratedManifest)"
-      Version="$(NinjaSlayerVersion)" />
+    <Exec Command="&quot;$(NodeExe)&quot; &quot;$(MSBuildProjectDirectory)\tools\package-contract.mjs&quot; generate --source &quot;$(MSBuildProjectDirectory)\NinjaSlayer.json&quot; --destination &quot;$(GeneratedManifest)&quot; --version &quot;$(NinjaSlayerVersion)&quot; --min-game-version &quot;$(NinjaSlayerManifestMinGameVersion)&quot; --ritsulib-version &quot;$(NinjaSlayerRitsuLibVersion)&quot;" />
   </Target>
 
   <Target Name="PreparePackageDirectory">
@@ -87,6 +112,8 @@
            Text="Package manifest is missing." />
     <Error Condition="!Exists('$(PostBuildModDir)$(NinjaSlayerArtifactName).pck')"
            Text="Package PCK is missing." />
+    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-assembly --assembly &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).dll&quot; --channel &quot;$(NinjaSlayerHostChannel)&quot; --game-api-version &quot;$(NinjaSlayerGameApiVersion)&quot; --ritsulib-package-id &quot;$(NinjaSlayerRitsuLibPackageId)&quot; --ritsulib-version &quot;$(NinjaSlayerRitsuLibVersion)&quot;" />
+    <Exec Command="&quot;$(NodeExe)&quot; &quot;$(MSBuildProjectDirectory)\tools\package-contract.mjs&quot; validate-manifest --manifest &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).json&quot; --version &quot;$(NinjaSlayerVersion)&quot; --min-game-version &quot;$(NinjaSlayerManifestMinGameVersion)&quot; --ritsulib-version &quot;$(NinjaSlayerRitsuLibVersion)&quot;" />
   </Target>
 
   <Target Name="GeneratePackageChecksums">
@@ -128,6 +155,8 @@
     <Error Condition="'$(IsWindows)' != 'true'" Text="PublishWorkshop is supported only on Windows." />
     <Error Condition="'$(Configuration)' != 'Release'" Text="PublishWorkshop requires Configuration=Release." />
     <Error Condition="'$(PublishWorkshopConfirmed)' != 'true'" Text="Pass PublishWorkshopConfirmed=true to publish." />
+    <Error Condition="'$(NinjaSlayerHostChannel)' != 'stable' or '$(NinjaSlayerDistributionChannel)' != 'public'"
+           Text="The local Workshop uploader is restricted to the stable public channel." />
     <Error Condition="'$(NinjaSlayerVersionWasExplicit)' != 'true'" Text="Pass NinjaSlayerVersion explicitly when publishing." />
     <Error Condition="'$(IsSupportedReleaseTag)' != 'true'"
            Text="Workshop publishing requires a clean stable SemVer tag (vMAJOR.MINOR.PATCH)." />
@@ -138,44 +167,27 @@
            Text="Workshop metadata missing at $(WorkshopUploadRoot)\$(NinjaSlayerArtifactName)\workshop.json." />
   </Target>
 
-  <Target Name="StageWorkshop">
+  <Target Name="StageWorkshop" DependsOnTargets="$(StageWorkshopDependsOn)">
     <Error Condition="'$(WorkshopContentDir)' == ''" Text="StageWorkshop requires WorkshopContentDir." />
+    <RemoveDir Directories="$(WorkshopContentDir)" Condition="Exists('$(WorkshopContentDir)')" />
     <MakeDir Directories="$(WorkshopContentDir)" />
     <ItemGroup>
       <_WorkshopFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).dll" />
       <_WorkshopFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).json" />
       <_WorkshopFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).pck" />
+      <_WorkshopFiles Include="$(PackageHashManifest)" />
     </ItemGroup>
     <Copy SourceFiles="@(_WorkshopFiles)" DestinationFolder="$(WorkshopContentDir)" SkipUnchangedFiles="false" />
     <VerifyMatchingFiles SourceDirectory="$(PostBuildModDir)"
                          DestinationDirectory="$(WorkshopContentDir)"
-                         FileNames="$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck" />
+                         FileNames="$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck;SHA256SUMS"
+                         RequireExactDestinationSet="true" />
   </Target>
 
   <Target Name="PublishWorkshop" DependsOnTargets="$(PublishWorkshopDependsOn)">
     <Exec Command="&quot;$(WorkshopUploaderExe)&quot; upload -w $(NinjaSlayerArtifactName)"
           WorkingDirectory="$(WorkshopUploadRoot)" />
   </Target>
-
-  <UsingTask
-    TaskName="GenerateManifestWithVersion"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <SourceFile ParameterType="System.String" Required="true" />
-      <DestinationFile ParameterType="System.String" Required="true" />
-      <Version ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Text" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        string content = File.ReadAllText(SourceFile, Encoding.UTF8);
-        content = content.Replace("VERSION_PLACEHOLDER", Version);
-        File.WriteAllText(DestinationFile, content, new UTF8Encoding(false));
-      ]]></Code>
-    </Task>
-  </UsingTask>
 
   <UsingTask
     TaskName="VerifyMatchingFiles"
@@ -185,10 +197,13 @@
       <SourceDirectory ParameterType="System.String" Required="true" />
       <DestinationDirectory ParameterType="System.String" Required="true" />
       <FileNames ParameterType="System.String[]" Required="true" />
+      <RequireExactDestinationSet ParameterType="System.Boolean" Required="false" />
     </ParameterGroup>
     <Task>
       <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
       <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
       <Using Namespace="System.Security.Cryptography" />
       <Code Type="Fragment" Language="cs"><![CDATA[
         foreach (string fileName in FileNames)
@@ -224,6 +239,22 @@
             if (!matches)
             {
                 Log.LogError($"SHA-256 mismatch after copying {fileName}.");
+            }
+        }
+
+        if (RequireExactDestinationSet && Directory.Exists(DestinationDirectory))
+        {
+            var expectedNames = new HashSet<string>(FileNames, StringComparer.Ordinal);
+            string[] actualNames = Directory.GetFiles(DestinationDirectory)
+                .Select(Path.GetFileName)
+                .Where(name => name != null)
+                .Cast<string>()
+                .ToArray();
+            if (actualNames.Length != expectedNames.Count
+                || actualNames.Any(name => !expectedNames.Contains(name)))
+            {
+                Log.LogError(
+                    $"Workshop staging contains an unexpected file set: {string.Join(", ", actualNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase))}.");
             }
         }
       ]]></Code>

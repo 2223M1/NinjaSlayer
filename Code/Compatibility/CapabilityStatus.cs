@@ -124,4 +124,13 @@ internal static class CapabilityStatusEvaluator
             $"Required capability is not operational: {dependencyId}.",
             0,
             probes);
+
+    public static CapabilityStatus RolledBack(
+        string failedCapabilityId,
+        IEnumerable<CapabilityProbe>? probes = null) =>
+        new(
+            CapabilityState.Disabled,
+            $"Core activation was rolled back after {failedCapabilityId} failed.",
+            0,
+            probes);
 }

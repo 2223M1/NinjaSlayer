@@ -85,9 +85,3 @@ public class TestEnchantment : ModEnchantmentTemplate
 如何使用：
 - 控制台里输入`enchant TEST_ENCHANTMENT_TEST_ENCHANTMENT [数量] [给予手牌的编号]`。
 - 在效果里，使用`CardCmd.Enchant<TestEnchantment>(card, 2m)`。第二个参数用于修改Amount。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/04-ritsulib/04-13-add-enchantment/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

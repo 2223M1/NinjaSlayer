@@ -23,12 +23,12 @@ jobs:
   smoke:
     runs-on: [self-hosted, Windows, X64, ninjaslayer-smoke]
     environment: game-smoke
-    timeout-minutes: 75
+    timeout-minutes: 140
     steps:
-      - name: Checkout trusted harness from protected main
+      - name: Checkout trusted harness at workflow SHA
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
           path: trusted
           persist-credentials: false
@@ -39,15 +39,21 @@ jobs:
         shell: powershell
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
         run: |
           if ($env:CANDIDATE_SHA -notmatch '^[0-9a-fA-F]{40}$') { throw 'candidate_sha must be a full SHA.' }
+          $candidateSha = $env:CANDIDATE_SHA.ToLowerInvariant()
+          $workflowSha = $env:WORKFLOW_SHA.ToLowerInvariant()
+          if ($candidateSha -cne $workflowSha) {
+            throw "candidate_sha $candidateSha must match the workflow SHA $workflowSha."
+          }
           git -C trusted remote set-url origin "https://github.com/${{ github.repository }}.git"
           git -C trusted fetch origin main --no-tags
-          git -C trusted cat-file -e "$env:CANDIDATE_SHA^{commit}"
+          git -C trusted cat-file -e "$candidateSha^{commit}"
           if ($LASTEXITCODE -ne 0) { throw 'Candidate is not present in the canonical repository.' }
-          git -C trusted merge-base --is-ancestor $env:CANDIDATE_SHA origin/main
+          git -C trusted merge-base --is-ancestor $candidateSha origin/main
           if ($LASTEXITCODE -ne 0) { throw 'Candidate must already be an ancestor of canonical main.' }
-          "sha=$($env:CANDIDATE_SHA.ToLowerInvariant())" | Out-File $env:GITHUB_OUTPUT -Append
+          "sha=$candidateSha" | Out-File $env:GITHUB_OUTPUT -Append
 
       - name: Checkout candidate without credentials
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -63,10 +69,11 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Validate protected smoke inputs
+      - name: Validate protected dual-host smoke inputs
         shell: powershell
         run: |
-          foreach ($variable in @('NINJASLAYER_SMOKE_GAME_ROOT', 'NINJASLAYER_RITSULIB_MOD_DIR', 'GODOT_EXE')) {
+          . .\trusted\.github\scripts\compatibility.ps1
+          foreach ($variable in @('NINJASLAYER_RITSULIB_MOD_DIR', 'GODOT_EXE')) {
             $value = [Environment]::GetEnvironmentVariable($variable)
             if ([string]::IsNullOrWhiteSpace($value) -or -not (Test-Path -LiteralPath $value)) {
               throw "The ephemeral smoke runner did not provide $variable."
@@ -79,38 +86,69 @@ jobs:
               [Security.Principal.WindowsBuiltInRole]::Administrator)) {
             throw 'The smoke runner must be elevated for process firewall isolation.'
           }
+
+          $compatibilityPath = Join-Path $env:GITHUB_WORKSPACE 'candidate\eng\compatibility.json'
+          $trustedCompatibilityPath = Join-Path $env:GITHUB_WORKSPACE 'trusted\eng\compatibility.json'
+          if ((Get-NinjaSlayerCompatibilitySha256 -Path $compatibilityPath) -ne
+              (Get-NinjaSlayerCompatibilitySha256 -Path $trustedCompatibilityPath)) {
+            throw 'Candidate compatibility.json must match the protected main harness.'
+          }
+          $compatibility = Read-NinjaSlayerCompatibility -Path $compatibilityPath
+          $roots = @{
+            stable = $env:NINJASLAYER_SMOKE_STABLE_GAME_ROOT
+            preview = $env:NINJASLAYER_SMOKE_PREVIEW_GAME_ROOT
+          }
+          $hosts = foreach ($channelName in @($compatibility.channels.PSObject.Properties.Name)) {
+            $profile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
+            $gameRoot = $roots[$channelName]
+            if ([string]::IsNullOrWhiteSpace($gameRoot) -or -not (Test-Path -LiteralPath $gameRoot -PathType Container)) {
+              throw "The ephemeral smoke runner did not provide the $channelName game root."
+            }
+            $resolvedRoot = [IO.Path]::GetFullPath($gameRoot)
+            if ($resolvedRoot.StartsWith([IO.Path]::GetFullPath($env:GITHUB_WORKSPACE), [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$channelName game root must remain outside the repository workspace."
+            }
+            foreach ($file in @('SlayTheSpire2.exe', 'SlayTheSpire2.pck', 'data_sts2_windows_x86_64\sts2.dll')) {
+              if (-not (Test-Path -LiteralPath (Join-Path $resolvedRoot $file) -PathType Leaf)) {
+                throw "$channelName game root is missing $file."
+              }
+            }
+            $actualMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $resolvedRoot 'data_sts2_windows_x86_64\sts2.dll')
+            if ($actualMvid -ne [string]$profile.hostContract.moduleMvid) {
+              throw "$channelName smoke host MVID does not match compatibility.json."
+            }
+            [ordered]@{ channel = $channelName; gameRoot = $resolvedRoot }
+          }
+          "SMOKE_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress)" | Out-File $env:GITHUB_ENV -Append
           "NUGET_PACKAGES=$env:RUNNER_TEMP\smoke-nuget" | Out-File $env:GITHUB_ENV -Append
 
-      - name: Restore candidate and trusted driver
+      - name: Run isolated stable and preview smoke
         shell: powershell
         run: |
-          dotnet restore candidate/NinjaSlayer.csproj -p:Sts2Dir="$env:NINJASLAYER_SMOKE_GAME_ROOT"
-          dotnet restore trusted/tools/smoke-harness/NinjaSlayer.SmokeDriver/NinjaSlayer.SmokeDriver.csproj `
-            -p:Sts2DataDir="$env:NINJASLAYER_SMOKE_GAME_ROOT\data_sts2_windows_x86_64" `
-            -p:NinjaSlayerAssemblyPath="$env:GITHUB_WORKSPACE\candidate\.godot\mono\temp\bin\Release\NinjaSlayer.dll" `
-            -p:RitsuLibAssemblyPath="$env:NINJASLAYER_RITSULIB_MOD_DIR\STS2-RitsuLib.dll"
-
-      - name: Run isolated real-game smoke
-        shell: powershell
-        run: |
-          & trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1 `
-            -CandidateSha '${{ steps.candidate.outputs.sha }}' `
-            -CandidateRoot "$env:GITHUB_WORKSPACE\candidate" `
-            -TrustedRoot "$env:GITHUB_WORKSPACE\trusted" `
-            -GameRootDirectory "$env:NINJASLAYER_SMOKE_GAME_ROOT" `
-            -RitsuLibModDirectory "$env:NINJASLAYER_RITSULIB_MOD_DIR" `
-            -GodotExecutable "$env:GODOT_EXE" `
-            -OutputDirectory "$env:RUNNER_TEMP\smoke-result" `
-            -Mode '${{ inputs.mode }}' `
-            -Repository '${{ github.repository }}' `
-            -RunId '${{ github.run_id }}'
+          foreach ($host in @($env:SMOKE_HOSTS_JSON | ConvertFrom-Json)) {
+            $channel = [string]$host.channel
+            & trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1 `
+              -CandidateSha '${{ steps.candidate.outputs.sha }}' `
+              -CandidateRoot "$env:GITHUB_WORKSPACE\candidate" `
+              -TrustedRoot "$env:GITHUB_WORKSPACE\trusted" `
+              -GameRootDirectory "$($host.gameRoot)" `
+              -RitsuLibModDirectory "$env:NINJASLAYER_RITSULIB_MOD_DIR" `
+              -GodotExecutable "$env:GODOT_EXE" `
+              -OutputDirectory "$env:RUNNER_TEMP\smoke-result\$channel" `
+              -Channel $channel `
+              -Mode '${{ inputs.mode }}' `
+              -Repository '${{ github.repository }}' `
+              -RunId '${{ github.run_id }}'
+          }
 
       - name: Upload successful text-only attestation
         if: success()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: game-smoke-${{ inputs.mode }}-${{ steps.candidate.outputs.sha }}
-          path: ${{ runner.temp }}/smoke-result/attestation.json
+          path: |
+            ${{ runner.temp }}/smoke-result/stable/attestation.json
+            ${{ runner.temp }}/smoke-result/preview/attestation.json
           if-no-files-found: error
           retention-days: 30
 

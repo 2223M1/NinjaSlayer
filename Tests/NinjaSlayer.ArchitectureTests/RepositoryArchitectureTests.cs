@@ -29,6 +29,7 @@ public sealed partial class RepositoryArchitectureTests
             "Entry.cs"));
 
         Assert.Contains("<Compile Remove=\"tools\\smoke-harness\\**\\*.cs\" />", project, StringComparison.Ordinal);
+        Assert.Contains("<Compile Remove=\"build\\**\\*.cs\" />", project, StringComparison.Ordinal);
         Assert.DoesNotContain("NinjaSlayer-SmokeDriver", packaging, StringComparison.Ordinal);
         Assert.Contains("$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck", packaging, StringComparison.Ordinal);
         Assert.DoesNotContain("SmokeController : Node", controller, StringComparison.Ordinal);
@@ -36,18 +37,27 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void SmokeWorkflowUsesTrustedMainAndProtectedCanonicalCandidates()
+    public void ProtectedWorkflowsPinTrustedHarnessToTheAttestedSha()
     {
-        string workflow = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
+        string contract = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "contract.yml"));
+        string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
 
-        Assert.Contains("environment: game-smoke", workflow, StringComparison.Ordinal);
-        Assert.Contains("ref: main", workflow, StringComparison.Ordinal);
-        Assert.Contains("persist-credentials: false", workflow, StringComparison.Ordinal);
-        Assert.Contains("merge-base --is-ancestor", workflow, StringComparison.Ordinal);
-        Assert.Contains("trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1", workflow, StringComparison.Ordinal);
-        Assert.Contains("FirstCombatRestart", workflow, StringComparison.Ordinal);
-        Assert.Contains("FullAutoSlay", workflow, StringComparison.Ordinal);
-        Assert.DoesNotContain("pull_request_target", workflow, StringComparison.Ordinal);
+        foreach (string workflow in new[] { contract, smoke })
+        {
+            Assert.Contains("ref: ${{ github.sha }}", workflow, StringComparison.Ordinal);
+            Assert.Contains("WORKFLOW_SHA: ${{ github.sha }}", workflow, StringComparison.Ordinal);
+            Assert.Contains("$candidateSha -cne $workflowSha", workflow, StringComparison.Ordinal);
+            Assert.Contains("merge-base --is-ancestor", workflow, StringComparison.Ordinal);
+            Assert.Contains("persist-credentials: false", workflow, StringComparison.Ordinal);
+            Assert.DoesNotContain("ref: main", workflow, StringComparison.Ordinal);
+            Assert.DoesNotContain("pull_request_target", workflow, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("environment: game-contract", contract, StringComparison.Ordinal);
+        Assert.Contains("environment: game-smoke", smoke, StringComparison.Ordinal);
+        Assert.Contains("trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1", smoke, StringComparison.Ordinal);
+        Assert.Contains("FirstCombatRestart", smoke, StringComparison.Ordinal);
+        Assert.Contains("FullAutoSlay", smoke, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -61,7 +71,9 @@ public sealed partial class RepositoryArchitectureTests
                      "$env:APPDATA = $appDataDirectory",
                      "$env:LOCALAPPDATA = $localAppDataDirectory",
                      "--force-steam=off",
-                     "New-NetFirewallRule",
+                     "New-NinjaSlayerProcessFirewallLease",
+                     "-RemoteScope All",
+                     "Remove-NinjaSlayerProcessFirewallLease",
                      "Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 20",
                      "Invoke-SmokePhase -Phase Resume -ExpectedExitCode 0",
                      "Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0",
@@ -71,7 +83,143 @@ public sealed partial class RepositoryArchitectureTests
             Assert.Contains(required, launcher, StringComparison.Ordinal);
         }
 
-        Assert.DoesNotContain("verify-smoke-attestation.ps1", release, StringComparison.Ordinal);
+        Assert.Contains("verify-contract-attestation.ps1", release, StringComparison.Ordinal);
+        Assert.Contains("verify-smoke-attestation.ps1", release, StringComparison.Ordinal);
+        Assert.Contains("FirstCombatRestart", release, StringComparison.Ordinal);
+        Assert.Contains("Package stable and preview release archives", release, StringComparison.Ordinal);
+        Assert.Contains("Invoke-NinjaSlayerChannelBuild.ps1", release, StringComparison.Ordinal);
+        Assert.Contains("new-release-attestation.ps1", release, StringComparison.Ordinal);
+        Assert.Contains(
+            "protected-release-${{ env.RELEASE_TAG }}-${{ steps.release.outputs.release_sha }}",
+            release,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "path: ${{ steps.package.outputs.protected_release_dir }}",
+            release,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("--clobber", release, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ProtectedProcessIsolationCoversDotnetAndGodotWithoutBlockingLoopback()
+    {
+        string contract = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "contract.yml"));
+        string smoke = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "Invoke-NinjaSlayerSmoke.ps1"));
+        string helper = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "process-network-isolation.ps1"));
+
+        Assert.Contains("Resolve-NinjaSlayerProtectedExecutable", contract, StringComparison.Ordinal);
+        Assert.Contains("must be elevated for process firewall isolation", contract, StringComparison.Ordinal);
+        Assert.Contains("NINJASLAYER_CONTRACT_DOTNET_EXE", contract, StringComparison.Ordinal);
+        Assert.Contains("$programs = @($dotnet, $godot)", contract, StringComparison.Ordinal);
+        Assert.Contains("-RemoteScope NonLoopback", contract, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayer.NetworkIsolationProbe.dll", contract, StringComparison.Ordinal);
+        Assert.Contains("NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = '1'", contract, StringComparison.Ordinal);
+        Assert.DoesNotContain("New-NetFirewallRule", contract, StringComparison.Ordinal);
+        Assert.DoesNotContain("$rule = \"NinjaSlayer-Contract", contract, StringComparison.Ordinal);
+
+        Assert.Contains("-RemoteScope All", smoke, StringComparison.Ordinal);
+        Assert.Contains("Remove-NinjaSlayerProcessFirewallLease", smoke, StringComparison.Ordinal);
+        Assert.DoesNotContain("New-NetFirewallRule", smoke, StringComparison.Ordinal);
+
+        foreach (string remoteRange in new[]
+                 {
+                     "0.0.0.0-126.255.255.255",
+                     "128.0.0.0-255.255.255.255",
+                     "::-::",
+                     "::2-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+                 })
+        {
+            Assert.Contains(remoteRange, helper, StringComparison.Ordinal);
+        }
+        Assert.Contains("[Collections.Generic.List[object]]::new()", helper, StringComparison.Ordinal);
+        Assert.Contains("for ($index = $ruleNames.Count - 1; $index -ge 0; $index--)", helper, StringComparison.Ordinal);
+        Assert.Contains("Get-NetFirewallRule -Name $ruleName", helper, StringComparison.Ordinal);
+        Assert.Contains("Remove-NinjaSlayerProcessFirewallLease -Lease $lease", helper, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ProtectedRunnerDocumentationMatchesAttestationSchemas()
+    {
+        string readme = File.ReadAllText(Path.Combine(Root, "tools", "private-contract", "README.md"));
+        string contractVerifier = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "verify-contract-attestation.ps1"));
+        string smokeVerifier = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "verify-smoke-attestation.ps1"));
+
+        Assert.Contains("| Contract | `4` |", readme, StringComparison.Ordinal);
+        Assert.Contains("| Smoke | `3` |", readme, StringComparison.Ordinal);
+        Assert.Contains("$attestation.schemaVersion) 4", contractVerifier, StringComparison.Ordinal);
+        Assert.Contains("$attestation.schemaVersion) 3", smokeVerifier, StringComparison.Ordinal);
+        Assert.DoesNotContain("Contract and Smoke artifacts contain only schema 3", readme, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BlackFlameTracksFinalDamageResultsInsideTheCardPlayScope()
+    {
+        string patch = File.ReadAllText(Path.Combine(Root, "Code", "Patches", "BlackFlameDamagePatch.cs"));
+        string hostAdapter = File.ReadAllText(Path.Combine(
+            Root,
+            "Code",
+            "Compatibility",
+            "HostBlackFlameDamagePatch.cs"));
+        string damageAdapter = File.ReadAllText(Path.Combine(
+            Root,
+            "Code",
+            "Compatibility",
+            "GameCompatibility.Damage.cs"));
+        string scope = File.ReadAllText(Path.Combine(Root, "Code", "Lifecycle", "CardPlayResolutionScope.cs"));
+        string enchantment = File.ReadAllText(Path.Combine(
+            Root,
+            "Enchantments",
+            "BlackFlameEnchantment.cs"));
+        string contractProject = File.ReadAllText(Path.Combine(
+            Root,
+            "Tests",
+            "NinjaSlayer.RitsuLibContractTests",
+            "NinjaSlayer.RitsuLibContractTests.csproj"));
+
+        Assert.Contains("typeof(CreatureCmd)", patch, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.Damage.CommandParameterTypes", patch, StringComparison.Ordinal);
+        Assert.Contains("CardPlayResolutionScope.TryResolveCurrentPlay", patch, StringComparison.Ordinal);
+        Assert.Contains("IBlackFlameEnchantment", patch, StringComparison.Ordinal);
+        Assert.Contains("IBlackFlameEnchantment", enchantment, StringComparison.Ordinal);
+        Assert.DoesNotContain("AttackCommand", patch, StringComparison.Ordinal);
+        Assert.Contains("#if NINJASLAYER_LEGACY_DAMAGE_API", hostAdapter, StringComparison.Ordinal);
+        Assert.Contains("TryTakePlayState", scope, StringComparison.Ordinal);
+        Assert.DoesNotContain("RecordIfEnchanted", damageAdapter, StringComparison.Ordinal);
+        foreach (string productionFile in new[]
+                 {
+                     "BlackFlameDamagePatch.cs",
+                     "HostBlackFlameDamagePatch.cs",
+                     "BlackFlameDamageReceiverSet.cs",
+                     "BlackFlameHitTracker.cs",
+                     "CardPlayResolutionScope.cs"
+                 })
+        {
+            Assert.Contains(productionFile, contractProject, StringComparison.Ordinal);
+        }
+
+        string contract = File.ReadAllText(Path.Combine(
+            Root,
+            "Tests",
+            "NinjaSlayer.RitsuLibContractTests",
+            "ContractRunner.cs"));
+        Assert.Contains("VerifyBlackFlameDamagePatchContract()", contract, StringComparison.Ordinal);
+        Assert.Contains("patcher.RegisterPatch<BlackFlameDamagePatch>()", contract, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -126,24 +274,23 @@ public sealed partial class RepositoryArchitectureTests
         foreach (string group in groups)
         {
             int installationCount = entry.DescendantNodes().OfType<InvocationExpressionSyntax>()
-                .Count(invocation => invocation.Expression is GenericNameSyntax
-                {
-                    Identifier.Text: "InstallCapability",
-                    TypeArgumentList.Arguments.Count: 1
-                } generic && generic.TypeArgumentList.Arguments[0].ToString() == group);
+                .Count(invocation => invocation.Expression is GenericNameSyntax generic
+                    && generic.TypeArgumentList.Arguments.Count == 1
+                    && generic.TypeArgumentList.Arguments[0].ToString() == group
+                    && generic.Identifier.Text is "InstallCapability" or "TryInstallRequiredCapability");
             Assert.Equal(1, installationCount);
         }
     }
 
     [Fact]
-    public void DebugCharacterIsOptInAndReusesTheStartingDeckDefinition()
+    public void DebugCharacterIsEnabledByDefaultAndReusesTheStartingDeckDefinition()
     {
         string project = File.ReadAllText(Path.Combine(Root, "NinjaSlayer.csproj"));
         string entry = SourceText("Scripts/Entry.cs");
         string debugCharacter = SourceText("Content/NinjaSlayerDebugCharacter.cs");
         string telemetry = SourceText("Content/NinjaSlayerBalanceTelemetry.cs");
 
-        Assert.Contains("<EnableNinjaSlayerDebugContent Condition=\"'$(EnableNinjaSlayerDebugContent)' == ''\">false", project, StringComparison.Ordinal);
+        Assert.Contains("<EnableNinjaSlayerDebugContent Condition=\"'$(EnableNinjaSlayerDebugContent)' == ''\">true", project, StringComparison.Ordinal);
         Assert.Contains("'$(EnableNinjaSlayerDebugContent)' == 'true'", project, StringComparison.Ordinal);
         Assert.Contains("NINJA_SLAYER_DEBUG_CONTENT", project, StringComparison.Ordinal);
         Assert.Contains("Character<NinjaSlayerCharacter>(ConfigureStartingDeck)", entry, StringComparison.Ordinal);
@@ -176,7 +323,8 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Equal(1, CountOccurrences(groups, "RegisterPatch<OrobasSeaGlassCharacterPatch>()"));
         Assert.Contains("typeof(IReadOnlyList<EventOption>)", compatibility, StringComparison.Ordinal);
         Assert.Contains("CapabilityProbe.Required", compatibility, StringComparison.Ordinal);
-        Assert.Contains("InstallCapability<OrobasSeaGlassPatchGroup>", entry, StringComparison.Ordinal);
+        Assert.Contains("TryInstallRequiredCapability<OrobasSeaGlassPatchGroup>", entry, StringComparison.Ordinal);
+        Assert.Contains("RitsuLibFramework.ApplyRequiredPatcher", entry, StringComparison.Ordinal);
         Assert.Contains("GameCompatibility.OrobasSeaGlass.GetProbes()", entry, StringComparison.Ordinal);
         Assert.Contains("public interface INinjaSlayerCharacter", marker, StringComparison.Ordinal);
         Assert.DoesNotContain("class Orobas :", patch, StringComparison.Ordinal);
@@ -221,18 +369,31 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Equal(values.Length, values.Distinct(StringComparer.Ordinal).Count());
 
         CompilationUnitSyntax entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root;
+        string[] installerNames = ["InstallCapability", "TryInstallRequiredCapability"];
         Assert.DoesNotContain(
             entry.DescendantNodes().OfType<InvocationExpressionSyntax>(),
-            invocation => invocation.Expression is GenericNameSyntax { Identifier.Text: "InstallCapability" }
+            invocation => invocation.Expression is GenericNameSyntax generic
+                && installerNames.Contains(generic.Identifier.Text, StringComparer.Ordinal)
                 && invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression is LiteralExpressionSyntax);
 
-        string[] installedIds = entry.DescendantNodes().OfType<InvocationExpressionSyntax>()
-            .Where(invocation => invocation.Expression is GenericNameSyntax { Identifier.Text: "InstallCapability" })
+        IEnumerable<string> directlyInstalledIds = entry.DescendantNodes().OfType<InvocationExpressionSyntax>()
+            .Where(invocation => invocation.Expression is GenericNameSyntax generic
+                && installerNames.Contains(generic.Identifier.Text, StringComparer.Ordinal))
             .Select(invocation => invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression)
             .OfType<MemberAccessExpressionSyntax>()
             .Where(member => member.Expression.ToString() == "NinjaSlayerCapabilityIds")
-            .Select(member => member.Name.Identifier.Text)
+            .Select(member => member.Name.Identifier.Text);
+        IEnumerable<string> requiredIds = entry.DescendantNodes().OfType<AssignmentExpressionSyntax>()
+            .Where(assignment => assignment.Left.ToString() == "failedCapabilityId")
+            .Select(assignment => assignment.Right)
+            .OfType<MemberAccessExpressionSyntax>()
+            .Where(member => member.Expression.ToString() == "NinjaSlayerCapabilityIds")
+            .Select(member => member.Name.Identifier.Text);
+        string[] installedIds = directlyInstalledIds
+            .Concat(requiredIds)
+            .Append("CoreContent")
             .ToArray();
+        Assert.Equal(installedIds.Length, installedIds.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(
             declarations.Select(declaration => declaration.Identifier.Text).Order(StringComparer.Ordinal),
             installedIds.Order(StringComparer.Ordinal));
@@ -256,17 +417,75 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void RequiredCoreActivationIsTransactionalAndContentIsRuntimeGated()
+    {
+        string entry = SourceText("Scripts/Entry.cs");
+        string access = SourceText("Content/NinjaSlayerContentAccess.cs");
+        string orobas = SourceText("Code/Patches/OrobasSeaGlassCharacterPatch.cs");
+
+        Assert.True(
+            entry.IndexOf("TryActivateCoreCapabilities", StringComparison.Ordinal)
+            < entry.IndexOf("ModTypeDiscoveryHub.RegisterModAssembly", StringComparison.Ordinal));
+        Assert.Contains("RitsuLibFramework.ApplyRequiredPatcher", entry, StringComparison.Ordinal);
+        Assert.Contains("disableMod: () => succeeded = false", entry, StringComparison.Ordinal);
+        Assert.Contains("candidate.Rollback(failedCapabilityId)", entry, StringComparison.Ordinal);
+        Assert.Contains("activation.Rollback(NinjaSlayerCapabilityIds.CoreContent)", entry, StringComparison.Ordinal);
+        Assert.Contains("for (int index = _resources.Count - 1; index >= 0; index--)", entry, StringComparison.Ordinal);
+        Assert.Contains("CapabilityStatusEvaluator.RolledBack(failedCapabilityId)", entry, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerPatchCapabilities.CoreContentEnabled", access, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerPatchCapabilities.CoreContentEnabled", orobas, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerPatchCapabilities.OrobasSeaGlassEnabled", orobas, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PreparedLifecycleSubscriptionsRollbackAndDisposeInReverseOrder()
+    {
+        string lifecycle = SourceText("Code/Prepared/PreparedSafetyLifecycle.cs");
+
+        Assert.Contains("var subscriptions = new List<IDisposable>(3)", lifecycle, StringComparison.Ordinal);
+        Assert.Contains("catch", lifecycle, StringComparison.Ordinal);
+        Assert.Contains(
+            "for (int index = subscriptions.Count - 1; index >= 0; index--)",
+            lifecycle,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "for (int index = _subscriptions.Length - 1; index >= 0; index--)",
+            lifecycle,
+            StringComparison.Ordinal);
+        Assert.Contains("Interlocked.Exchange(ref _disposed, 1)", lifecycle, StringComparison.Ordinal);
+        Assert.Contains("_subscriptions[index].Dispose()", lifecycle, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PreparedPublisherContractUsesStructuredOriginalIlInspection()
+    {
+        string contract = File.ReadAllText(Path.Combine(
+            Root,
+            "Tests",
+            "NinjaSlayer.RitsuLibContractTests",
+            "ContractRunner.cs"));
+
+        Assert.Contains("GetOriginalIl(resolveAsync: false)", contract, StringComparison.Ordinal);
+        Assert.Contains("OpCodes.Newobj", contract, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetILAsByteArray", contract, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PreparedSafetyRunsAfterPileHooksAndGameplayCreationIsGated()
     {
         string preparedPatches = Sources
             .Single(source => source.RelativePath == "Code/Patches/PreparedCardPatches.cs")
             .Root
             .ToFullString();
-        Assert.Contains("PreparedPileChangeSafetyPatch", preparedPatches, StringComparison.Ordinal);
-        Assert.Contains(
-            "CompletePileChangeAfter(__result, combatState, card, oldPile)",
-            preparedPatches,
-            StringComparison.Ordinal);
+        string lifecycle = SourceText("Code/Prepared/PreparedSafetyLifecycle.cs");
+        Assert.DoesNotContain("PreparedPileChangeSafetyPatch", preparedPatches, StringComparison.Ordinal);
+        Assert.DoesNotContain("PreparedRunLoadedSafetyPatch", preparedPatches, StringComparison.Ordinal);
+        Assert.DoesNotContain("PreparedCombatStartSafetyPatch", preparedPatches, StringComparison.Ordinal);
+        Assert.Contains("SubscribeLifecycle<CardMovedBetweenPilesEvent>", lifecycle, StringComparison.Ordinal);
+        Assert.Contains("SubscribeLifecycle<RunLoadedEvent>", lifecycle, StringComparison.Ordinal);
+        Assert.Contains("SubscribeLifecycle<CombatStartingEvent>", lifecycle, StringComparison.Ordinal);
+        Assert.Equal(3, CountOccurrences(lifecycle, "replayCurrentState: false"));
+        Assert.Contains("PreparedSafetyService.CompletePileChange", lifecycle, StringComparison.Ordinal);
         Assert.DoesNotContain("PreparedPileExitPatch", preparedPatches, StringComparison.Ordinal);
         Assert.DoesNotContain("nameof(CardPile.RemoveInternal)", preparedPatches, StringComparison.Ordinal);
 
@@ -296,8 +515,9 @@ public sealed partial class RepositoryArchitectureTests
             .Single(source => source.RelativePath == "Code/Compatibility/PreparedQueueCompatibility.cs")
             .Root
             .ToFullString();
-        Assert.Contains("ExpectedAddIlSha256", queueCompatibility, StringComparison.Ordinal);
-        Assert.Contains("ExpectedRemoveIlSha256", queueCompatibility, StringComparison.Ordinal);
+        Assert.Contains("GameHostContractProfile.TryResolve", queueCompatibility, StringComparison.Ordinal);
+        Assert.Contains("profile.PreparedQueueAdd", queueCompatibility, StringComparison.Ordinal);
+        Assert.Contains("profile.PreparedQueueRemove", queueCompatibility, StringComparison.Ordinal);
         Assert.Contains("PreparedQueueTransaction.Execute", queueCompatibility, StringComparison.Ordinal);
 
         string actions = Sources
@@ -313,8 +533,9 @@ public sealed partial class RepositoryArchitectureTests
 
         string entry = Sources.Single(source => source.RelativePath == "Scripts/Entry.cs").Root.ToFullString();
         Assert.True(
-            entry.IndexOf("InstallCapability<PreparedSafetyPatchGroup>", StringComparison.Ordinal)
-            < entry.IndexOf("InstallCapability<PreparedGameplayPatchGroup>", StringComparison.Ordinal));
+            entry.IndexOf("PreparedSafetyLifecycle.Subscribe()", StringComparison.Ordinal)
+            < entry.IndexOf("TryInstallRequiredCapability<PreparedGameplayPatchGroup>", StringComparison.Ordinal));
+        Assert.Contains("candidate.Track(failedCapabilityId, preparedSafety", entry, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -323,13 +544,15 @@ public sealed partial class RepositoryArchitectureTests
         string service = SourceText("Code/Prepared/PreparedSafetyService.cs");
         string accessor = SourceText("Code/Prepared/CombatStateAccessor.cs");
         string patches = SourceText("Code/Patches/PreparedCardPatches.cs");
+        string lifecycle = SourceText("Code/Prepared/PreparedSafetyLifecycle.cs");
 
         Assert.DoesNotContain("DebugOnlyGetState", service, StringComparison.Ordinal);
         Assert.DoesNotContain("DebugOnlyGetState", patches, StringComparison.Ordinal);
         Assert.Contains("CardCombatStateAccessor.Resolve", service, StringComparison.Ordinal);
         Assert.Contains("static class CardCombatStateAccessor", accessor, StringComparison.Ordinal);
         Assert.Contains("PreparedCleanupStatus.Deferred", service, StringComparison.Ordinal);
-        Assert.Contains("ICombatState? combatState", patches, StringComparison.Ordinal);
+        Assert.Contains("evt.CombatState", lifecycle, StringComparison.Ordinal);
+        Assert.DoesNotContain("ICombatState? combatState", patches, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1500,12 +1723,24 @@ public sealed partial class RepositoryArchitectureTests
     {
         string greeting = SourceText("Code/ExternalAnimations/BossGreetingCinematic.cs");
         string camera = SourceText("Code/ExternalAnimations/CombatCinematicCameraLease.cs");
+        string framing = SourceText("Code/ExternalAnimations/FinisherCameraFraming.cs");
+        string containment = SourceText("Code/Combat/CinematicCameraContainment.cs");
 
         Assert.Contains("public Vector2 ClampPosition", camera, StringComparison.Ordinal);
         Assert.Contains("GetCameraCenter(position, scale, screenCenter)", camera, StringComparison.Ordinal);
         Assert.Contains(
             "GetCameraPosition(ClampTarget(center, scale), scale, screenCenter)",
             camera,
+            StringComparison.Ordinal);
+        Assert.Contains("_cameraPosition = ClampPosition(position, scale)", camera, StringComparison.Ordinal);
+        Assert.Contains(
+            "ClampPosition(position, _cameraScale)",
+            camera,
+            StringComparison.Ordinal);
+        Assert.Contains("ResolveSubjectAwareCenter", framing, StringComparison.Ordinal);
+        Assert.Contains(
+            "Scene containment wins",
+            containment,
             StringComparison.Ordinal);
         Assert.Contains(
             "TweenCameraToClamped(cameraPosition, targetZoom, BossCameraMoveSeconds)",
@@ -1517,6 +1752,9 @@ public sealed partial class RepositoryArchitectureTests
             StringComparison.Ordinal);
         Assert.Contains("clampToScene: true", greeting, StringComparison.Ordinal);
         Assert.Contains("_camera.ClampPosition(position, scale)", greeting, StringComparison.Ordinal);
+        Assert.Contains("TryFrameBossFocusAndBubble", greeting, StringComparison.Ordinal);
+        Assert.Contains("GetSceneLocalPointRect(bossFocus)", greeting, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetSceneLocalRect(bossBounds)", greeting, StringComparison.Ordinal);
         Assert.DoesNotContain(
             "TweenCameraTo(cameraPosition, targetZoom, BossCameraMoveSeconds)",
             greeting,
@@ -1549,7 +1787,10 @@ public sealed partial class RepositoryArchitectureTests
 
         Assert.Contains("ProcessLoadingQueue", patch, StringComparison.Ordinal);
         Assert.Contains("GetConcurrentAssetLoadLimit", patch, StringComparison.Ordinal);
-        Assert.Contains("replacements != 1", patch, StringComparison.Ordinal);
+        Assert.Contains("HarmonyIlRewriter.From", patch, StringComparison.Ordinal);
+        Assert.Contains("IsLoadingCountLimitSite", patch, StringComparison.Ordinal);
+        Assert.Contains("rewriter.ReplaceEach", patch, StringComparison.Ordinal);
+        Assert.Contains("rewriter.InstructionsChecked(report)", patch, StringComparison.Ordinal);
         Assert.Contains("VisibleTransitionConcurrentLoadLimit = 8", policy, StringComparison.Ordinal);
         Assert.Contains("VanillaConcurrentLoadLimit = 128", policy, StringComparison.Ordinal);
     }
@@ -1649,9 +1890,12 @@ public sealed partial class RepositoryArchitectureTests
     public void NinjaSlayerMapHistoryAndEvasionPresentationUseStableScopes()
     {
         string mapPatch = SourceText("Code/Patches/NinjaSlayerMapHistoryPatch.cs");
+        string mapCompatibility = SourceText("Code/Compatibility/GameCompatibility.MapHistory.cs");
         string alignment = SourceText("Code/Combat/VisitedMapHistoryAlignment.cs");
         string dodgePatch = SourceText("Code/Patches/EnemyAttackDodgePatch.cs");
         string dodgeAnimation = SourceText("Code/ExternalAnimations/CombatDodgeAnimation.cs");
+        string dodgeCompatibility = SourceText("Code/Compatibility/GameCompatibility.EnemyAttackDodge.cs");
+        string entry = SourceText("Scripts/Entry.cs");
         string evasion = SourceText("Powers/EvasionPower.cs");
         string groups = SourceText("Code/Patches/NinjaSlayerPatchGroups.cs");
 
@@ -1660,6 +1904,10 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("expectedPrefix", alignment, StringComparison.Ordinal);
         Assert.Contains("LocalContext.GetMe(runState)?.Character is not INinjaSlayerCharacter", mapPatch, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<NinjaSlayerMapHistoryIconPatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.MapHistory.TryGetRunState", mapPatch, StringComparison.Ordinal);
+        Assert.DoesNotContain("AccessTools", mapPatch, StringComparison.Ordinal);
+        Assert.Contains("AccessTools.Field(typeof(NMapPoint), \"_runState\")", mapCompatibility, StringComparison.Ordinal);
+        Assert.Contains("CapabilityProbe.Optional", mapCompatibility, StringComparison.Ordinal);
 
         Assert.Contains("AttackIntentPreviewContext.IsActive", evasion, StringComparison.Ordinal);
         Assert.Contains("CombatDodgeAnimation.NotifyImpact(Owner)", evasion, StringComparison.Ordinal);
@@ -1667,6 +1915,30 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("owner.GetPower<EvasionPower>()", dodgeAnimation, StringComparison.Ordinal);
         Assert.Contains("nameof(AttackIntent.GetSingleDamage)", dodgePatch, StringComparison.Ordinal);
         Assert.Contains("RegisterPatch<AttackIntentDamagePreviewPatch>()", groups, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.EnemyAttackDodge.TryReadPresentation", dodgeAnimation, StringComparison.Ordinal);
+        Assert.DoesNotContain("AccessTools", dodgeAnimation, StringComparison.Ordinal);
+        Assert.Equal(3, CountOccurrences(dodgeCompatibility, "AccessTools.Field"));
+        Assert.Contains("GameCompatibility.MapHistory.GetProbes()", entry, StringComparison.Ordinal);
+        Assert.Contains("GameCompatibility.EnemyAttackDodge.GetProbes()", entry, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RuntimeStateMachinesUseOwnedDynamicPatchesAndCheckedIlRewriters()
+    {
+        string entry = SourceText("Scripts/Entry.cs");
+        string transition = SourceText("Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs");
+        string tornado = SourceText("Code/Patches/TornadoFistFinisherCadencePatch.cs");
+
+        Assert.Contains("patcher.ApplyDynamicPatches", entry, StringComparison.Ordinal);
+        Assert.Contains("rollbackOnCriticalFailure: true", entry, StringComparison.Ordinal);
+        Assert.Contains("NinjaSlayerTransitionGcDeferralPatch.CreateDynamicPatches", entry, StringComparison.Ordinal);
+        Assert.Contains("TornadoFistFinisherCadencePatch.CreateDynamicPatches", entry, StringComparison.Ordinal);
+        Assert.Contains("new DynamicPatchInfo", transition, StringComparison.Ordinal);
+        Assert.Contains("new DynamicPatchInfo", tornado, StringComparison.Ordinal);
+        Assert.Contains("HarmonyIlRewriter.From", transition, StringComparison.Ordinal);
+        Assert.Contains("HarmonyAsyncIl.RedirectAwaitedCalls", tornado, StringComparison.Ordinal);
+        Assert.Contains("InstructionsChecked(report)", transition, StringComparison.Ordinal);
+        Assert.Contains("InstructionsChecked(report)", tornado, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1727,6 +1999,14 @@ public sealed partial class RepositoryArchitectureTests
         string slowAttack = SourceText("Code/ExternalAnimations/SlowAttackAnimation.cs");
         string yamotoKoki = File.ReadAllText(Path.Combine(Root, "Monsters", "YamotoKokiMonster.cs"));
         string yamotoAnimations = SourceText("Code/ExternalAnimations/YamotoKokiCombatAnimations.cs");
+        string timeline = SourceText("Code/ExternalAnimations/FinisherTimeline.cs");
+        MethodDeclarationSyntax beginSession = MethodDeclaration("FinisherSession", "Begin");
+        MethodDeclarationSyntax prepareReverseImpact = MethodDeclaration(
+            "FinisherSession",
+            "PrepareReverseImpactLead");
+        MethodDeclarationSyntax returnToBaseline = MethodDeclaration(
+            "FinisherSession",
+            "ReturnToBaseline");
 
         Assert.Contains("NinjaSlayerAttack", request, StringComparison.Ordinal);
         Assert.Contains("YamotoKokiIaiSlash", request, StringComparison.Ordinal);
@@ -1736,7 +2016,7 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("FinisherSessionRequest request", session, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter ActionAdapter", request, StringComparison.Ordinal);
         Assert.Contains("FinisherActionAdapters.YamotoKokiIai", eligibility, StringComparison.Ordinal);
-        Assert.Contains("FinisherActionAdapters.Stationary", classifier, StringComparison.Ordinal);
+        Assert.Contains("FinisherActionAdapters.Instant", classifier, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter Instant", adapters, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter Fast", adapters, StringComparison.Ordinal);
         Assert.Contains("IFinisherActionAdapter Slow", adapters, StringComparison.Ordinal);
@@ -1775,6 +2055,13 @@ public sealed partial class RepositoryArchitectureTests
             "_cameraFrame = FinisherCameraFraming.SelectTargets",
             StringComparison.Ordinal);
         Assert.True(instantTeleport >= 0 && instantTeleport < cameraFraming);
+        Assert.Contains("if (_actionAdapter.RequiresPositioning)", session, StringComparison.Ordinal);
+        IfStatementSyntax positioningBranch = beginSession.DescendantNodes()
+            .OfType<IfStatementSyntax>()
+            .Single(statement => statement.Condition.ToString().Contains(
+                "_actionAdapter.RequiresPositioning",
+                StringComparison.Ordinal));
+        Assert.Equal("_actionAdapter.RequiresPositioning", positioningBranch.Condition.ToString());
         Assert.Contains("_actionStarted = true", session, StringComparison.Ordinal);
         Assert.Contains("_actionPeakReached = true", session, StringComparison.Ordinal);
         Assert.Contains("FinisherImpactPositionResolver.ResolveImpactX", adapters, StringComparison.Ordinal);
@@ -1821,6 +2108,26 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("TryStartReverseFinisher", classifier, StringComparison.Ordinal);
         Assert.Contains("FinisherScenarioKind.EnemyExecutesNinjaSlayer", classifier, StringComparison.Ordinal);
         Assert.Contains("FinisherCompletionCondition.AnyCandidateLethal", classifier, StringComparison.Ordinal);
+        Assert.Contains("FinalHitZoomSeconds = 0.1f", timeline, StringComparison.Ordinal);
+        Assert.Contains("DoomPoseSeconds = 0.3f", timeline, StringComparison.Ordinal);
+        Assert.Contains("await PrepareReverseImpactLead()", session, StringComparison.Ordinal);
+        Assert.Contains(
+            "await Task.WhenAll(_cameraTransitionTask, _backdropTransitionTask)",
+            session,
+            StringComparison.Ordinal);
+        string reverseImpactSource = prepareReverseImpact.ToFullString();
+        Assert.True(
+            reverseImpactSource.IndexOf("StartFinalZoom()", StringComparison.Ordinal)
+            < reverseImpactSource.IndexOf("await Task.WhenAll", StringComparison.Ordinal));
+        AssignmentExpressionSyntax actorReturn = returnToBaseline.DescendantNodes()
+            .OfType<AssignmentExpressionSyntax>()
+            .Single(assignment => assignment.Left.ToString() == "_actorNode.Position"
+                && assignment.Right.ToString().Contains("ownerFrom.Lerp", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            actorReturn.Ancestors().OfType<IfStatementSyntax>(),
+            statement => statement.Condition.ToString().Contains(
+                "EnemyExecutesNinjaSlayer",
+                StringComparison.Ordinal));
         Assert.Contains("FinisherDeathContinuationRegistry.Arm", session, StringComparison.Ordinal);
         Assert.Contains("TryConsumeReverseFlight", deathPatch, StringComparison.Ordinal);
         Assert.Contains("PlayEnemyFinisherFlightOnly", deathPatch, StringComparison.Ordinal);
@@ -1868,7 +2175,37 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("public const float CloseRangeApproachGap = 0f", visuals, StringComparison.Ordinal);
         Assert.Contains("NinjaSlayerCombatVisuals.CloseRangeApproachGap", alabama, StringComparison.Ordinal);
         Assert.Contains("NinjaSlayerCombatVisuals.CloseRangeApproachGap", architect, StringComparison.Ordinal);
-        Assert.Contains("FinisherActionAdapters.Stationary", classifier, StringComparison.Ordinal);
+        Assert.Contains("FinisherActionAdapters.Instant", classifier, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BossBurstPhysicsIsCharacterAgnosticAndUsesExpandedSceneCleanup()
+    {
+        string factory = SourceText("Code/ExternalAnimations/BossDismembermentPresentation.Factory.cs");
+        string presentation = SourceText("Code/ExternalAnimations/BossDismembermentPresentation.cs");
+        string launchProfile = SourceText("Code/Combat/BossFountainLaunchProfile.cs");
+        string solveSource = MethodDeclaration(
+            "BossDismembermentPresentation",
+            "SolveSoftBodies").ToFullString();
+        string removalSource = MethodDeclaration(
+            "BossDismembermentPresentation",
+            "RemoveOffscreenFragments").ToFullString();
+
+        Assert.DoesNotContain("NinjaSlayerDebugCharacter", factory, StringComparison.Ordinal);
+        Assert.DoesNotContain("DebugOnlyGetState", factory, StringComparison.Ordinal);
+        Assert.DoesNotContain("BossBurstPhysicsProfile", presentation, StringComparison.Ordinal);
+        Assert.DoesNotContain("Omnidirectional", launchProfile, StringComparison.Ordinal);
+        Assert.DoesNotContain("DebugGravity", launchProfile, StringComparison.Ordinal);
+        Assert.Contains(
+            "SoftHorizontalBoundary? horizontalBoundary = !architectLead",
+            solveSource,
+            StringComparison.Ordinal);
+        Assert.Contains("IsFullyOutsideScene(minimum, maximum)", removalSource, StringComparison.Ordinal);
+        Assert.Contains("HasLiveJoint(fragment.Body)", removalSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("_visibleSceneBounds.Position.Y", removalSource, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            Root,
+            "Code/Combat/BossFragmentCullPolicy.cs")));
     }
 
     [Fact]
@@ -1944,7 +2281,12 @@ public sealed partial class RepositoryArchitectureTests
             "GameCompatibility.AssetLoading.cs",
             "GameCompatibility.TornadoCadence.cs",
             "GameCompatibility.ReporterPass.cs",
-            "GameCompatibility.BossBurst.cs"
+            "GameCompatibility.BossBurst.cs",
+            "GameCompatibility.MapHistory.cs",
+            "GameCompatibility.EnemyAttackDodge.cs",
+            "GameCompatibility.CardPlays.cs",
+            "GameCompatibility.Damage.cs",
+            "GameCompatibility.CreaturePresentation.cs"
         ];
 
         Assert.Contains("partial class GameCompatibility", facade, StringComparison.Ordinal);
@@ -2064,6 +2406,13 @@ public sealed partial class RepositoryArchitectureTests
                 .OfType<TypeDeclarationSyntax>()
                 .Any(declaration => declaration.Identifier.Text == typeName))
             .Select(source => source.Root.ToFullString()));
+
+    private static MethodDeclarationSyntax MethodDeclaration(string typeName, string methodName) =>
+        Sources
+            .SelectMany(source => source.Root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+            .Where(declaration => declaration.Identifier.Text == typeName)
+            .SelectMany(declaration => declaration.Members.OfType<MethodDeclarationSyntax>())
+            .Single(method => method.Identifier.Text == methodName);
 
     private static int CountOccurrences(string source, string value) =>
         source.Split(value, StringSplitOptions.None).Length - 1;

@@ -10,17 +10,42 @@
     <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and '$(OS)' == 'Windows_NT'">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64</Sts2DataDir>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="$(NinjaSlayerHostChannel)" />
+    <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="$(NinjaSlayerGameApiVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="$(NinjaSlayerRitsuLibPackageId)" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="$(NinjaSlayerRitsuLibVersion)" />
+  </ItemGroup>
   <Target Name="RequirePrivateGameContract" BeforeTargets="ResolveReferences">
-    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll') or !Exists('$(Sts2DataDir)/0Harmony.dll')"
-           Text="RitsuLib contract tests require the protected 0.109.x game reference bundle." />
+    <Error Condition="'$(NinjaSlayerHostChannelWasExplicit)' != 'true'"
+           Text="RitsuLib contract tests require an explicit NinjaSlayerHostChannel=stable|preview." />
+    <Error Condition="'$(NinjaSlayerRitsuLibPackageId)' == ''"
+           Text="NinjaSlayerRitsuLibPackageId was not resolved for game API '$(NinjaSlayerGameApiVersion)'." />
+    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll') or !Exists('$(Sts2DataDir)/0Harmony.dll') or !Exists('$(Sts2DataDir)/GodotSharp.dll')"
+           Text="RitsuLib contract tests require a protected supported-host game reference bundle." />
+    <Error Condition="!Exists('$(Sts2DataDir)/%(_NinjaSlayerRuntimeReference.Identity)')"
+           Text="RitsuLib contract tests require runtime assembly '%(_NinjaSlayerRuntimeReference.Identity)' for channel '$(NinjaSlayerHostChannel)'." />
   </Target>
   <ItemGroup>
     <Compile Include="ContractRunner.cs" />
+    <Compile Include="ContractSupport.cs" />
+    <Compile Include="..\..\Code\Combat\TornadoFistFinisherCadenceContext.cs" Link="TornadoFistFinisherCadenceContext.cs" />
+    <Compile Include="..\..\Code\Combat\BlackFlameDamageReceiverSet.cs" Link="BlackFlameDamageReceiverSet.cs" />
+    <Compile Include="..\..\Code\Combat\BlackFlameHitTracker.cs" Link="BlackFlameHitTracker.cs" />
     <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.cs" Link="GameHostContractProfile.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.g.cs" Link="GameHostContractProfile.g.cs" />
     <Compile Include="..\..\Code\Compatibility\FinisherLethalTargetContract.cs" Link="FinisherLethalTargetContract.cs" />
     <Compile Include="..\..\Code\Compatibility\NancyCompatibility.cs" Link="NancyCompatibility.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.cs" Link="GameCompatibility.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameCompatibility.AssetLoading.cs" Link="GameCompatibility.AssetLoading.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameCompatibility.CardPlays.cs" Link="GameCompatibility.CardPlays.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameCompatibility.Damage.cs" Link="GameCompatibility.Damage.cs" />
+    <Compile Include="..\..\Code\Compatibility\HostBlackFlameDamagePatch.cs" Link="HostBlackFlameDamagePatch.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.OrobasSeaGlass.cs" Link="GameCompatibility.OrobasSeaGlass.cs" />
+    <Compile Include="..\..\Code\Compatibility\GameCompatibility.TornadoCadence.cs" Link="GameCompatibility.TornadoCadence.cs" />
+    <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityIds.cs" Link="NinjaSlayerCapabilityIds.cs" />
+    <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityRegistry.cs" Link="NinjaSlayerCapabilityRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\OrobasSeaGlassCandidatePolicy.cs" Link="OrobasSeaGlassCandidatePolicy.cs" />
     <Compile Include="..\..\Code\Compatibility\PreparedDrawTargetContract.cs" Link="PreparedDrawTargetContract.cs" />
     <Compile Include="..\..\Code\Compatibility\PreparedQueueCompatibility.cs" Link="PreparedQueueCompatibility.cs" />
@@ -28,11 +53,25 @@
     <Compile Include="..\..\Code\ExternalAnimations\FinisherCompletionProtocol.cs" Link="FinisherCompletionProtocol.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\FinisherDamageLedger.cs" Link="FinisherDamageLedger.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
+    <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
+    <Compile Include="..\..\Code\Lifecycle\CardPlayResolutionScope.cs" Link="CardPlayResolutionScope.cs" />
+    <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Prepared\PreparedApplyTransaction.cs" Link="PreparedApplyTransaction.cs" />
+    <Compile Include="..\..\Code\Patches\NinjaSlayerPatchCapabilities.cs" Link="NinjaSlayerPatchCapabilities.cs" />
+    <Compile Include="..\..\Code\Patches\BlackFlameDamagePatch.cs" Link="BlackFlameDamagePatch.cs" />
+    <Compile Include="..\..\Code\Patches\NinjaSlayerTransitionLoadSmoothingPatch.cs" Link="NinjaSlayerTransitionLoadSmoothingPatch.cs" />
     <Compile Include="..\..\Code\Patches\OrobasSeaGlassCharacterPatch.cs" Link="OrobasSeaGlassCharacterPatch.cs" />
+    <Compile Include="..\..\Code\Patches\TornadoFistFinisherCadencePatch.cs" Link="TornadoFistFinisherCadencePatch.cs" />
+    <Compile Include="..\..\Code\Transition\NinjaSlayerTransitionLoadSmoothing.cs" Link="NinjaSlayerTransitionLoadSmoothing.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionLoadConcurrencyPolicy.cs" Link="TransitionLoadConcurrencyPolicy.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionNoGcRegionState.cs" Link="TransitionNoGcRegionState.cs" />
+    <Compile Include="..\..\Code\Transition\TransitionPerformanceTrace.cs" Link="TransitionPerformanceTrace.cs" />
     <Compile Include="..\..\Content\INinjaSlayerCharacter.cs" Link="INinjaSlayerCharacter.cs" />
     <Compile Include="..\..\Content\NinjaSlayerWorldVisualProfile.cs" Link="NinjaSlayerWorldVisualProfile.cs" />
     <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
+    <Compile Include="..\..\Enchantments\IBlackFlameEnchantment.cs" Link="IBlackFlameEnchantment.cs" />
     <None Include="..\Fixtures\RunData\*.json"
           Link="Fixtures\RunData\%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
@@ -48,6 +87,11 @@
       <HintPath>$(Sts2DataDir)/GodotSharp.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <PackageReference Include="STS2.RitsuLib" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
+    <_NinjaSlayerRuntimeReference Include="$(NinjaSlayerRuntimeAssemblies)" />
+    <Reference Include="@(_NinjaSlayerRuntimeReference)">
+      <HintPath>$(Sts2DataDir)/%(Identity)</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <PackageReference Include="$(NinjaSlayerRitsuLibPackageId)" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
   </ItemGroup>
 </Project>

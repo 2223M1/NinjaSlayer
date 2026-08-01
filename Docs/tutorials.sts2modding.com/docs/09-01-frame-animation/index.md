@@ -74,9 +74,3 @@ public partial class Effect : AnimatedSprite2D {
 
 - 有的时候，你导入的帧图片的分辨率过大，在游戏中有明显的卡顿，我们可以通过修改导入设置来缩图。
 批量勾选你的图片，在左上角导入设置这里，选择最小分辨率像素，比如原来的图是1080p，可以修改成720/540来缩图。
-
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/09-01-frame-animation/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

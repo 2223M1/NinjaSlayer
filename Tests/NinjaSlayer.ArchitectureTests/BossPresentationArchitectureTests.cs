@@ -32,11 +32,30 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("slot.Call(\"set_attachment\"", partitioner, StringComparison.Ordinal);
         Assert.Contains("OversizedAreaRatio = 0.22f", partitioner, StringComparison.Ordinal);
         Assert.Contains("OversizedSpanRatio = 0.45f", partitioner, StringComparison.Ordinal);
+        Assert.Contains("Rect2 semanticSourceBounds = atlasParts", partitioner, StringComparison.Ordinal);
+        Assert.Contains("ToFragmentRect(semanticSourceBounds)", partitioner, StringComparison.Ordinal);
+        int readBoneName = partitioner.IndexOf(
+            "private static string ReadBoneName",
+            StringComparison.Ordinal);
+        int directBoneName = partitioner.IndexOf(
+            "ReadString(bone, \"get_bone_name\", \"get_name\")",
+            readBoneName,
+            StringComparison.Ordinal);
+        int boneDataFallback = partitioner.IndexOf(
+            "CallObject(bone, \"get_data\")",
+            readBoneName,
+            StringComparison.Ordinal);
+        Assert.True(
+            readBoneName >= 0
+            && directBoneName > readBoneName
+            && boneDataFallback > directBoneName);
         Assert.Contains("public const int MaximumPieces = 16", math, StringComparison.Ordinal);
         Assert.DoesNotContain("BuildFountainRagdollLinks", presentation, StringComparison.Ordinal);
         Assert.Contains("CombatVfxContainer", presentation, StringComparison.Ordinal);
         Assert.Contains("BodyToSceneContainer", presentation, StringComparison.Ordinal);
         Assert.Contains("ValidateBaselineFragmentGeometry", presentation, StringComparison.Ordinal);
+        Assert.Contains("partition.SourceBounds", presentation, StringComparison.Ordinal);
+        Assert.Contains("semantic_source_size=", presentation, StringComparison.Ordinal);
         Assert.Contains(
             "Vector2 compressionOrigin = fragment.CompressionOrigin",
             presentation,
@@ -151,9 +170,35 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("registration.CombatRelease.WaitAsync", cinematic, StringComparison.Ordinal);
         Assert.DoesNotContain("registration.Completion.WaitAsync", cinematic, StringComparison.Ordinal);
         Assert.Contains("private const float ExitSpeedPixelsPerSecond = 840f", cinematic, StringComparison.Ordinal);
-        int logicalDeath = cinematic.IndexOf("_deathSession.CompleteVisuals()", StringComparison.Ordinal);
+        int replacementDecision = cinematic.IndexOf(
+            "bool fragmentReplacementReady = _softBodyLead != null",
+            StringComparison.Ordinal);
+        int logicalDeath = cinematic.IndexOf(
+            "_deathSession.CompleteVisuals()",
+            replacementDecision,
+            StringComparison.Ordinal);
+        int registration = cinematic.IndexOf(
+            "BossBurstPresentationCoordinator.Register",
+            replacementDecision,
+            StringComparison.Ordinal);
         int exitStart = cinematic.IndexOf("StartExitScene()", StringComparison.Ordinal);
-        Assert.True(logicalDeath >= 0 && exitStart > logicalDeath);
+        int combatRelease = cinematic.IndexOf(
+            "registration.CombatRelease.WaitAsync",
+            replacementDecision,
+            StringComparison.Ordinal);
+        int fallbackRelease = cinematic.IndexOf(
+            "_deathSession.CompleteVisuals()",
+            combatRelease,
+            StringComparison.Ordinal);
+        Assert.True(
+            replacementDecision >= 0
+            && logicalDeath > replacementDecision
+            && registration > logicalDeath
+            && exitStart > registration
+            && combatRelease > exitStart
+            && fallbackRelease > combatRelease);
+        Assert.Contains("if (fragmentReplacementReady)", cinematic, StringComparison.Ordinal);
+        Assert.Contains("if (!fragmentReplacementReady)", cinematic, StringComparison.Ordinal);
         Assert.Contains("private CinematicSessionLifetime? _exitLifetime", cinematic, StringComparison.Ordinal);
         Assert.Contains("private async Task RunExitScene", cinematic, StringComparison.Ordinal);
         Assert.Contains("room.AddChildSafely(controller)", cinematic, StringComparison.Ordinal);

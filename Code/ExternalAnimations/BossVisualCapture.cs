@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -364,7 +365,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                     .ToArray();
                 Partition = BossFragmentPartitioner.BuildSemanticPartition(
                     atlasParts,
-                    BodyLocalBounds,
                     _seed,
                     (_semanticBuilder?.MergedPartCount ?? 0) + _atlasMergeCount);
                 PrepareFragmentResources();
@@ -746,16 +746,18 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private static void FreezeSpineAnimation(Node2D visual)
     {
         var sprite = new MegaSprite(Variant.CreateFrom(visual));
-        using MegaAnimationState? animation = sprite.TryGetAnimationState();
+        MegaAnimationState? animation = sprite.TryGetAnimationState();
+        using IDisposable animationLease = GameCompatibility.NativeHandles.Lease(animation);
         animation?.SetTimeScale(0f);
     }
 
     private static Color[] CaptureSlotColors(Node2D visual)
     {
         var sprite = new MegaSprite(Variant.CreateFrom(visual));
-        using MegaSkeleton skeleton = sprite.GetSkeleton()
+        MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException(
                 "The isolated Spine clone has no skeleton.");
+        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");
@@ -792,9 +794,10 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         Color[] originalColors)
     {
         var sprite = new MegaSprite(Variant.CreateFrom(visual));
-        using MegaSkeleton skeleton = sprite.GetSkeleton()
+        MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException(
                 "The isolated Spine clone has no skeleton.");
+        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");
@@ -844,7 +847,8 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         try
         {
             var sprite = new MegaSprite(Variant.CreateFrom(visual));
-            using MegaSkeleton? skeleton = sprite.GetSkeleton();
+            MegaSkeleton? skeleton = sprite.GetSkeleton();
+            using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
             if (skeleton != null)
             {
                 Rect2 spineBounds = skeleton.GetBounds();

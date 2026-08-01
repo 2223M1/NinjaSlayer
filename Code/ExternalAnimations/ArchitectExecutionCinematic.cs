@@ -329,7 +329,11 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
 
         string monsterId = _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT";
-        _deathSession.CompleteVisuals();
+        bool fragmentReplacementReady = _softBodyLead != null;
+        if (fragmentReplacementReady)
+        {
+            _deathSession.CompleteVisuals();
+        }
 
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
             _room,
@@ -343,6 +347,11 @@ public sealed partial class ArchitectExecutionCinematic : Node
         await Task.WhenAll(
             cameraRestore,
             registration.CombatRelease.WaitAsync(cancelToken));
+        if (!fragmentReplacementReady)
+        {
+            _deathSession.CompleteVisuals();
+        }
+
         await killTask;
     }
 

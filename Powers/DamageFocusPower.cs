@@ -12,7 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class DamageFocusPower : NinjaSlayerPowerTemplate
+public sealed partial class DamageFocusPower : NinjaSlayerPowerTemplate
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.None;
@@ -20,7 +20,12 @@ public sealed class DamageFocusPower : NinjaSlayerPowerTemplate
     public decimal DamageMultiplier { get; set; } = 1m;
     public decimal DefenseMultiplier { get; set; } = 1m;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+    private decimal ModifyDamageMultiplicativeCore(
+        Creature? target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource)
     {
         if (target == Owner && dealer?.Player != null && props.HasFlag(ValueProp.Move))
         {

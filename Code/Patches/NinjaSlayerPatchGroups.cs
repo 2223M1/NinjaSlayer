@@ -133,16 +133,6 @@ internal sealed class PreparedGameplayPatchGroup : IModPatches
     public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<PreparedDrawPatch>();
 }
 
-internal sealed class PreparedSafetyPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<PreparedPileChangeSafetyPatch>();
-        patcher.RegisterPatch<PreparedRunLoadedSafetyPatch>();
-        patcher.RegisterPatch<PreparedCombatStartSafetyPatch>();
-    }
-}
-
 internal sealed class PreparedUiPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>();
@@ -173,7 +163,9 @@ internal sealed class FinisherPresentationPatchGroup : IModPatches
 
 internal sealed class FinisherCadencePatchGroup : IModPatches
 {
-    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<TornadoFistFinisherCadencePatch>();
+    public static void AddTo(ModPatcher patcher)
+    {
+    }
 }
 
 internal sealed class TransitionCorePatchGroup : IModPatches
@@ -208,7 +200,6 @@ internal sealed class TransitionSmoothingPatchGroup : IModPatches
     {
         patcher.RegisterPatch<NinjaSlayerTransitionAssetLoadConcurrencyPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionGcDeferralPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionRunSceneTracePatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionRunInitializationTracePatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionSceneTreeTracePatch>();

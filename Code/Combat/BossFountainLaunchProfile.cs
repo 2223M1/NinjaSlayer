@@ -19,6 +19,8 @@ internal readonly record struct BossFountainLaunchPlan(
 
 internal static class BossFountainLaunchProfile
 {
+    private const int HorizontalDriftCorrectionPasses = 128;
+
     public const float LaunchActuatorSeconds = 0.06f;
     public const float MaximumDeformationSpeed = 520f;
     public const float MinimumLaunchSpeed = 860f;
@@ -44,17 +46,23 @@ internal static class BossFountainLaunchProfile
             return [];
         }
 
-        int outliersPerKind = count < 8
-            ? 0
-            : Math.Max(1, (int)MathF.Round(count * 0.125f));
+        int outliersPerKind = count >= 3
+            ? Math.Max(1, (int)MathF.Round(count * 0.125f))
+            : 0;
         outliersPerKind = Math.Min(outliersPerKind, count / 2);
-        int upwardCount = count - outliersPerKind * 2;
+        int horizontalCount = outliersPerKind;
+        int downwardCount = count == 2 ? 1 : outliersPerKind;
+        int upwardCount = count - horizontalCount - downwardCount;
         var lanes = new BossFountainLaunchLane[count];
         Array.Fill(lanes, BossFountainLaunchLane.Upward);
-        for (int index = 0; index < outliersPerKind; index++)
+        for (int index = 0; index < horizontalCount; index++)
         {
             lanes[upwardCount + index] = BossFountainLaunchLane.Horizontal;
-            lanes[upwardCount + outliersPerKind + index] = BossFountainLaunchLane.Downward;
+        }
+
+        for (int index = 0; index < downwardCount; index++)
+        {
+            lanes[upwardCount + horizontalCount + index] = BossFountainLaunchLane.Downward;
         }
 
         var random = new FountainRandom(seed);
@@ -157,7 +165,7 @@ internal static class BossFountainLaunchProfile
         BossFountainLaunch[] launches,
         IReadOnlyList<float> massRatios)
     {
-        for (int pass = 0; pass < 32; pass++)
+        for (int pass = 0; pass < HorizontalDriftCorrectionPasses; pass++)
         {
             float totalMass = 0f;
             float momentum = 0f;

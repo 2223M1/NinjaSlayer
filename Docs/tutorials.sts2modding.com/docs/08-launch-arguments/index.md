@@ -89,8 +89,3 @@ public static class NGamePatch
 发行版无法使用。需要自己patch`IBootstrapSettingsSubtypes`中的`Get`以添加启动场景。
 
 直接到某个场景。
-版权声明：本文采用 [CC BY-NC-SA 4.0 CN](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议进行许可
-本页目录
-
-[English](/en/docs/08-launch-arguments/)
-[GitHub](https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials)

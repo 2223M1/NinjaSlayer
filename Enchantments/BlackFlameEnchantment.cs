@@ -10,7 +10,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Enchantments;
 
 [RegisterEnchantment]
-public sealed class BlackFlameEnchantment : ModEnchantmentTemplate
+public sealed class BlackFlameEnchantment : ModEnchantmentTemplate, IBlackFlameEnchantment
 {
     public override EnchantmentAssetProfile AssetProfile => new(
         IconPath: $"res://NinjaSlayer/images/enchantments/{GetType().Name}.png"
