@@ -19,12 +19,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(NinjaSlayerHostChannel)' == 'preview'">
-    <NinjaSlayerGameApiVersion>0.110.0</NinjaSlayerGameApiVersion>
+    <NinjaSlayerGameApiVersion>0.110.1</NinjaSlayerGameApiVersion>
     <NinjaSlayerRitsuLibPackageId>STS2.RitsuLib</NinjaSlayerRitsuLibPackageId>
-    <NinjaSlayerManifestMinGameVersion>0.110.0</NinjaSlayerManifestMinGameVersion>
+    <NinjaSlayerManifestMinGameVersion>0.110.1</NinjaSlayerManifestMinGameVersion>
     <NinjaSlayerDistributionChannel>beta</NinjaSlayerDistributionChannel>
     <NinjaSlayerWorkshopItemId></NinjaSlayerWorkshopItemId>
-    <NinjaSlayerHostModuleMvid>fc7d1cd0-3eb8-4bc1-be64-afffa905aab8</NinjaSlayerHostModuleMvid>
+    <NinjaSlayerHostModuleMvid>c0f649b8-8d57-4a9c-8b07-21aece97dca0</NinjaSlayerHostModuleMvid>
     <NinjaSlayerRuntimeAssemblies>Sentry.dll;Sentry.Godot.dll;SmartFormat.dll;SmartFormat.ZString.dll;Steamworks.NET.dll</NinjaSlayerRuntimeAssemblies>
     <DefineConstants>$(DefineConstants);NINJASLAYER_CHANNEL_PREVIEW</DefineConstants>
   </PropertyGroup>

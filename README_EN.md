@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
     <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.110.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.110.0">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.110.1-B51F24" alt="Slay the Spire 2 0.107.1 and 0.110.1">
     <img src="https://img.shields.io/badge/RitsuLib-0.5.1-2D7D9A" alt="RitsuLib 0.5.1">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
@@ -43,7 +43,7 @@ NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built o
 <!-- compatibility:start -->
 | Component | Supported version |
 |---|---|
-| Slay the Spire 2 | stable public `0.107.1`; preview beta `0.110.0` |
+| Slay the Spire 2 | stable public `0.107.1`; preview beta `0.110.1` |
 | RitsuLib | build baseline and minimum dependency `0.5.1`; Workshop installs receive its current release automatically |
 | .NET | `9.0` |
 | Godot | `4.5.1 Mono` |
