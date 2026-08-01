@@ -420,6 +420,17 @@ assert(
   releaseWorkflow.includes('854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'),
   'Release packaging must pin the verified Spine extension hash.',
 );
+assert(smokeWorkflow.includes('NINJASLAYER_SPINE_DIR'));
+assert(smokeWorkflow.includes('Install verified Spine extension'));
+assert(
+  smokeWorkflow.includes('854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'),
+  'Smoke packaging must pin the verified Spine extension hash.',
+);
+assert(
+  smokeWorkflow.indexOf('Install verified Spine extension')
+    < smokeWorkflow.indexOf('Run isolated stable and preview smoke'),
+  'Smoke must install the verified Spine extension before invoking PackageMod.',
+);
 for (const forbidden of [
   'STS2_REFERENCE_BUNDLE_URL',
   'STS2_REFERENCE_BUNDLE_TOKEN',
@@ -449,10 +460,28 @@ for (const required of [
 ]) {
   assert(ephemeralRunner.includes(required), `Ephemeral runner launcher is missing: ${required}`);
 }
+const spineValidationBlock = `if ($RunnerPurpose -in @('Release', 'Smoke')) {
+    foreach ($fileName in $requiredSpineFiles) {
+        $source = Join-Path $SpineExtensionDirectory $fileName`;
 assert(
-  ephemeralRunner.includes("if ($RunnerPurpose -eq 'Release')")
-    && ephemeralRunner.includes('(Get-Item -LiteralPath $destination).IsReadOnly = $true'),
-  'The release runner must isolate its Spine inputs as read-only files.',
+  ephemeralRunner.replaceAll('\r\n', '\n').includes(spineValidationBlock),
+  'Release and Smoke runners must validate every Spine input.',
+);
+const spineIsolationBlock = `    if ($RunnerPurpose -in @('Release', 'Smoke')) {
+        New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null
+        foreach ($fileName in $requiredSpineFiles) {
+            $destination = Join-Path $spineDirectory $fileName
+            Copy-Item -LiteralPath (Join-Path $SpineExtensionDirectory $fileName) -Destination $destination
+            (Get-Item -LiteralPath $destination).IsReadOnly = $true`;
+assert(
+  ephemeralRunner.replaceAll('\r\n', '\n').includes(spineIsolationBlock),
+  'Release and Smoke runners must copy their Spine inputs into a read-only isolated directory.',
+);
+assert(
+  ephemeralRunner.includes(
+    "-Value $(if ($RunnerPurpose -in @('Release', 'Smoke')) { $spineDirectory } else { $null })",
+  ),
+  'Release and Smoke runners must expose only the isolated Spine directory.',
 );
 assert(
   !packagingTargets.includes('BeforeTargets=') && !packagingTargets.includes('AfterTargets='),

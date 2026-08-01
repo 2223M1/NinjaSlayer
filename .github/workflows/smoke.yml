@@ -73,12 +73,20 @@ jobs:
         shell: powershell
         run: |
           . .\trusted\.github\scripts\compatibility.ps1
-          foreach ($variable in @('NINJASLAYER_RITSULIB_MOD_DIR', 'GODOT_EXE')) {
+          $workspaceRoot = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE).TrimEnd(
+            [IO.Path]::DirectorySeparatorChar,
+            [IO.Path]::AltDirectorySeparatorChar)
+          $workspacePrefix = $workspaceRoot + [IO.Path]::DirectorySeparatorChar
+          foreach ($variable in @('NINJASLAYER_RITSULIB_MOD_DIR', 'NINJASLAYER_SPINE_DIR', 'GODOT_EXE')) {
             $value = [Environment]::GetEnvironmentVariable($variable)
             if ([string]::IsNullOrWhiteSpace($value) -or -not (Test-Path -LiteralPath $value)) {
               throw "The ephemeral smoke runner did not provide $variable."
             }
-            if ([IO.Path]::GetFullPath($value).StartsWith([IO.Path]::GetFullPath($env:GITHUB_WORKSPACE), [StringComparison]::OrdinalIgnoreCase)) {
+            $resolvedValue = [IO.Path]::GetFullPath($value).TrimEnd(
+              [IO.Path]::DirectorySeparatorChar,
+              [IO.Path]::AltDirectorySeparatorChar)
+            if ($resolvedValue.Equals($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -or
+                $resolvedValue.StartsWith($workspacePrefix, [StringComparison]::OrdinalIgnoreCase)) {
               throw "$variable must remain outside the repository workspace."
             }
           }
@@ -104,8 +112,11 @@ jobs:
             if ([string]::IsNullOrWhiteSpace($gameRoot) -or -not (Test-Path -LiteralPath $gameRoot -PathType Container)) {
               throw "The ephemeral smoke runner did not provide the $channelName game root."
             }
-            $resolvedRoot = [IO.Path]::GetFullPath($gameRoot)
-            if ($resolvedRoot.StartsWith([IO.Path]::GetFullPath($env:GITHUB_WORKSPACE), [StringComparison]::OrdinalIgnoreCase)) {
+            $resolvedRoot = [IO.Path]::GetFullPath($gameRoot).TrimEnd(
+              [IO.Path]::DirectorySeparatorChar,
+              [IO.Path]::AltDirectorySeparatorChar)
+            if ($resolvedRoot.Equals($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -or
+                $resolvedRoot.StartsWith($workspacePrefix, [StringComparison]::OrdinalIgnoreCase)) {
               throw "$channelName game root must remain outside the repository workspace."
             }
             foreach ($file in @('SlayTheSpire2.exe', 'SlayTheSpire2.pck', 'data_sts2_windows_x86_64\sts2.dll')) {
@@ -121,6 +132,60 @@ jobs:
           }
           "SMOKE_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress)" | Out-File $env:GITHUB_ENV -Append
           "NUGET_PACKAGES=$env:RUNNER_TEMP\smoke-nuget" | Out-File $env:GITHUB_ENV -Append
+
+      - name: Install verified Spine extension
+        shell: powershell
+        run: |
+          function Assert-NoReparsePointInPath {
+            param([Parameter(Mandatory)][string]$Path)
+
+            $currentPath = [IO.Path]::GetFullPath($Path)
+            while (-not [string]::IsNullOrWhiteSpace($currentPath)) {
+              $current = Get-Item -LiteralPath $currentPath -Force -ErrorAction Stop
+              if (($current.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "Protected Smoke input traverses a reparse point: $($current.FullName)"
+              }
+              $parentPath = Split-Path -Parent $current.FullName
+              if ([string]::IsNullOrWhiteSpace($parentPath) -or
+                  $parentPath.Equals($currentPath, [StringComparison]::OrdinalIgnoreCase)) {
+                break
+              }
+              $currentPath = $parentPath
+            }
+          }
+
+          $expectedHash = '854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'
+          $workspaceRoot = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE).TrimEnd(
+            [IO.Path]::DirectorySeparatorChar,
+            [IO.Path]::AltDirectorySeparatorChar)
+          $workspacePrefix = $workspaceRoot + [IO.Path]::DirectorySeparatorChar
+          $spineRoot = Get-Item -LiteralPath $env:NINJASLAYER_SPINE_DIR -ErrorAction Stop
+          if (-not $spineRoot.PSIsContainer) {
+            throw 'NINJASLAYER_SPINE_DIR must be a directory.'
+          }
+          Assert-NoReparsePointInPath -Path $spineRoot.FullName
+          $destination = Join-Path $env:GITHUB_WORKSPACE 'candidate\addons\spine\windows'
+          New-Item -ItemType Directory -Path $destination -Force | Out-Null
+          foreach ($fileName in @(
+            'libspine_godot.windows.editor.x86_64.dll',
+            'libspine_godot.windows.template_debug.x86_64.dll',
+            'libspine_godot.windows.template_release.x86_64.dll'
+          )) {
+            $source = Join-Path $env:NINJASLAYER_SPINE_DIR $fileName
+            $file = Get-Item -LiteralPath $source -ErrorAction Stop
+            if (-not $file.IsReadOnly) {
+              throw "$fileName must be a read-only Smoke input."
+            }
+            Assert-NoReparsePointInPath -Path $file.FullName
+            if ($file.FullName.Equals($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -or
+                $file.FullName.StartsWith($workspacePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+              throw "$fileName must remain outside the repository workspace."
+            }
+            if ((Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $expectedHash) {
+              throw "Spine extension hash mismatch for $fileName."
+            }
+            Copy-Item -LiteralPath $source -Destination $destination
+          }
 
       - name: Run isolated stable and preview smoke
         shell: powershell

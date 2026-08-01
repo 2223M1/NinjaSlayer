@@ -132,11 +132,11 @@ $requiredSpineFiles = @(
     'libspine_godot.windows.template_debug.x86_64.dll',
     'libspine_godot.windows.template_release.x86_64.dll'
 )
-if ($RunnerPurpose -eq 'Release') {
+if ($RunnerPurpose -in @('Release', 'Smoke')) {
     foreach ($fileName in $requiredSpineFiles) {
         $source = Join-Path $SpineExtensionDirectory $fileName
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-            throw "Missing Spine release input: $source"
+            throw "Missing Spine $RunnerPurpose input: $source"
         }
     }
 }
@@ -286,7 +286,7 @@ try {
         }
     }
 
-    if ($RunnerPurpose -eq 'Release') {
+    if ($RunnerPurpose -in @('Release', 'Smoke')) {
         New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null
         foreach ($fileName in $requiredSpineFiles) {
             $destination = Join-Path $spineDirectory $fileName
@@ -321,7 +321,7 @@ try {
     Set-RunnerEnvironment -Name 'NINJASLAYER_CONTRACT_DOTNET_ROOT' `
         -Value $(if ($RunnerPurpose -eq 'Contract') { $dotnetRuntimeDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_SPINE_DIR' `
-        -Value $(if ($RunnerPurpose -eq 'Release') { $spineDirectory } else { $null })
+        -Value $(if ($RunnerPurpose -in @('Release', 'Smoke')) { $spineDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_RITSULIB_MOD_DIR' `
         -Value $(if ($RunnerPurpose -eq 'Smoke') { $ritsuLibSmokeDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_STS2_STABLE_DATA_DIR' `
