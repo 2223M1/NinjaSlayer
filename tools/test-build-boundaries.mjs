@@ -21,6 +21,16 @@ const privateProjectPath = join(root, 'tools', 'private-contract', 'NinjaSlayer.
 const versionPropsPath = join(root, 'eng', 'NinjaSlayer.Version.props');
 const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
+const particlesContainerPath = join(
+  root,
+  'Code',
+  'Nodes',
+  'NinjaSlayerNParticlesContainer.cs',
+);
+const energyVfxScenePaths = [
+  join(root, 'NinjaSlayer', 'scenes', 'vfx', 'energy', 'ironclad', 'ironclad_energy_vfx_back.tscn'),
+  join(root, 'NinjaSlayer', 'scenes', 'vfx', 'energy', 'ironclad', 'ironclad_energy_vfx_front.tscn'),
+];
 const compatibilityPath = join(root, 'eng', 'compatibility.json');
 const contractProjectPath = join(
   root,
@@ -82,6 +92,8 @@ const privateRunnerReadme = readFileSync(privateRunnerReadmePath, 'utf8');
 const contractVerifier = readFileSync(contractVerifierPath, 'utf8');
 const smokeVerifier = readFileSync(smokeVerifierPath, 'utf8');
 const networkProbeProject = readFileSync(networkProbeProjectPath, 'utf8');
+const particlesContainer = readFileSync(particlesContainerPath, 'utf8');
+const energyVfxScenes = energyVfxScenePaths.map((path) => readFileSync(path, 'utf8'));
 const defaultChannel = compatibility.defaultBuildChannel;
 const channelBuild = readFileSync(channelBuildPath, 'utf8');
 
@@ -498,6 +510,7 @@ assert(
 for (const target of [
   'ValidatePackageHost',
   'BuildGodotEditorAssembly',
+  'ImportGodotProjectForPackage',
   'ResolveLocalInstallVersion',
   'PackageMod',
   'InstallLocal',
@@ -508,8 +521,10 @@ for (const target of [
   assert(packagingTargets.includes(`<Target Name="${target}"`), `Missing delivery target ${target}.`);
 }
 assert(
-  packagingTargets.includes('BuildGodotEditorAssembly;Build;SyncFmodBankForPackage'),
-  'Packaging must refresh the Godot editor assembly before exporting the requested configuration.',
+  packagingTargets.includes(
+    'BuildGodotEditorAssembly;Build;ImportGodotProjectForPackage;SyncFmodBankForPackage',
+  ),
+  'Packaging must import Godot resources after the final build and before export.',
 );
 const editorBuildTarget = xmlElement(
   packagingTargets,
@@ -525,6 +540,58 @@ assert(
   'The export-only editor assembly must not register game-dependent mod scripts.',
 );
 assert(editorBuildTarget.includes('BuildInParallel="false"'));
+assert(
+  editorBuildTarget.includes(
+    'RemoveProperties="BaseOutputPath;NinjaSlayerIsolatedOutputRoot"',
+  ),
+  'The Godot editor assembly must be written to .godot instead of the isolated package output.',
+);
+const importGodotTarget = xmlElement(
+  packagingTargets,
+  'Target',
+  'Name="ImportGodotProjectForPackage"',
+);
+assert(
+  importGodotTarget.includes('&quot;$(GodotExe)&quot; --headless --import'),
+  'Packaging must wait for Godot to import resources before export.',
+);
+assert(importGodotTarget.includes('WorkingDirectory="$(MSBuildProjectDirectory)"'));
+assert(
+  importGodotTarget.includes(
+    'EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"',
+  ),
+);
+const godotErrorRegex = 'System\\.[A-Za-z0-9_.]+Exception:|SCRIPT ERROR:|ERROR:';
+assert(
+  importGodotTarget.includes(`CustomErrorRegularExpression="${godotErrorRegex}"`),
+  'Godot import must treat managed and Godot errors as build failures.',
+);
+const exportGodotTarget = xmlElement(
+  packagingTargets,
+  'Target',
+  'Name="ExportPckForPackage"',
+);
+assert(
+  exportGodotTarget.includes(`CustomErrorRegularExpression="${godotErrorRegex}"`),
+  'Godot import and export must use the same error detection.',
+);
+assert(
+  !particlesContainer.includes('[Export(')
+    && !particlesContainer.includes('private new Array<GpuParticles2D>'),
+  'Cross-assembly private NParticlesContainer fields must not be serialized by mod scenes.',
+);
+const particlesAssignment = particlesContainer.indexOf('ParticlesField.SetValue(this, particles);');
+const baseReady = particlesContainer.indexOf('base._Ready();');
+assert(
+  particlesAssignment >= 0 && baseReady > particlesAssignment,
+  'The base particle field must be populated before the inherited ready lifecycle runs.',
+);
+for (const scene of energyVfxScenes) {
+  assert(
+    !scene.includes('_particles'),
+    'Energy VFX scenes must let NinjaSlayerNParticlesContainer discover direct particle children.',
+  );
+}
 assert(
   packagingTargets.includes(
     '<InstallLocalDependsOn Condition="\'$(InstallLocalDependsOn)\' == \'\'">ResolveLocalInstallVersion;PackageMod</InstallLocalDependsOn>',
@@ -713,6 +780,12 @@ try {
   });
   assert.notEqual(godotFailure.status, 0, 'Managed Godot errors must fail packaging even with exit code zero.');
   assert.match(`${godotFailure.stdout}\n${godotFailure.stderr}`, /System\.TypeLoadException/);
+
+  const godotImportFailure = runMsbuild(harnessPath, 'ImportGodotProjectForPackage', {
+    GodotExe: fakeGodotPath,
+  });
+  assert.notEqual(godotImportFailure.status, 0, 'Managed Godot import errors must fail packaging.');
+  assert.match(`${godotImportFailure.stdout}\n${godotImportFailure.stderr}`, /System\.TypeLoadException/);
 
   requireSuccess(runMsbuild(harnessPath, 'InstallLocal'), 'temporary InstallLocal');
   const artifactNames = ['NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck'];
