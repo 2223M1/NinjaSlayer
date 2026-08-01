@@ -261,6 +261,22 @@ for (const source of [releaseWorkflow, workshopWorkflow]) {
 assert(releaseWorkflow.includes('environment: release-production'));
 assert(releaseWorkflow.includes('Assert-NinjaSlayerImmutableReleasesEnabled'));
 assert(releaseWorkflow.includes('workflow_dispatch:'));
+assert(
+  !releaseWorkflow.includes('shell: pwsh'),
+  'The dedicated Windows Release runner must not require PowerShell 7.',
+);
+const releaseCommandFileWrites = releaseWorkflow
+  .split('\n')
+  .filter(
+    (line) =>
+      line.includes('Out-File')
+      && (line.includes('$env:GITHUB_ENV') || line.includes('$env:GITHUB_OUTPUT')),
+  );
+assert(releaseCommandFileWrites.length > 0, 'Release must publish command-file outputs.');
+assert(
+  releaseCommandFileWrites.every((line) => line.includes('-Encoding utf8')),
+  'Windows PowerShell 5.1 must write GitHub command files as UTF-8.',
+);
 assert(!releaseWorkflow.includes("tags:\n      - 'v0.1.*'"), 'Tag pushes must not automatically queue the protected release path.');
 assert(releaseWorkflow.includes('git rev-list -n 1 $env:RELEASE_TAG'));
 assert(releaseWorkflow.includes('Exactly two release archives are required.'));

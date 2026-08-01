@@ -24,6 +24,69 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     throw 'Run the real-game smoke launcher from elevated PowerShell so outbound traffic can be blocked.'
 }
 
+function Invoke-Native {
+    param(
+        [Parameter(Mandatory)][string]$Command,
+        [Parameter(Mandatory)][string[]]$Arguments
+    )
+
+    & $Command @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Command failed with exit code $LASTEXITCODE."
+    }
+}
+
+function Add-MsBuildProperty {
+    param(
+        [Parameter(Mandatory)][Collections.Generic.List[string]]$Arguments,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$Value
+    )
+
+    $Arguments.Add("-p:$Name=$Value")
+}
+
+function Get-RelativeChildPath {
+    param(
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][string]$Child
+    )
+
+    $sourceRoot = [IO.Path]::GetFullPath($Source).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $sourcePrefix = "$sourceRoot$([IO.Path]::DirectorySeparatorChar)"
+    $childPath = [IO.Path]::GetFullPath($Child)
+    if (-not $childPath.StartsWith($sourcePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Smoke mirror path is not a child of $sourceRoot`: $childPath"
+    }
+
+    return $childPath.Substring($sourcePrefix.Length)
+}
+
+function Replace-OrdinalIgnoreCase {
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$OldValue,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$NewValue
+    )
+
+    $builder = [Text.StringBuilder]::new()
+    $searchIndex = 0
+    while ($searchIndex -lt $Text.Length) {
+        $matchIndex = $Text.IndexOf($OldValue, $searchIndex, [StringComparison]::OrdinalIgnoreCase)
+        if ($matchIndex -lt 0) {
+            break
+        }
+
+        $null = $builder.Append($Text, $searchIndex, $matchIndex - $searchIndex)
+        $null = $builder.Append($NewValue)
+        $searchIndex = $matchIndex + $OldValue.Length
+    }
+    $null = $builder.Append($Text, $searchIndex, $Text.Length - $searchIndex)
+    return $builder.ToString()
+}
+
 function Resolve-RequiredPath {
     param([Parameter(Mandatory)][string]$Path, [switch]$Leaf)
 
@@ -45,11 +108,11 @@ function New-HardLinkedTree {
     }
     New-Item -ItemType Directory -Path $Destination -Force | Out-Null
     foreach ($directory in Get-ChildItem -LiteralPath $Source -Directory -Recurse -Force) {
-        $relative = [IO.Path]::GetRelativePath($Source, $directory.FullName)
+        $relative = Get-RelativeChildPath -Source $Source -Child $directory.FullName
         New-Item -ItemType Directory -Path (Join-Path $Destination $relative) -Force | Out-Null
     }
     foreach ($file in Get-ChildItem -LiteralPath $Source -File -Recurse -Force) {
-        $relative = [IO.Path]::GetRelativePath($Source, $file.FullName)
+        $relative = Get-RelativeChildPath -Source $Source -Child $file.FullName
         New-Item -ItemType HardLink -Path (Join-Path $Destination $relative) -Target $file.FullName | Out-Null
     }
 }
@@ -135,7 +198,10 @@ function Copy-SanitizedTextArtifact {
         @($GameRootDirectory, '<GAME_ROOT>'),
         @($env:USERPROFILE, '<USER_PROFILE>')
     )) {
-        $content = $content.Replace($replacement[0], $replacement[1], [StringComparison]::OrdinalIgnoreCase)
+        $content = Replace-OrdinalIgnoreCase `
+            -Text $content `
+            -OldValue ([string]$replacement[0]) `
+            -NewValue ([string]$replacement[1])
     }
     Set-Content -LiteralPath $Destination -Value $content -Encoding utf8
 }
@@ -198,22 +264,53 @@ $effectivePhaseTimeoutSeconds = if ($PhaseTimeoutSeconds -gt 0) {
 try {
     New-Item -ItemType Directory -Path $sessionRoot, $appDataDirectory, $localAppDataDirectory, $packageDirectory, $driverOutput -Force | Out-Null
 
-    & dotnet build (Join-Path $CandidateRoot 'NinjaSlayer.csproj') -c Release -t:PackageMod -v:minimal `
-        -p:Sts2Dir=$GameRootDirectory `
-        -p:Sts2DataDir=(Join-Path $GameRootDirectory 'data_sts2_windows_x86_64') `
-        -p:NinjaSlayerHostChannel=$Channel `
-        -p:GodotExe=$GodotExecutable `
-        -p:PostBuildModDir="$packageDirectory\"
-    if ($LASTEXITCODE -ne 0) { throw 'Candidate PackageMod failed.' }
+    $gameDataDirectory = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64'
+    $packageArguments = [Collections.Generic.List[string]]::new()
+    foreach ($argument in @(
+            'build',
+            (Join-Path $CandidateRoot 'NinjaSlayer.csproj'),
+            '-c',
+            'Release',
+            '-t:PackageMod',
+            '-v:minimal'
+        )) {
+        $packageArguments.Add($argument)
+    }
+    Add-MsBuildProperty $packageArguments 'Sts2Dir' $GameRootDirectory
+    Add-MsBuildProperty $packageArguments 'Sts2DataDir' $gameDataDirectory
+    Add-MsBuildProperty $packageArguments 'NinjaSlayerHostChannel' $Channel
+    Add-MsBuildProperty $packageArguments 'GodotExe' $GodotExecutable
+    Add-MsBuildProperty $packageArguments 'PostBuildModDir' ($packageDirectory + [IO.Path]::DirectorySeparatorChar)
+    try {
+        Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray()
+    }
+    catch {
+        throw "Candidate PackageMod failed. $($_.Exception.Message)"
+    }
 
     $candidateAssembly = Join-Path $packageDirectory 'NinjaSlayer.dll'
-    & dotnet build (Join-Path $TrustedRoot 'tools\smoke-harness\NinjaSlayer.SmokeDriver\NinjaSlayer.SmokeDriver.csproj') `
-        -c Release -v:minimal -o $driverOutput `
-        -p:Sts2DataDir=(Join-Path $GameRootDirectory 'data_sts2_windows_x86_64') `
-        -p:NinjaSlayerHostChannel=$Channel `
-        -p:NinjaSlayerAssemblyPath=$candidateAssembly `
-        -p:RitsuLibAssemblyPath=(Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
-    if ($LASTEXITCODE -ne 0) { throw 'Trusted SmokeDriver build failed.' }
+    $driverArguments = [Collections.Generic.List[string]]::new()
+    foreach ($argument in @(
+            'build',
+            (Join-Path $TrustedRoot 'tools\smoke-harness\NinjaSlayer.SmokeDriver\NinjaSlayer.SmokeDriver.csproj'),
+            '-c',
+            'Release',
+            '-v:minimal',
+            '-o',
+            $driverOutput
+        )) {
+        $driverArguments.Add($argument)
+    }
+    Add-MsBuildProperty $driverArguments 'Sts2DataDir' $gameDataDirectory
+    Add-MsBuildProperty $driverArguments 'NinjaSlayerHostChannel' $Channel
+    Add-MsBuildProperty $driverArguments 'NinjaSlayerAssemblyPath' $candidateAssembly
+    Add-MsBuildProperty $driverArguments 'RitsuLibAssemblyPath' (Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
+    try {
+        Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray()
+    }
+    catch {
+        throw "Trusted SmokeDriver build failed. $($_.Exception.Message)"
+    }
 
     New-Item -ItemType Directory -Path $isolatedGameRoot -Force | Out-Null
     foreach ($file in Get-ChildItem -LiteralPath $GameRootDirectory -File -Force) {

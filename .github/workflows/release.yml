@@ -28,7 +28,7 @@ jobs:
 
       - name: Validate new release tag at origin/main HEAD
         id: release
-        shell: pwsh
+        shell: powershell
         run: |
           if ('${{ github.ref }}' -cne 'refs/heads/main') {
             throw 'The protected Release workflow must be dispatched from main.'
@@ -51,11 +51,11 @@ jobs:
           if ($workflowSha -ne $releaseSha) {
             throw "The workflow head $workflowSha does not match release commit $releaseSha."
           }
-          "RELEASE_SHA=$releaseSha" | Out-File $env:GITHUB_ENV -Append
-          "release_sha=$releaseSha" | Out-File $env:GITHUB_OUTPUT -Append
+          "RELEASE_SHA=$releaseSha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "release_sha=$releaseSha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Require an immutable new GitHub Release
-        shell: pwsh
+        shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -70,7 +70,7 @@ jobs:
           }
 
       - name: Require protected dual-host Contract and smoke
-        shell: pwsh
+        shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -131,7 +131,7 @@ jobs:
               dataDirectory = $resolved
             }
           }
-          "RELEASE_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress)" | Out-File $env:GITHUB_ENV -Append
+          "RELEASE_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install verified Spine extension
         shell: powershell
@@ -157,7 +157,7 @@ jobs:
           }
 
       - name: Validate resources and import with preview host
-        shell: pwsh
+        shell: powershell
         run: |
           node .\tools\sync-compatibility.mjs --check
           node .\tools\validate-repository.mjs
@@ -181,7 +181,7 @@ jobs:
 
       - name: Package stable and preview release archives
         id: package
-        shell: pwsh
+        shell: powershell
         run: |
           $version = $env:RELEASE_TAG.Substring(1)
           $buildRoot = Join-Path $env:RUNNER_TEMP 'release-channel-build'
@@ -218,9 +218,9 @@ jobs:
             -StableArchivePath $archivesByChannel.stable `
             -PreviewArchivePath $archivesByChannel.preview `
             -OutputPath (Join-Path $protectedRoot 'release-attestation.json')
-          "RELEASE_ARCHIVES=$($archives -join ';')" | Out-File $env:GITHUB_ENV -Append
-          "PROTECTED_RELEASE_DIR=$protectedRoot" | Out-File $env:GITHUB_ENV -Append
-          "protected_release_dir=$protectedRoot" | Out-File $env:GITHUB_OUTPUT -Append
+          "RELEASE_ARCHIVES=$($archives -join ';')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROTECTED_RELEASE_DIR=$protectedRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "protected_release_dir=$protectedRoot" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Upload protected dual-host release artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -231,7 +231,7 @@ jobs:
           retention-days: 90
 
       - name: Create immutable GitHub Release
-        shell: pwsh
+        shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
