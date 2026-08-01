@@ -27,12 +27,26 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 function Invoke-Native {
     param(
         [Parameter(Mandatory)][string]$Command,
-        [Parameter(Mandatory)][string[]]$Arguments
+        [Parameter(Mandatory)][string[]]$Arguments,
+        [string]$WorkingDirectory
     )
 
-    & $Command @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "$Command failed with exit code $LASTEXITCODE."
+    $changeDirectory = -not [string]::IsNullOrWhiteSpace($WorkingDirectory)
+    $exitCode = 0
+    try {
+        if ($changeDirectory) {
+            Push-Location -LiteralPath $WorkingDirectory
+        }
+        & $Command @Arguments
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        if ($changeDirectory) {
+            Pop-Location
+        }
+    }
+    if ($exitCode -ne 0) {
+        throw "$Command failed with exit code $exitCode."
     }
 }
 
@@ -282,7 +296,7 @@ try {
     Add-MsBuildProperty $packageArguments 'GodotExe' $GodotExecutable
     Add-MsBuildProperty $packageArguments 'PostBuildModDir' ($packageDirectory + [IO.Path]::DirectorySeparatorChar)
     try {
-        Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray()
+        Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray() -WorkingDirectory $CandidateRoot
     }
     catch {
         throw "Candidate PackageMod failed. $($_.Exception.Message)"
@@ -306,7 +320,7 @@ try {
     Add-MsBuildProperty $driverArguments 'NinjaSlayerAssemblyPath' $candidateAssembly
     Add-MsBuildProperty $driverArguments 'RitsuLibAssemblyPath' (Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
     try {
-        Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray()
+        Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray() -WorkingDirectory $TrustedRoot
     }
     catch {
         throw "Trusted SmokeDriver build failed. $($_.Exception.Message)"

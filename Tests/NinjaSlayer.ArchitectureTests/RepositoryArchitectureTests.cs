@@ -73,10 +73,16 @@ public sealed partial class RepositoryArchitectureTests
         Assert.DoesNotContain("-p:Sts2DataDir=(Join-Path", launcher, StringComparison.Ordinal);
         Assert.Contains("$packageArguments = [Collections.Generic.List[string]]::new()", launcher, StringComparison.Ordinal);
         Assert.Contains("Add-MsBuildProperty $packageArguments 'Sts2DataDir' $gameDataDirectory", launcher, StringComparison.Ordinal);
-        Assert.Contains("Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray()", launcher, StringComparison.Ordinal);
+        Assert.Contains(
+            "Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray() -WorkingDirectory $CandidateRoot",
+            launcher,
+            StringComparison.Ordinal);
         Assert.Contains("$driverArguments = [Collections.Generic.List[string]]::new()", launcher, StringComparison.Ordinal);
         Assert.Contains("Add-MsBuildProperty $driverArguments 'Sts2DataDir' $gameDataDirectory", launcher, StringComparison.Ordinal);
-        Assert.Contains("Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray()", launcher, StringComparison.Ordinal);
+        Assert.Contains(
+            "Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray() -WorkingDirectory $TrustedRoot",
+            launcher,
+            StringComparison.Ordinal);
         Assert.DoesNotContain("[IO.Path]::GetRelativePath", launcher, StringComparison.Ordinal);
         Assert.Contains("function Get-RelativeChildPath", launcher, StringComparison.Ordinal);
         Assert.Contains("$childPath.Substring($sourcePrefix.Length)", launcher, StringComparison.Ordinal);
