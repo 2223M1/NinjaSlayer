@@ -1,5 +1,7 @@
 Set-StrictMode -Version Latest
 
+. (Join-Path $PSScriptRoot 'file-hash.ps1')
+
 if ($null -eq ('System.IO.Compression.ZipFile' -as [type])) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
 }
@@ -12,7 +14,7 @@ $script:NinjaSlayerPackageFiles = @(
 )
 
 function Get-NinjaSlayerSha256([string]$Path) {
-    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    return Get-NinjaSlayerFileSha256 -Path $Path
 }
 
 function Assert-NinjaSlayerReleaseEqual($Actual, $Expected, [string]$Field) {

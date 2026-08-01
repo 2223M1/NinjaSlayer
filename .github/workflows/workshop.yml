@@ -121,6 +121,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          . .\.github\scripts\file-hash.ps1
+
           $protectedDirectory = Join-Path $env:RUNNER_TEMP 'protected-release\verified'
           $protectedArchive = Join-Path $protectedDirectory $env:RELEASE_ARCHIVE_NAME
           $publicDirectory = Join-Path $env:RUNNER_TEMP 'public-release'
@@ -130,8 +132,8 @@ jobs:
             --dir $publicDirectory
           if ($LASTEXITCODE -ne 0) { throw 'Downloading the public GitHub Release archive failed.' }
           $publicArchive = Join-Path $publicDirectory $env:RELEASE_ARCHIVE_NAME
-          $protectedHash = (Get-FileHash -LiteralPath $protectedArchive -Algorithm SHA256).Hash
-          $publicHash = (Get-FileHash -LiteralPath $publicArchive -Algorithm SHA256).Hash
+          $protectedHash = Get-NinjaSlayerFileSha256 -Path $protectedArchive
+          $publicHash = Get-NinjaSlayerFileSha256 -Path $publicArchive
           if ($publicHash -ne $protectedHash) {
             throw 'The public GitHub Release asset does not match the protected Release artifact.'
           }

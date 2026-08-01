@@ -136,6 +136,8 @@ jobs:
       - name: Install verified Spine extension
         shell: powershell
         run: |
+          . .\.github\scripts\file-hash.ps1
+
           $expectedHash = '854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'
           $workspace = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
           $destination = Join-Path $env:GITHUB_WORKSPACE 'addons\spine\windows'
@@ -150,7 +152,7 @@ jobs:
             if (-not $file.IsReadOnly -or $file.FullName.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
               throw "$fileName must be a read-only input outside the workspace."
             }
-            if ((Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $expectedHash) {
+            if ((Get-NinjaSlayerFileSha256 -Path $source) -ne $expectedHash) {
               throw "Spine extension hash mismatch for $fileName."
             }
             Copy-Item -LiteralPath $source -Destination $destination

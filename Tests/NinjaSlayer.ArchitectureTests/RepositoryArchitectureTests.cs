@@ -99,6 +99,76 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void ProtectedDeliveryHashingDoesNotDependOnGetFileHash()
+    {
+        string hashHelper = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "file-hash.ps1"));
+        string ci = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "ci.yml"));
+        string compatibility = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "compatibility.ps1"));
+        string releaseArtifact = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "release-artifact.ps1"));
+        string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
+        string release = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "release.yml"));
+        string workshop = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "workshop.yml"));
+
+        Assert.Contains("[Security.Cryptography.SHA256]::Create()", hashHelper, StringComparison.Ordinal);
+        Assert.Contains("[IO.File]::OpenRead", hashHelper, StringComparison.Ordinal);
+        Assert.DoesNotContain("Get-FileHash", hashHelper, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("powershell-compatibility:", ci, StringComparison.Ordinal);
+        Assert.Contains("runs-on: windows-latest", ci, StringComparison.Ordinal);
+        Assert.Contains("shell: powershell", ci, StringComparison.Ordinal);
+        Assert.Contains("./tools/test-compatibility-powershell.ps1", ci, StringComparison.Ordinal);
+        Assert.Contains("needs: powershell-compatibility", ci, StringComparison.Ordinal);
+        Assert.Contains("if: ${{ always() }}", ci, StringComparison.Ordinal);
+        Assert.Contains(
+            "if: ${{ needs.powershell-compatibility.result != 'success' }}",
+            ci,
+            StringComparison.Ordinal);
+        Assert.Contains("PowerShell 5.1 compatibility job must succeed.", ci, StringComparison.Ordinal);
+        Assert.Contains(". (Join-Path $PSScriptRoot 'file-hash.ps1')", compatibility, StringComparison.Ordinal);
+        Assert.Contains(". (Join-Path $PSScriptRoot 'file-hash.ps1')", releaseArtifact, StringComparison.Ordinal);
+        Assert.Contains(
+            ". .\\trusted\\.github\\scripts\\file-hash.ps1",
+            ExtractWorkflowStep(smoke, "Install verified Spine extension"),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            ". .\\.github\\scripts\\file-hash.ps1",
+            ExtractWorkflowStep(release, "Install verified Spine extension"),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            ". .\\.github\\scripts\\file-hash.ps1",
+            ExtractWorkflowStep(workshop, "Match public Release asset and extract protected archive"),
+            StringComparison.Ordinal);
+
+        foreach (string relativePath in new[]
+        {
+            ".github/scripts/compatibility.ps1",
+            ".github/scripts/release-artifact.ps1",
+            ".github/workflows/contract.yml",
+            ".github/workflows/smoke.yml",
+            ".github/workflows/release.yml",
+            ".github/workflows/workshop.yml",
+            "tools/private-contract/Start-EphemeralContractRunner.ps1",
+        })
+        {
+            string source = File.ReadAllText(Path.Combine(
+                Root,
+                relativePath.Replace('/', Path.DirectorySeparatorChar)));
+            Assert.DoesNotContain("Get-FileHash", source, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
     public void SmokeWorkflowInstallsVerifiedSpineExtensionBeforePackaging()
     {
         string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
@@ -2587,6 +2657,15 @@ public sealed partial class RepositoryArchitectureTests
 
     private static int CountOccurrences(string source, string value) =>
         source.Split(value, StringSplitOptions.None).Length - 1;
+
+    private static string ExtractWorkflowStep(string workflow, string stepName)
+    {
+        string marker = $"- name: {stepName}";
+        int start = workflow.IndexOf(marker, StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Workflow step '{stepName}' was not found.");
+        int end = workflow.IndexOf("\n      - name:", start + marker.Length, StringComparison.Ordinal);
+        return end >= 0 ? workflow[start..end] : workflow[start..];
+    }
 
     private static (int Width, int Height) ReadPngDimensions(string relativePath)
     {

@@ -136,6 +136,8 @@ jobs:
       - name: Install verified Spine extension
         shell: powershell
         run: |
+          . .\trusted\.github\scripts\file-hash.ps1
+
           function Assert-NoReparsePointInPath {
             param([Parameter(Mandatory)][string]$Path)
 
@@ -181,7 +183,7 @@ jobs:
                 $file.FullName.StartsWith($workspacePrefix, [StringComparison]::OrdinalIgnoreCase)) {
               throw "$fileName must remain outside the repository workspace."
             }
-            if ((Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $expectedHash) {
+            if ((Get-NinjaSlayerFileSha256 -Path $source) -ne $expectedHash) {
               throw "Spine extension hash mismatch for $fileName."
             }
             Copy-Item -LiteralPath $source -Destination $destination
