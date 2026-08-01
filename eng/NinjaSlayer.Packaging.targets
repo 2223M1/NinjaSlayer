@@ -10,7 +10,7 @@
     <GodotExportPreset Condition="'$(GodotExportPreset)' == ''">Windows Desktop</GodotExportPreset>
     <NodeExe Condition="'$(NodeExe)' == ''">node</NodeExe>
     <DotNetExe Condition="'$(DotNetExe)' == ''">dotnet</DotNetExe>
-    <PackageModDependsOn Condition="'$(PackageModDependsOn)' == ''">RequireExplicitPackageHostChannel;ValidatePackageHost;BuildGodotEditorAssembly;Build;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums</PackageModDependsOn>
+    <PackageModDependsOn Condition="'$(PackageModDependsOn)' == ''">RequireExplicitPackageHostChannel;ValidatePackageHost;BuildGodotEditorAssembly;Build;ImportGodotProjectForPackage;SyncFmodBankForPackage;GenerateVersionedManifest;PreparePackageDirectory;ExportPckForPackage;CopyPackageArtifacts;ValidatePackageOutput;GeneratePackageChecksums</PackageModDependsOn>
     <InstallLocalDependsOn Condition="'$(InstallLocalDependsOn)' == ''">ResolveLocalInstallVersion;PackageMod</InstallLocalDependsOn>
     <PublishWorkshopDependsOn Condition="'$(PublishWorkshopDependsOn)' == ''">ValidateWorkshopPublish;PackageMod;StageWorkshop</PublishWorkshopDependsOn>
     <StageWorkshopDependsOn Condition="'$(StageWorkshopDependsOn)' == ''">RequireExplicitPackageHostChannel;ValidatePackageOutput</StageWorkshopDependsOn>
@@ -63,6 +63,7 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Build"
              Properties="Configuration=Debug;GodotDisabledSourceGenerators=ScriptPathAttribute"
+             RemoveProperties="BaseOutputPath;NinjaSlayerIsolatedOutputRoot"
              BuildInParallel="false" />
   </Target>
 
@@ -88,6 +89,14 @@
   <Target Name="PreparePackageDirectory">
     <RemoveDir Directories="$(PostBuildModDir)" Condition="Exists('$(PostBuildModDir)')" />
     <MakeDir Directories="$(PostBuildModDir)" />
+  </Target>
+
+  <Target Name="ImportGodotProjectForPackage">
+    <Error Condition="!Exists('$(GodotExe)')" Text="Godot 4.5.1 Mono not found at $(GodotExe)." />
+    <Exec Command="&quot;$(GodotExe)&quot; --headless --import"
+          WorkingDirectory="$(MSBuildProjectDirectory)"
+          EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
+          CustomErrorRegularExpression="System\.[A-Za-z0-9_.]+Exception:|SCRIPT ERROR:|ERROR:" />
   </Target>
 
   <Target Name="ExportPckForPackage">

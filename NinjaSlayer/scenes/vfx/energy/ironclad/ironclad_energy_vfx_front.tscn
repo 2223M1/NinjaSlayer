@@ -211,9 +211,8 @@ turbulence_initial_displacement_min = -4.9999986
 turbulence_initial_displacement_max = 5.0000014
 turbulence_influence_over_life = SubResource("CurveTexture_io0od")
 
-[node name="ironclad_energy_vfx_front" type="Node2D" node_paths=PackedStringArray("_particles")]
+[node name="ironclad_energy_vfx_front" type="Node2D"]
 script = ExtResource("1_ymtlw")
-_particles = [NodePath("vfx_fire_flipbook_1"), NodePath("vfx_fire_flipbook_2"), NodePath("vfx_fire_flipbook_3"), NodePath("vfx_fire_embers_straight"), NodePath("vfx_common_ring_polar_a")]
 
 [node name="vfx_fire_flipbook_1" parent="." instance=ExtResource("2_sbapc")]
 position = Vector2(11, -55)
