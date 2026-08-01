@@ -99,6 +99,79 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
+    public void SmokeWorkflowInstallsVerifiedSpineExtensionBeforePackaging()
+    {
+        string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
+
+        Assert.Contains("Install verified Spine extension", smoke, StringComparison.Ordinal);
+        Assert.Contains("NINJASLAYER_SPINE_DIR", smoke, StringComparison.Ordinal);
+        Assert.Contains(
+            "854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C",
+            smoke,
+            StringComparison.Ordinal);
+        foreach (string fileName in new[]
+        {
+            "libspine_godot.windows.editor.x86_64.dll",
+            "libspine_godot.windows.template_debug.x86_64.dll",
+            "libspine_godot.windows.template_release.x86_64.dll",
+        })
+        {
+            Assert.Contains(fileName, smoke, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("candidate\\addons\\spine\\windows", smoke, StringComparison.Ordinal);
+        Assert.Contains("if (-not $file.IsReadOnly)", smoke, StringComparison.Ordinal);
+        Assert.Contains(
+            "$workspacePrefix = $workspaceRoot + [IO.Path]::DirectorySeparatorChar",
+            smoke,
+            StringComparison.Ordinal);
+        Assert.Contains("$file.FullName.Equals($workspaceRoot", smoke, StringComparison.Ordinal);
+        Assert.Contains("function Assert-NoReparsePointInPath", smoke, StringComparison.Ordinal);
+        Assert.Contains(
+            "while (-not [string]::IsNullOrWhiteSpace($currentPath))",
+            smoke,
+            StringComparison.Ordinal);
+        Assert.Contains("[IO.FileAttributes]::ReparsePoint", smoke, StringComparison.Ordinal);
+        Assert.Contains("Assert-NoReparsePointInPath -Path $file.FullName", smoke, StringComparison.Ordinal);
+        Assert.Contains("Copy-Item -LiteralPath $source -Destination $destination", smoke, StringComparison.Ordinal);
+        Assert.True(
+            smoke.IndexOf("Install verified Spine extension", StringComparison.Ordinal)
+                < smoke.IndexOf("Run isolated stable and preview smoke", StringComparison.Ordinal),
+            "The verified Spine extension must be installed before Smoke invokes PackageMod.");
+    }
+
+    [Fact]
+    public void EphemeralReleaseAndSmokeRunnersIsolateSpineExtension()
+    {
+        string launcher = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "private-contract",
+            "Start-EphemeralContractRunner.ps1"));
+        string normalized = launcher.Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        Assert.Contains(
+            "if ($RunnerPurpose -in @('Release', 'Smoke')) {\n" +
+                "    foreach ($fileName in $requiredSpineFiles) {\n" +
+                "        $source = Join-Path $SpineExtensionDirectory $fileName",
+            normalized,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "    if ($RunnerPurpose -in @('Release', 'Smoke')) {\n" +
+                "        New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null\n" +
+                "        foreach ($fileName in $requiredSpineFiles) {\n" +
+                "            $destination = Join-Path $spineDirectory $fileName\n" +
+                "            Copy-Item -LiteralPath (Join-Path $SpineExtensionDirectory $fileName) -Destination $destination\n" +
+                "            (Get-Item -LiteralPath $destination).IsReadOnly = $true",
+            normalized,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "-Value $(if ($RunnerPurpose -in @('Release', 'Smoke')) { $spineDirectory } else { $null })",
+            launcher,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ProtectedWorkflowsEnumerateTopLevelHostArraysOnWindowsPowerShell()
     {
         string contract = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "contract.yml"));

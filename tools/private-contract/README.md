@@ -6,7 +6,7 @@ This directory contains the trusted entry points for protected Contract, Release
 
 - `-RunnerPurpose Contract`: pass `GameDataDirectoryStable` and `GameDataDirectoryPreview`. The launcher copies both reference sets read-only and creates an isolated .NET 9 runtime. Run from elevated PowerShell so the job can block non-loopback traffic from both dotnet and Godot while retaining the local Contract fixture.
 - `-RunnerPurpose Release`: pass the same two data directories. The launcher also isolates the fixed-hash Spine GDExtension files used by `PackageMod`.
-- `-RunnerPurpose Smoke`: pass `GameRootDirectoryStable`, `GameRootDirectoryPreview`, and `RitsuLibModDirectory`. The RitsuLib directory must be a complete current Workshop installation whose manifest and assembly are at least the pinned compile baseline. Run from elevated PowerShell.
+- `-RunnerPurpose Smoke`: pass `GameRootDirectoryStable`, `GameRootDirectoryPreview`, and `RitsuLibModDirectory`. The launcher isolates the same fixed-hash Spine GDExtension files for candidate packaging. The RitsuLib directory must be a complete current Workshop installation whose manifest and assembly are at least the pinned compile baseline. Run from elevated PowerShell.
 
 Example:
 
