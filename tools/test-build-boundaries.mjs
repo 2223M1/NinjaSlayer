@@ -375,6 +375,14 @@ assert(workshopWorkflow.includes("'${{ github.ref }}' -cne 'refs/heads/main'"));
 assert(workshopWorkflow.includes('verify-release-attestation.ps1'));
 assert(workshopWorkflow.includes('The public GitHub Release asset does not match'));
 assert(
+  workshopWorkflow.includes('node ./tools/package-contract.mjs validate-manifest'),
+  'Workshop manifest validation must use a path that works on Linux runners.',
+);
+assert(
+  !workshopWorkflow.includes('node .\\tools\\package-contract.mjs'),
+  'Workshop manifest validation must not use a Windows-only path.',
+);
+assert(
   releaseWorkflow.includes('runs-on: [self-hosted, Windows, X64, ninjaslayer-release]'),
   'Release packaging must run only on the dedicated ephemeral release runner.',
 );
