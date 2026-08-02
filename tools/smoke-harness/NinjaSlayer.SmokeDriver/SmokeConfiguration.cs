@@ -1,5 +1,7 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using NinjaSlayer.Code.Diagnostics;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -43,6 +45,7 @@ internal sealed record SmokeConfiguration(
 
 [JsonSerializable(typeof(SmokeConfiguration))]
 [JsonSerializable(typeof(SmokeCheckpoint))]
+[JsonSerializable(typeof(NinjaSlayerRuntimeHealthSnapshot))]
 internal partial class SmokeJsonContext : JsonSerializerContext;
 
 internal sealed record SmokeCheckpoint(
@@ -53,4 +56,4 @@ internal sealed record SmokeCheckpoint(
     long Sequence,
     string Status,
     long ElapsedMilliseconds,
-    object? Data = null);
+    JsonNode? Data = null);

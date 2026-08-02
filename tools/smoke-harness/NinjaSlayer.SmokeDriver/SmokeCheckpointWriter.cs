@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -17,7 +18,7 @@ internal sealed class SmokeCheckpointWriter : IDisposable
         _writer = new StreamWriter(configuration.CheckpointPath, append: true) { AutoFlush = true };
     }
 
-    public void Write(string name, string status = "passed", object? data = null)
+    public void Write(string name, string status = "passed", JsonNode? data = null)
     {
         var checkpoint = new SmokeCheckpoint(
             1,

@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Godot;
 using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Screens;
@@ -9,6 +11,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -65,7 +68,7 @@ internal sealed class SmokeController
         }
 
         Current = this;
-        _ = RunSafelyAsync();
+        TaskHelper.RunSafely(RunSafelyAsync());
     }
 
     public bool TryClaimFirstCombat() =>
@@ -96,7 +99,9 @@ internal sealed class SmokeController
     }
 
     public void ReportCharacterSelected(string characterId) =>
-        _checkpoints.Write("character.selected", data: new { characterId });
+        _checkpoints.Write(
+            "character.selected",
+            data: new JsonObject { ["characterId"] = characterId });
 
     public void BeforeFullAutoSlayExit(ref int exitCode)
     {
@@ -114,7 +119,7 @@ internal sealed class SmokeController
         catch (Exception exception)
         {
             exitCode = 1;
-            _checkpoints.Write("driver.failed", "failed", new { exception = exception.ToString() });
+            _checkpoints.Write("driver.failed", "failed", ExceptionData(exception));
             TryCaptureFailureScreenshot();
         }
     }
@@ -131,7 +136,9 @@ internal sealed class SmokeController
             () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "player play phase did not start",
             cancellationToken);
-        _checkpoints.Write("combat.started", data: new { enemyCount = combatState.Enemies.Count });
+        _checkpoints.Write(
+            "combat.started",
+            data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });
 
         await PlayerCmd.SetEnergy(10m, player);
         ReadyBlade readyBlade = combatState.CreateCard<ReadyBlade>(player);
@@ -192,14 +199,29 @@ internal sealed class SmokeController
         TornadoFist lethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(lethal, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), lethal, focus);
-        await WaitUntilAsync(() => !CombatManager.Instance.IsInProgress, "finisher did not end combat", cancellationToken);
+        NinjaSlayerRuntimeHealthSnapshot afterLethalCard = NinjaSlayerRuntimeHealth.Capture();
+        _checkpoints.Write(
+            "finisher.card-returned",
+            data: new JsonObject
+            {
+                ["combatInProgress"] = CombatManager.Instance.IsInProgress,
+                ["focusAlive"] = focus.IsAlive,
+                ["focusCurrentHp"] = focus.CurrentHp,
+                ["focusBlock"] = focus.Block,
+                ["hittableEnemyCount"] = combatState.HittableEnemies.Count,
+                ["runtimeHealth"] = HealthData(afterLethalCard)
+            });
         await WaitForRuntimeIdleAsync(cancellationToken);
         NinjaSlayerRuntimeHealthSnapshot afterFinisher = NinjaSlayerRuntimeHealth.Capture();
+        Require(!focus.IsAlive && focus.CurrentHp == 0, "The lethal X attack did not kill its focus.");
+        Require(combatState.HittableEnemies.Count == 0, "A hittable enemy remained after the lethal X attack.");
         Require(
             afterFinisher.FinisherSucceeded + afterFinisher.FinisherDegraded
                 > beforeFinisher.FinisherSucceeded + beforeFinisher.FinisherDegraded,
             "The lethal X attack did not complete a finisher session.");
-        _checkpoints.Write("finisher.completed", data: afterFinisher);
+        bool combatEnded = await CombatManager.Instance.CheckWinCondition();
+        Require(combatEnded && !CombatManager.Instance.IsInProgress, "The completed finisher did not end combat.");
+        _checkpoints.Write("finisher.completed", data: HealthData(afterFinisher));
         _firstCombatCompleted.TrySetResult();
     }
 
@@ -226,7 +248,7 @@ internal sealed class SmokeController
         }
         catch (Exception exception)
         {
-            _checkpoints.Write("driver.failed", "failed", new { exception = exception.ToString() });
+            _checkpoints.Write("driver.failed", "failed", ExceptionData(exception));
             TryCaptureFailureScreenshot();
             _tree.Quit(1);
         }
@@ -278,7 +300,7 @@ internal sealed class SmokeController
         await WaitUntilAsync(
             () => RunManager.Instance.IsInProgress
                 && NRun.Instance is not null
-                && NMapScreen.Instance?.IsOpen == true,
+                && (NMapScreen.Instance?.IsOpen == true || CombatManager.Instance.IsInProgress),
             "saved run did not load",
             timeout: TimeSpan.FromMinutes(2));
         await WaitForRuntimeIdleAsync(CancellationToken.None);
@@ -316,11 +338,16 @@ internal sealed class SmokeController
         string[] required = ["STS2-RitsuLib", "NinjaSlayer", "NinjaSlayer-SmokeDriver"];
         var loaded = MegaCrit.Sts2.Core.Modding.ModManager.Mods
             .Where(mod => mod.state.ToString() == "Loaded" && mod.manifest?.id is not null)
-            .Select(mod => mod.manifest!.id)
+            .Select(mod => mod.manifest!.id!)
             .ToHashSet(StringComparer.Ordinal);
         string[] missing = required.Where(id => !loaded.Contains(id)).ToArray();
         Require(missing.Length == 0, $"Required smoke mods were not loaded: {string.Join(", ", missing)}");
-        _checkpoints.Write("mods.loaded", data: new { loaded = loaded.OrderBy(id => id).ToArray() });
+        var loadedIds = new JsonArray();
+        foreach (string id in loaded.OrderBy(id => id, StringComparer.Ordinal))
+        {
+            loadedIds.Add(id);
+        }
+        _checkpoints.Write("mods.loaded", data: new JsonObject { ["loaded"] = loadedIds });
     }
 
     private void ValidateCoreCapabilities()
@@ -331,7 +358,7 @@ internal sealed class SmokeController
             .Where(id => !health.Capabilities.TryGetValue(id, out NinjaSlayerCapabilityHealth? status) || !status.IsOperational)
             .ToArray();
         Require(unavailable.Length == 0, $"Required capabilities were unavailable: {string.Join(", ", unavailable)}");
-        _checkpoints.Write("capabilities.operational", data: health.Capabilities);
+        _checkpoints.Write("capabilities.operational", data: HealthData(health));
     }
 
     private void ValidateRuntimeIdle(string checkpoint)
@@ -343,7 +370,7 @@ internal sealed class SmokeController
         Require(!health.ScreenShakeSuppressed, "Screen shake suppression remained active.");
         Require(!health.XAttackAudioSuppressed && !health.XAttackComboActive, "An X attack scope remained active.");
         Require(health.PreparedRepairFailed == 0, "Prepared safety reported an unrepaired failure.");
-        _checkpoints.Write(checkpoint, data: health);
+        _checkpoints.Write(checkpoint, data: HealthData(health));
     }
 
     private async Task WaitForRuntimeIdleAsync(CancellationToken cancellationToken)
@@ -419,4 +446,11 @@ internal sealed class SmokeController
             throw new InvalidOperationException(message);
         }
     }
+
+    private static JsonObject ExceptionData(Exception exception) =>
+        new() { ["exception"] = exception.ToString() };
+
+    private static JsonNode HealthData(NinjaSlayerRuntimeHealthSnapshot health) =>
+        JsonSerializer.SerializeToNode(health, SmokeJsonContext.Default.NinjaSlayerRuntimeHealthSnapshot)
+        ?? throw new InvalidOperationException("Runtime health snapshot serialization returned null.");
 }
