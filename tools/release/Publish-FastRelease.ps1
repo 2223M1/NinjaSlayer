@@ -513,7 +513,7 @@ try {
             throw 'Fast official release requires HEAD to match origin/main exactly.'
         }
 
-        $dirty = Get-DisallowedWorktreeChanges
+        $dirty = @(Get-DisallowedWorktreeChanges)
         if ($dirty.Count -gt 0 -and -not $AllowDirty) {
             throw "Fast official release found uncommitted shipping changes:`n$($dirty -join [Environment]::NewLine)"
         }
