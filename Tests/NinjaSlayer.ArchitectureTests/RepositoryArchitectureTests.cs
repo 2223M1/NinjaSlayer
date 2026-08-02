@@ -27,6 +27,18 @@ public sealed partial class RepositoryArchitectureTests
             "smoke-harness",
             "NinjaSlayer.SmokeDriver",
             "Entry.cs"));
+        string checkpointWriter = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "NinjaSlayer.SmokeDriver",
+            "SmokeCheckpointWriter.cs"));
+        string configuration = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "NinjaSlayer.SmokeDriver",
+            "SmokeConfiguration.cs"));
 
         Assert.Contains("<Compile Remove=\"tools\\smoke-harness\\**\\*.cs\" />", project, StringComparison.Ordinal);
         Assert.Contains("<Compile Remove=\"build\\**\\*.cs\" />", project, StringComparison.Ordinal);
@@ -34,6 +46,18 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck", packaging, StringComparison.Ordinal);
         Assert.DoesNotContain("SmokeController : Node", controller, StringComparison.Ordinal);
         Assert.Contains("controller.Start();", entry, StringComparison.Ordinal);
+        Assert.Contains("TaskHelper.RunSafely(RunSafelyAsync());", controller, StringComparison.Ordinal);
+        Assert.Contains("JsonNode? data = null", checkpointWriter, StringComparison.Ordinal);
+        Assert.Contains("JsonNode? Data = null", configuration, StringComparison.Ordinal);
+        Assert.Contains("JsonSerializable(typeof(NinjaSlayerRuntimeHealthSnapshot))", configuration, StringComparison.Ordinal);
+        Assert.DoesNotContain("object? data", checkpointWriter, StringComparison.Ordinal);
+        Assert.DoesNotContain("object? Data", configuration, StringComparison.Ordinal);
+        Assert.DoesNotContain("new {", controller, StringComparison.Ordinal);
+        Assert.Contains("await CombatManager.Instance.CheckWinCondition();", controller, StringComparison.Ordinal);
+        Assert.Contains(
+            "NMapScreen.Instance?.IsOpen == true || CombatManager.Instance.IsInProgress",
+            controller,
+            StringComparison.Ordinal);
     }
 
     [Fact]
