@@ -63,6 +63,52 @@ function Assert-NinjaSlayerImmutableReleasesEnabled {
     return Assert-NinjaSlayerImmutableReleaseSettings -Settings $settings
 }
 
+function Get-NinjaSlayerHttpStatusCode {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)]$ErrorRecord)
+
+    $exception = $ErrorRecord.Exception
+    if ($null -eq $exception) {
+        return $null
+    }
+    $responseProperty = $exception.PSObject.Properties['Response']
+    if ($null -eq $responseProperty -or $null -eq $responseProperty.Value) {
+        return $null
+    }
+    $statusProperty = $responseProperty.Value.PSObject.Properties['StatusCode']
+    if ($null -eq $statusProperty) {
+        return $null
+    }
+    try {
+        return [int]$statusProperty.Value
+    }
+    catch {
+        return $null
+    }
+}
+
+function Test-NinjaSlayerGitHubReleaseExists {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]$Context,
+        [Parameter(Mandatory)][ValidatePattern('^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
+        [string]$Tag
+    )
+
+    $encodedTag = [Uri]::EscapeDataString($Tag)
+    $uri = "$($Context.ApiBaseUri)/repos/$($Context.Repository)/releases/tags/$encodedTag"
+    try {
+        $null = Invoke-NinjaSlayerGitHubApi $Context $uri
+        return $true
+    }
+    catch {
+        if ((Get-NinjaSlayerHttpStatusCode -ErrorRecord $_) -eq 404) {
+            return $false
+        }
+        throw "GitHub Release $Tag status could not be verified: $($_.Exception.Message)"
+    }
+}
+
 function Get-NinjaSlayerArtifactCandidates {
     [CmdletBinding()]
     param(
