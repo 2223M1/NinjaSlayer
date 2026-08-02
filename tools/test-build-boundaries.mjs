@@ -433,6 +433,7 @@ for (const safeguard of [
   'if ($AllowDirty -and -not $DryRun)',
   "if ($branch -ne 'main')",
   'if ($script:head -ne $originMain)',
+  '$dirty = @(Get-DisallowedWorktreeChanges)',
   'Read-NinjaSlayerPackageArchive',
   '[IO.Compression.CompressionLevel]::NoCompression',
   "'release', 'create', $tag",
