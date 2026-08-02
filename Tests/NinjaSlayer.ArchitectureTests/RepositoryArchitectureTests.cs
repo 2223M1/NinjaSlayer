@@ -305,6 +305,12 @@ public sealed partial class RepositoryArchitectureTests
     public void SmokeLauncherPreservesSaveNetworkAndReleaseBoundaries()
     {
         string launcher = File.ReadAllText(Path.Combine(Root, "tools", "smoke-harness", "Invoke-NinjaSlayerSmoke.ps1"));
+        string smokeDriverProject = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "smoke-harness",
+            "NinjaSlayer.SmokeDriver",
+            "NinjaSlayer.SmokeDriver.csproj"));
         string release = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "release.yml"));
 
         foreach (string required in new[]
@@ -323,6 +329,31 @@ public sealed partial class RepositoryArchitectureTests
         {
             Assert.Contains(required, launcher, StringComparison.Ordinal);
         }
+
+        Assert.Contains(
+            "<PackageDownload Include=\"$(NinjaSlayerRitsuLibPackageId)\" Version=\"[$(NinjaSlayerRitsuLibVersion)]\" />",
+            smokeDriverProject,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<PinnedRitsuLibAssemblyPath>$([System.IO.Path]::Combine('$(NuGetPackageRoot)'",
+            smokeDriverProject,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<HintPath>$(PinnedRitsuLibAssemblyPath)</HintPath>",
+            smokeDriverProject,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "<PackageReference Include=\"$(NinjaSlayerRitsuLibPackageId)\"",
+            smokeDriverProject,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Add-MsBuildProperty $driverArguments 'RitsuLibAssemblyPath'",
+            launcher,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Copy-Item -LiteralPath $RitsuLibModDirectory",
+            launcher,
+            StringComparison.Ordinal);
 
         Assert.Contains("verify-contract-attestation.ps1", release, StringComparison.Ordinal);
         Assert.Contains("verify-smoke-attestation.ps1", release, StringComparison.Ordinal);

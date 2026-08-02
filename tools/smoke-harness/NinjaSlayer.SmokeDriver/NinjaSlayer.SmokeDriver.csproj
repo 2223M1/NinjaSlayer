@@ -9,7 +9,7 @@
     <RootNamespace>NinjaSlayer.SmokeDriver</RootNamespace>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <NinjaSlayerRitsuLibPackagePathId>$(NinjaSlayerRitsuLibPackageId.ToLowerInvariant())</NinjaSlayerRitsuLibPackagePathId>
-    <RitsuLibAssemblyPath Condition="'$(RitsuLibAssemblyPath)' == ''">$(UserProfile)\.nuget\packages\$(NinjaSlayerRitsuLibPackagePathId)\$(NinjaSlayerRitsuLibVersion)\lib\net9.0\STS2-RitsuLib.dll</RitsuLibAssemblyPath>
+    <PinnedRitsuLibAssemblyPath>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', '$(NinjaSlayerRitsuLibPackagePathId)', '$(NinjaSlayerRitsuLibVersion)', 'lib/net9.0/STS2-RitsuLib.dll'))</PinnedRitsuLibAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="sts2">
@@ -28,14 +28,15 @@
       <HintPath>$(NinjaSlayerAssemblyPath)</HintPath>
       <Private>false</Private>
     </Reference>
+    <PackageDownload Include="$(NinjaSlayerRitsuLibPackageId)" Version="[$(NinjaSlayerRitsuLibVersion)]" />
     <Reference Include="STS2-RitsuLib">
-      <HintPath>$(RitsuLibAssemblyPath)</HintPath>
+      <HintPath>$(PinnedRitsuLibAssemblyPath)</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
   <Target Name="ValidateSmokeReferences" BeforeTargets="ResolveReferences">
     <Error Condition="!Exists('$(Sts2DataDir)\sts2.dll')" Text="SmokeDriver requires Sts2DataDir." />
     <Error Condition="!Exists('$(NinjaSlayerAssemblyPath)')" Text="SmokeDriver requires NinjaSlayerAssemblyPath." />
-    <Error Condition="!Exists('$(RitsuLibAssemblyPath)')" Text="SmokeDriver requires RitsuLibAssemblyPath." />
+    <Error Condition="!Exists('$(PinnedRitsuLibAssemblyPath)')" Text="SmokeDriver requires the pinned channel-specific RitsuLib compile package." />
   </Target>
 </Project>

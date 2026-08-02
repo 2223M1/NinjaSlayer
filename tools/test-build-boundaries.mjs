@@ -71,6 +71,13 @@ const processNetworkIsolationPath = join(
 );
 const processNetworkIsolationTestPath = join(root, 'tools', 'test-process-network-isolation.ps1');
 const smokeLauncherPath = join(root, 'tools', 'smoke-harness', 'Invoke-NinjaSlayerSmoke.ps1');
+const smokeDriverProjectPath = join(
+  root,
+  'tools',
+  'smoke-harness',
+  'NinjaSlayer.SmokeDriver',
+  'NinjaSlayer.SmokeDriver.csproj',
+);
 const privateRunnerReadmePath = join(root, 'tools', 'private-contract', 'README.md');
 const contractVerifierPath = join(root, '.github', 'scripts', 'verify-contract-attestation.ps1');
 const smokeVerifierPath = join(root, '.github', 'scripts', 'verify-smoke-attestation.ps1');
@@ -88,6 +95,7 @@ const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
 const processNetworkIsolation = readFileSync(processNetworkIsolationPath, 'utf8');
 const processNetworkIsolationTest = readFileSync(processNetworkIsolationTestPath, 'utf8');
 const smokeLauncher = readFileSync(smokeLauncherPath, 'utf8');
+const smokeDriverProject = readFileSync(smokeDriverProjectPath, 'utf8');
 const privateRunnerReadme = readFileSync(privateRunnerReadmePath, 'utf8');
 const contractVerifier = readFileSync(contractVerifierPath, 'utf8');
 const smokeVerifier = readFileSync(smokeVerifierPath, 'utf8');
@@ -237,6 +245,22 @@ assert(smokeLauncher.includes('New-NinjaSlayerProcessFirewallLease'));
 assert(smokeLauncher.includes('-RemoteScope All'));
 assert(smokeLauncher.includes('Remove-NinjaSlayerProcessFirewallLease'));
 assert(!smokeLauncher.includes('New-NetFirewallRule'));
+assert(
+  smokeDriverProject.includes(
+    '<PackageDownload Include="$(NinjaSlayerRitsuLibPackageId)" Version="[$(NinjaSlayerRitsuLibVersion)]" />',
+  ),
+  'SmokeDriver must download the channel-specific pinned RitsuLib compile package.',
+);
+assert(
+  smokeDriverProject.includes(
+    "<PinnedRitsuLibAssemblyPath>$([System.IO.Path]::Combine('$(NuGetPackageRoot)'",
+  ),
+  'SmokeDriver must resolve the pinned DLL from the active NuGet package root.',
+);
+assert(smokeDriverProject.includes('<HintPath>$(PinnedRitsuLibAssemblyPath)</HintPath>'));
+assert(!smokeDriverProject.includes('<PackageReference Include="$(NinjaSlayerRitsuLibPackageId)"'));
+assert(!smokeLauncher.includes("Add-MsBuildProperty $driverArguments 'RitsuLibAssemblyPath'"));
+assert(smokeLauncher.includes('Copy-Item -LiteralPath $RitsuLibModDirectory'));
 for (const required of [
   '0.0.0.0-126.255.255.255',
   '128.0.0.0-255.255.255.255',
