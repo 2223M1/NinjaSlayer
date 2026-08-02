@@ -305,6 +305,12 @@ for (const source of [releaseWorkflow, workshopWorkflow]) {
 assert(releaseWorkflow.includes('environment: release-production'));
 assert(releaseWorkflow.includes('Assert-NinjaSlayerImmutableReleasesEnabled'));
 assert(releaseWorkflow.includes('workflow_dispatch:'));
+assert(releaseWorkflow.includes('RELEASE_POLICY_TOKEN: ${{ secrets.RELEASE_POLICY_TOKEN }}'));
+assert(releaseWorkflow.includes('-Token $env:RELEASE_POLICY_TOKEN'));
+assert(
+  releaseWorkflow.includes('release-production must provide RELEASE_POLICY_TOKEN'),
+  'Release must fail clearly when its immutable-policy credential is unavailable.',
+);
 const releaseCheckoutStart = releaseWorkflow.indexOf('- name: Checkout complete history');
 const releaseValidationStart = releaseWorkflow.indexOf('- name: Validate new release tag at origin/main HEAD');
 assert(

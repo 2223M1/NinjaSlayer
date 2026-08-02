@@ -60,11 +60,15 @@ jobs:
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_POLICY_TOKEN: ${{ secrets.RELEASE_POLICY_TOKEN }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:RELEASE_POLICY_TOKEN)) {
+            throw 'release-production must provide RELEASE_POLICY_TOKEN with read access to repository administration settings.'
+          }
           . .\.github\scripts\actions-provenance.ps1
           $context = New-NinjaSlayerGitHubApiContext `
             -Repository '${{ github.repository }}' `
-            -Token $env:GH_TOKEN
+            -Token $env:RELEASE_POLICY_TOKEN
           Assert-NinjaSlayerImmutableReleasesEnabled -Context $context | Out-Null
           gh release view $env:RELEASE_TAG *> $null
           if ($LASTEXITCODE -eq 0) {
