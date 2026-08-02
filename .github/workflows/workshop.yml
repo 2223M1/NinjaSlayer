@@ -157,7 +157,7 @@ jobs:
             --ritsulib-package-id $env:RITSULIB_PACKAGE_ID `
             --ritsulib-version $env:RITSULIB_VERSION
           if ($LASTEXITCODE -ne 0) { throw 'Workshop DLL channel validation failed.' }
-          node .\tools\package-contract.mjs validate-manifest `
+          node ./tools/package-contract.mjs validate-manifest `
             --manifest "$env:RUNNER_TEMP/content/NinjaSlayer.json" `
             --version $env:RELEASE_VERSION `
             --min-game-version $env:GAME_API_VERSION `
