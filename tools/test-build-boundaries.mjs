@@ -44,6 +44,7 @@ const ciWorkflowPath = join(root, '.github', 'workflows', 'ci.yml');
 const releaseWorkflowPath = join(root, '.github', 'workflows', 'release.yml');
 const workshopWorkflowPath = join(root, '.github', 'workflows', 'workshop.yml');
 const quickReleasePath = join(root, 'tools', 'release', 'Publish-QuickRelease.ps1');
+const fastReleasePath = join(root, 'tools', 'release', 'Publish-FastRelease.ps1');
 const oneClickReleasePath = join(root, 'tools', 'release', 'Invoke-OneClickRelease.ps1');
 const workshopQuickReleasePath = join(
   root,
@@ -211,6 +212,7 @@ const packagingTargets = readFileSync(packagingTargetsPath, 'utf8');
 const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
 const workshopWorkflow = readFileSync(workshopWorkflowPath, 'utf8');
 const quickRelease = readFileSync(quickReleasePath, 'utf8');
+const fastRelease = readFileSync(fastReleasePath, 'utf8');
 const oneClickRelease = readFileSync(oneClickReleasePath, 'utf8');
 const workshopQuickRelease = readFileSync(workshopQuickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
@@ -416,36 +418,64 @@ for (const forwardedParameter of [
     `Quick release must forward the local stable build parameter: ${forwardedParameter}`,
   );
 }
-// The desktop one-click path is Workshop-only: it builds the current working tree and uploads it,
-// and must never commit, tag, push, open a pull request, or touch a GitHub Release. It owns no
-// logic of its own beyond delegating to the guarded Workshop publisher.
+// The routine one-click path is a thin wrapper over the local fast publisher. The publisher builds
+// and validates both channels before performing any irreversible repository or remote operation.
 assert(
-  oneClickRelease.includes("Join-Path $PSScriptRoot 'Publish-WorkshopQuickRelease.ps1'"),
-  'One-click release must delegate to the Workshop-only publisher.',
+  oneClickRelease.includes("Join-Path $PSScriptRoot 'Publish-FastRelease.ps1'"),
+  'One-click release must delegate to the fast official publisher.',
 );
 assert(
-  oneClickRelease.includes('& $publisher -Confirm'),
-  'One-click release must invoke the Workshop publisher with -Confirm.',
+  oneClickRelease.includes('& $publisher @PSBoundParameters'),
+  'One-click release must forward the caller parameters without owning release logic.',
 );
-assert(
-  oneClickRelease.includes('No GitHub operation was attempted'),
-  'One-click release must state that no GitHub operation was attempted on failure.',
-);
-for (const forbidden of [
-  "'add'",
-  "'commit'",
-  "'push'",
-  "'tag'",
-  "'pr'",
-  "'merge'",
-  "'pull'",
-  'gh ',
+for (const safeguard of [
+  'if (-not $DryRun -and -not $Confirm)',
+  'if ($AllowDirty -and -not $DryRun)',
+  "if ($branch -ne 'main')",
+  'if ($script:head -ne $originMain)',
+  'Read-NinjaSlayerPackageArchive',
+  '[IO.Compression.CompressionLevel]::NoCompression',
+  "'release', 'create', $tag",
+  "'tag', '-a', $tag",
+  "'push', 'origin', $tag",
+  "'upload', '-w', 'NinjaSlayer'",
+  'ReuseCache = -not $CleanBuildCache',
+  'reusable = -not $AllowDirty',
+  '$state.reusable -ne $true',
+  'function Assert-ReleaseNoteIsFresh',
+  'Release note must be tracked and committed before publishing',
+  'Release note matches the previous release',
+  'Where-Object { $_.Version -lt $requestedVersion }',
+  'appeared remotely on a different commit during packaging',
+  'Preparation exceeded the $BudgetSeconds-second budget before publication',
 ]) {
-  assert(
-    !oneClickRelease.includes(forbidden),
-    `One-click release must not perform the repository operation: ${forbidden}`,
-  );
+  assert(fastRelease.includes(safeguard), `Fast release must retain safeguard: ${safeguard}`);
 }
+assert(
+  fastRelease.indexOf('New-ExactPackageArchive $packageDirectory')
+    < fastRelease.indexOf("Invoke-Native git @('tag', '-a', $tag"),
+  'Fast release must finish archive creation before creating the release tag.',
+);
+assert(
+  fastRelease.indexOf("if ($DryRun)")
+    < fastRelease.indexOf("Invoke-Native git @('tag', '-a', $tag"),
+  'DryRun must return before creating the release tag.',
+);
+assert(
+  fastRelease.indexOf('Assert-ReleaseNoteIsFresh -ReleaseNotePath')
+    < fastRelease.indexOf("Invoke-Native git @('tag', '-a', $tag"),
+  'Fast release must verify the committed release note before creating the release tag.',
+);
+for (const slowGate of [
+  'verify-contract-attestation.ps1',
+  'verify-smoke-attestation.ps1',
+  'Start-EphemeralContractRunner.ps1',
+  "'workflow', 'run'",
+]) {
+  assert(!fastRelease.includes(slowGate), `Routine fast release must not wait for ${slowGate}.`);
+}
+assert(channelBuild.includes('[switch]$ReuseCache'));
+assert(channelBuild.includes('if (-not $ReuseCache)'));
 
 // The Workshop publisher may read local tags to pick the next version, but nothing it does may
 // mutate the repository or reach GitHub.

@@ -18,7 +18,8 @@ param(
     [string]$GodotExe,
     [string]$SteamModDir,
     [string]$WorkshopContentDir,
-    [string]$BuildRoot
+    [string]$BuildRoot,
+    [switch]$ReuseCache
 )
 
 $ErrorActionPreference = 'Stop'
@@ -98,7 +99,9 @@ $intermediateDirectory = Join-Path $channelBuildRoot 'obj'
 $outputDirectory = Join-Path $channelBuildRoot 'bin'
 $packageDirectory = Join-Path $channelBuildRoot 'package\NinjaSlayer'
 
-Remove-IsolatedDirectory -Path $channelBuildRoot -AllowedRoot $resolvedBuildRoot
+if (-not $ReuseCache) {
+    Remove-IsolatedDirectory -Path $channelBuildRoot -AllowedRoot $resolvedBuildRoot
+}
 [IO.Directory]::CreateDirectory($intermediateDirectory) | Out-Null
 [IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
 
@@ -134,7 +137,9 @@ $restoreArguments.Add('restore')
 foreach ($argument in $commonArguments) {
     $restoreArguments.Add($argument)
 }
-$restoreArguments.Add('--force')
+if (-not $ReuseCache) {
+    $restoreArguments.Add('--force')
+}
 Invoke-Native -Command dotnet -Arguments $restoreArguments.ToArray()
 
 $assetsPath = Join-Path $intermediateDirectory 'project.assets.json'
