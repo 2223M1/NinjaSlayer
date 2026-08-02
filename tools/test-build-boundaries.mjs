@@ -304,6 +304,14 @@ for (const source of [releaseWorkflow, workshopWorkflow]) {
 }
 assert(releaseWorkflow.includes('environment: release-production'));
 assert(releaseWorkflow.includes('Assert-NinjaSlayerImmutableReleasesEnabled'));
+assert(
+  releaseWorkflow.match(/Test-NinjaSlayerGitHubReleaseExists/g)?.length === 2,
+  'Release must use the structured REST probe before building and before publishing.',
+);
+assert(
+  !releaseWorkflow.includes('gh release view'),
+  'Windows PowerShell 5.1 must not probe an absent release through native stderr.',
+);
 assert(releaseWorkflow.includes('workflow_dispatch:'));
 assert(releaseWorkflow.includes('RELEASE_POLICY_TOKEN: ${{ secrets.RELEASE_POLICY_TOKEN }}'));
 assert(releaseWorkflow.includes('-Token $env:RELEASE_POLICY_TOKEN'));

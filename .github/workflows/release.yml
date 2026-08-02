@@ -70,8 +70,7 @@ jobs:
             -Repository '${{ github.repository }}' `
             -Token $env:RELEASE_POLICY_TOKEN
           Assert-NinjaSlayerImmutableReleasesEnabled -Context $context | Out-Null
-          gh release view $env:RELEASE_TAG *> $null
-          if ($LASTEXITCODE -eq 0) {
+          if (Test-NinjaSlayerGitHubReleaseExists -Context $context -Tag $env:RELEASE_TAG) {
             throw "GitHub Release $env:RELEASE_TAG already exists and is immutable."
           }
 
@@ -245,8 +244,11 @@ jobs:
         run: |
           $archives = $env:RELEASE_ARCHIVES.Split(';', [StringSplitOptions]::RemoveEmptyEntries)
           if ($archives.Count -ne 2) { throw 'Exactly two release archives are required.' }
-          gh release view $env:RELEASE_TAG *> $null
-          if ($LASTEXITCODE -eq 0) {
+          . .\.github\scripts\actions-provenance.ps1
+          $context = New-NinjaSlayerGitHubApiContext `
+            -Repository '${{ github.repository }}' `
+            -Token $env:GH_TOKEN
+          if (Test-NinjaSlayerGitHubReleaseExists -Context $context -Tag $env:RELEASE_TAG) {
             throw "GitHub Release $env:RELEASE_TAG appeared during the build and will not be overwritten."
           }
           $arguments = @('release', 'create', $env:RELEASE_TAG) + $archives + @(
