@@ -318,7 +318,6 @@ try {
     Add-MsBuildProperty $driverArguments 'Sts2DataDir' $gameDataDirectory
     Add-MsBuildProperty $driverArguments 'NinjaSlayerHostChannel' $Channel
     Add-MsBuildProperty $driverArguments 'NinjaSlayerAssemblyPath' $candidateAssembly
-    Add-MsBuildProperty $driverArguments 'RitsuLibAssemblyPath' (Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
     try {
         Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray() -WorkingDirectory $TrustedRoot
     }
