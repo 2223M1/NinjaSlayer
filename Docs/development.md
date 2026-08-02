@@ -47,36 +47,61 @@ Godot loads a Debug editor assembly before Release export. The export-only build
 
 Releases use stable SemVer tags in the form `vMAJOR.MINOR.PATCH`, without leading zeroes. A clean exact tag produces the matching package version. Development builds use the next patch after the repository's highest stable release tag, including tags retained on archived history, so a cleaned main branch cannot regress below an already published version.
 
-### Workshop-only quick test release
+The three release entry points have distinct ownership:
 
-Frequent player-test builds can use the desktop shortcut or the Workshop-only script. It includes the current working tree, automatically selects the next local patch version, packages and installs the mod, stages Workshop content, and invokes the local uploader:
+| Entry point | Purpose |
+| --- | --- |
+| `Invoke-OneClickRelease.ps1` | Normal official release. Builds stable and preview, publishes GitHub, then uploads stable to Workshop. |
+| `Publish-WorkshopQuickRelease.ps1` | Workshop-only player test or emergency upload. It does not publish GitHub. |
+| `Publish-QuickRelease.ps1` | Optional protected audit path using Contract, Smoke, and protected artifacts. |
 
-```powershell
-.\tools\release\Invoke-OneClickRelease.ps1
-# Or explicitly:
-.\tools\release\Publish-WorkshopQuickRelease.ps1 -Confirm
-```
+### Routine official release
 
-This path deliberately skips tests, Contract, Smoke, protected environments, and self-hosted runners. It does not require a clean branch and performs no GitHub authentication, fetch, commit, tag, push, pull request, or Release operation. The next version is derived from local tags and completed Workshop markers under `build/releases`; a failed upload reuses the same version. The release note comes from `Workshop/change-note.md`.
-
-To create or reuse a tag from clean `main` and dispatch the protected dual-host GitHub Release, use:
+The normal personal-project release path is local and targets completion within five minutes. Configure the two host directories once while performing a non-publishing dry run:
 
 ```powershell
-.\tools\release\Publish-QuickRelease.ps1 -Version 0.1.2 -SkipWorkshop -Confirm
+pwsh .\tools\release\Invoke-OneClickRelease.ps1 `
+  -Version 0.1.30 `
+  -StableDataDir C:\path\to\stable\data_sts2_windows_x86_64 `
+  -PreviewDataDir C:\path\to\preview\data_sts2_windows_x86_64 `
+  -SaveSettings `
+  -DryRun
 ```
 
-This command never builds or uploads a GitHub asset locally; the protected workflow owns both host archives and all attestations. Workshop publication is a separate operation after Release succeeds. `Publish-QuickRelease.ps1 -SkipGitHub` still delegates to the explicitly unsafe Workshop-only player-test path and performs no GitHub operation.
+The paths are saved in the ignored `build/fast-release/settings.json`. Keep old stable host references outside the repository in a durable private directory such as `../.sts2build/hosts/stable-0.107.1`; never point this setting at `.codex_tmp` or commit game binaries. Later releases require one non-interactive command:
 
-### Protected stable-candidate release
+```powershell
+pwsh .\tools\release\Invoke-OneClickRelease.ps1 -Version 0.1.30 -Confirm
+```
 
-The release flow is:
+The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It creates uncompressed ZIP containers because the exported PCK is already compressed, validates the exact four-file archives, then creates and pushes the tag, creates the GitHub Release, and uploads the exact stable archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses archives bound to the same commit and compatibility manifest after an interrupted publication.
 
-1. Push the candidate commit to `main`.
-2. Run **Protected game contract** for the exact commit with an ephemeral `Contract` runner.
-3. Run **Protected real-game smoke** in `FirstCombatRestart` mode for the same commit with an ephemeral `Smoke` runner.
-4. Create and push the next stable SemVer tag.
-5. Manually dispatch **GitHub Release**, approve it, and start an ephemeral `Release` runner. The workflow creates one stable and one preview archive from the same source revision.
-6. Dispatch **Publish Steam Workshop** for the required channel. The public item accepts only stable; preview remains blocked until its separate unlisted item id is recorded in `eng/compatibility.json`.
+Routine releases deliberately do not wait for Contract, Smoke, protected environments, attestations, pull requests, or a self-hosted Actions runner. Those checks remain available as optional audits. The five-minute budget covers local preparation and normal uploads; unusually slow GitHub or Steam network transfer can still exceed it without corrupting the completed release.
+
+### Workshop-only player test or emergency upload
+
+To upload an uncommitted working tree only to Workshop, use the separate player-test path:
+
+```powershell
+pwsh .\tools\release\Publish-WorkshopQuickRelease.ps1 -Confirm
+```
+
+This path automatically selects the next local patch version, packages and installs stable, and performs no GitHub operation. It remains intentionally separate from the official one-click release.
+
+### Optional protected audit release
+
+The original high-assurance path is retained for compatibility investigations or major host migrations:
+
+1. Run **Protected game contract** for the exact commit with an ephemeral `Contract` runner.
+2. Run **Protected real-game smoke** in `FirstCombatRestart` mode for the same commit with an ephemeral `Smoke` runner.
+3. Dispatch the protected Release workflow with `Publish-QuickRelease.ps1`.
+4. Publish its stable artifact through the protected Workshop workflow.
+
+```powershell
+pwsh .\tools\release\Publish-QuickRelease.ps1 -Version 0.1.30 -SkipWorkshop -Confirm
+```
+
+This optional path owns dual-host attestations and immutable protected artifacts, and is expected to take substantially longer than the routine local release.
 
 The local Workshop target is:
 
