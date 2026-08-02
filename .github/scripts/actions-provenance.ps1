@@ -119,9 +119,10 @@ function Get-NinjaSlayerArtifactCandidates {
     $encodedName = [Uri]::EscapeDataString($ArtifactName)
     $listing = Invoke-NinjaSlayerGitHubApi $Context `
         "$($Context.ApiBaseUri)/repos/$($Context.Repository)/actions/artifacts?name=$encodedName&per_page=100"
-    return @($listing.artifacts |
+    $candidates = @($listing.artifacts |
         Where-Object { -not $_.expired -and $_.name -ceq $ArtifactName } |
         Sort-Object created_at -Descending)
+    return ,$candidates
 }
 
 function Assert-NinjaSlayerArtifactProvenance {
