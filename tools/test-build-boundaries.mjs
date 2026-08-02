@@ -305,6 +305,24 @@ for (const source of [releaseWorkflow, workshopWorkflow]) {
 assert(releaseWorkflow.includes('environment: release-production'));
 assert(releaseWorkflow.includes('Assert-NinjaSlayerImmutableReleasesEnabled'));
 assert(releaseWorkflow.includes('workflow_dispatch:'));
+const releaseCheckoutStart = releaseWorkflow.indexOf('- name: Checkout complete history');
+const releaseValidationStart = releaseWorkflow.indexOf('- name: Validate new release tag at origin/main HEAD');
+assert(
+  releaseCheckoutStart >= 0 && releaseValidationStart > releaseCheckoutStart,
+  'Release checkout and validation steps must remain ordered.',
+);
+const releaseCheckout = releaseWorkflow.slice(
+  releaseCheckoutStart,
+  releaseValidationStart,
+);
+assert(
+  releaseCheckout.includes('persist-credentials: false'),
+  'Release checkout must not persist workflow credentials.',
+);
+assert(
+  releaseCheckout.includes('set-safe-directory: false'),
+  'Release checkout must not create a temporary global safe-directory config.',
+);
 assert(
   !releaseWorkflow.includes('shell: pwsh'),
   'The dedicated Windows Release runner must not require PowerShell 7.',
