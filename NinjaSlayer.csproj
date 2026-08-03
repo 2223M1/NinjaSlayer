@@ -26,6 +26,11 @@
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(NinjaSlayerIsolatedIntermediateRoot)', '$(Configuration)'))</IntermediateOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="$(NinjaSlayerHostChannel)" />
     <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="$(NinjaSlayerGameApiVersion)" />

@@ -20,8 +20,7 @@ param(
     [switch]$SaveSettings,
     [switch]$SkipGitHub,
     [switch]$SkipWorkshop,
-    [switch]$CleanBuildCache,
-    [switch]$AllowDirty
+    [switch]$CleanBuildCache
 )
 
 $ErrorActionPreference = 'Stop'

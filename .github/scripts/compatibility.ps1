@@ -11,7 +11,7 @@ function Read-NinjaSlayerCompatibility {
 
     $resolved = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
     $manifest = Get-Content -LiteralPath $resolved -Raw -Encoding utf8 | ConvertFrom-Json
-    if ([int]$manifest.schemaVersion -ne 1) {
+    if ([int]$manifest.schemaVersion -ne 2) {
         throw "Unsupported compatibility schema in $resolved."
     }
     $channelNames = @($manifest.channels.PSObject.Properties.Name)
@@ -26,6 +26,18 @@ function Read-NinjaSlayerCompatibility {
     }
     if ([string]$manifest.ritsuLibVersion -notmatch '^\d+\.\d+\.\d+$') {
         throw 'Compatibility ritsuLibVersion must be an exact SemVer core.'
+    }
+    $spineFiles = @($manifest.spineExtension.windowsFiles)
+    if ($spineFiles.Count -ne 3) {
+        throw 'Compatibility spineExtension.windowsFiles must contain exactly three files.'
+    }
+    $spineNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($spineFile in $spineFiles) {
+        if ([string]$spineFile.name -notmatch '^libspine_godot\.windows\.[A-Za-z0-9_.-]+\.dll$' -or
+            [string]$spineFile.sha256 -notmatch '^[0-9a-f]{64}$' -or
+            -not $spineNames.Add([string]$spineFile.name)) {
+            throw 'Compatibility spineExtension.windowsFiles contains an invalid or duplicate file.'
+        }
     }
     foreach ($channelName in $channelNames) {
         $channel = $manifest.channels.$channelName

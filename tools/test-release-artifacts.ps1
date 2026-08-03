@@ -26,6 +26,59 @@ function Copy-JsonValue($Value) {
     return $Value | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 }
 
+function Invoke-ArtifactValidator([string]$AssemblyPath, [string]$ForbiddenPathRoot) {
+    $arguments = @(
+        'run',
+        '--project', (Join-Path $repositoryRoot 'tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj'),
+        '--configuration', 'Release',
+        '--no-launch-profile',
+        '--',
+        'validate-assembly',
+        '--assembly', $AssemblyPath,
+        '--channel', 'stable',
+        '--game-api-version', '0.107.1',
+        '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.107.1',
+        '--ritsulib-version', '0.5.1',
+        '--forbidden-path-root', $ForbiddenPathRoot
+    )
+    $startInfo = New-Object Diagnostics.ProcessStartInfo
+    $startInfo.FileName = (Get-Command dotnet -ErrorAction Stop).Source
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    if ($null -ne $startInfo.PSObject.Properties['ArgumentList']) {
+        foreach ($argument in $arguments) {
+            $startInfo.ArgumentList.Add($argument)
+        }
+    }
+    else {
+        $startInfo.Arguments = (@($arguments | ForEach-Object {
+            '"' + $_.Replace('"', '\"') + '"'
+        }) -join ' ')
+    }
+
+    $process = New-Object Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw 'Unable to start the artifact validator.'
+        }
+        $standardOutput = $process.StandardOutput.ReadToEndAsync()
+        $standardError = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($standardOutput, $standardError))
+        $output = ($standardOutput.Result + [Environment]::NewLine + $standardError.Result).Trim()
+        $exitCode = $process.ExitCode
+    }
+    finally {
+        $process.Dispose()
+    }
+    if ($exitCode -ne 0) {
+        throw $output
+    }
+}
+
 function New-PackageArchive(
     [string]$Directory,
     [string]$ArchivePath,
@@ -219,6 +272,63 @@ try {
         $unsafe.Dispose()
     }
     Assert-Throws { Read-NinjaSlayerPackageArchive $unsafeArchive } '(exactly the four|unsafe ZIP entry)'
+
+    $assemblyFixture = Join-Path $temporaryRoot 'assembly-fixture'
+    [IO.Directory]::CreateDirectory($assemblyFixture) | Out-Null
+    [IO.File]::WriteAllText(
+        (Join-Path $assemblyFixture 'AssemblyFixture.csproj'),
+        @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>ArtifactFixture</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="stable" />
+    <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="0.107.1" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="STS2.RitsuLib.Compat.0.107.1" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="0.5.1" />
+  </ItemGroup>
+</Project>
+'@,
+        [Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText(
+        (Join-Path $assemblyFixture 'Fixture.cs'),
+        'public static class Fixture { }',
+        [Text.UTF8Encoding]::new($false))
+    & dotnet build (Join-Path $assemblyFixture 'AssemblyFixture.csproj') `
+        -c Release -v:q -p:DebugType=portable -p:DebugSymbols=true
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Unable to build the CodeView artifact fixture.'
+    }
+    $fixtureAssembly = Join-Path $assemblyFixture 'bin\Release\net9.0\ArtifactFixture.dll'
+    Assert-Throws {
+        Invoke-ArtifactValidator $fixtureAssembly $assemblyFixture
+    } 'CodeView/PDB path'
+
+    & dotnet build (Join-Path $assemblyFixture 'AssemblyFixture.csproj') `
+        -c Release -v:q -t:Rebuild -p:DebugType=none -p:DebugSymbols=false
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Unable to build the symbol-free artifact fixture.'
+    }
+    Invoke-ArtifactValidator $fixtureAssembly $assemblyFixture
+
+    $escapedFixtureRoot = $assemblyFixture.Replace('"', '""')
+    [IO.File]::WriteAllText(
+        (Join-Path $assemblyFixture 'Fixture.cs'),
+        "public static class Fixture { public const string BuildRoot = @`"$escapedFixtureRoot`"; }",
+        [Text.UTF8Encoding]::new($false))
+    & dotnet build (Join-Path $assemblyFixture 'AssemblyFixture.csproj') `
+        -c Release -v:q -t:Rebuild -p:DebugType=none -p:DebugSymbols=false
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Unable to build the absolute-path artifact fixture.'
+    }
+    Assert-Throws {
+        Invoke-ArtifactValidator $fixtureAssembly $assemblyFixture
+    } 'absolute build root'
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Expected artifact validation failures leaked a native process exit code.'
+    }
 
     Write-Output 'Release artifact tests passed.'
 }

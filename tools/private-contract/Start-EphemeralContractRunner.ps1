@@ -40,6 +40,7 @@ Set-StrictMode -Version Latest
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $compatibilityScript = Join-Path $repositoryRoot '.github\scripts\compatibility.ps1'
 . $compatibilityScript
+. (Join-Path $repositoryRoot '.github\scripts\spine-extension.ps1')
 $compatibility = Read-NinjaSlayerCompatibility -Path (Join-Path $repositoryRoot 'eng\compatibility.json')
 $channelNames = @($compatibility.channels.PSObject.Properties.Name)
 
@@ -127,18 +128,10 @@ if ($RunnerPurpose -eq 'Smoke') {
     }
 }
 
-$requiredSpineFiles = @(
-    'libspine_godot.windows.editor.x86_64.dll',
-    'libspine_godot.windows.template_debug.x86_64.dll',
-    'libspine_godot.windows.template_release.x86_64.dll'
-)
 if ($RunnerPurpose -in @('Release', 'Smoke')) {
-    foreach ($fileName in $requiredSpineFiles) {
-        $source = Join-Path $SpineExtensionDirectory $fileName
-        if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-            throw "Missing Spine $RunnerPurpose input: $source"
-        }
-    }
+    $null = Get-NinjaSlayerVerifiedSpineExtension `
+        -Compatibility $compatibility `
+        -SourceDirectory $SpineExtensionDirectory
 }
 
 $sessionId = [Guid]::NewGuid().ToString('N')
@@ -287,12 +280,11 @@ try {
     }
 
     if ($RunnerPurpose -in @('Release', 'Smoke')) {
-        New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null
-        foreach ($fileName in $requiredSpineFiles) {
-            $destination = Join-Path $spineDirectory $fileName
-            Copy-Item -LiteralPath (Join-Path $SpineExtensionDirectory $fileName) -Destination $destination
-            (Get-Item -LiteralPath $destination).IsReadOnly = $true
-        }
+        $null = Copy-NinjaSlayerVerifiedSpineExtension `
+            -Compatibility $compatibility `
+            -SourceDirectory $SpineExtensionDirectory `
+            -DestinationDirectory $spineDirectory `
+            -MarkDestinationReadOnly
     }
 
     if ([string]::IsNullOrWhiteSpace($RunnerArchivePath)) {

@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Text.Json;
 
 namespace NinjaSlayer.ArchitectureTests;
 
@@ -162,11 +163,11 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains(". (Join-Path $PSScriptRoot 'file-hash.ps1')", compatibility, StringComparison.Ordinal);
         Assert.Contains(". (Join-Path $PSScriptRoot 'file-hash.ps1')", releaseArtifact, StringComparison.Ordinal);
         Assert.Contains(
-            ". .\\trusted\\.github\\scripts\\file-hash.ps1",
+            ". .\\trusted\\.github\\scripts\\spine-extension.ps1",
             ExtractWorkflowStep(smoke, "Install verified Spine extension"),
             StringComparison.Ordinal);
         Assert.Contains(
-            ". .\\.github\\scripts\\file-hash.ps1",
+            ". .\\.github\\scripts\\spine-extension.ps1",
             ExtractWorkflowStep(release, "Install verified Spine extension"),
             StringComparison.Ordinal);
         Assert.Contains(
@@ -177,6 +178,7 @@ public sealed partial class RepositoryArchitectureTests
         foreach (string relativePath in new[]
         {
             ".github/scripts/compatibility.ps1",
+            ".github/scripts/spine-extension.ps1",
             ".github/scripts/release-artifact.ps1",
             ".github/workflows/contract.yml",
             ".github/workflows/smoke.yml",
@@ -196,13 +198,21 @@ public sealed partial class RepositoryArchitectureTests
     public void SmokeWorkflowInstallsVerifiedSpineExtensionBeforePackaging()
     {
         string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));
+        string release = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "release.yml"));
+        string compatibility = File.ReadAllText(Path.Combine(Root, "eng", "compatibility.json"));
+        string helper = File.ReadAllText(Path.Combine(
+            Root,
+            ".github",
+            "scripts",
+            "spine-extension.ps1"));
+        using JsonDocument compatibilityDocument = JsonDocument.Parse(compatibility);
+        JsonElement spineFiles = compatibilityDocument.RootElement
+            .GetProperty("spineExtension")
+            .GetProperty("windowsFiles");
 
         Assert.Contains("Install verified Spine extension", smoke, StringComparison.Ordinal);
         Assert.Contains("NINJASLAYER_SPINE_DIR", smoke, StringComparison.Ordinal);
-        Assert.Contains(
-            "854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C",
-            smoke,
-            StringComparison.Ordinal);
+        Assert.Equal(3, spineFiles.GetArrayLength());
         foreach (string fileName in new[]
         {
             "libspine_godot.windows.editor.x86_64.dll",
@@ -210,9 +220,20 @@ public sealed partial class RepositoryArchitectureTests
             "libspine_godot.windows.template_release.x86_64.dll",
         })
         {
-            Assert.Contains(fileName, smoke, StringComparison.Ordinal);
+            Assert.Contains(
+                spineFiles.EnumerateArray(),
+                file => file.GetProperty("name").GetString() == fileName
+                    && System.Text.RegularExpressions.Regex.IsMatch(
+                        file.GetProperty("sha256").GetString() ?? string.Empty,
+                        "^[0-9a-f]{64}$"));
         }
 
+        Assert.DoesNotContain("$expectedHash", smoke, StringComparison.Ordinal);
+        Assert.DoesNotContain("$expectedHash", release, StringComparison.Ordinal);
+        Assert.Contains("Copy-NinjaSlayerVerifiedSpineExtension", smoke, StringComparison.Ordinal);
+        Assert.Contains("Copy-NinjaSlayerVerifiedSpineExtension", release, StringComparison.Ordinal);
+        Assert.Contains("Get-NinjaSlayerVerifiedSpineExtension", helper, StringComparison.Ordinal);
+        Assert.Contains("Copied Spine extension hash mismatch", helper, StringComparison.Ordinal);
         Assert.Contains("candidate\\addons\\spine\\windows", smoke, StringComparison.Ordinal);
         Assert.Contains("if (-not $file.IsReadOnly)", smoke, StringComparison.Ordinal);
         Assert.Contains(
@@ -227,7 +248,6 @@ public sealed partial class RepositoryArchitectureTests
             StringComparison.Ordinal);
         Assert.Contains("[IO.FileAttributes]::ReparsePoint", smoke, StringComparison.Ordinal);
         Assert.Contains("Assert-NoReparsePointInPath -Path $file.FullName", smoke, StringComparison.Ordinal);
-        Assert.Contains("Copy-Item -LiteralPath $source -Destination $destination", smoke, StringComparison.Ordinal);
         Assert.True(
             smoke.IndexOf("Install verified Spine extension", StringComparison.Ordinal)
                 < smoke.IndexOf("Run isolated stable and preview smoke", StringComparison.Ordinal),
@@ -242,22 +262,17 @@ public sealed partial class RepositoryArchitectureTests
             "tools",
             "private-contract",
             "Start-EphemeralContractRunner.ps1"));
-        string normalized = launcher.Replace("\r\n", "\n", StringComparison.Ordinal);
-
         Assert.Contains(
-            "if ($RunnerPurpose -in @('Release', 'Smoke')) {\n" +
-                "    foreach ($fileName in $requiredSpineFiles) {\n" +
-                "        $source = Join-Path $SpineExtensionDirectory $fileName",
-            normalized,
+            "Get-NinjaSlayerVerifiedSpineExtension",
+            launcher,
             StringComparison.Ordinal);
         Assert.Contains(
-            "    if ($RunnerPurpose -in @('Release', 'Smoke')) {\n" +
-                "        New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null\n" +
-                "        foreach ($fileName in $requiredSpineFiles) {\n" +
-                "            $destination = Join-Path $spineDirectory $fileName\n" +
-                "            Copy-Item -LiteralPath (Join-Path $SpineExtensionDirectory $fileName) -Destination $destination\n" +
-                "            (Get-Item -LiteralPath $destination).IsReadOnly = $true",
-            normalized,
+            "Copy-NinjaSlayerVerifiedSpineExtension",
+            launcher,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "-MarkDestinationReadOnly",
+            launcher,
             StringComparison.Ordinal);
         Assert.Contains(
             "-Value $(if ($RunnerPurpose -in @('Release', 'Smoke')) { $spineDirectory } else { $null })",

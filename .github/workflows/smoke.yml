@@ -65,7 +65,7 @@ jobs:
           set-safe-directory: false
 
       - name: Setup .NET 9
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 9.0.x
 
@@ -136,7 +136,8 @@ jobs:
       - name: Install verified Spine extension
         shell: powershell
         run: |
-          . .\trusted\.github\scripts\file-hash.ps1
+          . .\trusted\.github\scripts\compatibility.ps1
+          . .\trusted\.github\scripts\spine-extension.ps1
 
           function Assert-NoReparsePointInPath {
             param([Parameter(Mandatory)][string]$Path)
@@ -156,7 +157,7 @@ jobs:
             }
           }
 
-          $expectedHash = '854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'
+          $compatibility = Read-NinjaSlayerCompatibility -Path '.\trusted\eng\compatibility.json'
           $workspaceRoot = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE).TrimEnd(
             [IO.Path]::DirectorySeparatorChar,
             [IO.Path]::AltDirectorySeparatorChar)
@@ -167,27 +168,21 @@ jobs:
           }
           Assert-NoReparsePointInPath -Path $spineRoot.FullName
           $destination = Join-Path $env:GITHUB_WORKSPACE 'candidate\addons\spine\windows'
-          New-Item -ItemType Directory -Path $destination -Force | Out-Null
-          foreach ($fileName in @(
-            'libspine_godot.windows.editor.x86_64.dll',
-            'libspine_godot.windows.template_debug.x86_64.dll',
-            'libspine_godot.windows.template_release.x86_64.dll'
-          )) {
-            $source = Join-Path $env:NINJASLAYER_SPINE_DIR $fileName
-            $file = Get-Item -LiteralPath $source -ErrorAction Stop
-            if (-not $file.IsReadOnly) {
-              throw "$fileName must be a read-only Smoke input."
+          Copy-NinjaSlayerVerifiedSpineExtension `
+            -Compatibility $compatibility `
+            -SourceDirectory $env:NINJASLAYER_SPINE_DIR `
+            -DestinationDirectory $destination `
+            -ValidateSource {
+              param($file, $contract)
+              if (-not $file.IsReadOnly) {
+                throw "$($contract.name) must be a read-only Smoke input."
+              }
+              Assert-NoReparsePointInPath -Path $file.FullName
+              if ($file.FullName.Equals($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -or
+                  $file.FullName.StartsWith($workspacePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "$($contract.name) must remain outside the repository workspace."
+              }
             }
-            Assert-NoReparsePointInPath -Path $file.FullName
-            if ($file.FullName.Equals($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -or
-                $file.FullName.StartsWith($workspacePrefix, [StringComparison]::OrdinalIgnoreCase)) {
-              throw "$fileName must remain outside the repository workspace."
-            }
-            if ((Get-NinjaSlayerFileSha256 -Path $source) -ne $expectedHash) {
-              throw "Spine extension hash mismatch for $fileName."
-            }
-            Copy-Item -LiteralPath $source -Destination $destination
-          }
 
       - name: Run isolated stable and preview smoke
         shell: powershell
@@ -211,7 +206,7 @@ jobs:
 
       - name: Upload successful text-only attestation
         if: success()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: game-smoke-${{ inputs.mode }}-${{ steps.candidate.outputs.sha }}
           path: |
@@ -222,7 +217,7 @@ jobs:
 
       - name: Upload sanitized failure evidence
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: game-smoke-failure-${{ inputs.mode }}-${{ steps.candidate.outputs.sha }}
           path: ${{ runner.temp }}/smoke-result

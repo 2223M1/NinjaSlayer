@@ -20,8 +20,7 @@ param(
     [switch]$SaveSettings,
     [switch]$SkipGitHub,
     [switch]$SkipWorkshop,
-    [switch]$CleanBuildCache,
-    [switch]$AllowDirty
+    [switch]$CleanBuildCache
 )
 
 $ErrorActionPreference = 'Stop'
@@ -138,6 +137,16 @@ function Get-TrackedTextAtRevision(
         throw "Unable to read $RelativePath from $Revision."
     }
     return (($output -join "`n").Trim())
+}
+
+function Get-TrackedObjectIdAtRevision(
+    [string]$Revision,
+    [string]$RelativePath) {
+    $objectId = Get-NativeText git @('rev-parse', "$Revision`:$RelativePath")
+    if ($objectId -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "Unable to resolve the tracked object id for $RelativePath at $Revision."
+    }
+    return $objectId.ToLowerInvariant()
 }
 
 function Assert-ReleaseNoteIsFresh(
@@ -324,18 +333,34 @@ function New-ExactPackageArchive([string]$PackageDirectory, [string]$ArchivePath
 function Test-ResumeArtifacts(
     [string]$StatePath,
     [string]$CandidateSha,
+    [string]$CandidateTree,
     [string]$CompatibilitySha,
+    $Compatibility,
+    [string]$ReleaseNoteRelativePath,
+    [string]$ReleaseNoteBlob,
+    [string]$ReleaseNotePath,
+    [string]$WorkshopMetadataRelativePath,
+    [string]$WorkshopMetadataBlob,
+    [string]$WorkshopMetadataPath,
     [hashtable]$ArchivePaths) {
     if (-not (Test-Path -LiteralPath $StatePath -PathType Leaf)) {
         return $false
     }
     try {
         $state = Get-Content -LiteralPath $StatePath -Raw -Encoding UTF8 | ConvertFrom-Json
-        if ([int]$state.schemaVersion -ne 1 -or
-            $state.reusable -ne $true -or
-            [string]$state.version -ne $Version -or
-            [string]$state.candidateSha -ne $CandidateSha -or
-            [string]$state.compatibilityManifestSha256 -ne $CompatibilitySha) {
+        if (-not (Test-NinjaSlayerFrozenReleaseInputs `
+            -State $state `
+            -Version $Version `
+            -CandidateSha $CandidateSha `
+            -CandidateTree $CandidateTree `
+            -CompatibilitySha $CompatibilitySha `
+            -Compatibility $Compatibility `
+            -ReleaseNoteRelativePath $ReleaseNoteRelativePath `
+            -ReleaseNoteBlob $ReleaseNoteBlob `
+            -ReleaseNotePath $ReleaseNotePath `
+            -WorkshopMetadataRelativePath $WorkshopMetadataRelativePath `
+            -WorkshopMetadataBlob $WorkshopMetadataBlob `
+            -WorkshopMetadataPath $WorkshopMetadataPath)) {
             return $false
         }
         foreach ($channel in @('stable', 'preview')) {
@@ -344,7 +369,8 @@ function Test-ResumeArtifacts(
                 return $false
             }
             $archive = Read-NinjaSlayerPackageArchive -Path $archivePath
-            if ([string]$state.archives.$channel.sha256 -ne [string]$archive.sha256) {
+            if ([string]$state.archives.$channel.path -cne (Split-Path -Leaf $archivePath) -or
+                [string]$state.archives.$channel.sha256 -ne [string]$archive.sha256) {
                 return $false
             }
         }
@@ -399,15 +425,12 @@ if ($DryRun -and ($SkipGitHub -or $SkipWorkshop)) {
 if (-not $DryRun -and $SkipGitHub -and $SkipWorkshop) {
     throw 'SkipGitHub and SkipWorkshop cannot both be selected.'
 }
-if ($AllowDirty -and -not $DryRun) {
-    throw 'AllowDirty is restricted to DryRun so a published package always matches its tag.'
-}
-
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 Set-Location $repositoryRoot
 $compatibilityPath = Join-Path $repositoryRoot 'eng\compatibility.json'
 . (Join-Path $repositoryRoot '.github\scripts\compatibility.ps1')
 . (Join-Path $repositoryRoot '.github\scripts\release-artifact.ps1')
+. (Join-Path $repositoryRoot '.github\scripts\release-candidate.ps1')
 
 $compatibility = Read-NinjaSlayerCompatibility -Path $compatibilityPath
 $compatibilitySha = Get-NinjaSlayerCompatibilitySha256 -Path $compatibilityPath
@@ -485,9 +508,15 @@ $releaseNotePath = Resolve-FilePath $releaseNotePath 'Release note file'
 if ([string]::IsNullOrWhiteSpace((Get-Content -LiteralPath $releaseNotePath -Raw -Encoding UTF8))) {
     throw 'Release note must contain at least one sentence.'
 }
+$releaseNoteRelativePath = Get-RepositoryRelativePath `
+    -Path $releaseNotePath `
+    -RepositoryRoot $repositoryRoot `
+    -Description 'Release note'
+$workshopMetadataRelativePath = 'Workshop/workshop.json'
 
 $tag = "v$Version"
 $buildRoot = Join-Path $repositoryRoot 'build\fast-release\cache'
+$candidateRoot = Join-Path $repositoryRoot 'build\fast-release\candidate'
 $releaseRoot = Join-Path $repositoryRoot "build\fast-release\$tag"
 $releaseRoot = Assert-ChildPath $releaseRoot (Join-Path $repositoryRoot 'build\fast-release') 'Release output'
 [IO.Directory]::CreateDirectory($releaseRoot) | Out-Null
@@ -496,9 +525,17 @@ $archivePaths = @{
     preview = Join-Path $releaseRoot "NinjaSlayer-$tag-preview-sts2-$($previewProfile.gameApiVersion).zip"
 }
 $statePath = Join-Path $releaseRoot 'fast-release-state.json'
+$frozenInputRoot = Join-Path $releaseRoot 'frozen-inputs'
+$frozenReleaseNotePath = Join-Path $frozenInputRoot 'change-note.md'
+$frozenWorkshopMetadataPath = Join-Path $frozenInputRoot 'workshop.json'
+$spineExtensionDirectory = Join-Path $repositoryRoot 'addons\spine\windows'
 
 $repository = $null
 $head = $null
+$candidateTree = $null
+$releaseNoteBlob = $null
+$workshopMetadataBlob = $null
+$candidate = $null
 $existingRelease = $false
 try {
     Invoke-TimedStep 'Preflight' {
@@ -514,7 +551,7 @@ try {
         }
 
         $dirty = @(Get-DisallowedWorktreeChanges)
-        if ($dirty.Count -gt 0 -and -not $AllowDirty) {
+        if ($dirty.Count -gt 0) {
             throw "Fast official release found uncommitted shipping changes:`n$($dirty -join [Environment]::NewLine)"
         }
         Invoke-Native git @('diff', '--check')
@@ -552,6 +589,15 @@ try {
             Select-Object -First 1
         $previousReleaseTag = if ($null -eq $previousRelease) { $null } else { $previousRelease.Name }
         Assert-ReleaseNoteIsFresh -ReleaseNotePath $releaseNotePath -RepositoryRoot $repositoryRoot -PreviousTag $previousReleaseTag
+        $script:candidateTree = (Get-NativeText git @(
+            'rev-parse', "$($script:head)^{tree}"
+        )).ToLowerInvariant()
+        $script:releaseNoteBlob = Get-TrackedObjectIdAtRevision `
+            -Revision $script:head `
+            -RelativePath $releaseNoteRelativePath
+        $script:workshopMetadataBlob = Get-TrackedObjectIdAtRevision `
+            -Revision $script:head `
+            -RelativePath $workshopMetadataRelativePath
 
         if (-not $DryRun -and -not $SkipGitHub) {
             Invoke-Native gh @('auth', 'status')
@@ -567,15 +613,44 @@ try {
         Invoke-Native node @('tools/validate-repository.mjs')
     }
 
-    $reuseArtifacts = $Resume -and -not $AllowDirty -and (Test-ResumeArtifacts `
+    $reuseArtifacts = $Resume -and (Test-ResumeArtifacts `
         -StatePath $statePath `
         -CandidateSha $head `
+        -CandidateTree $candidateTree `
         -CompatibilitySha $compatibilitySha `
+        -Compatibility $compatibility `
+        -ReleaseNoteRelativePath $releaseNoteRelativePath `
+        -ReleaseNoteBlob $releaseNoteBlob `
+        -ReleaseNotePath $frozenReleaseNotePath `
+        -WorkshopMetadataRelativePath $workshopMetadataRelativePath `
+        -WorkshopMetadataBlob $workshopMetadataBlob `
+        -WorkshopMetadataPath $frozenWorkshopMetadataPath `
         -ArchivePaths $archivePaths)
     if ($reuseArtifacts) {
         Write-Host 'Reusing locally verified stable and preview archives.' -ForegroundColor Green
     }
     else {
+        Invoke-TimedStep 'Freeze release candidate' {
+            $script:candidate = New-NinjaSlayerReleaseCandidate `
+                -RepositoryRoot $repositoryRoot `
+                -CandidateSha $head `
+                -CandidateRoot $candidateRoot `
+                -Compatibility $compatibility `
+                -SpineExtensionDirectory $spineExtensionDirectory `
+                -ReleaseNoteRelativePath $releaseNoteRelativePath `
+                -WorkshopMetadataRelativePath $workshopMetadataRelativePath
+            if ([string]$script:candidate.TreeSha -ne $candidateTree) {
+                throw 'The frozen release candidate tree does not match the preflight tree.'
+            }
+            if (Test-Path -LiteralPath $frozenInputRoot) {
+                Remove-Item -LiteralPath $frozenInputRoot -Recurse -Force
+            }
+            [IO.Directory]::CreateDirectory($frozenInputRoot) | Out-Null
+            Copy-Item -LiteralPath $script:candidate.ReleaseNotePath `
+                -Destination $frozenReleaseNotePath
+            Copy-Item -LiteralPath $script:candidate.WorkshopMetadataPath `
+                -Destination $frozenWorkshopMetadataPath
+        }
         foreach ($channel in @('stable', 'preview')) {
             $dataDirectory = if ($channel -eq 'stable') {
                 $resolvedStableDataDir
@@ -593,7 +668,9 @@ try {
                     BuildRoot = $buildRoot
                     ReuseCache = -not $CleanBuildCache
                 }
-                & (Join-Path $PSScriptRoot 'Invoke-NinjaSlayerChannelBuild.ps1') @parameters
+                $parameters.SourceRevision = $head
+                & (Join-Path $candidate.Root 'tools\release\Invoke-NinjaSlayerChannelBuild.ps1') `
+                    @parameters
             }
 
             Invoke-TimedStep "Archive $channel" {
@@ -604,13 +681,27 @@ try {
         }
 
         $state = [ordered]@{
-            schemaVersion = 1
+            schemaVersion = 2
             version = $Version
             tag = $tag
             candidateSha = $head
+            candidateTree = $candidateTree
             compatibilityManifestSha256 = $compatibilitySha
-            reusable = -not $AllowDirty
+            reusable = $true
             createdAtUtc = [DateTimeOffset]::UtcNow.ToString('O')
+            frozenInputs = [ordered]@{
+                releaseNote = [ordered]@{
+                    relativePath = $releaseNoteRelativePath
+                    gitBlob = $releaseNoteBlob
+                    sha256 = Get-NinjaSlayerSha256 -Path $frozenReleaseNotePath
+                }
+                workshopMetadata = [ordered]@{
+                    relativePath = $workshopMetadataRelativePath
+                    gitBlob = $workshopMetadataBlob
+                    sha256 = Get-NinjaSlayerSha256 -Path $frozenWorkshopMetadataPath
+                }
+                spineFiles = @($candidate.SpineFiles)
+            }
             archives = [ordered]@{
                 stable = [ordered]@{
                     path = Split-Path -Leaf $archivePaths.stable
@@ -638,6 +729,17 @@ try {
     }
 
     Invoke-TimedStep 'Tag and push' {
+        Invoke-Native git @('fetch', 'origin', 'main', '--tags', '--prune')
+        $currentHead = (Get-NativeText git @('rev-parse', 'HEAD')).ToLowerInvariant()
+        $currentOriginMain = (Get-NativeText git @('rev-parse', 'origin/main')).ToLowerInvariant()
+        if ($currentHead -ne $head -or $currentOriginMain -ne $head) {
+            throw "Release inputs moved after freezing candidate $head."
+        }
+        $dirty = @(Get-DisallowedWorktreeChanges)
+        if ($dirty.Count -gt 0) {
+            throw "Shipping changes appeared after candidate freeze:`n$($dirty -join [Environment]::NewLine)"
+        }
+        Invoke-Native git @('diff', '--check')
         $localTagCommit = Get-TagCommit $tag
         if (-not [string]::IsNullOrWhiteSpace($localTagCommit) -and $localTagCommit -ne $head) {
             throw "$tag changed locally during packaging."
@@ -668,7 +770,7 @@ try {
                     $archivePaths.preview,
                     '--repo', $repository,
                     '--verify-tag',
-                    '--notes-file', $releaseNotePath,
+                    '--notes-file', $frozenReleaseNotePath,
                     '--title', "NinjaSlayer $tag",
                     '--latest'
                 )
@@ -693,9 +795,9 @@ try {
                 -DestinationPath $contentDirectory `
                 -ExpectedFileNames $script:PackageFiles
 
-            $metadata = Get-Content -LiteralPath (Join-Path $repositoryRoot 'Workshop\workshop.json') `
+            $metadata = Get-Content -LiteralPath $frozenWorkshopMetadataPath `
                 -Raw -Encoding UTF8 | ConvertFrom-Json
-            $metadata.changeNote = (Get-Content -LiteralPath $releaseNotePath -Raw -Encoding UTF8).Trim()
+            $metadata.changeNote = (Get-Content -LiteralPath $frozenReleaseNotePath -Raw -Encoding UTF8).Trim()
             [IO.File]::WriteAllText(
                 (Join-Path $workshopDirectory 'workshop.json'),
                 ($metadata | ConvertTo-Json -Depth 10),
@@ -718,6 +820,7 @@ try {
         version = $Version
         tag = $tag
         candidateSha = $head
+        candidateTree = $candidateTree
         completedAtUtc = [DateTimeOffset]::UtcNow.ToString('O')
         elapsedSeconds = [Math]::Round($script:TotalTimer.Elapsed.TotalSeconds, 3)
         budgetSeconds = $BudgetSeconds
@@ -733,6 +836,14 @@ try {
     Write-Host "NinjaSlayer $tag release completed." -ForegroundColor Green
 }
 finally {
+    if ($null -ne $candidate -and -not [string]::IsNullOrWhiteSpace([string]$candidate.Root)) {
+        try {
+            Remove-NinjaSlayerReleaseCandidate -Path $candidate.Root -CandidateRoot $candidateRoot
+        }
+        catch {
+            Write-Warning "Unable to remove frozen release candidate: $($_.Exception.Message)"
+        }
+    }
     $script:TotalTimer.Stop()
     Write-Host ''
     $script:PhaseTimings | Format-Table Phase, Seconds -AutoSize | Out-Host

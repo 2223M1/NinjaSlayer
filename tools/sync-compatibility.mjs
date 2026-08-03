@@ -81,9 +81,22 @@ if (drift.length > 0) {
 console.log(mode === 'check' ? 'Compatibility-derived files are current.' : 'Compatibility-derived files updated.');
 
 function validateManifest(value) {
-  if (value.schemaVersion !== 1) throw new Error('compatibility.json schemaVersion must be 1.');
+  if (value.schemaVersion !== 2) throw new Error('compatibility.json schemaVersion must be 2.');
   if (!/^\d+\.\d+\.\d+$/.test(value.ritsuLibVersion ?? '')) {
     throw new Error('ritsuLibVersion must be an exact SemVer core.');
+  }
+  const spineFiles = value.spineExtension?.windowsFiles;
+  if (!Array.isArray(spineFiles) || spineFiles.length !== 3) {
+    throw new Error('spineExtension.windowsFiles must contain exactly three files.');
+  }
+  const spineNames = new Set();
+  for (const file of spineFiles) {
+    if (!/^libspine_godot\.windows\.[A-Za-z0-9_.-]+\.dll$/.test(file?.name ?? '')
+        || !/^[0-9a-f]{64}$/.test(file?.sha256 ?? '')
+        || spineNames.has(file.name)) {
+      throw new Error('spineExtension.windowsFiles contains an invalid or duplicate file.');
+    }
+    spineNames.add(file.name);
   }
   const names = Object.keys(value.channels ?? {});
   if (names.join(',') !== 'stable,preview') {

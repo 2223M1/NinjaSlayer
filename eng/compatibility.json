@@ -1,7 +1,23 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "defaultBuildChannel": "preview",
   "ritsuLibVersion": "0.5.1",
+  "spineExtension": {
+    "windowsFiles": [
+      {
+        "name": "libspine_godot.windows.editor.x86_64.dll",
+        "sha256": "854d827b8926b00ba6459093033bf0c0898efa2b6e1c85eb0abc78ca153ea58c"
+      },
+      {
+        "name": "libspine_godot.windows.template_debug.x86_64.dll",
+        "sha256": "854d827b8926b00ba6459093033bf0c0898efa2b6e1c85eb0abc78ca153ea58c"
+      },
+      {
+        "name": "libspine_godot.windows.template_release.x86_64.dll",
+        "sha256": "854d827b8926b00ba6459093033bf0c0898efa2b6e1c85eb0abc78ca153ea58c"
+      }
+    ]
+  },
   "channels": {
     "stable": {
       "gameApiVersion": "0.107.1",
