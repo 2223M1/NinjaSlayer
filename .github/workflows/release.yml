@@ -30,7 +30,7 @@ jobs:
 
       - name: Validate new release tag at origin/main HEAD
         id: release
-        shell: powershell
+        shell: pwsh
         run: |
           if ('${{ github.ref }}' -cne 'refs/heads/main') {
             throw 'The protected Release workflow must be dispatched from main.'
@@ -57,7 +57,7 @@ jobs:
           "release_sha=$releaseSha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Require an immutable new GitHub Release
-        shell: powershell
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_POLICY_TOKEN: ${{ secrets.RELEASE_POLICY_TOKEN }}
@@ -75,7 +75,7 @@ jobs:
           }
 
       - name: Require protected dual-host Contract and smoke
-        shell: powershell
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -97,7 +97,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Validate isolated dual-host release inputs
-        shell: powershell
+        shell: pwsh
         run: |
           . .\.github\scripts\compatibility.ps1
           if ([string]::IsNullOrWhiteSpace($env:GODOT_EXE) -or -not (Test-Path -LiteralPath $env:GODOT_EXE -PathType Leaf)) {
@@ -139,7 +139,7 @@ jobs:
           "RELEASE_HOSTS_JSON=$(ConvertTo-Json -InputObject @($hosts) -Compress)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install verified Spine extension
-        shell: powershell
+        shell: pwsh
         run: |
           . .\.github\scripts\compatibility.ps1
           . .\.github\scripts\spine-extension.ps1
@@ -159,7 +159,7 @@ jobs:
             }
 
       - name: Validate resources and import with preview host
-        shell: powershell
+        shell: pwsh
         run: |
           node .\tools\sync-compatibility.mjs --check
           node .\tools\validate-repository.mjs
@@ -183,7 +183,7 @@ jobs:
 
       - name: Package stable and preview release archives
         id: package
-        shell: powershell
+        shell: pwsh
         run: |
           $version = $env:RELEASE_TAG.Substring(1)
           $buildRoot = Join-Path $env:RUNNER_TEMP 'release-channel-build'
@@ -233,7 +233,7 @@ jobs:
           retention-days: 90
 
       - name: Create immutable GitHub Release
-        shell: powershell
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

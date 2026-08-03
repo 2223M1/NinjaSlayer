@@ -1,3 +1,6 @@
+#Requires -Version 7.0
+#Requires -PSEdition Core
+
 Set-StrictMode -Version Latest
 
 $script:NinjaSlayerNonLoopbackRemoteAddresses = @(

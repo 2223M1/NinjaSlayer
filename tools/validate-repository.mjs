@@ -58,6 +58,30 @@ if (compatibilitySync.status !== 0) {
   );
 }
 
+const powerShellHeader = '#Requires -Version 7.0\n#Requires -PSEdition Core\n';
+for (const directory of [
+  join(root, '.github', 'scripts'),
+  join(root, 'tools'),
+  join(root, 'Docs'),
+  join(root, 'skills'),
+]) {
+  for (const path of filesUnder(directory).filter(path => path.endsWith('.ps1'))) {
+    const source = readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
+    if (!source.startsWith(powerShellHeader)) {
+      errors.push(`${relative(root, path)} must require PowerShell 7 Core`);
+    }
+  }
+}
+
+for (const workflow of filesUnder(join(root, '.github', 'workflows')).filter(
+  path => path.endsWith('.yml'),
+)) {
+  const source = readFileSync(workflow, 'utf8');
+  if (/^\s*shell:\s*powershell\s*$/m.test(source)) {
+    errors.push(`${relative(root, workflow)} must use pwsh instead of Windows PowerShell`);
+  }
+}
+
 const retiredCardArtTools = [
   'tools/build-card-art-manifest.mjs',
   'tools/process-card-art.py',

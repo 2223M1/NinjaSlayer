@@ -9,7 +9,7 @@ python3 Docs/_sync_tutorials.py
 On Windows, the existing wrapper remains available:
 
 ```powershell
-.\Docs\Sync-Sts2Tutorials.ps1
+pwsh .\Docs\Sync-Sts2Tutorials.ps1
 ```
 
 ## Slay the Spire 2 Modding Tutorials
