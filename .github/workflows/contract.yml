@@ -57,7 +57,7 @@ jobs:
           set-safe-directory: false
 
       - name: Setup .NET 9
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 9.0.x
 
@@ -349,7 +349,7 @@ jobs:
           }
 
       - name: Upload text-only attestation
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: private-contract-${{ steps.candidate.outputs.sha }}
           path: ${{ runner.temp }}/contract-attestation

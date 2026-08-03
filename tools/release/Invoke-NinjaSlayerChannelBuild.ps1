@@ -19,6 +19,8 @@ param(
     [string]$SteamModDir,
     [string]$WorkshopContentDir,
     [string]$BuildRoot,
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$SourceRevision,
     [switch]$ReuseCache
 )
 
@@ -131,6 +133,12 @@ Add-MsBuildProperty $commonArguments 'PostBuildModDir' ($packageDirectory + [IO.
 Add-MsBuildProperty $commonArguments 'GodotExe' $GodotExe
 Add-MsBuildProperty $commonArguments 'SteamModDir' $SteamModDir
 Add-MsBuildProperty $commonArguments 'WorkshopContentDir' $WorkshopContentDir
+if (-not [string]::IsNullOrWhiteSpace($SourceRevision)) {
+    $normalizedSourceRevision = $SourceRevision.ToLowerInvariant()
+    Add-MsBuildProperty $commonArguments 'GitDescribe' $normalizedSourceRevision
+    Add-MsBuildProperty $commonArguments 'GitReleaseTags' "v$Version"
+    Add-MsBuildProperty $commonArguments 'RepositoryCommit' $normalizedSourceRevision
+}
 
 $restoreArguments = [Collections.Generic.List[string]]::new()
 $restoreArguments.Add('restore')
@@ -190,6 +198,7 @@ Write-Output ([pscustomobject]@{
     Target = $Target
     GameApiVersion = [string]$profile.gameApiVersion
     RitsuLibPackageId = [string]$profile.ritsuLibPackageId
+    SourceRevision = $SourceRevision
     AssetsPath = $assetsPath
     PackageDirectory = $packageDirectory
 })

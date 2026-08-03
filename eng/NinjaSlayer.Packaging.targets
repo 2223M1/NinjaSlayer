@@ -121,7 +121,7 @@
            Text="Package manifest is missing." />
     <Error Condition="!Exists('$(PostBuildModDir)$(NinjaSlayerArtifactName).pck')"
            Text="Package PCK is missing." />
-    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-assembly --assembly &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).dll&quot; --channel &quot;$(NinjaSlayerHostChannel)&quot; --game-api-version &quot;$(NinjaSlayerGameApiVersion)&quot; --ritsulib-package-id &quot;$(NinjaSlayerRitsuLibPackageId)&quot; --ritsulib-version &quot;$(NinjaSlayerRitsuLibVersion)&quot;" />
+    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-assembly --assembly &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).dll&quot; --channel &quot;$(NinjaSlayerHostChannel)&quot; --game-api-version &quot;$(NinjaSlayerGameApiVersion)&quot; --ritsulib-package-id &quot;$(NinjaSlayerRitsuLibPackageId)&quot; --ritsulib-version &quot;$(NinjaSlayerRitsuLibVersion)&quot; --forbidden-path-root &quot;$(MSBuildProjectDirectory)&quot;" />
     <Exec Command="&quot;$(NodeExe)&quot; &quot;$(MSBuildProjectDirectory)\tools\package-contract.mjs&quot; validate-manifest --manifest &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).json&quot; --version &quot;$(NinjaSlayerVersion)&quot; --min-game-version &quot;$(NinjaSlayerManifestMinGameVersion)&quot; --ritsulib-version &quot;$(NinjaSlayerRitsuLibVersion)&quot;" />
   </Target>
 

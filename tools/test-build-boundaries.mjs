@@ -58,6 +58,9 @@ const channelBuildPath = join(
   'release',
   'Invoke-NinjaSlayerChannelBuild.ps1',
 );
+const releaseCandidatePath = join(root, '.github', 'scripts', 'release-candidate.ps1');
+const spineExtensionPath = join(root, '.github', 'scripts', 'spine-extension.ps1');
+const artifactContractPath = join(root, 'tools', 'artifact-contract', 'Program.cs');
 const ephemeralRunnerPath = join(
   root,
   'tools',
@@ -105,6 +108,9 @@ const particlesContainer = readFileSync(particlesContainerPath, 'utf8');
 const energyVfxScenes = energyVfxScenePaths.map((path) => readFileSync(path, 'utf8'));
 const defaultChannel = compatibility.defaultBuildChannel;
 const channelBuild = readFileSync(channelBuildPath, 'utf8');
+const releaseCandidate = readFileSync(releaseCandidatePath, 'utf8');
+const spineExtension = readFileSync(spineExtensionPath, 'utf8');
+const artifactContract = readFileSync(artifactContractPath, 'utf8');
 
 function xml(value) {
   return value
@@ -189,6 +195,8 @@ assert(
   project.includes('<Compile Remove="build\\**\\*.cs" />'),
   'Channel-local generated sources under build/ must never enter the shipping compilation.',
 );
+assert(project.includes('<DebugType>none</DebugType>'));
+assert(project.includes('<DebugSymbols>false</DebugSymbols>'));
 const isolatedPathRoot = join(tmpdir(), 'ninjaslayer-isolated-output-contract');
 const evaluatedPaths = evaluateProperties(
   projectPath,
@@ -217,6 +225,30 @@ const oneClickRelease = readFileSync(oneClickReleasePath, 'utf8');
 const workshopQuickRelease = readFileSync(workshopQuickReleasePath, 'utf8');
 const ephemeralRunner = readFileSync(ephemeralRunnerPath, 'utf8');
 const stableTagPattern = '^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$';
+assert.equal(compatibility.schemaVersion, 2);
+assert.equal(compatibility.spineExtension.windowsFiles.length, 3);
+assert.equal(new Set(compatibility.spineExtension.windowsFiles.map(file => file.name)).size, 3);
+assert(
+  compatibility.spineExtension.windowsFiles.every(file => /^[0-9a-f]{64}$/.test(file.sha256)),
+  'Every Spine input must have a lowercase SHA-256 contract.',
+);
+assert(packagingTargets.includes('--forbidden-path-root &quot;$(MSBuildProjectDirectory)&quot;'));
+for (const debugContract of [
+  'DebugDirectoryEntryType.CodeView',
+  'DebugDirectoryEntryType.EmbeddedPortablePdb',
+  'DebugDirectoryEntryType.PdbChecksum',
+  'Release assembly contains its absolute build root',
+]) {
+  assert(artifactContract.includes(debugContract), `Artifact contract is missing: ${debugContract}`);
+}
+for (const workflow of [ciWorkflow, contractWorkflow, smokeWorkflow, releaseWorkflow, workshopWorkflow]) {
+  assert(!workflow.includes('67a3573c9a986a3f9c594539f4ab511d57bb3ce9'));
+  assert(!workflow.includes('49933ea5288caeca8642d1e84afbd3f7d6820020'));
+  assert(!workflow.includes('ea165f8d65b6e75b540449e92b4886f43607fa02'));
+}
+assert(ciWorkflow.includes('actions/setup-node@820762786026740c76f36085b0efc47a31fe5020'));
+assert(ciWorkflow.includes('actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68'));
+assert(releaseWorkflow.includes('actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'));
 for (const [channelName, channel] of Object.entries(compatibility.channels)) {
   for (const assembly of ['SmartFormat.dll', 'SmartFormat.ZString.dll', 'Steamworks.NET.dll']) {
     assert(
@@ -430,10 +462,18 @@ assert(
 );
 for (const safeguard of [
   'if (-not $DryRun -and -not $Confirm)',
-  'if ($AllowDirty -and -not $DryRun)',
   "if ($branch -ne 'main')",
   'if ($script:head -ne $originMain)',
   '$dirty = @(Get-DisallowedWorktreeChanges)',
+  'New-NinjaSlayerReleaseCandidate',
+  'candidateTree = $candidateTree',
+  'schemaVersion = 2',
+  '$parameters.SourceRevision = $head',
+  "Join-Path $candidate.Root 'tools\\release\\Invoke-NinjaSlayerChannelBuild.ps1'",
+  "Invoke-Native git @('fetch', 'origin', 'main', '--tags', '--prune')",
+  'Shipping changes appeared after candidate freeze',
+  '$frozenReleaseNotePath',
+  '$frozenWorkshopMetadataPath',
   'Read-NinjaSlayerPackageArchive',
   '[IO.Compression.CompressionLevel]::NoCompression',
   "'release', 'create', $tag",
@@ -441,8 +481,7 @@ for (const safeguard of [
   "'push', 'origin', $tag",
   "'upload', '-w', 'NinjaSlayer'",
   'ReuseCache = -not $CleanBuildCache',
-  'reusable = -not $AllowDirty',
-  '$state.reusable -ne $true',
+  'reusable = $true',
   'function Assert-ReleaseNoteIsFresh',
   'Release note must be tracked and committed before publishing',
   'Release note matches the previous release',
@@ -452,6 +491,20 @@ for (const safeguard of [
 ]) {
   assert(fastRelease.includes(safeguard), `Fast release must retain safeguard: ${safeguard}`);
 }
+assert(!fastRelease.includes('$AllowDirty'), 'Official fast release must only package committed HEAD.');
+assert(!oneClickRelease.includes('$AllowDirty'), 'One-click release must not expose dirty packaging.');
+for (const contract of [
+  'git archive --format=zip',
+  'Expand-NinjaSlayerGitArchive',
+  'Copy-NinjaSlayerVerifiedSpineExtension',
+  'Release candidate path must remain under',
+  '$State.reusable -ne $true',
+  'Test-NinjaSlayerFrozenReleaseInputs',
+]) {
+  assert(releaseCandidate.includes(contract), `Release candidate helper is missing: ${contract}`);
+}
+assert(channelBuild.includes("Add-MsBuildProperty $commonArguments 'GitDescribe' $normalizedSourceRevision"));
+assert(channelBuild.includes("Add-MsBuildProperty $commonArguments 'RepositoryCommit' $normalizedSourceRevision"));
 assert(
   fastRelease.indexOf('New-ExactPackageArchive $packageDirectory')
     < fastRelease.indexOf("Invoke-Native git @('tag', '-a', $tag"),
@@ -531,15 +584,22 @@ assert.equal(
   2,
   'Each PowerShell input-validation step must initialize its own workspace boundary.',
 );
-assert(
-  releaseWorkflow.includes('854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'),
-  'Release packaging must pin the verified Spine extension hash.',
-);
 assert(smokeWorkflow.includes('NINJASLAYER_SPINE_DIR'));
 assert(smokeWorkflow.includes('Install verified Spine extension'));
 assert(
-  smokeWorkflow.includes('854D827B8926B00BA6459093033BF0C0898EFA2B6E1C85EB0ABC78CA153EA58C'),
-  'Smoke packaging must pin the verified Spine extension hash.',
+  releaseWorkflow.includes('Copy-NinjaSlayerVerifiedSpineExtension')
+    && smokeWorkflow.includes('Copy-NinjaSlayerVerifiedSpineExtension'),
+  'Release and Smoke must consume the shared Spine extension contract.',
+);
+assert(
+  spineExtension.includes('Get-NinjaSlayerVerifiedSpineExtension')
+    && spineExtension.includes('Copied Spine extension hash mismatch')
+    && spineExtension.includes('exactly the three declared files'),
+  'The shared Spine helper must validate inputs, outputs, and destination contents.',
+);
+assert(
+  !releaseWorkflow.includes('$expectedHash') && !smokeWorkflow.includes('$expectedHash'),
+  'Workflow files must not duplicate the Spine hash from compatibility.json.',
 );
 assert(
   smokeWorkflow.indexOf('Install verified Spine extension')
@@ -575,21 +635,13 @@ for (const required of [
 ]) {
   assert(ephemeralRunner.includes(required), `Ephemeral runner launcher is missing: ${required}`);
 }
-const spineValidationBlock = `if ($RunnerPurpose -in @('Release', 'Smoke')) {
-    foreach ($fileName in $requiredSpineFiles) {
-        $source = Join-Path $SpineExtensionDirectory $fileName`;
 assert(
-  ephemeralRunner.replaceAll('\r\n', '\n').includes(spineValidationBlock),
+  ephemeralRunner.includes('Get-NinjaSlayerVerifiedSpineExtension'),
   'Release and Smoke runners must validate every Spine input.',
 );
-const spineIsolationBlock = `    if ($RunnerPurpose -in @('Release', 'Smoke')) {
-        New-Item -ItemType Directory -Path $spineDirectory -Force | Out-Null
-        foreach ($fileName in $requiredSpineFiles) {
-            $destination = Join-Path $spineDirectory $fileName
-            Copy-Item -LiteralPath (Join-Path $SpineExtensionDirectory $fileName) -Destination $destination
-            (Get-Item -LiteralPath $destination).IsReadOnly = $true`;
 assert(
-  ephemeralRunner.replaceAll('\r\n', '\n').includes(spineIsolationBlock),
+  ephemeralRunner.includes('Copy-NinjaSlayerVerifiedSpineExtension')
+    && ephemeralRunner.includes('-MarkDestinationReadOnly'),
   'Release and Smoke runners must copy their Spine inputs into a read-only isolated directory.',
 );
 assert(

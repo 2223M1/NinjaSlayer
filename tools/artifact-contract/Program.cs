@@ -1,5 +1,6 @@
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Text;
 
 if (args.Length == 0)
 {
@@ -33,6 +34,8 @@ static void ValidateAssembly(IReadOnlyDictionary<string, string> options)
 
     using FileStream stream = File.OpenRead(assemblyPath);
     using var peReader = new PEReader(stream);
+    ValidateReleaseDebugDirectory(peReader);
+    ValidateForbiddenPath(peReader, Required(options, "forbidden-path-root"));
     MetadataReader reader = peReader.GetMetadataReader();
     var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
     foreach (CustomAttributeHandle handle in reader.GetAssemblyDefinition().GetCustomAttributes())
@@ -70,6 +73,76 @@ static void ValidateAssembly(IReadOnlyDictionary<string, string> options)
     }
 
     Console.WriteLine($"Validated package assembly {assemblyPath}");
+}
+
+static void ValidateReleaseDebugDirectory(PEReader peReader)
+{
+    foreach (DebugDirectoryEntry entry in peReader.ReadDebugDirectory())
+    {
+        switch (entry.Type)
+        {
+            case DebugDirectoryEntryType.CodeView:
+                CodeViewDebugDirectoryData codeView = peReader.ReadCodeViewDebugDirectoryData(entry);
+                throw new InvalidDataException(
+                    $"Release assembly contains a CodeView/PDB path: {codeView.Path}");
+            case DebugDirectoryEntryType.EmbeddedPortablePdb:
+            case DebugDirectoryEntryType.PdbChecksum:
+                throw new InvalidDataException(
+                    $"Release assembly contains forbidden PDB debug data ({entry.Type}).");
+        }
+    }
+}
+
+static void ValidateForbiddenPath(PEReader peReader, string forbiddenPathRoot)
+{
+    string root = Path.GetFullPath(forbiddenPathRoot).TrimEnd(
+        Path.DirectorySeparatorChar,
+        Path.AltDirectorySeparatorChar);
+    byte[] image = peReader.GetEntireImage().GetContent().ToArray();
+    foreach (string path in new[] { root, root.Replace('\\', '/'), root.Replace('/', '\\') }
+        .Distinct(StringComparer.OrdinalIgnoreCase))
+    {
+        if (ContainsBytes(image, Encoding.UTF8.GetBytes(path), ignoreAsciiCase: true)
+            || ContainsBytes(image, Encoding.Unicode.GetBytes(path), ignoreAsciiCase: true))
+        {
+            throw new InvalidDataException(
+                $"Release assembly contains its absolute build root: {root}");
+        }
+    }
+}
+
+static bool ContainsBytes(byte[] source, byte[] value, bool ignoreAsciiCase)
+{
+    if (value.Length == 0 || value.Length > source.Length)
+    {
+        return false;
+    }
+    for (int index = 0; index <= source.Length - value.Length; index++)
+    {
+        int offset = 0;
+        while (offset < value.Length
+               && BytesEqual(source[index + offset], value[offset], ignoreAsciiCase))
+        {
+            offset++;
+        }
+        if (offset == value.Length)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool BytesEqual(byte left, byte right, bool ignoreAsciiCase)
+{
+    if (left == right || !ignoreAsciiCase)
+    {
+        return left == right;
+    }
+    static byte ToUpperAscii(byte value) => value is >= (byte)'a' and <= (byte)'z'
+        ? (byte)(value - 32)
+        : value;
+    return ToUpperAscii(left) == ToUpperAscii(right);
 }
 
 static void ValidateHost(IReadOnlyDictionary<string, string> options)
@@ -161,5 +234,6 @@ static bool IsAssemblyMetadataTypeDefinition(MetadataReader reader, TypeDefiniti
 
 static InvalidOperationException Usage() => new(
     "Usage: validate-assembly --assembly <file> --channel <stable|preview> " +
-    "--game-api-version <version> --ritsulib-package-id <id> --ritsulib-version <version> | " +
+    "--game-api-version <version> --ritsulib-package-id <id> --ritsulib-version <version> " +
+    "--forbidden-path-root <directory> | " +
     "validate-host --assembly <sts2.dll> --module-mvid <guid>");
