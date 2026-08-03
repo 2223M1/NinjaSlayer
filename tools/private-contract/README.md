@@ -4,14 +4,14 @@ This directory contains the trusted entry points for protected Contract, Release
 
 `eng/compatibility.json` defines the two rolling hosts. The launcher reads that manifest and accepts semantic paths only:
 
-- `-RunnerPurpose Contract`: pass `GameDataDirectoryStable` and `GameDataDirectoryPreview`. The launcher copies both reference sets read-only and creates an isolated .NET 9 runtime. Run from elevated PowerShell so the job can block non-loopback traffic from both dotnet and Godot while retaining the local Contract fixture.
+- `-RunnerPurpose Contract`: pass `GameDataDirectoryStable` and `GameDataDirectoryPreview`. The launcher copies both reference sets read-only and creates an isolated .NET 9 runtime. Run from elevated PowerShell 7 (`pwsh`) so the job can block non-loopback traffic from both dotnet and Godot while retaining the local Contract fixture.
 - `-RunnerPurpose Release`: pass the same two data directories. The launcher also isolates the fixed-hash Spine GDExtension files used by `PackageMod`.
-- `-RunnerPurpose Smoke`: pass `GameRootDirectoryStable`, `GameRootDirectoryPreview`, and `RitsuLibModDirectory`. The launcher isolates the same fixed-hash Spine GDExtension files for candidate packaging. The RitsuLib directory must be a complete current Workshop installation whose manifest and assembly are at least the pinned compile baseline. Run from elevated PowerShell.
+- `-RunnerPurpose Smoke`: pass `GameRootDirectoryStable`, `GameRootDirectoryPreview`, and `RitsuLibModDirectory`. The launcher isolates the same fixed-hash Spine GDExtension files for candidate packaging. The RitsuLib directory must be a complete current Workshop installation whose manifest and assembly are at least the pinned compile baseline. Run from elevated PowerShell 7 (`pwsh`).
 
 Example:
 
 ```powershell
-.\tools\private-contract\Start-EphemeralContractRunner.ps1 `
+pwsh .\tools\private-contract\Start-EphemeralContractRunner.ps1 `
   -RunnerPurpose Contract `
   -RegistrationToken <short-lived-token> `
   -RunnerVersion <actions-runner-version> `

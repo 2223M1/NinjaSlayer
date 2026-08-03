@@ -56,7 +56,7 @@ This English README documents the project and installation process. It does not 
 
 ## Development
 
-Development requires the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0), [Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/), and compatible game files.
+Development requires the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0), [Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/), PowerShell 7 (`pwsh`), and compatible game files. Repository automation does not support Windows PowerShell 5.1.
 
 ```powershell
 git clone https://github.com/2223M1/NinjaSlayer.git

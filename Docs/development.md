@@ -11,6 +11,8 @@
 Only these two rolling channels are active. Runtime players receive the current RitsuLib Workshop build; `0.5.1` is the pinned, reproducible compile baseline and minimum manifest dependency. Protected builds use each channel's real game assemblies. No intermediate game host or RefLib approximation is a release target.
 <!-- compatibility:end -->
 
+All repository automation targets PowerShell 7 Core and must be invoked through `pwsh`. Windows PowerShell 5.1 is not supported.
+
 ## Validation
 
 ```powershell
@@ -120,11 +122,11 @@ It requires a clean exact matching tag, stable host references, and the configur
 `eng/compatibility.json` is the only handwritten source for active host versions, package ids, distribution channels, and host fingerprints. Update one channel from a read-only game installation with:
 
 ```powershell
-.\tools\Capture-GameHostContract.ps1 `
+pwsh .\tools\Capture-GameHostContract.ps1 `
   -GameDirectory C:\path\to\game\data_sts2_windows_x86_64 `
   -Channel preview
 # Review the candidate JSON and layout report, then:
-.\tools\Capture-GameHostContract.ps1 `
+pwsh .\tools\Capture-GameHostContract.ps1 `
   -GameDirectory C:\path\to\game\data_sts2_windows_x86_64 `
   -Channel preview `
   -Apply

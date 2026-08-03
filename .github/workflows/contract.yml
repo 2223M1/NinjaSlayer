@@ -28,7 +28,7 @@ jobs:
 
       - name: Validate canonical candidate
         id: candidate
-        shell: powershell
+        shell: pwsh
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
           WORKFLOW_SHA: ${{ github.sha }}
@@ -62,7 +62,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Validate isolated dual-host inputs
-        shell: powershell
+        shell: pwsh
         run: |
           . .\trusted\.github\scripts\compatibility.ps1
           . .\trusted\.github\scripts\process-network-isolation.ps1
@@ -141,7 +141,7 @@ jobs:
           "NUGET_PACKAGES=$env:RUNNER_TEMP\private-contract-nuget" | Out-File $env:GITHUB_ENV -Append
 
       - name: Restore trusted projects before isolation
-        shell: powershell
+        shell: pwsh
         run: |
           $contractHosts = ConvertFrom-Json -InputObject $env:CONTRACT_HOSTS_JSON
           foreach ($hostContract in $contractHosts) {
@@ -161,7 +161,7 @@ jobs:
           }
 
       - name: Prepare trusted network isolation probe
-        shell: powershell
+        shell: pwsh
         run: |
           $probeProject = 'trusted/Tests/NinjaSlayer.NetworkIsolationProbe/NinjaSlayer.NetworkIsolationProbe.csproj'
           $probeOutput = Join-Path $env:RUNNER_TEMP 'contract-network-probe'
@@ -203,7 +203,7 @@ jobs:
           "NINJASLAYER_CONTRACT_NETWORK_PROBE_DLL=$probeDll" | Out-File $env:GITHUB_ENV -Append
 
       - name: Compile candidate and run trusted contracts without network
-        shell: powershell
+        shell: pwsh
         run: |
           . .\trusted\.github\scripts\process-network-isolation.ps1
           $dotnet = $env:NINJASLAYER_CONTRACT_DOTNET_EXE
@@ -317,7 +317,7 @@ jobs:
           }
 
       - name: Create dual-host contract attestation
-        shell: powershell
+        shell: pwsh
         run: |
           . .\trusted\.github\scripts\compatibility.ps1
           $root = Join-Path $env:RUNNER_TEMP 'contract-attestation'
@@ -358,7 +358,7 @@ jobs:
 
       - name: Scrub private inputs and caches
         if: always()
-        shell: powershell
+        shell: pwsh
         run: |
           Remove-Item "$env:RUNNER_TEMP\private-contract-*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item "$env:RUNNER_TEMP\contract-*" -Recurse -Force -ErrorAction SilentlyContinue

@@ -86,7 +86,7 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void SmokeLauncherUsesPowerShell51SafeArgumentsAndHelpers()
+    public void SmokeLauncherUsesPowerShell7ApisAndStructuredArguments()
     {
         string launcher = File.ReadAllText(Path.Combine(
             Root,
@@ -108,19 +108,58 @@ public sealed partial class RepositoryArchitectureTests
             "Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray() -WorkingDirectory $TrustedRoot",
             launcher,
             StringComparison.Ordinal);
-        Assert.DoesNotContain("[IO.Path]::GetRelativePath", launcher, StringComparison.Ordinal);
         Assert.Contains("function Get-RelativeChildPath", launcher, StringComparison.Ordinal);
-        Assert.Contains("$childPath.Substring($sourcePrefix.Length)", launcher, StringComparison.Ordinal);
-        Assert.DoesNotContain(
-            "$content.Replace($replacement[0], $replacement[1], [StringComparison]::OrdinalIgnoreCase)",
-            launcher,
-            StringComparison.Ordinal);
-        Assert.Contains("function Replace-OrdinalIgnoreCase", launcher, StringComparison.Ordinal);
-        Assert.Contains("[Text.StringBuilder]::new()", launcher, StringComparison.Ordinal);
         Assert.Contains(
-            "$Text.IndexOf($OldValue, $searchIndex, [StringComparison]::OrdinalIgnoreCase)",
+            "return [IO.Path]::GetRelativePath($sourceRoot, $childPath)",
             launcher,
             StringComparison.Ordinal);
+        Assert.DoesNotContain("function Replace-OrdinalIgnoreCase", launcher, StringComparison.Ordinal);
+        Assert.Contains(
+            "$content = $content.Replace(",
+            launcher,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "[StringComparison]::OrdinalIgnoreCase)",
+            launcher,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PowerShellAutomationTargetsCoreSevenOnly()
+    {
+        string requiredHeader = "#Requires -Version 7.0\n#Requires -PSEdition Core\n";
+        string[] scriptRoots =
+        {
+            Path.Combine(Root, ".github", "scripts"),
+            Path.Combine(Root, "tools"),
+            Path.Combine(Root, "Docs"),
+            Path.Combine(Root, "skills"),
+        };
+
+        foreach (string script in scriptRoots
+            .SelectMany(path => Directory.EnumerateFiles(path, "*.ps1", SearchOption.AllDirectories))
+            .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("build", StringComparer.OrdinalIgnoreCase)))
+        {
+            string source = File.ReadAllText(script).Replace("\r\n", "\n", StringComparison.Ordinal);
+            Assert.True(
+                source.StartsWith(requiredHeader, StringComparison.Ordinal),
+                $"{Path.GetRelativePath(Root, script)} must require PowerShell 7 Core.");
+        }
+
+        foreach (string workflow in Directory.EnumerateFiles(
+            Path.Combine(Root, ".github", "workflows"),
+            "*.yml"))
+        {
+            string source = File.ReadAllText(workflow);
+            Assert.DoesNotContain("shell: powershell", source, StringComparison.Ordinal);
+        }
+
+        string compatibilityTest = File.ReadAllText(Path.Combine(
+            Root,
+            "tools",
+            "test-compatibility-powershell.ps1"));
+        Assert.Contains("$PSVersionTable.PSVersion.Major -ne 7", compatibilityTest, StringComparison.Ordinal);
+        Assert.Contains("$PSVersionTable.PSEdition -cne 'Core'", compatibilityTest, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -149,17 +188,17 @@ public sealed partial class RepositoryArchitectureTests
         Assert.Contains("[Security.Cryptography.SHA256]::Create()", hashHelper, StringComparison.Ordinal);
         Assert.Contains("[IO.File]::OpenRead", hashHelper, StringComparison.Ordinal);
         Assert.DoesNotContain("Get-FileHash", hashHelper, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("powershell-compatibility:", ci, StringComparison.Ordinal);
+        Assert.Contains("powershell7:", ci, StringComparison.Ordinal);
         Assert.Contains("runs-on: windows-latest", ci, StringComparison.Ordinal);
-        Assert.Contains("shell: powershell", ci, StringComparison.Ordinal);
+        Assert.Contains("shell: pwsh", ci, StringComparison.Ordinal);
         Assert.Contains("./tools/test-compatibility-powershell.ps1", ci, StringComparison.Ordinal);
-        Assert.Contains("needs: powershell-compatibility", ci, StringComparison.Ordinal);
+        Assert.Contains("needs: powershell7", ci, StringComparison.Ordinal);
         Assert.Contains("if: ${{ always() }}", ci, StringComparison.Ordinal);
         Assert.Contains(
-            "if: ${{ needs.powershell-compatibility.result != 'success' }}",
+            "if: ${{ needs.powershell7.result != 'success' }}",
             ci,
             StringComparison.Ordinal);
-        Assert.Contains("PowerShell 5.1 compatibility job must succeed.", ci, StringComparison.Ordinal);
+        Assert.Contains("PowerShell 7 contract job must succeed.", ci, StringComparison.Ordinal);
         Assert.Contains(". (Join-Path $PSScriptRoot 'file-hash.ps1')", compatibility, StringComparison.Ordinal);
         Assert.Contains(". (Join-Path $PSScriptRoot 'file-hash.ps1')", releaseArtifact, StringComparison.Ordinal);
         Assert.Contains(
@@ -281,7 +320,7 @@ public sealed partial class RepositoryArchitectureTests
     }
 
     [Fact]
-    public void ProtectedWorkflowsEnumerateTopLevelHostArraysOnWindowsPowerShell()
+    public void ProtectedWorkflowsEnumerateTopLevelHostArraysDeterministically()
     {
         string contract = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "contract.yml"));
         string smoke = File.ReadAllText(Path.Combine(Root, ".github", "workflows", "smoke.yml"));

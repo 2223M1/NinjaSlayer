@@ -316,13 +316,14 @@ for (const required of [
 }
 assert(ciWorkflow.includes('./tools/test-process-network-isolation.ps1'));
 assert(ciWorkflow.includes('./tools/test-compatibility-powershell.ps1'));
-assert(ciWorkflow.includes('powershell-compatibility:'));
+assert(ciWorkflow.includes('powershell7:'));
 assert(ciWorkflow.includes('runs-on: windows-latest'));
-assert(ciWorkflow.includes('shell: powershell'));
-assert(ciWorkflow.includes('needs: powershell-compatibility'));
+assert(ciWorkflow.includes('shell: pwsh'));
+assert(!ciWorkflow.includes('shell: powershell'));
+assert(ciWorkflow.includes('needs: powershell7'));
 assert(ciWorkflow.includes('if: ${{ always() }}'));
-assert(ciWorkflow.includes("if: ${{ needs.powershell-compatibility.result != 'success' }}"));
-assert(ciWorkflow.includes('PowerShell 5.1 compatibility job must succeed.'));
+assert(ciWorkflow.includes("if: ${{ needs.powershell7.result != 'success' }}"));
+assert(ciWorkflow.includes('PowerShell 7 contract job must succeed.'));
 assert(ciWorkflow.includes('Tests/NinjaSlayer.NetworkIsolationProbe/NinjaSlayer.NetworkIsolationProbe.csproj'));
 assert(networkProbeProject.includes('<UseAppHost>false</UseAppHost>'));
 assert(privateRunnerReadme.includes('| Contract | `4` |'));
@@ -344,7 +345,7 @@ assert(
 );
 assert(
   !releaseWorkflow.includes('gh release view'),
-  'Windows PowerShell 5.1 must not probe an absent release through native stderr.',
+  'Release existence checks must not depend on native stderr parsing.',
 );
 assert(releaseWorkflow.includes('workflow_dispatch:'));
 assert(releaseWorkflow.includes('RELEASE_POLICY_TOKEN: ${{ secrets.RELEASE_POLICY_TOKEN }}'));
@@ -371,10 +372,10 @@ assert(
   releaseCheckout.includes('set-safe-directory: false'),
   'Release checkout must not create a temporary global safe-directory config.',
 );
-assert(
-  !releaseWorkflow.includes('shell: pwsh'),
-  'The dedicated Windows Release runner must not require PowerShell 7.',
-);
+for (const workflow of [contractWorkflow, smokeWorkflow, releaseWorkflow, workshopWorkflow]) {
+  assert(workflow.includes('shell: pwsh'), 'Protected workflows must run PowerShell through pwsh.');
+  assert(!workflow.includes('shell: powershell'), 'Windows PowerShell 5.1 is unsupported.');
+}
 const releaseCommandFileWrites = releaseWorkflow
   .split('\n')
   .filter(
@@ -385,7 +386,7 @@ const releaseCommandFileWrites = releaseWorkflow
 assert(releaseCommandFileWrites.length > 0, 'Release must publish command-file outputs.');
 assert(
   releaseCommandFileWrites.every((line) => line.includes('-Encoding utf8')),
-  'Windows PowerShell 5.1 must write GitHub command files as UTF-8.',
+  'Release command files must use explicit UTF-8 encoding.',
 );
 assert(!releaseWorkflow.includes("tags:\n      - 'v0.1.*'"), 'Tag pushes must not automatically queue the protected release path.');
 assert(releaseWorkflow.includes('git rev-list -n 1 $env:RELEASE_TAG'));

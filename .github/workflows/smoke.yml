@@ -36,7 +36,7 @@ jobs:
 
       - name: Validate canonical candidate
         id: candidate
-        shell: powershell
+        shell: pwsh
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
           WORKFLOW_SHA: ${{ github.sha }}
@@ -70,7 +70,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Validate protected dual-host smoke inputs
-        shell: powershell
+        shell: pwsh
         run: |
           . .\trusted\.github\scripts\compatibility.ps1
           $workspaceRoot = [IO.Path]::GetFullPath($env:GITHUB_WORKSPACE).TrimEnd(
@@ -134,7 +134,7 @@ jobs:
           "NUGET_PACKAGES=$env:RUNNER_TEMP\smoke-nuget" | Out-File $env:GITHUB_ENV -Append
 
       - name: Install verified Spine extension
-        shell: powershell
+        shell: pwsh
         run: |
           . .\trusted\.github\scripts\compatibility.ps1
           . .\trusted\.github\scripts\spine-extension.ps1
@@ -185,7 +185,7 @@ jobs:
             }
 
       - name: Run isolated stable and preview smoke
-        shell: powershell
+        shell: pwsh
         run: |
           $smokeHosts = ConvertFrom-Json -InputObject $env:SMOKE_HOSTS_JSON
           foreach ($channelHost in $smokeHosts) {
@@ -226,7 +226,7 @@ jobs:
 
       - name: Scrub smoke workspace and caches
         if: always()
-        shell: powershell
+        shell: pwsh
         run: |
           Remove-Item "$env:RUNNER_TEMP\smoke-*" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item candidate, trusted -Recurse -Force -ErrorAction SilentlyContinue

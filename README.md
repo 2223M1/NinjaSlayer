@@ -56,7 +56,7 @@ GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。公
 
 ## 开发构建
 
-需要 [.NET SDK 9](https://dotnet.microsoft.com/download/dotnet/9.0)、[Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/) 和对应版本的游戏文件。
+需要 [.NET SDK 9](https://dotnet.microsoft.com/download/dotnet/9.0)、[Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/)、PowerShell 7（`pwsh`）和对应版本的游戏文件。仓库自动化不支持 Windows PowerShell 5.1。
 
 ```powershell
 git clone https://github.com/2223M1/NinjaSlayer.git

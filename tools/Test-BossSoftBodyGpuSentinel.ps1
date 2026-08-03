@@ -1,3 +1,6 @@
+#Requires -Version 7.0
+#Requires -PSEdition Core
+
 [CmdletBinding()]
 param(
     [string]$GameExe = 'C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\SlayTheSpire2.exe'

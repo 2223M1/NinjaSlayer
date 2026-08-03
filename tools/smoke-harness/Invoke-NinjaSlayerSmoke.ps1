@@ -1,3 +1,6 @@
+#Requires -Version 7.0
+#Requires -PSEdition Core
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][ValidatePattern('^[0-9A-Fa-f]{40}$')][string]$CandidateSha,
@@ -75,30 +78,7 @@ function Get-RelativeChildPath {
         throw "Smoke mirror path is not a child of $sourceRoot`: $childPath"
     }
 
-    return $childPath.Substring($sourcePrefix.Length)
-}
-
-function Replace-OrdinalIgnoreCase {
-    param(
-        [Parameter(Mandatory)][AllowEmptyString()][string]$Text,
-        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$OldValue,
-        [Parameter(Mandatory)][AllowEmptyString()][string]$NewValue
-    )
-
-    $builder = [Text.StringBuilder]::new()
-    $searchIndex = 0
-    while ($searchIndex -lt $Text.Length) {
-        $matchIndex = $Text.IndexOf($OldValue, $searchIndex, [StringComparison]::OrdinalIgnoreCase)
-        if ($matchIndex -lt 0) {
-            break
-        }
-
-        $null = $builder.Append($Text, $searchIndex, $matchIndex - $searchIndex)
-        $null = $builder.Append($NewValue)
-        $searchIndex = $matchIndex + $OldValue.Length
-    }
-    $null = $builder.Append($Text, $searchIndex, $Text.Length - $searchIndex)
-    return $builder.ToString()
+    return [IO.Path]::GetRelativePath($sourceRoot, $childPath)
 }
 
 function Resolve-RequiredPath {
@@ -212,10 +192,10 @@ function Copy-SanitizedTextArtifact {
         @($GameRootDirectory, '<GAME_ROOT>'),
         @($env:USERPROFILE, '<USER_PROFILE>')
     )) {
-        $content = Replace-OrdinalIgnoreCase `
-            -Text $content `
-            -OldValue ([string]$replacement[0]) `
-            -NewValue ([string]$replacement[1])
+        $content = $content.Replace(
+            [string]$replacement[0],
+            [string]$replacement[1],
+            [StringComparison]::OrdinalIgnoreCase)
     }
     Set-Content -LiteralPath $Destination -Value $content -Encoding utf8
 }

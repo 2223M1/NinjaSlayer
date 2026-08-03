@@ -1,8 +1,15 @@
+#Requires -Version 7.0
+#Requires -PSEdition Core
+
 [CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+if ($PSVersionTable.PSEdition -cne 'Core' -or $PSVersionTable.PSVersion.Major -ne 7) {
+    throw "NinjaSlayer automation requires PowerShell 7 Core; found $($PSVersionTable.PSEdition) $($PSVersionTable.PSVersion)."
+}
 
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 . (Join-Path $repositoryRoot '.github\scripts\compatibility.ps1')
@@ -215,7 +222,7 @@ try {
         }
     }
 
-    Write-Output 'PowerShell compatibility tests passed.'
+    Write-Output 'PowerShell 7 compatibility tests passed.'
 }
 finally {
     if (Test-Path -LiteralPath $temporaryFile) {
