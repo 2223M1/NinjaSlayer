@@ -13,36 +13,33 @@ namespace NinjaSlayer.Code.Prepared;
 
 internal static class PreparedSafetyService
 {
-    public static PreparedCleanupResult CompletePileChange(
+    public static void CompletePileChange(
         ICombatState? suppliedCombatState,
         CardModel card,
         PileType oldPile)
     {
         if (!NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
         {
-            return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
+            return;
         }
 
-        CombatStateAccessResult<ICombatState> access =
-            CardCombatStateAccessor.Resolve(card, suppliedCombatState);
-        if (!access.Succeeded)
+        ICombatState? cardCombatState = card.CombatState ?? card.Owner?.Creature.CombatState;
+        if (suppliedCombatState is not null
+            && cardCombatState is not null
+            && !ReferenceEquals(suppliedCombatState, cardCombatState))
         {
-            return new PreparedCleanupResult(
-                PreparedCleanupStatus.Deferred,
-                Reason: access.Reason ?? "The current combat state could not be confirmed.");
+            return;
         }
 
-        bool belongsToCurrentCombat = BelongsToCombat(card, access.State);
-        if (PreparedSafetyPolicy.ShouldClearAfterPileChange(
-                PrepareCmd.IsPrepared(card),
-                oldPile == PileType.Draw,
-                card.Pile?.Type == PileType.Draw,
-                belongsToCurrentCombat))
+        ICombatState? combatState = suppliedCombatState ?? cardCombatState;
+        if (combatState is not null
+            && PrepareCmd.IsPrepared(card)
+            && oldPile == PileType.Draw
+            && card.Pile?.Type != PileType.Draw
+            && BelongsToCombat(card, combatState))
         {
-            return TryClear(card, "confirmed draw-pile exit");
+            _ = TryClear(card, "confirmed draw-pile exit");
         }
-
-        return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
     }
 
     public static void RecoverAfterRunLoaded(IRunState runState)
@@ -80,7 +77,7 @@ internal static class PreparedSafetyService
             && BelongsToCombat(card, card.Owner.Creature.CombatState);
     }
 
-    public static PreparedCleanupResult RepairAfterApplyFailure(CardModel card, string reason) =>
+    public static Exception? RepairAfterApplyFailure(CardModel card, string reason) =>
         TryClear(card, $"apply recovery: {reason}", logFailure: false);
 
     private static void CleanupPlayers(
@@ -100,11 +97,10 @@ internal static class PreparedSafetyService
 
             foreach (CardModel card in cards)
             {
-                if (PreparedSafetyPolicy.ShouldClearAtLifecycleBoundary(
-                        PrepareCmd.IsPrepared(card),
-                        card.Pile?.Type == PileType.Draw,
-                        BelongsToCombat(card, combatState),
-                        combatIsEnding))
+                if (PrepareCmd.IsPrepared(card)
+                    && (combatIsEnding
+                        || card.Pile?.Type != PileType.Draw
+                        || !BelongsToCombat(card, combatState)))
                 {
                     TryClear(card, boundary);
                 }
@@ -119,11 +115,11 @@ internal static class PreparedSafetyService
         && ReferenceEquals(card.CombatState, combatState)
         && card.Owner.PlayerCombatState?.AllCards.Contains(card) == true;
 
-    private static PreparedCleanupResult TryClear(CardModel card, string reason, bool logFailure = true)
+    private static Exception? TryClear(CardModel card, string reason, bool logFailure = true)
     {
         if (!PrepareCmd.IsPrepared(card))
         {
-            return new PreparedCleanupResult(PreparedCleanupStatus.NotRequired);
+            return null;
         }
 
         try
@@ -131,17 +127,17 @@ internal static class PreparedSafetyService
             CardCmd.ClearAffliction(card);
             if (!PrepareCmd.IsPrepared(card))
             {
-                return new PreparedCleanupResult(PreparedCleanupStatus.Cleared);
+                return null;
             }
 
             var exception = new InvalidOperationException("Prepared affliction remained after cleanup.");
             LogCleanupFailure(card, reason, exception, logFailure);
-            return new PreparedCleanupResult(PreparedCleanupStatus.Failed, exception);
+            return exception;
         }
         catch (Exception exception)
         {
             LogCleanupFailure(card, reason, exception, logFailure);
-            return new PreparedCleanupResult(PreparedCleanupStatus.Failed, exception);
+            return exception;
         }
     }
 

@@ -39,7 +39,6 @@
     <Compile Include="..\..\Code\Combat\SoftContactSolver.cs" Link="SoftContactSolver.cs" />
     <Compile Include="..\..\Code\Combat\SoftBoundaryContactSolver.cs" Link="SoftBoundaryContactSolver.cs" />
     <Compile Include="..\..\Code\Combat\SoftBodyEnergyAudit.cs" Link="SoftBodyEnergyAudit.cs" />
-    <Compile Include="..\..\Code\Combat\SoftBodyResidualStatistics.cs" Link="SoftBodyResidualStatistics.cs" />
     <Compile Include="..\..\Code\Combat\BossSoftBodySolver.cs" Link="BossSoftBodySolver.cs" />
     <Compile Include="..\..\Code\Combat\SoftBodyRenderPose.cs" Link="SoftBodyRenderPose.cs" />
     <Compile Include="..\..\Code\Combat\BossBurstTimeline.cs" Link="BossBurstTimeline.cs" />
@@ -47,12 +46,12 @@
     <Compile Include="..\..\Code\Combat\BossBurstPresentationPolicy.cs" Link="BossBurstPresentationPolicy.cs" />
     <Compile Include="..\..\Code\Combat\CinematicCameraContainment.cs" Link="CinematicCameraContainment.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
+    <Compile Include="..\..\Code\Combat\CombatHealthBar.cs" Link="CombatHealthBar.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
     <Compile Include="..\..\Code\Combat\FacingScaleMath.cs" Link="FacingScaleMath.cs" />
     <Compile Include="..\..\Code\Combat\AttackIntentPreviewContext.cs" Link="AttackIntentPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
     <Compile Include="..\..\Code\Combat\FinisherActionTrajectory.cs" Link="FinisherActionTrajectory.cs" />
-    <Compile Include="..\..\Code\Combat\FinisherApproachPath.cs" Link="FinisherApproachPath.cs" />
     <Compile Include="..\..\Code\Combat\FinisherSquashAnchorPolicy.cs" Link="FinisherSquashAnchorPolicy.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
@@ -67,7 +66,6 @@
     <Compile Include="..\..\Code\Combat\YamotoKokiRelicLifetimePolicy.cs" Link="YamotoKokiRelicLifetimePolicy.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackComboContext.cs" Link="XAttackComboContext.cs" />
-    <Compile Include="..\..\Code\ExternalAnimations\CinematicTimingContract.cs" Link="CinematicTimingContract.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\CinematicSessionLifetime.cs" Link="CinematicSessionLifetime.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\FinisherCompletionProtocol.cs" Link="FinisherCompletionProtocol.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\FinisherDeathKickTimeline.cs" Link="FinisherDeathKickTimeline.cs" />
@@ -77,25 +75,14 @@
     <Compile Include="..\..\Code\Feedback\NinjaSlayerFeedbackSession.cs" Link="NinjaSlayerFeedbackSession.cs" />
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
-    <Compile Include="..\..\Code\Compatibility\NancyAvailabilityPolicy.cs" Link="NancyAvailabilityPolicy.cs" />
     <Compile Include="..\..\Code\Compatibility\OrobasSeaGlassCandidatePolicy.cs" Link="OrobasSeaGlassCandidatePolicy.cs" />
-    <Compile Include="..\..\Code\Prepared\PreparedSafetyPolicy.cs" Link="PreparedSafetyPolicy.cs" />
-    <Compile Include="..\..\Code\Prepared\PreparedApplyTransaction.cs" Link="PreparedApplyTransaction.cs" />
-    <Compile Include="..\..\Code\Prepared\CombatStateAccessPolicy.cs" Link="CombatStateAccessPolicy.cs" />
-    <Compile Include="..\..\Code\Prepared\PreparedDrawPolicy.cs" Link="PreparedDrawPolicy.cs" />
-    <Compile Include="..\..\Code\Prepared\NextDiscardProtectionPolicy.cs" Link="NextDiscardProtectionPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
     <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
     <Compile Include="..\..\Code\Transition\TransitionNoGcRegionState.cs" Link="TransitionNoGcRegionState.cs" />
-    <Compile Include="..\..\Code\Transition\TransitionPerformanceTrace.cs" Link="TransitionPerformanceTrace.cs" />
     <Compile Include="..\..\Code\Transition\TransitionPresentationBarrier.cs" Link="TransitionPresentationBarrier.cs" />
     <Compile Include="..\..\Code\Transition\TransitionViewReadiness.cs" Link="TransitionViewReadiness.cs" />
     <Compile Include="..\..\Code\Transition\TransitionLoadConcurrencyPolicy.cs" Link="TransitionLoadConcurrencyPolicy.cs" />
     <Compile Include="..\..\Code\Telemetry\NinjaSlayerTelemetryIdentityTracker.cs" Link="NinjaSlayerTelemetryIdentityTracker.cs" />
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />
-    <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
-    <None Include="..\Fixtures\RunData\*.json"
-          Link="Fixtures\RunData\%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Combat.HealthBars;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -28,6 +29,27 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
             Amount,
             NarakuLifeHealthBarColors.Foreground,
             null);
+    }
+
+    public override Task AfterPowerAmountChanged(
+        PlayerChoiceContext choiceContext,
+        PowerModel power,
+        decimal amount,
+        Creature? applier,
+        CardModel? cardSource)
+    {
+        if (ReferenceEquals(power, this) && Amount > 0)
+        {
+            CombatHealthBar.Refresh(Owner);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterRemoved(Creature oldOwner)
+    {
+        CombatHealthBar.Refresh(oldOwner);
+        return Task.CompletedTask;
     }
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)

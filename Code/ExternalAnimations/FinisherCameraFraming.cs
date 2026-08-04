@@ -88,23 +88,7 @@ internal static class FinisherCameraFraming
             frame.UseTargetCentersOnly);
         Vector2 desired = subjects.GetCenter()
             + Vector2.Right * requestedHorizontalScreenOffset / Mathf.Max(scale, 0.0001f);
-        return new Vector2(
-            CinematicCameraContainment.ResolveSubjectAwareCenter(
-                desired.X,
-                camera.ViewportSize.X,
-                scale,
-                camera.SceneSize.X,
-                subjects.Position.X,
-                subjects.End.X,
-                SafeMarginPixels),
-            CinematicCameraContainment.ResolveSubjectAwareCenter(
-                desired.Y,
-                camera.ViewportSize.Y,
-                scale,
-                camera.SceneSize.Y,
-                subjects.Position.Y,
-                subjects.End.Y,
-                SafeMarginPixels));
+        return camera.ClampTarget(desired, scale);
     }
 
     private static bool CanFrame(
@@ -122,8 +106,9 @@ internal static class FinisherCameraFraming
             return false;
         }
 
-        Vector2 sceneMinimum = halfViewport;
-        Vector2 sceneMaximum = camera.SceneSize - halfViewport;
+        Rect2 sceneBounds = camera.BaselineVisibleSceneBounds;
+        Vector2 sceneMinimum = sceneBounds.Position + halfViewport;
+        Vector2 sceneMaximum = sceneBounds.End - halfViewport;
         Vector2 subjectMinimum = subjects.End - halfContent;
         Vector2 subjectMaximum = subjects.Position + halfContent;
         return Mathf.Max(sceneMinimum.X, subjectMinimum.X) <= Mathf.Min(sceneMaximum.X, subjectMaximum.X)
@@ -148,13 +133,29 @@ internal static class FinisherCameraFraming
         return bounds;
     }
 
-    private static Vector2 GetHalfViewport(CombatCinematicCameraLease camera, float scale) =>
-        camera.ViewportSize / (2f * Mathf.Max(scale, 0.0001f));
+    private static Vector2 GetHalfViewport(CombatCinematicCameraLease camera, float scale)
+    {
+        Rect2 bounds = camera.BaselineVisibleSceneBounds;
+        return new Vector2(
+            CinematicCameraContainment.ResolveVisibleHalfExtent(
+                bounds.Position.X,
+                bounds.End.X,
+                camera.BaselineScale.X,
+                scale),
+            CinematicCameraContainment.ResolveVisibleHalfExtent(
+                bounds.Position.Y,
+                bounds.End.Y,
+                camera.BaselineScale.Y,
+                scale));
+    }
 
     private static Vector2 GetHalfContent(CombatCinematicCameraLease camera, float scale)
     {
         Vector2 halfViewport = GetHalfViewport(camera, scale);
-        Vector2 margin = Vector2.One * SafeMarginPixels / Mathf.Max(scale, 0.0001f);
+        Vector2 viewportSize = camera.ViewportSize;
+        Vector2 margin = new(
+            viewportSize.X > 0f ? halfViewport.X * 2f * SafeMarginPixels / viewportSize.X : 0f,
+            viewportSize.Y > 0f ? halfViewport.Y * 2f * SafeMarginPixels / viewportSize.Y : 0f);
         return new Vector2(
             Mathf.Max(0f, halfViewport.X - margin.X),
             Mathf.Max(0f, halfViewport.Y - margin.Y));

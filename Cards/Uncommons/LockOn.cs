@@ -27,8 +27,7 @@ public sealed class LockOn : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        DamageFocusPower? power = await PowerCmd.Apply<DamageFocusPower>(choiceContext, cardPlay.Target, 1, Owner.Creature, this);
+        DamageFocusPower? power = await PowerCmd.Apply<DamageFocusPower>(choiceContext, cardPlay.Target!, 1, Owner.Creature, this);
         if (power != null)
         {
             power.DamageMultiplier = 1m + DynamicVars["DamagePercent"].BaseValue / 100m;

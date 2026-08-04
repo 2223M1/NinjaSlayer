@@ -28,8 +28,8 @@ NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built o
 
 ### Steam Workshop
 
-1. Subscribe to and enable [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
-2. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842).
+1. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) through its direct link; the item does not appear in public listings or search.
+2. Subscribe to and enable [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
 3. Launch the game and enable both `STS2-RitsuLib` and `NinjaSlayer` in the mod manager.
 
 ### Manual installation
@@ -49,7 +49,7 @@ NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built o
 | Godot | `4.5.1 Mono` |
 | In-game language | Primarily Simplified Chinese at present |
 
-Each GitHub Release contains separate host-specific stable and preview archives. The public Workshop item always receives stable; a preview item link will be added after its one-time creation. Never enable both NinjaSlayer items together.
+Each GitHub Release contains separate host-specific stable and preview archives. The Workshop item is unlisted: it is absent from public listings and search but remains accessible and subscribable by link. It receives stable only; preview is not uploaded to Workshop.
 <!-- compatibility:end -->
 
 This English README documents the project and installation process. It does not indicate complete English localization in the game.
@@ -69,7 +69,7 @@ An ordinary build never installs or publishes the mod automatically. See the [de
 
 ## Links
 
-- [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)
+- [Steam Workshop (unlisted link)](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)
 - [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases)
 - [Issue tracker](https://github.com/2223M1/NinjaSlayer/issues)
 - [Card catalog](Docs/card-catalog.md)

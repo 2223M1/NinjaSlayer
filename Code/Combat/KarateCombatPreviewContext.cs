@@ -1,7 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
 
 namespace NinjaSlayer.Code.Combat;
 
@@ -20,8 +18,8 @@ public static class KarateCombatPreviewContext
 
     public static void RefreshAssignedTargets(Creature? previousTarget, Creature? currentTarget)
     {
-        RefreshHealthBar(previousTarget);
-        RefreshHealthBar(currentTarget);
+        CombatHealthBar.Refresh(previousTarget);
+        CombatHealthBar.Refresh(currentTarget);
     }
 
     public static CardModel? TryGetCard(Creature creature) =>
@@ -30,20 +28,6 @@ public static class KarateCombatPreviewContext
     public static CardModel? CurrentCard => FindActive(_current)?.Card;
 
     public static Creature? CurrentTarget => FindActive(_current)?.Target;
-
-    public static void RefreshHealthBar(Creature? creature)
-    {
-        if (creature == null)
-        {
-            return;
-        }
-
-        NCreature? creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        NHealthBar? healthBar = creatureNode
-            ?.GetNodeOrNull<NCreatureStateDisplay>("%HealthBar")
-            ?.GetNodeOrNull<NHealthBar>("%HealthBar");
-        healthBar?.RefreshValues();
-    }
 
     private static Scope? FindActive(Scope? scope)
     {

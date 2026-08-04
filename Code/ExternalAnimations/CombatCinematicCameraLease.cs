@@ -23,6 +23,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
     private readonly Control _sceneContainer;
     private readonly Transform2D _baselineSceneToGlobal;
     private readonly List<CameraSample> _followSamples = [];
+    private Rect2 _baselineVisibleSceneBounds;
     private bool _disposed;
     private bool _screenShakeTargetSuspended;
     private bool _layoutAdjustmentActive;
@@ -45,7 +46,9 @@ public sealed class CombatCinematicCameraLease : IDisposable
         _baselineSceneToGlobal = _sceneContainer.GetGlobalTransform();
         _cameraPosition = BaselinePosition;
         _cameraScale = BaselineScale.X;
-        ViewportSize = room.GetViewportRect().Size;
+        Rect2 viewportRect = room.GetViewportRect();
+        ViewportSize = viewportRect.Size;
+        _baselineVisibleSceneBounds = CaptureBaselineVisibleSceneBounds(viewportRect);
         _room.TreeExiting += OnRoomTreeExiting;
 
         NGame? game = NGame.Instance;
@@ -61,7 +64,8 @@ public sealed class CombatCinematicCameraLease : IDisposable
     public Vector2 BaselinePosition { get; }
     public Vector2 BaselineScale { get; }
     public Vector2 ViewportSize { get; private set; }
-    internal Vector2 SceneSize => _sceneContainer.Size;
+    internal Rect2 BaselineVisibleSceneBounds => _baselineVisibleSceneBounds;
+    internal event Action<Rect2>? BaselineVisibleSceneBoundsChanged;
     public float CurrentScale => _cameraScale;
     public Vector2 CurrentPosition => _cameraPosition;
     internal static bool IsControllingCamera => _active is { _disposed: false };
@@ -234,22 +238,20 @@ public sealed class CombatCinematicCameraLease : IDisposable
 
     public Vector2 ClampTarget(Vector2 localTarget, float scale)
     {
-        if (scale <= 0f)
-        {
-            return _sceneContainer.Size * 0.5f;
-        }
-
+        Rect2 bounds = _baselineVisibleSceneBounds;
         return new Vector2(
             CinematicCameraContainment.ClampCenter(
                 localTarget.X,
-                ViewportSize.X,
-                scale,
-                _sceneContainer.Size.X),
+                bounds.Position.X,
+                bounds.End.X,
+                BaselineScale.X,
+                scale),
             CinematicCameraContainment.ClampCenter(
                 localTarget.Y,
-                ViewportSize.Y,
-                scale,
-                _sceneContainer.Size.Y));
+                bounds.Position.Y,
+                bounds.End.Y,
+                BaselineScale.Y,
+                scale));
     }
 
     public Vector2 ClampPosition(Vector2 position, float scale)
@@ -378,11 +380,50 @@ public sealed class CombatCinematicCameraLease : IDisposable
         }
 
         _layoutAdjustmentActive = false;
-        ViewportSize = _room.GetViewportRect().Size;
+        RefreshBaselineVisibleSceneBounds();
         _cameraPosition = GetCameraPosition(_layoutCameraCenter, _cameraScale, ViewportSize * 0.5f);
         ApplyTransform();
         _responsiveLayoutAdjustmentCount++;
     }
+
+    private void RefreshBaselineVisibleSceneBounds()
+    {
+        Rect2 viewportRect = _room.GetViewportRect();
+        Rect2 bounds = CaptureBaselineVisibleSceneBounds(viewportRect);
+        if (viewportRect.Position.IsFinite()
+            && viewportRect.Size.IsFinite()
+            && viewportRect.Size.X > 0f
+            && viewportRect.Size.Y > 0f
+            && IsValidBounds(bounds))
+        {
+            ViewportSize = viewportRect.Size;
+            _baselineVisibleSceneBounds = bounds;
+            BaselineVisibleSceneBoundsChanged?.Invoke(bounds);
+            return;
+        }
+
+        Entry.Logger.Warn(
+            $"Could not refresh the baseline visible scene bounds for {OwnerName}; preserving "
+            + $"{_baselineVisibleSceneBounds.Position}/{_baselineVisibleSceneBounds.Size}.");
+    }
+
+    private Rect2 CaptureBaselineVisibleSceneBounds(Rect2 viewportRect)
+    {
+        Transform2D toScene = _sceneContainer.GetGlobalTransformWithCanvas().AffineInverse();
+        Vector2 topLeft = toScene * viewportRect.Position;
+        Vector2 topRight = toScene * new Vector2(viewportRect.End.X, viewportRect.Position.Y);
+        Vector2 bottomLeft = toScene * new Vector2(viewportRect.Position.X, viewportRect.End.Y);
+        Vector2 bottomRight = toScene * viewportRect.End;
+        Vector2 minimum = topLeft.Min(topRight).Min(bottomLeft).Min(bottomRight);
+        Vector2 maximum = topLeft.Max(topRight).Max(bottomLeft).Max(bottomRight);
+        return new Rect2(minimum, maximum - minimum);
+    }
+
+    private static bool IsValidBounds(Rect2 bounds) =>
+        bounds.Position.IsFinite()
+        && bounds.Size.IsFinite()
+        && bounds.Size.X > 0f
+        && bounds.Size.Y > 0f;
 
     private void RestoreScreenShakeTarget()
     {

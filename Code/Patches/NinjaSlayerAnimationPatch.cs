@@ -34,12 +34,4 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
 
         return !NinjaSlayerCombatAnimations.TryPlayTriggerAnim(creature, triggerName, waitTime, ref __result);
     }
-
-    public static void Postfix(Creature creature, string triggerName, ref Task __result)
-    {
-        __result = NinjaSlayerFinisherCinematic.WrapOwnedTriggerAtActionPeak(
-            creature,
-            triggerName,
-            __result);
-    }
 }

@@ -39,7 +39,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private float _atlasDensity;
     private ulong _readyAfterFrame;
     private ulong _lastWorkFrame = ulong.MaxValue;
-    private long _readyElapsedTicks;
     private int _disposeStarted;
     private ulong _seed;
     private string? _detachedBoneName;
@@ -49,10 +48,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     private float[]? _mappedAreas;
     private float[]? _massRatios;
     private bool _atlasComplete;
-    private long _measurementCpuTicks;
-    private long _atlasCpuTicks;
-    private long _fragmentPreparationCpuTicks;
-    private long _maximumCpuFrameTicks;
 
     private BossVisualCapture()
     {
@@ -63,30 +58,11 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     public Rect2 BodyLocalBounds { get; private set; }
     public Transform2D BodyToSceneContainer { get; private set; }
     public Transform2D BaselineSceneToGlobal { get; private set; }
-    public Vector2 BaselineScenePosition { get; private set; }
-    public Vector2 BaselineSceneScale { get; private set; }
     public Transform2D BodyBaselineGlobalTransform =>
         BaselineSceneToGlobal * BodyToSceneContainer;
     public Rect2 BodyBaselineScreenBounds { get; private set; }
-    public long CaptureStartedTicks { get; private set; }
-    public long SetupElapsedTicks { get; private set; }
-    public long ReadyElapsedTicks => _readyElapsedTicks;
-    public long MeasurementCpuTicks => _measurementCpuTicks;
-    public long AtlasCpuTicks => _atlasCpuTicks;
-    public long FragmentPreparationCpuTicks => _fragmentPreparationCpuTicks;
-    public long MaximumCpuFrameTicks => _maximumCpuFrameTicks;
     public string FailureReason { get; private set; } = string.Empty;
     internal BossFragmentPartition? Partition { get; private set; }
-
-    public Vector2I PixelSize => _viewport is { } viewport
-        && GodotObject.IsInstanceValid(viewport)
-            ? viewport.Size
-            : Vector2I.Zero;
-
-    public long EstimatedTextureBytes => (long)PixelSize.X * PixelSize.Y * 4L;
-    public float AtlasDensity => _atlasDensity;
-    public Node? PresentationParent => IsInsideTree() ? GetParent() : null;
-
     public bool IsReady => _state == CaptureState.Ready
         && _viewport is { } viewport
         && GodotObject.IsInstanceValid(viewport)
@@ -130,14 +106,13 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     internal static BossVisualCapture? TryCreate(
         Node presentationParent,
         Node2D sourceBody,
-        Rect2 fallbackBodyLocalBounds,
+        Rect2 bodyLocalBounds,
         Transform2D bodyToSceneContainer,
         CombatSceneBaseline baseline,
         bool canSplitSpine,
         ulong seed,
         string? detachedBoneName)
     {
-        long setupStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         BossVisualCapture? capture = null;
         try
         {
@@ -147,14 +122,11 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                     "The boss is not using an accessible Spine death pose.");
             }
 
-            ValidateBounds(fallbackBodyLocalBounds);
+            ValidateBounds(bodyLocalBounds);
             capture = new BossVisualCapture
             {
-                CaptureStartedTicks = setupStarted,
                 BodyToSceneContainer = bodyToSceneContainer,
                 BaselineSceneToGlobal = baseline.SceneToGlobal,
-                BaselineScenePosition = baseline.Position,
-                BaselineSceneScale = baseline.Scale,
                 _seed = seed,
                 _detachedBoneName = detachedBoneName,
                 _state = CaptureState.Initializing
@@ -177,9 +149,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             template.Skew = 0f;
             FreezeSpineAnimation(template);
 
-            capture.BodyLocalBounds = ResolveCaptureBounds(
-                template,
-                fallbackBodyLocalBounds);
+            capture.BodyLocalBounds = bodyLocalBounds;
             ValidateBounds(capture.BodyLocalBounds);
             capture.BodyBaselineScreenBounds = TransformBounds(
                 capture.BodyLocalBounds,
@@ -187,8 +157,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             ValidateBounds(capture.BodyBaselineScreenBounds);
 
             capture._lastWorkFrame = Engine.GetProcessFrames();
-            capture.SetupElapsedTicks =
-                System.Diagnostics.Stopwatch.GetTimestamp() - setupStarted;
             capture.SetProcess(true);
             return capture;
         }
@@ -215,8 +183,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
 
         _lastWorkFrame = frame;
-        CaptureState stateAtFrameStart = _state;
-        long frameStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
             switch (_state)
@@ -249,22 +215,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         {
             Fail($"semantic atlas capture failed: {exception.Message}");
             Scripts.Entry.Logger.Warn($"Boss visual capture failed: {exception}");
-        }
-        finally
-        {
-            long elapsed = System.Diagnostics.Stopwatch.GetTimestamp() - frameStarted;
-            _maximumCpuFrameTicks = Math.Max(_maximumCpuFrameTicks, elapsed);
-            switch (stateAtFrameStart)
-            {
-                case CaptureState.Initializing:
-                case CaptureState.MeasuringParts:
-                    _measurementCpuTicks += elapsed;
-                    break;
-                case CaptureState.BuildingAtlas:
-                case CaptureState.WaitingForFrame:
-                    _atlasCpuTicks += elapsed;
-                    break;
-            }
         }
     }
 
@@ -432,46 +382,36 @@ public sealed partial class BossVisualCapture : Node, IDisposable
 
     private void AdvanceFragmentPreparation()
     {
-        long started = System.Diagnostics.Stopwatch.GetTimestamp();
-        try
+        BossFragmentPartition partition = Partition
+            ?? throw new InvalidOperationException("The semantic fragment partition expired.");
+        Shader shader = _fragmentShader
+            ?? throw new InvalidOperationException("The captured fragment shader expired.");
+        float[] mappedAreas = _mappedAreas
+            ?? throw new InvalidOperationException("The mapped fragment areas expired.");
+        float[] massRatios = _massRatios
+            ?? throw new InvalidOperationException("The fragment mass ratios expired.");
+        if (_nextPreparedFragment >= partition.Fragments.Count)
         {
-            BossFragmentPartition partition = Partition
-                ?? throw new InvalidOperationException("The semantic fragment partition expired.");
-            Shader shader = _fragmentShader
-                ?? throw new InvalidOperationException("The captured fragment shader expired.");
-            float[] mappedAreas = _mappedAreas
-                ?? throw new InvalidOperationException("The mapped fragment areas expired.");
-            float[] massRatios = _massRatios
-                ?? throw new InvalidOperationException("The fragment mass ratios expired.");
-            if (_nextPreparedFragment >= partition.Fragments.Count)
-            {
-                return;
-            }
-
-            int index = _nextPreparedFragment;
-            BossCapturedFragmentDescriptor descriptor = partition.Fragments[index];
-            if (!BossCapturedFragmentRenderSurface.TryPrepare(
-                    descriptor,
-                    _bodyToPresentation,
-                    shader,
-                    massRatios[index],
-                    BossDismembermentMath.ResolveCollisionPadding(mappedAreas[index]),
-                    mappedAreas[index],
-                    out BossCapturedFragmentRenderSurface.PreparedResource? prepared)
-                || prepared == null)
-            {
-                throw new InvalidOperationException(
-                    $"fragment {descriptor.FragmentIndex} could not be prepared");
-            }
-
-            _preparedFragments.Add(prepared);
-            _nextPreparedFragment++;
+            return;
         }
-        finally
+
+        int index = _nextPreparedFragment;
+        BossCapturedFragmentDescriptor descriptor = partition.Fragments[index];
+        if (!BossCapturedFragmentRenderSurface.TryPrepare(
+                descriptor,
+                _bodyToPresentation,
+                shader,
+                massRatios[index],
+                BossDismembermentMath.ResolveCollisionPadding(mappedAreas[index]),
+                out BossCapturedFragmentRenderSurface.PreparedResource? prepared)
+            || prepared == null)
         {
-            _fragmentPreparationCpuTicks +=
-                System.Diagnostics.Stopwatch.GetTimestamp() - started;
+            throw new InvalidOperationException(
+                $"fragment {descriptor.FragmentIndex} could not be prepared");
         }
+
+        _preparedFragments.Add(prepared);
+        _nextPreparedFragment++;
     }
 
     private void TryMarkReady()
@@ -483,8 +423,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             return;
         }
 
-        _readyElapsedTicks =
-            System.Diagnostics.Stopwatch.GetTimestamp() - CaptureStartedTicks;
         _state = CaptureState.Ready;
         SetProcess(false);
     }
@@ -840,31 +778,6 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                 slot.Dispose();
             }
         }
-    }
-
-    private static Rect2 ResolveCaptureBounds(Node2D visual, Rect2 fallbackBounds)
-    {
-        try
-        {
-            var sprite = new MegaSprite(Variant.CreateFrom(visual));
-            MegaSkeleton? skeleton = sprite.GetSkeleton();
-            using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
-            if (skeleton != null)
-            {
-                Rect2 spineBounds = skeleton.GetBounds();
-                if (IsValidBounds(spineBounds))
-                {
-                    return spineBounds.Grow(2f);
-                }
-            }
-        }
-        catch (Exception exception)
-        {
-            Scripts.Entry.Logger.Warn(
-                $"Boss Spine bounds were unavailable; using visual bounds: {exception.Message}");
-        }
-
-        return fallbackBounds;
     }
 
     private static float ResolveMaximumScale(Transform2D transform) =>

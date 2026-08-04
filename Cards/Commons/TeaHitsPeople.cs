@@ -24,19 +24,19 @@ public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
         HoverTipFactory.FromCard<ChadoCard>()
     ];
 
-    protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoExhaustedThisTurn(this);
+    protected override bool ShouldGlowGoldInternal => NinjaSlayerCombatMetrics.ChadoExhaustedThisTurn(Owner);
 
     public TeaHitsPeople() : base(CardSpec) { }
 
     public override bool TryGetHitPreview(Creature? target, out int hitCount)
     {
-        hitCount = NinjaSlayerActions.ChadoExhaustedThisTurn(this) ? 2 : 1;
+        hitCount = NinjaSlayerCombatMetrics.ChadoExhaustedThisTurn(Owner) ? 2 : 1;
         return true;
     }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int hitCount = NinjaSlayerActions.ChadoExhaustedThisTurn(this) ? 2 : 1;
+        int hitCount = NinjaSlayerCombatMetrics.ChadoExhaustedThisTurn(Owner) ? 2 : 1;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(hitCount)
             .FromCard(this, cardPlay)

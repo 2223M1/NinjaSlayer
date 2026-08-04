@@ -294,6 +294,7 @@ const workshopPublisher = readFileSync(join(root, '.github', 'scripts', 'publish
 for (const required of [
   'Get-NinjaSlayerCompatibilityChannel',
   'workshopItemId',
+  'workshopVisibility',
   'has not been provisioned in compatibility.json',
   'verify-contract-attestation.ps1',
   'verify-smoke-attestation.ps1',
@@ -316,11 +317,11 @@ for (const required of ['$WORKSHOP_ITEM_ID', '$WORKSHOP_VISIBILITY']) {
 }
 if (compatibility?.channels?.stable?.workshopItemId
     && workshopPublisher.includes(compatibility.channels.stable.workshopItemId)) {
-  errors.push('Workshop publisher must not hardcode the public item id');
+  errors.push('Workshop publisher must not hardcode the Workshop item id');
 }
 const localWorkshopManifest = readJson(join(root, 'Workshop', 'workshop.json'));
-if (localWorkshopManifest?.visibility !== 'public') {
-  errors.push('The local Workshop uploader is stable-only, so Workshop/workshop.json must remain public');
+if (localWorkshopManifest?.visibility !== compatibility?.channels?.stable?.workshopVisibility) {
+  errors.push('Workshop/workshop.json visibility must match the stable compatibility target');
 }
 
 const retiredHostVersion = ['0', '109', '0'].join('.');
@@ -519,10 +520,6 @@ const concreteCardSources = filesUnder(join(root, 'Cards'))
   .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
   .filter(({ source }) => /public\s+sealed\s+class\s+\w+/.test(source));
 const cardSpecPattern = /private\s+static\s+readonly\s+NinjaSlayerCardSpec\s+CardSpec\s*=\s*new\s*\(\s*nameof\((\w+)\)/g;
-const cardPortraitSizeOverrides = new Map([
-  ['KarateStraight', [1438, 1093]],
-  ['ShurikenCard', [1439, 1093]],
-]);
 let cardSpecCount = 0;
 for (const { path, source } of concreteCardSources) {
   const className = /public\s+sealed\s+class\s+(\w+)/.exec(source)?.[1];
@@ -551,8 +548,7 @@ for (const { path, source } of concreteCardSources) {
     if (!existsSync(portraitPath)) errors.push(`Missing dedicated card portrait: ${className}.png`);
     continue;
   }
-  const expectedSize = cardPortraitSizeOverrides.get(className)
-    ?? (/CardRarity\.Ancient/.test(source) ? [606, 852] : [1000, 760]);
+  const expectedSize = /CardRarity\.Ancient/.test(source) ? [606, 852] : [1000, 760];
   if (portraitSize[0] !== expectedSize[0] || portraitSize[1] !== expectedSize[1]) {
     errors.push(
       `${className}.png must be ${expectedSize[0]}x${expectedSize[1]}, found ${portraitSize[0]}x${portraitSize[1]}`,

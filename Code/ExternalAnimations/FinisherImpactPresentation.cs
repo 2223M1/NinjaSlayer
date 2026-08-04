@@ -60,14 +60,19 @@ internal sealed class FinisherImpactPresentation : IDisposable
     }
 
     private readonly NCombatRoom _room;
+    private readonly CombatCinematicCameraLease _camera;
     private readonly CanvasLayer _layer;
     private readonly ColorRect _backdrop;
     private readonly List<ShaderMaterial> _impactMaterials = [];
     private bool _disposed;
 
-    private FinisherImpactPresentation(NCombatRoom room, int impactCount)
+    private FinisherImpactPresentation(
+        NCombatRoom room,
+        CombatCinematicCameraLease camera,
+        int impactCount)
     {
         _room = room;
+        _camera = camera;
         _layer = new CanvasLayer
         {
             Name = "NinjaSlayerFinisherImpactLayer",
@@ -84,7 +89,9 @@ internal sealed class FinisherImpactPresentation : IDisposable
         {
             Control backgroundContainer = room.GetNode<Control>("%BgContainer");
             room.SceneContainer.AddChild(_backdrop);
-            _backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            _backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopLeft);
+            UpdateBackdropBounds(camera.BaselineVisibleSceneBounds);
+            camera.BaselineVisibleSceneBoundsChanged += UpdateBackdropBounds;
             room.SceneContainer.MoveChild(_backdrop, backgroundContainer.GetIndex() + 1);
 
             Shader impactShader = GetSharedImpactShader();
@@ -113,15 +120,31 @@ internal sealed class FinisherImpactPresentation : IDisposable
         }
     }
 
-    public static FinisherImpactPresentation Create(NCombatRoom room, int impactCount)
+    public static FinisherImpactPresentation Create(
+        NCombatRoom room,
+        CombatCinematicCameraLease camera,
+        int impactCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(impactCount);
 
-        return new FinisherImpactPresentation(room, impactCount);
+        return new FinisherImpactPresentation(room, camera, impactCount);
     }
 
-    public static FinisherImpactPresentation CreateBackdropOnly(NCombatRoom room) =>
-        new(room, impactCount: 0);
+    public static FinisherImpactPresentation CreateBackdropOnly(
+        NCombatRoom room,
+        CombatCinematicCameraLease camera) =>
+        new(room, camera, impactCount: 0);
+
+    private void UpdateBackdropBounds(Rect2 bounds)
+    {
+        if (_disposed || !GodotObject.IsInstanceValid(_backdrop))
+        {
+            return;
+        }
+
+        _backdrop.Position = bounds.Position;
+        _backdrop.Size = bounds.Size;
+    }
 
     public void SetBackdropIntensity(float intensity)
     {
@@ -174,6 +197,7 @@ internal sealed class FinisherImpactPresentation : IDisposable
         }
 
         _disposed = true;
+        _camera.BaselineVisibleSceneBoundsChanged -= UpdateBackdropBounds;
         if (GodotObject.IsInstanceValid(_layer))
         {
             _layer.QueueFree();

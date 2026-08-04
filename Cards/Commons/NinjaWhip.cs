@@ -25,26 +25,25 @@ public sealed class NinjaWhip : NinjaSlayerCardTemplate
         HoverTipFactory.FromPower<VulnerablePower>()
     ];
 
-    protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.PreviousFinishedCardWasAttack(Owner);
+    protected override bool ShouldGlowGoldInternal => NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
 
     public NinjaWhip() : base(CardSpec) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        bool shouldApplyVulnerable = NinjaSlayerActions.PreviousFinishedCardWasAttack(Owner);
+        bool shouldApplyVulnerable = NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
-        if (shouldApplyVulnerable && cardPlay.Target.IsAlive)
+        if (shouldApplyVulnerable && cardPlay.Target!.IsAlive)
         {
             await PowerCmd.Apply<VulnerablePower>(
                 choiceContext,
-                cardPlay.Target,
+                cardPlay.Target!,
                 DynamicVars["VulnerablePower"].BaseValue,
                 Owner.Creature,
                 this);

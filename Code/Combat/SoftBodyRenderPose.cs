@@ -3,8 +3,7 @@ namespace NinjaSlayer.Code.Combat;
 internal readonly record struct SoftBodyRenderPose(
     BossFragmentPoint Position,
     float RotationRadians,
-    float UniformScale,
-    float MaximumResidual);
+    float UniformScale);
 
 internal static class SoftBodyRenderPoseResolver
 {
@@ -68,7 +67,6 @@ internal static class SoftBodyRenderPoseResolver
         float cosine = MathF.Cos(rotation);
         float sine = MathF.Sin(rotation);
         float inverseScale = 1f / scale;
-        float maximumResidual = 0f;
         for (int index = 0; index < SoftFragmentBody.ParticleCount; index++)
         {
             BossFragmentPoint rest = Subtract(body.GetRestParticlePosition(index), restCenter);
@@ -84,10 +82,9 @@ internal static class SoftBodyRenderPoseResolver
             }
 
             residuals[index] = residual;
-            maximumResidual = Math.Max(maximumResidual, Length(residual));
         }
 
-        pose = new SoftBodyRenderPose(currentCenter, rotation, scale, maximumResidual);
+        pose = new SoftBodyRenderPose(currentCenter, rotation, scale);
         return true;
     }
 
@@ -117,6 +114,4 @@ internal static class SoftBodyRenderPoseResolver
     private static BossFragmentPoint Subtract(BossFragmentPoint first, BossFragmentPoint second) =>
         new(first.X - second.X, first.Y - second.Y);
 
-    private static float Length(BossFragmentPoint point) =>
-        MathF.Sqrt(point.X * point.X + point.Y * point.Y);
 }

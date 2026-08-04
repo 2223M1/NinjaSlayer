@@ -55,6 +55,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             enemy.Block,
             enemy.GetPowerAmount<KaratePower>(),
             enemy.GetPowerAmount<VulnerablePower>(),
+            enemy.IsPrimaryEnemy,
             damageByTarget[index])).ToArray();
         _effects = effects.Select(effect => new EffectSnapshot(effect)).ToArray();
 
@@ -137,6 +138,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         private readonly int _block;
         private readonly int _karate;
         private readonly int _vulnerable;
+        private readonly bool _isPrimaryEnemy;
         private readonly decimal _damage;
 
         public EnemySnapshot(
@@ -145,6 +147,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             int block,
             int karate,
             int vulnerable,
+            bool isPrimaryEnemy,
             decimal damage)
         {
             _enemy = enemy;
@@ -152,6 +155,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             _block = block;
             _karate = karate;
             _vulnerable = vulnerable;
+            _isPrimaryEnemy = isPrimaryEnemy;
             _damage = damage;
         }
 
@@ -161,6 +165,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             && _block == other._block
             && _karate == other._karate
             && _vulnerable == other._vulnerable
+            && _isPrimaryEnemy == other._isPrimaryEnemy
             && _damage == other._damage;
 
         public override bool Equals(object? obj) => obj is EnemySnapshot other && Equals(other);
@@ -171,6 +176,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             _block,
             _karate,
             _vulnerable,
+            _isPrimaryEnemy,
             _damage);
 
         public void AddHash(ref HashCode hash)
@@ -180,6 +186,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             hash.Add(_block);
             hash.Add(_karate);
             hash.Add(_vulnerable);
+            hash.Add(_isPrimaryEnemy);
             hash.Add(_damage);
         }
     }

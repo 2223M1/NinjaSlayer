@@ -24,8 +24,7 @@ public sealed class KarateFinish : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        KaratePower? karate = cardPlay.Target.GetPower<KaratePower>();
+        KaratePower? karate = cardPlay.Target!.GetPower<KaratePower>();
         int amount = karate?.Amount ?? 0;
         if (amount > 0)
         {
@@ -41,10 +40,10 @@ public sealed class KarateFinish : NinjaSlayerCardTemplate
             props,
             async () =>
             {
-                NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target);
+                NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target!);
                 await GameCompatibility.Damage.DealFromCard(
                     choiceContext,
-                    cardPlay.Target,
+                    cardPlay.Target!,
                     damage,
                     props,
                     this,

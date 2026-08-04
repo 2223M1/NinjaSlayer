@@ -10,7 +10,6 @@ param(
     [string]$ReleaseNoteFile = 'Workshop\change-note.md',
     [string]$WorkshopUploadRoot,
     [string]$Sts2DataDir,
-    [string]$SteamModDir,
     [string]$GodotExe,
     [switch]$SkipGitHub,
     [switch]$SkipWorkshop,
@@ -63,9 +62,6 @@ if ($SkipGitHub) {
     }
     if (-not [string]::IsNullOrWhiteSpace($Sts2DataDir)) {
         $workshopParameters.Sts2DataDir = $Sts2DataDir
-    }
-    if (-not [string]::IsNullOrWhiteSpace($SteamModDir)) {
-        $workshopParameters.SteamModDir = $SteamModDir
     }
     if (-not [string]::IsNullOrWhiteSpace($GodotExe)) {
         $workshopParameters.GodotExe = $GodotExe

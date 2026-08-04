@@ -23,7 +23,8 @@
       "gameApiVersion": "0.107.1",
       "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
       "distributionChannel": "public",
-      "workshopItemId": "3761570842",
+      "workshopItemId": "3776911445",
+      "workshopVisibility": "unlisted",
       "runtimeAssemblies": [
         "Sentry.dll",
         "SmartFormat.dll",
@@ -33,7 +34,8 @@
       "compileFeatures": [
         "legacyCardPlayLinks",
         "legacyCreaturePresentation",
-        "legacyDamageApi"
+        "legacyDamageApi",
+        "legacyArchitectVictoryCompletion"
       ],
       "hostContract": {
         "buildVariant": "public-release",
@@ -211,6 +213,7 @@
       "ritsuLibPackageId": "STS2.RitsuLib",
       "distributionChannel": "beta",
       "workshopItemId": null,
+      "workshopVisibility": null,
       "runtimeAssemblies": [
         "Sentry.dll",
         "Sentry.Godot.dll",

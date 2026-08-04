@@ -30,7 +30,6 @@ public sealed class AlabamaDrop : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
 
         bool appliedKarate = false;
         async Task ApplyKarate()
@@ -49,13 +48,13 @@ public sealed class AlabamaDrop : NinjaSlayerCardTemplate
                 this);
             await PowerCmd.Apply<KaratePower>(
                 choiceContext,
-                cardPlay.Target,
+                cardPlay.Target!,
                 DynamicVars["EnemyKarate"].BaseValue,
                 Owner.Creature,
                 this);
         }
 
-        await AlabamaDropAnimation.Play(Owner.Creature, cardPlay.Target, ApplyKarate);
+        await AlabamaDropAnimation.Play(Owner.Creature, cardPlay.Target!, ApplyKarate);
         if (!appliedKarate)
         {
             await ApplyKarate();

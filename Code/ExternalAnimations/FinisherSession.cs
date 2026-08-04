@@ -39,7 +39,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly CombatCinematicCameraLease _camera;
     private readonly NCombatRoom _room;
     private readonly Vector2 _actorStartPosition;
-    private readonly IFinisherActionAdapter _actionAdapter;
     private readonly object _actionSync = new();
     private readonly HashSet<ulong> _vfxBaselineChildIds;
     private readonly bool _usesJumpDeathSquash;
@@ -76,7 +75,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _disposed;
     private bool _actionStarted;
     private bool _actionPeakReached;
-    private FinisherActionContext _actionContext;
+    private Vector2 _actionStartPosition;
+    private Vector2 _impactPosition;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
     private FinisherActorLayerLease? _actorLayerLease;
@@ -101,7 +101,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _actorNode = request.ActorNode;
         _focusNode = request.FocusNode;
         _camera = request.Camera;
-        _actionAdapter = request.ActionAdapter;
         _completionProtocol = new FinisherCompletionProtocol(sessionId);
         _ledger = new FinisherDamageLedger(
             request.Victims,
@@ -110,8 +109,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             combatState,
             IsCurrentCombatContext);
         _actorStartPosition = request.ActorNode.Position;
-        _actionContext = FinisherActionContext.Stationary(request.ActorNode);
-        _actionPeakReached = !_actionAdapter.RequiresPositioning;
+        _actionStartPosition = request.ActorNode.Position;
+        _impactPosition = request.ActorNode.Position;
+        _actionPeakReached = request.Scenario != FinisherScenarioKind.YamotoKokiIaiSlash;
         _vfxBaselineChildIds = request.VfxBaselineChildIds?.ToHashSet()
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(_room).ToHashSet();
         _room.TreeExiting += OnRoomTreeExiting;
@@ -148,24 +148,21 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             NinjaSlayerFacingState.SyncForTarget(Actor, _focusNode.Entity);
         }
-        if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Enhanced)
+        _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
+        if (CardPlay is { } cardPlay)
         {
-            _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
-            if (CardPlay is { } cardPlay)
-            {
-                _cardVisualSuppression = FinisherCardVisualSuppression.Acquire(_room, cardPlay);
-            }
-            try
-            {
-                _presentation = _usesNinjaSlayerSignatureImpact
-                    ? FinisherImpactPresentation.Create(_room, _ledger.Victims.Count)
-                    : FinisherImpactPresentation.CreateBackdropOnly(_room);
-            }
-            catch (Exception ex)
-            {
-                _enhancedImpactFailed = true;
-                FinisherLog.Warn($"Could not create enhanced finisher presentation; legacy presentation will be used: {ex}");
-            }
+            _cardVisualSuppression = FinisherCardVisualSuppression.Acquire(_room, cardPlay);
+        }
+        try
+        {
+            _presentation = _usesNinjaSlayerSignatureImpact
+                ? FinisherImpactPresentation.Create(_room, _camera, _ledger.Victims.Count)
+                : FinisherImpactPresentation.CreateBackdropOnly(_room, _camera);
+        }
+        catch (Exception ex)
+        {
+            _enhancedImpactFailed = true;
+            FinisherLog.Warn($"Could not create finisher presentation; fallback presentation will be used: {ex}");
         }
 
         List<NCreature> framingCandidates = _ledger.Victims
@@ -185,25 +182,32 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 $"Finisher actor layer could not be raised above its victims: {exception.Message}");
         }
 
-        if (_actionAdapter.RequiresPositioning)
-        {
-            _actionContext = _actionAdapter.CreateContext(
+        _impactPosition = new Vector2(
+            FinisherImpactPositionResolver.ResolveImpactX(
                 _actorNode,
                 _focusNode,
-                GetDeathSquashMultiplier());
-            if (_actionAdapter.ApproachMode == FinisherApproachMode.PrepositionThenLunge)
+                GetDeathSquashMultiplier(),
+                NinjaSlayerCombatVisuals.CloseRangeApproachGap),
+            _actorNode.Position.Y);
+        if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash)
+        {
+            float fallbackDirection = Actor.Side == CombatSide.Player ? 1f : -1f;
+            _actionStartPosition = new Vector2(
+                FinisherActionTrajectory.ResolveIaiStartX(
+                    _actorStartPosition.X,
+                    _impactPosition.X,
+                    fallbackDirection),
+                _impactPosition.Y);
+            _actorNode.Position = _actionStartPosition;
+        }
+        else
+        {
+            _actorNode.Position = _impactPosition;
+            lock (_actionSync)
             {
-                _actorNode.Position = _actionContext.TravelStartPosition;
-            }
-            else if (_actionAdapter.ApproachMode == FinisherApproachMode.TeleportAtStart)
-            {
-                _actorNode.Position = _actionContext.ImpactPosition;
-                lock (_actionSync)
-                {
-                    _actionStarted = true;
-                    _actionPeakReached = true;
-                    _actionPeakTask = Task.CompletedTask;
-                }
+                _actionStarted = true;
+                _actionPeakReached = true;
+                _actionPeakTask = Task.CompletedTask;
             }
         }
         float maximumScale = _camera.BaselineScale.X
@@ -233,7 +237,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     public Task PlayActionToPeak(Creature creature, float repeatWaitSeconds)
     {
-        if (_disposed || creature != Actor || !_actionAdapter.RequiresPositioning)
+        if (_disposed
+            || creature != Actor
+            || Scenario != FinisherScenarioKind.YamotoKokiIaiSlash)
         {
             return Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
         }
@@ -255,23 +261,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         return startedNow
             ? actionTask
             : Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
-    }
-
-    public Task EnsureActionPeak() => EnsureActionPeakCore();
-
-    public Task WrapTriggerAtActionPeak(
-        Creature creature,
-        string triggerName,
-        Task original)
-    {
-        if (_disposed
-            || creature != Actor
-            || !_actionAdapter.IsPeakTrigger(triggerName))
-        {
-            return original;
-        }
-
-        return CompleteTriggerAtActionPeak(original);
     }
 
     public bool TryAwaitPostCard() => _completionProtocol.TryAwaitPostCard();
@@ -500,7 +489,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private async Task<bool> CommitDeathsWithPoseCore()
     {
-        await EnsureActionPeakCore();
+        await EnsureActionPeak();
         _committing = true;
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
         bool guaranteedClearMatchedRuntime = IsCompletionConditionSatisfied();
@@ -533,18 +522,13 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             await PrepareReverseImpactLead();
 
-            if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Enhanced)
-            {
-                TryScheduleEnhancedImpact();
-                await _enhancedImpactTask;
-            }
+            TryScheduleEnhancedImpact();
+            await _enhancedImpactTask;
 
-            if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Legacy
-                || !_enhancedImpactScheduled
+            if (!_enhancedImpactScheduled
                 || _enhancedImpactFailed)
             {
-                if (FinisherPresentationSettings.Mode == FinisherPresentationMode.Enhanced
-                    && Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+                if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
                 {
                     _finalZoomStarted = false;
                 }
@@ -782,8 +766,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private void TryScheduleEnhancedImpact()
     {
-        if (FinisherPresentationSettings.Mode != FinisherPresentationMode.Enhanced
-            || _enhancedImpactScheduled
+        if (_enhancedImpactScheduled
             || _enhancedImpactFailed
             || _disposed
             || !_actionPeakReached
@@ -1054,9 +1037,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         return delta;
     }
 
-    private async Task EnsureActionPeakCore()
+    public async Task EnsureActionPeak()
     {
-        if (!_actionAdapter.RequiresPositioning || _actionPeakReached)
+        if (Scenario != FinisherScenarioKind.YamotoKokiIaiSlash || _actionPeakReached)
         {
             return;
         }
@@ -1085,27 +1068,17 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 throw new InvalidOperationException("The finisher actor node was released before its approach began.");
             }
 
-            if (_actionAdapter.HasContinuousTravel)
+            float elapsed = 0f;
+            while (elapsed < FinisherActionTrajectory.SlowTravelSeconds)
             {
-                float elapsed = 0f;
-                while (elapsed < _actionAdapter.TravelSeconds)
-                {
-                    elapsed += await NextFrame();
-                    _actionCancellation.Token.ThrowIfCancellationRequested();
-                    float progress = _actionAdapter.GetTravelProgress(
-                        elapsed / _actionAdapter.TravelSeconds);
-                    _actorNode.Position = _actionContext.TravelStartPosition.Lerp(
-                        _actionContext.TravelEndPosition,
-                        progress);
-                }
-
-                _actorNode.Position = _actionContext.TravelEndPosition;
-            }
-            else if (_actionAdapter.ApproachMode == FinisherApproachMode.TeleportAtPeak)
-            {
-                _actorNode.Position = _actionContext.ImpactPosition;
+                elapsed += await NextFrame();
+                _actionCancellation.Token.ThrowIfCancellationRequested();
+                float progress = FinisherActionTrajectory.SlowProgress(
+                    elapsed / FinisherActionTrajectory.SlowTravelSeconds);
+                _actorNode.Position = _actionStartPosition.Lerp(_impactPosition, progress);
             }
 
+            _actorNode.Position = _impactPosition;
             _actionPeakReached = true;
             TryScheduleEnhancedImpact();
         }
@@ -1114,11 +1087,5 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             || !GodotObject.IsInstanceValid(_room))
         {
         }
-    }
-
-    private async Task CompleteTriggerAtActionPeak(Task original)
-    {
-        await original;
-        await EnsureActionPeakCore();
     }
 }

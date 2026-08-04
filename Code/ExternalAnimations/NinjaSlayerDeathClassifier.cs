@@ -154,7 +154,6 @@ internal static class NinjaSlayerDeathClassifier
                     focusNode,
                     victims,
                     camera!,
-                    FinisherActionAdapters.Instant,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: 1,

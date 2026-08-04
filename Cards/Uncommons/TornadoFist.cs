@@ -49,13 +49,12 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         CardPlay cardPlay,
         float attackerAnimDelay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
 
         var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim(AttackerAnimTrigger, attackerAnimDelay)
-            .Targeting(cardPlay.Target);
+            .Targeting(cardPlay.Target!);
         await command.Execute(choiceContext);
         List<DamageResult> results = command.Results.SelectMany(r => r).ToList();
         if (results.Any(r => r.WasTargetKilled))
@@ -67,7 +66,7 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         {
             await PowerCmd.Apply<VulnerablePower>(
                 choiceContext,
-                cardPlay.Target,
+                cardPlay.Target!,
                 DynamicVars["VulnerablePower"].BaseValue,
                 Owner.Creature,
                 this);

@@ -5,7 +5,7 @@ namespace NinjaSlayer.LogicTests;
 public sealed class CapabilityStatusTests
 {
     [Fact]
-    public void CapabilityStatusSnapshotsProbeInputs()
+    public void CapabilityStatusUsesProbesOnlyDuringEvaluation()
     {
         var probes = new List<CapabilityProbe>
         {
@@ -17,12 +17,6 @@ public sealed class CapabilityStatusTests
             patchAllSucceeded: true,
             registeredPatchCount: 1,
             appliedPatchCount: 1);
-        probes[0] = CapabilityProbe.Required("changed", false, "missing");
-        probes.Add(CapabilityProbe.Optional("added", false, "missing"));
-
-        CapabilityProbe snapshot = Assert.Single(status.Probes);
-        Assert.Equal("required", snapshot.Name);
-        Assert.True(snapshot.IsAvailable);
         Assert.Equal(CapabilityState.Enabled, status.State);
     }
 
@@ -63,7 +57,7 @@ public sealed class CapabilityStatusTests
     }
 
     [Fact]
-    public void CapabilityRegistryReturnsStableSnapshotsAndReadOnlyGates()
+    public void CapabilityRegistryGatesUnknownAndDisabledCapabilities()
     {
         var registry = new NinjaSlayerCapabilityRegistry();
         CapabilityStatus enabled = CapabilityStatusEvaluator.EvaluatePatchResult(
@@ -73,28 +67,22 @@ public sealed class CapabilityStatusTests
             appliedPatchCount: 1);
 
         registry.Publish("first", enabled);
-        IReadOnlyDictionary<string, CapabilityStatus> firstSnapshot = registry.Snapshot();
         registry.Publish("second", CapabilityStatusEvaluator.DisabledByDependency("first"));
 
         Assert.True(registry.IsOperational("first"));
         Assert.False(registry.IsOperational("second"));
-        Assert.Equal(CapabilityState.NotEvaluated, registry.Get("unknown").State);
-        Assert.Single(firstSnapshot);
-        Assert.DoesNotContain("second", firstSnapshot.Keys);
+        Assert.False(registry.IsOperational("unknown"));
         Assert.Equal(2, registry.Snapshot().Count);
     }
 
     [Fact]
     public void RolledBackStatusNamesTheCapabilityThatAbortedCoreActivation()
     {
-        CapabilityStatus status = CapabilityStatusEvaluator.RolledBack(
-            "prepared-gameplay",
-            [CapabilityProbe.Optional("diagnostic", false, "missing")]);
+        CapabilityStatus status = CapabilityStatusEvaluator.RolledBack("prepared-gameplay");
 
         Assert.Equal(CapabilityState.Disabled, status.State);
         Assert.False(status.IsOperational);
         Assert.Equal(0, status.InstalledPatchCount);
         Assert.Contains("prepared-gameplay", status.Reason, StringComparison.Ordinal);
-        Assert.Single(status.Probes);
     }
 }

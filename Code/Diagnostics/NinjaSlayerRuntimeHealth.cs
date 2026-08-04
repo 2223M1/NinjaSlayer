@@ -9,21 +9,18 @@ public static class NinjaSlayerRuntimeHealth
 {
     public static NinjaSlayerRuntimeHealthSnapshot Capture()
     {
-        IReadOnlyDictionary<string, NinjaSlayerCapabilityHealth> capabilities =
-            NinjaSlayerRuntimeHealthSnapshot.FreezeCapabilities(
-                NinjaSlayerCapabilityRegistry.Current.Snapshot().Select(pair =>
-                    new KeyValuePair<string, NinjaSlayerCapabilityHealth>(
-                        pair.Key,
-                        new NinjaSlayerCapabilityHealth(
-                            pair.Value.State.ToString(),
-                            pair.Value.Reason,
-                            pair.Value.InstalledPatchCount,
-                            pair.Value.IsOperational))));
-        RuntimeCounterSnapshot counters = NinjaSlayerRuntimeCounters.Snapshot();
+        Dictionary<string, NinjaSlayerCapabilityHealth> capabilities =
+            NinjaSlayerCapabilityRegistry.Current.Snapshot().ToDictionary(
+                pair => pair.Key,
+                pair => new NinjaSlayerCapabilityHealth(
+                    pair.Value.State.ToString(),
+                    pair.Value.Reason,
+                    pair.Value.InstalledPatchCount,
+                    pair.Value.IsOperational),
+                StringComparer.Ordinal);
         (bool transitionActive, bool transitionPending) = NinjaSlayerTransitionGate.GetHealthState();
 
         return new NinjaSlayerRuntimeHealthSnapshot(
-            NinjaSlayerRuntimeHealthSnapshot.CurrentSchemaVersion,
             capabilities,
             FinisherSessionRegistry.HasRegisteredSession(),
             transitionActive,
@@ -32,17 +29,6 @@ public static class NinjaSlayerRuntimeHealth
             ScreenShakeSuppressionContext.IsSuppressed,
             XAttackAudioContext.SuppressAutomaticSfx,
             XAttackComboContext.Active,
-            counters.PreparedApplied,
-            counters.PreparedDegraded,
-            counters.PreparedRepairFailed,
-            counters.FinisherSucceeded,
-            counters.FinisherDegraded,
-            counters.FinisherFaulted,
-            counters.FinisherCancelled,
-            counters.TransitionSucceeded,
-            counters.TransitionFaulted,
-            counters.TransitionCancelled,
-            counters.TransitionTimedOut,
-            counters.TransitionSuperseded);
+            NinjaSlayerRuntimeCounters.FinisherCompletions);
     }
 }

@@ -22,7 +22,7 @@ public sealed class AssassinationFist : NinjaSlayerCardTemplate
         new CalculationBaseVar(5),
         new ExtraDamageVar(6),
         new CalculatedDamageVar(ValueProp.Move)
-            .WithMultiplier(NinjaSlayerActions.ChadoGeneratedThisCombatMultiplier)
+            .WithMultiplier((card, _) => NinjaSlayerCombatMetrics.ChadoGeneratedThisCombat(card.Owner))
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -33,12 +33,11 @@ public sealed class AssassinationFist : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.CalculatedDamage)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 

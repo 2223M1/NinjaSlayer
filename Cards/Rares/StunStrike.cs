@@ -30,14 +30,13 @@ public sealed class StunStrike : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        await CreatureCmd.Stun(cardPlay.Target);
+        await CreatureCmd.Stun(cardPlay.Target!);
         await PowerCmd.Apply<DelayedSelfStunPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }
 

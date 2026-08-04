@@ -21,7 +21,7 @@ public sealed class RubHands : NinjaSlayerCardTemplate
         new DamageVar(6, ValueProp.Move),
         new CalculationBaseVar(1),
         new CalculationExtraVar(1),
-        new CalculatedVar("CalculatedShuriken").WithMultiplier((card, _) => NinjaSlayerActions.MeleeAttacksPlayedThisTurn(card.Owner))
+        new CalculatedVar("CalculatedShuriken").WithMultiplier((card, _) => NinjaSlayerCombatMetrics.MeleeAttacksPlayedThisTurn(card.Owner))
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
@@ -32,14 +32,13 @@ public sealed class RubHands : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        int shurikenCount = (int)((CalculatedVar)DynamicVars["CalculatedShuriken"]).Calculate(cardPlay.Target);
+        int shurikenCount = (int)((CalculatedVar)DynamicVars["CalculatedShuriken"]).Calculate(cardPlay.Target!);
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, shurikenCount, PileType.Discard, IsUpgraded);

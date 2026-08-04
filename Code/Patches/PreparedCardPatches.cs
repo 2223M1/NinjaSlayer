@@ -22,11 +22,6 @@ using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-internal static class PreparedDrawCompatibility
-{
-    public static Task ShowShuffleFtue() => GameCompatibility.Prepared.ShowShuffleFtue();
-}
-
 public sealed class PreparedDrawPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_prepared_draw_filter";
@@ -78,9 +73,7 @@ internal static class PreparedDrawService
         Player player,
         bool fromHandDraw)
     {
-        if (PreparedDrawPolicy.DecideStart(
-                !CombatManager.Instance.IsOverOrEnding,
-                drawAllowed: true) == PreparedDrawStartDecision.CombatEnded)
+        if (CombatManager.Instance.IsOverOrEnding)
         {
             return [];
         }
@@ -91,8 +84,7 @@ internal static class PreparedDrawService
         }
 
         bool drawAllowed = Hook.ShouldDraw(combatState, player, fromHandDraw, out AbstractModel? modifier);
-        if (PreparedDrawPolicy.DecideStart(combatActive: true, drawAllowed)
-            == PreparedDrawStartDecision.Prevented)
+        if (!drawAllowed)
         {
             if (modifier is not null)
             {
@@ -104,7 +96,7 @@ internal static class PreparedDrawService
         List<CardModel> result = [];
         CardPile hand = PileType.Hand.GetPile(player);
         CardPile drawPile = PileType.Draw.GetPile(player);
-        int drawsRequested = PreparedDrawPolicy.RequestedDraws(count);
+        int drawsRequested = count > 0m ? (int)Math.Ceiling(count) : 0;
         if (drawsRequested == 0)
         {
             return result;
@@ -135,9 +127,7 @@ internal static class PreparedDrawService
                 break;
             }
 
-            int drawableIndex = PreparedDrawPolicy.FindFirstDrawableIndex(
-                drawPile.Cards.Select(PrepareCmd.IsPrepared));
-            CardModel? card = drawableIndex >= 0 ? drawPile.Cards[drawableIndex] : null;
+            CardModel? card = drawPile.Cards.FirstOrDefault(card => !PrepareCmd.IsPrepared(card));
             if (card is null || hand.Cards.Count >= CardPile.MaxCardsInHand)
             {
                 break;
@@ -157,32 +147,40 @@ internal static class PreparedDrawService
 
     private static bool CheckIfFilteredDrawIsPossible(Player player)
     {
-        PreparedDrawDecision decision = CurrentDecision(player);
-        if (decision == PreparedDrawDecision.StopNoCards)
+        if (CombatManager.Instance.IsOverOrEnding)
         {
-            ThinkCmd.Play(new LocString("combat_messages", "NO_DRAW"), player.Creature, 2.0);
             return false;
         }
 
-        if (decision == PreparedDrawDecision.StopHandFull)
+        if (PileType.Hand.GetPile(player).Cards.Count >= CardPile.MaxCardsInHand)
         {
             ThinkCmd.Play(new LocString("combat_messages", "HAND_FULL"), player.Creature, 2.0);
             return false;
         }
 
-        return decision is PreparedDrawDecision.Draw or PreparedDrawDecision.Shuffle;
+        if (PileType.Draw.GetPile(player).Cards.Any(card => !PrepareCmd.IsPrepared(card))
+            || PileType.Discard.GetPile(player).Cards.Count > 0)
+        {
+            return true;
+        }
+
+        ThinkCmd.Play(new LocString("combat_messages", "NO_DRAW"), player.Creature, 2.0);
+        return false;
     }
 
     private static async Task ShuffleIfNecessary(PlayerChoiceContext choiceContext, Player player)
     {
         CardPile drawPile = PileType.Draw.GetPile(player);
         CardPile discardPile = PileType.Discard.GetPile(player);
-        if (CurrentDecision(player) != PreparedDrawDecision.Shuffle)
+        if (CombatManager.Instance.IsOverOrEnding
+            || PileType.Hand.GetPile(player).Cards.Count >= CardPile.MaxCardsInHand
+            || drawPile.Cards.Any(card => !PrepareCmd.IsPrepared(card))
+            || discardPile.Cards.Count == 0)
         {
             return;
         }
 
-        await PreparedDrawCompatibility.ShowShuffleFtue();
+        await GameCompatibility.Prepared.ShowShuffleFtue();
         List<CardModel> shuffledCards = discardPile.Cards.ToList();
         shuffledCards.StableShuffle(player.RunState.Rng.Shuffle);
         if (player.Creature.CombatState is not { } combatState)
@@ -220,13 +218,6 @@ internal static class PreparedDrawService
         }
     }
 
-    private static PreparedDrawDecision CurrentDecision(Player player) =>
-        PreparedDrawPolicy.DecideNext(
-            !CombatManager.Instance.IsOverOrEnding,
-            PileType.Hand.GetPile(player).Cards.Count,
-            CardPile.MaxCardsInHand,
-            PileType.Draw.GetPile(player).Cards.Count(card => !PrepareCmd.IsPrepared(card)),
-            PileType.Discard.GetPile(player).Cards.Count);
 }
 
 public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod

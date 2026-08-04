@@ -12,7 +12,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-public sealed class ZazenDrink : NinjaSlayerStandaloneCardTemplate, IDrawCastSkillCard
+public sealed class ZazenDrink : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(ZazenDrink), 0, CardType.Skill, CardRarity.Ancient, TargetType.Self, true);
 

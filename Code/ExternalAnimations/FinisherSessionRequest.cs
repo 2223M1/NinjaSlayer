@@ -25,7 +25,6 @@ internal sealed record FinisherSessionRequest(
     NCreature FocusNode,
     IReadOnlyList<Creature> Victims,
     CombatCinematicCameraLease Camera,
-    IFinisherActionAdapter ActionAdapter,
     CardPlay? CardPlay,
     bool RequiresAfterCardPlayed,
     int ResolvedHits,

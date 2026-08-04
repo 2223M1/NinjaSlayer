@@ -4,58 +4,30 @@ namespace NinjaSlayer.LogicTests;
 
 public sealed class CinematicCameraContainmentTests
 {
-    [Fact]
-    public void ClampCenterMakesTheOutwardViewportEdgeFlushWithTheScene()
+    private const float KinBaselineMinimumX = -169.41176f;
+    private const float KinBaselineMaximumX = 2089.41176f;
+    private const float KinBaselineScale = 0.85f;
+
+    [Theory]
+    [InlineData(1.275f, 1336.471f)]
+    [InlineData(1.7f, 1524.706f)]
+    public void KinCinematicsMakeTheRightViewportEdgeFlushWithTheBaselineScene(
+        float targetScale,
+        float expectedCenter)
     {
         float center = CinematicCameraContainment.ClampCenter(
             desiredCenter: 1800f,
-            viewportPixels: 1920f,
-            scale: 1.5f,
-            sceneSize: 1920f);
+            baselineMinimum: KinBaselineMinimumX,
+            baselineMaximum: KinBaselineMaximumX,
+            baselineScale: KinBaselineScale,
+            targetScale);
+        float halfViewport = CinematicCameraContainment.ResolveVisibleHalfExtent(
+            KinBaselineMinimumX,
+            KinBaselineMaximumX,
+            KinBaselineScale,
+            targetScale);
 
-        Assert.Equal(1280f, center, precision: 3);
-        Assert.Equal(1920f, center + 1920f / (2f * 1.5f), precision: 3);
-    }
-
-    [Fact]
-    public void SubjectFramingUsesSafeMarginsWhenItFits()
-    {
-        float center = CinematicCameraContainment.ResolveSubjectAwareCenter(
-            desiredCenter: 960f,
-            viewportPixels: 1920f,
-            scale: 1.5f,
-            sceneSize: 1920f,
-            subjectMinimum: 700f,
-            subjectMaximum: 1220f,
-            safeMarginPixels: 64f);
-
-        Assert.Equal(960f, center, precision: 3);
-    }
-
-    [Fact]
-    public void SceneContainmentWinsWhenTheSubjectCannotFit()
-    {
-        float center = CinematicCameraContainment.ResolveSubjectAwareCenter(
-            desiredCenter: 2000f,
-            viewportPixels: 1920f,
-            scale: 1.5f,
-            sceneSize: 1920f,
-            subjectMinimum: 1800f,
-            subjectMaximum: 2200f,
-            safeMarginPixels: 64f);
-
-        Assert.Equal(1280f, center, precision: 3);
-    }
-
-    [Fact]
-    public void ViewportLargerThanSceneFallsBackToSceneCenter()
-    {
-        float center = CinematicCameraContainment.ClampCenter(
-            desiredCenter: 100f,
-            viewportPixels: 2560f,
-            scale: 1f,
-            sceneSize: 1920f);
-
-        Assert.Equal(960f, center, precision: 3);
+        Assert.Equal(expectedCenter, center, precision: 3);
+        Assert.Equal(KinBaselineMaximumX, center + halfViewport, precision: 3);
     }
 }

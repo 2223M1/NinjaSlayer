@@ -1,6 +1,6 @@
 # Ninja Slayer 原著书目与章节索引
 
-> 本文件由 `skills/ninjaslayer-lore/scripts/build_corpus.py` 生成。只记录结构、哈希与私有缓存文件名，不包含原文。
+> 本文件由 `.agents/skills/ninjaslayer-lore/scripts/build_corpus.py` 生成。只记录结构、哈希与私有缓存文件名，不包含原文。
 
 ## 书目概览
 

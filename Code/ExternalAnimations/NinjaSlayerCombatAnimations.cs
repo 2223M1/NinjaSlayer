@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 
@@ -48,7 +49,7 @@ public static class NinjaSlayerCombatAnimations
                 result = PlayVisualCueTrigger(creature, TornadoFistSpinAnimation.CueTriggerName, waitTime);
                 return true;
             case "Cast":
-                if (NinjaSlayerCombatCastContext.GetCurrentCard(creature) is not IDrawCastSkillCard)
+                if (NinjaSlayerCombatCastContext.GetCurrentCard(creature) is not ZazenDrink)
                 {
                     result = Task.CompletedTask;
                     return true;

@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Models;
 
@@ -13,6 +14,8 @@ namespace NinjaSlayer.Code.Patches;
 [HarmonyPriority(Priority.Last)]
 public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
 {
+    private const string EmbeddedStripName = "NinjaSlayerNarakuLifeStrip";
+
     public static string PatchId => "ninjaslayer_naraku_life_health_bar_layout";
 
     public static string Description =>
@@ -29,9 +32,15 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
     public static void Postfix(NHealthBar __instance)
     {
         if (!GameCompatibility.NarakuHealthBar.TryGetCreature(__instance, out Creature? creature)
-            || creature == null
-            || creature.GetPowerAmount<NarakuLifePower>() <= 0
-            || __instance.GetParent()?.GetParent() is not NCreature creatureNode)
+            || creature == null)
+        {
+            HideEmbeddedStrip(__instance);
+            return;
+        }
+
+        int narakuLife = creature.GetPowerAmount<NarakuLifePower>();
+        RefreshEmbeddedStrip(__instance, creature, narakuLife);
+        if (narakuLife <= 0 || __instance.GetParent()?.GetParent() is not NCreature creatureNode)
         {
             return;
         }
@@ -52,5 +61,74 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         barPosition.X = layout.BarLeft;
         hpBar.GlobalPosition = barPosition;
         GameCompatibility.NarakuHealthBar.AnchorBlock(__instance, layout.BlockLeft);
+    }
+
+    private static void RefreshEmbeddedStrip(NHealthBar healthBar, Creature creature, int narakuLife)
+    {
+        NinePatchRect? poisonTemplate = healthBar.GetNodeOrNull<NinePatchRect>("%PoisonForeground");
+        if (poisonTemplate?.GetParent() is not Control mask)
+        {
+            return;
+        }
+
+        NinePatchRect? strip = mask.GetNodeOrNull<NinePatchRect>(EmbeddedStripName);
+        EmbeddedHealthBarSegment? segment = ExtendedHealthBarLayoutCalculator.CalculateEmbeddedNarakuLife(
+            creature.CurrentHp,
+            creature.MaxHp,
+            narakuLife,
+            GameCompatibility.NarakuHealthBar.GetMaxForegroundWidth(healthBar),
+            poisonTemplate.PatchMarginLeft);
+        if (segment == null)
+        {
+            if (strip != null)
+            {
+                strip.Visible = false;
+            }
+
+            return;
+        }
+
+        strip ??= CreateEmbeddedStrip(healthBar, mask, poisonTemplate);
+        if (strip == null)
+        {
+            return;
+        }
+
+        strip.OffsetLeft = segment.Value.OffsetLeft;
+        strip.OffsetRight = segment.Value.OffsetRight;
+        strip.Visible = true;
+    }
+
+    private static NinePatchRect? CreateEmbeddedStrip(
+        NHealthBar healthBar,
+        Control mask,
+        NinePatchRect poisonTemplate)
+    {
+        Control? hpForeground = healthBar.GetNodeOrNull<Control>("%HpForeground");
+        if (hpForeground == null)
+        {
+            return null;
+        }
+
+        NinePatchRect strip = (NinePatchRect)poisonTemplate.Duplicate();
+        strip.Name = EmbeddedStripName;
+        strip.Visible = false;
+        strip.Modulate = Colors.White;
+        strip.SelfModulate = NarakuLifeHealthBarColors.Foreground;
+        strip.Material = null;
+        strip.ZIndex = 0;
+        strip.MouseFilter = Control.MouseFilterEnum.Ignore;
+        mask.AddChild(strip);
+        mask.MoveChild(strip, Math.Clamp(hpForeground.GetIndex() + 1, 0, mask.GetChildCount() - 1));
+        return strip;
+    }
+
+    private static void HideEmbeddedStrip(NHealthBar healthBar)
+    {
+        healthBar
+            .GetNodeOrNull<NinePatchRect>("%PoisonForeground")
+            ?.GetParent()
+            ?.GetNodeOrNull<NinePatchRect>(EmbeddedStripName)
+            ?.Hide();
     }
 }

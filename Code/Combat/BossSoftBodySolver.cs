@@ -22,7 +22,7 @@ internal sealed class BossSoftBodySolver
     private readonly HashSet<SoftFragmentBody> _activeBodies = [];
     private readonly List<(int First, int Second)> _expiredSweptOrderings = [];
 
-    public SoftBodyStepMetrics Step(
+    public void Step(
         IReadOnlyList<SoftFragmentBody> bodies,
         IReadOnlyList<SoftRagdollLink> links,
         float seconds,
@@ -36,29 +36,9 @@ internal sealed class BossSoftBodySolver
     {
         if (!float.IsFinite(seconds) || seconds <= 0f)
         {
-            return default;
+            return;
         }
 
-        int manifolds = 0;
-        int contactPoints = 0;
-        int contactStarts = 0;
-        int visibleBounces = 0;
-        int sweptContacts = 0;
-        int leftWallContacts = 0;
-        int rightWallContacts = 0;
-        int wallBounces = 0;
-        int brokenLinks = 0;
-        int rollbacks = 0;
-        int inversions = 0;
-        int safetyProjections = 0;
-        int wobbleZeroCrossings = 0;
-        int limitedContacts = 0;
-        int limitedCenterSpeeds = 0;
-        float maximumPenetration = 0f;
-        float maximumCenterSpeed = 0f;
-        float maximumObservedCenterSpeed = 0f;
-        float contactEnergyBefore = 0f;
-        float contactEnergyAfter = 0f;
         PruneSweptOrderings(bodies);
         centerSpeedLimit = Math.Max(1f, centerSpeedLimit);
         int substeps = ResolveSubstepCount(
@@ -94,10 +74,7 @@ internal sealed class BossSoftBodySolver
 
             for (int linkIndex = 0; linkIndex < links.Count; linkIndex++)
             {
-                if (links[linkIndex].BeginSubstep(substepSeconds))
-                {
-                    brokenLinks++;
-                }
+                _ = links[linkIndex].BeginSubstep(substepSeconds);
             }
 
             _manifoldBuilder.BeginSubstep(links);
@@ -139,9 +116,6 @@ internal sealed class BossSoftBodySolver
                         _velocityManifolds.Add(manifold);
                     }
 
-                    maximumPenetration = Math.Max(
-                        maximumPenetration,
-                        manifold.MaximumPenetration);
                 }
 
                 for (int manifoldIndex = 0; manifoldIndex < currentManifolds.Count; manifoldIndex++)
@@ -167,9 +141,6 @@ internal sealed class BossSoftBodySolver
                             _boundaryVelocityManifolds.Add(manifold);
                         }
 
-                        maximumPenetration = Math.Max(
-                            maximumPenetration,
-                            manifold.MaximumPenetration);
                         SoftBoundaryContactSolver.SolvePositions(manifold);
                     }
                 }
@@ -187,31 +158,6 @@ internal sealed class BossSoftBodySolver
 
             }
 
-            manifolds += _velocityManifolds.Count;
-            for (int manifoldIndex = 0; manifoldIndex < _velocityManifolds.Count; manifoldIndex++)
-            {
-                SoftContactManifold manifold = _velocityManifolds[manifoldIndex];
-                contactPoints += manifold.PointCount;
-                contactStarts += manifold.IsNewContact ? 1 : 0;
-                sweptContacts += manifold.IsSwept ? 1 : 0;
-            }
-
-            for (int manifoldIndex = 0;
-                manifoldIndex < _boundaryVelocityManifolds.Count;
-                manifoldIndex++)
-            {
-                SoftBoundaryContactManifold manifold =
-                    _boundaryVelocityManifolds[manifoldIndex];
-                if (manifold.Side == SoftBoundarySide.Left)
-                {
-                    leftWallContacts++;
-                }
-                else
-                {
-                    rightWallContacts++;
-                }
-            }
-
             _acceptedBodies.Clear();
             for (int bodyIndex = 0; bodyIndex < bodies.Count; bodyIndex++)
             {
@@ -222,28 +168,14 @@ internal sealed class BossSoftBodySolver
                 }
 
                 body.ProjectSafetyConstraints(substepSeconds);
-                SoftBodyCommitResult commit = body.TryCommitSubstep(substepSeconds);
-                if (commit.SafetyProjected)
-                {
-                    safetyProjections++;
-                }
-                if (commit.Accepted)
+                if (body.TryCommitSubstep(substepSeconds))
                 {
                     if (floorY.HasValue)
                     {
                         _ = body.ConstrainToFloor(floorY.Value);
                         body.FinalizeVelocities(substepSeconds);
                     }
-
                     _acceptedBodies.Add(body);
-                }
-                else
-                {
-                    rollbacks++;
-                    if (commit.Inverted)
-                    {
-                        inversions++;
-                    }
                 }
             }
 
@@ -257,16 +189,8 @@ internal sealed class BossSoftBodySolver
                 }
 
                 _energyAudit.Capture(manifold);
-                SoftContactVelocityResult velocityResult =
-                    SoftContactSolver.SolveVelocities(manifold);
-                visibleBounces += velocityResult.Bounced ? 1 : 0;
-                SoftBodyEnergyAuditResult energy = _energyAudit.LimitContactEnergy(manifold);
-                contactEnergyBefore += energy.Before;
-                contactEnergyAfter += energy.After;
-                if (energy.Limited)
-                {
-                    limitedContacts++;
-                }
+                _ = SoftContactSolver.SolveVelocities(manifold);
+                _ = _energyAudit.LimitContactEnergy(manifold);
             }
 
             for (int manifoldIndex = 0;
@@ -281,17 +205,8 @@ internal sealed class BossSoftBodySolver
                 }
 
                 _energyAudit.Capture(manifold.Body);
-                SoftBoundaryVelocityResult velocityResult =
-                    SoftBoundaryContactSolver.SolveVelocities(manifold);
-                wallBounces += velocityResult.Bounced ? 1 : 0;
-                SoftBodyEnergyAuditResult energy =
-                    _energyAudit.LimitBoundaryEnergy(manifold.Body);
-                contactEnergyBefore += energy.Before;
-                contactEnergyAfter += energy.After;
-                if (energy.Limited)
-                {
-                    limitedContacts++;
-                }
+                _ = SoftBoundaryContactSolver.SolveVelocities(manifold);
+                _ = _energyAudit.LimitBoundaryEnergy(manifold.Body);
             }
 
             _manifoldBuilder.EndSubstep();
@@ -314,41 +229,10 @@ internal sealed class BossSoftBodySolver
                     continue;
                 }
 
-                maximumObservedCenterSpeed = Math.Max(
-                    maximumObservedCenterSpeed,
-                    body.ResolveCenterSpeed());
-                if (body.ClampCenterSpeed(centerSpeedLimit))
-                {
-                    limitedCenterSpeeds++;
-                }
-
-                wobbleZeroCrossings += body.UpdateDeformationMetrics(substepSeconds);
-                maximumCenterSpeed = Math.Max(maximumCenterSpeed, body.ResolveCenterSpeed());
+                _ = body.ClampCenterSpeed(centerSpeedLimit);
+                body.CompleteSubstep();
             }
         }
-
-        return new SoftBodyStepMetrics(
-            manifolds,
-            contactPoints,
-            contactStarts,
-            visibleBounces,
-            sweptContacts,
-            leftWallContacts,
-            rightWallContacts,
-            wallBounces,
-            brokenLinks,
-            rollbacks,
-            inversions,
-            safetyProjections,
-            wobbleZeroCrossings,
-            maximumCenterSpeed,
-            maximumObservedCenterSpeed,
-            contactEnergyBefore,
-            contactEnergyAfter,
-            limitedContacts,
-            limitedCenterSpeeds,
-            maximumPenetration,
-            substeps);
     }
 
     private static int ResolveSubstepCount(

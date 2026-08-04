@@ -26,81 +26,10 @@ internal sealed record BossFragmentCell(
     public BossFragmentPoint Centroid => BossDismembermentMath.PolygonCentroid(Vertices);
 }
 
-internal readonly record struct BossFragmentLink(
-    int FirstIndex,
-    int SecondIndex);
-
 internal static class BossDismembermentMath
 {
     public const int MaximumPieces = 16;
     private const int CandidateCount = 128;
-
-    public static IReadOnlyList<BossFragmentLink> BuildRagdollLinks(
-        IReadOnlyList<BossFragmentPoint> points,
-        int maximumClusterSize = 3)
-    {
-        int count = Math.Min(points.Count, MaximumPieces);
-        if (count < 2)
-        {
-            return [];
-        }
-
-        var connected = new HashSet<int> { 0 };
-        var candidates = new List<BossFragmentLink>(count - 1);
-        while (connected.Count < count)
-        {
-            int bestFirst = -1;
-            int bestSecond = -1;
-            float bestDistance = float.PositiveInfinity;
-            foreach (int first in connected.Order())
-            {
-                for (int second = 0; second < count; second++)
-                {
-                    if (connected.Contains(second))
-                    {
-                        continue;
-                    }
-
-                    float dx = points[second].X - points[first].X;
-                    float dy = points[second].Y - points[first].Y;
-                    float distance = MathF.Sqrt(dx * dx + dy * dy);
-                    if (distance < bestDistance
-                        || (MathF.Abs(distance - bestDistance) <= 0.001f
-                            && (first < bestFirst
-                                || (first == bestFirst && second < bestSecond))))
-                    {
-                        bestFirst = first;
-                        bestSecond = second;
-                        bestDistance = distance;
-                    }
-                }
-            }
-
-            candidates.Add(new BossFragmentLink(bestFirst, bestSecond));
-            connected.Add(bestSecond);
-        }
-
-        maximumClusterSize = Math.Clamp(maximumClusterSize, 2, count);
-        int[] parents = Enumerable.Range(0, count).ToArray();
-        int[] sizes = Enumerable.Repeat(1, count).ToArray();
-        var links = new List<BossFragmentLink>(count - 1);
-        foreach (BossFragmentLink candidate in candidates)
-        {
-            int firstRoot = FindRoot(parents, candidate.FirstIndex);
-            int secondRoot = FindRoot(parents, candidate.SecondIndex);
-            if (firstRoot == secondRoot
-                || sizes[firstRoot] + sizes[secondRoot] > maximumClusterSize)
-            {
-                continue;
-            }
-
-            parents[secondRoot] = firstRoot;
-            sizes[firstRoot] += sizes[secondRoot];
-            links.Add(candidate);
-        }
-
-        return links;
-    }
 
     public static float ResolveCollisionPadding(float visibleArea)
     {
@@ -110,6 +39,17 @@ internal static class BossDismembermentMath
         }
 
         return Math.Clamp(MathF.Sqrt(visibleArea) * 0.08f, 18f, 42f);
+    }
+
+    public static BossFragmentPoint ResolveArchitectLeadVelocity(
+        float impactDirection,
+        float unitSample)
+    {
+        float direction = MathF.Abs(impactDirection) <= 0.0001f
+            ? 1f
+            : MathF.CopySign(1f, impactDirection);
+        float speed = 200f + 200f * Math.Clamp(unitSample, 0f, 1f);
+        return new BossFragmentPoint(direction * speed, 0f);
     }
 
     public static ulong ResolveMotionSeed(
@@ -219,49 +159,6 @@ internal static class BossDismembermentMath
         separationEpsilon = Math.Max(0f, separationEpsilon);
         return HasNoSeparatingAxis(first, second, separationEpsilon)
             && HasNoSeparatingAxis(second, first, separationEpsilon);
-    }
-
-    public static IReadOnlyList<BossFragmentPoint> BuildConvexHull(
-        IReadOnlyList<BossFragmentPoint> points)
-    {
-        BossFragmentPoint[] sorted = points
-            .Where(IsFinite)
-            .Distinct()
-            .OrderBy(point => point.X)
-            .ThenBy(point => point.Y)
-            .ToArray();
-        if (sorted.Length <= 2)
-        {
-            return sorted;
-        }
-
-        var lower = new List<BossFragmentPoint>(sorted.Length);
-        foreach (BossFragmentPoint point in sorted)
-        {
-            while (lower.Count >= 2 && Cross(lower[^2], lower[^1], point) <= 0f)
-            {
-                lower.RemoveAt(lower.Count - 1);
-            }
-
-            lower.Add(point);
-        }
-
-        var upper = new List<BossFragmentPoint>(sorted.Length);
-        for (int index = sorted.Length - 1; index >= 0; index--)
-        {
-            BossFragmentPoint point = sorted[index];
-            while (upper.Count >= 2 && Cross(upper[^2], upper[^1], point) <= 0f)
-            {
-                upper.RemoveAt(upper.Count - 1);
-            }
-
-            upper.Add(point);
-        }
-
-        lower.RemoveAt(lower.Count - 1);
-        upper.RemoveAt(upper.Count - 1);
-        lower.AddRange(upper);
-        return lower;
     }
 
     public static IReadOnlyList<BossFragmentCell> BuildVoronoiCells(
@@ -722,17 +619,6 @@ internal static class BossDismembermentMath
         value = (value ^ (value >> 30)) * 0xBF58476D1CE4E5B9UL;
         value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
         return value ^ (value >> 31);
-    }
-
-    private static int FindRoot(int[] parents, int index)
-    {
-        while (parents[index] != index)
-        {
-            parents[index] = parents[parents[index]];
-            index = parents[index];
-        }
-
-        return index;
     }
 
 }

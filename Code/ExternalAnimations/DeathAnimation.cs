@@ -245,11 +245,12 @@ public static class DeathAnimation
             CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(creatureNode.Visuals) is { } cinematicFocus
                 ? cinematicFocus
                 : creatureNode.Visuals.Bounds;
-            if (CombatCinematicCameraLease.TryAcquire(room, "NinjaSlayer enemy finisher", out camera))
+            if (CombatCinematicCameraLease.TryAcquire(room, "NinjaSlayer enemy finisher", out camera)
+                && camera != null)
             {
                 try
                 {
-                    presentation = FinisherImpactPresentation.CreateBackdropOnly(room);
+                    presentation = FinisherImpactPresentation.CreateBackdropOnly(room, camera);
                 }
                 catch (Exception ex)
                 {

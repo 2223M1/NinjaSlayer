@@ -148,7 +148,9 @@ function feedbackRequest(overrides = {}) {
     { type: overrides.logsType ?? 'application/zip' },
   ));
   const headers = { 'CF-Connecting-IP': overrides.ip ?? '203.0.113.8' };
-  if (!overrides.legacy) headers['X-NinjaSlayer-Submission-Id'] = overrides.headerId ?? submissionId;
+  if (!overrides.omitHeader) {
+    headers['X-NinjaSlayer-Submission-Id'] = overrides.headerId ?? submissionId;
+  }
   return new Request('https://worker.test/feedback', {
     method: overrides.method ?? 'PUT',
     headers,
@@ -278,6 +280,8 @@ test('telemetry forwards only validated fields and no IP header', async () => {
 
 test('feedback rejects invalid schemas, MIME types, sizes, signatures, and mismatched headers', async () => {
   assert.equal((await handleRequest(feedbackRequest({ method: 'POST' }), workerEnv())).status, 405);
+  assert.equal((await handleRequest(feedbackRequest({ omitHeader: true }), workerEnv())).status, 400);
+  assert.equal((await handleRequest(feedbackRequest({ headerId: 'bad' }), workerEnv())).status, 400);
   assert.equal((await handleRequest(feedbackRequest({ category: 'other' }), workerEnv())).status, 400);
   assert.equal((await handleRequest(feedbackRequest({ submissionId: 'bad' }), workerEnv())).status, 400);
   assert.equal((await handleRequest(feedbackRequest({ contextFields: { unexpected: true } }), workerEnv())).status, 400);
@@ -432,11 +436,6 @@ test('an administrative tombstone prevents deleted submissions from being recrea
   assert.equal(retry.status, 410);
   assert.equal((await retry.json()).error, 'submission_deleted');
   assert.equal(kv.objects.has(`feedback-index/${UUID}`), false);
-});
-
-test('legacy clients without a submission header remain serialized and supported', async () => {
-  const response = await handleRequest(feedbackRequest({ legacy: true }), workerEnv());
-  assert.equal(response.status, 200);
 });
 
 test('daily feedback quota remains atomic across concurrent submission coordinators', async () => {

@@ -40,10 +40,9 @@ public sealed class TelemetryIdentityTrackerTests
     }
 
     [Theory]
-    [InlineData(NinjaSlayerTelemetryCharacterKind.Debug)]
-    [InlineData(NinjaSlayerTelemetryCharacterKind.Other)]
-    [InlineData(NinjaSlayerTelemetryCharacterKind.Unknown)]
-    public void NonOfficialLocalCharactersAreRejected(NinjaSlayerTelemetryCharacterKind characterKind)
+    [InlineData((int)NinjaSlayerTelemetryCharacterKind.Other)]
+    [InlineData((int)NinjaSlayerTelemetryCharacterKind.Unknown)]
+    public void NonOfficialLocalCharactersAreRejected(int characterKind)
     {
         var tracker = BeginTrackedRun();
 
@@ -51,7 +50,7 @@ public sealed class TelemetryIdentityTrackerTests
             new object(),
             isAbandoned: false,
             10,
-            [Player(10, characterKind)]));
+            [Player(10, (NinjaSlayerTelemetryCharacterKind)characterKind)]));
     }
 
     [Fact]
@@ -123,12 +122,12 @@ public sealed class TelemetryIdentityTrackerTests
     {
         var tracker = BeginTrackedRun();
         tracker.Refresh(ActiveRun, 10, [Player(10, NinjaSlayerTelemetryCharacterKind.Official)]);
-        long firstGeneration = tracker.Generation;
 
         object nextRun = new();
         tracker.BeginRun(nextRun);
-        Assert.Equal(firstGeneration + 1, tracker.Generation);
-        Assert.Equal(NinjaSlayerTelemetryIdentityStatus.AwaitingIdentity, tracker.Status);
+        Assert.Equal(
+            NinjaSlayerTelemetryIdentityStatus.AwaitingIdentity,
+            tracker.Refresh(nextRun, null, []));
         Assert.False(tracker.TryCaptureCompletedRun(
             new object(),
             false,
@@ -136,7 +135,9 @@ public sealed class TelemetryIdentityTrackerTests
             [Player(10, NinjaSlayerTelemetryCharacterKind.Official)]));
 
         tracker.Clear();
-        Assert.Equal(NinjaSlayerTelemetryIdentityStatus.NoActiveRun, tracker.Status);
+        Assert.Equal(
+            NinjaSlayerTelemetryIdentityStatus.NoActiveRun,
+            tracker.Refresh(nextRun, 10, [Player(10, NinjaSlayerTelemetryCharacterKind.Official)]));
     }
 
     [Fact]
@@ -150,7 +151,6 @@ public sealed class TelemetryIdentityTrackerTests
                 new object(),
                 10,
                 [Player(10, NinjaSlayerTelemetryCharacterKind.Official)]));
-        Assert.Equal(NinjaSlayerTelemetryIdentityStatus.AwaitingIdentity, tracker.Status);
     }
 
     private static NinjaSlayerTelemetryIdentityTracker BeginTrackedRun()

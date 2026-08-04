@@ -57,8 +57,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
     public override Task AfterCardGeneratedForCombat(CardModel card, Player? creator)
     {
         if (card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player>? metrics)
-            && metrics is not null)
+            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             if (card is ChadoCard && creator == card.Owner)
@@ -73,8 +72,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
     public override Task AfterCardDiscarded(PlayerChoiceContext choiceContext, CardModel card)
     {
         if (card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player>? metrics)
-            && metrics is not null)
+            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             if (card is ChadoCard)
@@ -92,8 +90,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         bool causedByEthereal)
     {
         if (card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player>? metrics)
-            && metrics is not null)
+            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             if (card is ChadoCard)
@@ -108,8 +105,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (cardPlay.Card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player>? metrics)
-            && metrics is not null)
+            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             metrics.AddFinishedCard(
@@ -132,8 +128,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         if (result.UnblockedDamage > 0
             && target.Player is { } player
             && target.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player>? metrics)
-            && metrics is not null)
+            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             metrics.MarkHpLost(player);
@@ -162,9 +157,9 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
 
     private static bool TryGetExisting(
         ICombatState combatState,
-        out CombatMetricsSnapshot<Player>? snapshot)
+        out CombatMetricsSnapshot<Player> snapshot)
     {
-        if (_snapshots.TryGetValue(combatState, out snapshot))
+        if (_snapshots.TryGetValue(combatState, out snapshot!))
         {
             return true;
         }

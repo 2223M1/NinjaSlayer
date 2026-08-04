@@ -209,14 +209,8 @@ public sealed class LifecycleTests
     }
 
     [Fact]
-    public void CinematicContractsRemainCalibratedAndDisposalIsIdempotent()
+    public void CinematicLifetimeDisposalIsIdempotent()
     {
-        Assert.Equal(2f, CinematicTimingContract.BossMinimumCameraHoldSeconds);
-        Assert.Equal(0.2f, CinematicTimingContract.BossCameraReturnSeconds);
-        Assert.Equal(0.1f, CinematicTimingContract.FinisherDeathKickSettleSeconds);
-        Assert.Equal(0.2f, CinematicTimingContract.FinisherReturnSeconds);
-        Assert.Equal(90f, CinematicTimingContract.FinisherWatchdogSeconds);
-
         var lifetime = new CinematicSessionLifetime();
         CancellationToken token = lifetime.Token;
         lifetime.Cancel();
@@ -247,14 +241,14 @@ public sealed class LifecycleTests
         object innerScope = new();
         object stateOwner = new();
         var scopes = new ResolutionScopeRegistry<object, object>();
-        Assert.True(scopes.Begin(subject, outerScope));
+        scopes.Begin(subject, outerScope);
         Assert.True(scopes.TryGetOrCreateState(
             outerScope,
             stateOwner,
             static () => new List<int>(),
             out List<int>? created));
         created!.Add(1);
-        Assert.True(scopes.Begin(subject, innerScope));
+        scopes.Begin(subject, innerScope);
 
         Assert.True(scopes.TryGetLatestScope(subject, out object? latest));
         Assert.Same(innerScope, latest);
@@ -265,7 +259,6 @@ public sealed class LifecycleTests
         Assert.Equal([1], values);
 
         scopes.CompleteSubject(subject);
-        Assert.Equal(0, scopes.Count);
         Assert.False(scopes.TryGetLatestScope(subject, out _));
     }
 
@@ -276,7 +269,7 @@ public sealed class LifecycleTests
         object scope = new();
         object owner = new();
         var scopes = new ResolutionScopeRegistry<object, object>();
-        Assert.True(scopes.Begin(subject, scope));
+        scopes.Begin(subject, scope);
 
         Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int>(), out List<int>? list));
         Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new HashSet<int>(), out HashSet<int>? set));
@@ -294,7 +287,7 @@ public sealed class LifecycleTests
         object scope = new();
         object owner = new();
         var scopes = new ResolutionScopeRegistry<object, object>();
-        Assert.True(scopes.Begin(subject, scope));
+        scopes.Begin(subject, scope);
         Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int> { 3 }, out _));
 
         Assert.True(scopes.TryTakeState(scope, owner, out List<int>? taken));
@@ -306,41 +299,14 @@ public sealed class LifecycleTests
     }
 
     [Fact]
-    public async Task ResolutionScopesRejectForeignThreadMutationAndReportOnceInReleaseMode()
+    public void ResolutionScopesCanBeForceClearedAtALifecycleBoundary()
     {
-        var reports = new List<string>();
-        var scopes = new ResolutionScopeRegistry<object, object>(reports.Add, throwOnThreadViolation: false);
+        var scopes = new ResolutionScopeRegistry<object, object>();
         object subject = new();
+        scopes.Begin(subject, new object());
 
-        bool[] results = await Task.WhenAll(Enumerable.Range(0, 2).Select(_ => Task.Run(() =>
-            scopes.Begin(subject, new object()))));
-
-        Assert.All(results, Assert.False);
-        Assert.Single(reports);
-        Assert.Equal(0, scopes.Count);
-    }
-
-    [Fact]
-    public async Task ResolutionScopesAssertForeignThreadMutationInStrictMode()
-    {
-        var scopes = new ResolutionScopeRegistry<object, object>(throwOnThreadViolation: true);
-
-        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Task.Run(() => scopes.Begin(new object(), new object())));
-
-        Assert.Contains("owner thread", exception.Message, StringComparison.Ordinal);
-        Assert.Equal(0, scopes.Count);
-    }
-
-    [Fact]
-    public async Task ResolutionScopesCanBeForceClearedAtALifecycleBoundary()
-    {
-        var scopes = new ResolutionScopeRegistry<object, object>(throwOnThreadViolation: false);
-        Assert.True(scopes.Begin(new object(), new object()));
-
-        int cleared = await Task.Run(scopes.ForceClear);
-
-        Assert.Equal(1, cleared);
-        Assert.Equal(0, scopes.Count);
+        Assert.True(scopes.ForceClear());
+        Assert.False(scopes.TryGetLatestScope(subject, out _));
+        Assert.False(scopes.ForceClear());
     }
 }

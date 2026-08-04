@@ -42,22 +42,21 @@ public sealed class Riffle : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(DynamicVars.Repeat.IntValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
-        int strengthLoss = cardPlay.Target.GetPowerAmount<KaratePower>();
+        int strengthLoss = cardPlay.Target!.GetPowerAmount<KaratePower>();
         if (strengthLoss > 0)
         {
             await PowerCmd.Apply<RiffleStrengthDownPower>(
                 choiceContext,
-                cardPlay.Target,
+                cardPlay.Target!,
                 strengthLoss,
                 Owner.Creature,
                 this);

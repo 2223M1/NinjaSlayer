@@ -2,53 +2,21 @@ using System.Runtime.CompilerServices;
 
 namespace NinjaSlayer.Code.Lifecycle;
 
-public sealed class ResolutionScopeRegistry<TSubject, TScope>
+internal sealed class ResolutionScopeRegistry<TSubject, TScope>
     where TSubject : class
     where TScope : class
 {
-    private readonly object _sync = new();
+    private readonly Lock _lock = new();
     private readonly Dictionary<TSubject, List<ScopeEntry>> _entriesBySubject =
         new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<TScope, ScopeEntry> _entriesByScope =
         new(ReferenceEqualityComparer.Instance);
-    private readonly int _ownerThreadId = Environment.CurrentManagedThreadId;
-    private readonly Action<string>? _violationReporter;
-    private readonly bool _throwOnThreadViolation;
-    private long _nextSequence;
-    private int _threadViolationReported;
-
-    public ResolutionScopeRegistry(
-        Action<string>? violationReporter = null,
-        bool? throwOnThreadViolation = null)
+    public void Begin(TSubject subject, TScope scope)
     {
-        _violationReporter = violationReporter;
-        _throwOnThreadViolation = throwOnThreadViolation ?? DefaultStrictThreadAffinity;
-    }
-
-    public int Count
-    {
-        get
-        {
-            lock (_sync)
-            {
-                return _entriesByScope.Count;
-            }
-        }
-    }
-
-    public bool Begin(TSubject subject, TScope scope)
-    {
-        ArgumentNullException.ThrowIfNull(subject);
-        ArgumentNullException.ThrowIfNull(scope);
-        if (!CheckThreadAffinity(nameof(Begin)))
-        {
-            return false;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             CompleteCore(scope);
-            ScopeEntry entry = new(subject, scope, ++_nextSequence);
+            ScopeEntry entry = new(subject, scope);
             if (!_entriesBySubject.TryGetValue(subject, out List<ScopeEntry>? entries))
             {
                 entries = [];
@@ -57,19 +25,12 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
 
             entries.Add(entry);
             _entriesByScope.Add(scope, entry);
-            return true;
         }
     }
 
     public bool TryGetLatestScope(TSubject subject, out TScope? scope)
     {
-        if (!CheckThreadAffinity(nameof(TryGetLatestScope)))
-        {
-            scope = null;
-            return false;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             if (_entriesBySubject.TryGetValue(subject, out List<ScopeEntry>? entries) && entries.Count > 0)
             {
@@ -89,16 +50,7 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
         out TState? state)
         where TState : class
     {
-        ArgumentNullException.ThrowIfNull(scope);
-        ArgumentNullException.ThrowIfNull(owner);
-        ArgumentNullException.ThrowIfNull(factory);
-        if (!CheckThreadAffinity(nameof(TryGetOrCreateState)))
-        {
-            state = null;
-            return false;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             if (!_entriesByScope.TryGetValue(scope, out ScopeEntry? entry))
             {
@@ -122,15 +74,7 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
     public bool TryGetState<TState>(TScope scope, object owner, out TState? state)
         where TState : class
     {
-        ArgumentNullException.ThrowIfNull(scope);
-        ArgumentNullException.ThrowIfNull(owner);
-        if (!CheckThreadAffinity(nameof(TryGetState)))
-        {
-            state = null;
-            return false;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             if (_entriesByScope.TryGetValue(scope, out ScopeEntry? entry)
                 && entry.States.TryGetValue(new StateKey(owner, typeof(TState)), out object? existing)
@@ -148,15 +92,7 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
     public bool TryTakeState<TState>(TScope scope, object owner, out TState? state)
         where TState : class
     {
-        ArgumentNullException.ThrowIfNull(scope);
-        ArgumentNullException.ThrowIfNull(owner);
-        if (!CheckThreadAffinity(nameof(TryTakeState)))
-        {
-            state = null;
-            return false;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             if (_entriesByScope.TryGetValue(scope, out ScopeEntry? entry)
                 && entry.States.Remove(new StateKey(owner, typeof(TState)), out object? existing)
@@ -173,31 +109,19 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
 
     public bool Complete(TScope scope)
     {
-        ArgumentNullException.ThrowIfNull(scope);
-        if (!CheckThreadAffinity(nameof(Complete)))
-        {
-            return false;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             return CompleteCore(scope);
         }
     }
 
-    public int CompleteSubject(TSubject subject)
+    public void CompleteSubject(TSubject subject)
     {
-        ArgumentNullException.ThrowIfNull(subject);
-        if (!CheckThreadAffinity(nameof(CompleteSubject)))
-        {
-            return 0;
-        }
-
-        lock (_sync)
+        lock (_lock)
         {
             if (!_entriesBySubject.Remove(subject, out List<ScopeEntry>? entries))
             {
-                return 0;
+                return;
             }
 
             foreach (ScopeEntry entry in entries)
@@ -205,18 +129,17 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
                 _entriesByScope.Remove(entry.Scope);
             }
 
-            return entries.Count;
         }
     }
 
-    public int ForceClear()
+    public bool ForceClear()
     {
-        lock (_sync)
+        lock (_lock)
         {
-            int count = _entriesByScope.Count;
+            bool hadEntries = _entriesByScope.Count > 0;
             _entriesBySubject.Clear();
             _entriesByScope.Clear();
-            return count;
+            return hadEntries;
         }
     }
 
@@ -239,40 +162,10 @@ public sealed class ResolutionScopeRegistry<TSubject, TScope>
         return true;
     }
 
-    private bool CheckThreadAffinity(string operation)
-    {
-        int currentThreadId = Environment.CurrentManagedThreadId;
-        if (currentThreadId == _ownerThreadId)
-        {
-            return true;
-        }
-
-        string message =
-            $"Resolution scope operation {operation} ran on thread {currentThreadId}; owner thread is {_ownerThreadId}.";
-        if (_throwOnThreadViolation)
-        {
-            throw new InvalidOperationException(message);
-        }
-
-        if (Interlocked.Exchange(ref _threadViolationReported, 1) == 0)
-        {
-            _violationReporter?.Invoke(message);
-        }
-
-        return false;
-    }
-
-#if DEBUG
-    private const bool DefaultStrictThreadAffinity = true;
-#else
-    private const bool DefaultStrictThreadAffinity = false;
-#endif
-
-    private sealed class ScopeEntry(TSubject subject, TScope scope, long sequence)
+    private sealed class ScopeEntry(TSubject subject, TScope scope)
     {
         public TSubject Subject { get; } = subject;
         public TScope Scope { get; } = scope;
-        public long Sequence { get; } = sequence;
         public Dictionary<StateKey, object> States { get; } = [];
     }
 

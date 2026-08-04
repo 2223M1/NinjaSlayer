@@ -13,6 +13,8 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
 
     private readonly MeshInstance2D _meshNode;
     private readonly ShaderMaterial _material;
+    private readonly SoftFragmentBody _fragmentBody;
+    private readonly BossFragmentPoint _fragmentRestCenter;
     private readonly BossFragmentPoint[] _residuals =
         new BossFragmentPoint[SoftFragmentBody.ParticleCount];
     private readonly Godot.Collections.Array<Vector2> _controlOffsets =
@@ -20,6 +22,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
     private float _previousRotation;
     private int _applyFailureLogged;
     private int _consecutivePoseFailures;
+    private SoftFragmentBody _body;
     private bool _disposed;
 
     private BossCapturedFragmentRenderSurface(
@@ -32,16 +35,16 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         Anchor = anchor;
         _meshNode = meshNode;
         _material = material;
-        Body = body;
+        _fragmentBody = body;
+        _fragmentRestCenter = body.RestCenter;
+        _body = body;
         Descriptor = descriptor;
     }
 
     public Node2D Anchor { get; }
-    public SoftFragmentBody Body { get; }
+    public SoftFragmentBody Body => _body;
+    public SoftFragmentBody FragmentBody => _fragmentBody;
     public BossCapturedFragmentDescriptor Descriptor { get; }
-    public float MaximumResidual { get; private set; }
-    public float RmsResidual { get; private set; }
-    public float RmsResidualRatio => RmsResidual / Math.Max(1f, Body.ShortDimension);
 
     internal sealed class PreparedResource : IDisposable
     {
@@ -52,21 +55,18 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
             BossCapturedFragmentDescriptor descriptor,
             SoftFragmentBody body,
             ArrayMesh mesh,
-            ShaderMaterial material,
-            float mappedArea)
+            ShaderMaterial material)
         {
             Descriptor = descriptor;
             Body = body;
             Mesh = mesh;
             Material = material;
-            MappedArea = mappedArea;
         }
 
         internal BossCapturedFragmentDescriptor Descriptor { get; }
         internal SoftFragmentBody Body { get; }
         internal ArrayMesh Mesh { get; }
         internal ShaderMaterial Material { get; }
-        internal float MappedArea { get; }
 
         internal void MarkConsumed() => Interlocked.Exchange(ref _consumed, 1);
 
@@ -89,7 +89,6 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         Shader shader,
         float mass,
         float collisionMargin,
-        float mappedArea,
         out PreparedResource? prepared)
     {
         prepared = null;
@@ -128,7 +127,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
                 descriptor.AtlasUvRect,
                 bodyToPresentation,
                 body.RestCenter);
-            prepared = new PreparedResource(descriptor, body, mesh, material, mappedArea);
+            prepared = new PreparedResource(descriptor, body, mesh, material);
             return true;
         }
         catch (Exception exception)
@@ -197,61 +196,13 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         }
     }
 
-    public static bool TryCreate(
-        Node parent,
-        BossCapturedFragmentDescriptor descriptor,
-        Transform2D bodyToPresentation,
-        Texture2D captureTexture,
-        Shader shader,
-        BossFragmentPoint? initialCenter,
-        float initialScale,
-        float mass,
-        float collisionMargin,
-        int zIndex,
-        out BossCapturedFragmentRenderSurface? surface)
+    internal void BindToSharedBody(SoftFragmentBody body, Rect2 deformationBounds) =>
+        BindBody(body, deformationBounds);
+
+    internal void BindToFragmentBody()
     {
-        surface = null;
-        if (!TryPrepare(
-                descriptor,
-                bodyToPresentation,
-                shader,
-                mass,
-                collisionMargin,
-                ResolveMappedArea(descriptor.Cell, bodyToPresentation),
-                out PreparedResource? prepared)
-            || prepared == null)
-        {
-            return false;
-        }
-
-        using (prepared)
-        {
-            if (!TryInstantiate(parent, prepared, captureTexture, zIndex, out surface)
-                || surface == null)
-            {
-                return false;
-            }
-
-            if (initialCenter.HasValue || !Mathf.IsEqualApprox(initialScale, 1f))
-            {
-                surface.Body.PinCompressed(
-                    initialCenter ?? surface.Body.RestCenter,
-                    initialScale,
-                    phase: 0f,
-                    slideRadius: 0f,
-                    squashAmount: 0f);
-            }
-
-            if (!surface.ApplyFrame())
-            {
-                surface.Dispose();
-                surface = null;
-                return false;
-            }
-
-            surface.Anchor.Visible = true;
-            return true;
-        }
+        Rect2 cellBounds = ToRect2(BossDismembermentMath.BoundsOf(Descriptor.Cell.Vertices));
+        BindBody(_fragmentBody, cellBounds);
     }
 
     public bool ApplyFrame()
@@ -266,7 +217,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         }
 
         if (!SoftBodyRenderPoseResolver.TryResolve(
-                Body,
+                _body,
                 _previousRotation,
                 _residuals,
                 out SoftBodyRenderPose pose))
@@ -282,16 +233,11 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
             Anchor.Position = new Vector2(pose.Position.X, pose.Position.Y);
             Anchor.Rotation = pose.RotationRadians;
             Anchor.Scale = Vector2.One * pose.UniformScale;
-            MaximumResidual = pose.MaximumResidual;
-            double residualSquared = 0d;
             for (int index = 0; index < _residuals.Length; index++)
             {
                 _controlOffsets[index] = new Vector2(_residuals[index].X, _residuals[index].Y);
-                residualSquared += _residuals[index].X * _residuals[index].X
-                    + _residuals[index].Y * _residuals[index].Y;
             }
 
-            RmsResidual = (float)Math.Sqrt(residualSquared / _residuals.Length);
             _material.SetShaderParameter(ControlOffsetsParameter, _controlOffsets);
             return true;
         }
@@ -320,6 +266,18 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         {
             Anchor.QueueFreeSafely();
         }
+    }
+
+    private void BindBody(SoftFragmentBody body, Rect2 deformationBounds)
+    {
+        _body = body;
+        _meshNode.Position = new Vector2(
+            _fragmentRestCenter.X - body.RestCenter.X,
+            _fragmentRestCenter.Y - body.RestCenter.Y);
+        _material.SetShaderParameter("cell_bounds_min", deformationBounds.Position);
+        _material.SetShaderParameter("cell_bounds_size", deformationBounds.Size);
+        _previousRotation = 0f;
+        _consecutivePoseFailures = 0;
     }
 
     private static BossFragmentPoint[] BuildRestGrid(
@@ -371,27 +329,6 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         && partBounds.Size.Y > 1f
         && descriptor.AtlasUvRect.Size.X > 0f
         && descriptor.AtlasUvRect.Size.Y > 0f;
-
-    private static float ResolveMappedArea(
-        BossFragmentCell cell,
-        Transform2D bodyToPresentation)
-    {
-        if (cell.Vertices.Count < 3)
-        {
-            return 0f;
-        }
-
-        double twiceArea = 0d;
-        for (int index = 0; index < cell.Vertices.Count; index++)
-        {
-            Vector2 current = bodyToPresentation * ToVector2(cell.Vertices[index]);
-            Vector2 next = bodyToPresentation
-                * ToVector2(cell.Vertices[(index + 1) % cell.Vertices.Count]);
-            twiceArea += current.X * next.Y - next.X * current.Y;
-        }
-
-        return (float)Math.Abs(twiceArea * 0.5d);
-    }
 
     private static ArrayMesh BuildMesh(
         Rect2 renderBounds,

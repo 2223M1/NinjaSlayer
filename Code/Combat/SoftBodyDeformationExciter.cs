@@ -2,13 +2,9 @@ namespace NinjaSlayer.Code.Combat;
 
 internal sealed class SoftBodyDeformationExciter
 {
-    private const float MinimumVisibleAmplitude = 0.015f;
-
     private readonly BossFragmentPoint[] _squashPattern;
     private readonly BossFragmentPoint[] _bendPattern;
     private readonly float _shortDimension;
-    private int _previousSquashSign;
-    private int _previousBendSign;
 
     public SoftBodyDeformationExciter(
         IReadOnlyList<BossFragmentPoint> restPoints,
@@ -28,8 +24,6 @@ internal sealed class SoftBodyDeformationExciter
         Orthogonalize(_bendPattern, _squashPattern);
         NormalizePattern(_bendPattern);
     }
-
-    public int ZeroCrossings { get; private set; }
 
     public void AddLaunchExcitation(
         BossFragmentPoint linearVelocityDelta,
@@ -78,45 +72,6 @@ internal sealed class SoftBodyDeformationExciter
                 local.X * cosine - local.Y * sine,
                 local.X * sine + local.Y * cosine);
         }
-    }
-
-    public int ObserveLocalResiduals(ReadOnlySpan<BossFragmentPoint> localResiduals)
-    {
-        float squash = Project(localResiduals, _squashPattern) / _shortDimension;
-        float bend = Project(localResiduals, _bendPattern) / _shortDimension;
-        int before = ZeroCrossings;
-        CountCrossing(squash, ref _previousSquashSign);
-        CountCrossing(bend, ref _previousBendSign);
-        return ZeroCrossings - before;
-    }
-
-    private void CountCrossing(float value, ref int previousSign)
-    {
-        int sign = MathF.Abs(value) < MinimumVisibleAmplitude ? 0 : Math.Sign(value);
-        if (sign != 0 && previousSign != 0 && sign != previousSign)
-        {
-            ZeroCrossings++;
-        }
-
-        if (sign != 0)
-        {
-            previousSign = sign;
-        }
-    }
-
-    private static float Project(
-        ReadOnlySpan<BossFragmentPoint> values,
-        BossFragmentPoint[] pattern)
-    {
-        float numerator = 0f;
-        float denominator = 0f;
-        for (int index = 0; index < values.Length; index++)
-        {
-            numerator += Dot(values[index], pattern[index]);
-            denominator += Dot(pattern[index], pattern[index]);
-        }
-
-        return denominator <= 0.0001f ? 0f : numerator / denominator;
     }
 
     private static BossFragmentPoint[] BuildSquashPattern(

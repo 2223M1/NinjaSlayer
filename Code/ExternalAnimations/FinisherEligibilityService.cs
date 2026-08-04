@@ -28,7 +28,6 @@ internal static class FinisherEligibilityService
         FinisherAttackSpec spec,
         AttackCommand? command,
         string entryPoint,
-        IFinisherActionAdapter? actionAdapter,
         out FinisherSession? session)
     {
         session = null;
@@ -60,7 +59,8 @@ internal static class FinisherEligibilityService
         }
 
         List<Creature> enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToList();
-        if (enemies.Count == 0)
+        List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
+        if (primaryEnemies.Count == 0)
         {
             return false;
         }
@@ -77,7 +77,7 @@ internal static class FinisherEligibilityService
         }
 
         NCreature? ownerNode = room.GetCreatureNode(owner);
-        Creature? focus = enemies
+        Creature? focus = primaryEnemies
             .Select(enemy => (Enemy: enemy, Node: room.GetCreatureNode(enemy)))
             .Where(pair => pair.Node != null)
             .OrderBy(pair => pair.Node!.GlobalPosition.X)
@@ -90,14 +90,6 @@ internal static class FinisherEligibilityService
             return false;
         }
 
-        bool jumpActive = JumpAnimation.IsActive(owner);
-        actionAdapter ??= command != null
-            && GameCompatibility.Finisher.TryReadAttackCommand(
-                command,
-                out GameCompatibility.AttackCommandState commandState)
-                ? FinisherActionAdapters.Resolve(commandState, jumpActive)
-                : FinisherActionAdapters.ResolveWithoutCommand();
-
         if (!FinisherSessionRegistry.TryRegisterSession(
                 new FinisherSessionRequest(
                     FinisherScenarioKind.NinjaSlayerAttack,
@@ -105,9 +97,8 @@ internal static class FinisherEligibilityService
                     owner,
                     ownerNode,
                     focusNode,
-                    enemies,
+                    primaryEnemies,
                     camera!,
-                    actionAdapter,
                     spec.CardPlay,
                     forecast.RequiresAfterCardPlayed,
                     forecast.ResolvedHits),
@@ -133,12 +124,23 @@ internal static class FinisherEligibilityService
         out FinisherSession? session)
     {
         session = null;
+        List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
             || owner.Monster is not YamotoKokiMonster
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
-            || enemies.Count == 0
+            || primaryEnemies.Count == 0
             || !GameCompatibility.Finisher.CanProtectLethalDamage(out _))
+        {
+            return false;
+        }
+
+        NCreature? primaryFocusNode = focusNode.Entity.IsPrimaryEnemy
+            ? focusNode
+            : primaryEnemies
+                .Select(enemy => room.GetCreatureNode(enemy))
+                .FirstOrDefault(node => node != null);
+        if (primaryFocusNode == null)
         {
             return false;
         }
@@ -169,10 +171,9 @@ internal static class FinisherEligibilityService
                     FinisherCompletionCondition.AllCandidatesLethal,
                     owner,
                     ownerNode,
-                    focusNode,
-                    enemies,
+                    primaryFocusNode,
+                    primaryEnemies,
                     camera!,
-                    FinisherActionAdapters.YamotoKokiIai,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: forecast.ResolvedHits),
@@ -185,7 +186,7 @@ internal static class FinisherEligibilityService
         }
 
         FinisherLog.Info(
-            $"Yamoto Koki finisher session {session!.SessionId} started: victims={enemies.Count}.");
+            $"Yamoto Koki finisher session {session!.SessionId} started: victims={primaryEnemies.Count}.");
         return true;
     }
 

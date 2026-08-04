@@ -1,5 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models.Events;
@@ -12,6 +11,7 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Runs.History;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -34,7 +34,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private const float ExitSpeedPixelsPerSecond = 840f;
     private const float ExitMargin = 160f;
 
-    private TheArchitect _eventModel = null!;
     private Creature _owner = null!;
     private NCreature _ownerNode = null!;
     private NCreature _architectNode = null!;
@@ -42,11 +41,11 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private readonly CinematicSessionLifetime _runLifetime = new();
     private CinematicSessionLifetime? _exitLifetime;
     private Task? _exitTask;
+    private Task? _victoryCompletionTask;
     private CombatCinematicCameraLease? _camera;
     private FinisherImpactPresentation? _presentation;
     private BossDismembermentSnapshot? _dismembermentSnapshot;
     private ArchitectBossSoftBodyLead? _softBodyLead;
-    private ArchitectDeathPresentationSession? _deathSession;
     private Vector2 _ownerStartPosition;
     private Vector2 _architectBodyPosition;
     private Vector2 _architectBodyScale;
@@ -56,6 +55,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private bool _initialized;
     private bool _completed;
     private bool _architectDeathCommitted;
+    private bool _architectVisualHidden;
 
     public static bool TryStart(TheArchitect eventModel)
     {
@@ -76,7 +76,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         var controller = new ArchitectExecutionCinematic
         {
             Name = ControllerName,
-            _eventModel = eventModel,
             _owner = owner,
             _ownerNode = ownerNode,
             _architectNode = architectNode,
@@ -106,14 +105,13 @@ public sealed partial class ArchitectExecutionCinematic : Node
     {
         _runLifetime.Dispose();
         Interlocked.Exchange(ref _exitLifetime, null)?.Dispose();
-        _deathSession?.CompleteVisuals();
-        _deathSession?.Dispose();
         _softBodyLead?.Dispose();
         _softBodyLead = null;
         DisposeDismembermentSnapshot();
+        HideArchitectVisual();
         if (_initialized)
         {
-            RestoreTemporaryState(restoreOwnerPosition: !_completed);
+            RestoreTemporaryState(restoreOwnerPosition: _exitTask == null);
         }
         _presentation?.Dispose();
         _presentation = null;
@@ -152,7 +150,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
             await PlayArchitectDeath(cancelToken);
 
             _completed = true;
-            CompleteEvent();
+            await CompleteEvent();
         }
         catch (OperationCanceledException) when (cancelToken.IsCancellationRequested || !IsRuntimeValid())
         {
@@ -160,10 +158,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
         catch (Exception exception)
         {
             Entry.Logger.Error($"Architect execution cinematic failed: {exception}");
-            RestoreTemporaryState(restoreOwnerPosition: true);
             if (IsRuntimeValid())
             {
-                CompleteEvent();
+                await CompleteEvent();
             }
         }
         finally
@@ -173,13 +170,11 @@ public sealed partial class ArchitectExecutionCinematic : Node
                 _exitLifetime?.Cancel();
             }
 
-            _deathSession?.CompleteVisuals();
-            _deathSession?.Dispose();
-            _deathSession = null;
             _softBodyLead?.Dispose();
             _softBodyLead = null;
             DisposeDismembermentSnapshot();
-            RestoreTemporaryState(restoreOwnerPosition: !_completed);
+            HideArchitectVisual();
+            RestoreTemporaryState(restoreOwnerPosition: _exitTask == null);
             _presentation?.Dispose();
             _presentation = null;
             _camera?.Dispose();
@@ -203,18 +198,18 @@ public sealed partial class ArchitectExecutionCinematic : Node
         if (CombatCinematicCameraLease.TryAcquire(
                 _room,
                 "NinjaSlayer Architect execution",
-                out CombatCinematicCameraLease? camera))
+                out CombatCinematicCameraLease? camera)
+            && camera != null)
         {
             _camera = camera;
-        }
-
-        try
-        {
-            _presentation = FinisherImpactPresentation.Create(_room, 1);
-        }
-        catch (Exception exception)
-        {
-            Entry.Logger.Warn($"Architect execution backdrop unavailable: {exception}");
+            try
+            {
+                _presentation = FinisherImpactPresentation.Create(_room, camera, 1);
+            }
+            catch (Exception exception)
+            {
+                Entry.Logger.Warn($"Architect execution backdrop unavailable: {exception}");
+            }
         }
     }
 
@@ -251,7 +246,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         vfxContainer.AddChildSafely(NHitSparkVfx.Create(
             _architectNode.Entity,
             requireInteractable: false));
-        VfxCmd.PlayOnCreatureCenter(_architectNode.Entity, "vfx/vfx_heavy_blunt");
+        NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(_architectNode.Entity);
 
         _doomFrozen = DoomHurtPoseController.TryFreeze(_architectNode);
         _architectNode.Body.Position = _architectBodyPosition;
@@ -307,9 +302,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
             fallDirection = 1f;
         }
 
-        _deathSession = ArchitectDeathPresentationSession.Register(_architectNode);
-        Task killTask = CreatureCmd.Kill(_architectNode.Entity, force: true);
-        await _deathSession.WaitUntilDeathStarts(killTask, cancelToken);
+        GameCompatibility.CreaturePresentation.DisableInteractionForDeath(_architectNode);
+        _architectNode.AnimHideIntent();
+        _architectNode.AnimDisableUi();
         _architectDeathCommitted = true;
 
         BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
@@ -332,7 +327,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         bool fragmentReplacementReady = _softBodyLead != null;
         if (fragmentReplacementReady)
         {
-            _deathSession.CompleteVisuals();
+            HideArchitectVisual();
         }
 
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
@@ -341,18 +336,16 @@ public sealed partial class ArchitectExecutionCinematic : Node
                 monsterId,
                 SpawnArchitectBurst));
         StartExitScene();
+        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
 
         await registration.Cue.WaitAsync(cancelToken);
-        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
         await Task.WhenAll(
             cameraRestore,
             registration.CombatRelease.WaitAsync(cancelToken));
         if (!fragmentReplacementReady)
         {
-            _deathSession.CompleteVisuals();
+            HideArchitectVisual();
         }
-
-        await killTask;
     }
 
     private BossDismembermentSpawn SpawnArchitectBurst()
@@ -541,19 +534,27 @@ public sealed partial class ArchitectExecutionCinematic : Node
         snapshot?.Dispose();
     }
 
-    private void CompleteEvent()
+    private Task CompleteEvent() => _victoryCompletionTask ??= CompleteEventCore();
+
+    private async Task CompleteEventCore()
     {
-        if (_completed)
+        ArchitectVictoryCleanup.Mark(_owner);
+        await GameCompatibility.ArchitectVictory.Complete(_owner.Player!, _room);
+    }
+
+    private void HideArchitectVisual()
+    {
+        if (!_architectDeathCommitted || _architectVisualHidden)
         {
-            ArchitectVictoryCleanup.Mark(_owner);
+            return;
         }
 
-        if (_eventModel.Owner?.RunState.Players.Count > 1)
+        _architectVisualHidden = true;
+        if (GodotObject.IsInstanceValid(_architectNode)
+            && GodotObject.IsInstanceValid(_architectNode.Body))
         {
-            _room.SetWaitingForOtherPlayersOverlayVisible(visible: true);
+            _architectNode.Body.Visible = false;
         }
-
-        RunManager.Instance.ActChangeSynchronizer.SetLocalPlayerReady();
     }
 
     private async Task WaitSeconds(float seconds, CancellationToken cancelToken)

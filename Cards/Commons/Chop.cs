@@ -25,14 +25,13 @@ public sealed class Chop : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target!, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         if (!Keywords.Contains(CardKeyword.Exhaust) && !ExhaustOnNextPlay)
         {
             await CardPileCmd.Add(this, PileType.Draw, CardPilePosition.Top);

@@ -67,6 +67,11 @@ jobs:
           if ($itemId -notmatch '^\d+$') {
             throw "The $($env:REQUESTED_CHANNEL) Workshop item id is invalid."
           }
+          $visibilityCode = switch ([string]$profile.workshopVisibility) {
+            'private' { '2' }
+            'unlisted' { '3' }
+            default { throw "The $($env:REQUESTED_CHANNEL) Workshop visibility must be private or unlisted." }
+          }
           $expectedConfirmation = "PUBLISH_NINJASLAYER_$($env:REQUESTED_CHANNEL.ToUpperInvariant())_$itemId"
           if ($env:CONFIRMATION -cne $expectedConfirmation) {
             throw "Invalid confirmation. Expected $expectedConfirmation."
@@ -82,7 +87,7 @@ jobs:
           "RELEASE_ARCHIVE_NAME=$archiveName" | Out-File $env:GITHUB_ENV -Append
           "WORKSHOP_CHANNEL=$($env:REQUESTED_CHANNEL)" | Out-File $env:GITHUB_ENV -Append
           "WORKSHOP_ITEM_ID=$itemId" | Out-File $env:GITHUB_ENV -Append
-          "WORKSHOP_VISIBILITY=$(if ($env:REQUESTED_CHANNEL -eq 'stable') { '0' } else { '3' })" | Out-File $env:GITHUB_ENV -Append
+          "WORKSHOP_VISIBILITY=$visibilityCode" | Out-File $env:GITHUB_ENV -Append
           "GAME_API_VERSION=$($profile.gameApiVersion)" | Out-File $env:GITHUB_ENV -Append
           "RITSULIB_PACKAGE_ID=$($profile.ritsuLibPackageId)" | Out-File $env:GITHUB_ENV -Append
           "RITSULIB_VERSION=$($compatibility.ritsuLibVersion)" | Out-File $env:GITHUB_ENV -Append

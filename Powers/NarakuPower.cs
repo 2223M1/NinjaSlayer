@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -45,6 +46,7 @@ public sealed class NarakuPower : NinjaSlayerPowerTemplate
 
     public override Task AfterRemoved(Creature oldOwner)
     {
+        GameCompatibility.NarakuPowerUi.RemoveStaleNode(oldOwner, this);
         NarakuVisualOverlay.Sync(oldOwner);
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback([oldOwner]);
         return Task.CompletedTask;
@@ -55,6 +57,20 @@ public sealed class NarakuPower : NinjaSlayerPowerTemplate
         if (cardPlay.Card.Owner == Owner.Player && cardPlay.Card.Type == CardType.Attack)
         {
             await Content.NinjaSlayerActions.AddGeneratedCard<BurningCard>(Owner.Player, PileType.Discard);
+        }
+    }
+
+    public override async Task AfterSideTurnEnd(
+        PlayerChoiceContext choiceContext,
+        CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        if (side == Owner.Side
+            && participants.Contains(Owner)
+            && Owner.Player is { } player
+            && NinjaSlayerActions.ChadoInHandCount(player) > 0)
+        {
+            await NinjaSlayerActions.ExitNaraku(Owner);
         }
     }
 

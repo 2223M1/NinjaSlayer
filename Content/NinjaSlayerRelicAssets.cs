@@ -13,9 +13,4 @@ public static class NinjaSlayerRelicAssets
         IconPath: NinjaSlayerAssetPaths.RelicImage($"{relicImageName}.png"),
         IconOutlinePath: NinjaSlayerAssetPaths.RelicImage($"{relicImageName}_outline.png"),
         BigIconPath: NinjaSlayerAssetPaths.RelicImage($"{relicImageName}_large.png"));
-
-    public static RelicAssetProfile FromCardImage(string cardImageName) => new(
-        IconPath: NinjaSlayerAssetPaths.CardImage($"{cardImageName}.png"),
-        IconOutlinePath: NinjaSlayerAssetPaths.CardImage($"{cardImageName}.png"),
-        BigIconPath: NinjaSlayerAssetPaths.CardImage($"{cardImageName}.png"));
 }

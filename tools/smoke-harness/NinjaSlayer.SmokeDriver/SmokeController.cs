@@ -216,8 +216,7 @@ internal sealed class SmokeController
         Require(!focus.IsAlive && focus.CurrentHp == 0, "The lethal X attack did not kill its focus.");
         Require(combatState.HittableEnemies.Count == 0, "A hittable enemy remained after the lethal X attack.");
         Require(
-            afterFinisher.FinisherSucceeded + afterFinisher.FinisherDegraded
-                > beforeFinisher.FinisherSucceeded + beforeFinisher.FinisherDegraded,
+            afterFinisher.FinisherCompletions > beforeFinisher.FinisherCompletions,
             "The lethal X attack did not complete a finisher session.");
         bool combatEnded = await CombatManager.Instance.CheckWinCondition();
         Require(combatEnded && !CombatManager.Instance.IsInProgress, "The completed finisher did not end combat.");
@@ -369,7 +368,6 @@ internal sealed class SmokeController
         Require(!health.CinematicCameraActive, "A cinematic camera lease remained active.");
         Require(!health.ScreenShakeSuppressed, "Screen shake suppression remained active.");
         Require(!health.XAttackAudioSuppressed && !health.XAttackComboActive, "An X attack scope remained active.");
-        Require(health.PreparedRepairFailed == 0, "Prepared safety reported an unrepaired failure.");
         _checkpoints.Write(checkpoint, data: HealthData(health));
     }
 

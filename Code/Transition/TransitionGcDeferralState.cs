@@ -1,120 +1,75 @@
-using System.Diagnostics;
-
 namespace NinjaSlayer.Code.Transition;
-
-internal readonly record struct TransitionGcDeferralCompletion(
-    bool IsCurrentSession,
-    long SessionId,
-    int DeferredRequestCount);
 
 internal sealed class TransitionGcDeferralState
 {
-    private readonly object _sync = new();
-    private long _activeSessionId;
-    private int _deferredRequestCount;
+    private readonly Lock _lock = new();
+    private long _sessionId;
+    private bool _collectionRequested;
 
     public bool IsActive
     {
         get
         {
-            lock (_sync)
+            lock (_lock)
             {
-                return _activeSessionId != 0;
+                return _sessionId != 0;
             }
         }
     }
 
-    public int Begin(long sessionId)
+    public bool Begin(long sessionId)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sessionId);
-
-        lock (_sync)
+        lock (_lock)
         {
-            if (_activeSessionId == sessionId)
-            {
-                return 0;
-            }
-
-            int carriedRequestCount = _activeSessionId == 0 ? 0 : _deferredRequestCount;
-            _activeSessionId = sessionId;
-            _deferredRequestCount = carriedRequestCount;
-            return carriedRequestCount;
+            bool inheritedRequest = _sessionId != 0 && _collectionRequested;
+            _sessionId = sessionId;
+            _collectionRequested = inheritedRequest;
+            return inheritedRequest;
         }
     }
 
-    public bool TryDefer(out long sessionId, out int requestOrdinal)
+    public bool TryDefer()
     {
-        lock (_sync)
+        lock (_lock)
         {
-            if (_activeSessionId == 0)
+            if (_sessionId == 0)
             {
-                sessionId = 0;
-                requestOrdinal = 0;
                 return false;
             }
 
-            sessionId = _activeSessionId;
-            requestOrdinal = ++_deferredRequestCount;
+            _collectionRequested = true;
             return true;
         }
     }
 
-    public TransitionGcDeferralCompletion Complete(long sessionId)
+    public Exception? Complete(long sessionId, Action requestCollection)
     {
-        lock (_sync)
+        bool collectionRequested;
+        lock (_lock)
         {
-            if (_activeSessionId != sessionId)
+            if (_sessionId != sessionId)
             {
-                return new TransitionGcDeferralCompletion(false, sessionId, 0);
+                return null;
             }
 
-            int deferredRequestCount = _deferredRequestCount;
-            _activeSessionId = 0;
-            _deferredRequestCount = 0;
-            return new TransitionGcDeferralCompletion(true, sessionId, deferredRequestCount);
+            collectionRequested = _collectionRequested;
+            _sessionId = 0;
+            _collectionRequested = false;
         }
-    }
-}
 
-internal readonly record struct TransitionGcFlushResult(
-    int DeferredRequestCount,
-    bool Attempted,
-    bool Succeeded,
-    double RequestMilliseconds,
-    string? ErrorType)
-{
-    public static TransitionGcFlushResult None { get; } = new(0, false, false, 0, null);
-}
-
-internal static class TransitionGcRequestExecutor
-{
-    public static TransitionGcFlushResult Execute(int deferredRequestCount, Action requestCollection)
-    {
-        ArgumentNullException.ThrowIfNull(requestCollection);
-        if (deferredRequestCount <= 0)
+        if (!collectionRequested)
         {
-            return TransitionGcFlushResult.None;
+            return null;
         }
 
-        long startedAt = Stopwatch.GetTimestamp();
         try
         {
             requestCollection();
-            return new TransitionGcFlushResult(
-                deferredRequestCount,
-                Attempted: true,
-                Succeeded: true,
-                Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
-                ErrorType: null);
+            return null;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            return new TransitionGcFlushResult(
-                deferredRequestCount,
-                Attempted: true,
-                Succeeded: false,
-                Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
-                ex.GetType().Name);
+            return exception;
         }
     }
 }

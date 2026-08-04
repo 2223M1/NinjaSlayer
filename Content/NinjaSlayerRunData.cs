@@ -16,11 +16,8 @@ public static class NinjaSlayerRunData
             defaultFactory: () => new NinjaSlayerRunState(),
             options: new RunSavedDataOptions
             {
-                SchemaVersion = 1,
                 WritePolicy = RunSavedDataWritePolicy.WhenNonDefault
             });
-
-        RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(evt => NormalizeLoadedStates(evt.RunState));
     }
 
     public static void MarkPendingAncientEntranceAnimation(Player player)
@@ -43,13 +40,12 @@ public static class NinjaSlayerRunData
     }
 
     public static bool HasCompletedBossGreeting(Player player, string roomKey) =>
-        PlayerState.Get(player).CompletedBossGreetingRoomKeys?.Contains(roomKey, StringComparer.Ordinal) ?? false;
+        PlayerState.Get(player).CompletedBossGreetingRoomKeys.Contains(roomKey, StringComparer.Ordinal);
 
     public static void MarkBossGreetingCompleted(Player player, string roomKey)
     {
         PlayerState.Modify(player, state =>
         {
-            state.CompletedBossGreetingRoomKeys ??= [];
             if (!state.CompletedBossGreetingRoomKeys.Contains(roomKey, StringComparer.Ordinal))
             {
                 state.CompletedBossGreetingRoomKeys.Add(roomKey);
@@ -57,22 +53,5 @@ public static class NinjaSlayerRunData
 
             state.PendingAncientEntranceAnimation = false;
         });
-    }
-
-    private static void NormalizeLoadedStates(MegaCrit.Sts2.Core.Runs.RunState runState)
-    {
-        foreach (Player player in runState.Players)
-        {
-            if (!PlayerState.TryGet(runState, player.NetId, out NinjaSlayerRunState state)
-                || !NinjaSlayerRunStateNormalizer.TryNormalizeRoomKeys(state, out List<string> roomKeys))
-            {
-                continue;
-            }
-
-            PlayerState.Modify(
-                runState,
-                player.NetId,
-                loadedState => loadedState.CompletedBossGreetingRoomKeys = roomKeys);
-        }
     }
 }

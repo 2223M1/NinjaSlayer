@@ -32,19 +32,18 @@ public sealed class StraightKi : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        bool shouldStun = cardPlay.Target.HasPower<WeakPower>() && cardPlay.Target.HasPower<VulnerablePower>();
+        bool shouldStun = cardPlay.Target!.HasPower<WeakPower>() && cardPlay.Target!.HasPower<VulnerablePower>();
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
         if (shouldStun)
         {
-            await CreatureCmd.Stun(cardPlay.Target);
+            await CreatureCmd.Stun(cardPlay.Target!);
         }
     }
 

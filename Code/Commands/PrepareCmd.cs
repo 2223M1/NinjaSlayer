@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Code.Compatibility;
-using NinjaSlayer.Code.Diagnostics;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Scripts;
@@ -27,11 +26,11 @@ internal static class PrepareCmd
     public static bool ShouldReserveFromNormalDraw(CardModel card) =>
         NinjaSlayerPatchCapabilities.PreparedGameplayEnabled && IsPrepared(card);
 
-    public static async Task<PreparedApplyResult> Apply(CardModel card)
+    public static async Task Apply(CardModel card)
     {
         if (!CanPrepare(card))
         {
-            return new PreparedApplyResult(PreparedApplyStatus.NotApplied);
+            return;
         }
 
         CardPile drawPile = PileType.Draw.GetPile(card.Owner);
@@ -39,62 +38,48 @@ internal static class PrepareCmd
         PreparedAffliction? affliction = await CardCmd.Afflict<PreparedAffliction>(card, 1m);
         if (affliction is null)
         {
-            return new PreparedApplyResult(PreparedApplyStatus.NotApplied);
+            return;
         }
 
         CardPileAddResult result = await CardPileCmd.Add(card, drawPile, CardPilePosition.Top);
         if (!result.success || !drawPile.Cards.Any(candidate => ReferenceEquals(candidate, card)))
         {
-            PreparedCleanupResult cleanup = PreparedSafetyService.RepairAfterApplyFailure(
-                card,
-                "draw-pile add was not confirmed");
-            return Report(card, PreparedApplyPolicy.ResolveAfterReposition(
-                new PreparedQueueTransactionResult(
-                    PreparedQueueTransactionStatus.FailedUncertain,
-                    new InvalidOperationException("Prepared draw-pile add was not confirmed.")),
-                hasStablePreparedPlacement: false,
-                cleanup,
-                "draw-pile add was not confirmed"));
+            Repair(card, "draw-pile add was not confirmed", null);
+            return;
         }
 
         // Top insertion is LIFO; place the new card after the existing prepared queue.
-        PreparedQueueTransactionResult reposition = PreparedQueueCompatibility.TryReposition(
+        bool repositioned = PreparedQueueCompatibility.TryReposition(
             drawPile,
             card,
-            Math.Min(preparedAhead, drawPile.Cards.Count));
-        bool stablePlacement = PreparedSafetyService.HasStablePreparedPlacement(card, drawPile);
-        PreparedCleanupResult repair = stablePlacement
-            ? new PreparedCleanupResult(PreparedCleanupStatus.NotRequired)
-            : PreparedSafetyService.RepairAfterApplyFailure(card, "queue reposition was not confirmed");
-        return Report(card, PreparedApplyPolicy.ResolveAfterReposition(
-            reposition,
-            stablePlacement,
-            repair,
-            "queue reposition was not confirmed"));
+            Math.Min(preparedAhead, drawPile.Cards.Count),
+            out Exception? repositionError);
+        if (repositioned)
+        {
+            return;
+        }
+
+        if (PreparedSafetyService.HasStablePreparedPlacement(card, drawPile))
+        {
+            Entry.Logger.Warn($"Prepared queue reposition failed for {card.Id}; the card remains safely prepared. {repositionError}");
+            return;
+        }
+
+        Repair(card, "queue reposition was not confirmed", repositionError);
     }
 
-    private static PreparedApplyResult Report(CardModel card, PreparedApplyResult result)
+    private static void Repair(CardModel card, string reason, Exception? failure)
     {
-        NinjaSlayerRuntimeCounters.RecordPrepared(
-            result.IsPrepared,
-            result.IsDegraded,
-            result.RequiresLifecycleRepair);
-        if (!result.IsDegraded)
+        Exception? cleanupFailure = PreparedSafetyService.RepairAfterApplyFailure(card, reason);
+        if (cleanupFailure is null)
         {
-            return result;
+            Entry.Logger.Warn($"Prepared apply failed for {card.Id}: {reason}. {failure}");
+            return;
         }
 
-        string diagnostic = result.Error is null ? string.Empty : $" {result.Error}";
-        string message = $"Prepared apply {result.Status} for {card.Id}: {result.Reason}.{diagnostic}";
-        if (result.RequiresLifecycleRepair)
-        {
-            Entry.Logger.Error(message);
-        }
-        else
-        {
-            Entry.Logger.Warn(message);
-        }
-
-        return result;
+        Exception error = failure is null
+            ? cleanupFailure
+            : new AggregateException(failure, cleanupFailure);
+        Entry.Logger.Error($"Prepared apply cleanup failed for {card.Id}: {reason}. {error}");
     }
 }

@@ -12,10 +12,11 @@
     <NinjaSlayerRitsuLibPackageId>STS2.RitsuLib.Compat.0.107.1</NinjaSlayerRitsuLibPackageId>
     <NinjaSlayerManifestMinGameVersion>0.107.1</NinjaSlayerManifestMinGameVersion>
     <NinjaSlayerDistributionChannel>public</NinjaSlayerDistributionChannel>
-    <NinjaSlayerWorkshopItemId>3761570842</NinjaSlayerWorkshopItemId>
+    <NinjaSlayerWorkshopItemId>3776911445</NinjaSlayerWorkshopItemId>
+    <NinjaSlayerWorkshopVisibility>unlisted</NinjaSlayerWorkshopVisibility>
     <NinjaSlayerHostModuleMvid>97f10687-c306-4798-ab75-8b9f23f34dfb</NinjaSlayerHostModuleMvid>
     <NinjaSlayerRuntimeAssemblies>Sentry.dll;SmartFormat.dll;SmartFormat.ZString.dll;Steamworks.NET.dll</NinjaSlayerRuntimeAssemblies>
-    <DefineConstants>$(DefineConstants);NINJASLAYER_CHANNEL_STABLE;NINJASLAYER_LEGACY_CARD_PLAY_LINKS;NINJASLAYER_LEGACY_CREATURE_PRESENTATION;NINJASLAYER_LEGACY_DAMAGE_API</DefineConstants>
+    <DefineConstants>$(DefineConstants);NINJASLAYER_CHANNEL_STABLE;NINJASLAYER_LEGACY_CARD_PLAY_LINKS;NINJASLAYER_LEGACY_CREATURE_PRESENTATION;NINJASLAYER_LEGACY_DAMAGE_API;NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(NinjaSlayerHostChannel)' == 'preview'">
@@ -24,6 +25,7 @@
     <NinjaSlayerManifestMinGameVersion>0.110.1</NinjaSlayerManifestMinGameVersion>
     <NinjaSlayerDistributionChannel>beta</NinjaSlayerDistributionChannel>
     <NinjaSlayerWorkshopItemId></NinjaSlayerWorkshopItemId>
+    <NinjaSlayerWorkshopVisibility></NinjaSlayerWorkshopVisibility>
     <NinjaSlayerHostModuleMvid>c0f649b8-8d57-4a9c-8b07-21aece97dca0</NinjaSlayerHostModuleMvid>
     <NinjaSlayerRuntimeAssemblies>Sentry.dll;Sentry.Godot.dll;SmartFormat.dll;SmartFormat.ZString.dll;Steamworks.NET.dll</NinjaSlayerRuntimeAssemblies>
     <DefineConstants>$(DefineConstants);NINJASLAYER_CHANNEL_PREVIEW</DefineConstants>

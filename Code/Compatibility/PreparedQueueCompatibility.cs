@@ -3,7 +3,6 @@ using System.Runtime.ExceptionServices;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Code.Prepared;
 
 namespace NinjaSlayer.Code.Compatibility;
 
@@ -61,36 +60,64 @@ internal static class PreparedQueueCompatibility
         return true;
     }
 
-    public static PreparedQueueTransactionResult TryReposition(CardPile pile, CardModel card, int index)
+    public static bool TryReposition(
+        CardPile pile,
+        CardModel card,
+        int index,
+        out Exception? error)
     {
         if (AddInternal is null || RemoveInternal is null)
         {
-            return new PreparedQueueTransactionResult(
-                ContainsReference(pile.Cards, card)
-                    ? PreparedQueueTransactionStatus.FailedStable
-                    : PreparedQueueTransactionStatus.FailedUncertain,
-                new MissingMethodException("Prepared queue methods are unavailable."));
+            error = new MissingMethodException("Prepared queue methods are unavailable.");
+            return false;
         }
 
         int originalIndex = FindCardIndex(pile.Cards, card);
         if (originalIndex < 0)
         {
-            return new PreparedQueueTransactionResult(
-                PreparedQueueTransactionStatus.FailedUncertain,
-                new InvalidOperationException($"Prepared queue does not contain {card}."));
+            error = new InvalidOperationException($"Prepared queue does not contain {card}.");
+            return false;
         }
 
-        return PreparedQueueTransaction.Execute(
-            remove: () => Invoke(RemoveInternal, pile, [card, false]),
-            insertAtTarget: () => Invoke(
-                AddInternal,
-                pile,
-                [card, Math.Clamp(index, 0, pile.Cards.Count), false]),
-            restoreAtOriginal: () => Invoke(
-                AddInternal,
-                pile,
-                [card, Math.Clamp(originalIndex, 0, pile.Cards.Count), false]),
-            isPresent: () => ContainsReference(pile.Cards, card));
+        try
+        {
+            Invoke(RemoveInternal, pile, [card, false]);
+            Invoke(AddInternal, pile, [card, Math.Clamp(index, 0, pile.Cards.Count), false]);
+            if (ContainsReference(pile.Cards, card))
+            {
+                error = null;
+                return true;
+            }
+
+            error = new InvalidOperationException("Prepared queue insert completed without retaining the card.");
+        }
+        catch (Exception exception)
+        {
+            error = exception;
+        }
+
+        if (ContainsReference(pile.Cards, card))
+        {
+            return false;
+        }
+
+        try
+        {
+            Invoke(AddInternal, pile, [card, Math.Clamp(originalIndex, 0, pile.Cards.Count), false]);
+        }
+        catch (Exception rollbackFailure)
+        {
+            error = new AggregateException(error!, rollbackFailure);
+        }
+
+        if (!ContainsReference(pile.Cards, card))
+        {
+            error = new AggregateException(
+                error!,
+                new InvalidOperationException("Prepared queue rollback did not restore the card."));
+        }
+
+        return false;
     }
 
     private static void Invoke(MethodInfo method, object instance, object?[] arguments)

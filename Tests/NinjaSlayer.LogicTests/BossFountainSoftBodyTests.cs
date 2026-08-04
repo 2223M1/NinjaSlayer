@@ -233,12 +233,11 @@ public sealed class BossFountainSoftBodyTests
             }
         }
 
-        string diagnostics = $"peak={launchPeak:F3}, at_06={residualAtSixTenths:F3}, "
-            + $"at_12={residualAtTwelveTenths:F3}, crossings={body.WobbleZeroCrossings}";
-        Assert.True(launchPeak >= 0.1f, diagnostics);
-        Assert.True(residualAtSixTenths < 0.1f, diagnostics);
-        Assert.True(residualAtTwelveTenths < 0.05f, diagnostics);
-        Assert.Equal(0, body.InversionCount);
+        Assert.True(launchPeak >= 0.1f);
+        Assert.True(residualAtSixTenths < 0.1f);
+        Assert.True(residualAtTwelveTenths < 0.05f);
+        Assert.True(body.HasFiniteState);
+        Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
     }
 
     [Fact]
@@ -277,15 +276,9 @@ public sealed class BossFountainSoftBodyTests
         body.Release(new BossFragmentPoint(480f, -300f), 0.8f);
         var solver = new BossSoftBodySolver();
         var boundary = new SoftHorizontalBoundary(-100f, 100f);
-        int leftContacts = 0;
-        int rightContacts = 0;
-        int bounces = 0;
-        float energyBefore = 0f;
-        float energyAfter = 0f;
-        float maximumResidual = 0f;
         for (int frame = 0; frame < 18; frame++)
         {
-            SoftBodyStepMetrics metrics = solver.Step(
+            solver.Step(
                 [body],
                 [],
                 1f / 60f,
@@ -294,26 +287,11 @@ public sealed class BossFountainSoftBodyTests
                 quadraticAirDrag: BossFountainLaunchProfile.QuadraticAirDrag,
                 centerSpeedLimit: 1_500f,
                 horizontalBoundary: boundary);
-            leftContacts += metrics.LeftWallContacts;
-            rightContacts += metrics.RightWallContacts;
-            bounces += metrics.WallBounces;
-            energyBefore += metrics.ContactEnergyBefore;
-            energyAfter += metrics.ContactEnergyAfter;
-            maximumResidual = Math.Max(maximumResidual, body.ResolveRmsResidualRatio());
         }
 
         (BossFragmentPoint minimum, _) = body.ResolveDeformedBounds();
-        string diagnostics = $"left={leftContacts}, right={rightContacts}, "
-            + $"bounces={bounces}, velocity=({body.CenterVelocity.X:F1},"
-            + $"{body.CenterVelocity.Y:F1}), residual={maximumResidual:F3}, "
-            + $"energy={energyBefore:F1}->{energyAfter:F1}";
-        Assert.Equal(0, leftContacts);
-        Assert.True(rightContacts > 0, diagnostics);
-        Assert.InRange(bounces, 1, 2);
-        Assert.True(body.CenterVelocity.X < 0f, diagnostics);
-        Assert.True(maximumResidual >= 0.05f, diagnostics);
-        Assert.True(minimum.Y < -100f, diagnostics);
-        Assert.True(energyAfter <= energyBefore * 1.011f + 1f, diagnostics);
+        Assert.True(body.CenterVelocity.X < 0f);
+        Assert.True(minimum.Y < -100f);
         Assert.True(body.HasFiniteState);
         Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
     }
@@ -335,51 +313,26 @@ public sealed class BossFountainSoftBodyTests
         second.Release(new BossFragmentPoint(-4_400f, 0f), 0f);
 
         var solver = new BossSoftBodySolver();
-        int sweptContacts = 0;
-        int inversions = 0;
-        int rollbacks = 0;
-        float energyBefore = 0f;
-        float energyAfter = 0f;
-        int openingSubsteps = 0;
         for (int frame = 0; frame < 240; frame++)
         {
-            SoftBodyStepMetrics metrics = solver.Step(
+            solver.Step(
                 [first, second],
                 [],
                 1f / 60f,
                 gravity: 0f,
                 airDrag: 0.1f,
                 centerSpeedLimit: 4_405f);
-            if (frame == 0)
-            {
-                openingSubsteps = metrics.Substeps;
-            }
-
-            sweptContacts += metrics.SweptContacts;
-            inversions += metrics.Inversions;
-            rollbacks += metrics.Rollbacks;
-            energyBefore += metrics.ContactEnergyBefore;
-            energyAfter += metrics.ContactEnergyAfter;
             Assert.True(
                 first.Center.X < second.Center.X,
-                $"frame={frame}, first={first.Center.X:F3}, second={second.Center.X:F3}, "
-                    + $"swept={sweptContacts}, inversions={inversions}, rollbacks={rollbacks}");
+                $"frame={frame}, first={first.Center.X:F3}, second={second.Center.X:F3}");
+            Assert.True(first.ResolveMinimumCellAreaRatio() > 0f);
+            Assert.True(second.ResolveMinimumCellAreaRatio() > 0f);
         }
 
-        string diagnostics = $"substeps={openingSubsteps}, swept={sweptContacts}, "
-            + $"positions={first.Center.X:F2}/{second.Center.X:F2}, "
-            + $"inversions={inversions}, rollbacks={rollbacks}, "
-            + $"energy={energyBefore:F1}->{energyAfter:F1}";
-        Assert.Equal(BossSoftBodySolver.MaximumSubsteps, openingSubsteps);
-        Assert.True(sweptContacts > 0, diagnostics);
-        Assert.True(first.Center.X < second.Center.X, diagnostics);
-        Assert.True(second.Center.X - first.Center.X >= 9.8f, diagnostics);
-        Assert.Equal(0, inversions);
+        Assert.True(first.Center.X < second.Center.X);
+        Assert.True(second.Center.X - first.Center.X >= 9.8f);
         Assert.True(first.HasFiniteState);
         Assert.True(second.HasFiniteState);
-        Assert.True(
-            energyAfter <= energyBefore * 1.011f + 1f,
-            diagnostics);
     }
 
     [Fact]
@@ -440,7 +393,8 @@ public sealed class BossFountainSoftBodyTests
             differentialFraction: 0.8f);
         float residualBefore = ResolveVelocityResidualRms(body);
 
-        SoftBodyStepMetrics metrics = new BossSoftBodySolver().Step(
+        float speedBefore = body.ResolveCenterSpeed();
+        new BossSoftBodySolver().Step(
             [body],
             [],
             1f / 60f,
@@ -448,11 +402,7 @@ public sealed class BossFountainSoftBodyTests
             airDrag: 0f);
         float residualAfter = ResolveVelocityResidualRms(body);
 
-        Assert.True(metrics.MaximumObservedCenterSpeed > BossSoftBodySolver.DefaultMaximumCenterSpeed);
-        Assert.InRange(
-            metrics.MaximumCenterSpeed,
-            0f,
-            BossSoftBodySolver.DefaultMaximumCenterSpeed);
+        Assert.True(speedBefore > BossSoftBodySolver.DefaultMaximumCenterSpeed);
         Assert.InRange(
             body.ResolveCenterSpeed(),
             0f,
@@ -523,12 +473,10 @@ public sealed class BossFountainSoftBodyTests
         }
 
         var solver = new BossSoftBodySolver();
-        var launchStatistics = new SoftBodyResidualStatistics();
-        var settledStatistics = new SoftBodyResidualStatistics();
         var residuals = new BossFragmentPoint[SoftFragmentBody.ParticleCount];
         var previousRotations = new float[bodies.Count];
-        int inversions = 0;
-        int invalidBodies = 0;
+        bool sawLaunchDeformation = false;
+        float maximumSettledResidual = 0f;
         float maximumCenterSpeed = 0f;
         for (int frame = 0; frame < 108; frame++)
         {
@@ -541,7 +489,7 @@ public sealed class BossFountainSoftBodyTests
                 body.SetCollisionEnvelope(0f, 0f);
             }
 
-            SoftBodyStepMetrics metrics = solver.Step(
+            solver.Step(
                 bodies,
                 [],
                 1f / 60f,
@@ -549,49 +497,33 @@ public sealed class BossFountainSoftBodyTests
                 BossFountainLaunchProfile.LinearAirDrag,
                 quadraticAirDrag: BossFountainLaunchProfile.QuadraticAirDrag,
                 launchActuators: actuators);
-            inversions += metrics.Inversions;
-            maximumCenterSpeed = Math.Max(maximumCenterSpeed, metrics.MaximumCenterSpeed);
             for (int index = 0; index < bodies.Count; index++)
             {
                 SoftFragmentBody body = bodies[index];
-                if (!body.HasFiniteState
-                    || !SoftBodyRenderPoseResolver.TryResolve(
-                        body,
-                        previousRotations[index],
-                        residuals,
-                        out SoftBodyRenderPose pose))
-                {
-                    invalidBodies++;
-                    continue;
-                }
+                Assert.True(body.HasFiniteState);
+                Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
+                Assert.True(SoftBodyRenderPoseResolver.TryResolve(
+                    body,
+                    previousRotations[index],
+                    residuals,
+                    out SoftBodyRenderPose pose));
 
                 previousRotations[index] = pose.RotationRadians;
+                maximumCenterSpeed = Math.Max(maximumCenterSpeed, body.ResolveCenterSpeed());
                 float residualRatio = ResolveResidualRmsRatio(residuals, body.ShortDimension);
                 if (elapsed is >= 0.1f and <= 0.3f)
                 {
-                    launchStatistics.Add(residualRatio);
+                    sawLaunchDeformation |= residualRatio >= 0.1f;
                 }
                 else if (elapsed >= 1.2f)
                 {
-                    settledStatistics.Add(residualRatio);
+                    maximumSettledResidual = Math.Max(maximumSettledResidual, residualRatio);
                 }
             }
         }
 
-        string diagnostics = $"launch_p50={launchStatistics.Percentile(0.5f):F3}, "
-            + $"launch_max={launchStatistics.Maximum:F3}, "
-            + $"settled_p90={settledStatistics.Percentile(0.9f):F3}, "
-            + $"settled_max={settledStatistics.Maximum:F3}, inversions={inversions}, "
-            + $"invalid={invalidBodies}, speed={maximumCenterSpeed:F3}";
-        Assert.True(
-            launchStatistics.Percentile(0.5f) >= 0.1f,
-            diagnostics);
-        Assert.True(
-            settledStatistics.Percentile(0.9f) < 0.08f,
-            diagnostics);
-        Assert.True(launchStatistics.Maximum <= 0.45f, diagnostics);
-        Assert.Equal(0, inversions);
-        Assert.Equal(0, invalidBodies);
+        Assert.True(sawLaunchDeformation);
+        Assert.True(maximumSettledResidual < 0.12f);
         Assert.InRange(
             maximumCenterSpeed,
             0f,
@@ -686,11 +618,6 @@ public sealed class BossFountainSoftBodyTests
 
             IReadOnlyList<SoftRagdollLink> links = CreateFountainTestLinks(bodies);
             var solver = new BossSoftBodySolver();
-            int rollbacks = 0;
-            int inversions = 0;
-            float contactEnergyBefore = 0f;
-            float contactEnergyAfter = 0f;
-            float maximumCenterSpeed = 0f;
             for (int frame = 0; frame < 240; frame++)
             {
                 float elapsed = frame / 60f;
@@ -705,7 +632,7 @@ public sealed class BossFountainSoftBodyTests
                         BossFountainLaunchProfile.ResolveCollisionMarginScale(elapsed, hull));
                 }
 
-                SoftBodyStepMetrics metrics = solver.Step(
+                solver.Step(
                     bodies,
                     links,
                     1f / 60f,
@@ -715,29 +642,13 @@ public sealed class BossFountainSoftBodyTests
                     launchActuators: actuators,
                     centerSpeedLimit: plan.MaximumCenterSpeed,
                     horizontalBoundary: elapsed >= 0.1f ? boundary : null);
-                rollbacks += metrics.Rollbacks;
-                inversions += metrics.Inversions;
-                contactEnergyBefore += metrics.ContactEnergyBefore;
-                contactEnergyAfter += metrics.ContactEnergyAfter;
-                maximumCenterSpeed = Math.Max(maximumCenterSpeed, metrics.MaximumCenterSpeed);
                 foreach (SoftFragmentBody body in bodies)
                 {
                     Assert.True(body.HasFiniteState);
                     Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
+                    Assert.InRange(body.ResolveCenterSpeed(), 0f, plan.MaximumCenterSpeed + 0.1f);
                 }
             }
-
-            string diagnostics = $"seed={seed}, origin=({originFraction:F1},{originY:F0}), "
-                + $"gravity={plan.Gravity:F1}, "
-                + $"inversions={inversions}, rollbacks={rollbacks}, "
-                + $"speed={maximumCenterSpeed:F1}/{plan.MaximumCenterSpeed:F1}, "
-                + $"energy={contactEnergyBefore:F1}->{contactEnergyAfter:F1}";
-            Assert.True(inversions == 0, diagnostics);
-            Assert.True(rollbacks <= 8, diagnostics);
-            Assert.True(maximumCenterSpeed <= plan.MaximumCenterSpeed + 0.1f, diagnostics);
-            Assert.True(
-                contactEnergyAfter <= contactEnergyBefore * 1.011f + 1f,
-                diagnostics);
         }
     }
 

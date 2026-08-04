@@ -1,14 +1,13 @@
 namespace NinjaSlayer.Code.Telemetry;
 
-public enum NinjaSlayerTelemetryCharacterKind
+internal enum NinjaSlayerTelemetryCharacterKind
 {
     Unknown,
     Official,
-    Debug,
     Other
 }
 
-public enum NinjaSlayerTelemetryIdentityStatus
+internal enum NinjaSlayerTelemetryIdentityStatus
 {
     NoActiveRun,
     AwaitingIdentity,
@@ -17,11 +16,11 @@ public enum NinjaSlayerTelemetryIdentityStatus
     Ended
 }
 
-public readonly record struct NinjaSlayerTelemetryPlayerIdentity(
+internal readonly record struct NinjaSlayerTelemetryPlayerIdentity(
     ulong NetId,
     NinjaSlayerTelemetryCharacterKind CharacterKind);
 
-public sealed class NinjaSlayerTelemetryIdentityTracker
+internal sealed class NinjaSlayerTelemetryIdentityTracker
 {
     private readonly object _gate = new();
 
@@ -30,35 +29,10 @@ public sealed class NinjaSlayerTelemetryIdentityTracker
     private ulong? _localNetId;
     private bool _endedCaptureEligible;
     private bool _endedCaptureConsumed;
-    private long _generation;
     private NinjaSlayerTelemetryIdentityStatus _status = NinjaSlayerTelemetryIdentityStatus.NoActiveRun;
-
-    public long Generation
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _generation;
-            }
-        }
-    }
-
-    public NinjaSlayerTelemetryIdentityStatus Status
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _status;
-            }
-        }
-    }
 
     public void BeginRun(object runToken)
     {
-        ArgumentNullException.ThrowIfNull(runToken);
-
         lock (_gate)
         {
             if (ReferenceEquals(_activeRunToken, runToken))
@@ -66,7 +40,6 @@ public sealed class NinjaSlayerTelemetryIdentityTracker
                 return;
             }
 
-            _generation++;
             _activeRunToken = runToken;
             _endedRunToken = null;
             _localNetId = null;
@@ -81,9 +54,6 @@ public sealed class NinjaSlayerTelemetryIdentityTracker
         ulong? localNetId,
         IReadOnlyList<NinjaSlayerTelemetryPlayerIdentity> players)
     {
-        ArgumentNullException.ThrowIfNull(runToken);
-        ArgumentNullException.ThrowIfNull(players);
-
         lock (_gate)
         {
             if (!ReferenceEquals(_activeRunToken, runToken))
@@ -102,9 +72,6 @@ public sealed class NinjaSlayerTelemetryIdentityTracker
         ulong? localNetId,
         IReadOnlyList<NinjaSlayerTelemetryPlayerIdentity> players)
     {
-        ArgumentNullException.ThrowIfNull(endedRunToken);
-        ArgumentNullException.ThrowIfNull(players);
-
         lock (_gate)
         {
             if (ReferenceEquals(_endedRunToken, endedRunToken))
@@ -136,9 +103,6 @@ public sealed class NinjaSlayerTelemetryIdentityTracker
         ulong? localNetId,
         IReadOnlyList<NinjaSlayerTelemetryPlayerIdentity> players)
     {
-        ArgumentNullException.ThrowIfNull(endedRunToken);
-        ArgumentNullException.ThrowIfNull(players);
-
         lock (_gate)
         {
             if (ReferenceEquals(_endedRunToken, endedRunToken)
@@ -202,8 +166,7 @@ public sealed class NinjaSlayerTelemetryIdentityTracker
         return localPlayer.CharacterKind switch
         {
             NinjaSlayerTelemetryCharacterKind.Official => NinjaSlayerTelemetryIdentityStatus.Eligible,
-            NinjaSlayerTelemetryCharacterKind.Debug or NinjaSlayerTelemetryCharacterKind.Other =>
-                NinjaSlayerTelemetryIdentityStatus.Ineligible,
+            NinjaSlayerTelemetryCharacterKind.Other => NinjaSlayerTelemetryIdentityStatus.Ineligible,
             _ => NinjaSlayerTelemetryIdentityStatus.AwaitingIdentity
         };
     }

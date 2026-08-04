@@ -14,8 +14,6 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <!-- Godot generators and Harmony intentionally emit compatibility types also present in sts2.dll. -->
     <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
-    <EnableNinjaSlayerDebugContent Condition="'$(EnableNinjaSlayerDebugContent)' == ''">true</EnableNinjaSlayerDebugContent>
-    <DefineConstants Condition="'$(EnableNinjaSlayerDebugContent)' == 'true'">$(DefineConstants);NINJA_SLAYER_DEBUG_CONTENT</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(NinjaSlayerIsolatedOutputRoot)' != ''">

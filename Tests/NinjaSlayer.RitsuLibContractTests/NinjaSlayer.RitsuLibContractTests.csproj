@@ -36,7 +36,6 @@
     <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.cs" Link="GameHostContractProfile.cs" />
     <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.g.cs" Link="GameHostContractProfile.g.cs" />
     <Compile Include="..\..\Code\Compatibility\FinisherLethalTargetContract.cs" Link="FinisherLethalTargetContract.cs" />
-    <Compile Include="..\..\Code\Compatibility\NancyCompatibility.cs" Link="NancyCompatibility.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.cs" Link="GameCompatibility.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.AssetLoading.cs" Link="GameCompatibility.AssetLoading.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.CardPlays.cs" Link="GameCompatibility.CardPlays.cs" />
@@ -56,7 +55,6 @@
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
     <Compile Include="..\..\Code\Lifecycle\CardPlayResolutionScope.cs" Link="CardPlayResolutionScope.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
-    <Compile Include="..\..\Code\Prepared\PreparedApplyTransaction.cs" Link="PreparedApplyTransaction.cs" />
     <Compile Include="..\..\Code\Patches\NinjaSlayerPatchCapabilities.cs" Link="NinjaSlayerPatchCapabilities.cs" />
     <Compile Include="..\..\Code\Patches\BlackFlameDamagePatch.cs" Link="BlackFlameDamagePatch.cs" />
     <Compile Include="..\..\Code\Patches\NinjaSlayerTransitionLoadSmoothingPatch.cs" Link="NinjaSlayerTransitionLoadSmoothingPatch.cs" />
@@ -67,14 +65,8 @@
     <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
     <Compile Include="..\..\Code\Transition\TransitionLoadConcurrencyPolicy.cs" Link="TransitionLoadConcurrencyPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionNoGcRegionState.cs" Link="TransitionNoGcRegionState.cs" />
-    <Compile Include="..\..\Code\Transition\TransitionPerformanceTrace.cs" Link="TransitionPerformanceTrace.cs" />
     <Compile Include="..\..\Content\INinjaSlayerCharacter.cs" Link="INinjaSlayerCharacter.cs" />
     <Compile Include="..\..\Content\NinjaSlayerWorldVisualProfile.cs" Link="NinjaSlayerWorldVisualProfile.cs" />
-    <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
-    <Compile Include="..\..\Enchantments\IBlackFlameEnchantment.cs" Link="IBlackFlameEnchantment.cs" />
-    <None Include="..\Fixtures\RunData\*.json"
-          Link="Fixtures\RunData\%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
     <Reference Include="sts2">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
       <Private>true</Private>

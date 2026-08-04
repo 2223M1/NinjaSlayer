@@ -26,15 +26,14 @@ public sealed class PursuitStrike : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
-        PursuitPower? pursuit = await PowerCmd.Apply<PursuitPower>(choiceContext, cardPlay.Target, DynamicVars["Pursuit"].IntValue, Owner.Creature, this);
+        PursuitPower? pursuit = await PowerCmd.Apply<PursuitPower>(choiceContext, cardPlay.Target!, DynamicVars["Pursuit"].IntValue, Owner.Creature, this);
         if (pursuit != null)
         {
             pursuit.EnergyReward = DynamicVars.Energy.IntValue;

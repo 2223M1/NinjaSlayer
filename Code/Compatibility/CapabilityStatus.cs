@@ -1,10 +1,7 @@
-using System.Collections.Immutable;
-
 namespace NinjaSlayer.Code.Compatibility;
 
 internal enum CapabilityState
 {
-    NotEvaluated,
     Enabled,
     Degraded,
     Disabled
@@ -23,29 +20,12 @@ internal sealed record CapabilityProbe(
         new(name, isAvailable, false, detail);
 }
 
-internal sealed record CapabilityStatus
+internal sealed record CapabilityStatus(
+    CapabilityState State,
+    string Reason,
+    int InstalledPatchCount)
 {
-    public CapabilityStatus(
-        CapabilityState state,
-        string reason,
-        int installedPatchCount,
-        IEnumerable<CapabilityProbe>? probes = null)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(installedPatchCount);
-        State = state;
-        Reason = reason;
-        InstalledPatchCount = installedPatchCount;
-        Probes = probes?.ToImmutableArray() ?? [];
-    }
-
-    public CapabilityState State { get; }
-    public string Reason { get; }
-    public int InstalledPatchCount { get; }
-    public ImmutableArray<CapabilityProbe> Probes { get; }
     public bool IsOperational => State is CapabilityState.Enabled or CapabilityState.Degraded;
-
-    public static CapabilityStatus NotEvaluated { get; } =
-        new(CapabilityState.NotEvaluated, "Capability has not been evaluated.", 0);
 }
 
 internal static class CapabilityStatusEvaluator
@@ -65,15 +45,14 @@ internal static class CapabilityStatusEvaluator
                 "Applied patch count cannot exceed registered patch count.");
         }
 
-        ImmutableArray<CapabilityProbe> snapshot = probes?.ToImmutableArray() ?? [];
-        CapabilityProbe? requiredFailure = snapshot.FirstOrDefault(probe => probe.IsRequired && !probe.IsAvailable);
+        CapabilityProbe[] probeArray = probes?.ToArray() ?? [];
+        CapabilityProbe? requiredFailure = probeArray.FirstOrDefault(probe => probe.IsRequired && !probe.IsAvailable);
         if (requiredFailure != null)
         {
             return new CapabilityStatus(
                 CapabilityState.Disabled,
                 $"Required compatibility probe failed: {requiredFailure.Name} ({requiredFailure.Detail}).",
-                appliedPatchCount,
-                snapshot);
+                appliedPatchCount);
         }
 
         if (!patchAllSucceeded)
@@ -81,11 +60,10 @@ internal static class CapabilityStatusEvaluator
             return new CapabilityStatus(
                 CapabilityState.Disabled,
                 $"Patch installation failed and was rolled back ({appliedPatchCount}/{registeredPatchCount} applied).",
-                appliedPatchCount,
-                snapshot);
+                appliedPatchCount);
         }
 
-        CapabilityProbe[] optionalFailures = snapshot
+        CapabilityProbe[] optionalFailures = probeArray
             .Where(probe => !probe.IsRequired && !probe.IsAvailable)
             .ToArray();
         if (optionalFailures.Length > 0 || appliedPatchCount < registeredPatchCount)
@@ -105,32 +83,24 @@ internal static class CapabilityStatusEvaluator
             return new CapabilityStatus(
                 CapabilityState.Degraded,
                 string.Join("; ", reasons),
-                appliedPatchCount,
-                snapshot);
+                appliedPatchCount);
         }
 
         return new CapabilityStatus(
             CapabilityState.Enabled,
             $"All {registeredPatchCount} registered patches applied.",
-            appliedPatchCount,
-            snapshot);
+            appliedPatchCount);
     }
 
-    public static CapabilityStatus DisabledByDependency(
-        string dependencyId,
-        IEnumerable<CapabilityProbe>? probes = null) =>
+    public static CapabilityStatus DisabledByDependency(string dependencyId) =>
         new(
             CapabilityState.Disabled,
             $"Required capability is not operational: {dependencyId}.",
-            0,
-            probes);
+            0);
 
-    public static CapabilityStatus RolledBack(
-        string failedCapabilityId,
-        IEnumerable<CapabilityProbe>? probes = null) =>
+    public static CapabilityStatus RolledBack(string failedCapabilityId) =>
         new(
             CapabilityState.Disabled,
             $"Core activation was rolled back after {failedCapabilityId} failed.",
-            0,
-            probes);
+            0);
 }

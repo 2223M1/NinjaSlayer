@@ -35,14 +35,13 @@ public sealed class MurderFist : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
-        int hitCount = IsAtOrBelowHalfHp(cardPlay.Target) ? 2 : 1;
+        int hitCount = IsAtOrBelowHalfHp(cardPlay.Target!) ? 2 : 1;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(hitCount)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay, hitCountOverride: hitCount);
     }
 

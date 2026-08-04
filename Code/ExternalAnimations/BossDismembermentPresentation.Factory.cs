@@ -49,14 +49,14 @@ public sealed partial class BossDismembermentPresentation
                 .GetGlobalTransform()
                 .AffineInverse()
                 * sourceBody.GlobalTransform;
-            Rect2 fallbackBounds = ResolveFallbackCaptureBounds(creature, sourceBody);
+            Rect2 bodyLocalBounds = ResolveBodyLocalBounds(creature, sourceBody);
             ulong seed = CreateSeed(creature);
             bool canSplitSpine = creature.HasSpineAnimation
                 && !creature.Visuals.IsUsingPhobiaModeBody;
             BossVisualCapture? capture = BossVisualCapture.TryCreate(
                 presentationParent,
                 sourceBody,
-                fallbackBounds,
+                bodyLocalBounds,
                 bodyToSceneContainer,
                 baseline,
                 canSplitSpine,
@@ -87,7 +87,6 @@ public sealed partial class BossDismembermentPresentation
         NCreature creature,
         BossDismembermentSnapshot? snapshot,
         Vector2 bodyExplosionCenter,
-        string? detachedBoneName = null,
         Vector2? detachedExplosionCenter = null,
         int zIndex = BossBurstPresentationCoordinator.FragmentZIndex)
     {
@@ -96,7 +95,6 @@ public sealed partial class BossDismembermentPresentation
             creature,
             snapshot,
             bodyExplosionCenter,
-            detachedBoneName,
             detachedExplosionCenter,
             zIndex,
             PresentationMode.CompressedBurst,
@@ -120,7 +118,6 @@ public sealed partial class BossDismembermentPresentation
             creature,
             snapshot,
             burstOrigin,
-            detachedBoneName: null,
             detachedExplosionCenter: null,
             zIndex,
             PresentationMode.ArchitectLead,
@@ -140,14 +137,12 @@ public sealed partial class BossDismembermentPresentation
         NCreature creature,
         BossDismembermentSnapshot? snapshot,
         Vector2 bodyExplosionCenter,
-        string? detachedBoneName,
         Vector2? detachedExplosionCenter,
         int zIndex,
         PresentationMode mode,
         float architectFallDirection,
         out string failureReason)
     {
-        long spawnStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         failureReason = string.Empty;
         if (!GodotObject.IsInstanceValid(room)
             || !GodotObject.IsInstanceValid(creature)
@@ -203,13 +198,7 @@ public sealed partial class BossDismembermentPresentation
             _seed = snapshot.Seed,
             _monsterId = snapshot.MonsterId,
             _mode = mode,
-            _burstTriggered = mode == PresentationMode.CompressedBurst,
-            _captureSetupTicks = capture.SetupElapsedTicks,
-            _captureReadyElapsedTicks = capture.ReadyElapsedTicks,
-            _captureMeasurementCpuTicks = capture.MeasurementCpuTicks,
-            _captureAtlasCpuTicks = capture.AtlasCpuTicks,
-            _captureFragmentPreparationCpuTicks = capture.FragmentPreparationCpuTicks,
-            _captureMaximumCpuFrameTicks = capture.MaximumCpuFrameTicks
+            _burstTriggered = mode == PresentationMode.CompressedBurst
         };
         IReadOnlyList<BossCapturedFragmentRenderSurface.PreparedResource>? preparedFragments = null;
         try
@@ -238,16 +227,6 @@ public sealed partial class BossDismembermentPresentation
                     "the prebuilt soft-fragment resources are incomplete");
             }
 
-            Vector2I captureSize = capture.PixelSize;
-            presentation._capturePixelWidth = captureSize.X;
-            presentation._capturePixelHeight = captureSize.Y;
-            presentation._captureTextureBytes = capture.EstimatedTextureBytes;
-            presentation._semanticPartCount = partition.SemanticPartCount;
-            presentation._mergedPartCount = partition.MergedPartCount;
-            presentation._splitFragmentCount = partition.SplitFragmentCount;
-            presentation._atlasDensity = capture.AtlasDensity;
-            presentation._baselineSceneScale = snapshot.BaselineSceneScale.X;
-            presentation._currentSceneScale = room.SceneContainer.Scale.X;
             presentation.ValidateBaselineFragmentGeometry(
                 partition,
                 snapshot.BodyBaselineScreenBounds);
@@ -259,13 +238,12 @@ public sealed partial class BossDismembermentPresentation
                 mode,
                 architectFallDirection,
                 detachedExplosionCenter);
+            presentation.FollowArchitectCamera();
             if (GodotObject.IsInstanceValid(creature.Body))
             {
                 creature.Body.Visible = false;
             }
             presentation.SetProcess(true);
-            presentation._spawnSetupTicks =
-                System.Diagnostics.Stopwatch.GetTimestamp() - spawnStarted;
             return presentation;
         }
         catch (Exception exception)

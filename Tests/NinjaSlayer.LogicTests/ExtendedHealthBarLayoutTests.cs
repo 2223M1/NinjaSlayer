@@ -4,6 +4,44 @@ namespace NinjaSlayer.LogicTests;
 
 public sealed class ExtendedHealthBarLayoutTests
 {
+    [Theory]
+    [InlineData(46, 72, 22, 59.88889f, -5.55556f)]
+    [InlineData(50, 72, 22, 65.44444f, 0f)]
+    public void NarakuLifeUsesAnEmbeddedSegmentUntilItExceedsMaxHp(
+        int currentHp,
+        int maxHp,
+        int narakuLife,
+        float expectedLeft,
+        float expectedRight)
+    {
+        EmbeddedHealthBarSegment? segment = ExtendedHealthBarLayoutCalculator.CalculateEmbeddedNarakuLife(
+            currentHp,
+            maxHp,
+            narakuLife,
+            maxWidth: 100f,
+            patchMarginLeft: 4);
+
+        Assert.NotNull(segment);
+        Assert.Equal(expectedLeft, segment.Value.OffsetLeft, precision: 4);
+        Assert.Equal(expectedRight, segment.Value.OffsetRight, precision: 4);
+    }
+
+    [Theory]
+    [InlineData(51, 72, 22)]
+    [InlineData(46, 72, 0)]
+    public void NarakuLifeDoesNotUseAnEmbeddedSegmentOutsideTheVanillaBar(
+        int currentHp,
+        int maxHp,
+        int narakuLife)
+    {
+        Assert.Null(ExtendedHealthBarLayoutCalculator.CalculateEmbeddedNarakuLife(
+            currentHp,
+            maxHp,
+            narakuLife,
+            maxWidth: 100f,
+            patchMarginLeft: 4));
+    }
+
     [Fact]
     public void ExtraLifeExtendsRightWithoutMovingTheBarOrBlockLeftEdges()
     {

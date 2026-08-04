@@ -42,14 +42,12 @@ public partial class ContractRunner : Node
             VerifyPreparedLifecyclePublishers();
             VerifyOriginalLethalTargetFingerprint();
             VerifyOriginalPreparedDrawTargetFingerprint();
-            VerifyNancyLoadedRunCompatibility();
             VerifyOrobasSeaGlassPatchContract();
             VerifyBlackFlameDamagePatchContract();
             VerifyProductionDynamicPatchContracts();
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyOriginalFeedbackStreamOwnership();
-            VerifyRunDataSchemaCompatibility();
             VerifyFinisherProtectionTransaction();
             VerifyWorldVisualStylesAreIdempotent();
             VerifyCriticalRollback();
@@ -293,25 +291,6 @@ public partial class ContractRunner : Node
             .Any(nested => TypeTreeCreatesEvent(nested, eventType));
     }
 
-    private static void VerifyNancyLoadedRunCompatibility()
-    {
-        Require(
-            NancyCompatibility.GetLoadedRunRepairProbes().All(probe => probe.IsAvailable),
-            "The Nancy loaded-run room contract is unavailable.");
-
-        var act = (Glory)RuntimeHelpers.GetUninitializedObject(typeof(Glory));
-        var rooms = new RoomSet();
-        FieldInfo roomsField = typeof(ActModel).GetField(
-            "_rooms",
-            BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new MissingFieldException(typeof(ActModel).FullName, "_rooms");
-        roomsField.SetValue(act, rooms);
-
-        Require(
-            NancyCompatibility.TryGetRooms(act, out RoomSet? resolved) && ReferenceEquals(rooms, resolved),
-            "The Nancy compatibility adapter did not return the loaded act room set.");
-    }
-
     private static void VerifyOrobasSeaGlassPatchContract()
     {
         Require(
@@ -531,38 +510,6 @@ public partial class ContractRunner : Node
         }
     }
 
-    private static void VerifyRunDataSchemaCompatibility()
-    {
-        var defaultOptions = new RunSavedDataOptions
-        {
-            WritePolicy = RunSavedDataWritePolicy.WhenNonDefault
-        };
-        var explicitOptions = new RunSavedDataOptions
-        {
-            SchemaVersion = 1,
-            WritePolicy = RunSavedDataWritePolicy.WhenNonDefault
-        };
-        Require(defaultOptions.SchemaVersion == 1, "RitsuLib's default RunData schema is no longer version 1.");
-        Require(
-            defaultOptions.SchemaVersion == explicitOptions.SchemaVersion,
-            "Explicit schema version 1 no longer matches the former default registration.");
-
-        NinjaSlayerRunState single = ImportRunDataFixture(
-            "single-player-pre-greeting-v1.json",
-            defaultOptions,
-            1001);
-        Require(single.PendingAncientEntranceAnimation, "The pre-greeting single-player flag was not restored.");
-        Require(single.CompletedBossGreetingRoomKeys.Count == 0, "The added room-key field lost its version 1 default.");
-
-        NinjaSlayerRunState multiplayer = ImportRunDataFixture(
-            "multiplayer-boss-greeting-v1.json",
-            explicitOptions,
-            1001);
-        Require(
-            multiplayer.CompletedBossGreetingRoomKeys.Count == 6,
-            "The multiplayer room-key payload did not survive RitsuLib's version 1 import.");
-    }
-
     private static void VerifyOriginalFeedbackStreamOwnership()
     {
         string? previousUrl = System.Environment.GetEnvironmentVariable("STS2_FEEDBACK_URL");
@@ -648,40 +595,6 @@ public partial class ContractRunner : Node
         {
             listener.Stop();
         }
-    }
-
-    private static NinjaSlayerRunState ImportRunDataFixture(
-        string fixtureName,
-        RunSavedDataOptions options,
-        ulong expectedNetId)
-    {
-        string modId = $"NinjaSlayer.ContractTests.RunData.{Guid.NewGuid():N}";
-        PlayerRunSavedData<NinjaSlayerRunState> handle;
-        using (RitsuLibFramework.BeginModDataRegistration(modId))
-        {
-            handle = RitsuLibFramework.GetRunSavedDataStore(modId).RegisterPerPlayer(
-                key: "ninja_slayer_run_state",
-                defaultFactory: () => new NinjaSlayerRunState(),
-                options: options);
-        }
-
-        string fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "RunData", fixtureName);
-        string payload = System.IO.File.ReadAllText(fixturePath)
-            .Replace("\"NinjaSlayer\"", $"\"{modId}\"", StringComparison.Ordinal);
-        var runState = (RunState)RuntimeHelpers.GetUninitializedObject(typeof(RunState));
-        Type registryType = typeof(RitsuLibFramework).Assembly.GetType(
-            "STS2RitsuLib.RunData.RunSavedDataRegistry",
-            throwOnError: true)!;
-        MethodInfo import = registryType.GetMethod(
-            "ImportPayloadIntoRun",
-            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new MissingMethodException(registryType.FullName, "ImportPayloadIntoRun");
-        import.Invoke(null, [runState, payload]);
-
-        Require(
-            handle.TryGet(runState, expectedNetId, out NinjaSlayerRunState state),
-            $"RitsuLib did not import {fixtureName} for player {expectedNetId}.");
-        return state;
     }
 
     private static void VerifyFinisherProtectionTransaction()

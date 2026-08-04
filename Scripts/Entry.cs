@@ -66,16 +66,9 @@ public class Entry
 
             NinjaSlayerBalanceTelemetry.Register();
 
-            ModContentPackBuilder contentPack = RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
-                .Character<NinjaSlayerCharacter>(ConfigureStartingDeck);
-#if NINJA_SLAYER_DEBUG_CONTENT
-            contentPack.Character<NinjaSlayerDebugCharacter>(character =>
-            {
-                ConfigureStartingDeck(character);
-                character.AddStartingRelic<ChadoBreathingRelic>(1, 0);
-            });
-#endif
-            contentPack.Apply();
+            RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
+                .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
+                .Apply();
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
         }
@@ -204,9 +197,6 @@ public class Entry
             NinjaSlayerCapabilityIds.ReporterPass,
             GameCompatibility.ReporterPass.GetProbes());
         InstallCapability<NancyCandidateFilterPatchGroup>(NinjaSlayerCapabilityIds.NancyCandidateFilter);
-        InstallCapability<NancyLoadedRunRepairPatchGroup>(
-            NinjaSlayerCapabilityIds.NancyLoadedRunRepair,
-            NancyCompatibility.GetLoadedRunRepairProbes());
         InstallCapability<KaratePreviewPatchGroup>(
             NinjaSlayerCapabilityIds.KaratePreview,
             GameCompatibility.KarateHealthBar.GetProbes());

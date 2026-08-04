@@ -20,11 +20,6 @@ internal static class BossBurstParticipationRegistry
         CombatRoom modelRoom,
         IRunState runState)
     {
-        ArgumentNullException.ThrowIfNull(boss);
-        ArgumentNullException.ThrowIfNull(sceneRoom);
-        ArgumentNullException.ThrowIfNull(modelRoom);
-        ArgumentNullException.ThrowIfNull(runState);
-
         lock (Gate)
         {
             ParticipantMarker marker = new(new WeakReference<NCombatRoom>(sceneRoom));
@@ -77,7 +72,6 @@ internal static class BossBurstParticipationRegistry
 
     public static bool ShouldSuppressDeathFade(NCreature creature)
     {
-        ArgumentNullException.ThrowIfNull(creature);
         lock (Gate)
         {
             if (!Participants.TryGetValue(creature, out ParticipantMarker? participant)

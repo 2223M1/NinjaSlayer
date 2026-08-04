@@ -1,19 +1,18 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Lifecycle;
 
-internal static partial class CardPlayResolutionScope
+internal static class CardPlayResolutionScope
 {
-    private static readonly ResolutionScopeRegistry<CardModel, CardResolution> CardScopes =
-        new(ReportThreadViolation);
-    private static readonly ResolutionScopeRegistry<CardResolution, CardPlay> PlayScopes =
-        new(ReportThreadViolation);
+    private static readonly ResolutionScopeRegistry<CardModel, CardResolution> CardScopes = new();
+    private static readonly ResolutionScopeRegistry<CardResolution, CardPlay> PlayScopes = new();
 
     public static CardResolution BeginCard(CardModel card)
     {
         CardResolution resolution = new(card);
-        _ = CardScopes.Begin(card, resolution);
+        CardScopes.Begin(card, resolution);
         return resolution;
     }
 
@@ -22,7 +21,7 @@ internal static partial class CardPlayResolutionScope
         if (CardScopes.TryGetLatestScope(cardPlay.Card, out CardResolution? resolution)
             && resolution is not null)
         {
-            _ = PlayScopes.Begin(resolution, cardPlay);
+            PlayScopes.Begin(resolution, cardPlay);
         }
     }
 
@@ -120,17 +119,13 @@ internal static partial class CardPlayResolutionScope
 
     public static void ResetAtLifecycleBoundary(string boundary)
     {
-        int playCount = PlayScopes.ForceClear();
-        int cardCount = CardScopes.ForceClear();
-        if (playCount > 0 || cardCount > 0)
+        bool clearedPlay = PlayScopes.ForceClear();
+        bool clearedCard = CardScopes.ForceClear();
+        if (clearedPlay || clearedCard)
         {
-            WriteWarning($"Force-cleared resolution scopes at {boundary}: card={cardCount}, play={playCount}.");
+            Entry.Logger.Warn($"Force-cleared resolution scopes at {boundary}.");
         }
     }
-
-    private static void ReportThreadViolation(string message) => WriteWarning(message);
-
-    static partial void WriteWarning(string message);
 
     internal sealed class CardResolution(CardModel card)
     {

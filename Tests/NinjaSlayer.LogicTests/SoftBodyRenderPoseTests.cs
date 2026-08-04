@@ -29,7 +29,8 @@ public sealed class SoftBodyRenderPoseTests
         Assert.Equal(translation.Y, pose.Position.Y, 3);
         Assert.Equal(rotation, pose.RotationRadians, 3);
         Assert.Equal(scale, pose.UniformScale, 3);
-        Assert.InRange(pose.MaximumResidual, 0f, 0.001f);
+        Assert.All(residuals, residual =>
+            Assert.InRange(MathF.Sqrt(residual.X * residual.X + residual.Y * residual.Y), 0f, 0.001f));
     }
 
     [Fact]
@@ -39,8 +40,7 @@ public sealed class SoftBodyRenderPoseTests
         body.ApplyParticleCorrection(0, new BossFragmentPoint(12f, 8f));
         var residuals = new BossFragmentPoint[SoftFragmentBody.ParticleCount];
 
-        Assert.True(SoftBodyRenderPoseResolver.TryResolve(body, 0f, residuals, out SoftBodyRenderPose pose));
-        Assert.True(pose.MaximumResidual > 5f);
+        Assert.True(SoftBodyRenderPoseResolver.TryResolve(body, 0f, residuals, out _));
         Assert.True(MathF.Abs(residuals[0].X) > 1f || MathF.Abs(residuals[0].Y) > 1f);
     }
 

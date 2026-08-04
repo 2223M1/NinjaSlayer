@@ -12,7 +12,6 @@ internal static partial class GameCompatibility
     {
         public static void DisableInteractionForDeath(NCreature creatureNode)
         {
-            ArgumentNullException.ThrowIfNull(creatureNode);
 #if NINJASLAYER_LEGACY_CREATURE_PRESENTATION
             if (creatureNode.Hitbox.HasFocus())
             {

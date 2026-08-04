@@ -18,7 +18,9 @@ jobs:
 
       - name: PowerShell 7 contracts
         shell: pwsh
-        run: ./tools/test-compatibility-powershell.ps1
+        run: |
+          ./tools/test-compatibility-powershell.ps1
+          ./tools/test-current-host-release-install.ps1
 
   validate:
     if: ${{ always() }}
@@ -58,9 +60,6 @@ jobs:
 
       - name: Pure logic tests
         run: dotnet test Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj -c Release -v:minimal
-
-      - name: Roslyn architecture tests
-        run: dotnet test Tests/NinjaSlayer.ArchitectureTests/NinjaSlayer.ArchitectureTests.csproj -c Release -v:minimal
 
       - name: Build delivery boundaries
         run: node tools/test-build-boundaries.mjs

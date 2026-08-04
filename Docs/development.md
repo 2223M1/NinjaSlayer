@@ -17,7 +17,6 @@ All repository automation targets PowerShell 7 Core and must be invoked through 
 
 ```powershell
 dotnet test .\Tests\NinjaSlayer.LogicTests\NinjaSlayer.LogicTests.csproj -c Release
-dotnet test .\Tests\NinjaSlayer.ArchitectureTests\NinjaSlayer.ArchitectureTests.csproj -c Release
 node .\tools\validate-repository.mjs
 node .\tools\test-build-boundaries.mjs
 ```
@@ -42,6 +41,14 @@ dotnet msbuild .\NinjaSlayer.csproj -t:InstallLocal `
 Packaging and installation require an explicit channel and verify the selected `sts2.dll` MVID before export. `PackageMod` writes `NinjaSlayer.dll`, `NinjaSlayer.json`, `NinjaSlayer.pck`, and `SHA256SUMS` under `build/mods/<channel>/NinjaSlayer`. `InstallLocal` copies that verified package to the configured game Mods directory.
 
 For an untagged build, `InstallLocal` uses the resolved version core with `+local.<commit>` build metadata. This keeps local testing at the same SemVer precedence as the corresponding Workshop release, so the game consistently selects the local package when both sources are installed. `PackageMod` and release publication retain their normal version semantics.
+
+Local packages take precedence over the unlisted Workshop item. After switching the Steam branch between stable and preview, install the matching published package by host MVID instead of reusing the previous local DLL:
+
+```powershell
+pwsh .\tools\release\Install-CurrentHostRelease.ps1 -Version 0.1.30
+```
+
+The installer refuses unknown hosts and cross-channel archives, validates the published SHA-256 and all four package files, and atomically replaces `mods/NinjaSlayer`. Pass `-GameRoot` for a non-default Steam library or `-ArchivePath` to reuse an already downloaded official ZIP.
 
 Godot loads a Debug editor assembly before Release export. The export-only build disables `ScriptPathAttribute` generation so the editor does not resolve game-dependent script types in its custom load context; the packaged Release assembly keeps normal script registration.
 
@@ -76,7 +83,7 @@ The paths are saved in the ignored `build/fast-release/settings.json`. Keep old 
 pwsh .\tools\release\Invoke-OneClickRelease.ps1 -Version 0.1.30 -Confirm
 ```
 
-The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It creates uncompressed ZIP containers because the exported PCK is already compressed, validates the exact four-file archives, then creates and pushes the tag, creates the GitHub Release, and uploads the exact stable archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses archives bound to the same commit and compatibility manifest after an interrupted publication.
+The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It creates uncompressed ZIP containers because the exported PCK is already compressed, validates the exact four-file archives, installs the archive matching the active local host, then creates and pushes the tag, creates the GitHub Release, and uploads the exact stable archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses archives bound to the same commit and compatibility manifest after an interrupted publication. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
 
 Routine releases deliberately do not wait for Contract, Smoke, protected environments, attestations, pull requests, or a self-hosted Actions runner. Those checks remain available as optional audits. The five-minute budget covers local preparation and normal uploads; unusually slow GitHub or Steam network transfer can still exceed it without corrupting the completed release.
 
@@ -88,7 +95,7 @@ To upload an uncommitted working tree only to Workshop, use the separate player-
 pwsh .\tools\release\Publish-WorkshopQuickRelease.ps1 -Confirm
 ```
 
-This path automatically selects the next local patch version, packages and installs stable, and performs no GitHub operation. It remains intentionally separate from the official one-click release.
+This path automatically selects the next local patch version, stages and uploads stable, and performs no GitHub operation or local game installation. Use `Install-CurrentHostRelease.ps1` separately when the active game host needs a local package.
 
 ### Optional protected audit release
 

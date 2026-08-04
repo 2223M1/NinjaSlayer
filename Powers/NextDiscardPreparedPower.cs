@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Commands;
-using NinjaSlayer.Code.Prepared;
 
 namespace NinjaSlayer.Powers;
 
@@ -33,22 +32,20 @@ public sealed class NextDiscardPreparedPower : NinjaSlayerPowerTemplate
         }
 
         bool hasSourceMarker = card.Affliction is NextDiscardSourceAffliction;
-        NextDiscardProtectionDecision protection = NextDiscardProtectionPolicy.Resolve(
-            Amount,
-            hasSourceMarker,
-            oldPileType == PileType.Play && card is NinjaApathy);
+        bool protectsSource = hasSourceMarker
+            || oldPileType == PileType.Play && card is NinjaApathy;
         if (hasSourceMarker)
         {
             CardCmd.ClearAffliction(card);
         }
-        if (!protection.ShouldConsumeLayer)
+        if (Amount - (protectsSource ? 1 : 0) <= 0)
         {
             return;
         }
 
         Flash();
         await PowerCmd.Decrement(this);
-        _ = await PrepareCmd.Apply(card);
+        await PrepareCmd.Apply(card);
     }
 
     public override async Task AfterSideTurnEnd(

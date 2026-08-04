@@ -40,7 +40,8 @@ internal sealed record FinisherForecastSimulation<TState, TStateKey>(
     Func<TState[], IReadOnlyList<int>, int, bool> TryApplyHit,
     int? SingleTarget = null,
     IReadOnlyList<int>? FixedTargets = null,
-    IReadOnlyList<FinisherForecastPostEffect<TState>>? PostEffects = null)
+    IReadOnlyList<FinisherForecastPostEffect<TState>>? PostEffects = null,
+    Func<TState, bool>? IsVictoryBlocking = null)
     where TStateKey : notnull;
 
 internal enum FinisherForecastSearchStage
@@ -225,7 +226,7 @@ internal static class FinisherForecastEngine
         IReadOnlyList<FinisherForecastPostEffect<TState>> effects = simulation.PostEffects ?? [];
         if (effectIndex >= effects.Count)
         {
-            return AllDefeated(states, simulation.IsAlive)
+            return AllDefeated(states, simulation.IsVictoryBlocking ?? simulation.IsAlive)
                 ? FinisherForecastOutcome.Guaranteed
                 : FinisherForecastOutcome.NotGuaranteed;
         }
@@ -233,7 +234,9 @@ internal static class FinisherForecastEngine
         int[] alive = AliveTargets(states, simulation.IsAlive);
         if (alive.Length == 0)
         {
-            return FinisherForecastOutcome.Guaranteed;
+            return AllDefeated(states, simulation.IsVictoryBlocking ?? simulation.IsAlive)
+                ? FinisherForecastOutcome.Guaranteed
+                : FinisherForecastOutcome.NotGuaranteed;
         }
 
         FinisherForecastPostEffect<TState> effect = effects[effectIndex];

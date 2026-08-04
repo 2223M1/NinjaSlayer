@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Code.Events;
 using NinjaSlayer.Code.Interop;
 
 namespace NinjaSlayer.Code.Commands;
@@ -48,8 +47,6 @@ public static class ScryCmd
 
         int discardedAmount = cardsToDiscard.Count;
         int viewedAmount = cardsToScry.Count;
-        await NinjaSlayerHook.OnScryed(choiceContext, player, viewedAmount, discardedAmount);
-
         if (WatcherScryHookInterop.IsReady)
         {
             await WatcherScryHookInterop.OnScryed(choiceContext, player, viewedAmount, discardedAmount);

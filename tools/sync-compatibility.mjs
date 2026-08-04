@@ -108,8 +108,13 @@ function validateManifest(value) {
   if (value.defaultBuildChannel !== 'preview') {
     throw new Error('defaultBuildChannel must be preview.');
   }
-  if (value.channels.stable.workshopItemId !== '3761570842') {
-    throw new Error('stable.workshopItemId must remain the public NinjaSlayer item 3761570842.');
+  if (!/^\d+$/.test(value.channels.stable.workshopItemId ?? '')
+      || value.channels.stable.workshopVisibility !== 'unlisted') {
+    throw new Error('stable must declare a numeric unlisted Workshop item.');
+  }
+  if (value.channels.preview.workshopItemId !== null
+      || value.channels.preview.workshopVisibility !== null) {
+    throw new Error('preview Workshop publication must remain unprovisioned.');
   }
   const itemIds = new Set();
   for (const name of names) {
@@ -129,9 +134,16 @@ function validateManifest(value) {
     if (channel.distributionChannel !== (name === 'stable' ? 'public' : 'beta')) {
       throw new Error(`${name}.distributionChannel is invalid.`);
     }
-    if (channel.workshopItemId !== null) {
+    if (channel.workshopItemId === null) {
+      if (channel.workshopVisibility !== null) {
+        throw new Error(`${name}.workshopVisibility must be null without an item id.`);
+      }
+    } else {
       if (!/^\d+$/.test(channel.workshopItemId ?? '') || itemIds.has(channel.workshopItemId)) {
         throw new Error(`${name}.workshopItemId must be a unique numeric string or null.`);
+      }
+      if (!['private', 'unlisted'].includes(channel.workshopVisibility)) {
+        throw new Error(`${name}.workshopVisibility must be private or unlisted.`);
       }
       itemIds.add(channel.workshopItemId);
     }
@@ -145,7 +157,12 @@ function validateManifest(value) {
     if (new Set(channel.compileFeatures).size !== channel.compileFeatures.length) {
       throw new Error(`${name}.compileFeatures contains duplicates.`);
     }
-    const allowedFeatures = new Set(['legacyCardPlayLinks', 'legacyCreaturePresentation', 'legacyDamageApi']);
+    const allowedFeatures = new Set([
+      'legacyCardPlayLinks',
+      'legacyCreaturePresentation',
+      'legacyDamageApi',
+      'legacyArchitectVictoryCompletion',
+    ]);
     for (const feature of channel.compileFeatures) {
       if (!allowedFeatures.has(feature)) throw new Error(`${name} has unknown compile feature ${feature}.`);
     }
@@ -209,16 +226,19 @@ function renderProps(value) {
     legacyCardPlayLinks: 'NINJASLAYER_LEGACY_CARD_PLAY_LINKS',
     legacyCreaturePresentation: 'NINJASLAYER_LEGACY_CREATURE_PRESENTATION',
     legacyDamageApi: 'NINJASLAYER_LEGACY_DAMAGE_API',
+    legacyArchitectVictoryCompletion: 'NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION',
   };
   const groups = Object.entries(value.channels).map(([name, channel]) => {
     const symbols = [channelSymbol(name), ...channel.compileFeatures.map(feature => featureSymbols[feature])];
     const workshopId = channel.workshopItemId ?? '';
+    const workshopVisibility = channel.workshopVisibility ?? '';
     return `  <PropertyGroup Condition="'$(NinjaSlayerHostChannel)' == '${name}'">\n` +
       `    <NinjaSlayerGameApiVersion>${channel.gameApiVersion}</NinjaSlayerGameApiVersion>\n` +
       `    <NinjaSlayerRitsuLibPackageId>${xml(channel.ritsuLibPackageId)}</NinjaSlayerRitsuLibPackageId>\n` +
       `    <NinjaSlayerManifestMinGameVersion>${channel.gameApiVersion}</NinjaSlayerManifestMinGameVersion>\n` +
       `    <NinjaSlayerDistributionChannel>${channel.distributionChannel}</NinjaSlayerDistributionChannel>\n` +
       `    <NinjaSlayerWorkshopItemId>${workshopId}</NinjaSlayerWorkshopItemId>\n` +
+      `    <NinjaSlayerWorkshopVisibility>${workshopVisibility}</NinjaSlayerWorkshopVisibility>\n` +
       `    <NinjaSlayerHostModuleMvid>${channel.hostContract.moduleMvid}</NinjaSlayerHostModuleMvid>\n` +
       `    <NinjaSlayerRuntimeAssemblies>${channel.runtimeAssemblies.join(';')}</NinjaSlayerRuntimeAssemblies>\n` +
       `    <DefineConstants>$(DefineConstants);${symbols.join(';')}</DefineConstants>\n` +
@@ -349,7 +369,7 @@ function renderChineseCompatibility(value) {
 | Godot | \`4.5.1 Mono\` |
 | 游戏内语言 | 目前主要提供简体中文 |
 
-GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。公开 Workshop item 只发布 stable；preview 测试 item 建立后会在此补充链接，两个 NinjaSlayer item 不得同时启用。
+GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；该条目只上传 stable，preview 不上传 Workshop。
 <!-- compatibility:end -->`;
 }
 
@@ -365,7 +385,7 @@ function renderEnglishCompatibility(value) {
 | Godot | \`4.5.1 Mono\` |
 | In-game language | Primarily Simplified Chinese at present |
 
-Each GitHub Release contains separate host-specific stable and preview archives. The public Workshop item always receives stable; a preview item link will be added after its one-time creation. Never enable both NinjaSlayer items together.
+Each GitHub Release contains separate host-specific stable and preview archives. The Workshop item is unlisted: it is absent from public listings and search but remains accessible and subscribable by link. It receives stable only; preview is not uploaded to Workshop.
 <!-- compatibility:end -->`;
 }
 

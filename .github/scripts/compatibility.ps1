@@ -53,8 +53,15 @@ function Read-NinjaSlayerCompatibility {
             throw "Compatibility channel '$channelName' is incomplete."
         }
         $workshopItemId = $channel.workshopItemId
-        if ($null -ne $workshopItemId -and [string]$workshopItemId -notmatch '^\d+$') {
-            throw "Compatibility channel '$channelName' has an invalid Workshop item id."
+        $workshopVisibility = $channel.workshopVisibility
+        if ($null -eq $workshopItemId) {
+            if ($null -ne $workshopVisibility) {
+                throw "Compatibility channel '$channelName' must not declare Workshop visibility without an item id."
+            }
+        }
+        elseif ([string]$workshopItemId -notmatch '^\d+$' -or
+            [string]$workshopVisibility -notin @('private', 'unlisted')) {
+            throw "Compatibility channel '$channelName' has an invalid or public Workshop publication target."
         }
         if ([string]$channel.hostContract.assemblyVersion -notmatch '^\d+\.\d+\.\d+\.\d+$' -or
             [string]$channel.hostContract.moduleMvid -notmatch '^[0-9A-Fa-f-]{36}$') {
@@ -81,6 +88,34 @@ function Get-NinjaSlayerCompatibilityChannel {
         throw "Compatibility channel '$Channel' is unavailable."
     }
     return $value
+}
+
+function Resolve-NinjaSlayerCompatibilityHost {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]$Manifest,
+        [Parameter(Mandatory)][string]$ModuleMvid
+    )
+
+    [Guid]$parsedMvid = [Guid]::Empty
+    if (-not [Guid]::TryParse($ModuleMvid, [ref]$parsedMvid)) {
+        throw "Invalid STS2 module MVID: $ModuleMvid"
+    }
+    $normalizedMvid = $parsedMvid.ToString('D')
+    $matches = @($Manifest.channels.PSObject.Properties | Where-Object {
+        [string]$_.Value.hostContract.moduleMvid -ieq $normalizedMvid
+    })
+    if ($matches.Count -eq 0) {
+        throw "STS2 module MVID $normalizedMvid is not an active stable or preview host."
+    }
+    if ($matches.Count -ne 1) {
+        throw "STS2 module MVID $normalizedMvid resolves to multiple compatibility channels."
+    }
+
+    return [pscustomobject]@{
+        Channel = [string]$matches[0].Name
+        Profile = $matches[0].Value
+    }
 }
 
 function Get-NinjaSlayerCompatibilitySha256 {

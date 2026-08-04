@@ -30,7 +30,7 @@ const FEEDBACK_PAYLOAD_FIELDS = new Set([
   'description', 'category', 'gameVersion', 'commit', 'platformBranch', 'isModded', 'isFullConsole', 'lang',
 ]);
 const FEEDBACK_CONTEXT_FIELDS = new Set([
-  'submissionId', 'submittedAtUtc', 'modVersion', 'characterId', 'isDebugCharacter', 'seed',
+  'submissionId', 'submittedAtUtc', 'modVersion', 'characterId', 'seed',
   'currentActIndex', 'actId', 'actFloor', 'totalFloor', 'room', 'roomType', 'ascensionLevel',
   'gameMode', 'playerCount',
 ]);
@@ -144,7 +144,7 @@ async function hasFileSignature(file, signatures) {
   return signatures.some((signature) => bytesEqual(prefix, signature));
 }
 
-export async function validateFeedbackForm(form, expectedSubmissionId = null) {
+export async function validateFeedbackForm(form, expectedSubmissionId) {
   const payload = parseJsonField(form, 'payload_json', FEEDBACK_PAYLOAD_FIELDS);
   const modContext = parseJsonField(form, 'mod_context', FEEDBACK_CONTEXT_FIELDS);
   if (!FEEDBACK_CATEGORIES.has(payload.category)) throw new FeedbackValidationError('Unsupported feedback category');
@@ -154,7 +154,7 @@ export async function validateFeedbackForm(form, expectedSubmissionId = null) {
   if (typeof modContext.submissionId !== 'string' || !UUID_PATTERN.test(modContext.submissionId)) {
     throw new FeedbackValidationError('mod_context.submissionId must be a UUID');
   }
-  if (expectedSubmissionId && expectedSubmissionId !== modContext.submissionId) {
+  if (expectedSubmissionId !== modContext.submissionId) {
     throw new FeedbackValidationError('Submission header does not match mod_context.submissionId');
   }
   if (typeof modContext.submittedAtUtc !== 'string' || Number.isNaN(Date.parse(modContext.submittedAtUtc))) {

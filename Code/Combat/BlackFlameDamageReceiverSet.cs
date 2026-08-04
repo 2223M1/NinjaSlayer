@@ -9,7 +9,6 @@ internal sealed class BlackFlameDamageReceiverSet<TReceiver>
 
     public void Record(TReceiver receiver, decimal totalDamage)
     {
-        ArgumentNullException.ThrowIfNull(receiver);
         if (totalDamage <= 0)
         {
             return;
@@ -26,7 +25,6 @@ internal sealed class BlackFlameDamageReceiverSet<TReceiver>
 
     public IReadOnlyList<TReceiver> SnapshotWhere(Func<TReceiver, bool> predicate)
     {
-        ArgumentNullException.ThrowIfNull(predicate);
         lock (_syncRoot)
         {
             return _ordered.Where(predicate).ToArray();

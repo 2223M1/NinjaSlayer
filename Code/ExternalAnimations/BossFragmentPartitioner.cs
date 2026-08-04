@@ -125,10 +125,15 @@ internal sealed class BossSemanticPartBuilder
             while (_measurementIndex < _parts.Count && measured < maximumParts)
             {
                 PartDraft part = _parts[_measurementIndex++];
-                part.SourceBounds = MeasureIsolatedBounds(
+                Rect2 measuredBounds = MeasureIsolatedBounds(
                     skeleton,
                     slots,
                     part.SlotIndices);
+                part.SourceBounds = measuredBounds.Intersects(
+                    _bodyBounds,
+                    includeBorders: true)
+                        ? measuredBounds
+                        : default;
                 measured++;
             }
         }

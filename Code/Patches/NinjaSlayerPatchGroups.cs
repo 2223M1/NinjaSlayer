@@ -20,7 +20,6 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
         patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
         patcher.RegisterPatch<ArchitectExecutionStartPatch>();
-        patcher.RegisterPatch<ArchitectDeathAnimationPatch>();
         patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
         patcher.RegisterPatch<BlackFlameDamagePatch>();
@@ -81,11 +80,6 @@ internal sealed class ReporterPassPatchGroup : IModPatches
 internal sealed class NancyCandidateFilterPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<NancyLeeCandidatePatch>();
-}
-
-internal sealed class NancyLoadedRunRepairPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<NancyLeeLoadedRunPatch>();
 }
 
 internal sealed class KaratePreviewPatchGroup : IModPatches
@@ -200,10 +194,6 @@ internal sealed class TransitionSmoothingPatchGroup : IModPatches
     {
         patcher.RegisterPatch<NinjaSlayerTransitionAssetLoadConcurrencyPatch>();
         patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionRunSceneTracePatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionRunInitializationTracePatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionSceneTreeTracePatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionEventSceneTracePatch>();
     }
 }
 

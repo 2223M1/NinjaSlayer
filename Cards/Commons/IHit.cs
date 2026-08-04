@@ -28,19 +28,18 @@ public sealed class IHit : NinjaSlayerCardTemplate
 
     public IHit() : base(CardSpec) { }
 
-    protected override bool ShouldGlowGoldInternal => NinjaSlayerActions.ChadoDiscardedThisTurn(this);
+    protected override bool ShouldGlowGoldInternal => NinjaSlayerCombatMetrics.ChadoDiscardedThisTurn(Owner);
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target)
+            .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
-        if (NinjaSlayerActions.ChadoDiscardedThisTurn(this))
+        if (NinjaSlayerCombatMetrics.ChadoDiscardedThisTurn(Owner))
         {
             await PlayerCmd.GainEnergy(DynamicVars.Energy.BaseValue, Owner);
         }

@@ -90,19 +90,18 @@ async function handleFeedback(request, env) {
   if (rateLimit.response) return rateLimit.response;
 
   const submissionHeader = request.headers.get('X-NinjaSlayer-Submission-Id');
-  if (submissionHeader && !UUID_PATTERN.test(submissionHeader)) {
+  if (!submissionHeader || !UUID_PATTERN.test(submissionHeader)) {
     return jsonResponse(400, { error: 'invalid_feedback', message: 'Submission header must be a UUID' });
   }
-  if (submissionHeader && await env.FEEDBACK_KV.get(feedbackTombstoneKey(submissionHeader))) {
+  if (await env.FEEDBACK_KV.get(feedbackTombstoneKey(submissionHeader))) {
     return jsonResponse(410, { error: 'submission_deleted' });
   }
-  const coordinatorName = submissionHeader ?? 'legacy-feedback-ingress';
-  const id = env.FEEDBACK_SUBMISSIONS.idFromName(coordinatorName);
+  const id = env.FEEDBACK_SUBMISSIONS.idFromName(submissionHeader);
   const headers = {
     'Content-Type': request.headers.get('content-type') || '',
     'X-Client-Key': rateLimit.clientKey,
+    'X-Submission-Id': submissionHeader,
   };
-  if (submissionHeader) headers['X-Submission-Id'] = submissionHeader;
   if (env.TEST_NOW) headers['X-Test-Now'] = String(env.TEST_NOW);
   const forwarded = new Request('https://feedback.internal/', {
     method: 'PUT',

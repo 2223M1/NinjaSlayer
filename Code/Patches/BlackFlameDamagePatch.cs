@@ -5,13 +5,14 @@ using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Lifecycle;
-using NinjaSlayer.Enchantments;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
 public sealed partial class BlackFlameDamagePatch : IPatchMethod
 {
+    private const string BlackFlameEnchantmentId = "NINJA_SLAYER_ENCHANTMENT_BLACK_FLAME_ENCHANTMENT";
+
     public static string PatchId => "ninjaslayer_black_flame_damage_results";
     public static string Description => "Track actual damage receivers for Black Flame enchanted attacks.";
     public static bool IsCritical => true;
@@ -29,7 +30,7 @@ public sealed partial class BlackFlameDamagePatch : IPatchMethod
         CardPlay? suppliedCardPlay,
         ref Task<IEnumerable<DamageResult>> resultTask)
     {
-        if (cardSource?.Enchantment is not IBlackFlameEnchantment)
+        if (cardSource?.Enchantment?.Id.Entry != BlackFlameEnchantmentId)
         {
             return;
         }

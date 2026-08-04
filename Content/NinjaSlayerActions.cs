@@ -22,7 +22,8 @@ public static class NinjaSlayerActions
     {
         if (player.Creature.HasPower<OneBodyOneSoulPower>())
         {
-            await GrantNarakuEntryBonus(choiceContext, player);
+            await PlayerCmd.GainEnergy(2, player);
+            await CardPileCmd.Draw(choiceContext, 2, player);
             await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, OneBodyOneSoulNarakuLife, player.Creature, null);
             return;
         }
@@ -34,12 +35,6 @@ public static class NinjaSlayerActions
 
         await PowerCmd.Apply<NarakuPower>(choiceContext, player.Creature, 1, player.Creature, null);
         await PowerCmd.Apply<NarakuLifePower>(choiceContext, player.Creature, NarakuEntryLife, player.Creature, null);
-    }
-
-    private static async Task GrantNarakuEntryBonus(PlayerChoiceContext choiceContext, Player player)
-    {
-        await PlayerCmd.GainEnergy(2, player);
-        await CardPileCmd.Draw(choiceContext, 2, player);
     }
 
     public static async Task EnterNaraku(PlayerChoiceContext choiceContext, Player player, decimal life = 12)
@@ -71,53 +66,12 @@ public static class NinjaSlayerActions
     public static decimal ChadoInExhaustPileMultiplier(CardModel card, Creature? _) =>
         PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c is ChadoCard);
 
-    public static decimal ChadoGeneratedThisCombatMultiplier(CardModel card, Creature? _) =>
-        NinjaSlayerCombatMetrics.ChadoGeneratedThisCombat(card.Owner);
-
-    public static bool ChadoExhaustedThisTurn(CardModel card) =>
-        NinjaSlayerCombatMetrics.ChadoExhaustedThisTurn(card.Owner);
-
-    public static bool ChadoDiscardedThisTurn(CardModel card) =>
-        NinjaSlayerCombatMetrics.ChadoDiscardedThisTurn(card.Owner);
-
-    public static bool PreviousFinishedCardWasAttack(Player player) =>
-        NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(player);
-
-    public static int MeleeAttacksPlayedThisTurn(Player player) =>
-        NinjaSlayerCombatMetrics.MeleeAttacksPlayedThisTurn(player);
-
-    public static int RubHandsShurikenCount(Player player) =>
-        MeleeAttacksPlayedThisTurn(player) + 1;
-
-    // Static multiplier (1 while in Naraku, else 0) so cards can preview bonus damage live.
-    public static decimal NarakuActiveMultiplier(CardModel card, Creature? _) =>
-        card.Owner.Creature.HasPower<NarakuPower>() ? 1 : 0;
-
     public static async Task AddGeneratedCard<T>(Player owner, PileType pile, CardPilePosition position = CardPilePosition.Bottom)
         where T : CardModel
     {
         ICombatState combatState = owner.Creature.CombatState ?? throw new InvalidOperationException("Generated cards require an active combat state.");
         CardPileAddResult result = await CardPileCmd.AddGeneratedCardToCombat(combatState.CreateCard<T>(owner), pile, owner, position);
         PreviewGeneratedPileAdd(pile, result);
-    }
-
-    public static async Task AddGeneratedCards<T>(Player owner, int count, PileType pile, CardPilePosition position = CardPilePosition.Bottom)
-        where T : CardModel
-    {
-        if (count <= 0 || CombatManager.Instance.IsOverOrEnding)
-        {
-            return;
-        }
-
-        ICombatState combatState = owner.Creature.CombatState ?? throw new InvalidOperationException("Generated cards require an active combat state.");
-        List<CardModel> cards = new();
-        for (int i = 0; i < count; i++)
-        {
-            cards.Add(combatState.CreateCard<T>(owner));
-        }
-
-        IReadOnlyList<CardPileAddResult> results = await CardPileCmd.AddGeneratedCardsToCombat(cards, pile, owner, position);
-        PreviewGeneratedPileAdd(pile, results);
     }
 
     public static async Task AddGeneratedShuriken(
@@ -182,7 +136,7 @@ public static class NinjaSlayerActions
             {
                 if (result.success)
                 {
-                    _ = await PrepareCmd.Apply(result.cardAdded);
+                    await PrepareCmd.Apply(result.cardAdded);
                 }
             }
         }
@@ -257,7 +211,7 @@ public static class NinjaSlayerActions
             await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
         }
 
-        KarateCombatPreviewContext.RefreshHealthBar(target);
+        CombatHealthBar.Refresh(target);
     }
 
     public static async Task<int> ClearAllKarate(PlayerChoiceContext choiceContext, Player player)

@@ -29,6 +29,19 @@ function Invoke-FixtureGit([string]$Repository, [string[]]$Arguments) {
     }
 }
 
+function Assert-Throws([scriptblock]$Action, [string]$Pattern) {
+    try {
+        & $Action
+    }
+    catch {
+        if ($_.Exception.Message -notmatch $Pattern) {
+            throw "Expected failure matching '$Pattern', received: $($_.Exception.Message)"
+        }
+        return
+    }
+    throw "Expected failure matching '$Pattern', but the operation succeeded."
+}
+
 $temporaryFile = Join-Path ([IO.Path]::GetTempPath()) `
     "ninjaslayer-compatibility-hash-$([Guid]::NewGuid().ToString('N'))"
 $temporaryRoot = Join-Path ([IO.Path]::GetTempPath()) `
@@ -45,6 +58,46 @@ try {
             throw "PowerShell SHA-256 mismatch: expected $expected, got $actual."
         }
     }
+
+    $compatibility = Read-NinjaSlayerCompatibility `
+        -Path (Join-Path $repositoryRoot 'eng\compatibility.json')
+    foreach ($channelName in @('stable', 'preview')) {
+        $profile = Get-NinjaSlayerCompatibilityChannel `
+            -Manifest $compatibility `
+            -Channel $channelName
+        if ($channelName -eq 'stable' -and
+            ([string]$profile.workshopVisibility -cne 'unlisted' -or
+                [string]$profile.workshopItemId -notmatch '^\d+$')) {
+            throw 'Stable Workshop compatibility must resolve to an unlisted numeric item.'
+        }
+        if ($channelName -eq 'preview' -and
+            ($null -ne $profile.workshopVisibility -or $null -ne $profile.workshopItemId)) {
+            throw 'Preview Workshop compatibility must remain unprovisioned.'
+        }
+        $resolvedHost = Resolve-NinjaSlayerCompatibilityHost `
+            -Manifest $compatibility `
+            -ModuleMvid ([string]$profile.hostContract.moduleMvid).ToUpperInvariant()
+        if ($resolvedHost.Channel -cne $channelName -or
+            -not [object]::ReferenceEquals($resolvedHost.Profile, $profile)) {
+            throw "Compatibility MVID selection did not resolve $channelName."
+        }
+    }
+    Assert-Throws {
+        Resolve-NinjaSlayerCompatibilityHost `
+            -Manifest $compatibility `
+            -ModuleMvid '11111111-1111-1111-1111-111111111111'
+    } 'not an active stable or preview host'
+    Assert-Throws {
+        Resolve-NinjaSlayerCompatibilityHost -Manifest $compatibility -ModuleMvid 'not-a-guid'
+    } 'Invalid STS2 module MVID'
+    $ambiguousCompatibility = $compatibility | ConvertTo-Json -Depth 30 | ConvertFrom-Json
+    $ambiguousCompatibility.channels.preview.hostContract.moduleMvid =
+        $ambiguousCompatibility.channels.stable.hostContract.moduleMvid
+    Assert-Throws {
+        Resolve-NinjaSlayerCompatibilityHost `
+            -Manifest $ambiguousCompatibility `
+            -ModuleMvid ([string]$ambiguousCompatibility.channels.stable.hostContract.moduleMvid)
+    } 'multiple compatibility channels'
 
     $spineSource = Join-Path $temporaryRoot 'spine-source'
     $spineDestination = Join-Path $temporaryRoot 'spine-destination'

@@ -2,8 +2,6 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
-using MegaCrit.Sts2.Core.Random;
-using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Ancients;
@@ -25,55 +23,15 @@ public sealed class NancyLeeCandidatePatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(Glory), nameof(Glory.GetUnlockedAncients), [typeof(UnlockState)])];
 
-    [HarmonyAfter(NancyCompatibility.RitsuLibContentRegistryHarmonyId)]
+    [HarmonyAfter("com.ritsukage.sts2-RitsuLib.framework-content-registry")]
     public static void Postfix(ref IEnumerable<AncientEventModel> __result)
     {
         var runState = RunManager.Instance.DebugOnlyGetState();
-        if (!NancyAvailabilityPolicy.ShouldFilterCandidates(
-                runState != null,
-                runState != null && NinjaSlayerContentAccess.HasNinjaSlayer(runState)))
+        if (runState == null || NinjaSlayerContentAccess.HasNinjaSlayer(runState))
         {
             return;
         }
 
         __result = __result.Where(ancient => ancient is not NancyLee).ToArray();
-    }
-}
-
-public sealed class NancyLeeLoadedRunPatch : IPatchMethod
-{
-    public static string PatchId => "ninjaslayer_nancy_lee_loaded_run_filter";
-
-    public static string Description =>
-        "Replace Nancy Lee in loaded non-NinjaSlayer runs with another Glory Ancient.";
-
-    public static bool IsCritical => true;
-
-    public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(ActModel), nameof(ActModel.ValidateRoomsAfterLoad), [typeof(Rng)])];
-
-    public static void Postfix(ActModel __instance, Rng rng)
-    {
-        var runState = RunManager.Instance.DebugOnlyGetState();
-        if (runState == null
-            || !NancyCompatibility.TryGetRooms(__instance, out RoomSet? rooms)
-            || rooms is null
-            || !NancyAvailabilityPolicy.ShouldRepairLoadedSelection(
-                __instance is Glory,
-                NinjaSlayerContentAccess.HasNinjaSlayer(runState),
-                rooms.HasAncient,
-                rooms.HasAncient && rooms.Ancient is NancyLee))
-        {
-            return;
-        }
-
-        AncientEventModel? replacement = rng.NextItem(
-            __instance.GetUnlockedAncients(runState.UnlockState)
-                .Where(ancient => ancient is not NancyLee));
-
-        if (replacement != null)
-        {
-            rooms.Ancient = replacement;
-        }
     }
 }

@@ -10,8 +10,8 @@ internal static class BossGreetingTimeline
     public const float PlayerCameraFollowDelaySeconds = 0.2f;
     public const float PlayerCameraSettleSeconds = 0.12f;
     public const float BossCameraMoveSeconds = 0.2f;
-    public const float CameraReturnSeconds = CinematicTimingContract.BossCameraReturnSeconds;
-    public const float MinimumBossCameraHoldSeconds = CinematicTimingContract.BossMinimumCameraHoldSeconds;
+    public const float CameraReturnSeconds = 0.2f;
+    public const float MinimumBossCameraHoldSeconds = 2f;
     public const float BossActionTimeoutSeconds = 8f;
     public const float BossBubbleLifetimeSeconds = 999f;
     public const float PostCombatStartBubbleSeconds = 2f;

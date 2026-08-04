@@ -32,9 +32,8 @@ public sealed class KataDrill : NinjaSlayerCardTemplate
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(cardPlay.Target);
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
-        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target, DynamicVars.Karate().BaseValue, Owner.Creature, this);
+        await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target!, DynamicVars.Karate().BaseValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()

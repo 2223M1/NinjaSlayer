@@ -340,7 +340,6 @@ public sealed partial class BossDeathPresentationController : Node
                 _boss,
                 snapshot,
                 bodyCenter,
-                _partFlight == null ? null : _partSpec?.BoneName,
                 partCenter,
                 BossBurstPresentationCoordinator.FragmentZIndex);
             if (dismemberment.Spawned)

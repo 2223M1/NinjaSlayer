@@ -10,34 +10,6 @@ internal readonly record struct SoftBodyHullPoint(
     float U,
     float V);
 
-internal readonly record struct SoftBodyStepMetrics(
-    int Contacts,
-    int ContactPoints,
-    int ContactStarts,
-    int VisibleBounces,
-    int SweptContacts,
-    int LeftWallContacts,
-    int RightWallContacts,
-    int WallBounces,
-    int BrokenLinks,
-    int Rollbacks,
-    int Inversions,
-    int SafetyProjections,
-    int WobbleZeroCrossings,
-    float MaximumCenterSpeed,
-    float MaximumObservedCenterSpeed,
-    float ContactEnergyBefore,
-    float ContactEnergyAfter,
-    int LimitedContacts,
-    int LimitedCenterSpeeds,
-    float MaximumPenetration,
-    int Substeps);
-
-internal readonly record struct SoftBodyCommitResult(
-    bool Accepted,
-    bool Inverted,
-    bool SafetyProjected);
-
 internal sealed partial class SoftFragmentBody
 {
     public const int GridSize = 4;
@@ -171,13 +143,6 @@ internal sealed partial class SoftFragmentBody
     public SoftBodyBounds RestBounds { get; }
     public float ShortDimension { get; }
     public float CharacteristicLength { get; }
-    public int RollbackCount { get; private set; }
-    public int InversionCount { get; private set; }
-    public int SafetyProjectionCount { get; private set; }
-    public int WobbleZeroCrossings => _deformationExciter.ZeroCrossings;
-    public float LastRejectedAreaRatio { get; private set; } = 1f;
-    public float LastRejectedParticleSpeed { get; private set; }
-
     public BossFragmentPoint Center
     {
         get
@@ -517,10 +482,9 @@ internal sealed partial class SoftFragmentBody
 
     }
 
-    public SoftBodyCommitResult TryCommitSubstep(float seconds)
+    public bool TryCommitSubstep(float seconds)
     {
         float minimumArea = ResolveMinimumCellAreaRatio();
-        bool inverted = minimumArea <= 0f;
         float minimumAllowedArea = TargetLinearScale
             * TargetLinearScale
             * _material.MinimumAreaFraction
@@ -534,7 +498,7 @@ internal sealed partial class SoftFragmentBody
         if (!invalid)
         {
             FinalizeVelocities(seconds);
-            return new SoftBodyCommitResult(true, false, false);
+            return true;
         }
 
         if (HasFiniteState
@@ -545,27 +509,18 @@ internal sealed partial class SoftFragmentBody
                 _material.MaximumResidualRmsRatio,
                 out float acceptedFraction))
         {
-            SafetyProjectionCount++;
             FinalizeVelocities(seconds);
             if (acceptedFraction < 0.999f)
             {
                 ApplySafetyBoundaryRestitution();
             }
-            return new SoftBodyCommitResult(true, false, true);
+            return true;
         }
 
-        if (inverted)
-        {
-            InversionCount++;
-        }
-
-        RollbackCount++;
-        LastRejectedAreaRatio = minimumArea;
-        LastRejectedParticleSpeed = maximumPredictedSpeed;
         Array.Copy(_substepSnapshot, _particles, ParticleCount);
         DampNonRigidVelocity(0.45f);
         _collisionCooldownSubsteps = Math.Max(_collisionCooldownSubsteps, 2);
-        return new SoftBodyCommitResult(false, inverted, false);
+        return false;
     }
 
     private bool TryProjectCandidateToSafety(
@@ -766,32 +721,12 @@ internal sealed partial class SoftFragmentBody
 
     }
 
-    public int UpdateDeformationMetrics(float seconds)
+    public void CompleteSubstep()
     {
-        _ = seconds;
-        BossFragmentPoint center = Center;
-        float rotation = ResolveBestFitRotation();
-        float cosine = MathF.Cos(rotation);
-        float sine = MathF.Sin(rotation);
-        float inverseScale = 1f / Math.Max(TargetLinearScale, 0.05f);
-        for (int index = 0; index < ParticleCount; index++)
-        {
-            BossFragmentPoint current = Subtract(_particles[index].Position, center);
-            BossFragmentPoint local = new(
-                (current.X * cosine + current.Y * sine) * inverseScale,
-                (-current.X * sine + current.Y * cosine) * inverseScale);
-            _workVectors[index] = Subtract(
-                local,
-                Subtract(_particles[index].RestPosition, _restCenter));
-        }
-
-        int crossings = _deformationExciter.ObserveLocalResiduals(_workVectors);
         if (_collisionCooldownSubsteps > 0)
         {
             _collisionCooldownSubsteps--;
         }
-
-        return crossings;
     }
 
     public int ConstrainToFloor(float floorY)
@@ -1074,9 +1009,6 @@ internal sealed partial class SoftFragmentBody
             maximum = Math.Max(maximum, projection);
         }
     }
-
-    public SoftBodyHullPoint GetHullPoint(int index) =>
-        _hull[Math.Clamp(index, 0, _hull.Length - 1)];
 
     public (BossFragmentPoint Minimum, BossFragmentPoint Maximum) ResolveCollisionAabb()
     {

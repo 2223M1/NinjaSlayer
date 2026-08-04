@@ -22,12 +22,6 @@ public static class NinjaSlayerCombatVfx
     public static AttackCommand WithHeavyBluntHitFx(this AttackCommand command) =>
         command.WithHitFx(VfxCmd.heavyBluntPath, null, TmpSfx.heavyAttack);
 
-    public static async Task<AttackCommand> ExecuteWithoutScreenShake(this AttackCommand command, PlayerChoiceContext? choiceContext)
-    {
-        using var _ = ScreenShakeSuppressionContext.Suppress();
-        return await command.Execute(choiceContext);
-    }
-
     public static void PlayDefectStrikeHitFx(Creature target)
     {
         VfxCmd.PlayOnCreatureCenter(target, VfxCmd.bluntPath);

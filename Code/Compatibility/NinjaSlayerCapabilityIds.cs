@@ -8,7 +8,6 @@ internal static class NinjaSlayerCapabilityIds
     public const string CardResolution = "card-resolution";
     public const string ReporterPass = "reporter-pass";
     public const string NancyCandidateFilter = "nancy-candidate-filter";
-    public const string NancyLoadedRunRepair = "nancy-loaded-run-repair";
     public const string KaratePreview = "karate-preview";
     public const string Typography = "typography";
     public const string ChadoPresentation = "chado-presentation";
@@ -34,7 +33,6 @@ internal static class NinjaSlayerCapabilityIds
         CardResolution,
         ReporterPass,
         NancyCandidateFilter,
-        NancyLoadedRunRepair,
         KaratePreview,
         Typography,
         ChadoPresentation,

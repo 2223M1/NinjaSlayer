@@ -482,11 +482,8 @@ public static class BossGreetingCinematic
             return false;
         }
 
-        bool replayAfterLoad = RunManager.Instance.NetService.Type == NetGameType.Singleplayer
-            && LocalContext.GetMe(combatState)?.Character is NinjaSlayerDebugCharacter;
         string completedRoomKey = roomKey;
-        return replayAfterLoad
-            || !ninjaSlayers.All(player => NinjaSlayerRunData.HasCompletedBossGreeting(player, completedRoomKey));
+        return !ninjaSlayers.All(player => NinjaSlayerRunData.HasCompletedBossGreeting(player, completedRoomKey));
     }
 
     private static bool TryMarkProcessed(IRunState runState, string roomKey)

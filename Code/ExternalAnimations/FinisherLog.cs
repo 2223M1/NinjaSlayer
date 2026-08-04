@@ -37,8 +37,3 @@ internal static class FinisherLog
         }
     }
 }
-
-internal static class FinisherPresentationSettings
-{
-    public const FinisherPresentationMode Mode = FinisherPresentationMode.Enhanced;
-}

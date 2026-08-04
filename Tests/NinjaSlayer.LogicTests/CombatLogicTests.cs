@@ -226,6 +226,57 @@ public sealed class CombatLogicTests
     }
 
     [Fact]
+    public void FinisherForecastTargetsSecondariesWithoutRequiringTheirDeath()
+    {
+        List<int> allTargets = [];
+        var allSimulation = new FinisherForecastSimulation<ForecastTestState, ForecastTestState>(
+            [new(5, 0, 0), new(50, 0, 0, IsPrimary: false)],
+            1,
+            FinisherForecastTargeting.All,
+            state => state.Hp > 0,
+            state => state,
+            (current, targets, _) =>
+            {
+                allTargets.AddRange(targets);
+                foreach (int target in targets)
+                {
+                    current[target] = current[target] with { Hp = current[target].Hp - 5 };
+                }
+
+                return true;
+            },
+            IsVictoryBlocking: state => state.Hp > 0 && state.IsPrimary);
+
+        Assert.Equal(
+            FinisherForecastOutcome.Guaranteed,
+            EvaluateForecastForCorrectness(allSimulation));
+        Assert.Equal([0, 1], allTargets);
+        Assert.Equal(
+            FinisherForecastOutcome.Guaranteed,
+            EvaluateForecastForCorrectness(CreateForecast(
+                [new(5, 0, 0), new(50, 0, 0, IsPrimary: false)],
+                1,
+                FinisherForecastTargeting.Single,
+                5,
+                singleTarget: 0)));
+        Assert.Equal(
+            FinisherForecastOutcome.NotGuaranteed,
+            EvaluateForecastForCorrectness(CreateForecast(
+                [new(6, 0, 0), new(5, 0, 0, IsPrimary: false)],
+                1,
+                FinisherForecastTargeting.Single,
+                5,
+                singleTarget: 0)));
+        Assert.Equal(
+            FinisherForecastOutcome.NotGuaranteed,
+            EvaluateForecastForCorrectness(CreateForecast(
+                [new(5, 0, 0), new(5, 0, 0, IsPrimary: false)],
+                1,
+                FinisherForecastTargeting.Random,
+                5)));
+    }
+
+    [Fact]
     public void FinisherForecastFailsClosedWhenItsBudgetIsExhausted()
     {
         FinisherForecastOutcome result = FinisherForecastEngine.Evaluate(
@@ -307,8 +358,6 @@ public sealed class CombatLogicTests
     [Fact]
     public void FinisherActionTrajectoriesKeepTheirAuthoredTimingAndEndpoints()
     {
-        Assert.Equal(90f, FinisherActionTrajectory.FastTravelPixels);
-        Assert.Equal(0.15f, FinisherActionTrajectory.FastTravelSeconds);
         Assert.Equal(0f, FinisherActionTrajectory.FastProgress(-1f));
         Assert.Equal(0.5f, FinisherActionTrajectory.FastProgress(0.5f), 5);
         Assert.Equal(1f, FinisherActionTrajectory.FastProgress(2f));
@@ -320,112 +369,22 @@ public sealed class CombatLogicTests
         Assert.Equal(1f, FinisherActionTrajectory.SlowProgress(2f));
     }
 
-    [Fact]
-    public void NinjaSlayerFinisherTravelsContinuouslyFromItsOriginalPositionToImpact()
-    {
-        FinisherApproachPath fastRight = FinisherApproachPath.Create(
-            FinisherApproachMode.ContinuousToImpact,
-            actorX: 0f,
-            targetX: 500f,
-            targetHalfWidth: 50f,
-            approachGap: 0f,
-            authoredTravel: FinisherActionTrajectory.FastTravelPixels,
-            fallbackDirection: 1f);
-        Assert.Equal(0f, fastRight.TravelStartX);
-        Assert.Equal(450f, fastRight.TravelEndX);
-        Assert.Equal(450f, fastRight.ImpactX);
-        Assert.True(
-            fastRight.TravelEndX - fastRight.TravelStartX
-            > FinisherActionTrajectory.FastTravelPixels);
-
-        FinisherApproachPath slowLeft = FinisherApproachPath.Create(
-            FinisherApproachMode.ContinuousToImpact,
-            actorX: 500f,
-            targetX: 0f,
-            targetHalfWidth: 50f,
-            approachGap: 0f,
-            authoredTravel: FinisherActionTrajectory.SlowTravelPixels,
-            fallbackDirection: -1f);
-        Assert.Equal(500f, slowLeft.TravelStartX);
-        Assert.Equal(50f, slowLeft.TravelEndX);
-        Assert.Equal(50f, slowLeft.ImpactX);
-    }
-
     [Theory]
-    [InlineData(400f, 500f, 450f)]
-    [InlineData(100f, 0f, 50f)]
-    public void NinjaSlayerFinisherClampsNearTravelAtTheImpactPosition(
-        float actorX,
-        float targetX,
-        float expectedImpactX)
-    {
-        FinisherApproachPath path = FinisherApproachPath.Create(
-            FinisherApproachMode.ContinuousToImpact,
-            actorX,
-            targetX,
-            targetHalfWidth: 50f,
-            approachGap: 0f,
-            authoredTravel: FinisherActionTrajectory.SlowTravelPixels,
-            fallbackDirection: targetX >= actorX ? 1f : -1f);
-
-        Assert.Equal(expectedImpactX, path.TravelEndX);
-        Assert.Equal(expectedImpactX, path.ImpactX);
-    }
-
-    [Theory]
-    [InlineData(20f, 430f)]
-    [InlineData(430f, 20f)]
-    public void InstantFinisherStartsAtImpactWithoutTravel(float actorX, float impactX)
-    {
-        FinisherApproachPath path = FinisherApproachPath.CreateToImpact(
-            FinisherApproachMode.TeleportAtStart,
-            actorX,
-            impactX,
-            authoredTravel: FinisherActionTrajectory.FastTravelPixels,
-            fallbackDirection: impactX >= actorX ? 1f : -1f);
-
-        Assert.Equal(actorX, path.OriginalX);
-        Assert.Equal(impactX, path.TravelStartX);
-        Assert.Equal(impactX, path.TravelEndX);
-        Assert.Equal(impactX, path.ImpactX);
-    }
-
-    [Fact]
-    public void FinisherWithoutContinuousMovementTeleportsOnlyAtItsPeak()
-    {
-        FinisherApproachPath path = FinisherApproachPath.CreateToImpact(
-            FinisherApproachMode.TeleportAtPeak,
-            actorX: 20f,
-            impactX: 430f,
-            authoredTravel: 0f,
-            fallbackDirection: 1f);
-
-        Assert.Equal(20f, path.TravelStartX);
-        Assert.Equal(20f, path.TravelEndX);
-        Assert.Equal(430f, path.ImpactX);
-    }
-
-    [Theory]
-    [InlineData(0f, 500f, 330f, 450f)]
-    [InlineData(500f, 0f, 170f, 50f)]
+    [InlineData(0f, 450f, 1f, 330f)]
+    [InlineData(500f, 50f, -1f, 170f)]
     public void YamotoKokiFinisherKeepsItsContinuousPreparationLunge(
         float actorX,
-        float targetX,
-        float expectedStartX,
-        float expectedImpactX)
+        float impactX,
+        float fallbackDirection,
+        float expectedStartX)
     {
-        FinisherApproachPath path = FinisherApproachPath.Create(
-            FinisherApproachMode.PrepositionThenLunge,
+        float startX = FinisherActionTrajectory.ResolveIaiStartX(
             actorX,
-            targetX,
-            targetHalfWidth: 50f,
-            approachGap: 0f,
-            authoredTravel: FinisherActionTrajectory.SlowTravelPixels,
-            fallbackDirection: targetX >= actorX ? 1f : -1f);
+            impactX,
+            fallbackDirection);
 
-        Assert.Equal(expectedStartX, path.TravelStartX);
-        Assert.Equal(expectedImpactX, path.TravelEndX);
-        Assert.Equal(expectedImpactX, path.ImpactX);
+        Assert.Equal(expectedStartX, startX);
+        Assert.Equal(FinisherActionTrajectory.SlowTravelPixels, MathF.Abs(impactX - startX));
     }
 
     [Fact]
@@ -1014,99 +973,21 @@ public sealed class CombatLogicTests
     }
 #endif
 
-    [Fact]
-    public void BossDismembermentBuildsDeterministicConnectedRagdollWithinThePieceCap()
+    [Theory]
+    [InlineData(-1f, 0f, -200f)]
+    [InlineData(1f, 0.5f, 300f)]
+    [InlineData(0f, 1f, 400f)]
+    public void ArchitectLeadVelocityUsesTheImpactDirectionAndTrialSpeedRange(
+        float impactDirection,
+        float unitSample,
+        float expectedX)
     {
-        BossFragmentPoint[] points = Enumerable.Range(0, 20)
-            .Select(index => new BossFragmentPoint(
-                index % 4 * 50f,
-                index / 4 * 60f))
-            .ToArray();
+        BossFragmentPoint velocity = BossDismembermentMath.ResolveArchitectLeadVelocity(
+            impactDirection,
+            unitSample);
 
-        IReadOnlyList<BossFragmentLink> first = BossDismembermentMath.BuildRagdollLinks(points);
-        IReadOnlyList<BossFragmentLink> second = BossDismembermentMath.BuildRagdollLinks(points);
-
-        Assert.InRange(first.Count, 1, BossDismembermentMath.MaximumPieces - 1);
-        Assert.Equal(first, second);
-        Assert.All(first, link =>
-        {
-            Assert.InRange(link.FirstIndex, 0, BossDismembermentMath.MaximumPieces - 1);
-            Assert.InRange(link.SecondIndex, 0, BossDismembermentMath.MaximumPieces - 1);
-        });
-        List<int>[] adjacency = Enumerable.Range(0, BossDismembermentMath.MaximumPieces)
-            .Select(_ => new List<int>())
-            .ToArray();
-        foreach (BossFragmentLink link in first)
-        {
-            adjacency[link.FirstIndex].Add(link.SecondIndex);
-            adjacency[link.SecondIndex].Add(link.FirstIndex);
-        }
-
-        var visited = new HashSet<int>();
-        var componentSizes = new List<int>();
-        for (int start = 0; start < adjacency.Length; start++)
-        {
-            if (!visited.Add(start))
-            {
-                continue;
-            }
-
-            var queue = new Queue<int>();
-            queue.Enqueue(start);
-            int size = 0;
-            while (queue.TryDequeue(out int current))
-            {
-                size++;
-                foreach (int neighbor in adjacency[current])
-                {
-                    if (visited.Add(neighbor))
-                    {
-                        queue.Enqueue(neighbor);
-                    }
-                }
-            }
-
-            componentSizes.Add(size);
-        }
-
-        Assert.All(componentSizes, size => Assert.InRange(size, 1, 3));
-        Assert.Contains(3, componentSizes);
-    }
-
-    [Fact]
-    public void ArchitectSoftRagdollConnectsEveryFragmentUntilTheBurst()
-    {
-        BossFragmentPoint[] points = Enumerable.Range(0, 8)
-            .Select(index => new BossFragmentPoint(index % 4 * 50f, index / 4 * 60f))
-            .ToArray();
-
-        IReadOnlyList<BossFragmentLink> links =
-            BossDismembermentMath.BuildRagdollLinks(points, points.Length);
-
-        Assert.Equal(points.Length - 1, links.Count);
-        var visited = new HashSet<int> { 0 };
-        while (true)
-        {
-            int previousCount = visited.Count;
-            foreach (BossFragmentLink link in links)
-            {
-                if (visited.Contains(link.FirstIndex))
-                {
-                    visited.Add(link.SecondIndex);
-                }
-                if (visited.Contains(link.SecondIndex))
-                {
-                    visited.Add(link.FirstIndex);
-                }
-            }
-
-            if (visited.Count == previousCount)
-            {
-                break;
-            }
-        }
-
-        Assert.Equal(points.Length, visited.Count);
+        Assert.Equal(expectedX, velocity.X, 5);
+        Assert.Equal(0f, velocity.Y);
     }
 
     [Fact]
@@ -1351,9 +1232,6 @@ public sealed class CombatLogicTests
         Assert.True(
             body.ResolveAreaRatio() > 0.8f,
             $"area={body.ResolveAreaRatio():F3}, min={body.ResolveMinimumCellAreaRatio():F3}, "
-                + $"rollbacks={body.RollbackCount}, inversions={body.InversionCount}, "
-                + $"rejected_area={body.LastRejectedAreaRatio:F3}, "
-                + $"rejected_speed={body.LastRejectedParticleSpeed:F3}, "
                 + $"width={pumpedPoints.Max(point => point.X) - pumpedPoints.Min(point => point.X):F3}, "
                 + $"height={pumpedPoints.Max(point => point.Y) - pumpedPoints.Min(point => point.Y):F3}");
         Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
@@ -1419,18 +1297,16 @@ public sealed class CombatLogicTests
         second.Release(default, 0f);
         var solver = new BossSoftBodySolver();
         float openingDistance = MathF.Abs(second.Center.X - first.Center.X);
-        int openingContacts = 0;
         for (int step = 0; step < 8; step++)
         {
-            openingContacts += solver.Step(
+            solver.Step(
                 [first, second],
                 [],
                 1f / 60f,
                 gravity: 0f,
-                airDrag: 0.6f).Contacts;
+                airDrag: 0.6f);
         }
 
-        Assert.Equal(0, openingContacts);
         Assert.InRange(
             MathF.Abs(second.Center.X - first.Center.X),
             openingDistance - 0.01f,
@@ -1441,25 +1317,26 @@ public sealed class CombatLogicTests
             second.ApplyParticleCorrection(index, new BossFragmentPoint(180f, 0f));
         }
 
-        _ = solver.Step([first, second], [], 1f / 60f, gravity: 0f, airDrag: 0f);
+        solver.Step([first, second], [], 1f / 60f, gravity: 0f, airDrag: 0f);
         first.Release(new BossFragmentPoint(240f, 0f), 0f);
         second.Release(new BossFragmentPoint(-240f, 0f), 0f);
-        int contactStarts = 0;
-        for (int step = 0; step < 40 && contactStarts == 0; step++)
+        bool collided = false;
+        for (int step = 0; step < 40 && !collided; step++)
         {
-            contactStarts += solver.Step(
+            solver.Step(
                 [first, second],
                 [],
                 1f / 60f,
                 gravity: 0f,
-                airDrag: 0f).ContactStarts;
+                airDrag: 0f);
+            collided = second.CenterVelocity.X - first.CenterVelocity.X >= 0f;
         }
 
-        Assert.True(contactStarts > 0);
+        Assert.True(collided);
         float contactDistance = MathF.Abs(second.Center.X - first.Center.X);
         for (int step = 0; step < 60; step++)
         {
-            _ = solver.Step(
+            solver.Step(
                 [first, second],
                 [],
                 1f / 60f,
@@ -1480,39 +1357,47 @@ public sealed class CombatLogicTests
         Assert.True(second.ResolveMinimumCellAreaRatio() > 0f);
     }
 
-    [Fact]
-    public void ArchitectSoftRagdollUsesParticleFloorContactsAndUnbreakableLeadLinks()
+    [Theory]
+    [InlineData(-1f)]
+    [InlineData(1f)]
+    public void ArchitectLeadRemainsOneFiniteSoftBodyBeforeTheBurst(float impactDirection)
     {
-        SoftFragmentBody first = CreateSoftBody(1, new BossFragmentPoint(-45f, -90f), 1f);
-        SoftFragmentBody second = CreateSoftBody(2, new BossFragmentPoint(45f, -90f), 1f);
-        first.SetCollisionEnvelope(hullScale: 1f, marginScale: 0f);
-        second.SetCollisionEnvelope(hullScale: 1f, marginScale: 0f);
-        first.Release(new BossFragmentPoint(90f, -140f), 0.2f);
-        second.Release(new BossFragmentPoint(100f, -125f), -0.15f);
-        var link = new SoftRagdollLink(first, 7, second, 4, restLength: 90f)
-        {
-            CanBreak = false
-        };
+        SoftFragmentBody body = CreateSoftBody(
+            1,
+            new SoftBodyBounds(-90f, -140f, 180f, 100f));
+        body.SetMaterial(SoftBodyMaterialProfile.ArchitectLead);
+        body.SetCollisionEnvelope(hullScale: 1f, marginScale: 0f);
+        body.ConfigureDeformation(0x415243484C454144UL);
+        BossFragmentPoint velocity = BossDismembermentMath.ResolveArchitectLeadVelocity(
+            impactDirection,
+            unitSample: 0.5f);
+        var actuator = new SoftBodyLaunchActuator(body, velocity, 0.2f);
+        actuator.Begin();
+        Assert.InRange(MathF.Abs(body.CenterVelocity.X), 200f, 400f);
+        Assert.Equal(0f, body.CenterVelocity.Y, 5);
+
+        SoftFragmentBody[] bodies = [body];
+        Assert.Single(bodies);
+        float startX = body.Center.X;
         var solver = new BossSoftBodySolver();
-        for (int step = 0; step < 90; step++)
+        for (int step = 0; step < 54; step++)
         {
             solver.Step(
-                [first, second],
-                [link],
+                bodies,
+                [],
                 1f / 60f,
                 gravity: 860f,
                 airDrag: 0.08f,
-                floorY: 0f);
+                floorY: 0f,
+                launchActuators: [actuator],
+                centerSpeedLimit: BossSoftBodySolver.DefaultMaximumCenterSpeed);
         }
 
-        Assert.False(link.Broken);
+        Assert.True(body.HasFiniteState);
+        Assert.True(impactDirection * (body.Center.X - startX) > 100f);
+        Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
         Assert.All(Enumerable.Range(0, SoftFragmentBody.ParticleCount), index =>
-        {
-            Assert.True(first.GetParticlePosition(index).Y <= 0.001f);
-            Assert.True(second.GetParticlePosition(index).Y <= 0.001f);
-        });
-        Assert.True(first.ResolveMinimumCellAreaRatio() > 0f);
-        Assert.True(second.ResolveMinimumCellAreaRatio() > 0f);
+            Assert.True(body.GetParticlePosition(index).Y <= 0.001f));
     }
 
     [Fact]
@@ -1638,25 +1523,20 @@ public sealed class CombatLogicTests
         second.Release(new BossFragmentPoint(-180f, 0f), 0f);
 
         var solver = new BossSoftBodySolver();
-        int manifolds = 0;
-        int maximumManifoldsPerStep = 0;
-        float energyBefore = 0f;
-        float energyAfter = 0f;
+        float energyBefore = first.ResolveKineticEnergy() + second.ResolveKineticEnergy();
         float maximumCenterSpeed = 0f;
         float relativeHorizontalSpeed = float.NegativeInfinity;
         for (int frame = 0; frame < 60; frame++)
         {
-            SoftBodyStepMetrics metrics = solver.Step(
+            solver.Step(
                 [first, second],
                 [],
                 1f / 60f,
                 gravity: 0f,
                 airDrag: 0f);
-            manifolds += metrics.Contacts;
-            maximumManifoldsPerStep = Math.Max(maximumManifoldsPerStep, metrics.Contacts);
-            energyBefore += metrics.ContactEnergyBefore;
-            energyAfter += metrics.ContactEnergyAfter;
-            maximumCenterSpeed = Math.Max(maximumCenterSpeed, metrics.MaximumCenterSpeed);
+            maximumCenterSpeed = Math.Max(
+                maximumCenterSpeed,
+                Math.Max(first.ResolveCenterSpeed(), second.ResolveCenterSpeed()));
             relativeHorizontalSpeed = second.CenterVelocity.X - first.CenterVelocity.X;
             if (relativeHorizontalSpeed >= 0f)
             {
@@ -1664,12 +1544,12 @@ public sealed class CombatLogicTests
             }
         }
 
+        float energyAfter = first.ResolveKineticEnergy() + second.ResolveKineticEnergy();
         Assert.True(
             relativeHorizontalSpeed is >= 1f and <= 360f,
-            $"relative={relativeHorizontalSpeed:F3}, manifolds={manifolds}, "
+            $"relative={relativeHorizontalSpeed:F3}, "
                 + $"energy_before={energyBefore:F3}, energy_after={energyAfter:F3}");
         Assert.True(energyAfter <= energyBefore * 1.011f + 1f);
-        Assert.InRange(maximumManifoldsPerStep, 1, BossSoftBodySolver.MaximumSubsteps);
         Assert.InRange(
             maximumCenterSpeed,
             0f,
@@ -1741,6 +1621,46 @@ public sealed class CombatLogicTests
             center,
             compressedScale,
             mass: 1f);
+    }
+
+    private static SoftFragmentBody CreateSoftBody(int id, SoftBodyBounds bounds)
+    {
+        BossFragmentPoint[] grid = BuildSoftBodyGrid(bounds);
+        SoftBodyHullPoint[] hull =
+        [
+            new(new BossFragmentPoint(bounds.X, bounds.Y), 0f, 0f),
+            new(new BossFragmentPoint(bounds.X + bounds.Width, bounds.Y), 1f, 0f),
+            new(new BossFragmentPoint(
+                bounds.X + bounds.Width,
+                bounds.Y + bounds.Height), 1f, 1f),
+            new(new BossFragmentPoint(bounds.X, bounds.Y + bounds.Height), 0f, 1f)
+        ];
+        return new SoftFragmentBody(
+            id,
+            grid,
+            hull,
+            bounds.Center,
+            compressedScale: 1f,
+            mass: 1f,
+            collisionMargin: 0f);
+    }
+
+    private static BossFragmentPoint[] BuildSoftBodyGrid(SoftBodyBounds bounds)
+    {
+        var grid = new BossFragmentPoint[SoftFragmentBody.ParticleCount];
+        for (int row = 0; row < SoftFragmentBody.GridSize; row++)
+        {
+            for (int column = 0; column < SoftFragmentBody.GridSize; column++)
+            {
+                float u = column / (float)(SoftFragmentBody.GridSize - 1);
+                float v = row / (float)(SoftFragmentBody.GridSize - 1);
+                grid[row * SoftFragmentBody.GridSize + column] = new BossFragmentPoint(
+                    bounds.X + bounds.Width * u,
+                    bounds.Y + bounds.Height * v);
+            }
+        }
+
+        return grid;
     }
 
     private static float SmoothStep(float start, float end, float value)
@@ -1917,7 +1837,8 @@ public sealed class CombatLogicTests
 
                 return true;
             },
-            singleTarget);
+            singleTarget,
+            IsVictoryBlocking: state => state.Hp > 0 && state.IsPrimary);
     }
 
     private static FinisherForecastSimulation<ForecastTestState, ForecastTestState>
@@ -1962,8 +1883,13 @@ public sealed class CombatLogicTests
 
                 return true;
             },
-            PostEffects: effects);
+            PostEffects: effects,
+            IsVictoryBlocking: state => state.Hp > 0 && state.IsPrimary);
     }
 
-    private readonly record struct ForecastTestState(int Hp, int Block, int Karate);
+    private readonly record struct ForecastTestState(
+        int Hp,
+        int Block,
+        int Karate,
+        bool IsPrimary = true);
 }

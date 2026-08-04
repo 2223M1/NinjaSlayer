@@ -38,46 +38,9 @@ internal sealed record FinisherForecastEffect(
     CardPlay? CardPlay,
     FinisherForecastEffectTargeting Targeting);
 
-internal interface IFinisherForecastContributor
-{
-    bool TryCreateEffect(Creature owner, FinisherAttackSpec spec, out FinisherForecastEffect? effect);
-}
-
-internal sealed class KusarigamaFinisherForecastContributor : IFinisherForecastContributor
-{
-    public bool TryCreateEffect(Creature owner, FinisherAttackSpec spec, out FinisherForecastEffect? effect)
-    {
-        effect = null;
-        Kusarigama? kusarigama = owner.Player?.GetRelic<Kusarigama>();
-        if (kusarigama == null || spec.Card.Type != CardType.Attack)
-        {
-            return false;
-        }
-
-        int cardsPerTrigger = kusarigama.DynamicVars.Cards.IntValue;
-        if (cardsPerTrigger <= 0 || kusarigama.DisplayAmount != cardsPerTrigger - 1)
-        {
-            return false;
-        }
-
-        effect = new FinisherForecastEffect(
-            kusarigama.DynamicVars.Damage.BaseValue,
-            kusarigama.DynamicVars.Damage.Props,
-            owner,
-            null,
-            null,
-            FinisherForecastEffectTargeting.Random);
-        return true;
-    }
-}
-
 internal static class FinisherForecast
 {
     private static readonly FrameScopedCache<FinisherForecastFrameKey, CachedForecast> FrameCache = new();
-    private static readonly IFinisherForecastContributor[] PostCardContributors =
-    [
-        new KusarigamaFinisherForecastContributor()
-    ];
 
     public static FinisherForecastOutcome Evaluate(
         Creature owner,
@@ -112,11 +75,19 @@ internal static class FinisherForecast
             .Select((enemy, index) => (enemy, index))
             .ToDictionary(pair => pair.enemy, pair => pair.index);
         List<FinisherForecastEffect> forecastEffects = [];
-        foreach (IFinisherForecastContributor contributor in PostCardContributors)
+        Kusarigama? kusarigama = owner.Player?.GetRelic<Kusarigama>();
+        if (kusarigama != null && spec.Card.Type == CardType.Attack)
         {
-            if (contributor.TryCreateEffect(owner, spec, out FinisherForecastEffect? effect) && effect != null)
+            int cardsPerTrigger = kusarigama.DynamicVars.Cards.IntValue;
+            if (cardsPerTrigger > 0 && kusarigama.DisplayAmount == cardsPerTrigger - 1)
             {
-                forecastEffects.Add(effect);
+                forecastEffects.Add(new FinisherForecastEffect(
+                    kusarigama.DynamicVars.Damage.BaseValue,
+                    kusarigama.DynamicVars.Damage.Props,
+                    owner,
+                    null,
+                    null,
+                    FinisherForecastEffectTargeting.Random));
             }
         }
 
@@ -124,7 +95,8 @@ internal static class FinisherForecast
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>())).ToArray();
+            enemy.GetPowerAmount<KaratePower>(),
+            enemy.IsPrimaryEnemy)).ToArray();
         Creature? singleTarget = descriptor.SingleTarget ?? spec.CardPlay.Target;
         int? singleTargetIndex = singleTarget != null && enemyIndices.TryGetValue(singleTarget, out int singleIndex)
             ? singleIndex
@@ -141,7 +113,7 @@ internal static class FinisherForecast
             FinisherTargeting.Fixed => FinisherForecastTargeting.Fixed,
             _ => throw new ArgumentOutOfRangeException(nameof(spec), descriptor.Targeting, null)
         };
-        if (targeting == FinisherForecastTargeting.Single && (enemies.Count != 1 || singleTargetIndex == null)
+        if (targeting == FinisherForecastTargeting.Single && singleTargetIndex == null
             || targeting == FinisherForecastTargeting.Fixed
             && (fixedTargets is not { Length: > 0 } || fixedTargets.Length != descriptor.FixedTargets!.Count))
         {
@@ -196,7 +168,7 @@ internal static class FinisherForecast
             hits,
             targeting,
             state => state.Hp > 0,
-            state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
+            state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
             (current, targets, hitIndex) =>
             {
                 ApplyHit(owner, enemies, current, spec, damageByTarget, narakuHpLoss, targets, hitIndex);
@@ -204,7 +176,8 @@ internal static class FinisherForecast
             },
             singleTargetIndex,
             fixedTargets,
-            postCardEffects);
+            postCardEffects,
+            state => state.Hp > 0 && state.IsPrimaryEnemy);
         FinisherForecastOutcome outcome = FinisherForecastEngine.Evaluate(simulation);
         FrameCache.Store(frame, cacheKey, new CachedForecast(outcome, result));
         return outcome;
@@ -258,14 +231,15 @@ internal static class FinisherForecast
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>())).ToArray();
+            enemy.GetPowerAmount<KaratePower>(),
+            enemy.IsPrimaryEnemy)).ToArray();
         decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
         var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
             states,
             descriptor.HitCount,
             targeting,
             state => state.Hp > 0,
-            state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
+            state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
             (current, targets, _) =>
             {
                 ApplyActionDamage(
@@ -283,7 +257,8 @@ internal static class FinisherForecast
                 return true;
             },
             singleTargetIndex,
-            fixedTargets);
+            fixedTargets,
+            IsVictoryBlocking: state => state.Hp > 0 && state.IsPrimaryEnemy);
         return FinisherForecastEngine.Evaluate(simulation);
     }
 
@@ -307,7 +282,8 @@ internal static class FinisherForecast
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>())).ToArray();
+            enemy.GetPowerAmount<KaratePower>(),
+            enemy.IsPrimaryEnemy)).ToArray();
         Creature[] missileDealers = [.. missiles];
         decimal[] missileDamage = missileDealers
             .Select(missile => (decimal)((YamotoKokiOrigamiMissile)missile.Monster!).GetExplodeDamage())
@@ -341,7 +317,7 @@ internal static class FinisherForecast
             missileDealers.Length,
             FinisherForecastTargeting.Random,
             state => state.Hp > 0,
-            state => new ForecastStateKey(state.Hp, state.Block, state.Karate),
+            state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
             (current, targets, hitIndex) =>
             {
                 if (hitIndex < 0 || hitIndex >= missileDealers.Length)
@@ -365,7 +341,8 @@ internal static class FinisherForecast
 
                 return true;
             },
-            PostEffects: postEffects);
+            PostEffects: postEffects,
+            IsVictoryBlocking: state => state.Hp > 0 && state.IsPrimaryEnemy);
         return FinisherForecastEngine.Evaluate(
             simulation,
             branchQuantifier: FinisherForecastBranchQuantifier.AnyBranch);
@@ -587,8 +564,8 @@ internal static class FinisherForecast
     // A value type: the search mutates state through `with` expressions on up to
     // FinisherForecastEngine.DefaultMaximumSearchStates nodes, and as a record class every one of
     // those was a heap allocation during targeting.
-    private readonly record struct ForecastState(int Hp, int Block, int Karate);
-    private readonly record struct ForecastStateKey(int Hp, int Block, int Karate);
+    private readonly record struct ForecastState(int Hp, int Block, int Karate, bool IsPrimaryEnemy);
+    private readonly record struct ForecastStateKey(int Hp, int Block, int Karate, bool IsPrimaryEnemy);
     private readonly record struct CachedForecast(
         FinisherForecastOutcome Outcome,
         FinisherForecastResult Result);

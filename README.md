@@ -28,8 +28,8 @@ NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围
 
 ### Steam 创意工坊
 
-1. 订阅并启用 [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
-2. 订阅 [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)。
+1. 通过链接订阅 [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)；该条目不会出现在公开列表或搜索中。
+2. 订阅并启用 [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
 3. 启动游戏，在 Mod 管理器中启用 `STS2-RitsuLib` 与 `NinjaSlayer`。
 
 ### 手动安装
@@ -49,7 +49,7 @@ NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围
 | Godot | `4.5.1 Mono` |
 | 游戏内语言 | 目前主要提供简体中文 |
 
-GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。公开 Workshop item 只发布 stable；preview 测试 item 建立后会在此补充链接，两个 NinjaSlayer item 不得同时启用。
+GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；该条目只上传 stable，preview 不上传 Workshop。
 <!-- compatibility:end -->
 
 英文 README 仅用于项目文档与安装说明，不代表游戏内已提供完整英文文本。
@@ -69,7 +69,7 @@ dotnet build .\NinjaSlayer.csproj --no-restore -c Release -v:minimal
 
 ## 相关链接
 
-- [Steam 创意工坊](https://steamcommunity.com/sharedfiles/filedetails/?id=3761570842)
+- [Steam 创意工坊（非公开链接）](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)
 - [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases)
 - [问题反馈](https://github.com/2223M1/NinjaSlayer/issues)
 - [卡牌目录](Docs/card-catalog.md)

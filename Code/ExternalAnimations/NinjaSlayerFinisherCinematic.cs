@@ -21,12 +21,6 @@ internal enum FinisherTargeting
     Fixed
 }
 
-internal enum FinisherPresentationMode
-{
-    Legacy,
-    Enhanced
-}
-
 internal sealed record FinisherAttackSpec(
     CardModel Card,
     CardPlay CardPlay,
@@ -114,17 +108,6 @@ internal static class NinjaSlayerFinisherCinematic
     {
         FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
         return session?.Actor == creature ? session.EnsureActionPeak() : Task.CompletedTask;
-    }
-
-    internal static Task WrapOwnedTriggerAtActionPeak(
-        Creature creature,
-        string triggerName,
-        Task original)
-    {
-        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
-        return session?.Actor == creature
-            ? session.WrapTriggerAtActionPeak(creature, triggerName, original)
-            : original;
     }
 
     internal static void TryProtectLethalDamage(
@@ -274,7 +257,6 @@ internal static class NinjaSlayerFinisherCinematic
                 spec,
                 command,
                 entryPoint,
-                actionAdapter: null,
                 out FinisherSession? session))
         {
             return await ExecuteOriginalCommand(command, choiceContext);
@@ -285,15 +267,6 @@ internal static class NinjaSlayerFinisherCinematic
         try
         {
             await session.Begin();
-            if (GameCompatibility.Finisher.TryReadAttackCommand(
-                    command,
-                    out GameCompatibility.AttackCommandState commandState)
-                && (!commandState.ShouldPlayAnimation
-                    || string.IsNullOrWhiteSpace(commandState.AttackerAnimName)))
-            {
-                await session.EnsureActionPeak();
-            }
-
             AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
             if (session.RequiresAfterCardPlayed)
             {
@@ -338,7 +311,6 @@ internal static class NinjaSlayerFinisherCinematic
                 spec,
                 command: null,
                 entryPoint: "explicit-sequence",
-                actionAdapter: FinisherActionAdapters.Instant,
                 out FinisherSession? session))
         {
             await sequence();
@@ -401,7 +373,6 @@ internal static class NinjaSlayerFinisherCinematic
                 spec,
                 command: null,
                 entryPoint: entryPoint,
-                actionAdapter: FinisherActionAdapters.Instant,
                 out FinisherSession? session))
         {
             await damageAction();
@@ -413,7 +384,6 @@ internal static class NinjaSlayerFinisherCinematic
         try
         {
             await session.Begin();
-            await session.EnsureActionPeak();
             await damageAction();
             if (session.RequiresAfterCardPlayed)
             {

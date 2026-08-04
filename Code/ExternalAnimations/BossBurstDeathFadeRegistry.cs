@@ -10,7 +10,6 @@ internal static class BossBurstDeathFadeRegistry
 
     public static void MarkPlaybackSuppressed(NMonsterDeathVfx vfx)
     {
-        ArgumentNullException.ThrowIfNull(vfx);
         lock (Gate)
         {
             SuppressedPlayback.Remove(vfx);
@@ -20,7 +19,6 @@ internal static class BossBurstDeathFadeRegistry
 
     public static bool ConsumePlaybackSuppression(NMonsterDeathVfx vfx)
     {
-        ArgumentNullException.ThrowIfNull(vfx);
         lock (Gate)
         {
             return SuppressedPlayback.Remove(vfx);

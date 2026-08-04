@@ -140,7 +140,6 @@ public static class NinjaSlayerFeedbackClient
             submittedAtUtc,
             modVersion = NinjaSlayerVersion.Current,
             characterId = player?.Character.Id.ToString() ?? "unknown",
-            isDebugCharacter = player?.Character is NinjaSlayerDebugCharacter,
             seed = runState?.Rng.StringSeed,
             currentActIndex = runState?.CurrentActIndex,
             actId = runState?.Act.Id.ToString(),

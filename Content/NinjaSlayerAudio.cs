@@ -76,8 +76,4 @@ public static class NinjaSlayerAudio
     /// <summary>FMOD clip length for ninja_slayer_outro_spin_attack.</summary>
     public const float OutroSpinAttackSeconds = 1.114f;
 
-    // Legacy aliases kept for any external references.
-    public const string CharacterAttackEvent = NinjaSlayerFastAttackEvent;
-    public const string CharacterDeathEvent = NinjaSlayerDeathEvent;
-    public const string CharacterHurtEvent = NinjaSlayerHurtEvent;
 }

@@ -14,7 +14,6 @@ internal static partial class GameCompatibility
 
         public static Player GetPlayer(CardPlay cardPlay)
         {
-            ArgumentNullException.ThrowIfNull(cardPlay);
             return Players.TryGetValue(cardPlay, out PlayerHolder? holder)
                 ? holder.Player
                 : cardPlay.Card.Owner;
@@ -22,8 +21,6 @@ internal static partial class GameCompatibility
 
         public static void AssociatePlayer(CardPlay cardPlay, Player player)
         {
-            ArgumentNullException.ThrowIfNull(cardPlay);
-            ArgumentNullException.ThrowIfNull(player);
             Players.Remove(cardPlay);
             Players.Add(cardPlay, new PlayerHolder(player));
         }
@@ -32,7 +29,6 @@ internal static partial class GameCompatibility
 #else
         public static Player GetPlayer(CardPlay cardPlay)
         {
-            ArgumentNullException.ThrowIfNull(cardPlay);
             return cardPlay.Player;
         }
 
@@ -49,15 +45,12 @@ internal static partial class GameCompatibility
 
         public static void AssociateCardPlay(AttackCommand command, CardPlay cardPlay)
         {
-            ArgumentNullException.ThrowIfNull(command);
-            ArgumentNullException.ThrowIfNull(cardPlay);
             CardPlays.Remove(command);
             CardPlays.Add(command, new CardPlayHolder(cardPlay));
         }
 
         public static bool TryGetCardPlay(AttackCommand command, out CardPlay? cardPlay)
         {
-            ArgumentNullException.ThrowIfNull(command);
             if (CardPlays.TryGetValue(command, out CardPlayHolder? holder))
             {
                 cardPlay = holder.CardPlay;
@@ -76,7 +69,6 @@ internal static partial class GameCompatibility
 
         public static bool TryGetCardPlay(AttackCommand command, out CardPlay? cardPlay)
         {
-            ArgumentNullException.ThrowIfNull(command);
             cardPlay = command.CardPlay;
             return cardPlay != null;
         }

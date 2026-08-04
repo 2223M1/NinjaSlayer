@@ -33,15 +33,11 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         }
 
         bool wasPending = NinjaSlayerTransitionGate.ConsumePendingRequest();
-        TransitionInvocationKind invocationKind = wasPending
-            ? TransitionInvocationKind.Embark
-            : TransitionInvocationKind.SaveLoad;
 
         // Start playback independently, then release loading at the established media cue.
         // The reveal patches (RoomFadeIn/FadeIn) still await the full presentation task.
         if (!NinjaSlayerTransitionGate.TryStartSession(
                 __instance,
-                invocationKind,
                 BeginNinjaSlayerTransition,
                 cancelToken ?? CancellationToken.None,
                 out NinjaSlayerTransitionSession? session))

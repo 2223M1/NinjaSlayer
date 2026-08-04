@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
@@ -17,29 +16,10 @@ public partial class NinjaSlayerTransitionOverlay : Control
     private const float PlaybackTimeoutPaddingSeconds = 1f;
 
     private VideoStreamPlayer? videoPlayer;
-    private TransitionPerformanceTrace? performanceTrace;
 
     public override void _Ready()
     {
         EnsureInitialized();
-    }
-
-    public override void _Process(double delta)
-    {
-        // The overlay outlives every session under the persistent NTransition. Without an early
-        // exit its three interop calls ran on every frame of the game for nothing.
-        if (performanceTrace is null)
-        {
-            SetProcess(false);
-            return;
-        }
-
-        double? videoPosition = videoPlayer is not null
-            && GodotObject.IsInstanceValid(videoPlayer)
-            && videoPlayer.IsPlaying()
-                ? videoPlayer.StreamPosition
-                : null;
-        performanceTrace?.RecordFrame(delta, videoPosition);
     }
 
     private void EnsureInitialized()
@@ -84,20 +64,9 @@ public partial class NinjaSlayerTransitionOverlay : Control
         }
 
         using var hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
-        TransitionPerformanceTrace? trace = performanceTrace;
-        SetProcess(true);
         try
         {
-            long streamStartedAt = Stopwatch.GetTimestamp();
-            VideoStream stream;
-            try
-            {
-                stream = NinjaSlayerTransitionVideo.GetStream();
-            }
-            finally
-            {
-                trace?.RecordStreamAcquire(Stopwatch.GetElapsedTime(streamStartedAt));
-            }
+            VideoStream stream = NinjaSlayerTransitionVideo.GetStream();
 
             // Assigning Stream instantiates the Theora decoder on the main thread. The overlay is
             // reused across sessions, so only the first transition of a process pays for it.
@@ -110,28 +79,13 @@ public partial class NinjaSlayerTransitionOverlay : Control
             SelfModulate = Colors.White;
             Visible = true;
 
-            long playStartedAt = Stopwatch.GetTimestamp();
-            try
-            {
-                videoPlayer.Play();
-            }
-            finally
-            {
-                trace?.RecordPlayCall(Stopwatch.GetElapsedTime(playStartedAt));
-            }
-            trace?.MarkVideoStarted();
+            videoPlayer.Play();
 
             double elapsed = 0.0;
-            bool firstProcessFrame = true;
             float timeout = Math.Max(duration, 0f) + PlaybackTimeoutPaddingSeconds;
             while (videoPlayer.IsPlaying() && elapsed < timeout)
             {
                 elapsed += await this.AwaitProcessFrame(cancelToken);
-                if (firstProcessFrame)
-                {
-                    trace?.RecordFirstPostPlayFrame();
-                    firstProcessFrame = false;
-                }
             }
 
             if (videoPlayer.IsPlaying())
@@ -141,9 +95,6 @@ public partial class NinjaSlayerTransitionOverlay : Control
         }
         finally
         {
-            // MarkVideoStopped is idempotent; the local trace also covers the case where the
-            // session detached it before this task unwound.
-            trace?.MarkVideoStopped();
             StopPlayback();
         }
     }
@@ -152,27 +103,12 @@ public partial class NinjaSlayerTransitionOverlay : Control
     {
         if (videoPlayer != null && GodotObject.IsInstanceValid(videoPlayer))
         {
-            performanceTrace?.MarkVideoStopped();
             videoPlayer.Stop();
         }
 
         if (GodotObject.IsInstanceValid(this))
         {
             Visible = false;
-        }
-    }
-
-    internal void AttachPerformanceTrace(TransitionPerformanceTrace trace)
-    {
-        ArgumentNullException.ThrowIfNull(trace);
-        performanceTrace = trace;
-    }
-
-    internal void DetachPerformanceTrace(TransitionPerformanceTrace trace)
-    {
-        if (ReferenceEquals(performanceTrace, trace))
-        {
-            performanceTrace = null;
         }
     }
 

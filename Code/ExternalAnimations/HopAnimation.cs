@@ -11,17 +11,6 @@ public static class HopAnimation
     private static readonly Dictionary<ulong, Vector2> _basePositions = new();
     private static readonly Dictionary<ulong, Tween> _activeTweens = new();
 
-    public static void RegisterBasePosition(Creature creature)
-    {
-        var anchor = GetHopTarget(creature);
-        if (anchor != null)
-        {
-            var id = anchor.GetInstanceId();
-            StopActiveTween(id, anchor);
-            _basePositions[id] = anchor.Position;
-        }
-    }
-
     public static void SyncBasePosition(Creature creature, Vector2 basePosition)
     {
         var anchor = GetHopTarget(creature);

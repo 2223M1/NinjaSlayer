@@ -42,14 +42,12 @@ internal static class NinjaSlayerTransitionGate
     /// </summary>
     internal static bool TryStartSession(
         NTransition transition,
-        TransitionInvocationKind invocationKind,
         Func<NinjaSlayerTransitionSession, CancellationToken, Task> startAnimation,
         CancellationToken cancellationToken,
         out NinjaSlayerTransitionSession? session)
     {
         var next = new NinjaSlayerTransitionSession(
             new TransitionViewAdapter(transition),
-            invocationKind,
             cancellationToken);
         NinjaSlayerTransitionSession? previous;
         lock (SyncRoot)

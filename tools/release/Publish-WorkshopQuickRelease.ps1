@@ -9,7 +9,6 @@ param(
     [string] $ReleaseNoteFile = 'Workshop\change-note.md',
     [string] $WorkshopUploadRoot,
     [string] $Sts2DataDir,
-    [string] $SteamModDir,
     [string] $GodotExe,
     [switch] $Confirm
 )
@@ -124,13 +123,6 @@ elseif (-not [string]::IsNullOrWhiteSpace($env:NINJASLAYER_STS2_STABLE_DATA_DIR)
 else {
     throw 'Stable Workshop publication requires -Sts2DataDir or NINJASLAYER_STS2_STABLE_DATA_DIR.'
 }
-$localInstallDirectory = if (-not [string]::IsNullOrWhiteSpace($SteamModDir)) {
-    [IO.Path]::GetFullPath($SteamModDir)
-}
-else {
-    Join-Path (Split-Path -Parent $stableDataDirectory) 'mods\NinjaSlayer'
-}
-
 Write-Host ''
 Write-Host "Publishing NinjaSlayer $tag to Steam Workshop only" -ForegroundColor Cyan
 Write-Host "Release note: $releaseNote"
@@ -154,8 +146,7 @@ $channelBuildParameters = @{
     Channel = 'stable'
     Version = $Version
     Sts2DataDir = $stableDataDirectory
-    Target = 'InstallLocalAndStageWorkshop'
-    SteamModDir = $localInstallDirectory
+    Target = 'StageWorkshop'
     WorkshopContentDir = $workshopContentDirectory
     BuildRoot = (Join-Path $repositoryRoot 'build\channel-build')
 }

@@ -1,7 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Nodes;
 using NinjaSlayer.Code.Nodes;
-using NinjaSlayer.Code.Diagnostics;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Transition;
@@ -15,24 +14,20 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     private readonly object _presentationSync = new();
     private readonly TransitionCompletionProtocol _protocol;
     private readonly TransitionViewReadiness _viewReadiness = new();
-    private readonly ITransitionViewAdapter _view;
-    private readonly TransitionInvocationKind _invocationKind;
+    private readonly TransitionViewAdapter _view;
     private Task _animationTask = Task.CompletedTask;
     private int _loadSmoothingStarted;
     private int _animationSmoothingEnded;
     private int _loadSmoothingCompleted;
     private int _disposed;
-    private TransitionPerformanceTrace? _performanceTrace;
     private TransitionNodeProcessLease? _presentationLease;
     private NRun? _presentationRoot;
 
     public NinjaSlayerTransitionSession(
-        ITransitionViewAdapter view,
-        TransitionInvocationKind invocationKind,
+        TransitionViewAdapter view,
         CancellationToken externalCancellation)
     {
         _view = view;
-        _invocationKind = invocationKind;
         _externalCancellation = externalCancellation;
         _lifetime = CancellationTokenSource.CreateLinkedTokenSource(externalCancellation);
         _protocol = new TransitionCompletionProtocol(Interlocked.Increment(ref _nextSessionId));
@@ -67,7 +62,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
     public NinjaSlayerTransitionOverlay PrepareAnimatedView()
     {
-        NinjaSlayerTransitionOverlay overlay = _view.PrepareAnimated(_performanceTrace);
+        NinjaSlayerTransitionOverlay overlay = _view.PrepareAnimated();
         _viewReadiness.TryMarkReady();
         return overlay;
     }
@@ -166,7 +161,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     {
         if (Interlocked.CompareExchange(ref _loadSmoothingStarted, 1, 0) == 0)
         {
-            _performanceTrace = NinjaSlayerTransitionLoadSmoothing.BeginSession(SessionId, _invocationKind);
+            NinjaSlayerTransitionLoadSmoothing.BeginSession(SessionId);
         }
     }
 
@@ -205,9 +200,7 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         }
 
         var cleanupFailures = new List<Exception>();
-        TransitionPerformanceTrace? performanceTrace = _performanceTrace;
-        TransitionGcCounts endingGcCounts = TransitionGcCounts.Capture();
-        TransitionLoadSmoothingCompletion loadSmoothing = TransitionLoadSmoothingCompletion.None;
+        Exception? collectionFailure = null;
         _viewReadiness.TryMarkUnavailable();
         CaptureCleanup(cleanupFailures, () => CompletePresentation(status));
         CaptureCleanup(cleanupFailures, ReleasePresentationRootLifetime);
@@ -215,15 +208,9 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         CaptureCleanup(cleanupFailures, _view.StopPlayback);
         CaptureCleanup(cleanupFailures, EndAnimationSmoothing);
         CaptureCleanup(cleanupFailures, () => RestoreTransition(forceRelease));
-        if (performanceTrace is not null)
-        {
-            CaptureCleanup(cleanupFailures, () => _view.DetachPerformanceTrace(performanceTrace));
-        }
-
         CaptureCleanup(cleanupFailures, () =>
         {
-            endingGcCounts = TransitionGcCounts.Capture();
-            loadSmoothing = CompleteLoadSmoothing(endingGcCounts);
+            collectionFailure = CompleteLoadSmoothing(TransitionGcCounts.Capture());
         });
 
         if (cleanupFailures.Count > 0)
@@ -238,24 +225,14 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
                 string.Join(System.Environment.NewLine, cleanupFailures));
         }
 
-        if (performanceTrace is not null)
+        if (collectionFailure is not null)
         {
-            TransitionPerformanceSnapshot snapshot = performanceTrace.Complete(
-                status,
-                endingGcCounts,
-                loadSmoothing.GcFlush,
-                loadSmoothing.NoGcRegion);
-            Entry.Logger.Info(snapshot.ToLogMessage());
-            if (loadSmoothing.GcFlush.Attempted && !loadSmoothing.GcFlush.Succeeded)
-            {
-                Entry.Logger.Warn(
-                    $"NinjaSlayer transition session {SessionId} could not request optimized non-blocking GC " +
-                    $"({loadSmoothing.GcFlush.ErrorType ?? "unknown"}); natural GC will reclaim the deferred assets.");
-            }
+            Entry.Logger.Warn(
+                $"NinjaSlayer transition session {SessionId} could not request optimized non-blocking GC " +
+                $"({collectionFailure.GetType().Name}); natural GC will reclaim the deferred assets.");
         }
 
         var result = new TransitionCompletionResult(SessionId, status, diagnostic);
-        NinjaSlayerRuntimeCounters.RecordTransition(result.Status);
         _protocol.Finish(result);
         NinjaSlayerTransitionGate.OnSessionCompleted(this);
         Dispose();
@@ -430,13 +407,13 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         }
     }
 
-    private TransitionLoadSmoothingCompletion CompleteLoadSmoothing(
+    private Exception? CompleteLoadSmoothing(
         TransitionGcCounts endingGcCounts)
     {
         if (Volatile.Read(ref _loadSmoothingStarted) == 0
             || Interlocked.CompareExchange(ref _loadSmoothingCompleted, 1, 0) != 0)
         {
-            return TransitionLoadSmoothingCompletion.None;
+            return null;
         }
 
         return NinjaSlayerTransitionLoadSmoothing.CompleteSession(SessionId, endingGcCounts);

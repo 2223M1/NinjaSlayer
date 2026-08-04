@@ -13,9 +13,6 @@ internal static class LegacyAttackCommandExtensions
         CardModel card,
         CardPlay cardPlay)
     {
-        ArgumentNullException.ThrowIfNull(command);
-        ArgumentNullException.ThrowIfNull(card);
-        ArgumentNullException.ThrowIfNull(cardPlay);
         GameCompatibility.CardPlays.AssociatePlayer(cardPlay, card.Owner);
         GameCompatibility.AttackCommands.AssociateCardPlay(command, cardPlay);
         return command.FromCard(card);

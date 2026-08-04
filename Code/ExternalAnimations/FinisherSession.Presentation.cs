@@ -58,8 +58,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private void StartBackdropDarkening()
     {
-        if (FinisherPresentationSettings.Mode != FinisherPresentationMode.Enhanced
-            || _enhancedImpactFailed
+        if (_enhancedImpactFailed
             || _presentation == null
             || _backdropDarkeningStarted)
         {
@@ -194,9 +193,10 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private Vector2 GetCameraFocusPoint()
     {
         Vector2 focusPoint = _camera.GetLocalCenter(GetCameraFocus());
-        if (_actionAdapter.RequiresPositioning && GodotObject.IsInstanceValid(_actorNode))
+        if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash
+            && GodotObject.IsInstanceValid(_actorNode))
         {
-            focusPoint += _actionContext.ImpactPosition - _actorNode.Position;
+            focusPoint += _impactPosition - _actorNode.Position;
         }
 
         return focusPoint;
@@ -586,7 +586,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         Vector2 cameraFrom = _camera.CurrentPosition;
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
-        float actorReturnSeconds = _actionAdapter.ReturnSeconds;
+        float actorReturnSeconds = Scenario == FinisherScenarioKind.YamotoKokiIaiSlash
+            ? FinisherActionTrajectory.SlowTravelSeconds
+            : ReturnSeconds;
         float totalReturnSeconds = Math.Max(ReturnSeconds, actorReturnSeconds);
         float elapsed = 0f;
         while (elapsed < totalReturnSeconds)
