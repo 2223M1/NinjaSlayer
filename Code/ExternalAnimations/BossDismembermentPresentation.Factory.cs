@@ -232,6 +232,7 @@ public sealed partial class BossDismembermentPresentation
                 snapshot.BodyBaselineScreenBounds);
             presentation._burstOrigin = presentation.ToLocalPoint(bodyExplosionCenter);
             presentation.InitializeSoftBodies(
+                creature,
                 partition,
                 preparedFragments,
                 zIndex,
@@ -239,7 +240,8 @@ public sealed partial class BossDismembermentPresentation
                 architectFallDirection,
                 detachedExplosionCenter);
             presentation.FollowArchitectCamera();
-            if (GodotObject.IsInstanceValid(creature.Body))
+            if (mode != PresentationMode.ArchitectLead
+                && GodotObject.IsInstanceValid(creature.Body))
             {
                 creature.Body.Visible = false;
             }

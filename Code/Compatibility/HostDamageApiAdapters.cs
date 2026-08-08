@@ -80,26 +80,6 @@ namespace NinjaSlayer.Powers
 #endif
     }
 
-    public sealed partial class EvasionPower
-    {
-#if NINJASLAYER_LEGACY_DAMAGE_API
-        public override decimal ModifyDamageCap(
-            Creature? target,
-            ValueProp props,
-            Creature? dealer,
-            CardModel? cardSource) =>
-            ModifyDamageCapCore(target, props, dealer, cardSource);
-#else
-        public override decimal ModifyDamageCap(
-            Creature? target,
-            ValueProp props,
-            Creature? dealer,
-            CardModel? cardSource,
-            CardPlay? cardPlay) =>
-            ModifyDamageCapCore(target, props, dealer, cardSource);
-#endif
-    }
-
     public sealed partial class OpeningPower
     {
 #if NINJASLAYER_LEGACY_DAMAGE_API

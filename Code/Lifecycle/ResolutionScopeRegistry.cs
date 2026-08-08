@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace NinjaSlayer.Code.Lifecycle;
@@ -28,7 +29,7 @@ internal sealed class ResolutionScopeRegistry<TSubject, TScope>
         }
     }
 
-    public bool TryGetLatestScope(TSubject subject, out TScope? scope)
+    public bool TryGetLatestScope(TSubject subject, [NotNullWhen(true)] out TScope? scope)
     {
         lock (_lock)
         {
@@ -47,7 +48,7 @@ internal sealed class ResolutionScopeRegistry<TSubject, TScope>
         TScope scope,
         object owner,
         Func<TState> factory,
-        out TState? state)
+        [NotNullWhen(true)] out TState? state)
         where TState : class
     {
         lock (_lock)
@@ -71,7 +72,10 @@ internal sealed class ResolutionScopeRegistry<TSubject, TScope>
         }
     }
 
-    public bool TryGetState<TState>(TScope scope, object owner, out TState? state)
+    public bool TryGetState<TState>(
+        TScope scope,
+        object owner,
+        [NotNullWhen(true)] out TState? state)
         where TState : class
     {
         lock (_lock)
@@ -89,7 +93,10 @@ internal sealed class ResolutionScopeRegistry<TSubject, TScope>
         return false;
     }
 
-    public bool TryTakeState<TState>(TScope scope, object owner, out TState? state)
+    public bool TryTakeState<TState>(
+        TScope scope,
+        object owner,
+        [NotNullWhen(true)] out TState? state)
         where TState : class
     {
         lock (_lock)

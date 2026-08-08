@@ -16,7 +16,7 @@
   "NINJA_SLAYER_POWER_DRAW_FOR_EVASION_POWER.title": "纸一重",
   "NINJA_SLAYER_POWER_DRAW_FOR_EVASION_POWER.description": "每回合抽到指定数量的牌后，在回合结束获得{Amount}层[gold]回避[/gold]。",
   "NINJA_SLAYER_POWER_EVASION_POWER.title": "回避",
-  "NINJA_SLAYER_POWER_EVASION_POWER.description": "下次受到敌人攻击时，完全规避其中一段攻击（不失去生命，格挡也不会降低）。",
+  "NINJA_SLAYER_POWER_EVASION_POWER.description": "下次受到敌人攻击时，完全规避其中一段攻击（不失去生命，格挡也不会降低）。你的下回合开始时，失去所有[gold]回避[/gold]。",
   "NINJA_SLAYER_POWER_EVERY_HIT_TEMPORARY_STRENGTH_POWER.title": "势不可挡",
   "NINJA_SLAYER_POWER_EVERY_HIT_TEMPORARY_STRENGTH_POWER.description": "你每打出一张攻击牌，获得{Amount}点临时[gold]力量[/gold]。",
   "NINJA_SLAYER_POWER_EXHAUST_FOR_SHURIKEN_POWER.title": "暗器机括",
@@ -82,5 +82,7 @@
   "NINJA_SLAYER_POWER_DISCARD_DEFENSE_POWER.title": "舍弃成垒",
   "NINJA_SLAYER_POWER_DISCARD_DEFENSE_POWER.description": "本回合，每丢弃一张牌，获得{Amount}点[gold]格挡[/gold]。",
   "NINJA_SLAYER_POWER_OPENING_GUARD_POWER.title": "应对",
-  "NINJA_SLAYER_POWER_OPENING_GUARD_POWER.description": "记录被你完全防御住攻击的敌人，并在下回合开始时给予其1层[gold]破绽[/gold]。"
+  "NINJA_SLAYER_POWER_OPENING_GUARD_POWER.description": "记录被你完全防御住攻击的敌人，并在下回合开始时给予其1层[gold]破绽[/gold]。",
+  "NINJA_SLAYER_POWER_IAI_POWER.title": "居合",
+  "NINJA_SLAYER_POWER_IAI_POWER.description": "再受到{Amount}次攻击时，立即反击攻击者。反击的基础伤害为0。"
 }

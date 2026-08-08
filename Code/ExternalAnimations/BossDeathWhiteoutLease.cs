@@ -1,6 +1,8 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -31,6 +33,73 @@ internal sealed class BossDeathWhiteoutLease : IDisposable
     }
 
     public static IEnumerable<string> AssetPaths => [ShaderPath];
+
+    public static async Task RunUntilCue(
+        Node frameSource,
+        NCombatRoom room,
+        NCreature boss,
+        string bossId,
+        Task cue,
+        CancellationToken cancelToken)
+    {
+        BossDeathWhiteoutLease? lease = null;
+        try
+        {
+            float elapsed = 0f;
+            while (!cue.IsCompleted
+                   && !cancelToken.IsCancellationRequested
+                   && IsRuntimeValid(frameSource, room, boss))
+            {
+                await frameSource.ToSignal(
+                    frameSource.GetTree(),
+                    SceneTree.SignalName.ProcessFrame);
+                cancelToken.ThrowIfCancellationRequested();
+                if (!IsRuntimeValid(frameSource, room, boss))
+                {
+                    break;
+                }
+
+                float delta = (float)frameSource.GetProcessDeltaTime();
+                if (delta <= 0f)
+                {
+                    continue;
+                }
+
+                elapsed += delta;
+                if (elapsed < BossBurstTimeline.WhiteoutStartSeconds)
+                {
+                    continue;
+                }
+
+                if (lease == null
+                    && !TryAcquire(boss, out lease, out string failureReason))
+                {
+                    Scripts.Entry.Logger.Warn(
+                        $"Boss death whiteout was unavailable for {bossId}: {failureReason}.");
+                    return;
+                }
+
+                lease?.SetMix(BossBurstTimeline.ResolveWhiteoutMix(elapsed));
+            }
+
+            if (cue.IsCompleted && !cancelToken.IsCancellationRequested)
+            {
+                lease?.SetMix(1f);
+            }
+        }
+        catch (OperationCanceledException) when (cancelToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            Scripts.Entry.Logger.Warn(
+                $"Boss death whiteout failed for {bossId}: {exception.Message}");
+        }
+        finally
+        {
+            lease?.Dispose();
+        }
+    }
 
     public static bool TryAcquire(
         NCreature boss,
@@ -195,6 +264,18 @@ internal sealed class BossDeathWhiteoutLease : IDisposable
             }
         }
     }
+
+    private static bool IsRuntimeValid(
+        Node frameSource,
+        NCombatRoom room,
+        NCreature boss) =>
+        GodotObject.IsInstanceValid(frameSource)
+        && frameSource.IsInsideTree()
+        && GodotObject.IsInstanceValid(room)
+        && room.IsInsideTree()
+        && ReferenceEquals(NCombatRoom.Instance, room)
+        && GodotObject.IsInstanceValid(boss)
+        && boss.IsInsideTree();
 
     private sealed record SlotColorState(GodotObject Slot, Color Original);
 }

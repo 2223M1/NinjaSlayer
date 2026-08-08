@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using MegaCrit.Sts2.Core.Logging;
@@ -42,7 +43,7 @@ public class Entry
         Log.Info("Initializing NinjaSlayer...");
 
         var assembly = Assembly.GetExecutingAssembly();
-        if (!TryActivateCoreCapabilities(out CoreActivationLease activation, out string failedCapabilityId))
+        if (!TryActivateCoreCapabilities(out CoreActivationLease? activation, out string failedCapabilityId))
         {
             PublishCapabilityStatus(
                 NinjaSlayerCapabilityIds.CoreContent,
@@ -63,8 +64,6 @@ public class Entry
             {
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
             }
-
-            NinjaSlayerBalanceTelemetry.Register();
 
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
@@ -97,7 +96,21 @@ public class Entry
         InstallFinisherCapability();
         InstallTransitionCapability();
         InstallFeedbackCapability();
-        InstallCapability<TelemetryIdentityPatchGroup>(NinjaSlayerCapabilityIds.TelemetryIdentity);
+        try
+        {
+            NinjaSlayerBalanceTelemetry.Register();
+            InstallCapability<TelemetryIdentityPatchGroup>(NinjaSlayerCapabilityIds.TelemetryIdentity);
+        }
+        catch (Exception exception)
+        {
+            PublishCapabilityStatus(
+                NinjaSlayerCapabilityIds.TelemetryIdentity,
+                new CapabilityStatus(
+                    CapabilityState.Disabled,
+                    $"Telemetry registration failed: {exception.Message}",
+                    0));
+            Logger.Warn($"NinjaSlayer telemetry registration failed; identity patches were skipped: {exception}");
+        }
 
         RegisterFmodBanksIfPresent();
         Log.Info("NinjaSlayer initialized.");
@@ -114,7 +127,7 @@ public class Entry
     }
 
     private static bool TryActivateCoreCapabilities(
-        out CoreActivationLease activation,
+        [NotNullWhen(true)] out CoreActivationLease? activation,
         out string failedCapabilityId)
     {
         var candidate = new CoreActivationLease();
@@ -128,7 +141,7 @@ public class Entry
                 gameplayProbes))
         {
             candidate.Rollback(failedCapabilityId);
-            activation = null!;
+            activation = null;
             return false;
         }
 
@@ -139,7 +152,7 @@ public class Entry
                 GameCompatibility.OrobasSeaGlass.GetProbes()))
         {
             candidate.Rollback(failedCapabilityId);
-            activation = null!;
+            activation = null;
             return false;
         }
 
@@ -147,7 +160,7 @@ public class Entry
         if (!TryInstallRequiredCapability<CardResolutionPatchGroup>(failedCapabilityId, candidate))
         {
             candidate.Rollback(failedCapabilityId);
-            activation = null!;
+            activation = null;
             return false;
         }
 
@@ -172,7 +185,7 @@ public class Entry
                     $"Lifecycle subscription failed and was rolled back: {exception.Message}",
                     0));
             candidate.Rollback(failedCapabilityId);
-            activation = null!;
+            activation = null;
             return false;
         }
 
@@ -183,7 +196,7 @@ public class Entry
                 GameCompatibility.Prepared.GetGameplayProbes()))
         {
             candidate.Rollback(failedCapabilityId);
-            activation = null!;
+            activation = null;
             return false;
         }
 

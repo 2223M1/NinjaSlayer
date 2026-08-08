@@ -25,29 +25,4 @@ internal static class NinjaSlayerCapabilityIds
     public const string Feedback = "feedback";
     public const string TelemetryIdentity = "telemetry-identity";
 
-    public static IReadOnlyList<string> All { get; } =
-    [
-        CoreContent,
-        Gameplay,
-        OrobasSeaGlass,
-        CardResolution,
-        ReporterPass,
-        NancyCandidateFilter,
-        KaratePreview,
-        Typography,
-        ChadoPresentation,
-        CinematicInfrastructure,
-        BossBurstPresentation,
-        PreparedSafety,
-        PreparedGameplay,
-        PreparedUi,
-        FinisherCore,
-        FinisherPresentation,
-        FinisherTornadoCadence,
-        TransitionCore,
-        TransitionPresentation,
-        TransitionLoadSmoothing,
-        Feedback,
-        TelemetryIdentity
-    ];
 }

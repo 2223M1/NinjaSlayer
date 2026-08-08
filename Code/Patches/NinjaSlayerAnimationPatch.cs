@@ -12,7 +12,7 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
 
     public static string Description => "Route NinjaSlayer combat TriggerAnim calls to ExternalAnimations.";
 
-    public static bool IsCritical => true;
+    public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim), [typeof(Creature), typeof(string), typeof(float)])];
@@ -24,13 +24,12 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
             return false;
         }
 
-        NinjaSlayerFinisherCinematic.NotifyPrimaryAttackAnimation(creature, triggerName);
-
-        // ponytail: one rebuild-time switch restores the archived cue animations.
-        if (!NinjaSlayerAnimationCatalog.OriginalAnimations)
+        if (DarkNinjaCombatAnimations.TryPlayTriggerAnim(creature, triggerName, waitTime, ref __result))
         {
-            return true;
+            return false;
         }
+
+        NinjaSlayerFinisherCinematic.NotifyPrimaryAttackAnimation(creature, triggerName);
 
         return !NinjaSlayerCombatAnimations.TryPlayTriggerAnim(creature, triggerName, waitTime, ref __result);
     }

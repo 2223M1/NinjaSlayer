@@ -13,6 +13,7 @@ using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Scaffolding.Godot;
@@ -211,8 +212,16 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             return;
         }
 
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
-        NinjaSlayerCombatVfx.PlayYamotoKokiIaiImpact(enemies);
+        List<Creature> connectedTargets = enemies
+            .Where(target => target.GetPower<EvasionPower>() is not { } evasion
+                || !evasion.CanEvade(target, ValueProp.Move, Creature))
+            .ToList();
+        if (connectedTargets.Count > 0)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
+            NinjaSlayerCombatVfx.PlayYamotoKokiIaiImpact(connectedTargets);
+        }
+
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),
             enemies,

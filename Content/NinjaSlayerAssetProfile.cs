@@ -17,7 +17,7 @@ public static class NinjaSlayerAssetProfile
         "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer.png";
     public const string CharacterSelectLockedTexturePath =
         "res://NinjaSlayer/images/characters/ninja_slayer/char_select_NinjaSlayer_locked.png";
-    public const string MapMarkerTexturePath = "res://NinjaSlayer/images/characters/ninja_slayer/map_marker.png";
+    public const string MapMarkerTexturePath = "res://images/packed/map/icons/map_marker_ironclad.png";
     public const string CharacterSelectTransitionMaterialPath =
         "res://NinjaSlayer/materials/transitions/ninja_slayer_transition_mat.tres";
     public const string TransitionVideoPath = "res://NinjaSlayer/videos/ninja_slayer_transition.ogv";

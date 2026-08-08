@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -10,7 +11,9 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class FinisherAttackCommandAdapter
 {
-    public static bool TryCreateSpec(AttackCommand command, out FinisherAttackSpec? spec)
+    public static bool TryCreateSpec(
+        AttackCommand command,
+        [NotNullWhen(true)] out FinisherAttackSpec? spec)
     {
         spec = null;
         if (!GameCompatibility.Finisher.TryReadAttackCommand(
@@ -18,7 +21,6 @@ internal static class FinisherAttackCommandAdapter
                 out GameCompatibility.AttackCommandState commandState)
             || command.ModelSource is not CardModel { Type: CardType.Attack } card
             || !GameCompatibility.AttackCommands.TryGetCardPlay(command, out CardPlay? cardPlay)
-            || cardPlay == null
             || command.Attacker == null
             || card.Owner?.Creature != command.Attacker)
         {

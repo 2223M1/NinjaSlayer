@@ -41,7 +41,7 @@ public sealed partial class BlackFlameDamagePatch : IPatchMethod
         {
             return;
         }
-        if (cardPlay is null || !ReferenceEquals(cardSource, cardPlay.Card))
+        if (!ReferenceEquals(cardSource, cardPlay.Card))
         {
             return;
         }

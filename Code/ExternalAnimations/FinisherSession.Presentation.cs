@@ -104,7 +104,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             _enhancedImpactFailed = true;
             DisposeEnhancedPresentation();
-            FinisherLog.Warn($"Finisher backdrop transition failed; legacy presentation will be used: {ex}");
+            Entry.Logger.Warn($"Finisher backdrop transition failed; fallback presentation will be used: {ex}");
         }
     }
 
@@ -147,7 +147,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Warn($"Finisher camera transition failed: {ex}");
+            Entry.Logger.Warn($"Finisher camera transition failed: {ex}");
         }
     }
 
@@ -667,7 +667,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Warn($"Finisher camera shake pump stopped unexpectedly: {ex}");
+            Entry.Logger.Warn($"Finisher camera shake pump stopped unexpectedly: {ex}");
         }
     }
 

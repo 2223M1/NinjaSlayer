@@ -34,8 +34,7 @@ public sealed class OpeningGuardPower : NinjaSlayerPowerTemplate
         }
     }
 
-    public override async Task BeforeSideTurnStart(
-        PlayerChoiceContext choiceContext,
+    public override async Task AfterSideTurnStart(
         CombatSide side,
         IReadOnlyList<Creature> participants,
         ICombatState combatState)

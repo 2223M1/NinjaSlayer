@@ -6,8 +6,10 @@ public static class NinjaSlayerAudio
     public const string GuidMappingsPath = NinjaSlayerAssetPaths.FmodRoot + "/GUIDs.txt";
 
     private const string Root = "event:/NinjaSlayerAudio/sfx";
+    private const string MusicRoot = "event:/NinjaSlayerAudio/music";
     private const string NinjaSlayerRoot = Root + "/ninja_slayer";
     private const string NarakuRoot = Root + "/naraku";
+    private const string DarkNinjaRoot = Root + "/dark_ninja";
     public const string PangbaiRoot = Root + "/pangbai";
     public const string YamotoKokiRoot = Root + "/yamoto_koki";
 
@@ -30,7 +32,7 @@ public static class NinjaSlayerAudio
     public const float ShortWashoiSeconds = 1.024014f;
 
     /// <summary>Clip length of the long Washoi FMOD event.</summary>
-    public const float LongWashoiSeconds = 1.429343f;
+    public const float LongWashoiSeconds = 1.299343f;
 
     /// <summary>FMOD clip length for ninja_slayer_transition (6月16日(1).wav).</summary>
     public const float TransitionAudioSeconds = 2.0201361f;
@@ -66,6 +68,26 @@ public static class NinjaSlayerAudio
     public const string YamotoKokiGoEvent = YamotoKokiRoot + "/yamoto_koki_go";
     public const string YamotoKokiMissileSummonEvent =
         "event:/sfx/characters/defect/defect_dark_channel";
+
+    public const string DarkNinjaBattleMusicEvent = MusicRoot + "/dark_ninja_battle";
+    public const string DarkNinjaBeginEvent = DarkNinjaRoot + "/dark_ninja_begin";
+    public const string DarkNinjaBeppinAwakensEvent = DarkNinjaRoot + "/dark_ninja_beppin_awakens";
+    public const string DarkNinjaDarkRobeEvent = DarkNinjaRoot + "/dark_ninja_dark_robe";
+    public const string DarkNinjaDeathEvent = DarkNinjaRoot + "/dark_ninja_death";
+    public const string DarkNinjaDeathKiriEvent = DarkNinjaRoot + "/dark_ninja_death_kiri";
+    public const string DarkNinjaFailedEvent = DarkNinjaRoot + "/dark_ninja_failed";
+    public const string DarkNinjaFastAttackEvent = DarkNinjaRoot + "/dark_ninja_fast_attack";
+    public const string DarkNinjaHurtEvent = DarkNinjaRoot + "/dark_ninja_hurt";
+    public const string DarkNinjaInsultEvent = DarkNinjaRoot + "/dark_ninja_insult";
+    public const string DarkNinjaSlowAttackEvent = DarkNinjaRoot + "/dark_ninja_slow_attack";
+    public const string DarkNinjaStabEvent =
+        "event:/sfx/enemy/enemy_attacks/lagavulin_matriarch/lagavulin_matriarch_attack_stab";
+    public const string DarkNinjaProgressParameter = "dark_ninja_progress";
+    public const float DarkNinjaEndProgress = 5f;
+
+    public const string ForestSawatariBattleMusicEvent = MusicRoot + "/forest_sawatari_battle";
+    public const string ForestSawatariProgressParameter = "forest_sawatari_progress";
+    public const float ForestSawatariEndProgress = 5f;
 
     /// <summary>FMOD clip length for ninja_slayer_intro_spin_attack.</summary>
     public const float IntroSpinAttackSeconds = 1.369f;

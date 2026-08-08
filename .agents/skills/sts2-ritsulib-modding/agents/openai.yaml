@@ -1,0 +1,4 @@
+interface:
+  display_name: "STS2 RitsuLib Modding"
+  short_description: "Follow local STS2/RitsuLib modding docs and examples."
+  default_prompt: "Use the local STS2/RitsuLib modding documentation mirror to implement or review this mod change."

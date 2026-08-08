@@ -28,7 +28,6 @@ public sealed partial class BossDeathPresentationController : Node
     private SpineBoneFlight? _partFlight;
     private BossDismembermentSnapshot? _dismembermentSnapshot;
     private CombatCinematicCameraLease? _camera;
-    private BossDeathWhiteoutLease? _whiteout;
     private readonly CinematicSessionLifetime _lifetime = new();
     private int _started;
 
@@ -159,7 +158,6 @@ public sealed partial class BossDeathPresentationController : Node
         DisposeDismembermentSnapshot();
         _partFlight?.Dispose();
         _camera?.Dispose();
-        DisposeWhiteout();
         _completion.TrySetResult();
     }
 
@@ -171,7 +169,6 @@ public sealed partial class BossDeathPresentationController : Node
         _partFlight = null;
         _camera?.Dispose();
         _camera = null;
-        DisposeWhiteout();
         _completion.TrySetResult();
         this.QueueFreeSafely();
     }
@@ -194,7 +191,13 @@ public sealed partial class BossDeathPresentationController : Node
             Task flightTask = _partFlight == null
                 ? Task.CompletedTask
                 : RunPartFlightUntilCue(_partFlight, registration.Cue, cancelToken);
-            Task whiteoutTask = RunWhiteoutUntilCue(registration.Cue, cancelToken);
+            Task whiteoutTask = BossDeathWhiteoutLease.RunUntilCue(
+                this,
+                _room,
+                _boss,
+                _bossId,
+                registration.Cue,
+                cancelToken);
             await registration.Cue.WaitAsync(cancelToken);
             await Task.WhenAll(flightTask, whiteoutTask);
             await RestoreCamera(cancelToken);
@@ -215,65 +218,8 @@ public sealed partial class BossDeathPresentationController : Node
             _partFlight = null;
             _camera?.Dispose();
             _camera = null;
-            DisposeWhiteout();
             _lifetime.Dispose();
             _completion.TrySetResult();
-        }
-    }
-
-    private async Task RunWhiteoutUntilCue(Task cue, CancellationToken cancelToken)
-    {
-        try
-        {
-            float elapsed = 0f;
-            while (!cue.IsCompleted
-                   && !cancelToken.IsCancellationRequested
-                   && IsRuntimeValid())
-            {
-                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-                cancelToken.ThrowIfCancellationRequested();
-                float delta = (float)GetProcessDeltaTime();
-                if (delta <= 0f)
-                {
-                    continue;
-                }
-
-                elapsed += delta;
-                if (elapsed < BossBurstTimeline.WhiteoutStartSeconds)
-                {
-                    continue;
-                }
-
-                if (_whiteout == null
-                    && !BossDeathWhiteoutLease.TryAcquire(
-                        _boss,
-                        out _whiteout,
-                        out string failureReason))
-                {
-                    Entry.Logger.Warn(
-                        $"Boss death whiteout was unavailable for {_bossId}: {failureReason}.");
-                    return;
-                }
-
-                _whiteout?.SetMix(BossBurstTimeline.ResolveWhiteoutMix(elapsed));
-            }
-
-            if (cue.IsCompleted && !cancelToken.IsCancellationRequested)
-            {
-                _whiteout?.SetMix(1f);
-            }
-        }
-        catch (OperationCanceledException) when (cancelToken.IsCancellationRequested)
-        {
-        }
-        catch (Exception exception)
-        {
-            Entry.Logger.Warn(
-                $"Boss death whiteout failed for {_bossId}: {exception.Message}");
-        }
-        finally
-        {
-            DisposeWhiteout();
         }
     }
 
@@ -398,12 +344,6 @@ public sealed partial class BossDeathPresentationController : Node
         BossDismembermentSnapshot? snapshot = _dismembermentSnapshot;
         _dismembermentSnapshot = null;
         snapshot?.Dispose();
-    }
-
-    private void DisposeWhiteout()
-    {
-        BossDeathWhiteoutLease? whiteout = Interlocked.Exchange(ref _whiteout, null);
-        whiteout?.Dispose();
     }
 
     private async Task RestoreCamera(CancellationToken cancelToken)

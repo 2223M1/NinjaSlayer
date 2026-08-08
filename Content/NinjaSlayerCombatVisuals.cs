@@ -9,9 +9,9 @@ public static class NinjaSlayerCombatVisuals
     public const float AttackLungeDistance = 90f;
     public const float SlowAttackLungeDistance = 120f;
     public const float SlowAttackLungeDuration = 0.25f;
-    public static readonly Vector2 BodySpriteBasePosition = new(-160f, -190f);
+    public static readonly Vector2 BodySpriteBasePosition = new(-166f, -183f);
     public const float BodySpriteBaseScale = 0.33f;
 
-    public static float GetShadowScale(Creature creature) =>
-        NinjaSlayerFormState.GetPresentation(creature).ShadowScale;
+    public static float GetShadowScaleMultiplier(Creature creature) =>
+        NinjaSlayerFormState.GetPresentation(creature).ShadowScaleMultiplier;
 }

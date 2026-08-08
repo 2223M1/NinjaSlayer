@@ -55,7 +55,7 @@ internal sealed class SpineBoneFlight : IDisposable
         _rotation = _originalRotation = rotation;
         _originalScaleX = scaleX;
         _originalScaleY = scaleY;
-        _applyCallable = Callable.From(Apply);
+        _applyCallable = Callable.From<GodotObject>(_ => Apply());
         Error connection = _sprite.ConnectBeforeWorldTransformsChange(_applyCallable);
         if (connection != Error.Ok)
         {

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://boeq57vxjjnd8"
-path="res://.godot/imported/hit_0001.png-c0096913a873fff6ecdc6cb25349e729.ctex"
+uid="uid://mijlquy5vq2u"
+path="res://.godot/imported/dark_ninja_character.png-fc34f4e227540746356a5ff7df5040a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/characters/ninja_slayer/hit/hit_0001.png"
-dest_files=["res://.godot/imported/hit_0001.png-c0096913a873fff6ecdc6cb25349e729.ctex"]
+source_file="res://NinjaSlayer/images/monsters/dark_ninja_character.png"
+dest_files=["res://.godot/imported/dark_ninja_character.png-fc34f4e227540746356a5ff7df5040a9.ctex"]
 
 [params]
 

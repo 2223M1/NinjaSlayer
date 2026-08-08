@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
@@ -22,6 +23,7 @@ public sealed class NarakuEvent : ModEventTemplate
 
     private int _numberOfCalls;
 
+    [SavedProperty]
     private int NumberOfCalls
     {
         get => _numberOfCalls;
