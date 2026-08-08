@@ -15,7 +15,8 @@ public partial class NinjaSlayerShadowController : Node
     private Vector2 _groundPosition;
     private Color _groundModulate;
     private float _groundAnchorY;
-    private float _baseScale = 0.5f;
+    private Vector2 _authoredScale = Vector2.One * 0.5f;
+    private float _scaleMultiplier = 1f;
     private bool _deathFallOverride;
     private float _deathFallProgress;
     private float _deathFallDirection = -1f;
@@ -34,7 +35,7 @@ public partial class NinjaSlayerShadowController : Node
         _groundPosition = _shadow.Position;
         _groundModulate = _shadow.Modulate;
         _groundAnchorY = _airborneAnchor.Position.Y;
-        _baseScale = Mathf.Abs(_shadow.Scale.X);
+        _authoredScale = new Vector2(Mathf.Abs(_shadow.Scale.X), Mathf.Abs(_shadow.Scale.Y));
         ApplyPresentation();
     }
 
@@ -43,9 +44,16 @@ public partial class NinjaSlayerShadowController : Node
         ApplyPresentation();
     }
 
-    public void SetBaseScale(float scale)
+    public void SetScaleMultiplier(float multiplier)
     {
-        _baseScale = Mathf.Max(0f, scale);
+        _scaleMultiplier = Mathf.Max(0f, multiplier);
+        ApplyPresentation();
+    }
+
+    internal void SetAuthoredPresentation(Vector2 position, Vector2 scale)
+    {
+        _groundPosition = position;
+        _authoredScale = new Vector2(Mathf.Abs(scale.X), Mathf.Abs(scale.Y));
         ApplyPresentation();
     }
 
@@ -76,12 +84,15 @@ public partial class NinjaSlayerShadowController : Node
 
         if (_deathFallOverride)
         {
+            Vector2 baseScale = _authoredScale * _scaleMultiplier;
             float widthMultiplier = Mathf.Lerp(1f, FallenShadowWidthMultiplier, _deathFallProgress);
             float heightMultiplier = Mathf.Lerp(1f, FallenShadowHeightMultiplier, _deathFallProgress);
             float textureWidth = _shadow.Texture?.GetWidth() ?? 0f;
-            float extension = textureWidth * _baseScale * (widthMultiplier - 1f) * 0.5f;
+            float extension = textureWidth * baseScale.X * (widthMultiplier - 1f) * 0.5f;
             _shadow.Position = _groundPosition + Vector2.Right * (_deathFallDirection * extension);
-            _shadow.Scale = new Vector2(_baseScale * widthMultiplier, _baseScale * heightMultiplier);
+            _shadow.Scale = new Vector2(
+                baseScale.X * widthMultiplier,
+                baseScale.Y * heightMultiplier);
             _shadow.Modulate = _groundModulate;
             return;
         }
@@ -90,7 +101,7 @@ public partial class NinjaSlayerShadowController : Node
         float airborneProgress = Mathf.Clamp(altitude / AirborneFadeDistance, 0f, 1f);
         float scaleMultiplier = Mathf.Lerp(1f, MinimumAirborneScale, airborneProgress);
         _shadow.Position = _groundPosition;
-        _shadow.Scale = Vector2.One * (_baseScale * scaleMultiplier);
+        _shadow.Scale = _authoredScale * _scaleMultiplier * scaleMultiplier;
         _shadow.Modulate = new Color(
             _groundModulate.R,
             _groundModulate.G,

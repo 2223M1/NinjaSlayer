@@ -35,7 +35,7 @@ public sealed class FormPresentationTests
         Assert.False(normal.UsesNarakuAudio);
         Assert.True(normal.UseNormalSpinPivot);
         Assert.False(normal.ForcePerHitComboAudio);
-        Assert.Equal(0.5f, normal.ShadowScale);
+        Assert.Equal(1f, normal.ShadowScaleMultiplier);
 
         NinjaSlayerFormPresentation naraku = NinjaSlayerFormPresentationCatalog.Naraku;
         Assert.Equal(NinjaSlayerBodyTextureMode.SynchronizedIdleSequence, naraku.BodyTextureMode);
@@ -43,7 +43,7 @@ public sealed class FormPresentationTests
         Assert.False(naraku.UsesNarakuAudio);
         Assert.True(naraku.UseNormalSpinPivot);
         Assert.False(naraku.ForcePerHitComboAudio);
-        Assert.Equal(0.5f, naraku.ShadowScale);
+        Assert.Equal(1f, naraku.ShadowScaleMultiplier);
 
         NinjaSlayerFormPresentation fullyReleased = NinjaSlayerFormPresentationCatalog.FullyReleasedNaraku;
         Assert.Equal(NinjaSlayerBodyTextureMode.Static, fullyReleased.BodyTextureMode);
@@ -53,7 +53,7 @@ public sealed class FormPresentationTests
         Assert.True(fullyReleased.UsesNarakuAudio);
         Assert.False(fullyReleased.UseNormalSpinPivot);
         Assert.True(fullyReleased.ForcePerHitComboAudio);
-        Assert.Equal(1f, fullyReleased.ShadowScale);
+        Assert.Equal(2f, fullyReleased.ShadowScaleMultiplier);
 
         NinjaSlayerFormPresentation oneBodyOneSoul = NinjaSlayerFormPresentationCatalog.OneBodyOneSoul;
         Assert.Equal(NinjaSlayerBodyTextureMode.Static, oneBodyOneSoul.BodyTextureMode);
@@ -62,7 +62,7 @@ public sealed class FormPresentationTests
         Assert.False(oneBodyOneSoul.UsesNarakuAudio);
         Assert.False(oneBodyOneSoul.UseNormalSpinPivot);
         Assert.False(oneBodyOneSoul.ForcePerHitComboAudio);
-        Assert.Equal(0.5f, oneBodyOneSoul.ShadowScale);
+        Assert.Equal(1f, oneBodyOneSoul.ShadowScaleMultiplier);
     }
 
     [Theory]

@@ -45,24 +45,25 @@ public static class NinjaSlayerVisualRig
         return visuals?.GetNodeOrNull<Node2D>(CinematicFocusPath);
     }
 
+    internal static Sprite2D? GetShadow(NCreatureVisuals? visuals)
+    {
+        return visuals?.GetNodeOrNull<Sprite2D>(ShadowPath);
+    }
+
     public static void SyncShadowScale(Creature creature)
     {
         var visuals = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
-        var shadow = visuals?.GetNodeOrNull<Sprite2D>(ShadowPath);
+        var shadow = GetShadow(visuals);
         if (shadow == null)
         {
             return;
         }
 
-        float scale = NinjaSlayerCombatVisuals.GetShadowScale(creature);
+        float scaleMultiplier = NinjaSlayerCombatVisuals.GetShadowScaleMultiplier(creature);
         var controller = visuals?.GetNodeOrNull<NinjaSlayerShadowController>(ShadowControllerPath);
         if (controller != null)
         {
-            controller.SetBaseScale(scale);
-        }
-        else
-        {
-            shadow.Scale = new Vector2(scale, scale);
+            controller.SetScaleMultiplier(scaleMultiplier);
         }
     }
 }

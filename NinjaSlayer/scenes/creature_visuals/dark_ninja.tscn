@@ -1,0 +1,51 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/dark_ninja_standing.png" id="1_dark_ninja"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/shadow.png" id="2_shadow"]
+[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerShadowController.cs" id="3_shadow_controller"]
+
+[node name="DarkNinja" type="Node2D"]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="Shadow" type="Sprite2D" parent="."]
+position = Vector2(-8, -20.625)
+scale = Vector2(0.44, 0.25)
+texture = ExtResource("2_shadow")
+
+[node name="AirborneAnchor" type="Node2D" parent="."]
+
+[node name="ShadowController" type="Node" parent="."]
+script = ExtResource("3_shadow_controller")
+
+[node name="CinematicFocus" type="Marker2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(0, -169.1)
+
+[node name="Visuals" type="Sprite2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(0, -169.1)
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("1_dark_ninja")
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -195.0
+offset_top = -364.5
+offset_right = 195.0
+offset_bottom = 12.0
+mouse_filter = 2
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -169.1)
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -404.2)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-71, -355.4)
