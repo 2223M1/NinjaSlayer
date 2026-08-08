@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer 人物拓展包",
   "description": "《杀戮尖塔 2》的忍者杀手角色 Mod，包含完整角色机制、卡牌、遗物、事件、动画与音效。",
   "visibility": "unlisted",
-  "changeNote": "修复奈落图标与生命条残留、随从存活时的处决结算，以及建筑师和普通 Boss 的软体爆裂、镜头与胜利流程；更新卡牌美术并继续提供 stable 0.107.1 与 preview 0.110.1 双宿主构建。",
+  "changeNote": "新增京都之影与黑暗忍者战斗，实装居合、专属语音和真正的回避未命中；修复奈落生命条、随从处决判断、建筑师爆裂及 Boss 结算。",
   "tags": ["mod", "Simplified Chinese"],
   "dependencies": [3747602295],
   "contentDescriptors": []
