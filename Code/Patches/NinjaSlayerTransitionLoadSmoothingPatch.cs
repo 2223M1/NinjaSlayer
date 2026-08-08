@@ -39,7 +39,7 @@ public sealed class NinjaSlayerTransitionAssetLoadConcurrencyPatch : IPatchMetho
             (code, index) => GameCompatibility.AssetLoading.IsLoadingCountLimitSite(
                 code,
                 index,
-                TransitionLoadConcurrencyPolicy.VanillaConcurrentLoadLimit),
+                128),
             (_, _) => [HarmonyIl.Call(replacement)],
             code => code.Any(HarmonyIl.IsCall(replacement)));
         return rewriter.InstructionsChecked(report);
@@ -67,8 +67,7 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
             return true;
         }
 
-        if (!GameCompatibility.AssetLoading.TryGetFinalizing(__instance, out Queue<string>? finalizing)
-            || finalizing is null)
+        if (!GameCompatibility.AssetLoading.TryGetFinalizing(__instance, out Queue<string>? finalizing))
         {
             return true;
         }

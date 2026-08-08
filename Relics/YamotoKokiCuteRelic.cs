@@ -88,19 +88,17 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         }
 
         Flash();
-        Creature? yamotoKoki = YamotoKokiPartyState.FindLivingCompanion(Owner.RunState);
-        bool created = yamotoKoki == null;
-        if (created)
-        {
-            yamotoKoki = await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
-        }
+        Creature? existingCompanion = YamotoKokiPartyState.FindLivingCompanion(Owner.RunState);
+        bool created = existingCompanion == null;
+        Creature yamotoKoki = existingCompanion
+            ?? await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
 
-        YamotoKokiIntentLifecycle.BeginCombat(yamotoKoki!);
-        await AssignIntent(yamotoKoki!, YamotoKokiMonster.SummonMissileMoveId);
+        YamotoKokiIntentLifecycle.BeginCombat(yamotoKoki);
+        await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonMissileMoveId);
         if (created && !YamotoKokiPartyState.HasPlayedEntrance(Owner.RunState))
         {
             HasPlayedEntrance = true;
-            _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayEntrance(yamotoKoki!));
+            _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayEntrance(yamotoKoki));
         }
     }
 
@@ -111,10 +109,9 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             return Task.CompletedTask;
         }
 
-        CombatsLeft = YamotoKokiRelicLifetimePolicy.CompleteCombat(CombatsLeft);
-        if (!YamotoKokiRelicLifetimePolicy.ShouldPlayFarewell(
-                YamotoKokiPartyState.GetActiveRelicCount(Owner.RunState),
-                YamotoKokiPartyState.HasPlayedFarewell(Owner.RunState)))
+        CombatsLeft = Math.Max(0, CombatsLeft - 1);
+        if (YamotoKokiPartyState.GetActiveRelicCount(Owner.RunState) != 0
+            || YamotoKokiPartyState.HasPlayedFarewell(Owner.RunState))
         {
             return Task.CompletedTask;
         }

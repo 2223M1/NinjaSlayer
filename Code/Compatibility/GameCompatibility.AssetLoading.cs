@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Godot;
@@ -71,7 +72,9 @@ internal static partial class GameCompatibility
             ];
         }
 
-        public static bool TryGetFinalizing(AssetLoadingSession session, out Queue<string>? finalizing)
+        public static bool TryGetFinalizing(
+            AssetLoadingSession session,
+            [NotNullWhen(true)] out Queue<string>? finalizing)
         {
             finalizing = Finalizing?.GetValue(session) as Queue<string>;
             return finalizing != null;

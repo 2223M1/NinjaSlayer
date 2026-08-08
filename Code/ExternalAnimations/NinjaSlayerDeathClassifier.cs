@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -153,7 +154,7 @@ internal static class NinjaSlayerDeathClassifier
                     dealerNode,
                     focusNode,
                     victims,
-                    camera!,
+                    camera,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: 1,
@@ -162,21 +163,21 @@ internal static class NinjaSlayerDeathClassifier
                 room,
                 out FinisherSession? session))
         {
-            camera!.Dispose();
+            camera.Dispose();
             return false;
         }
 
         try
         {
-            session!.Begin().GetAwaiter().GetResult();
+            session.Begin().GetAwaiter().GetResult();
             capture.Session = session;
-            FinisherLog.Info(
+            Entry.Logger.Info(
                 $"Reverse finisher session {session.SessionId} started: dealer={capture.Dealer}, victims={victims.Count}.");
             return true;
         }
         catch (Exception ex)
         {
-            FinisherLog.Warn($"Could not begin reverse finisher session {session!.SessionId}: {ex}");
+            Entry.Logger.Warn($"Could not begin reverse finisher session {session.SessionId}: {ex}");
             _ = session.CompleteAsync(
                 FinisherCompletionStatus.Faulted,
                 FinisherCompletionMode.ReleaseOnly,

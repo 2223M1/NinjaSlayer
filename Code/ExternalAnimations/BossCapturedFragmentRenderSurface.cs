@@ -14,7 +14,6 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
     private readonly MeshInstance2D _meshNode;
     private readonly ShaderMaterial _material;
     private readonly SoftFragmentBody _fragmentBody;
-    private readonly BossFragmentPoint _fragmentRestCenter;
     private readonly BossFragmentPoint[] _residuals =
         new BossFragmentPoint[SoftFragmentBody.ParticleCount];
     private readonly Godot.Collections.Array<Vector2> _controlOffsets =
@@ -22,7 +21,6 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
     private float _previousRotation;
     private int _applyFailureLogged;
     private int _consecutivePoseFailures;
-    private SoftFragmentBody _body;
     private bool _disposed;
 
     private BossCapturedFragmentRenderSurface(
@@ -36,13 +34,10 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         _meshNode = meshNode;
         _material = material;
         _fragmentBody = body;
-        _fragmentRestCenter = body.RestCenter;
-        _body = body;
         Descriptor = descriptor;
     }
 
     public Node2D Anchor { get; }
-    public SoftFragmentBody Body => _body;
     public SoftFragmentBody FragmentBody => _fragmentBody;
     public BossCapturedFragmentDescriptor Descriptor { get; }
 
@@ -196,15 +191,6 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         }
     }
 
-    internal void BindToSharedBody(SoftFragmentBody body, Rect2 deformationBounds) =>
-        BindBody(body, deformationBounds);
-
-    internal void BindToFragmentBody()
-    {
-        Rect2 cellBounds = ToRect2(BossDismembermentMath.BoundsOf(Descriptor.Cell.Vertices));
-        BindBody(_fragmentBody, cellBounds);
-    }
-
     public bool ApplyFrame()
     {
         if (_disposed
@@ -217,7 +203,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         }
 
         if (!SoftBodyRenderPoseResolver.TryResolve(
-                _body,
+                _fragmentBody,
                 _previousRotation,
                 _residuals,
                 out SoftBodyRenderPose pose))
@@ -247,7 +233,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
             if (Interlocked.Exchange(ref _applyFailureLogged, 1) == 0)
             {
                 Scripts.Entry.Logger.Warn(
-                    $"Captured boss fragment {Body.Id} render binding failed: {exception.Message}");
+                    $"Captured boss fragment {_fragmentBody.Id} render binding failed: {exception.Message}");
             }
 
             return _consecutivePoseFailures < 3;
@@ -266,18 +252,6 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         {
             Anchor.QueueFreeSafely();
         }
-    }
-
-    private void BindBody(SoftFragmentBody body, Rect2 deformationBounds)
-    {
-        _body = body;
-        _meshNode.Position = new Vector2(
-            _fragmentRestCenter.X - body.RestCenter.X,
-            _fragmentRestCenter.Y - body.RestCenter.Y);
-        _material.SetShaderParameter("cell_bounds_min", deformationBounds.Position);
-        _material.SetShaderParameter("cell_bounds_size", deformationBounds.Size);
-        _previousRotation = 0f;
-        _consecutivePoseFailures = 0;
     }
 
     private static BossFragmentPoint[] BuildRestGrid(

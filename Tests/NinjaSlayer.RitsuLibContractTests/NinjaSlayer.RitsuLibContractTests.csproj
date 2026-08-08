@@ -63,7 +63,6 @@
     <Compile Include="..\..\Code\Transition\NinjaSlayerTransitionLoadSmoothing.cs" Link="NinjaSlayerTransitionLoadSmoothing.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
     <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
-    <Compile Include="..\..\Code\Transition\TransitionLoadConcurrencyPolicy.cs" Link="TransitionLoadConcurrencyPolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionNoGcRegionState.cs" Link="TransitionNoGcRegionState.cs" />
     <Compile Include="..\..\Content\INinjaSlayerCharacter.cs" Link="INinjaSlayerCharacter.cs" />
     <Compile Include="..\..\Content\NinjaSlayerWorldVisualProfile.cs" Link="NinjaSlayerWorldVisualProfile.cs" />

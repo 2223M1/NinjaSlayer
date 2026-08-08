@@ -27,7 +27,7 @@ internal sealed record NinjaSlayerDeathContext(
 
 public static class DeathAnimation
 {
-    public const float EnemyKillDurationSeconds = 0.8f;
+    public const float EnemyKillDurationSeconds = 1.6f;
     public const float OtherDeathDurationSeconds = 0.45f;
     private const float EnemyFinisherImpactSeconds = 0.3f;
 
@@ -146,7 +146,9 @@ public static class DeathAnimation
         }
     }
 
-    internal static async Task PlayEnemyFinisherFlightOnly(Creature creature)
+    internal static async Task PlayEnemyFinisherFlightOnly(
+        Creature creature,
+        bool flyRight = false)
     {
         NCombatRoom? room = NCombatRoom.Instance;
         NCreature? creatureNode = room?.GetCreatureNode(creature);
@@ -178,7 +180,7 @@ public static class DeathAnimation
         VisualStates.Add(creature, state);
         try
         {
-            await PlayEnemyKillFlight(creatureNode, anchor, body, state);
+            await PlayEnemyKillFlight(creatureNode, anchor, body, state, flyRight: flyRight);
         }
         catch (OperationCanceledException) when (state.Cancellation.IsCancellationRequested
             || !GodotObject.IsInstanceValid(room))
@@ -245,8 +247,7 @@ public static class DeathAnimation
             CanvasItem focus = NinjaSlayerVisualRig.GetCinematicFocus(creatureNode.Visuals) is { } cinematicFocus
                 ? cinematicFocus
                 : creatureNode.Visuals.Bounds;
-            if (CombatCinematicCameraLease.TryAcquire(room, "NinjaSlayer enemy finisher", out camera)
-                && camera != null)
+            if (CombatCinematicCameraLease.TryAcquire(room, "NinjaSlayer enemy finisher", out camera))
             {
                 try
                 {
@@ -465,7 +466,8 @@ public static class DeathAnimation
         CombatCinematicCameraLease? camera = null,
         FinisherImpactPresentation? presentation = null,
         NCombatRoom? room = null,
-        CinematicFrameClock? clock = null)
+        CinematicFrameClock? clock = null,
+        bool flyRight = false)
     {
         Node2D? focus = NinjaSlayerVisualRig.GetCinematicFocus((creatureNode as MegaCrit.Sts2.Core.Nodes.Combat.NCreature)?.Visuals);
         CanvasItem? anchorParent = anchor.GetParent() as CanvasItem;
@@ -484,11 +486,18 @@ public static class DeathAnimation
             return;
         }
 
-        anchor.RotationDegrees = HitRotationDegrees;
+        anchor.RotationDegrees = state.AnchorRotationDegrees
+            + (flyRight ? -HitRotationDegrees : HitRotationDegrees);
         Vector2 start = focus.GetGlobalTransformWithCanvas().Origin;
         Vector2 viewportSize = creatureNode.GetViewport().GetVisibleRect().Size;
-        float rightExtent = GetRightVisualExtent(anchor, start, body);
-        Vector2 end = new(-rightExtent - FlightExitPadding, viewportSize.Y * FlightTargetHeightRatio);
+        float horizontalExtent = flyRight
+            ? GetLeftVisualExtent(anchor, start, body)
+            : GetRightVisualExtent(anchor, start, body);
+        Vector2 end = new(
+            flyRight
+                ? viewportSize.X + horizontalExtent + FlightExitPadding
+                : -horizontalExtent - FlightExitPadding,
+            viewportSize.Y * FlightTargetHeightRatio);
         Vector2 control = (start + end) * 0.5f + Vector2.Up * viewportSize.Y * FlightArcHeightRatio;
         Vector2 cameraStartPosition = camera?.CurrentPosition ?? Vector2.Zero;
         float cameraStartScale = camera?.CurrentScale ?? 1f;
@@ -709,6 +718,35 @@ public static class DeathAnimation
         }
 
         return rightExtent;
+    }
+
+    private static float GetLeftVisualExtent(
+        Node2D anchor,
+        Vector2 focusCanvasPosition,
+        Sprite2D fallbackBody)
+    {
+        float leftExtent = 0f;
+        IEnumerable<Sprite2D> sprites = anchor.FindChildren("*", nameof(Sprite2D), recursive: true, owned: false)
+            .OfType<Sprite2D>()
+            .Where(sprite => sprite.Visible && sprite.Texture != null);
+
+        foreach (Sprite2D sprite in sprites.DefaultIfEmpty(fallbackBody))
+        {
+            Rect2 rect = sprite.GetRect();
+            Transform2D transform = sprite.GetGlobalTransformWithCanvas();
+            Vector2[] corners =
+            [
+                rect.Position,
+                new Vector2(rect.End.X, rect.Position.Y),
+                rect.End,
+                new Vector2(rect.Position.X, rect.End.Y)
+            ];
+            leftExtent = Math.Max(
+                leftExtent,
+                corners.Max(corner => focusCanvasPosition.X - (transform * corner).X));
+        }
+
+        return leftExtent;
     }
 
     private static void SetFocusCanvasPosition(

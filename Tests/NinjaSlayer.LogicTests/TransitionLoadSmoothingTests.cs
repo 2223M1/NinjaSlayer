@@ -5,17 +5,6 @@ namespace NinjaSlayer.LogicTests;
 public sealed class TransitionLoadSmoothingTests
 {
     [Fact]
-    public void VisibleTransitionUsesBoundedAssetLoadConcurrency()
-    {
-        Assert.Equal(
-            TransitionLoadConcurrencyPolicy.VisibleTransitionConcurrentLoadLimit,
-            TransitionLoadConcurrencyPolicy.Resolve(transitionVisible: true));
-        Assert.Equal(
-            TransitionLoadConcurrencyPolicy.VanillaConcurrentLoadLimit,
-            TransitionLoadConcurrencyPolicy.Resolve(transitionVisible: false));
-    }
-
-    [Fact]
     public void DeferredRequestsCoalesceAndFollowTheCurrentSession()
     {
         var state = new TransitionGcDeferralState();

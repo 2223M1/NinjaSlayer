@@ -198,8 +198,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         if (CombatCinematicCameraLease.TryAcquire(
                 _room,
                 "NinjaSlayer Architect execution",
-                out CombatCinematicCameraLease? camera)
-            && camera != null)
+                out CombatCinematicCameraLease? camera))
         {
             _camera = camera;
             try
@@ -325,22 +324,25 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
         string monsterId = _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT";
         bool fragmentReplacementReady = _softBodyLead != null;
-        if (fragmentReplacementReady)
-        {
-            HideArchitectVisual();
-        }
-
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
             _room,
             new BossBurstParticipant(
                 monsterId,
                 SpawnArchitectBurst));
+        Task whiteout = BossDeathWhiteoutLease.RunUntilCue(
+            this,
+            _room,
+            _architectNode,
+            monsterId,
+            registration.Cue,
+            cancelToken);
         StartExitScene();
         Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
 
         await registration.Cue.WaitAsync(cancelToken);
         await Task.WhenAll(
             cameraRestore,
+            whiteout,
             registration.CombatRelease.WaitAsync(cancelToken));
         if (!fragmentReplacementReady)
         {
@@ -437,47 +439,49 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private void FrameBothSubjects(Vector2 cameraStart, float progress)
     {
-        if (_camera == null)
+        if (_camera is not { } camera)
         {
             return;
         }
 
         float scale = Mathf.Lerp(
-            _camera.BaselineScale.X,
+            camera.BaselineScale.X,
             GetCameraScale(CameraScaleMultiplier),
             CombatCinematicCameraLease.EaseOutCubic(progress));
-        Vector2 targetPosition = ResolveDualSubjectCameraPosition(scale);
-        _camera.SetTransform(
+        Vector2 targetPosition = ResolveDualSubjectCameraPosition(camera, scale);
+        camera.SetTransform(
             cameraStart.Lerp(targetPosition, CombatCinematicCameraLease.EaseOutCubic(progress)),
             scale);
     }
 
     private void FrameBothSubjectsAtScale(float multiplier)
     {
-        if (_camera == null)
+        if (_camera is not { } camera)
         {
             return;
         }
 
         float scale = GetCameraScale(multiplier);
-        _camera.SetTransform(ResolveDualSubjectCameraPosition(scale), scale);
+        camera.SetTransform(ResolveDualSubjectCameraPosition(camera, scale), scale);
     }
 
-    private Vector2 ResolveDualSubjectCameraPosition(float scale)
+    private Vector2 ResolveDualSubjectCameraPosition(
+        CombatCinematicCameraLease camera,
+        float scale)
     {
         Node2D? cinematicFocus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals);
         CanvasItem focus = cinematicFocus is not null ? cinematicFocus : _ownerNode;
         FinisherCameraFrame frame = FinisherCameraFraming.SelectTargets(
-            _camera!,
+            camera,
             focus,
             [_architectNode],
             GetCameraScale(ImpactScaleMultiplier));
         Vector2 center = FinisherCameraFraming.ResolveCenter(
-            _camera!,
+            camera,
             focus,
             frame,
             scale);
-        return _camera!.GetCameraPosition(center, scale, _camera.ViewportSize * 0.5f);
+        return camera.GetCameraPosition(center, scale, camera.ViewportSize * 0.5f);
     }
 
     private static float ResolveImpactScale(float elapsed)

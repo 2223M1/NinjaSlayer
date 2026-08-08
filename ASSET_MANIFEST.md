@@ -19,7 +19,6 @@ The character scene uses these namespaced resources:
 - `NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_0001.png` through `NinjaSlayer_naraku_idle_0022.png` at 24 fps
 - `NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png`
 - `NinjaSlayer/images/characters/ninja_slayer/cast/cast_0001.png`
-- `NinjaSlayer/images/characters/ninja_slayer/hit/hit_0001.png`
 - `NinjaSlayer/images/characters/ninja_slayer/dead/dead_0001.png`
 - `NinjaSlayer/images/characters/ninja_slayer/relaxed/relaxed_0001.png`
 - `NinjaSlayer/images/characters/ninja_slayer/naraku.png`
@@ -50,9 +49,9 @@ The foundational shared portraits include:
 
 New cards should use a `{ClassName}.png`. Temporary aliases must also be recorded in `Docs/placeholder-assets.json`; replacing an alias with dedicated art requires removing both its `AssetName` and inventory entry.
 
-All 93 current card classes now resolve to dedicated class-name portraits. `Docs/placeholder-assets.json` contains no outstanding card-art aliases.
+All current card classes resolve to dedicated class-name portraits. `Docs/placeholder-assets.json` contains no outstanding card-art aliases.
 
-Of these portraits, 88 standard cards use `1000x760` and the 3 Ancient cards use `606x852`. `KarateStraight.png` remains at its restored source size of `1438x1093`, and the unchanged Shuriken Token `ShurikenCard.png` remains at `1439x1093`, as explicit source-art exceptions.
+Standard card portraits use `1000x760` and Ancient card portraits use `606x852`. `KarateStraight.png` remains at its restored source size of `1438x1093`, and the unchanged Shuriken Token `ShurikenCard.png` remains at `1439x1093`, as explicit source-art exceptions.
 
 ## Relic, Potion, Ancient, And Enchantment Images
 
@@ -73,4 +72,20 @@ Her authoritative identity sheet is archived at `../art-production/output/ancill
 
 ## Power Icons
 
-Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. All 41 concrete mod Power classes have dedicated 256x256 transparent PNGs; no shared fallback icon remains.
+Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. Every concrete mod Power class has a dedicated 256x256 transparent PNG; no shared fallback icon remains. `IaiPower.png` is the dedicated Iai icon.
+
+## Monster And Event Images
+
+Dark Ninja uses two dedicated full-body poses on the same `733x649` transparent combat canvas:
+
+- `NinjaSlayer/images/monsters/dark_ninja_standing.png` is the complete standing pose used by the Glory event and the first player turn.
+- `NinjaSlayer/images/monsters/dark_ninja.png` is the combat pose used after Dark Ninja begins its first move.
+
+`NinjaSlayer/images/monsters/dark_ninja_blade_glow.png` is the project-local white additive mask used to reveal the curved blade charge from the blade base to the tip.
+
+Dark Strike uses two project-local, pixel-aligned presentation layers derived from that same image:
+
+- `NinjaSlayer/images/monsters/dark_ninja_character.png`
+- `NinjaSlayer/images/monsters/dark_ninja_sword.png` (blade-only cutout, no hilt)
+
+Both layers remain `733x649`, share the full image origin, and recombine without an alignment offset. Runtime combat code must load these project resources rather than the external cutout workspace.

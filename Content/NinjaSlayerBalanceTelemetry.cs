@@ -18,18 +18,9 @@ public static class NinjaSlayerBalanceTelemetry
     public const string BalanceContextContributionId = "ninja_slayer_balance_context";
 
     private static readonly NinjaSlayerTelemetryIdentityTracker IdentityTracker = new();
-    private static ITelemetryClient Client = null!;
-    private static bool _initialized;
 
     public static void Register()
     {
-        if (_initialized)
-        {
-            return;
-        }
-
-        _initialized = true;
-
         RitsuLibFramework.SubscribeLifecycle<RunStartedEvent>(evt => BeginRun(evt.RunState));
         RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(evt => BeginRun(evt.RunState));
         RitsuLibFramework.SubscribeLifecycle<RunEndedEvent>(ObserveRunEnded);
@@ -43,7 +34,7 @@ public static class NinjaSlayerBalanceTelemetry
                 ApplicantId = NinjaSlayerIds.ModId,
                 OwnerModId = NinjaSlayerIds.ModId,
                 DisplayName = NinjaSlayerIds.ModId,
-                DisplayNameText = ModSettingsText.Literal("NinjaSlayer"),
+                DisplayNameText = ModSettingsText.Literal("Ninja Slayer"),
                 Adapter = new PostHogTelemetryAdapter(
                     host: "https://ninja-slayer-telemetry.theonetrue2223.workers.dev",
                     projectApiKey: "proxy"
@@ -60,7 +51,6 @@ public static class NinjaSlayerBalanceTelemetry
             }
         );
 
-        Client = TelemetryApi.GetClient(NinjaSlayerIds.ModId);
     }
 
     internal static void RefreshIdentity(RunState runState)

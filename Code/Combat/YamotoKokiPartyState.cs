@@ -41,5 +41,5 @@ internal static class YamotoKokiPartyState
         runState.Players.SelectMany(player => player.Relics.OfType<YamotoKokiCuteRelic>());
 
     private static bool IsActive(YamotoKokiCuteRelic relic) =>
-        YamotoKokiRelicLifetimePolicy.IsActive(relic.CombatsLeft, relic.IsMelted);
+        relic.CombatsLeft > 0 && !relic.IsMelted;
 }

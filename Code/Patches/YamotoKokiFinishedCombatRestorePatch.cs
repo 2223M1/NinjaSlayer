@@ -49,12 +49,10 @@ public sealed class YamotoKokiFinishedCombatRestorePatch : IPatchMethod
         YamotoKokiCuteRelic? controller = YamotoKokiPartyState.GetController(runState);
         bool companionPresent = room.CreatureNodes.Any(
             node => node.Entity.Monster is YamotoKokiMonster);
-        if (!YamotoKokiCompanionRestorePolicy.ShouldRestore(
-                room.Mode == CombatRoomMode.FinishedCombat,
-                YamotoKokiPartyState.GetActiveRelicCount(runState),
-                YamotoKokiPartyState.HasPlayedFarewell(runState),
-                companionPresent)
-            || controller == null)
+        if (room.Mode != CombatRoomMode.FinishedCombat
+            || controller == null
+            || YamotoKokiPartyState.HasPlayedFarewell(runState)
+            || companionPresent)
         {
             return;
         }

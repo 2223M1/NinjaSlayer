@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -49,7 +50,9 @@ internal static partial class GameCompatibility
             CardPlays.Add(command, new CardPlayHolder(cardPlay));
         }
 
-        public static bool TryGetCardPlay(AttackCommand command, out CardPlay? cardPlay)
+        public static bool TryGetCardPlay(
+            AttackCommand command,
+            [NotNullWhen(true)] out CardPlay? cardPlay)
         {
             if (CardPlays.TryGetValue(command, out CardPlayHolder? holder))
             {
@@ -67,7 +70,9 @@ internal static partial class GameCompatibility
         {
         }
 
-        public static bool TryGetCardPlay(AttackCommand command, out CardPlay? cardPlay)
+        public static bool TryGetCardPlay(
+            AttackCommand command,
+            [NotNullWhen(true)] out CardPlay? cardPlay)
         {
             cardPlay = command.CardPlay;
             return cardPlay != null;

@@ -25,6 +25,18 @@
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPTED.description": "Fujikido loosens his grip on the reins of self. Red-black flame floods his body, and Naraku's laughter merges with his breath.",
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.SILENCED.description": "\"Silence, Naraku.\" Fujikido speaks his own name and rises from the nightmare on a deep, Chado-like breath.",
 
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.title": "Glory",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.description": "The dark cloak stands in the stone chamber. Empty! Killing intent strikes from behind. \"Domo, Ninja Slayer-san. Dark Ninja desu.\" \"Domo, Dark Ninja-san. Ninja Slayer desu.\" A shuriken pierces the cloak. GOURANGA! The true body already waits at Ninja Slayer's landing point! Death Slash closes in!",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.options.ESCAPE.title": "Escape",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.options.ESCAPE.description": "Gain [gold]{Gold}[/gold] Gold.",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.options.STAY.title": "Stay",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.options.STAY.description": "Face Dark Ninja.",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.FIGHT.description": "Dark Ninja withdraws Death Slash and assumes an iaijutsu stance. The killing intent in the chamber becomes tangible.",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.FIGHT.options.FIGHT.title": "Fight",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.FIGHT.options.FIGHT.description": "Fight Dark Ninja.",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.ESCAPED.description": "Ninja Slayer evades Death Slash and withdraws from the chamber. Among Kyoto Castle's debris, he finds 100 Gold.",
+  "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.VICTORY.description": "Dark Ninja's temporary body dissolves into zeroes and ones from the wound. Blade, cloak, and cold smile vanish in turn, all reclaimed by Kyoto Castle's circuitry deep within the stone walls.",
+
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.title": "Yamoto Koki Is So Cute",
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.INITIAL.description": "You ran into Yamoto Koki!",
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.INITIAL.options.HUG_YAMOTO_KOKI.title": "Hug and take!",

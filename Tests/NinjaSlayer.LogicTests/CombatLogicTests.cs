@@ -481,152 +481,6 @@ public sealed class CombatLogicTests
             overlappingTriangle));
     }
 
-    // Retired semantic-atlas tests are excluded while the simplified capture path is tested in game.
-#if false
-    [Fact]
-    public void BossSemanticMergeKeepsAabbOnlyOverlapSeparateAndMergesVisibleInterleaving()
-    {
-        BossFragmentPoint[] upperLeftTriangle =
-        [
-            new(0f, 0f),
-            new(100f, 0f),
-            new(0f, 100f)
-        ];
-        BossFragmentPoint[] lowerRightTriangle =
-        [
-            new(100f, 100f),
-            new(55f, 100f),
-            new(100f, 55f)
-        ];
-        BossFragmentPoint[] overlappingTriangle =
-        [
-            new(45f, 45f),
-            new(95f, 45f),
-            new(45f, 95f)
-        ];
-        BossSemanticPartMergeInput first = CreateMergePart(
-            sourceIndex: 0,
-            boneId: 1UL,
-            ancestors: [],
-            hull: upperLeftTriangle,
-            slotIndex: 10,
-            minimumDrawOrder: 0,
-            maximumDrawOrder: 2,
-            visibleArea: 3_000f);
-        BossSemanticPartMergeInput separate = CreateMergePart(
-            sourceIndex: 1,
-            boneId: 2UL,
-            ancestors: [],
-            hull: lowerRightTriangle,
-            slotIndex: 11,
-            minimumDrawOrder: 1,
-            maximumDrawOrder: 3,
-            visibleArea: 3_000f);
-        BossSemanticPartMergeInput overlapping = separate with
-        {
-            Hull = overlappingTriangle,
-            Bounds = BossDismembermentMath.BoundsOf(overlappingTriangle),
-            AlphaSamples = overlappingTriangle
-        };
-        var fullBounds = new BossFragmentRect(0f, 0f, 100f, 100f);
-
-        IReadOnlyList<BossSemanticPartMergeInput> separateResult =
-            BossSemanticPartMergePolicy.Normalize(
-                [first, separate],
-                fullVisibleArea: 6_000f,
-                fullBounds);
-        IReadOnlyList<BossSemanticPartMergeInput> mergedResult =
-            BossSemanticPartMergePolicy.Normalize(
-                [first, overlapping],
-                fullVisibleArea: 6_000f,
-                fullBounds);
-
-        Assert.Equal(2, separateResult.Count);
-        BossSemanticPartMergeInput merged = Assert.Single(mergedResult);
-        Assert.Equal([10, 11], merged.SlotIndices);
-        Assert.Equal(0UL, merged.PrimaryBoneId);
-        Assert.Equal([1UL, 2UL], merged.VisibleBoneIds);
-    }
-
-    [Fact]
-    public void BossSemanticMergeFindsTheNearestContainingAncestorForTinyOverlays()
-    {
-        BossSemanticPartMergeInput root = CreateMergePart(
-            sourceIndex: 0,
-            boneId: 1UL,
-            ancestors: [],
-            hull: RectangleHull(0f, 0f, 100f, 100f),
-            slotIndex: 10,
-            minimumDrawOrder: 0,
-            maximumDrawOrder: 0,
-            visibleArea: 9_000f);
-        BossSemanticPartMergeInput nearerButNonContaining = CreateMergePart(
-            sourceIndex: 1,
-            boneId: 2UL,
-            ancestors: [1UL],
-            hull: RectangleHull(120f, 20f, 20f, 20f),
-            slotIndex: 11,
-            minimumDrawOrder: 1,
-            maximumDrawOrder: 1,
-            visibleArea: 400f);
-        BossSemanticPartMergeInput overlay = CreateMergePart(
-            sourceIndex: 2,
-            boneId: 3UL,
-            ancestors: [2UL, 1UL],
-            hull: RectangleHull(40f, 40f, 2f, 2f),
-            slotIndex: 12,
-            minimumDrawOrder: 2,
-            maximumDrawOrder: 2,
-            visibleArea: 4f);
-
-        IReadOnlyList<BossSemanticPartMergeInput> result =
-            BossSemanticPartMergePolicy.Normalize(
-                [root, nearerButNonContaining, overlay],
-                fullVisibleArea: 10_000f,
-                new BossFragmentRect(0f, 0f, 140f, 100f));
-
-        Assert.Equal(2, result.Count);
-        BossSemanticPartMergeInput mergedRoot = Assert.Single(
-            result,
-            part => part.PrimaryBoneId == 1UL);
-        Assert.Equal([10, 12], mergedRoot.SlotIndices);
-        Assert.Single(result, part => part.PrimaryBoneId == 2UL);
-    }
-
-    [Fact]
-    public void BossSemanticMergeNeverLeavesACompositeOnlyLayerAsItsOwnFragment()
-    {
-        BossSemanticPartMergeInput body = CreateMergePart(
-            sourceIndex: 0,
-            boneId: 1UL,
-            ancestors: [],
-            hull: RectangleHull(0f, 0f, 100f, 100f),
-            slotIndex: 10,
-            minimumDrawOrder: 0,
-            maximumDrawOrder: 0,
-            visibleArea: 8_000f);
-        BossSemanticPartMergeInput glow = CreateMergePart(
-            sourceIndex: 1,
-            boneId: 2UL,
-            ancestors: [1UL],
-            hull: RectangleHull(10f, 10f, 80f, 80f),
-            slotIndex: 11,
-            minimumDrawOrder: 1,
-            maximumDrawOrder: 1,
-            visibleArea: 4_000f,
-            hasNormalBlendSlot: false);
-
-        BossSemanticPartMergeInput merged = Assert.Single(
-            BossSemanticPartMergePolicy.Normalize(
-                [body, glow],
-                fullVisibleArea: 10_000f,
-                new BossFragmentRect(0f, 0f, 100f, 100f)));
-
-        Assert.True(merged.HasNormalBlendSlot);
-        Assert.Equal(1UL, merged.PrimaryBoneId);
-        Assert.Equal([10, 11], merged.SlotIndices);
-    }
-#endif
 
     [Fact]
     public void BossFragmentBoundsUseOneCenteredScaleAndRejectAspectDistortion()
@@ -677,301 +531,6 @@ public sealed class CombatLogicTests
             out _));
     }
 
-#if false
-    [Fact]
-    public void BossSemanticPartsSplitOnlyWhenOversizedAndNeverPadToTwentyFour()
-    {
-        var fullBounds = new BossFragmentRect(0f, 0f, 1_000f, 800f);
-        BossSemanticPartDefinition[] ordinary = Enumerable.Range(0, 5)
-            .Select(index => CreateSemanticPart(
-                index,
-                x: index * 100f,
-                y: 100f,
-                width: 80f,
-                height: 120f,
-                areaRatio: 0.08f,
-                boneId: (ulong)(index + 1)))
-            .ToArray();
-        Assert.Equal(
-            ordinary.Length,
-            BossSemanticPartPolicy.BuildFragments(ordinary, fullBounds, 1UL).Count);
-
-        Assert.Equal(1, BossSemanticPartPolicy.ResolveSplitCount(0.219f, 0.44f, 0.44f, 4));
-        Assert.Equal(2, BossSemanticPartPolicy.ResolveSplitCount(0.22f, 0.2f, 0.2f, 4));
-        Assert.Equal(2, BossSemanticPartPolicy.ResolveSplitCount(0.1f, 0.45f, 0.2f, 4));
-
-        BossSemanticPartDefinition[] crowded = Enumerable.Range(0, 21)
-            .Select(index => CreateSemanticPart(
-                index,
-                x: index % 7 * 70f,
-                y: index / 7 * 90f,
-                width: 50f,
-                height: 60f,
-                areaRatio: 0.02f,
-                boneId: (ulong)(index + 1)))
-            .Append(CreateSemanticPart(
-                21,
-                x: 400f,
-                y: 200f,
-                width: 500f,
-                height: 450f,
-                areaRatio: 0.58f,
-                boneId: 99UL))
-            .ToArray();
-        IReadOnlyList<BossSemanticFragmentDescriptor> fragments =
-            BossSemanticPartPolicy.BuildFragments(crowded, fullBounds, 2UL);
-        Assert.Equal(BossDismembermentMath.MaximumPieces, fragments.Count);
-        Assert.Equal(3, fragments.Count(fragment => fragment.SemanticPartIndex == 21));
-        Assert.All(
-            crowded.Take(21),
-            part => Assert.Single(
-                fragments,
-                fragment => fragment.SemanticPartIndex == part.PartIndex));
-    }
-
-    [Fact]
-    public void BossSemanticPartsRejectOverCapacityInputInsteadOfSilentlyDroppingBones()
-    {
-        var fullBounds = new BossFragmentRect(0f, 0f, 1_000f, 800f);
-        BossSemanticPartDefinition[] parts = Enumerable
-            .Range(0, BossDismembermentMath.MaximumPieces + 1)
-            .Select(index => CreateSemanticPart(
-                index,
-                x: index % 8 * 90f,
-                y: index / 8 * 90f,
-                width: 55f,
-                height: 55f,
-                areaRatio: 0.02f,
-                boneId: (ulong)(index + 1)))
-            .ToArray();
-
-        Assert.Empty(BossSemanticPartPolicy.BuildFragments(parts, fullBounds, 3UL));
-    }
-
-    [Fact]
-    public void BossOversizedSemanticPartsPlaceEverySplitSeedOnMeasuredAlpha()
-    {
-        BossFragmentPoint[] alphaSamples =
-        [
-            new(12f, 12f),
-            new(12f, 88f),
-            new(88f, 12f),
-            new(88f, 88f),
-            new(50f, 12f)
-        ];
-        BossSemanticPartDefinition part = CreateSemanticPart(
-            0,
-            0f,
-            0f,
-            100f,
-            100f,
-            areaRatio: 0.6f,
-            boneId: 1UL) with
-        {
-            AlphaSamples = alphaSamples
-        };
-
-        IReadOnlyList<BossSemanticFragmentDescriptor> fragments =
-            BossSemanticPartPolicy.BuildFragments(
-                [part],
-                new BossFragmentRect(0f, 0f, 100f, 100f),
-                seed: 7UL);
-
-        Assert.Equal(4, fragments.Count);
-        Assert.All(fragments, fragment => Assert.Contains(fragment.Cell.Seed, alphaSamples));
-        Assert.All(fragments, fragment =>
-            Assert.All(fragment.LocalSeeds, seed => Assert.Contains(seed, alphaSamples)));
-    }
-
-    [Fact]
-    public void BossSpineTopologyUsesStableBoneDataIndicesAndNearestFirstAncestors()
-    {
-        BossSpineBoneNode[] bones =
-        [
-            new(0, null),
-            new(1, 0),
-            new(2, 1),
-            new(3, 0),
-            new(4, 3)
-        ];
-
-        IReadOnlyDictionary<int, BossSpineBonePath> paths =
-            BossSpineTopologyPolicy.BuildPaths(bones, detachedRootBoneIndex: 3);
-
-        Assert.Equal(1UL, paths[0].BoneId);
-        Assert.Equal(3UL, paths[2].BoneId);
-        Assert.Equal([2UL, 1UL], paths[2].AncestorBoneIds);
-        Assert.False(paths[2].BelongsToDetachedPart);
-        Assert.True(paths[3].BelongsToDetachedPart);
-        Assert.True(paths[4].BelongsToDetachedPart);
-        Assert.Equal([4UL, 1UL], paths[4].AncestorBoneIds);
-    }
-
-    [Fact]
-    public void BossSpineTopologyRejectsMissingParentsAndCycles()
-    {
-        Assert.Throws<InvalidOperationException>(() =>
-            BossSpineTopologyPolicy.BuildPaths(
-                [new BossSpineBoneNode(0, 9)],
-                detachedRootBoneIndex: null));
-        Assert.Throws<InvalidOperationException>(() =>
-            BossSpineTopologyPolicy.BuildPaths(
-                [new BossSpineBoneNode(0, 1), new BossSpineBoneNode(1, 0)],
-                detachedRootBoneIndex: null));
-    }
-
-    [Fact]
-    public void BossSpineDrawOrderUsesTheCurrentDeathPoseOrdering()
-    {
-        IReadOnlyDictionary<int, int> drawOrder =
-            BossSpineTopologyPolicy.BuildDrawOrder(
-                [0, 1, 2, 3],
-                [2, 0, 3, 1]);
-
-        Assert.Equal(0, drawOrder[2]);
-        Assert.Equal(1, drawOrder[0]);
-        Assert.Equal(2, drawOrder[3]);
-        Assert.Equal(3, drawOrder[1]);
-        Assert.Throws<InvalidOperationException>(() =>
-            BossSpineTopologyPolicy.BuildDrawOrder([0, 1], [0, 0]));
-    }
-
-    [Fact]
-    public void BossSemanticLinksUseOnlySmallOriginalBoneRelationsAndNeverReuseAPart()
-    {
-        BossSemanticPartCandidate[] parts =
-        [
-            new(0, 10UL, [], new(0f, 0f), new(0f, 0f), 0.07f, false, false),
-            new(1, 11UL, [10UL], new(20f, 0f), new(10f, 0f), 0.06f, false, false),
-            new(2, 12UL, [11UL, 10UL], new(40f, 0f), new(30f, 0f), 0.05f, false, false),
-            new(3, 20UL, [], new(100f, 0f), new(100f, 0f), 0.04f, false, false),
-            new(4, 21UL, [20UL], new(120f, 0f), new(110f, 0f), 0.04f, false, false),
-            new(5, 30UL, [10UL], new(0f, 40f), new(0f, 20f), 0.03f, true, false),
-            new(6, 31UL, [10UL], new(0f, 60f), new(0f, 30f), 0.03f, false, true)
-        ];
-
-        IReadOnlyList<BossSemanticBoneLink> links =
-            BossSemanticPartPolicy.SelectOriginalBoneLinks(parts);
-
-        Assert.Equal(2, links.Count);
-        Assert.Contains(links, link => link.FirstPartIndex == 3 && link.SecondPartIndex == 4);
-        Assert.Contains(links, link =>
-            link.FirstPartIndex == 0 && link.SecondPartIndex == 1
-            || link.FirstPartIndex == 1 && link.SecondPartIndex == 2);
-        Assert.DoesNotContain(links, link =>
-            link.FirstPartIndex == 0 && link.SecondPartIndex == 2);
-        Assert.DoesNotContain(links, link => link.FirstPartIndex == 5 || link.SecondPartIndex == 5);
-        Assert.DoesNotContain(links, link => link.FirstPartIndex == 6 || link.SecondPartIndex == 6);
-        Assert.Equal(
-            links.Count * 2,
-            links.SelectMany(link => new[] { link.FirstPartIndex, link.SecondPartIndex })
-                .Distinct()
-                .Count());
-    }
-
-    [Fact]
-    public void BossSemanticLinkConflictDoesNotReserveTheUnusedCandidateEndpoint()
-    {
-        BossSemanticPartCandidate[] parts =
-        [
-            new(0, 10UL, [], new(0f, 0f), new(0f, 0f), 0.04f, false, false),
-            new(1, 11UL, [10UL], new(1f, 0f), new(1f, 0f), 0.04f, false, false),
-            new(2, 12UL, [10UL], new(2f, 0f), new(2f, 0f), 0.04f, false, false),
-            new(3, 13UL, [12UL, 10UL], new(5f, 0f), new(4f, 0f), 0.04f, false, false)
-        ];
-
-        IReadOnlyList<BossSemanticBoneLink> links =
-            BossSemanticPartPolicy.SelectOriginalBoneLinks(parts);
-
-        Assert.Equal(2, links.Count);
-        Assert.Contains(links, link => link.FirstPartIndex == 0 && link.SecondPartIndex == 1);
-        Assert.Contains(links, link => link.FirstPartIndex == 2 && link.SecondPartIndex == 3);
-    }
-
-    [Fact]
-    public void BossSemanticLinksCrossOnlyInvisibleIntermediateBonesWithinOneDetachedDomain()
-    {
-        BossSemanticPartCandidate[] withoutVisibleIntermediate =
-        [
-            new(0, 1UL, [], new(0f, 0f), new(0f, 0f), 0.04f, true, false),
-            new(1, 3UL, [2UL, 1UL], new(8f, 0f), new(4f, 0f), 0.04f, true, false)
-        ];
-        BossSemanticPartCandidate[] withVisibleIntermediate =
-        [
-            .. withoutVisibleIntermediate,
-            new(2, 2UL, [1UL], new(4f, 0f), new(2f, 0f), 0.04f, true, false)
-        ];
-        BossSemanticPartCandidate[] acrossDetachedDomains =
-        [
-            withoutVisibleIntermediate[0],
-            withoutVisibleIntermediate[1] with { BelongsToDetachedPart = false }
-        ];
-
-        BossSemanticBoneLink link = Assert.Single(
-            BossSemanticPartPolicy.SelectOriginalBoneLinks(withoutVisibleIntermediate));
-        Assert.Equal(2, link.BoneDistance);
-        IReadOnlyList<BossSemanticBoneLink> visibleIntermediateLinks =
-            BossSemanticPartPolicy.SelectOriginalBoneLinks(withVisibleIntermediate);
-        Assert.DoesNotContain(visibleIntermediateLinks, candidate =>
-            candidate.FirstPartIndex == 0 && candidate.SecondPartIndex == 1);
-        Assert.Contains(visibleIntermediateLinks, candidate =>
-            candidate.FirstPartIndex == 0 && candidate.SecondPartIndex == 2);
-        Assert.Empty(BossSemanticPartPolicy.SelectOriginalBoneLinks(acrossDetachedDomains));
-    }
-
-    [Fact]
-    public void BossSemanticLinksCannotCrossAnIntermediateBoneInsideAMergedPart()
-    {
-        BossSemanticPartCandidate[] parts =
-        [
-            new(0, 1UL, [], new(0f, 0f), new(0f, 0f), 0.04f, false, false),
-            new(
-                1,
-                0UL,
-                [],
-                new(4f, 0f),
-                new(2f, 0f),
-                0.04f,
-                false,
-                false,
-                [2UL, 20UL]),
-            new(2, 3UL, [2UL, 1UL], new(8f, 0f), new(4f, 0f), 0.04f, false, false)
-        ];
-
-        IReadOnlyList<BossSemanticBoneLink> links =
-            BossSemanticPartPolicy.SelectOriginalBoneLinks(parts);
-
-        Assert.DoesNotContain(links, link =>
-            link.FirstPartIndex == 0 && link.SecondPartIndex == 2);
-    }
-
-    [Fact]
-    public void BossStagingVerticalFlipPreservesAbsoluteTileIdentity()
-    {
-        Assert.Equal(12, BossCaptureSamplingMath.MapViewportYToImage(256, 12, false));
-        Assert.Equal(243, BossCaptureSamplingMath.MapViewportYToImage(256, 12, true));
-        Assert.Equal(115, BossCaptureSamplingMath.MapViewportYToImage(256, 140, true));
-        Assert.False(BossCaptureSamplingMath.ResolveReadbackVerticalFlip(1f, 0f));
-        Assert.True(BossCaptureSamplingMath.ResolveReadbackVerticalFlip(0f, 1f));
-        Assert.Throws<InvalidOperationException>(() =>
-            BossCaptureSamplingMath.ResolveReadbackVerticalFlip(0f, 0f));
-        Assert.Throws<InvalidOperationException>(() =>
-            BossCaptureSamplingMath.ResolveReadbackVerticalFlip(0.8f, 0.7f));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            BossCaptureSamplingMath.MapViewportYToImage(256, 256, true));
-    }
-
-    [Fact]
-    public void BossSpineBlendPolicyKeepsNormalLayersAndMergesCompositeOnlyLayers()
-    {
-        Assert.True(BossSemanticPartPolicy.IsNormalBlendMode(0L, null));
-        Assert.False(BossSemanticPartPolicy.IsNormalBlendMode(1L, "normal"));
-        Assert.False(BossSemanticPartPolicy.IsNormalBlendMode(null, "additive"));
-        Assert.False(BossSemanticPartPolicy.IsNormalBlendMode(null, "Multiply"));
-        Assert.False(BossSemanticPartPolicy.IsNormalBlendMode(null, "screen"));
-        Assert.True(BossSemanticPartPolicy.IsNormalBlendMode(null, "unknown"));
-    }
-#endif
 
     [Theory]
     [InlineData(-1f, 0f, -200f)]
@@ -988,6 +547,52 @@ public sealed class CombatLogicTests
 
         Assert.Equal(expectedX, velocity.X, 5);
         Assert.Equal(0f, velocity.Y);
+    }
+
+    [Fact]
+    public void ArchitectRagdollTopologyUsesTheNearestVisibleAncestorAndLargestTopLevelRoot()
+    {
+        ArchitectRagdollTopologyPart[] parts =
+        [
+            new(1UL, 4f, 10, [90UL]),
+            new(2UL, 1f, 20, [70UL, 1UL, 90UL]),
+            new(3UL, 0.5f, 30, [2UL, 1UL, 90UL]),
+            new(4UL, 2f, 5, [80UL])
+        ];
+
+        IReadOnlyList<ArchitectRagdollTopologyNode> topology =
+            BossDismembermentMath.ResolveArchitectRagdollTopology(parts);
+
+        Assert.Equal(1UL, topology[0].BoneId);
+        Assert.Null(topology[0].ParentBoneId);
+        Assert.Equal(1UL, topology.Single(node => node.BoneId == 2UL).ParentBoneId);
+        Assert.Equal(2UL, topology.Single(node => node.BoneId == 3UL).ParentBoneId);
+        Assert.Equal(1UL, topology.Single(node => node.BoneId == 4UL).ParentBoneId);
+    }
+
+    [Fact]
+    public void ArchitectBoneRotationAppliesOnlyTheRelativeSegmentRotation()
+    {
+        float originalRotation = 17f;
+        float parentRotation = 0.25f;
+        float childRotation = 0.6f;
+
+        float result = BossDismembermentMath.ResolveArchitectLocalBoneRotation(
+            originalRotation,
+            childRotation,
+            parentRotation);
+
+        Assert.Equal(
+            originalRotation + (childRotation - parentRotation) * (180f / MathF.PI),
+            result,
+            5);
+        Assert.Equal(
+            originalRotation,
+            BossDismembermentMath.ResolveArchitectLocalBoneRotation(
+                originalRotation,
+                parentRotation,
+                parentRotation),
+            5);
     }
 
     [Fact]
@@ -1360,44 +965,121 @@ public sealed class CombatLogicTests
     [Theory]
     [InlineData(-1f)]
     [InlineData(1f)]
-    public void ArchitectLeadRemainsOneFiniteSoftBodyBeforeTheBurst(float impactDirection)
+    public void ArchitectRagdollTorsoPullsConnectedLimbsBeforeTheBurst(float impactDirection)
     {
-        SoftFragmentBody body = CreateSoftBody(
+        SoftFragmentBody torso = CreateSoftBody(
             1,
-            new SoftBodyBounds(-90f, -140f, 180f, 100f));
-        body.SetMaterial(SoftBodyMaterialProfile.ArchitectLead);
-        body.SetCollisionEnvelope(hullScale: 1f, marginScale: 0f);
-        body.ConfigureDeformation(0x415243484C454144UL);
+            new SoftBodyBounds(-30f, -120f, 60f, 90f));
+        SoftFragmentBody leftArm = CreateSoftBody(
+            2,
+            new SoftBodyBounds(-75f, -105f, 45f, 25f));
+        SoftFragmentBody rightArm = CreateSoftBody(
+            3,
+            new SoftBodyBounds(30f, -105f, 45f, 25f));
+        SoftFragmentBody leftLeg = CreateSoftBody(
+            4,
+            new SoftBodyBounds(-25f, -30f, 20f, 70f));
+        SoftFragmentBody rightLeg = CreateSoftBody(
+            5,
+            new SoftBodyBounds(5f, -30f, 20f, 70f));
+        SoftFragmentBody[] bodies = [torso, leftArm, rightArm, leftLeg, rightLeg];
         BossFragmentPoint velocity = BossDismembermentMath.ResolveArchitectLeadVelocity(
             impactDirection,
             unitSample: 0.5f);
-        var actuator = new SoftBodyLaunchActuator(body, velocity, 0.2f);
-        actuator.Begin();
-        Assert.InRange(MathF.Abs(body.CenterVelocity.X), 200f, 400f);
-        Assert.Equal(0f, body.CenterVelocity.Y, 5);
+        foreach (SoftFragmentBody body in bodies)
+        {
+            body.SetMaterial(SoftBodyMaterialProfile.ArchitectLead);
+            body.SetCollisionEnvelope(hullScale: 1f, marginScale: 0f);
+        }
 
-        SoftFragmentBody[] bodies = [body];
-        Assert.Single(bodies);
-        float startX = body.Center.X;
+        torso.Release(velocity, angularVelocityRadians: 0f);
+        foreach (SoftFragmentBody limb in bodies.Skip(1))
+        {
+            limb.Release(default, angularVelocityRadians: 0f);
+        }
+
+        Assert.InRange(MathF.Abs(torso.CenterVelocity.X), 200f, 400f);
+        Assert.Equal(MathF.Sign(impactDirection), MathF.Sign(torso.CenterVelocity.X));
+        Assert.Equal(0f, torso.CenterVelocity.Y, 5);
+        Assert.All(Enumerable.Range(0, SoftFragmentBody.ParticleCount), index =>
+        {
+            Assert.Equal(velocity.X, torso.GetParticleVelocity(index).X, 5);
+            Assert.Equal(0f, torso.GetParticleVelocity(index).Y, 5);
+        });
+        Assert.All(bodies.Skip(1), limb =>
+        {
+            Assert.Equal(0f, limb.CenterVelocity.X, 5);
+            Assert.Equal(0f, limb.CenterVelocity.Y, 5);
+            Assert.All(Enumerable.Range(0, SoftFragmentBody.ParticleCount), index =>
+            {
+                Assert.Equal(0f, limb.GetParticleVelocity(index).X, 5);
+                Assert.Equal(0f, limb.GetParticleVelocity(index).Y, 5);
+            });
+        });
+
+        SoftRagdollLink[] links =
+        [
+            CreateRagdollLink(torso, leftArm, new BossFragmentPoint(-30f, -95f)),
+            CreateRagdollLink(torso, rightArm, new BossFragmentPoint(30f, -95f)),
+            CreateRagdollLink(torso, leftLeg, new BossFragmentPoint(-15f, -30f)),
+            CreateRagdollLink(torso, rightLeg, new BossFragmentPoint(15f, -30f))
+        ];
+        Dictionary<SoftFragmentBody, BossFragmentPoint> initialOffsets = bodies
+            .Skip(1)
+            .ToDictionary(
+                body => body,
+                body => Subtract(body.Center, torso.Center));
+        float torsoStartX = torso.Center.X;
         var solver = new BossSoftBodySolver();
         for (int step = 0; step < 54; step++)
         {
             solver.Step(
                 bodies,
-                [],
+                links,
                 1f / 60f,
                 gravity: 860f,
                 airDrag: 0.08f,
-                floorY: 0f,
-                launchActuators: [actuator],
+                floorY: 40f,
                 centerSpeedLimit: BossSoftBodySolver.DefaultMaximumCenterSpeed);
         }
 
-        Assert.True(body.HasFiniteState);
-        Assert.True(impactDirection * (body.Center.X - startX) > 100f);
-        Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
-        Assert.All(Enumerable.Range(0, SoftFragmentBody.ParticleCount), index =>
-            Assert.True(body.GetParticlePosition(index).Y <= 0.001f));
+        Dictionary<SoftFragmentBody, SoftBodyRenderPose> poses = bodies.ToDictionary(
+            body => body,
+            body => ResolvePose(body));
+        Assert.True(
+            impactDirection * (torso.Center.X - torsoStartX) > 0f,
+            $"The Architect torso did not move in the impact direction: "
+                + $"start={torsoStartX:F3}, end={torso.Center.X:F3}.");
+        int articulatedChildren = bodies.Skip(1).Count(body =>
+        {
+            BossFragmentPoint currentOffset = Subtract(body.Center, torso.Center);
+            BossFragmentPoint offsetDelta = Subtract(currentOffset, initialOffsets[body]);
+            float displacement = Length(offsetDelta);
+            float relativeRotation = MathF.Abs(
+                poses[body].RotationRadians - poses[torso].RotationRadians);
+            return displacement > 2f || relativeRotation > 0.02f;
+        });
+        Assert.True(
+            articulatedChildren >= 2,
+            $"Only {articulatedChildren} Architect limbs moved relative to the torso.");
+        Assert.All(links, link =>
+        {
+            Assert.False(link.Broken);
+            float jointDistance = Length(Subtract(
+                link.Second.GetParticlePosition(link.SecondParticle),
+                link.First.GetParticlePosition(link.FirstParticle)));
+            float tolerance = Math.Max(
+                2f,
+                Math.Min(link.First.ShortDimension, link.Second.ShortDimension) * 0.05f);
+            Assert.True(
+                jointDistance <= link.RestLength + tolerance,
+                $"Joint stretched to {jointDistance:F3} from {link.RestLength:F3}.");
+        });
+        Assert.All(bodies, body =>
+        {
+            Assert.True(body.HasFiniteState);
+            Assert.True(body.ResolveMinimumCellAreaRatio() > 0f);
+        });
     }
 
     [Fact]
@@ -1602,6 +1284,54 @@ public sealed class CombatLogicTests
         where TState : notnull =>
         FinisherForecastEngine.Evaluate(simulation, maximumSearchTime: TimeSpan.MaxValue);
 
+    private static SoftRagdollLink CreateRagdollLink(
+        SoftFragmentBody parent,
+        SoftFragmentBody child,
+        BossFragmentPoint pivot)
+    {
+        int parentParticle = FindNearestParticle(parent, pivot);
+        int childParticle = FindNearestParticle(child, pivot);
+        return new SoftRagdollLink(
+            parent,
+            parentParticle,
+            child,
+            childParticle,
+            Length(Subtract(
+                child.GetParticlePosition(childParticle),
+                parent.GetParticlePosition(parentParticle))))
+        {
+            CanBreak = false
+        };
+    }
+
+    private static int FindNearestParticle(
+        SoftFragmentBody body,
+        BossFragmentPoint pivot)
+    {
+        return Enumerable.Range(0, SoftFragmentBody.ParticleCount)
+            .OrderBy(index => Length(Subtract(body.GetParticlePosition(index), pivot)))
+            .First();
+    }
+
+    private static SoftBodyRenderPose ResolvePose(SoftFragmentBody body)
+    {
+        var residuals = new BossFragmentPoint[SoftFragmentBody.ParticleCount];
+        Assert.True(SoftBodyRenderPoseResolver.TryResolve(
+            body,
+            previousRotation: 0f,
+            residuals,
+            out SoftBodyRenderPose pose));
+        return pose;
+    }
+
+    private static BossFragmentPoint Subtract(
+        BossFragmentPoint first,
+        BossFragmentPoint second) =>
+        new(first.X - second.X, first.Y - second.Y);
+
+    private static float Length(BossFragmentPoint point) =>
+        MathF.Sqrt(point.X * point.X + point.Y * point.Y);
+
     private static SoftFragmentBody CreateSoftBody(
         int id,
         BossFragmentPoint center,
@@ -1701,88 +1431,6 @@ public sealed class CombatLogicTests
             collisionMargin: 18f);
     }
 
-#if false
-    private static BossSemanticPartDefinition CreateSemanticPart(
-        int index,
-        float x,
-        float y,
-        float width,
-        float height,
-        float areaRatio,
-        ulong boneId,
-        IReadOnlyList<ulong>? ancestors = null,
-        bool detached = false)
-    {
-        BossFragmentPoint[] hull =
-        [
-            new(x, y),
-            new(x + width, y),
-            new(x + width, y + height),
-            new(x, y + height)
-        ];
-        BossFragmentPoint[] alphaSamples = Enumerable.Range(0, 9)
-            .Select(sample => new BossFragmentPoint(
-                x + width * (0.15f + sample % 3 * 0.35f),
-                y + height * (0.15f + sample / 3 * 0.35f)))
-            .ToArray();
-        return new BossSemanticPartDefinition(
-            index,
-            boneId,
-            $"bone_{boneId}",
-            ancestors ?? [],
-            new BossFragmentPoint(x + width * 0.5f, y + height * 0.5f),
-            new BossFragmentRect(x, y, width, height),
-            hull,
-            alphaSamples,
-            width * height,
-            areaRatio,
-            detached,
-            [index],
-            index,
-            index);
-    }
-
-    private static BossSemanticPartMergeInput CreateMergePart(
-        int sourceIndex,
-        ulong boneId,
-        IReadOnlyList<ulong> ancestors,
-        IReadOnlyList<BossFragmentPoint> hull,
-        int slotIndex,
-        int minimumDrawOrder,
-        int maximumDrawOrder,
-        float visibleArea,
-        bool hasNormalBlendSlot = true)
-    {
-        BossFragmentRect bounds = BossDismembermentMath.BoundsOf(hull);
-        return new BossSemanticPartMergeInput(
-            sourceIndex,
-            boneId,
-            $"bone_{boneId}",
-            ancestors,
-            BossDismembermentMath.PolygonCentroid(hull),
-            BelongsToDetachedPart: false,
-            [slotIndex],
-            hasNormalBlendSlot,
-            minimumDrawOrder,
-            maximumDrawOrder,
-            visibleArea,
-            bounds,
-            hull,
-            hull);
-    }
-
-    private static BossFragmentPoint[] RectangleHull(
-        float x,
-        float y,
-        float width,
-        float height) =>
-    [
-        new(x, y),
-        new(x + width, y),
-        new(x + width, y + height),
-        new(x, y + height)
-    ];
-#endif
 
     private static FinisherForecastSimulation<ForecastTestState, ForecastTestState> CreateForecast(
         IReadOnlyList<ForecastTestState> states,

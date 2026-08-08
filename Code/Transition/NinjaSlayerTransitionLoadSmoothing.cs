@@ -22,8 +22,7 @@ public static class NinjaSlayerTransitionLoadSmoothing
 
     internal static bool IsAnimationPlaying => Volatile.Read(ref animationSessionId) != 0;
 
-    public static int GetConcurrentAssetLoadLimit() =>
-        TransitionLoadConcurrencyPolicy.Resolve(IsAnimationPlaying);
+    public static int GetConcurrentAssetLoadLimit() => IsAnimationPlaying ? 8 : 128;
 
     internal static void BeginSession(long sessionId)
     {

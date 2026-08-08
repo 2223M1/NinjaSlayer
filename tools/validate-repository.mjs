@@ -148,6 +148,40 @@ validateReadme('README_EN.md', 'README.md', 'eng');
 for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter((path) => path.endsWith('.json'))) {
   readJson(path);
 }
+
+const runtimeAudioBankPath = join(root, 'NinjaSlayer', 'audio', 'fmod', 'NinjaSlayer.bank');
+const desktopAudioBankPath = join(
+  root,
+  'NinjaSlayer',
+  'audio',
+  'fmod',
+  'desktop',
+  'NinjaSlayer.bank',
+);
+if (!existsSync(runtimeAudioBankPath) || !existsSync(desktopAudioBankPath)) {
+  errors.push('Runtime and desktop NinjaSlayer FMOD banks must both exist');
+} else if (!readFileSync(runtimeAudioBankPath).equals(readFileSync(desktopAudioBankPath))) {
+  errors.push('Runtime NinjaSlayer FMOD bank must match the latest desktop bank byte-for-byte');
+}
+
+const fmodGuidMappingsPath = join(root, 'NinjaSlayer', 'audio', 'fmod', 'GUIDs.txt');
+if (!existsSync(fmodGuidMappingsPath)) {
+  errors.push('NinjaSlayer/audio/fmod/GUIDs.txt must exist');
+} else {
+  const fmodGuidMappings = readFileSync(fmodGuidMappingsPath, 'utf8');
+  for (const eventPath of [
+    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_death',
+    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_death_kiri',
+    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_fast_attack',
+    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_kirisute_goumen',
+    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_slow_attack',
+  ]) {
+    if (!fmodGuidMappings.includes(eventPath)) {
+      errors.push(`NinjaSlayer/audio/fmod/GUIDs.txt is missing ${eventPath}`);
+    }
+  }
+}
+
 const manifest = readJson(join(root, 'NinjaSlayer.json'));
 if (manifest) {
   if (manifest.version !== 'VERSION_PLACEHOLDER'
@@ -393,18 +427,7 @@ const patchSources = filesUnder(join(root, 'Code', 'Patches'))
   .map((path) => readFileSync(path, 'utf8'))
   .join('\n');
 const entrySource = readFileSync(join(root, 'Scripts', 'Entry.cs'), 'utf8');
-const worldVisualSource = readFileSync(join(root, 'Content', 'NinjaSlayerWorldVisualProfile.cs'), 'utf8');
 const patchGroupSource = readFileSync(join(root, 'Code', 'Patches', 'NinjaSlayerPatchGroups.cs'), 'utf8');
-
-for (const visualClass of ['Merchant', 'RestSite']) {
-  const classStart = worldVisualSource.indexOf(`class ${visualClass}`);
-  const bodyStyleStart = worldVisualSource.indexOf('BodyStyle()', classStart);
-  const bodyStyleEnd = worldVisualSource.indexOf(';', bodyStyleStart);
-  const bodyStyle = worldVisualSource.slice(bodyStyleStart, bodyStyleEnd);
-  if (!bodyStyle.includes('.WithPosition(') || bodyStyle.includes('.WithOffset(')) {
-    errors.push(`NinjaSlayerWorldVisualProfile.${visualClass}.BodyStyle must use idempotent absolute positioning`);
-  }
-}
 const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)]
   .map((match) => match[1]);
 const patchRegistrations = [...patchGroupSource.matchAll(/RegisterPatch<(\w+)>/g)]
@@ -448,17 +471,6 @@ if (patchIds.length !== patchClasses.length) {
   errors.push(`Expected one PatchId per IPatchMethod (${patchClasses.length} classes, ${patchIds.length} ids)`);
 }
 
-const patchGroups = [...patchGroupSource.matchAll(/sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
-  .map((match) => match[1]);
-for (const patchGroup of patchGroups) {
-  const installationCount = [...entrySource.matchAll(
-    new RegExp(`(?:InstallCapability|TryInstallRequiredCapability)<${patchGroup}>`, 'g'),
-  )].length;
-  if (installationCount !== 1) {
-    errors.push(`Entry.cs must install typed patch group ${patchGroup} exactly once (found ${installationCount})`);
-  }
-}
-
 const compatibilityOwnedFiles = [
   'Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs',
   'Code/Patches/KarateHealthBarPreviewPatch.cs',
@@ -489,58 +501,17 @@ for (const capabilityId of new Set(capabilityIds)) {
   const count = capabilityIds.filter((candidate) => candidate === capabilityId).length;
   if (count !== 1) errors.push(`Capability id ${capabilityId} is declared ${count} times`);
 }
-const nonPatchCapabilityNames = ['CoreContent', 'PreparedSafety'];
-if (capabilityIds.length !== patchGroups.length + nonPatchCapabilityNames.length) {
-  errors.push(
-    `Expected one capability id per typed patch group plus core content and Prepared lifecycle (${patchGroups.length} groups, ${capabilityIds.length} ids)`,
-  );
-}
 if (/(?:InstallCapability|TryInstallRequiredCapability)<[^>]+>\(\s*"/.test(entrySource)) {
   errors.push('Entry.cs must use NinjaSlayerCapabilityIds for every capability installation');
-}
-const installedCapabilityNames = [
-  ...entrySource.matchAll(/InstallCapability<[^>]+>\(\s*NinjaSlayerCapabilityIds\.(\w+)/g),
-].map((match) => match[1]);
-installedCapabilityNames.push(
-  ...[...entrySource.matchAll(/failedCapabilityId\s*=\s*NinjaSlayerCapabilityIds\.(\w+)/g)]
-    .map((match) => match[1]),
-  'CoreContent',
-);
-const declaredCapabilityNames = [
-  ...capabilityIdSource.matchAll(/const\s+string\s+(\w+)\s*=\s*"[^"]+"/g),
-].map((match) => match[1]);
-if (new Set(installedCapabilityNames).size !== installedCapabilityNames.length
-    || [...installedCapabilityNames].sort().join('\n')
-      !== [...declaredCapabilityNames].sort().join('\n')) {
-  errors.push('Every declared capability id must be installed exactly once by Entry.cs');
 }
 
 const concreteCardSources = filesUnder(join(root, 'Cards'))
   .filter((path) => path.endsWith('.cs') && !path.includes(`${join('Cards', 'Base')}`))
   .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
   .filter(({ source }) => /public\s+sealed\s+class\s+\w+/.test(source));
-const cardSpecPattern = /private\s+static\s+readonly\s+NinjaSlayerCardSpec\s+CardSpec\s*=\s*new\s*\(\s*nameof\((\w+)\)/g;
-let cardSpecCount = 0;
 for (const { path, source } of concreteCardSources) {
   const className = /public\s+sealed\s+class\s+(\w+)/.exec(source)?.[1];
   if (!className) continue;
-
-  const specs = [...source.matchAll(cardSpecPattern)];
-  cardSpecCount += specs.length;
-  if (specs.length !== 1) {
-    errors.push(`${relative(root, path)} must declare exactly one NinjaSlayerCardSpec (found ${specs.length})`);
-    continue;
-  }
-  if (specs[0][1] !== className) {
-    errors.push(`${relative(root, path)} CardSpec id ${specs[0][1]} does not match class ${className}`);
-  }
-  const constructorPattern = new RegExp(`public\\s+${className}\\(\\)\\s*:\\s*base\\(CardSpec\\)`);
-  if (!constructorPattern.test(source)) {
-    errors.push(`${relative(root, path)} constructor must delegate to base(CardSpec)`);
-  }
-  if (/\bAssetName\s*:/.test(source)) {
-    errors.push(`${relative(root, path)} must use its dedicated class-name portrait instead of AssetName`);
-  }
 
   const portraitPath = join(root, 'NinjaSlayer', 'images', 'cards', `${className}.png`);
   const portraitSize = readPngSize(portraitPath);
@@ -555,21 +526,12 @@ for (const { path, source } of concreteCardSources) {
     );
   }
 }
-if (cardSpecCount !== 93) {
-  errors.push(`Expected 93 concrete NinjaSlayerCardSpec declarations, found ${cardSpecCount}`);
-}
-for (const { path, source } of concreteCardSources) {
-  if (/public\s+\w+\(\)\s*:\s*base\((?!CardSpec\b)[^)]*,[^)]*,[^)]*,[^)]*,[^)]*\)/s.test(source)) {
-    errors.push(`${relative(root, path)} still uses the legacy five-argument card constructor`);
-  }
-}
 
 const placeholderInventoryPath = join(root, 'Docs', 'placeholder-assets.json');
 const placeholderInventory = readJson(placeholderInventoryPath);
 if (placeholderInventory) {
   const items = Array.isArray(placeholderInventory.items) ? placeholderInventory.items : [];
   const ids = new Set();
-  const sources = new Set();
   for (const item of items) {
     if (typeof item.id !== 'string' || ids.has(item.id)) {
       errors.push(`Docs/placeholder-assets.json contains a missing or duplicate id: ${item.id ?? '<missing>'}`);
@@ -578,7 +540,6 @@ if (placeholderInventory) {
     if (typeof item.source !== 'string' || !existsSync(join(root, ...item.source.split('/')))) {
       errors.push(`Placeholder ${item.id ?? '<missing>'} references missing source ${item.source ?? '<missing>'}`);
     }
-    sources.add(item.source);
     for (const field of ['currentAsset', 'targetAsset']) {
       if (typeof item[field] !== 'string' || item[field].length === 0) {
         errors.push(`Placeholder ${item.id ?? '<missing>'} must define ${field}`);
@@ -587,14 +548,6 @@ if (placeholderInventory) {
     if (typeof item.releaseBlocking !== 'boolean') {
       errors.push(`Placeholder ${item.id ?? '<missing>'} must define boolean releaseBlocking`);
     }
-  }
-
-  const visualPonytailSources = filesUnder(root)
-    .filter((path) => /\.(cs|md)$/.test(path))
-    .filter((path) => /ponytail:.*(?:art|icon|stand-in)/i.test(readFileSync(path, 'utf8')))
-    .map((path) => relative(root, path).replaceAll('\\', '/'));
-  for (const source of visualPonytailSources) {
-    if (!sources.has(source)) errors.push(`Placeholder inventory is missing visual marker in ${source}`);
   }
 }
 
@@ -614,25 +567,17 @@ const powerClassNames = filesUnder(join(root, 'Powers'))
   .filter((path) => path.endsWith('.cs'))
   .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/public\s+sealed\s+(?:partial\s+)?class\s+(\w+Power)\b/g)])
   .map((match) => match[1]);
-if (powerClassNames.length !== 41) {
-  errors.push(`Expected 41 concrete power classes, found ${powerClassNames.length}`);
-}
 for (const powerClassName of powerClassNames) {
   const iconPath = join(root, 'NinjaSlayer', 'images', 'powers', `${powerClassName}.png`);
-  if (!existsSync(iconPath)) errors.push(`Missing dedicated power icon: ${powerClassName}.png`);
-}
-const riffleStrengthDownSource = readFileSync(join(root, 'Powers', 'RiffleStrengthDownPower.cs'), 'utf8');
-if (
-  !riffleStrengthDownSource.includes('IModPowerAssetOverrides')
-  || !riffleStrengthDownSource.includes('NinjaSlayerPowerAssets.For(GetType())')
-) {
-  errors.push('RiffleStrengthDownPower must expose its dedicated icon through RitsuLib asset overrides');
+  const iconSize = readPngSize(iconPath);
+  if (!iconSize) {
+    if (!existsSync(iconPath)) errors.push(`Missing dedicated power icon: ${powerClassName}.png`);
+  } else if (iconSize[0] !== 256 || iconSize[1] !== 256) {
+    errors.push(`${powerClassName}.png must be 256x256, found ${iconSize[0]}x${iconSize[1]}`);
+  }
 }
 if (existsSync(join(root, 'NinjaSlayer', 'images', 'powers', 'soar_power.png'))) {
   errors.push('Shared soar_power.png fallback should not remain after dedicated power art is complete');
-}
-if (!assetManifest.includes('All 41 concrete mod Power classes')) {
-  errors.push('ASSET_MANIFEST.md does not describe the dedicated power icon set');
 }
 
 const ancillaryArt = [

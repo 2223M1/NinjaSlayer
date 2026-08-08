@@ -51,7 +51,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         if (NinjaSlayerPatchCapabilities.TransitionPresentationEnabled)
         {
             __result = WaitForViewReadyAndLoadDelayAsync(
-                session!,
+                session,
                 delay,
                 cancelToken ?? CancellationToken.None);
         }

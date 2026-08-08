@@ -162,7 +162,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         catch (Exception ex)
         {
             _enhancedImpactFailed = true;
-            FinisherLog.Warn($"Could not create finisher presentation; fallback presentation will be used: {ex}");
+            Entry.Logger.Warn($"Could not create finisher presentation; fallback presentation will be used: {ex}");
         }
 
         List<NCreature> framingCandidates = _ledger.Victims
@@ -178,7 +178,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception exception)
         {
-            FinisherLog.Warn(
+            Entry.Logger.Warn(
                 $"Finisher actor layer could not be raised above its victims: {exception.Message}");
         }
 
@@ -421,7 +421,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             status = FinisherCompletionStatus.Faulted;
             finalDiagnostic = AppendDiagnostic(finalDiagnostic, ex.Message);
-            FinisherLog.Error($"NinjaSlayer finisher session {SessionId} completion failed: {ex}");
+            Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} completion failed: {ex}");
             if (IsCurrentCombatContext() && mode != FinisherCompletionMode.ReleaseOnly)
             {
                 try
@@ -432,7 +432,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 catch (Exception fallbackEx)
                 {
                     finalDiagnostic = AppendDiagnostic(finalDiagnostic, $"Fallback commit failed: {fallbackEx.Message}");
-                    FinisherLog.Error(
+                    Entry.Logger.Error(
                         $"NinjaSlayer finisher session {SessionId} fallback death commit failed: {fallbackEx}");
                 }
             }
@@ -459,7 +459,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             {
                 status = FinisherCompletionStatus.Faulted;
                 finalDiagnostic = AppendDiagnostic(finalDiagnostic, $"Resource restoration failed: {ex.Message}");
-                FinisherLog.Error($"NinjaSlayer finisher session {SessionId} restoration failed: {ex}");
+                Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} restoration failed: {ex}");
             }
             finally
             {
@@ -496,7 +496,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         List<Creature> toKill = _ledger.LivingDeferredDeaths();
         if (!guaranteedClearMatchedRuntime)
         {
-            FinisherLog.Warn(
+            Entry.Logger.Warn(
                 $"Finisher session {SessionId} forecast did not match runtime damage; committing confirmed deaths without the pose.");
             await KillDeferredDeathsOnce(toKill, useDeathKick: false);
             return false;
@@ -570,7 +570,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Warn(
+            Entry.Logger.Warn(
                 $"Finisher session {SessionId} could not cancel its impact during fallback commit: {ex}");
         }
 
@@ -580,7 +580,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Warn(
+            Entry.Logger.Warn(
                 $"Finisher session {SessionId} could not release every pending protection during fallback commit: {ex}");
         }
 
@@ -609,7 +609,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Warn(
+            Entry.Logger.Warn(
                 $"Finisher session {SessionId} could not restore a death squash before committing deaths: {ex}");
         }
 
@@ -705,7 +705,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 return;
             }
 
-            FinisherLog.Error(
+            Entry.Logger.Error(
                 $"NinjaSlayer finisher session {SessionId} exceeded 90 active seconds; committing confirmed deaths and restoring state.");
             await CompleteAsync(
                 FinisherCompletionStatus.Degraded,
@@ -724,7 +724,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Error($"NinjaSlayer finisher session {SessionId} watchdog failed: {ex}");
+            Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} watchdog failed: {ex}");
             await CompleteAsync(
                 FinisherCompletionStatus.Faulted,
                 IsCurrentCombatContext()
@@ -750,7 +750,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            FinisherLog.Error($"NinjaSlayer finisher session {SessionId} room-exit cleanup failed: {ex}");
+            Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} room-exit cleanup failed: {ex}");
         }
     }
 
@@ -821,7 +821,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             _enhancedImpactFailed = true;
             DisposeEnhancedPresentation();
-            FinisherLog.Warn($"Enhanced finisher impact failed; legacy presentation will be used: {ex}");
+            Entry.Logger.Warn($"Enhanced finisher impact failed; fallback presentation will be used: {ex}");
         }
     }
 

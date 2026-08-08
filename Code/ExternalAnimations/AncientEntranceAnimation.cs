@@ -159,31 +159,58 @@ public static class AncientEntranceAnimation
         Vector2 landingPos = snapshot.CreaturePosition + new Vector2(LeftLandingOffset, 0f);
         float invertedRotationDegrees = snapshot.BodyRotationDegrees + 180f;
         float uprightRotationDegrees = snapshot.BodyRotationDegrees + 360f;
+        FixedPivotTransform? shadowPivot = CaptureShadowPivot(creatureNode.Visuals, body);
         try
         {
             creatureNode.Position = landingPos;
-            body.RotationDegrees = invertedRotationDegrees;
+            ApplyBodyRotation(body, shadowPivot, invertedRotationDegrees, snapshot.BodyScale);
             anchor.Position = snapshot.AnchorPosition + new Vector2(0f, -FallDistance);
             SetVisualsVisible(creature);
             await WaitForStart(startSignal, cinematicContext);
             PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
-            await Task.WhenAll(
-                ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext),
-                HoldBodyRotation(body, invertedRotationDegrees, FallDuration, cinematicContext),
-                SoarSpinAnimation.PlayFiniteAirborneSpin(
+
+            VerticalAxisSpinProjection? invertedProjection = CaptureCurrentShadowAxisProjection(
+                creatureNode.Visuals,
+                body);
+            Task spin = invertedProjection is { } projection
+                ? PlayFiniteProjection(
+                    creature,
+                    projection,
+                    FallDuration,
+                    GetTumbleAngleDegrees,
+                    cinematicContext)
+                : SoarSpinAnimation.PlayFiniteAirborneSpin(
                     creature,
                     FallDuration,
                     GetTumbleAngleDegrees,
-                    cinematicContext));
+                    cinematicContext);
+            Task holdRotation = invertedProjection == null
+                ? HoldBodyRotation(
+                    body,
+                    invertedRotationDegrees,
+                    snapshot.BodyScale,
+                    FallDuration,
+                    cinematicContext,
+                    shadowPivot)
+                : Task.CompletedTask;
+            await Task.WhenAll(
+                ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext),
+                holdRotation,
+                spin);
             body.Scale = snapshot.BodyScale;
             if (body is Sprite2D sprite)
             {
                 sprite.Offset = Vector2.Zero;
             }
-            body.RotationDegrees = invertedRotationDegrees;
+            ApplyBodyRotation(body, shadowPivot, invertedRotationDegrees, snapshot.BodyScale);
             await Task.WhenAll(
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, RiseDuration, Tween.EaseType.Out, Tween.TransitionType.Quad, cinematicContext),
-                TweenBodyRotation(body, uprightRotationDegrees, RiseDuration, cinematicContext));
+                TweenBodyRotation(
+                    body,
+                    uprightRotationDegrees,
+                    RiseDuration,
+                    cinematicContext,
+                    shadowPivot));
         }
         finally
         {
@@ -316,24 +343,114 @@ public static class AncientEntranceAnimation
         await AwaitTween(creatureNode, tween, cinematicContext);
     }
 
-    private static async Task TweenBodyRotation(Node2D body, float targetDegrees, float duration, ICinematicAnimationContext? cinematicContext)
+    private static FixedPivotTransform? CaptureShadowPivot(
+        NCreatureVisuals visuals,
+        Node2D body)
     {
+        Sprite2D? shadow = NinjaSlayerVisualRig.GetShadow(visuals);
+        Sprite2D? bodySprite = NinjaSlayerVisualRig.GetBodySprite(visuals);
+        return shadow != null
+            && ReferenceEquals(body, bodySprite)
+            && FixedPivotTransform.TryCapture(body, shadow, out FixedPivotTransform transform)
+                ? transform
+                : null;
+    }
+
+    private static VerticalAxisSpinProjection? CaptureCurrentShadowAxisProjection(
+        NCreatureVisuals visuals,
+        Node2D body)
+    {
+        Node2D? bodyMarker = NinjaSlayerVisualRig.GetCinematicFocus(visuals);
+        Sprite2D? shadow = NinjaSlayerVisualRig.GetShadow(visuals);
+        if (bodyMarker == null
+            || shadow == null
+            || !ReferenceEquals(body, NinjaSlayerVisualRig.GetBodySprite(visuals)))
+        {
+            return null;
+        }
+
+        Vector2 markerCanvasPosition = bodyMarker.GetGlobalTransformWithCanvas().Origin;
+        return VerticalAxisSpinProjection.CaptureCurrent(
+            body,
+            shadow.GetGlobalTransformWithCanvas().Origin.X,
+            markerCanvasPosition);
+    }
+
+    private static async Task PlayFiniteProjection(
+        Creature creature,
+        VerticalAxisSpinProjection projection,
+        float duration,
+        Func<float, float> angleDegreesAtProgress,
+        ICinematicAnimationContext? cinematicContext)
+    {
+        await SoarSpinAnimation.PlayFiniteVerticalAxisProjection(
+            creature,
+            duration,
+            progress => projection.ApplyDegrees(angleDegreesAtProgress(progress)),
+            cinematicContext,
+            keepActivityAfterCompletion: true);
+        projection.ApplyDegrees(angleDegreesAtProgress(1f));
+    }
+
+    private static void ApplyBodyRotation(
+        Node2D body,
+        FixedPivotTransform? pivot,
+        float rotationDegrees,
+        Vector2 scale)
+    {
+        if (!GodotObject.IsInstanceValid(body))
+        {
+            return;
+        }
+
+        if (pivot is { } fixedPivot)
+        {
+            fixedPivot.Apply(rotationDegrees, scale);
+            return;
+        }
+
+        body.RotationDegrees = rotationDegrees;
+        body.Scale = scale;
+    }
+
+    private static async Task TweenBodyRotation(
+        Node2D body,
+        float targetDegrees,
+        float duration,
+        ICinematicAnimationContext? cinematicContext,
+        FixedPivotTransform? pivot = null)
+    {
+        float startDegrees = body.RotationDegrees;
+        Vector2 scale = body.Scale;
         var tween = body.CreateTween();
-        tween.TweenProperty(body, "rotation_degrees", targetDegrees, duration)
+        tween.TweenMethod(
+                Callable.From<float>(progress =>
+                    ApplyBodyRotation(
+                        body,
+                        pivot,
+                        Mathf.Lerp(startDegrees, targetDegrees, progress),
+                        scale)),
+                0f,
+                1f,
+                duration)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
 
         await AwaitTween(body, tween, cinematicContext);
+        ApplyBodyRotation(body, pivot, targetDegrees, scale);
     }
 
-    private static async Task HoldBodyRotation(Node2D body, float rotationDegrees, float duration, ICinematicAnimationContext? cinematicContext)
+    private static async Task HoldBodyRotation(
+        Node2D body,
+        float rotationDegrees,
+        Vector2 scale,
+        float duration,
+        ICinematicAnimationContext? cinematicContext,
+        FixedPivotTransform? pivot = null)
     {
         var tween = body.CreateTween();
         tween.TweenMethod(
-            Callable.From<float>(_ =>
-            {
-                body.RotationDegrees = rotationDegrees;
-            }),
+            Callable.From<float>(_ => ApplyBodyRotation(body, pivot, rotationDegrees, scale)),
             0f,
             1f,
             duration);

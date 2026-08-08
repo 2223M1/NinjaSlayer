@@ -10,13 +10,16 @@ public static class StaggerAnimation
 {
     private const float StaggerDuration = 0.3f;
     private const float StaggerDistance = 20f;
-    private const float StaggerRotationDegrees = -15f;
+    internal const float DefaultRotationDegrees = -15f;
+    internal const float MirroredRotationDegrees = 15f;
 
     private static readonly Dictionary<Creature, StaggerState> ActiveStates = [];
 
     public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature);
 
-    public static async Task Play(Creature creature)
+    public static async Task Play(
+        Creature creature,
+        float rotationDegrees = DefaultRotationDegrees)
     {
         if (ActiveStates.Remove(creature, out StaggerState? previous))
         {
@@ -39,7 +42,8 @@ public static class StaggerAnimation
             bodyAnchor,
             creatureNode.Position,
             bodyAnchor?.RotationDegrees ?? 0f,
-            creature.IsPlayer ? -1f : 1f);
+            creature.IsPlayer ? -1f : 1f,
+            rotationDegrees);
         ActiveStates[creature] = state;
 
         try
@@ -85,7 +89,8 @@ public static class StaggerAnimation
         Node2D? bodyAnchor,
         Vector2 originalPosition,
         float originalBodyRotation,
-        float direction)
+        float direction,
+        float rotationDegrees)
     {
         private bool _stopped;
 
@@ -104,7 +109,7 @@ public static class StaggerAnimation
             if (bodyAnchor != null && GodotObject.IsInstanceValid(bodyAnchor))
             {
                 bodyAnchor.RotationDegrees = originalBodyRotation
-                    + Mathf.Lerp(StaggerRotationDegrees, 0f, easedProgress);
+                    + Mathf.Lerp(rotationDegrees, 0f, easedProgress);
             }
         }
 

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MegaCrit.Sts2.Core.Nodes;
 using NinjaSlayer.Scripts;
 
@@ -44,7 +45,7 @@ internal static class NinjaSlayerTransitionGate
         NTransition transition,
         Func<NinjaSlayerTransitionSession, CancellationToken, Task> startAnimation,
         CancellationToken cancellationToken,
-        out NinjaSlayerTransitionSession? session)
+        [NotNullWhen(true)] out NinjaSlayerTransitionSession? session)
     {
         var next = new NinjaSlayerTransitionSession(
             new TransitionViewAdapter(transition),
@@ -80,7 +81,9 @@ internal static class NinjaSlayerTransitionGate
         }
     }
 
-    internal static bool TryClaimReveal(NTransition transition, out NinjaSlayerTransitionSession? session)
+    internal static bool TryClaimReveal(
+        NTransition transition,
+        [NotNullWhen(true)] out NinjaSlayerTransitionSession? session)
     {
         lock (SyncRoot)
         {

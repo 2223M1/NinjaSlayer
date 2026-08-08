@@ -28,8 +28,7 @@ internal static class BlackFlameHitTracker
 
     public static IReadOnlyList<Creature> TakeLiveOpponents(CardPlay cardPlay)
     {
-        if (!CardPlayResolutionScope.TryTakePlayState(cardPlay, ScopeOwner, out HitSet? hitSet)
-            || hitSet is null)
+        if (!CardPlayResolutionScope.TryTakePlayState(cardPlay, ScopeOwner, out HitSet? hitSet))
         {
             return [];
         }

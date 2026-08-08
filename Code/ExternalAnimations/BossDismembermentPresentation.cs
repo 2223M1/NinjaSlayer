@@ -101,9 +101,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private readonly List<SoftBodyLaunchActuator> _launchActuators = [];
     private readonly BossSoftBodySolver _solver = new();
     private BossVisualCapture? _capture;
-    private SoftFragmentBody? _architectLeadBody;
+    private ArchitectSpineRagdoll? _architectRagdoll;
+    private Node2D? _architectBody;
     private NCombatRoom _room = null!;
     private Transform2D _bodyToPresentation;
+    private Transform2D _visualBodyToPresentation;
     private Transform2D _baselineSceneToGlobalInverse;
     private Transform2D _baselinePresentationGlobal;
     private Rect2 _bodyLocalBounds;
@@ -215,6 +217,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _bodyToPresentation = globalToPresentation
             * baselineSceneToGlobal
             * bodyToSceneContainer;
+        _visualBodyToPresentation = _bodyToPresentation;
         Transform2D vfxToGlobal = _room.CombatVfxContainer.GetGlobalTransform();
         Vector2 sceneSize = _room.CombatVfxContainer.Size;
         Vector2[] sceneCorners =
@@ -241,6 +244,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
     }
 
     private void InitializeSoftBodies(
+        NCreature creature,
         BossFragmentPartition partition,
         IReadOnlyList<BossCapturedFragmentRenderSurface.PreparedResource> preparedFragments,
         int zIndex,
@@ -333,7 +337,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 continue;
             }
 
-            surface.Anchor.Visible = true;
+            surface.Anchor.Visible = mode != PresentationMode.ArchitectLead;
 
             var runtime = new SoftFragmentRuntime(
                 surface,
@@ -359,7 +363,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
         if (mode == PresentationMode.ArchitectLead)
         {
-            ReleaseArchitectLead(rng, architectFallDirection);
+            InitializeArchitectLead(
+                creature,
+                partition,
+                rng,
+                architectFallDirection);
         }
         else
         {
@@ -487,80 +495,33 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _centerSpeedLimit = plan.MaximumCenterSpeed;
     }
 
-    private void ReleaseArchitectLead(
+    private void InitializeArchitectLead(
+        NCreature creature,
+        BossFragmentPartition partition,
         RandomNumberGenerator rng,
         float fallDirection)
     {
-        SoftFragmentBody body = CreateArchitectLeadBody();
-        body.SetMaterial(SoftBodyMaterialProfile.ArchitectLead);
-        body.ConfigureDeformation(_motionSeed ^ 0x415243484C454144UL);
-        body.TargetLinearScale = 1f;
-        body.SetCollisionEnvelope(hullScale: 1f, marginScale: 0f);
-        for (int index = 0; index < _fragments.Count; index++)
+        _architectBody = creature.Body;
+        BossFragmentPoint velocity = BossDismembermentMath.ResolveArchitectLeadVelocity(
+            fallDirection,
+            rng.Randf());
+        _architectRagdoll = ArchitectSpineRagdoll.TryCreate(
+            this,
+            creature,
+            partition,
+            _bodyToPresentation,
+            _visualBodyToPresentation,
+            velocity,
+            out string failureReason);
+        if (_architectRagdoll == null)
         {
-            BossCapturedFragmentRenderSurface surface = _fragments[index].Surface;
-            surface.BindToSharedBody(body, _bodyLocalBounds);
-            if (!surface.ApplyFrame())
-            {
-                throw new InvalidOperationException(
-                    $"architect lead surface {index} could not bind to the shared soft body");
-            }
+            Entry.Logger.Warn(
+                $"Architect Spine ragdoll unavailable for {_monsterId}: {failureReason}; "
+                + "keeping the frozen death pose until Body Burst.");
+            return;
         }
 
-        _architectLeadBody = body;
-        _bodies.Add(body);
-        BossFragmentPoint linearVelocity =
-            BossDismembermentMath.ResolveArchitectLeadVelocity(
-                fallDirection,
-                rng.Randf());
-        float angularVelocity = Mathf.DegToRad(rng.RandfRange(-38f, 38f));
-        var actuator = new SoftBodyLaunchActuator(body, linearVelocity, angularVelocity);
-        actuator.Begin();
-        _launchActuators.Add(actuator);
-    }
-
-    private SoftFragmentBody CreateArchitectLeadBody()
-    {
-        var restGrid = new BossFragmentPoint[SoftFragmentBody.ParticleCount];
-        BossFragmentPoint restCenter = default;
-        for (int row = 0; row < SoftFragmentBody.GridSize; row++)
-        {
-            for (int column = 0; column < SoftFragmentBody.GridSize; column++)
-            {
-                float u = column / (float)(SoftFragmentBody.GridSize - 1);
-                float v = row / (float)(SoftFragmentBody.GridSize - 1);
-                Vector2 mapped = _bodyToPresentation
-                    * (_bodyLocalBounds.Position + _bodyLocalBounds.Size * new Vector2(u, v));
-                int index = row * SoftFragmentBody.GridSize + column;
-                restGrid[index] = new BossFragmentPoint(mapped.X, mapped.Y);
-                restCenter = new BossFragmentPoint(
-                    restCenter.X + mapped.X,
-                    restCenter.Y + mapped.Y);
-            }
-        }
-
-        float inverseCount = 1f / restGrid.Length;
-        restCenter = new BossFragmentPoint(
-            restCenter.X * inverseCount,
-            restCenter.Y * inverseCount);
-        SoftBodyHullPoint[] restHull = RectCorners(_bodyLocalBounds)
-            .Select(point =>
-            {
-                Vector2 mapped = _bodyToPresentation * point;
-                return new SoftBodyHullPoint(
-                    new BossFragmentPoint(mapped.X, mapped.Y),
-                    (point.X - _bodyLocalBounds.Position.X) / _bodyLocalBounds.Size.X,
-                    (point.Y - _bodyLocalBounds.Position.Y) / _bodyLocalBounds.Size.Y);
-            })
-            .ToArray();
-        return new SoftFragmentBody(
-            id: -1,
-            restGrid,
-            restHull,
-            restCenter,
-            compressedScale: 1f,
-            mass: _fragments.Sum(fragment => fragment.Body.Mass),
-            collisionMargin: 0f);
+        _bodies.AddRange(_architectRagdoll.Bodies);
     }
 
     internal bool TriggerArchitectBurst()
@@ -568,7 +529,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
         if (_completed
             || _mode != PresentationMode.ArchitectLead
             || _burstTriggered
-            || _architectLeadBody == null
             || _fragments.Count < 2)
         {
             return false;
@@ -580,16 +540,17 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _elapsed = 0f;
         _physicsAccumulator = 0f;
         _floorY = null;
-        _burstOrigin = new Vector2(
-            _architectLeadBody.Center.X,
-            _architectLeadBody.Center.Y);
-        _architectLeadBody = null;
+        if (_architectRagdoll != null)
+        {
+            BossFragmentPoint ragdollCenter = _architectRagdoll.ResolveBurstOrigin();
+            _burstOrigin = new Vector2(ragdollCenter.X, ragdollCenter.Y);
+        }
+
         _bodies.Clear();
         _launchActuators.Clear();
         for (int index = 0; index < _fragments.Count; index++)
         {
             SoftFragmentRuntime fragment = _fragments[index];
-            fragment.Surface.BindToFragmentBody();
             _bodies.Add(fragment.Body);
             fragment.Body.SetMaterial(SoftBodyMaterialProfile.FountainJelly);
             fragment.Body.ConfigureDeformation(
@@ -615,7 +576,18 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
         // Upload the compressed pose immediately so the first visible burst frame
         // cannot expose the lead pose.
-        ApplyRenderFrame();
+        ApplyFragmentFrames();
+        _architectRagdoll?.Dispose();
+        _architectRagdoll = null;
+        if (_architectBody != null && GodotObject.IsInstanceValid(_architectBody))
+        {
+            _architectBody.Visible = false;
+        }
+
+        foreach (SoftFragmentRuntime fragment in _fragments)
+        {
+            fragment.Surface.Anchor.Visible = true;
+        }
 
         return true;
     }
@@ -707,18 +679,31 @@ public sealed partial class BossDismembermentPresentation : Node2D
             : null;
         _solver.Step(
             _bodies,
-            [],
+            architectLead && _architectRagdoll != null
+                ? _architectRagdoll.Links
+                : [],
             seconds,
             architectLead ? 860f : _gravity,
             architectLead ? 0.08f : BossFountainLaunchProfile.LinearAirDrag,
             floorY,
             architectLead ? 0f : BossFountainLaunchProfile.QuadraticAirDrag,
-            architectLead || _burstReleased ? _launchActuators : null,
+            _burstReleased ? _launchActuators : null,
             _centerSpeedLimit,
             horizontalBoundary);
     }
 
     private void ApplyRenderFrame()
+    {
+        if (_mode == PresentationMode.ArchitectLead && !_burstTriggered)
+        {
+            _architectRagdoll?.ApplyVisualPose();
+            return;
+        }
+
+        ApplyFragmentFrames();
+    }
+
+    private void ApplyFragmentFrames()
     {
         for (int index = _fragments.Count - 1; index >= 0; index--)
         {
@@ -779,7 +764,9 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _fragments.Clear();
         _bodies.Clear();
         _launchActuators.Clear();
-        _architectLeadBody = null;
+        _architectRagdoll?.Dispose();
+        _architectRagdoll = null;
+        _architectBody = null;
     }
 
     private void CompleteAndFree()

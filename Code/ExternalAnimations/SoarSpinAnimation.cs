@@ -273,11 +273,13 @@ public static class SoarSpinAnimation
     {
         Sprite2D? visuals = GetSpinVisual(creature);
         Node2D? focus = GetSpinFocus(creature);
+        Node2D? axis = GetSpinAxis(creature) ?? focus;
         return visuals == null || focus == null
             ? null
             : VerticalAxisSpinProjection.CaptureNinjaSlayer(
                 visuals,
                 focus,
+                axis!,
                 GetNormalScaleX(visuals));
     }
 
@@ -295,6 +297,9 @@ public static class SoarSpinAnimation
     private static Node2D? GetSpinFocus(Creature creature) =>
         NinjaSlayerVisualRig.GetCinematicFocus(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
 
+    private static Sprite2D? GetSpinAxis(Creature creature) =>
+        NinjaSlayerVisualRig.GetShadow(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
+
     private static void RestoreVerticalSpin(Creature creature, Node2D visuals)
     {
         if (visuals is not Sprite2D sprite || GetSpinFocus(creature) is not { } focus)
@@ -302,9 +307,12 @@ public static class SoarSpinAnimation
             return;
         }
 
+        Node2D axis = GetSpinAxis(creature) ?? focus;
+
         VerticalAxisSpinProjection.CaptureNinjaSlayer(
                 sprite,
                 focus,
+                axis,
                 GetNormalScaleX(visuals))
             .ApplyDegrees(0f);
         sprite.Offset = Vector2.Zero;

@@ -160,7 +160,6 @@ internal static class NinjaSlayerFinisherCinematic
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
             || IsCommandBypassed(command)
             || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
-            || spec == null
             || FinisherEligibilityService.IsExcludedAttackCard(spec.Card))
         {
             return false;
@@ -262,7 +261,6 @@ internal static class NinjaSlayerFinisherCinematic
             return await ExecuteOriginalCommand(command, choiceContext);
         }
 
-        ArgumentNullException.ThrowIfNull(session);
         bool transferred = false;
         try
         {
@@ -317,7 +315,6 @@ internal static class NinjaSlayerFinisherCinematic
             return;
         }
 
-        ArgumentNullException.ThrowIfNull(session);
         bool transferred = false;
         try
         {
@@ -379,7 +376,6 @@ internal static class NinjaSlayerFinisherCinematic
             return;
         }
 
-        ArgumentNullException.ThrowIfNull(session);
         bool transferred = false;
         try
         {

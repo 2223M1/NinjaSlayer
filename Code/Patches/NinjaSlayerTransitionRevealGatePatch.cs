@@ -31,7 +31,7 @@ public sealed class NinjaSlayerRoomFadeInGatePatch : IPatchMethod
             return true;
         }
 
-        __result = DelayThenReveal(__instance, session!, showTransition);
+        __result = DelayThenReveal(__instance, session, showTransition);
         return false;
     }
 
@@ -89,7 +89,7 @@ public sealed class NinjaSlayerFadeInGatePatch : IPatchMethod
             return true;
         }
 
-        __result = DelayThenReveal(__instance, session!, time, transitionPath, cancelToken);
+        __result = DelayThenReveal(__instance, session, time, transitionPath, cancelToken);
         return false;
     }
 

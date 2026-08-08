@@ -71,58 +71,6 @@ public sealed class EnemyAttackDodgeAnimationPatch : IPatchMethod
     }
 }
 
-public sealed class AllyDodgeImpactPatch : IPatchMethod
-{
-    public static string PatchId => "ninjaslayer_ally_dodge_impact";
-    public static string Description =>
-        "Notify ally dodge animations at impact and keep origami missiles unhittable.";
-    public static bool IsCritical => false;
-
-    public static ModPatchTarget[] GetTargets() =>
-    [
-        new(
-            typeof(CreatureCmd),
-            nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
-    ];
-
-    public static void Prefix(
-        ref IEnumerable<Creature>? targets,
-        ValueProp props,
-        Creature? dealer)
-    {
-        List<Creature> targetList = targets?
-            .Where(target => target.Monster is not YamotoKokiOrigamiMissile)
-            .ToList() ?? [];
-        targets = targetList;
-
-        if (dealer is not { IsMonster: true } || !props.IsCardOrMonsterMove())
-        {
-            return;
-        }
-
-        foreach (var player in targetList
-                     .Where(target => target.Side != dealer.Side)
-                     .Select(target => target.Player ?? target.PetOwner)
-                     .OfType<Player>()
-                     .Distinct())
-        {
-            if (player.Creature is { IsAlive: true } owner
-                && owner.GetPower<EvasionPower>() is { Amount: > 0 })
-            {
-                CombatDodgeAnimation.NotifyImpact(owner);
-            }
-
-            Creature? yamotoKoki = player.PlayerCombatState?.Pets
-                .FirstOrDefault(pet => pet.Monster is YamotoKokiMonster && pet.IsAlive);
-            if (yamotoKoki != null)
-            {
-                CombatDodgeAnimation.NotifyImpact(yamotoKoki);
-            }
-        }
-    }
-}
-
 public sealed class AttackIntentDamagePreviewPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_attack_intent_damage_preview";

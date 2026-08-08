@@ -30,7 +30,7 @@ public sealed record NinjaSlayerFormPresentation(
     int IdleFrameCount,
     float? FixedBodyScale,
     float BodyYOffset,
-    float ShadowScale,
+    float ShadowScaleMultiplier,
     bool UsesNarakuAudio,
     bool UseNormalSpinPivot,
     bool ForcePerHitComboAudio)
@@ -62,7 +62,7 @@ public static class NinjaSlayerFormPresentationCatalog
         IdleFrameCount: 0,
         FixedBodyScale: null,
         BodyYOffset: 0f,
-        ShadowScale: 0.5f,
+        ShadowScaleMultiplier: 1f,
         UsesNarakuAudio: false,
         UseNormalSpinPivot: true,
         ForcePerHitComboAudio: false);
@@ -76,7 +76,7 @@ public static class NinjaSlayerFormPresentationCatalog
         IdleFrameCount: NarakuIdleFrameCount,
         FixedBodyScale: null,
         BodyYOffset: 0f,
-        ShadowScale: 0.5f,
+        ShadowScaleMultiplier: 1f,
         UsesNarakuAudio: false,
         UseNormalSpinPivot: true,
         ForcePerHitComboAudio: false);
@@ -90,7 +90,7 @@ public static class NinjaSlayerFormPresentationCatalog
         IdleFrameCount: 0,
         FixedBodyScale: 0.5f,
         BodyYOffset: -50f,
-        ShadowScale: 1f,
+        ShadowScaleMultiplier: 2f,
         UsesNarakuAudio: true,
         UseNormalSpinPivot: false,
         ForcePerHitComboAudio: true);
@@ -104,7 +104,7 @@ public static class NinjaSlayerFormPresentationCatalog
         IdleFrameCount: 0,
         FixedBodyScale: null,
         BodyYOffset: 0f,
-        ShadowScale: 0.5f,
+        ShadowScaleMultiplier: 1f,
         UsesNarakuAudio: false,
         UseNormalSpinPivot: false,
         ForcePerHitComboAudio: false);

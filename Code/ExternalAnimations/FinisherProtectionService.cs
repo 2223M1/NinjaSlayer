@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using NinjaSlayer.Code.Patches;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -43,7 +44,7 @@ internal static class FinisherProtectionService
         }
         catch (Exception ex)
         {
-            FinisherLog.Error($"Could not confirm NinjaSlayer finisher lethal protection: {ex}");
+            Entry.Logger.Error($"Could not confirm NinjaSlayer finisher lethal protection: {ex}");
         }
         finally
         {

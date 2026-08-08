@@ -7,7 +7,7 @@ internal sealed class SoftRagdollLink(
     int secondParticle,
     float restLength)
 {
-    private const float Compliance = 0.0025f;
+    private const float Compliance = 0.00001f;
     private float _lambda;
     private float _fatigueSeconds;
 

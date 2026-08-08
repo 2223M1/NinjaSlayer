@@ -26,10 +26,10 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellHoldSeconds = 0.2f;
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
-    private const float GroundOffsetFromPivot = 8.625f;
+    private const float GroundOffsetFromPivot = 14.625f;
     private const float IaiApproachSeconds = 0.25f;
     private const float IaiApproachDistance = 120f;
-    private static readonly Vector2 RightFootContactFromPivot = new(65.495f, 3.137f);
+    private static readonly Vector2 RightFootContactFromPivot = new(51.995f, 9.137f);
 
     public static bool TryPlayTriggerAnim(
         Creature creature,

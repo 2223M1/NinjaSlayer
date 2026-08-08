@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Screens;
 using MegaCrit.Sts2.Core.AutoSlay.Helpers;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -13,6 +14,8 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
@@ -32,7 +35,10 @@ using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Diagnostics;
+using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -178,6 +184,9 @@ internal sealed class SmokeController
         await WaitForRuntimeIdleAsync(cancellationToken);
         _checkpoints.Write("x-attack.nonlethal-completed");
 
+        await VerifyCardPlayEvasion(combatState, player, focus);
+        await VerifyMoveEvasion(combatState, player, focus);
+
         foreach (Creature enemy in combatState.HittableEnemies.Where(enemy => !ReferenceEquals(enemy, focus)).ToArray())
         {
             await CreatureCmd.Kill(enemy, force: true);
@@ -222,6 +231,188 @@ internal sealed class SmokeController
         Require(combatEnded && !CombatManager.Instance.IsInProgress, "The completed finisher did not end combat.");
         _checkpoints.Write("finisher.completed", data: HealthData(afterFinisher));
         _firstCombatCompleted.TrySetResult();
+    }
+
+    private async Task VerifyCardPlayEvasion(
+        ICombatState combatState,
+        Player player,
+        Creature target)
+    {
+        await PowerCmd.Remove<ArtifactPower>(target);
+        await PowerCmd.Remove<VulnerablePower>(target);
+        Require(
+            NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(player),
+            "The evasion card scenario did not follow an attack card.");
+
+        int initialHp = target.CurrentHp;
+        int initialBlock = target.Block;
+        int initialHistoryEntries = CombatManager.Instance.History.Entries
+            .OfType<DamageReceivedEntry>()
+            .Count(entry => ReferenceEquals(entry.Receiver, target));
+        await PlayerCmd.SetEnergy(2m, player);
+
+        await PowerCmd.Apply<EvasionPower>(
+            new ThrowingPlayerChoiceContext(),
+            target,
+            1,
+            target,
+            null);
+        NinjaWhip first = combatState.CreateCard<NinjaWhip>(player);
+        await CardPileCmd.Add(first, PileType.Hand);
+        await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), first, target);
+        Require(target.GetPower<EvasionPower>()?.Amount is null or 0, "Evasion was not consumed by an attack card.");
+        Require(!target.HasPower<VulnerablePower>(), "Evasion did not suppress a newly applied card debuff.");
+
+        await PowerCmd.Apply<VulnerablePower>(
+            new ThrowingPlayerChoiceContext(),
+            target,
+            1,
+            player.Creature,
+            null);
+        int vulnerableBefore = target.GetPower<VulnerablePower>()?.Amount
+            ?? throw new InvalidOperationException("The smoke fixture could not apply Vulnerable.");
+        await PowerCmd.Apply<EvasionPower>(
+            new ThrowingPlayerChoiceContext(),
+            target,
+            1,
+            target,
+            null);
+        NinjaWhip second = combatState.CreateCard<NinjaWhip>(player);
+        await CardPileCmd.Add(second, PileType.Hand);
+        await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), second, target);
+
+        Require(target.CurrentHp == initialHp, "An evaded attack card reduced HP.");
+        Require(target.Block == initialBlock, "An evaded attack card reduced Block.");
+        Require(
+            target.GetPower<VulnerablePower>()?.Amount == vulnerableBefore,
+            "Evasion did not suppress card debuff stacking.");
+        int finalHistoryEntries = CombatManager.Instance.History.Entries
+            .OfType<DamageReceivedEntry>()
+            .Count(entry => ReferenceEquals(entry.Receiver, target));
+        Require(finalHistoryEntries == initialHistoryEntries, "Evaded attack cards created damage history entries.");
+        await PowerCmd.Remove<VulnerablePower>(target);
+        _checkpoints.Write("evasion.cardplay-completed");
+    }
+
+    private async Task VerifyMoveEvasion(
+        ICombatState combatState,
+        Player player,
+        Creature attacker)
+    {
+        Creature target = player.Creature;
+        await PowerCmd.Remove<ArtifactPower>(target);
+        await PowerCmd.Remove<WeakPower>(target);
+        int initialHp = target.CurrentHp;
+        int initialBlock = target.Block;
+        int initialHistoryEntries = CombatManager.Instance.History.Entries
+            .OfType<DamageReceivedEntry>()
+            .Count(entry => ReferenceEquals(entry.Receiver, target));
+
+        IReadOnlyList<DamageResult> evadedResults = [];
+        var evadedMove = new MoveState(
+            "NINJASLAYER_SMOKE_EVASION",
+            async targets =>
+            {
+                evadedResults = (await CreatureCmd.Damage(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    ValueProp.Move,
+                    attacker)).ToArray();
+                await PowerCmd.Apply<WeakPower>(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    attacker,
+                    null);
+            });
+        await PowerCmd.Apply<EvasionPower>(
+            new ThrowingPlayerChoiceContext(),
+            target,
+            1,
+            target,
+            null);
+        await evadedMove.PerformMove([target]);
+
+        Require(evadedResults.Count == 0, "An evaded monster move returned a fabricated damage result.");
+        Require(target.CurrentHp == initialHp, "An evaded monster move reduced HP.");
+        Require(target.Block == initialBlock, "An evaded monster move reduced Block.");
+        Require(!target.HasPower<WeakPower>(), "Evasion did not suppress a monster move debuff.");
+        int evadedHistoryEntries = CombatManager.Instance.History.Entries
+            .OfType<DamageReceivedEntry>()
+            .Count(entry => ReferenceEquals(entry.Receiver, target));
+        Require(evadedHistoryEntries == initialHistoryEntries, "An evaded monster move created damage history.");
+
+        IReadOnlyList<DamageResult> firstResults = [];
+        IReadOnlyList<DamageResult> secondResults = [];
+        var mixedMove = new MoveState(
+            "NINJASLAYER_SMOKE_MIXED_EVASION",
+            async targets =>
+            {
+                firstResults = (await CreatureCmd.Damage(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    ValueProp.Move,
+                    attacker)).ToArray();
+                secondResults = (await CreatureCmd.Damage(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    ValueProp.Move,
+                    attacker)).ToArray();
+                await PowerCmd.Apply<WeakPower>(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    attacker,
+                    null);
+            });
+        await PowerCmd.Apply<EvasionPower>(
+            new ThrowingPlayerChoiceContext(),
+            target,
+            1,
+            target,
+            null);
+        await mixedMove.PerformMove([target]);
+
+        Require(firstResults.Count == 0, "The first hit did not consume the only Evasion layer.");
+        Require(secondResults.Any(result => ReferenceEquals(result.Receiver, target)), "The second hit did not connect.");
+        Require(target.HasPower<WeakPower>(), "A connected hit incorrectly suppressed its move debuff.");
+        await PowerCmd.Remove<WeakPower>(target);
+
+        DefendNinjaSlayer nonAttackSource = combatState.CreateCard<DefendNinjaSlayer>(player);
+        var nonAttackSourceMove = new MoveState(
+            "NINJASLAYER_SMOKE_NON_ATTACK_SOURCE",
+            async targets =>
+            {
+                await GameCompatibility.Damage.Deal(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    ValueProp.Move,
+                    attacker,
+                    nonAttackSource,
+                    null);
+                await PowerCmd.Apply<WeakPower>(
+                    new ThrowingPlayerChoiceContext(),
+                    targets,
+                    1,
+                    attacker,
+                    nonAttackSource);
+            });
+        await PowerCmd.Apply<EvasionPower>(
+            new ThrowingPlayerChoiceContext(),
+            target,
+            1,
+            target,
+            null);
+        await nonAttackSourceMove.PerformMove([target]);
+        Require(
+            target.HasPower<WeakPower>(),
+            "A non-attack card source was incorrectly treated as a bound monster-move debuff.");
+        await PowerCmd.Remove<WeakPower>(target);
+        _checkpoints.Write("evasion.move-completed");
     }
 
     private async Task RunSafelyAsync()

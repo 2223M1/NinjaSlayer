@@ -12,6 +12,7 @@
     <PinnedRitsuLibAssemblyPath>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', '$(NinjaSlayerRitsuLibPackagePathId)', '$(NinjaSlayerRitsuLibVersion)', 'lib/net9.0/STS2-RitsuLib.dll'))</PinnedRitsuLibAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\Code\Compatibility\GameCompatibility.Damage.cs" Link="Compatibility\GameCompatibility.Damage.cs" />
     <Reference Include="sts2">
       <HintPath>$(Sts2DataDir)\sts2.dll</HintPath>
       <Private>false</Private>

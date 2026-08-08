@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -102,7 +103,10 @@ public sealed class CombatCinematicCameraLease : IDisposable
         return true;
     }
 
-    public static bool TryAcquire(NCombatRoom room, string ownerName, out CombatCinematicCameraLease? lease)
+    public static bool TryAcquire(
+        NCombatRoom room,
+        string ownerName,
+        [NotNullWhen(true)] out CombatCinematicCameraLease? lease)
     {
         if (_active != null && !_active._disposed)
         {

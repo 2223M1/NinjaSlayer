@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -12,6 +13,7 @@ using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -28,7 +30,7 @@ internal static class FinisherEligibilityService
         FinisherAttackSpec spec,
         AttackCommand? command,
         string entryPoint,
-        out FinisherSession? session)
+        [NotNullWhen(true)] out FinisherSession? session)
     {
         session = null;
         if (!NinjaSlayerPatchCapabilities.FinisherEnabled
@@ -50,7 +52,7 @@ internal static class FinisherEligibilityService
         {
             if (Interlocked.Exchange(ref CompatibilityWarningLogged, 1) == 0)
             {
-                FinisherLog.Warn(
+                Entry.Logger.Warn(
                     $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason} "
                     + $"supportedGame={GameCompatibility.SupportedGameVersion}.");
             }
@@ -98,7 +100,7 @@ internal static class FinisherEligibilityService
                     ownerNode,
                     focusNode,
                     primaryEnemies,
-                    camera!,
+                    camera,
                     spec.CardPlay,
                     forecast.RequiresAfterCardPlayed,
                     forecast.ResolvedHits),
@@ -106,12 +108,12 @@ internal static class FinisherEligibilityService
                 room,
                 out session))
         {
-            camera!.Dispose();
+            camera.Dispose();
             return false;
         }
 
-        FinisherLog.Info(
-            $"NinjaSlayer finisher session {session!.SessionId} started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Forecast.Targeting}, hits={forecast.ResolvedHits}.");
+        Entry.Logger.Info(
+            $"NinjaSlayer finisher session {session.SessionId} started: card={spec.Card.Id.Entry}, entry={entryPoint}, targeting={spec.Forecast.Targeting}, hits={forecast.ResolvedHits}.");
         return true;
     }
 
@@ -121,7 +123,7 @@ internal static class FinisherEligibilityService
         NCreature focusNode,
         IReadOnlyList<Creature> enemies,
         Func<Creature, decimal> damage,
-        out FinisherSession? session)
+        [NotNullWhen(true)] out FinisherSession? session)
     {
         session = null;
         List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
@@ -173,7 +175,7 @@ internal static class FinisherEligibilityService
                     ownerNode,
                     primaryFocusNode,
                     primaryEnemies,
-                    camera!,
+                    camera,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: forecast.ResolvedHits),
@@ -181,12 +183,12 @@ internal static class FinisherEligibilityService
                 room,
                 out session))
         {
-            camera!.Dispose();
+            camera.Dispose();
             return false;
         }
 
-        FinisherLog.Info(
-            $"Yamoto Koki finisher session {session!.SessionId} started: victims={primaryEnemies.Count}.");
+        Entry.Logger.Info(
+            $"Yamoto Koki finisher session {session.SessionId} started: victims={primaryEnemies.Count}.");
         return true;
     }
 

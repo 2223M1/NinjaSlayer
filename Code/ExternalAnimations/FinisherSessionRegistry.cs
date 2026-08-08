@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -5,6 +6,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -117,7 +119,7 @@ internal static class FinisherSessionRegistry
         FinisherSessionRequest request,
         ICombatState combatState,
         NCombatRoom room,
-        out FinisherSession? session)
+        [NotNullWhen(true)] out FinisherSession? session)
     {
         lock (SessionRegistrySync)
         {
@@ -149,7 +151,7 @@ internal static class FinisherSessionRegistry
             catch (Exception ex)
             {
                 session = null;
-                FinisherLog.Warn($"Could not create NinjaSlayer finisher session {sessionId}: {ex}");
+                Entry.Logger.Warn($"Could not create NinjaSlayer finisher session {sessionId}: {ex}");
                 return false;
             }
 
@@ -223,7 +225,7 @@ internal static class FinisherSessionRegistry
             return;
         }
 
-        FinisherLog.Warn(
+        Entry.Logger.Warn(
             $"Released stale finisher session {session.SessionId} before entering a new combat epoch.");
         TaskHelper.RunSafely(session.CompleteAsync(
             FinisherCompletionStatus.Cancelled,

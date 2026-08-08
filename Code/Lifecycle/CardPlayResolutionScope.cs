@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Scripts;
@@ -18,8 +19,7 @@ internal static class CardPlayResolutionScope
 
     public static void BeginPlay(CardPlay cardPlay)
     {
-        if (CardScopes.TryGetLatestScope(cardPlay.Card, out CardResolution? resolution)
-            && resolution is not null)
+        if (CardScopes.TryGetLatestScope(cardPlay.Card, out CardResolution? resolution))
         {
             PlayScopes.Begin(resolution, cardPlay);
         }
@@ -29,7 +29,6 @@ internal static class CardPlayResolutionScope
         where TState : class
     {
         return CardScopes.TryGetLatestScope(cardPlay.Card, out CardResolution? resolution)
-            && resolution is not null
             && PlayScopes.TryGetLatestScope(resolution, out CardPlay? activePlay)
             && ReferenceEquals(activePlay, cardPlay)
                 && PlayScopes.TryGetOrCreateState(cardPlay, owner, factory, out TState? state)
@@ -37,12 +36,12 @@ internal static class CardPlayResolutionScope
                     : null;
     }
 
-    public static bool TryResolveCurrentPlay(CardModel card, out CardPlay? cardPlay)
+    public static bool TryResolveCurrentPlay(
+        CardModel card,
+        [NotNullWhen(true)] out CardPlay? cardPlay)
     {
         if (CardScopes.TryGetLatestScope(card, out CardResolution? resolution)
-            && resolution is not null
-            && PlayScopes.TryGetLatestScope(resolution, out cardPlay)
-            && cardPlay is not null)
+            && PlayScopes.TryGetLatestScope(resolution, out cardPlay))
         {
             return true;
         }
@@ -51,17 +50,21 @@ internal static class CardPlayResolutionScope
         return false;
     }
 
-    public static bool TryTakePlayState<TState>(CardPlay cardPlay, object owner, out TState? state)
+    public static bool TryTakePlayState<TState>(
+        CardPlay cardPlay,
+        object owner,
+        [NotNullWhen(true)] out TState? state)
         where TState : class =>
         PlayScopes.TryTakeState(cardPlay, owner, out state);
 
-    public static bool TryGetLatestPlayState<TState>(CardModel card, object owner, out TState? state)
+    public static bool TryGetLatestPlayState<TState>(
+        CardModel card,
+        object owner,
+        [NotNullWhen(true)] out TState? state)
         where TState : class
     {
         if (CardScopes.TryGetLatestScope(card, out CardResolution? resolution)
-            && resolution is not null
-            && PlayScopes.TryGetLatestScope(resolution, out CardPlay? cardPlay)
-            && cardPlay is not null)
+            && PlayScopes.TryGetLatestScope(resolution, out CardPlay? cardPlay))
         {
             return PlayScopes.TryGetState(cardPlay, owner, out state);
         }
@@ -74,16 +77,18 @@ internal static class CardPlayResolutionScope
         where TState : class
     {
         return CardScopes.TryGetLatestScope(card, out CardResolution? resolution)
-            && resolution is not null
             && CardScopes.TryGetOrCreateState(resolution, owner, factory, out TState? state)
                 ? state
                 : null;
     }
 
-    public static bool TryGetCardState<TState>(CardModel card, object owner, out TState? state)
+    public static bool TryGetCardState<TState>(
+        CardModel card,
+        object owner,
+        [NotNullWhen(true)] out TState? state)
         where TState : class
     {
-        if (CardScopes.TryGetLatestScope(card, out CardResolution? resolution) && resolution is not null)
+        if (CardScopes.TryGetLatestScope(card, out CardResolution? resolution))
         {
             return CardScopes.TryGetState(resolution, owner, out state);
         }

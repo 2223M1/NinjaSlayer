@@ -56,23 +56,27 @@ internal sealed class VerticalAxisSpinProjection
 
     internal static VerticalAxisSpinProjection CaptureNinjaSlayer(
         Sprite2D body,
-        Node2D focus,
+        Node2D bodyMarker,
+        Node2D axisMarker,
         float normalScaleX)
     {
         CanvasItem parent = body.GetParent<CanvasItem>();
-        Vector2 focusCanvasPosition = focus.GetGlobalTransformWithCanvas().Origin;
-        Vector2 focusParentLocal = parent.GetGlobalTransformWithCanvas().AffineInverse() * focusCanvasPosition;
+        Transform2D canvasToParent = parent.GetGlobalTransformWithCanvas().AffineInverse();
+        Vector2 bodyMarkerCanvasPosition = bodyMarker.GetGlobalTransformWithCanvas().Origin;
+        Vector2 bodyMarkerParentLocal = canvasToParent * bodyMarkerCanvasPosition;
+        float axisCanvasX = axisMarker.GetGlobalTransformWithCanvas().Origin.X;
+        float axisParentX = (canvasToParent * new Vector2(axisCanvasX, bodyMarkerCanvasPosition.Y)).X;
         Vector2 baseScale = new(normalScaleX, body.Scale.Y);
         float axisBodyLocalY = Mathf.Abs(baseScale.Y) > 0.001f
-            ? (focusParentLocal.Y - body.Position.Y) / baseScale.Y
+            ? (bodyMarkerParentLocal.Y - body.Position.Y) / baseScale.Y
             : 0f;
 
         return new VerticalAxisSpinProjection(
             body,
             parent,
             new Vector2(NinjaSlayerVisualRig.SpinPivotDeltaX, axisBodyLocalY),
-            focusParentLocal,
-            focusParentLocal.X,
+            bodyMarkerParentLocal,
+            axisParentX,
             body.Position,
             0f,
             baseScale);

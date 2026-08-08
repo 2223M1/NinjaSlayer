@@ -33,7 +33,16 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
-        patcher.RegisterPatch<AllyDodgeImpactPatch>();
+        patcher.RegisterPatch<AttackEvasionFeedbackScopePatch>();
+        patcher.RegisterPatch<EvasionMoveScopePatch>();
+        patcher.RegisterPatch<EvasionTargetHitVfxPatch>();
+        patcher.RegisterPatch<EvasionSideHitVfxPatch>();
+        patcher.RegisterPatch<EvasionFmodHitSfxPatch>();
+        patcher.RegisterPatch<EvasionTemporaryHitSfxPatch>();
+        patcher.RegisterPatch<EvasionCustomHitVfxPatch>();
+        patcher.RegisterPatch<AttackEvasionDamagePatch>();
+        patcher.RegisterPatch<EvasionPowerApplyPatch>();
+        patcher.RegisterPatch<EvasionPowerModifyAmountPatch>();
         patcher.RegisterPatch<AttackIntentDamagePreviewPatch>();
         patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
         patcher.RegisterPatch<YamotoKokiIntentGenerationPatch>();
