@@ -28,7 +28,7 @@ NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围
 
 ### Steam 创意工坊
 
-1. 通过链接订阅 [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)；该条目不会出现在公开列表或搜索中。
+1. 通过链接订阅 [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)；该条目不会出现在公开列表或搜索中，同一个下载包同时支持 stable 和 preview。
 2. 订阅并启用 [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
 3. 启动游戏，在 Mod 管理器中启用 `STS2-RitsuLib` 与 `NinjaSlayer`。
 
@@ -45,11 +45,12 @@ NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围
 |---|---|
 | Slay the Spire 2 | stable 正式版 `0.107.1`；preview 测试版 `0.110.1` |
 | RitsuLib | 编译基线与最低依赖 `0.5.1`；Workshop 运行时使用自动更新的最新版 |
+| 平台目标 | Windows x64、macOS、Linux x86_64 / Steam Deck；正式跨平台支持须通过六格实机矩阵 |
 | .NET | `9.0` |
 | Godot | `4.5.1 Mono` |
 | 游戏内语言 | 目前主要提供简体中文 |
 
-GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；该条目只上传 stable，preview 不上传 Workshop。
+GitHub Release 提供 stable、preview 两个宿主专用诊断包和一个通用 Workshop 包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；所有玩家下载同一个包，启动时按游戏宿主精确选择 stable 或 preview 实现。通用 PCK 不携带 Spine 原生扩展，运行时复用官方客户端已经加载的当前平台扩展。当前自动化真实游戏测试仅覆盖 Windows；macOS 与 Linux 的 stable/preview 实机矩阵通过前不宣称已完成正式跨平台验证。
 <!-- compatibility:end -->
 
 英文 README 仅用于项目文档与安装说明，不代表游戏内已提供完整英文文本。

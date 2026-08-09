@@ -8,7 +8,8 @@ param(
 
     [string] $ReleaseNoteFile = 'Workshop\change-note.md',
     [string] $WorkshopUploadRoot,
-    [string] $Sts2DataDir,
+    [string] $StableDataDir,
+    [string] $PreviewDataDir,
     [string] $GodotExe,
     [switch] $Confirm
 )
@@ -71,6 +72,8 @@ if (-not $Confirm) {
 
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 Set-Location $repositoryRoot
+$compatibility = Get-Content -LiteralPath (Join-Path $repositoryRoot 'eng\compatibility.json') `
+    -Raw -Encoding utf8 | ConvertFrom-Json
 $releaseDirectory = Join-Path $repositoryRoot 'build\releases'
 [IO.Directory]::CreateDirectory($releaseDirectory) | Out-Null
 
@@ -114,14 +117,23 @@ if (-not (Test-Path -LiteralPath $uploader -PathType Leaf)) {
     throw "Workshop uploader is missing: $uploader"
 }
 
-$stableDataDirectory = if (-not [string]::IsNullOrWhiteSpace($Sts2DataDir)) {
-    [IO.Path]::GetFullPath($Sts2DataDir)
+$stableDataDirectory = if (-not [string]::IsNullOrWhiteSpace($StableDataDir)) {
+    [IO.Path]::GetFullPath($StableDataDir)
 }
 elseif (-not [string]::IsNullOrWhiteSpace($env:NINJASLAYER_STS2_STABLE_DATA_DIR)) {
     [IO.Path]::GetFullPath($env:NINJASLAYER_STS2_STABLE_DATA_DIR)
 }
 else {
-    throw 'Stable Workshop publication requires -Sts2DataDir or NINJASLAYER_STS2_STABLE_DATA_DIR.'
+    throw 'Workshop publication requires -StableDataDir or NINJASLAYER_STS2_STABLE_DATA_DIR.'
+}
+$previewDataDirectory = if (-not [string]::IsNullOrWhiteSpace($PreviewDataDir)) {
+    [IO.Path]::GetFullPath($PreviewDataDir)
+}
+elseif (-not [string]::IsNullOrWhiteSpace($env:NINJASLAYER_STS2_PREVIEW_DATA_DIR)) {
+    [IO.Path]::GetFullPath($env:NINJASLAYER_STS2_PREVIEW_DATA_DIR)
+}
+else {
+    throw 'Workshop publication requires -PreviewDataDir or NINJASLAYER_STS2_PREVIEW_DATA_DIR.'
 }
 Write-Host ''
 Write-Host "Publishing NinjaSlayer $tag to Steam Workshop only" -ForegroundColor Cyan
@@ -142,44 +154,47 @@ $workshopMetadataJson = $workshopMetadata | ConvertTo-Json -Depth 10
     [Text.UTF8Encoding]::new($false))
 Copy-Item -LiteralPath $pendingMetadataPath -Destination (Join-Path $workshopDirectory 'workshop.json') -Force
 
-$channelBuildParameters = @{
-    Channel = 'stable'
-    Version = $Version
-    Sts2DataDir = $stableDataDirectory
-    Target = 'StageWorkshop'
-    WorkshopContentDir = $workshopContentDirectory
-    BuildRoot = (Join-Path $repositoryRoot 'build\channel-build')
-}
-if (-not [string]::IsNullOrWhiteSpace($GodotExe)) {
-    $channelBuildParameters.GodotExe = $GodotExe
-}
-& (Join-Path $PSScriptRoot 'Invoke-NinjaSlayerChannelBuild.ps1') @channelBuildParameters
-
-$packageDirectory = Join-Path $repositoryRoot 'build\channel-build\stable\package\NinjaSlayer'
-$requiredArtifacts = @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'SHA256SUMS')
-foreach ($artifact in $requiredArtifacts) {
-    if (-not (Test-Path -LiteralPath (Join-Path $packageDirectory $artifact) -PathType Leaf)) {
-        throw "Package artifact is missing: $artifact"
+$buildRoot = Join-Path $repositoryRoot 'build\channel-build'
+foreach ($channel in @('stable', 'preview')) {
+    $channelBuildParameters = @{
+        Channel = $channel
+        Version = $Version
+        Sts2DataDir = if ($channel -eq 'stable') { $stableDataDirectory } else { $previewDataDirectory }
+        Target = 'PackageMod'
+        BuildRoot = $buildRoot
     }
+    if (-not [string]::IsNullOrWhiteSpace($GodotExe)) {
+        $channelBuildParameters.GodotExe = $GodotExe
+    }
+    & (Join-Path $PSScriptRoot 'Invoke-NinjaSlayerChannelBuild.ps1') @channelBuildParameters
 }
 
-$manifest = Get-Content -LiteralPath (Join-Path $packageDirectory 'NinjaSlayer.json') -Raw -Encoding UTF8 |
-    ConvertFrom-Json
-if ($manifest.version -ne $Version) {
-    throw "Package version $($manifest.version) does not match requested version $Version."
-}
+$bundleDirectory = Join-Path $repositoryRoot 'build\workshop-bundle\NinjaSlayer'
+& (Join-Path $PSScriptRoot 'New-NinjaSlayerWorkshopBundle.ps1') `
+    -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
+    -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
+    -StableSts2DataDir $stableDataDirectory `
+    -OutputDirectory $bundleDirectory `
+    -BuildRoot (Join-Path $repositoryRoot 'build\workshop-bundle\build') `
+    -Version $Version
 
-foreach ($line in Get-Content -LiteralPath (Join-Path $packageDirectory 'SHA256SUMS')) {
-    if ($line -notmatch '^([0-9A-Fa-f]{64}) \*([^\\/]+)$') {
-        throw "Invalid SHA256SUMS entry: $line"
-    }
-    $expected = $Matches[1].ToUpperInvariant()
-    $artifactPath = Join-Path $packageDirectory $Matches[2]
-    $actual = (Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256).Hash
-    if ($actual -ne $expected) {
-        throw "Package checksum mismatch for $($Matches[2])."
-    }
+if (Test-Path -LiteralPath $workshopContentDirectory) {
+    Remove-Item -LiteralPath $workshopContentDirectory -Recurse -Force
 }
+Copy-Item -LiteralPath $bundleDirectory -Destination $workshopContentDirectory -Recurse
+Invoke-Native -Command dotnet -Arguments @(
+    'run',
+    '--project', (Join-Path $repositoryRoot 'tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj'),
+    '--configuration', 'Release',
+    '--no-launch-profile',
+    '--',
+    'validate-workshop-bundle',
+    '--directory', $workshopContentDirectory,
+    '--compatibility', (Join-Path $repositoryRoot 'eng\compatibility.json'),
+    '--version', $Version,
+    '--ritsulib-version', [string]$compatibility.ritsuLibVersion,
+    '--forbidden-path-root', $repositoryRoot
+)
 
 Push-Location $WorkshopUploadRoot
 try {

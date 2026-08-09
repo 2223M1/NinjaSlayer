@@ -52,6 +52,86 @@ function Read-NinjaSlayerPackageArchive {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Path)
 
+    return Read-NinjaSlayerChecksummedArchive `
+        -Path $Path `
+        -ExpectedFileNames $script:NinjaSlayerPackageFiles `
+        -ExactSetDescription 'exactly the four NinjaSlayer package files'
+}
+
+function Get-NinjaSlayerWorkshopBundleFiles {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)]$Compatibility)
+
+    $files = [Collections.Generic.List[string]]::new()
+    foreach ($name in @(
+            'NinjaSlayer.dll',
+            'NinjaSlayer.json',
+            'NinjaSlayer.pck',
+            'ninjaslayer-variants.manifest',
+            'SHA256SUMS')) {
+        $files.Add($name)
+    }
+    foreach ($channelName in @($Compatibility.channels.PSObject.Properties.Name)) {
+        $version = [string]$Compatibility.channels.$channelName.gameApiVersion
+        $files.Add("lib/$version/compat-target.txt")
+        $files.Add("lib/$version/NinjaSlayer.dll")
+    }
+    return $files.ToArray()
+}
+
+function Read-NinjaSlayerWorkshopBundleArchive {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)]$Compatibility
+    )
+
+    return Read-NinjaSlayerChecksummedArchive `
+        -Path $Path `
+        -ExpectedFileNames (Get-NinjaSlayerWorkshopBundleFiles -Compatibility $Compatibility) `
+        -ExactSetDescription 'the exact universal Workshop bundle files'
+}
+
+function Test-NinjaSlayerSafeArchivePath([string]$Path) {
+    if ([string]::IsNullOrWhiteSpace($Path) -or
+        [IO.Path]::IsPathRooted($Path) -or
+        $Path.Contains('\') -or
+        $Path.StartsWith('/', [StringComparison]::Ordinal)) {
+        return $false
+    }
+    $segments = $Path.Split('/')
+    return $segments.Count -gt 0 -and
+        @($segments | Where-Object { $_ -in @('', '.', '..') }).Count -eq 0
+}
+
+function Resolve-NinjaSlayerSafeReplaceDirectory([string]$Path) {
+    $resolved = [IO.Path]::GetFullPath($Path)
+    $root = [IO.Path]::GetPathRoot($resolved)
+    $parent = [IO.Directory]::GetParent($resolved)
+    if ([string]::IsNullOrWhiteSpace($root) -or
+        $null -eq $parent -or
+        $parent.FullName.TrimEnd([IO.Path]::DirectorySeparatorChar) -ceq
+            $root.TrimEnd([IO.Path]::DirectorySeparatorChar)) {
+        throw "Replacement directory must be below a dedicated parent: $resolved"
+    }
+    if (Test-Path -LiteralPath $resolved) {
+        $attributes = [IO.File]::GetAttributes($resolved)
+        if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "Replacement directory must not be a reparse point: $resolved"
+        }
+    }
+
+    return $resolved
+}
+
+function Read-NinjaSlayerChecksummedArchive {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string[]]$ExpectedFileNames,
+        [Parameter(Mandatory)][string]$ExactSetDescription
+    )
+
     $resolved = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
     $zip = [IO.Compression.ZipFile]::OpenRead($resolved)
     try {
@@ -59,16 +139,16 @@ function Read-NinjaSlayerPackageArchive {
         $entryNames = @($entries | ForEach-Object FullName)
         $entryDifference = Compare-Object `
             -ReferenceObject @($entryNames | Sort-Object) `
-            -DifferenceObject @($script:NinjaSlayerPackageFiles | Sort-Object) `
+            -DifferenceObject @($ExpectedFileNames | Sort-Object) `
             -CaseSensitive
-        if ($entryNames.Count -ne $script:NinjaSlayerPackageFiles.Count -or $null -ne $entryDifference) {
-            throw "$(Split-Path -Leaf $resolved) must contain exactly the four NinjaSlayer package files."
+        if ($entryNames.Count -ne $ExpectedFileNames.Count -or $null -ne $entryDifference) {
+            throw "$(Split-Path -Leaf $resolved) must contain $ExactSetDescription."
         }
         if (@($entryNames | Group-Object { $_.ToLowerInvariant() } | Where-Object Count -gt 1).Count -gt 0) {
             throw "$(Split-Path -Leaf $resolved) contains duplicate ZIP entries."
         }
         foreach ($name in $entryNames) {
-            if ($name -match '[/\\]' -or $name -in @('.', '..')) {
+            if (-not (Test-NinjaSlayerSafeArchivePath $name)) {
                 throw "$(Split-Path -Leaf $resolved) contains an unsafe ZIP entry: $name"
             }
         }
@@ -107,16 +187,19 @@ function Read-NinjaSlayerPackageArchive {
             $checksumStream.Dispose()
         }
         $checksumLines = @($checksumText -split '\r?\n' | Where-Object { $_ -ne '' })
-        if ($checksumLines.Count -ne 3) {
-            throw 'SHA256SUMS must contain exactly three package checksums.'
+        if ($checksumLines.Count -ne ($ExpectedFileNames.Count - 1)) {
+            throw "SHA256SUMS must contain exactly $($ExpectedFileNames.Count - 1) package checksums."
         }
         $seenChecksums = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
         foreach ($line in $checksumLines) {
-            if ($line -notmatch '^([0-9A-Fa-f]{64}) \*([^/\\]+)$') {
+            if ($line -notmatch '^([0-9A-Fa-f]{64}) \*(.+)$') {
                 throw "Invalid SHA256SUMS entry: $line"
             }
             $name = $Matches[2]
-            if ($name -ceq 'SHA256SUMS' -or -not $hashes.ContainsKey($name) -or -not $seenChecksums.Add($name)) {
+            if (-not (Test-NinjaSlayerSafeArchivePath $name) -or
+                $name -ceq 'SHA256SUMS' -or
+                -not $hashes.ContainsKey($name) -or
+                -not $seenChecksums.Add($name)) {
                 throw "SHA256SUMS references an invalid or duplicate package file: $name"
             }
             if ($hashes[$name] -ne $Matches[1].ToLowerInvariant()) {
@@ -145,7 +228,7 @@ function Expand-NinjaSlayerExactZip {
     )
 
     $resolvedArchive = (Resolve-Path -LiteralPath $ArchivePath -ErrorAction Stop).Path
-    $resolvedDestination = [IO.Path]::GetFullPath($DestinationPath)
+    $resolvedDestination = Resolve-NinjaSlayerSafeReplaceDirectory $DestinationPath
     $zip = [IO.Compression.ZipFile]::OpenRead($resolvedArchive)
     try {
         $names = @($zip.Entries | ForEach-Object FullName)
@@ -160,7 +243,7 @@ function Expand-NinjaSlayerExactZip {
             throw "$(Split-Path -Leaf $resolvedArchive) contains duplicate entries."
         }
         foreach ($name in $names) {
-            if ($name -match '[/\\]' -or $name -in @('.', '..')) {
+            if (-not (Test-NinjaSlayerSafeArchivePath $name)) {
                 throw "$(Split-Path -Leaf $resolvedArchive) contains an unsafe entry: $name"
             }
         }
@@ -171,6 +254,7 @@ function Expand-NinjaSlayerExactZip {
         [IO.Directory]::CreateDirectory($resolvedDestination) | Out-Null
         foreach ($entry in $zip.Entries) {
             $destination = Join-Path $resolvedDestination $entry.FullName
+            [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
             $source = $entry.Open()
             try {
                 $target = [IO.File]::Create($destination)
@@ -179,6 +263,64 @@ function Expand-NinjaSlayerExactZip {
                 }
                 finally {
                     $target.Dispose()
+                }
+            }
+            finally {
+                $source.Dispose()
+            }
+        }
+    }
+    finally {
+        $zip.Dispose()
+    }
+}
+
+function New-NinjaSlayerExactZip {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$SourceDirectory,
+        [Parameter(Mandatory)][string]$ArchivePath,
+        [Parameter(Mandatory)][string[]]$ExpectedFileNames
+    )
+
+    $resolvedSource = (Resolve-Path -LiteralPath $SourceDirectory -ErrorAction Stop).Path
+    $resolvedArchive = [IO.Path]::GetFullPath($ArchivePath)
+    $actual = @(Get-ChildItem -LiteralPath $resolvedSource -File -Recurse -Force | ForEach-Object {
+        [IO.Path]::GetRelativePath($resolvedSource, $_.FullName).Replace('\', '/')
+    })
+    $difference = Compare-Object `
+        -ReferenceObject @($actual | Sort-Object) `
+        -DifferenceObject @($ExpectedFileNames | Sort-Object) `
+        -CaseSensitive
+    if ($actual.Count -ne $ExpectedFileNames.Count -or $null -ne $difference) {
+        throw "Source directory contains missing or unexpected archive files: $resolvedSource"
+    }
+    foreach ($entry in Get-ChildItem -LiteralPath $resolvedSource -Force -Recurse) {
+        if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "Source directory contains a reparse point: $($entry.FullName)"
+        }
+    }
+
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $resolvedArchive)) | Out-Null
+    if (Test-Path -LiteralPath $resolvedArchive) {
+        Remove-Item -LiteralPath $resolvedArchive -Force
+    }
+    $zip = [IO.Compression.ZipFile]::Open($resolvedArchive, [IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($name in $ExpectedFileNames) {
+            if (-not (Test-NinjaSlayerSafeArchivePath $name)) {
+                throw "Unsafe archive path: $name"
+            }
+            $entry = $zip.CreateEntry($name, [IO.Compression.CompressionLevel]::NoCompression)
+            $entry.LastWriteTime = [DateTimeOffset]::new(1980, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
+            $source = [IO.File]::OpenRead((Join-Path $resolvedSource $name.Replace('/', [IO.Path]::DirectorySeparatorChar)))
+            try {
+                $destination = $entry.Open()
+                try {
+                    $source.CopyTo($destination)
+                }
+                finally {
+                    $destination.Dispose()
                 }
             }
             finally {
@@ -200,7 +342,8 @@ function New-NinjaSlayerReleaseAttestation {
         [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string]$CandidateSha,
         [Parameter(Mandatory)][ValidatePattern('^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')][string]$Tag,
         [Parameter(Mandatory)][string]$WorkflowRunId,
-        [Parameter(Mandatory)][hashtable]$ArchivesByChannel
+        [Parameter(Mandatory)][hashtable]$ArchivesByChannel,
+        [Parameter(Mandatory)][string]$WorkshopArchivePath
     )
 
     $channels = [ordered]@{}
@@ -225,8 +368,14 @@ function New-NinjaSlayerReleaseAttestation {
         }
     }
 
+    $workshopArchive = Read-NinjaSlayerWorkshopBundleArchive `
+        -Path $WorkshopArchivePath `
+        -Compatibility $Compatibility
+    $expectedWorkshopName = "NinjaSlayer-$Tag-workshop-universal.zip"
+    Assert-NinjaSlayerReleaseEqual $workshopArchive.name $expectedWorkshopName 'workshop.archive.name'
+
     return [ordered]@{
-        schemaVersion = 1
+        schemaVersion = 2
         repository = $Repository
         candidateSha = $CandidateSha.ToLowerInvariant()
         tag = $Tag
@@ -235,6 +384,14 @@ function New-NinjaSlayerReleaseAttestation {
         compatibilityManifestSha256 = $CompatibilityManifestSha256.ToLowerInvariant()
         ritsuLibVersion = [string]$Compatibility.ritsuLibVersion
         channels = $channels
+        workshop = [ordered]@{
+            archive = [ordered]@{
+                name = $workshopArchive.name
+                length = $workshopArchive.length
+                sha256 = $workshopArchive.sha256
+            }
+            files = $workshopArchive.files
+        }
     }
 }
 
@@ -253,9 +410,9 @@ function Assert-NinjaSlayerReleaseAttestation {
 
     Assert-NinjaSlayerPropertySet $Attestation @(
         'schemaVersion', 'repository', 'candidateSha', 'tag', 'workflowRunId',
-        'workflowPath', 'compatibilityManifestSha256', 'ritsuLibVersion', 'channels'
+        'workflowPath', 'compatibilityManifestSha256', 'ritsuLibVersion', 'channels', 'workshop'
     ) 'Release attestation'
-    Assert-NinjaSlayerReleaseEqual ([int]$Attestation.schemaVersion) 1 'release.schemaVersion'
+    Assert-NinjaSlayerReleaseEqual ([int]$Attestation.schemaVersion) 2 'release.schemaVersion'
     Assert-NinjaSlayerReleaseEqual ([string]$Attestation.repository) $Repository 'release.repository'
     Assert-NinjaSlayerReleaseEqual ([string]$Attestation.candidateSha).ToLowerInvariant() `
         $CandidateSha.ToLowerInvariant() 'release.candidateSha'
@@ -306,5 +463,35 @@ function Assert-NinjaSlayerReleaseAttestation {
             Assert-NinjaSlayerReleaseEqual ([string]$expectedFile.sha256).ToLowerInvariant() `
                 ([string]$actualFile.sha256) "$channelName.files[$index].sha256"
         }
+    }
+
+    Assert-NinjaSlayerPropertySet $Attestation.workshop @('archive', 'files') 'Workshop release bundle'
+    Assert-NinjaSlayerPropertySet $Attestation.workshop.archive @('name', 'length', 'sha256') `
+        'Workshop release archive'
+    $expectedWorkshopName = "NinjaSlayer-$Tag-workshop-universal.zip"
+    Assert-NinjaSlayerReleaseEqual ([string]$Attestation.workshop.archive.name) `
+        $expectedWorkshopName 'workshop.archive.name'
+    $workshopArchive = Read-NinjaSlayerWorkshopBundleArchive `
+        -Path (Join-Path $ArchiveDirectory $expectedWorkshopName) `
+        -Compatibility $Compatibility
+    Assert-NinjaSlayerReleaseEqual ([long]$Attestation.workshop.archive.length) `
+        ([long]$workshopArchive.length) 'workshop.archive.length'
+    Assert-NinjaSlayerReleaseEqual ([string]$Attestation.workshop.archive.sha256).ToLowerInvariant() `
+        ([string]$workshopArchive.sha256) 'workshop.archive.sha256'
+    $expectedWorkshopFiles = @(Get-NinjaSlayerWorkshopBundleFiles -Compatibility $Compatibility)
+    if (@($Attestation.workshop.files).Count -ne $expectedWorkshopFiles.Count) {
+        throw "workshop.files must contain exactly $($expectedWorkshopFiles.Count) entries."
+    }
+    for ($index = 0; $index -lt $expectedWorkshopFiles.Count; $index++) {
+        $expectedFile = @($Attestation.workshop.files)[$index]
+        $actualFile = @($workshopArchive.files)[$index]
+        Assert-NinjaSlayerPropertySet $expectedFile @('path', 'length', 'sha256') `
+            "workshop.files[$index]"
+        Assert-NinjaSlayerReleaseEqual ([string]$expectedFile.path) ([string]$actualFile.path) `
+            "workshop.files[$index].path"
+        Assert-NinjaSlayerReleaseEqual ([long]$expectedFile.length) ([long]$actualFile.length) `
+            "workshop.files[$index].length"
+        Assert-NinjaSlayerReleaseEqual ([string]$expectedFile.sha256).ToLowerInvariant() `
+            ([string]$actualFile.sha256) "workshop.files[$index].sha256"
     }
 }

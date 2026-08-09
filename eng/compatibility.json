@@ -2,6 +2,10 @@
   "schemaVersion": 2,
   "defaultBuildChannel": "preview",
   "ritsuLibVersion": "0.5.1",
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "unlisted"
+  },
   "spineExtension": {
     "windowsFiles": [
       {
@@ -23,8 +27,6 @@
       "gameApiVersion": "0.107.1",
       "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
       "distributionChannel": "public",
-      "workshopItemId": "3776911445",
-      "workshopVisibility": "unlisted",
       "runtimeAssemblies": [
         "Sentry.dll",
         "SmartFormat.dll",
@@ -212,8 +214,6 @@
       "gameApiVersion": "0.110.1",
       "ritsuLibPackageId": "STS2.RitsuLib",
       "distributionChannel": "beta",
-      "workshopItemId": null,
-      "workshopVisibility": null,
       "runtimeAssemblies": [
         "Sentry.dll",
         "Sentry.Godot.dll",

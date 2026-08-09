@@ -61,19 +61,14 @@ try {
 
     $compatibility = Read-NinjaSlayerCompatibility `
         -Path (Join-Path $repositoryRoot 'eng\compatibility.json')
+    if ([string]$compatibility.workshop.visibility -cne 'unlisted' -or
+        [string]$compatibility.workshop.itemId -notmatch '^\d+$') {
+        throw 'Universal Workshop compatibility must resolve to one unlisted numeric item.'
+    }
     foreach ($channelName in @('stable', 'preview')) {
         $profile = Get-NinjaSlayerCompatibilityChannel `
             -Manifest $compatibility `
             -Channel $channelName
-        if ($channelName -eq 'stable' -and
-            ([string]$profile.workshopVisibility -cne 'unlisted' -or
-                [string]$profile.workshopItemId -notmatch '^\d+$')) {
-            throw 'Stable Workshop compatibility must resolve to an unlisted numeric item.'
-        }
-        if ($channelName -eq 'preview' -and
-            ($null -ne $profile.workshopVisibility -or $null -ne $profile.workshopItemId)) {
-            throw 'Preview Workshop compatibility must remain unprovisioned.'
-        }
         $resolvedHost = Resolve-NinjaSlayerCompatibilityHost `
             -Manifest $compatibility `
             -ModuleMvid ([string]$profile.hostContract.moduleMvid).ToUpperInvariant()

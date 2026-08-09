@@ -25,6 +25,7 @@ $archiveNames = @($compatibility.channels.PSObject.Properties.Name | ForEach-Obj
     $profile = $compatibility.channels.$_
     "NinjaSlayer-$Tag-$_-sts2-$($profile.gameApiVersion).zip"
 })
+$archiveNames += "NinjaSlayer-$Tag-workshop-universal.zip"
 $artifactName = "protected-release-$Tag-$candidate"
 $context = New-NinjaSlayerGitHubApiContext -Repository $Repository -Token $Token -ApiBaseUri $ApiBaseUri
 $artifacts = Get-NinjaSlayerArtifactCandidates -Context $context -ArtifactName $artifactName

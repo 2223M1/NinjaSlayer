@@ -9,6 +9,7 @@ param(
     [Parameter(Mandatory)][string]$WorkflowRunId,
     [Parameter(Mandatory)][string]$StableArchivePath,
     [Parameter(Mandatory)][string]$PreviewArchivePath,
+    [Parameter(Mandatory)][string]$WorkshopArchivePath,
     [Parameter(Mandatory)][string]$OutputPath,
     [string]$CompatibilityManifestPath = (Join-Path $PSScriptRoot '..\..\eng\compatibility.json')
 )
@@ -29,7 +30,8 @@ $attestation = New-NinjaSlayerReleaseAttestation `
     -ArchivesByChannel @{
         stable = $StableArchivePath
         preview = $PreviewArchivePath
-    }
+    } `
+    -WorkshopArchivePath $WorkshopArchivePath
 
 $resolvedOutput = [IO.Path]::GetFullPath($OutputPath)
 [IO.Directory]::CreateDirectory((Split-Path -Parent $resolvedOutput)) | Out-Null

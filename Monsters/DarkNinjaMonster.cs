@@ -235,7 +235,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
 
     private async Task DeathSlashMove(IReadOnlyList<Creature> targets)
     {
-        var attack = await DarkNinjaAttackExecution.PlayDeathSlash(this, DeathSlashDamage);
+        var attack = await DarkNinjaAttackExecution.PlayDeathSlash(this, targets, DeathSlashDamage);
         if (!HasPlayedDeathKiri && attack.Results.SelectMany(result => result).Any())
         {
             HasPlayedDeathKiri = true;
@@ -269,19 +269,18 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
 
     private async Task DarkStrikeMove(IReadOnlyList<Creature> targets)
     {
-        var attack = await DarkNinjaAttackExecution.PlayDarkStrike(this, DarkStrikeDamage);
-        var results = attack.Results.SelectMany(result => result).ToArray();
-        if (results.Any(result => result.WasFullyBlocked && result.BlockedDamage > 0))
-        {
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaFailedEvent);
-        }
+        IReadOnlyList<Creature> connectedTargets =
+            await DarkNinjaAttackExecution.PlayDarkStrike(this, targets, DarkStrikeDamage);
 
-        await PowerCmd.Apply<WeakPower>(
-            new ThrowingPlayerChoiceContext(),
-            targets,
-            2,
-            Creature,
-            null);
+        if (connectedTargets.Count > 0)
+        {
+            await PowerCmd.Apply<WeakPower>(
+                new ThrowingPlayerChoiceContext(),
+                connectedTargets,
+                2,
+                Creature,
+                null);
+        }
     }
 
     private async Task KillingIntentMove(IReadOnlyList<Creature> _)

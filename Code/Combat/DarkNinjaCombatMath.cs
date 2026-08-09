@@ -11,6 +11,8 @@ internal readonly record struct DarkNinjaStabSegment(
 
 internal static class DarkNinjaCombatMath
 {
+    private const int MaximumCanvasZIndex = 4095;
+
     private static readonly DarkNinjaPoint[] BladeChargePath =
     [
         new(196f, 370f),
@@ -22,6 +24,7 @@ internal static class DarkNinjaCombatMath
     ];
 
     internal const int CounterInterval = 3;
+    internal const float DeathSlashWindupRetreatDistance = 60f;
     internal const float DeathSlashWindupSeconds = 0.25f;
     internal const float DeathSlashOutboundSeconds = 0.25f;
     internal const float DeathSlashOffscreenSeconds = 0.1f;
@@ -33,6 +36,7 @@ internal static class DarkNinjaCombatMath
     internal const float DarkStrikeLaterReferenceStartSeconds = 0.2f;
     internal const float DarkStrikeLaterMotionSeconds = 0.175f;
     internal const float DarkStrikeHoldSeconds = 0.025f;
+    internal const float DarkStrikeSuccessfulFinalHoldSeconds = 0.2f;
     internal const float DarkStrikeReturnSeconds = 0.6f;
 
     internal const float DarkStrikeContactTextureX = 151.4f;
@@ -54,6 +58,21 @@ internal static class DarkNinjaCombatMath
             ? blockedDamage + unblockedDamage + overkillDamage
             : 0;
 
+    internal static float SampleDeathSlashTravel(float progress)
+    {
+        progress = Math.Clamp(progress, 0f, 1f);
+        if (progress < 0.5f)
+        {
+            return 4f * progress * progress * progress;
+        }
+
+        float inverse = -2f * progress + 2f;
+        return 1f - inverse * inverse * inverse * 0.5f;
+    }
+
+    internal static float SampleDeathSlashWindupOffset(float progress) =>
+        DeathSlashWindupRetreatDistance * SampleDeathSlashTravel(progress);
+
     internal static DarkNinjaStabSegment GetDarkStrikeSegment(int targetIndex) =>
         targetIndex <= 0
             ? new DarkNinjaStabSegment(
@@ -64,6 +83,42 @@ internal static class DarkNinjaCombatMath
                 DarkStrikeLaterReferenceStartSeconds,
                 DarkStrikeLaterMotionSeconds,
                 DarkStrikeHoldSeconds);
+
+    internal static float SampleDarkStrikeVisualReference(
+        DarkNinjaStabSegment segment,
+        float progress) =>
+        segment.ReferenceStartSeconds
+        + segment.MotionSeconds * Math.Clamp(progress, 0f, 1f);
+
+    internal static float ResolveDarkStrikeHoldSeconds(
+        DarkNinjaStabSegment segment,
+        bool successfulHit,
+        bool hasLaterTarget) =>
+        segment.HoldSeconds
+        + (successfulHit && !hasLaterTarget ? DarkStrikeSuccessfulFinalHoldSeconds : 0f);
+
+    internal static int ResolveDarkStrikeAttackerZIndex(int targetZIndex) =>
+        Math.Clamp(
+            targetZIndex - 1,
+            -MaximumCanvasZIndex,
+            MaximumCanvasZIndex);
+
+    internal static float ResolveDarkStrikeForegroundBladeCutTextureX(
+        float referenceSeconds,
+        bool penetratesTarget) =>
+        penetratesTarget
+            ? Math.Clamp(
+                DarkStrikeContactTextureX + SampleDarkStrikeOffset(referenceSeconds).X,
+                0f,
+                DarkStrikeContactTextureX)
+            : 0f;
+
+    internal static float ResolveDarkStrikeRightReturnStartX(
+        float firstViewportEdgeX,
+        float secondViewportEdgeX,
+        float characterHalfWidth) =>
+        Math.Max(firstViewportEdgeX, secondViewportEdgeX)
+        + Math.Max(0f, characterHalfWidth);
 
     internal static DarkNinjaPoint SampleDarkStrikeOffset(float referenceSeconds)
     {

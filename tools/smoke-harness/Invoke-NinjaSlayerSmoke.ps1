@@ -4,11 +4,12 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][ValidatePattern('^[0-9A-Fa-f]{40}$')][string]$CandidateSha,
+    [Parameter(Mandatory)][ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')][string]$BundleVersion,
     [Parameter(Mandatory)][string]$CandidateRoot,
+    [Parameter(Mandatory)][string]$BundleDirectory,
     [Parameter(Mandatory)][string]$TrustedRoot,
     [Parameter(Mandatory)][string]$GameRootDirectory,
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
-    [Parameter(Mandatory)][string]$GodotExecutable,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
     [ValidateSet('FirstCombatRestart', 'FullAutoSlay')][string]$Mode = 'FirstCombatRestart',
@@ -188,6 +189,7 @@ function Copy-SanitizedTextArtifact {
     foreach ($replacement in @(
         @($sessionRoot, '<SMOKE_SESSION>'),
         @($CandidateRoot, '<CANDIDATE>'),
+        @($BundleDirectory, '<BUNDLE>'),
         @($TrustedRoot, '<TRUSTED>'),
         @($GameRootDirectory, '<GAME_ROOT>'),
         @($env:USERPROFILE, '<USER_PROFILE>')
@@ -200,11 +202,64 @@ function Copy-SanitizedTextArtifact {
     Set-Content -LiteralPath $Destination -Value $content -Encoding utf8
 }
 
+function Get-RitsuLibRuntimeVersion {
+    param(
+        [Parameter(Mandatory)][string]$ModDirectory,
+        [Parameter(Mandatory)][string]$MinimumVersion
+    )
+
+    $manifestPath = Join-Path $ModDirectory 'mod_manifest.json'
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        throw "RitsuLib Workshop manifest was not found: $manifestPath"
+    }
+
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding utf8 | ConvertFrom-Json
+    $runtimeVersion = [string]$manifest.version
+    if ([string]$manifest.id -cne 'STS2-RitsuLib' -or
+        $runtimeVersion -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
+        throw 'RitsuLib Workshop manifest has an invalid id or version.'
+    }
+    if ([version]$runtimeVersion -lt [version]$MinimumVersion) {
+        throw "RitsuLib Workshop version $runtimeVersion is older than required $MinimumVersion."
+    }
+
+    return $runtimeVersion
+}
+
+function Assert-SmokeLogsClean {
+    param(
+        [Parameter(Mandatory)][string]$GameLogsDirectory,
+        [Parameter(Mandatory)][string]$HarnessLogsDirectory
+    )
+
+    $logs = [Collections.Generic.List[IO.FileInfo]]::new()
+    if (Test-Path -LiteralPath $GameLogsDirectory -PathType Container) {
+        $logs.AddRange([IO.FileInfo[]]@(Get-ChildItem -LiteralPath $GameLogsDirectory -File -Force))
+    }
+    $logs.AddRange([IO.FileInfo[]]@(Get-ChildItem -LiteralPath $HarnessLogsDirectory `
+        -File -Filter 'autoslay-*.log' -ErrorAction SilentlyContinue))
+
+    $forbidden = [ordered]@{
+        'NinjaSlayer loader failure' = '(?i)\[NinjaSlayer\.Loader\].*initialization failed|NinjaSlayer does not support STS2 host MVID|Variant SHA-256 mismatch'
+        'managed assembly load failure' = '(?i)Could not load file or assembly|Could not resolve assembly|FileLoadException|BadImageFormatException'
+        'native library load failure' = '(?i)DllNotFoundException|Unable to load shared library|cannot open shared object file|Library not loaded'
+        'NinjaSlayer resource or Spine failure' = '(?im)^(?:ERROR|SCRIPT ERROR):.*(?:res://NinjaSlayer|addons/spine|SpineSprite|spine_godot)'
+    }
+    foreach ($log in $logs) {
+        $content = Get-Content -LiteralPath $log.FullName -Raw
+        foreach ($entry in $forbidden.GetEnumerator()) {
+            if ($content -match $entry.Value) {
+                throw "Smoke log $($log.Name) contains $($entry.Key)."
+            }
+        }
+    }
+}
+
 $CandidateRoot = Resolve-RequiredPath $CandidateRoot
+$BundleDirectory = Resolve-RequiredPath $BundleDirectory
 $TrustedRoot = Resolve-RequiredPath $TrustedRoot
 $GameRootDirectory = Resolve-RequiredPath $GameRootDirectory
 $RitsuLibModDirectory = Resolve-RequiredPath $RitsuLibModDirectory
-$GodotExecutable = Resolve-RequiredPath $GodotExecutable -Leaf
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 $networkIsolationScript = Join-Path $TrustedRoot '.github\scripts\process-network-isolation.ps1'
 if (-not (Test-Path -LiteralPath $networkIsolationScript -PathType Leaf)) {
@@ -217,13 +272,23 @@ $hostCompatibility = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibilit
 $GameApiVersion = [string]$hostCompatibility.gameApiVersion
 $RitsuLibPackageId = [string]$hostCompatibility.ritsuLibPackageId
 $RitsuLibVersion = [string]$compatibility.ritsuLibVersion
+$RitsuLibRuntimeVersion = Get-RitsuLibRuntimeVersion `
+    -ModDirectory $RitsuLibModDirectory `
+    -MinimumVersion $RitsuLibVersion
 $compatibilityManifestSha256 = Get-NinjaSlayerCompatibilitySha256 -Path $compatibilityManifestPath
+$bundleSha256 = Get-NinjaSlayerFileSha256 -Path (Join-Path $BundleDirectory 'SHA256SUMS')
 
 foreach ($required in @(
     (Join-Path $GameRootDirectory 'SlayTheSpire2.exe'),
     (Join-Path $GameRootDirectory 'SlayTheSpire2.pck'),
     (Join-Path $GameRootDirectory 'data_sts2_windows_x86_64\sts2.dll'),
-    (Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll')
+    (Join-Path $RitsuLibModDirectory 'STS2-RitsuLib.dll'),
+    (Join-Path $RitsuLibModDirectory 'mod_manifest.json'),
+    (Join-Path $BundleDirectory 'NinjaSlayer.dll'),
+    (Join-Path $BundleDirectory 'NinjaSlayer.json'),
+    (Join-Path $BundleDirectory 'NinjaSlayer.pck'),
+    (Join-Path $BundleDirectory 'ninjaslayer-variants.manifest'),
+    (Join-Path $BundleDirectory "lib\$GameApiVersion\NinjaSlayer.dll")
 )) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Missing smoke input: $required" }
 }
@@ -241,7 +306,6 @@ $sessionRoot = Join-Path $temporaryRoot "NinjaSlayer-Smoke-$Channel-$($Candidate
 $isolatedGameRoot = Join-Path $sessionRoot 'game'
 $appDataDirectory = Join-Path $sessionRoot 'appdata'
 $localAppDataDirectory = Join-Path $sessionRoot 'localappdata'
-$packageDirectory = Join-Path $sessionRoot 'package\NinjaSlayer'
 $driverOutput = Join-Path $sessionRoot 'driver'
 $configurationPath = Join-Path $sessionRoot 'smoke-config.json'
 $checkpointPath = Join-Path $OutputDirectory 'checkpoints.jsonl'
@@ -256,33 +320,24 @@ $effectivePhaseTimeoutSeconds = if ($PhaseTimeoutSeconds -gt 0) {
 }
 
 try {
-    New-Item -ItemType Directory -Path $sessionRoot, $appDataDirectory, $localAppDataDirectory, $packageDirectory, $driverOutput -Force | Out-Null
+    New-Item -ItemType Directory -Path $sessionRoot, $appDataDirectory, $localAppDataDirectory, $driverOutput -Force | Out-Null
 
     $gameDataDirectory = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64'
-    $packageArguments = [Collections.Generic.List[string]]::new()
-    foreach ($argument in @(
-            'build',
-            (Join-Path $CandidateRoot 'NinjaSlayer.csproj'),
-            '-c',
-            'Release',
-            '-t:PackageMod',
-            '-v:minimal'
-        )) {
-        $packageArguments.Add($argument)
-    }
-    Add-MsBuildProperty $packageArguments 'Sts2Dir' $GameRootDirectory
-    Add-MsBuildProperty $packageArguments 'Sts2DataDir' $gameDataDirectory
-    Add-MsBuildProperty $packageArguments 'NinjaSlayerHostChannel' $Channel
-    Add-MsBuildProperty $packageArguments 'GodotExe' $GodotExecutable
-    Add-MsBuildProperty $packageArguments 'PostBuildModDir' ($packageDirectory + [IO.Path]::DirectorySeparatorChar)
-    try {
-        Invoke-Native -Command dotnet -Arguments $packageArguments.ToArray() -WorkingDirectory $CandidateRoot
-    }
-    catch {
-        throw "Candidate PackageMod failed. $($_.Exception.Message)"
-    }
+    Invoke-Native -Command dotnet -Arguments @(
+        'run',
+        '--project', (Join-Path $CandidateRoot 'tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj'),
+        '--configuration', 'Release',
+        '--no-launch-profile',
+        '--',
+        'validate-workshop-bundle',
+        '--directory', $BundleDirectory,
+        '--compatibility', $compatibilityManifestPath,
+        '--version', $BundleVersion,
+        '--ritsulib-version', $RitsuLibVersion,
+        '--forbidden-path-root', $CandidateRoot
+    ) -WorkingDirectory $CandidateRoot
 
-    $candidateAssembly = Join-Path $packageDirectory 'NinjaSlayer.dll'
+    $candidateAssembly = Join-Path $BundleDirectory "lib\$GameApiVersion\NinjaSlayer.dll"
     $driverArguments = [Collections.Generic.List[string]]::new()
     foreach ($argument in @(
             'build',
@@ -318,7 +373,7 @@ try {
 
     $modsDirectory = Join-Path $isolatedGameRoot 'mods'
     New-Item -ItemType Directory -Path $modsDirectory -Force | Out-Null
-    Copy-Item -LiteralPath $packageDirectory -Destination (Join-Path $modsDirectory 'NinjaSlayer') -Recurse
+    Copy-Item -LiteralPath $BundleDirectory -Destination (Join-Path $modsDirectory 'NinjaSlayer') -Recurse
     Copy-Item -LiteralPath $RitsuLibModDirectory -Destination (Join-Path $modsDirectory 'STS2-RitsuLib') -Recurse
     $smokeModDirectory = Join-Path $modsDirectory 'NinjaSlayer-SmokeDriver'
     New-Item -ItemType Directory -Path $smokeModDirectory -Force | Out-Null
@@ -349,7 +404,7 @@ try {
         -ProgramPath $protectedPrograms `
         -RemoteScope All `
         -RulePrefix "NinjaSlayer-Smoke-$Channel-$($CandidateSha.Substring(0, 12))" `
-        -ForbiddenRoot @($CandidateRoot, $TrustedRoot)
+        -ForbiddenRoot @($CandidateRoot, $TrustedRoot, $BundleDirectory)
 
     if ($Mode -eq 'FullAutoSlay') {
         Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0
@@ -359,12 +414,17 @@ try {
         Invoke-SmokePhase -Phase Resume -ExpectedExitCode 0
     }
 
+    $gameLogsDirectory = Join-Path $appDataDirectory 'SlayTheSpire2\logs'
+    Assert-SmokeLogsClean `
+        -GameLogsDirectory $gameLogsDirectory `
+        -HarnessLogsDirectory $OutputDirectory
+
     $checkpoints = @(Get-Content -LiteralPath $checkpointPath | ForEach-Object { $_ | ConvertFrom-Json })
     $requiredCheckpoints = if ($Mode -eq 'FullAutoSlay') {
         @('full-autoslay.starting', 'full-autoslay.runtime-idle', 'full-autoslay.completed')
     }
     else {
-        @('prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'finisher.completed', 'fresh.saved', 'resume.loaded', 'resume.completed')
+        @('prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'resume.loaded', 'resume.completed')
     }
     $missing = @($requiredCheckpoints | Where-Object { $_ -notin $checkpoints.Name })
     if ($missing.Count -gt 0 -or @($checkpoints | Where-Object Status -ne 'passed').Count -gt 0) {
@@ -374,8 +434,9 @@ try {
     $gameAssemblyPath = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64\sts2.dll'
     $gameVersion = [Reflection.AssemblyName]::GetAssemblyName($gameAssemblyPath).Version.ToString()
     [ordered]@{
-        schemaVersion = 3
+        schemaVersion = 5
         candidateSha = $CandidateSha.ToLowerInvariant()
+        bundleVersion = $BundleVersion
         result = 'passed'
         channel = $Channel
         gameApiVersion = $GameApiVersion
@@ -383,6 +444,8 @@ try {
         gameModuleMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath $gameAssemblyPath
         ritsuLibPackageId = $RitsuLibPackageId
         ritsuLibVersion = $RitsuLibVersion
+        ritsuLibRuntimeVersion = $RitsuLibRuntimeVersion
+        bundleSha256 = $bundleSha256
         compatibilityManifestSha256 = $compatibilityManifestSha256
         mode = if ($Mode -eq 'FullAutoSlay') { 'singleplayer-full-autoslay' } else { 'singleplayer-first-combat-restart' }
         repository = $Repository

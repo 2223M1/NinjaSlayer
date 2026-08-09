@@ -1,7 +1,14 @@
+using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Rooms;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Screens;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Random;
 using NinjaSlayer.Content;
@@ -71,6 +78,69 @@ internal static class NinjaSlayerSmokeCombatPatch
         __result = controller.ExecuteFirstCombatAsync(random, ct);
         return false;
     }
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.ModifyDamage))]
+internal static class NinjaSlayerSmokeDamageHookPatch
+{
+    public static void Prefix(
+        Creature? target,
+        Creature? dealer,
+        ModifyDamageHookType modifyDamageHookType,
+        CardPreviewMode previewMode)
+    {
+        if (!NinjaSlayerSmokeAttackIntentPatch.IsEvaluating
+            && modifyDamageHookType == ModifyDamageHookType.All
+            && previewMode == CardPreviewMode.None)
+        {
+            SmokeController.Current?.ObserveDarkStrikeDamageHook(target, dealer);
+        }
+    }
+}
+
+[HarmonyPatch(typeof(AttackIntent), nameof(AttackIntent.GetSingleDamage))]
+internal static class NinjaSlayerSmokeAttackIntentPatch
+{
+    [ThreadStatic]
+    private static int _depth;
+
+    public static bool IsEvaluating => _depth > 0;
+
+    public static void Prefix() => _depth++;
+
+    public static Exception? Finalizer(Exception? __exception)
+    {
+        _depth--;
+        return __exception;
+    }
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.BeforeAttack))]
+internal static class NinjaSlayerSmokeBeforeAttackHookPatch
+{
+    public static void Prefix(AttackCommand command) =>
+        SmokeController.Current?.ObserveDarkStrikeAttackHook(command, after: false);
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.AfterAttack))]
+internal static class NinjaSlayerSmokeAfterAttackHookPatch
+{
+    public static void Prefix(AttackCommand command) =>
+        SmokeController.Current?.ObserveDarkStrikeAttackHook(command, after: true);
+}
+
+[HarmonyPatch(typeof(NinjaSlayerCombatAudioSet), nameof(NinjaSlayerCombatAudioSet.Play))]
+internal static class NinjaSlayerSmokeDarkStrikeAudioPatch
+{
+    public static void Prefix(string? eventPath) =>
+        SmokeController.Current?.ObserveDarkStrikeAudio(eventPath);
+}
+
+[HarmonyPatch(typeof(VfxCmd), nameof(VfxCmd.PlayVfx))]
+internal static class NinjaSlayerSmokeDarkStrikeVfxPatch
+{
+    public static void Prefix(Vector2 position, string? path) =>
+        SmokeController.Current?.ObserveDarkStrikeVfx(position, path);
 }
 
 [HarmonyPatch(typeof(AutoSlayer), "QuitGame")]

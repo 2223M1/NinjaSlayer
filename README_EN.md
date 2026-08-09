@@ -28,7 +28,7 @@ NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built o
 
 ### Steam Workshop
 
-1. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) through its direct link; the item does not appear in public listings or search.
+1. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) through its direct link; the unlisted item delivers one bundle for both stable and preview.
 2. Subscribe to and enable [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
 3. Launch the game and enable both `STS2-RitsuLib` and `NinjaSlayer` in the mod manager.
 
@@ -45,11 +45,12 @@ NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built o
 |---|---|
 | Slay the Spire 2 | stable public `0.107.1`; preview beta `0.110.1` |
 | RitsuLib | build baseline and minimum dependency `0.5.1`; Workshop installs receive its current release automatically |
+| Platform targets | Windows x64, macOS, and Linux x86_64 / Steam Deck; formal cross-platform support requires the six-cell real-device matrix |
 | .NET | `9.0` |
 | Godot | `4.5.1 Mono` |
 | In-game language | Primarily Simplified Chinese at present |
 
-Each GitHub Release contains separate host-specific stable and preview archives. The Workshop item is unlisted: it is absent from public listings and search but remains accessible and subscribable by link. It receives stable only; preview is not uploaded to Workshop.
+Each GitHub Release contains stable and preview diagnostic archives plus one universal Workshop archive. The unlisted Workshop item remains accessible by link; every subscriber receives the same bundle, which selects the exact stable or preview implementation at startup. The universal PCK carries no native Spine extension and reuses the platform extension already loaded by the official client. Automated real-game testing currently covers Windows only; formal macOS and Linux support is not claimed until both channels pass on those platforms.
 <!-- compatibility:end -->
 
 This English README documents the project and installation process. It does not indicate complete English localization in the game.

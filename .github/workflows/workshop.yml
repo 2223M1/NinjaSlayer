@@ -4,19 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Existing GitHub Release stable SemVer tag
+        description: Existing GitHub Release SemVer tag with a universal Workshop bundle
         required: true
         type: string
-      channel:
-        description: Host-specific Workshop channel
-        required: true
-        default: stable
-        type: choice
-        options:
-          - stable
-          - preview
       confirmation:
-        description: Type the channel/item confirmation shown in the compatibility manifest
+        description: Type the Workshop item confirmation shown in the compatibility manifest
         required: true
         type: string
 
@@ -27,7 +19,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.channel == 'stable' && 'workshop-production' || 'workshop-preview' }}
+    environment: workshop-production
     steps:
       - name: Checkout release tag
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -41,11 +33,10 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Resolve channel and validate confirmation
+      - name: Resolve universal target and validate confirmation
         shell: pwsh
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
-          REQUESTED_CHANNEL: ${{ inputs.channel }}
           CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           if ('${{ github.ref }}' -cne 'refs/heads/main') {
@@ -57,22 +48,16 @@ jobs:
           . .\.github\scripts\compatibility.ps1
           $compatibilityPath = Join-Path $env:GITHUB_WORKSPACE 'eng\compatibility.json'
           $compatibility = Read-NinjaSlayerCompatibility -Path $compatibilityPath
-          $profile = Get-NinjaSlayerCompatibilityChannel `
-            -Manifest $compatibility `
-            -Channel $env:REQUESTED_CHANNEL
-          $itemId = [string]$profile.workshopItemId
-          if ([string]::IsNullOrWhiteSpace($itemId)) {
-            throw "The $($env:REQUESTED_CHANNEL) Workshop item has not been provisioned in compatibility.json."
-          }
+          $itemId = [string]$compatibility.workshop.itemId
           if ($itemId -notmatch '^\d+$') {
-            throw "The $($env:REQUESTED_CHANNEL) Workshop item id is invalid."
+            throw 'The universal Workshop item id is invalid.'
           }
-          $visibilityCode = switch ([string]$profile.workshopVisibility) {
+          $visibilityCode = switch ([string]$compatibility.workshop.visibility) {
             'private' { '2' }
             'unlisted' { '3' }
-            default { throw "The $($env:REQUESTED_CHANNEL) Workshop visibility must be private or unlisted." }
+            default { throw 'The universal Workshop visibility must be private or unlisted.' }
           }
-          $expectedConfirmation = "PUBLISH_NINJASLAYER_$($env:REQUESTED_CHANNEL.ToUpperInvariant())_$itemId"
+          $expectedConfirmation = "PUBLISH_NINJASLAYER_WORKSHOP_$itemId"
           if ($env:CONFIRMATION -cne $expectedConfirmation) {
             throw "Invalid confirmation. Expected $expectedConfirmation."
           }
@@ -81,15 +66,12 @@ jobs:
           if ((git rev-parse HEAD).Trim().ToLowerInvariant() -ne $releaseSha) {
             throw 'The checked-out commit does not match the release tag.'
           }
-          $archiveName = "NinjaSlayer-$env:RELEASE_TAG-$($env:REQUESTED_CHANNEL)-sts2-$($profile.gameApiVersion).zip"
+          $archiveName = "NinjaSlayer-$env:RELEASE_TAG-workshop-universal.zip"
           "RELEASE_SHA=$releaseSha" | Out-File $env:GITHUB_ENV -Append
           "RELEASE_VERSION=$($env:RELEASE_TAG.Substring(1))" | Out-File $env:GITHUB_ENV -Append
           "RELEASE_ARCHIVE_NAME=$archiveName" | Out-File $env:GITHUB_ENV -Append
-          "WORKSHOP_CHANNEL=$($env:REQUESTED_CHANNEL)" | Out-File $env:GITHUB_ENV -Append
           "WORKSHOP_ITEM_ID=$itemId" | Out-File $env:GITHUB_ENV -Append
           "WORKSHOP_VISIBILITY=$visibilityCode" | Out-File $env:GITHUB_ENV -Append
-          "GAME_API_VERSION=$($profile.gameApiVersion)" | Out-File $env:GITHUB_ENV -Append
-          "RITSULIB_PACKAGE_ID=$($profile.ritsuLibPackageId)" | Out-File $env:GITHUB_ENV -Append
           "RITSULIB_VERSION=$($compatibility.ritsuLibVersion)" | Out-File $env:GITHUB_ENV -Append
 
       - name: Require protected dual-host Contract and smoke
@@ -107,6 +89,7 @@ jobs:
             -Repository '${{ github.repository }}' `
             -Token $env:GH_TOKEN `
             -OutputDirectory (Join-Path $env:RUNNER_TEMP 'smoke-attestation') `
+            -ExpectedBundleVersion $env:RELEASE_VERSION `
             -ExpectedMode FirstCombatRestart
 
       - name: Verify protected Release artifact
@@ -144,30 +127,27 @@ jobs:
           }
 
           . .\.github\scripts\release-artifact.ps1
-          $null = Read-NinjaSlayerPackageArchive -Path $protectedArchive
+          . .\.github\scripts\compatibility.ps1
+          $compatibility = Read-NinjaSlayerCompatibility -Path '.\eng\compatibility.json'
+          $null = Read-NinjaSlayerWorkshopBundleArchive `
+            -Path $protectedArchive `
+            -Compatibility $compatibility
           Expand-NinjaSlayerExactZip `
             -ArchivePath $protectedArchive `
             -DestinationPath (Join-Path $env:RUNNER_TEMP 'content') `
-            -ExpectedFileNames @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'SHA256SUMS')
+            -ExpectedFileNames (Get-NinjaSlayerWorkshopBundleFiles -Compatibility $compatibility)
 
-      - name: Verify archive channel contract
+      - name: Verify universal bundle contract
         shell: pwsh
         run: |
           dotnet run --project .\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj `
-            --configuration Release --no-launch-profile -- `
-            validate-assembly `
-            --assembly "$env:RUNNER_TEMP/content/NinjaSlayer.dll" `
-            --channel $env:WORKSHOP_CHANNEL `
-            --game-api-version $env:GAME_API_VERSION `
-            --ritsulib-package-id $env:RITSULIB_PACKAGE_ID `
-            --ritsulib-version $env:RITSULIB_VERSION
-          if ($LASTEXITCODE -ne 0) { throw 'Workshop DLL channel validation failed.' }
-          node ./tools/package-contract.mjs validate-manifest `
-            --manifest "$env:RUNNER_TEMP/content/NinjaSlayer.json" `
+            --configuration Release --no-launch-profile -- validate-workshop-bundle `
+            --directory "$env:RUNNER_TEMP/content" `
+            --compatibility ".\eng\compatibility.json" `
             --version $env:RELEASE_VERSION `
-            --min-game-version $env:GAME_API_VERSION `
-            --ritsulib-version $env:RITSULIB_VERSION
-          if ($LASTEXITCODE -ne 0) { throw 'Workshop manifest channel validation failed.' }
+            --ritsulib-version $env:RITSULIB_VERSION `
+            --forbidden-path-root "$env:GITHUB_WORKSPACE"
+          if ($LASTEXITCODE -ne 0) { throw 'Universal Workshop bundle validation failed.' }
 
       - name: Install SteamCMD
         shell: bash
@@ -178,7 +158,7 @@ jobs:
             https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz \
             | tar -xz -C "$RUNNER_TEMP/steamcmd"
 
-      - name: Publish selected Workshop item
+      - name: Publish universal Workshop item
         shell: bash
         env:
           STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}

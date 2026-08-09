@@ -15,12 +15,11 @@ param(
     [string]$Sts2DataDir,
 
     [Parameter(Mandatory)]
-    [ValidateSet('PackageMod', 'InstallLocal', 'StageWorkshop', 'InstallLocalAndStageWorkshop')]
+    [ValidateSet('PackageMod', 'InstallLocal')]
     [string]$Target,
 
     [string]$GodotExe,
     [string]$SteamModDir,
-    [string]$WorkshopContentDir,
     [string]$BuildRoot,
     [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
     [string]$SourceRevision,
@@ -110,13 +109,9 @@ if (-not $ReuseCache) {
 [IO.Directory]::CreateDirectory($intermediateDirectory) | Out-Null
 [IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
 
-$requiresInstallDirectory = $Target -in @('InstallLocal', 'InstallLocalAndStageWorkshop')
+$requiresInstallDirectory = $Target -eq 'InstallLocal'
 if ($requiresInstallDirectory -and [string]::IsNullOrWhiteSpace($SteamModDir)) {
     throw 'InstallLocal requires SteamModDir.'
-}
-$requiresWorkshopDirectory = $Target -in @('StageWorkshop', 'InstallLocalAndStageWorkshop')
-if ($requiresWorkshopDirectory -and [string]::IsNullOrWhiteSpace($WorkshopContentDir)) {
-    throw 'StageWorkshop requires WorkshopContentDir.'
 }
 
 $commonArguments = [Collections.Generic.List[string]]::new()
@@ -135,7 +130,6 @@ Add-MsBuildProperty $commonArguments 'NinjaSlayerIsolatedOutputRoot' ($outputDir
 Add-MsBuildProperty $commonArguments 'PostBuildModDir' ($packageDirectory + [IO.Path]::DirectorySeparatorChar)
 Add-MsBuildProperty $commonArguments 'GodotExe' $GodotExe
 Add-MsBuildProperty $commonArguments 'SteamModDir' $SteamModDir
-Add-MsBuildProperty $commonArguments 'WorkshopContentDir' $WorkshopContentDir
 if (-not [string]::IsNullOrWhiteSpace($SourceRevision)) {
     $normalizedSourceRevision = $SourceRevision.ToLowerInvariant()
     Add-MsBuildProperty $commonArguments 'GitDescribe' $normalizedSourceRevision
@@ -188,12 +182,7 @@ $buildArguments.Add('msbuild')
 foreach ($argument in $commonArguments) {
     $buildArguments.Add($argument)
 }
-$targets = switch ($Target) {
-    'StageWorkshop' { 'PackageMod;StageWorkshop' }
-    'InstallLocalAndStageWorkshop' { 'InstallLocal;StageWorkshop' }
-    default { $Target }
-}
-$buildArguments.Add("-t:$targets")
+$buildArguments.Add("-t:$Target")
 Invoke-Native -Command dotnet -Arguments $buildArguments.ToArray()
 
 Write-Output ([pscustomobject]@{

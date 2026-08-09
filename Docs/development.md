@@ -40,6 +40,8 @@ dotnet msbuild .\NinjaSlayer.csproj -t:InstallLocal `
 
 Packaging and installation require an explicit channel and verify the selected `sts2.dll` MVID before export. `PackageMod` writes `NinjaSlayer.dll`, `NinjaSlayer.json`, `NinjaSlayer.pck`, and `SHA256SUMS` under `build/mods/<channel>/NinjaSlayer`. `InstallLocal` copies that verified package to the configured game Mods directory.
 
+Windows Spine binaries under `addons/spine` are local Godot editor/import inputs only. The export preset excludes the complete directory, and the artifact validator rejects `addons/spine/**` plus every `.dll`, `.so`, `.dylib`, or `.framework` entry inside the PCK. At runtime the mod reuses the Spine extension already loaded by the official Windows, macOS, or Linux client.
+
 For an untagged build, `InstallLocal` uses the resolved version core with `+local.<commit>` build metadata. This keeps local testing at the same SemVer precedence as the corresponding Workshop release, so the game consistently selects the local package when both sources are installed. `PackageMod` and release publication retain their normal version semantics.
 
 Local packages take precedence over the unlisted Workshop item. After switching the Steam branch between stable and preview, install the matching published package by host MVID instead of reusing the previous local DLL:
@@ -60,8 +62,8 @@ The three release entry points have distinct ownership:
 
 | Entry point | Purpose |
 | --- | --- |
-| `Invoke-OneClickRelease.ps1` | Normal official release. Builds stable and preview, publishes GitHub, then uploads stable to Workshop. |
-| `Publish-WorkshopQuickRelease.ps1` | Workshop-only player test or emergency upload. It does not publish GitHub. |
+| `Invoke-OneClickRelease.ps1` | Normal official release. Builds stable and preview, publishes all three archives, then uploads the universal bundle to Workshop. |
+| `Publish-WorkshopQuickRelease.ps1` | Workshop-only player test or emergency upload. It builds both hosts and does not publish GitHub. |
 | `Publish-QuickRelease.ps1` | Optional protected audit path using Contract, Smoke, and protected artifacts. |
 
 ### Routine official release
@@ -83,7 +85,7 @@ The paths are saved in the ignored `build/fast-release/settings.json`. Keep old 
 pwsh .\tools\release\Invoke-OneClickRelease.ps1 -Version 0.1.30 -Confirm
 ```
 
-The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It creates uncompressed ZIP containers because the exported PCK is already compressed, validates the exact four-file archives, installs the archive matching the active local host, then creates and pushes the tag, creates the GitHub Release, and uploads the exact stable archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses archives bound to the same commit and compatibility manifest after an interrupted publication. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
+The command requires `main` to match `origin/main`, permits only local `AGENTS.md` and `.agents/` changes, and requires the tracked `Workshop/change-note.md` to differ from the previous SemVer release. It runs the fast repository checks and builds both host packages. It keeps the two exact four-file host archives for diagnostics, then creates a third universal archive containing a loader plus both implementations. The loader maps the running `sts2.dll` MVID to exactly one implementation and rejects unknown hosts. The command installs the host-specific archive matching the active local game, creates and pushes the tag, creates the GitHub Release with all three archives, and uploads only the universal archive contents through the local Workshop uploader. Stable and preview build caches are retained between releases. `-Resume` reuses all three archives only when they remain bound to the same commit and compatibility manifest. `-DryRun` never changes the local game install, and `-SkipLocalInstall` explicitly disables the normal host-matched install.
 
 Routine releases deliberately do not wait for Contract, Smoke, protected environments, attestations, pull requests, or a self-hosted Actions runner. Those checks remain available as optional audits. The five-minute budget covers local preparation and normal uploads; unusually slow GitHub or Steam network transfer can still exceed it without corrupting the completed release.
 
@@ -92,10 +94,13 @@ Routine releases deliberately do not wait for Contract, Smoke, protected environ
 To upload an uncommitted working tree only to Workshop, use the separate player-test path:
 
 ```powershell
-pwsh .\tools\release\Publish-WorkshopQuickRelease.ps1 -Confirm
+pwsh .\tools\release\Publish-WorkshopQuickRelease.ps1 `
+  -StableDataDir C:\path\to\stable\data_sts2_windows_x86_64 `
+  -PreviewDataDir C:\path\to\preview\data_sts2_windows_x86_64 `
+  -Confirm
 ```
 
-This path automatically selects the next local patch version, stages and uploads stable, and performs no GitHub operation or local game installation. Use `Install-CurrentHostRelease.ps1` separately when the active game host needs a local package.
+This path automatically selects the next local patch version, builds both exact host implementations, assembles and validates one universal bundle, and uploads that bundle. It performs no GitHub operation or local game installation. The two data-directory parameters may instead be supplied through `NINJASLAYER_STS2_STABLE_DATA_DIR` and `NINJASLAYER_STS2_PREVIEW_DATA_DIR`.
 
 ### Optional protected audit release
 
@@ -104,7 +109,7 @@ The original high-assurance path is retained for compatibility investigations or
 1. Run **Protected game contract** for the exact commit with an ephemeral `Contract` runner.
 2. Run **Protected real-game smoke** in `FirstCombatRestart` mode for the same commit with an ephemeral `Smoke` runner.
 3. Dispatch the protected Release workflow with `Publish-QuickRelease.ps1`.
-4. Publish its stable artifact through the protected Workshop workflow.
+4. Publish its attested universal artifact through the protected Workshop workflow.
 
 ```powershell
 pwsh .\tools\release\Publish-QuickRelease.ps1 -Version 0.1.30 -SkipWorkshop -Confirm
@@ -112,17 +117,7 @@ pwsh .\tools\release\Publish-QuickRelease.ps1 -Version 0.1.30 -SkipWorkshop -Con
 
 This optional path owns dual-host attestations and immutable protected artifacts, and is expected to take substantially longer than the routine local release.
 
-The local Workshop target is:
-
-```powershell
-dotnet msbuild .\NinjaSlayer.csproj -t:PublishWorkshop `
-  -p:Configuration=Release `
-  -p:NinjaSlayerHostChannel=stable `
-  -p:NinjaSlayerVersion=MAJOR.MINOR.PATCH `
-  -p:PublishWorkshopConfirmed=true
-```
-
-It requires a clean exact matching tag, stable host references, and the configured local uploader. GitHub Workshop publication uses separate protected environments for public and preview items, downloads only the matching host archive, and revalidates its assembly metadata and manifest before upload.
+There is no single-channel MSBuild Workshop target. The protected Workshop workflow has one production environment and one item id from `eng/compatibility.json`. It downloads the attested `workshop-universal` release asset, verifies the loader, both implementation metadata records, both MVID mappings, the recursive file set, and every SHA-256 before one upload.
 
 ## Host contract capture
 
@@ -149,7 +144,9 @@ Contract and Release runners require both `GameDataDirectoryStable` and `GameDat
 
 ## Real-game smoke
 
-The **Protected real-game smoke** workflow runs a bounded single-player first-combat and process-restart scenario. `FullAutoSlay` is available as a longer advisory run. Both modes use a trusted test driver excluded from the shipping assembly and package.
+The **Protected real-game smoke** workflow assembles one universal candidate bundle, then runs that same directory against stable and preview in bounded single-player first-combat and process-restart scenarios. `FullAutoSlay` is available as a longer advisory run. Both modes use a trusted test driver excluded from the shipping assembly and package.
+
+The automated harness is Windows-specific. Formal cross-platform support requires one frozen candidate directory, with an identical PCK and SHA-256, to pass stable and preview on Windows x64, macOS, and Linux x86_64/Steam Deck. No platform may rebuild or replace files during that six-cell run. Each cell must load the mod and both custom encounters, instantiate Yamoto's Spine scene, and exercise Dark Strike normal hit, full block, evasion, sequential multi-target, and attacker death from retaliation. Until all six cells pass, the Workshop item remains `unlisted`.
 
 Smoke setup, outputs, isolation boundaries, and troubleshooting are documented in [tools/smoke-harness/README.md](../tools/smoke-harness/README.md).
 

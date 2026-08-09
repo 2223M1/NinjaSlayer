@@ -7,21 +7,18 @@ set -euo pipefail
 : "${PREVIEW_FILE:?PREVIEW_FILE is required}"
 : "${STEAMCMD:?STEAMCMD is required}"
 : "${CHANGE_NOTE_FILE:?CHANGE_NOTE_FILE is required}"
-: "${WORKSHOP_CHANNEL:?WORKSHOP_CHANNEL is required}"
 : "${WORKSHOP_ITEM_ID:?WORKSHOP_ITEM_ID is required}"
 : "${WORKSHOP_VISIBILITY:?WORKSHOP_VISIBILITY is required}"
 
-[[ "$WORKSHOP_CHANNEL" == "stable" || "$WORKSHOP_CHANNEL" == "preview" ]] || {
-  echo "WORKSHOP_CHANNEL must be stable or preview"; exit 1;
-}
 [[ "$WORKSHOP_ITEM_ID" =~ ^[0-9]+$ ]] || { echo "WORKSHOP_ITEM_ID must be numeric"; exit 1; }
 [[ "$WORKSHOP_VISIBILITY" == "2" || "$WORKSHOP_VISIBILITY" == "3" ]] || {
   echo "WORKSHOP_VISIBILITY must be private (2) or unlisted (3)"; exit 1;
 }
 
-for artifact in NinjaSlayer.dll NinjaSlayer.json NinjaSlayer.pck SHA256SUMS; do
+for artifact in NinjaSlayer.dll NinjaSlayer.json NinjaSlayer.pck ninjaslayer-variants.manifest SHA256SUMS; do
   test -f "$CONTENT_DIR/$artifact" || { echo "Missing release artifact: $artifact"; exit 1; }
 done
+test -d "$CONTENT_DIR/lib" || { echo "Missing release artifact directory: lib"; exit 1; }
 test -f "$PREVIEW_FILE" || { echo "Missing Workshop preview image"; exit 1; }
 test "$(stat -c%s "$PREVIEW_FILE")" -le 1048576 || { echo "Workshop preview exceeds 1 MiB"; exit 1; }
 test -x "$STEAMCMD" || { echo "SteamCMD is unavailable"; exit 1; }

@@ -30,6 +30,10 @@ function Read-NinjaSlayerCompatibility {
     if ([string]$manifest.ritsuLibVersion -notmatch '^\d+\.\d+\.\d+$') {
         throw 'Compatibility ritsuLibVersion must be an exact SemVer core.'
     }
+    if ([string]$manifest.workshop.itemId -notmatch '^\d+$' -or
+        [string]$manifest.workshop.visibility -notin @('private', 'unlisted')) {
+        throw 'Compatibility Workshop target must have a numeric item id and private or unlisted visibility.'
+    }
     $spineFiles = @($manifest.spineExtension.windowsFiles)
     if ($spineFiles.Count -ne 3) {
         throw 'Compatibility spineExtension.windowsFiles must contain exactly three files.'
@@ -51,17 +55,6 @@ function Read-NinjaSlayerCompatibility {
             $null -eq $channel.compileFeatures -or
             $null -eq $channel.hostContract) {
             throw "Compatibility channel '$channelName' is incomplete."
-        }
-        $workshopItemId = $channel.workshopItemId
-        $workshopVisibility = $channel.workshopVisibility
-        if ($null -eq $workshopItemId) {
-            if ($null -ne $workshopVisibility) {
-                throw "Compatibility channel '$channelName' must not declare Workshop visibility without an item id."
-            }
-        }
-        elseif ([string]$workshopItemId -notmatch '^\d+$' -or
-            [string]$workshopVisibility -notin @('private', 'unlisted')) {
-            throw "Compatibility channel '$channelName' has an invalid or public Workshop publication target."
         }
         if ([string]$channel.hostContract.assemblyVersion -notmatch '^\d+\.\d+\.\d+\.\d+$' -or
             [string]$channel.hostContract.moduleMvid -notmatch '^[0-9A-Fa-f-]{36}$') {

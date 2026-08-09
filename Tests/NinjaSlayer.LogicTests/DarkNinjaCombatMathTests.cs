@@ -5,6 +5,36 @@ namespace NinjaSlayer.LogicTests;
 public sealed class DarkNinjaCombatMathTests
 {
     [Theory]
+    [InlineData(0f, 0f)]
+    [InlineData(0.25f, 0.0625f)]
+    [InlineData(0.5f, 0.5f)]
+    [InlineData(0.75f, 0.9375f)]
+    [InlineData(1f, 1f)]
+    public void DeathSlashUsesPronouncedCubicAccelerationAndDeceleration(
+        float elapsedProgress,
+        float expectedTravelProgress)
+    {
+        Assert.Equal(
+            expectedTravelProgress,
+            DarkNinjaCombatMath.SampleDeathSlashTravel(elapsedProgress),
+            precision: 6);
+    }
+
+    [Theory]
+    [InlineData(0f, 0f)]
+    [InlineData(0.5f, 30f)]
+    [InlineData(1f, 60f)]
+    public void DeathSlashWindupRetreatsBeforeTheCharge(
+        float elapsedProgress,
+        float expectedOffset)
+    {
+        Assert.Equal(
+            expectedOffset,
+            DarkNinjaCombatMath.SampleDeathSlashWindupOffset(elapsedProgress),
+            precision: 6);
+    }
+
+    [Theory]
     [InlineData(3, 2, false)]
     [InlineData(2, 1, false)]
     [InlineData(1, 3, true)]
@@ -86,6 +116,87 @@ public sealed class DarkNinjaCombatMathTests
         Assert.InRange(screenX, -78.32f, -78.30f);
         Assert.InRange(screenY, 78.24f, 78.26f);
         Assert.InRange(upwardAngleDegrees, -45.1f, -44.9f);
+    }
+
+    [Fact]
+    public void DarkStrikeUsesOneTrajectoryRegardlessOfThePendingDamageOutcome()
+    {
+        DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(1);
+
+        float start = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
+            segment,
+            0f);
+        float impact = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
+            segment,
+            1f);
+
+        Assert.Equal(0.2f, start, precision: 6);
+        Assert.Equal(0.375f, impact, precision: 6);
+    }
+
+    [Theory]
+    [InlineData(true, false, 0.225f)]
+    [InlineData(true, true, 0.025f)]
+    [InlineData(false, false, 0.025f)]
+    public void DarkStrikeOnlyAddsTheLongHoldAfterTheFinalSuccessfulStab(
+        bool successfulHit,
+        bool hasLaterTarget,
+        float expectedSeconds)
+    {
+        DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(0);
+
+        Assert.Equal(
+            expectedSeconds,
+            DarkNinjaCombatMath.ResolveDarkStrikeHoldSeconds(
+                segment,
+                successfulHit,
+                hasLaterTarget),
+            precision: 6);
+    }
+
+    [Fact]
+    public void DarkStrikeSplitsTheBladeAroundTheUntouchedLiveTarget()
+    {
+        const int targetZIndex = 12;
+
+        int attackerZIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
+            targetZIndex);
+        const int rearSwordRelativeZIndex = 0;
+        const int frontSwordRelativeZIndex = 2;
+
+        Assert.Equal(11, attackerZIndex);
+        Assert.Equal(11, attackerZIndex + rearSwordRelativeZIndex);
+        Assert.Equal(13, attackerZIndex + frontSwordRelativeZIndex);
+        Assert.True(attackerZIndex < targetZIndex);
+        Assert.True(targetZIndex < attackerZIndex + frontSwordRelativeZIndex);
+    }
+
+    [Theory]
+    [InlineData(0f, false, 0f)]
+    [InlineData(0.375f, false, 0f)]
+    [InlineData(0.375f, true, 151.4f)]
+    public void DarkStrikeForegroundBladeAppearsOnlyAfterAConfirmedHit(
+        float referenceSeconds,
+        bool penetratesTarget,
+        float expectedCutTextureX)
+    {
+        Assert.Equal(
+            expectedCutTextureX,
+            DarkNinjaCombatMath.ResolveDarkStrikeForegroundBladeCutTextureX(
+                referenceSeconds,
+                penetratesTarget),
+            precision: 3);
+    }
+
+    [Fact]
+    public void DarkStrikeReturnStartsOutsideTheRightViewportEdge()
+    {
+        Assert.Equal(
+            2120f,
+            DarkNinjaCombatMath.ResolveDarkStrikeRightReturnStartX(
+                firstViewportEdgeX: 0f,
+                secondViewportEdgeX: 1920f,
+                characterHalfWidth: 200f));
     }
 
     [Fact]

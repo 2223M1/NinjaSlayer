@@ -5,6 +5,7 @@ The staged maintainability work starts from commit `c85acf3b2f92b78710bad9616f0e
 ## Runtime contracts
 
 - Supported game hosts are the rolling `stable` and `preview` entries in `eng/compatibility.json`. RitsuLib uses one exact compile baseline and minimum manifest dependency; players receive the current Workshop runtime.
+- Workshop has one item and one universal bundle. Its top-level loader accepts only the two active host MVIDs, verifies the selected implementation SHA-256, associates that assembly with the active mod, and rejects unknown hosts instead of guessing a nearby version.
 - Finisher capability owns attack interception, lethal protection, primary damage observation, post-card commit, and card-play cleanup. Presentation and Tornado cadence are separate optional capabilities.
 - Enhanced lethal protection is pinned through `GameHostContractProfile` to the exact `Creature.LoseHpInternal` body for each supported host. Assembly version, MVID, metadata token, and IL SHA-256 must all match; a mismatch or a foreign skipping/result-replacing Harmony patch disables the enhancement and keeps the original attack path.
 - Finisher search limits are 25,000 states and 8 ms; the active-time watchdog is 90 seconds.

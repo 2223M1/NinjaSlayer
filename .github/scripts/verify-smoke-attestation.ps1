@@ -7,6 +7,7 @@ param(
     [Parameter(Mandatory)][ValidatePattern('^[^/]+/[^/]+$')][string]$Repository,
     [Parameter(Mandatory)][string]$Token,
     [Parameter(Mandatory)][string]$OutputDirectory,
+    [Parameter(Mandatory)][ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')][string]$ExpectedBundleVersion,
     [ValidateSet('FirstCombatRestart', 'FullAutoSlay')][string]$ExpectedMode = 'FirstCombatRestart',
     [string]$CompatibilityManifestPath = (Join-Path $PSScriptRoot '..\..\eng\compatibility.json'),
     [string]$ApiBaseUri = 'https://api.github.com'
@@ -27,16 +28,17 @@ $expectedAttestationMode = if ($ExpectedMode -eq 'FullAutoSlay') {
     'singleplayer-first-combat-restart'
 }
 $context = New-NinjaSlayerGitHubApiContext -Repository $Repository -Token $Token -ApiBaseUri $ApiBaseUri
-$artifactName = "game-smoke-$ExpectedMode-$candidate"
+$artifactName = "game-smoke-$ExpectedMode-$ExpectedBundleVersion-$candidate"
 $artifacts = Get-NinjaSlayerArtifactCandidates -Context $context -ArtifactName $artifactName
 if ($artifacts.Count -eq 0) {
     throw "No non-expired protected smoke attestation exists for $candidate."
 }
 
 $expectedProperties = @(
-    'candidateSha', 'channel', 'compatibilityManifestSha256', 'completedAtUtc',
+    'bundleSha256', 'bundleVersion', 'candidateSha', 'channel', 'compatibilityManifestSha256', 'completedAtUtc',
     'gameApiVersion', 'gameAssemblyVersion', 'gameModuleMvid', 'mode', 'repository',
-    'result', 'ritsuLibPackageId', 'ritsuLibVersion', 'schemaVersion', 'workflowRunId'
+    'result', 'ritsuLibPackageId', 'ritsuLibRuntimeVersion', 'ritsuLibVersion',
+    'schemaVersion', 'workflowRunId'
 ) | Sort-Object
 $failures = [Collections.Generic.List[string]]::new()
 foreach ($artifact in $artifacts) {
@@ -59,6 +61,7 @@ foreach ($artifact in $artifacts) {
 
         $verifiedDirectory = Join-Path $OutputDirectory 'verified'
         New-Item -ItemType Directory -Path $verifiedDirectory -Force | Out-Null
+        $bundleSha256 = $null
         foreach ($channelName in $channelNames) {
             $channelProfile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
             $path = Join-Path $attemptDirectory "$channelName\attestation.json"
@@ -69,8 +72,9 @@ foreach ($artifact in $artifacts) {
             if (Compare-Object @($attestation.PSObject.Properties.Name | Sort-Object) $expectedProperties) {
                 throw "$channelName smoke attestation contains missing or unexpected fields."
             }
-            Assert-NinjaSlayerEqual ([int]$attestation.schemaVersion) 3 "$channelName.schemaVersion"
+            Assert-NinjaSlayerEqual ([int]$attestation.schemaVersion) 5 "$channelName.schemaVersion"
             Assert-NinjaSlayerEqual ([string]$attestation.candidateSha).ToLowerInvariant() $candidate "$channelName.candidateSha"
+            Assert-NinjaSlayerEqual ([string]$attestation.bundleVersion) $ExpectedBundleVersion "$channelName.bundleVersion"
             Assert-NinjaSlayerEqual ([string]$attestation.repository) $Repository "$channelName.repository"
             Assert-NinjaSlayerEqual ([string]$attestation.workflowRunId) ([string]$run.id) "$channelName.workflowRunId"
             Assert-NinjaSlayerEqual ([string]$attestation.result) 'passed' "$channelName.result"
@@ -81,6 +85,21 @@ foreach ($artifact in $artifacts) {
             Assert-NinjaSlayerEqual ([string]$attestation.gameModuleMvid).ToLowerInvariant() ([string]$channelProfile.hostContract.moduleMvid).ToLowerInvariant() "$channelName.gameModuleMvid"
             Assert-NinjaSlayerEqual ([string]$attestation.ritsuLibPackageId) ([string]$channelProfile.ritsuLibPackageId) "$channelName.ritsuLibPackageId"
             Assert-NinjaSlayerEqual ([string]$attestation.ritsuLibVersion) ([string]$compatibility.ritsuLibVersion) "$channelName.ritsuLibVersion"
+            $runtimeVersion = [string]$attestation.ritsuLibRuntimeVersion
+            if ($runtimeVersion -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' -or
+                [version]$runtimeVersion -lt [version][string]$compatibility.ritsuLibVersion) {
+                throw "$channelName.ritsuLibRuntimeVersion is not a valid runtime at or above the pinned baseline."
+            }
+            $attestedBundleSha = [string]$attestation.bundleSha256
+            if ($attestedBundleSha -notmatch '^[0-9a-f]{64}$') {
+                throw "$channelName.bundleSha256 is invalid."
+            }
+            if ($null -eq $bundleSha256) {
+                $bundleSha256 = $attestedBundleSha
+            }
+            else {
+                Assert-NinjaSlayerEqual $attestedBundleSha $bundleSha256 "$channelName.bundleSha256"
+            }
             Assert-NinjaSlayerEqual ([string]$attestation.compatibilityManifestSha256).ToLowerInvariant() $compatibilitySha "$channelName.compatibilityManifestSha256"
             if ([string]::IsNullOrWhiteSpace([string]$attestation.completedAtUtc)) {
                 throw "$channelName.completedAtUtc must not be empty."

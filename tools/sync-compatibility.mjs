@@ -85,6 +85,10 @@ function validateManifest(value) {
   if (!/^\d+\.\d+\.\d+$/.test(value.ritsuLibVersion ?? '')) {
     throw new Error('ritsuLibVersion must be an exact SemVer core.');
   }
+  if (!/^\d+$/.test(value.workshop?.itemId ?? '')
+      || !['private', 'unlisted'].includes(value.workshop?.visibility)) {
+    throw new Error('workshop must declare one numeric private or unlisted item.');
+  }
   const spineFiles = value.spineExtension?.windowsFiles;
   if (!Array.isArray(spineFiles) || spineFiles.length !== 3) {
     throw new Error('spineExtension.windowsFiles must contain exactly three files.');
@@ -108,15 +112,6 @@ function validateManifest(value) {
   if (value.defaultBuildChannel !== 'preview') {
     throw new Error('defaultBuildChannel must be preview.');
   }
-  if (!/^\d+$/.test(value.channels.stable.workshopItemId ?? '')
-      || value.channels.stable.workshopVisibility !== 'unlisted') {
-    throw new Error('stable must declare a numeric unlisted Workshop item.');
-  }
-  if (value.channels.preview.workshopItemId !== null
-      || value.channels.preview.workshopVisibility !== null) {
-    throw new Error('preview Workshop publication must remain unprovisioned.');
-  }
-  const itemIds = new Set();
   for (const name of names) {
     const channel = value.channels[name];
     if (!/^\d+\.\d+\.\d+$/.test(channel.gameApiVersion ?? '')) {
@@ -133,19 +128,6 @@ function validateManifest(value) {
     }
     if (channel.distributionChannel !== (name === 'stable' ? 'public' : 'beta')) {
       throw new Error(`${name}.distributionChannel is invalid.`);
-    }
-    if (channel.workshopItemId === null) {
-      if (channel.workshopVisibility !== null) {
-        throw new Error(`${name}.workshopVisibility must be null without an item id.`);
-      }
-    } else {
-      if (!/^\d+$/.test(channel.workshopItemId ?? '') || itemIds.has(channel.workshopItemId)) {
-        throw new Error(`${name}.workshopItemId must be a unique numeric string or null.`);
-      }
-      if (!['private', 'unlisted'].includes(channel.workshopVisibility)) {
-        throw new Error(`${name}.workshopVisibility must be private or unlisted.`);
-      }
-      itemIds.add(channel.workshopItemId);
     }
     if (!Array.isArray(channel.runtimeAssemblies) || !Array.isArray(channel.compileFeatures)) {
       throw new Error(`${name} runtimeAssemblies and compileFeatures must be arrays.`);
@@ -230,15 +212,11 @@ function renderProps(value) {
   };
   const groups = Object.entries(value.channels).map(([name, channel]) => {
     const symbols = [channelSymbol(name), ...channel.compileFeatures.map(feature => featureSymbols[feature])];
-    const workshopId = channel.workshopItemId ?? '';
-    const workshopVisibility = channel.workshopVisibility ?? '';
     return `  <PropertyGroup Condition="'$(NinjaSlayerHostChannel)' == '${name}'">\n` +
       `    <NinjaSlayerGameApiVersion>${channel.gameApiVersion}</NinjaSlayerGameApiVersion>\n` +
       `    <NinjaSlayerRitsuLibPackageId>${xml(channel.ritsuLibPackageId)}</NinjaSlayerRitsuLibPackageId>\n` +
       `    <NinjaSlayerManifestMinGameVersion>${channel.gameApiVersion}</NinjaSlayerManifestMinGameVersion>\n` +
       `    <NinjaSlayerDistributionChannel>${channel.distributionChannel}</NinjaSlayerDistributionChannel>\n` +
-      `    <NinjaSlayerWorkshopItemId>${workshopId}</NinjaSlayerWorkshopItemId>\n` +
-      `    <NinjaSlayerWorkshopVisibility>${workshopVisibility}</NinjaSlayerWorkshopVisibility>\n` +
       `    <NinjaSlayerHostModuleMvid>${channel.hostContract.moduleMvid}</NinjaSlayerHostModuleMvid>\n` +
       `    <NinjaSlayerRuntimeAssemblies>${channel.runtimeAssemblies.join(';')}</NinjaSlayerRuntimeAssemblies>\n` +
       `    <DefineConstants>$(DefineConstants);${symbols.join(';')}</DefineConstants>\n` +
@@ -250,6 +228,8 @@ function renderProps(value) {
     <NinjaSlayerHostChannelWasExplicit Condition="'$(NinjaSlayerHostChannel)' != ''">true</NinjaSlayerHostChannelWasExplicit>
     <NinjaSlayerHostChannel Condition="'$(NinjaSlayerHostChannel)' == ''">${value.defaultBuildChannel}</NinjaSlayerHostChannel>
     <NinjaSlayerRitsuLibVersion>${value.ritsuLibVersion}</NinjaSlayerRitsuLibVersion>
+    <NinjaSlayerWorkshopItemId>${value.workshop.itemId}</NinjaSlayerWorkshopItemId>
+    <NinjaSlayerWorkshopVisibility>${value.workshop.visibility}</NinjaSlayerWorkshopVisibility>
     <NinjaSlayerCompatibilityManifest>$(MSBuildThisFileDirectory)compatibility.json</NinjaSlayerCompatibilityManifest>
   </PropertyGroup>
 
@@ -365,11 +345,12 @@ function renderChineseCompatibility(value) {
 |---|---|
 | Slay the Spire 2 | stable 正式版 \`${stable.gameApiVersion}\`；preview 测试版 \`${preview.gameApiVersion}\` |
 | RitsuLib | 编译基线与最低依赖 \`${value.ritsuLibVersion}\`；Workshop 运行时使用自动更新的最新版 |
+| 平台目标 | Windows x64、macOS、Linux x86_64 / Steam Deck；正式跨平台支持须通过六格实机矩阵 |
 | .NET | \`9.0\` |
 | Godot | \`4.5.1 Mono\` |
 | 游戏内语言 | 目前主要提供简体中文 |
 
-GitHub Release 同时提供 stable 与 preview 两个宿主专用压缩包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；该条目只上传 stable，preview 不上传 Workshop。
+GitHub Release 提供 stable、preview 两个宿主专用诊断包和一个通用 Workshop 包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；所有玩家下载同一个包，启动时按游戏宿主精确选择 stable 或 preview 实现。通用 PCK 不携带 Spine 原生扩展，运行时复用官方客户端已经加载的当前平台扩展。当前自动化真实游戏测试仅覆盖 Windows；macOS 与 Linux 的 stable/preview 实机矩阵通过前不宣称已完成正式跨平台验证。
 <!-- compatibility:end -->`;
 }
 
@@ -381,11 +362,12 @@ function renderEnglishCompatibility(value) {
 |---|---|
 | Slay the Spire 2 | stable public \`${stable.gameApiVersion}\`; preview beta \`${preview.gameApiVersion}\` |
 | RitsuLib | build baseline and minimum dependency \`${value.ritsuLibVersion}\`; Workshop installs receive its current release automatically |
+| Platform targets | Windows x64, macOS, and Linux x86_64 / Steam Deck; formal cross-platform support requires the six-cell real-device matrix |
 | .NET | \`9.0\` |
 | Godot | \`4.5.1 Mono\` |
 | In-game language | Primarily Simplified Chinese at present |
 
-Each GitHub Release contains separate host-specific stable and preview archives. The Workshop item is unlisted: it is absent from public listings and search but remains accessible and subscribable by link. It receives stable only; preview is not uploaded to Workshop.
+Each GitHub Release contains stable and preview diagnostic archives plus one universal Workshop archive. The unlisted Workshop item remains accessible by link; every subscriber receives the same bundle, which selects the exact stable or preview implementation at startup. The universal PCK carries no native Spine extension and reuses the platform extension already loaded by the official client. Automated real-game testing currently covers Windows only; formal macOS and Linux support is not claimed until both channels pass on those platforms.
 <!-- compatibility:end -->`;
 }
 

@@ -79,6 +79,8 @@ public static class NinjaSlayerAudio
     public const string DarkNinjaFastAttackEvent = DarkNinjaRoot + "/dark_ninja_fast_attack";
     public const string DarkNinjaHurtEvent = DarkNinjaRoot + "/dark_ninja_hurt";
     public const string DarkNinjaInsultEvent = DarkNinjaRoot + "/dark_ninja_insult";
+    public const string DarkNinjaKirisuteGomenEvent =
+        DarkNinjaRoot + "/dark_ninja_kirisute_goumen";
     public const string DarkNinjaSlowAttackEvent = DarkNinjaRoot + "/dark_ninja_slow_attack";
     public const string DarkNinjaStabEvent =
         "event:/sfx/enemy/enemy_attacks/lagavulin_matriarch/lagavulin_matriarch_attack_stab";

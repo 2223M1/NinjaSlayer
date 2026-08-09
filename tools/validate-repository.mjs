@@ -326,17 +326,17 @@ for (const workflow of filesUnder(join(root, '.github', 'workflows')).filter((pa
 const workshopWorkflow = readFileSync(join(root, '.github', 'workflows', 'workshop.yml'), 'utf8');
 const workshopPublisher = readFileSync(join(root, '.github', 'scripts', 'publish-workshop.sh'), 'utf8');
 for (const required of [
-  'Get-NinjaSlayerCompatibilityChannel',
-  'workshopItemId',
-  'workshopVisibility',
-  'has not been provisioned in compatibility.json',
+  'compatibility.workshop.itemId',
+  'compatibility.workshop.visibility',
+  'PUBLISH_NINJASLAYER_WORKSHOP_',
   'verify-contract-attestation.ps1',
   'verify-smoke-attestation.ps1',
   'verify-release-attestation.ps1',
   'FirstCombatRestart',
   'protected-release',
   'public GitHub Release asset does not match the protected Release artifact',
-  'WORKSHOP_CHANNEL',
+  'workshop-universal',
+  'validate-workshop-bundle',
   'WORKSHOP_ITEM_ID',
   'WORKSHOP_VISIBILITY',
 ]) {
@@ -349,13 +349,13 @@ for (const required of ['$WORKSHOP_ITEM_ID', '$WORKSHOP_VISIBILITY']) {
     errors.push(`Workshop publisher is missing manifest-derived value ${required}`);
   }
 }
-if (compatibility?.channels?.stable?.workshopItemId
-    && workshopPublisher.includes(compatibility.channels.stable.workshopItemId)) {
+if (compatibility?.workshop?.itemId
+    && workshopPublisher.includes(compatibility.workshop.itemId)) {
   errors.push('Workshop publisher must not hardcode the Workshop item id');
 }
 const localWorkshopManifest = readJson(join(root, 'Workshop', 'workshop.json'));
-if (localWorkshopManifest?.visibility !== compatibility?.channels?.stable?.workshopVisibility) {
-  errors.push('Workshop/workshop.json visibility must match the stable compatibility target');
+if (localWorkshopManifest?.visibility !== compatibility?.workshop?.visibility) {
+  errors.push('Workshop/workshop.json visibility must match the universal compatibility target');
 }
 
 const retiredHostVersion = ['0', '109', '0'].join('.');

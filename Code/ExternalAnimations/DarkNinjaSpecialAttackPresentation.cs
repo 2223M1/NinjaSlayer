@@ -1,5 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Assets;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
@@ -15,6 +16,8 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class DarkNinjaSpecialAttackPresentation
 {
+    private const int MaximumCanvasZIndex = 4095;
+
     private const string CharacterTexturePath =
         "res://NinjaSlayer/images/monsters/dark_ninja_character.png";
     private const string SwordTexturePath =
@@ -32,26 +35,40 @@ internal static class DarkNinjaSpecialAttackPresentation
         Creature attacker,
         Func<Task> onDamage)
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaSlowAttackEvent);
         using DarkNinjaBodyMotionLease? motion = DarkNinjaBodyMotionLease.TryAcquire(attacker);
         if (motion == null)
         {
-            await Cmd.Wait(DarkNinjaCombatMath.DeathSlashTotalSeconds);
+            await Cmd.Wait(DarkNinjaCombatMath.DeathSlashWindupSeconds);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaSlowAttackEvent);
+            await Cmd.Wait(
+                DarkNinjaCombatMath.DeathSlashTotalSeconds
+                - DarkNinjaCombatMath.DeathSlashWindupSeconds);
             await onDamage();
             return;
         }
 
-        await Cmd.Wait(DarkNinjaCombatMath.DeathSlashWindupSeconds);
         Vector2 start = motion.FocusCanvasPosition;
+        await PlayTween(
+            motion.Owner,
+            DarkNinjaCombatMath.DeathSlashWindupSeconds,
+            progress =>
+            {
+                float offset = DarkNinjaCombatMath.SampleDeathSlashWindupOffset(progress);
+                motion.SetFocusCanvasPosition(start + Vector2.Right * offset);
+            });
+
+        Vector2 launchStart = motion.FocusCanvasPosition;
         Vector2 viewportSize = motion.Owner.GetViewport().GetVisibleRect().Size;
         float leftExitX = -motion.HalfWidth - ExitPadding;
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaSlowAttackEvent);
 
         await PlayTween(
             motion.Owner,
             DarkNinjaCombatMath.DeathSlashOutboundSeconds,
             progress =>
             {
-                float x = Mathf.Lerp(start.X, leftExitX, progress);
+                float travel = DarkNinjaCombatMath.SampleDeathSlashTravel(progress);
+                float x = Mathf.Lerp(launchStart.X, leftExitX, travel);
                 motion.SetFocusCanvasPosition(new Vector2(x, start.Y));
             });
 
@@ -63,7 +80,11 @@ internal static class DarkNinjaSpecialAttackPresentation
         await PlayTween(
             motion.Owner,
             DarkNinjaCombatMath.DeathSlashReturnSeconds,
-            progress => motion.SetFocusCanvasPosition(returnStart.Lerp(start, progress)));
+            progress =>
+            {
+                float travel = DarkNinjaCombatMath.SampleDeathSlashTravel(progress);
+                motion.SetFocusCanvasPosition(returnStart.Lerp(start, travel));
+            });
         motion.SetFocusCanvasPosition(start);
         await onDamage();
     }
@@ -71,7 +92,8 @@ internal static class DarkNinjaSpecialAttackPresentation
     internal static async Task PlayDarkStrike(
         Creature attacker,
         IReadOnlyList<Creature> targets,
-        Func<Creature, Task<int>> onImpact)
+        Func<Creature, bool> canImpact,
+        Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact)
     {
         Creature[] orderedTargets = OrderTargets(targets);
         if (orderedTargets.Length == 0)
@@ -82,41 +104,56 @@ internal static class DarkNinjaSpecialAttackPresentation
         using DarkNinjaDetachedVisualLease? visual = DarkNinjaDetachedVisualLease.TryAcquire(attacker);
         if (visual == null)
         {
-            await PlayDarkStrikeFallback(attacker, orderedTargets, onImpact);
+            await PlayDarkStrikeFallback(
+                attacker,
+                orderedTargets,
+                canImpact,
+                onImpact);
             return;
         }
 
         int highestHealing = 0;
+        bool playedSuccessfulVoice = false;
+        bool playedBlockedVoice = false;
+        bool attemptedImpact = false;
+        int presentationIndex = 0;
         for (int index = 0; index < orderedTargets.Length; index++)
         {
             Creature target = orderedTargets[index];
-            if (!target.IsAlive)
+            if (!CanContinue(attacker))
+            {
+                return;
+            }
+
+            if (!canImpact(target))
             {
                 continue;
             }
 
-            DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(index);
-            visual.PrepareTarget(target, segment.ReferenceStartSeconds);
-            using CreatureScreenHalfOverlayLease? overlay =
-                CreatureScreenHalfOverlayLease.TryAcquire(
-                    visual.Room,
-                    target,
-                    visual.OverlayZIndex);
-            Task<int>? impactTask = null;
-            Task holdTask = Task.CompletedTask;
+            DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(
+                presentationIndex++);
+            visual.PrepareTarget(
+                target,
+                DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
+                    segment,
+                    0f));
+            (NCombatRoom Room, Vector2 Position)? impactVfx = null;
+            Task<DarkStrikeImpactOutcome>? impactTask = null;
             void TriggerImpactOnFinalMotionFrame()
             {
-                if (impactTask != null || !target.IsAlive)
+                if (impactTask != null || !canImpact(target))
                 {
                     return;
                 }
 
+                float referenceSeconds = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
+                    segment,
+                    1f);
                 visual.ApplyReferencePose(
                     target,
-                    DarkNinjaCombatMath.DarkStrikeReferenceMotionSeconds);
-                overlay?.SyncMask();
+                    referenceSeconds);
+                impactVfx = CaptureImpactVfx(target);
                 impactTask = onImpact(target);
-                holdTask = Cmd.Wait(segment.HoldSeconds);
             }
 
             await PlayTween(
@@ -124,62 +161,209 @@ internal static class DarkNinjaSpecialAttackPresentation
                 segment.MotionSeconds,
                 progress =>
                 {
-                    float referenceSeconds = segment.ReferenceStartSeconds
-                        + segment.MotionSeconds * progress;
+                    float referenceSeconds = DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
+                        segment,
+                        progress);
                     visual.ApplyReferencePose(target, referenceSeconds);
-                    overlay?.SyncMask();
                 },
                 TriggerImpactOnFinalMotionFrame);
 
             TriggerImpactOnFinalMotionFrame();
             if (impactTask == null)
             {
+                if (!CanContinue(attacker))
+                {
+                    return;
+                }
+
                 continue;
             }
 
-            highestHealing = Math.Max(highestHealing, await impactTask);
-            await holdTask;
+            attemptedImpact = true;
+            DarkStrikeImpactOutcome outcome = await impactTask;
+            highestHealing = Math.Max(highestHealing, outcome.Healing);
+            if (outcome.Connected && !outcome.FullyBlocked)
+            {
+                visual.ConfirmPenetration(DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
+                    segment,
+                    1f));
+            }
+
+            PlayImpactFeedback(
+                outcome,
+                impactVfx,
+                ref playedSuccessfulVoice,
+                ref playedBlockedVoice);
+            if (!outcome.ShouldContinue)
+            {
+                return;
+            }
+
+            bool hasLaterTarget = orderedTargets
+                .Skip(index + 1)
+                .Any(canImpact);
+            await Cmd.Wait(DarkNinjaCombatMath.ResolveDarkStrikeHoldSeconds(
+                segment,
+                outcome.Connected && !outcome.FullyBlocked,
+                hasLaterTarget));
+            if (!hasLaterTarget)
+            {
+                break;
+            }
         }
 
-        if (highestHealing > 0 && attacker.IsAlive)
+        if (!attemptedImpact || !CanContinue(attacker))
+        {
+            return;
+        }
+
+        if (highestHealing > 0)
         {
             await CreatureCmd.Heal(attacker, highestHealing);
         }
 
+        if (!CanContinue(attacker))
+        {
+            return;
+        }
+
         visual.ShowFullBody();
-        await visual.PlayWrappedReturn();
+        await visual.PlayRightSideReturn();
     }
 
     private static async Task PlayDarkStrikeFallback(
         Creature attacker,
         Creature[] targets,
-        Func<Creature, Task<int>> onImpact)
+        Func<Creature, bool> canImpact,
+        Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact)
     {
         int highestHealing = 0;
+        bool playedSuccessfulVoice = false;
+        bool playedBlockedVoice = false;
+        bool attemptedImpact = false;
+        int presentationIndex = 0;
         for (int index = 0; index < targets.Length; index++)
         {
-            if (!targets[index].IsAlive)
+            if (!CanContinue(attacker))
+            {
+                return;
+            }
+
+            Creature target = targets[index];
+            if (!canImpact(target))
             {
                 continue;
             }
 
-            DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(index);
+            DarkNinjaStabSegment segment = DarkNinjaCombatMath.GetDarkStrikeSegment(
+                presentationIndex++);
             await Cmd.Wait(segment.MotionSeconds);
-            if (!targets[index].IsAlive)
+            if (!canImpact(target))
             {
                 continue;
             }
 
-            highestHealing = Math.Max(highestHealing, await onImpact(targets[index]));
-            await Cmd.Wait(segment.HoldSeconds);
+            (NCombatRoom Room, Vector2 Position)? impactVfx = CaptureImpactVfx(target);
+            DarkStrikeImpactOutcome outcome = await onImpact(target);
+            attemptedImpact = true;
+            highestHealing = Math.Max(highestHealing, outcome.Healing);
+            PlayImpactFeedback(
+                outcome,
+                impactVfx,
+                ref playedSuccessfulVoice,
+                ref playedBlockedVoice);
+            if (!outcome.ShouldContinue)
+            {
+                return;
+            }
+
+            bool hasLaterTarget = targets
+                .Skip(index + 1)
+                .Any(canImpact);
+            await Cmd.Wait(DarkNinjaCombatMath.ResolveDarkStrikeHoldSeconds(
+                segment,
+                outcome.Connected && !outcome.FullyBlocked,
+                hasLaterTarget));
+            if (!hasLaterTarget)
+            {
+                break;
+            }
         }
 
-        if (highestHealing > 0 && attacker.IsAlive)
+        if (!attemptedImpact || !CanContinue(attacker))
+        {
+            return;
+        }
+
+        if (highestHealing > 0)
         {
             await CreatureCmd.Heal(attacker, highestHealing);
         }
 
-        await Cmd.Wait(DarkNinjaCombatMath.DarkStrikeReturnSeconds);
+        if (CanContinue(attacker))
+        {
+            await Cmd.Wait(DarkNinjaCombatMath.DarkStrikeReturnSeconds);
+        }
+    }
+
+    private static bool CanContinue(Creature attacker) =>
+        attacker.IsAlive
+        && attacker.CombatState is { } combatState
+        && combatState.ContainsCreature(attacker)
+        && combatState.IsLiveCombat()
+        && !CombatManager.Instance.IsOverOrEnding;
+
+    private static (NCombatRoom Room, Vector2 Position)? CaptureImpactVfx(Creature target)
+    {
+        NCombatRoom? room = NCombatRoom.Instance;
+        if (room == null || !GodotObject.IsInstanceValid(room))
+        {
+            return null;
+        }
+
+        NCreature? targetNode = room.GetCreatureNode(target);
+        return targetNode != null
+            && GodotObject.IsInstanceValid(targetNode)
+            ? (room, targetNode.VfxSpawnPosition)
+            : null;
+    }
+
+    private static void PlayImpactFeedback(
+        DarkStrikeImpactOutcome outcome,
+        (NCombatRoom Room, Vector2 Position)? impactVfx,
+        ref bool playedSuccessfulVoice,
+        ref bool playedBlockedVoice)
+    {
+        if (!outcome.Connected)
+        {
+            return;
+        }
+
+        if (outcome.FullyBlocked)
+        {
+            if (!playedBlockedVoice)
+            {
+                playedBlockedVoice = true;
+                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaFailedEvent);
+            }
+
+            return;
+        }
+
+        if (impactVfx is { } vfx
+            && ReferenceEquals(NCombatRoom.Instance, vfx.Room)
+            && GodotObject.IsInstanceValid(vfx.Room)
+            && GodotObject.IsInstanceValid(vfx.Room.CombatVfxContainer))
+        {
+            VfxCmd.PlayVfx(vfx.Position, VfxCmd.dramaticStabPath, vfx.Room.CombatVfxContainer);
+        }
+
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaStabEvent);
+        if (!playedSuccessfulVoice)
+        {
+            playedSuccessfulVoice = true;
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaKirisuteGomenEvent);
+        }
     }
 
     private static Creature[] OrderTargets(IReadOnlyList<Creature> targets)
@@ -195,8 +379,16 @@ internal static class DarkNinjaSpecialAttackPresentation
 
     private static float ResolveTargetCanvasCenterX(Creature target)
     {
-        NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
-        return targetNode?.Visuals.Bounds.GetGlobalRect().GetCenter().X ?? float.MaxValue;
+        NCombatRoom? room = NCombatRoom.Instance;
+        if (room == null || !GodotObject.IsInstanceValid(room))
+        {
+            return float.MaxValue;
+        }
+
+        NCreature? targetNode = room.GetCreatureNode(target);
+        return targetNode != null && GodotObject.IsInstanceValid(targetNode)
+            ? targetNode.Visuals.Bounds.GetGlobalRect().GetCenter().X
+            : float.MaxValue;
     }
 
     private static async Task PlayTween(
@@ -259,14 +451,26 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         internal static DarkNinjaBodyMotionLease? TryAcquire(Creature creature)
         {
-            NCreature? owner = NCombatRoom.Instance?.GetCreatureNode(creature);
-            Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(owner?.Visuals)
-                ?? owner?.Visuals.GetCurrentBody();
-            Node2D? focus = NinjaSlayerVisualRig.GetCinematicFocus(owner?.Visuals)
-                ?? owner?.Visuals.GetCurrentBody();
-            if (owner == null
-                || anchor == null
+            NCombatRoom? room = NCombatRoom.Instance;
+            if (room == null || !GodotObject.IsInstanceValid(room))
+            {
+                return null;
+            }
+
+            NCreature? owner = room.GetCreatureNode(creature);
+            if (owner == null || !GodotObject.IsInstanceValid(owner))
+            {
+                return null;
+            }
+
+            Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(owner.Visuals)
+                ?? owner.Visuals.GetCurrentBody();
+            Node2D? focus = NinjaSlayerVisualRig.GetCinematicFocus(owner.Visuals)
+                ?? owner.Visuals.GetCurrentBody();
+            if (anchor == null
                 || focus == null
+                || !GodotObject.IsInstanceValid(anchor)
+                || !GodotObject.IsInstanceValid(focus)
                 || anchor.GetParent() is not CanvasItem parent)
             {
                 return null;
@@ -284,7 +488,8 @@ internal static class DarkNinjaSpecialAttackPresentation
         {
             if (Volatile.Read(ref _disposed) != 0
                 || !GodotObject.IsInstanceValid(_anchor)
-                || !GodotObject.IsInstanceValid(_focus))
+                || !GodotObject.IsInstanceValid(_focus)
+                || !GodotObject.IsInstanceValid(_anchorParent))
             {
                 return;
             }
@@ -319,20 +524,24 @@ internal static class DarkNinjaSpecialAttackPresentation
     private sealed class DarkNinjaDetachedVisualLease : IDisposable
     {
         private readonly CanvasItem _sceneContainer;
+        private readonly Creature _attacker;
         private readonly Sprite2D _sourceBody;
         private readonly bool _sourceBodyVisible;
         private readonly Sprite2D? _shadow;
         private readonly bool _shadowVisible;
         private readonly Node2D _root;
         private readonly Sprite2D _character;
-        private readonly Sprite2D _sword;
+        private readonly Sprite2D _rearSword;
+        private readonly Sprite2D _frontSword;
         private readonly Sprite2D _fullBody;
         private readonly Vector2 _baselinePosition;
         private readonly float _scaleX;
         private readonly float _scaleY;
+        private bool _penetratesTarget;
         private int _disposed;
 
         private DarkNinjaDetachedVisualLease(
+            Creature attacker,
             NCombatRoom room,
             NCreature owner,
             CanvasItem sceneContainer,
@@ -340,7 +549,8 @@ internal static class DarkNinjaSpecialAttackPresentation
             Sprite2D? shadow,
             Node2D root,
             Sprite2D character,
-            Sprite2D sword,
+            Sprite2D rearSword,
+            Sprite2D frontSword,
             Sprite2D fullBody,
             Vector2 baselinePosition,
             float scaleX,
@@ -348,6 +558,7 @@ internal static class DarkNinjaSpecialAttackPresentation
         {
             Room = room;
             Owner = owner;
+            _attacker = attacker;
             _sceneContainer = sceneContainer;
             _sourceBody = sourceBody;
             _sourceBodyVisible = sourceBody.Visible;
@@ -355,21 +566,38 @@ internal static class DarkNinjaSpecialAttackPresentation
             _shadowVisible = shadow?.Visible ?? false;
             _root = root;
             _character = character;
-            _sword = sword;
+            _rearSword = rearSword;
+            _frontSword = frontSword;
             _fullBody = fullBody;
             _baselinePosition = baselinePosition;
             _scaleX = scaleX;
             _scaleY = scaleY;
-            sourceBody.Visible = false;
-            if (shadow != null)
+            try
             {
-                shadow.Visible = false;
+                sourceBody.Visible = false;
+                if (shadow != null)
+                {
+                    shadow.Visible = false;
+                }
+            }
+            catch
+            {
+                if (GodotObject.IsInstanceValid(sourceBody))
+                {
+                    sourceBody.Visible = _sourceBodyVisible;
+                }
+
+                if (shadow != null && GodotObject.IsInstanceValid(shadow))
+                {
+                    shadow.Visible = _shadowVisible;
+                }
+
+                throw;
             }
         }
 
         internal NCombatRoom Room { get; }
         internal NCreature Owner { get; }
-        internal int OverlayZIndex => Math.Clamp(_root.ZIndex + 2, -4095, 4095);
 
         internal static DarkNinjaDetachedVisualLease? TryAcquire(Creature creature)
         {
@@ -377,9 +605,20 @@ internal static class DarkNinjaSpecialAttackPresentation
             try
             {
                 NCombatRoom? room = NCombatRoom.Instance;
-                NCreature? owner = room?.GetCreatureNode(creature);
-                Sprite2D? sourceBody = NinjaSlayerVisualRig.GetBodySprite(owner?.Visuals);
-                if (room == null || owner == null || sourceBody == null)
+                if (room == null
+                    || !GodotObject.IsInstanceValid(room))
+                {
+                    return null;
+                }
+
+                NCreature? owner = room.GetCreatureNode(creature);
+                if (owner == null || !GodotObject.IsInstanceValid(owner))
+                {
+                    return null;
+                }
+
+                Sprite2D? sourceBody = NinjaSlayerVisualRig.GetBodySprite(owner.Visuals);
+                if (sourceBody == null || !GodotObject.IsInstanceValid(sourceBody))
                 {
                     return null;
                 }
@@ -389,6 +628,11 @@ internal static class DarkNinjaSpecialAttackPresentation
                 Texture2D fullTexture = PreloadManager.Cache.GetTexture2D(
                     DarkNinjaMonster.CombatTexturePath);
                 CanvasItem sceneContainer = room.SceneContainer;
+                if (!GodotObject.IsInstanceValid(sceneContainer))
+                {
+                    return null;
+                }
+
                 Transform2D bodyToScene = sceneContainer.GetGlobalTransformWithCanvas()
                     .AffineInverse()
                     * sourceBody.GetGlobalTransformWithCanvas();
@@ -403,7 +647,13 @@ internal static class DarkNinjaSpecialAttackPresentation
                 }
 
                 Node2D targetBody = owner.Visuals.GetCurrentBody();
-                int zIndex = CreatureScreenHalfOverlayLease.ResolveEffectiveZ(targetBody) + 1;
+                if (!GodotObject.IsInstanceValid(targetBody))
+                {
+                    return null;
+                }
+
+                int zIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
+                    ResolveEffectiveZ(targetBody));
                 root = new Node2D
                 {
                     Name = "DarkNinjaDarkStrike",
@@ -420,23 +670,42 @@ internal static class DarkNinjaSpecialAttackPresentation
                     Texture = characterTexture,
                     ZIndex = 0
                 };
-                var sword = new Sprite2D
+                var rearSword = new Sprite2D
                 {
-                    Name = "Sword",
+                    Name = "RearSword",
                     Texture = swordTexture,
-                    ZIndex = 1
+                    ZIndex = 0,
+                    Centered = false,
+                    RegionEnabled = true,
+                    RegionFilterClipEnabled = true,
+                    Position = new Vector2(-TextureWidth * 0.5f, -TextureHeight * 0.5f),
+                    RegionRect = new Rect2(0f, 0f, TextureWidth, TextureHeight)
+                };
+                var frontSword = new Sprite2D
+                {
+                    Name = "FrontSword",
+                    Texture = swordTexture,
+                    ZIndex = 2,
+                    Centered = false,
+                    RegionEnabled = true,
+                    RegionFilterClipEnabled = true,
+                    Position = new Vector2(-TextureWidth * 0.5f, -TextureHeight * 0.5f),
+                    RegionRect = new Rect2(0f, 0f, 0f, TextureHeight),
+                    Visible = false
                 };
                 var fullBody = new Sprite2D
                 {
                     Name = "FullBody",
                     Texture = fullTexture,
-                    ZIndex = 0,
+                    ZIndex = 2,
                     Visible = false
                 };
                 root.AddChildSafely(character);
-                root.AddChildSafely(sword);
+                root.AddChildSafely(rearSword);
+                root.AddChildSafely(frontSword);
                 root.AddChildSafely(fullBody);
                 return new DarkNinjaDetachedVisualLease(
+                    creature,
                     room,
                     owner,
                     sceneContainer,
@@ -444,7 +713,8 @@ internal static class DarkNinjaSpecialAttackPresentation
                     NinjaSlayerVisualRig.GetShadow(owner.Visuals),
                     root,
                     character,
-                    sword,
+                    rearSword,
+                    frontSword,
                     fullBody,
                     bodyToScene.Origin,
                     scaleX,
@@ -462,26 +732,51 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
         }
 
-        internal void PrepareTarget(Creature target, float referenceSeconds)
+        internal void PrepareTarget(
+            Creature target,
+            float referenceSeconds)
         {
-            NCreature? targetNode = Room.GetCreatureNode(target);
-            if (targetNode != null)
+            if (Volatile.Read(ref _disposed) != 0
+                || !GodotObject.IsInstanceValid(_root)
+                || !GodotObject.IsInstanceValid(Room))
             {
-                _root.ZIndex = Math.Clamp(
-                    CreatureScreenHalfOverlayLease.ResolveEffectiveZ(
-                        targetNode.Visuals.GetCurrentBody()) + 1,
-                    -4095,
-                    4095);
+                return;
             }
 
+            NCreature? targetNode = Room.GetCreatureNode(target);
+            if (targetNode != null && GodotObject.IsInstanceValid(targetNode))
+            {
+                Node2D targetBody = targetNode.Visuals.GetCurrentBody();
+                if (GodotObject.IsInstanceValid(targetBody))
+                {
+                    int targetZIndex = ResolveEffectiveZ(targetBody);
+                    _root.ZIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
+                        targetZIndex);
+                }
+            }
+
+            _penetratesTarget = false;
             ApplyReferencePose(target, referenceSeconds);
             _root.Visible = true;
+        }
+
+        internal void ConfirmPenetration(float referenceSeconds)
+        {
+            if (Volatile.Read(ref _disposed) != 0
+                || !GodotObject.IsInstanceValid(_root))
+            {
+                return;
+            }
+
+            _penetratesTarget = true;
+            ApplySwordDepth(referenceSeconds);
         }
 
         internal void ApplyReferencePose(Creature target, float referenceSeconds)
         {
             if (Volatile.Read(ref _disposed) != 0
-                || !GodotObject.IsInstanceValid(_root))
+                || !GodotObject.IsInstanceValid(_root)
+                || !GodotObject.IsInstanceValid(_sceneContainer))
             {
                 return;
             }
@@ -500,31 +795,81 @@ internal static class DarkNinjaSpecialAttackPresentation
             _root.Position = finalPosition + new Vector2(
                 offset.X * _scaleX,
                 offset.Y * _scaleY);
+            ApplySwordDepth(referenceSeconds);
         }
 
         internal void ShowFullBody()
         {
+            if (Volatile.Read(ref _disposed) != 0
+                || !GodotObject.IsInstanceValid(_root))
+            {
+                return;
+            }
+
             _character.Visible = false;
-            _sword.Visible = false;
+            _rearSword.Visible = false;
+            _frontSword.Visible = false;
             _fullBody.Visible = true;
         }
 
-        internal async Task PlayWrappedReturn()
+        private void ApplySwordDepth(float referenceSeconds)
         {
-            Vector2 start = _root.Position;
+            if (!GodotObject.IsInstanceValid(_rearSword)
+                || !GodotObject.IsInstanceValid(_frontSword))
+            {
+                return;
+            }
+
+            float cutX = DarkNinjaCombatMath.ResolveDarkStrikeForegroundBladeCutTextureX(
+                referenceSeconds,
+                _penetratesTarget);
+            float rearWidth = TextureWidth - cutX;
+            _rearSword.Position = new Vector2(
+                -TextureWidth * 0.5f + cutX,
+                -TextureHeight * 0.5f);
+            _rearSword.RegionRect = new Rect2(
+                cutX,
+                0f,
+                rearWidth,
+                TextureHeight);
+            _rearSword.Visible = rearWidth > 0f;
+
+            _frontSword.Position = new Vector2(
+                -TextureWidth * 0.5f,
+                -TextureHeight * 0.5f);
+            _frontSword.RegionRect = new Rect2(
+                0f,
+                0f,
+                cutX,
+                TextureHeight);
+            _frontSword.Visible = cutX > 0f;
+        }
+
+        internal async Task PlayRightSideReturn()
+        {
+            if (Volatile.Read(ref _disposed) != 0
+                || !GodotObject.IsInstanceValid(_root)
+                || !GodotObject.IsInstanceValid(_sceneContainer)
+                || !GodotObject.IsInstanceValid(Owner))
+            {
+                return;
+            }
+
             Transform2D canvasToScene = _sceneContainer.GetGlobalTransformWithCanvas().AffineInverse();
             Vector2 viewportSize = Owner.GetViewport().GetVisibleRect().Size;
             Vector2 leftCanvas = canvasToScene * Vector2.Zero;
             Vector2 rightCanvas = canvasToScene * new Vector2(viewportSize.X, 0f);
-            float viewportWidth = Math.Abs(rightCanvas.X - leftCanvas.X);
             float canvasScaleY = _sceneContainer.GetGlobalTransformWithCanvas().Y.Length();
             float arcHeight = ReturnArcCanvasHeight / Math.Max(canvasScaleY, 0.001f);
             float rightExtent = TextureWidth * _scaleX * 0.5f;
-            float wrapThreshold = Math.Min(leftCanvas.X, rightCanvas.X) - rightExtent;
-            DarkNinjaPoint unwrappedStart = new(start.X, start.Y);
-            DarkNinjaPoint unwrappedEnd = new(
-                _baselinePosition.X - viewportWidth,
+            var start = new DarkNinjaPoint(
+                DarkNinjaCombatMath.ResolveDarkStrikeRightReturnStartX(
+                    leftCanvas.X,
+                    rightCanvas.X,
+                    rightExtent),
                 _baselinePosition.Y);
+            var end = new DarkNinjaPoint(_baselinePosition.X, _baselinePosition.Y);
+            _root.Position = new Vector2(start.X, start.Y);
 
             await PlayTween(
                 Owner,
@@ -532,16 +877,19 @@ internal static class DarkNinjaSpecialAttackPresentation
                 progress =>
                 {
                     DarkNinjaPoint point = DarkNinjaCombatMath.SampleReturnParabola(
-                        unwrappedStart,
-                        unwrappedEnd,
+                        start,
+                        end,
                         arcHeight,
                         progress);
-                    float displayX = point.X <= wrapThreshold
-                        ? point.X + viewportWidth
-                        : point.X;
-                    _root.Position = new Vector2(displayX, point.Y);
+                    if (GodotObject.IsInstanceValid(_root))
+                    {
+                        _root.Position = new Vector2(point.X, point.Y);
+                    }
                 });
-            _root.Position = _baselinePosition;
+            if (GodotObject.IsInstanceValid(_root))
+            {
+                _root.Position = _baselinePosition;
+            }
         }
 
         public void Dispose()
@@ -551,12 +899,14 @@ internal static class DarkNinjaSpecialAttackPresentation
                 return;
             }
 
-            if (GodotObject.IsInstanceValid(_sourceBody))
+            if (_attacker.IsAlive && GodotObject.IsInstanceValid(_sourceBody))
             {
                 _sourceBody.Visible = _sourceBodyVisible;
             }
 
-            if (_shadow != null && GodotObject.IsInstanceValid(_shadow))
+            if (_attacker.IsAlive
+                && _shadow != null
+                && GodotObject.IsInstanceValid(_shadow))
             {
                 _shadow.Visible = _shadowVisible;
             }
@@ -569,8 +919,13 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         private Vector2 ResolveImpactCanvasPosition(Creature target)
         {
+            if (!GodotObject.IsInstanceValid(Room))
+            {
+                return _sceneContainer.GetGlobalTransformWithCanvas() * _root.Position;
+            }
+
             NCreature? targetNode = Room.GetCreatureNode(target);
-            if (targetNode == null)
+            if (targetNode == null || !GodotObject.IsInstanceValid(targetNode))
             {
                 return _sceneContainer.GetGlobalTransformWithCanvas() * _root.Position;
             }
@@ -581,4 +936,21 @@ internal static class DarkNinjaSpecialAttackPresentation
                 : targetNode.Visuals.Bounds.GetGlobalRect().GetCenter();
         }
     }
+
+    private static int ResolveEffectiveZ(CanvasItem item)
+    {
+        int zIndex = item.ZIndex;
+        CanvasItem current = item;
+        while (current.ZAsRelative && current.GetParent() is CanvasItem parent)
+        {
+            zIndex = Math.Clamp(
+                zIndex + parent.ZIndex,
+                -MaximumCanvasZIndex,
+                MaximumCanvasZIndex);
+            current = parent;
+        }
+
+        return zIndex;
+    }
+
 }

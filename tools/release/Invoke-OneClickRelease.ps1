@@ -379,6 +379,17 @@ function Test-ResumeArtifacts(
                 return $false
             }
         }
+        $workshopArchivePath = $ArchivePaths.workshop
+        if (-not (Test-Path -LiteralPath $workshopArchivePath -PathType Leaf)) {
+            return $false
+        }
+        $workshopArchive = Read-NinjaSlayerWorkshopBundleArchive `
+            -Path $workshopArchivePath `
+            -Compatibility $Compatibility
+        if ([string]$state.archives.workshop.path -cne (Split-Path -Leaf $workshopArchivePath) -or
+            [string]$state.archives.workshop.sha256 -ne [string]$workshopArchive.sha256) {
+            return $false
+        }
         return $true
     }
     catch {
@@ -402,10 +413,10 @@ function Assert-GitHubReleaseAssets(
     $expectedNames = @($ArchivePaths.Values | ForEach-Object { Split-Path -Leaf $_ } | Sort-Object)
     $actualNames = @($releaseJson.assets | ForEach-Object name | Sort-Object)
     if ($null -ne (Compare-Object $expectedNames $actualNames -CaseSensitive)) {
-        throw "GitHub Release $Tag does not contain exactly the stable and preview archives."
+        throw "GitHub Release $Tag does not contain exactly the stable, preview, and universal Workshop archives."
     }
-    foreach ($channel in @('stable', 'preview')) {
-        $path = $ArchivePaths[$channel]
+    foreach ($archiveName in @('stable', 'preview', 'workshop')) {
+        $path = $ArchivePaths[$archiveName]
         $asset = @($releaseJson.assets | Where-Object name -CEQ (Split-Path -Leaf $path))[0]
         $file = Get-Item -LiteralPath $path
         if ([long]$asset.size -ne $file.Length) {
@@ -528,6 +539,7 @@ $releaseRoot = Assert-ChildPath $releaseRoot (Join-Path $repositoryRoot 'build\f
 $archivePaths = @{
     stable = Join-Path $releaseRoot "NinjaSlayer-$tag-stable-sts2-$($stableProfile.gameApiVersion).zip"
     preview = Join-Path $releaseRoot "NinjaSlayer-$tag-preview-sts2-$($previewProfile.gameApiVersion).zip"
+    workshop = Join-Path $releaseRoot "NinjaSlayer-$tag-workshop-universal.zip"
 }
 $statePath = Join-Path $releaseRoot 'fast-release-state.json'
 $frozenInputRoot = Join-Path $releaseRoot 'frozen-inputs'
@@ -632,7 +644,7 @@ try {
         -WorkshopMetadataPath $frozenWorkshopMetadataPath `
         -ArchivePaths $archivePaths)
     if ($reuseArtifacts) {
-        Write-Host 'Reusing locally verified stable and preview archives.' -ForegroundColor Green
+        Write-Host 'Reusing locally verified stable, preview, and universal Workshop archives.' -ForegroundColor Green
     }
     else {
         Invoke-TimedStep 'Freeze release candidate' {
@@ -685,6 +697,26 @@ try {
             }
         }
 
+        Invoke-TimedStep 'Bundle Workshop package' {
+            $bundleDirectory = Join-Path $buildRoot 'workshop\package\NinjaSlayer'
+            & (Join-Path $candidate.Root 'tools\release\New-NinjaSlayerWorkshopBundle.ps1') `
+                -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
+                -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
+                -StableSts2DataDir $resolvedStableDataDir `
+                -OutputDirectory $bundleDirectory `
+                -BuildRoot (Join-Path $buildRoot 'workshop\build') `
+                -CompatibilityManifestPath (Join-Path $candidate.Root 'eng\compatibility.json') `
+                -Version $Version
+            $bundleFiles = Get-NinjaSlayerWorkshopBundleFiles -Compatibility $compatibility
+            New-NinjaSlayerExactZip `
+                -SourceDirectory $bundleDirectory `
+                -ArchivePath $archivePaths.workshop `
+                -ExpectedFileNames $bundleFiles
+            $null = Read-NinjaSlayerWorkshopBundleArchive `
+                -Path $archivePaths.workshop `
+                -Compatibility $compatibility
+        }
+
         $state = [ordered]@{
             schemaVersion = 2
             version = $Version
@@ -715,6 +747,10 @@ try {
                 preview = [ordered]@{
                     path = Split-Path -Leaf $archivePaths.preview
                     sha256 = Get-NinjaSlayerSha256 -Path $archivePaths.preview
+                }
+                workshop = [ordered]@{
+                    path = Split-Path -Leaf $archivePaths.workshop
+                    sha256 = Get-NinjaSlayerSha256 -Path $archivePaths.workshop
                 }
             }
         }
@@ -795,6 +831,7 @@ try {
                     'release', 'create', $tag,
                     $archivePaths.stable,
                     $archivePaths.preview,
+                    $archivePaths.workshop,
                     '--repo', $repository,
                     '--verify-tag',
                     '--notes-file', $frozenReleaseNotePath,
@@ -818,9 +855,9 @@ try {
                 'Workshop content directory'
             [IO.Directory]::CreateDirectory($workshopDirectory) | Out-Null
             Expand-NinjaSlayerExactZip `
-                -ArchivePath $archivePaths.stable `
+                -ArchivePath $archivePaths.workshop `
                 -DestinationPath $contentDirectory `
-                -ExpectedFileNames $script:PackageFiles
+                -ExpectedFileNames (Get-NinjaSlayerWorkshopBundleFiles -Compatibility $compatibility)
 
             $metadata = Get-Content -LiteralPath $frozenWorkshopMetadataPath `
                 -Raw -Encoding UTF8 | ConvertFrom-Json

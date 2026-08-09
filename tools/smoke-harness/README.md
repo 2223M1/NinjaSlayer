@@ -2,6 +2,8 @@
 
 This harness verifies runtime integration that RefLib and ABI contracts cannot cover. It is intentionally separate from the distributed mod.
 
+The current automation controls the Windows client. macOS and Linux/Steam Deck validation uses the same scenario requirements as a manual release gate until platform-native harness runners exist.
+
 ## Scenario
 
 The fresh process uses the original `AutoSlayer` for menu, reward, and map navigation while trusted Harmony patches select NinjaSlayer and replace only the first combat handler. The scenario:
@@ -9,11 +11,13 @@ The fresh process uses the original `AutoSlayer` for menu, reward, and map navig
 1. Plays `ReadyBlade` and verifies Prepared is created.
 2. Advances a turn and verifies Prepared does not remain on a card outside the draw pile.
 3. Plays a non-lethal `TornadoFist` and verifies all X-attack ownership scopes return idle.
-4. Reduces the final enemy to a deterministic lethal state, plays `TornadoFist`, and verifies a Finisher completes.
-5. Holds AutoSlay at the first map, saves, and exits with code `20`.
-6. A second process clicks Continue, verifies runtime ownership is idle, abandons the run, returns to the main menu, and exits `0`.
+4. Instantiates Yamoto Koki's origami-missile scene and verifies its native node resolves as `SpineSprite`.
+5. Exercises Dark Strike normal hit, full block, evasion, mixed sequential targets, injected hook failure, and lethal Thorns retaliation.
+6. Reduces the final enemy to a deterministic lethal state, plays `TornadoFist`, and verifies a Finisher completes.
+7. Holds AutoSlay at the first map, saves, and exits with code `20`.
+8. A second process clicks Continue, verifies runtime ownership is idle, abandons the run, returns to the main menu, and exits `0`.
 
-Failures capture a screenshot when a viewport exists. JSONL checkpoints include only bounded runtime health counters and capability states; they do not expose mutable game objects.
+Failures capture a screenshot when a viewport exists. JSONL checkpoints include only bounded runtime health counters and capability states; they do not expose mutable game objects. The attestation records the requested bundle SemVer, both the pinned RitsuLib compile baseline and the actual Workshop runtime version, plus the SHA-256 of the universal bundle's checksum manifest. Stable and preview attestations must carry the same bundle identity. The launcher also rejects loader, managed/native library, NinjaSlayer resource, and Spine errors found in the game logs.
 
 ## Isolation
 
@@ -25,16 +29,18 @@ Failures capture a screenshot when a viewport exists. JSONL checkpoints include 
 - A complete current Workshop RitsuLib mod directory. Its manifest and assembly must be at least the pinned compile baseline; newer Workshop releases are expected and supported.
 - An ephemeral GitHub Actions runner created with `-RunnerPurpose Smoke`.
 
-The launcher builds the candidate package, creates a hard-linked temporary game root without copying installed `mods`, stages exactly three mods, seeds a temporary settings file, redirects both Windows application-data roots, forces Steam off, and blocks outbound traffic for the temporary game executable and crash handler. A process-tree watchdog terminates either phase after five minutes. Cleanup removes firewall rules and the complete session tree.
+The workflow builds both candidate implementations once and assembles one universal Workshop directory. The launcher validates and copies that exact directory, creates a hard-linked temporary game root without copying installed `mods`, stages exactly three mods, seeds a temporary settings file, redirects both Windows application-data roots, forces Steam off, and blocks outbound traffic for the temporary game executable and crash handler. A process-tree watchdog terminates either phase after five minutes. Cleanup removes firewall rules and the complete session tree.
 
 Do not invoke the game manually from the staged directory and do not point the launcher at the real Mods directory. Successful and failed artifacts are written only to the explicit output directory.
 
-Each host is tested with its own host-specific NinjaSlayer DLL and isolated game mirror. A Contract pass cannot compensate for a dependency that fails during type discovery before the mod loads.
+Stable and preview are tested with the same top-level loader, manifest, PCK, and bundle file set. Only the implementation selected by the exact host MVID differs. A Contract pass cannot compensate for a loader or dependency that fails during type discovery before the mod loads.
+
+The cross-platform release matrix freezes one candidate SHA-256 for Windows x64, macOS, and Linux x86_64/Steam Deck, with stable and preview on each platform. Every cell must verify mod and character registration, both custom encounters, Yamoto Koki origami-missile Spine instantiation, Dark Strike hit/block/evasion/sequential multi-target/retaliation-death paths, and logs free of native-library, import, MVID-selection, or managed-loader errors. A test performed after rebuilding or replacing any candidate file does not belong to the same matrix.
 
 ## GitHub Operation
 
 1. Configure the `game-smoke` Environment with required approval.
-2. Dispatch **Protected real-game smoke** with a full SHA already merged to `main`.
+2. Dispatch **Protected real-game smoke** with a full SHA already merged to `main` and the exact SemVer intended for its frozen Release bundle.
 3. Approve the Environment.
 4. From elevated PowerShell 7 (`pwsh`), register one ephemeral `ninjaslayer-smoke` runner with both game roots and the current RitsuLib Workshop directory.
 5. Review the text-only attestation or sanitized failure evidence; the runner removes itself after one job.

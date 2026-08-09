@@ -89,6 +89,7 @@ jobs:
             -Repository '${{ github.repository }}' `
             -Token $env:GH_TOKEN `
             -OutputDirectory (Join-Path $env:RUNNER_TEMP 'smoke-attestation') `
+            -ExpectedBundleVersion ($env:RELEASE_TAG.Substring(1)) `
             -ExpectedMode FirstCombatRestart
 
       - name: Setup .NET 9
@@ -203,7 +204,8 @@ jobs:
               -Sts2DataDir "$($channelHost.dataDirectory)" `
               -Target PackageMod `
               -GodotExe "$env:GODOT_EXE" `
-              -BuildRoot $buildRoot
+              -BuildRoot $buildRoot `
+              -SourceRevision $env:RELEASE_SHA
 
             $archive = "NinjaSlayer-$env:RELEASE_TAG-$channel-sts2-$($channelHost.gameApiVersion).zip"
             $archivePath = Join-Path $protectedRoot $archive
@@ -212,6 +214,39 @@ jobs:
             $archives.Add($archivePath)
             $archivesByChannel[$channel] = $archivePath
           }
+          . .\.github\scripts\compatibility.ps1
+          . .\.github\scripts\release-artifact.ps1
+          $compatibility = Read-NinjaSlayerCompatibility -Path '.\eng\compatibility.json'
+          $stableHost = @($releaseHosts | Where-Object channel -eq 'stable')[0]
+          $bundleDirectory = Join-Path $buildRoot 'workshop\package\NinjaSlayer'
+          & .\tools\release\New-NinjaSlayerWorkshopBundle.ps1 `
+            -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
+            -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
+            -StableSts2DataDir ([string]$stableHost.dataDirectory) `
+            -OutputDirectory $bundleDirectory `
+            -BuildRoot (Join-Path $buildRoot 'workshop\build') `
+            -Version $version
+          $smokeBundleHashes = @(Get-ChildItem `
+              -LiteralPath (Join-Path $env:RUNNER_TEMP 'smoke-attestation\verified') `
+              -File -Filter 'attestation.json' -Recurse |
+            ForEach-Object {
+              [string](Get-Content -LiteralPath $_.FullName -Raw -Encoding utf8 |
+                ConvertFrom-Json).bundleSha256
+            } | Sort-Object -Unique)
+          $releaseBundleHash = Get-NinjaSlayerFileSha256 `
+            -Path (Join-Path $bundleDirectory 'SHA256SUMS')
+          if ($smokeBundleHashes.Count -ne 1 -or $smokeBundleHashes[0] -cne $releaseBundleHash) {
+            throw 'The universal Release bundle does not match the bundle used by protected smoke.'
+          }
+          $workshopArchivePath = Join-Path $protectedRoot "NinjaSlayer-$env:RELEASE_TAG-workshop-universal.zip"
+          New-NinjaSlayerExactZip `
+            -SourceDirectory $bundleDirectory `
+            -ArchivePath $workshopArchivePath `
+            -ExpectedFileNames (Get-NinjaSlayerWorkshopBundleFiles -Compatibility $compatibility)
+          $null = Read-NinjaSlayerWorkshopBundleArchive `
+            -Path $workshopArchivePath `
+            -Compatibility $compatibility
+          $archives.Add($workshopArchivePath)
           & .\.github\scripts\new-release-attestation.ps1 `
             -Repository '${{ github.repository }}' `
             -CandidateSha $env:RELEASE_SHA `
@@ -219,6 +254,7 @@ jobs:
             -WorkflowRunId '${{ github.run_id }}' `
             -StableArchivePath $archivesByChannel.stable `
             -PreviewArchivePath $archivesByChannel.preview `
+            -WorkshopArchivePath $workshopArchivePath `
             -OutputPath (Join-Path $protectedRoot 'release-attestation.json')
           "RELEASE_ARCHIVES=$($archives -join ';')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "PROTECTED_RELEASE_DIR=$protectedRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -238,7 +274,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $archives = $env:RELEASE_ARCHIVES.Split(';', [StringSplitOptions]::RemoveEmptyEntries)
-          if ($archives.Count -ne 2) { throw 'Exactly two release archives are required.' }
+          if ($archives.Count -ne 3) { throw 'Exactly three release archives are required.' }
           . .\.github\scripts\actions-provenance.ps1
           $context = New-NinjaSlayerGitHubApiContext `
             -Repository '${{ github.repository }}' `

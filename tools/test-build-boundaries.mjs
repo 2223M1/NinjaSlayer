@@ -201,7 +201,6 @@ try {
 
   const packageDir = join(sandbox, 'package');
   const installDir = join(sandbox, 'installed');
-  const workshopDir = join(sandbox, 'workshop');
   const harnessPath = join(sandbox, 'BuildBoundaryHarness.proj');
   writeFileSync(harnessPath, `
 <Project>
@@ -216,11 +215,7 @@ try {
     <NinjaSlayerArtifactName>NinjaSlayer</NinjaSlayerArtifactName>
     <PostBuildModDir>${xml(packageDir)}</PostBuildModDir>
     <SteamModDir>${xml(installDir)}</SteamModDir>
-    <WorkshopContentDir>${xml(workshopDir)}</WorkshopContentDir>
-    <WorkshopUploadRoot>${xml(sandbox)}</WorkshopUploadRoot>
-    <WorkshopUploaderExe>${xml(join(sandbox, 'must-not-run.exe'))}</WorkshopUploaderExe>
     <PackageModDependsOn>PrepareBuildTestPackage;GeneratePackageChecksums</PackageModDependsOn>
-    <StageWorkshopDependsOn>PrepareBuildTestPackage;GeneratePackageChecksums;RequireExplicitPackageHostChannel</StageWorkshopDependsOn>
   </PropertyGroup>
   <Import Project="${xml(versionPropsPath)}" />
   <Import Project="${xml(versionTargetsPath)}" />
@@ -261,41 +256,6 @@ try {
     assert(checksumLines.includes(`${fileHash(join(packageDir, name))} *${name}`));
   }
 
-  mkdirSync(workshopDir, { recursive: true });
-  writeFileSync(join(workshopDir, 'stale-preview.dll'), 'must be removed', 'utf8');
-  requireSuccess(runMsbuild(harnessPath, 'StageWorkshop'), 'temporary StageWorkshop');
-  const stagedNames = [...artifactNames, 'SHA256SUMS'];
-  assert.deepEqual(readdirSync(workshopDir).sort(), stagedNames.sort());
-  for (const name of stagedNames) {
-    assert.equal(fileHash(join(packageDir, name)), fileHash(join(workshopDir, name)));
-  }
-
-  const guardPackageDir = join(sandbox, 'guard-package');
-  const guardWorkshopDir = join(sandbox, 'guard-workshop');
-  const guarded = runMsbuild(harnessPath, 'PublishWorkshop', {
-    PostBuildModDir: guardPackageDir,
-    WorkshopContentDir: guardWorkshopDir,
-  });
-  assert.notEqual(guarded.status, 0);
-  assert.match(`${guarded.stdout}\n${guarded.stderr}`, /requires Configuration=Release/);
-  assert(!existsSync(guardPackageDir));
-  assert(!existsSync(guardWorkshopDir));
-
-  const unsupportedVersion = runMsbuild(harnessPath, 'PublishWorkshop', {
-    Configuration: 'Release',
-    GitDescribe: 'v01.1.0-0-gabcdef',
-    NinjaSlayerVersion: '01.1.0',
-    PublishWorkshopConfirmed: 'true',
-    PostBuildModDir: guardPackageDir,
-    WorkshopContentDir: guardWorkshopDir,
-  });
-  assert.notEqual(unsupportedVersion.status, 0);
-  assert.match(
-    `${unsupportedVersion.stdout}\n${unsupportedVersion.stderr}`,
-    /requires a clean stable SemVer tag/,
-  );
-  assert(!existsSync(guardPackageDir));
-  assert(!existsSync(guardWorkshopDir));
 } finally {
   rmSync(sandbox, { recursive: true, force: true });
 }

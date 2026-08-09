@@ -12,15 +12,25 @@ using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
+internal readonly record struct DarkStrikeImpactOutcome(
+    bool Connected,
+    bool FullyBlocked,
+    int Healing,
+    bool ShouldContinue);
+
 internal static class DarkNinjaAttackExecution
 {
     private const string DeathSlashImpactSfx =
         "event:/sfx/enemy/enemy_attacks/vantom/vantom_dismember";
-    internal static Task<AttackCommand> PlayDeathSlash(
+
+    internal static async Task<AttackCommand> PlayDeathSlash(
         DarkNinjaMonster monster,
-        int damage) =>
-        Execute(
+        IReadOnlyList<Creature> targets,
+        int damage)
+    {
+        Execution execution = await Execute(
             monster,
+            targets,
             damage,
             async (execution, targets) =>
             {
@@ -28,10 +38,10 @@ internal static class DarkNinjaAttackExecution
                     monster.Creature,
                     async () =>
                     {
-                        Creature[] liveTargets = targets.Where(target => target.IsAlive).ToArray();
-                        if (liveTargets.Length > 0)
+                        Creature[] impactTargets = targets.Where(execution.CanHit).ToArray();
+                        if (impactTargets.Length > 0)
                         {
-                            Creature[] connectedTargets = liveTargets
+                            Creature[] connectedTargets = impactTargets
                                 .Where(execution.WillConnect)
                                 .ToArray();
                             if (connectedTargets.Length > 0)
@@ -42,72 +52,62 @@ internal static class DarkNinjaAttackExecution
                                 NinjaSlayerCombatAudioSet.Play(DeathSlashImpactSfx);
                             }
 
-                            await execution.Deal(liveTargets);
+                            await execution.Deal(impactTargets);
                         }
                     });
             });
+        return execution.Command;
+    }
 
-    internal static Task<AttackCommand> PlayDarkStrike(
+    internal static async Task<IReadOnlyList<Creature>> PlayDarkStrike(
         DarkNinjaMonster monster,
-        int damage) =>
-        Execute(
+        IReadOnlyList<Creature> targets,
+        int damage)
+    {
+        Execution execution = await Execute(
             monster,
+            targets,
             damage,
             async (execution, targets) =>
             {
                 await DarkNinjaSpecialAttackPresentation.PlayDarkStrike(
                     monster.Creature,
                     targets,
-                    async target =>
-                    {
-                        if (execution.WillConnect(target))
-                        {
-                            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaStabEvent);
-                            VfxCmd.PlayOnCreatureCenter(target, VfxCmd.dramaticStabPath);
-                        }
-
-                        IReadOnlyList<DamageResult> results = await execution.Deal([target]);
-                        return results
-                            .Select(result => DarkNinjaCombatMath.ResolveDarkStrikeHealing(
-                                result.BlockedDamage,
-                                result.UnblockedDamage,
-                                result.OverkillDamage))
-                            .DefaultIfEmpty(0)
-                            .Max();
-                    });
+                    execution.CanHit,
+                    execution.Deal);
             });
+        return execution.ConnectedTargets;
+    }
 
-    private static async Task<AttackCommand> Execute(
+    private static async Task<Execution> Execute(
         DarkNinjaMonster monster,
+        IReadOnlyList<Creature> targets,
         int damage,
         Func<Execution, IReadOnlyList<Creature>, Task> playPresentation)
     {
         Creature attacker = monster.Creature;
         AttackCommand command = DamageCmd.Attack(damage).FromMonster(monster);
         ICombatState? combatState = attacker.CombatState;
-        if (combatState == null
-            || attacker.IsDead
-            || (CombatManager.Instance.IsOverOrEnding && combatState.IsLiveCombat()))
-        {
-            return command;
-        }
-
         var choiceContext = new BlockingPlayerChoiceContext();
         var execution = new Execution(
             command,
             choiceContext,
             attacker,
+            combatState,
             damage);
-        Creature[] targets = combatState.PlayerCreatures
-            .Where(target => target.IsAlive)
-            .ToArray();
+        if (combatState is null || !execution.CanContinue())
+        {
+            return execution;
+        }
+
+        Creature[] pendingTargets = targets.ToArray();
 
         await Hook.BeforeAttack(combatState, command);
         try
         {
-            if (targets.Length > 0 && attacker.IsAlive)
+            if (pendingTargets.Length > 0 && execution.CanContinue())
             {
-                await playPresentation(execution, targets);
+                await playPresentation(execution, pendingTargets);
             }
         }
         finally
@@ -117,30 +117,91 @@ internal static class DarkNinjaAttackExecution
                 command.AddResultsInternal(execution.Results);
             }
 
-            CombatManager.Instance.History.CreatureAttacked(
-                combatState,
-                attacker,
-                execution.Results);
-            await Hook.AfterAttack(combatState, choiceContext, command);
+            try
+            {
+                CombatManager.Instance.History.CreatureAttacked(
+                    combatState,
+                    attacker,
+                    execution.Results);
+            }
+            finally
+            {
+                await Hook.AfterAttack(combatState, choiceContext, command);
+            }
         }
 
-        return command;
+        return execution;
     }
 
     private sealed class Execution(
         AttackCommand command,
         PlayerChoiceContext choiceContext,
         Creature attacker,
+        ICombatState? combatState,
         decimal damage)
     {
+        internal AttackCommand Command => command;
         internal List<DamageResult> Results { get; } = [];
+        internal List<Creature> ConnectedTargets { get; } = [];
+
+        internal bool CanContinue() =>
+            combatState is not null
+            && attacker.IsAlive
+            && ReferenceEquals(attacker.CombatState, combatState)
+            && combatState.ContainsCreature(attacker)
+            && combatState.IsLiveCombat()
+            && !CombatManager.Instance.IsOverOrEnding;
+
+        internal bool CanHit(Creature target) =>
+            CanContinue()
+            && ReferenceEquals(target.CombatState, combatState)
+            && combatState?.ContainsCreature(target) == true
+            && target.IsAlive
+            && target.Side != attacker.Side
+            && target.IsHittable;
 
         internal bool WillConnect(Creature target) =>
-            target.GetPower<EvasionPower>() is not { } evasion
-            || !evasion.CanEvade(target, command.DamageProps, attacker);
+            CanHit(target)
+            && (target.GetPower<EvasionPower>() is not { } evasion
+            || !evasion.CanEvade(target, command.DamageProps, attacker));
+
+        internal async Task<DarkStrikeImpactOutcome> Deal(Creature target)
+        {
+            if (!CanHit(target))
+            {
+                return new DarkStrikeImpactOutcome(false, false, 0, CanContinue());
+            }
+
+            IReadOnlyList<DamageResult> results = await Deal([target]);
+            DamageResult[] targetResults = results
+                .Where(result => ReferenceEquals(result.Receiver, target))
+                .ToArray();
+            bool connected = targetResults.Length > 0;
+            if (connected)
+            {
+                ConnectedTargets.Add(target);
+            }
+
+            return new DarkStrikeImpactOutcome(
+                connected,
+                connected && targetResults.All(result => result.WasFullyBlocked),
+                results
+                    .Select(result => DarkNinjaCombatMath.ResolveDarkStrikeHealing(
+                        result.BlockedDamage,
+                        result.UnblockedDamage,
+                        result.OverkillDamage))
+                    .DefaultIfEmpty(0)
+                    .Max(),
+                CanContinue());
+        }
 
         internal async Task<IReadOnlyList<DamageResult>> Deal(IEnumerable<Creature> targets)
         {
+            if (!CanContinue())
+            {
+                return [];
+            }
+
             List<DamageResult> results = (await GameCompatibility.Damage.Deal(
                     choiceContext,
                     targets,
