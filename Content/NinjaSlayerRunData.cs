@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Runs;
 using STS2RitsuLib;
 using STS2RitsuLib.RunData;
 
@@ -7,6 +8,7 @@ namespace NinjaSlayer.Content;
 public static class NinjaSlayerRunData
 {
     public static PlayerRunSavedData<NinjaSlayerRunState> PlayerState { get; private set; } = null!;
+    public static RunSavedData<NinjaSlayerRunRules> Rules { get; private set; } = null!;
 
     public static void Register(string modId)
     {
@@ -18,12 +20,35 @@ public static class NinjaSlayerRunData
             {
                 WritePolicy = RunSavedDataWritePolicy.WhenNonDefault
             });
+        Rules = store.Register(
+            key: "ninja_slayer_run_rules",
+            defaultFactory: static () => new NinjaSlayerRunRules(),
+            options: new RunSavedDataOptions
+            {
+                WritePolicy = RunSavedDataWritePolicy.WhenNonDefault,
+                SyncLobbyOnChange = true
+            });
     }
+
+    public static NinjaSlayerRulesVersion GetRulesVersion(RunState runState) =>
+        Rules.Get(runState).RulesVersion;
 
     public static void MarkPendingAncientEntranceAnimation(Player player)
     {
         PlayerState.Modify(player, state => state.PendingAncientEntranceAnimation = true);
     }
+
+    public static void SnapshotEventValidation(RunState runState, bool enabled)
+    {
+        foreach (Player player in runState.Players)
+        {
+            PlayerState.Modify(player, state => state.EventValidationEnabled = enabled);
+        }
+    }
+
+    public static bool IsEventValidationEnabled(IRunState runState) =>
+        runState.Players.Count == 1
+        && PlayerState.Get(runState.Players[0]).EventValidationEnabled;
 
     public static bool HasPendingAncientEntranceAnimation(Player player) =>
         PlayerState.Get(player).PendingAncientEntranceAnimation;

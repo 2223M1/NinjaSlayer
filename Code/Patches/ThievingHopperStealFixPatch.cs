@@ -54,7 +54,7 @@ public sealed class NinjaSlayerSwipePowerStealPatch : IPatchMethod
 
     public static void Prefix(CardModel card)
     {
-        if (card.Pool is not NinjaSlayerCardPool)
+        if (card.Pool is not NinjaSlayerCardPoolTemplate)
         {
             return;
         }

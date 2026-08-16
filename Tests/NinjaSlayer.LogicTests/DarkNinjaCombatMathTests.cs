@@ -161,21 +161,26 @@ public sealed class DarkNinjaCombatMathTests
 
         int attackerZIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
             targetZIndex);
+        int raisedTargetZIndex = DarkNinjaCombatMath.ResolveDarkStrikeTargetZIndex(
+            attackerZIndex);
         const int rearSwordRelativeZIndex = 0;
         const int frontSwordRelativeZIndex = 2;
 
-        Assert.Equal(11, attackerZIndex);
-        Assert.Equal(11, attackerZIndex + rearSwordRelativeZIndex);
-        Assert.Equal(13, attackerZIndex + frontSwordRelativeZIndex);
-        Assert.True(attackerZIndex < targetZIndex);
-        Assert.True(targetZIndex < attackerZIndex + frontSwordRelativeZIndex);
+        Assert.Equal(12, attackerZIndex);
+        Assert.Equal(13, raisedTargetZIndex);
+        Assert.Equal(12, attackerZIndex + rearSwordRelativeZIndex);
+        Assert.Equal(14, attackerZIndex + frontSwordRelativeZIndex);
+        Assert.True(attackerZIndex < raisedTargetZIndex);
+        Assert.True(raisedTargetZIndex < attackerZIndex + frontSwordRelativeZIndex);
     }
 
     [Theory]
     [InlineData(0f, false, 0f)]
     [InlineData(0.375f, false, 0f)]
+    [InlineData(0f, true, 9.011f)]
+    [InlineData(0.2f, true, 136.929f)]
     [InlineData(0.375f, true, 151.4f)]
-    public void DarkStrikeForegroundBladeAppearsOnlyAfterAConfirmedHit(
+    public void DarkStrikeForegroundBladeAdvancesDuringPredictedPenetration(
         float referenceSeconds,
         bool penetratesTarget,
         float expectedCutTextureX)

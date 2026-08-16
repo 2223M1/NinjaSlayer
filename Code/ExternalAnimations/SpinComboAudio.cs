@@ -86,13 +86,13 @@ public static class SpinComboAudio
         float totalDuration = hitCount * perHitDuration;
         float loopPlayDuration = Math.Max(
             0f,
-            totalDuration - NinjaSlayerAudio.IntroSpinAttackSeconds - NinjaSlayerAudio.OutroSpinAttackSeconds);
+            totalDuration - NinjaSlayerAudio.IntroSpinAttackSeconds);
 
         bool loopStarted = false;
         bool outroPlayed = false;
         var earlyOutro = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void FinishEarly()
+        void FinishAudio()
         {
             if (outroPlayed)
             {
@@ -112,14 +112,24 @@ public static class SpinComboAudio
 
         NinjaSlayerCombatAudioSet.Play(audio.IntroSpinAttack);
         Task hitsTask = ObserveFaults(
-            RunWithSuppressedAutomaticSfx(() => executeHits(FinishEarly)),
+            RunWithSuppressedAutomaticSfx(() => executeHits(FinishAudio)),
             "Tornado Fist combo");
 
         try
         {
-            if (await WaitOrFinishEarly(NinjaSlayerAudio.IntroSpinAttackSeconds, earlyOutro.Task))
+            Task completed = await Task.WhenAny(
+                Cmd.Wait(NinjaSlayerAudio.IntroSpinAttackSeconds),
+                earlyOutro.Task,
+                hitsTask);
+            if (completed == earlyOutro.Task)
             {
                 await hitsTask;
+                return;
+            }
+            if (completed == hitsTask)
+            {
+                await hitsTask;
+                FinishAudio();
                 return;
             }
 
@@ -127,19 +137,25 @@ public static class SpinComboAudio
             {
                 SfxCmd.PlayLoop(creature, audio.LoopSpinAttack);
                 loopStarted = true;
-                if (await WaitOrFinishEarly(loopPlayDuration, earlyOutro.Task))
+                completed = await Task.WhenAny(
+                    Cmd.Wait(loopPlayDuration),
+                    earlyOutro.Task,
+                    hitsTask);
+                if (completed == earlyOutro.Task)
                 {
                     await hitsTask;
+                    return;
+                }
+                if (completed == hitsTask)
+                {
+                    await hitsTask;
+                    FinishAudio();
                     return;
                 }
             }
 
             await hitsTask;
-            if (!outroPlayed)
-            {
-                outroPlayed = true;
-                NinjaSlayerCombatAudioSet.Play(audio.OutroSpinAttack);
-            }
+            FinishAudio();
         }
         finally
         {
@@ -154,17 +170,6 @@ public static class SpinComboAudio
     {
         using IDisposable suppression = XAttackAudioContext.Suppress();
         await action();
-    }
-
-    private static async Task<bool> WaitOrFinishEarly(float duration, Task earlyOutro)
-    {
-        if (earlyOutro.IsCompleted)
-        {
-            return true;
-        }
-
-        Task completed = await Task.WhenAny(Cmd.Wait(duration), earlyOutro);
-        return completed == earlyOutro;
     }
 
     private static Task ObserveFaults(Task task, string operation)

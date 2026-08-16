@@ -6,6 +6,7 @@ internal static class NinjaSlayerPatchCapabilities
 {
     public static bool CoreContentEnabled => IsOperational(NinjaSlayerCapabilityIds.CoreContent);
     public static bool OrobasSeaGlassEnabled => IsOperational(NinjaSlayerCapabilityIds.OrobasSeaGlass);
+    public static bool RapidCardResolutionEnabled => IsOperational(NinjaSlayerCapabilityIds.RapidCardResolution);
     public static bool BossBurstPresentationEnabled =>
         IsOperational(NinjaSlayerCapabilityIds.BossBurstPresentation);
     public static bool PreparedSafetyEnabled => IsOperational(NinjaSlayerCapabilityIds.PreparedSafety);

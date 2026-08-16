@@ -75,11 +75,13 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _disposed;
     private bool _actionStarted;
     private bool _actionPeakReached;
+    private float _actionPeakSeconds = FinisherActionTrajectory.SlowTravelSeconds;
     private Vector2 _actionStartPosition;
     private Vector2 _impactPosition;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
     private FinisherActorLayerLease? _actorLayerLease;
+    private FinisherActorLeapPose? _actorLeapPose;
     private FinisherImpactPresentation? _presentation;
 
     public FinisherSession(
@@ -108,7 +110,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             combatEpoch,
             combatState,
             IsCurrentCombatContext);
-        _actorStartPosition = request.ActorNode.Position;
+        _actorStartPosition = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
+            ? NinjaSlayerRapidAnimationCoordinator.ClaimExclusiveBaseline(request.Actor, request.ActorNode)
+            : request.ActorNode.Position;
         _actionStartPosition = request.ActorNode.Position;
         _impactPosition = request.ActorNode.Position;
         _actionPeakReached = request.Scenario != FinisherScenarioKind.YamotoKokiIaiSlash;
@@ -143,6 +147,15 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 $"Finisher session {SessionId} cannot begin from phase {_completionProtocol.Phase}.");
         }
 
+        if (Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+        {
+            foreach (Creature victim in _ledger.Victims.Where(victim =>
+                         victim.Player?.Character is INinjaSlayerCharacter))
+            {
+                NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(victim);
+            }
+        }
+
         _ = RunWatchdog();
         if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
         {
@@ -163,6 +176,18 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             _enhancedImpactFailed = true;
             Entry.Logger.Warn($"Could not create finisher presentation; fallback presentation will be used: {ex}");
+        }
+
+        if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
+        {
+            try
+            {
+                _actorLeapPose = FinisherActorLeapPose.TryCreate(Actor, _actorNode, _focusNode);
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn($"Could not apply the Ninja Slayer finisher leap pose: {ex}");
+            }
         }
 
         List<NCreature> framingCandidates = _ledger.Victims
@@ -252,6 +277,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             if (startedNow)
             {
                 _actionStarted = true;
+                _actionPeakSeconds = Math.Max(0f, repeatWaitSeconds);
                 _actionPeakTask = RunActionToPeak();
             }
 
@@ -663,6 +689,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _cardVisualSuppression = null;
         cleanup.Capture(() => _actorLayerLease?.Dispose());
         _actorLayerLease = null;
+        cleanup.Capture(RestoreActorLeapPose);
         cleanup.Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
         cleanup.Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
         cleanup.Capture(RestoreDeathSquashes);
@@ -678,6 +705,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         cleanup.Capture(_camera.Dispose);
         cleanup.ThrowIfAny(
             $"Finisher session {SessionId} encountered {cleanup.FailureCount} resource-restoration failure(s).");
+    }
+
+    private void RestoreActorLeapPose()
+    {
+        _actorLeapPose?.Restore();
+        _actorLeapPose = null;
     }
 
     private async Task RunWatchdog()
@@ -1068,13 +1101,14 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 throw new InvalidOperationException("The finisher actor node was released before its approach began.");
             }
 
+            float duration = _actionPeakSeconds;
             float elapsed = 0f;
-            while (elapsed < FinisherActionTrajectory.SlowTravelSeconds)
+            while (elapsed < duration)
             {
                 elapsed += await NextFrame();
                 _actionCancellation.Token.ThrowIfCancellationRequested();
                 float progress = FinisherActionTrajectory.SlowProgress(
-                    elapsed / FinisherActionTrajectory.SlowTravelSeconds);
+                    elapsed / duration);
                 _actorNode.Position = _actionStartPosition.Lerp(_impactPosition, progress);
             }
 

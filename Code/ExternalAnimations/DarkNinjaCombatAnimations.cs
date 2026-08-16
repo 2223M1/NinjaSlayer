@@ -26,6 +26,7 @@ internal static class DarkNinjaCombatAnimations
                 result = FastAttackAnimation.Play(creature, waitTime);
                 return true;
             case "SlowAttack":
+                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaSlowAttackEvent);
                 result = SlowAttackAnimation.Play(creature);
                 return true;
             case "Hit":

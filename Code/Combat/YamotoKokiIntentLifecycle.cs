@@ -86,7 +86,7 @@ internal static class YamotoKokiIntentLifecycle
         foreach (NCreature node in room.CreatureNodes)
         {
             Creature creature = node.Entity;
-            if (creature.Monster is YamotoKokiMonster
+            if (creature.Monster is YamotoKokiMonster or YukanoMonster
                 && ReferenceEquals(creature.CombatState, combatState))
             {
                 Invalidate(creature);

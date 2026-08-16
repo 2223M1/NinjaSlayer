@@ -17,6 +17,18 @@ public static class StaggerAnimation
 
     public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature);
 
+    internal static bool TryTakeover(Creature creature, out HandoffLease? lease)
+    {
+        if (!ActiveStates.Remove(creature, out StaggerState? state))
+        {
+            lease = null;
+            return false;
+        }
+
+        lease = state.TransferOwnership();
+        return true;
+    }
+
     public static async Task Play(
         Creature creature,
         float rotationDegrees = DefaultRotationDegrees)
@@ -139,6 +151,55 @@ public static class StaggerAnimation
                 {
                     bodyAnchor.RotationDegrees = originalBodyRotation;
                 }
+            }
+        }
+
+        public HandoffLease TransferOwnership()
+        {
+            if (!_stopped)
+            {
+                _stopped = true;
+                if (GodotObject.IsInstanceValid(Tween) && Tween.IsValid())
+                {
+                    Tween.Kill();
+                }
+            }
+
+            return new HandoffLease(
+                creatureNode,
+                bodyAnchor,
+                originalPosition,
+                originalBodyRotation,
+                creatureNode.Position,
+                bodyAnchor?.RotationDegrees ?? originalBodyRotation);
+        }
+    }
+
+    internal sealed class HandoffLease(
+        Control creatureNode,
+        Node2D? bodyAnchor,
+        Vector2 baselinePosition,
+        float baselineBodyRotation,
+        Vector2 currentPosition,
+        float currentBodyRotation)
+    {
+        public Control CreatureNode { get; } = creatureNode;
+        public Node2D? BodyAnchor { get; } = bodyAnchor;
+        public Vector2 BaselinePosition { get; } = baselinePosition;
+        public float BaselineBodyRotation { get; } = baselineBodyRotation;
+        public Vector2 CurrentPosition { get; } = currentPosition;
+        public float CurrentBodyRotation { get; } = currentBodyRotation;
+
+        public void Restore()
+        {
+            if (GodotObject.IsInstanceValid(CreatureNode))
+            {
+                CreatureNode.Position = BaselinePosition;
+            }
+
+            if (BodyAnchor != null && GodotObject.IsInstanceValid(BodyAnchor))
+            {
+                BodyAnchor.RotationDegrees = BaselineBodyRotation;
             }
         }
     }

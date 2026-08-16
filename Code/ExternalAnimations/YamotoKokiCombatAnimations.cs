@@ -27,7 +27,6 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
     private const float GroundOffsetFromPivot = 14.625f;
-    private const float IaiApproachSeconds = 0.25f;
     private const float IaiApproachDistance = 120f;
     private static readonly Vector2 RightFootContactFromPivot = new(51.995f, 9.137f);
 
@@ -37,7 +36,15 @@ internal static class YamotoKokiCombatAnimations
         float waitTime,
         ref Task result)
     {
-        if (creature.Monster is not YamotoKokiMonster || creature.IsDead)
+        bool isYamotoKoki = creature.Monster is YamotoKokiMonster;
+        bool isSawatariCompanion = creature.Monster is SawatariMonster
+            && creature.Side == CombatSide.Player
+            && creature.PetOwner != null;
+        bool isYukanoCompanion = creature.Monster is YukanoMonster
+            && creature.Side == CombatSide.Player
+            && creature.PetOwner != null;
+        if ((!isYamotoKoki && !isSawatariCompanion && !isYukanoCompanion)
+            || creature.IsDead)
         {
             return false;
         }
@@ -51,7 +58,7 @@ internal static class YamotoKokiCombatAnimations
             case "BlockedHit":
                 result = CombatDodgeAnimation.PlayImmediate(creature);
                 return true;
-            case "SlowAttack":
+            case "SlowAttack" when isYamotoKoki:
                 result = SlowAttackAnimation.Play(creature);
                 return true;
             default:
@@ -114,20 +121,21 @@ internal static class YamotoKokiCombatAnimations
         }
 
         Vector2 originalPosition = creatureNode.Position;
+        float approachSeconds = CombatActionTimingRuntime.SlowAttackSeconds;
         bool isFinisherApproach = approachMode == YamotoKokiIaiApproachMode.FinisherCloseRange;
         if (isFinisherApproach)
         {
             await approachStarted();
             if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
                     creature,
-                    IaiApproachSeconds,
+                    approachSeconds,
                     out Task action))
             {
                 await action;
             }
             else
             {
-                await Cmd.Wait(IaiApproachSeconds);
+                await Cmd.Wait(approachSeconds);
             }
 
             await impactAtPeak();
@@ -143,15 +151,22 @@ internal static class YamotoKokiCombatAnimations
         Vector2 approachStart = originalPosition;
         Vector2 impactPosition = originalPosition + Vector2.Right * direction * IaiApproachDistance;
 
+        Task returnTask = Task.CompletedTask;
         try
         {
             await approachStarted();
-            await TweenIaiApproach(creatureNode, approachStart, impactPosition);
+            await TweenIaiApproach(creatureNode, approachStart, impactPosition, approachSeconds);
+            returnTask = TweenIaiReturn(
+                creatureNode,
+                impactPosition,
+                originalPosition,
+                CombatActionTimingRuntime.DamageRecoverySeconds);
             await impactAtPeak();
-            await TweenIaiReturn(creatureNode, impactPosition, originalPosition);
+            await returnTask;
         }
         finally
         {
+            await returnTask;
             if (GodotObject.IsInstanceValid(creatureNode))
             {
                 creatureNode.Position = originalPosition;
@@ -159,7 +174,7 @@ internal static class YamotoKokiCombatAnimations
         }
     }
 
-    public static async Task PlayEntrance(Creature creature)
+    public static async Task PlayEntrance(Creature creature, bool playVoice = true)
     {
         NCreature? creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
@@ -171,7 +186,10 @@ internal static class YamotoKokiCombatAnimations
         creatureNode.Hide();
         creatureNode.Position = destination + new Vector2(EntranceOffsetX, 0f);
         creatureNode.Show();
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiGoEvent);
+        if (playVoice)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiGoEvent);
+        }
 
         try
         {
@@ -286,8 +304,15 @@ internal static class YamotoKokiCombatAnimations
     private static async Task TweenIaiApproach(
         NCreature creatureNode,
         Vector2 start,
-        Vector2 destination)
+        Vector2 destination,
+        float duration)
     {
+        if (Mathf.IsZeroApprox(duration))
+        {
+            creatureNode.Position = destination;
+            return;
+        }
+
         Tween tween = creatureNode.CreateTween();
         tween.TweenMethod(
                 Callable.From<float>(progress =>
@@ -301,7 +326,7 @@ internal static class YamotoKokiCombatAnimations
                 }),
                 0f,
                 1f,
-                IaiApproachSeconds)
+                duration)
             .SetTrans(Tween.TransitionType.Linear);
         await TweenPlayback.AwaitCompletion(tween, creatureNode);
     }
@@ -309,8 +334,14 @@ internal static class YamotoKokiCombatAnimations
     private static async Task TweenIaiReturn(
         NCreature creatureNode,
         Vector2 start,
-        Vector2 destination)
+        Vector2 destination,
+        float duration)
     {
+        if (Mathf.IsZeroApprox(duration))
+        {
+            return;
+        }
+
         Tween tween = creatureNode.CreateTween();
         tween.TweenMethod(
                 Callable.From<float>(progress =>
@@ -324,7 +355,7 @@ internal static class YamotoKokiCombatAnimations
                 }),
                 0f,
                 1f,
-                IaiApproachSeconds)
+                duration)
             .SetTrans(Tween.TransitionType.Linear);
         await TweenPlayback.AwaitCompletion(tween, creatureNode);
     }

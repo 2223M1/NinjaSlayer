@@ -47,23 +47,27 @@
     <Compile Include="..\..\Code\Combat\BossBurstCompressionLayout.cs" Link="BossBurstCompressionLayout.cs" />
     <Compile Include="..\..\Code\Combat\BossBurstPresentationPolicy.cs" Link="BossBurstPresentationPolicy.cs" />
     <Compile Include="..\..\Code\Combat\CinematicCameraContainment.cs" Link="CinematicCameraContainment.cs" />
+    <Compile Include="..\..\Code\Combat\CombatActionTiming.cs" Link="CombatActionTiming.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\CombatHealthBar.cs" Link="CombatHealthBar.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />
     <Compile Include="..\..\Code\Combat\FacingScaleMath.cs" Link="FacingScaleMath.cs" />
+    <Compile Include="..\..\Code\Combat\FriendlyCompanionTargetPolicy.cs" Link="FriendlyCompanionTargetPolicy.cs" />
     <Compile Include="..\..\Code\Combat\AttackIntentPreviewContext.cs" Link="AttackIntentPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
     <Compile Include="..\..\Code\Combat\FinisherActionTrajectory.cs" Link="FinisherActionTrajectory.cs" />
+    <Compile Include="..\..\Code\Combat\RapidAttackTrajectory.cs" Link="RapidAttackTrajectory.cs" />
     <Compile Include="..\..\Code\Combat\FinisherSquashAnchorPolicy.cs" Link="FinisherSquashAnchorPolicy.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />
     <Compile Include="..\..\Code\Combat\ScreenShakeSuppressionContext.cs" Link="ScreenShakeSuppressionContext.cs" />
+    <Compile Include="..\..\Code\Combat\SawatariEventRules.cs" Link="SawatariEventRules.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiOrbitMath.cs" Link="YamotoKokiOrbitMath.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiFacingPolicy.cs" Link="YamotoKokiFacingPolicy.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiGridLayoutMath.cs" Link="YamotoKokiGridLayoutMath.cs" />
     <Compile Include="..\..\Code\Combat\VisitedMapHistoryAlignment.cs" Link="VisitedMapHistoryAlignment.cs" />
-    <Compile Include="..\..\Code\Combat\YamotoKokiDamageMath.cs" Link="YamotoKokiDamageMath.cs" />
+    <Compile Include="..\..\Code\Combat\CompanionDamageMath.cs" Link="CompanionDamageMath.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackComboContext.cs" Link="XAttackComboContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\CinematicSessionLifetime.cs" Link="CinematicSessionLifetime.cs" />
@@ -84,5 +88,9 @@
     <Compile Include="..\..\Code\Transition\TransitionViewReadiness.cs" Link="TransitionViewReadiness.cs" />
     <Compile Include="..\..\Code\Telemetry\NinjaSlayerTelemetryIdentityTracker.cs" Link="NinjaSlayerTelemetryIdentityTracker.cs" />
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />
+    <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
+    <Compile Include="..\..\Content\NinjaSlayerSettingsData.cs" Link="NinjaSlayerSettingsData.cs" />
+    <Compile Include="..\..\Content\NinjaSlayerRunRules.cs" Link="NinjaSlayerRunRules.cs" />
+    <Compile Include="..\..\Content\RedesignV1Rules.cs" Link="RedesignV1Rules.cs" />
   </ItemGroup>
 </Project>

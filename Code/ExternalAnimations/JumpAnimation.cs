@@ -19,6 +19,20 @@ public static class JumpAnimation
         && state.Tween.IsValid()
         && state.Tween.IsRunning();
 
+    internal static void StopForFinisher(Creature creature)
+    {
+        StopForAirChannel(creature);
+        HopAnimation.StopForAirChannel(creature);
+    }
+
+    internal static void StopForAirChannel(Creature creature)
+    {
+        if (ActiveTweens.Remove(creature, out JumpState? state))
+        {
+            state.StopAndRestore();
+        }
+    }
+
     public static async Task Play(Creature creature)
     {
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
@@ -34,6 +48,8 @@ public static class JumpAnimation
         }
 
         Node2D target = NinjaSlayerVisualRig.GetAirborneAnchor(visuals) ?? visuals;
+        NinjaSlayerRapidAnimationCoordinator.CancelVisualTailForAction(creature);
+        HopAnimation.StopForAirChannel(creature);
         if (ActiveTweens.Remove(creature, out JumpState? previous))
         {
             previous.StopAndRestore();

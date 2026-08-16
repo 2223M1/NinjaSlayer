@@ -1,4 +1,12 @@
 {
   "schemaVersion": 1,
-  "items": []
+  "items": [
+    {
+      "id": "sawatari-empty-hand-placeholder",
+      "source": "NinjaSlayer/images/monsters/sawatari.png",
+      "currentAsset": "NinjaSlayer/images/monsters/sawatari.png",
+      "targetAsset": "Final Forest Sawatari combat visuals with bamboo spear, firearm, and trap choreography",
+      "releaseBlocking": false
+    }
+  ]
 }

@@ -9,7 +9,8 @@ internal enum SmokePhase
 {
     Fresh,
     Resume,
-    FullAutoSlay
+    FullAutoSlay,
+    SawatariSameCombat
 }
 
 internal sealed record SmokeConfiguration(

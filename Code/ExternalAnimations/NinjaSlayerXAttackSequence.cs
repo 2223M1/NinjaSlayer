@@ -21,7 +21,7 @@ public static class NinjaSlayerXAttackSequence
             return;
         }
 
-        XAttackComboMovement.BeginCombo(creature);
+        XAttackComboMovement.BeginCombo(creature, perHitDelay);
         bool useSlowAttack = hits <= 4
             || NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
         Func<Action, Task> executeHits = async finishSpinEarly =>

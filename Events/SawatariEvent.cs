@@ -1,0 +1,208 @@
+using Godot;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Events;
+using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Acts;
+using MegaCrit.Sts2.Core.Nodes.Events;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.TestSupport;
+using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.Patches;
+using NinjaSlayer.Content;
+using NinjaSlayer.Monsters;
+using NinjaSlayer.Scripts;
+using STS2RitsuLib.Interop.AutoRegistration;
+using STS2RitsuLib.Scaffolding.Content;
+
+namespace NinjaSlayer.Events;
+
+[RegisterActEvent(typeof(Overgrowth))]
+[RegisterActEvent(typeof(Underdocks))]
+public sealed class SawatariEvent : ModEventTemplate
+{
+    private const float InitialNarrativeSeconds = 2.5f;
+
+    public override bool IsShared => true;
+    public override EventLayoutType LayoutType => EventLayoutType.Combat;
+
+    public override EncounterModel CanonicalEncounter
+    {
+        get
+        {
+            RunState runState = RunManager.Instance.DebugOnlyGetState()
+                ?? throw new InvalidOperationException("Sawatari event requires an active run.");
+            return SawatariEventRoute.ResolveEncounter(runState.Act);
+        }
+    }
+
+    public override bool IsAllowed(IRunState runState) =>
+        runState.CurrentActIndex == 0
+        && NinjaSlayerContentAccess.HasNinjaSlayer(runState);
+
+    protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
+    [
+        new EventOption(this, null, InitialOptionKey("WAIT"))
+    ];
+
+    public override IEnumerable<string> GetAssetPaths(IRunState runState)
+    {
+        if (TestMode.IsOn)
+        {
+            return [];
+        }
+
+        return base.GetAssetPaths(runState)
+            .Concat(ModelDb.Monster<SawatariMonster>().AssetPaths)
+            .Distinct();
+    }
+
+    public override void OnRoomEnter() => ClearCurrentOptions();
+
+    public override Task AfterEventStarted()
+    {
+        Player? owner = Owner;
+        if (owner == null || !LocalContext.IsMe(owner))
+        {
+            return Task.CompletedTask;
+        }
+
+        return BeginLocalEvent(owner);
+    }
+
+    internal void BeginEmbeddedCombat() => EnterCombatWithoutExitingEvent(
+        GameCompatibility.ResolveEventCombatEncounter(CanonicalEncounter),
+        [],
+        shouldResumeAfterCombat: false);
+
+    internal void ShowIntermissionPage()
+    {
+        SetEventState(
+            PageDescription("INTERMISSION"),
+            [
+                new EventOption(
+                    this,
+                    TakeRegularLoot,
+                    ModOptionKey("INTERMISSION", "TAKE_LOOT")),
+                new EventOption(
+                    this,
+                    StartDuel,
+                    ModOptionKey("INTERMISSION", "DUEL"))
+            ]);
+    }
+
+    internal void ShowDuelResultPage()
+    {
+        SetEventState(
+            PageDescription("DUEL_RESULT"),
+            [
+                new EventOption(
+                    this,
+                    TakeDuelRewards,
+                    ModOptionKey("DUEL_RESULT", "TAKE_LOOT"))
+            ]);
+    }
+
+    internal void FinishForFallback()
+    {
+        if (!IsFinished)
+        {
+            SetEventFinished(PageDescription("INTERMISSION"));
+        }
+    }
+
+    private async Task BeginLocalEvent(Player owner)
+    {
+        SawatariEvent[] events = RunManager.Instance.EventSynchronizer.Events
+            .OfType<SawatariEvent>()
+            .ToArray();
+        SawatariEventSession? session = null;
+        try
+        {
+            var state = GameCompatibility.EventCombat.GetEmbeddedCombatState(this)
+                ?? throw new InvalidOperationException("Embedded Sawatari combat state is unavailable.");
+            NCombatRoom room = NEventRoom.Instance?.EmbeddedCombatRoom
+                ?? throw new InvalidOperationException("Embedded Sawatari combat room is unavailable.");
+            EventRoom eventRoom = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom as EventRoom
+                ?? throw new InvalidOperationException("Sawatari event room is unavailable.");
+
+            session = SawatariEventSession.Create(state, room, events, owner, eventRoom);
+            await Cmd.Wait(InitialNarrativeSeconds);
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Error($"Sawatari event setup failed; continuing as a normal encounter: {exception}");
+            session?.AbortBeforeCombat();
+            SawatariEventUi.Hide();
+            foreach (SawatariEvent eventModel in events)
+            {
+                eventModel.FinishForFallback();
+                eventModel.BeginEmbeddedCombat();
+            }
+            return;
+        }
+
+        SawatariEventUi.Hide();
+        foreach (SawatariEvent eventModel in events)
+        {
+            eventModel.BeginEmbeddedCombat();
+        }
+    }
+
+    private Task TakeRegularLoot()
+    {
+        SetEventFinished(PageDescription("INTERMISSION"));
+        return RunLocalSession(session => session.TakeRegularLoot());
+    }
+
+    private Task StartDuel()
+    {
+        ClearCurrentOptions();
+        return RunLocalSession(session => session.StartDuel());
+    }
+
+    private Task TakeDuelRewards()
+    {
+        SetEventFinished(PageDescription("DUEL_RESULT"));
+        return RunLocalSession(session => session.TakeDuelRewards());
+    }
+
+    private Task RunLocalSession(Func<SawatariEventSession, Task> action)
+    {
+        Player? owner = Owner;
+        if (owner == null || !LocalContext.IsMe(owner))
+        {
+            return Task.CompletedTask;
+        }
+
+        return SawatariEventSession.TryGet(owner.Creature.CombatState, out SawatariEventSession? session)
+            ? action(session)
+            : Task.CompletedTask;
+    }
+}
+
+internal static class SawatariEventUi
+{
+    public static void Hide() =>
+        (NEventRoom.Instance?.Layout as NCombatEventLayout)?.HideEventVisuals();
+
+    public static void Show(bool isMultiplayer)
+    {
+        NCombatEventLayout? layout = NEventRoom.Instance?.Layout as NCombatEventLayout;
+        if (layout == null)
+        {
+            throw new InvalidOperationException("Sawatari event layout is unavailable.");
+        }
+
+        layout.GetNode<CanvasItem>("%EventDescription").Visible = true;
+        layout.GetNode<CanvasItem>("%SharedEventLabel").Visible = isMultiplayer;
+        Control options = layout.GetNode<Control>("%OptionsContainer");
+        options.Visible = true;
+        options.GetChildren().OfType<Control>().FirstOrDefault()?.GrabFocus();
+    }
+}

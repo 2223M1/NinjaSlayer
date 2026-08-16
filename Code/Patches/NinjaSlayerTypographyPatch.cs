@@ -22,7 +22,7 @@ public sealed class NinjaSlayerCardTitleTypographyPatch : IPatchMethod
 
     public static void Postfix(NCard __instance)
     {
-        if (__instance.Model?.Pool is not NinjaSlayerCardPool)
+        if (__instance.Model?.Pool is not NinjaSlayerCardPoolTemplate)
         {
             return;
         }

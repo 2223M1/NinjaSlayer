@@ -58,6 +58,48 @@ namespace NinjaSlayer.Code.Patches
 
 namespace NinjaSlayer.Powers
 {
+    public sealed partial class EveryThirdAttackPower
+    {
+#if NINJASLAYER_LEGACY_DAMAGE_API
+        public override decimal ModifyDamageMultiplicative(
+            Creature? target,
+            decimal amount,
+            ValueProp props,
+            Creature? dealer,
+            CardModel? cardSource) =>
+            ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
+#else
+        public override decimal ModifyDamageMultiplicative(
+            Creature? target,
+            decimal amount,
+            ValueProp props,
+            Creature? dealer,
+            CardModel? cardSource,
+            CardPlay? cardPlay) =>
+            ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
+#endif
+    }
+
+    public sealed partial class NullifyHitsPower
+    {
+#if NINJASLAYER_LEGACY_DAMAGE_API
+        public override decimal ModifyDamageCap(
+            Creature? target,
+            ValueProp props,
+            Creature? dealer,
+            CardModel? cardSource) =>
+            ModifyDamageCapCore(target, props, dealer, cardSource);
+#else
+        public override decimal ModifyDamageCap(
+            Creature? target,
+            ValueProp props,
+            Creature? dealer,
+            CardModel? cardSource,
+            CardPlay? cardPlay) =>
+            ModifyDamageCapCore(target, props, dealer, cardSource);
+#endif
+    }
+
     public sealed partial class DamageFocusPower
     {
 #if NINJASLAYER_LEGACY_DAMAGE_API
@@ -99,6 +141,31 @@ namespace NinjaSlayer.Powers
             CardModel? cardSource,
             CardPlay? cardPlay) =>
             ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
+#endif
+    }
+}
+
+namespace NinjaSlayer.Cards.RedesignV1
+{
+    public sealed partial class ClankDrinkTeaRedesignV1
+    {
+#if NINJASLAYER_LEGACY_DAMAGE_API
+        public override decimal ModifyDamageAdditive(
+            Creature? target,
+            decimal amount,
+            ValueProp props,
+            Creature? dealer,
+            CardModel? cardSource) =>
+            ModifyDamageAdditiveCore(target, amount, props, dealer, cardSource);
+#else
+        public override decimal ModifyDamageAdditive(
+            Creature? target,
+            decimal amount,
+            ValueProp props,
+            Creature? dealer,
+            CardModel? cardSource,
+            CardPlay? cardPlay) =>
+            ModifyDamageAdditiveCore(target, amount, props, dealer, cardSource);
 #endif
     }
 }

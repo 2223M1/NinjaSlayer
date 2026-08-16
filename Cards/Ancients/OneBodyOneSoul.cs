@@ -11,6 +11,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
+[RegisterCard(typeof(NinjaSlayerRedesignCardPool))]
 public sealed class OneBodyOneSoul : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OneBodyOneSoul), 3, CardType.Power, CardRarity.Ancient, TargetType.Self, true);

@@ -1,3 +1,4 @@
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
 
@@ -31,6 +32,32 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
+        patcher.RegisterPatch<EventValidationRunGenerationPatch>();
+        patcher.RegisterPatch<NinjaSlayerRunRulesCharacterPatch>();
+        patcher.RegisterPatch<NinjaSlayerCanonicalCharacterIdPatch>();
+        patcher.RegisterPatch<NinjaSlayerRunProgressIdentityPatch>();
+        patcher.RegisterPatch<NinjaSlayerGameOverBadgeIdentityPatch>();
+        patcher.RegisterPatch<NinjaSlayerCombatProgressIdentityPatch>();
+        patcher.RegisterPatch<ChadoBlockPower.EnergyGainPatch>();
+        patcher.RegisterPatch<SawatariActRoomGenerationPatch>();
+        patcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
+        patcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
+        patcher.RegisterPatch<SawatariPullEventPatch>();
+        patcher.RegisterPatch<SawatariRoomVisitPatch>();
+        patcher.RegisterPatch<SawatariCombatEndGatePatch>();
+        patcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
+        patcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
+        patcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();
+        patcher.RegisterPatch<FriendlyCompanionPotionSelectedPatch>();
+        patcher.RegisterPatch<FriendlyCompanionPotionDeselectedPatch>();
+        patcher.RegisterPatch<FriendlyCompanionTargetManagerPatch>();
+        patcher.RegisterPatch<FriendlyCompanionCardCanPlayPatch>();
+        patcher.RegisterPatch<FriendlyCompanionCardAutoPlayPatch>();
+        patcher.RegisterPatch<FriendlyCompanionControllerCardTargetPatch>();
+        patcher.RegisterPatch<FriendlyCompanionPotionThrowPatch>();
+        patcher.RegisterPatch<FriendlyCompanionPotionTargetPatch>();
+        patcher.RegisterPatch<SawatariDuelDeathAnimationPatch>();
+        patcher.RegisterPatch<SawatariDuelRewardsPatch>();
         patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
         patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
         patcher.RegisterPatch<AttackEvasionFeedbackScopePatch>();
@@ -78,6 +105,23 @@ internal sealed class CardResolutionPatchGroup : IModPatches
         patcher.RegisterPatch<CardPlayResolutionBeforePatch>();
         patcher.RegisterPatch<CardPlayResolutionAfterPatch>();
         patcher.RegisterPatch<CardResolutionCleanupPatch>();
+    }
+}
+
+internal sealed class RapidCardResolutionPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
+        patcher.RegisterPatch<RapidCardResolutionScopePatch>();
+        patcher.RegisterPatch<RapidPowerCardFlyPatch>();
+        patcher.RegisterPatch<RapidMultiCardPlayPatch>();
+    }
+}
+
+internal sealed class CombatPresentationPacingPatchGroup : IModPatches
+{
+    public static void AddTo(ModPatcher patcher)
+    {
     }
 }
 
@@ -161,13 +205,6 @@ internal sealed class FinisherPresentationPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerFinisherDeathStartPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
-    }
-}
-
-internal sealed class FinisherCadencePatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
     }
 }
 

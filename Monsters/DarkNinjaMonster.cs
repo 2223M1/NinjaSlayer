@@ -30,14 +30,18 @@ namespace NinjaSlayer.Monsters;
 public sealed class DarkNinjaMonster : ModMonsterTemplate
 {
     private static readonly Vector2 StandingShadowPosition = new(-8f, -20.625f);
-    private static readonly Vector2 StandingShadowScale = new(0.44f, 0.25f);
+    private static readonly Vector2 StandingShadowScale = new(0.432f, 0.245f);
     private static readonly Vector2 CombatShadowPosition = new(5f, -20.625f);
-    private static readonly Vector2 CombatShadowScale = new(0.6f, 0.28f);
+    private static readonly Vector2 CombatShadowScale = new(0.589f, 0.275f);
 
     internal const string StandingTexturePath =
         "res://NinjaSlayer/images/monsters/dark_ninja_standing.png";
     internal const string CombatTexturePath =
         "res://NinjaSlayer/images/monsters/dark_ninja.png";
+    internal const string StandingShadowTexturePath =
+        "res://NinjaSlayer/images/shadows/dark_ninja_standing_shadow.png";
+    internal const string CombatShadowTexturePath =
+        "res://NinjaSlayer/images/shadows/dark_ninja_combat_shadow.png";
     internal const string BladeGlowTexturePath =
         "res://NinjaSlayer/images/monsters/dark_ninja_blade_glow.png";
 
@@ -135,7 +139,12 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
 
     public override IEnumerable<string> AssetPaths =>
         base.AssetPaths
-            .Concat([StandingTexturePath, CombatTexturePath])
+            .Concat([
+                StandingTexturePath,
+                CombatTexturePath,
+                StandingShadowTexturePath,
+                CombatShadowTexturePath
+            ])
             .Concat(DarkNinjaBladeChargePresentation.AssetPaths)
             .Concat(DarkNinjaSpecialAttackPresentation.AssetPaths)
             .Concat(DarkNinjaBattleFirePresentation.AssetPaths);
@@ -212,6 +221,9 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     private async Task CounterStanceMove(IReadOnlyList<Creature> _)
     {
         EnterCombatStance();
+        NRunMusicController.Instance?.UpdateMusicParameter(
+            NinjaSlayerAudio.DarkNinjaProgressParameter,
+            NinjaSlayerAudio.DarkNinjaBattleProgress);
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaBeppinAwakensEvent);
         var choiceContext = new ThrowingPlayerChoiceContext();
         Task bladeCharge = DarkNinjaBladeChargePresentation.Play(Creature);
@@ -316,17 +328,28 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
 
         try
         {
-            body.Texture = PreloadManager.Cache.GetTexture2D(texturePath);
             bool isCombatPose = texturePath == CombatTexturePath;
+            string shadowTexturePath = isCombatPose
+                ? CombatShadowTexturePath
+                : StandingShadowTexturePath;
+            Texture2D bodyTexture = PreloadManager.Cache.GetTexture2D(texturePath);
+            Texture2D shadowTexture = PreloadManager.Cache.GetTexture2D(shadowTexturePath);
             Vector2 shadowPosition = isCombatPose ? CombatShadowPosition : StandingShadowPosition;
             Vector2 shadowScale = isCombatPose ? CombatShadowScale : StandingShadowScale;
+            body.Texture = bodyTexture;
+            Sprite2D? shadow = NinjaSlayerVisualRig.GetShadow(visuals);
+            if (shadow != null)
+            {
+                shadow.Texture = shadowTexture;
+            }
+
             var shadowController = visuals?.GetNodeOrNull<NinjaSlayerShadowController>(
                 NinjaSlayerVisualRig.ShadowControllerNodeName);
             if (shadowController != null)
             {
                 shadowController.SetAuthoredPresentation(shadowPosition, shadowScale);
             }
-            else if (NinjaSlayerVisualRig.GetShadow(visuals) is { } shadow)
+            else if (shadow != null)
             {
                 shadow.Position = shadowPosition;
                 shadow.Scale = shadowScale;

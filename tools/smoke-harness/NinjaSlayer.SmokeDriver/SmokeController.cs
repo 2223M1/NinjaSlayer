@@ -16,12 +16,14 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
+using MegaCrit.Sts2.Core.Nodes.Events;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Screens;
@@ -42,12 +44,13 @@ using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Diagnostics;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
+using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.SmokeDriver;
 
-internal sealed class SmokeController
+internal sealed partial class SmokeController
 {
     private const int RestartRequestedExitCode = 20;
     private const string InjectedDarkStrikeFailure = "Injected Dark Strike damage-hook failure.";
@@ -58,6 +61,8 @@ internal sealed class SmokeController
     private readonly TaskCompletionSource _firstCombatCompleted =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _firstMapReached =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _sawatariCompleted =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Creature? _observedDarkStrikeAttacker;
     private Creature[] _observedDarkStrikeTargets = [];
@@ -70,6 +75,14 @@ internal sealed class SmokeController
     private int _darkStrikeAfterAttackCount;
     private bool _throwOnDarkStrikeDamageHook;
     private Action? _onFirstDarkStrikeDamageHook;
+    private ICombatState? _observedSawatariCombat;
+    private int _sawatariBeforeCombatStartCount;
+    private int _sawatariAfterCombatEndCount;
+    private int _sawatariDuelBannerCount;
+    private bool _observeSawatariDuelBanner;
+    private int _tutorialUnknownRollCount;
+    private int _hostFilteredUnknownRollCount;
+    private int _sawatariEventForced;
     private int _firstCombatClaimed;
     private int _firstMapClaimed;
 
@@ -81,7 +94,8 @@ internal sealed class SmokeController
     }
 
     public static SmokeController? Current { get; private set; }
-    public bool ShouldForceCharacter => _configuration.Phase is SmokePhase.Fresh or SmokePhase.FullAutoSlay;
+    public bool ShouldForceCharacter => _configuration.Phase is
+        SmokePhase.Fresh or SmokePhase.FullAutoSlay or SmokePhase.SawatariSameCombat;
 
     public void Start()
     {
@@ -109,6 +123,80 @@ internal sealed class SmokeController
 
         result = HoldFirstMapAsync();
         return true;
+    }
+
+    public bool TryHandleSawatariEventCombat(CancellationToken cancellationToken, ref Task result)
+    {
+        if (_configuration.Phase != SmokePhase.SawatariSameCombat
+            || !RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any())
+        {
+            return false;
+        }
+
+        result = VerifySawatariEventCombat(cancellationToken);
+        return true;
+    }
+
+    public void ForceFirstSawatariEvent(RunState runState, ref EventModel nextEvent)
+    {
+        if (_configuration.Phase != SmokePhase.SawatariSameCombat
+            || Interlocked.Exchange(ref _sawatariEventForced, 1) != 0)
+        {
+            return;
+        }
+
+        EventModel sawatari = ModelDb.Event<SawatariEvent>();
+        runState.AddVisitedEvent(sawatari);
+        nextEvent = sawatari;
+    }
+
+    public void ObserveSawatariBeforeCombatStart(ICombatState? combatState)
+    {
+        if (ReferenceEquals(combatState, _observedSawatariCombat))
+        {
+            _sawatariBeforeCombatStartCount++;
+        }
+    }
+
+    public void ObserveSawatariAfterCombatEnd(ICombatState? combatState)
+    {
+        if (ReferenceEquals(combatState, _observedSawatariCombat))
+        {
+            _sawatariAfterCombatEndCount++;
+        }
+    }
+
+    public void ObserveCombatStartBanner()
+    {
+        if (_observeSawatariDuelBanner)
+        {
+            _sawatariDuelBannerCount++;
+        }
+    }
+
+    public void ObserveUnknownRoomRoll(
+        IRunState runState,
+        int hookCalls,
+        bool monsterOddsRestored)
+    {
+        bool tutorialUnknown = runState.UnlockState.NumberOfRuns == 0
+            && runState.MapPointHistory
+                .SelectMany(history => history)
+                .Count(entry => entry.MapPointType == MapPointType.Unknown) < 3;
+        Require(
+            hookCalls == (tutorialUnknown ? 0 : 1),
+            $"UnknownMapPointOdds.Roll invoked room-type hooks {hookCalls} times on a "
+            + (tutorialUnknown ? "tutorial" : "normal")
+            + " roll.");
+        Require(monsterOddsRestored, "UnknownMapPointOdds.Roll leaked temporary MonsterOdds.");
+        if (tutorialUnknown)
+        {
+            _tutorialUnknownRollCount++;
+        }
+        else
+        {
+            _hostFilteredUnknownRollCount++;
+        }
     }
 
     private async Task HoldFirstMapAsync()
@@ -215,6 +303,8 @@ internal sealed class SmokeController
         try
         {
             Require(exitCode == 0, $"AutoSlay requested failure exit code {exitCode}.");
+            Require(_tutorialUnknownRollCount > 0, "Full AutoSlay did not exercise tutorial unknown-room rolls.");
+            Require(_hostFilteredUnknownRollCount > 0, "Full AutoSlay did not exercise host-filtered unknown-room rolls.");
             ValidateRuntimeIdle("full-autoslay.runtime-idle");
             _checkpoints.Write("full-autoslay.completed");
         }
@@ -234,6 +324,7 @@ internal sealed class SmokeController
             ?? throw new InvalidOperationException("Combat state was unavailable.");
         Player player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())
             ?? throw new InvalidOperationException("Local player was unavailable.");
+        ValidateRedesignRunIdentity(player);
         await WaitUntilAsync(
             () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "player play phase did not start",
@@ -272,6 +363,7 @@ internal sealed class SmokeController
 
         Creature focus = combatState.HittableEnemies.FirstOrDefault()
             ?? throw new InvalidOperationException("No hittable enemy remained for the X attack scenario.");
+        await VerifyRedesignCardsAndPowers(combatState, player, focus);
         await PlayerCmd.SetEnergy(1m, player);
         TornadoFist nonLethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(nonLethal, PileType.Hand);
@@ -327,8 +419,120 @@ internal sealed class SmokeController
             "The lethal X attack did not complete a finisher session.");
         bool combatEnded = await CombatManager.Instance.CheckWinCondition();
         Require(combatEnded && !CombatManager.Instance.IsInProgress, "The completed finisher did not end combat.");
+        ValidateRedesignCombatProgress(combatState);
         _checkpoints.Write("finisher.completed", data: HealthData(afterFinisher));
         _firstCombatCompleted.TrySetResult();
+    }
+
+    private async Task VerifySawatariEventCombat(CancellationToken cancellationToken)
+    {
+        await WaitUntilAsync(
+            () => CombatManager.Instance.IsInProgress,
+            "Sawatari combat did not start",
+            cancellationToken);
+        CombatManager manager = CombatManager.Instance;
+        CombatState state = manager.DebugOnlyGetState()
+            ?? throw new InvalidOperationException("Sawatari combat state was unavailable.");
+        NCombatRoom room = NEventRoom.Instance?.EmbeddedCombatRoom
+            ?? throw new InvalidOperationException("Sawatari combat room was unavailable.");
+        Player player = LocalContext.GetMe(state.RunState)
+            ?? throw new InvalidOperationException("Sawatari local player was unavailable.");
+        PlayerCombatState playerState = player.PlayerCombatState
+            ?? throw new InvalidOperationException("Sawatari player combat state was unavailable.");
+        object history = manager.History;
+        object rng = state.RunState.Rng;
+        CardPile[] piles = playerState.AllPiles.ToArray();
+        CardModel[] cards = playerState.AllCards.ToArray();
+        AbstractModel[] powers = player.Creature.Powers.Cast<AbstractModel>().ToArray();
+
+        _observedSawatariCombat = state;
+        _sawatariBeforeCombatStartCount = 0;
+        _sawatariAfterCombatEndCount = 0;
+        _sawatariDuelBannerCount = 0;
+        Func<bool> autoSlayerCheck = NonInteractiveMode.AutoSlayerCheck;
+        NonInteractiveMode.AutoSlayerCheck = static () => false;
+        try
+        {
+            Creature[] firstEnemies = state.Enemies.Where(enemy => enemy.IsAlive).ToArray();
+            Require(firstEnemies.Length > 0, "Sawatari's first combat had no enemies.");
+            await CreatureCmd.Kill(firstEnemies);
+            await WaitUntilAsync(
+                () => manager.IsPaused && GetSawatariOptions().Count == 2,
+                "Sawatari intermission did not pause combat and show both choices",
+                cancellationToken);
+
+            int round = state.RoundNumber;
+            int turn = playerState.TurnNumber;
+            int energy = playerState.Energy;
+            Require(ReferenceEquals(manager.DebugOnlyGetState(), state), "Sawatari intermission replaced CombatState.");
+            Require(ReferenceEquals(NEventRoom.Instance?.EmbeddedCombatRoom, room), "Sawatari intermission replaced CombatRoom.");
+            Require(ReferenceEquals(manager.History, history), "Sawatari intermission replaced combat history.");
+            Require(ReferenceEquals(state.RunState.Rng, rng), "Sawatari intermission replaced combat RNG.");
+            Require(!room.Ui.Visible, "Sawatari intermission left the combat UI visible.");
+            Require(manager.PlayerActionsDisabled, "Sawatari intermission left player actions enabled.");
+            await WaitFrames(12);
+            Require(state.RoundNumber == round, "Sawatari intermission advanced the combat round.");
+            Require(playerState.TurnNumber == turn, "Sawatari intermission advanced the player turn.");
+            Require(playerState.Energy == energy, "Sawatari intermission changed player energy.");
+            Require(piles.SequenceEqual(playerState.AllPiles), "Sawatari intermission replaced card piles.");
+            Require(cards.SequenceEqual(playerState.AllCards), "Sawatari intermission changed combat cards.");
+            Require(powers.SequenceEqual(player.Creature.Powers.Cast<AbstractModel>()), "Sawatari intermission changed player powers.");
+
+            _observeSawatariDuelBanner = true;
+            await UiHelper.Click(GetSawatariOptions()[1]);
+            await WaitUntilAsync(
+                () => !manager.IsPaused
+                    && state.Enemies.Any(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster),
+                "Sawatari duel did not resume the original combat",
+                cancellationToken);
+            _observeSawatariDuelBanner = false;
+            Require(ReferenceEquals(manager.DebugOnlyGetState(), state), "Sawatari duel created a second CombatState.");
+            Require(ReferenceEquals(NEventRoom.Instance?.EmbeddedCombatRoom, room), "Sawatari duel created a second CombatRoom.");
+            Require(_sawatariBeforeCombatStartCount == 0, "Sawatari duel reran BeforeCombatStart.");
+            Require(_sawatariDuelBannerCount == 1, "Sawatari duel did not show exactly one combat-start banner.");
+            Require(room.Ui.Visible, "Sawatari duel did not restore the combat UI.");
+
+            Creature duel = state.Enemies.Single(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster);
+            await CreatureCmd.Kill(duel);
+            await WaitUntilAsync(
+                () => manager.IsPaused && GetSawatariOptions().Count == 1,
+                "Sawatari duel result did not pause combat and show its reward choice",
+                cancellationToken);
+            Require(!room.Ui.Visible, "Sawatari duel result left the combat UI visible.");
+            Require(manager.PlayerActionsDisabled, "Sawatari duel result left player actions enabled.");
+            Require(ReferenceEquals(manager.DebugOnlyGetState(), state), "Sawatari duel result replaced CombatState.");
+
+            await UiHelper.Click(GetSawatariOptions()[0]);
+            await WaitUntilAsync(
+                () => !manager.IsInProgress,
+                "Sawatari combat did not end after the final reward choice",
+                cancellationToken);
+            Require(!manager.IsPaused, "Sawatari finalization left combat paused.");
+            Require(_sawatariAfterCombatEndCount == 1, "Sawatari combat did not run AfterCombatEnd exactly once.");
+            _checkpoints.Write("sawatari.same-combat-completed");
+            _sawatariCompleted.TrySetResult();
+        }
+        finally
+        {
+            NonInteractiveMode.AutoSlayerCheck = autoSlayerCheck;
+            _observeSawatariDuelBanner = false;
+            _observedSawatariCombat = null;
+        }
+    }
+
+    private static List<NEventOptionButton> GetSawatariOptions() =>
+        NEventRoom.Instance == null
+            ? []
+            : UiHelper.FindAll<NEventOptionButton>(NEventRoom.Instance)
+                .Where(button => !button.Option.IsLocked)
+                .ToList();
+
+    private async Task WaitFrames(int count)
+    {
+        for (int index = 0; index < count; index++)
+        {
+            await _tree.ToSignal(_tree, SceneTree.SignalName.ProcessFrame);
+        }
     }
 
     private async Task VerifyCardPlayEvasion(
@@ -1135,6 +1339,7 @@ internal sealed class SmokeController
             await WaitUntilAsync(() => NGame.Instance?.MainMenu is not null, "main menu did not initialize");
             ValidateLoadedMods();
             ValidateCoreCapabilities();
+            ValidateRedesignContent();
             if (_configuration.Phase == SmokePhase.Fresh)
             {
                 await RunFreshPhaseAsync();
@@ -1142,6 +1347,10 @@ internal sealed class SmokeController
             else if (_configuration.Phase == SmokePhase.Resume)
             {
                 await RunResumePhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.SawatariSameCombat)
+            {
+                await RunSawatariSameCombatPhaseAsync();
             }
             else
             {
@@ -1193,6 +1402,23 @@ internal sealed class SmokeController
         await Task.Delay(Timeout.InfiniteTimeSpan);
     }
 
+    private async Task RunSawatariSameCombatPhaseAsync()
+    {
+        NGame.Instance!.DebugSeedOverride = _configuration.Seed;
+        _checkpoints.Write("sawatari.starting");
+        var autoSlayer = new AutoSlayer();
+        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+
+        await WaitTaskAsync(
+            _sawatariCompleted.Task,
+            "Sawatari same-combat scenario did not complete",
+            TimeSpan.FromMinutes(3));
+        await WaitFrames(2);
+        ValidateRuntimeIdle("sawatari.runtime-idle");
+        _checkpoints.Write("sawatari.completed");
+        _tree.Quit(0);
+    }
+
     private async Task RunResumePhaseAsync()
     {
         Control mainMenu = _tree.Root.GetNode<Control>("/root/Game/RootSceneContainer/MainMenu");
@@ -1206,6 +1432,14 @@ internal sealed class SmokeController
             "saved run did not load",
             timeout: TimeSpan.FromMinutes(2));
         await WaitForRuntimeIdleAsync(CancellationToken.None);
+        Player player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())
+            ?? throw new InvalidOperationException("Resumed local player was unavailable.");
+        ValidateRedesignRunIdentity(player);
+        ModelId canonicalCharacterId = ModelDb.Character<NinjaSlayerCharacter>().Id;
+        ModelId redesignCharacterId = ModelDb.Character<NinjaSlayerRedesignCharacter>().Id;
+        int lossesBeforeAbandon = SaveManager.Instance.Progress
+            .GetOrCreateCharacterStats(canonicalCharacterId)
+            .TotalLosses;
         ValidateRuntimeIdle("resume.loaded");
         _checkpoints.Write("resume.loaded");
 
@@ -1230,6 +1464,12 @@ internal sealed class SmokeController
         await WaitUntilAsync(
             () => root.GetNodeOrNull<Control>("/root/Game/RootSceneContainer/MainMenu")?.IsVisibleInTree() == true,
             "main menu did not return after abandon");
+        Require(
+            SaveManager.Instance.Progress.GetOrCreateCharacterStats(canonicalCharacterId).TotalLosses == lossesBeforeAbandon + 1,
+            "Abandoning the Redesign run did not record exactly one canonical Ninja Slayer loss.");
+        Require(
+            !SaveManager.Instance.Progress.CharacterStats.ContainsKey(redesignCharacterId),
+            "Abandoning the Redesign run created a separate hidden-character progress entry.");
         ValidateRuntimeIdle("resume.abandoned");
         _checkpoints.Write("resume.completed");
         _tree.Quit(0);
@@ -1273,7 +1513,12 @@ internal sealed class SmokeController
     private void ValidateCoreCapabilities()
     {
         NinjaSlayerRuntimeHealthSnapshot health = NinjaSlayerRuntimeHealth.Capture();
-        string[] required = ["gameplay", "prepared-safety", "prepared-gameplay", "finisher-core", "transition-core"];
+        string[] required =
+        [
+            "gameplay", "prepared-safety", "prepared-gameplay", "combat-presentation-pacing",
+            "rapid-card-resolution",
+            "finisher-core", "transition-core"
+        ];
         string[] unavailable = required
             .Where(id => !health.Capabilities.TryGetValue(id, out NinjaSlayerCapabilityHealth? status) || !status.IsOperational)
             .ToArray();

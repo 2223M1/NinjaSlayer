@@ -87,8 +87,8 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
         {
             await CreatureCmd.TriggerAnim(
                 Owner,
-                "Attack",
-                NinjaSlayerCharacterStats.AttackAnimDelay);
+                "SlowAttack",
+                CombatActionTiming.SlowAttackNormalSeconds);
             if (willConnect)
             {
                 NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(target);

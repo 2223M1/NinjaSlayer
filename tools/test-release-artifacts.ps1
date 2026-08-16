@@ -240,6 +240,41 @@ try {
     Assert-Throws {
         Resolve-NinjaSlayerSafeReplaceDirectory (Join-Path $volumeRoot 'NinjaSlayer')
     } 'below a dedicated parent'
+
+    $bundlePathFixture = Join-Path $temporaryRoot 'bundle-paths'
+    $stablePathFixture = Join-Path $bundlePathFixture 'stable'
+    $previewPathFixture = Join-Path $bundlePathFixture 'preview'
+    $stableDataFixture = Join-Path $bundlePathFixture 'stable-data'
+    foreach ($directory in @($stablePathFixture, $previewPathFixture, $stableDataFixture)) {
+        [IO.Directory]::CreateDirectory($directory) | Out-Null
+    }
+    $bundleScript = Join-Path $repositoryRoot 'tools\release\New-NinjaSlayerWorkshopBundle.ps1'
+    Assert-Throws {
+        & $bundleScript `
+            -StablePackageDirectory $stablePathFixture `
+            -PreviewPackageDirectory $previewPathFixture `
+            -StableSts2DataDir $stableDataFixture `
+            -OutputDirectory (Join-Path $stablePathFixture 'NinjaSlayer') `
+            -Version '0.1.0'
+    } 'dedicated NinjaSlayer directory'
+    Assert-Throws {
+        & $bundleScript `
+            -StablePackageDirectory $stablePathFixture `
+            -PreviewPackageDirectory $previewPathFixture `
+            -StableSts2DataDir $stableDataFixture `
+            -OutputDirectory (Split-Path -Parent $repositoryRoot) `
+            -Version '0.1.0'
+    } 'dedicated NinjaSlayer directory'
+    Assert-Throws {
+        & $bundleScript `
+            -StablePackageDirectory $stablePathFixture `
+            -PreviewPackageDirectory $previewPathFixture `
+            -StableSts2DataDir $stableDataFixture `
+            -OutputDirectory (Join-Path $bundlePathFixture 'bundle\NinjaSlayer') `
+            -BuildRoot $stablePathFixture `
+            -Version '0.1.0'
+    } 'Loader output must not overlap'
+
     $pckFixtureRoot = Join-Path $temporaryRoot 'pck-fixtures'
     [IO.Directory]::CreateDirectory($pckFixtureRoot) | Out-Null
     $validPck = Join-Path $pckFixtureRoot 'valid.pck'
@@ -248,6 +283,8 @@ try {
 
     foreach ($invalidPck in @(
         @{ Name = 'spine'; Entries = @('addons/spine/spine_godot_extension.gdextension'); Pattern = 'build-only Spine' },
+        @{ Name = 'output'; Entries = @('output/energy-counter-redesign/master.png.import'); Pattern = 'local work directory' },
+        @{ Name = 'sts2build'; Entries = @('.sts2build/stable/NinjaSlayer.pck'); Pattern = 'local work directory' },
         @{ Name = 'dll'; Entries = @('native/spine.dll'); Pattern = 'native platform library' },
         @{ Name = 'so'; Entries = @('native/libspine.so'); Pattern = 'native platform library' },
         @{ Name = 'dylib'; Entries = @('native/libspine.dylib'); Pattern = 'native platform library' },

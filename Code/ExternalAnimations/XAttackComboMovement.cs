@@ -13,21 +13,28 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 /// </summary>
 public static class XAttackComboMovement
 {
-    private const float ApproachDuration = NinjaSlayerCombatVisuals.SlowAttackLungeDuration;
-    private const float ReturnDuration = NinjaSlayerCombatVisuals.SlowAttackLungeDuration;
     private const float LungeDistance = NinjaSlayerCombatVisuals.SlowAttackLungeDistance;
 
     private static readonly Dictionary<Creature, ComboMovementState> ComboStates = new();
 
-    public static void BeginCombo(Creature creature)
+    public static void BeginCombo(Creature creature, float authoredHitDelay)
     {
-        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
-        {
-            _ = NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
+        float approachDuration = CombatActionTimingRuntime.Resolve(
+            authoredHitDelay,
+            Math.Min(authoredHitDelay * 0.5f, 0.25f));
+        if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
                 creature,
-                ApproachDuration,
-                out Task action);
-            _ = action;
+                approachDuration,
+                out _))
+        {
+            return;
+        }
+
+        if (NinjaSlayerRapidAnimationCoordinator.IsEnabled
+            && creature.Player?.Character is INinjaSlayerCharacter)
+        {
+            ComboStates[creature] = new ComboMovementState(
+                NinjaSlayerRapidAnimationCoordinator.BeginHeldSlowApproach(creature, approachDuration));
             return;
         }
 
@@ -42,7 +49,7 @@ public static class XAttackComboMovement
             previousState.StopAndRestore();
         }
 
-        var state = new ComboMovementState(creatureNode, creatureNode.Position);
+        var state = new ComboMovementState(creatureNode, creatureNode.Position, approachDuration);
         ComboStates[creature] = state;
         state.ApproachTask = PlayApproach(creature, state);
     }
@@ -55,6 +62,13 @@ public static class XAttackComboMovement
         }
 
         float direction = creature.IsPlayer ? 1f : -1f;
+        if (Mathf.IsZeroApprox(state.ApproachDuration))
+        {
+            state.CreatureNode.Position = state.BasePosition
+                + Vector2.Right * LungeDistance * direction;
+            return;
+        }
+
         var tween = state.CreatureNode.CreateTween();
         state.ActiveTween = tween;
         tween.TweenMethod(
@@ -68,7 +82,7 @@ public static class XAttackComboMovement
             }),
             0f,
             1f,
-            ApproachDuration
+            state.ApproachDuration
         ).SetTrans(Tween.TransitionType.Linear);
 
         bool completed = await TweenPlayback.AwaitCompletion(tween, state.CreatureNode);
@@ -87,7 +101,23 @@ public static class XAttackComboMovement
     {
         if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
         {
+            if (ComboStates.Remove(creature, out ComboMovementState? ownedState))
+            {
+                ownedState.StopWithoutRestore();
+            }
+
             await NinjaSlayerFinisherCinematic.WaitForOwnedActionPeak(creature);
+            return;
+        }
+
+        if (NinjaSlayerRapidAnimationCoordinator.IsEnabled
+            && creature.Player?.Character is INinjaSlayerCharacter)
+        {
+            if (ComboStates.Remove(creature, out ComboMovementState? rapidState))
+            {
+                await rapidState.ApproachTask;
+            }
+
             return;
         }
 
@@ -107,6 +137,13 @@ public static class XAttackComboMovement
             }
 
             Vector2 returnStart = state.CreatureNode.Position;
+            float returnDuration = CombatActionTimingRuntime.DamageRecoverySeconds;
+            if (Mathf.IsZeroApprox(returnDuration))
+            {
+                state.CreatureNode.Position = state.BasePosition;
+                return;
+            }
+
             var tween = state.CreatureNode.CreateTween();
             state.ActiveTween = tween;
             tween.TweenMethod(
@@ -117,7 +154,7 @@ public static class XAttackComboMovement
                 }),
                 0f,
                 1f,
-                ReturnDuration
+                returnDuration
             ).SetTrans(Tween.TransitionType.Linear);
 
             await TweenPlayback.AwaitCompletion(tween, state.CreatureNode);
@@ -133,24 +170,44 @@ public static class XAttackComboMovement
         }
     }
 
-    private sealed class ComboMovementState(NCreature creatureNode, Vector2 basePosition)
+    private sealed class ComboMovementState
     {
-        public NCreature CreatureNode { get; } = creatureNode;
-        public Vector2 BasePosition { get; } = basePosition;
+        public ComboMovementState(NCreature creatureNode, Vector2 basePosition, float approachDuration)
+        {
+            CreatureNode = creatureNode;
+            BasePosition = basePosition;
+            ApproachDuration = approachDuration;
+        }
+
+        public ComboMovementState(Task approachTask)
+        {
+            ApproachTask = approachTask;
+        }
+
+        public NCreature? CreatureNode { get; }
+        public Vector2 BasePosition { get; }
+        public float ApproachDuration { get; }
         public Task ApproachTask { get; set; } = Task.CompletedTask;
         public Tween? ActiveTween { get; set; }
 
         public void StopAndRestore()
+        {
+            StopWithoutRestore();
+
+            if (CreatureNode != null && GodotObject.IsInstanceValid(CreatureNode))
+            {
+                CreatureNode.Position = BasePosition;
+            }
+        }
+
+        public void StopWithoutRestore()
         {
             if (ActiveTween is { } tween && GodotObject.IsInstanceValid(tween) && tween.IsValid())
             {
                 tween.Kill();
             }
 
-            if (GodotObject.IsInstanceValid(CreatureNode))
-            {
-                CreatureNode.Position = BasePosition;
-            }
+            ActiveTween = null;
         }
     }
 }

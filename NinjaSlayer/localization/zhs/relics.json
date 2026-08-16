@@ -40,5 +40,14 @@
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.flavor": "赤黑之火漫过全身。另一道呼吸从神经元深处响起。",
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.title": "折纸之约",
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.description": "接下来的[blue]{Combats}[/blue]场战斗中，小季会与你并肩作战。",
-  "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.flavor": "“咱会跟上。”"
+  "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.flavor": "“咱会跟上。”",
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.title": "鸟居之约",
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.description": "接下来的[blue]{Combats}[/blue]场战斗中，由佳乃会与你并肩作战。",
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "“忍者杀手=SAN，我跟你走一段。”",
+  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.title": "茶道呼吸·实验型",
+  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将一张[gold]茶道呼吸[/gold]加入你的手牌。",
+  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.flavor": "呼吸、整顿、出击。",
+  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.title": "茶道呼吸·真髓·实验型",
+  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.description": "茶能量上限变为20，并立即回满。",
+  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.flavor": "气息贯通全身。"
 }

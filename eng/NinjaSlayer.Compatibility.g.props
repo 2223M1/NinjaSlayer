@@ -3,7 +3,7 @@
   <PropertyGroup>
     <NinjaSlayerHostChannelWasExplicit Condition="'$(NinjaSlayerHostChannel)' != ''">true</NinjaSlayerHostChannelWasExplicit>
     <NinjaSlayerHostChannel Condition="'$(NinjaSlayerHostChannel)' == ''">preview</NinjaSlayerHostChannel>
-    <NinjaSlayerRitsuLibVersion>0.5.1</NinjaSlayerRitsuLibVersion>
+    <NinjaSlayerRitsuLibVersion>0.5.12</NinjaSlayerRitsuLibVersion>
     <NinjaSlayerWorkshopItemId>3776911445</NinjaSlayerWorkshopItemId>
     <NinjaSlayerWorkshopVisibility>unlisted</NinjaSlayerWorkshopVisibility>
     <NinjaSlayerCompatibilityManifest>$(MSBuildThisFileDirectory)compatibility.json</NinjaSlayerCompatibilityManifest>
@@ -20,11 +20,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(NinjaSlayerHostChannel)' == 'preview'">
-    <NinjaSlayerGameApiVersion>0.110.1</NinjaSlayerGameApiVersion>
+    <NinjaSlayerGameApiVersion>0.111.0</NinjaSlayerGameApiVersion>
     <NinjaSlayerRitsuLibPackageId>STS2.RitsuLib</NinjaSlayerRitsuLibPackageId>
-    <NinjaSlayerManifestMinGameVersion>0.110.1</NinjaSlayerManifestMinGameVersion>
+    <NinjaSlayerManifestMinGameVersion>0.111.0</NinjaSlayerManifestMinGameVersion>
     <NinjaSlayerDistributionChannel>beta</NinjaSlayerDistributionChannel>
-    <NinjaSlayerHostModuleMvid>c0f649b8-8d57-4a9c-8b07-21aece97dca0</NinjaSlayerHostModuleMvid>
+    <NinjaSlayerHostModuleMvid>73b63ee0-6c0a-47bb-b0d1-b21f6d94222e</NinjaSlayerHostModuleMvid>
     <NinjaSlayerRuntimeAssemblies>Sentry.dll;Sentry.Godot.dll;SmartFormat.dll;SmartFormat.ZString.dll;Steamworks.NET.dll</NinjaSlayerRuntimeAssemblies>
     <DefineConstants>$(DefineConstants);NINJASLAYER_CHANNEL_PREVIEW</DefineConstants>
   </PropertyGroup>

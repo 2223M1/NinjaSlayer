@@ -278,6 +278,12 @@ function renderContract(name, channel, ritsuLibVersion) {
   const contract = channel.hostContract;
   const draw = contract.preparedDraw;
   const internalMethod = draw.internalMethod ? renderMethod(draw.internalMethod) : 'null';
+  const sensitive = new Map(contract.sensitiveMethods.map(method => [method.id, method]));
+  const rapid = id => {
+    const method = sensitive.get(id);
+    if (!method) throw new Error(`${name}.hostContract is missing ${id}.`);
+    return renderMethod(method);
+  };
   return `        new(
             "${name}",
             "${channel.gameApiVersion}",
@@ -293,7 +299,16 @@ function renderContract(name, channel, ritsuLibVersion) {
                 ${internalMethod},
                 ${renderMethod(draw.asyncMoveNext)}),
             ${renderMethod(contract.preparedQueueAdd)},
-            ${renderMethod(contract.preparedQueueRemove)})`;
+            ${renderMethod(contract.preparedQueueRemove)},
+            new(
+                ${rapid('rapid-card.on-play-wrapper')},
+                ${rapid('rapid-card.add-during-manual-play')},
+                ${rapid('rapid-card.power-fly')},
+                ${rapid('rapid-card.multi-play')}),
+            new(
+                ${rapid('tornado.creature-damage')},
+                ${rapid('tornado.power-apply')},
+                ${rapid('tornado.power-modify-amount')}))`;
 }
 
 function renderMethod(method) {

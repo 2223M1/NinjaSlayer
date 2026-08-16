@@ -32,6 +32,11 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         ref float __result,
         out bool __state)
     {
+        if (__instance.Entity.Player?.Character is INinjaSlayerCharacter)
+        {
+            NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(__instance.Entity);
+        }
+
         if (ArchitectVictoryCleanup.TryConsume(__instance.Entity))
         {
             __state = false;

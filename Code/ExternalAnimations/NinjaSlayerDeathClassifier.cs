@@ -158,7 +158,7 @@ internal static class NinjaSlayerDeathClassifier
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: 1,
-                    capture.VfxBaselineChildIds),
+                    VfxBaselineChildIds: capture.VfxBaselineChildIds),
                 combatState,
                 room,
                 out FinisherSession? session))

@@ -16,6 +16,17 @@ internal readonly record struct PreparedDrawHostContract(
     MethodBodyContract? InternalMethod,
     MethodBodyContract AsyncMoveNext);
 
+internal readonly record struct RapidCardResolutionHostContract(
+    MethodBodyContract OnPlayWrapper,
+    MethodBodyContract AddDuringManualPlay,
+    MethodBodyContract PowerFly,
+    MethodBodyContract MultiPlay);
+
+internal readonly record struct CombatPresentationPacingHostContract(
+    MethodBodyContract CreatureDamage,
+    MethodBodyContract PowerApply,
+    MethodBodyContract PowerModifyAmount);
+
 internal sealed record GameHostContractProfile(
     string Channel,
     string GameVersion,
@@ -27,7 +38,9 @@ internal sealed record GameHostContractProfile(
     MethodBodyContract LethalDamage,
     PreparedDrawHostContract PreparedDraw,
     MethodBodyContract PreparedQueueAdd,
-    MethodBodyContract PreparedQueueRemove)
+    MethodBodyContract PreparedQueueRemove,
+    RapidCardResolutionHostContract RapidCardResolution,
+    CombatPresentationPacingHostContract CombatPresentationPacing)
 {
     public static IReadOnlyList<GameHostContractProfile> Supported =>
         GeneratedGameHostContracts.Current;
@@ -50,7 +63,6 @@ internal sealed record GameHostContractProfile(
         string.Equals(
             fingerprint.AssemblyVersion,
             AssemblyVersion,
-            StringComparison.Ordinal)
-        && fingerprint.ModuleMvid == ModuleMvid;
+            StringComparison.Ordinal);
 
 }

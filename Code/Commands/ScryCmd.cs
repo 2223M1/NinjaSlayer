@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Interop;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.Commands;
 
@@ -47,6 +48,11 @@ public static class ScryCmd
 
         int discardedAmount = cardsToDiscard.Count;
         int viewedAmount = cardsToScry.Count;
+        foreach (IRedesignScryListener listener in player.Creature.Powers.OfType<IRedesignScryListener>().ToList())
+        {
+            await listener.AfterScry(choiceContext, viewedAmount, discardedAmount);
+        }
+
         if (WatcherScryHookInterop.IsReady)
         {
             await WatcherScryHookInterop.OnScryed(choiceContext, player, viewedAmount, discardedAmount);

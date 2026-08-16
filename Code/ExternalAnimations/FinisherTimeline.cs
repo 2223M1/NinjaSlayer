@@ -19,6 +19,7 @@ internal static class FinisherTimeline
     public const float WatchdogSeconds = 90f;
     public const float EnemyKnockbackPixels = 30f;
     public const float EnhancedEnemyTiltDegrees = 3f;
+    public const float ReverseVictimRotationDegrees = 15f;
     public const float ImpactVfxTargetMargin = 160f;
     public static readonly Vector2 JumpDeathSquash = new(1.2f, 0.55f);
     public static readonly Vector2 DefaultDeathSquash = new(0.55f, 1.2f);

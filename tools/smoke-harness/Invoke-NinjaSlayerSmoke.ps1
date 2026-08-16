@@ -12,7 +12,8 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay')][string]$Mode = 'FirstCombatRestart',
+    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat')]
+    [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
     [string]$Repository = 'local',
@@ -133,7 +134,9 @@ function Stop-SmokeProcesses {
 
 function Invoke-SmokePhase {
     param(
-        [Parameter(Mandatory)][ValidateSet('Fresh', 'Resume', 'FullAutoSlay')][string]$Phase,
+        [Parameter(Mandatory)]
+        [ValidateSet('Fresh', 'Resume', 'FullAutoSlay', 'SawatariSameCombat')]
+        [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
 
@@ -144,6 +147,7 @@ function Invoke-SmokePhase {
             'Fresh' { 0 }
             'Resume' { 1 }
             'FullAutoSlay' { 2 }
+            'SawatariSameCombat' { 3 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -313,7 +317,7 @@ $firewallLease = $null
 $succeeded = $false
 $effectivePhaseTimeoutSeconds = if ($PhaseTimeoutSeconds -gt 0) {
     $PhaseTimeoutSeconds
-} elseif ($Mode -eq 'FullAutoSlay') {
+    } elseif ($Mode -in @('FullAutoSlay', 'SawatariSameCombat')) {
     3600
 } else {
     300
@@ -409,6 +413,9 @@ try {
     if ($Mode -eq 'FullAutoSlay') {
         Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0
     }
+    elseif ($Mode -eq 'SawatariSameCombat') {
+        Invoke-SmokePhase -Phase SawatariSameCombat -ExpectedExitCode 0
+    }
     else {
         Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 20
         Invoke-SmokePhase -Phase Resume -ExpectedExitCode 0
@@ -422,6 +429,9 @@ try {
     $checkpoints = @(Get-Content -LiteralPath $checkpointPath | ForEach-Object { $_ | ConvertFrom-Json })
     $requiredCheckpoints = if ($Mode -eq 'FullAutoSlay') {
         @('full-autoslay.starting', 'full-autoslay.runtime-idle', 'full-autoslay.completed')
+    }
+    elseif ($Mode -eq 'SawatariSameCombat') {
+        @('sawatari.starting', 'sawatari.same-combat-completed', 'sawatari.runtime-idle', 'sawatari.completed')
     }
     else {
         @('prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'resume.loaded', 'resume.completed')
@@ -447,7 +457,11 @@ try {
         ritsuLibRuntimeVersion = $RitsuLibRuntimeVersion
         bundleSha256 = $bundleSha256
         compatibilityManifestSha256 = $compatibilityManifestSha256
-        mode = if ($Mode -eq 'FullAutoSlay') { 'singleplayer-full-autoslay' } else { 'singleplayer-first-combat-restart' }
+        mode = switch ($Mode) {
+            'FullAutoSlay' { 'singleplayer-full-autoslay' }
+            'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
+            default { 'singleplayer-first-combat-restart' }
+        }
         repository = $Repository
         workflowRunId = $RunId
         completedAtUtc = [DateTimeOffset]::UtcNow.ToString('O')

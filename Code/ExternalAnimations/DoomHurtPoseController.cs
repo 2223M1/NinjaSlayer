@@ -7,6 +7,24 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class DoomHurtPoseController
 {
+    public static bool TryPauseCurrentHurtAnimation(NCreature creatureNode)
+    {
+        if (!creatureNode.SpineAnimation.IsValid)
+        {
+            return false;
+        }
+
+        MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
+        using IDisposable trackLease = GameCompatibility.NativeHandles.Lease(track);
+        if (track?.GetAnimationName() != "hurt")
+        {
+            return false;
+        }
+
+        track.SetTimeScale(0f);
+        return true;
+    }
+
     public static bool TryFreeze(NCreature creatureNode)
     {
         if (!creatureNode.SpineAnimation.IsValid)

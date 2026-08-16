@@ -16,14 +16,24 @@ public sealed class StableMethodBodyContractTests
             profile.LethalDamage));
     }
 
+    [Fact]
+    public void StableFingerprintTreatsMvidAsDiagnosticOnly()
+    {
+        GameHostContractProfile profile = GameHostContractProfile.AllKnown
+            .Single(item => item.GameVersion == "0.107.1");
+
+        Assert.True(StableMethodBodyContract.Matches(
+            Fingerprint(profile, profile.LethalDamage) with { ModuleMvid = Guid.NewGuid() },
+            profile,
+            profile.LethalDamage));
+    }
+
     [Theory]
-    [InlineData("0.2.0.0", "97f10687-c306-4798-ab75-8b9f23f34dfb", 0x06008154, "93374cd3459eb592a9902b36e2951e3a8edd76149a23b25fa916f8a09d29a193")]
-    [InlineData("0.1.0.0", "fc7d1cd0-3eb8-4bc1-be64-afffa905aab8", 0x06008154, "93374cd3459eb592a9902b36e2951e3a8edd76149a23b25fa916f8a09d29a193")]
-    [InlineData("0.1.0.0", "97f10687-c306-4798-ab75-8b9f23f34dfb", 0x06008155, "93374cd3459eb592a9902b36e2951e3a8edd76149a23b25fa916f8a09d29a193")]
-    [InlineData("0.1.0.0", "97f10687-c306-4798-ab75-8b9f23f34dfb", 0x06008154, "changed-il")]
+    [InlineData("0.2.0.0", 0x06008154, "93374cd3459eb592a9902b36e2951e3a8edd76149a23b25fa916f8a09d29a193")]
+    [InlineData("0.1.0.0", 0x06008155, "93374cd3459eb592a9902b36e2951e3a8edd76149a23b25fa916f8a09d29a193")]
+    [InlineData("0.1.0.0", 0x06008154, "changed-il")]
     public void StableFingerprintRejectsBehavioralIdentityChanges(
         string assemblyVersion,
-        string moduleMvid,
         int metadataToken,
         string ilSha256)
     {
@@ -33,7 +43,7 @@ public sealed class StableMethodBodyContractTests
         Assert.False(StableMethodBodyContract.Matches(
             new MethodBodyFingerprint(
                 assemblyVersion,
-                Guid.Parse(moduleMvid),
+                profile.ModuleMvid,
                 metadataToken,
                 ilSha256),
             profile,
@@ -75,7 +85,7 @@ public sealed class StableMethodBodyContractTests
     }
 
     [Fact]
-    public void CurrentBuildOnlyResolvesItsSelectedProfile()
+    public void CurrentBuildResolvesByAssemblyVersionThenValidatesMethodIdentity()
     {
         GameHostContractProfile selected = Assert.Single(GameHostContractProfile.Supported);
         Assert.True(GameHostContractProfile.TryResolve(
@@ -85,9 +95,14 @@ public sealed class StableMethodBodyContractTests
 
         GameHostContractProfile other = GameHostContractProfile.AllKnown
             .Single(profile => !ReferenceEquals(profile, selected));
-        Assert.False(GameHostContractProfile.TryResolve(
+        Assert.True(GameHostContractProfile.TryResolve(
             Fingerprint(other, other.PreparedDraw.PublicMethod),
-            out _));
+            out GameHostContractProfile versionResolved));
+        Assert.Same(selected, versionResolved);
+        Assert.False(StableMethodBodyContract.Matches(
+            Fingerprint(other, other.PreparedDraw.PublicMethod),
+            selected,
+            selected.PreparedDraw.PublicMethod));
     }
 
     [Fact]
@@ -101,7 +116,14 @@ public sealed class StableMethodBodyContractTests
                 profile.PreparedDraw.PublicMethod,
                 profile.PreparedDraw.AsyncMoveNext,
                 profile.PreparedQueueAdd,
-                profile.PreparedQueueRemove
+                profile.PreparedQueueRemove,
+                profile.RapidCardResolution.OnPlayWrapper,
+                profile.RapidCardResolution.AddDuringManualPlay,
+                profile.RapidCardResolution.PowerFly,
+                profile.RapidCardResolution.MultiPlay,
+                profile.CombatPresentationPacing.CreatureDamage,
+                profile.CombatPresentationPacing.PowerApply,
+                profile.CombatPresentationPacing.PowerModifyAmount
             ];
             foreach (MethodBodyContract method in methods)
             {

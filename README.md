@@ -8,8 +8,8 @@
     <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
     <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
-    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.110.1-B51F24" alt="Slay the Spire 2 0.107.1 and 0.110.1">
-    <img src="https://img.shields.io/badge/RitsuLib-0.5.1-2D7D9A" alt="RitsuLib 0.5.1">
+    <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.111.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.111.0">
+    <img src="https://img.shields.io/badge/RitsuLib-0.5.12-2D7D9A" alt="RitsuLib 0.5.12">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
   </p>
   <!-- compatibility-badges:end -->
@@ -43,8 +43,8 @@ NinjaSlayer 将《忍者杀手》的战斗风格带入《杀戮尖塔 2》，围
 <!-- compatibility:start -->
 | 组件 | 支持范围 |
 |---|---|
-| Slay the Spire 2 | stable 正式版 `0.107.1`；preview 测试版 `0.110.1` |
-| RitsuLib | 编译基线与最低依赖 `0.5.1`；Workshop 运行时使用自动更新的最新版 |
+| Slay the Spire 2 | stable 正式版 `0.107.1`；preview 测试版 `0.111.0` |
+| RitsuLib | 编译基线与最低依赖 `0.5.12`；Workshop 运行时使用自动更新的最新版 |
 | 平台目标 | Windows x64、macOS、Linux x86_64 / Steam Deck；正式跨平台支持须通过六格实机矩阵 |
 | .NET | `9.0` |
 | Godot | `4.5.1 Mono` |

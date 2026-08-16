@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -16,7 +17,7 @@ namespace NinjaSlayer.Code.Patches;
 public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_yamoto_koki_ally_layout";
-    public static string Description => "Lay out Yamoto Koki as independent multiplayer slots.";
+    public static string Description => "Lay out full-size NinjaSlayer companions as multiplayer slots.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
@@ -27,7 +28,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
 
     public static bool Prefix(List<NCreature> creatureNodes, float scaling, bool fullyCenterPlayers)
     {
-        if (!creatureNodes.Any(node => node.Entity.Monster is YamotoKokiMonster))
+        if (!creatureNodes.Any(node => IsFullSizeCompanion(node.Entity.Monster)))
         {
             return true;
         }
@@ -41,7 +42,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         List<NCreature> allies = room.CreatureNodes
             .Where(node => node.Entity.IsPlayer || node.Entity.PetOwner != null)
             .ToList();
-        if (!allies.Any(node => node.Entity.Monster is YamotoKokiMonster))
+        if (!allies.Any(node => IsFullSizeCompanion(node.Entity.Monster)))
         {
             return;
         }
@@ -68,19 +69,18 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         foreach (Slot playerSlot in playerSlots)
         {
             slots.Add(playerSlot);
-            foreach (NCreature yamotoKoki in creatureNodes.Where(node =>
-                         node.Entity.Monster is YamotoKokiMonster
+            foreach (NCreature companion in creatureNodes.Where(node =>
+                         IsFullSizeCompanion(node.Entity.Monster)
                          && node.Entity.PetOwner == playerSlot.Anchor.Entity.Player))
             {
-                // A companion reserves a full player footprint, so one player plus Yamoto Koki
-                // exactly follows the vanilla two-player spacing.
-                slots.Add(new Slot(yamotoKoki, playerSlot.Width));
+                // A full-size companion follows the vanilla two-player footprint.
+                slots.Add(new Slot(companion, playerSlot.Width));
             }
         }
 
         foreach (NCreature pet in creatureNodes.Where(node =>
                      !node.Entity.IsPlayer
-                     && node.Entity.Monster is not YamotoKokiMonster
+                     && !IsFullSizeCompanion(node.Entity.Monster)
                      && node.Entity.Monster is not YamotoKokiOrigamiMissile))
         {
             Slot? ownerSlot = playerSlots.FirstOrDefault(slot =>
@@ -180,6 +180,9 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
                 basePosition.Y + 10f);
         }
     }
+
+    private static bool IsFullSizeCompanion(MonsterModel? monster) =>
+        monster is YamotoKokiMonster or SawatariMonster or YukanoMonster;
 
     private sealed class Slot(NCreature anchor, float width)
     {

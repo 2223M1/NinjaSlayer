@@ -90,7 +90,7 @@ public sealed class YamotoKokiIntentGenerationPatch : IPatchMethod
 
     public static bool Prefix(NCreature __instance, ref Task __result)
     {
-        if (__instance.Entity.Monster is not YamotoKokiMonster
+        if (__instance.Entity.Monster is not YamotoKokiMonster and not YukanoMonster
             || YamotoKokiIntentLifecycle.IsActive(__instance.Entity))
         {
             return true;

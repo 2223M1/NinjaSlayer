@@ -20,7 +20,9 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
 
     protected override string AttackerAnimTrigger => TornadoFistSpinAnimation.TriggerName;
     protected override float XAttackHitDelay => TornadoFistSpinAnimation.TurnSeconds;
-    protected override float XAttackAudioHitDuration => TornadoFistSpinAnimation.TurnSeconds;
+    protected override float XAttackAudioHitDuration =>
+        CombatActionTimingRuntime.AttackSeconds
+        + CombatActionTimingRuntime.DamageRecoverySeconds;
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new DamageVar(6, ValueProp.Move),
@@ -35,12 +37,6 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         int hitIndex,
         int totalHits)
     {
-        if (Owner.Creature.IsFinisherMovementOwned())
-        {
-            return await TornadoFistFinisherCadenceContext.Run(
-                () => ExecuteXHitCore(choiceContext, cardPlay, TornadoFistSpinAnimation.TurnSeconds));
-        }
-
         return await ExecuteXHitCore(choiceContext, cardPlay, XAttackHitDelay);
     }
 
@@ -50,29 +46,32 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         float attackerAnimDelay)
     {
 
-        var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this, cardPlay)
-            .WithDefectStrikeHitFx()
-            .WithAttackerAnim(AttackerAnimTrigger, attackerAnimDelay)
-            .Targeting(cardPlay.Target!);
-        await command.Execute(choiceContext);
-        List<DamageResult> results = command.Results.SelectMany(r => r).ToList();
-        if (results.Any(r => r.WasTargetKilled))
+        using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.PreserveDamage))
         {
-            return true;
-        }
+            var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+                .FromCard(this, cardPlay)
+                .WithDefectStrikeHitFx()
+                .WithAttackerAnim(AttackerAnimTrigger, attackerAnimDelay)
+                .Targeting(cardPlay.Target!);
+            await command.Execute(choiceContext);
+            List<DamageResult> results = command.Results.SelectMany(r => r).ToList();
+            if (results.Any(r => r.WasTargetKilled))
+            {
+                return true;
+            }
 
-        if (results.Any(r => r.UnblockedDamage > 0))
-        {
-            await PowerCmd.Apply<VulnerablePower>(
-                choiceContext,
-                cardPlay.Target!,
-                DynamicVars["VulnerablePower"].BaseValue,
-                Owner.Creature,
-                this);
-        }
+            if (results.Any(r => r.UnblockedDamage > 0))
+            {
+                await PowerCmd.Apply<VulnerablePower>(
+                    choiceContext,
+                    cardPlay.Target!,
+                    DynamicVars["VulnerablePower"].BaseValue,
+                    Owner.Creature,
+                    this);
+            }
 
-        return false;
+            return false;
+        }
     }
 
     protected override void OnUpgrade()

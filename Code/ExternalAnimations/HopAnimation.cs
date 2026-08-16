@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -37,6 +38,8 @@ public static class HopAnimation
             return;
         }
 
+        NinjaSlayerRapidAnimationCoordinator.CancelVisualTailForAction(creature);
+        JumpAnimation.StopForAirChannel(creature);
         var id = anchor.GetInstanceId();
         StopActiveTween(id, anchor);
         if (!_basePositions.TryGetValue(id, out var basePos) || SoarVisualState.IsAirborne(creature))
@@ -56,7 +59,13 @@ public static class HopAnimation
 
         var hopHeight = 60f;
         var animationDuration = 0.28f;
-        var actionDuration = 0.10f;
+        float actionDuration = CombatActionTimingRuntime.CastSeconds;
+
+        if (Mathf.IsZeroApprox(actionDuration))
+        {
+            anchor.Position = basePos;
+            return;
+        }
 
         var tween = creatureNode.CreateTween();
         _activeTweens[id] = tween;
@@ -81,6 +90,15 @@ public static class HopAnimation
         }));
 
         await Cmd.Wait(actionDuration);
+    }
+
+    internal static void StopForAirChannel(Creature creature)
+    {
+        Node2D? anchor = GetHopTarget(creature);
+        if (anchor != null)
+        {
+            StopActiveTween(anchor.GetInstanceId(), anchor);
+        }
     }
 
     private static void StopActiveTween(ulong id, Node2D anchor)

@@ -139,6 +139,10 @@ internal static class NinjaSlayerFacingState
         anchor.Scale = new Vector2(
             FacingScaleMath.WithFacing(anchor.Scale.X, faceLeft),
             anchor.Scale.Y);
+        creatureNode.Visuals
+            .GetNodeOrNull<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName)
+            ?.SetMirrored(faceLeft);
+        NarakuVisualOverlay.Sync(creatureNode.Entity);
     }
 
     private static void RestoreBodyScaleX(Creature creature, float scaleX)

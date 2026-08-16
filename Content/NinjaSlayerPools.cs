@@ -4,7 +4,7 @@ using STS2RitsuLib.Utils;
 
 namespace NinjaSlayer.Content;
 
-public class NinjaSlayerCardPool : TypeListCardPoolModel
+public abstract class NinjaSlayerCardPoolTemplate : TypeListCardPoolModel
 {
     private static readonly Material? _poolFrameMaterial = MaterialUtils.CreateHsvShaderMaterial(1f, 1.2f, 0.65f);
 
@@ -16,6 +16,14 @@ public class NinjaSlayerCardPool : TypeListCardPoolModel
     public override Color EnergyOutlineColor => new("691A1BFF");
     public override Material? PoolFrameMaterial => _poolFrameMaterial;
     public override bool IsColorless => false;
+}
+
+public sealed class NinjaSlayerCardPool : NinjaSlayerCardPoolTemplate
+{
+}
+
+public sealed class NinjaSlayerRedesignCardPool : NinjaSlayerCardPoolTemplate
+{
 }
 
 public sealed class NinjaSlayerRelicPool : TypeListRelicPoolModel

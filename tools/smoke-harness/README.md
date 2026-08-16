@@ -52,3 +52,7 @@ The workflow and SmokeDriver come from protected `main`; the candidate checkout 
 Dispatch the same workflow with `mode=FullAutoSlay` for the periodic/manual advisory run. This mode forces NinjaSlayer selection, otherwise leaves the original AutoSlayer room and combat handlers intact, and checks runtime ownership immediately before AutoSlayer exits. Its one-hour default timeout and unrelated vanilla randomness make it unsuitable for every stable release.
 
 Multiplayer smoke remains deferred until the single-player harness has stable field history.
+
+## Sawatari Same-Combat Gate
+
+Run `SawatariSameCombat` to verify the event's two decision pauses and duel in one real combat. The trusted SmokeDriver replaces only the first event returned by the host with Sawatari, then exercises the production event and combat code. It requires the original `CombatState`, `NCombatRoom`, history, RNG, card piles, and powers to survive the intermission; requires exactly one duel combat-start banner without another `BeforeCombatStart`; and requires exactly one final `AfterCombatEnd`. The process exits as soon as these assertions pass, so unrelated AutoSlayer failures later in the seeded run cannot mask this gate.

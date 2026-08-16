@@ -9,4 +9,10 @@ public static class NinjaSlayerPowerAssets
         string path = NinjaSlayerAssetPaths.PowerImage($"{powerType.Name}.png");
         return new PowerAssetProfile(IconPath: path, BigIconPath: path);
     }
+
+    public static PowerAssetProfile Named(string powerImageName)
+    {
+        string path = NinjaSlayerAssetPaths.PowerImage($"{powerImageName}.png");
+        return new PowerAssetProfile(IconPath: path, BigIconPath: path);
+    }
 }

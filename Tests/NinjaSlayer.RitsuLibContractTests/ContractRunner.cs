@@ -380,10 +380,15 @@ public partial class ContractRunner : Node
             expectedCount: 3,
             typeof(NinjaSlayerTransitionGcDeferralPatch));
         VerifyProductionDynamicPatchSet(
-            "tornado-cadence-contract",
-            TornadoFistFinisherCadencePatch.CreateDynamicPatches(),
+            "combat-presentation-pacing-contract",
+            CombatPresentationPacingPatch.CreateDynamicPatches(),
             expectedCount: 3,
-            typeof(TornadoFistFinisherCadencePatch));
+            typeof(CombatPresentationPacingPatch));
+        VerifyProductionDynamicPatchSet(
+            "rapid-card-resolution-contract",
+            RapidCardResolutionStateMachinePatch.CreateDynamicPatches(),
+            expectedCount: 2,
+            typeof(RapidCardResolutionStateMachinePatch));
     }
 
     private static void VerifyProductionDynamicPatchSet(
@@ -421,7 +426,9 @@ public partial class ContractRunner : Node
                 Patch transpiler = info.Transpilers.Single(item => item.owner == patcher.PatcherId);
                 Require(
                     transpiler.PatchMethod.DeclaringType == expectedPatchType
-                    && transpiler.PatchMethod.Name == "Transpiler",
+                    && (transpiler.PatchMethod.Name == "Transpiler"
+                        || expectedPatchType == typeof(RapidCardResolutionStateMachinePatch)
+                        && transpiler.PatchMethod.Name.StartsWith("Transpile", StringComparison.Ordinal)),
                     $"Harmony bound an unexpected transpiler for {dynamicPatch.Id}.");
             }
         }

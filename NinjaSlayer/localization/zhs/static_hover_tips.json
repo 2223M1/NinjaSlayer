@@ -1,0 +1,4 @@
+{
+  "NINJA_SLAYER_SECONDARY_RESOURCE_TEA_ENERGY.title": "茶能量",
+  "NINJA_SLAYER_SECONDARY_RESOURCE_TEA_ENERGY.description": "当前茶能量为{Amount}/{MaxAmount}。休息时恢复4点；用于支付新版茶道牌的费用。"
+}

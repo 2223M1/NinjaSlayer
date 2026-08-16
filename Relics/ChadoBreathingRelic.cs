@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -19,6 +20,10 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
     protected virtual int ChadoCount => 1;
 
     public override RelicRarity Rarity => RelicRarity.Starter;
+
+    public override bool IsAllowed(IRunState runState) =>
+        base.IsAllowed(runState)
+        && NinjaSlayerRunData.GetRulesVersion((RunState)runState) == NinjaSlayerRulesVersion.Legacy;
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
         HoverTipFactory.FromCard<ChadoCard>()

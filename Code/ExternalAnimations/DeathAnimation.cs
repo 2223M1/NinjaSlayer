@@ -32,7 +32,6 @@ public static class DeathAnimation
     private const float EnemyFinisherImpactSeconds = 0.3f;
 
     private const float HitRotationDegrees = -15f;
-    private const float DoomHitRotationDegrees = 15f;
     private const float FallRotationDegrees = -90f;
     private static readonly Vector2 CombatTextureSize = new(
         NinjaSlayerVisualRig.SpinTextureSize,
@@ -197,7 +196,8 @@ public static class DeathAnimation
     {
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).Death);
         NGame.Instance?.ScreenShake(ShakeStrength.TooMuch, ShakeDuration.Short);
-        anchor.RotationDegrees = state.AnchorRotationDegrees + DoomHitRotationDegrees;
+        anchor.RotationDegrees = state.AnchorRotationDegrees
+            + FinisherTimeline.ReverseVictimRotationDegrees;
         await WaitForDuration(
             NCombatRoom.Instance!,
             new CinematicFrameClock(),
@@ -274,7 +274,8 @@ public static class DeathAnimation
                 NGame.Instance?.ScreenShake(ShakeStrength.TooMuch, ShakeDuration.Short);
             }
 
-            anchor.RotationDegrees = state.AnchorRotationDegrees + DoomHitRotationDegrees;
+            anchor.RotationDegrees = state.AnchorRotationDegrees
+                + FinisherTimeline.ReverseVictimRotationDegrees;
             anchor.Scale = state.AnchorScale;
             frozenVfx = FinisherImpactVfxFreezeLease.Acquire(
                 room,

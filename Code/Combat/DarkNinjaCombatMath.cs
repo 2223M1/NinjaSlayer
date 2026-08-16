@@ -99,7 +99,13 @@ internal static class DarkNinjaCombatMath
 
     internal static int ResolveDarkStrikeAttackerZIndex(int targetZIndex) =>
         Math.Clamp(
-            targetZIndex - 1,
+            targetZIndex,
+            -MaximumCanvasZIndex,
+            MaximumCanvasZIndex - 2);
+
+    internal static int ResolveDarkStrikeTargetZIndex(int attackerZIndex) =>
+        Math.Clamp(
+            attackerZIndex + 1,
             -MaximumCanvasZIndex,
             MaximumCanvasZIndex);
 

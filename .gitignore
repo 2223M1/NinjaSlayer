@@ -17,6 +17,9 @@ wrangler-*.log
 
 # Mod export/build output
 build/
+.sts2build/
+output/
+mod-uploader.log
 
 # IDE/local files
 .vs/

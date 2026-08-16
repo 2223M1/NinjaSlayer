@@ -99,6 +99,40 @@ public sealed class FormPresentationTests
             actual);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(11)]
+    [InlineData(22)]
+    public void LeftFacingNormalIdleUsesMatchingKillFrame(int frame)
+    {
+        string? actual = NinjaSlayerFormPresentationCatalog.ResolveFacingIdleTexturePath(
+            NinjaSlayerFormPresentationCatalog.NormalIdleTexturePath(frame),
+            faceLeft: true);
+
+        Assert.Equal(NinjaSlayerFormPresentationCatalog.KillIdleTexturePath(frame), actual);
+    }
+
+    [Theory]
+    [InlineData(false, "res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png")]
+    [InlineData(true, "res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png")]
+    [InlineData(true, null)]
+    public void FacingVariantDoesNotReplaceRightFacingOrNonIdleTextures(
+        bool faceLeft,
+        string? sourceTexturePath)
+    {
+        Assert.Null(NinjaSlayerFormPresentationCatalog.ResolveFacingIdleTexturePath(
+            sourceTexturePath,
+            faceLeft));
+    }
+
+    [Fact]
+    public void FacingVariantRejectsOutOfRangeIdleFrame()
+    {
+        Assert.Null(NinjaSlayerFormPresentationCatalog.ResolveFacingIdleTexturePath(
+            NinjaSlayerFormPresentationCatalog.NormalIdleTexturePrefix + "0000.png",
+            faceLeft: true));
+    }
+
     [Fact]
     public void StaticAndSourceTexturePoliciesRemainDistinct()
     {
@@ -127,5 +161,9 @@ public sealed class FormPresentationTests
             NinjaSlayerFormPresentationCatalog.NormalIdleTexturePath(0));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             NinjaSlayerFormPresentationCatalog.NormalIdleTexturePath(23));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            NinjaSlayerFormPresentationCatalog.KillIdleTexturePath(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            NinjaSlayerFormPresentationCatalog.KillIdleTexturePath(23));
     }
 }

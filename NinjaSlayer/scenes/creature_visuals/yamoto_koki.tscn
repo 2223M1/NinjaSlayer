@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/yamoto_koki.png" id="1_yamoto_koki"]
-[ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/shadow.png" id="2_shadow"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/yamoto_koki_shadow.png" id="2_shadow"]
 
 [node name="YamotoKoki" type="Node2D"]
 metadata/_edit_group_ = true

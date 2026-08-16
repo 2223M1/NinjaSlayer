@@ -514,7 +514,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         foreach (ReverseVictimVisualSnapshot snapshot in snapshots.Where(snapshot =>
                      GodotObject.IsInstanceValid(snapshot.Anchor)))
         {
-            snapshot.Anchor.RotationDegrees = snapshot.RotationDegrees + 15f * amount;
+            snapshot.Anchor.RotationDegrees = snapshot.RotationDegrees
+                + FinisherTimeline.ReverseVictimRotationDegrees * amount;
         }
     }
 
@@ -575,6 +576,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     {
         if (!GodotObject.IsInstanceValid(_actorNode))
         {
+            RestoreActorLeapPose();
             ApplyDeathKickRecovery(1f);
             _returnTimelineCompleted = true;
             SetBackdropIntensity(0f);
@@ -587,7 +589,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
         float actorReturnSeconds = Scenario == FinisherScenarioKind.YamotoKokiIaiSlash
-            ? FinisherActionTrajectory.SlowTravelSeconds
+            ? CombatActionTimingRuntime.DamageRecoverySeconds
             : ReturnSeconds;
         float totalReturnSeconds = Math.Max(ReturnSeconds, actorReturnSeconds);
         float elapsed = 0f;
@@ -596,9 +598,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             elapsed += await NextFrame();
             float cameraLinearProgress = Mathf.Clamp(elapsed / ReturnSeconds, 0f, 1f);
             float cameraProgress = CombatCinematicCameraLease.EaseOutCubic(cameraLinearProgress);
-            float actorProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f));
+            float actorProgress = Mathf.IsZeroApprox(actorReturnSeconds)
+                ? 1f
+                : Mathf.SmoothStep(0f, 1f, Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f));
             ApplyDeathKickRecovery(cameraLinearProgress);
             _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
+            _actorLeapPose?.ApplyReturn(actorProgress);
             _camera.SetTransform(
                 cameraFrom.Lerp(_camera.BaselinePosition, cameraProgress),
                 Mathf.Lerp(scaleFrom, _camera.BaselineScale.X, cameraProgress));
@@ -606,6 +611,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
 
         ApplyDeathKickRecovery(1f);
+        _actorNode.Position = _actorStartPosition;
+        RestoreActorLeapPose();
         _returnTimelineCompleted = true;
         SetBackdropIntensity(0f);
     }

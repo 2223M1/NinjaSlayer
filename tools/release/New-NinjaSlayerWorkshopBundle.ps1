@@ -37,6 +37,18 @@ function Resolve-RequiredDirectory([string]$Path, [string]$Description) {
     return $resolved
 }
 
+function Test-IsSameOrChildPath([string]$Path, [string]$Root) {
+    $trimChars = [char[]]@(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $resolvedPath = [IO.Path]::GetFullPath($Path).TrimEnd($trimChars)
+    $resolvedRoot = [IO.Path]::GetFullPath($Root).TrimEnd($trimChars)
+    return $resolvedPath.Equals($resolvedRoot, [StringComparison]::OrdinalIgnoreCase) -or
+        $resolvedPath.StartsWith(
+            $resolvedRoot + [IO.Path]::DirectorySeparatorChar,
+            [StringComparison]::OrdinalIgnoreCase)
+}
+
 function Assert-ChannelPackage([string]$Directory, [string]$Channel, $Profile, [string]$RitsuVersion) {
     $expected = @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'SHA256SUMS')
     $actualFiles = @(Get-ChildItem -LiteralPath $Directory -File -Force)
@@ -94,18 +106,42 @@ $stableData = Resolve-RequiredDirectory $StableSts2DataDir 'Stable STS2 data dir
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 $outputRoot = [IO.Path]::GetPathRoot($output)
 $outputParent = [IO.Directory]::GetParent($output)
+$inputDirectories = @($stablePackage, $previewPackage, $stableData)
+$outputOverlapsInput = @($inputDirectories | Where-Object {
+    (Test-IsSameOrChildPath $output $_) -or
+        (Test-IsSameOrChildPath $_ $output)
+}).Count -ne 0
 if ([IO.Path]::GetFileName($output) -cne 'NinjaSlayer' -or
     [string]::IsNullOrWhiteSpace($outputRoot) -or
     $null -eq $outputParent -or
     $outputParent.FullName.TrimEnd([IO.Path]::DirectorySeparatorChar) -ceq
         $outputRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) -or
-    $output -in @($repositoryRoot, $stablePackage, $previewPackage, $stableData)) {
+    (Test-IsSameOrChildPath $repositoryRoot $output) -or
+    $outputOverlapsInput) {
     throw "Workshop bundle output must be a dedicated NinjaSlayer directory: $output"
 }
 if (Test-Path -LiteralPath $output) {
     $outputAttributes = [IO.File]::GetAttributes($output)
     if (($outputAttributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
         throw "Workshop bundle output must not be a reparse point: $output"
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($BuildRoot)) {
+    $BuildRoot = Join-Path $repositoryRoot 'build\workshop-bundle'
+}
+$loaderOutput = Join-Path ([IO.Path]::GetFullPath($BuildRoot)) 'loader'
+$loaderOverlapsProtectedDirectory = @($inputDirectories + $output | Where-Object {
+    (Test-IsSameOrChildPath $loaderOutput $_) -or
+        (Test-IsSameOrChildPath $_ $loaderOutput)
+}).Count -ne 0
+if ($loaderOverlapsProtectedDirectory) {
+    throw "Loader output must not overlap a package, game data, or Workshop output directory: $loaderOutput"
+}
+if (Test-Path -LiteralPath $loaderOutput) {
+    $loaderAttributes = [IO.File]::GetAttributes($loaderOutput)
+    if (($loaderAttributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "Loader output must not be a reparse point: $loaderOutput"
     }
 }
 
@@ -121,15 +157,7 @@ $stableMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $stableData
 if ($stableMvid -cne [string]$stableProfile.hostContract.moduleMvid) {
     throw "Stable loader references use host MVID $stableMvid, expected $($stableProfile.hostContract.moduleMvid)."
 }
-if ([string]::IsNullOrWhiteSpace($BuildRoot)) {
-    $BuildRoot = Join-Path $repositoryRoot 'build\workshop-bundle'
-}
-$loaderOutput = Join-Path ([IO.Path]::GetFullPath($BuildRoot)) 'loader'
 if (Test-Path -LiteralPath $loaderOutput) {
-    $loaderAttributes = [IO.File]::GetAttributes($loaderOutput)
-    if (($loaderAttributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-        throw "Loader output must not be a reparse point: $loaderOutput"
-    }
     Remove-Item -LiteralPath $loaderOutput -Recurse -Force
 }
 [IO.Directory]::CreateDirectory($loaderOutput) | Out-Null

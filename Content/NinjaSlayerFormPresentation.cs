@@ -43,6 +43,8 @@ public static class NinjaSlayerFormPresentationCatalog
     public const string NormalIdleTexturePrefix =
         "res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_";
     public const string NormalIdleFirstTexturePath = NormalIdleTexturePrefix + "0001.png";
+    public const string KillIdleTexturePrefix =
+        "res://NinjaSlayer/images/characters/ninja_slayer/kill_idle/NinjaSlayer_kill_idle_";
     public const string NarakuIdleTexturePrefix =
         "res://NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_";
     public const string FullyReleasedNarakuTexturePath =
@@ -125,6 +127,14 @@ public static class NinjaSlayerFormPresentationCatalog
     public static string NormalIdleTexturePath(int frame) =>
         FrameTexturePath(NormalIdleTexturePrefix, frame, NormalIdleFrameCount);
 
+    public static string KillIdleTexturePath(int frame) =>
+        FrameTexturePath(KillIdleTexturePrefix, frame, NormalIdleFrameCount);
+
+    public static string? ResolveFacingIdleTexturePath(string? sourceTexturePath, bool faceLeft) =>
+        faceLeft && TryResolveNormalIdleFrame(sourceTexturePath, out int frame)
+            ? KillIdleTexturePath(frame)
+            : null;
+
     public static string? ResolveBodyTexturePath(
         NinjaSlayerFormPresentation presentation,
         string? sourceTexturePath)
@@ -145,19 +155,23 @@ public static class NinjaSlayerFormPresentationCatalog
 
     private static int ResolveSourceIdleFrame(string? sourceTexturePath)
     {
+        return TryResolveNormalIdleFrame(sourceTexturePath, out int frame) ? frame : 1;
+    }
+
+    private static bool TryResolveNormalIdleFrame(string? sourceTexturePath, out int frame)
+    {
+        frame = 0;
         if (string.IsNullOrEmpty(sourceTexturePath)
             || !sourceTexturePath.StartsWith(NormalIdleTexturePrefix, StringComparison.Ordinal)
             || !sourceTexturePath.EndsWith(".png", StringComparison.Ordinal))
         {
-            return 1;
+            return false;
         }
 
         ReadOnlySpan<char> frameText = sourceTexturePath.AsSpan(
             NormalIdleTexturePrefix.Length,
             sourceTexturePath.Length - NormalIdleTexturePrefix.Length - ".png".Length);
-        return int.TryParse(frameText, out int frame) && frame is >= 1 and <= NormalIdleFrameCount
-            ? frame
-            : 1;
+        return int.TryParse(frameText, out frame) && frame is >= 1 and <= NormalIdleFrameCount;
     }
 
     private static string FrameTexturePath(string prefix, int frame, int frameCount)

@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://ninjaslayercreaturevisuals"]
+[gd_scene load_steps=7 format=3 uid="uid://ninjaslayercreaturevisuals"]
 
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png" id="1_idle_01"]
-[ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/shadow.png" id="2_shadow"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/ninja_slayer_shadow.png" id="2_shadow"]
 [ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerSpinPivot.cs" id="2_spin_pivot"]
 [ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerSpinMotionBlur.cs" id="3_spin_motion_blur"]
 [ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerShadowController.cs" id="4_shadow_controller"]
+[ext_resource type="Script" path="res://Code/Nodes/NarakuVisualOverlay.cs" id="5_body_variant_overlay"]
 
 [node name="NinjaSlayer" type="Node2D"]
 metadata/_edit_group_ = true
@@ -30,6 +31,10 @@ position = Vector2(-166, -183)
 rotation = 0.0
 scale = Vector2(0.33, 0.33)
 texture = ExtResource("1_idle_01")
+
+[node name="NarakuVisualOverlay" type="Sprite2D" parent="AirborneAnchor"]
+visible = false
+script = ExtResource("5_body_variant_overlay")
 
 [node name="SpinPivot" type="Node2D" parent="AirborneAnchor"]
 script = ExtResource("2_spin_pivot")

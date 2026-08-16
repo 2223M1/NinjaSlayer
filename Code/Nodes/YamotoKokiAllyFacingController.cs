@@ -35,7 +35,8 @@ public partial class YamotoKokiAllyFacingController : Node
     internal static void SyncCurrentRoom()
     {
         if (NCombatRoom.Instance is not { } room
-            || !room.CreatureNodes.Any(node => node.Entity.Monster is YamotoKokiMonster))
+            || !room.CreatureNodes.Any(node =>
+                node.Entity.Monster is YamotoKokiMonster or YukanoMonster))
         {
             return;
         }
@@ -77,6 +78,16 @@ public partial class YamotoKokiAllyFacingController : Node
             body.Scale = new Vector2(
                 FacingScaleMath.WithFacing(body.Scale.X, faceLeft),
                 body.Scale.Y);
+
+            if (NinjaSlayerVisualRig.GetShadow(companion.Visuals) is { } shadow)
+            {
+                shadow.FlipH = faceLeft;
+                if (companion.Entity.Monster is YukanoMonster)
+                {
+                    float centerX = Mathf.Abs(shadow.Position.X);
+                    shadow.Position = new Vector2(faceLeft ? -centerX : centerX, shadow.Position.Y);
+                }
+            }
         }
     }
 
@@ -103,5 +114,5 @@ public partial class YamotoKokiAllyFacingController : Node
 
     private static bool IsTrackedCompanion(NCreature node) =>
         node.Entity.IsAlive
-        && node.Entity.Monster is YamotoKokiMonster or YamotoKokiOrigamiMissile;
+        && node.Entity.Monster is YamotoKokiMonster or YamotoKokiOrigamiMissile or YukanoMonster;
 }

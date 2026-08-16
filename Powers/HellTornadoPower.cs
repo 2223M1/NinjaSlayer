@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -45,9 +46,18 @@ public sealed class HellTornadoPower : NinjaSlayerPowerTemplate
         if (power == this && amount > 0)
         {
             Flash();
-            await Task.WhenAll(
+            NinjaSlayerRapidAnimationCoordinator.CancelVisualTailForAction(Owner);
+            Task presentation = Task.WhenAll(
                 ByrdRiseAnimation.Play(Owner, RiseDistance),
                 SoarSpinAnimation.Accelerate(Owner, RiseDuration));
+            if (NinjaSlayerRapidAnimationCoordinator.IsEnabled)
+            {
+                _ = TaskHelper.RunSafely(presentation);
+            }
+            else
+            {
+                await presentation;
+            }
         }
     }
 

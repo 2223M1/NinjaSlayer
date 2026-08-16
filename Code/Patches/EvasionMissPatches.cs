@@ -266,7 +266,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         targets = remainingTargets;
         __state = evadedPowers.Count > 0 ? evadedPowers : null;
 
-        NotifyYamotoKokiImpact(targetList, attacker);
+        NotifyCompanionImpact(targetList, attacker);
     }
 
     public static void Postfix(
@@ -292,7 +292,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         return results;
     }
 
-    private static void NotifyYamotoKokiImpact(IReadOnlyList<Creature> targets, Creature attacker)
+    private static void NotifyCompanionImpact(IReadOnlyList<Creature> targets, Creature attacker)
     {
         if (!attacker.IsMonster)
         {
@@ -305,11 +305,17 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
                      .OfType<MegaCrit.Sts2.Core.Entities.Players.Player>()
                      .Distinct())
         {
-            Creature? yamotoKoki = player.PlayerCombatState?.Pets
-                .FirstOrDefault(pet => pet.Monster is YamotoKokiMonster && pet.IsAlive);
-            if (yamotoKoki is not null)
+            if (attacker.CombatState is not { } combatState)
             {
-                CombatDodgeAnimation.NotifyImpact(yamotoKoki);
+                continue;
+            }
+
+            foreach (Creature companion in combatState.Creatures.Where(creature =>
+                         creature.PetOwner == player
+                         && creature.IsAlive
+                         && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster))
+            {
+                CombatDodgeAnimation.NotifyImpact(companion);
             }
         }
     }

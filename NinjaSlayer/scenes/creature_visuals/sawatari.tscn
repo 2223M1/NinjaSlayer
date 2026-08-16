@@ -1,0 +1,47 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/sawatari.png" id="1_sawatari"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/sawatari_shadow.png" id="2_shadow"]
+
+[node name="Sawatari" type="Node2D"]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="Shadow" type="Sprite2D" parent="."]
+position = Vector2(0, -20.625)
+scale = Vector2(0.44, 0.27)
+texture = ExtResource("2_shadow")
+
+[node name="AirborneAnchor" type="Node2D" parent="."]
+
+[node name="CinematicFocus" type="Marker2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(0, -146.6)
+
+[node name="Visuals" type="Sprite2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(0, -146.6)
+scale = Vector2(0.52, 0.52)
+texture = ExtResource("1_sawatari")
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -125.0
+offset_top = -292.0
+offset_right = 125.0
+offset_bottom = 5.0
+mouse_filter = 2
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -146.6)
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -268.1)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-52.5, -275.6)

@@ -85,11 +85,19 @@ public static class NinjaSlayerAudio
     public const string DarkNinjaStabEvent =
         "event:/sfx/enemy/enemy_attacks/lagavulin_matriarch/lagavulin_matriarch_attack_stab";
     public const string DarkNinjaProgressParameter = "dark_ninja_progress";
+    public const float DarkNinjaBattleProgress = 1f;
     public const float DarkNinjaEndProgress = 5f;
 
     public const string ForestSawatariBattleMusicEvent = MusicRoot + "/forest_sawatari_battle";
     public const string ForestSawatariProgressParameter = "forest_sawatari_progress";
     public const float ForestSawatariEndProgress = 5f;
+    public const string SawatariCoopMusicEvent = MusicRoot + "/sawatari_coop_sequence";
+    public const string SawatariCoopPhaseParameter = "sawatari_coop_phase";
+    public const float SawatariCoopBattlePhase = 0f;
+    public const float SawatariCoopDecisionPhase = 1f;
+    public const float SawatariCoopLeavePhase = 2f;
+    public const float SawatariCoopDuelPhase = 3f;
+    public const float SawatariCoopDuelEndPhase = 4f;
 
     /// <summary>FMOD clip length for ninja_slayer_intro_spin_attack.</summary>
     public const float IntroSpinAttackSeconds = 1.369f;

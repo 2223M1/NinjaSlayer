@@ -242,6 +242,18 @@ internal static class Program
                 "SendButtonSelected", ["MegaCrit.Sts2.Core.Nodes.GodotExtensions.NButton"]),
             new("orobas.generate-initial-options", "MegaCrit.Sts2.Core.Models.Events.Orobas", "GenerateInitialOptions", []),
             new("prepared.shuffle-ftue", "MegaCrit.Sts2.Core.Commands.CardPileCmd", "ShuffleFtueCheck", null),
+            new("rapid-card.on-play-wrapper", "MegaCrit.Sts2.Core.Models.CardModel", "OnPlayWrapper",
+                [
+                    "MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext",
+                    "MegaCrit.Sts2.Core.Entities.Creatures.Creature",
+                    "System.Boolean",
+                    "MegaCrit.Sts2.Core.Entities.Cards.ResourceInfo",
+                    "System.Boolean"
+                ], true),
+            new("rapid-card.add-during-manual-play", "MegaCrit.Sts2.Core.Commands.CardPileCmd",
+                "AddDuringManualCardPlay", null, true),
+            new("rapid-card.power-fly", "MegaCrit.Sts2.Core.Models.CardModel", "PlayPowerCardFlyVfx", null, true),
+            new("rapid-card.multi-play", "MegaCrit.Sts2.Core.Nodes.Cards.NCard", "AnimMultiCardPlay", null, true),
             new("reporter-pass.set-event-finished", "MegaCrit.Sts2.Core.Models.EventModel", "SetEventFinished",
                 ["MegaCrit.Sts2.Core.Localization.LocString"]),
             new("transition.ancient-heal-vfx", "MegaCrit.Sts2.Core.Nodes.Events.NAncientEventLayout",

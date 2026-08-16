@@ -1,0 +1,48 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/yukano_closed.png" id="1_yukano"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/yukano_shadow.png" id="2_shadow"]
+
+[node name="Yukano" type="Node2D"]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="Shadow" type="Sprite2D" parent="."]
+position = Vector2(40, -20.625)
+scale = Vector2(0.299, 0.262)
+texture = ExtResource("2_shadow")
+
+[node name="AirborneAnchor" type="Node2D" parent="."]
+
+[node name="CinematicFocus" type="Marker2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(0, -140)
+
+[node name="Visuals" type="Sprite2D" parent="AirborneAnchor"]
+unique_name_in_owner = true
+position = Vector2(0, -140)
+scale = Vector2(0.21, 0.21)
+texture = ExtResource("1_yukano")
+flip_h = true
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -122.0
+offset_top = -279.0
+offset_right = 122.0
+offset_bottom = 5.0
+mouse_filter = 2
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -140)
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -258)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-50, -252)

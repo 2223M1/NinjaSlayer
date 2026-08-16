@@ -136,7 +136,8 @@ internal static class DarkNinjaSpecialAttackPresentation
                 target,
                 DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
                     segment,
-                    0f));
+                    0f),
+                penetratesTarget: false);
             (NCombatRoom Room, Vector2 Position)? impactVfx = null;
             Task<DarkStrikeImpactOutcome>? impactTask = null;
             void TriggerImpactOnFinalMotionFrame()
@@ -153,7 +154,10 @@ internal static class DarkNinjaSpecialAttackPresentation
                     target,
                     referenceSeconds);
                 impactVfx = CaptureImpactVfx(target);
-                impactTask = onImpact(target);
+                impactTask = DarkStrikeHurtPoseFreezeContext.Run(
+                    target,
+                    visual.FreezeTargetHurtPose,
+                    () => onImpact(target));
             }
 
             await PlayTween(
@@ -182,12 +186,9 @@ internal static class DarkNinjaSpecialAttackPresentation
             attemptedImpact = true;
             DarkStrikeImpactOutcome outcome = await impactTask;
             highestHealing = Math.Max(highestHealing, outcome.Healing);
-            if (outcome.Connected && !outcome.FullyBlocked)
-            {
-                visual.ConfirmPenetration(DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
-                    segment,
-                    1f));
-            }
+            visual.SetPenetration(
+                outcome.Connected && !outcome.FullyBlocked,
+                DarkNinjaCombatMath.SampleDarkStrikeVisualReference(segment, 1f));
 
             PlayImpactFeedback(
                 outcome,
@@ -537,6 +538,10 @@ internal static class DarkNinjaSpecialAttackPresentation
         private readonly Vector2 _baselinePosition;
         private readonly float _scaleX;
         private readonly float _scaleY;
+        private CanvasItem? _raisedTargetBody;
+        private int _raisedTargetOriginalZIndex;
+        private bool _raisedTargetOriginalZAsRelative;
+        private DarkStrikeHurtPoseFreezeLease? _targetPoseFreeze;
         private bool _penetratesTarget;
         private int _disposed;
 
@@ -734,33 +739,48 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         internal void PrepareTarget(
             Creature target,
-            float referenceSeconds)
+            float referenceSeconds,
+            bool penetratesTarget)
         {
-            if (Volatile.Read(ref _disposed) != 0
-                || !GodotObject.IsInstanceValid(_root)
-                || !GodotObject.IsInstanceValid(Room))
+            DarkStrikeHurtPoseFreezeLease? previousFreeze = _targetPoseFreeze;
+            _targetPoseFreeze = null;
+            try
             {
-                return;
-            }
-
-            NCreature? targetNode = Room.GetCreatureNode(target);
-            if (targetNode != null && GodotObject.IsInstanceValid(targetNode))
-            {
-                Node2D targetBody = targetNode.Visuals.GetCurrentBody();
-                if (GodotObject.IsInstanceValid(targetBody))
+                RestoreTargetLayer();
+                if (Volatile.Read(ref _disposed) != 0
+                    || !GodotObject.IsInstanceValid(_root)
+                    || !GodotObject.IsInstanceValid(Room))
                 {
-                    int targetZIndex = ResolveEffectiveZ(targetBody);
-                    _root.ZIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
-                        targetZIndex);
+                    return;
                 }
-            }
 
-            _penetratesTarget = false;
-            ApplyReferencePose(target, referenceSeconds);
-            _root.Visible = true;
+                NCreature? targetNode = Room.GetCreatureNode(target);
+                if (targetNode != null && GodotObject.IsInstanceValid(targetNode))
+                {
+                    Node2D targetBody = targetNode.Visuals.GetCurrentBody();
+                    if (GodotObject.IsInstanceValid(targetBody))
+                    {
+                        int targetZIndex = ResolveEffectiveZ(targetBody);
+                        int attackerZIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
+                            targetZIndex);
+                        _root.ZIndex = attackerZIndex;
+                        RaiseTargetLayer(
+                            targetBody,
+                            DarkNinjaCombatMath.ResolveDarkStrikeTargetZIndex(attackerZIndex));
+                    }
+                }
+
+                _penetratesTarget = penetratesTarget;
+                ApplyReferencePose(target, referenceSeconds);
+                _root.Visible = true;
+            }
+            finally
+            {
+                previousFreeze?.Dispose();
+            }
         }
 
-        internal void ConfirmPenetration(float referenceSeconds)
+        internal void SetPenetration(bool penetratesTarget, float referenceSeconds)
         {
             if (Volatile.Read(ref _disposed) != 0
                 || !GodotObject.IsInstanceValid(_root))
@@ -768,8 +788,20 @@ internal static class DarkNinjaSpecialAttackPresentation
                 return;
             }
 
-            _penetratesTarget = true;
+            _penetratesTarget = penetratesTarget;
             ApplySwordDepth(referenceSeconds);
+        }
+
+        internal bool FreezeTargetHurtPose(Creature target)
+        {
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return false;
+            }
+
+            _targetPoseFreeze?.Dispose();
+            _targetPoseFreeze = DarkStrikeHurtPoseFreezeLease.TryAcquire(target);
+            return _targetPoseFreeze != null;
         }
 
         internal void ApplyReferencePose(Creature target, float referenceSeconds)
@@ -800,16 +832,55 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         internal void ShowFullBody()
         {
-            if (Volatile.Read(ref _disposed) != 0
-                || !GodotObject.IsInstanceValid(_root))
+            try
+            {
+                RestoreTargetLayer();
+                if (Volatile.Read(ref _disposed) != 0
+                    || !GodotObject.IsInstanceValid(_root))
+                {
+                    return;
+                }
+
+                _character.Visible = false;
+                _rearSword.Visible = false;
+                _frontSword.Visible = false;
+                _fullBody.Visible = true;
+            }
+            finally
+            {
+                _targetPoseFreeze?.Dispose();
+                _targetPoseFreeze = null;
+            }
+        }
+
+        private void RaiseTargetLayer(CanvasItem targetBody, int zIndex)
+        {
+            _raisedTargetBody = targetBody;
+            _raisedTargetOriginalZIndex = targetBody.ZIndex;
+            _raisedTargetOriginalZAsRelative = targetBody.ZAsRelative;
+            try
+            {
+                targetBody.ZAsRelative = false;
+                targetBody.ZIndex = zIndex;
+            }
+            catch
+            {
+                RestoreTargetLayer();
+                throw;
+            }
+        }
+
+        private void RestoreTargetLayer()
+        {
+            CanvasItem? targetBody = _raisedTargetBody;
+            _raisedTargetBody = null;
+            if (targetBody == null || !GodotObject.IsInstanceValid(targetBody))
             {
                 return;
             }
 
-            _character.Visible = false;
-            _rearSword.Visible = false;
-            _frontSword.Visible = false;
-            _fullBody.Visible = true;
+            targetBody.ZIndex = _raisedTargetOriginalZIndex;
+            targetBody.ZAsRelative = _raisedTargetOriginalZAsRelative;
         }
 
         private void ApplySwordDepth(float referenceSeconds)
@@ -899,6 +970,15 @@ internal static class DarkNinjaSpecialAttackPresentation
                 return;
             }
 
+            if (GodotObject.IsInstanceValid(_root))
+            {
+                _root.Visible = false;
+            }
+
+            RestoreTargetLayer();
+            _targetPoseFreeze?.Dispose();
+            _targetPoseFreeze = null;
+
             if (_attacker.IsAlive && GodotObject.IsInstanceValid(_sourceBody))
             {
                 _sourceBody.Visible = _sourceBodyVisible;
@@ -937,6 +1017,77 @@ internal static class DarkNinjaSpecialAttackPresentation
         }
     }
 
+    private sealed class DarkStrikeHurtPoseFreezeLease : IDisposable
+    {
+        private readonly Creature _target;
+        private readonly NCreature _targetNode;
+        private readonly bool _deferredNinjaSlayerHit;
+        private readonly bool _pausedSpineHurt;
+        private int _disposed;
+
+        private DarkStrikeHurtPoseFreezeLease(
+            Creature target,
+            NCreature targetNode,
+            bool deferredNinjaSlayerHit,
+            bool pausedSpineHurt)
+        {
+            _target = target;
+            _targetNode = targetNode;
+            _deferredNinjaSlayerHit = deferredNinjaSlayerHit;
+            _pausedSpineHurt = pausedSpineHurt;
+        }
+
+        internal static DarkStrikeHurtPoseFreezeLease? TryAcquire(Creature target)
+        {
+            NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
+            if (targetNode == null || !GodotObject.IsInstanceValid(targetNode))
+            {
+                return null;
+            }
+
+            if (target.Player?.Character is INinjaSlayerCharacter)
+            {
+                return new DarkStrikeHurtPoseFreezeLease(
+                    target,
+                    targetNode,
+                    deferredNinjaSlayerHit: true,
+                    pausedSpineHurt: false);
+            }
+
+            return DoomHurtPoseController.TryPauseCurrentHurtAnimation(targetNode)
+                ? new DarkStrikeHurtPoseFreezeLease(
+                    target,
+                    targetNode,
+                    deferredNinjaSlayerHit: false,
+                    pausedSpineHurt: true)
+                : null;
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            {
+                return;
+            }
+
+            if (_pausedSpineHurt)
+            {
+                DoomHurtPoseController.Resume(_targetNode);
+            }
+
+            if (_deferredNinjaSlayerHit
+                && _target.IsAlive
+                && _target.CombatState is { } combatState
+                && combatState.ContainsCreature(_target)
+                && combatState.IsLiveCombat()
+                && GodotObject.IsInstanceValid(_targetNode)
+                && _targetNode.IsInsideTree())
+            {
+                NinjaSlayerCombatAnimations.PlayDeferredHitAnimation(_target);
+            }
+        }
+    }
+
     private static int ResolveEffectiveZ(CanvasItem item)
     {
         int zIndex = item.ZIndex;
@@ -953,4 +1104,115 @@ internal static class DarkNinjaSpecialAttackPresentation
         return zIndex;
     }
 
+}
+
+internal static class DarkStrikeHurtPoseFreezeContext
+{
+    private static readonly AsyncLocal<Frame?> Current = new();
+
+    internal static Task<T> Run<T>(
+        Creature target,
+        Func<Creature, bool> freezeTarget,
+        Func<Task<T>> action)
+    {
+        var frame = new Frame(Current.Value, target, freezeTarget);
+        Current.Value = frame;
+        Task<T> task;
+        try
+        {
+            task = action();
+        }
+        catch
+        {
+            frame.IsActive = false;
+            throw;
+        }
+        finally
+        {
+            if (ReferenceEquals(Current.Value, frame))
+            {
+                Current.Value = frame.Previous;
+            }
+        }
+
+        return Complete(task, frame);
+    }
+
+    internal static bool TryDeferNinjaSlayerHit(Creature creature)
+    {
+        for (Frame? frame = Current.Value; frame != null; frame = frame.Previous)
+        {
+            if (frame.IsActive && ReferenceEquals(frame.Target, creature))
+            {
+                return TryCaptureHurtResponse(frame, creature);
+            }
+        }
+
+        return false;
+    }
+
+    internal static void NotifyHitTriggered(Creature creature, string triggerName)
+    {
+        if (triggerName != "Hit")
+        {
+            return;
+        }
+
+        for (Frame? frame = Current.Value; frame != null; frame = frame.Previous)
+        {
+            if (!frame.IsActive || !ReferenceEquals(frame.Target, creature))
+            {
+                continue;
+            }
+
+            TryCaptureHurtResponse(frame, creature);
+            return;
+        }
+    }
+
+    private static bool TryCaptureHurtResponse(Frame frame, Creature creature)
+    {
+        if (frame.FreezeTriggered)
+        {
+            return frame.HurtResponseCaptured;
+        }
+
+        frame.FreezeTriggered = true;
+        try
+        {
+            frame.HurtResponseCaptured = frame.FreezeTarget(creature);
+        }
+        catch (Exception exception)
+        {
+            Entry.Logger.Warn(
+                $"Dark Strike hurt response could not be deferred: {exception.Message}");
+        }
+
+        return frame.HurtResponseCaptured;
+    }
+
+    private static async Task<T> Complete<T>(Task<T> task, Frame frame)
+    {
+        try
+        {
+            return await task;
+        }
+        finally
+        {
+            frame.IsActive = false;
+        }
+    }
+
+    private sealed class Frame(
+        Frame? previous,
+        Creature target,
+        Func<Creature, bool> freezeTarget)
+    {
+        internal Frame? Previous { get; } = previous;
+        internal Creature Target { get; } = target;
+        internal Func<Creature, bool> FreezeTarget { get; } = freezeTarget;
+        internal bool FreezeTriggered { get; set; }
+        internal bool HurtResponseCaptured { get; set; }
+        internal bool IsActive { get; set; } = true;
+    }
 }

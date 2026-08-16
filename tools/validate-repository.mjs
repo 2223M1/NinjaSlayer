@@ -383,6 +383,62 @@ for (const name of ['settings_ui.json', 'enchantments.json']) {
   }
 }
 
+const redesignCardsByLanguage = Object.fromEntries(
+  ['eng', 'zhs'].map((language) => {
+    const cards = readJson(join(root, 'NinjaSlayer', 'localization', language, 'cards.json')) ?? {};
+    return [language, Object.fromEntries(
+      Object.entries(cards).filter(([key]) => key.includes('_REDESIGN_V1.')),
+    )];
+  }),
+);
+const englishRedesignKeys = Object.keys(redesignCardsByLanguage.eng).sort();
+const chineseRedesignKeys = Object.keys(redesignCardsByLanguage.zhs).sort();
+if (JSON.stringify(englishRedesignKeys) !== JSON.stringify(chineseRedesignKeys)) {
+  errors.push('Redesign V1 card localization keys differ between eng/cards.json and zhs/cards.json');
+}
+for (const language of ['eng', 'zhs']) {
+  const cards = redesignCardsByLanguage[language];
+  const stems = new Set(Object.keys(cards).map((key) => key.replace(/\.(?:title|description)$/, '')));
+  for (const stem of stems) {
+    for (const suffix of ['title', 'description']) {
+      const value = cards[`${stem}.${suffix}`];
+      if (typeof value !== 'string' || value.trim().length === 0) {
+        errors.push(`${language}/cards.json is missing non-empty ${stem}.${suffix}`);
+      }
+    }
+  }
+}
+for (const key of englishRedesignKeys.filter((key) => key.endsWith('.description'))) {
+  const englishFields = [...redesignCardsByLanguage.eng[key].matchAll(/\{([A-Za-z_][A-Za-z0-9_]*)(?=[:}])/g)]
+    .map((match) => match[1])
+    .sort();
+  const chineseFields = [...redesignCardsByLanguage.zhs[key].matchAll(/\{([A-Za-z_][A-Za-z0-9_]*)(?=[:}])/g)]
+    .map((match) => match[1])
+    .sort();
+  if (JSON.stringify(englishFields) !== JSON.stringify(chineseFields)) {
+    errors.push(`Redesign V1 format fields differ between eng and zhs for ${key}`);
+  }
+}
+
+for (const language of ['eng', 'zhs']) {
+  const characters = readJson(join(root, 'NinjaSlayer', 'localization', language, 'characters.json')) ?? {};
+  const visiblePrefix = 'NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.';
+  const redesignPrefix = 'NINJA_SLAYER_CHARACTER_NINJA_SLAYER_REDESIGN_CHARACTER.';
+  const visible = Object.fromEntries(
+    Object.entries(characters)
+      .filter(([key]) => key.startsWith(visiblePrefix))
+      .map(([key, value]) => [key.slice(visiblePrefix.length), value]),
+  );
+  const redesign = Object.fromEntries(
+    Object.entries(characters)
+      .filter(([key]) => key.startsWith(redesignPrefix))
+      .map(([key, value]) => [key.slice(redesignPrefix.length), value]),
+  );
+  if (JSON.stringify(visible) !== JSON.stringify(redesign)) {
+    errors.push(`${language}/characters.json must give visible and Redesign Ninja Slayer identical localization`);
+  }
+}
+
 function validateFrames(directory, prefix, count) {
   const actual = readdirSync(directory)
     .filter((name) => name.endsWith('.png'))
@@ -447,6 +503,8 @@ const patchBodies = new Map(patchDeclarations.map((match, index) => [
 ]));
 for (const groupName of [
   'CardResolutionPatchGroup',
+  'CombatPresentationPacingPatchGroup',
+  'RapidCardResolutionPatchGroup',
   'PreparedGameplayPatchGroup',
   'BossBurstPresentationPatchGroup',
   'FinisherCorePatchGroup',
@@ -481,7 +539,6 @@ const compatibilityOwnedFiles = [
   'Code/Patches/NinjaSlayerTypographyPatch.cs',
   'Code/Patches/PreparedCardPatches.cs',
   'Code/Patches/ReporterPassEventOptionPatch.cs',
-  'Code/Patches/TornadoFistFinisherCadencePatch.cs',
 ];
 const privateReflectionPattern = /AccessTools\.(?:Field|Method|Property)|BindingFlags|GetField\(|GetMethod\(/;
 for (const relativePath of compatibilityOwnedFiles) {

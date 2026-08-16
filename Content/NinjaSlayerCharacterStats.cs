@@ -17,7 +17,7 @@ public static class NinjaSlayerCharacterStats
     public const int StartingHp = 72;
     public const int StartingGold = 99;
     public const float AttackAnimDelay = 0.15f;
-    public const float CastAnimDelay = 0.2f;
+    public const float CastAnimDelay = 0.25f;
     public const bool RequiresEpochAndTimeline = false;
     public const VfxColor SpeechBubbleColor = VfxColor.Red;
 

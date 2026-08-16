@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
@@ -62,11 +63,21 @@ public class Entry
 
             using (RitsuLibFramework.BeginModDataRegistration(NinjaSlayerIds.ModId))
             {
+                NinjaSlayerSettings.Register(NinjaSlayerIds.ModId);
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
             }
+            activation.Track(
+                NinjaSlayerCapabilityIds.CoreContent,
+                NinjaSlayerTeaEnergy.Register(NinjaSlayerIds.ModId),
+                installedCount: 1);
+            activation.Track(
+                NinjaSlayerCapabilityIds.CoreContent,
+                NinjaSlayerRunRulesRuntime.Subscribe(),
+                installedCount: 1);
 
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
+                .Character<NinjaSlayerRedesignCharacter>(ConfigureRedesignStartingDeck)
                 .Apply();
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
@@ -93,6 +104,7 @@ public class Entry
                 activation.InstalledPatchCount));
 
         InstallOptionalBaseCapabilities();
+        InstallRapidCardResolutionCapabilities();
         InstallFinisherCapability();
         InstallTransitionCapability();
         InstallFeedbackCapability();
@@ -126,6 +138,15 @@ public class Entry
             .AddStartingCard<KarateStraight>(1, 3);
     }
 
+    private static void ConfigureRedesignStartingDeck<TCharacter>(CharacterRegistrationEntry<TCharacter> character)
+        where TCharacter : CharacterModel
+    {
+        character
+            .AddStartingCard<StrikeNinjaSlayerRedesignV1>(4, 0)
+            .AddStartingCard<DefendNinjaSlayerRedesignV1>(5, 1)
+            .AddStartingCard<HandChopRedesignV1>(1, 2);
+    }
+
     private static bool TryActivateCoreCapabilities(
         [NotNullWhen(true)] out CoreActivationLease? activation,
         out string failedCapabilityId)
@@ -134,6 +155,7 @@ public class Entry
         failedCapabilityId = NinjaSlayerCapabilityIds.Gameplay;
         IReadOnlyList<CapabilityProbe> gameplayProbes = GameCompatibility.MapHistory.GetProbes()
             .Concat(GameCompatibility.EnemyAttackDodge.GetProbes())
+            .Concat(GameCompatibility.EventCombat.GetProbes())
             .ToArray();
         if (!TryInstallRequiredCapability<GameplayPatchGroup>(
                 failedCapabilityId,
@@ -234,6 +256,26 @@ public class Entry
         }
     }
 
+    private static void InstallRapidCardResolutionCapabilities()
+    {
+        CapabilityStatus pacing = InstallCapability<CombatPresentationPacingPatchGroup>(
+            NinjaSlayerCapabilityIds.CombatPresentationPacing,
+            GameCompatibility.CombatPresentationPacing.GetProbes(),
+            CombatPresentationPacingPatch.CreateDynamicPatches);
+        if (!pacing.IsOperational)
+        {
+            DisableByDependency(
+                NinjaSlayerCapabilityIds.RapidCardResolution,
+                NinjaSlayerCapabilityIds.CombatPresentationPacing);
+            return;
+        }
+
+        InstallCapability<RapidCardResolutionPatchGroup>(
+            NinjaSlayerCapabilityIds.RapidCardResolution,
+            GameCompatibility.RapidCardResolution.GetProbes(),
+            RapidCardResolutionStateMachinePatch.CreateDynamicPatches);
+    }
+
     private static void InstallFinisherCapability()
     {
         CapabilityStatus finisher = InstallCapability<FinisherCorePatchGroup>(
@@ -245,19 +287,12 @@ public class Entry
             DisableByDependency(
                 NinjaSlayerCapabilityIds.FinisherPresentation,
                 NinjaSlayerCapabilityIds.FinisherCore);
-            DisableByDependency(
-                NinjaSlayerCapabilityIds.FinisherTornadoCadence,
-                NinjaSlayerCapabilityIds.FinisherCore);
             return;
         }
 
         InstallCapability<FinisherPresentationPatchGroup>(
             NinjaSlayerCapabilityIds.FinisherPresentation,
             GameCompatibility.Finisher.GetPresentationProbes());
-        InstallCapability<FinisherCadencePatchGroup>(
-            NinjaSlayerCapabilityIds.FinisherTornadoCadence,
-            GameCompatibility.TornadoCadence.GetProbes(),
-            TornadoFistFinisherCadencePatch.CreateDynamicPatches);
     }
 
     private static void InstallTransitionCapability()

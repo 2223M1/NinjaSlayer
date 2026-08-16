@@ -226,11 +226,17 @@ internal static class EnemyAttackDodgeContext
                 dodgers.Add(owner);
             }
 
-            Creature? yamotoKoki = player.PlayerCombatState?.Pets.FirstOrDefault(pet =>
-                pet.Monster is YamotoKokiMonster && pet.IsAlive);
-            if (yamotoKoki != null)
+            if (attacker.CombatState is not { } combatState)
             {
-                dodgers.Add(yamotoKoki);
+                continue;
+            }
+
+            foreach (Creature companion in combatState.Creatures.Where(creature =>
+                         creature.PetOwner == player
+                         && creature.IsAlive
+                         && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster))
+            {
+                dodgers.Add(companion);
             }
         }
 

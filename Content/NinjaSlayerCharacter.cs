@@ -32,6 +32,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
     public override float AttackAnimDelay => NinjaSlayerCharacterStats.AttackAnimDelay;
     public override float CastAnimDelay => NinjaSlayerCharacterStats.CastAnimDelay;
     public override bool RequiresEpochAndTimeline => NinjaSlayerCharacterStats.RequiresEpochAndTimeline;
+    public override bool HideInCardLibraryCompendium => false;
     public override string CharacterSelectSfx => NinjaSlayerAudio.NinjaSlayerSelectEvent;
     public override string CharacterTransitionSfx => NinjaSlayerAudio.NinjaSlayerTransitionEvent;
     protected override IEnumerable<string> ExtraAssetPaths =>

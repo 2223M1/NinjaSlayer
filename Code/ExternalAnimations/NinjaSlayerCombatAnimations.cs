@@ -60,7 +60,11 @@ public static class NinjaSlayerCombatAnimations
                 return true;
             case "Hit":
                 NinjaSlayerCombatAudioSet.Play(audio.Hurt);
-                _ = PlayHitAnimation(creature);
+                if (!DarkStrikeHurtPoseFreezeContext.TryDeferNinjaSlayerHit(creature))
+                {
+                    _ = PlayHitAnimation(creature);
+                }
+
                 result = Task.CompletedTask;
                 return true;
             case "BlockedHit":
@@ -78,6 +82,14 @@ public static class NinjaSlayerCombatAnimations
         SoarSpinAnimation.ResetSpinVisual(creature);
         NinjaSlayerSpinMotionBlur.Get(creature)?.Reset();
         creature.GetCreatureNode()?.SetAnimationTrigger("Idle");
+    }
+
+    internal static void PlayDeferredHitAnimation(Creature creature)
+    {
+        if (!creature.IsDead)
+        {
+            _ = PlayHitAnimation(creature);
+        }
     }
 
     private static async Task PlayCastAnimation(Creature creature)

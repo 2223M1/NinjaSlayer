@@ -3,15 +3,22 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Rooms;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Screens;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
+using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Odds;
 using MegaCrit.Sts2.Core.Random;
+using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
+using NinjaSlayer.Events;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -70,7 +77,17 @@ internal static class NinjaSlayerSmokeCombatPatch
     public static bool Prefix(Rng random, CancellationToken ct, ref Task __result)
     {
         SmokeController? controller = SmokeController.Current;
-        if (controller is null || !controller.TryClaimFirstCombat())
+        if (controller is null)
+        {
+            return true;
+        }
+
+        if (controller.TryHandleSawatariEventCombat(ct, ref __result))
+        {
+            return false;
+        }
+
+        if (!controller.TryClaimFirstCombat())
         {
             return true;
         }
@@ -78,6 +95,119 @@ internal static class NinjaSlayerSmokeCombatPatch
         __result = controller.ExecuteFirstCombatAsync(random, ct);
         return false;
     }
+}
+
+[HarmonyPatch(typeof(ActModel), nameof(ActModel.PullNextEvent))]
+internal static class NinjaSlayerSmokeSawatariEventPatch
+{
+    public static void Postfix(RunState runState, ref EventModel __result) =>
+        SmokeController.Current?.ForceFirstSawatariEvent(runState, ref __result);
+}
+
+[HarmonyPatch(typeof(EventRoomHandler), "HandleEventCombat")]
+internal static class NinjaSlayerSmokeSawatariCombatPatch
+{
+    public static bool Prefix(CancellationToken ct, ref Task __result)
+    {
+        SmokeController? controller = SmokeController.Current;
+        return controller is null || !controller.TryHandleSawatariEventCombat(ct, ref __result);
+    }
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCombatStart))]
+internal static class NinjaSlayerSmokeSawatariBeforeCombatPatch
+{
+    public static void Prefix(ICombatState? combatState) =>
+        SmokeController.Current?.ObserveSawatariBeforeCombatStart(combatState);
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.AfterCombatEnd))]
+internal static class NinjaSlayerSmokeSawatariAfterCombatPatch
+{
+    public static void Prefix(ICombatState? combatState) =>
+        SmokeController.Current?.ObserveSawatariAfterCombatEnd(combatState);
+}
+
+[HarmonyPatch(typeof(NCombatStartBanner), nameof(NCombatStartBanner.Create))]
+internal static class NinjaSlayerSmokeCombatStartBannerPatch
+{
+    public static void Postfix() => SmokeController.Current?.ObserveCombatStartBanner();
+}
+
+[HarmonyPatch(typeof(UnknownMapPointOdds), nameof(UnknownMapPointOdds.Roll))]
+internal static class NinjaSlayerSmokeUnknownRoomRollPatch
+{
+    [ThreadStatic]
+    private static int _depth;
+
+    [ThreadStatic]
+    private static int _hookCalls;
+
+    [ThreadStatic]
+    private static float _initialMonsterOdds;
+
+    [ThreadStatic]
+    private static UnknownMapPointOdds? _rollOdds;
+
+    [ThreadStatic]
+    private static bool _forcedMonsterOddsObserved;
+
+    public static void Prefix(UnknownMapPointOdds __instance)
+    {
+        if (_depth++ == 0)
+        {
+            _hookCalls = 0;
+            _forcedMonsterOddsObserved = false;
+            _initialMonsterOdds = __instance.MonsterOdds;
+            _rollOdds = __instance;
+        }
+    }
+
+    [HarmonyPriority(Priority.Last)]
+    public static Exception? Finalizer(
+        Exception? __exception,
+        UnknownMapPointOdds __instance,
+        IRunState runState)
+    {
+        if (--_depth == 0)
+        {
+            SmokeController.Current?.ObserveUnknownRoomRoll(
+                runState,
+                _hookCalls,
+                !_forcedMonsterOddsObserved
+                    || __instance.MonsterOdds == _initialMonsterOdds);
+            _rollOdds = null;
+        }
+
+        return __exception;
+    }
+
+    public static void ObserveRoomTypeHook()
+    {
+        if (_depth == 1)
+        {
+            _hookCalls++;
+        }
+    }
+
+    public static void ObserveRoomTypeHookCompleted()
+    {
+        if (_depth == 1
+            && _initialMonsterOdds != 1f
+            && _rollOdds!.MonsterOdds == 1f)
+        {
+            _forcedMonsterOddsObserved = true;
+        }
+    }
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.ModifyUnknownMapPointRoomTypes))]
+internal static class NinjaSlayerSmokeUnknownRoomTypeHookPatch
+{
+    public static void Prefix() => NinjaSlayerSmokeUnknownRoomRollPatch.ObserveRoomTypeHook();
+
+    [HarmonyPriority(Priority.Last - 1)]
+    public static void Postfix() => NinjaSlayerSmokeUnknownRoomRollPatch.ObserveRoomTypeHookCompleted();
 }
 
 [HarmonyPatch(typeof(Hook), nameof(Hook.ModifyDamage))]

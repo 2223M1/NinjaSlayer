@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -63,8 +64,7 @@ public partial class NarakuVisualOverlay : Sprite2D
             overlay.Reparent(parent);
         }
 
-        overlay.creature = creature;
-        overlay.source = source;
+        overlay.Bind(creature, source);
         overlay.Centered = true;
         overlay.FlipH = source.FlipH;
         overlay.FlipV = source.FlipV;
@@ -75,8 +75,15 @@ public partial class NarakuVisualOverlay : Sprite2D
         overlay.UpdateVisual();
     }
 
+    public override void _Ready()
+    {
+        TryBindFromTree();
+        UpdateVisual();
+    }
+
     public override void _Process(double delta)
     {
+        TryBindFromTree();
         UpdateVisual();
     }
 
@@ -89,21 +96,28 @@ public partial class NarakuVisualOverlay : Sprite2D
         }
 
         NinjaSlayerFormPresentation presentation = NinjaSlayerFormState.GetPresentation(creature);
-        source.Visible = !presentation.UsesOverlay;
-        Visible = presentation.UsesOverlay;
-        if (!presentation.UsesOverlay)
+        Texture2D? sourceTexture = source.Texture;
+        string? facingTexturePath = presentation == NinjaSlayerFormPresentationCatalog.Normal
+            ? NinjaSlayerFormPresentationCatalog.ResolveFacingIdleTexturePath(
+                sourceTexture?.ResourcePath,
+                source.GetParent() is Node2D anchor && anchor.Scale.X < 0f)
+            : null;
+        bool usesOverlay = presentation.UsesOverlay || facingTexturePath != null;
+        source.Visible = !usesOverlay;
+        Visible = usesOverlay;
+        if (!usesOverlay)
         {
             return;
         }
 
-        Texture2D? sourceTexture = source.Texture;
         if (activeTexturePath is null
             || !ReferenceEquals(resolvedSourceTexture, sourceTexture)
             || resolvedPresentation != presentation)
         {
-            string texturePath = NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath(
-                presentation,
-                sourceTexture?.ResourcePath)
+            string texturePath = facingTexturePath
+                ?? NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath(
+                    presentation,
+                    sourceTexture?.ResourcePath)
                 ?? throw new InvalidOperationException("Overlay form presentation did not resolve a texture path.");
             if (activeTexturePath != texturePath)
             {
@@ -125,6 +139,35 @@ public partial class NarakuVisualOverlay : Sprite2D
         }
 
         MirrorSourceAppearance();
+    }
+
+    private void Bind(Creature owner, Sprite2D body)
+    {
+        creature = owner;
+        source = body;
+    }
+
+    private void TryBindFromTree()
+    {
+        if (creature != null
+            && source != null
+            && GodotObject.IsInstanceValid(source))
+        {
+            return;
+        }
+
+        for (Node? node = this; node != null; node = node.GetParent())
+        {
+            if (source == null && node is NCreatureVisuals visuals)
+            {
+                source = NinjaSlayerVisualRig.GetBodySprite(visuals);
+            }
+
+            if (creature == null && node is NCreature creatureNode)
+            {
+                creature = creatureNode.Entity;
+            }
+        }
     }
 
     /// <summary>

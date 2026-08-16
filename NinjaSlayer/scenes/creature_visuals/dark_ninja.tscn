@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/dark_ninja_standing.png" id="1_dark_ninja"]
-[ext_resource type="Texture2D" path="res://NinjaSlayer/images/characters/ninja_slayer/shadow.png" id="2_shadow"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/dark_ninja_standing_shadow.png" id="2_shadow"]
 [ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerShadowController.cs" id="3_shadow_controller"]
 
 [node name="DarkNinja" type="Node2D"]
@@ -10,7 +10,7 @@ metadata/_edit_lock_ = true
 
 [node name="Shadow" type="Sprite2D" parent="."]
 position = Vector2(-8, -20.625)
-scale = Vector2(0.44, 0.25)
+scale = Vector2(0.432, 0.245)
 texture = ExtResource("2_shadow")
 
 [node name="AirborneAnchor" type="Node2D" parent="."]
@@ -25,7 +25,7 @@ position = Vector2(0, -169.1)
 [node name="Visuals" type="Sprite2D" parent="AirborneAnchor"]
 unique_name_in_owner = true
 position = Vector2(0, -169.1)
-scale = Vector2(0.55, 0.55)
+scale = Vector2(0.54, 0.54)
 texture = ExtResource("1_dark_ninja")
 
 [node name="Bounds" type="Control" parent="."]
