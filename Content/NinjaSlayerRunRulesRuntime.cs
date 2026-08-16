@@ -35,6 +35,14 @@ public static class NinjaSlayerRunRulesRuntime
         return false;
     }
 
+    public static void ReplaceSingleplayerCharacter(ref CharacterModel character)
+    {
+        if (NinjaSlayerSettings.UseRedesignV1 && character is NinjaSlayerCharacter)
+        {
+            character = ModelDb.Character<NinjaSlayerRedesignCharacter>();
+        }
+    }
+
     private static void OnLobbyStaging(RunSavedDataLobbyStagingEvent evt)
     {
         if (evt.Reason != RunSavedDataLobbyStagingReason.Committing

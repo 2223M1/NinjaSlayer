@@ -1,5 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Ascension;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -7,10 +8,12 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -26,8 +29,9 @@ namespace NinjaSlayer.Monsters;
 [RegisterMonster]
 public sealed class SawatariMonster : ModMonsterTemplate
 {
+    public const string EnhanceMoveId = "BAMBOO_ENHANCEMENT";
     public const string AttackMoveId = "EMPTY_HAND_COMBO";
-    public const string TexturePath = "res://NinjaSlayer/images/monsters/sawatari.png";
+    public const string TexturePath = "res://NinjaSlayer/images/monsters/sawatari_bamboo.png";
     public override int MinInitialHp => AscensionHelper.GetValueIfAscension(
         AscensionLevel.ToughEnemies,
         SawatariEventRules.ToughHp,
@@ -46,12 +50,14 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
+        MoveState enhance = new(EnhanceMoveId, EnhanceMove, new BuffIntent());
         MoveState attack = new(
             AttackMoveId,
             AttackMove,
             new MultiAttackIntent(SawatariEventRules.AttackDamage, SawatariEventRules.AttackHits));
+        enhance.FollowUpState = attack;
         attack.FollowUpState = attack;
-        return new MonsterMoveStateMachine([attack], attack);
+        return new MonsterMoveStateMachine([enhance, attack], enhance);
     }
 
     public override async Task AfterAddedToRoom()
@@ -90,6 +96,22 @@ public sealed class SawatariMonster : ModMonsterTemplate
         return Task.CompletedTask;
     }
 
+    public override Task AfterDamageReceived(
+        PlayerChoiceContext choiceContext,
+        Creature target,
+        DamageResult result,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource)
+    {
+        if (ReferenceEquals(target, Creature) && result.UnblockedDamage > 0)
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariHurtEvent);
+        }
+
+        return Task.CompletedTask;
+    }
+
     public override Task AfterSideTurnStart(
         CombatSide side,
         IReadOnlyList<Creature> participants,
@@ -111,6 +133,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
             return;
         }
 
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariAttackEvent);
         AttackCommand command = MegaCrit.Sts2.Core.Commands.DamageCmd
             .Attack(SawatariEventRules.AttackDamage)
             .WithHitCount(SawatariEventRules.AttackHits)
@@ -177,8 +200,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
     private async Task AttackMove(IReadOnlyList<Creature> targets)
     {
-        if (!SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session)
-            || session.ConsumeSkippedDuelAction(Creature))
+        if (!SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session))
         {
             return;
         }
@@ -192,8 +214,28 @@ public sealed class SawatariMonster : ModMonsterTemplate
             if (target != null)
             {
                 await PlayAttack(target);
+                if (session.ConsumeBambooVoiceAfterAttack(Creature))
+                {
+                    NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBambooEvent);
+                }
             }
         }
+    }
+
+    private async Task EnhanceMove(IReadOnlyList<Creature> _)
+    {
+        if (!SawatariEventSession.IsActiveDuelCreature(Creature))
+        {
+            return;
+        }
+
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEnhancedEvent);
+        await PowerCmd.Apply<StrengthPower>(
+            new ThrowingPlayerChoiceContext(),
+            Creature,
+            SawatariEventRules.DuelStrength,
+            Creature,
+            null);
     }
 
     private static bool CanHit(Creature attacker, Creature target, ICombatState combatState) =>

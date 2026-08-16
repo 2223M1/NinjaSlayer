@@ -329,6 +329,7 @@ internal sealed partial class SmokeController
             () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "player play phase did not start",
             cancellationToken);
+        ValidateTeaCounterLayout();
         _checkpoints.Write(
             "combat.started",
             data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });

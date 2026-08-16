@@ -4,6 +4,14 @@ namespace NinjaSlayer.LogicTests;
 
 public sealed class SawatariEventRulesTests
 {
+    [Fact]
+    public void CombatValuesMatchTheCoopAndDuelSequence()
+    {
+        Assert.Equal(2, SawatariEventRules.AttackDamage);
+        Assert.Equal(4, SawatariEventRules.AttackHits);
+        Assert.Equal(2, SawatariEventRules.DuelStrength);
+    }
+
     [Theory]
     [InlineData(250f, 1f, 480f)]
     [InlineData(800f, 1f, 550f)]

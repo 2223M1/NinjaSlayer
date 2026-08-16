@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
@@ -23,14 +24,14 @@ public abstract class RedesignV1UncommonCard(string id, string art, int cost, Ca
 
 public sealed class IronShirtRedesignV1 : RedesignV1UncommonCard
 {
-    public IronShirtRedesignV1() : base(nameof(IronShirtRedesignV1), nameof(DrinkTea), 1, CardType.Power, TargetType.Self) { }
+    public IronShirtRedesignV1() : base(nameof(IronShirtRedesignV1), nameof(BrewTea), 1, CardType.Power, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => PowerCmd.Apply<ChadoHealPower>(c, Owner.Creature, IsUpgraded ? 3 : 2, Owner.Creature, this);
     protected override void OnUpgrade() { }
 }
 
 public sealed class SweepKickRedesignV1 : RedesignV1UncommonCard
 {
-    public SweepKickRedesignV1() : base(nameof(SweepKickRedesignV1), nameof(ShieldFromNothing), 1, CardType.Power, TargetType.Self) { }
+    public SweepKickRedesignV1() : base(nameof(SweepKickRedesignV1), nameof(Evade), 1, CardType.Power, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => PowerCmd.Apply<ChadoBlockPower>(c, Owner.Creature, IsUpgraded ? 7 : 5, Owner.Creature, this);
     protected override void OnUpgrade() { }
 }
@@ -38,15 +39,15 @@ public sealed class SweepKickRedesignV1 : RedesignV1UncommonCard
 public sealed class MurderFistRedesignV1 : RedesignV1UncommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
-    public MurderFistRedesignV1() : base(nameof(MurderFistRedesignV1), nameof(SipTea), 1, CardType.Skill, TargetType.Self) => this.SecondaryCosts().Set(NinjaSlayerTeaEnergy.Id, 1);
-    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => CreatureCmd.Heal(Owner.Creature, IsUpgraded ? 3 : 2);
+    public MurderFistRedesignV1() : base(nameof(MurderFistRedesignV1), nameof(MasochisticBliss), 1, CardType.Skill, TargetType.Self) => this.SecondaryCosts().Set(NinjaSlayerTeaEnergy.Id, 1);
+    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => CreatureCmd.Heal(Owner.Creature, IsUpgraded ? 13 : 10);
     protected override void OnUpgrade() { }
 }
 
 public sealed class LockOnRedesignV1 : RedesignV1UncommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Retain, CardKeyword.Exhaust];
-    public LockOnRedesignV1() : base(nameof(LockOnRedesignV1), nameof(Meditation), 1, CardType.Skill, TargetType.Self) { }
+    public LockOnRedesignV1() : base(nameof(LockOnRedesignV1), nameof(Momentum), 1, CardType.Skill, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => PowerCmd.Apply<ChadoEnergyPower>(c, Owner.Creature, 2, Owner.Creature, this);
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
@@ -63,7 +64,7 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1)];
-    public TornadoFistRedesignV1() : base(nameof(TornadoFistRedesignV1), nameof(Recycle), 0, CardType.Skill, TargetType.Self) { }
+    public TornadoFistRedesignV1() : base(nameof(TornadoFistRedesignV1), nameof(BladesCome), 0, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         var prefs = new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, DynamicVars.Cards.IntValue);
@@ -76,7 +77,7 @@ public sealed class AssassinationFistRedesignV1 : RedesignV1UncommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Retain, CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(6), new DynamicVar("Draw", 2)];
-    public AssassinationFistRedesignV1() : base(nameof(AssassinationFistRedesignV1), nameof(ColdBrew), 1, CardType.Skill, TargetType.Self) { }
+    public AssassinationFistRedesignV1() : base(nameof(AssassinationFistRedesignV1), nameof(ClankDrinkTea), 1, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { await ScryCmd.Execute(c, Owner, DynamicVars.Cards.IntValue); await CardPileCmd.Draw(c, DynamicVars["Draw"].IntValue, Owner); }
     protected override void OnUpgrade() { }
 }
@@ -92,7 +93,7 @@ public sealed class NinjaGreetingRedesignV1 : RedesignV1UncommonCard, IReturnToH
 public sealed class BloodTearsRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(3), new DynamicVar("NextDraw", 2)];
-    public BloodTearsRedesignV1() : base(nameof(BloodTearsRedesignV1), nameof(ReadyBlade), 1, CardType.Skill, TargetType.Self) { }
+    public BloodTearsRedesignV1() : base(nameof(BloodTearsRedesignV1), nameof(Redouble), 1, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         await ScryCmd.Execute(c, Owner, DynamicVars.Cards.IntValue);
@@ -154,7 +155,16 @@ public sealed class EvadeRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(14, ValueProp.Move), new DynamicVar("Strength", 2)];
     public EvadeRedesignV1() : base(nameof(EvadeRedesignV1), nameof(SweepKick), 2, CardType.Attack, TargetType.AllEnemies) { }
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).TargetingAllOpponents(CombatState!).Execute(c); await PowerCmd.Apply<StrengthPower>(c, Owner.Creature, 2, Owner.Creature, this); }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, p)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .TargetingAllOpponents(CombatState!)
+            .ExecuteWithFinisher(c, this, p);
+        await PowerCmd.Apply<StrengthPower>(c, Owner.Creature, 2, Owner.Creature, this);
+    }
     protected override void OnUpgrade() { }
 }
 
@@ -198,10 +208,14 @@ public sealed class IyaIronSlashWaveRedesignV1 : RedesignV1UncommonCard
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(6, ValueProp.Move)];
     public IyaIronSlashWaveRedesignV1() : base(nameof(IyaIronSlashWaveRedesignV1), nameof(OpeningGuard), 2, CardType.Skill, TargetType.Self) { }
+    public override decimal ModifyBlockAdditive(Creature target, decimal block, ValueProp props, CardModel? cardSource, CardPlay? cardPlay) =>
+        target == Owner.Creature && cardSource == this
+            ? Owner.Creature.GetPower<StrengthPower>()?.Amount ?? 0
+            : 0;
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p);
-        await PowerCmd.Apply<ThreeTurnBlockPower>(c, Owner.Creature, DynamicVars.Block.IntValue, Owner.Creature, this);
+        await PowerCmd.Apply<ThreeTurnBlockPower>(c, Owner.Creature, DynamicVars.Block.BaseValue, Owner.Creature, this);
     }
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);
 }
@@ -213,7 +227,13 @@ public sealed class MasochisticBlissRedesignV1 : RedesignV1UncommonCard
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
         int hits = p.Target!.CurrentHp * 2 <= p.Target.MaxHp ? 2 : 1;
-        for (int i = 0; i < hits; i++) await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target).Execute(c);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .WithHitCount(hits)
+            .FromCard(this, p)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .Targeting(p.Target)
+            .ExecuteWithFinisher(c, this, p, hitCountOverride: hits);
     }
     protected override void OnUpgrade() { }
 }
@@ -240,7 +260,7 @@ public sealed class OpeningGuardRedesignV1 : RedesignV1UncommonCard
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(10, ValueProp.Move)];
     public OpeningGuardRedesignV1() : base(nameof(OpeningGuardRedesignV1), nameof(IBlock), 2, CardType.Skill, TargetType.Self) { }
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p); await PowerCmd.Apply<IBlockPower>(c, Owner.Creature, 1, Owner.Creature, this); }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, p); await PowerCmd.Apply<RemainingBlockStrengthPower>(c, Owner.Creature, 1, Owner.Creature, this); }
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);
 }
 
@@ -300,6 +320,6 @@ public sealed class RubHandsRedesignV1 : RedesignV1UncommonCard
 public sealed class ShieldFromNothingRedesignV1 : RedesignV1UncommonCard
 {
     public ShieldFromNothingRedesignV1() : base(nameof(ShieldFromNothingRedesignV1), nameof(ShieldFromNothing), 1, CardType.Power, TargetType.Self) { }
-    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => PowerCmd.Apply<IntentOpeningPower>(c, Owner.Creature, IsUpgraded ? 2 : 1, Owner.Creature, this);
+    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => PowerCmd.Apply<SameNameCostPower>(c, Owner.Creature, IsUpgraded ? 2 : 1, Owner.Creature, this);
     protected override void OnUpgrade() { }
 }

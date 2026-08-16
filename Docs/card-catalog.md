@@ -542,7 +542,7 @@ Chop/Chop 白/攻击 费用0
 
 ### 新版白卡（15）
 
-手里剑库存/ShurikenStockRedesignV1 白/技能 费用1 获得7→8点格挡和2→3层手里剑库存；每张攻击牌结算后消耗1层并造成4点额外伤害。
+藏锋/ShurikenStockRedesignV1 白/技能 费用1 获得7→8点格挡和2→3层手里剑库存；每张攻击牌结算后消耗1层并造成4点额外伤害。
 
 回环扫击/RepeatSweepRedesignV1 白/技能 费用1 对所有敌人造成4→7点伤害，抽1张牌，复读。
 留势防御/RetainGuardRedesignV1 白/技能 费用1 获得5→8点格挡，给予一张手牌保留。
@@ -567,59 +567,59 @@ Chop/ChopRedesignV1 白/攻击 费用0 造成5→7点伤害并给予3→4层空�
 
 ### 新版蓝卡（30）
 
-- IronShirtRedesignV1：费用1能力；每次使用茶道呼吸回复2→3生命。
-- SweepKickRedesignV1：费用1能力；每当实际获得额外能量时获得5→7格挡。
-- MurderFistRedesignV1：费用1技能；消耗1茶能量，回复2→3生命，消耗。
-- LockOnRedesignV1：费用1→0技能；本场茶道呼吸额外获得2能量，保留，消耗。
-- 我来防御/IBlockRedesignV1：费用0技能；预见3，获得1茶能量。
-- TornadoFistRedesignV1：费用0技能；弃牌堆回手1→2张并给予保留，消耗。
-- AssassinationFistRedesignV1：费用1技能；预见6，抽2，保留，消耗。
-- NinjaGreetingRedesignV1：费用1技能；预见3，抽1，复读。
-- BloodTearsRedesignV1：费用1技能；预见3→4，本回合保留手牌，下回合多抽2→3。
-- BackBridgeRedesignV1：费用1能力；预见2→4，每次预见抽1。
-- BladeDanceRedesignV1：费用1能力；每次预见获得3→4格挡。
-- BrewTeaRedesignV1：费用1技能；获得7→8格挡和1力量。
-- ColdBrewRedesignV1：费用0技能；下一张攻击牌打出前获得3→5临时力量。
-- ContraptionRedesignV1：费用2→1能力；本回合每打出一张牌获得1临时力量。
-- DrinkTeaRedesignV1：费用0技能；获得2→4力量，持续至下回合开始。
-- EvadeRedesignV1：费用2攻击；对所有敌人造成14伤害，获得2力量。
-- EvolutionRedesignV1：费用1能力；洗牌时获得8→12格挡。
-- ForgoStrengthRedesignV1：费用1技能；获得3→4库存，复读。
-- HalfMoonCompassKickRedesignV1：费用2→1技能；按本回合此前出牌数获得库存。
-- ImpureFlameRedesignV1：费用1技能；获得4格挡和壁垒，复读。
-- IyaIronSlashWaveRedesignV1：费用2技能；立即及之后两回合各获得6→9格挡。
-- MasochisticBlissRedesignV1：费用2攻击；造成14伤害，半血以下再命中一次。
-- MomentumRedesignV1：费用0技能；目标本回合受伤提高25%→50%，消耗。
-- OpeningGuardRedesignV1：费用2技能；获得10→13格挡，下回合按剩余格挡获得活力。
-- PourTeaRedesignV1：费用1技能；获得14→19格挡，抽1，消耗。
-- PursuitStrikeRedesignV1：费用1技能；抽3→4，复读，虚无。
-- ReadyBladeRedesignV1：费用0技能；获得1→2能量，弃1，保留，消耗。
-- RiffleRedesignV1：费用0技能；两张手牌置顶，获得1→2能量。
-- RubHandsRedesignV1：费用1能力；每第3张攻击造成2→3倍伤害。
-- ShieldFromNothingRedesignV1：费用1能力；首次攻击有攻击意图的敌人后，接下来1→2张牌费用为0。
+- 舍念煮茶/IronShirtRedesignV1：费用1能力；每次使用茶道呼吸回复2→3生命。
+- 毫厘之距/SweepKickRedesignV1：费用1能力；每当实际获得额外能量时获得5→7格挡。
+- 不净之力/MurderFistRedesignV1：费用1技能；消耗1茶能量，回复10→13生命，消耗。
+- 势不可挡/LockOnRedesignV1：费用1→0技能；本回合茶道呼吸额外获得2能量，保留，消耗。
+- 一啜清明/IBlockRedesignV1：费用0技能；预见3，获得1茶能量。
+- 飞刃自来/TornadoFistRedesignV1：费用0技能；弃牌堆回手1→2张并给予保留，消耗。
+- 豪饮醒神/AssassinationFistRedesignV1：费用1技能；预见6，抽2，保留，消耗。
+- 忍者问候/NinjaGreetingRedesignV1：费用1技能；预见3，抽1，复读。
+- 倍劲/BloodTearsRedesignV1：费用1技能；预见3→4，本回合保留手牌，下回合多抽2→3。
+- 后拱桥/BackBridgeRedesignV1：费用1能力；预见2→4，每次预见抽1。
+- 飞刃之舞/BladeDanceRedesignV1：费用1能力；每次预见获得3→4格挡。
+- 铁身/BrewTeaRedesignV1：费用1技能；获得7→8格挡和1力量。
+- 冷萃思绪/ColdBrewRedesignV1：费用0技能；下一张攻击牌打出前获得3→5临时力量。
+- 暗器机括/ContraptionRedesignV1：费用2→1能力；本回合每打出一张牌获得1临时力量。
+- 茶力/DrinkTeaRedesignV1：费用0技能；获得2→4力量，持续至下回合开始。
+- 扫堂腿/EvadeRedesignV1：费用2攻击；对所有敌人造成14伤害，获得2力量。
+- 逆境甲壳/EvolutionRedesignV1：费用1能力；洗牌时获得8→12格挡。
+- 断腕/ForgoStrengthRedesignV1：费用1技能；获得3→4库存，复读。
+- 半月圆规踢/HalfMoonCompassKickRedesignV1：费用2→1技能；按本回合此前出牌数获得库存。
+- 浊火生茶/ImpureFlameRedesignV1：费用1技能；获得4格挡和壁垒，复读。
+- 铁雨回护/IyaIronSlashWaveRedesignV1：费用2技能；立即及之后两回合各获得6→9格挡，三次均同时受敏捷与力量加成。
+- 杀人空手道/MasochisticBlissRedesignV1：费用2攻击；造成14伤害，半血以下再命中一次。
+- 死神凝视/MomentumRedesignV1：费用0技能；目标本回合受伤提高25%→50%，消耗。
+- 守势反攻/OpeningGuardRedesignV1：费用2技能；获得10→13格挡，下回合按剩余格挡获得临时力量。
+- 倾盏回护/PourTeaRedesignV1：费用1技能；获得14→19格挡，抽1，消耗。
+- 追击/PursuitStrikeRedesignV1：费用1技能；抽3→4，复读，虚无。
+- 万刃待发/ReadyBladeRedesignV1：费用0技能；获得1→2能量，弃1，保留，消耗。
+- 拆势/RiffleRedesignV1：费用0技能；两张手牌置顶，获得1→2能量。
+- 袖中锋芒/RubHandsRedesignV1：费用1能力；每第3张攻击造成2→3倍伤害。
+- 无形守势/ShieldFromNothingRedesignV1：费用1能力；每回合第一张牌结算后，接下来1→2张同名牌本回合费用为0。
 
 ### 新版金卡（20）
 
-- AlabamaDropRedesignV1：费用2→1能力；茶道呼吸额外获得1能量。
-- KillingIntentRedesignV1：费用0技能；获得1→2茶能量并抽1，固有，消耗。
-- NarakuRecoveryRedesignV1：费用1→0技能；本回合手牌费用降至不高于1，消耗。
-- GreatUkeRedesignV1：费用2技能；按手牌数每张获得3→4格挡。
-- BangBangFistRedesignV1：费用1技能；从抽牌堆、弃牌堆或手牌选择一张回手并给予保留。
-- BeatPeopleChadoRedesignV1：费用1→0能力；回合结束选择一张手牌给予保留。
-- BladesComeRedesignV1：X费攻击；对所有敌人造成4→7伤害X次，X至少4时每次8→11。
-- ClankDrinkTeaRedesignV1：费用4攻击；造成30→40伤害，力量影响倍率为4→8倍。
-- DrowsyBlackTeaRedesignV1：费用5攻击；造成15→20伤害4次。
-- FootworkRedesignV1：费用2攻击；造成13伤害，获得4力量，给予自身1易伤。
-- HellTornadoRedesignV1：费用4能力；获得4库存，库存伤害提高3。
-- InjectionRedesignV1：费用1能力；获得4→5库存，每次库存消耗后获得3→4库存。
-- KarateFinishRedesignV1：费用0技能；洗入弃牌，预见4→6，下回合多抽2→3，消耗。
-- KarateRollingStoneRedesignV1：费用4技能；获得25→35格挡，未完全格挡下一次伤害时触发杀气惩罚，保留，消耗。
-- KarateWallRedesignV1：费用2技能；化身奈落，获得10→12层奈落生命与10→12点格挡，消耗。
-- OmnidirectionalThrowRedesignV1：费用1技能；接下来1→2次伤害降为0，消耗。
-- RecycleRedesignV1：费用1技能；目标生命低于30→40时直接击杀。
-- RedBlackFlameRedesignV1：费用3→2技能；眩晕一名敌人并保留手牌，固有，虚无，消耗。
-- RedoubleRedesignV1：费用0能力；失去3生命，获得3能量并抽2；之后每回合开始失去3生命。
-- SenchaStormRedesignV1：费用1→0技能；给予一张非能力牌复读，且其费用不能低于1，消耗。
+- 纸一重/AlabamaDropRedesignV1：费用2→1能力；茶道呼吸额外获得1能量。
+- 空手道·拉力赛/KillingIntentRedesignV1：费用0技能；获得1→2茶能量并抽1，固有，消耗。
+- 风林火山/NarakuRecoveryRedesignV1：费用1→0技能；本回合手牌费用降至不高于1，消耗。
+- 全方向投掷/GreatUkeRedesignV1：费用2技能；按手牌数每张获得3→4格挡。
+- 连环重击/BangBangFistRedesignV1：费用1技能；从抽牌堆、弃牌堆或手牌选择一张回手并给予保留。
+- 静中杀意/BeatPeopleChadoRedesignV1：费用1→0能力；回合结束选择一张手牌给予保留。
+- 龙卷拳/BladesComeRedesignV1：X费攻击；对所有敌人造成4→7伤害X次，X至少4时每次8→11。
+- 茶道暗杀术/ClankDrinkTeaRedesignV1：费用4攻击；造成30→40伤害，力量影响倍率为4→8倍。
+- 岚之拳/DrowsyBlackTeaRedesignV1：费用5攻击；造成15→20伤害4次。
+- 阿拉巴马落/FootworkRedesignV1：费用2攻击；造成13伤害，获得4力量，给予自身1易伤。
+- 强·手里剑/HellTornadoRedesignV1：费用4能力；获得4库存，库存伤害提高3。
+- 针锋入骨/InjectionRedesignV1：费用1能力；获得4→5库存，每次库存消耗后获得3→4库存。
+- 胜负已分/KarateFinishRedesignV1：费用0技能；洗入弃牌，预见4→6，下回合多抽2→3，消耗。
+- 杀气/KarateRollingStoneRedesignV1：费用4技能；获得25→35格挡，未完全格挡下一次伤害时触发杀气惩罚，保留，消耗。
+- 奈落之力/KarateWallRedesignV1：费用2技能；化身奈落，获得10→12层奈落生命与10→12点格挡，消耗。
+- 大·受身/OmnidirectionalThrowRedesignV1：费用1技能；接下来1→2次超过12点的伤害降为0，消耗。
+- 颂咏俳句吧/RecycleRedesignV1：费用1技能；目标生命低于30→40时直接击杀。
+- 忍者！杀无赦！/RedBlackFlameRedesignV1：费用3→2技能；眩晕一名敌人并保留手牌，固有，虚无，消耗。
+- 血泪/RedoubleRedesignV1：费用0能力；失去3生命，获得3能量并抽2；之后每回合开始失去3生命。
+- 茶岚/SenchaStormRedesignV1：费用1→0技能；给予一张非能力牌复读，且其费用不能低于1，消耗。
 
 ## 附录：动态数值公式
 

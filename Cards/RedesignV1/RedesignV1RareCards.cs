@@ -8,8 +8,10 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Combat.SecondaryResources;
@@ -23,7 +25,7 @@ public abstract class RedesignV1RareCard(string id, string art, int cost, CardTy
 
 public sealed class AlabamaDropRedesignV1 : RedesignV1RareCard
 {
-    public AlabamaDropRedesignV1() : base(nameof(AlabamaDropRedesignV1), nameof(BeatPeopleChado), 2, CardType.Power, TargetType.Self) { }
+    public AlabamaDropRedesignV1() : base(nameof(AlabamaDropRedesignV1), nameof(NinjaSlayerFootwork), 2, CardType.Power, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => PowerCmd.Apply<ChadoBaseEnergyPower>(c, Owner.Creature, 1, Owner.Creature, this);
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
@@ -32,7 +34,7 @@ public sealed class KillingIntentRedesignV1 : RedesignV1RareCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Innate, CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1), new DynamicVar("Tea", 1)];
-    public KillingIntentRedesignV1() : base(nameof(KillingIntentRedesignV1), nameof(SipTea), 0, CardType.Skill, TargetType.Self) { }
+    public KillingIntentRedesignV1() : base(nameof(KillingIntentRedesignV1), nameof(KarateRollingStone), 0, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { await SecondaryResourceCmd.Gain(Owner, NinjaSlayerTeaEnergy.Id, IsUpgraded ? 2 : 1, source: this); await CardPileCmd.Draw(c, 1, Owner); }
     protected override void OnUpgrade() { }
 }
@@ -40,7 +42,7 @@ public sealed class KillingIntentRedesignV1 : RedesignV1RareCard
 public sealed class NarakuRecoveryRedesignV1 : RedesignV1RareCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
-    public NarakuRecoveryRedesignV1() : base(nameof(NarakuRecoveryRedesignV1), nameof(ForgoStrength), 1, CardType.Skill, TargetType.Self) { }
+    public NarakuRecoveryRedesignV1() : base(nameof(NarakuRecoveryRedesignV1), nameof(KarateWall), 1, CardType.Skill, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) { foreach (CardModel card in PileType.Hand.GetPile(Owner).Cards.Where(x => x != this)) card.EnergyCost.SetThisTurnOrUntilPlayed(1, true); return Task.CompletedTask; }
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }
@@ -49,7 +51,7 @@ public sealed class GreatUkeRedesignV1 : RedesignV1RareCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("PerCard", 3)];
-    public GreatUkeRedesignV1() : base(nameof(GreatUkeRedesignV1), nameof(OpeningGuard), 2, CardType.Skill, TargetType.Self) { }
+    public GreatUkeRedesignV1() : base(nameof(GreatUkeRedesignV1), nameof(OmnidirectionalThrow), 2, CardType.Skill, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => CreatureCmd.GainBlock(Owner.Creature, DynamicVars["PerCard"].IntValue * PileType.Hand.GetPile(Owner).Cards.Count, ValueProp.Move, p);
     protected override void OnUpgrade() => DynamicVars["PerCard"].UpgradeValueBy(1);
 }
@@ -78,11 +80,39 @@ public sealed class BladesComeRedesignV1 : RedesignV1RareCard
 {
     protected override bool HasEnergyCostX => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(4, ValueProp.Move), new DynamicVar("ThresholdDamage", 8)];
-    public BladesComeRedesignV1() : base(nameof(BladesComeRedesignV1), nameof(HellTornado), 0, CardType.Attack, TargetType.AllEnemies) { }
+    public BladesComeRedesignV1() : base(nameof(BladesComeRedesignV1), nameof(TornadoFist), 0, CardType.Attack, TargetType.AllEnemies) { }
     protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
     {
-        int x = ResolveEnergyXValue(); int damage = x >= 4 ? DynamicVars["ThresholdDamage"].IntValue : DynamicVars.Damage.IntValue;
-        for (int i = 0; i < x; i++) await DamageCmd.Attack(damage).FromCard(this, p).TargetingAllOpponents(CombatState!).Execute(c);
+        int x = ResolveEnergyXValue();
+        if (x <= 0)
+        {
+            return;
+        }
+
+        int damage = x >= 4 ? DynamicVars["ThresholdDamage"].IntValue : DynamicVars.Damage.IntValue;
+        await this.ExecuteSequenceWithFinisher(
+            c,
+            p,
+            x,
+            () => NinjaSlayerXAttackSequence.Run(
+                Owner.Creature,
+                x,
+                TornadoFistSpinAnimation.TurnSeconds,
+                CombatActionTimingRuntime.AttackSeconds + CombatActionTimingRuntime.DamageRecoverySeconds,
+                async _ =>
+                {
+                    using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.PreserveDamage))
+                    {
+                        await DamageCmd.Attack(damage)
+                            .FromCard(this, p)
+                            .WithDefectStrikeHitFx()
+                            .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
+                            .TargetingAllOpponents(CombatState!)
+                            .Execute(c);
+                    }
+
+                    return CombatState!.HittableEnemies.Count == 0;
+                }));
     }
     protected override void OnUpgrade() { DynamicVars.Damage.UpgradeValueBy(3); DynamicVars["ThresholdDamage"].UpgradeValueBy(3); }
 }
@@ -90,8 +120,14 @@ public sealed class BladesComeRedesignV1 : RedesignV1RareCard
 public sealed partial class ClankDrinkTeaRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(30, ValueProp.Move)];
-    public ClankDrinkTeaRedesignV1() : base(nameof(ClankDrinkTeaRedesignV1), nameof(KarateFinish), 4, CardType.Attack, TargetType.AnyEnemy) { }
-    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) => DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target!).Execute(c);
+    public ClankDrinkTeaRedesignV1() : base(nameof(ClankDrinkTeaRedesignV1), nameof(AssassinationFist), 4, CardType.Attack, TargetType.AnyEnemy) { }
+    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p) =>
+        DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, p)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .Targeting(p.Target!)
+            .ExecuteWithFinisher(c, this, p);
     private decimal ModifyDamageAdditiveCore(MegaCrit.Sts2.Core.Entities.Creatures.Creature? target, decimal amount, ValueProp props, MegaCrit.Sts2.Core.Entities.Creatures.Creature? dealer, CardModel? source)
         => source == this && dealer == Owner.Creature ? (Owner.Creature.GetPower<StrengthPower>()?.Amount ?? 0) * (IsUpgraded ? 7 : 3) : 0;
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(10);
@@ -101,7 +137,32 @@ public sealed class DrowsyBlackTeaRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(15, ValueProp.Move), new RepeatVar(4)];
     public DrowsyBlackTeaRedesignV1() : base(nameof(DrowsyBlackTeaRedesignV1), nameof(TornadoFist), 5, CardType.Attack, TargetType.AnyEnemy) { }
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { for (int i = 0; i < DynamicVars.Repeat.IntValue; i++) await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target!).Execute(c); }
+    protected override Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        int hits = DynamicVars.Repeat.IntValue;
+        return this.ExecuteSequenceWithFinisher(
+            c,
+            p,
+            hits,
+            () => NinjaSlayerXAttackSequence.Run(
+                Owner.Creature,
+                hits,
+                TornadoFistSpinAnimation.TurnSeconds,
+                CombatActionTimingRuntime.AttackSeconds + CombatActionTimingRuntime.DamageRecoverySeconds,
+                async _ =>
+                {
+                    using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.PreserveDamage))
+                    {
+                        var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+                            .FromCard(this, p)
+                            .WithDefectStrikeHitFx()
+                            .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
+                            .Targeting(p.Target!);
+                        await command.Execute(c);
+                        return command.Results.SelectMany(result => result).Any(result => result.WasTargetKilled);
+                    }
+                }));
+    }
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(5);
 }
 
@@ -109,7 +170,31 @@ public sealed class FootworkRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(13, ValueProp.Move), new DynamicVar("Strength", 4)];
     public FootworkRedesignV1() : base(nameof(FootworkRedesignV1), nameof(AlabamaDrop), 2, CardType.Attack, TargetType.AnyEnemy) { }
-    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p) { await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, p).Targeting(p.Target!).Execute(c); await PowerCmd.Apply<StrengthPower>(c, Owner.Creature, 4, Owner.Creature, this); await PowerCmd.Apply<VulnerablePower>(c, Owner.Creature, 1, Owner.Creature, this); }
+    protected override async Task OnPlay(PlayerChoiceContext c, CardPlay p)
+    {
+        bool resolved = false;
+        async Task ResolveImpact()
+        {
+            if (resolved)
+            {
+                return;
+            }
+
+            resolved = true;
+            await GameCompatibility.Damage.DealFromCard(
+                c,
+                p.Target!,
+                DynamicVars.Damage.BaseValue,
+                ValueProp.Move,
+                this,
+                p);
+            await PowerCmd.Apply<StrengthPower>(c, Owner.Creature, 4, Owner.Creature, this);
+            await PowerCmd.Apply<VulnerablePower>(c, Owner.Creature, 1, Owner.Creature, this);
+        }
+
+        await AlabamaDropAnimation.Play(Owner.Creature, p.Target!, ResolveImpact);
+        await ResolveImpact();
+    }
     protected override void OnUpgrade() { }
 }
 

@@ -81,6 +81,10 @@ public sealed class ChadoBlockPower : RedesignV1CounterPower
 public sealed class ChadoEnergyPower : RedesignV1CounterPower
 {
     public override async Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p) { if (p.Card.Owner.Creature == Owner && p.Card is ChadoBreathRedesignV1) { Flash(); await PlayerCmd.GainEnergy(Amount, Owner.Player!); } }
+    public override Task AfterSideTurnEnd(PlayerChoiceContext c, CombatSide side, IEnumerable<Creature> participants) =>
+        side == Owner.Side && participants.Contains(Owner)
+            ? PowerCmd.Remove(this)
+            : Task.CompletedTask;
 }
 
 public sealed class ScryDrawPower : RedesignV1CounterPower, IRedesignScryListener
@@ -152,16 +156,69 @@ public sealed partial class EveryThirdAttackPower : RedesignV1CounterPower
     public override Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p) { if (p.Card.Owner.Creature == Owner && p.Card.Type == CardType.Attack) _attacks++; return Task.CompletedTask; }
 }
 
-public sealed class IntentOpeningPower : RedesignV1CounterPower
+public sealed class SameNameCostPower : RedesignV1CounterPower
 {
-    private readonly HashSet<Creature> _seen = [];
-    public override async Task BeforeCardPlayed(CardPlay p)
+    private ModelId _firstCardId = ModelId.none;
+    private int _remaining;
+    private bool _active = true;
+
+    public override bool TryModifyEnergyCostInCombatLate(CardModel card, decimal originalCost, out decimal modifiedCost)
     {
-        Creature? target = p.Target;
-        if (p.Card.Owner.Creature != Owner || p.Card.Type != CardType.Attack || target?.Monster?.IntendsToAttack != true || !_seen.Add(target)) return;
-        foreach (CardModel card in PileType.Hand.GetPile(Owner.Player!).Cards.Where(x => x != p.Card).Take(Amount)) card.EnergyCost.SetThisTurnOrUntilPlayed(0);
-        Flash();
-        await Task.CompletedTask;
+        modifiedCost = originalCost;
+        if (!_active
+            || _remaining <= 0
+            || card.Owner.Creature != Owner
+            || card.Id != _firstCardId
+            || card.Pile?.Type is not (PileType.Hand or PileType.Play))
+        {
+            return false;
+        }
+
+        modifiedCost = 0;
+        return true;
+    }
+
+    public override Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p)
+    {
+        if (!_active || !p.IsFirstInSeries || p.Card.Owner.Creature != Owner)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_firstCardId == ModelId.none)
+        {
+            _firstCardId = p.Card.Id;
+            _remaining = Amount;
+            Flash();
+        }
+        else if (p.Card.Id == _firstCardId && _remaining > 0)
+        {
+            _remaining--;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (participants.Contains(Owner))
+        {
+            _active = true;
+            _firstCardId = ModelId.none;
+            _remaining = 0;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterSideTurnEnd(PlayerChoiceContext c, CombatSide side, IEnumerable<Creature> participants)
+    {
+        if (participants.Contains(Owner))
+        {
+            _active = false;
+        }
+
+        return Task.CompletedTask;
     }
 }
 
@@ -192,8 +249,29 @@ public sealed class ThreeTurnBlockPower : RedesignV1CounterPower
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (player != Owner.Player || _turns <= 0) return;
-        await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null);
+        await CreatureCmd.GainBlock(Owner, Amount + (Owner.GetPower<StrengthPower>()?.Amount ?? 0), ValueProp.Move, null);
         if (--_turns == 0) await PowerCmd.Remove(this);
+    }
+}
+
+public sealed class RemainingBlockStrengthPower : NinjaSlayerPowerTemplate
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Single;
+
+    public override async Task BeforeSideTurnStart(PlayerChoiceContext c, CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (!participants.Contains(Owner))
+        {
+            return;
+        }
+
+        if (Owner.Block > 0)
+        {
+            await PowerCmd.Apply<RetainedForcePower>(c, Owner, Owner.Block, Owner, null);
+        }
+
+        await PowerCmd.Remove(this);
     }
 }
 
@@ -235,11 +313,11 @@ public sealed class ShurikenRegenerationPower : RedesignV1CounterPower
 public sealed partial class NullifyHitsPower : RedesignV1CounterPower
 {
     private bool _consumed;
-    private decimal ModifyDamageCapCore(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource)
+    private decimal ModifyDamageMultiplicativeCore(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Owner || Amount <= 0) return decimal.MaxValue;
+        if (target != Owner || Amount <= 0 || amount <= 12) return 1m;
         _consumed = true;
-        return 0;
+        return 0m;
     }
     public override async Task AfterModifyingDamageAmount(CardModel? cardSource)
     {

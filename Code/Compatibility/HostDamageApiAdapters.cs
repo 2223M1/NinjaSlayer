@@ -83,20 +83,22 @@ namespace NinjaSlayer.Powers
     public sealed partial class NullifyHitsPower
     {
 #if NINJASLAYER_LEGACY_DAMAGE_API
-        public override decimal ModifyDamageCap(
+        public override decimal ModifyDamageMultiplicative(
             Creature? target,
+            decimal amount,
             ValueProp props,
             Creature? dealer,
             CardModel? cardSource) =>
-            ModifyDamageCapCore(target, props, dealer, cardSource);
+            ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
 #else
-        public override decimal ModifyDamageCap(
+        public override decimal ModifyDamageMultiplicative(
             Creature? target,
+            decimal amount,
             ValueProp props,
             Creature? dealer,
             CardModel? cardSource,
             CardPlay? cardPlay) =>
-            ModifyDamageCapCore(target, props, dealer, cardSource);
+            ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
 #endif
     }
 

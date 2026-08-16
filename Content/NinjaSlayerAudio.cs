@@ -10,6 +10,7 @@ public static class NinjaSlayerAudio
     private const string NinjaSlayerRoot = Root + "/ninja_slayer";
     private const string NarakuRoot = Root + "/naraku";
     private const string DarkNinjaRoot = Root + "/dark_ninja";
+    private const string ForestSawatariRoot = Root + "/forest_sawatari";
     public const string PangbaiRoot = Root + "/pangbai";
     public const string YamotoKokiRoot = Root + "/yamoto_koki";
 
@@ -98,6 +99,21 @@ public static class NinjaSlayerAudio
     public const float SawatariCoopLeavePhase = 2f;
     public const float SawatariCoopDuelPhase = 3f;
     public const float SawatariCoopDuelEndPhase = 4f;
+
+    public const string ForestSawatariBeginEvent =
+        ForestSawatariRoot + "/forest_sawatari_begin";
+    public const string ForestSawatariHurtEvent =
+        ForestSawatariRoot + "/forest_sawatari_hurt";
+    public const string ForestSawatariAttackEvent =
+        ForestSawatariRoot + "/forest_sawatari_attack";
+    public const string ForestSawatariEndEvent =
+        ForestSawatariRoot + "/forest_sawatari_end";
+    public const string ForestSawatariDuelEvent =
+        ForestSawatariRoot + "/forest_sawatari_duel";
+    public const string ForestSawatariEnhancedEvent =
+        ForestSawatariRoot + "/forest_sawatari_enhanced";
+    public const string ForestSawatariBambooEvent =
+        ForestSawatariRoot + "/forest_sawatari_bamboo";
 
     /// <summary>FMOD clip length for ninja_slayer_intro_spin_attack.</summary>
     public const float IntroSpinAttackSeconds = 1.369f;

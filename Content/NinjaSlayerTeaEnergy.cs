@@ -37,18 +37,31 @@ public static class NinjaSlayerTeaEnergy
                     Definition,
                     new SecondaryResourceCounterStyle
                     {
-                        FontSize = 28,
+                        CounterSize = new Vector2(128, 128),
+                        IconSize = new Vector2(128, 128),
+                        FontSize = 36,
+                        OutlineSize = 14,
                         FormatAmount = static (amount, max) => max is { } value
                             ? $"{amount}/{value}"
                             : amount.ToString(CultureInfo.InvariantCulture),
                         IconStyle = SecondaryResourceIconStyle.Default with
                         {
-                            Size = new Vector2(76, 76),
+                            Size = new Vector2(128, 128),
                             HoverTip = SecondaryResourceHoverTipStyle.Default
                         }
                     });
-                Control energyCounter = parent.GetNode<Control>("%EnergyCounterContainer");
-                counter.Position = energyCounter.Position + new Vector2(112, -112);
+                Control starCounter = parent.GetNode<Control>("%StarCounter");
+                counter.AnchorLeft = starCounter.AnchorLeft;
+                counter.AnchorTop = starCounter.AnchorTop;
+                counter.AnchorRight = starCounter.AnchorRight;
+                counter.AnchorBottom = starCounter.AnchorBottom;
+                counter.OffsetLeft = starCounter.OffsetLeft;
+                counter.OffsetTop = starCounter.OffsetTop;
+                counter.OffsetRight = starCounter.OffsetRight;
+                counter.OffsetBottom = starCounter.OffsetBottom;
+                counter.GrowHorizontal = starCounter.GrowHorizontal;
+                counter.GrowVertical = starCounter.GrowVertical;
+                counter.Scale = starCounter.Scale;
                 return counter;
             },
             static context => context.Node.Bind(context.Player));

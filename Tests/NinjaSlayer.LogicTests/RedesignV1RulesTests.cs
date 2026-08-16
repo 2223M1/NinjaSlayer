@@ -5,6 +5,12 @@ namespace NinjaSlayer.LogicTests;
 public sealed class RedesignV1RulesTests
 {
     [Fact]
+    public void RedesignIsEnabledByDefault()
+    {
+        Assert.True(new NinjaSlayerSettingsData().UseRedesignV1);
+    }
+
+    [Fact]
     public void NewRunRulesDefaultToRedesignV1()
     {
         Assert.Equal(NinjaSlayerRulesVersion.RedesignV1, new NinjaSlayerRunRules().RulesVersion);

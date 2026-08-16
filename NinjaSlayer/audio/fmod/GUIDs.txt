@@ -26,7 +26,12 @@
 {858f6fb8-46c2-4feb-85a9-747b7872375f} event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_insult
 {b4951a3f-380e-4694-a3e6-bdb14065ff24} event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_kirisute_goumen
 {ea0bd5a0-86fe-4978-9862-9202c3a3a4ab} event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_slow_attack
+{ae9355ab-3946-4624-adca-eb051baef884} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_attack
+{91b5a40d-26eb-4af1-9d1e-51cadac4ece8} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_bamboo
 {72e056f8-0323-41e9-adac-54260b068b91} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_begin
+{c3984c02-fa51-4afa-aede-0d8e7393a8f4} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_duel
+{647b142a-123d-4b70-8ba1-87338a14b3c1} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_end
+{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_enhanced
 {1ce1c03a-d143-4e63-8185-7fd0a132b37f} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_hurt
 {1b2002fc-5bd1-4b96-935f-d81455abdcc8} event:/NinjaSlayerAudio/sfx/naraku/naraku_cast
 {1756f2f9-39e1-48ad-b868-b363650ff6d6} event:/NinjaSlayerAudio/sfx/naraku/naraku_death

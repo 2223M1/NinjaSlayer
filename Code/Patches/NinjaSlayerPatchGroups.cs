@@ -33,6 +33,7 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
         patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
         patcher.RegisterPatch<EventValidationRunGenerationPatch>();
+        patcher.RegisterPatch<NinjaSlayerSingleplayerRunRulesCharacterPatch>();
         patcher.RegisterPatch<NinjaSlayerRunRulesCharacterPatch>();
         patcher.RegisterPatch<NinjaSlayerCanonicalCharacterIdPatch>();
         patcher.RegisterPatch<NinjaSlayerRunProgressIdentityPatch>();

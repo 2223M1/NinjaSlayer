@@ -39,7 +39,7 @@ internal sealed class SawatariEventSession
     private Control? _enemyContainer;
     private int _supportRound;
     private bool _entrancePlayed;
-    private bool _skipNextDuelAction;
+    private bool _bambooVoicePending;
     private bool _ownsCombatPause;
 
     private SawatariEventSession(
@@ -184,6 +184,7 @@ internal sealed class SawatariEventSession
                 SawatariEventPhase.FirstCombat,
                 SawatariEventPhase.Intermission))
         {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEndEvent);
             BeginDecisionPhase(() => BeginIntermission(deathAnimLength));
         }
         else if (Phase == SawatariEventPhase.Duel
@@ -256,8 +257,9 @@ internal sealed class SawatariEventSession
                 throw new InvalidOperationException("Sawatari duel phase changed during setup.");
             }
 
+            _bambooVoicePending = true;
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariDuelEvent);
             bool endPlayerTurn = _state.CurrentSide == CombatSide.Player;
-            _skipNextDuelAction = endPlayerTurn;
             if (endPlayerTurn)
             {
                 foreach (Player player in _state.Players)
@@ -275,16 +277,16 @@ internal sealed class SawatariEventSession
         }
     }
 
-    public bool ConsumeSkippedDuelAction(Creature creature)
+    public bool ConsumeBambooVoiceAfterAttack(Creature creature)
     {
         if (Phase != SawatariEventPhase.Duel
             || !ReferenceEquals(creature, _duelCreature)
-            || !_skipNextDuelAction)
+            || !_bambooVoicePending)
         {
             return false;
         }
 
-        _skipNextDuelAction = false;
+        _bambooVoicePending = false;
         return true;
     }
 

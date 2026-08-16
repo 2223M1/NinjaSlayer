@@ -27,7 +27,12 @@ public sealed class RepeatSweepRedesignV1 : RedesignV1CommonCard, IReturnToHandA
     public RepeatSweepRedesignV1() : base(nameof(RepeatSweepRedesignV1), nameof(TeaHitsPeople), 1, CardType.Skill, TargetType.AllEnemies) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, cardPlay).TargetingAllOpponents(CombatState!).Execute(choiceContext);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .TargetingAllOpponents(CombatState!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.IntValue, Owner);
     }
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3);
@@ -70,7 +75,7 @@ public sealed class BorrowedDexterityRedesignV1 : RedesignV1CommonCard
     public BorrowedDexterityRedesignV1() : base(nameof(BorrowedDexterityRedesignV1), nameof(Evade), 1, CardType.Skill, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int strength = Math.Max(0, Owner.Creature.GetPower<StrengthPower>()?.Amount ?? 0);
+        int strength = Owner.Creature.GetPower<StrengthPower>()?.Amount ?? 0;
         return PowerCmd.Apply<BorrowedDexterityPower>(choiceContext, Owner.Creature, strength, Owner.Creature, this);
     }
     protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
@@ -82,7 +87,12 @@ public sealed class ThrowKunaiRedesignV1 : RedesignV1CommonCard
     public ThrowKunaiRedesignV1() : base(nameof(ThrowKunaiRedesignV1), nameof(ThrowKunai), 1, CardType.Attack, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, cardPlay).Targeting(cardPlay.Target!).Execute(choiceContext);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .Targeting(cardPlay.Target!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
         CardModel? selected = (await CardSelectCmd.FromHandForDiscard(choiceContext, Owner, new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, 1), null, this)).FirstOrDefault();
         if (selected != null) await CardCmd.Discard(choiceContext, selected);
@@ -96,7 +106,12 @@ public sealed class ChopRedesignV1 : RedesignV1CommonCard
     public ChopRedesignV1() : base(nameof(ChopRedesignV1), nameof(Chop), 0, CardType.Attack, TargetType.AnyEnemy) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, cardPlay).Targeting(cardPlay.Target!).Execute(choiceContext);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .Targeting(cardPlay.Target!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await PowerCmd.Apply<KaratePower>(choiceContext, cardPlay.Target!, DynamicVars.Karate().BaseValue, Owner.Creature, this);
         await MoveChopToDrawTopForLegacyHost();
     }
@@ -132,7 +147,12 @@ public sealed class ShurikenVolleyRedesignV1 : RedesignV1CommonCard
     public ShurikenVolleyRedesignV1() : base(nameof(ShurikenVolleyRedesignV1), nameof(ShurikenSpread), 1, CardType.Attack, TargetType.AllEnemies) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, cardPlay).TargetingAllOpponents(CombatState!).Execute(choiceContext);
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .TargetingAllOpponents(CombatState!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await PowerCmd.Apply<ShurikenStockPower>(choiceContext, Owner.Creature, DynamicVars["Stock"].BaseValue, Owner.Creature, this);
     }
     protected override void OnUpgrade() => DynamicVars["Stock"].UpgradeValueBy(1);

@@ -148,6 +148,7 @@ public sealed class SawatariEvent : ModEventTemplate
         }
 
         SawatariEventUi.Hide();
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBeginEvent);
         foreach (SawatariEvent eventModel in events)
         {
             eventModel.BeginEmbeddedCombat();

@@ -3,11 +3,17 @@ using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Cards;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Powers;
@@ -16,6 +22,49 @@ namespace NinjaSlayer.Cards;
 
 internal static class ShurikenCombat
 {
+    internal static async Task PlayStockTokenAnimation(CardModel source)
+    {
+        if (!LocalContext.IsMine(source) || NCombatRoom.Instance is not { } room)
+        {
+            return;
+        }
+
+        ShurikenCard token = (ShurikenCard)ModelDb.Card<ShurikenCard>().ToMutable();
+        token.Owner = source.Owner;
+        token.AfterCreated();
+
+        NCard? node = NCard.Create(token);
+        if (node == null)
+        {
+            return;
+        }
+
+        room.Ui.AddChildSafely(node);
+        node.UpdateVisuals(PileType.Play, CardPreviewMode.Normal);
+        node.Position = PileType.Hand.GetTargetPosition(node);
+        Vector2 startPosition = node.GlobalPosition;
+        room.Ui.AddToPlayContainer(node);
+        node.GlobalPosition = startPosition;
+        node.AnimCardToPlayPile();
+        if (node.PlayPileTween is { } playTween)
+        {
+            await playTween.AwaitFinished(room);
+        }
+
+        Tween cleanup = node.CreateTween();
+        cleanup.TweenInterval(0.6f);
+        cleanup.TweenProperty(node, "modulate:a", 0f, 0.15f);
+        cleanup.TweenCallback(Callable.From(node.QueueFreeSafely));
+    }
+
+    internal static async Task PlayStockThrowAnimation(Creature owner, Creature target)
+    {
+        await HopAnimation.Play(owner);
+        NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow);
+        target.GetVfxContainer()?.AddChildSafely(NShivThrowVfx.Create(owner, target, Colors.Green));
+        await Cmd.CustomScaledWait(0.15f, 0.15f);
+    }
+
     internal static bool HasSoarSpread(CardModel card) =>
         card.IsMutable && card.Owner != null && card.Owner.Creature.HasPower<HellTornadoPower>();
 

@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
@@ -20,9 +21,10 @@ public sealed class StrikeNinjaSlayerRedesignV1 : NinjaSlayerRedesignCardTemplat
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3);
 }
@@ -56,9 +58,10 @@ public sealed class HandChopRedesignV1 : NinjaSlayerRedesignCardTemplate, IRetur
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .FromCard(this, cardPlay)
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
-            .Execute(choiceContext);
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(4);
 }
