@@ -22,6 +22,7 @@ output/
 mod-uploader.log
 
 # IDE/local files
+.codex-temp/
 .vs/
 .idea/
 .cursor/

@@ -13,16 +13,39 @@ public static class SlowAttackAnimation
 {
     private const float LungeDistance = NinjaSlayerCombatVisuals.SlowAttackLungeDistance;
 
-    public static async Task Play(Creature creature)
+    internal static float PeakSeconds => CombatActionTimingRuntime.SlowAttackSeconds;
+    internal static float CompanionPeakSeconds => CombatActionTimingRuntime.CompanionSlowAttackSeconds;
+    public static Task Play(Creature creature) => Play(
+        creature,
+        PeakSeconds,
+        CombatActionTimingRuntime.DamageRecoverySeconds,
+        null);
+
+    internal static Task PlayRoundTrip(Creature creature, Func<Task> impactAtPeak) =>
+        Play(
+            creature,
+            CompanionPeakSeconds,
+            CombatActionTimingRuntime.CompanionDamageRecoverySeconds,
+            impactAtPeak);
+
+    private static async Task Play(
+        Creature creature,
+        float peakSeconds,
+        float returnSeconds,
+        Func<Task>? impactAtPeak)
     {
-        float peakSeconds = CombatActionTimingRuntime.SlowAttackSeconds;
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, peakSeconds, out Task action))
         {
             await action;
+            if (impactAtPeak != null)
+            {
+                await impactAtPeak();
+            }
             return;
         }
 
-        if (NinjaSlayerRapidAnimationCoordinator.IsEnabled
+        if (impactAtPeak == null
+            && NinjaSlayerRapidAnimationCoordinator.IsEnabled
             && creature.Player?.Character is INinjaSlayerCharacter)
         {
             await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(
@@ -30,25 +53,69 @@ public static class SlowAttackAnimation
                 LungeDistance,
                 peakSeconds,
                 FinisherActionTrajectory.SlowProgress,
-                returnSeconds: CombatActionTimingRuntime.DamageRecoverySeconds);
+                returnSeconds: returnSeconds);
             return;
         }
 
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        if (creatureNode == null) return;
+        if (creatureNode == null)
+        {
+            if (impactAtPeak != null)
+            {
+                await impactAtPeak();
+            }
+            return;
+        }
 
         _ = StaggerAnimation.TryTakeover(creature, out StaggerAnimation.HandoffLease? handoff);
         Vector2 baseline = handoff?.BaselinePosition ?? creatureNode.Position;
         Vector2 start = handoff?.CurrentPosition ?? creatureNode.Position;
         float direction = creature.Side == CombatSide.Player ? 1f : -1f;
         Vector2 peak = baseline + Vector2.Right * LungeDistance * direction;
-        if (!await TweenAttackToPeak(creatureNode, start, peak, peakSeconds, handoff))
+        bool reachedPeak = await TweenAttackToPeak(
+            creatureNode,
+            start,
+            peak,
+            peakSeconds,
+            handoff);
+
+        if (impactAtPeak == null)
         {
-            handoff?.Restore();
+            if (!reachedPeak)
+            {
+                handoff?.Restore();
+                return;
+            }
+
+            _ = TaskHelper.RunSafely(ReturnToBaseline(
+                creatureNode,
+                peak,
+                baseline,
+                returnSeconds,
+                handoff));
             return;
         }
 
-        StartReturn(creatureNode, peak, baseline, CombatActionTimingRuntime.DamageRecoverySeconds, handoff);
+        try
+        {
+            await impactAtPeak();
+        }
+        finally
+        {
+            if (reachedPeak)
+            {
+                await ReturnToBaseline(
+                    creatureNode,
+                    peak,
+                    baseline,
+                    returnSeconds,
+                    handoff);
+            }
+            else
+            {
+                handoff?.Restore();
+            }
+        }
     }
 
     internal static async Task PlayCombo(
@@ -173,24 +240,24 @@ public static class SlowAttackAnimation
         return completed;
     }
 
-    private static void StartReturn(
+    private static Task ReturnToBaseline(
         Control creatureNode,
         Vector2 start,
         Vector2 destination,
         float duration,
         StaggerAnimation.HandoffLease? handoff)
     {
+        if (!GodotObject.IsInstanceValid(creatureNode) || !creatureNode.IsInsideTree())
+        {
+            handoff?.Restore();
+            return Task.CompletedTask;
+        }
+
         if (Mathf.IsZeroApprox(duration))
         {
-            Callable.From(() =>
-            {
-                if (GodotObject.IsInstanceValid(creatureNode))
-                {
-                    creatureNode.Position = destination;
-                }
-                handoff?.Restore();
-            }).CallDeferred();
-            return;
+            creatureNode.Position = destination;
+            handoff?.Restore();
+            return Task.CompletedTask;
         }
 
         Tween tween = creatureNode.CreateTween();
@@ -201,7 +268,7 @@ public static class SlowAttackAnimation
                 1f,
                 duration)
             .SetTrans(Tween.TransitionType.Linear);
-        TaskHelper.RunSafely(CompleteReturn(tween, creatureNode, destination, handoff));
+        return CompleteReturn(tween, creatureNode, destination, handoff);
     }
 
     private static async Task CompleteReturn(

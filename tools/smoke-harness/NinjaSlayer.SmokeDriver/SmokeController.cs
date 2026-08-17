@@ -486,12 +486,14 @@ internal sealed partial class SmokeController
                     && state.Enemies.Any(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster),
                 "Sawatari duel did not resume the original combat",
                 cancellationToken);
+            Require(state.RoundNumber == round + 1, "Sawatari duel did not start on the next round.");
             _observeSawatariDuelBanner = false;
             Require(ReferenceEquals(manager.DebugOnlyGetState(), state), "Sawatari duel created a second CombatState.");
             Require(ReferenceEquals(NEventRoom.Instance?.EmbeddedCombatRoom, room), "Sawatari duel created a second CombatRoom.");
             Require(_sawatariBeforeCombatStartCount == 0, "Sawatari duel reran BeforeCombatStart.");
             Require(_sawatariDuelBannerCount == 1, "Sawatari duel did not show exactly one combat-start banner.");
             Require(room.Ui.Visible, "Sawatari duel did not restore the combat UI.");
+            Require(!manager.PlayerActionsDisabled, "Sawatari duel did not restore local player actions.");
 
             Creature duel = state.Enemies.Single(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster);
             await CreatureCmd.Kill(duel);

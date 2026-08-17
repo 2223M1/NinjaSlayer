@@ -30,4 +30,8 @@ internal static class CombatActionTiming
             CombatActionSpeed.Instant => 0f,
             _ => throw new ArgumentOutOfRangeException(nameof(speed), speed, null)
         };
+
+    public static float ResolveCompanion(
+        CombatActionSpeed speed,
+        float normalSeconds) => speed == CombatActionSpeed.Instant ? 0f : normalSeconds;
 }

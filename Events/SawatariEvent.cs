@@ -26,8 +26,6 @@ namespace NinjaSlayer.Events;
 [RegisterActEvent(typeof(Underdocks))]
 public sealed class SawatariEvent : ModEventTemplate
 {
-    private const float InitialNarrativeSeconds = 2.5f;
-
     public override bool IsShared => true;
     public override EventLayoutType LayoutType => EventLayoutType.Combat;
 
@@ -116,7 +114,7 @@ public sealed class SawatariEvent : ModEventTemplate
         }
     }
 
-    private async Task BeginLocalEvent(Player owner)
+    private Task BeginLocalEvent(Player owner)
     {
         SawatariEvent[] events = RunManager.Instance.EventSynchronizer.Events
             .OfType<SawatariEvent>()
@@ -132,7 +130,6 @@ public sealed class SawatariEvent : ModEventTemplate
                 ?? throw new InvalidOperationException("Sawatari event room is unavailable.");
 
             session = SawatariEventSession.Create(state, room, events, owner, eventRoom);
-            await Cmd.Wait(InitialNarrativeSeconds);
         }
         catch (Exception exception)
         {
@@ -144,7 +141,7 @@ public sealed class SawatariEvent : ModEventTemplate
                 eventModel.FinishForFallback();
                 eventModel.BeginEmbeddedCombat();
             }
-            return;
+            return Task.CompletedTask;
         }
 
         SawatariEventUi.Hide();
@@ -153,6 +150,7 @@ public sealed class SawatariEvent : ModEventTemplate
         {
             eventModel.BeginEmbeddedCombat();
         }
+        return Task.CompletedTask;
     }
 
     private Task TakeRegularLoot()

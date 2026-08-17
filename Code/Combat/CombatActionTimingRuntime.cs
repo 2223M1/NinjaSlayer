@@ -33,6 +33,18 @@ internal static class CombatActionTimingRuntime
         CombatActionTiming.ConsecutiveAttackNormalSeconds,
         CombatActionTiming.ConsecutiveAttackFastSeconds);
 
+    public static float CompanionSlowAttackSeconds => CombatActionTiming.ResolveCompanion(
+        CurrentSpeed,
+        CombatActionTiming.SlowAttackNormalSeconds);
+
+    public static float CompanionDamageRecoverySeconds => CombatActionTiming.ResolveCompanion(
+        CurrentSpeed,
+        CombatActionTiming.DamageRecoveryNormalSeconds);
+
+    public static float CompanionConsecutiveAttackSeconds => CombatActionTiming.ResolveCompanion(
+        CurrentSpeed,
+        CombatActionTiming.ConsecutiveAttackNormalSeconds);
+
     public static float Resolve(float normalSeconds, float fastSeconds) =>
         CombatActionTiming.Resolve(CurrentSpeed, normalSeconds, fastSeconds);
 }

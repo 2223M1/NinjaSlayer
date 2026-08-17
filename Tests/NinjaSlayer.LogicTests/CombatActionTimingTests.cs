@@ -45,6 +45,34 @@ public sealed class CombatActionTimingTests
         Assert.Equal(0f, KokiIaiDuration(CombatActionSpeed.Instant));
     }
 
+    [Fact]
+    public void SawatariFourHitComboMatchesFourSlowAttackPeaks()
+    {
+        AssertSequence(
+            [0.2f, 0.35f, 0.5f, 0.65f],
+            SlowComboHits(4, CombatActionSpeed.Normal));
+        Assert.Equal(
+            0.4f,
+            KokiIaiDuration(CombatActionSpeed.Normal));
+    }
+
+    [Fact]
+    public void FriendlyCompanionTimingIsNotHalvedByFastMode()
+    {
+        Assert.Equal(0.2f, CombatActionTiming.ResolveCompanion(
+            CombatActionSpeed.Fast,
+            CombatActionTiming.SlowAttackNormalSeconds));
+        Assert.Equal(0.15f, CombatActionTiming.ResolveCompanion(
+            CombatActionSpeed.Fast,
+            CombatActionTiming.ConsecutiveAttackNormalSeconds));
+        Assert.Equal(0.2f, CombatActionTiming.ResolveCompanion(
+            CombatActionSpeed.Fast,
+            CombatActionTiming.DamageRecoveryNormalSeconds));
+        Assert.Equal(0f, CombatActionTiming.ResolveCompanion(
+            CombatActionSpeed.Instant,
+            CombatActionTiming.SlowAttackNormalSeconds));
+    }
+
     private static void AssertTiming(
         CombatActionSpeed speed,
         float attack,

@@ -620,17 +620,27 @@ const assetManifest = readFileSync(join(root, 'ASSET_MANIFEST.md'), 'utf8');
 if (!assetManifest.includes('NinjaSlayer_idle_0022.png') || assetManifest.includes('NinjaSlayer_idle_0030.png')) {
   errors.push('ASSET_MANIFEST.md does not describe the 22-frame idle animation');
 }
-const powerClassNames = filesUnder(join(root, 'Powers'))
+const powerClasses = filesUnder(join(root, 'Powers'))
   .filter((path) => path.endsWith('.cs'))
-  .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/public\s+sealed\s+(?:partial\s+)?class\s+(\w+Power)\b/g)])
-  .map((match) => match[1]);
-for (const powerClassName of powerClassNames) {
-  const iconPath = join(root, 'NinjaSlayer', 'images', 'powers', `${powerClassName}.png`);
+  .flatMap((path) => {
+    const source = readFileSync(path, 'utf8');
+    const matches = [...source.matchAll(/public\s+sealed\s+(?:partial\s+)?class\s+(\w+Power)\b/g)];
+    return matches.map((match, index) => ({
+      name: match[1],
+      source: source.slice(match.index, matches[index + 1]?.index ?? source.length),
+    }));
+  });
+for (const powerClass of powerClasses) {
+  const reusedIcon = powerClass.source.match(
+    /NinjaSlayerPowerAssets\.Named\(nameof\((\w+Power)\)\)/,
+  )?.[1];
+  const iconName = reusedIcon ?? powerClass.name;
+  const iconPath = join(root, 'NinjaSlayer', 'images', 'powers', `${iconName}.png`);
   const iconSize = readPngSize(iconPath);
   if (!iconSize) {
-    if (!existsSync(iconPath)) errors.push(`Missing dedicated power icon: ${powerClassName}.png`);
+    if (!existsSync(iconPath)) errors.push(`Missing power icon: ${iconName}.png`);
   } else if (iconSize[0] !== 256 || iconSize[1] !== 256) {
-    errors.push(`${powerClassName}.png must be 256x256, found ${iconSize[0]}x${iconSize[1]}`);
+    errors.push(`${iconName}.png must be 256x256, found ${iconSize[0]}x${iconSize[1]}`);
   }
 }
 if (existsSync(join(root, 'NinjaSlayer', 'images', 'powers', 'soar_power.png'))) {

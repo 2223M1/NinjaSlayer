@@ -27,7 +27,6 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
     private const float GroundOffsetFromPivot = 14.625f;
-    private const float IaiApproachDistance = 120f;
     private static readonly Vector2 RightFootContactFromPivot = new(51.995f, 9.137f);
 
     public static bool TryPlayTriggerAnim(
@@ -108,70 +107,32 @@ internal static class YamotoKokiCombatAnimations
 
     public static async Task PlayIaiSlash(
         Creature creature,
-        NCreature targetNode,
         Func<Task> approachStarted,
         Func<Task> impactAtPeak,
         YamotoKokiIaiApproachMode approachMode)
     {
-        NCreature? creatureNode = creature.GetCreatureNode();
-        if (creatureNode == null)
-        {
-            await impactAtPeak();
-            return;
-        }
-
-        Vector2 originalPosition = creatureNode.Position;
-        float approachSeconds = CombatActionTimingRuntime.SlowAttackSeconds;
         bool isFinisherApproach = approachMode == YamotoKokiIaiApproachMode.FinisherCloseRange;
         if (isFinisherApproach)
         {
             await approachStarted();
             if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
                     creature,
-                    approachSeconds,
+                    SlowAttackAnimation.CompanionPeakSeconds,
                     out Task action))
             {
                 await action;
             }
             else
             {
-                await Cmd.Wait(approachSeconds);
+                await Cmd.Wait(SlowAttackAnimation.CompanionPeakSeconds);
             }
 
             await impactAtPeak();
             return;
         }
 
-        float direction = creature.Side == CombatSide.Player ? 1f : -1f;
-        if (Mathf.IsZeroApprox(direction))
-        {
-            direction = 1f;
-        }
-
-        Vector2 approachStart = originalPosition;
-        Vector2 impactPosition = originalPosition + Vector2.Right * direction * IaiApproachDistance;
-
-        Task returnTask = Task.CompletedTask;
-        try
-        {
-            await approachStarted();
-            await TweenIaiApproach(creatureNode, approachStart, impactPosition, approachSeconds);
-            returnTask = TweenIaiReturn(
-                creatureNode,
-                impactPosition,
-                originalPosition,
-                CombatActionTimingRuntime.DamageRecoverySeconds);
-            await impactAtPeak();
-            await returnTask;
-        }
-        finally
-        {
-            await returnTask;
-            if (GodotObject.IsInstanceValid(creatureNode))
-            {
-                creatureNode.Position = originalPosition;
-            }
-        }
+        await approachStarted();
+        await SlowAttackAnimation.PlayRoundTrip(creature, impactAtPeak);
     }
 
     public static async Task PlayEntrance(Creature creature, bool playVoice = true)
@@ -299,65 +260,6 @@ internal static class YamotoKokiCombatAnimations
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
         await TweenPlayback.AwaitCompletion(tween, node);
-    }
-
-    private static async Task TweenIaiApproach(
-        NCreature creatureNode,
-        Vector2 start,
-        Vector2 destination,
-        float duration)
-    {
-        if (Mathf.IsZeroApprox(duration))
-        {
-            creatureNode.Position = destination;
-            return;
-        }
-
-        Tween tween = creatureNode.CreateTween();
-        tween.TweenMethod(
-                Callable.From<float>(progress =>
-                {
-                    if (GodotObject.IsInstanceValid(creatureNode))
-                    {
-                        creatureNode.Position = start.Lerp(
-                            destination,
-                            FinisherActionTrajectory.SlowProgress(progress));
-                    }
-                }),
-                0f,
-                1f,
-                duration)
-            .SetTrans(Tween.TransitionType.Linear);
-        await TweenPlayback.AwaitCompletion(tween, creatureNode);
-    }
-
-    private static async Task TweenIaiReturn(
-        NCreature creatureNode,
-        Vector2 start,
-        Vector2 destination,
-        float duration)
-    {
-        if (Mathf.IsZeroApprox(duration))
-        {
-            return;
-        }
-
-        Tween tween = creatureNode.CreateTween();
-        tween.TweenMethod(
-                Callable.From<float>(progress =>
-                {
-                    if (GodotObject.IsInstanceValid(creatureNode))
-                    {
-                        creatureNode.Position = start.Lerp(
-                            destination,
-                            Mathf.SmoothStep(0f, 1f, progress));
-                    }
-                }),
-                0f,
-                1f,
-                duration)
-            .SetTrans(Tween.TransitionType.Linear);
-        await TweenPlayback.AwaitCompletion(tween, creatureNode);
     }
 
     private static async Task TweenPosition(

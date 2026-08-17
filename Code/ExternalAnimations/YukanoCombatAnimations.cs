@@ -58,7 +58,7 @@ internal static class YukanoCombatAnimations
             _shurikenTexture ??= ResourceLoader.Load<Texture2D>(YukanoMonster.ShurikenTexturePath),
             0.45f,
             spin: true,
-            duration: CombatActionTimingRuntime.SlowAttackSeconds);
+            duration: SlowAttackAnimation.CompanionPeakSeconds);
 
     private static AtlasTexture? ResolveArrowTexture()
     {

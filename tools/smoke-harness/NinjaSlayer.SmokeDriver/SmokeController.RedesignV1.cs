@@ -291,10 +291,19 @@ internal sealed partial class SmokeController
         Require(handChop.Pile?.Type == PileType.Hand, "Hand Chop did not return to hand.");
 
         ChopRedesignV1 chop = combatState.CreateCard<ChopRedesignV1>(player);
+        int strengthBeforeChop = player.Creature.GetPower<StrengthPower>()?.Amount ?? 0;
+        int karateBeforeChop = target.GetPower<KaratePower>()?.Amount ?? 0;
         await CardPileCmd.Add(chop, PileType.Hand);
         await CardCmd.AutoPlay(choiceContext, chop, target);
+        Require(player.Creature.GetPower<StrengthPower>()?.Amount == strengthBeforeChop + 3, "Chop did not grant temporary Strength.");
+        Require((target.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeChop, "Chop retained the legacy Karate effect.");
+        ChopTemporaryStrengthPower chopStrength = player.Creature.GetPower<ChopTemporaryStrengthPower>()
+            ?? throw new InvalidOperationException("Chop did not use its native temporary Strength power.");
         Require(chop.Pile?.Type == PileType.Draw, "Chop did not move to the draw pile.");
         Require(ReferenceEquals(PileType.Draw.GetPile(player).Cards.First(), chop), "Chop was not placed on top of the draw pile.");
+        await chopStrength.AfterSideTurnEnd(choiceContext, player.Creature.Side, [player.Creature]);
+        Require(player.Creature.GetPower<ChopTemporaryStrengthPower>() is null, "Chop temporary Strength survived the player's turn.");
+        Require((player.Creature.GetPower<StrengthPower>()?.Amount ?? 0) == strengthBeforeChop, "Chop removed the wrong Strength amount.");
 
         foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
         {

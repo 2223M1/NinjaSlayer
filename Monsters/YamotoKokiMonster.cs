@@ -168,7 +168,6 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             {
                 await YamotoKokiCombatAnimations.PlayIaiSlash(
                     Creature,
-                    focusNode,
                     async () =>
                     {
                         NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);

@@ -3,8 +3,10 @@ using System.Runtime.CompilerServices;
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Audio;
@@ -18,6 +20,7 @@ using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Powers;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Models;
 
@@ -138,14 +141,14 @@ internal sealed class SawatariEventSession
         await AncientEntranceAnimation.Play(_ninjaSlayer);
     }
 
-    public Task PlaySupportTurn(SawatariMonster monster, CombatSide side)
+    public async Task PlaySupportTurn(SawatariMonster monster, CombatSide side)
     {
         if (side != CombatSide.Player
             || Phase != SawatariEventPhase.FirstCombat
             || !ReferenceEquals(monster.Creature, _companion)
             || _supportRound == _state.RoundNumber)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         _supportRound = _state.RoundNumber;
@@ -155,7 +158,24 @@ internal sealed class SawatariEventSession
         Creature? target = targets.Length == 0
             ? null
             : _state.RunState.Rng.CombatTargets.NextItem(targets);
-        return target == null ? Task.CompletedTask : monster.PlayAttack(target);
+        if (target == null)
+        {
+            return;
+        }
+
+        NCreature? node = _room.GetCreatureNode(_companion);
+        if (node != null)
+        {
+            await node.PerformIntent();
+        }
+        else
+        {
+            await Cmd.CustomScaledWait(0.25f, 0.4f);
+        }
+
+        await Cmd.CustomScaledWait(0.1f, 0.2f);
+        await monster.PlayAttack(target);
+        await Cmd.CustomScaledWait(0.1f, 0.4f);
     }
 
     public void CaptureDyingCreature(Creature creature)
@@ -259,17 +279,10 @@ internal sealed class SawatariEventSession
 
             _bambooVoicePending = true;
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariDuelEvent);
-            bool endPlayerTurn = _state.CurrentSide == CombatSide.Player;
-            if (endPlayerTurn)
-            {
-                foreach (Player player in _state.Players)
-                {
-                    PlayerCmd.EndTurn(player, canBackOut: false);
-                }
-            }
 
             _room.AddChildSafely(NCombatStartBanner.Create());
             ExitDecisionState();
+            await BeginDuelPlayerRound();
         }
         catch (Exception exception)
         {
@@ -418,6 +431,32 @@ internal sealed class SawatariEventSession
         }
     }
 
+    private async Task BeginDuelPlayerRound()
+    {
+        if (_state.CurrentSide != CombatSide.Player)
+        {
+            return;
+        }
+
+        // Reuse the host's extra-turn transition so the duel enemy does not act
+        // until the next player turn has actually ended.
+        foreach (Player player in _state.Players)
+        {
+            await PowerCmd.Apply<DuelRoundBridgePower>(
+                new ThrowingPlayerChoiceContext(),
+                player.Creature,
+                1,
+                player.Creature,
+                null,
+                silent: true);
+        }
+
+        _state.RoundNumber++;
+        Player localPlayer = LocalContext.GetMe(_state)
+            ?? throw new InvalidOperationException("Sawatari duel requires a local combat player.");
+        PlayerCmd.EndTurn(localPlayer, canBackOut: false);
+    }
+
     private Vector2 ResolveIntermissionPosition(NCreature companionNode)
     {
         if (_enemyContainer != null)
@@ -527,16 +566,20 @@ internal sealed class SawatariEventSession
 internal static class SawatariMusicSession
 {
     private static EventRoom? _eventRoom;
+    private static float _phase;
     private static bool _subscribed;
 
     public static void Begin(EventRoom eventRoom)
     {
         Clear(stopMusic: false);
         _eventRoom = eventRoom;
+        _phase = 0f;
+        RunManager.Instance.RoomEntered += OnRoomEntered;
         RunManager.Instance.RoomExited += OnRoomExited;
         _subscribed = true;
         NRunMusicController.Instance?.PlayCustomMusic(
             NinjaSlayerAudio.SawatariCoopMusicEvent);
+        SetPhase(_phase);
     }
 
     public static void PlayDecision() => SetPhase(NinjaSlayerAudio.SawatariCoopDecisionPhase);
@@ -565,10 +608,13 @@ internal static class SawatariMusicSession
         }
     }
 
-    private static void SetPhase(float phase) =>
+    private static void SetPhase(float phase)
+    {
+        _phase = phase;
         NRunMusicController.Instance?.UpdateMusicParameter(
             NinjaSlayerAudio.SawatariCoopPhaseParameter,
             phase);
+    }
 
     public static void Abort()
     {
@@ -578,12 +624,22 @@ internal static class SawatariMusicSession
         }
     }
 
+    private static void OnRoomEntered()
+    {
+        if (IsCurrentRoom())
+        {
+            NRunMusicController.Instance?.PlayCustomMusic(
+                NinjaSlayerAudio.SawatariCoopMusicEvent);
+            SetPhase(_phase);
+            return;
+        }
+
+        Clear(stopMusic: true);
+    }
+
     private static void OnRoomExited()
     {
-        AbstractRoom? current = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom;
-        if (ReferenceEquals(current, _eventRoom)
-            || current is CombatRoom combatRoom
-                && combatRoom.ParentEventId == ModelDb.Event<SawatariEvent>().Id)
+        if (IsCurrentRoom())
         {
             return;
         }
@@ -591,14 +647,24 @@ internal static class SawatariMusicSession
         Clear(stopMusic: true);
     }
 
+    private static bool IsCurrentRoom()
+    {
+        AbstractRoom? current = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom;
+        return ReferenceEquals(current, _eventRoom)
+            || current is CombatRoom combatRoom
+                && combatRoom.ParentEventId == ModelDb.Event<SawatariEvent>().Id;
+    }
+
     private static void Clear(bool stopMusic)
     {
         if (_subscribed)
         {
+            RunManager.Instance.RoomEntered -= OnRoomEntered;
             RunManager.Instance.RoomExited -= OnRoomExited;
         }
 
         _eventRoom = null;
+        _phase = 0f;
         _subscribed = false;
 
         if (!stopMusic)
