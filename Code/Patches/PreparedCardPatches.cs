@@ -224,8 +224,9 @@ internal static class PreparedDrawService
 
 public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 {
-    private static readonly FieldInfo? Grid =
-        AccessTools.Field(typeof(NCardPileScreen), "_grid");
+    private static readonly FieldInfo Grid =
+        AccessTools.Field(typeof(NCardPileScreen), "_grid")
+        ?? throw new MissingFieldException(typeof(NCardPileScreen).FullName, "_grid");
 
     public static string PatchId => "ninjaslayer_prepared_draw_pile_display_order";
 
@@ -240,7 +241,13 @@ public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
     public static void Postfix(NCardPileScreen __instance)
     {
         CardPile pile = __instance.Pile;
-        NCardGrid? grid = Grid?.GetValue(__instance) as NCardGrid;
+        NCardGrid? grid = Grid.GetValue(__instance) switch
+        {
+            null => null,
+            NCardGrid value => value,
+            _ => throw new InvalidOperationException(
+                "NCardPileScreen._grid has an unexpected runtime type.")
+        };
         if (pile.Type != PileType.Draw
             || !pile.Cards.Any(PrepareCmd.IsPrepared)
             || grid is null)

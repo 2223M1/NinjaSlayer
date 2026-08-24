@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;

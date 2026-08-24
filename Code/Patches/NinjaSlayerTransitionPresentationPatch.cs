@@ -97,10 +97,13 @@ public sealed class NinjaSlayerTransitionAncientSetupPresentationPatch : IPatchM
 
 public sealed class NinjaSlayerTransitionAncientHealPresentationPatch : IPatchMethod
 {
-    private static readonly MethodInfo? AncientHealVfx = AccessTools.Method(
+    private static readonly MethodInfo AncientHealVfx = AccessTools.Method(
         typeof(NAncientEventLayout),
         "PlayHealVfxAfterFadeIn",
-        [typeof(Player), typeof(decimal)]);
+        [typeof(Player), typeof(decimal)])
+        ?? throw new MissingMethodException(
+            typeof(NAncientEventLayout).FullName,
+            "PlayHealVfxAfterFadeIn");
 
     public static string PatchId => "ninjaslayer_transition_ancient_heal_presentation_barrier";
 
@@ -110,9 +113,7 @@ public sealed class NinjaSlayerTransitionAncientHealPresentationPatch : IPatchMe
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
-        AncientHealVfx is { } target
-            ? [new(target.DeclaringType!, target.Name)]
-            : [];
+        [new(AncientHealVfx.DeclaringType!, AncientHealVfx.Name)];
 
     public static bool Prefix(
         NAncientEventLayout __instance,

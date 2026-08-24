@@ -15,12 +15,15 @@ namespace NinjaSlayer.Code.Patches;
 public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
 {
     private const string EmbeddedStripName = "NinjaSlayerNarakuLifeStrip";
-    private static readonly FieldInfo? HealthBarCreature =
-        AccessTools.Field(typeof(NHealthBar), "_creature");
-    private static readonly FieldInfo? ExpectedMaxForegroundWidth =
-        AccessTools.Field(typeof(NHealthBar), "_expectedMaxFgWidth");
-    private static readonly FieldInfo? OriginalBlockPosition =
-        AccessTools.Field(typeof(NHealthBar), "_originalBlockPosition");
+    private static readonly FieldInfo HealthBarCreature =
+        AccessTools.Field(typeof(NHealthBar), "_creature")
+        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_creature");
+    private static readonly FieldInfo ExpectedMaxForegroundWidth =
+        AccessTools.Field(typeof(NHealthBar), "_expectedMaxFgWidth")
+        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_expectedMaxFgWidth");
+    private static readonly FieldInfo OriginalBlockPosition =
+        AccessTools.Field(typeof(NHealthBar), "_originalBlockPosition")
+        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_originalBlockPosition");
 
     public static string PatchId => "ninjaslayer_naraku_life_health_bar_layout";
 
@@ -37,7 +40,13 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
 
     public static void Postfix(NHealthBar __instance)
     {
-        Creature? creature = HealthBarCreature?.GetValue(__instance) as Creature;
+        Creature? creature = HealthBarCreature.GetValue(__instance) switch
+        {
+            null => null,
+            Creature value => value,
+            _ => throw new InvalidOperationException(
+                "NHealthBar._creature has an unexpected runtime type.")
+        };
         if (creature == null)
         {
             HideEmbeddedStrip(__instance);
@@ -72,7 +81,7 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
             Vector2 globalPosition = block.GlobalPosition;
             globalPosition.X = layout.BlockLeft;
             block.GlobalPosition = globalPosition;
-            OriginalBlockPosition?.SetValue(__instance, block.Position);
+            OriginalBlockPosition.SetValue(__instance, block.Position);
         }
     }
 
@@ -85,9 +94,10 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         }
 
         NinePatchRect? strip = mask.GetNodeOrNull<NinePatchRect>(EmbeddedStripName);
-        float expectedWidth = ExpectedMaxForegroundWidth?.GetValue(healthBar) is float value
+        float expectedWidth = ExpectedMaxForegroundWidth.GetValue(healthBar) is float value
             ? value
-            : 0f;
+            : throw new InvalidOperationException(
+                "NHealthBar._expectedMaxFgWidth has an unexpected runtime type.");
         float maxForegroundWidth = expectedWidth > 0f
             ? expectedWidth
             : healthBar.GetNodeOrNull<Control>("%HpForegroundContainer")?.Size.X ?? 0f;

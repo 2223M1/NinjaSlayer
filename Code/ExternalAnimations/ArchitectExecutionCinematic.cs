@@ -11,7 +11,6 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Runs.History;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -301,7 +300,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
             fallDirection = 1f;
         }
 
-        GameCompatibility.CreaturePresentation.DisableInteractionForDeath(_architectNode);
+        CreatureDeathInteractionAdapter.Disable(_architectNode);
         _architectNode.AnimHideIntent();
         _architectNode.AnimDisableUi();
         _architectDeathCommitted = true;

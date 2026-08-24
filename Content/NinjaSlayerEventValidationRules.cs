@@ -2,7 +2,6 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Events;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Models;
@@ -50,7 +49,7 @@ public sealed class NinjaSlayerEventValidationRules : NinjaSlayerSingletonTempla
     }
 
     private static EventModel[] GetCandidates(RunState runState) =>
-        GameCompatibility.EventCombat.GetCurrentEvents(runState.Act)
+        runState.Act.AllEvents
             .Where(eventModel => eventModel is
                 YamotoKokiCuteEvent or YukanoEvent or NarakuEvent or DarkNinjaEvent
                 && eventModel.IsAllowed(runState)

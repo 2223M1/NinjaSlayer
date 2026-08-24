@@ -6,7 +6,6 @@ using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;

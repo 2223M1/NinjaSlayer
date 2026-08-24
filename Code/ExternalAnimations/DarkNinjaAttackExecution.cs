@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;

@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Powers;

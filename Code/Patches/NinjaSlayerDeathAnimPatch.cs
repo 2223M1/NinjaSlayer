@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Runs;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -102,7 +101,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         NCreature creatureNode,
         bool shouldRemove)
     {
-        GameCompatibility.CreaturePresentation.DisableInteractionForDeath(creatureNode);
+        CreatureDeathInteractionAdapter.Disable(creatureNode);
         foreach (NIntent intent in creatureNode.IntentContainer.GetChildren().OfType<NIntent>())
         {
             intent.SetFrozen(isFrozen: true);

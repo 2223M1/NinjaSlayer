@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;

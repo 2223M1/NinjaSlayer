@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Ancients;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 

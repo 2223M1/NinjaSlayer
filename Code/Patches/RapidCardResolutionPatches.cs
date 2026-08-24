@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Lifecycle;
 using STS2RitsuLib.Patching.Models;

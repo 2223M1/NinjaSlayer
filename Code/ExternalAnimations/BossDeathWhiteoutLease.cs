@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 

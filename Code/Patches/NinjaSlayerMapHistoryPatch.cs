@@ -16,8 +16,9 @@ namespace NinjaSlayer.Code.Patches;
 
 public sealed class NinjaSlayerMapHistoryIconPatch : IPatchMethod
 {
-    private static readonly FieldInfo? MapPointRunState =
-        AccessTools.Field(typeof(NMapPoint), "_runState");
+    private static readonly FieldInfo MapPointRunState =
+        AccessTools.Field(typeof(NMapPoint), "_runState")
+        ?? throw new MissingFieldException(typeof(NMapPoint).FullName, "_runState");
 
     public static string PatchId => "ninjaslayer_map_history_icon";
     public static string Description =>
@@ -31,7 +32,13 @@ public sealed class NinjaSlayerMapHistoryIconPatch : IPatchMethod
 
     public static void Postfix(NNormalMapPoint __instance)
     {
-        RunState? runState = MapPointRunState?.GetValue(__instance) as RunState;
+        RunState? runState = MapPointRunState.GetValue(__instance) switch
+        {
+            null => null,
+            RunState value => value,
+            _ => throw new InvalidOperationException(
+                "NMapPoint._runState has an unexpected runtime type.")
+        };
         if (__instance.Point.PointType != MapPointType.Unknown
             || __instance.State != MapPointState.Traveled
             || runState is null

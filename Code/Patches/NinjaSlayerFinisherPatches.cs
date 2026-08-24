@@ -14,7 +14,6 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;

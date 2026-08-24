@@ -39,7 +39,6 @@ using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;

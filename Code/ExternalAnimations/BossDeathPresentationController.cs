@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -74,7 +73,7 @@ public sealed partial class BossDeathPresentationController : Node
                 "Boss death presentation started before its visual snapshot was prepared.");
         }
 
-        GameCompatibility.CreaturePresentation.DisableInteractionForDeath(_boss);
+        CreatureDeathInteractionAdapter.Disable(_boss);
         foreach (NIntent intent in _boss.IntentContainer.GetChildren().OfType<NIntent>())
         {
             intent.SetFrozen(isFrozen: true);

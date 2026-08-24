@@ -2,7 +2,6 @@ using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 

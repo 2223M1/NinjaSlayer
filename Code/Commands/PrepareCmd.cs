@@ -2,7 +2,6 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Scripts;
 
@@ -46,7 +45,7 @@ internal static class PrepareCmd
         }
 
         // Top insertion is LIFO; place the new card after the existing prepared queue.
-        bool repositioned = PreparedQueueCompatibility.TryReposition(
+        bool repositioned = TryReposition(
             drawPile,
             card,
             Math.Min(preparedAhead, drawPile.Cards.Count),
@@ -64,6 +63,77 @@ internal static class PrepareCmd
 
         Repair(card, "queue reposition was not confirmed", repositionError);
     }
+
+    private static bool TryReposition(
+        CardPile pile,
+        CardModel card,
+        int index,
+        out Exception? error)
+    {
+        int originalIndex = FindCardIndex(pile.Cards, card);
+        if (originalIndex < 0)
+        {
+            error = new InvalidOperationException($"Prepared queue does not contain {card}.");
+            return false;
+        }
+
+        try
+        {
+            pile.RemoveInternal(card, false);
+            pile.AddInternal(card, Math.Clamp(index, 0, pile.Cards.Count), false);
+            if (ContainsReference(pile.Cards, card))
+            {
+                error = null;
+                return true;
+            }
+
+            error = new InvalidOperationException(
+                "Prepared queue insert completed without retaining the card.");
+        }
+        catch (Exception exception)
+        {
+            error = exception;
+        }
+
+        if (ContainsReference(pile.Cards, card))
+        {
+            return false;
+        }
+
+        try
+        {
+            pile.AddInternal(card, Math.Clamp(originalIndex, 0, pile.Cards.Count), false);
+        }
+        catch (Exception rollbackFailure)
+        {
+            error = new AggregateException(error!, rollbackFailure);
+        }
+
+        if (!ContainsReference(pile.Cards, card))
+        {
+            error = new AggregateException(
+                error!,
+                new InvalidOperationException("Prepared queue rollback did not restore the card."));
+        }
+
+        return false;
+    }
+
+    private static int FindCardIndex(IReadOnlyList<CardModel> cards, CardModel card)
+    {
+        for (int index = 0; index < cards.Count; index++)
+        {
+            if (ReferenceEquals(cards[index], card))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool ContainsReference(IReadOnlyList<CardModel> cards, CardModel card) =>
+        FindCardIndex(cards, card) >= 0;
 
     private static void Repair(CardModel card, string reason, Exception? failure)
     {

@@ -16,7 +16,6 @@ using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Combat.SecondaryResources;

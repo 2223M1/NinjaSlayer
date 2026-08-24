@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Code.Compatibility;
+using MegaCrit.Sts2.Core.Models.Acts;
 using NinjaSlayer.Code.Transition;
 using STS2RitsuLib.Patching.Models;
 using STS2RitsuLib.Utils.HarmonyIl;
@@ -14,6 +15,24 @@ namespace NinjaSlayer.Code.Patches;
 
 public sealed class NinjaSlayerTransitionAssetLoadConcurrencyPatch : IPatchMethod
 {
+    private static readonly FieldInfo Loading =
+        AccessTools.Field(typeof(AssetLoadingSession), "_loading")
+        ?? throw new MissingFieldException(typeof(AssetLoadingSession).FullName, "_loading");
+    private static readonly MethodInfo LoadingCount =
+        AccessTools.PropertyGetter(typeof(Queue<string>), nameof(Queue<string>.Count))
+        ?? throw new MissingMethodException(typeof(Queue<string>).FullName, "get_Count");
+    private static readonly MethodInfo ProcessLoadingQueue =
+        AccessTools.Method(typeof(AssetLoadingSession), "ProcessLoadingQueue")
+        ?? throw new MissingMethodException(
+            typeof(AssetLoadingSession).FullName,
+            "ProcessLoadingQueue");
+    private static readonly MethodInfo ConcurrentAssetLoadLimit = AccessTools.Method(
+        typeof(NinjaSlayerTransitionLoadSmoothing),
+        nameof(NinjaSlayerTransitionLoadSmoothing.GetConcurrentAssetLoadLimit))
+        ?? throw new MissingMethodException(
+            typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
+            nameof(NinjaSlayerTransitionLoadSmoothing.GetConcurrentAssetLoadLimit));
+
     public static string PatchId => "ninjaslayer_transition_asset_load_concurrency";
 
     public static string Description =>
@@ -22,32 +41,45 @@ public sealed class NinjaSlayerTransitionAssetLoadConcurrencyPatch : IPatchMetho
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
-        GameCompatibility.AssetLoading.ProcessLoadingQueue is { } target
-            ? [new(target.DeclaringType!, target.Name)]
-            : [];
+        [new(ProcessLoadingQueue.DeclaringType!, ProcessLoadingQueue.Name)];
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         const string operation = "NinjaSlayer transition asset concurrency limit";
         var rewriter = HarmonyIlRewriter.From(instructions);
-        MethodInfo replacement = GameCompatibility.AssetLoading.ConcurrentAssetLoadLimit
-            ?? throw new MissingMethodException(
-                typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
-                nameof(NinjaSlayerTransitionLoadSmoothing.GetConcurrentAssetLoadLimit));
         HarmonyIlRewriteReport report = rewriter.ReplaceEach(
             operation,
-            (code, index) => GameCompatibility.AssetLoading.IsLoadingCountLimitSite(
-                code,
-                index,
-                128),
-            (_, _) => [HarmonyIl.Call(replacement)],
-            code => code.Any(HarmonyIl.IsCall(replacement)));
+            (code, index) => IsLoadingCountLimitSite(code, index, 128),
+            (_, _) => [HarmonyIl.Call(ConcurrentAssetLoadLimit)],
+            code => code.Any(HarmonyIl.IsCall(ConcurrentAssetLoadLimit)));
         return rewriter.InstructionsChecked(report);
     }
+
+    private static bool IsLoadingCountLimitSite(
+        IReadOnlyList<CodeInstruction> code,
+        int index,
+        int expectedLimit) =>
+        index >= 3
+        && code[index].LoadsConstant(expectedLimit)
+        && HarmonyLib.CodeInstructionExtensions.IsLdarg(code[index - 3], 0)
+        && code[index - 2].LoadsField(Loading)
+        && code[index - 1].Calls(LoadingCount);
 }
 
 public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 {
+    private static readonly FieldInfo Finalizing =
+        AccessTools.Field(typeof(AssetLoadingSession), "_finalizing")
+        ?? throw new MissingFieldException(typeof(AssetLoadingSession).FullName, "_finalizing");
+    private static readonly MethodInfo AddToCache =
+        AccessTools.Method(typeof(AssetLoadingSession), "AddToCache")
+        ?? throw new MissingMethodException(typeof(AssetLoadingSession).FullName, "AddToCache");
+    private static readonly MethodInfo FinalizeLoading =
+        AccessTools.Method(typeof(AssetLoadingSession), "FinalizeLoading")
+        ?? throw new MissingMethodException(
+            typeof(AssetLoadingSession).FullName,
+            "FinalizeLoading");
+
     public static string PatchId => "ninjaslayer_transition_asset_finalize_batching";
 
     public static string Description =>
@@ -56,9 +88,7 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
-        GameCompatibility.AssetLoading.FinalizeLoading is { } target
-            ? [new(target.DeclaringType!, target.Name)]
-            : [];
+        [new(FinalizeLoading.DeclaringType!, FinalizeLoading.Name)];
 
     public static bool Prefix(AssetLoadingSession __instance)
     {
@@ -67,10 +97,9 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
             return true;
         }
 
-        if (!GameCompatibility.AssetLoading.TryGetFinalizing(__instance, out Queue<string>? finalizing))
-        {
-            return true;
-        }
+        Queue<string> finalizing = Finalizing.GetValue(__instance) as Queue<string>
+            ?? throw new InvalidOperationException(
+                "AssetLoadingSession._finalizing is not an initialized queue.");
 
         long batchStartedAt = Stopwatch.GetTimestamp();
         var finalized = 0;
@@ -80,7 +109,7 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
                && finalizing.TryDequeue(out string? path))
         {
             Resource? resource = ResourceLoader.LoadThreadedGet(path);
-            GameCompatibility.AssetLoading.Cache(__instance, resource, path);
+            AddToCache.Invoke(__instance, [resource, path]);
             finalized++;
         }
 
@@ -91,42 +120,69 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
 public static class NinjaSlayerTransitionGcDeferralPatch
 {
     private const string PatchIdPrefix = "ninjaslayer_transition_preload_gc_deferral";
+    private static readonly MethodInfo LoadRunAssetsMoveNext = ResolveMoveNext(
+        nameof(PreloadManager.LoadRunAssets),
+        [typeof(IEnumerable<CharacterModel>)]);
+    private static readonly MethodInfo LoadActAssetsMoveNext = ResolveMoveNext(
+        nameof(PreloadManager.LoadActAssets),
+        [typeof(ActModel)]);
+    private static readonly MethodInfo LoadRoomAssetsMoveNext = ResolveMoveNext(
+        "LoadRoomAssets",
+        [typeof(string), typeof(IEnumerable<string>)]);
+    private static readonly MethodInfo GcCollect =
+        AccessTools.Method(typeof(GC), nameof(GC.Collect), Type.EmptyTypes)
+        ?? throw new MissingMethodException(typeof(GC).FullName, nameof(GC.Collect));
+    private static readonly MethodInfo SafeCollect = AccessTools.Method(
+        typeof(NinjaSlayerTransitionLoadSmoothing),
+        nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe))
+        ?? throw new MissingMethodException(
+            typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
+            nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
 
     public static DynamicPatchInfo[] CreateDynamicPatches()
     {
-        if (!GameCompatibility.AssetLoading.TryResolvePreloadStateMachines(
-                out GameCompatibility.RuntimePatchTarget[] targets,
-                out string missingMember))
-        {
-            throw new MissingMethodException(missingMember);
-        }
-
         var harmonyTranspiler = new HarmonyMethod(
             typeof(NinjaSlayerTransitionGcDeferralPatch),
             nameof(Transpiler));
-        return targets.Select(target => new DynamicPatchInfo(
-                $"{PatchIdPrefix}_{target.IdSuffix}",
-                target.Method,
-                transpiler: harmonyTranspiler,
-                isCritical: true,
-                description: $"Defer forced GC in PreloadManager {target.IdSuffix}."))
-            .ToArray();
+        return
+        [
+            CreateDynamicPatch("load-run-assets", LoadRunAssetsMoveNext, harmonyTranspiler),
+            CreateDynamicPatch("load-act-assets", LoadActAssetsMoveNext, harmonyTranspiler),
+            CreateDynamicPatch("load-room-assets", LoadRoomAssetsMoveNext, harmonyTranspiler)
+        ];
     }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         const string operation = "NinjaSlayer transition GC deferral";
-        MethodInfo gcCollect = GameCompatibility.AssetLoading.GcCollect
-            ?? throw new MissingMethodException(typeof(GC).FullName, nameof(GC.Collect));
-        MethodInfo safeCollect = GameCompatibility.AssetLoading.SafeCollect
-            ?? throw new MissingMethodException(
-                typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
-                nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
         var rewriter = HarmonyIlRewriter.From(instructions);
         HarmonyIlRewriteReport report = rewriter.RedirectCalls(
             operation,
-            called => called == gcCollect ? safeCollect : null,
-            code => code.Any(HarmonyIl.IsCall(safeCollect)));
+            called => called == GcCollect ? SafeCollect : null,
+            code => code.Any(HarmonyIl.IsCall(SafeCollect)));
         return rewriter.InstructionsChecked(report);
+    }
+
+    private static DynamicPatchInfo CreateDynamicPatch(
+        string idSuffix,
+        MethodInfo moveNext,
+        HarmonyMethod transpiler) =>
+        new(
+            $"{PatchIdPrefix}_{idSuffix}",
+            moveNext,
+            transpiler: transpiler,
+            isCritical: true,
+            description: $"Defer forced GC in PreloadManager {idSuffix}.");
+
+    private static MethodInfo ResolveMoveNext(string methodName, Type[] parameterTypes)
+    {
+        MethodInfo method = AccessTools.Method(typeof(PreloadManager), methodName, parameterTypes)
+            ?? throw new MissingMethodException(typeof(PreloadManager).FullName, methodName);
+        Type stateMachine = method.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
+            ?? throw new MissingMemberException(
+                method.DeclaringType?.FullName,
+                $"{method.Name} async state machine");
+        return AccessTools.Method(stateMachine, "MoveNext", Type.EmptyTypes)
+            ?? throw new MissingMethodException(stateMachine.FullName, "MoveNext");
     }
 }

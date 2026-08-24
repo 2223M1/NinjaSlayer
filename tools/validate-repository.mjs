@@ -289,51 +289,6 @@ if (compatibility) {
   }
 }
 
-function permitsDirectHostConditional(repositoryPath, source, symbol) {
-  switch (symbol) {
-    case 'NINJASLAYER_LEGACY_CARD_PLAY_LINKS':
-      return (repositoryPath.startsWith('Cards/')
-          && (source.includes('.FromCard(')
-            || repositoryPath === 'Cards/RedesignV1/NinjaSlayerRedesignCardTemplate.cs'))
-        || [
-          'Code/Combat/BlackFlameHitTracker.cs',
-          'Code/ExternalAnimations/FinisherAttackCommandAdapter.cs',
-          'Code/Lifecycle/RapidCardPresentationContext.cs',
-          'Content/NinjaSlayerCombatMetrics.cs',
-        ].includes(repositoryPath);
-    case 'NINJASLAYER_LEGACY_DAMAGE_API':
-      return source.includes('CreatureCmd.Damage(')
-        || source.includes('nameof(CreatureCmd.Damage)')
-        || source.includes('Hook.ModifyDamage(')
-        || [
-          'Cards/RedesignV1/RedesignV1RareCards.cs',
-          'Powers/DamageFocusPower.cs',
-          'Powers/OpeningPower.cs',
-        ].includes(repositoryPath);
-    case 'NINJASLAYER_LEGACY_CREATURE_PRESENTATION':
-      return repositoryPath === 'Code/ExternalAnimations/DoomHurtPoseController.cs';
-    case 'NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION':
-      return repositoryPath === 'Code/ExternalAnimations/ArchitectExecutionCinematic.cs';
-    case 'NINJASLAYER_CHANNEL_STABLE':
-      return repositoryPath === 'Events/DarkNinjaEvent.cs'
-        || repositoryPath === 'Events/SawatariEvent.cs';
-    default:
-      return false;
-  }
-}
-
-for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
-  const repositoryPath = relative(root, path).replaceAll('\\', '/');
-  if (repositoryPath.startsWith('Code/Compatibility/')) continue;
-  const source = readFileSync(path, 'utf8');
-  for (const match of source.matchAll(
-    /^\s*#(?:if|elif)\s+!?\s*(NINJASLAYER_(?:STS2|CHANNEL|LEGACY)[A-Z0-9_]*)/gm,
-  )) {
-    if (!permitsDirectHostConditional(repositoryPath, source, match[1])) {
-      errors.push(`${repositoryPath} contains unowned host conditional ${match[1]}`);
-    }
-  }
-}
 const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));
 if (warningAllowlist) {
   const entries = Array.isArray(warningAllowlist.entries) ? warningAllowlist.entries : [];
@@ -580,21 +535,21 @@ if (patchIds.length !== patchClasses.length) {
   errors.push(`Expected one PatchId per IPatchMethod (${patchClasses.length} classes, ${patchIds.length} ids)`);
 }
 
-const compatibilityOwnedFiles = [
-  'Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs',
-  'Code/Patches/NancyLeeAvailabilityPatches.cs',
-  'Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs',
-  'Code/Patches/NinjaSlayerTransitionPatch.cs',
-];
-const privateReflectionPattern = /AccessTools\.(?:Field|Method|Property)|BindingFlags|GetField\(|GetMethod\(/;
-for (const relativePath of compatibilityOwnedFiles) {
-  const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
-  if (privateReflectionPattern.test(source)) {
-    errors.push(`${relativePath} must obtain private game members through GameCompatibility`);
-  }
-}
-
 const localizedPrivateMemberContracts = new Map([
+  ['Code/ExternalAnimations/AttackEvasionFeedbackContext.cs', ['"_singleTarget"']],
+  ['Code/ExternalAnimations/BossBurstMusicSession.cs', ['"_currentTrack"', '"_failedTrack"']],
+  ['Code/ExternalAnimations/CombatDodgeAnimation.cs', [
+    '"_attackerAnimName"',
+    '"_visualAttacker"',
+    '"_waitBeforeHit"',
+    '"_singleTarget"',
+  ]],
+  ['Code/ExternalAnimations/FinisherAttackCommandAdapter.cs', [
+    '"_damagePerHit"',
+    '"_calculatedDamageVar"',
+    '"_hitCount"',
+    '"_singleTarget"',
+  ]],
   ['Code/Patches/KarateHealthBarPreviewPatch.cs', ['"_creature"', '"_hpLabel"']],
   ['Code/Patches/NarakuLifeHealthBarLayoutPatch.cs', [
     '"_creature"',
@@ -603,17 +558,31 @@ const localizedPrivateMemberContracts = new Map([
   ]],
   ['Code/Patches/NinjaSlayerFeedbackPatches.cs', ['"SendButtonSelected"']],
   ['Code/Patches/NinjaSlayerMapHistoryPatch.cs', ['"_runState"']],
+  ['Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs', [
+    '"_loading"',
+    '"_finalizing"',
+    '"AddToCache"',
+    '"FinalizeLoading"',
+    '"ProcessLoadingQueue"',
+    '"MoveNext"',
+  ]],
   ['Code/Patches/NinjaSlayerTransitionPresentationPatch.cs', ['"PlayHealVfxAfterFadeIn"']],
   ['Code/Patches/NinjaSlayerTypographyPatch.cs', ['"_relics"', '"_index"']],
   ['Code/Patches/PreparedCardPatches.cs', ['"ShuffleFtueCheck"', '"_grid"']],
   ['Code/Patches/ReporterPassEventOptionPatch.cs', ['"SetEventFinished"']],
   ['Code/Transition/TransitionViewAdapter.cs', ['nameof(NTransition.InTransition)', '"_tween"']],
+  ['Events/SawatariEvent.cs', [
+    '"_combatStateForCombatLayout"',
+    '"_combatSynchronizer"',
+    '"CombatStateForLayout"',
+  ]],
+  ['Code/Patches/SawatariEventPatches.cs', ['"_rooms"']],
+  ['Powers/NarakuPower.cs', ['"_powerNodes"', '"UpdatePositions"']],
 ]);
 for (const [relativePath, members] of localizedPrivateMemberContracts) {
   const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
-  const accessCount = [...source.matchAll(/AccessTools\.(?:Field|Method|Property)\(/g)].length;
-  if (accessCount !== members.length || members.some(member => !source.includes(member))) {
-    errors.push(`${relativePath} must access exactly its owned private game members: ${members.join(', ')}`);
+  if (members.some(member => !source.includes(member))) {
+    errors.push(`${relativePath} must own its localized private game members: ${members.join(', ')}`);
   }
 }
 
@@ -636,6 +605,15 @@ const removedStage4AFiles = [
   'LegacyAttackCommandExtensions.cs',
   'OrobasSeaGlassCandidatePolicy.cs',
   'RedesignCardDestinationAdapter.cs',
+  'GameCompatibility.cs',
+  'GameCompatibility.AssetLoading.cs',
+  'GameCompatibility.BossBurst.cs',
+  'GameCompatibility.CreaturePresentation.cs',
+  'GameCompatibility.EnemyAttackDodge.cs',
+  'GameCompatibility.EventCombat.cs',
+  'GameCompatibility.Finisher.cs',
+  'GameCompatibility.NarakuPowerUi.cs',
+  'PreparedQueueCompatibility.cs',
 ];
 for (const file of removedStage4AFiles) {
   if (existsSync(join(root, 'Code', 'Compatibility', file))) {
@@ -644,7 +622,7 @@ for (const file of removedStage4AFiles) {
 }
 
 const retiredStage4AFacadePattern =
-  /\b(?:HostCompatibility|GameApiFacade|CompatibilityService|LegacyAttackCommandExtensions)\b|GameCompatibility\.(?:ArchitectVictory|CardPlays|AttackCommands|Damage|Feedback|KarateHealthBar|MapHistory|NarakuHealthBar|OrobasSeaGlass|Prepared|ReporterPass|Transition|TransitionPresentation|Typography|NativeHandles)|\bAssociate(?:Player|CardPlay)\b/;
+  /\b(?:GameCompatibility|HostCompatibility|GameApiFacade|CompatibilityManager|CompatibilityService|GameApiRegistry|LegacyAttackCommandExtensions)\b|\bAssociate(?:Player|CardPlay)\b/;
 for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
   const repositoryPath = relative(root, path).replaceAll('\\', '/');
   if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;

@@ -10,10 +10,14 @@ internal sealed class TransitionViewAdapter(NTransition transition)
 {
     private const string SimpleTransitionPath = "SimpleTransition";
     private const string GradientTransitionPath = "GradientTransition";
-    private static readonly PropertyInfo? InTransition =
-        AccessTools.Property(typeof(NTransition), nameof(NTransition.InTransition));
-    private static readonly FieldInfo? TransitionTween =
-        AccessTools.Field(typeof(NTransition), "_tween");
+    private static readonly PropertyInfo InTransition =
+        AccessTools.Property(typeof(NTransition), nameof(NTransition.InTransition))
+        ?? throw new MissingMemberException(
+            typeof(NTransition).FullName,
+            nameof(NTransition.InTransition));
+    private static readonly FieldInfo TransitionTween =
+        AccessTools.Field(typeof(NTransition), "_tween")
+        ?? throw new MissingFieldException(typeof(NTransition).FullName, "_tween");
     private NinjaSlayerTransitionOverlay? _overlay;
 
     public NTransition Transition { get; } = transition;
@@ -21,19 +25,19 @@ internal sealed class TransitionViewAdapter(NTransition transition)
     public void PrepareInstant()
     {
         EnsureValid();
-        InTransition?.SetValue(Transition, true);
+        InTransition.SetValue(Transition, true);
         Transition.Visible = false;
     }
 
     public NinjaSlayerTransitionOverlay PrepareAnimated()
     {
         EnsureValid();
-        if (TransitionTween?.GetValue(Transition) is Tween tween)
+        if (ReadTransitionTween() is { } tween)
         {
             tween.Kill();
             TransitionTween.SetValue(Transition, null);
         }
-        InTransition?.SetValue(Transition, true);
+        InTransition.SetValue(Transition, true);
         Transition.Visible = true;
         Transition.MouseFilter = Control.MouseFilterEnum.Stop;
 
@@ -72,7 +76,7 @@ internal sealed class TransitionViewAdapter(NTransition transition)
 
         if (forceRelease)
         {
-            if (TransitionTween?.GetValue(Transition) is Tween tween)
+            if (ReadTransitionTween() is { } tween)
             {
                 tween.Kill();
                 TransitionTween.SetValue(Transition, null);
@@ -91,7 +95,7 @@ internal sealed class TransitionViewAdapter(NTransition transition)
         }
 
         Transition.MouseFilter = Control.MouseFilterEnum.Ignore;
-        InTransition?.SetValue(Transition, false);
+        InTransition.SetValue(Transition, false);
     }
 
     private ColorRect? GetBackdrop() =>
@@ -106,6 +110,15 @@ internal sealed class TransitionViewAdapter(NTransition transition)
             throw new InvalidOperationException("The transition view is no longer valid.");
         }
     }
+
+    private Tween? ReadTransitionTween() =>
+        TransitionTween.GetValue(Transition) switch
+        {
+            null => null,
+            Tween tween => tween,
+            _ => throw new InvalidOperationException(
+                "NTransition._tween has an unexpected runtime type.")
+        };
 
     private static void SetBackdrop(ColorRect backdrop, bool opaque)
     {

@@ -132,10 +132,12 @@ internal static class KaratePreviewScopeRegistry
 
 public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod
 {
-    private static readonly FieldInfo? HealthBarCreature =
-        AccessTools.Field(typeof(NHealthBar), "_creature");
-    private static readonly FieldInfo? HpLabel =
-        AccessTools.Field(typeof(NHealthBar), "_hpLabel");
+    private static readonly FieldInfo HealthBarCreature =
+        AccessTools.Field(typeof(NHealthBar), "_creature")
+        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_creature");
+    private static readonly FieldInfo HpLabel =
+        AccessTools.Field(typeof(NHealthBar), "_hpLabel")
+        ?? throw new MissingFieldException(typeof(NHealthBar).FullName, "_hpLabel");
 
     public static string PatchId => "ninjaslayer_karate_hp_label_preview";
 
@@ -148,8 +150,20 @@ public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod
 
     public static void Postfix(NHealthBar __instance)
     {
-        Creature? creature = HealthBarCreature?.GetValue(__instance) as Creature;
-        MegaLabel? hpLabel = HpLabel?.GetValue(__instance) as MegaLabel;
+        Creature? creature = HealthBarCreature.GetValue(__instance) switch
+        {
+            null => null,
+            Creature value => value,
+            _ => throw new InvalidOperationException(
+                "NHealthBar._creature has an unexpected runtime type.")
+        };
+        MegaLabel? hpLabel = HpLabel.GetValue(__instance) switch
+        {
+            null => null,
+            MegaLabel value => value,
+            _ => throw new InvalidOperationException(
+                "NHealthBar._hpLabel has an unexpected runtime type.")
+        };
         if (creature is null
             || hpLabel is null
             || !creature.HpDisplay.ShowsNumbers())
