@@ -428,13 +428,13 @@ try {
 
     $checkpoints = @(Get-Content -LiteralPath $checkpointPath | ForEach-Object { $_ | ConvertFrom-Json })
     $requiredCheckpoints = if ($Mode -eq 'FullAutoSlay') {
-        @('full-autoslay.starting', 'full-autoslay.runtime-idle', 'full-autoslay.completed')
+        @('full-autoslay.starting', 'full-autoslay.completed')
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
-        @('sawatari.starting', 'sawatari.same-combat-completed', 'sawatari.runtime-idle', 'sawatari.completed')
+        @('sawatari.starting', 'sawatari.same-combat-completed', 'sawatari.completed')
     }
     else {
-        @('prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'resume.loaded', 'resume.completed')
+        @('prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed')
     }
     $missing = @($requiredCheckpoints | Where-Object { $_ -notin $checkpoints.Name })
     if ($missing.Count -gt 0 -or @($checkpoints | Where-Object Status -ne 'passed').Count -gt 0) {

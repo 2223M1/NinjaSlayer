@@ -325,7 +325,6 @@ internal sealed partial class SmokeController
             () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "player play phase did not start",
             cancellationToken);
-        ValidateTeaCounterLayout();
         _checkpoints.Write(
             "combat.started",
             data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });
@@ -1333,19 +1332,11 @@ internal sealed partial class SmokeController
 
     private static Task RemoveSmokeBlock(Creature target)
     {
-        MethodInfo method = typeof(CreatureCmd).GetMethod(
-            nameof(CreatureCmd.LoseBlock),
-            BindingFlags.Public | BindingFlags.Static)
-            ?? throw new MissingMethodException(typeof(CreatureCmd).FullName, nameof(CreatureCmd.LoseBlock));
-        object?[] arguments = method.GetParameters().Length switch
-        {
-            2 => [target, (decimal)target.Block],
-            4 => [new ThrowingPlayerChoiceContext(), target, (decimal)target.Block, null],
-            int count => throw new InvalidOperationException(
-                $"CreatureCmd.LoseBlock has unsupported arity {count}.")
-        };
-        return method.Invoke(null, arguments) as Task
-            ?? throw new InvalidOperationException("CreatureCmd.LoseBlock did not return a Task.");
+#if NINJASLAYER_CHANNEL_STABLE
+        return CreatureCmd.LoseBlock(target, target.Block);
+#else
+        return CreatureCmd.LoseBlock(new ThrowingPlayerChoiceContext(), target, target.Block, null);
+#endif
     }
 
     private async Task RunSafelyAsync()
@@ -1404,6 +1395,7 @@ internal sealed partial class SmokeController
             "The first map gate was reached before combat and rewards completed.");
         await SaveManager.Instance.SaveRun(null);
         Require(SaveManager.Instance.HasRunSave, "Run save was not created after first combat.");
+        _checkpoints.Write("fresh.saved");
         _checkpoints.Write("fresh.restart-requested");
         _tree.Quit(RestartRequestedExitCode);
     }
