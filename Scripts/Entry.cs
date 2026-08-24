@@ -11,6 +11,7 @@ using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
 using STS2RitsuLib;
 using STS2RitsuLib.Audio;
@@ -50,13 +51,84 @@ public class Entry
             nameof(Entry));
         try
         {
-            requiredPatcher.RegisterPatches<GameplayPatchGroup>();
-            requiredPatcher.RegisterPatches<OrobasSeaGlassPatchGroup>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAnimationPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerMapHistoryIconPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAbandonDeathCapturePatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAbandonVisualCreationPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAbandonMerchantDeathPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
+            requiredPatcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
+            requiredPatcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
+            requiredPatcher.RegisterPatch<ArchitectExecutionStartPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
+            requiredPatcher.RegisterPatch<BlackFlameDamagePatch>();
+            requiredPatcher.RegisterPatch<KarateDamageWavePatch>();
+            requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
+            requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
+            requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
+            requiredPatcher.RegisterPatch<CardTransformShineSfxPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
+            requiredPatcher.RegisterPatch<EventValidationRunGenerationPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerSingleplayerRunRulesCharacterPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerRunRulesCharacterPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerCanonicalCharacterIdPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerRunProgressIdentityPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerGameOverBadgeIdentityPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerCombatProgressIdentityPatch>();
+            requiredPatcher.RegisterPatch<AetherEnergyPower.EnergyGainPatch>();
+            requiredPatcher.RegisterPatch<SawatariActRoomGenerationPatch>();
+            requiredPatcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
+            requiredPatcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
+            requiredPatcher.RegisterPatch<SawatariPullEventPatch>();
+            requiredPatcher.RegisterPatch<SawatariRoomVisitPatch>();
+            requiredPatcher.RegisterPatch<SawatariCombatEndGatePatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionPotionSelectedPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionPotionDeselectedPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionTargetManagerPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionCardCanPlayPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionCardAutoPlayPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionControllerCardTargetPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionPotionThrowPatch>();
+            requiredPatcher.RegisterPatch<FriendlyCompanionPotionTargetPatch>();
+            requiredPatcher.RegisterPatch<SawatariDuelDeathAnimationPatch>();
+            requiredPatcher.RegisterPatch<SawatariDuelRewardsPatch>();
+            requiredPatcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
+            requiredPatcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
+            requiredPatcher.RegisterPatch<AttackEvasionFeedbackScopePatch>();
+            requiredPatcher.RegisterPatch<EvasionMoveScopePatch>();
+            requiredPatcher.RegisterPatch<EvasionTargetHitVfxPatch>();
+            requiredPatcher.RegisterPatch<EvasionSideHitVfxPatch>();
+            requiredPatcher.RegisterPatch<EvasionFmodHitSfxPatch>();
+            requiredPatcher.RegisterPatch<EvasionTemporaryHitSfxPatch>();
+            requiredPatcher.RegisterPatch<EvasionCustomHitVfxPatch>();
+            requiredPatcher.RegisterPatch<AttackEvasionDamagePatch>();
+            requiredPatcher.RegisterPatch<EvasionPowerApplyPatch>();
+            requiredPatcher.RegisterPatch<EvasionPowerModifyAmountPatch>();
+            requiredPatcher.RegisterPatch<AttackIntentDamagePreviewPatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiIntentGenerationPatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiLastEnemyDeathIntentPatch>();
+            requiredPatcher.RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
+            requiredPatcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
+            requiredPatcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
             requiredPatcher.RegisterPatches<CardResolutionPatchGroup>();
-            requiredPatcher.RegisterPatches<PreparedGameplayPatchGroup>();
-            requiredPatcher.RegisterPatches<ReporterPassPatchGroup>();
-            requiredPatcher.RegisterPatches<NancyCandidateFilterPatchGroup>();
+            requiredPatcher.RegisterPatch<PreparedDrawPatch>();
+            requiredPatcher.RegisterPatch<ReporterPassEventOptionPatch>();
+            requiredPatcher.RegisterPatch<NancyLeeCandidatePatch>();
             requiredPatcher.RegisterPatches<FinisherCorePatchGroup>();
+            requiredPatcher.RegisterPatch<NinjaSlayerDeathCompletionPatch>();
             requiredPatcher.RegisterPatches<FeedbackPatchGroup>();
 
             bool requiredPatchFailure = false;
@@ -117,7 +189,8 @@ public class Entry
                 "telemetry-identity");
             try
             {
-                telemetryPatcher.RegisterPatches<TelemetryIdentityPatchGroup>();
+                telemetryPatcher.RegisterPatch<NinjaSlayerTelemetryIdentityLaunchPatch>();
+                telemetryPatcher.RegisterPatch<NinjaSlayerTelemetryIdentityCleanupPatch>();
                 bool patchesApplied = telemetryPatcher.PatchAll();
                 int expectedPatchCount = telemetryPatcher.RegisteredPatchCount;
                 if (!patchesApplied || telemetryPatcher.AppliedPatchCount != expectedPatchCount)
@@ -168,28 +241,51 @@ public class Entry
     private static void InstallOptionalPresentations()
     {
         TryInstallOptionalPresentation(
-            nameof(KaratePreviewPatchGroup),
-            patcher => patcher.RegisterPatches<KaratePreviewPatchGroup>());
+            "KaratePreviewPatchGroup",
+            patcher =>
+            {
+                patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
+                patcher.RegisterPatch<KarateCardPreviewAllEnemiesPatch>();
+                patcher.RegisterPatch<KarateCardPreviewClearPatch>();
+                patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
+            });
         TryInstallOptionalPresentation(
-            nameof(TypographyPatchGroup),
-            patcher => patcher.RegisterPatches<TypographyPatchGroup>());
+            "TypographyPatchGroup",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
+                patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
+            });
         TryInstallOptionalPresentation(
-            nameof(ChadoPresentationPatchGroup),
-            patcher => patcher.RegisterPatches<ChadoPresentationPatchGroup>());
+            "ChadoPresentationPatchGroup",
+            patcher =>
+            {
+                patcher.RegisterPatch<ChadoEnergyCostVisualPatch>();
+                patcher.RegisterPatch<ChadoCardNodeLifecyclePatch>();
+            });
         TryInstallOptionalPresentation(
-            nameof(CinematicInfrastructurePatchGroup),
-            patcher => patcher.RegisterPatches<CinematicInfrastructurePatchGroup>());
+            "CinematicInfrastructurePatchGroup",
+            patcher =>
+            {
+                patcher.RegisterPatch<CombatCinematicLayoutPatch>();
+                patcher.RegisterPatch<ScreenShakeSuppressionPatch>();
+                patcher.RegisterPatch<ScreenRumbleCinematicSuppressionPatch>();
+                patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
+            });
         TryInstallOptionalPresentation(
             nameof(BossBurstPresentationPatchGroup),
             patcher => patcher.RegisterPatches<BossBurstPresentationPatchGroup>());
         TryInstallOptionalPresentation(
-            nameof(PreparedUiPatchGroup),
-            patcher => patcher.RegisterPatches<PreparedUiPatchGroup>());
+            "PreparedUiPatchGroup",
+            patcher => patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>());
         TryInstallOptionalPresentation(
-            nameof(RapidCardResolutionPatchGroup),
+            "RapidCardResolutionPatchGroup",
             patcher =>
             {
-                patcher.RegisterPatches<RapidCardResolutionPatchGroup>();
+                patcher.RegisterPatch<RapidCardResolutionScopePatch>();
+                patcher.RegisterPatch<RapidPowerCardFlyPatch>();
+                patcher.RegisterPatch<RapidMultiCardPlayPatch>();
             },
             () =>
             [
@@ -197,15 +293,28 @@ public class Entry
                 .. RapidCardResolutionStateMachinePatch.CreateDynamicPatches()
             ]);
         TryInstallOptionalPresentation(
-            nameof(FinisherPresentationPatchGroup),
-            patcher => patcher.RegisterPatches<FinisherPresentationPatchGroup>());
+            "FinisherPresentationPatchGroup",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerFinisherDeathStartPatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
+                patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
+            });
         TryInstallOptionalPresentation(
             nameof(TransitionCorePatchGroup),
             patcher =>
             {
                 patcher.RegisterPatches<TransitionCorePatchGroup>();
-                patcher.RegisterPatches<TransitionPresentationPatchGroup>();
-                patcher.RegisterPatches<TransitionSmoothingPatchGroup>();
+                patcher.RegisterPatch<NinjaSlayerTransitionRunPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionTeardownPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionCombatPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionAncientSetupPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionAncientHealPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionRunMusicPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionParameterizedSfxPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionAssetLoadConcurrencyPatch>();
+                patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
             },
             NinjaSlayerTransitionGcDeferralPatch.CreateDynamicPatches);
     }

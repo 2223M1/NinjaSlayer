@@ -1,92 +1,7 @@
-using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
-
-internal sealed class GameplayPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerAnimationPatch>();
-        patcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
-        patcher.RegisterPatch<NinjaSlayerMapHistoryIconPatch>();
-        patcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
-        patcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
-        patcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
-        patcher.RegisterPatch<NinjaSlayerAbandonDeathCapturePatch>();
-        patcher.RegisterPatch<NinjaSlayerAbandonVisualCreationPatch>();
-        patcher.RegisterPatch<NinjaSlayerAbandonMerchantDeathPatch>();
-        patcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
-        patcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
-        patcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
-        patcher.RegisterPatch<ArchitectExecutionStartPatch>();
-        patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
-        patcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
-        patcher.RegisterPatch<BlackFlameDamagePatch>();
-        patcher.RegisterPatch<KarateDamageWavePatch>();
-        patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
-        patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
-        patcher.RegisterPatch<BossGreetingMusicPatch>();
-        patcher.RegisterPatch<CardTransformShineSfxPatch>();
-        patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
-        patcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
-        patcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
-        patcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
-        patcher.RegisterPatch<EventValidationRunGenerationPatch>();
-        patcher.RegisterPatch<NinjaSlayerSingleplayerRunRulesCharacterPatch>();
-        patcher.RegisterPatch<NinjaSlayerRunRulesCharacterPatch>();
-        patcher.RegisterPatch<NinjaSlayerCanonicalCharacterIdPatch>();
-        patcher.RegisterPatch<NinjaSlayerRunProgressIdentityPatch>();
-        patcher.RegisterPatch<NinjaSlayerGameOverBadgeIdentityPatch>();
-        patcher.RegisterPatch<NinjaSlayerCombatProgressIdentityPatch>();
-        patcher.RegisterPatch<AetherEnergyPower.EnergyGainPatch>();
-        patcher.RegisterPatch<SawatariActRoomGenerationPatch>();
-        patcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
-        patcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
-        patcher.RegisterPatch<SawatariPullEventPatch>();
-        patcher.RegisterPatch<SawatariRoomVisitPatch>();
-        patcher.RegisterPatch<SawatariCombatEndGatePatch>();
-        patcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
-        patcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
-        patcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();
-        patcher.RegisterPatch<FriendlyCompanionPotionSelectedPatch>();
-        patcher.RegisterPatch<FriendlyCompanionPotionDeselectedPatch>();
-        patcher.RegisterPatch<FriendlyCompanionTargetManagerPatch>();
-        patcher.RegisterPatch<FriendlyCompanionCardCanPlayPatch>();
-        patcher.RegisterPatch<FriendlyCompanionCardAutoPlayPatch>();
-        patcher.RegisterPatch<FriendlyCompanionControllerCardTargetPatch>();
-        patcher.RegisterPatch<FriendlyCompanionPotionThrowPatch>();
-        patcher.RegisterPatch<FriendlyCompanionPotionTargetPatch>();
-        patcher.RegisterPatch<SawatariDuelDeathAnimationPatch>();
-        patcher.RegisterPatch<SawatariDuelRewardsPatch>();
-        patcher.RegisterPatch<EnemyAttackDodgeScopePatch>();
-        patcher.RegisterPatch<EnemyAttackDodgeAnimationPatch>();
-        patcher.RegisterPatch<AttackEvasionFeedbackScopePatch>();
-        patcher.RegisterPatch<EvasionMoveScopePatch>();
-        patcher.RegisterPatch<EvasionTargetHitVfxPatch>();
-        patcher.RegisterPatch<EvasionSideHitVfxPatch>();
-        patcher.RegisterPatch<EvasionFmodHitSfxPatch>();
-        patcher.RegisterPatch<EvasionTemporaryHitSfxPatch>();
-        patcher.RegisterPatch<EvasionCustomHitVfxPatch>();
-        patcher.RegisterPatch<AttackEvasionDamagePatch>();
-        patcher.RegisterPatch<EvasionPowerApplyPatch>();
-        patcher.RegisterPatch<EvasionPowerModifyAmountPatch>();
-        patcher.RegisterPatch<AttackIntentDamagePreviewPatch>();
-        patcher.RegisterPatch<YamotoKokiIntentUpdatePatch>();
-        patcher.RegisterPatch<YamotoKokiIntentGenerationPatch>();
-        patcher.RegisterPatch<YamotoKokiLastEnemyDeathIntentPatch>();
-        patcher.RegisterPatch<YamotoKokiOrigamiMissileHitSparkPatch>();
-        patcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
-        patcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
-    }
-}
-
-internal sealed class OrobasSeaGlassPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher) =>
-        patcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
-}
 
 internal sealed class BossBurstPresentationPatchGroup : IModPatches
 {
@@ -110,77 +25,6 @@ internal sealed class CardResolutionPatchGroup : IModPatches
     }
 }
 
-internal sealed class RapidCardResolutionPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<RapidCardResolutionScopePatch>();
-        patcher.RegisterPatch<RapidPowerCardFlyPatch>();
-        patcher.RegisterPatch<RapidMultiCardPlayPatch>();
-    }
-}
-
-internal sealed class ReporterPassPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<ReporterPassEventOptionPatch>();
-}
-
-internal sealed class NancyCandidateFilterPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<NancyLeeCandidatePatch>();
-}
-
-internal sealed class KaratePreviewPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
-        patcher.RegisterPatch<KarateCardPreviewAllEnemiesPatch>();
-        patcher.RegisterPatch<KarateCardPreviewClearPatch>();
-        patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
-    }
-}
-
-internal sealed class TypographyPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
-        patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
-    }
-}
-
-internal sealed class ChadoPresentationPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<ChadoEnergyCostVisualPatch>();
-        patcher.RegisterPatch<ChadoCardNodeLifecyclePatch>();
-    }
-}
-
-internal sealed class CinematicInfrastructurePatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<CombatCinematicLayoutPatch>();
-        patcher.RegisterPatch<ScreenShakeSuppressionPatch>();
-        patcher.RegisterPatch<ScreenRumbleCinematicSuppressionPatch>();
-        patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
-    }
-}
-
-internal sealed class PreparedGameplayPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<PreparedDrawPatch>();
-}
-
-internal sealed class PreparedUiPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>();
-}
-
 internal sealed class FinisherCorePatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
@@ -190,17 +34,6 @@ internal sealed class FinisherCorePatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
         patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
-        patcher.RegisterPatch<NinjaSlayerDeathCompletionPatch>();
-    }
-}
-
-internal sealed class FinisherPresentationPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerFinisherDeathStartPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
     }
 }
 
@@ -215,30 +48,6 @@ internal sealed class TransitionCorePatchGroup : IModPatches
     }
 }
 
-internal sealed class TransitionPresentationPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerTransitionRunPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionTeardownPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionCombatPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionAncientSetupPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionAncientHealPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionRunMusicPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionParameterizedSfxPresentationPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();
-    }
-}
-
-internal sealed class TransitionSmoothingPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerTransitionAssetLoadConcurrencyPatch>();
-        patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
-    }
-}
-
 internal sealed class FeedbackPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
@@ -248,14 +57,5 @@ internal sealed class FeedbackPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
         patcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
         patcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
-    }
-}
-
-internal sealed class TelemetryIdentityPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerTelemetryIdentityLaunchPatch>();
-        patcher.RegisterPatch<NinjaSlayerTelemetryIdentityCleanupPatch>();
     }
 }

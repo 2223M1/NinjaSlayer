@@ -478,7 +478,10 @@ for (const path of sourceFiles) {
   }
 }
 
-const patchSources = filesUnder(join(root, 'Code', 'Patches'))
+const patchSources = [
+  ...filesUnder(join(root, 'Code', 'Patches')),
+  ...filesUnder(join(root, 'Powers')),
+]
   .filter((path) => path.endsWith('.cs'))
   .map((path) => readFileSync(path, 'utf8'))
   .join('\n');
@@ -486,14 +489,15 @@ const entrySource = readFileSync(join(root, 'Scripts', 'Entry.cs'), 'utf8');
 const patchGroupSource = readFileSync(join(root, 'Code', 'Patches', 'NinjaSlayerPatchGroups.cs'), 'utf8');
 const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)]
   .map((match) => match[1]);
-const patchRegistrations = [...patchGroupSource.matchAll(/RegisterPatch<(\w+)>/g)]
-  .map((match) => match[1]);
+const patchRegistrationSource = `${entrySource}\n${patchGroupSource}`;
+const patchRegistrations = [...patchRegistrationSource.matchAll(/RegisterPatch<([\w.]+)>/g)]
+  .map((match) => match[1].split('.').at(-1));
 for (const patchClass of patchClasses) {
   const count = patchRegistrations.filter((registered) => registered === patchClass).length;
-  if (count !== 1) errors.push(`${patchClass} must appear in exactly one typed patch group (found ${count})`);
+  if (count !== 1) errors.push(`${patchClass} must appear in exactly one production patch registration (found ${count})`);
 }
 for (const registered of patchRegistrations) {
-  if (!patchClasses.includes(registered)) errors.push(`Typed patch group references unknown patch ${registered}`);
+  if (!patchClasses.includes(registered)) errors.push(`Production patch registration references unknown patch ${registered}`);
 }
 
 const patchDeclarations = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)];
@@ -501,19 +505,28 @@ const patchBodies = new Map(patchDeclarations.map((match, index) => [
   match[1],
   patchSources.slice(match.index, patchDeclarations[index + 1]?.index ?? patchSources.length),
 ]));
-for (const groupName of [
-  'CardResolutionPatchGroup',
-  'CombatPresentationPacingPatchGroup',
-  'RapidCardResolutionPatchGroup',
-  'PreparedGameplayPatchGroup',
+const retainedPatchGroups = [
   'BossBurstPresentationPatchGroup',
+  'CardResolutionPatchGroup',
   'FinisherCorePatchGroup',
   'TransitionCorePatchGroup',
-]) {
+  'FeedbackPatchGroup',
+];
+const declaredPatchGroups = [...patchGroupSource.matchAll(/internal\s+sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
+  .map((match) => match[1]);
+if (declaredPatchGroups.join(',') !== retainedPatchGroups.join(',')) {
+  errors.push(`Patch groups must be exactly: ${retainedPatchGroups.join(', ')}`);
+}
+for (const groupName of retainedPatchGroups) {
   const groupStart = patchGroupSource.indexOf(`class ${groupName}`);
+  if (groupStart < 0) continue;
   const groupEnd = patchGroupSource.indexOf('\ninternal sealed class ', groupStart + 1);
   const groupBody = patchGroupSource.slice(groupStart, groupEnd < 0 ? undefined : groupEnd);
-  for (const match of groupBody.matchAll(/RegisterPatch<(\w+)>/g)) {
+  const groupRegistrations = [...groupBody.matchAll(/RegisterPatch<(\w+)>/g)];
+  if (groupRegistrations.length < 2) {
+    errors.push(`${groupName} must contain at least two patches`);
+  }
+  for (const match of groupRegistrations) {
     if (!patchBodies.get(match[1])?.includes('IsCritical => true')) {
       errors.push(`${groupName} contains non-critical required patch ${match[1]}`);
     }
