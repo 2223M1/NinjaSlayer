@@ -52,8 +52,7 @@ internal static class FinisherEligibilityService
             if (Interlocked.Exchange(ref CompatibilityWarningLogged, 1) == 0)
             {
                 Entry.Logger.Warn(
-                    $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason} "
-                    + $"supportedGame={GameCompatibility.SupportedGameVersion}.");
+                    $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason}");
             }
 
             return false;

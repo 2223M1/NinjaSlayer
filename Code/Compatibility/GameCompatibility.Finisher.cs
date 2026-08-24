@@ -18,18 +18,15 @@ internal static partial class GameCompatibility
         private static readonly FieldInfo? SingleTarget = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
         private static readonly FieldInfo? AttackerAnimName = AccessTools.Field(typeof(AttackCommand), "_attackerAnimName");
         private static readonly FieldInfo? ShouldPlayAnimation = AccessTools.Field(typeof(AttackCommand), "_shouldPlayAnimation");
+        private static readonly MethodInfo LethalDamage = AccessTools.Method(
+            typeof(Creature),
+            nameof(Creature.LoseHpInternal),
+            [typeof(decimal), typeof(MegaCrit.Sts2.Core.ValueProps.ValueProp)])
+            ?? throw new MissingMethodException(typeof(Creature).FullName, nameof(Creature.LoseHpInternal));
+
         public static bool CanProtectLethalDamage(out string reason)
         {
-            if (!FinisherLethalTargetContract.TryValidate(
-                    out MethodInfo? lethalDamage,
-                    out _,
-                    out reason)
-                || lethalDamage == null)
-            {
-                return false;
-            }
-
-            HarmonyLib.Patches? patchInfo = Harmony.GetPatchInfo(lethalDamage);
+            HarmonyLib.Patches? patchInfo = Harmony.GetPatchInfo(LethalDamage);
             if (patchInfo == null)
             {
                 reason = string.Empty;

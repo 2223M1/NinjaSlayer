@@ -3,15 +3,12 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Hooks;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.Combat;
 
 internal static class VanillaHitPreviewCompatibility
 {
-    public static string SupportedGameVersion => GameCompatibility.SupportedGameVersion;
-
     private static readonly Dictionary<Type, int> HitCounts = new()
     {
         [typeof(TwinStrike)] = 2,

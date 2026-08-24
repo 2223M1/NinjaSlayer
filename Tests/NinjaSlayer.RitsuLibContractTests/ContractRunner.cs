@@ -38,10 +38,7 @@ public partial class ContractRunner : Node
             {
                 RitsuLibFramework.Initialize();
             }
-            VerifySelectedHostContract();
             VerifyPreparedLifecyclePublishers();
-            VerifyOriginalLethalTargetFingerprint();
-            VerifyOriginalPreparedDrawTargetFingerprint();
             VerifyOrobasSeaGlassPatchContract();
             VerifyBlackFlameDamagePatchContract();
             VerifyProductionDynamicPatchContracts();
@@ -117,71 +114,6 @@ public partial class ContractRunner : Node
         string fullPath = Path.GetFullPath(markerPath);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
         System.IO.File.WriteAllText(fullPath, "passed\n");
-    }
-
-    private static void VerifySelectedHostContract()
-    {
-        IReadOnlyDictionary<string, string> metadata = Assembly.GetExecutingAssembly()
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .ToDictionary(attribute => attribute.Key, attribute => attribute.Value ?? string.Empty);
-        string selectedChannel = GetRequiredMetadata(metadata, "NinjaSlayerHostChannel");
-        string selectedApi = GetRequiredMetadata(metadata, "NinjaSlayerGameApiVersion");
-        string selectedPackage = GetRequiredMetadata(metadata, "NinjaSlayerRitsuLibPackageId");
-        string selectedRitsuVersion = GetRequiredMetadata(metadata, "NinjaSlayerRitsuLibVersion");
-
-        Assembly gameAssembly = typeof(Orobas).Assembly;
-        string gameAssemblyVersion = gameAssembly.GetName().Version?.ToString() ?? "unknown";
-        Guid gameMvid = gameAssembly.ManifestModule.ModuleVersionId;
-        GameHostContractProfile[] matchingProfiles = GameHostContractProfile.Supported
-            .Where(profile =>
-                string.Equals(profile.AssemblyVersion, gameAssemblyVersion, StringComparison.Ordinal)
-                && profile.ModuleMvid == gameMvid)
-            .ToArray();
-        Require(matchingProfiles.Length == 1, $"The protected host is unknown: {gameAssemblyVersion}/{gameMvid:D}.");
-        Require(
-            string.Equals(matchingProfiles[0].Channel, selectedChannel, StringComparison.Ordinal),
-            $"Selected channel {selectedChannel} does not match protected host {matchingProfiles[0].Id}.");
-        Require(
-            string.Equals(matchingProfiles[0].GameVersion, selectedApi, StringComparison.Ordinal),
-            $"Selected game API {selectedApi} does not match protected host {matchingProfiles[0].Id}.");
-        Require(
-            string.Equals(selectedPackage, matchingProfiles[0].RitsuLibPackageId, StringComparison.Ordinal),
-            $"Selected RitsuLib package {selectedPackage} does not match {matchingProfiles[0].Id}.");
-        Require(
-            string.Equals(selectedRitsuVersion, matchingProfiles[0].RitsuLibVersion, StringComparison.Ordinal),
-            $"Selected RitsuLib version {selectedRitsuVersion} does not match {matchingProfiles[0].Id}.");
-        Version loadedRitsuVersion = typeof(RitsuLibFramework).Assembly.GetName().Version
-            ?? throw new InvalidOperationException("The loaded RitsuLib assembly has no version.");
-        Require(
-            string.Equals(loadedRitsuVersion.ToString(3), selectedRitsuVersion, StringComparison.Ordinal),
-            $"The contract runner loaded RitsuLib {loadedRitsuVersion}, expected {selectedRitsuVersion}.");
-    }
-
-    private static string GetRequiredMetadata(
-        IReadOnlyDictionary<string, string> metadata,
-        string key)
-    {
-        Require(
-            metadata.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value),
-            $"Missing contract assembly metadata: {key}.");
-        return value!;
-    }
-
-    private static void VerifyOriginalLethalTargetFingerprint()
-    {
-        Require(
-            FinisherLethalTargetContract.TryValidate(out _, out _, out string reason),
-            reason);
-    }
-
-    private static void VerifyOriginalPreparedDrawTargetFingerprint()
-    {
-        Require(
-            PreparedDrawTargetContract.TryValidate(out _, out _, out string reason),
-            reason);
-        Require(
-            PreparedQueueCompatibility.TryValidate(out _, out string queueReason),
-            queueReason);
     }
 
     private static void VerifyPreparedLifecyclePublishers()

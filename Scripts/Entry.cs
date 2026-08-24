@@ -189,7 +189,6 @@ public class Entry
             nameof(RapidCardResolutionPatchGroup),
             patcher =>
             {
-                patcher.RegisterPatches<CombatPresentationPacingPatchGroup>();
                 patcher.RegisterPatches<RapidCardResolutionPatchGroup>();
             },
             () =>

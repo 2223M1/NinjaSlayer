@@ -120,13 +120,6 @@ internal sealed class RapidCardResolutionPatchGroup : IModPatches
     }
 }
 
-internal sealed class CombatPresentationPacingPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-    }
-}
-
 internal sealed class ReporterPassPatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher) => patcher.RegisterPatch<ReporterPassEventOptionPatch>();

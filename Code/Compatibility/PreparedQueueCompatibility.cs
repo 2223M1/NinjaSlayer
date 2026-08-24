@@ -8,57 +8,16 @@ namespace NinjaSlayer.Code.Compatibility;
 
 internal static class PreparedQueueCompatibility
 {
-    private static readonly MethodInfo? AddInternal = AccessTools.Method(
+    private static readonly MethodInfo AddInternal = AccessTools.Method(
         typeof(CardPile),
         nameof(CardPile.AddInternal),
-        [typeof(CardModel), typeof(int), typeof(bool)]);
-    private static readonly MethodInfo? RemoveInternal = AccessTools.Method(
+        [typeof(CardModel), typeof(int), typeof(bool)])
+        ?? throw new MissingMethodException(typeof(CardPile).FullName, nameof(CardPile.AddInternal));
+    private static readonly MethodInfo RemoveInternal = AccessTools.Method(
         typeof(CardPile),
         nameof(CardPile.RemoveInternal),
-        [typeof(CardModel), typeof(bool)]);
-
-    public static bool TryValidate(out PreparedQueueFingerprint fingerprint, out string reason)
-    {
-        if (!MethodBodyFingerprintCapture.TryCapture(
-                AddInternal,
-                out MethodBodyFingerprint add,
-                out reason))
-        {
-            fingerprint = default;
-            return false;
-        }
-        if (!MethodBodyFingerprintCapture.TryCapture(
-                RemoveInternal,
-                out MethodBodyFingerprint remove,
-                out reason))
-        {
-            fingerprint = default;
-            return false;
-        }
-
-        if (!GameHostContractProfile.TryResolve(add, out GameHostContractProfile profile))
-        {
-            fingerprint = default;
-            reason = $"Unsupported CardPile.AddInternal host ({add}).";
-            return false;
-        }
-        if (!StableMethodBodyContract.Matches(add, profile, profile.PreparedQueueAdd))
-        {
-            fingerprint = default;
-            reason = $"CardPile.AddInternal fingerprint mismatch for {profile.Id} ({add}).";
-            return false;
-        }
-        if (!StableMethodBodyContract.Matches(remove, profile, profile.PreparedQueueRemove))
-        {
-            fingerprint = default;
-            reason = $"CardPile.RemoveInternal fingerprint mismatch for {profile.Id} ({remove}).";
-            return false;
-        }
-
-        fingerprint = new PreparedQueueFingerprint(profile.Id, add, remove);
-        reason = string.Empty;
-        return true;
-    }
+        [typeof(CardModel), typeof(bool)])
+        ?? throw new MissingMethodException(typeof(CardPile).FullName, nameof(CardPile.RemoveInternal));
 
     public static bool TryReposition(
         CardPile pile,
@@ -66,12 +25,6 @@ internal static class PreparedQueueCompatibility
         int index,
         out Exception? error)
     {
-        if (AddInternal is null || RemoveInternal is null)
-        {
-            error = new MissingMethodException("Prepared queue methods are unavailable.");
-            return false;
-        }
-
         int originalIndex = FindCardIndex(pile.Cards, card);
         if (originalIndex < 0)
         {
@@ -148,13 +101,4 @@ internal static class PreparedQueueCompatibility
 
     private static bool ContainsReference(IReadOnlyList<CardModel> cards, CardModel card) =>
         FindCardIndex(cards, card) >= 0;
-}
-
-internal readonly record struct PreparedQueueFingerprint(
-    string HostProfile,
-    MethodBodyFingerprint AddInternal,
-    MethodBodyFingerprint RemoveInternal)
-{
-    public override string ToString() =>
-        $"host={HostProfile}, add=[{AddInternal}], remove=[{RemoveInternal}]";
 }

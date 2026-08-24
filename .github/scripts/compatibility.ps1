@@ -14,7 +14,7 @@ function Read-NinjaSlayerCompatibility {
 
     $resolved = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
     $manifest = Get-Content -LiteralPath $resolved -Raw -Encoding utf8 | ConvertFrom-Json
-    if ([int]$manifest.schemaVersion -ne 2) {
+    if ([int]$manifest.schemaVersion -ne 3) {
         throw "Unsupported compatibility schema in $resolved."
     }
     $channelNames = @($manifest.channels.PSObject.Properties.Name)
@@ -56,7 +56,9 @@ function Read-NinjaSlayerCompatibility {
             $null -eq $channel.hostContract) {
             throw "Compatibility channel '$channelName' is incomplete."
         }
-        if ([string]$channel.hostContract.assemblyVersion -notmatch '^\d+\.\d+\.\d+\.\d+$' -or
+        $hostContractProperties = @($channel.hostContract.PSObject.Properties.Name)
+        if ($hostContractProperties.Count -ne 1 -or
+            $hostContractProperties[0] -cne 'moduleMvid' -or
             [string]$channel.hostContract.moduleMvid -notmatch '^[0-9A-Fa-f-]{36}$') {
             throw "Compatibility channel '$channelName' has an invalid host contract identity."
         }

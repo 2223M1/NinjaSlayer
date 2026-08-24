@@ -67,7 +67,6 @@
     <Compile Remove="build\**\*.cs" />
     <Compile Remove="Tests\**\*.cs" />
     <Compile Remove="tools\artifact-contract\**\*.cs" />
-    <Compile Remove="tools\host-contract\**\*.cs" />
     <Compile Remove="tools\loader\**\*.cs" />
     <Compile Remove="tools\smoke-harness\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">

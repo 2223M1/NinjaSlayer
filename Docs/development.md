@@ -119,22 +119,9 @@ This optional path owns dual-host attestations and immutable protected artifacts
 
 There is no single-channel MSBuild Workshop target. The protected Workshop workflow has one production environment and one item id from `eng/compatibility.json`. It downloads the attested `workshop-universal` release asset, verifies the loader, both implementation metadata records, both MVID mappings, the recursive file set, and every SHA-256 before one upload.
 
-## Host contract capture
+## Host compatibility updates
 
-`eng/compatibility.json` is the only handwritten source for active host versions, package ids, distribution channels, and host fingerprints. Update one channel from a read-only game installation with:
-
-```powershell
-pwsh .\tools\Capture-GameHostContract.ps1 `
-  -GameDirectory C:\path\to\game\data_sts2_windows_x86_64 `
-  -Channel preview
-# Review the candidate JSON and layout report, then:
-pwsh .\tools\Capture-GameHostContract.ps1 `
-  -GameDirectory C:\path\to\game\data_sts2_windows_x86_64 `
-  -Channel preview `
-  -Apply
-```
-
-After reviewing the generated diff, run `node .\tools\sync-compatibility.mjs --check`. A host promotion replaces one of the two rolling channel entries; intermediate versions are not retained as active build targets.
+`eng/compatibility.json` is the handwritten source for active host versions, package ids, distribution channels, compile features, runtime assemblies, and exact host MVIDs. A host promotion replaces one of the two rolling channel entries from a real read-only game installation; intermediate versions are not retained as active build targets. After updating it, regenerate derived files, build both channels against their exact host inputs, and run the protected contracts for both hosts.
 
 ## Protected runners
 
