@@ -2,7 +2,6 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Ancients;
-using NinjaSlayer.Code.Patches;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Models;
 
@@ -11,8 +10,7 @@ namespace NinjaSlayer.Content;
 public static class NinjaSlayerContentAccess
 {
     public static bool HasNinjaSlayer(IRunState runState) =>
-        NinjaSlayerPatchCapabilities.CoreContentEnabled
-        && runState.Players.Any(player => player.Character is INinjaSlayerCharacter);
+        runState.Players.Any(player => player.Character is INinjaSlayerCharacter);
 }
 
 [RegisterSingleton]

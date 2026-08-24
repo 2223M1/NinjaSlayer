@@ -2,8 +2,6 @@ using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Audio;
-using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Runs;
 
 namespace NinjaSlayer.Code.Compatibility;
@@ -12,64 +10,12 @@ internal static partial class GameCompatibility
 {
     internal static class BossBurst
     {
-        private static readonly MethodInfo? StartDeathAnim = AccessTools.Method(
-            typeof(NCreature),
-            nameof(NCreature.StartDeathAnim),
-            [typeof(bool)]);
-        private static readonly MethodInfo? UpdateTrack = AccessTools.Method(
-            typeof(NRunMusicController),
-            nameof(NRunMusicController.UpdateTrack),
-            Type.EmptyTypes);
-        private static readonly MethodInfo? CreateSingleDeathVfx = AccessTools.Method(
-            typeof(NMonsterDeathVfx),
-            nameof(NMonsterDeathVfx.Create),
-            [typeof(NCreature), typeof(CancellationToken)]);
-        private static readonly MethodInfo? CreateGroupedDeathVfx = AccessTools.Method(
-            typeof(NMonsterDeathVfx),
-            nameof(NMonsterDeathVfx.Create),
-            [typeof(List<NCreature>)]);
-        private static readonly MethodInfo? PlayDeathVfx = AccessTools.Method(
-            typeof(NMonsterDeathVfx),
-            nameof(NMonsterDeathVfx.PlayVfx),
-            Type.EmptyTypes);
         private static readonly FieldInfo? CurrentTrack = AccessTools.Field(
             typeof(NRunMusicController),
             "_currentTrack");
         private static readonly FieldInfo? FailedTrack = AccessTools.Field(
             typeof(NRunMusicController),
             "_failedTrack");
-
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            RequiredMember(
-                "NCreature.start-death-animation",
-                StartDeathAnim,
-                "NCreature.StartDeathAnim(bool)"),
-            RequiredMember(
-                "NRunMusicController.update-track",
-                UpdateTrack,
-                "NRunMusicController.UpdateTrack()"),
-            RequiredMember(
-                "NMonsterDeathVfx.create-single",
-                CreateSingleDeathVfx,
-                "NMonsterDeathVfx.Create(NCreature, CancellationToken)"),
-            RequiredMember(
-                "NMonsterDeathVfx.create-grouped",
-                CreateGroupedDeathVfx,
-                "NMonsterDeathVfx.Create(List<NCreature>)"),
-            RequiredMember(
-                "NMonsterDeathVfx.play",
-                PlayDeathVfx,
-                "NMonsterDeathVfx.PlayVfx()"),
-            RequiredMember(
-                "NRunMusicController.current-track",
-                CurrentTrack,
-                "NRunMusicController._currentTrack"),
-            RequiredMember(
-                "NRunMusicController.failed-track",
-                FailedTrack,
-                "NRunMusicController._failedTrack")
-        ];
 
         public static bool TryStopBossMusicImmediately(
             NRunMusicController controller,

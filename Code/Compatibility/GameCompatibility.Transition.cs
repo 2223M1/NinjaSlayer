@@ -13,12 +13,6 @@ internal static partial class GameCompatibility
             AccessTools.Property(typeof(NTransition), nameof(NTransition.InTransition));
         private static readonly FieldInfo? Tween = AccessTools.Field(typeof(NTransition), "_tween");
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            RequiredMember("NTransition.in-transition", InTransition, "NTransition.InTransition"),
-            RequiredMember("NTransition.tween", Tween, "NTransition._tween")
-        ];
-
         public static void SetInTransition(NTransition transition, bool value) =>
             InTransition?.SetValue(transition, value);
 

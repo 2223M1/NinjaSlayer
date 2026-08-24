@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -49,7 +50,7 @@ public static class JumpAnimation
         }
 
         Node2D target = NinjaSlayerVisualRig.GetAirborneAnchor(visuals) ?? visuals;
-        bool rapid = NinjaSlayerRapidAnimationCoordinator.IsEnabled;
+        bool rapid = RapidCardPresentationContext.IsActive;
         if (rapid)
         {
             NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, creatureNode);

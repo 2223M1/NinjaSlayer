@@ -14,12 +14,5 @@ internal static partial class GameCompatibility
             "PlayHealVfxAfterFadeIn",
             [typeof(Player), typeof(decimal)]);
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            RequiredMember(
-                "NAncientEventLayout.heal-vfx",
-                AncientHealVfx,
-                "NAncientEventLayout.PlayHealVfxAfterFadeIn")
-        ];
     }
 }

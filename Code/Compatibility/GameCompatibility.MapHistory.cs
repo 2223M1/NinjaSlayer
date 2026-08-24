@@ -11,14 +11,6 @@ internal static partial class GameCompatibility
     {
         private static readonly FieldInfo? RunState = AccessTools.Field(typeof(NMapPoint), "_runState");
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            CapabilityProbe.Optional(
-                "NMapPoint.run-state",
-                RunState != null,
-                RunState != null ? "available" : "NMapPoint._runState is unavailable")
-        ];
-
         public static bool TryGetRunState(NMapPoint point, out RunState? runState)
         {
             runState = RunState?.GetValue(point) as RunState;

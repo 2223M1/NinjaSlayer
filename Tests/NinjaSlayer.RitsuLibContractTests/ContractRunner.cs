@@ -293,10 +293,6 @@ public partial class ContractRunner : Node
 
     private static void VerifyOrobasSeaGlassPatchContract()
     {
-        Require(
-            GameCompatibility.OrobasSeaGlass.GetProbes().All(probe => probe.IsAvailable),
-            "The Orobas Sea Glass target contract is unavailable.");
-
         MethodInfo target = AccessTools.Method(
             typeof(Orobas),
             GameCompatibility.OrobasSeaGlass.TargetMethodName,

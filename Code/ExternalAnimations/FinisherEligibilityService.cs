@@ -33,8 +33,7 @@ internal static class FinisherEligibilityService
         [NotNullWhen(true)] out FinisherSession? session)
     {
         session = null;
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || IsExcludedAttackCard(spec.Card)
+        if (IsExcludedAttackCard(spec.Card)
             || spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
@@ -127,8 +126,7 @@ internal static class FinisherEligibilityService
     {
         session = null;
         List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || owner.Monster is not YamotoKokiMonster
+        if (owner.Monster is not YamotoKokiMonster
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
             || primaryEnemies.Count == 0

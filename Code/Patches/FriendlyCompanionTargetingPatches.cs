@@ -289,7 +289,7 @@ public sealed class FriendlyCompanionControllerCardTargetPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_friendly_companion_controller_card_target";
     public static string Description => "Include companions in controller navigation for safe ally cards.";
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets()
     {

@@ -157,8 +157,7 @@ internal static class NinjaSlayerFinisherCinematic
         out Task<AttackCommand>? result)
     {
         result = null;
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || IsCommandBypassed(command)
+        if (IsCommandBypassed(command)
             || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
             || FinisherEligibilityService.IsExcludedAttackCard(spec.Card))
         {
@@ -184,8 +183,7 @@ internal static class NinjaSlayerFinisherCinematic
         out Task<IEnumerable<DamageResult>>? result)
     {
         result = null;
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || DirectDamageBypassDepth.Value > 0
+        if (DirectDamageBypassDepth.Value > 0
             || dealer?.Player?.Character is not INinjaSlayerCharacter
             || cardSource?.Type != CardType.Attack
             || cardPlay == null

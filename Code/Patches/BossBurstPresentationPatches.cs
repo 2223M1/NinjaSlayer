@@ -29,11 +29,6 @@ public sealed class BossBurstCombatEndMusicPatch : IPatchMethod
     [HarmonyPriority(Priority.First)]
     public static bool Prefix(NRunMusicController __instance)
     {
-        if (!NinjaSlayerPatchCapabilities.BossBurstPresentationEnabled)
-        {
-            return true;
-        }
-
         try
         {
             BossBurstCombatEndMusicDecision decision =
@@ -101,11 +96,6 @@ public sealed class BossBurstSingleDeathFadePatch : IPatchMethod
 
     public static bool Prefix(NCreature creatureNode, ref NMonsterDeathVfx? __result)
     {
-        if (!NinjaSlayerPatchCapabilities.BossBurstPresentationEnabled)
-        {
-            return true;
-        }
-
         try
         {
             if (!BossBurstParticipationRegistry.ShouldSuppressDeathFade(creatureNode))
@@ -158,11 +148,6 @@ public sealed class BossBurstGroupedDeathFadePatch : IPatchMethod
     public static bool Prefix(ref List<NCreature> creatureNodes, out bool __state)
     {
         __state = false;
-        if (!NinjaSlayerPatchCapabilities.BossBurstPresentationEnabled)
-        {
-            return true;
-        }
-
         try
         {
             List<NCreature> remaining = creatureNodes
@@ -244,8 +229,7 @@ public sealed class BossBurstDeathFadePlaybackPatch : IPatchMethod
 
     public static bool Prefix(NMonsterDeathVfx __instance, ref Task __result)
     {
-        if (!NinjaSlayerPatchCapabilities.BossBurstPresentationEnabled
-            || !BossBurstDeathFadeRegistry.ConsumePlaybackSuppression(__instance))
+        if (!BossBurstDeathFadeRegistry.ConsumePlaybackSuppression(__instance))
         {
             return true;
         }

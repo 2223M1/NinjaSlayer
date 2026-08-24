@@ -44,33 +44,6 @@ internal static class FinisherSessionRegistry
         }
     }
 
-    internal static bool HasRegisteredSession()
-    {
-        FinisherSession? staleSession = null;
-        lock (SessionRegistrySync)
-        {
-            if (_active == null && _pendingAfterCardPlayed == null)
-            {
-                return false;
-            }
-
-            NCombatRoom? currentRoom = NCombatRoom.Instance;
-            if (currentRoom != null && ReferenceEquals(_epochRoom, currentRoom))
-            {
-                return true;
-            }
-
-            staleSession = DetachRegisteredSession(
-                combatState: null,
-                currentRoom);
-        }
-
-        ReleaseStaleSession(
-            staleSession,
-            "The active combat room changed before this finisher completed.");
-        return false;
-    }
-
     internal static bool HasRegisteredSessionForCombat(
         ICombatState combatState,
         NCombatRoom room)

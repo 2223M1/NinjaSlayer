@@ -52,25 +52,6 @@ internal static partial class GameCompatibility
             nameof(CardCmd.Exhaust),
             [typeof(PlayerChoiceContext), typeof(CardModel), typeof(bool), typeof(bool)]);
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes()
-        {
-            bool stateMachinesMatch = TryResolveStateMachines(out _, out string reason);
-            return
-            [
-                RequiredMember("rapid-card.custom-wait", CustomWait, "Cmd.CustomScaledWait"),
-                RequiredMember("rapid-card.await-tween", AwaitTween, "TweenHelper.AwaitFinished"),
-                RequiredMember("rapid-card.add", AddCard, "CardPileCmd.Add"),
-                RequiredMember("rapid-card.remove", RemoveFromCombat, "CardPileCmd.RemoveFromCombat"),
-                RequiredMember("rapid-card.exhaust", Exhaust, "CardCmd.Exhaust"),
-                RequiredMember("rapid-card.power-fly", PowerFly, "CardModel.PlayPowerCardFlyVfx"),
-                RequiredMember("rapid-card.multi-play", MultiPlay, "NCard.AnimMultiCardPlay"),
-                CapabilityProbe.Required(
-                    "rapid-card.state-machines",
-                    stateMachinesMatch,
-                    stateMachinesMatch ? "validated" : reason)
-            ];
-        }
-
         public static bool TryResolveStateMachines(
             out RuntimePatchTarget[] targets,
             out string reason)

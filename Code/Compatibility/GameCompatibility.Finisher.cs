@@ -18,37 +18,6 @@ internal static partial class GameCompatibility
         private static readonly FieldInfo? SingleTarget = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
         private static readonly FieldInfo? AttackerAnimName = AccessTools.Field(typeof(AttackCommand), "_attackerAnimName");
         private static readonly FieldInfo? ShouldPlayAnimation = AccessTools.Field(typeof(AttackCommand), "_shouldPlayAnimation");
-        private static readonly MethodInfo? StartDeathAnim = AccessTools.Method(
-            typeof(NCreature),
-            nameof(NCreature.StartDeathAnim),
-            [typeof(bool)]);
-
-        public static IReadOnlyList<CapabilityProbe> GetProbes()
-        {
-            bool lethalTargetAvailable = CanProtectLethalDamage(out string lethalReason);
-            return
-            [
-                RequiredMember("AttackCommand.damage-per-hit", DamagePerHit, "AttackCommand._damagePerHit"),
-                RequiredMember("AttackCommand.calculated-damage", CalculatedDamage, "AttackCommand._calculatedDamageVar"),
-                RequiredMember("AttackCommand.hit-count", HitCount, "AttackCommand._hitCount"),
-                RequiredMember("AttackCommand.single-target", SingleTarget, "AttackCommand._singleTarget"),
-                RequiredMember("AttackCommand.attacker-animation", AttackerAnimName, "AttackCommand._attackerAnimName"),
-                RequiredMember("AttackCommand.should-play-animation", ShouldPlayAnimation, "AttackCommand._shouldPlayAnimation"),
-                CapabilityProbe.Required(
-                    "Creature.lethal-damage-contract",
-                    lethalTargetAvailable,
-                    lethalTargetAvailable ? "validated" : lethalReason)
-            ];
-        }
-
-        public static IReadOnlyList<CapabilityProbe> GetPresentationProbes() =>
-        [
-            RequiredMember(
-                "NCreature.start-death-animation",
-                StartDeathAnim,
-                "NCreature.StartDeathAnim(bool)")
-        ];
-
         public static bool CanProtectLethalDamage(out string reason)
         {
             if (!FinisherLethalTargetContract.TryValidate(
@@ -110,8 +79,9 @@ internal static partial class GameCompatibility
                 || AttackerAnimName == null
                 || ShouldPlayAnimation == null)
             {
-                state = default;
-                return false;
+                throw new MissingFieldException(
+                    typeof(AttackCommand).FullName,
+                    "Required finisher command fields");
             }
 
             state = new AttackCommandState(

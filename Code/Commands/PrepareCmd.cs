@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Code.Compatibility;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Scripts;
 
@@ -13,8 +12,7 @@ internal static class PrepareCmd
 {
     public static bool CanPrepare(CardModel card)
     {
-        return NinjaSlayerPatchCapabilities.PreparedGameplayEnabled
-            && card.IsMutable
+        return card.IsMutable
             && card.IsInCombat
             && !card.HasBeenRemovedFromState
             && card.Owner?.PlayerCombatState is not null
@@ -23,8 +21,7 @@ internal static class PrepareCmd
 
     public static bool IsPrepared(CardModel card) => card.Affliction is PreparedAffliction;
 
-    public static bool ShouldReserveFromNormalDraw(CardModel card) =>
-        NinjaSlayerPatchCapabilities.PreparedGameplayEnabled && IsPrepared(card);
+    public static bool ShouldReserveFromNormalDraw(CardModel card) => IsPrepared(card);
 
     public static async Task Apply(CardModel card)
     {

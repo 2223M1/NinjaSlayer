@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Telemetry;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib;
@@ -76,11 +75,6 @@ public static class NinjaSlayerBalanceTelemetry
 
     private static bool ShouldCaptureRunHistory(RunEndedEvent evt)
     {
-        if (!NinjaSlayerPatchCapabilities.TelemetryIdentityEnabled)
-        {
-            return false;
-        }
-
         return IdentityTracker.TryCaptureCompletedRun(
             evt.Run,
             evt.IsAbandoned,

@@ -17,12 +17,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
-    <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityRegistry.cs" Link="NinjaSlayerCapabilityRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.cs" Link="GameHostContractProfile.cs" />
     <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.g.cs" Link="GameHostContractProfile.g.cs" />
     <Compile Include="..\..\Code\Compatibility\StableMethodBodyContract.cs" Link="StableMethodBodyContract.cs" />
-    <Compile Include="..\..\Code\Diagnostics\NinjaSlayerRuntimeHealthModel.cs" Link="NinjaSlayerRuntimeHealthModel.cs" />
     <Compile Include="..\..\Code\Combat\BoundedMemoSearch.cs" Link="BoundedMemoSearch.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameDamageReceiverSet.cs" Link="BlackFlameDamageReceiverSet.cs" />
     <Compile Include="..\..\Code\Combat\DarkNinjaCombatMath.cs" Link="DarkNinjaCombatMath.cs" />

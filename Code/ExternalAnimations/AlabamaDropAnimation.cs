@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -104,7 +105,7 @@ public static class AlabamaDropAnimation
         targetBody = targetRig.Body;
         targetBodyProcessMode = targetRig.Body.ProcessMode;
         var ownerRestoreSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
-        bool rapid = NinjaSlayerRapidAnimationCoordinator.IsEnabled;
+        bool rapid = RapidCardPresentationContext.IsActive;
         if (rapid)
         {
             NinjaSlayerRapidAnimationCoordinator.PrepareAction(owner, ownerRig.CreatureNode);

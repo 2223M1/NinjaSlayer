@@ -26,8 +26,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
     public static bool Prefix(float time, string transitionPath, NTransition __instance, ref Task __result, CancellationToken? cancelToken = null)
     {
-        if (!NinjaSlayerPatchCapabilities.TransitionEnabled ||
-            (!NinjaSlayerTransitionGate.Pending && !NinjaSlayerTransitionPaths.IsModPath(transitionPath)))
+        if (!NinjaSlayerTransitionGate.Pending && !NinjaSlayerTransitionPaths.IsModPath(transitionPath))
         {
             return true;
         }
@@ -48,19 +47,10 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         float delay = wasPending
             ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
             : NinjaSlayerAudio.SaveLoadStartDelaySeconds;
-        if (NinjaSlayerPatchCapabilities.TransitionPresentationEnabled)
-        {
-            __result = WaitForViewReadyAndLoadDelayAsync(
-                session,
-                delay,
-                cancelToken ?? CancellationToken.None);
-        }
-        else
-        {
-            __result = WaitForLoadDelayAsync(
-                delay,
-                cancelToken ?? CancellationToken.None);
-        }
+        __result = WaitForViewReadyAndLoadDelayAsync(
+            session,
+            delay,
+            cancelToken ?? CancellationToken.None);
         return false;
     }
 
@@ -70,16 +60,6 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         CancellationToken cancellationToken)
     {
         await session.WaitForViewReadyAsync(cancellationToken);
-        if (delay > 0f)
-        {
-            await Cmd.Wait(delay, cancellationToken);
-        }
-    }
-
-    private static async Task WaitForLoadDelayAsync(
-        float delay,
-        CancellationToken cancellationToken)
-    {
         if (delay > 0f)
         {
             await Cmd.Wait(delay, cancellationToken);
@@ -96,10 +76,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
             return;
         }
 
-        if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
-        {
-            session.BeginLoadSmoothing();
-        }
+        session.BeginLoadSmoothing();
         NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
         await PlayOverlayAsync(session, overlay, cancelToken);
     }

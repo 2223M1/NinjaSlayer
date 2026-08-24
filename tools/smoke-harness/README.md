@@ -10,14 +10,14 @@ The fresh process uses the original `AutoSlayer` for menu, reward, and map navig
 
 1. Plays `ReadyBlade` and verifies Prepared is created.
 2. Advances a turn and verifies Prepared does not remain on a card outside the draw pile.
-3. Plays a non-lethal `TornadoFist` and verifies all X-attack ownership scopes return idle.
+3. Plays a non-lethal `TornadoFist` and verifies combat continues, the target survives, and the player returns to its combat position.
 4. Instantiates Yamoto Koki's origami-missile scene and verifies its native node resolves as `SpineSprite`.
 5. Exercises Dark Strike normal hit, full block, evasion, mixed sequential targets, injected hook failure, and lethal Thorns retaliation.
-6. Reduces the final enemy to a deterministic lethal state, plays `TornadoFist`, and verifies a Finisher completes.
+6. Reduces the final enemy to a deterministic lethal state, plays `TornadoFist`, and verifies the target reaches 0 HP, no hittable enemy remains, and combat ends.
 7. Holds AutoSlay at the first map, saves, and exits with code `20`.
-8. A second process clicks Continue, verifies runtime ownership is idle, abandons the run, returns to the main menu, and exits `0`.
+8. A second process clicks Continue, verifies the saved run and canonical character progress, abandons the run, returns to the main menu, and exits `0`.
 
-Failures capture a screenshot when a viewport exists. JSONL checkpoints include only bounded runtime health counters and capability states; they do not expose mutable game objects. The attestation records the requested bundle SemVer, both the pinned RitsuLib compile baseline and the actual Workshop runtime version, plus the SHA-256 of the universal bundle's checksum manifest. Stable and preview attestations must carry the same bundle identity. The launcher also rejects loader, managed/native library, NinjaSlayer resource, and Spine errors found in the game logs.
+Failures capture a screenshot when a viewport exists. JSONL checkpoints include only bounded player-observable assertions and identifiers; they do not expose mutable game objects. The attestation records the requested bundle SemVer, both the pinned RitsuLib compile baseline and the actual Workshop runtime version, plus the SHA-256 of the universal bundle's checksum manifest. Stable and preview attestations must carry the same bundle identity. The launcher also rejects loader, managed/native library, NinjaSlayer resource, and Spine errors found in the game logs.
 
 ## Isolation
 
@@ -49,7 +49,7 @@ The workflow and SmokeDriver come from protected `main`; the candidate checkout 
 
 ## Periodic Full AutoSlay
 
-Dispatch the same workflow with `mode=FullAutoSlay` for the periodic/manual advisory run. This mode forces NinjaSlayer selection, otherwise leaves the original AutoSlayer room and combat handlers intact, and checks runtime ownership immediately before AutoSlayer exits. Its one-hour default timeout and unrelated vanilla randomness make it unsuitable for every stable release.
+Dispatch the same workflow with `mode=FullAutoSlay` for the periodic/manual advisory run. This mode forces NinjaSlayer selection, otherwise leaves the original AutoSlayer room and combat handlers intact, and verifies both tutorial and host-filtered unknown-room paths before AutoSlayer exits. Its one-hour default timeout and unrelated vanilla randomness make it unsuitable for every stable release.
 
 Multiplayer smoke remains deferred until the single-player harness has stable field history.
 

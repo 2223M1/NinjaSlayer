@@ -30,48 +30,6 @@ internal static partial class GameCompatibility
         public static MethodInfo? SafeCollect { get; } = AccessTools.Method(
             typeof(NinjaSlayerTransitionLoadSmoothing),
             nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
-        public static MethodInfo? AncientInitializeVisuals { get; } =
-            AccessTools.Method(typeof(MegaCrit.Sts2.Core.Nodes.Events.NAncientEventLayout), "InitializeVisuals");
-
-        public static IReadOnlyList<CapabilityProbe> GetProbes()
-        {
-            bool stateMachinesAvailable = TryResolvePreloadStateMachines(out _, out string stateMachineReason);
-            return
-            [
-                RequiredMember("AssetLoadingSession.loading", Loading, "AssetLoadingSession._loading"),
-                RequiredMember("Queue.loading-count", LoadingCount, "Queue<string>.Count"),
-                RequiredMember("AssetLoadingSession.finalizing", Finalizing, "AssetLoadingSession._finalizing"),
-                RequiredMember("AssetLoadingSession.add-to-cache", AddToCache, "AssetLoadingSession.AddToCache"),
-                RequiredMember(
-                    "AssetLoadingSession.finalize-loading",
-                    FinalizeLoading,
-                    "AssetLoadingSession.FinalizeLoading"),
-                RequiredMember(
-                    "AssetLoadingSession.process-loading-queue",
-                    ProcessLoadingQueue,
-                    "AssetLoadingSession.ProcessLoadingQueue"),
-                RequiredMember(
-                    "TransitionLoadSmoothing.concurrent-load-limit",
-                    ConcurrentAssetLoadLimit,
-                    "NinjaSlayerTransitionLoadSmoothing.GetConcurrentAssetLoadLimit"),
-                RequiredMember("GC.collect", GcCollect, "System.GC.Collect()"),
-                RequiredMember(
-                    "TransitionLoadSmoothing.safe-collect",
-                    SafeCollect,
-                    "NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe"),
-                CapabilityProbe.Required(
-                    "PreloadManager.state-machines",
-                    stateMachinesAvailable,
-                    stateMachinesAvailable ? "validated" : stateMachineReason),
-                CapabilityProbe.Optional(
-                    "NAncientEventLayout.initialize-visuals",
-                    AncientInitializeVisuals != null,
-                    AncientInitializeVisuals != null
-                        ? "available"
-                        : "NAncientEventLayout.InitializeVisuals is unavailable")
-            ];
-        }
-
         public static bool TryGetFinalizing(
             AssetLoadingSession session,
             [NotNullWhen(true)] out Queue<string>? finalizing)

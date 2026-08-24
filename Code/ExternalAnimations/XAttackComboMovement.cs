@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -30,7 +31,7 @@ public static class XAttackComboMovement
             return;
         }
 
-        if (NinjaSlayerRapidAnimationCoordinator.IsEnabled
+        if (RapidCardPresentationContext.IsActive
             && creature.Player?.Character is INinjaSlayerCharacter)
         {
             ComboStates[creature] = new ComboMovementState(
@@ -110,7 +111,7 @@ public static class XAttackComboMovement
             return;
         }
 
-        if (NinjaSlayerRapidAnimationCoordinator.IsEnabled
+        if (RapidCardPresentationContext.IsActive
             && creature.Player?.Character is INinjaSlayerCharacter)
         {
             if (ComboStates.Remove(creature, out ComboMovementState? rapidState))

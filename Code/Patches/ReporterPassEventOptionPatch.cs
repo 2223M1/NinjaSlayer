@@ -22,7 +22,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 
     public static string Description => "Inject ReporterPassRelic record option into events.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(EventModel), "SetEventState", [typeof(LocString), typeof(IEnumerable<EventOption>)])];
@@ -76,7 +76,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
         }
 
         // ponytail: protected finish API; reflection avoids patching every event subclass.
-        GameCompatibility.ReporterPass.TryFinish(
+        GameCompatibility.ReporterPass.Finish(
             eventModel,
             new LocString("relics", $"{RelicLocPrefix}.record.done"));
         return Task.CompletedTask;

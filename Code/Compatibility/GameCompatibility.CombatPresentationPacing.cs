@@ -19,19 +19,6 @@ internal static partial class GameCompatibility
             nameof(Cmd.CustomScaledWait),
             [typeof(float), typeof(float), typeof(bool), typeof(CancellationToken)]);
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes()
-        {
-            bool stateMachinesMatch = TryResolveStateMachines(out _, out string reason);
-            return
-            [
-                RequiredMember("combat-pacing.custom-wait", CustomWait, "Cmd.CustomScaledWait"),
-                CapabilityProbe.Required(
-                    "combat-pacing.state-machines",
-                    stateMachinesMatch,
-                    stateMachinesMatch ? "validated" : reason)
-            ];
-        }
-
         public static bool TryResolveStateMachines(
             out RuntimePatchTarget[] targets,
             out string reason)

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using MegaCrit.Sts2.Core.Logging;
@@ -26,7 +25,8 @@ namespace NinjaSlayer.Scripts;
 public class Entry
 {
     public static readonly Logger Logger = RitsuLibFramework.CreateLogger(NinjaSlayerIds.ModId);
-    private static CoreActivationLease? _coreActivation;
+    private static IDisposable? _runRulesSubscription;
+    private static PreparedSafetyLifecycle? _preparedSafetyLifecycle;
     private static readonly Type[] GodotSceneScriptTypes =
     [
         typeof(NinjaSlayerSpinPivot),
@@ -45,20 +45,39 @@ public class Entry
         Log.Info("Initializing NinjaSlayer...");
 
         var assembly = Assembly.GetExecutingAssembly();
-        if (!TryActivateCoreCapabilities(out CoreActivationLease? activation, out string failedCapabilityId))
-        {
-            PublishCapabilityStatus(
-                NinjaSlayerCapabilityIds.CoreContent,
-                CapabilityStatusEvaluator.DisabledByDependency(failedCapabilityId));
-            Logger.Error(
-                $"NinjaSlayer content registration was skipped because required capability " +
-                $"'{failedCapabilityId}' is unavailable.");
-            return;
-        }
-
-        _coreActivation = activation;
+        ModPatcher requiredPatcher = RitsuLibFramework.CreatePatcher(
+            NinjaSlayerIds.ModId,
+            nameof(Entry));
         try
         {
+            requiredPatcher.RegisterPatches<GameplayPatchGroup>();
+            requiredPatcher.RegisterPatches<OrobasSeaGlassPatchGroup>();
+            requiredPatcher.RegisterPatches<CardResolutionPatchGroup>();
+            requiredPatcher.RegisterPatches<PreparedGameplayPatchGroup>();
+            requiredPatcher.RegisterPatches<ReporterPassPatchGroup>();
+            requiredPatcher.RegisterPatches<NancyCandidateFilterPatchGroup>();
+            requiredPatcher.RegisterPatches<FinisherCorePatchGroup>();
+            requiredPatcher.RegisterPatches<FeedbackPatchGroup>();
+            requiredPatcher.RegisterPatches<TelemetryIdentityPatchGroup>();
+
+            bool requiredPatchFailure = false;
+            bool requiredPatchesApplied = RitsuLibFramework.ApplyRequiredPatcher(
+                requiredPatcher,
+                disableMod: () => requiredPatchFailure = true,
+                failureMessage: "Required NinjaSlayer patches failed; initialization will abort.");
+            if (!requiredPatchesApplied || requiredPatchFailure)
+            {
+                LogPatchFailure(requiredPatcher);
+                throw new InvalidOperationException("Required NinjaSlayer patch installation failed.");
+            }
+
+            if (!GameCompatibility.Finisher.CanProtectLethalDamage(out string finisherReason))
+            {
+                throw new InvalidOperationException(
+                    $"Required NinjaSlayer finisher contract is unavailable: {finisherReason}");
+            }
+
+            _preparedSafetyLifecycle = PreparedSafetyLifecycle.Subscribe();
             RitsuLibFramework.EnsureGodotScriptsRegistered(assembly, Logger);
             ModTypeDiscoveryHub.RegisterModAssembly(NinjaSlayerIds.ModId, assembly);
 
@@ -67,10 +86,7 @@ public class Entry
                 NinjaSlayerSettings.Register(NinjaSlayerIds.ModId);
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
             }
-            activation.Track(
-                NinjaSlayerCapabilityIds.CoreContent,
-                NinjaSlayerRunRulesRuntime.Subscribe(),
-                installedCount: 1);
+            _runRulesSubscription = NinjaSlayerRunRulesRuntime.Subscribe();
 
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
@@ -80,49 +96,20 @@ public class Entry
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, CollapseFistRedesignV1>();
-        }
-        catch (Exception exception)
-        {
-            activation.Rollback(NinjaSlayerCapabilityIds.CoreContent);
-            _coreActivation = null;
-            PublishCapabilityStatus(
-                NinjaSlayerCapabilityIds.CoreContent,
-                new CapabilityStatus(
-                    CapabilityState.Disabled,
-                    $"Content registration failed before activation completed: {exception.Message}",
-                    0));
-            Logger.Error($"NinjaSlayer content registration failed and core patches were rolled back: {exception}");
-            return;
-        }
-
-        PublishCapabilityStatus(
-            NinjaSlayerCapabilityIds.CoreContent,
-            new CapabilityStatus(
-                CapabilityState.Enabled,
-                "All required patches, lifecycle subscriptions, and content registrations succeeded.",
-                activation.InstalledPatchCount));
-
-        InstallOptionalBaseCapabilities();
-        InstallRapidCardResolutionCapabilities();
-        InstallFinisherCapability();
-        InstallTransitionCapability();
-        InstallFeedbackCapability();
-        try
-        {
             NinjaSlayerBalanceTelemetry.Register();
-            InstallCapability<TelemetryIdentityPatchGroup>(NinjaSlayerCapabilityIds.TelemetryIdentity);
         }
         catch (Exception exception)
         {
-            PublishCapabilityStatus(
-                NinjaSlayerCapabilityIds.TelemetryIdentity,
-                new CapabilityStatus(
-                    CapabilityState.Disabled,
-                    $"Telemetry registration failed: {exception.Message}",
-                    0));
-            Logger.Warn($"NinjaSlayer telemetry registration failed; identity patches were skipped: {exception}");
+            _runRulesSubscription?.Dispose();
+            _runRulesSubscription = null;
+            _preparedSafetyLifecycle?.Dispose();
+            _preparedSafetyLifecycle = null;
+            TryRollbackPatcher(requiredPatcher, nameof(Entry));
+            Logger.Error($"NinjaSlayer required initialization failed and patches were rolled back: {exception}");
+            throw;
         }
 
+        InstallOptionalPresentations();
         RegisterFmodBanksIfPresent();
         Log.Info("NinjaSlayer initialized.");
     }
@@ -147,316 +134,84 @@ public class Entry
             .AddStartingCard<TurtleShellRedesignV1>(1, 3);
     }
 
-    private static bool TryActivateCoreCapabilities(
-        [NotNullWhen(true)] out CoreActivationLease? activation,
-        out string failedCapabilityId)
+    private static void InstallOptionalPresentations()
     {
-        var candidate = new CoreActivationLease();
-        failedCapabilityId = NinjaSlayerCapabilityIds.Gameplay;
-        IReadOnlyList<CapabilityProbe> gameplayProbes = GameCompatibility.MapHistory.GetProbes()
-            .Concat(GameCompatibility.EnemyAttackDodge.GetProbes())
-            .Concat(GameCompatibility.EventCombat.GetProbes())
-            .ToArray();
-        if (!TryInstallRequiredCapability<GameplayPatchGroup>(
-                failedCapabilityId,
-                candidate,
-                gameplayProbes))
-        {
-            candidate.Rollback(failedCapabilityId);
-            activation = null;
-            return false;
-        }
-
-        failedCapabilityId = NinjaSlayerCapabilityIds.OrobasSeaGlass;
-        if (!TryInstallRequiredCapability<OrobasSeaGlassPatchGroup>(
-                failedCapabilityId,
-                candidate,
-                GameCompatibility.OrobasSeaGlass.GetProbes()))
-        {
-            candidate.Rollback(failedCapabilityId);
-            activation = null;
-            return false;
-        }
-
-        failedCapabilityId = NinjaSlayerCapabilityIds.CardResolution;
-        if (!TryInstallRequiredCapability<CardResolutionPatchGroup>(failedCapabilityId, candidate))
-        {
-            candidate.Rollback(failedCapabilityId);
-            activation = null;
-            return false;
-        }
-
-        failedCapabilityId = NinjaSlayerCapabilityIds.PreparedSafety;
-        try
-        {
-            PreparedSafetyLifecycle preparedSafety = PreparedSafetyLifecycle.Subscribe();
-            candidate.Track(failedCapabilityId, preparedSafety, preparedSafety.SubscriptionCount);
-            PublishCapabilityStatus(
-                failedCapabilityId,
-                new CapabilityStatus(
-                    CapabilityState.Enabled,
-                    $"All {preparedSafety.SubscriptionCount} lifecycle subscriptions installed.",
-                    preparedSafety.SubscriptionCount));
-        }
-        catch (Exception exception)
-        {
-            PublishCapabilityStatus(
-                failedCapabilityId,
-                new CapabilityStatus(
-                    CapabilityState.Disabled,
-                    $"Lifecycle subscription failed and was rolled back: {exception.Message}",
-                    0));
-            candidate.Rollback(failedCapabilityId);
-            activation = null;
-            return false;
-        }
-
-        failedCapabilityId = NinjaSlayerCapabilityIds.PreparedGameplay;
-        if (!TryInstallRequiredCapability<PreparedGameplayPatchGroup>(
-                failedCapabilityId,
-                candidate,
-                GameCompatibility.Prepared.GetGameplayProbes()))
-        {
-            candidate.Rollback(failedCapabilityId);
-            activation = null;
-            return false;
-        }
-
-        activation = candidate;
-        return true;
-    }
-
-    private static void InstallOptionalBaseCapabilities()
-    {
-        InstallCapability<ReporterPassPatchGroup>(
-            NinjaSlayerCapabilityIds.ReporterPass,
-            GameCompatibility.ReporterPass.GetProbes());
-        InstallCapability<NancyCandidateFilterPatchGroup>(NinjaSlayerCapabilityIds.NancyCandidateFilter);
-        InstallCapability<KaratePreviewPatchGroup>(
-            NinjaSlayerCapabilityIds.KaratePreview,
-            GameCompatibility.KarateHealthBar.GetProbes());
-        InstallCapability<TypographyPatchGroup>(
-            NinjaSlayerCapabilityIds.Typography,
-            GameCompatibility.Typography.GetProbes());
-        InstallCapability<ChadoPresentationPatchGroup>(NinjaSlayerCapabilityIds.ChadoPresentation);
-        InstallCapability<CinematicInfrastructurePatchGroup>(NinjaSlayerCapabilityIds.CinematicInfrastructure);
-        InstallCapability<BossBurstPresentationPatchGroup>(
-            NinjaSlayerCapabilityIds.BossBurstPresentation,
-            GameCompatibility.BossBurst.GetProbes());
-
-        if (NinjaSlayerPatchCapabilities.PreparedGameplayEnabled)
-        {
-            InstallCapability<PreparedUiPatchGroup>(
-                NinjaSlayerCapabilityIds.PreparedUi,
-                GameCompatibility.Prepared.GetUiProbes());
-        }
-        else
-        {
-            DisableByDependency(NinjaSlayerCapabilityIds.PreparedUi, NinjaSlayerCapabilityIds.PreparedGameplay);
-        }
-    }
-
-    private static void InstallRapidCardResolutionCapabilities()
-    {
-        CapabilityStatus pacing = InstallCapability<CombatPresentationPacingPatchGroup>(
-            NinjaSlayerCapabilityIds.CombatPresentationPacing,
-            GameCompatibility.CombatPresentationPacing.GetProbes(),
-            CombatPresentationPacingPatch.CreateDynamicPatches);
-        if (!pacing.IsOperational)
-        {
-            DisableByDependency(
-                NinjaSlayerCapabilityIds.RapidCardResolution,
-                NinjaSlayerCapabilityIds.CombatPresentationPacing);
-            return;
-        }
-
-        InstallCapability<RapidCardResolutionPatchGroup>(
-            NinjaSlayerCapabilityIds.RapidCardResolution,
-            GameCompatibility.RapidCardResolution.GetProbes(),
-            RapidCardResolutionStateMachinePatch.CreateDynamicPatches);
-    }
-
-    private static void InstallFinisherCapability()
-    {
-        CapabilityStatus finisher = InstallCapability<FinisherCorePatchGroup>(
-            NinjaSlayerCapabilityIds.FinisherCore,
-            GameCompatibility.Finisher.GetProbes());
-
-        if (!finisher.IsOperational)
-        {
-            DisableByDependency(
-                NinjaSlayerCapabilityIds.FinisherPresentation,
-                NinjaSlayerCapabilityIds.FinisherCore);
-            return;
-        }
-
-        InstallCapability<FinisherPresentationPatchGroup>(
-            NinjaSlayerCapabilityIds.FinisherPresentation,
-            GameCompatibility.Finisher.GetPresentationProbes());
-    }
-
-    private static void InstallTransitionCapability()
-    {
-        CapabilityStatus transition = InstallCapability<TransitionCorePatchGroup>(
-            NinjaSlayerCapabilityIds.TransitionCore,
-            GameCompatibility.Transition.GetProbes());
-
-        if (!transition.IsOperational)
-        {
-            DisableByDependency(
-                NinjaSlayerCapabilityIds.TransitionPresentation,
-                NinjaSlayerCapabilityIds.TransitionCore);
-            DisableByDependency(
-                NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
-                NinjaSlayerCapabilityIds.TransitionCore);
-            return;
-        }
-
-        InstallCapability<TransitionPresentationPatchGroup>(
-            NinjaSlayerCapabilityIds.TransitionPresentation,
-            GameCompatibility.TransitionPresentation.GetProbes());
-        InstallCapability<TransitionSmoothingPatchGroup>(
-            NinjaSlayerCapabilityIds.TransitionLoadSmoothing,
-            GameCompatibility.AssetLoading.GetProbes(),
+        TryInstallOptionalPresentation(
+            nameof(KaratePreviewPatchGroup),
+            patcher => patcher.RegisterPatches<KaratePreviewPatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(TypographyPatchGroup),
+            patcher => patcher.RegisterPatches<TypographyPatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(ChadoPresentationPatchGroup),
+            patcher => patcher.RegisterPatches<ChadoPresentationPatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(CinematicInfrastructurePatchGroup),
+            patcher => patcher.RegisterPatches<CinematicInfrastructurePatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(BossBurstPresentationPatchGroup),
+            patcher => patcher.RegisterPatches<BossBurstPresentationPatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(PreparedUiPatchGroup),
+            patcher => patcher.RegisterPatches<PreparedUiPatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(RapidCardResolutionPatchGroup),
+            patcher =>
+            {
+                patcher.RegisterPatches<CombatPresentationPacingPatchGroup>();
+                patcher.RegisterPatches<RapidCardResolutionPatchGroup>();
+            },
+            () =>
+            [
+                .. CombatPresentationPacingPatch.CreateDynamicPatches(),
+                .. RapidCardResolutionStateMachinePatch.CreateDynamicPatches()
+            ]);
+        TryInstallOptionalPresentation(
+            nameof(FinisherPresentationPatchGroup),
+            patcher => patcher.RegisterPatches<FinisherPresentationPatchGroup>());
+        TryInstallOptionalPresentation(
+            nameof(TransitionCorePatchGroup),
+            patcher =>
+            {
+                patcher.RegisterPatches<TransitionCorePatchGroup>();
+                patcher.RegisterPatches<TransitionPresentationPatchGroup>();
+                patcher.RegisterPatches<TransitionSmoothingPatchGroup>();
+            },
             NinjaSlayerTransitionGcDeferralPatch.CreateDynamicPatches);
     }
 
-    private static bool TryInstallRequiredCapability<TPatchGroup>(
-        string capabilityId,
-        CoreActivationLease activation,
-        IReadOnlyList<CapabilityProbe>? probes = null)
-        where TPatchGroup : IModPatches
-    {
-        CapabilityProbe[] probeSnapshot = probes?.ToArray() ?? [];
-        if (probeSnapshot.Any(probe => probe.IsRequired && !probe.IsAvailable))
-        {
-            CapabilityStatus disabled = CapabilityStatusEvaluator.EvaluatePatchResult(
-                probeSnapshot,
-                patchAllSucceeded: false,
-                registeredPatchCount: 0,
-                appliedPatchCount: 0);
-            PublishCapabilityStatus(capabilityId, disabled);
-            return false;
-        }
-
-        ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, capabilityId);
-        bool succeeded = false;
-        try
-        {
-            patcher.RegisterPatches<TPatchGroup>();
-            succeeded = RitsuLibFramework.ApplyRequiredPatcher(
-                patcher,
-                disableMod: () => succeeded = false,
-                failureMessage:
-                    $"Required NinjaSlayer capability '{capabilityId}' failed; content registration will be skipped.");
-        }
-        catch (Exception exception)
-        {
-            TryRollbackPatcher(patcher, capabilityId);
-            Logger.Error($"Required capability installation threw: {capabilityId}; {exception}");
-        }
-
-        CapabilityStatus status = CapabilityStatusEvaluator.EvaluatePatchResult(
-            probeSnapshot,
-            succeeded,
-            patcher.RegisteredPatchCount,
-            patcher.AppliedPatchCount);
-        if (!succeeded)
-        {
-            LogPatchFailure(patcher);
-            PublishCapabilityStatus(capabilityId, status);
-            return false;
-        }
-
-        activation.Track(capabilityId, patcher);
-        PublishCapabilityStatus(capabilityId, status);
-        return true;
-    }
-
-    private static CapabilityStatus InstallCapability<TPatchGroup>(
-        string capabilityId,
-        IReadOnlyList<CapabilityProbe>? probes = null,
+    private static void TryInstallOptionalPresentation(
+        string patcherName,
+        Action<ModPatcher> registerPatches,
         Func<DynamicPatchInfo[]>? dynamicPatchFactory = null)
-        where TPatchGroup : IModPatches
     {
-        CapabilityProbe[] probeSnapshot = probes?.ToArray() ?? [];
-        if (probeSnapshot.Any(probe => probe.IsRequired && !probe.IsAvailable))
-        {
-            CapabilityStatus disabled = CapabilityStatusEvaluator.EvaluatePatchResult(
-                probeSnapshot,
-                patchAllSucceeded: false,
-                registeredPatchCount: 0,
-                appliedPatchCount: 0);
-            PublishCapabilityStatus(capabilityId, disabled);
-            return disabled;
-        }
-
-        ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, capabilityId);
-        bool patchAllSucceeded;
+        ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, patcherName);
         try
         {
-            patcher.RegisterPatches<TPatchGroup>();
-            patchAllSucceeded = patcher.PatchAll();
-            if (patchAllSucceeded && dynamicPatchFactory is not null)
+            registerPatches(patcher);
+            DynamicPatchInfo[] dynamicPatches = dynamicPatchFactory?.Invoke() ?? [];
+            bool staticPatchesApplied = patcher.PatchAll();
+            bool dynamicPatchesApplied = staticPatchesApplied
+                && (dynamicPatches.Length == 0
+                    || patcher.ApplyDynamicPatches(
+                        dynamicPatches,
+                        rollbackOnCriticalFailure: true));
+            int expectedPatchCount = patcher.RegisteredPatchCount + dynamicPatches.Length;
+            if (dynamicPatchesApplied && patcher.AppliedPatchCount == expectedPatchCount)
             {
-                DynamicPatchInfo[] dynamicPatches = dynamicPatchFactory();
-                patchAllSucceeded = patcher.ApplyDynamicPatches(
-                    dynamicPatches,
-                    rollbackOnCriticalFailure: true);
+                return;
             }
+
+            TryRollbackPatcher(patcher, patcherName);
+            Logger.Warn(
+                $"Optional NinjaSlayer presentation '{patcherName}' was not installed: " +
+                $"applied {patcher.AppliedPatchCount}/{expectedPatchCount} patches.");
         }
         catch (Exception exception)
         {
-            patchAllSucceeded = false;
-            TryRollbackPatcher(patcher, capabilityId);
-            Logger.Error($"Capability installation threw: {capabilityId}; {exception}");
-        }
-
-        int registeredPatchCount = patcher.RegisteredPatchCount + patcher.RegisteredDynamicPatchCount;
-        CapabilityStatus status = CapabilityStatusEvaluator.EvaluatePatchResult(
-            probeSnapshot,
-            patchAllSucceeded,
-            registeredPatchCount,
-            patcher.AppliedPatchCount);
-        if (!patchAllSucceeded)
-        {
-            LogPatchFailure(patcher);
-        }
-
-        PublishCapabilityStatus(capabilityId, status);
-        return status;
-    }
-
-    private static void InstallFeedbackCapability()
-    {
-        InstallCapability<FeedbackPatchGroup>(
-            NinjaSlayerCapabilityIds.Feedback,
-            GameCompatibility.Feedback.GetProbes());
-    }
-
-    private static void DisableByDependency(string capabilityId, string dependencyId)
-    {
-        CapabilityStatus status = CapabilityStatusEvaluator.DisabledByDependency(dependencyId);
-        PublishCapabilityStatus(capabilityId, status);
-    }
-
-    private static void PublishCapabilityStatus(string capabilityId, CapabilityStatus status)
-    {
-        NinjaSlayerCapabilityRegistry.Current.Publish(capabilityId, status);
-        Version? gameVersion = typeof(MegaCrit.Sts2.Core.Nodes.NGame).Assembly.GetName().Version;
-        Version? ritsuVersion = typeof(RitsuLibFramework).Assembly.GetName().Version;
-        string message =
-            $"NinjaSlayer capability {status.State.ToString().ToLowerInvariant()}: {capabilityId}; " +
-            $"patches={status.InstalledPatchCount}; reason={status.Reason}; " +
-            $"game={gameVersion}; RitsuLib={ritsuVersion}.";
-
-        if (status.State == CapabilityState.Enabled)
-        {
-            Logger.Info(message);
-        }
-        else
-        {
-            Logger.Warn(message);
+            TryRollbackPatcher(patcher, patcherName);
+            Logger.Warn(
+                $"Optional NinjaSlayer presentation '{patcherName}' was not installed: {exception}");
         }
     }
 
@@ -477,7 +232,7 @@ public class Entry
         }
     }
 
-    private static void TryRollbackPatcher(ModPatcher patcher, string capabilityId)
+    private static void TryRollbackPatcher(ModPatcher patcher, string patcherName)
     {
         try
         {
@@ -485,7 +240,7 @@ public class Entry
         }
         catch (Exception rollbackException)
         {
-            Logger.Error($"Capability rollback failed: {capabilityId}; {rollbackException}");
+            Logger.Error($"Patch rollback failed: {patcherName}; {rollbackException}");
         }
     }
 
@@ -502,57 +257,4 @@ public class Entry
         Logger.Info($"FMOD bank registered: {NinjaSlayerAudio.BankPath}");
     }
 
-    private sealed class CoreActivationLease
-    {
-        private readonly List<ActivationResource> _resources = [];
-        private bool _rolledBack;
-
-        public int InstalledPatchCount => _resources.Sum(resource => resource.InstalledCount);
-
-        public void Track(string capabilityId, ModPatcher patcher) =>
-            _resources.Add(new ActivationResource(
-                capabilityId,
-                patcher.AppliedPatchCount,
-                () => TryRollbackPatcher(patcher, capabilityId)));
-
-        public void Track(string capabilityId, IDisposable subscription, int installedCount) =>
-            _resources.Add(new ActivationResource(
-                capabilityId,
-                installedCount,
-                subscription.Dispose));
-
-        public void Rollback(string failedCapabilityId)
-        {
-            if (_rolledBack)
-            {
-                return;
-            }
-
-            _rolledBack = true;
-            for (int index = _resources.Count - 1; index >= 0; index--)
-            {
-                ActivationResource resource = _resources[index];
-                try
-                {
-                    resource.Release();
-                }
-                catch (Exception exception)
-                {
-                    Logger.Error(
-                        $"Core activation rollback failed for {resource.CapabilityId}: {exception}");
-                }
-
-                PublishCapabilityStatus(
-                    resource.CapabilityId,
-                    CapabilityStatusEvaluator.RolledBack(failedCapabilityId));
-            }
-
-            _resources.Clear();
-        }
-
-        private sealed record ActivationResource(
-            string CapabilityId,
-            int InstalledCount,
-            Action Release);
-    }
 }

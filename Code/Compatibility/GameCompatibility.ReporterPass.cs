@@ -10,24 +10,13 @@ internal static partial class GameCompatibility
 {
     internal static class ReporterPass
     {
-        private static readonly MethodInfo? SetEventFinished =
-            AccessTools.Method(typeof(EventModel), "SetEventFinished", [typeof(LocString)]);
+        private static readonly MethodInfo SetEventFinished =
+            AccessTools.Method(typeof(EventModel), "SetEventFinished", [typeof(LocString)])
+            ?? throw new MissingMethodException(typeof(EventModel).FullName, "SetEventFinished");
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            RequiredMember("EventModel.set-event-finished", SetEventFinished,
-                "EventModel.SetEventFinished(LocString)")
-        ];
-
-        public static bool TryFinish(EventModel eventModel, LocString result)
+        public static void Finish(EventModel eventModel, LocString result)
         {
-            if (SetEventFinished == null)
-            {
-                return false;
-            }
-
             SetEventFinished.Invoke(eventModel, [result]);
-            return true;
         }
     }
 }

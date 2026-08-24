@@ -41,11 +41,6 @@ public sealed class PreparedDrawPatch : IPatchMethod
         bool fromHandDraw,
         ref Task<IEnumerable<CardModel>> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedGameplayEnabled)
-        {
-            return true;
-        }
-
         CardPile drawPile = PileType.Draw.GetPile(player);
         if (IsAllowedPreparedDraw(player, fromHandDraw)
             || !drawPile.Cards.Any(PrepareCmd.IsPrepared))
@@ -234,11 +229,6 @@ public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 
     public static void Postfix(NCardPileScreen __instance)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedUiEnabled)
-        {
-            return;
-        }
-
         CardPile pile = __instance.Pile;
         if (pile.Type != PileType.Draw
             || !pile.Cards.Any(PrepareCmd.IsPrepared)

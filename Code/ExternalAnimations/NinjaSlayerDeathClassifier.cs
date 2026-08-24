@@ -106,8 +106,7 @@ internal static class NinjaSlayerDeathClassifier
 
     public static bool TryStartReverseFinisher(Creature target, decimal amount)
     {
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || target.Player?.Character is not INinjaSlayerCharacter
+        if (target.Player?.Character is not INinjaSlayerCharacter
             || target.CombatState is not { } combatState
             || target.CurrentHp <= 0
             || amount < target.CurrentHp

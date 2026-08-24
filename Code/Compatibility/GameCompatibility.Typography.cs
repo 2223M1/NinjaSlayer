@@ -12,18 +12,6 @@ internal static partial class GameCompatibility
         private static readonly FieldInfo? Relics = AccessTools.Field(typeof(NInspectRelicScreen), "_relics");
         private static readonly FieldInfo? Index = AccessTools.Field(typeof(NInspectRelicScreen), "_index");
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            CapabilityProbe.Optional(
-                "NInspectRelicScreen.relics",
-                Relics != null,
-                Relics != null ? "available" : "NInspectRelicScreen._relics is unavailable"),
-            CapabilityProbe.Optional(
-                "NInspectRelicScreen.index",
-                Index != null,
-                Index != null ? "available" : "NInspectRelicScreen._index is unavailable")
-        ];
-
         public static bool TryGetSelectedRelic(NInspectRelicScreen screen, out RelicModel? relic)
         {
             relic = null;

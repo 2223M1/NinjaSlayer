@@ -10,24 +10,15 @@ internal static partial class GameCompatibility
 {
     internal static class Feedback
     {
-        private static readonly MethodInfo? SendButtonSelected =
-            AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)]);
+        private static readonly MethodInfo SendButtonSelected =
+            AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)])
+            ?? throw new MissingMethodException(
+                typeof(NSendFeedbackScreen).FullName,
+                "SendButtonSelected");
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            RequiredMember("NSendFeedbackScreen.send-button-selected", SendButtonSelected,
-                "NSendFeedbackScreen.SendButtonSelected(NButton)")
-        ];
-
-        public static bool TrySelectSendButton(NSendFeedbackScreen screen, NButton button)
+        public static void SelectSendButton(NSendFeedbackScreen screen, NButton button)
         {
-            if (SendButtonSelected == null)
-            {
-                return false;
-            }
-
             SendButtonSelected.Invoke(screen, [button]);
-            return true;
         }
     }
 }

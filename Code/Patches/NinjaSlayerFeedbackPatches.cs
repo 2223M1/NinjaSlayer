@@ -33,8 +33,7 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
 
     public static bool Prefix(NFeedbackScreenOpener __instance, InputEvent inputEvent)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
-            inputEvent is not InputEventKey { Pressed: not false, Keycode: Key.F2 }
+        if (inputEvent is not InputEventKey { Pressed: not false, Keycode: Key.F2 }
             || !IsLocalNinjaSlayer()
             || NGame.Instance is not { } game
             || game.GetOrCreateFeedbackScreen().Visible
@@ -137,8 +136,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 
     public static bool Prefix(NSendFeedbackScreen __instance, NButton _)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled
-            || !NinjaSlayerFeedbackSession.TryGetCurrentToken(
+        if (!NinjaSlayerFeedbackSession.TryGetCurrentToken(
                 __instance.GetInstanceId(),
                 out NinjaSlayerFeedbackSessionToken token)
             || NinjaSlayerFeedbackSession.IsConfirmed(token))
@@ -186,7 +184,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
             return;
         }
 
-        GameCompatibility.Feedback.TrySelectSendButton(
+        GameCompatibility.Feedback.SelectSendButton(
             screen,
             screen.GetNode<NButton>("%SendButton"));
     }
@@ -218,8 +216,7 @@ public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
         Stream logsMemoryStream,
         ref Task<bool> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled
-            || !NinjaSlayerFeedbackSession.TryGetConfirmedToken(out _))
+        if (!NinjaSlayerFeedbackSession.TryGetConfirmedToken(out _))
         {
             return true;
         }

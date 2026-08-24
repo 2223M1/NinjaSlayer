@@ -6,7 +6,6 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Commands;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Prepared;
@@ -18,11 +17,6 @@ internal static class PreparedSafetyService
         CardModel card,
         PileType oldPile)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
-        {
-            return;
-        }
-
         ICombatState? cardCombatState = card.CombatState ?? card.Owner?.Creature.CombatState;
         if (suppliedCombatState is not null
             && cardCombatState is not null
@@ -42,29 +36,19 @@ internal static class PreparedSafetyService
         }
     }
 
-    public static void RecoverAfterRunLoaded(IRunState runState)
-    {
-        if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
-        {
-            CleanupPlayers(runState.Players, combatIsEnding: false, "run load");
-        }
-    }
+    public static void RecoverAfterRunLoaded(IRunState runState) =>
+        CleanupPlayers(runState.Players, combatIsEnding: false, "run load");
 
     public static void RecoverBeforeCombatStart(ICombatState? combatState)
     {
-        if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled && combatState is not null)
+        if (combatState is not null)
         {
             CleanupPlayers(combatState.Players, combatIsEnding: false, "combat start");
         }
     }
 
-    public static void RecoverAfterCombatEnd(CombatRoom room)
-    {
-        if (NinjaSlayerPatchCapabilities.PreparedSafetyEnabled)
-        {
-            CleanupPlayers(room.CombatState.Players, combatIsEnding: true, "combat end");
-        }
-    }
+    public static void RecoverAfterCombatEnd(CombatRoom room) =>
+        CleanupPlayers(room.CombatState.Players, combatIsEnding: true, "combat end");
 
     public static bool HasStablePreparedPlacement(CardModel card, CardPile expectedDrawPile)
     {

@@ -32,7 +32,6 @@
     <Compile Include="..\..\Code\Combat\CombatPresentationPacingScope.cs" Link="CombatPresentationPacingScope.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameDamageReceiverSet.cs" Link="BlackFlameDamageReceiverSet.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameHitTracker.cs" Link="BlackFlameHitTracker.cs" />
-    <Compile Include="..\..\Code\Compatibility\CapabilityStatus.cs" Link="CapabilityStatus.cs" />
     <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.cs" Link="GameHostContractProfile.cs" />
     <Compile Include="..\..\Code\Compatibility\GameHostContractProfile.g.cs" Link="GameHostContractProfile.g.cs" />
     <Compile Include="..\..\Code\Compatibility\FinisherLethalTargetContract.cs" Link="FinisherLethalTargetContract.cs" />
@@ -44,8 +43,6 @@
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.OrobasSeaGlass.cs" Link="GameCompatibility.OrobasSeaGlass.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.RapidCardResolution.cs" Link="GameCompatibility.RapidCardResolution.cs" />
     <Compile Include="..\..\Code\Compatibility\GameCompatibility.CombatPresentationPacing.cs" Link="GameCompatibility.CombatPresentationPacing.cs" />
-    <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityIds.cs" Link="NinjaSlayerCapabilityIds.cs" />
-    <Compile Include="..\..\Code\Compatibility\NinjaSlayerCapabilityRegistry.cs" Link="NinjaSlayerCapabilityRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\OrobasSeaGlassCandidatePolicy.cs" Link="OrobasSeaGlassCandidatePolicy.cs" />
     <Compile Include="..\..\Code\Compatibility\PreparedDrawTargetContract.cs" Link="PreparedDrawTargetContract.cs" />
     <Compile Include="..\..\Code\Compatibility\PreparedQueueCompatibility.cs" Link="PreparedQueueCompatibility.cs" />
@@ -57,7 +54,6 @@
     <Compile Include="..\..\Code\Lifecycle\CardPlayResolutionScope.cs" Link="CardPlayResolutionScope.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Compatibility\RapidCardPresentationContext.cs" Link="RapidCardPresentationContext.cs" />
-    <Compile Include="..\..\Code\Patches\NinjaSlayerPatchCapabilities.cs" Link="NinjaSlayerPatchCapabilities.cs" />
     <Compile Include="..\..\Code\Patches\BlackFlameDamagePatch.cs" Link="BlackFlameDamagePatch.cs" />
     <Compile Include="..\..\Code\Patches\NinjaSlayerTransitionLoadSmoothingPatch.cs" Link="NinjaSlayerTransitionLoadSmoothingPatch.cs" />
     <Compile Include="..\..\Code\Patches\OrobasSeaGlassCharacterPatch.cs" Link="OrobasSeaGlassCharacterPatch.cs" />

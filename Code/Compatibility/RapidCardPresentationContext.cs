@@ -13,7 +13,6 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 #endif
 using MegaCrit.Sts2.Core.Nodes.Vfx.Cards;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.Lifecycle;
@@ -25,8 +24,7 @@ internal static class RapidCardPresentationContext
     public static ScopeLease Begin(CardModel card)
     {
         ScopeFrame? previous = Current.Value;
-        bool active = NinjaSlayerPatchCapabilities.RapidCardResolutionEnabled
-            && card.Owner.Creature.Player?.Character is INinjaSlayerCharacter;
+        bool active = card.Owner.Creature.Player?.Character is INinjaSlayerCharacter;
         Current.Value = new ScopeFrame(active, previous);
         CombatPresentationPacingScope.ScopeLease? pacing = active
             ? CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.RapidCard)

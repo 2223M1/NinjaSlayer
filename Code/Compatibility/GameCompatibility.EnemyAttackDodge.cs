@@ -16,13 +16,6 @@ internal static partial class GameCompatibility
         private static readonly FieldInfo? WaitBeforeHit =
             AccessTools.Field(typeof(AttackCommand), "_waitBeforeHit");
 
-        public static IReadOnlyList<CapabilityProbe> GetProbes() =>
-        [
-            OptionalMember("AttackCommand.attacker-animation", AttackerAnimName, "AttackCommand._attackerAnimName"),
-            OptionalMember("AttackCommand.visual-attacker", VisualAttacker, "AttackCommand._visualAttacker"),
-            OptionalMember("AttackCommand.wait-before-hit", WaitBeforeHit, "AttackCommand._waitBeforeHit")
-        ];
-
         public static bool TryReadPresentation(
             AttackCommand command,
             Creature fallbackAttacker,
@@ -43,15 +36,6 @@ internal static partial class GameCompatibility
                 Math.Max(0f, hitWaits[1]));
             return true;
         }
-
-        private static CapabilityProbe OptionalMember(
-            string name,
-            MemberInfo? member,
-            string memberDescription) =>
-            CapabilityProbe.Optional(
-                name,
-                member != null,
-                member != null ? "available" : $"{memberDescription} is unavailable");
     }
 
     internal readonly record struct EnemyAttackPresentation(

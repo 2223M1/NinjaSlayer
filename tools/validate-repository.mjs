@@ -548,18 +548,14 @@ for (const relativePath of compatibilityOwnedFiles) {
   }
 }
 
-const capabilityIdSource = readFileSync(
-  join(root, 'Code', 'Compatibility', 'NinjaSlayerCapabilityIds.cs'),
-  'utf8',
-);
-const capabilityIds = [...capabilityIdSource.matchAll(/const\s+string\s+\w+\s*=\s*"([^"]+)"/g)]
-  .map((match) => match[1]);
-for (const capabilityId of new Set(capabilityIds)) {
-  const count = capabilityIds.filter((candidate) => candidate === capabilityId).length;
-  if (count !== 1) errors.push(`Capability id ${capabilityId} is declared ${count} times`);
-}
-if (/(?:InstallCapability|TryInstallRequiredCapability)<[^>]+>\(\s*"/.test(entrySource)) {
-  errors.push('Entry.cs must use NinjaSlayerCapabilityIds for every capability installation');
+const retiredRuntimeCapabilityPattern =
+  /\b(?:CapabilityState|CapabilityProbe|CapabilityStatus|NinjaSlayerCapabilityRegistry|NinjaSlayerCapabilityIds|NinjaSlayerPatchCapabilities|NinjaSlayerRuntimeHealth)\b/;
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
+  if (retiredRuntimeCapabilityPattern.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains a retired runtime capability symbol`);
+  }
 }
 
 const concreteCardSources = filesUnder(join(root, 'Cards'))

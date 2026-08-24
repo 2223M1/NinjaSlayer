@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -45,7 +46,7 @@ public static class SlowAttackAnimation
         }
 
         if (impactAtPeak == null
-            && NinjaSlayerRapidAnimationCoordinator.IsEnabled
+            && RapidCardPresentationContext.IsActive
             && creature.Player?.Character is INinjaSlayerCharacter)
         {
             await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(

@@ -1,6 +1,5 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -13,16 +12,13 @@ internal static class FinisherProtectionService
         out FinisherProtectionToken? token)
     {
         token = null;
-        if (NinjaSlayerPatchCapabilities.FinisherEnabled)
+        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
+        if (session == null && NinjaSlayerDeathClassifier.TryStartReverseFinisher(target, amount))
         {
-            FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
-            if (session == null && NinjaSlayerDeathClassifier.TryStartReverseFinisher(target, amount))
-            {
-                session = FinisherSessionRegistry.GetActiveSession();
-            }
-
-            session?.TryProtectLethalDamage(target, ref amount, out token);
+            session = FinisherSessionRegistry.GetActiveSession();
         }
+
+        session?.TryProtectLethalDamage(target, ref amount, out token);
     }
 
     internal static void ConfirmProtectedDamageResult(

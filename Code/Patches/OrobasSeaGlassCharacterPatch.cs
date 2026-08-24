@@ -23,12 +23,6 @@ public sealed class OrobasSeaGlassCharacterPatch : IPatchMethod
 
     public static void Postfix(Orobas __instance, IReadOnlyList<EventOption> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.CoreContentEnabled
-            || !NinjaSlayerPatchCapabilities.OrobasSeaGlassEnabled)
-        {
-            return;
-        }
-
         CharacterModel? ownerCharacter = __instance.Owner?.Character;
         if (ownerCharacter == null || ownerCharacter is INinjaSlayerCharacter)
         {
