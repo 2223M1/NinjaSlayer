@@ -204,8 +204,59 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , typeof(CardPlay)
+#endif
+            ])
     ];
+
+#pragma warning disable CA1707 // Harmony reserves double-underscore parameter names.
+#if NINJASLAYER_LEGACY_DAMAGE_API
+    public static bool Prefix(
+        PlayerChoiceContext choiceContext,
+        ref IEnumerable<Creature>? targets,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        ref Task<IEnumerable<DamageResult>> __result) =>
+        PrefixCore(
+            choiceContext,
+            ref targets,
+            amount,
+            props,
+            dealer,
+            cardSource,
+            NinjaSlayerFinisherCinematic.ResolveActiveCardPlay(dealer, cardSource),
+            ref __result);
+#else
+    public static bool Prefix(
+        PlayerChoiceContext choiceContext,
+        ref IEnumerable<Creature>? targets,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay,
+        ref Task<IEnumerable<DamageResult>> __result) =>
+        PrefixCore(
+            choiceContext,
+            ref targets,
+            amount,
+            props,
+            dealer,
+            cardSource,
+            cardPlay,
+            ref __result);
+#endif
+#pragma warning restore CA1707
 
     private static bool PrefixCore(
         PlayerChoiceContext choiceContext,
@@ -248,7 +299,17 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , typeof(CardPlay)
+#endif
+            ])
     ];
 
     public static void Prefix(

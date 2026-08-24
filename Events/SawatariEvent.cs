@@ -73,10 +73,17 @@ public sealed class SawatariEvent : ModEventTemplate
         return BeginLocalEvent(owner);
     }
 
-    internal void BeginEmbeddedCombat() => EnterCombatWithoutExitingEvent(
-        GameCompatibility.ResolveEventCombatEncounter(CanonicalEncounter),
-        [],
-        shouldResumeAfterCombat: false);
+    internal void BeginEmbeddedCombat()
+    {
+        EncounterModel encounter = CanonicalEncounter;
+#if NINJASLAYER_CHANNEL_STABLE
+        encounter = encounter.ToMutable();
+#endif
+        EnterCombatWithoutExitingEvent(
+            encounter,
+            [],
+            shouldResumeAfterCombat: false);
+    }
 
     internal void ShowIntermissionPage()
     {

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -10,7 +11,6 @@ using MegaCrit.Sts2.Core.Nodes.Audio;
 using MegaCrit.Sts2.Core.Nodes.Events;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Runs;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Transition;
 using STS2RitsuLib.Patching.Models;
 
@@ -97,6 +97,11 @@ public sealed class NinjaSlayerTransitionAncientSetupPresentationPatch : IPatchM
 
 public sealed class NinjaSlayerTransitionAncientHealPresentationPatch : IPatchMethod
 {
+    private static readonly MethodInfo? AncientHealVfx = AccessTools.Method(
+        typeof(NAncientEventLayout),
+        "PlayHealVfxAfterFadeIn",
+        [typeof(Player), typeof(decimal)]);
+
     public static string PatchId => "ninjaslayer_transition_ancient_heal_presentation_barrier";
 
     public static string Description =>
@@ -105,7 +110,7 @@ public sealed class NinjaSlayerTransitionAncientHealPresentationPatch : IPatchMe
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
-        GameCompatibility.TransitionPresentation.AncientHealVfx is { } target
+        AncientHealVfx is { } target
             ? [new(target.DeclaringType!, target.Name)]
             : [];
 

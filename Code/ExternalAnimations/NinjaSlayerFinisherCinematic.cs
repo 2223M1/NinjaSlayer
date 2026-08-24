@@ -466,14 +466,17 @@ internal static class NinjaSlayerFinisherCinematic
         DirectDamageBypassDepth.Value++;
         try
         {
-            return await GameCompatibility.Damage.Deal(
+            return await CreatureCmd.Damage(
                 choiceContext,
                 targets,
                 amount,
                 props,
                 dealer,
-                cardSource,
-                cardPlay);
+                cardSource
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , cardPlay
+#endif
+            );
         }
         finally
         {

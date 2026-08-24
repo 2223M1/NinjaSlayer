@@ -685,7 +685,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     {
         var sprite = new MegaSprite(Variant.CreateFrom(visual));
         MegaAnimationState? animation = sprite.TryGetAnimationState();
-        using IDisposable animationLease = GameCompatibility.NativeHandles.Lease(animation);
+        using IDisposable? animationLease = animation as IDisposable;
         animation?.SetTimeScale(0f);
     }
 
@@ -695,7 +695,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException(
                 "The isolated Spine clone has no skeleton.");
-        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
+        using IDisposable? skeletonLease = skeleton as IDisposable;
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");
@@ -735,7 +735,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException(
                 "The isolated Spine clone has no skeleton.");
-        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
+        using IDisposable? skeletonLease = skeleton as IDisposable;
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");

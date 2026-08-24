@@ -540,10 +540,20 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private Task CompleteEvent() => _victoryCompletionTask ??= CompleteEventCore();
 
-    private async Task CompleteEventCore()
+    private Task CompleteEventCore()
     {
         ArchitectVictoryCleanup.Mark(_owner);
-        await GameCompatibility.ArchitectVictory.Complete(_owner.Player!, _room);
+#if NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION
+        if (_owner.Player!.RunState.Players.Count > 1)
+        {
+            _room.SetWaitingForOtherPlayersOverlayVisible(visible: true);
+        }
+
+        RunManager.Instance.ActChangeSynchronizer.SetLocalPlayerReady();
+        return Task.CompletedTask;
+#else
+        return RunManager.Instance.WinRun();
+#endif
     }
 
     private void HideArchitectVisual()

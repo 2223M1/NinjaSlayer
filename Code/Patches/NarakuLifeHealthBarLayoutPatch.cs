@@ -1,9 +1,9 @@
+using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Models;
@@ -15,6 +15,12 @@ namespace NinjaSlayer.Code.Patches;
 public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
 {
     private const string EmbeddedStripName = "NinjaSlayerNarakuLifeStrip";
+    private static readonly FieldInfo? HealthBarCreature =
+        AccessTools.Field(typeof(NHealthBar), "_creature");
+    private static readonly FieldInfo? ExpectedMaxForegroundWidth =
+        AccessTools.Field(typeof(NHealthBar), "_expectedMaxFgWidth");
+    private static readonly FieldInfo? OriginalBlockPosition =
+        AccessTools.Field(typeof(NHealthBar), "_originalBlockPosition");
 
     public static string PatchId => "ninjaslayer_naraku_life_health_bar_layout";
 
@@ -31,8 +37,8 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
 
     public static void Postfix(NHealthBar __instance)
     {
-        if (!GameCompatibility.NarakuHealthBar.TryGetCreature(__instance, out Creature? creature)
-            || creature == null)
+        Creature? creature = HealthBarCreature?.GetValue(__instance) as Creature;
+        if (creature == null)
         {
             HideEmbeddedStrip(__instance);
             return;
@@ -60,7 +66,14 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         Vector2 barPosition = hpBar.GlobalPosition;
         barPosition.X = layout.BarLeft;
         hpBar.GlobalPosition = barPosition;
-        GameCompatibility.NarakuHealthBar.AnchorBlock(__instance, layout.BlockLeft);
+        Control? block = __instance.GetNodeOrNull<Control>("%BlockContainer");
+        if (block != null)
+        {
+            Vector2 globalPosition = block.GlobalPosition;
+            globalPosition.X = layout.BlockLeft;
+            block.GlobalPosition = globalPosition;
+            OriginalBlockPosition?.SetValue(__instance, block.Position);
+        }
     }
 
     private static void RefreshEmbeddedStrip(NHealthBar healthBar, Creature creature, int narakuLife)
@@ -72,11 +85,17 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         }
 
         NinePatchRect? strip = mask.GetNodeOrNull<NinePatchRect>(EmbeddedStripName);
+        float expectedWidth = ExpectedMaxForegroundWidth?.GetValue(healthBar) is float value
+            ? value
+            : 0f;
+        float maxForegroundWidth = expectedWidth > 0f
+            ? expectedWidth
+            : healthBar.GetNodeOrNull<Control>("%HpForegroundContainer")?.Size.X ?? 0f;
         EmbeddedHealthBarSegment? segment = ExtendedHealthBarLayoutCalculator.CalculateEmbeddedNarakuLife(
             creature.CurrentHp,
             creature.MaxHp,
             narakuLife,
-            GameCompatibility.NarakuHealthBar.GetMaxForegroundWidth(healthBar),
+            maxForegroundWidth,
             poisonTemplate.PatchMarginLeft);
         if (segment == null)
         {

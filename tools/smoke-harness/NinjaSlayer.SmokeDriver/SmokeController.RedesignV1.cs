@@ -435,12 +435,30 @@ internal sealed partial class SmokeController
         NullifyHitsPower nullify = await PowerCmd.Apply<NullifyHitsPower>(
             choiceContext, player.Creature, 2, player.Creature, null)
             ?? throw new InvalidOperationException("Nullify Hits could not be applied.");
-        await GameCompatibility.Damage.Deal(
-            choiceContext, [player.Creature], 12, ValueProp.Unblockable | ValueProp.Unpowered, target, null, null);
+        await CreatureCmd.Damage(
+            choiceContext,
+            [player.Creature],
+            12,
+            ValueProp.Unblockable | ValueProp.Unpowered,
+            target,
+            null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
         Require(player.Creature.CurrentHp == hpBeforeNullify - 12, "A 12-damage hit incorrectly triggered Great Uke.");
         Require(nullify.Amount == 2, "A 12-damage hit consumed Great Uke.");
-        await GameCompatibility.Damage.Deal(
-            choiceContext, [player.Creature], 13, ValueProp.Unblockable | ValueProp.Unpowered, target, null, null);
+        await CreatureCmd.Damage(
+            choiceContext,
+            [player.Creature],
+            13,
+            ValueProp.Unblockable | ValueProp.Unpowered,
+            target,
+            null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
         Require(player.Creature.CurrentHp == hpBeforeNullify - 12, "A hit above 12 damage was not nullified.");
         Require(nullify.Amount == 1, "A hit above 12 damage did not consume one Great Uke charge.");
         await PowerCmd.Remove(nullify);

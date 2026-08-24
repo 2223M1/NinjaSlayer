@@ -86,7 +86,11 @@ public sealed class CombatAdjustmentRedesignV1 : RedesignV1UncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -113,7 +117,11 @@ public sealed class SweepKickRedesignV1 : RedesignV1UncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState!)
@@ -213,13 +221,16 @@ public sealed class AlabamaDropRedesignV1 : RedesignV1UncommonCard
             }
 
             resolved = true;
-            await GameCompatibility.Damage.DealFromCard(
+            await CreatureCmd.Damage(
                 choiceContext,
                 cardPlay.Target!,
                 DynamicVars.Damage.BaseValue,
                 ValueProp.Move,
-                this,
-                cardPlay);
+                this
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , cardPlay
+#endif
+            );
             if (cardPlay.Target!.IsAlive)
             {
                 await PowerCmd.Apply<VulnerablePower>(
@@ -287,7 +298,11 @@ public sealed class RedBlackFlameAttackRedesignV1 : RedesignV1UncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -514,7 +529,11 @@ public sealed class IyaRedesignV1 : RedesignV1UncommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

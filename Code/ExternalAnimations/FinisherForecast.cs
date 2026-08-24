@@ -536,7 +536,7 @@ internal static class FinisherForecast
             return false;
         }
 
-        decimal modified = GameCompatibility.Damage.Modify(
+        decimal modified = Hook.ModifyDamage(
             runState,
             owner.CombatState,
             target,
@@ -544,7 +544,9 @@ internal static class FinisherForecast
             amount,
             props,
             cardSource,
+#if !NINJASLAYER_LEGACY_DAMAGE_API
             cardPlay,
+#endif
             ModifyDamageHookType.All,
             CardPreviewMode.None,
             out _);

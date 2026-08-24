@@ -61,7 +61,11 @@ public sealed class SpiralRoundhouseJumpRedesignV1 : RedesignV1CommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState!)
@@ -154,7 +158,11 @@ public sealed class GuidingFlameRedesignV1 : RedesignV1CommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -178,7 +186,11 @@ public sealed class ThrowKunaiRedesignV1 : RedesignV1CommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -328,7 +340,11 @@ public sealed class LeftHeavyPunchRedesignV1 : RedesignV1CommonCard
     {
         bool vulnerable = cardPlay.Target!.GetPowerAmount<VulnerablePower>() > 0;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target)
@@ -353,7 +369,11 @@ public sealed class RightHeavyPunchRedesignV1 : RedesignV1CommonCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -461,7 +481,11 @@ public sealed class RoundhouseKickRedesignV1 : RedesignV1CommonCard
                 async _ =>
                 {
                     AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                        .FromCard(this)
+#else
                         .FromCard(this, cardPlay)
+#endif
                         .WithDefectStrikeHitFx()
                         .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
                         .TargetingAllOpponents(CombatState!);
@@ -518,7 +542,11 @@ public sealed class PalmThrustRedesignV1 : RedesignV1CommonCard
                     }
 
                     AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                        .FromCard(this)
+#else
                         .FromCard(this, cardPlay)
+#endif
                         .WithDefectStrikeHitFx()
                         .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
                         .Targeting(target);

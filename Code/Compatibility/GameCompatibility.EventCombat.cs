@@ -9,16 +9,6 @@ namespace NinjaSlayer.Code.Compatibility;
 
 internal static partial class GameCompatibility
 {
-    public static EncounterModel ResolveEventCombatEncounter(
-        EncounterModel canonicalEncounter)
-    {
-#if NINJASLAYER_CHANNEL_STABLE
-        return canonicalEncounter.ToMutable();
-#else
-        return canonicalEncounter;
-#endif
-    }
-
     internal static class EventCombat
     {
         private static readonly FieldInfo ActRooms = AccessTools.Field(typeof(ActModel), "_rooms")

@@ -1,11 +1,12 @@
 using MegaCrit.Sts2.addons.mega_text;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Models;
 
@@ -131,6 +132,11 @@ internal static class KaratePreviewScopeRegistry
 
 public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod
 {
+    private static readonly FieldInfo? HealthBarCreature =
+        AccessTools.Field(typeof(NHealthBar), "_creature");
+    private static readonly FieldInfo? HpLabel =
+        AccessTools.Field(typeof(NHealthBar), "_hpLabel");
+
     public static string PatchId => "ninjaslayer_karate_hp_label_preview";
 
     public static string Description => "Subtract forecasted karate damage from HP label while targeting with an attack.";
@@ -142,11 +148,9 @@ public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod
 
     public static void Postfix(NHealthBar __instance)
     {
-        if (!GameCompatibility.KarateHealthBar.TryGetState(
-                __instance,
-                out Creature? creature,
-                out MegaLabel? hpLabel)
-            || creature is null
+        Creature? creature = HealthBarCreature?.GetValue(__instance) as Creature;
+        MegaLabel? hpLabel = HpLabel?.GetValue(__instance) as MegaLabel;
+        if (creature is null
             || hpLabel is null
             || !creature.HpDisplay.ShowsNumbers())
         {

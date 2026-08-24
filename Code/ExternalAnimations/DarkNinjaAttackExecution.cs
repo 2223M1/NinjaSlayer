@@ -202,14 +202,17 @@ internal static class DarkNinjaAttackExecution
                 return [];
             }
 
-            List<DamageResult> results = (await GameCompatibility.Damage.Deal(
+            List<DamageResult> results = (await CreatureCmd.Damage(
                     choiceContext,
                     targets,
                     damage,
                     command.DamageProps,
                     attacker,
-                    null,
-                    null))
+                    null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , null
+#endif
+                ))
                 .ToList();
             Results.AddRange(results);
             return results;

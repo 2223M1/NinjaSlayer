@@ -1,7 +1,9 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Lifecycle;
@@ -22,8 +24,33 @@ public sealed partial class BlackFlameDamagePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , typeof(CardPlay)
+#endif
+            ])
     ];
+
+#pragma warning disable CA1707 // Harmony reserves double-underscore parameter names.
+#if NINJASLAYER_LEGACY_DAMAGE_API
+    public static void Postfix(
+        CardModel? cardSource,
+        ref Task<IEnumerable<DamageResult>> __result) =>
+        TrackResults(cardSource, suppliedCardPlay: null, ref __result);
+#else
+    public static void Postfix(
+        CardModel? cardSource,
+        CardPlay? cardPlay,
+        ref Task<IEnumerable<DamageResult>> __result) =>
+        TrackResults(cardSource, cardPlay, ref __result);
+#endif
+#pragma warning restore CA1707
 
     private static void TrackResults(
         CardModel? cardSource,

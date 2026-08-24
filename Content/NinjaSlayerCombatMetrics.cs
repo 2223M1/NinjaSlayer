@@ -10,7 +10,6 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Content;
@@ -108,8 +107,13 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
             && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            Player player = cardPlay.Card.Owner;
+#else
+            Player player = cardPlay.Player;
+#endif
             metrics.AddFinishedCard(
-                GameCompatibility.CardPlays.GetPlayer(cardPlay),
+                player,
                 cardPlay.Card.Type == CardType.Attack,
                 KarateTriggerRules.IsMeleeAttack(cardPlay.Card));
         }
@@ -214,7 +218,11 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         foreach (Player player in combatState.Players)
         {
             CardPlayFinishedEntry? previous = CombatManager.Instance.History.CardPlaysFinished
-                .LastOrDefault(entry => GameCompatibility.CardPlays.GetPlayer(entry.CardPlay) == player);
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                .LastOrDefault(entry => entry.CardPlay.Card.Owner == player);
+#else
+                .LastOrDefault(entry => entry.CardPlay.Player == player);
+#endif
             if (previous is not null)
             {
                 snapshot.AddFinishedCard(player, previous.CardPlay.Card.Type == CardType.Attack, isMelee: false);
@@ -224,8 +232,13 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         foreach (CardPlayFinishedEntry entry in CombatManager.Instance.History.CardPlaysFinished
                      .Where(entry => entry.HappenedThisTurn(combatState)))
         {
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            Player player = entry.CardPlay.Card.Owner;
+#else
+            Player player = entry.CardPlay.Player;
+#endif
             snapshot.AddFinishedCard(
-                GameCompatibility.CardPlays.GetPlayer(entry.CardPlay),
+                player,
                 entry.CardPlay.Card.Type == CardType.Attack,
                 KarateTriggerRules.IsMeleeAttack(entry.CardPlay.Card));
         }

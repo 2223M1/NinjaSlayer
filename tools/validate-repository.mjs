@@ -289,11 +289,49 @@ if (compatibility) {
   }
 }
 
+function permitsDirectHostConditional(repositoryPath, source, symbol) {
+  switch (symbol) {
+    case 'NINJASLAYER_LEGACY_CARD_PLAY_LINKS':
+      return (repositoryPath.startsWith('Cards/')
+          && (source.includes('.FromCard(')
+            || repositoryPath === 'Cards/RedesignV1/NinjaSlayerRedesignCardTemplate.cs'))
+        || [
+          'Code/Combat/BlackFlameHitTracker.cs',
+          'Code/ExternalAnimations/FinisherAttackCommandAdapter.cs',
+          'Code/Lifecycle/RapidCardPresentationContext.cs',
+          'Content/NinjaSlayerCombatMetrics.cs',
+        ].includes(repositoryPath);
+    case 'NINJASLAYER_LEGACY_DAMAGE_API':
+      return source.includes('CreatureCmd.Damage(')
+        || source.includes('nameof(CreatureCmd.Damage)')
+        || source.includes('Hook.ModifyDamage(')
+        || [
+          'Cards/RedesignV1/RedesignV1RareCards.cs',
+          'Powers/DamageFocusPower.cs',
+          'Powers/OpeningPower.cs',
+        ].includes(repositoryPath);
+    case 'NINJASLAYER_LEGACY_CREATURE_PRESENTATION':
+      return repositoryPath === 'Code/ExternalAnimations/DoomHurtPoseController.cs';
+    case 'NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION':
+      return repositoryPath === 'Code/ExternalAnimations/ArchitectExecutionCinematic.cs';
+    case 'NINJASLAYER_CHANNEL_STABLE':
+      return repositoryPath === 'Events/DarkNinjaEvent.cs'
+        || repositoryPath === 'Events/SawatariEvent.cs';
+    default:
+      return false;
+  }
+}
+
 for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
   const repositoryPath = relative(root, path).replaceAll('\\', '/');
   if (repositoryPath.startsWith('Code/Compatibility/')) continue;
-  if (/^\s*#(?:if|elif).*NINJASLAYER_(?:STS2|CHANNEL|LEGACY)/m.test(readFileSync(path, 'utf8'))) {
-    errors.push(`${repositoryPath} contains a host conditional outside Code/Compatibility`);
+  const source = readFileSync(path, 'utf8');
+  for (const match of source.matchAll(
+    /^\s*#(?:if|elif)\s+!?\s*(NINJASLAYER_(?:STS2|CHANNEL|LEGACY)[A-Z0-9_]*)/gm,
+  )) {
+    if (!permitsDirectHostConditional(repositoryPath, source, match[1])) {
+      errors.push(`${repositoryPath} contains unowned host conditional ${match[1]}`);
+    }
   }
 }
 const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));
@@ -544,20 +582,74 @@ if (patchIds.length !== patchClasses.length) {
 
 const compatibilityOwnedFiles = [
   'Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs',
-  'Code/Patches/KarateHealthBarPreviewPatch.cs',
   'Code/Patches/NancyLeeAvailabilityPatches.cs',
-  'Code/Patches/NinjaSlayerFeedbackPatches.cs',
   'Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs',
   'Code/Patches/NinjaSlayerTransitionPatch.cs',
-  'Code/Patches/NinjaSlayerTypographyPatch.cs',
-  'Code/Patches/PreparedCardPatches.cs',
-  'Code/Patches/ReporterPassEventOptionPatch.cs',
 ];
 const privateReflectionPattern = /AccessTools\.(?:Field|Method|Property)|BindingFlags|GetField\(|GetMethod\(/;
 for (const relativePath of compatibilityOwnedFiles) {
   const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
   if (privateReflectionPattern.test(source)) {
     errors.push(`${relativePath} must obtain private game members through GameCompatibility`);
+  }
+}
+
+const localizedPrivateMemberContracts = new Map([
+  ['Code/Patches/KarateHealthBarPreviewPatch.cs', ['"_creature"', '"_hpLabel"']],
+  ['Code/Patches/NarakuLifeHealthBarLayoutPatch.cs', [
+    '"_creature"',
+    '"_expectedMaxFgWidth"',
+    '"_originalBlockPosition"',
+  ]],
+  ['Code/Patches/NinjaSlayerFeedbackPatches.cs', ['"SendButtonSelected"']],
+  ['Code/Patches/NinjaSlayerMapHistoryPatch.cs', ['"_runState"']],
+  ['Code/Patches/NinjaSlayerTransitionPresentationPatch.cs', ['"PlayHealVfxAfterFadeIn"']],
+  ['Code/Patches/NinjaSlayerTypographyPatch.cs', ['"_relics"', '"_index"']],
+  ['Code/Patches/PreparedCardPatches.cs', ['"ShuffleFtueCheck"', '"_grid"']],
+  ['Code/Patches/ReporterPassEventOptionPatch.cs', ['"SetEventFinished"']],
+  ['Code/Transition/TransitionViewAdapter.cs', ['nameof(NTransition.InTransition)', '"_tween"']],
+]);
+for (const [relativePath, members] of localizedPrivateMemberContracts) {
+  const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
+  const accessCount = [...source.matchAll(/AccessTools\.(?:Field|Method|Property)\(/g)].length;
+  if (accessCount !== members.length || members.some(member => !source.includes(member))) {
+    errors.push(`${relativePath} must access exactly its owned private game members: ${members.join(', ')}`);
+  }
+}
+
+const removedStage4AFiles = [
+  'GameCompatibility.ArchitectVictory.cs',
+  'GameCompatibility.CardPlays.cs',
+  'GameCompatibility.Damage.cs',
+  'GameCompatibility.Feedback.cs',
+  'GameCompatibility.KarateHealthBar.cs',
+  'GameCompatibility.MapHistory.cs',
+  'GameCompatibility.NarakuHealthBar.cs',
+  'GameCompatibility.OrobasSeaGlass.cs',
+  'GameCompatibility.Prepared.cs',
+  'GameCompatibility.ReporterPass.cs',
+  'GameCompatibility.Transition.cs',
+  'GameCompatibility.TransitionPresentation.cs',
+  'GameCompatibility.Typography.cs',
+  'HostBlackFlameDamagePatch.cs',
+  'HostDamageApiAdapters.cs',
+  'LegacyAttackCommandExtensions.cs',
+  'OrobasSeaGlassCandidatePolicy.cs',
+  'RedesignCardDestinationAdapter.cs',
+];
+for (const file of removedStage4AFiles) {
+  if (existsSync(join(root, 'Code', 'Compatibility', file))) {
+    errors.push(`Code/Compatibility/${file} is a retired Stage 4A facade`);
+  }
+}
+
+const retiredStage4AFacadePattern =
+  /\b(?:HostCompatibility|GameApiFacade|CompatibilityService|LegacyAttackCommandExtensions)\b|GameCompatibility\.(?:ArchitectVictory|CardPlays|AttackCommands|Damage|Feedback|KarateHealthBar|MapHistory|NarakuHealthBar|OrobasSeaGlass|Prepared|ReporterPass|Transition|TransitionPresentation|Typography|NativeHandles)|\bAssociate(?:Player|CardPlay)\b/;
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
+  if (retiredStage4AFacadePattern.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains a retired Stage 4A facade or replacement`);
   }
 }
 

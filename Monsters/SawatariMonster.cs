@@ -177,14 +177,17 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                     {
-                        results.AddRange(await GameCompatibility.Damage.Deal(
+                        results.AddRange(await CreatureCmd.Damage(
                             choiceContext,
                             [target],
                             SawatariEventRules.AttackDamage,
                             command.DamageProps,
                             attacker,
-                            null,
-                            null));
+                            null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                            , null
+#endif
+                        ));
                     }
                 });
         }

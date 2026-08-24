@@ -703,14 +703,17 @@ internal sealed partial class SmokeController
             "NINJASLAYER_SMOKE_NON_ATTACK_SOURCE",
             async targets =>
             {
-                await GameCompatibility.Damage.Deal(
+                await CreatureCmd.Damage(
                     new ThrowingPlayerChoiceContext(),
                     targets,
                     1,
                     ValueProp.Move,
                     attacker,
-                    nonAttackSource,
-                    null);
+                    nonAttackSource
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , null
+#endif
+                );
                 await PowerCmd.Apply<WeakPower>(
                     new ThrowingPlayerChoiceContext(),
                     targets,

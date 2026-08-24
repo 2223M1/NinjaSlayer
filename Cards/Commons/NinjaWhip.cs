@@ -33,7 +33,11 @@ public sealed class NinjaWhip : NinjaSlayerCardTemplate
     {
         bool shouldApplyVulnerable = NinjaSlayerCombatMetrics.PreviousFinishedCardWasAttack(Owner);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

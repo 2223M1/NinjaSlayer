@@ -227,11 +227,11 @@ public partial class ContractRunner : Node
     {
         MethodInfo target = AccessTools.Method(
             typeof(Orobas),
-            GameCompatibility.OrobasSeaGlass.TargetMethodName,
+            "GenerateInitialOptions",
             Type.EmptyTypes)
             ?? throw new MissingMethodException(
                 typeof(Orobas).FullName,
-                GameCompatibility.OrobasSeaGlass.TargetMethodName);
+                "GenerateInitialOptions");
         Require(
             target.ReturnType == typeof(IReadOnlyList<MegaCrit.Sts2.Core.Events.EventOption>),
             "Orobas.GenerateInitialOptions() no longer returns IReadOnlyList<EventOption>.");

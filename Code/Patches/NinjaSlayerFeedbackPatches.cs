@@ -1,4 +1,6 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
@@ -13,7 +15,6 @@ using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Feedback;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
@@ -127,6 +128,11 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 {
     private const string LocTable = "settings_ui";
+    private static readonly MethodInfo SendButtonSelected =
+        AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)])
+        ?? throw new MissingMethodException(
+            typeof(NSendFeedbackScreen).FullName,
+            "SendButtonSelected");
 
     public static string PatchId => "ninjaslayer_feedback_confirmation";
     public static string Description => "Require informed confirmation before uploading NinjaSlayer F2 feedback.";
@@ -184,9 +190,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
             return;
         }
 
-        GameCompatibility.Feedback.SelectSendButton(
-            screen,
-            screen.GetNode<NButton>("%SendButton"));
+        SendButtonSelected.Invoke(screen, [screen.GetNode<NButton>("%SendButton")]);
     }
 
     private static bool TryLoc(string key, out LocString loc)

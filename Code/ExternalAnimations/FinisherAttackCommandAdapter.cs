@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.Lifecycle;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -20,9 +21,18 @@ internal static class FinisherAttackCommandAdapter
                 command,
                 out GameCompatibility.AttackCommandState commandState)
             || command.ModelSource is not CardModel { Type: CardType.Attack } card
-            || !GameCompatibility.AttackCommands.TryGetCardPlay(command, out CardPlay? cardPlay)
             || command.Attacker == null
             || card.Owner?.Creature != command.Attacker)
+        {
+            return false;
+        }
+
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+        if (!CardPlayResolutionScope.TryResolveCurrentPlay(card, out CardPlay? cardPlay))
+#else
+        CardPlay? cardPlay = command.CardPlay;
+        if (cardPlay == null)
+#endif
         {
             return false;
         }

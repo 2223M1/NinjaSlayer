@@ -89,13 +89,16 @@ public sealed class NarakuPower : NinjaSlayerPowerTemplate
 
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies);
 
-        await GameCompatibility.Damage.Deal(
+        await CreatureCmd.Damage(
             choiceContext,
             enemies,
             DynamicVars.HpLoss.BaseValue,
             ValueProp.Unblockable | ValueProp.Unpowered,
             Owner,
-            cardSource,
-            null);
+            cardSource
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
     }
 }

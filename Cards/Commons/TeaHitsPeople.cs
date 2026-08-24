@@ -39,7 +39,11 @@ public sealed class TeaHitsPeople : NinjaSlayerCardTemplate
         int hitCount = NinjaSlayerCombatMetrics.ChadoExhaustedThisTurn(Owner) ? 2 : 1;
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithHitCount(hitCount)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Tea Hits People requires combat."))

@@ -214,14 +214,17 @@ public sealed class BloodTearsRedesignPower : RedesignV1CounterPower
     {
         if (player == Owner.Player)
         {
-            await GameCompatibility.Damage.Deal(
+            await CreatureCmd.Damage(
                 choiceContext,
                 [Owner],
                 Amount,
                 ValueProp.Unblockable | ValueProp.Unpowered,
                 Owner,
-                null,
-                null);
+                null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , null
+#endif
+            );
         }
     }
 }

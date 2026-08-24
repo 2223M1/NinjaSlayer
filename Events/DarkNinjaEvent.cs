@@ -119,8 +119,12 @@ public sealed class DarkNinjaEvent : ModEventTemplate
             DarkNinjaMusicSession.Begin(eventRoom);
         }
 
+        EncounterModel encounter = CanonicalEncounter;
+#if NINJASLAYER_CHANNEL_STABLE
+        encounter = encounter.ToMutable();
+#endif
         EnterCombatWithoutExitingEvent(
-            GameCompatibility.ResolveEventCombatEncounter(CanonicalEncounter),
+            encounter,
             [],
             shouldResumeAfterCombat: true);
         return Task.CompletedTask;

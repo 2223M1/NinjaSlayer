@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -114,7 +113,7 @@ internal static class NinjaSlayerDeathClassifier
             || capture.IsCompleted
             || capture.Session != null
             || !IsValidEnemyDealer(target, capture.Dealer)
-            || !GameCompatibility.Finisher.CanProtectLethalDamage(out _)
+            || !FinisherProtectionService.CanProtectLethalDamage(out _)
             || !Hook.ShouldDie(target.Player.RunState, combatState, target, out _)
             || NCombatRoom.Instance is not { } room)
         {

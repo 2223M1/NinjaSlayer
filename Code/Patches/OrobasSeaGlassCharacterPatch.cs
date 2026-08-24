@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Models.Relics;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
@@ -19,7 +18,7 @@ public sealed class OrobasSeaGlassCharacterPatch : IPatchMethod
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(Orobas), GameCompatibility.OrobasSeaGlass.TargetMethodName, Type.EmptyTypes)];
+        [new(typeof(Orobas), "GenerateInitialOptions", Type.EmptyTypes)];
 
     public static void Postfix(Orobas __instance, IReadOnlyList<EventOption> __result)
     {
@@ -35,19 +34,17 @@ public sealed class OrobasSeaGlassCharacterPatch : IPatchMethod
         {
             if (seaGlass.CharacterId is not { } targetId
                 || ModelDb.GetById<CharacterModel>(targetId) is not { } targetCharacter
-                || !OrobasSeaGlassCandidatePolicy.ShouldReplace(
-                    ownerCharacter is INinjaSlayerCharacter,
-                    targetCharacter is INinjaSlayerCharacter))
+                || targetCharacter is not INinjaSlayerCharacter)
             {
                 continue;
             }
 
-            CharacterModel replacement = OrobasSeaGlassCandidatePolicy.SelectReplacement(
-                ownerCharacter,
-                __instance.Owner!.UnlockState.Characters,
-                candidate => candidate is INinjaSlayerCharacter,
-                (left, right) => left.Id == right.Id,
-                candidates => __instance.Rng.NextItem(candidates) ?? ownerCharacter);
+            CharacterModel[] candidates = __instance.Owner!.UnlockState.Characters
+                .Where(candidate => candidate is not INinjaSlayerCharacter && candidate.Id != ownerCharacter.Id)
+                .ToArray();
+            CharacterModel replacement = candidates.Length == 0
+                ? ownerCharacter
+                : __instance.Rng.NextItem(candidates) ?? ownerCharacter;
             seaGlass.CharacterId = replacement.Id;
         }
     }

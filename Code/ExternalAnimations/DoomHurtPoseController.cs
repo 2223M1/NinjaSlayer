@@ -1,7 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -15,7 +14,7 @@ internal static class DoomHurtPoseController
         }
 
         MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-        using IDisposable trackLease = GameCompatibility.NativeHandles.Lease(track);
+        using IDisposable? trackLease = track as IDisposable;
         if (track?.GetAnimationName() != "hurt")
         {
             return false;
@@ -34,14 +33,17 @@ internal static class DoomHurtPoseController
 
         creatureNode.SetAnimationTrigger("Hit");
         MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-        using IDisposable trackLease = GameCompatibility.NativeHandles.Lease(track);
+        using IDisposable? trackLease = track as IDisposable;
         if (track?.GetAnimationName() != "hurt")
         {
             return false;
         }
 
-        float trackTime = GameCompatibility.CreaturePresentation.GetHurtAnimationTrackOffset(
-            creatureNode.Entity.Monster);
+#if NINJASLAYER_LEGACY_CREATURE_PRESENTATION
+        const float trackTime = 0.1f;
+#else
+        float trackTime = creatureNode.Entity.Monster?.HurtAnimationTrackOffsetForDoom ?? 0.1f;
+#endif
         track.SetTrackTime(trackTime);
         track.SetTimeScale(0f);
         return true;
@@ -55,7 +57,7 @@ internal static class DoomHurtPoseController
         }
 
         MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-        using IDisposable trackLease = GameCompatibility.NativeHandles.Lease(track);
+        using IDisposable? trackLease = track as IDisposable;
         if (track?.GetAnimationName() == "hurt")
         {
             track.SetTimeScale(1f);

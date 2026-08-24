@@ -41,13 +41,16 @@ public sealed class KarateFinish : NinjaSlayerCardTemplate
             async () =>
             {
                 NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(cardPlay.Target!);
-                await GameCompatibility.Damage.DealFromCard(
+                await CreatureCmd.Damage(
                     choiceContext,
                     cardPlay.Target!,
                     damage,
                     props,
-                    this,
-                    cardPlay);
+                    this
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , cardPlay
+#endif
+                );
             });
     }
 

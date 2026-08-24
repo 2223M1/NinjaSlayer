@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -170,14 +171,17 @@ public sealed class YukanoMonster : ModMonsterTemplate
 
                 using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                 {
-                    results.AddRange(await GameCompatibility.Damage.Deal(
+                    results.AddRange(await CreatureCmd.Damage(
                         choiceContext,
                         [target],
                         damage,
                         command.DamageProps,
                         Creature,
-                        null,
-                        null));
+                        null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                        , null
+#endif
+                    ));
                 }
             }
         }

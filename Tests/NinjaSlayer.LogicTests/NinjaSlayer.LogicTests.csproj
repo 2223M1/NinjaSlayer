@@ -76,7 +76,6 @@
     <Compile Include="..\..\Code\Feedback\NinjaSlayerFeedbackSession.cs" Link="NinjaSlayerFeedbackSession.cs" />
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
     <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
-    <Compile Include="..\..\Code\Compatibility\OrobasSeaGlassCandidatePolicy.cs" Link="OrobasSeaGlassCandidatePolicy.cs" />
     <Compile Include="..\..\Code\Transition\TransitionCompletionProtocol.cs" Link="TransitionCompletionProtocol.cs" />
     <Compile Include="..\..\Code\Transition\TransitionGcDeferralState.cs" Link="TransitionGcDeferralState.cs" />
     <Compile Include="..\..\Code\Transition\TransitionNoGcRegionState.cs" Link="TransitionNoGcRegionState.cs" />

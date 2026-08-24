@@ -7,6 +7,7 @@ using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Prepared;
@@ -142,7 +143,7 @@ public class Entry
                 throw new InvalidOperationException("Required NinjaSlayer patch installation failed.");
             }
 
-            if (!GameCompatibility.Finisher.CanProtectLethalDamage(out string finisherReason))
+            if (!FinisherProtectionService.CanProtectLethalDamage(out string finisherReason))
             {
                 throw new InvalidOperationException(
                     $"Required NinjaSlayer finisher contract is unavailable: {finisherReason}");

@@ -213,7 +213,17 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , typeof(CardPlay)
+#endif
+            ])
     ];
 
     public static void Prefix(

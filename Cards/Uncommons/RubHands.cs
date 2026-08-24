@@ -35,7 +35,11 @@ public sealed class RubHands : NinjaSlayerCardTemplate
         int shurikenCount = (int)((CalculatedVar)DynamicVars["CalculatedShuriken"]).Calculate(cardPlay.Target!);
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

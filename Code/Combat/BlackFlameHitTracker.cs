@@ -1,6 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Lifecycle;
 
 namespace NinjaSlayer.Code.Combat;
@@ -33,7 +32,11 @@ internal static class BlackFlameHitTracker
             return [];
         }
 
-        var playerSide = GameCompatibility.CardPlays.GetPlayer(cardPlay).Creature.Side;
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+        var playerSide = cardPlay.Card.Owner.Creature.Side;
+#else
+        var playerSide = cardPlay.Player.Creature.Side;
+#endif
         return hitSet.Targets.SnapshotWhere(target =>
             !target.IsDead
             && target.Side != playerSide);

@@ -84,7 +84,7 @@ internal sealed class ArchitectSpineRagdoll : IDisposable
                 throw new InvalidOperationException("the Architect Spine skeleton is unavailable");
             }
 
-            using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
+            using IDisposable? skeletonLease = skeleton as IDisposable;
             SegmentDefinition[] definitions = partition.Fragments
                 .GroupBy(fragment => fragment.Part.PrimaryBoneId)
                 .Select(group => new SegmentDefinition(
@@ -133,7 +133,7 @@ internal sealed class ArchitectSpineRagdoll : IDisposable
                 }
                 catch
                 {
-                    GameCompatibility.NativeHandles.Dispose(bone);
+                    (bone as IDisposable)?.Dispose();
                     throw;
                 }
             }
@@ -528,7 +528,7 @@ internal sealed class ArchitectSpineRagdoll : IDisposable
             }
 
             _disposed = true;
-            GameCompatibility.NativeHandles.Dispose(Bone);
+            (Bone as IDisposable)?.Dispose();
         }
     }
 }

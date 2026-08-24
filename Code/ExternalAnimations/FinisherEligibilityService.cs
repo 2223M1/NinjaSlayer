@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -47,7 +46,7 @@ internal static class FinisherEligibilityService
             return false;
         }
 
-        if (!GameCompatibility.Finisher.CanProtectLethalDamage(out string compatibilityReason))
+        if (!FinisherProtectionService.CanProtectLethalDamage(out string compatibilityReason))
         {
             if (Interlocked.Exchange(ref CompatibilityWarningLogged, 1) == 0)
             {
@@ -129,7 +128,7 @@ internal static class FinisherEligibilityService
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
             || primaryEnemies.Count == 0
-            || !GameCompatibility.Finisher.CanProtectLethalDamage(out _))
+            || !FinisherProtectionService.CanProtectLethalDamage(out _))
         {
             return false;
         }
