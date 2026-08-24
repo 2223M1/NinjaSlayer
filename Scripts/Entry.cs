@@ -58,7 +58,6 @@ public class Entry
             requiredPatcher.RegisterPatches<NancyCandidateFilterPatchGroup>();
             requiredPatcher.RegisterPatches<FinisherCorePatchGroup>();
             requiredPatcher.RegisterPatches<FeedbackPatchGroup>();
-            requiredPatcher.RegisterPatches<TelemetryIdentityPatchGroup>();
 
             bool requiredPatchFailure = false;
             bool requiredPatchesApplied = RitsuLibFramework.ApplyRequiredPatcher(
@@ -96,7 +95,6 @@ public class Entry
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, CollapseFistRedesignV1>();
-            NinjaSlayerBalanceTelemetry.Register();
         }
         catch (Exception exception)
         {
@@ -110,6 +108,39 @@ public class Entry
         }
 
         InstallOptionalPresentations();
+        try
+        {
+            NinjaSlayerBalanceTelemetry.Register();
+
+            ModPatcher telemetryPatcher = RitsuLibFramework.CreatePatcher(
+                NinjaSlayerIds.ModId,
+                "telemetry-identity");
+            try
+            {
+                telemetryPatcher.RegisterPatches<TelemetryIdentityPatchGroup>();
+                bool patchesApplied = telemetryPatcher.PatchAll();
+                int expectedPatchCount = telemetryPatcher.RegisteredPatchCount;
+                if (!patchesApplied || telemetryPatcher.AppliedPatchCount != expectedPatchCount)
+                {
+                    TryRollbackPatcher(telemetryPatcher, telemetryPatcher.PatcherName);
+                    Logger.Warn(
+                        "Optional NinjaSlayer telemetry identity patches were not installed: " +
+                        $"applied {telemetryPatcher.AppliedPatchCount}/{expectedPatchCount} patches.");
+                }
+            }
+            catch (Exception exception)
+            {
+                TryRollbackPatcher(telemetryPatcher, telemetryPatcher.PatcherName);
+                Logger.Warn(
+                    $"Optional NinjaSlayer telemetry identity patches were not installed: {exception}");
+            }
+        }
+        catch (Exception exception)
+        {
+            Logger.Warn(
+                $"NinjaSlayer telemetry registration failed; identity patches were skipped: {exception}");
+        }
+
         RegisterFmodBanksIfPresent();
         Log.Info("NinjaSlayer initialized.");
     }
