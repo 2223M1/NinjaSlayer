@@ -29,6 +29,7 @@
 {ae9355ab-3946-4624-adca-eb051baef884} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_attack
 {91b5a40d-26eb-4af1-9d1e-51cadac4ece8} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_bamboo
 {72e056f8-0323-41e9-adac-54260b068b91} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_begin
+{8da32b4e-0fc2-43c3-a183-5a5380b4832b} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_death
 {c3984c02-fa51-4afa-aede-0d8e7393a8f4} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_duel
 {647b142a-123d-4b70-8ba1-87338a14b3c1} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_end
 {4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0} event:/NinjaSlayerAudio/sfx/forest_sawatari/forest_sawatari_enhanced

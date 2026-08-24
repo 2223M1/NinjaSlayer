@@ -38,7 +38,7 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
             return;
         }
 
-        if (target.GetPowerAmount<KaratePower>() <= 0)
+        if (card.Owner.Creature.GetPowerAmount<KaratePower>() <= 0)
         {
             KaratePreviewScopeRegistry.Release(__instance);
             return;
@@ -52,6 +52,33 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
         && KarateTriggerRules.CanTriggerFromCardSource(card)
         && card.Owner.Creature.CombatState != null
         && card.Owner.Creature.CombatState == target.CombatState;
+}
+
+public sealed class KarateCardPreviewAllEnemiesPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_karate_preview_all_enemies";
+
+    public static string Description => "Track all targets while dragging an all-enemy attack.";
+
+    public static bool IsCritical => false;
+
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(NCardPlay), "ShowMultiCreatureTargetingVisuals")];
+
+    public static void Postfix(NCardPlay __instance)
+    {
+        CardModel? card = __instance.Holder?.CardNode?.Model;
+        if (card?.Type != CardType.Attack
+            || card.TargetType != TargetType.AllEnemies
+            || card.CombatState == null
+            || card.Owner.Creature.GetPowerAmount<KaratePower>() <= 0)
+        {
+            KaratePreviewScopeRegistry.Release(__instance);
+            return;
+        }
+
+        KaratePreviewScopeRegistry.Replace(__instance, card, card.CombatState.HittableEnemies);
+    }
 }
 
 public sealed class KarateCardPreviewClearPatch : IPatchMethod
@@ -79,9 +106,12 @@ internal static class KaratePreviewScopeRegistry
     private static readonly ConditionalWeakTable<NCardPlay, ScopeHolder> Scopes = new();
 
     public static void Replace(NCardPlay cardPlay, CardModel card, Creature target)
+        => Replace(cardPlay, card, [target]);
+
+    public static void Replace(NCardPlay cardPlay, CardModel card, IReadOnlyList<Creature> targets)
     {
         Release(cardPlay);
-        Scopes.Add(cardPlay, new ScopeHolder(KarateCombatPreviewContext.Enter(card, target)));
+        Scopes.Add(cardPlay, new ScopeHolder(KarateCombatPreviewContext.Enter(card, targets)));
     }
 
     public static void Release(NCardPlay cardPlay)
@@ -123,14 +153,17 @@ public sealed class KarateHealthBarTextPreviewPatch : IPatchMethod
             return;
         }
 
-        KaratePower? karate = creature.GetPower<KaratePower>();
         CardModel? previewCard = KarateCombatPreviewContext.TryGetCard(creature);
-        if (karate == null || previewCard == null)
+        Creature? attacker = previewCard?.Owner.Creature;
+        if (attacker == null || attacker.Side == creature.Side)
         {
             return;
         }
 
-        int karateDamage = KarateForecastCalculator.ResolveHpPreviewDamage(karate, previewCard, creature);
+        int karateDamage = KarateForecastCalculator.ResolveHpPreviewDamage(
+            attacker.GetPowerAmount<KaratePower>(),
+            previewCard,
+            creature);
         if (karateDamage <= 0)
         {
             return;

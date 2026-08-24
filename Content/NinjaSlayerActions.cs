@@ -177,24 +177,23 @@ public static class NinjaSlayerActions
         return exhaustedUpgradedShuriken;
     }
 
-    public static async Task TriggerKarate(PlayerChoiceContext choiceContext, Creature? dealer, Creature target, CardModel? cardSource)
+    public static async Task TriggerKarateWave(
+        PlayerChoiceContext choiceContext,
+        Creature dealer,
+        IReadOnlyList<Creature> targets,
+        KaratePower karate,
+        int extraDamage,
+        CardModel? cardSource)
     {
-        if (dealer == null || dealer.Side == target.Side)
+        if (targets.Count == 0 || extraDamage <= 0)
         {
             return;
         }
 
-        KaratePower? karate = target.GetPower<KaratePower>();
-        if (karate == null || karate.Amount <= 0)
-        {
-            return;
-        }
-
-        int extraDamage = karate.Amount;
         using var _ = ScreenShakeSuppressionContext.Suppress();
-        await CreatureCmd.Damage(choiceContext, target, extraDamage, ValueProp.Unpowered, dealer);
+        await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
 
-        ICombatState? combatState = target.CombatState ?? dealer.CombatState;
+        ICombatState? combatState = dealer.CombatState;
         if (combatState != null)
         {
             foreach (Player player in combatState.Players)
@@ -206,12 +205,13 @@ public static class NinjaSlayerActions
             }
         }
 
-        if (!target.IsDead)
+        int amountBeforeConsumption = karate.Amount;
+        await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+        if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
         {
-            await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+            // PowerCmd rejects amount changes after the bonus ends combat, but the triggering wave still consumes.
+            karate.SetAmount(Math.Max(0, amountBeforeConsumption - 1), silent: true);
         }
-
-        CombatHealthBar.Refresh(target);
     }
 
     public static async Task<int> ClearAllKarate(PlayerChoiceContext choiceContext, Player player)

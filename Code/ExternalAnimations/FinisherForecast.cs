@@ -95,7 +95,7 @@ internal static class FinisherForecast
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>(),
+            owner.GetPowerAmount<KaratePower>(),
             enemy.IsPrimaryEnemy)).ToArray();
         Creature? singleTarget = descriptor.SingleTarget ?? spec.CardPlay.Target;
         int? singleTargetIndex = singleTarget != null && enemyIndices.TryGetValue(singleTarget, out int singleIndex)
@@ -231,7 +231,7 @@ internal static class FinisherForecast
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>(),
+            owner.GetPowerAmount<KaratePower>(),
             enemy.IsPrimaryEnemy)).ToArray();
         decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
         var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
@@ -282,7 +282,7 @@ internal static class FinisherForecast
         ForecastState[] states = enemies.Select(enemy => new ForecastState(
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>(),
+            owner.GetPowerAmount<KaratePower>(),
             enemy.IsPrimaryEnemy)).ToArray();
         Creature[] missileDealers = [.. missiles];
         decimal[] missileDamage = missileDealers
@@ -381,38 +381,15 @@ internal static class FinisherForecast
             primaryResults.Add((targetIndex, dealtDamage));
         }
 
-        foreach ((int targetIndex, bool triggerKarate) in primaryResults)
-        {
-            ForecastState state = states[targetIndex];
-            if (!triggersKarate
-                || !triggerKarate
-                || state.Hp <= 0
-                || state.Karate <= 0
-                || !props.IsPoweredAttack()
-                || !KarateTriggerRules.CanTriggerFromCardSource(cardSource))
-            {
-                continue;
-            }
-
-            ApplyDamage(
-                owner,
-                enemies,
-                states,
-                targetIndex,
-                state.Karate,
-                ValueProp.Unpowered,
-                dealer,
-                cardSource: null,
-                cardPlay: null);
-            ForecastState afterKarate = states[targetIndex];
-            if (afterKarate.Hp > 0)
-            {
-                states[targetIndex] = afterKarate with
-                {
-                    Karate = Math.Max(0, afterKarate.Karate - 1)
-                };
-            }
-        }
+        ApplyKarateWave(
+            owner,
+            enemies,
+            states,
+            primaryResults,
+            props,
+            dealer,
+            cardSource,
+            triggersKarate);
     }
 
     private static void ApplyHit(
@@ -454,29 +431,18 @@ internal static class FinisherForecast
             damageResults.Add((targetIndex, dealtDamage));
         }
 
-        foreach ((int target, bool triggerKarate) in damageResults)
-        {
-            ForecastState state = states[target];
-            if (triggerKarate && state.Hp > 0 && state.Karate > 0 && spec.Forecast.Props.IsPoweredAttack()
-                && KarateTriggerRules.CanTriggerFromCardSource(spec.Card))
-            {
-                ApplyDamage(
-                    owner,
-                    enemies,
-                    states,
-                    target,
-                    state.Karate,
-                    ValueProp.Unpowered,
-                    owner,
-                    null,
-                    null);
-                ForecastState afterKarate = states[target];
-                if (afterKarate.Hp > 0)
-                {
-                    states[target] = afterKarate with { Karate = Math.Max(0, afterKarate.Karate - 1) };
-                }
-            }
+        ApplyKarateWave(
+            owner,
+            enemies,
+            states,
+            damageResults,
+            spec.Forecast.Props,
+            owner,
+            spec.Card,
+            triggersKarate: true);
 
+        for (int resultIndex = 0; resultIndex < damageResults.Count; resultIndex++)
+        {
             if (narakuHpLoss.HasValue)
             {
                 foreach (int enemy in AliveTargets(states))
@@ -493,6 +459,55 @@ internal static class FinisherForecast
                         null);
                 }
             }
+        }
+    }
+
+    private static void ApplyKarateWave(
+        Creature owner,
+        IReadOnlyList<Creature> enemies,
+        ForecastState[] states,
+        IReadOnlyList<(int Target, bool TriggerKarate)> primaryResults,
+        ValueProp props,
+        Creature dealer,
+        CardModel? cardSource,
+        bool triggersKarate)
+    {
+        int stacks = states.Length > 0 ? states[0].Karate : 0;
+        int[] targets = primaryResults
+            .Where(result => result.TriggerKarate
+                && states[result.Target].Hp > 0
+                && enemies[result.Target].Side != dealer.Side)
+            .Select(result => result.Target)
+            .Distinct()
+            .ToArray();
+        KarateWaveResolution wave = KarateWaveRules.Resolve(
+            stacks,
+            triggersKarate
+                && props.IsPoweredAttack()
+                && KarateTriggerRules.CanTriggerFromCardSource(cardSource),
+            targets.Length);
+        if (!wave.Triggered)
+        {
+            return;
+        }
+
+        foreach (int target in targets)
+        {
+            ApplyDamage(
+                owner,
+                enemies,
+                states,
+                target,
+                wave.BonusDamagePerTarget,
+                ValueProp.Unpowered,
+                dealer,
+                cardSource: null,
+                cardPlay: null);
+        }
+
+        for (int index = 0; index < states.Length; index++)
+        {
+            states[index] = states[index] with { Karate = wave.RemainingStacks };
         }
     }
 

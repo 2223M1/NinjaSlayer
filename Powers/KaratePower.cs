@@ -1,50 +1,50 @@
-using Godot;
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Content;
-using STS2RitsuLib.Combat.HealthBars;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class KaratePower : NinjaSlayerPowerTemplate, IHealthBarForecastSource
+public sealed class KaratePower : NinjaSlayerPowerTemplate
 {
-    public override PowerType Type => PowerType.Debuff;
+    public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public IEnumerable<HealthBarForecastSegment> GetHealthBarForecastSegments(HealthBarForecastContext context)
+    public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
-        if (Amount <= 0 || context.Creature != Owner)
-        {
-            return [];
-        }
-
-        CardModel? previewCard = KarateCombatPreviewContext.TryGetCard(context.Creature);
-        int damage = KarateForecastCalculator.ResolveForecastDamage(this, previewCard, context.Creature);
-        if (damage <= 0)
-        {
-            return [];
-        }
-
-        return HealthBarForecasts.FromRight(context, KarateHealthBarColors.Middleground, KarateHealthBarColors.Middleground)
-            .Add(damage)
-            .Build();
+        RefreshOpposingHealthBars(Owner);
+        return Task.CompletedTask;
     }
 
-    public override async Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer, DamageResult result, ValueProp props, Creature target, CardModel? cardSource)
+    public override Task AfterPowerAmountChanged(
+        PlayerChoiceContext choiceContext,
+        PowerModel power,
+        decimal amount,
+        Creature? applier,
+        CardModel? cardSource)
     {
-        if (target == Owner
-            && props.IsPoweredAttack()
-            && result.TotalDamage > 0
-            && KarateTriggerRules.CanTriggerFromCardSource(cardSource))
+        if (ReferenceEquals(power, this))
         {
-            await Content.NinjaSlayerActions.TriggerKarate(choiceContext, dealer, target, cardSource);
+            RefreshOpposingHealthBars(Owner);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterRemoved(Creature oldOwner)
+    {
+        RefreshOpposingHealthBars(oldOwner);
+        return Task.CompletedTask;
+    }
+
+    private static void RefreshOpposingHealthBars(Creature owner)
+    {
+        foreach (Creature creature in owner.CombatState?.Creatures.Where(creature => creature.Side != owner.Side) ?? [])
+        {
+            CombatHealthBar.Refresh(creature);
         }
     }
 }

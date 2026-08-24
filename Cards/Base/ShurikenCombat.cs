@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -16,21 +17,22 @@ using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards;
 
 internal static class ShurikenCombat
 {
-    internal static async Task PlayStockTokenAnimation(CardModel source)
+    internal static async Task PlayStockTokenAnimation(Player owner)
     {
-        if (!LocalContext.IsMine(source) || NCombatRoom.Instance is not { } room)
+        if (!LocalContext.IsMe(owner) || NCombatRoom.Instance is not { } room)
         {
             return;
         }
 
         ShurikenCard token = (ShurikenCard)ModelDb.Card<ShurikenCard>().ToMutable();
-        token.Owner = source.Owner;
+        token.Owner = owner;
         token.AfterCreated();
 
         NCard? node = NCard.Create(token);
@@ -63,6 +65,28 @@ internal static class ShurikenCombat
         NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow);
         target.GetVfxContainer()?.AddChildSafely(NShivThrowVfx.Create(owner, target, Colors.Green));
         await Cmd.CustomScaledWait(0.15f, 0.15f);
+    }
+
+    internal static async Task TriggerStockShot(
+        PlayerChoiceContext choiceContext,
+        Creature owner,
+        Creature target,
+        CardModel? source)
+    {
+        Player player = owner.Player
+            ?? throw new InvalidOperationException("Shuriken stock requires a player owner.");
+        await PlayStockTokenAnimation(player);
+        await PlayStockThrowAnimation(owner, target);
+        int bonus = owner.GetPower<ShurikenDamagePower>()?.Amount ?? 0;
+        await Code.Compatibility.GameCompatibility.Damage.Deal(
+            choiceContext,
+            [target],
+            RedesignV1Rules.ShurikenDamage(bonus),
+            MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered
+                | MegaCrit.Sts2.Core.ValueProps.ValueProp.Move,
+            owner,
+            source,
+            null);
     }
 
     internal static bool HasSoarSpread(CardModel card) =>

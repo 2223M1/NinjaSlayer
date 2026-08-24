@@ -1,6 +1,8 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.LogicTests;
 
@@ -13,6 +15,104 @@ public sealed class CombatLogicTests
     public void KarateDamageUsesDescendingArithmetic(int stacks, int hits, int expected)
     {
         Assert.Equal(expected, KarateDamageMath.CumulativeDamage(stacks, hits));
+    }
+
+    [Fact]
+    public void KarateWaveSharesOneStackSnapshotAcrossEveryTarget()
+    {
+        KarateWaveResolution wave = KarateWaveRules.Resolve(
+            stacks: 3,
+            isPoweredAttack: true,
+            eligibleTargetCount: 2);
+
+        Assert.True(wave.Triggered);
+        Assert.Equal(3, wave.BonusDamagePerTarget);
+        Assert.Equal(2, wave.EligibleTargetCount);
+        Assert.Equal(2, wave.RemainingStacks);
+    }
+
+    [Fact]
+    public void KarateWaveStacksDescendOncePerAttackSegment()
+    {
+        int stacks = 3;
+        List<int> bonusDamage = [];
+
+        for (int segment = 0; segment < 3; segment++)
+        {
+            KarateWaveResolution wave = KarateWaveRules.Resolve(stacks, true, eligibleTargetCount: 1);
+            bonusDamage.Add(wave.BonusDamagePerTarget);
+            stacks = wave.RemainingStacks;
+        }
+
+        Assert.Equal([3, 2, 1], bonusDamage);
+        Assert.Equal(0, stacks);
+    }
+
+    [Theory]
+    [InlineData(6, true, true, true)]
+    [InlineData(0, true, true, false)]
+    [InlineData(6, false, true, false)]
+    [InlineData(6, true, false, false)]
+    public void KarateWaveFiltersDamageResults(
+        int totalDamage,
+        bool isOpposingSide,
+        bool canReceiveBonus,
+        bool expected)
+    {
+        Assert.Equal(
+            expected,
+            KarateWaveRules.IsEligibleHit(totalDamage, isOpposingSide, canReceiveBonus));
+    }
+
+    [Fact]
+    public void UnpoweredKarateBonusCannotTriggerRecursively()
+    {
+        KarateWaveResolution wave = KarateWaveRules.Resolve(3, isPoweredAttack: false, eligibleTargetCount: 1);
+
+        Assert.False(wave.Triggered);
+        Assert.Equal(3, wave.RemainingStacks);
+    }
+
+    [Fact]
+    public void KarateConsumesTheWaveEvenWhenItsBonusKillsTheTarget()
+    {
+        KarateWaveResolution wave = KarateWaveRules.Resolve(1, isPoweredAttack: true, eligibleTargetCount: 1);
+
+        Assert.True(wave.Triggered);
+        Assert.Equal(0, wave.RemainingStacks);
+    }
+
+    [Fact]
+    public void ShurikenAndShivTriggerKarateWithoutChangingMeleeStatistics()
+    {
+        var shuriken = new CardModel { Type = CardType.Attack };
+        shuriken.Tags.Add(NinjaSlayerCardTags.Shuriken);
+        var shiv = new CardModel { Type = CardType.Attack };
+        shiv.Tags.Add(CardTag.Shiv);
+
+        Assert.True(KarateTriggerRules.CanTriggerFromCardSource(shuriken));
+        Assert.True(KarateTriggerRules.CanTriggerFromCardSource(shiv));
+        Assert.False(KarateTriggerRules.IsMeleeAttack(shuriken));
+        Assert.False(KarateTriggerRules.IsMeleeAttack(shiv));
+    }
+
+    [Fact]
+    public void KarateForecastUsesOneWaveByDefaultAndDescendingHitsWhileTargeting()
+    {
+        Assert.Equal(3, KarateDamageMath.ForecastDamage(3, hits: 2, isPreviewTarget: false));
+        Assert.Equal(5, KarateDamageMath.ForecastDamage(3, hits: 2, isPreviewTarget: true));
+        Assert.Equal(5, KarateDamageMath.HpPreviewDamage(3, hits: 2, isPreviewTarget: true));
+        Assert.Equal(0, KarateDamageMath.HpPreviewDamage(3, hits: 2, isPreviewTarget: false));
+    }
+
+    [Fact]
+    public void KarateAllEnemyForecastUsesTheSameDescendingDamageForEveryTarget()
+    {
+        int[] allEnemyDamage = Enumerable.Range(0, 3)
+            .Select(_ => KarateDamageMath.ForecastDamage(4, hits: 3, isPreviewTarget: true))
+            .ToArray();
+
+        Assert.Equal([9, 9, 9], allEnemyDamage);
     }
 
     [Fact]
@@ -166,6 +266,25 @@ public sealed class CombatLogicTests
     }
 
     [Fact]
+    public void KarateCombatPreviewTracksEveryAllEnemyTarget()
+    {
+        var card = new CardModel();
+        var first = new Creature();
+        var second = new Creature();
+
+        using (KarateCombatPreviewContext.Enter(card, [first, second]))
+        {
+            Assert.Same(card, KarateCombatPreviewContext.TryGetCard(first));
+            Assert.Same(card, KarateCombatPreviewContext.TryGetCard(second));
+            Assert.True(KarateCombatPreviewContext.IsPreviewTarget(first));
+            Assert.True(KarateCombatPreviewContext.IsPreviewTarget(second));
+        }
+
+        Assert.False(KarateCombatPreviewContext.IsPreviewTarget(first));
+        Assert.False(KarateCombatPreviewContext.IsPreviewTarget(second));
+    }
+
+    [Fact]
     public void CombatMetricsResetOnlyTurnScopedValues()
     {
         object player = new();
@@ -217,6 +336,9 @@ public sealed class CombatLogicTests
         Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(7, 0, 3)], 2, FinisherForecastTargeting.Single, 1,
             useKarate: true, singleTarget: 0)));
+        Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
+            [new ForecastTestState(4, 0, 3), new ForecastTestState(4, 0, 0)],
+            1, FinisherForecastTargeting.All, 1, useKarate: true)));
         Assert.Equal(FinisherForecastOutcome.Guaranteed, EvaluateForecastForCorrectness(CreateForecast(
             [new ForecastTestState(1, 0, 0), new ForecastTestState(2, 0, 0)],
             1, FinisherForecastTargeting.Random, 1, narakuSplash: 2)));
@@ -1494,30 +1616,52 @@ public sealed class CombatLogicTests
                     return false;
                 }
 
+                List<int> karateTargets = [];
                 foreach (int target in targets)
                 {
                     ForecastTestState state = current[target];
                     int blocked = Math.Min(state.Block, damage);
                     int primaryLoss = damage - blocked;
                     state = state with { Block = state.Block - blocked, Hp = state.Hp - primaryLoss };
-                    if (useKarate && damage > 0 && state.Hp > 0 && state.Karate > 0)
-                    {
-                        state = state with { Hp = state.Hp - state.Karate };
-                        if (state.Hp > 0)
-                        {
-                            state = state with { Karate = state.Karate - 1 };
-                        }
-                    }
                     current[target] = state;
-
-                    if (narakuSplash > 0)
+                    if (damage > 0 && state.Hp > 0)
                     {
-                        for (int enemy = 0; enemy < current.Length; enemy++)
+                        karateTargets.Add(target);
+                    }
+
+                }
+
+                int stacks = current.Length > 0 ? current[0].Karate : 0;
+                KarateWaveResolution karateWave = KarateWaveRules.Resolve(
+                    stacks,
+                    useKarate,
+                    karateTargets.Count);
+                if (karateWave.Triggered)
+                {
+                    foreach (int target in karateTargets)
+                    {
+                        ForecastTestState state = current[target];
+                        int blocked = Math.Min(state.Block, karateWave.BonusDamagePerTarget);
+                        current[target] = state with
                         {
-                            if (current[enemy].Hp > 0)
-                            {
-                                current[enemy] = current[enemy] with { Hp = current[enemy].Hp - narakuSplash };
-                            }
+                            Block = state.Block - blocked,
+                            Hp = state.Hp - (karateWave.BonusDamagePerTarget - blocked)
+                        };
+                    }
+
+                    for (int index = 0; index < current.Length; index++)
+                    {
+                        current[index] = current[index] with { Karate = karateWave.RemainingStacks };
+                    }
+                }
+
+                for (int resultIndex = 0; resultIndex < targets.Count && narakuSplash > 0; resultIndex++)
+                {
+                    for (int enemy = 0; enemy < current.Length; enemy++)
+                    {
+                        if (current[enemy].Hp > 0)
+                        {
+                            current[enemy] = current[enemy] with { Hp = current[enemy].Hp - narakuSplash };
                         }
                     }
                 }

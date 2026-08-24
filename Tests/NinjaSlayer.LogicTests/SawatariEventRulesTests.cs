@@ -42,6 +42,20 @@ public sealed class SawatariEventRulesTests
                 monsterOdds),
             precision: 5);
 
+    [Theory]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, false)]
+    public void IntermissionWaitsForEveryEnemyToDie(
+        bool defeatedCreatureIsEnemy,
+        bool hasOtherLivingEnemy,
+        bool expected) =>
+        Assert.Equal(
+            expected,
+            SawatariEventRules.ShouldBeginIntermission(
+                defeatedCreatureIsEnemy,
+                hasOtherLivingEnemy));
+
     [Fact]
     public void PhaseTransitionsAreIdempotent()
     {

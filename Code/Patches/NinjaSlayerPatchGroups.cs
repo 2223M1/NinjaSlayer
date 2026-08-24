@@ -24,6 +24,7 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
         patcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
         patcher.RegisterPatch<BlackFlameDamagePatch>();
+        patcher.RegisterPatch<KarateDamageWavePatch>();
         patcher.RegisterPatch<AncientEntranceEventOptionPatch>();
         patcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
         patcher.RegisterPatch<BossGreetingMusicPatch>();
@@ -39,7 +40,7 @@ internal sealed class GameplayPatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerRunProgressIdentityPatch>();
         patcher.RegisterPatch<NinjaSlayerGameOverBadgeIdentityPatch>();
         patcher.RegisterPatch<NinjaSlayerCombatProgressIdentityPatch>();
-        patcher.RegisterPatch<ChadoBlockPower.EnergyGainPatch>();
+        patcher.RegisterPatch<AetherEnergyPower.EnergyGainPatch>();
         patcher.RegisterPatch<SawatariActRoomGenerationPatch>();
         patcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
         patcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
@@ -141,6 +142,7 @@ internal sealed class KaratePreviewPatchGroup : IModPatches
     public static void AddTo(ModPatcher patcher)
     {
         patcher.RegisterPatch<KarateCardPreviewTargetPatch>();
+        patcher.RegisterPatch<KarateCardPreviewAllEnemiesPatch>();
         patcher.RegisterPatch<KarateCardPreviewClearPatch>();
         patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
     }

@@ -39,6 +39,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
     public override int MaxInitialHp => MinInitialHp;
     public override bool IsHealthBarVisible => false;
+    public override string DeathSfx => NinjaSlayerAudio.ForestSawatariDeathEvent;
 
     protected override string VisualsPath =>
         "res://NinjaSlayer/scenes/creature_visuals/sawatari.tscn";

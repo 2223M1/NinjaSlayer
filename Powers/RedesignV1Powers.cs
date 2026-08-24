@@ -1,20 +1,23 @@
-using MegaCrit.Sts2.Core.CardSelection;
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
+using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Patching.Models;
-
-#pragma warning disable CA1707, CA1725, CA1826
+using STS2RitsuLib.Scaffolding.Content;
+using STS2RitsuLib.Scaffolding.Content.Patches;
 
 namespace NinjaSlayer.Powers;
 
@@ -29,89 +32,29 @@ public abstract class RedesignV1CounterPower : NinjaSlayerPowerTemplate
     public override PowerStackType StackType => PowerStackType.Counter;
 }
 
-public sealed class ChadoHealPower : RedesignV1CounterPower
+[RegisterPower]
+public sealed class HookRopeStrengthDownPower : TemporaryStrengthPower, IModPowerAssetOverrides
 {
-    public override async Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p) { if (p.Card.Owner.Creature == Owner && p.Card is ChadoBreathRedesignV1) { Flash(); await CreatureCmd.Heal(Owner, Amount); } }
+    public PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(RiffleStrengthDownPower));
+    public string? CustomIconPath => AssetProfile.IconPath;
+    public string? CustomBigIconPath => AssetProfile.BigIconPath;
+
+    public override AbstractModel OriginModel => ModelDb.Card<HookRopeRedesignV1>();
+
+    protected override bool IsPositive => false;
 }
 
-public sealed class ChadoBlockPower : RedesignV1CounterPower
+public sealed class CombatAdjustmentPower : RedesignV1CounterPower
 {
-    public sealed class EnergyGainPatch : IPatchMethod
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(TeaDrinkingSwordPower));
+
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        public static string PatchId => "ninjaslayer_chado_block_energy_gain";
-        public static string Description => "Resolve Chado block before successful energy gain completes.";
-        public static bool IsCritical => true;
-
-        public static ModPatchTarget[] GetTargets() =>
-        [
-            new(typeof(PlayerCmd), nameof(PlayerCmd.GainEnergy), [typeof(decimal), typeof(Player)])
-        ];
-
-        public static void Prefix(
-            Player player,
-            out (Player Player, int Energy, ChadoBlockPower? Power, int Block) __state)
+        if (cardPlay.Card.Owner.Creature == Owner && cardPlay.Card.Type == CardType.Skill)
         {
-            ChadoBlockPower? power = player.Creature.GetPower<ChadoBlockPower>();
-            __state = (player, player.PlayerCombatState!.Energy, power, power?.Amount ?? 0);
+            Flash();
+            await ChadoBreathCmd.Apply(Owner.Player!, Amount, cardPlay.Card);
         }
-
-        public static void Postfix(
-            ref Task __result,
-            (Player Player, int Energy, ChadoBlockPower? Power, int Block) __state) =>
-            __result = Complete(__result, __state);
-
-        private static async Task Complete(
-            Task task,
-            (Player Player, int Energy, ChadoBlockPower? Power, int Block) state)
-        {
-            await task;
-            if (state.Power == null
-                || state.Block <= 0
-                || state.Player.PlayerCombatState!.Energy <= state.Energy)
-            {
-                return;
-            }
-
-            state.Power.Flash();
-            await CreatureCmd.GainBlock(state.Power.Owner, state.Block, ValueProp.Move, null);
-        }
-    }
-}
-
-public sealed class ChadoEnergyPower : RedesignV1CounterPower
-{
-    public override async Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p) { if (p.Card.Owner.Creature == Owner && p.Card is ChadoBreathRedesignV1) { Flash(); await PlayerCmd.GainEnergy(Amount, Owner.Player!); } }
-    public override Task AfterSideTurnEnd(PlayerChoiceContext c, CombatSide side, IEnumerable<Creature> participants) =>
-        side == Owner.Side && participants.Contains(Owner)
-            ? PowerCmd.Remove(this)
-            : Task.CompletedTask;
-}
-
-public sealed class ScryDrawPower : RedesignV1CounterPower, IRedesignScryListener
-{
-    public async Task AfterScry(PlayerChoiceContext c, int viewed, int discarded) { Flash(); await CardPileCmd.Draw(c, Amount, Owner.Player!); }
-}
-
-public sealed class ScryBlockPower : RedesignV1CounterPower, IRedesignScryListener
-{
-    public async Task AfterScry(PlayerChoiceContext c, int viewed, int discarded) { Flash(); await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null); }
-}
-
-public sealed class NextAttackStrengthPower : RedesignV1CounterPower
-{
-    public override async Task BeforeCardPlayed(CardPlay p)
-    {
-        if (p.Card.Owner.Creature != Owner || p.Card.Type != CardType.Attack) return;
-        await PowerCmd.Apply<RetainedForcePower>(new ThrowingPlayerChoiceContext(), Owner, Amount, Owner, null);
-        await PowerCmd.Remove(this);
-    }
-}
-
-public sealed class PerCardStrengthPower : RedesignV1CounterPower
-{
-    public override async Task BeforeCardPlayed(CardPlay p)
-    {
-        if (p.Card.Owner.Creature == Owner) await PowerCmd.Apply<RetainedForcePower>(new ThrowingPlayerChoiceContext(), Owner, Amount, Owner, null);
     }
 
     public override Task AfterSideTurnEnd(
@@ -123,219 +66,156 @@ public sealed class PerCardStrengthPower : RedesignV1CounterPower
             : Task.CompletedTask;
 }
 
-public sealed class CarriedStrengthPower : RedesignV1CounterPower
+public sealed class MetabolicAccelerationPower : RedesignV1CounterPower
 {
-    public override Task AfterPowerAmountChanged(
-        PlayerChoiceContext choiceContext,
-        PowerModel power,
-        decimal delta,
-        Creature? applier,
-        CardModel? source) =>
-        power == this && delta > 0
-            ? PowerCmd.Apply<StrengthPower>(choiceContext, Owner, delta, applier, source)
-            : Task.CompletedTask;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(DrinkTeaPower));
 
-    public override async Task AfterPlayerTurnStart(PlayerChoiceContext c, Player player)
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (player != Owner.Player) return;
-        await PowerCmd.Apply<StrengthPower>(c, Owner, -Amount, Owner, null);
-        await PowerCmd.Remove(this);
+        if (cardPlay.Card.Owner.Creature != Owner || cardPlay.Card is not ChadoEnergyRedesignV1)
+        {
+            return;
+        }
+
+        Flash();
+        await CreatureCmd.Heal(Owner, Amount);
+        foreach (CardModel status in PileType.Hand.GetPile(Owner.Player!).Cards
+                     .Where(card => card.Type == CardType.Status)
+                     .ToList())
+        {
+            await CardCmd.Exhaust(choiceContext, status);
+        }
+    }
+}
+
+public sealed class ScryBlockPower : RedesignV1CounterPower, IRedesignScryListener
+{
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(DiscardDefensePower));
+
+    public async Task AfterScry(PlayerChoiceContext choiceContext, int viewed, int discarded)
+    {
+        Flash();
+        await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null);
+    }
+}
+
+public sealed class ScryStatusExhaustPower : NinjaSlayerPowerTemplate
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Single;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(DiscardDefensePower));
+}
+
+public sealed class AetherEnergyPower : RedesignV1CounterPower
+{
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
+
+    public sealed class EnergyGainPatch : IPatchMethod
+    {
+        public static string PatchId => "ninjaslayer_redesign_aether_energy_gain";
+        public static string Description => "Grant Karate after successful extra energy gain.";
+        public static bool IsCritical => true;
+
+        public static ModPatchTarget[] GetTargets() =>
+        [
+            new(typeof(PlayerCmd), nameof(PlayerCmd.GainEnergy), [typeof(decimal), typeof(Player)])
+        ];
+
+        public static void Prefix(
+            Player player,
+            out (Player Player, int Energy, AetherEnergyPower? Power) __state) =>
+            __state = (
+                player,
+                player.PlayerCombatState?.Energy ?? 0,
+                player.Creature.GetPower<AetherEnergyPower>());
+
+        public static void Postfix(
+            ref Task __result,
+            (Player Player, int Energy, AetherEnergyPower? Power) __state) =>
+            __result = Complete(__result, __state);
+
+        private static async Task Complete(
+            Task task,
+            (Player Player, int Energy, AetherEnergyPower? Power) state)
+        {
+            await task;
+            if (state.Power == null
+                || state.Power.Amount <= 0
+                || state.Player.PlayerCombatState == null
+                || state.Player.PlayerCombatState.Energy <= state.Energy)
+            {
+                return;
+            }
+
+            state.Power.Flash();
+            await PowerCmd.Apply<KaratePower>(
+                new ThrowingPlayerChoiceContext(),
+                state.Player.Creature,
+                state.Power.Amount,
+                state.Player.Creature,
+                null);
+        }
+    }
+}
+
+public sealed class KarateTrainingPower : RedesignV1CounterPower
+{
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (player == Owner.Player)
+        {
+            Flash();
+            await PowerCmd.Apply<KaratePower>(choiceContext, Owner, Amount, Owner, null);
+        }
     }
 }
 
 public sealed class ShuffleBlockPower : RedesignV1CounterPower
 {
-    public override async Task AfterShuffle(PlayerChoiceContext c, Player player) { if (player == Owner.Player) { Flash(); await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null); } }
-}
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(IBlockPower));
 
-public sealed partial class EveryThirdAttackPower : RedesignV1CounterPower
-{
-    private int _attacks;
-    private decimal ModifyDamageMultiplicativeCore(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? source)
-        => dealer == Owner && source?.Type == CardType.Attack && (_attacks + 1) % 3 == 0 ? Amount : 1m;
-    public override Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p) { if (p.Card.Owner.Creature == Owner && p.Card.Type == CardType.Attack) _attacks++; return Task.CompletedTask; }
-}
-
-public sealed class SameNameCostPower : RedesignV1CounterPower
-{
-    private ModelId _firstCardId = ModelId.none;
-    private int _remaining;
-    private bool _active = true;
-
-    public override bool TryModifyEnergyCostInCombatLate(CardModel card, decimal originalCost, out decimal modifiedCost)
+    public override async Task AfterShuffle(PlayerChoiceContext choiceContext, Player player)
     {
-        modifiedCost = originalCost;
-        if (!_active
-            || _remaining <= 0
-            || card.Owner.Creature != Owner
-            || card.Id != _firstCardId
-            || card.Pile?.Type is not (PileType.Hand or PileType.Play))
+        if (player == Owner.Player)
         {
-            return false;
-        }
-
-        modifiedCost = 0;
-        return true;
-    }
-
-    public override Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p)
-    {
-        if (!_active || !p.IsFirstInSeries || p.Card.Owner.Creature != Owner)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (_firstCardId == ModelId.none)
-        {
-            _firstCardId = p.Card.Id;
-            _remaining = Amount;
             Flash();
-        }
-        else if (p.Card.Id == _firstCardId && _remaining > 0)
-        {
-            _remaining--;
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
-    {
-        if (participants.Contains(Owner))
-        {
-            _active = true;
-            _firstCardId = ModelId.none;
-            _remaining = 0;
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public override Task AfterSideTurnEnd(PlayerChoiceContext c, CombatSide side, IEnumerable<Creature> participants)
-    {
-        if (participants.Contains(Owner))
-        {
-            _active = false;
-        }
-
-        return Task.CompletedTask;
-    }
-}
-
-public sealed class ChadoBaseEnergyPower : RedesignV1CounterPower
-{
-    public override async Task AfterCardPlayed(PlayerChoiceContext c, CardPlay p) { if (p.Card.Owner.Creature == Owner && p.Card is ChadoBreathRedesignV1) await PlayerCmd.GainEnergy(Amount, Owner.Player!); }
-}
-
-public sealed class EndTurnRetainPower : NinjaSlayerPowerTemplate
-{
-    public override PowerType Type => PowerType.Buff;
-    public override PowerStackType StackType => PowerStackType.Single;
-    public override async Task BeforeSideTurnEnd(PlayerChoiceContext c, CombatSide side, IEnumerable<Creature> participants)
-    {
-        if (participants.Contains(Owner))
-        {
-            CardModel? card = (await CardSelectCmd.FromHand(c, Owner.Player!, new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, 1), null, this)).FirstOrDefault();
-            card?.AddKeyword(CardKeyword.Retain);
+            await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null);
         }
     }
 }
 
-public sealed class ThreeTurnBlockPower : RedesignV1CounterPower
+public sealed class WasshoiDuplicationPower : RedesignV1CounterPower
 {
-    private int _turns = 2;
+    private CardModel? _targetCard;
+
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("EveryThirdAttackPower");
 
-    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    public void Arm(CardModel card)
     {
-        if (player != Owner.Player || _turns <= 0) return;
-        await CreatureCmd.GainBlock(Owner, Amount + (Owner.GetPower<StrengthPower>()?.Amount ?? 0), ValueProp.Move, null);
-        if (--_turns == 0) await PowerCmd.Remove(this);
+        AssertMutable();
+        _targetCard = card;
     }
-}
 
-public sealed class RemainingBlockStrengthPower : NinjaSlayerPowerTemplate
-{
-    public override PowerType Type => PowerType.Buff;
-    public override PowerStackType StackType => PowerStackType.Single;
+    public override int ModifyCardPlayCount(CardModel card, Creature? target, int playCount) =>
+        card == _targetCard ? playCount + Amount : playCount;
 
-    public override async Task BeforeSideTurnStart(PlayerChoiceContext c, CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
-    {
-        if (!participants.Contains(Owner))
-        {
-            return;
-        }
-
-        if (Owner.Block > 0)
-        {
-            await PowerCmd.Apply<RetainedForcePower>(c, Owner, Owner.Block, Owner, null);
-        }
-
-        await PowerCmd.Remove(this);
-    }
-}
-
-public sealed class OneTurnBarricadePower : NinjaSlayerPowerTemplate
-{
-    public override PowerType Type => PowerType.Buff;
-    public override PowerStackType StackType => PowerStackType.Single;
-    public override bool ShouldClearBlock(Creature creature) => creature != Owner;
-    public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
-    {
-        if (participants.Contains(Owner)) await PowerCmd.Remove(this);
-    }
-}
-
-public sealed class RetaliatoryIntentPower : NinjaSlayerPowerTemplate
-{
-    public override PowerType Type => PowerType.Buff;
-    public override PowerStackType StackType => PowerStackType.Single;
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (target != Owner || result.TotalDamage <= 0 || result.WasFullyBlocked) return;
-        foreach (Creature enemy in Owner.CombatState!.HittableEnemies.ToList())
-        {
-            await PowerCmd.Apply<WeakPower>(choiceContext, enemy, 3, Owner, cardSource);
-            await PowerCmd.Apply<VulnerablePower>(choiceContext, enemy, 3, Owner, cardSource);
-        }
-        await PowerCmd.Remove(this);
-    }
-}
-
-public sealed class ShurikenRegenerationPower : RedesignV1CounterPower
-{
-    public override async Task AfterPowerAmountChanged(PlayerChoiceContext c, PowerModel power, decimal delta, Creature? applier, CardModel? source)
-    {
-        if (power is ShurikenStockPower && power.Owner == Owner && delta < 0) await PowerCmd.Apply<ShurikenStockPower>(c, Owner, Amount, Owner, source);
-    }
-}
-
-public sealed partial class NullifyHitsPower : RedesignV1CounterPower
-{
-    private bool _consumed;
-    private decimal ModifyDamageMultiplicativeCore(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (target != Owner || Amount <= 0 || amount <= 12) return 1m;
-        _consumed = true;
-        return 0m;
-    }
-    public override async Task AfterModifyingDamageAmount(CardModel? cardSource)
-    {
-        if (!_consumed) return;
-        _consumed = false;
-        Flash();
-        await PowerCmd.Decrement(this);
-    }
+    public override Task AfterModifyingCardPlayCount(CardModel card) =>
+        card == _targetCard ? PowerCmd.Remove(this) : Task.CompletedTask;
 }
 
 public sealed class BloodTearsRedesignPower : RedesignV1CounterPower
 {
-    public override async Task AfterPlayerTurnStart(PlayerChoiceContext c, Player player)
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(BloodTearsPower));
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (player == Owner.Player)
         {
             await GameCompatibility.Damage.Deal(
-                c,
+                choiceContext,
                 [Owner],
                 Amount,
                 ValueProp.Unblockable | ValueProp.Unpowered,
@@ -343,5 +223,156 @@ public sealed class BloodTearsRedesignPower : RedesignV1CounterPower
                 null,
                 null);
         }
+    }
+}
+
+public sealed class BladeCyclePower : RedesignV1CounterPower
+{
+    public override PowerStackType StackType => PowerStackType.Single;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ExhaustForShurikenPower));
+}
+
+public sealed class HardItOutPower : RedesignV1CounterPower
+{
+    private int _damageRemainder;
+    private int _pendingWounds;
+
+    public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(GreatUkePower));
+
+    public override decimal ModifyHpLostAfterOstyLate(
+        Creature target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource)
+    {
+        if (target != Owner || dealer == null || dealer.Side == Owner.Side || amount <= 0)
+        {
+            return amount;
+        }
+
+        int accumulated = _damageRemainder + (int)amount;
+        _pendingWounds += RedesignV1Rules.ResolveHardItOutWounds(accumulated, Amount);
+        _damageRemainder = Amount <= 0 ? 0 : accumulated % Amount;
+        return 0;
+    }
+
+    public override async Task AfterModifyingHpLostAfterOsty()
+    {
+        Flash();
+        while (_pendingWounds-- > 0)
+        {
+            await NinjaSlayerActions.AddGeneratedCard<Wound>(Owner.Player!, PileType.Hand);
+        }
+
+        _pendingWounds = 0;
+    }
+
+    public override Task AfterSideTurnStart(
+        CombatSide side,
+        IReadOnlyList<Creature> participants,
+        ICombatState combatState) =>
+        side == Owner.Side && participants.Contains(Owner)
+            ? PowerCmd.Remove(this)
+            : Task.CompletedTask;
+}
+
+public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
+{
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(NarakuPower));
+
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        if (cardPlay.Card.Owner.Creature != Owner || cardPlay.Card.Type != CardType.Attack)
+        {
+            return;
+        }
+
+        Flash();
+        await PowerCmd.Apply<KaratePower>(choiceContext, Owner, Amount, Owner, cardPlay.Card);
+        await NinjaSlayerActions.AddGeneratedCard<BlackFlameRedesignV1>(
+            Owner.Player!,
+            PileType.Draw,
+            CardPilePosition.Top);
+    }
+}
+
+public sealed class KillingIntentRedesignPower : NinjaSlayerPowerTemplate
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Single;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KillingIntentPower));
+    public bool GenerateUpgradedCard { get; set; }
+
+    public override async Task AfterDamageReceived(
+        PlayerChoiceContext choiceContext,
+        Creature target,
+        DamageResult result,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource)
+    {
+        if (target != Owner
+            || dealer == null
+            || dealer.Side == Owner.Side
+            || !props.IsPoweredAttack()
+            || !result.WasFullyBlocked
+            || result.TotalDamage <= 0)
+        {
+            return;
+        }
+
+        StraightKiRedesignV1 card = CombatState.CreateCard<StraightKiRedesignV1>(Owner.Player!);
+        if (GenerateUpgradedCard)
+        {
+            CardCmd.Upgrade(card);
+        }
+
+        Flash();
+        await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, Owner.Player!);
+        await PowerCmd.Remove(this);
+    }
+
+    public override Task AfterSideTurnStart(
+        CombatSide side,
+        IReadOnlyList<Creature> participants,
+        ICombatState combatState) =>
+        side == Owner.Side && participants.Contains(Owner)
+            ? PowerCmd.Remove(this)
+            : Task.CompletedTask;
+}
+
+public sealed class GreatUkeRedesignPower : RedesignV1CounterPower
+{
+    private bool _consumed;
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(GreatUkePower));
+
+    public override decimal ModifyHpLostAfterOstyLate(
+        Creature target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource)
+    {
+        if (target != Owner || amount <= 10 || Amount <= 0)
+        {
+            return amount;
+        }
+
+        _consumed = true;
+        return 0;
+    }
+
+    public override async Task AfterModifyingHpLostAfterOsty()
+    {
+        if (!_consumed)
+        {
+            return;
+        }
+
+        _consumed = false;
+        Flash();
+        await PowerCmd.Decrement(this);
     }
 }

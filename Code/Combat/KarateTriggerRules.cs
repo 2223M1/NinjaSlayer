@@ -6,26 +6,10 @@ namespace NinjaSlayer.Code.Combat;
 
 public static class KarateTriggerRules
 {
-    public static bool CanTriggerFromCardSource(CardModel? cardSource)
-    {
-        if (cardSource == null)
-        {
-            return true;
-        }
-
-        if (cardSource.Tags.Contains(NinjaSlayerCardTags.Shuriken))
-        {
-            return false;
-        }
-
-        if (cardSource.Tags.Contains(CardTag.Shiv))
-        {
-            return false;
-        }
-
-        return true;
-    }
+    public static bool CanTriggerFromCardSource(CardModel? _) => true;
 
     public static bool IsMeleeAttack(CardModel card) =>
-        card.Type == CardType.Attack && CanTriggerFromCardSource(card);
+        card.Type == CardType.Attack
+        && !card.Tags.Contains(NinjaSlayerCardTags.Shuriken)
+        && !card.Tags.Contains(CardTag.Shiv);
 }

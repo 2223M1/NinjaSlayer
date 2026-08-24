@@ -1,3 +1,12 @@
+namespace MegaCrit.Sts2.Core.Entities.Cards
+{
+    public enum CardTag
+    {
+        Shiv,
+        Shuriken
+    }
+}
+
 namespace MegaCrit.Sts2.Core.Entities.Creatures
 {
     public class Creature;
@@ -5,7 +14,29 @@ namespace MegaCrit.Sts2.Core.Entities.Creatures
 
 namespace MegaCrit.Sts2.Core.Models
 {
-    public class CardModel;
+    using MegaCrit.Sts2.Core.Entities.Cards;
+
+    public enum CardType
+    {
+        Skill,
+        Attack
+    }
+
+    public class CardModel
+    {
+        public CardType Type { get; set; }
+        public HashSet<CardTag> Tags { get; } = [];
+    }
+}
+
+namespace NinjaSlayer.Content
+{
+    using MegaCrit.Sts2.Core.Entities.Cards;
+
+    public static class NinjaSlayerCardTags
+    {
+        public static readonly CardTag Shuriken = CardTag.Shuriken;
+    }
 }
 
 namespace MegaCrit.Sts2.Core.Nodes.Combat

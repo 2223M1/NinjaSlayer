@@ -563,7 +563,9 @@ if (/(?:InstallCapability|TryInstallRequiredCapability)<[^>]+>\(\s*"/.test(entry
 }
 
 const concreteCardSources = filesUnder(join(root, 'Cards'))
-  .filter((path) => path.endsWith('.cs') && !path.includes(`${join('Cards', 'Base')}`))
+  .filter((path) => path.endsWith('.cs')
+    && !path.includes(`${join('Cards', 'Base')}`)
+    && !path.includes(`${join('Cards', 'RedesignV1')}`))
   .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
   .filter(({ source }) => /public\s+sealed\s+class\s+\w+/.test(source));
 for (const { path, source } of concreteCardSources) {
@@ -582,6 +584,153 @@ for (const { path, source } of concreteCardSources) {
       `${className}.png must be ${expectedSize[0]}x${expectedSize[1]}, found ${portraitSize[0]}x${portraitSize[1]}`,
     );
   }
+}
+
+const redesignRulesSource = readFileSync(join(root, 'Content', 'RedesignV1Rules.cs'), 'utf8');
+const redesignCardSource = filesUnder(join(root, 'Cards', 'RedesignV1'))
+  .filter(path => path.endsWith('.cs'))
+  .map(path => readFileSync(path, 'utf8'))
+  .join('\n');
+const redesignStarterRelicSource = readFileSync(
+  join(root, 'Relics', 'RedesignV1ChadoBreathingRelic.cs'),
+  'utf8',
+);
+if (!/protected\s+virtual\s+int\s+ChadoCount\s*=>\s*0/.test(redesignStarterRelicSource)
+    || !/protected\s+override\s+int\s+ChadoCount\s*=>\s*2/.test(redesignStarterRelicSource)
+    || !/ChadoBreathCmd\.Apply\(Owner,\s*2,\s*this\)/.test(redesignStarterRelicSource)) {
+  errors.push('Redesign starter relics must apply Chado Breathing 2, with two Chado added by the Ancient version');
+}
+
+function readRedesignCardIds(propertyName) {
+  const match = new RegExp(`${propertyName}\\s*\\{[^}]*\\}\\s*=\\s*\\[([\\s\\S]*?)\\];`)
+    .exec(redesignRulesSource);
+  if (!match) {
+    errors.push(`RedesignV1Rules.${propertyName} is missing`);
+    return [];
+  }
+  return [...match[1].matchAll(/"([^"]+)"/g)].map(candidate => candidate[1]);
+}
+
+const redesignRewardGroups = [
+  ['Common', 19, readRedesignCardIds('CommonRewardCardIds')],
+  ['Uncommon', 32, readRedesignCardIds('UncommonRewardCardIds')],
+  ['Rare', 17, readRedesignCardIds('RareRewardCardIds')],
+];
+const redesignRewardIds = redesignRewardGroups.flatMap(([, , ids]) => ids);
+for (const [rarity, expectedCount, ids] of redesignRewardGroups) {
+  const declaredCount = Number(new RegExp(`const\\s+int\\s+${rarity}RewardCount\\s*=\\s*(\\d+)`)
+    .exec(redesignRulesSource)?.[1]);
+  if (declaredCount !== expectedCount || ids.length !== expectedCount) {
+    errors.push(`Redesign V1 ${rarity} rewards must contain exactly ${expectedCount} cards`);
+  }
+
+  const implementedIds = [...redesignCardSource.matchAll(
+    new RegExp(`public\\s+sealed\\s+(?:partial\\s+)?class\\s+(\\w+)\\s*:\\s*RedesignV1${rarity}Card`, 'g'),
+  )].map(match => match[1]);
+  const missing = ids.filter(id => !implementedIds.includes(id));
+  const extra = implementedIds.filter(id => !ids.includes(id));
+  if (missing.length > 0 || extra.length > 0) {
+    errors.push(
+      `Redesign V1 ${rarity} reward list differs from implementations `
+      + `(missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'})`,
+    );
+  }
+}
+
+if (new Set(redesignRewardIds).size !== 68) {
+  errors.push('Redesign V1 rewards must contain 68 unique cards');
+}
+const excludedRedesignIds = readRedesignCardIds('ExcludedSpecialCardIds');
+for (const id of excludedRedesignIds) {
+  if (redesignRewardIds.includes(id)) errors.push(`Redesign V1 special card is in rewards: ${id}`);
+  if (!new RegExp(`class\\s+${id}\\b`).test(redesignCardSource)
+      && !filesUnder(join(root, 'Cards', 'Ancients')).some(path =>
+        path.endsWith('.cs') && new RegExp(`class\\s+${id}\\b`).test(readFileSync(path, 'utf8')))) {
+    errors.push(`Redesign V1 special card implementation is missing: ${id}`);
+  }
+}
+
+const redesignBasicSource = readFileSync(
+  join(root, 'Cards', 'RedesignV1', 'RedesignV1BasicCards.cs'),
+  'utf8',
+);
+for (const id of ['KarateStraightRedesignV1', 'TurtleShellRedesignV1']) {
+  const classPattern = new RegExp(
+    `class\\s+${id}\\s*:\\s*NinjaSlayerRedesignCardTemplate\\s*\\{`
+      + `[\\s\\S]*?NinjaSlayerCardSpec\\s+Spec\\s*=\\s*new\\([^;]*CardRarity\\.Basic[^;]*\\);`,
+  );
+  if (!classPattern.test(redesignBasicSource)) {
+    errors.push(`${id} must use the Redesign character pool and Basic starter-card rarity`);
+  }
+}
+if (!/AddStartingCard<TurtleShellRedesignV1>\(1,\s*3\)/.test(entrySource)
+    || /AddStartingCard<CountermeasureRedesignV1>/.test(entrySource)) {
+  errors.push('Redesign V1 starting deck must replace Countermeasure with TurtleShellRedesignV1');
+}
+if (!redesignRewardIds.includes('CountermeasureRedesignV1')
+    || !excludedRedesignIds.includes('TurtleShellRedesignV1')) {
+  errors.push('Countermeasure must be a reward and Turtle Shell must remain starter-only');
+}
+if (!/class\s+TurtleShellRedesignV1\b[\s\S]*?base\(Spec,\s*"BlockCard"\)/.test(redesignBasicSource)) {
+  errors.push('TurtleShellRedesignV1 must reuse BlockCard.png');
+}
+if (!existsSync(join(root, 'NinjaSlayer', 'images', 'cards', 'BlockCard.png'))) {
+  errors.push('TurtleShellRedesignV1 portrait BlockCard.png is missing');
+}
+
+const tokenPoolRedesignIds = [...redesignCardSource.matchAll(
+  /\[RegisterCard\(typeof\(TokenCardPool\)\)\]\s*public\s+sealed\s+class\s+(\w+)/g,
+)].map(match => match[1]).sort();
+const expectedColorlessRedesignIds = [
+  'ChadoEnergyRedesignV1',
+  'IyaEchoRedesignV1',
+  'PunchRedesignV1',
+];
+if (tokenPoolRedesignIds.join(',') !== expectedColorlessRedesignIds.join(',')) {
+  errors.push('Only Redesign generated tokens may use the colorless card pool');
+}
+
+const collapseFistSource = readFileSync(join(root, 'Cards', 'Ancients', 'CollapseFist.cs'), 'utf8');
+if (!/\[RegisterCard\(typeof\(NinjaSlayerRedesignCardPool\)\)\]\s*public\s+sealed\s+class\s+CollapseFistRedesignV1/.test(collapseFistSource)) {
+  errors.push('CollapseFistRedesignV1 must use the Redesign character pool');
+}
+
+const redesignArtOwners = new Map();
+for (const id of redesignRewardIds) {
+  const artMatch = new RegExp(
+    `:\\s*base\\(nameof\\(${id}\\),\\s*(?:nameof\\((\\w+)\\)|"([^"]+)")`,
+  ).exec(redesignCardSource);
+  if (!artMatch) {
+    errors.push(`Unable to resolve Redesign V1 card art: ${id}`);
+    continue;
+  }
+
+  const artName = artMatch[1] ?? artMatch[2];
+  const previousOwner = redesignArtOwners.get(artName);
+  if (previousOwner) errors.push(`Redesign V1 reward art ${artName}.png is shared by ${previousOwner} and ${id}`);
+  else redesignArtOwners.set(artName, id);
+
+  const portraitPath = join(root, 'NinjaSlayer', 'images', 'cards', `${artName}.png`);
+  if (!readPngSize(portraitPath)) {
+    if (!existsSync(portraitPath)) errors.push(`Missing Redesign V1 reward portrait: ${artName}.png`);
+  }
+
+  if (id === 'BladeCycleRedesignV1' && artName !== 'ShurikenBarrage') {
+    errors.push('BladeCycleRedesignV1 must use ShurikenBarrage.png');
+  }
+}
+
+const shurikenStockPowerSource = readFileSync(join(root, 'Powers', 'ShurikenStockPower.cs'), 'utf8');
+if (!/override\s+async\s+Task\s+AfterShuffle\b/.test(shurikenStockPowerSource)
+    || /override\s+async\s+Task\s+AfterCardPlayed\b/.test(shurikenStockPowerSource)) {
+  errors.push('Shuriken Stock must trigger on shuffle instead of after Attack cards');
+}
+const redesignPowerSource = readFileSync(join(root, 'Powers', 'RedesignV1Powers.cs'), 'utf8');
+const bladeCyclePowerSource = /class\s+BladeCyclePower\b([\s\S]*?)class\s+HardItOutPower\b/
+  .exec(redesignPowerSource)?.[1] ?? '';
+if (!/PowerStackType\.Single/.test(bladeCyclePowerSource)
+    || /AfterShuffle\s*\(/.test(bladeCyclePowerSource)) {
+  errors.push('Blade Cycle must be a single non-dispatching preservation marker');
 }
 
 const placeholderInventoryPath = join(root, 'Docs', 'placeholder-assets.json');
@@ -604,6 +753,18 @@ if (placeholderInventory) {
     }
     if (typeof item.releaseBlocking !== 'boolean') {
       errors.push(`Placeholder ${item.id ?? '<missing>'} must define boolean releaseBlocking`);
+    }
+  }
+}
+
+for (const language of ['zhs', 'eng']) {
+  const localizedCards = readJson(join(root, 'NinjaSlayer', 'localization', language, 'cards.json')) ?? {};
+  const chainedValueFormatter = /\{[A-Za-z][A-Za-z0-9]*(?::(?:abs|diff|inverseDiff|energyIcons|starIcons|percentMore|percentLess)(?:\([^{}]*\))?){2,}\}/;
+  for (const [key, description] of Object.entries(localizedCards)) {
+    if (key.includes('_REDESIGN_V1.description')
+        && typeof description === 'string'
+        && chainedValueFormatter.test(description)) {
+      errors.push(`${language} ${key} uses unsupported chained value formatters`);
     }
   }
 }
@@ -631,9 +792,10 @@ const powerClasses = filesUnder(join(root, 'Powers'))
     }));
   });
 for (const powerClass of powerClasses) {
-  const reusedIcon = powerClass.source.match(
-    /NinjaSlayerPowerAssets\.Named\(nameof\((\w+Power)\)\)/,
-  )?.[1];
+  const reusedIconMatch = powerClass.source.match(
+    /NinjaSlayerPowerAssets\.Named\((?:nameof\((\w+Power)\)|"(\w+Power)")\)/,
+  );
+  const reusedIcon = reusedIconMatch?.[1] ?? reusedIconMatch?.[2];
   const iconName = reusedIcon ?? powerClass.name;
   const iconPath = join(root, 'NinjaSlayer', 'images', 'powers', `${iconName}.png`);
   const iconSize = readPngSize(iconPath);

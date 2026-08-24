@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Modding;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
@@ -68,19 +69,17 @@ public class Entry
             }
             activation.Track(
                 NinjaSlayerCapabilityIds.CoreContent,
-                NinjaSlayerTeaEnergy.Register(NinjaSlayerIds.ModId),
-                installedCount: 1);
-            activation.Track(
-                NinjaSlayerCapabilityIds.CoreContent,
                 NinjaSlayerRunRulesRuntime.Subscribe(),
                 installedCount: 1);
 
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
                 .Character<NinjaSlayerRedesignCharacter>(ConfigureRedesignStartingDeck)
+                .HealthBarForecast<KarateHealthBarForecastSource>("karate")
                 .Apply();
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
+            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, CollapseFistRedesignV1>();
         }
         catch (Exception exception)
         {
@@ -143,8 +142,9 @@ public class Entry
     {
         character
             .AddStartingCard<StrikeNinjaSlayerRedesignV1>(4, 0)
-            .AddStartingCard<DefendNinjaSlayerRedesignV1>(5, 1)
-            .AddStartingCard<HandChopRedesignV1>(1, 2);
+            .AddStartingCard<DefendNinjaSlayerRedesignV1>(4, 1)
+            .AddStartingCard<KarateStraightRedesignV1>(1, 2)
+            .AddStartingCard<TurtleShellRedesignV1>(1, 3);
     }
 
     private static bool TryActivateCoreCapabilities(

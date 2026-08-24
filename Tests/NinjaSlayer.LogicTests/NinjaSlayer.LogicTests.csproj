@@ -61,6 +61,8 @@
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
     <Compile Include="..\..\Code\Combat\KarateDamageMath.cs" Link="KarateDamageMath.cs" />
+    <Compile Include="..\..\Code\Combat\KarateTriggerRules.cs" Link="KarateTriggerRules.cs" />
+    <Compile Include="..\..\Code\Combat\KarateWaveRules.cs" Link="KarateWaveRules.cs" />
     <Compile Include="..\..\Code\Combat\ScreenShakeSuppressionContext.cs" Link="ScreenShakeSuppressionContext.cs" />
     <Compile Include="..\..\Code\Combat\SawatariEventRules.cs" Link="SawatariEventRules.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiOrbitMath.cs" Link="YamotoKokiOrbitMath.cs" />

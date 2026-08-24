@@ -104,6 +104,8 @@ public static class NinjaSlayerAudio
         ForestSawatariRoot + "/forest_sawatari_begin";
     public const string ForestSawatariHurtEvent =
         ForestSawatariRoot + "/forest_sawatari_hurt";
+    public const string ForestSawatariDeathEvent =
+        ForestSawatariRoot + "/forest_sawatari_death";
     public const string ForestSawatariAttackEvent =
         ForestSawatariRoot + "/forest_sawatari_attack";
     public const string ForestSawatariEndEvent =

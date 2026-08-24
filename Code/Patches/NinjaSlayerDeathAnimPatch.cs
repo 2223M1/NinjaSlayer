@@ -49,7 +49,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             return true;
         }
 
-        if (__instance.Entity.Monster is DarkNinjaMonster darkNinja)
+        if (__instance.Entity.Monster is DarkNinjaMonster or SawatariMonster)
         {
             __state = false;
             if (__instance.DeathAnimationTask is { IsCompleted: false })
@@ -58,7 +58,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
                 return false;
             }
 
-            Task deathTask = PlayDarkNinjaDeath(__instance, darkNinja, shouldRemove);
+            Task deathTask = PlayMonsterDeathFlight(__instance, shouldRemove);
             __instance.DeathAnimationTask = deathTask;
             TaskHelper.RunSafely(deathTask);
             __result = DeathAnimation.EnemyKillDurationSeconds;
@@ -98,9 +98,8 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         __result = DeathAnimation.GetDuration(context.Kind);
     }
 
-    private static async Task PlayDarkNinjaDeath(
+    private static async Task PlayMonsterDeathFlight(
         NCreature creatureNode,
-        DarkNinjaMonster monster,
         bool shouldRemove)
     {
         GameCompatibility.CreaturePresentation.DisableInteractionForDeath(creatureNode);
@@ -120,7 +119,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         }
 
         creatureNode.AnimDisableUi();
-        SfxCmd.PlayDeath(monster);
+        SfxCmd.PlayDeath(creatureNode.Entity.Monster);
         try
         {
             await DeathAnimation.PlayEnemyFinisherFlightOnly(

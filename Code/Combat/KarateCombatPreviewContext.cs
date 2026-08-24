@@ -7,27 +7,40 @@ public static class KarateCombatPreviewContext
 {
     private static Scope? _current;
 
-    public static IDisposable Enter(CardModel? card, Creature? target)
+    public static IDisposable Enter(CardModel? card, Creature? target) =>
+        Enter(card, target == null ? [] : [target]);
+
+    public static IDisposable Enter(CardModel? card, IReadOnlyList<Creature> targets)
     {
-        Creature? previousTarget = CurrentTarget;
-        var scope = new Scope(FindActive(_current), card, target);
+        IReadOnlyList<Creature> previousTargets = CurrentTargets;
+        Creature[] assignedTargets = targets.Distinct().ToArray();
+        var scope = new Scope(FindActive(_current), card, assignedTargets);
         _current = scope;
-        RefreshAssignedTargets(previousTarget, target);
+        RefreshAssignedTargets(previousTargets, assignedTargets);
         return scope;
     }
 
-    public static void RefreshAssignedTargets(Creature? previousTarget, Creature? currentTarget)
+    public static void RefreshAssignedTargets(
+        IEnumerable<Creature> previousTargets,
+        IEnumerable<Creature> currentTargets)
     {
-        CombatHealthBar.Refresh(previousTarget);
-        CombatHealthBar.Refresh(currentTarget);
+        foreach (Creature target in previousTargets.Concat(currentTargets).Distinct())
+        {
+            CombatHealthBar.Refresh(target);
+        }
     }
 
     public static CardModel? TryGetCard(Creature creature) =>
-        CurrentTarget == creature ? CurrentCard : null;
+        IsPreviewTarget(creature) ? CurrentCard : null;
+
+    public static bool IsPreviewTarget(Creature creature) =>
+        CurrentTargets.Contains(creature);
 
     public static CardModel? CurrentCard => FindActive(_current)?.Card;
 
-    public static Creature? CurrentTarget => FindActive(_current)?.Target;
+    public static IReadOnlyList<Creature> CurrentTargets => FindActive(_current)?.Targets ?? [];
+
+    public static Creature? CurrentTarget => CurrentTargets.Count > 0 ? CurrentTargets[0] : null;
 
     private static Scope? FindActive(Scope? scope)
     {
@@ -39,13 +52,13 @@ public static class KarateCombatPreviewContext
         return scope;
     }
 
-    private sealed class Scope(Scope? parent, CardModel? card, Creature? target) : IDisposable
+    private sealed class Scope(Scope? parent, CardModel? card, Creature[] targets) : IDisposable
     {
         private int _disposed;
 
         public Scope? Parent { get; } = parent;
         public CardModel? Card { get; } = card;
-        public Creature? Target { get; } = target;
+        public Creature[] Targets { get; } = targets;
         public bool IsDisposed => Volatile.Read(ref _disposed) != 0;
 
         public void Dispose()
@@ -57,9 +70,9 @@ public static class KarateCombatPreviewContext
 
             if (ReferenceEquals(_current, this))
             {
-                Creature? previousTarget = Target;
+                Creature[] previousTargets = Targets;
                 _current = FindActive(Parent);
-                RefreshAssignedTargets(previousTarget, CurrentTarget);
+                RefreshAssignedTargets(previousTargets, CurrentTargets);
             }
         }
     }

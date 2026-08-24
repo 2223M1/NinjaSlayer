@@ -12,7 +12,6 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Cards;
 
 [RegisterCard(typeof(NinjaSlayerCardPool))]
-[RegisterCard(typeof(NinjaSlayerRedesignCardPool))]
 public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(CollapseFist), 2, CardType.Attack, CardRarity.Ancient, TargetType.AnyEnemy, true);
@@ -38,6 +37,49 @@ public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
     protected override void OnUpgrade()
     {
         DynamicVars.Damage.UpgradeValueBy(10);
+        DynamicVars.Karate().UpgradeValueBy(2);
+    }
+}
+
+[RegisterCard(typeof(NinjaSlayerRedesignCardPool))]
+public sealed class CollapseFistRedesignV1 : NinjaSlayerStandaloneCardTemplate
+{
+    private static readonly NinjaSlayerCardSpec CardSpec = new(
+        nameof(CollapseFistRedesignV1),
+        1,
+        CardType.Attack,
+        CardRarity.Ancient,
+        TargetType.AnyEnemy,
+        true,
+        nameof(CollapseFist));
+
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new DamageVar(10, ValueProp.Move),
+        new KarateVar(5)
+    ];
+
+    public CollapseFistRedesignV1() : base(CardSpec) { }
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this, cardPlay)
+            .WithHeavyBluntHitFx()
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
+            .Targeting(cardPlay.Target!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
+        await PowerCmd.Apply<KaratePower>(
+            choiceContext,
+            Owner.Creature,
+            DynamicVars.Karate().BaseValue,
+            Owner.Creature,
+            this);
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(4);
         DynamicVars.Karate().UpgradeValueBy(2);
     }
 }

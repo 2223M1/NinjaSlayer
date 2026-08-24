@@ -10,7 +10,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public static class HopAnimation
 {
     private static readonly Dictionary<ulong, Vector2> _basePositions = new();
-    private static readonly Dictionary<ulong, Tween> _activeTweens = new();
+    private static readonly Dictionary<ulong, HopState> _activeStates = new();
 
     public static void SyncBasePosition(Creature creature, Vector2 basePosition)
     {
@@ -38,7 +38,11 @@ public static class HopAnimation
             return;
         }
 
-        NinjaSlayerRapidAnimationCoordinator.CancelVisualTailForAction(creature);
+        bool rapid = NinjaSlayerRapidAnimationCoordinator.IsEnabled;
+        if (rapid)
+        {
+            NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, creatureNode);
+        }
         JumpAnimation.StopForAirChannel(creature);
         var id = anchor.GetInstanceId();
         StopActiveTween(id, anchor);
@@ -68,11 +72,13 @@ public static class HopAnimation
         }
 
         var tween = creatureNode.CreateTween();
-        _activeTweens[id] = tween;
+        var state = new HopState(id, tween, anchor, basePos);
+        _activeStates[id] = state;
 
         tween.TweenMethod(
             Callable.From<float>(t =>
             {
+                state.Progress = t;
                 var yOffset = Mathf.Sin(t * Mathf.Pi) * hopHeight;
                 anchor.Position = new Vector2(basePos.X, basePos.Y - yOffset);
             }),
@@ -82,12 +88,25 @@ public static class HopAnimation
         ).SetTrans(Tween.TransitionType.Linear);
         tween.TweenCallback(Callable.From(() =>
         {
-            if (_activeTweens.TryGetValue(id, out Tween? activeTween) && activeTween == tween)
+            if (_activeStates.TryGetValue(id, out HopState? activeState)
+                && ReferenceEquals(activeState, state))
             {
                 anchor.Position = basePos;
-                _activeTweens.Remove(id);
+                _activeStates.Remove(id);
+                if (state.TailGeneration is { } generation)
+                {
+                    NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, generation);
+                }
             }
         }));
+
+        if (rapid)
+        {
+            state.TailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(
+                creature,
+                () => Takeover(state),
+                () => StopForAirChannel(creature));
+        }
 
         await Cmd.Wait(actionDuration);
     }
@@ -103,19 +122,52 @@ public static class HopAnimation
 
     private static void StopActiveTween(ulong id, Node2D anchor)
     {
-        if (!_activeTweens.Remove(id, out Tween? tween))
+        if (!_activeStates.Remove(id, out HopState? state))
         {
             return;
         }
 
-        if (GodotObject.IsInstanceValid(tween))
-        {
-            tween.Kill();
-        }
+        state.StopWithoutRestore();
 
         if (_basePositions.TryGetValue(id, out Vector2 basePos))
         {
             anchor.Position = basePos;
+        }
+    }
+
+    private static RapidMotionHandoff? Takeover(HopState state)
+    {
+        if (!_activeStates.Remove(state.Id, out HopState? active)
+            || !ReferenceEquals(active, state))
+        {
+            return null;
+        }
+
+        state.StopWithoutRestore();
+        return new(
+            [RapidMotionChannel.For(state.Anchor, state.BasePosition)],
+            RapidAttackTrajectory.RemainingReturnSeconds(0.28f, state.Progress));
+    }
+
+    private sealed class HopState(
+        ulong id,
+        Tween tween,
+        Node2D anchor,
+        Vector2 basePosition)
+    {
+        public ulong Id { get; } = id;
+        public Tween Tween { get; } = tween;
+        public Node2D Anchor { get; } = anchor;
+        public Vector2 BasePosition { get; } = basePosition;
+        public float Progress { get; set; }
+        public long? TailGeneration { get; set; }
+
+        public void StopWithoutRestore()
+        {
+            if (GodotObject.IsInstanceValid(Tween) && Tween.IsValid())
+            {
+                Tween.Kill();
+            }
         }
     }
 

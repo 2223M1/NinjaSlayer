@@ -25,6 +25,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
     private readonly FinisherTargeting _targeting;
     private readonly decimal? _narakuHpLoss;
     private readonly int _hits;
+    private readonly int _ownerKarate;
     private readonly int _hashCode;
 
     public FinisherForecastFrameKey(
@@ -49,11 +50,11 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         _targeting = descriptor.Targeting;
         _narakuHpLoss = narakuHpLoss;
         _hits = hits;
+        _ownerKarate = owner.GetPowerAmount<KaratePower>();
         _enemies = enemies.Select((enemy, index) => new EnemySnapshot(
             enemy,
             enemy.CurrentHp,
             enemy.Block,
-            enemy.GetPowerAmount<KaratePower>(),
             enemy.GetPowerAmount<VulnerablePower>(),
             enemy.IsPrimaryEnemy,
             damageByTarget[index])).ToArray();
@@ -69,6 +70,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         hash.Add(_targeting);
         hash.Add(_narakuHpLoss);
         hash.Add(_hits);
+        hash.Add(_ownerKarate);
         AddReferenceSequenceHash(ref hash, _fixedTargets);
         foreach (EnemySnapshot enemy in _enemies)
         {
@@ -94,6 +96,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         && _targeting == other._targeting
         && _narakuHpLoss == other._narakuHpLoss
         && _hits == other._hits
+        && _ownerKarate == other._ownerKarate
         && ReferenceSequenceEqual(_fixedTargets, other._fixedTargets)
         && _enemies.AsSpan().SequenceEqual(other._enemies)
         && _effects.AsSpan().SequenceEqual(other._effects);
@@ -136,7 +139,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         private readonly Creature _enemy;
         private readonly int _hp;
         private readonly int _block;
-        private readonly int _karate;
         private readonly int _vulnerable;
         private readonly bool _isPrimaryEnemy;
         private readonly decimal _damage;
@@ -145,7 +147,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             Creature enemy,
             int hp,
             int block,
-            int karate,
             int vulnerable,
             bool isPrimaryEnemy,
             decimal damage)
@@ -153,7 +154,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             _enemy = enemy;
             _hp = hp;
             _block = block;
-            _karate = karate;
             _vulnerable = vulnerable;
             _isPrimaryEnemy = isPrimaryEnemy;
             _damage = damage;
@@ -163,7 +163,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             ReferenceEquals(_enemy, other._enemy)
             && _hp == other._hp
             && _block == other._block
-            && _karate == other._karate
             && _vulnerable == other._vulnerable
             && _isPrimaryEnemy == other._isPrimaryEnemy
             && _damage == other._damage;
@@ -174,7 +173,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             RuntimeHelpers.GetHashCode(_enemy),
             _hp,
             _block,
-            _karate,
             _vulnerable,
             _isPrimaryEnemy,
             _damage);
@@ -184,7 +182,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             hash.Add(RuntimeHelpers.GetHashCode(_enemy));
             hash.Add(_hp);
             hash.Add(_block);
-            hash.Add(_karate);
             hash.Add(_vulnerable);
             hash.Add(_isPrimaryEnemy);
             hash.Add(_damage);

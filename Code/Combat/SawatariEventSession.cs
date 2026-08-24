@@ -195,11 +195,11 @@ internal sealed class SawatariEventSession
     public void ObserveDeath(Creature creature, float deathAnimLength)
     {
         if (Phase == SawatariEventPhase.FirstCombat
-            && creature.IsPrimaryEnemy
-            && !_state.Enemies.Any(enemy =>
-                !ReferenceEquals(enemy, creature)
-                && enemy.IsAlive
-                && enemy.IsPrimaryEnemy)
+            && SawatariEventRules.ShouldBeginIntermission(
+                creature.Side == CombatSide.Enemy,
+                _state.Enemies.Any(enemy =>
+                    !ReferenceEquals(enemy, creature)
+                    && enemy.IsAlive))
             && _phases.TryMove(
                 SawatariEventPhase.FirstCombat,
                 SawatariEventPhase.Intermission))
@@ -213,7 +213,7 @@ internal sealed class SawatariEventSession
                 SawatariEventPhase.Duel,
                 SawatariEventPhase.DuelResult))
         {
-            BeginDecisionPhase(BeginDuelResult);
+            BeginDecisionPhase(() => BeginDuelResult(deathAnimLength));
         }
     }
 
@@ -347,8 +347,12 @@ internal sealed class SawatariEventSession
         }
     }
 
-    private async Task BeginDuelResult()
+    private async Task BeginDuelResult(float deathAnimLength)
     {
+        if (deathAnimLength > 0f)
+        {
+            await Cmd.Wait(deathAnimLength);
+        }
         await RunManager.Instance.ActionExecutor.FinishedExecutingActions();
         await NextFrame();
         SawatariMusicSession.PlayDuelEnd();

@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Interop;
 using NinjaSlayer.Powers;
 
@@ -43,7 +44,19 @@ public static class ScryCmd
 
         foreach (CardModel card in cardsToDiscard)
         {
-            await CardCmd.Discard(choiceContext, card);
+            if (card is ReflexGuardRedesignV1)
+            {
+                await CardCmd.AutoPlay(choiceContext, card, null);
+            }
+            else if (card.Type == CardType.Status
+                     && player.Creature.HasPower<ScryStatusExhaustPower>())
+            {
+                await CardCmd.Exhaust(choiceContext, card);
+            }
+            else
+            {
+                await CardCmd.Discard(choiceContext, card);
+            }
         }
 
         int discardedAmount = cardsToDiscard.Count;

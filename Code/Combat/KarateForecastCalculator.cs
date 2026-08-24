@@ -3,67 +3,54 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.Combat;
 
 public static class KarateForecastCalculator
 {
-    public static int ResolveForecastDamage(KaratePower karate, CardModel? previewCard, Creature target)
+    public static int ResolveForecastDamage(int stacks, CardModel? previewCard, Creature target)
     {
-        int stack = karate.Amount;
-        if (stack <= 0)
+        if (stacks <= 0)
         {
             return 0;
         }
 
-        if (previewCard == null || previewCard.Type != CardType.Attack || KarateCombatPreviewContext.TryGetCard(target) != previewCard)
-        {
-            return stack;
-        }
-
-        if (!KarateTriggerRules.CanTriggerFromCardSource(previewCard))
-        {
-            return stack;
-        }
-
-        return KarateDamageMath.CumulativeDamage(stack, ResolveHitCount(previewCard, target));
+        bool isPreviewTarget = previewCard?.Type == CardType.Attack
+            && KarateCombatPreviewContext.TryGetCard(target) == previewCard
+            && KarateTriggerRules.CanTriggerFromCardSource(previewCard);
+        int hits = isPreviewTarget ? ResolveHitCount(previewCard!, target) : 1;
+        int multiplier = previewCard is ClankDrinkTeaRedesignV1 assassination
+            ? assassination.KarateMultiplier
+            : 1;
+        return KarateDamageMath.ForecastDamage(stacks, hits, isPreviewTarget) * multiplier;
     }
 
-    public static int ResolveHpPreviewDamage(KaratePower karate, CardModel? previewCard, Creature target)
+    public static int ResolveHpPreviewDamage(int stacks, CardModel? previewCard, Creature target)
     {
-        int stack = karate.Amount;
-        if (stack <= 0)
+        if (stacks <= 0)
         {
             return 0;
         }
 
-        if (previewCard == null || previewCard.Type != CardType.Attack || KarateCombatPreviewContext.TryGetCard(target) != previewCard)
-        {
-            return 0;
-        }
-
-        if (!KarateTriggerRules.CanTriggerFromCardSource(previewCard))
-        {
-            return 0;
-        }
-
-        return KarateDamageMath.CumulativeDamage(stack, ResolveHitCount(previewCard, target));
+        bool isPreviewTarget = previewCard?.Type == CardType.Attack
+            && KarateCombatPreviewContext.TryGetCard(target) == previewCard
+            && KarateTriggerRules.CanTriggerFromCardSource(previewCard);
+        int hits = isPreviewTarget ? ResolveHitCount(previewCard!, target) : 1;
+        int multiplier = previewCard is ClankDrinkTeaRedesignV1 assassination
+            ? assassination.KarateMultiplier
+            : 1;
+        return KarateDamageMath.HpPreviewDamage(stacks, hits, isPreviewTarget) * multiplier;
     }
 
     public static int CumulativeDamage(int stack, int hits)
         => KarateDamageMath.CumulativeDamage(stack, hits);
 
-    public static int RemainingKarateAfterTriggers(Creature? target, CardModel card)
+    public static int RemainingKarateAfterTriggers(Creature? target, CardModel _)
     {
         int karate = target?.GetPowerAmount<KaratePower>() ?? 0;
-        if (karate <= 0)
-        {
-            return 0;
-        }
-
-        int hits = ResolveHitCount(card, target);
-        return Math.Max(0, karate - Math.Min(karate, hits));
+        return Math.Max(0, karate);
     }
 
     public static int ResolveHitCount(CardModel card, Creature? target)

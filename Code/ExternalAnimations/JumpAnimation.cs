@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -48,7 +49,11 @@ public static class JumpAnimation
         }
 
         Node2D target = NinjaSlayerVisualRig.GetAirborneAnchor(visuals) ?? visuals;
-        NinjaSlayerRapidAnimationCoordinator.CancelVisualTailForAction(creature);
+        bool rapid = NinjaSlayerRapidAnimationCoordinator.IsEnabled;
+        if (rapid)
+        {
+            NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, creatureNode);
+        }
         HopAnimation.StopForAirChannel(creature);
         if (ActiveTweens.Remove(creature, out JumpState? previous))
         {
@@ -57,9 +62,11 @@ public static class JumpAnimation
 
         Vector2 originalPos = target.Position;
         var tween = creatureNode.CreateTween();
+        var state = new JumpState(tween, target, originalPos);
         tween.TweenMethod(
                 Callable.From<float>(progress =>
                 {
+                    state.Progress = progress;
                     float animY = 4f * JumpHeight * progress * (1f - progress);
                     target.Position = new Vector2(originalPos.X, originalPos.Y - animY);
                 }),
@@ -68,8 +75,14 @@ public static class JumpAnimation
                 AnimationDuration)
             .SetTrans(Tween.TransitionType.Linear);
 
-        var state = new JumpState(tween, target, originalPos);
         ActiveTweens[creature] = state;
+        if (rapid)
+        {
+            state.TailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(
+                creature,
+                () => Takeover(creature, state),
+                () => StopForAirChannel(creature));
+        }
         _ = TaskHelper.RunSafely(ClearWhenFinished(creature, creatureNode, state));
         await Cmd.Wait(ActionDuration);
     }
@@ -87,29 +100,63 @@ public static class JumpAnimation
             {
                 ActiveTweens.Remove(creature);
                 state.Restore();
+                if (state.TailGeneration is { } generation)
+                {
+                    NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, generation);
+                }
             }
         }
     }
 
-    private sealed class JumpState(Tween tween, Node2D target, Vector2 originalPosition)
+    private static RapidMotionHandoff? Takeover(Creature creature, JumpState state)
     {
-        public Tween Tween { get; } = tween;
+        if (!ActiveTweens.Remove(creature, out JumpState? active)
+            || !ReferenceEquals(active, state))
+        {
+            return null;
+        }
 
-        public void StopAndRestore()
+        state.StopWithoutRestore();
+        return new(
+            [RapidMotionChannel.For(state.Target, state.OriginalPosition)],
+            RapidAttackTrajectory.RemainingReturnSeconds(AnimationDuration, state.Progress));
+    }
+
+    private sealed class JumpState
+    {
+        public JumpState(Tween tween, Node2D target, Vector2 originalPosition)
+        {
+            Tween = tween;
+            Target = target;
+            OriginalPosition = originalPosition;
+        }
+
+        public Tween Tween { get; }
+        public Node2D Target { get; }
+        public Vector2 OriginalPosition { get; }
+        public float Progress { get; set; }
+        public long? TailGeneration { get; set; }
+
+        public void StopWithoutRestore()
         {
             if (Tween.IsValid())
             {
                 Tween.Kill();
             }
+        }
+
+        public void StopAndRestore()
+        {
+            StopWithoutRestore();
 
             Restore();
         }
 
         public void Restore()
         {
-            if (GodotObject.IsInstanceValid(target))
+            if (GodotObject.IsInstanceValid(Target))
             {
-                target.Position = originalPosition;
+                Target.Position = OriginalPosition;
             }
         }
     }

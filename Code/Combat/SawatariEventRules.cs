@@ -35,6 +35,11 @@ internal static class SawatariEventRules
 
         return Math.Clamp(eventOdds / validEventCount / monsterOdds, 0f, 1f);
     }
+
+    public static bool ShouldBeginIntermission(
+        bool defeatedCreatureIsEnemy,
+        bool hasOtherLivingEnemy) =>
+        defeatedCreatureIsEnemy && !hasOtherLivingEnemy;
 }
 
 internal sealed class SawatariEventPhaseGate

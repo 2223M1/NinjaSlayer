@@ -44,9 +44,11 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             return;
         }
 
-        CancelVisualTail(creature);
+        PrepareAction(creature, creatureNode);
         ActionState state = GetOrCreateState(creature, creatureNode);
-        state.ReturnSeconds = returnSeconds;
+        state.ReturnSeconds = RapidAttackTrajectory.AddReturnSeconds(
+            state.ReturnSeconds,
+            returnSeconds);
         bool isContinuation = state.HasPlayedAction;
         state.StopActiveTween();
         state.HasPlayedAction = true;
@@ -60,7 +62,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             : firstPeakSeconds;
         if (Mathf.IsZeroApprox(duration))
         {
-            creatureNode.Position = state.Baseline + new Vector2(peakOffset, 0f);
+            creatureNode.Position = new Vector2(
+                state.Baseline.X + peakOffset,
+                creatureNode.Position.Y);
             return;
         }
 
@@ -82,7 +86,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                             peakOffset,
                             outboundCurve)
                         : Mathf.Lerp(currentOffset, peakOffset, outboundCurve(progress));
-                    creatureNode.Position = state.Baseline + new Vector2(offset, 0f);
+                    creatureNode.Position = new Vector2(
+                        state.Baseline.X + offset,
+                        creatureNode.Position.Y);
                 }),
                 0f,
                 1f,
@@ -93,7 +99,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         if (completed && IsCurrent(creature, state, generation))
         {
             state.ActiveTween = null;
-            creatureNode.Position = state.Baseline + new Vector2(peakOffset, 0f);
+            creatureNode.Position = new Vector2(
+                state.Baseline.X + peakOffset,
+                creatureNode.Position.Y);
         }
     }
 
@@ -117,12 +125,58 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             return;
         }
 
+        state.GameplaySettled = true;
+        if (VisualTails.ContainsKey(creature))
+        {
+            return;
+        }
+
+        StartReturn(creature, state);
+    }
+
+    public static void PrepareAction(Creature creature, NCreature creatureNode)
+    {
+        ActionState state = GetOrCreateState(creature, creatureNode);
+        state.GameplaySettled = false;
+        state.StopActiveTween();
+        if (VisualTails.Remove(creature, out VisualTailState? tail))
+        {
+            RapidMotionHandoff? handoff = tail.TryTakeover?.Invoke();
+            if (handoff is { } continuation)
+            {
+                state.AddHandoff(continuation);
+            }
+            else
+            {
+                tail.CancelAndRestore();
+            }
+        }
+    }
+
+    public static Vector2 GetBaseline(Creature creature, NCreature creatureNode) =>
+        States.TryGetValue(creature, out ActionState? state)
+            && ReferenceEquals(state.CreatureNode, creatureNode)
+            ? state.Baseline
+            : creatureNode.Position;
+
+    private static void StartReturn(Creature creature, ActionState state)
+    {
         state.StopActiveTween();
         long generation = ++state.Generation;
-        Vector2 returnStart = state.CreatureNode.Position;
-        if (Mathf.IsZeroApprox(state.ReturnSeconds))
+        RapidMotionChannel[] channels = state.Channels
+            .Where(channel => GodotObject.IsInstanceValid(channel.Target))
+            .ToArray();
+        if (channels.Length == 0)
         {
-            state.CreatureNode.Position = state.Baseline;
+            States.Remove(creature);
+            return;
+        }
+
+        float returnSeconds = state.ReturnSeconds;
+        Vector2[] returnStarts = channels.Select(channel => channel.GetPosition()).ToArray();
+        if (Mathf.IsZeroApprox(returnSeconds))
+        {
+            RestoreChannels(channels);
             States.Remove(creature);
             return;
         }
@@ -137,12 +191,22 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                         return;
                     }
 
+                    state.ReturnSeconds = RapidAttackTrajectory.RemainingReturnSeconds(
+                        returnSeconds,
+                        progress);
                     float eased = Mathf.SmoothStep(0f, 1f, progress);
-                    state.CreatureNode.Position = returnStart.Lerp(state.Baseline, eased);
+                    for (int index = 0; index < channels.Length; index++)
+                    {
+                        RapidMotionChannel channel = channels[index];
+                        if (GodotObject.IsInstanceValid(channel.Target))
+                        {
+                            channel.SetPosition(returnStarts[index].Lerp(channel.Baseline, eased));
+                        }
+                    }
                 }),
                 0f,
                 1f,
-                state.ReturnSeconds)
+                returnSeconds)
             .SetTrans(Tween.TransitionType.Linear);
         TaskHelper.RunSafely(CompleteReturn(creature, state, generation, tween));
     }
@@ -156,6 +220,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         }
 
         state.StopActiveTween();
+        RestoreChannels(state.Channels.Skip(1).ToArray());
         return state.Baseline;
     }
 
@@ -172,12 +237,15 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         Participants.Remove(creature);
     }
 
-    public static long RegisterVisualTail(Creature creature, Action cancelAndRestore)
+    public static long RegisterReturnTail(
+        Creature creature,
+        Func<RapidMotionHandoff?>? tryTakeover,
+        Action cancelAndRestore)
     {
         EnsureLifecycle(creature);
         CancelVisualTail(creature);
         long generation = Interlocked.Increment(ref _visualTailGeneration);
-        VisualTails[creature] = new VisualTailState(generation, cancelAndRestore);
+        VisualTails[creature] = new VisualTailState(generation, tryTakeover, cancelAndRestore);
         return generation;
     }
 
@@ -195,6 +263,11 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             && state.Generation == generation)
         {
             VisualTails.Remove(creature);
+            if (States.TryGetValue(creature, out ActionState? actionState)
+                && actionState.GameplaySettled)
+            {
+                StartReturn(creature, actionState);
+            }
         }
     }
 
@@ -220,6 +293,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             return state;
         }
 
+        CancelVisualTail(creature);
         state?.StopAndRestore();
         var created = new ActionState(creatureNode, creatureNode.Position);
         States[creature] = created;
@@ -291,7 +365,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         }
 
         state.ActiveTween = null;
-        state.CreatureNode.Position = state.Baseline;
+        RestoreChannels(state.Channels.ToArray());
         States.Remove(creature);
     }
 
@@ -309,6 +383,17 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         }
     }
 
+    private static void RestoreChannels(RapidMotionChannel[] channels)
+    {
+        foreach (RapidMotionChannel channel in channels)
+        {
+            if (GodotObject.IsInstanceValid(channel.Target))
+            {
+                channel.SetPosition(channel.Baseline);
+            }
+        }
+    }
+
     private sealed class ActionState(NCreature creatureNode, Vector2 baseline)
     {
         public NCreature CreatureNode { get; } = creatureNode;
@@ -316,7 +401,23 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         public Tween? ActiveTween { get; set; }
         public long Generation { get; set; }
         public bool HasPlayedAction { get; set; }
-        public float ReturnSeconds { get; set; } = RapidAttackTrajectory.ReturnSeconds;
+        public bool GameplaySettled { get; set; }
+        public float ReturnSeconds { get; set; }
+        public List<RapidMotionChannel> Channels { get; } = [RapidMotionChannel.For(creatureNode, baseline)];
+
+        public void AddHandoff(RapidMotionHandoff handoff)
+        {
+            ReturnSeconds = RapidAttackTrajectory.AddReturnSeconds(
+                ReturnSeconds,
+                handoff.RemainingSeconds);
+            foreach (RapidMotionChannel channel in handoff.Channels)
+            {
+                if (!Channels.Any(existing => ReferenceEquals(existing.Target, channel.Target)))
+                {
+                    Channels.Add(channel);
+                }
+            }
+        }
 
         public void StopActiveTween()
         {
@@ -331,12 +432,29 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         public void StopAndRestore()
         {
             StopActiveTween();
-            if (GodotObject.IsInstanceValid(CreatureNode))
-            {
-                CreatureNode.Position = Baseline;
-            }
+            RestoreChannels(Channels.ToArray());
         }
     }
 
-    private sealed record VisualTailState(long Generation, Action CancelAndRestore);
+    private sealed record VisualTailState(
+        long Generation,
+        Func<RapidMotionHandoff?>? TryTakeover,
+        Action CancelAndRestore);
 }
+
+internal sealed record RapidMotionChannel(
+    Node Target,
+    Func<Vector2> GetPosition,
+    Action<Vector2> SetPosition,
+    Vector2 Baseline)
+{
+    public static RapidMotionChannel For(Control node, Vector2 baseline) =>
+        new(node, () => node.Position, position => node.Position = position, baseline);
+
+    public static RapidMotionChannel For(Node2D node, Vector2 baseline) =>
+        new(node, () => node.Position, position => node.Position = position, baseline);
+}
+
+internal sealed record RapidMotionHandoff(
+    RapidMotionChannel[] Channels,
+    float RemainingSeconds);

@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -103,8 +104,14 @@ public static class AlabamaDropAnimation
         targetBody = targetRig.Body;
         targetBodyProcessMode = targetRig.Body.ProcessMode;
         var ownerRestoreSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
-        Vector2 ownerAuthoredBaseline = NinjaSlayerRapidAnimationCoordinator.IsEnabled
-            ? NinjaSlayerRapidAnimationCoordinator.ClaimExclusiveBaseline(owner, ownerRig.CreatureNode)
+        bool rapid = NinjaSlayerRapidAnimationCoordinator.IsEnabled;
+        if (rapid)
+        {
+            NinjaSlayerRapidAnimationCoordinator.PrepareAction(owner, ownerRig.CreatureNode);
+        }
+
+        Vector2 ownerAuthoredBaseline = rapid
+            ? NinjaSlayerRapidAnimationCoordinator.GetBaseline(owner, ownerRig.CreatureNode)
             : ownerRig.CreatureNode.Position;
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
         SoarSpinAnimation.SuspendForCinematic(owner);
@@ -193,7 +200,8 @@ public static class AlabamaDropAnimation
                     ownerRig.CreatureNode,
                     ownerStartPos,
                     StandUpDuration,
-                    visualTail.Track),
+                    visualTail.Track,
+                    visualTail.SetProgress),
                 TweenBodyRotation(
                     ownerRig.Body,
                     ownerSnapshot.BodyRotationDegrees + 360f,
@@ -207,7 +215,7 @@ public static class AlabamaDropAnimation
                     targetSnapshot.BodyScale,
                     visualTail.Track));
             impactResolutionJoined = true;
-            if (NinjaSlayerRapidAnimationCoordinator.IsEnabled)
+            if (rapid)
             {
                 try
                 {
@@ -219,8 +227,9 @@ public static class AlabamaDropAnimation
                     throw;
                 }
 
-                long tailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterVisualTail(
+                long tailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(
                     owner,
+                    visualTail.TryTakeover,
                     visualTail.CancelAndRestore);
                 visualTailOwnsRestore = true;
                 _ = TaskHelper.RunSafely(CompleteVisualTail(
@@ -481,7 +490,8 @@ public static class AlabamaDropAnimation
         NCreature creatureNode,
         Vector2 target,
         float duration,
-        Action<Tween>? onTweenCreated = null)
+        Action<Tween>? onTweenCreated = null,
+        Action<float>? onProgress = null)
     {
         Vector2 start = creatureNode.Position;
         var tween = creatureNode.CreateTween();
@@ -489,6 +499,7 @@ public static class AlabamaDropAnimation
         tween.TweenMethod(
             Callable.From<float>(progress =>
             {
+                onProgress?.Invoke(progress);
                 float easedProgress = progress * progress * (3f - 2f * progress);
                 float yOffset = Mathf.Sin(progress * Mathf.Pi) * ReturnHopHeight;
                 Vector2 pos = start.Lerp(target, easedProgress);
@@ -573,6 +584,9 @@ public static class AlabamaDropAnimation
     {
         private readonly List<Tween> _tweens = [];
         private int _cancelled;
+        private float _progress;
+
+        public void SetProgress(float progress) => _progress = progress;
 
         public void Track(Tween tween)
         {
@@ -601,6 +615,28 @@ public static class AlabamaDropAnimation
             RestoreSnapshots();
         }
 
+        public RapidMotionHandoff? TryTakeover()
+        {
+            if (Interlocked.Exchange(ref _cancelled, 1) != 0)
+            {
+                return null;
+            }
+
+            Vector2 currentPosition = ownerSnapshot.CreatureNode.Position;
+            foreach (Tween tween in _tweens)
+            {
+                if (GodotObject.IsInstanceValid(tween) && tween.IsValid())
+                {
+                    tween.Kill();
+                }
+            }
+
+            RestoreSnapshots(currentPosition);
+            return new(
+                [RapidMotionChannel.For(ownerSnapshot.CreatureNode, ownerAuthoredBaseline)],
+                RapidAttackTrajectory.RemainingReturnSeconds(StandUpDuration, _progress));
+        }
+
         public void RestoreAfterCompletion()
         {
             if (Volatile.Read(ref _cancelled) == 0)
@@ -609,13 +645,13 @@ public static class AlabamaDropAnimation
             }
         }
 
-        private void RestoreSnapshots()
+        private void RestoreSnapshots(Vector2? ownerPosition = null)
         {
             targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
             ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
             if (GodotObject.IsInstanceValid(ownerSnapshot.CreatureNode))
             {
-                ownerSnapshot.CreatureNode.Position = ownerAuthoredBaseline;
+                ownerSnapshot.CreatureNode.Position = ownerPosition ?? ownerAuthoredBaseline;
             }
         }
     }

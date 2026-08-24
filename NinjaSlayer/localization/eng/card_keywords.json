@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "Look at the specified number of cards from the top of your Draw Pile. You may discard any of them.",
+  "NINJA_SLAYER_KEYWORD_SCRY.title": "Scry",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "Ignore Block and kill an enemy outright when it meets the listed condition.",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "Judgment"
+}

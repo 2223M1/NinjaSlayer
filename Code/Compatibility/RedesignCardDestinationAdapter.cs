@@ -6,11 +6,6 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public abstract partial class NinjaSlayerRedesignCardTemplate
 {
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-    protected Task MoveChopToDrawTopForLegacyHost() =>
-        Keywords.Contains(CardKeyword.Exhaust) || ExhaustOnNextPlay
-            ? Task.CompletedTask
-            : CardPileCmd.Add(this, PileType.Draw, CardPilePosition.Top);
-
     protected override PileType GetResultPileTypeForCardPlay()
     {
         PileType pileType = base.GetResultPileTypeForCardPlay();
@@ -20,8 +15,6 @@ public abstract partial class NinjaSlayerRedesignCardTemplate
                 : pileType;
     }
 #else
-    protected static Task MoveChopToDrawTopForLegacyHost() => Task.CompletedTask;
-
     protected override CardLocation GetResultLocationForCardPlay()
     {
         CardLocation result = base.GetResultLocationForCardPlay();
@@ -30,12 +23,7 @@ public abstract partial class NinjaSlayerRedesignCardTemplate
             return result;
         }
 
-        if (this is ChopRedesignV1)
-        {
-            result.pileType = PileType.Draw;
-            result.position = CardPilePosition.Top;
-        }
-        else if (this is IReturnToHandAfterPlay || RedesignRepeatState.Has(this))
+        if (this is IReturnToHandAfterPlay || RedesignRepeatState.Has(this))
         {
             result.pileType = PileType.Hand;
         }
