@@ -2,3 +2,6 @@ interface:
   display_name: "STS2 Original Code Reference"
   short_description: "Find and follow original Slay the Spire 2 code patterns."
   default_prompt: "Use the local Slay the Spire 2 source export to find original code patterns for this mod task."
+
+policy:
+  allow_implicit_invocation: false
