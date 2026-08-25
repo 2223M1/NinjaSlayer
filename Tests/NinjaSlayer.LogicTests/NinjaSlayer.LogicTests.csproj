@@ -62,7 +62,6 @@
     <Compile Include="..\..\Code\Combat\YamotoKokiOrbitMath.cs" Link="YamotoKokiOrbitMath.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiFacingPolicy.cs" Link="YamotoKokiFacingPolicy.cs" />
     <Compile Include="..\..\Code\Combat\YamotoKokiGridLayoutMath.cs" Link="YamotoKokiGridLayoutMath.cs" />
-    <Compile Include="..\..\Code\Combat\VisitedMapHistoryAlignment.cs" Link="VisitedMapHistoryAlignment.cs" />
     <Compile Include="..\..\Code\Combat\CompanionDamageMath.cs" Link="CompanionDamageMath.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackAudioContext.cs" Link="XAttackAudioContext.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\XAttackComboContext.cs" Link="XAttackComboContext.cs" />

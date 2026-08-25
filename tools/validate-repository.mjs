@@ -557,7 +557,6 @@ const localizedPrivateMemberContracts = new Map([
     '"_originalBlockPosition"',
   ]],
   ['Code/Patches/NinjaSlayerFeedbackPatches.cs', ['"SendButtonSelected"']],
-  ['Code/Patches/NinjaSlayerMapHistoryPatch.cs', ['"_runState"']],
   ['Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs', [
     '"_loading"',
     '"_finalizing"',

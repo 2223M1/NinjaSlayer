@@ -53,7 +53,6 @@ public class Entry
         {
             requiredPatcher.RegisterPatch<NinjaSlayerAnimationPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerMapHistoryIconPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
