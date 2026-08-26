@@ -83,19 +83,19 @@ internal static class FinisherProtectionService
             return;
         }
 
+        if (result == null || !token.Ledger.Confirm(token, result, originalRan))
+        {
+            return;
+        }
+
         try
         {
-            if (result != null)
-            {
-                token.Ledger.Confirm(token, result, originalRan);
-            }
+            token.Ledger.PresentProtectedDamage(token, result);
         }
         finally
         {
-            if (token.IsConfirmed
-                && FinisherSessionRegistry.GetActiveSession() is { } session
-                && session.SessionId == token.SessionId
-                && session.CombatEpoch == token.CombatEpoch)
+            if (FinisherSessionRegistry.GetActiveSession() is { } session
+                && session.OwnsProtection(token))
             {
                 session.NotifyProtectedDamageConfirmed();
             }

@@ -214,7 +214,7 @@ internal static class NinjaSlayerFinisherCinematic
         bool transferred = false;
         try
         {
-            await session.Begin();
+            session.Begin();
             AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
             if (session.RequiresAfterCardPlayed)
             {
@@ -223,29 +223,21 @@ internal static class NinjaSlayerFinisherCinematic
             }
             else
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await session.CompleteAsync(playPose: true);
             }
 
             return result;
         }
-        catch (Exception ex)
+        catch
         {
-            await session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.CommitWithoutPose,
-                ex.Message);
+            await session.CompleteAsync(playPose: false);
             throw;
         }
         finally
         {
             if (!transferred)
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Cancelled,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Command wrapper exited before normal completion.");
+                await session.CompleteAsync(playPose: false);
             }
         }
     }
@@ -268,7 +260,7 @@ internal static class NinjaSlayerFinisherCinematic
         bool transferred = false;
         try
         {
-            await session.Begin();
+            session.Begin();
             await sequence();
             if (session.RequiresAfterCardPlayed)
             {
@@ -277,27 +269,19 @@ internal static class NinjaSlayerFinisherCinematic
             }
             else
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await session.CompleteAsync(playPose: true);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            await session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.CommitWithoutPose,
-                ex.Message);
+            await session.CompleteAsync(playPose: false);
             throw;
         }
         finally
         {
             if (!transferred)
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Cancelled,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Sequence wrapper exited before normal completion.");
+                await session.CompleteAsync(playPose: false);
             }
         }
     }
@@ -329,7 +313,7 @@ internal static class NinjaSlayerFinisherCinematic
         bool transferred = false;
         try
         {
-            await session.Begin();
+            session.Begin();
             await damageAction();
             if (session.RequiresAfterCardPlayed)
             {
@@ -338,27 +322,19 @@ internal static class NinjaSlayerFinisherCinematic
             }
             else
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await session.CompleteAsync(playPose: true);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            await session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.CommitWithoutPose,
-                ex.Message);
+            await session.CompleteAsync(playPose: false);
             throw;
         }
         finally
         {
             if (!transferred)
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Cancelled,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Direct-damage wrapper exited before normal completion.");
+                await session.CompleteAsync(playPose: false);
             }
         }
     }

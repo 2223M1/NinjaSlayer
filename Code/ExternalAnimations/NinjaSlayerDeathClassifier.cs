@@ -167,7 +167,7 @@ internal static class NinjaSlayerDeathClassifier
 
         try
         {
-            session.Begin().GetAwaiter().GetResult();
+            session.Begin();
             capture.Session = session;
             Entry.Logger.Info(
                 $"Reverse finisher session {session.SessionId} started: dealer={capture.Dealer}, victims={victims.Count}.");
@@ -176,10 +176,7 @@ internal static class NinjaSlayerDeathClassifier
         catch (Exception ex)
         {
             Entry.Logger.Warn($"Could not begin reverse finisher session {session.SessionId}: {ex}");
-            _ = session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.ReleaseOnly,
-                ex.Message);
+            _ = session.CancelAsync();
             return false;
         }
     }
@@ -198,9 +195,7 @@ internal static class NinjaSlayerDeathClassifier
             IEnumerable<DamageResult> results = await damageTask;
             if (capture.Session is { } session)
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await session.CompleteAsync(playPose: true);
             }
 
             return results;
@@ -209,10 +204,7 @@ internal static class NinjaSlayerDeathClassifier
         {
             if (capture.Session is { } session)
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Faulted,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Incoming damage resolution failed during a reverse finisher.");
+                await session.CompleteAsync(playPose: false);
             }
 
             throw;

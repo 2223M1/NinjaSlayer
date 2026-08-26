@@ -325,6 +325,17 @@ internal sealed partial class SmokeController
             () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "player play phase did not start",
             cancellationToken);
+        NTransition transition = FindDescendant<NTransition>(_tree.Root)
+            ?? throw new InvalidOperationException("The transition node was unavailable after combat started.");
+        NinjaSlayerTransitionOverlay overlay = FindDescendant<NinjaSlayerTransitionOverlay>(transition)
+            ?? throw new InvalidOperationException("The NinjaSlayer transition overlay was not created.");
+        Require(!overlay.Visible, "The NinjaSlayer transition overlay remained visible after reveal.");
+        Require(!transition.InTransition, "The transition remained active after combat started.");
+        Require(
+            transition.MouseFilter == Control.MouseFilterEnum.Ignore,
+            "The transition continued blocking mouse input after reveal.");
+        Require(CombatManager.Instance.IsInProgress, "Combat ended before transition verification.");
+        _checkpoints.Write("transition.completed");
         _checkpoints.Write(
             "combat.started",
             data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });
@@ -1546,6 +1557,24 @@ internal sealed partial class SmokeController
         T? node = null;
         await WaitUntilAsync(() => (node = root.GetNodeOrNull<T>(path)) is not null, $"Node was unavailable: {path}");
         return node!;
+    }
+
+    private static T? FindDescendant<T>(Node root) where T : Node
+    {
+        if (root is T match)
+        {
+            return match;
+        }
+
+        foreach (Node child in root.GetChildren())
+        {
+            if (FindDescendant<T>(child) is { } descendant)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
     }
 
     private void TryCaptureFailureScreenshot()

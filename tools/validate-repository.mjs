@@ -563,7 +563,6 @@ const localizedPrivateMemberContracts = new Map([
     '"AddToCache"',
     '"FinalizeLoading"',
     '"ProcessLoadingQueue"',
-    '"MoveNext"',
   ]],
   ['Code/Patches/NinjaSlayerTransitionPresentationPatch.cs', ['"PlayHealVfxAfterFadeIn"']],
   ['Code/Patches/NinjaSlayerTypographyPatch.cs', ['"_relics"', '"_index"']],
@@ -631,12 +630,21 @@ for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
 }
 
 const retiredRuntimeCapabilityPattern =
-  /\b(?:CapabilityState|CapabilityProbe|CapabilityStatus|NinjaSlayerCapabilityRegistry|NinjaSlayerCapabilityIds|NinjaSlayerPatchCapabilities|NinjaSlayerRuntimeHealth)\b/;
+  /\b(?:CapabilityState|CapabilityProbe|CapabilityStatus|NinjaSlayerCapabilityRegistry|NinjaSlayerCapabilityIds|NinjaSlayerPatchCapabilities|NinjaSlayerRuntimeHealth|MethodBodyFingerprint|StableMethodBodyContract|GameHostContractProfile)\b/;
 for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
   const repositoryPath = relative(root, path).replaceAll('\\', '/');
   if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
   if (retiredRuntimeCapabilityPattern.test(readFileSync(path, 'utf8'))) {
     errors.push(`${repositoryPath} contains a retired runtime capability symbol`);
+  }
+}
+
+const retiredGcControlPattern = /\b(?:System\.)?GC\.(?:TryStartNoGCRegion|Collect)\s*\(/;
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
+  if (retiredGcControlPattern.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains retired explicit GC control`);
   }
 }
 

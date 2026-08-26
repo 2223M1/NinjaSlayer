@@ -47,23 +47,10 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         float delay = wasPending
             ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
             : NinjaSlayerAudio.SaveLoadStartDelaySeconds;
-        __result = WaitForViewReadyAndLoadDelayAsync(
-            session,
-            delay,
-            cancelToken ?? CancellationToken.None);
+        __result = delay > 0f
+            ? Cmd.Wait(delay, cancelToken ?? CancellationToken.None)
+            : Task.CompletedTask;
         return false;
-    }
-
-    private static async Task WaitForViewReadyAndLoadDelayAsync(
-        NinjaSlayerTransitionSession session,
-        float delay,
-        CancellationToken cancellationToken)
-    {
-        await session.WaitForViewReadyAsync(cancellationToken);
-        if (delay > 0f)
-        {
-            await Cmd.Wait(delay, cancellationToken);
-        }
     }
 
     private static async Task BeginNinjaSlayerTransition(
@@ -98,10 +85,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
                 session.HoldBackdrop();
             }
 
-            // Load smoothing deliberately stays armed past the end of the video. Dropping it here
-            // restored the vanilla 128-wide asset concurrency and unbounded finalize drain in the
-            // same frames as the fade-in, which is exactly where the hitch was visible. The
-            // session ends it during CompleteAsync, after the reveal has finished.
+            // Load smoothing stays armed through reveal and ends with the session.
         }
     }
 }

@@ -314,8 +314,7 @@ public class Entry
                 patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();
                 patcher.RegisterPatch<NinjaSlayerTransitionAssetLoadConcurrencyPatch>();
                 patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
-            },
-            NinjaSlayerTransitionGcDeferralPatch.CreateDynamicPatches);
+            });
     }
 
     private static void TryInstallOptionalPresentation(

@@ -37,11 +37,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly CombatCinematicCameraLease _camera;
     private readonly NCombatRoom _room;
     private readonly Vector2 _actorStartPosition;
-    private readonly object _actionSync = new();
     private readonly HashSet<ulong> _vfxBaselineChildIds;
     private readonly bool _usesJumpDeathSquash;
     private readonly bool _usesNinjaSlayerSignatureImpact;
-    private readonly FinisherCompletionProtocol _completionProtocol;
+    private readonly TaskCompletionSource _completion =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
     private FinisherCameraFrame _cameraFrame = new([], false);
     private readonly CinematicSessionLifetime _impactCancellation = new();
     private readonly CinematicSessionLifetime _actionCancellation = new();
@@ -71,6 +71,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _returnTimelineCompleted;
     private float _returnTimelineProgress;
     private bool _disposed;
+    private bool _begun;
+    private bool _completionStarted;
     private bool _actionStarted;
     private bool _actionPeakReached;
     private float _actionPeakSeconds = FinisherActionTrajectory.SlowTravelSeconds;
@@ -84,15 +86,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     public FinisherSession(
         long sessionId,
-        long combatEpoch,
-        long registryGeneration,
         ICombatState combatState,
         NCombatRoom room,
         FinisherSessionRequest request)
     {
         SessionId = sessionId;
-        CombatEpoch = combatEpoch;
-        RegistryGeneration = registryGeneration;
         _combatState = combatState;
         _room = room;
         Scenario = request.Scenario;
@@ -101,11 +99,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _actorNode = request.ActorNode;
         _focusNode = request.FocusNode;
         _camera = request.Camera;
-        _completionProtocol = new FinisherCompletionProtocol(sessionId);
         _ledger = new FinisherDamageLedger(
             request.Victims,
-            sessionId,
-            combatEpoch,
             combatState,
             IsCurrentCombatContext);
         _actorStartPosition = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
@@ -127,24 +122,24 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     }
 
     public long SessionId { get; }
-    public long CombatEpoch { get; }
-    public long RegistryGeneration { get; }
     public FinisherScenarioKind Scenario { get; }
     public FinisherCompletionCondition CompletionCondition { get; }
     public Creature Actor { get; }
     public CardPlay? CardPlay { get; }
     public bool RequiresAfterCardPlayed { get; }
     public int ResolvedHits { get; }
-    public Task<FinisherCompletionResult> Completion => _completionProtocol.Completion;
+    internal ICombatState CombatState => _combatState;
+    internal NCombatRoom Room => _room;
+    internal bool CanTransferToAfterCardPlayed => _begun && !_completionStarted;
 
-    public Task Begin()
+    public void Begin()
     {
-        if (!_completionProtocol.TryStart())
+        if (_begun)
         {
-            throw new InvalidOperationException(
-                $"Finisher session {SessionId} cannot begin from phase {_completionProtocol.Phase}.");
+            throw new InvalidOperationException($"Finisher session {SessionId} has already begun.");
         }
 
+        _begun = true;
         if (Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
         {
             foreach (Creature victim in _ledger.Victims.Where(victim =>
@@ -226,12 +221,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         else
         {
             _actorNode.Position = _impactPosition;
-            lock (_actionSync)
-            {
-                _actionStarted = true;
-                _actionPeakReached = true;
-                _actionPeakTask = Task.CompletedTask;
-            }
+            _actionStarted = true;
+            _actionPeakReached = true;
+            _actionPeakTask = Task.CompletedTask;
         }
         float maximumScale = _camera.BaselineScale.X
             * FinalHitZoomMultiplier
@@ -255,7 +247,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             }
         }
 
-        return Task.CompletedTask;
     }
 
     public Task PlayActionToPeak(Creature creature, float repeatWaitSeconds)
@@ -267,27 +258,21 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             return Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
         }
 
-        bool startedNow;
-        Task actionTask;
-        lock (_actionSync)
+        bool startedNow = !_actionStarted;
+        if (startedNow)
         {
-            startedNow = !_actionStarted;
-            if (startedNow)
-            {
-                _actionStarted = true;
-                _actionPeakSeconds = Math.Max(0f, repeatWaitSeconds);
-                _actionPeakTask = RunActionToPeak();
-            }
-
-            actionTask = _actionPeakTask;
+            _actionStarted = true;
+            _actionPeakSeconds = Math.Max(0f, repeatWaitSeconds);
+            _actionPeakTask = RunActionToPeak();
         }
 
         return startedNow
-            ? actionTask
+            ? _actionPeakTask
             : Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
     }
 
-    public bool TryAwaitPostCard() => _completionProtocol.TryAwaitPostCard();
+    internal bool OwnsProtection(FinisherProtectionToken token) =>
+        ReferenceEquals(token.Ledger, _ledger);
 
     public void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
     {
@@ -391,49 +376,43 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     public bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage) =>
         _ledger.TryTakeDamageDisplayOverride(result, out displayDamage);
 
-    public async Task<FinisherCompletionResult> CompleteAsync(
-        FinisherCompletionStatus requestedStatus,
-        FinisherCompletionMode requestedMode,
-        string? diagnostic = null)
+    public Task CompleteAsync(bool playPose)
     {
-        if (!_completionProtocol.TryBeginCompletion())
+        StartCompletion(commitDeaths: true, playPose);
+        return _completion.Task;
+    }
+
+    public Task CancelAsync()
+    {
+        StartCompletion(commitDeaths: false, playPose: false);
+        return _completion.Task;
+    }
+
+    public ValueTask DisposeAsync() => new(
+        IsCurrentCombatContext()
+            ? CompleteAsync(playPose: false)
+            : CancelAsync());
+
+    private void StartCompletion(bool commitDeaths, bool playPose)
+    {
+        if (_completionStarted)
         {
-            return await Completion;
+            return;
         }
 
-        FinisherSessionRegistry.MarkSessionCompleting(this);
-        FinisherCompletionStatus status = requestedStatus;
-        FinisherCompletionMode mode = requestedMode;
-        string? finalDiagnostic = diagnostic;
-        bool currentCombat = IsCurrentCombatContext();
-        if (!currentCombat)
-        {
-            status = FinisherCompletionStatus.Cancelled;
-            mode = FinisherCompletionMode.ReleaseOnly;
-            finalDiagnostic = AppendDiagnostic(finalDiagnostic, "Combat or room generation changed before completion.");
-        }
+        _completionStarted = true;
+        _ = CompleteCore(commitDeaths, playPose);
+    }
 
+    private async Task CompleteCore(bool commitDeaths, bool playPose)
+    {
         try
         {
-            if (mode != FinisherCompletionMode.ReleaseOnly)
+            if (commitDeaths && IsCurrentCombatContext())
             {
-                if (!_completionProtocol.TryTransition(FinisherSessionPhase.Committing))
+                if (playPose)
                 {
-                    throw new InvalidOperationException(
-                        $"Finisher session {SessionId} cannot commit from phase {_completionProtocol.Phase}.");
-                }
-
-                if (mode == FinisherCompletionMode.PlayPose)
-                {
-                    bool posePlayed = await CommitDeathsWithPoseCore();
-                    if (!posePlayed)
-                    {
-                        status = FinisherCompletionStatus.Degraded;
-                        mode = FinisherCompletionMode.CommitWithoutPose;
-                        finalDiagnostic = AppendDiagnostic(
-                            finalDiagnostic,
-                            "Runtime damage did not satisfy the forecast or target visuals were unavailable.");
-                    }
+                    await CommitDeathsWithPoseCore();
                 }
                 else
                 {
@@ -443,19 +422,15 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            status = FinisherCompletionStatus.Faulted;
-            finalDiagnostic = AppendDiagnostic(finalDiagnostic, ex.Message);
             Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} completion failed: {ex}");
-            if (IsCurrentCombatContext() && mode != FinisherCompletionMode.ReleaseOnly)
+            if (commitDeaths && IsCurrentCombatContext())
             {
                 try
                 {
-                    mode = FinisherCompletionMode.CommitWithoutPose;
                     await CommitConfirmedDeathsEmergencyCore();
                 }
                 catch (Exception fallbackEx)
                 {
-                    finalDiagnostic = AppendDiagnostic(finalDiagnostic, $"Fallback commit failed: {fallbackEx.Message}");
                     Entry.Logger.Error(
                         $"NinjaSlayer finisher session {SessionId} fallback death commit failed: {fallbackEx}");
                 }
@@ -463,17 +438,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         finally
         {
-            _completionProtocol.TryTransition(FinisherSessionPhase.Restoring);
-            bool mayRestoreCurrentCombat = mode != FinisherCompletionMode.ReleaseOnly
-                && IsCurrentCombatContext();
-            if (!mayRestoreCurrentCombat)
-            {
-                mode = FinisherCompletionMode.ReleaseOnly;
-                if (status != FinisherCompletionStatus.Faulted)
-                {
-                    status = FinisherCompletionStatus.Cancelled;
-                }
-            }
+            bool mayRestoreCurrentCombat = commitDeaths && IsCurrentCombatContext();
 
             try
             {
@@ -481,36 +446,27 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                status = FinisherCompletionStatus.Faulted;
-                finalDiagnostic = AppendDiagnostic(finalDiagnostic, $"Resource restoration failed: {ex.Message}");
                 Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} restoration failed: {ex}");
             }
             finally
             {
-                FinisherSessionRegistry.UnregisterSession(this);
-                _completionProtocol.TryTransition(FinisherSessionPhase.Finished);
-                var completionResult = new FinisherCompletionResult(
-                    SessionId,
-                    status,
-                    mode,
-                    finalDiagnostic);
-                _completionProtocol.Finish(completionResult);
+                try
+                {
+                    FinisherSessionRegistry.UnregisterSession(this);
+                }
+                catch (Exception ex)
+                {
+                    Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} unregister failed: {ex}");
+                }
+                finally
+                {
+                    _completion.TrySetResult();
+                }
             }
         }
-
-        return await Completion;
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        bool currentCombat = IsCurrentCombatContext();
-        await CompleteAsync(
-            FinisherCompletionStatus.Cancelled,
-            currentCombat ? FinisherCompletionMode.CommitWithoutPose : FinisherCompletionMode.ReleaseOnly,
-            "Finisher session was disposed before normal completion.");
-    }
-
-    private async Task<bool> CommitDeathsWithPoseCore()
+    private async Task CommitDeathsWithPoseCore()
     {
         await EnsureActionPeak();
         _committing = true;
@@ -522,7 +478,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             Entry.Logger.Warn(
                 $"Finisher session {SessionId} forecast did not match runtime damage; committing confirmed deaths without the pose.");
             await KillDeferredDeathsOnce(toKill, useDeathKick: false);
-            return false;
+            return;
         }
 
         if (CompletionCondition == FinisherCompletionCondition.AllCandidatesLethal)
@@ -538,7 +494,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         if (toKill.Count > 0 && targetNodes.Count == 0)
         {
             await KillDeferredDeathsOnce(toKill, useDeathKick: false);
-            return false;
+            return;
         }
 
         if (targetNodes.Count > 0)
@@ -570,8 +526,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 StartReturnTimeline(includeSettle: true);
             }
         }
-
-        return true;
     }
 
     private async Task CommitDeferredDeathsWithoutPoseCore()
@@ -659,49 +613,77 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
 
         _disposed = true;
-        var cleanup = new FinisherCleanupAccumulator();
-        cleanup.Capture(_watchdogCancellation.Cancel);
-        cleanup.Capture(_actionCancellation.Cancel);
-        cleanup.Capture(_impactCancellation.Cancel);
-        await cleanup.CaptureAsync(() => _actionPeakTask);
-        await cleanup.CaptureAsync(() => _enhancedImpactTask);
+        var failures = new List<Exception>();
+        void Capture(Action cleanup)
+        {
+            try
+            {
+                cleanup();
+            }
+            catch (Exception ex)
+            {
+                failures.Add(ex);
+            }
+        }
+
+        async Task CaptureAsync(Func<Task> cleanup)
+        {
+            try
+            {
+                await cleanup();
+            }
+            catch (Exception ex)
+            {
+                failures.Add(ex);
+            }
+        }
+
+        Capture(_watchdogCancellation.Cancel);
+        Capture(_actionCancellation.Cancel);
+        Capture(_impactCancellation.Cancel);
+        await CaptureAsync(() => _actionPeakTask);
+        await CaptureAsync(() => _enhancedImpactTask);
         _cameraTransitionGeneration++;
         _backdropTransitionGeneration++;
-        await cleanup.CaptureAsync(() => _cameraTransitionTask);
-        await cleanup.CaptureAsync(() => _backdropTransitionTask);
+        await CaptureAsync(() => _cameraTransitionTask);
+        await CaptureAsync(() => _backdropTransitionTask);
         if (mayRestoreCurrentCombat)
         {
-            await cleanup.CaptureAsync(EnsureReturnToBaseline);
+            await CaptureAsync(EnsureReturnToBaseline);
         }
-        await cleanup.CaptureAsync(() => _cameraShakePumpTask);
+        await CaptureAsync(() => _cameraShakePumpTask);
 
         if (mayRestoreCurrentCombat && GodotObject.IsInstanceValid(_actorNode))
         {
-            cleanup.Capture(() => _actorNode.Position = _actorStartPosition);
+            Capture(() => _actorNode.Position = _actorStartPosition);
         }
 
-        cleanup.Capture(() => _hoverTipSuppression?.Dispose());
+        Capture(() => _hoverTipSuppression?.Dispose());
         _hoverTipSuppression = null;
-        cleanup.Capture(() => _cardVisualSuppression?.Dispose());
+        Capture(() => _cardVisualSuppression?.Dispose());
         _cardVisualSuppression = null;
-        cleanup.Capture(() => _actorLayerLease?.Dispose());
+        Capture(() => _actorLayerLease?.Dispose());
         _actorLayerLease = null;
-        cleanup.Capture(RestoreActorLeapPose);
-        cleanup.Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
-        cleanup.Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
-        cleanup.Capture(RestoreDeathSquashes);
-        cleanup.Capture(RestoreDeathKicks);
-        cleanup.Capture(DisposeEnhancedPresentation);
+        Capture(RestoreActorLeapPose);
+        Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
+        Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
+        Capture(RestoreDeathSquashes);
+        Capture(RestoreDeathKicks);
+        Capture(DisposeEnhancedPresentation);
         if (GodotObject.IsInstanceValid(_room))
         {
-            cleanup.Capture(() => _room.TreeExiting -= OnRoomTreeExiting);
+            Capture(() => _room.TreeExiting -= OnRoomTreeExiting);
         }
-        cleanup.Capture(_impactCancellation.Dispose);
-        cleanup.Capture(_actionCancellation.Dispose);
-        cleanup.Capture(_watchdogCancellation.Dispose);
-        cleanup.Capture(_camera.Dispose);
-        cleanup.ThrowIfAny(
-            $"Finisher session {SessionId} encountered {cleanup.FailureCount} resource-restoration failure(s).");
+        Capture(_impactCancellation.Dispose);
+        Capture(_actionCancellation.Dispose);
+        Capture(_watchdogCancellation.Dispose);
+        Capture(_camera.Dispose);
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(
+                $"Finisher session {SessionId} encountered {failures.Count} resource-restoration failure(s).",
+                failures);
+        }
     }
 
     private void RestoreActorLeapPose()
@@ -720,10 +702,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 _watchdogCancellation.Token.ThrowIfCancellationRequested();
                 if (!IsCurrentCombatContext())
                 {
-                    await CompleteAsync(
-                        FinisherCompletionStatus.Cancelled,
-                        FinisherCompletionMode.ReleaseOnly,
-                        "Combat room changed while the finisher was active.");
+                    await CancelAsync();
                     return;
                 }
 
@@ -737,30 +716,27 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
             Entry.Logger.Error(
                 $"NinjaSlayer finisher session {SessionId} exceeded 90 active seconds; committing confirmed deaths and restoring state.");
-            await CompleteAsync(
-                FinisherCompletionStatus.Degraded,
-                FinisherCompletionMode.CommitWithoutPose,
-                "Finisher watchdog expired.");
+            await CompleteAsync(playPose: false);
         }
         catch (OperationCanceledException) when (_watchdogCancellation.IsCancellationRequested || _disposed)
         {
         }
         catch (OperationCanceledException ex)
         {
-            await CompleteAsync(
-                FinisherCompletionStatus.Cancelled,
-                FinisherCompletionMode.ReleaseOnly,
-                ex.Message);
+            Entry.Logger.Warn($"NinjaSlayer finisher session {SessionId} watchdog was cancelled: {ex.Message}");
+            await CancelAsync();
         }
         catch (Exception ex)
         {
             Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} watchdog failed: {ex}");
-            await CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                IsCurrentCombatContext()
-                    ? FinisherCompletionMode.CommitWithoutPose
-                    : FinisherCompletionMode.ReleaseOnly,
-                ex.Message);
+            if (IsCurrentCombatContext())
+            {
+                await CompleteAsync(playPose: false);
+            }
+            else
+            {
+                await CancelAsync();
+            }
         }
     }
 
@@ -773,10 +749,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     {
         try
         {
-            await CompleteAsync(
-                FinisherCompletionStatus.Cancelled,
-                FinisherCompletionMode.ReleaseOnly,
-                "Combat room exited the scene tree.");
+            await CancelAsync();
         }
         catch (Exception ex)
         {
@@ -790,9 +763,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         && ReferenceEquals(NCombatRoom.Instance, _room)
         && GodotObject.IsInstanceValid(_room)
         && _room.IsInsideTree();
-
-    private static string AppendDiagnostic(string? current, string next) =>
-        string.IsNullOrWhiteSpace(current) ? next : $"{current} {next}";
 
     private void TryScheduleEnhancedImpact()
     {
@@ -1074,19 +1044,13 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             return;
         }
 
-        Task actionTask;
-        lock (_actionSync)
+        if (!_actionStarted)
         {
-            if (!_actionStarted)
-            {
-                _actionStarted = true;
-                _actionPeakTask = RunActionToPeak();
-            }
-
-            actionTask = _actionPeakTask;
+            _actionStarted = true;
+            _actionPeakTask = RunActionToPeak();
         }
 
-        await actionTask;
+        await _actionPeakTask;
     }
 
     private async Task RunActionToPeak()

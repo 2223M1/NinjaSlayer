@@ -159,7 +159,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                 NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
                 if (finisher != null)
                 {
-                    await finisher.Begin();
+                    finisher.Begin();
                 }
 
                 await PlayIaiImpact();
@@ -168,13 +168,15 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             {
                 await YamotoKokiCombatAnimations.PlayIaiSlash(
                     Creature,
-                    async () =>
+                    () =>
                     {
                         NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
                         if (finisher != null)
                         {
-                            await finisher.Begin();
+                            finisher.Begin();
                         }
+
+                        return Task.CompletedTask;
                     },
                     PlayIaiImpact,
                     finisher == null
@@ -184,19 +186,14 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
 
             if (finisher != null)
             {
-                await finisher.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await finisher.CompleteAsync(playPose: true);
             }
         }
-        catch (Exception ex)
+        catch
         {
             if (finisher != null)
             {
-                await finisher.CompleteAsync(
-                    FinisherCompletionStatus.Faulted,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    ex.Message);
+                await finisher.CompleteAsync(playPose: false);
             }
 
             throw;

@@ -46,9 +46,6 @@ internal static class FinisherCleanupService
             return;
         }
 
-        await session.CompleteAsync(
-            playPose ? FinisherCompletionStatus.Succeeded : FinisherCompletionStatus.Degraded,
-            playPose ? FinisherCompletionMode.PlayPose : FinisherCompletionMode.CommitWithoutPose,
-            playPose ? null : "Card resolution ended before AfterCardPlayed completed.");
+        await session.CompleteAsync(playPose);
     }
 }

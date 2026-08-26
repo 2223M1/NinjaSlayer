@@ -434,7 +434,7 @@ try {
         @('sawatari.starting', 'sawatari.same-combat-completed', 'sawatari.completed')
     }
     else {
-        @('prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed')
+        @('transition.completed', 'prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed')
     }
     $missing = @($requiredCheckpoints | Where-Object { $_ -notin $checkpoints.Name })
     if ($missing.Count -gt 0 -or @($checkpoints | Where-Object Status -ne 'passed').Count -gt 0) {

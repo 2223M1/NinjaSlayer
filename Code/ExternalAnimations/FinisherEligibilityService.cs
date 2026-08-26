@@ -18,7 +18,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class FinisherEligibilityService
 {
-    private static int CompatibilityWarningLogged;
+    private static bool CompatibilityWarningLogged;
 
     internal static bool IsExcludedAttackCard(CardModel card) =>
         card is ShurikenCard or GiantShurikenCard
@@ -48,8 +48,9 @@ internal static class FinisherEligibilityService
 
         if (!FinisherProtectionService.CanProtectLethalDamage(out string compatibilityReason))
         {
-            if (Interlocked.Exchange(ref CompatibilityWarningLogged, 1) == 0)
+            if (!CompatibilityWarningLogged)
             {
+                CompatibilityWarningLogged = true;
                 Entry.Logger.Warn(
                     $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason}");
             }

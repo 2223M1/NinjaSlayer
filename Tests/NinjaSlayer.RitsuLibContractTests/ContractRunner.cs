@@ -302,11 +302,6 @@ public partial class ContractRunner : Node
     private static void VerifyProductionDynamicPatchContracts()
     {
         VerifyProductionDynamicPatchSet(
-            "transition-gc-contract",
-            NinjaSlayerTransitionGcDeferralPatch.CreateDynamicPatches(),
-            expectedCount: 3,
-            typeof(NinjaSlayerTransitionGcDeferralPatch));
-        VerifyProductionDynamicPatchSet(
             "combat-presentation-pacing-contract",
             CombatPresentationPacingPatch.CreateDynamicPatches(),
             expectedCount: 3,
@@ -537,18 +532,22 @@ public partial class ContractRunner : Node
         bool contextIsCurrent = true;
 
         Creature failedTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
-        var failedLedger = new FinisherDamageLedger([failedTarget], 1, 1, combatState, () => contextIsCurrent);
+        var failedLedger = new FinisherDamageLedger([failedTarget], combatState, () => contextIsCurrent);
         decimal failedAmount = 10m;
         Require(
             failedLedger.TryProtect(failedTarget, committing: false, ref failedAmount, out FinisherProtectionToken? failedToken),
             "Lethal protection did not create a token.");
         Require(failedTarget.CurrentHp == 2 && failedAmount == 1m, "The temporary 1 -> 2 HP bump was not applied.");
+        DamageResult skippedResult = failedTarget.LoseHpInternal(0m, ValueProp.Move);
+        Require(
+            !failedLedger.Confirm(failedToken!, skippedResult, originalRan: false),
+            "A skipped original damage call confirmed its protection token.");
         failedLedger.FinalizeProtection(failedToken!);
         Require(failedTarget.CurrentHp == 1, "Finalizer did not roll back an intact temporary HP bump.");
         Require(failedLedger.DeferredDeaths.Count == 0, "An unconfirmed damage call registered a deferred death.");
 
         Creature confirmedTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
-        var confirmedLedger = new FinisherDamageLedger([confirmedTarget], 2, 1, combatState, () => contextIsCurrent);
+        var confirmedLedger = new FinisherDamageLedger([confirmedTarget], combatState, () => contextIsCurrent);
         decimal confirmedAmount = 10m;
         Require(
             confirmedLedger.TryProtect(
@@ -558,17 +557,17 @@ public partial class ContractRunner : Node
                 out FinisherProtectionToken? confirmedToken),
             "Confirmed lethal protection did not create a token.");
         DamageResult result = confirmedTarget.LoseHpInternal(confirmedAmount, ValueProp.Move);
-        confirmedLedger.Confirm(confirmedToken!, result, originalRan: true);
+        Require(
+            confirmedLedger.Confirm(confirmedToken!, result, originalRan: true),
+            "The real DamageResult did not confirm its protection token.");
+        confirmedLedger.PresentProtectedDamage(confirmedToken!, result);
         confirmedLedger.FinalizeProtection(confirmedToken!);
         Require(confirmedTarget.CurrentHp == 1, "Confirmed protection changed the protected target HP.");
-        Require(confirmedToken!.IsConfirmed, "The real DamageResult did not confirm its protection token.");
         Require(confirmedLedger.DeferredDeaths.SetEquals([confirmedTarget]), "Confirmed lethal damage was not deferred exactly once.");
 
         Creature postfixFailureTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
         var postfixFailureLedger = new FinisherDamageLedger(
             [postfixFailureTarget],
-            5,
-            1,
             combatState,
             () => contextIsCurrent,
             (_, _) => throw new InvalidOperationException("injected-postfix-failure"));
@@ -581,9 +580,12 @@ public partial class ContractRunner : Node
                 out FinisherProtectionToken? postfixFailureToken),
             "Postfix-failure protection did not create a token.");
         DamageResult postfixFailureResult = postfixFailureTarget.LoseHpInternal(postfixFailureAmount, ValueProp.Move);
+        Require(
+            postfixFailureLedger.Confirm(postfixFailureToken!, postfixFailureResult, originalRan: true),
+            "Postfix-failure damage did not confirm its protection token.");
         try
         {
-            postfixFailureLedger.Confirm(postfixFailureToken!, postfixFailureResult, originalRan: true);
+            postfixFailureLedger.PresentProtectedDamage(postfixFailureToken!, postfixFailureResult);
             throw new InvalidOperationException("Injected Postfix failure did not propagate to the patch boundary.");
         }
         catch (InvalidOperationException ex) when (ex.Message == "injected-postfix-failure")
@@ -591,7 +593,6 @@ public partial class ContractRunner : Node
         }
         postfixFailureLedger.FinalizeProtection(postfixFailureToken!);
         Require(postfixFailureTarget.CurrentHp == 1, "Postfix failure rolled a confirmed target back to its bumped HP.");
-        Require(postfixFailureToken!.IsConfirmed, "Postfix failure lost the confirmed DamageResult state.");
         Require(
             postfixFailureLedger.DeferredDeaths.SetEquals([postfixFailureTarget]),
             "Postfix failure lost the confirmed deferred death.");
@@ -599,8 +600,6 @@ public partial class ContractRunner : Node
         Creature partiallyMutatedTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
         var partiallyMutatedLedger = new FinisherDamageLedger(
             [partiallyMutatedTarget],
-            3,
-            1,
             combatState,
             () => contextIsCurrent);
         decimal partialAmount = 10m;
@@ -616,7 +615,7 @@ public partial class ContractRunner : Node
         Require(partiallyMutatedTarget.CurrentHp == 1, "Finalizer overwrote HP changed by the original method.");
 
         Creature staleTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
-        var staleLedger = new FinisherDamageLedger([staleTarget], 4, 1, combatState, () => contextIsCurrent);
+        var staleLedger = new FinisherDamageLedger([staleTarget], combatState, () => contextIsCurrent);
         decimal staleAmount = 10m;
         Require(
             staleLedger.TryProtect(staleTarget, committing: false, ref staleAmount, out FinisherProtectionToken? staleToken),
@@ -624,6 +623,68 @@ public partial class ContractRunner : Node
         contextIsCurrent = false;
         staleLedger.FinalizeProtection(staleToken!);
         Require(staleTarget.CurrentHp == 2, "Finalizer wrote HP into a stale combat.");
+
+        contextIsCurrent = true;
+        int duplicatePresentations = 0;
+        Creature duplicateTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
+        var duplicateLedger = new FinisherDamageLedger(
+            [duplicateTarget],
+            combatState,
+            () => contextIsCurrent,
+            (_, _) => duplicatePresentations++);
+        decimal duplicateAmount = 10m;
+        Require(
+            duplicateLedger.TryProtect(
+                duplicateTarget,
+                committing: false,
+                ref duplicateAmount,
+                out FinisherProtectionToken? duplicateToken),
+            "Duplicate-call protection did not create a token.");
+        DamageResult duplicateResult = duplicateTarget.LoseHpInternal(duplicateAmount, ValueProp.Move);
+        Require(
+            duplicateLedger.Confirm(duplicateToken!, duplicateResult, originalRan: true),
+            "The first confirmation did not consume its active protection token.");
+        duplicateLedger.PresentProtectedDamage(duplicateToken!, duplicateResult);
+        Require(
+            !duplicateLedger.Confirm(duplicateToken!, duplicateResult, originalRan: true),
+            "A consumed protection token confirmed twice.");
+        duplicateLedger.FinalizeProtection(duplicateToken!);
+        duplicateLedger.FinalizeProtection(duplicateToken!);
+        Require(duplicatePresentations == 1, "A repeated protection callback presented damage more than once.");
+        Require(
+            duplicateLedger.DeferredDeaths.SetEquals([duplicateTarget]),
+            "Repeated confirmation changed the deferred-death set.");
+
+        int repeatedHitPresentations = 0;
+        Creature repeatedHitTarget = CreateCreature(combatState, currentHp: 1, maxHp: 10);
+        var repeatedHitLedger = new FinisherDamageLedger(
+            [repeatedHitTarget],
+            combatState,
+            () => contextIsCurrent,
+            (_, _) => repeatedHitPresentations++);
+        for (int hit = 0; hit < 2; hit++)
+        {
+            decimal repeatedAmount = 10m;
+            Require(
+                repeatedHitLedger.TryProtect(
+                    repeatedHitTarget,
+                    committing: false,
+                    ref repeatedAmount,
+                    out FinisherProtectionToken? repeatedToken),
+                $"Repeated lethal hit {hit + 1} did not create a protection token.");
+            DamageResult repeatedResult = repeatedHitTarget.LoseHpInternal(repeatedAmount, ValueProp.Move);
+            Require(
+                repeatedHitLedger.Confirm(repeatedToken!, repeatedResult, originalRan: true),
+                $"Repeated lethal hit {hit + 1} did not confirm its protection token.");
+            repeatedHitLedger.PresentProtectedDamage(repeatedToken!, repeatedResult);
+            repeatedHitLedger.FinalizeProtection(repeatedToken!);
+        }
+
+        Require(repeatedHitTarget.CurrentHp == 1, "Repeated protected lethal hits changed the target's protected HP.");
+        Require(repeatedHitPresentations == 2, "Repeated lethal hits did not preserve both damage presentations.");
+        Require(
+            repeatedHitLedger.DeferredDeaths.SetEquals([repeatedHitTarget]),
+            "Repeated lethal hits registered the same deferred death more than once.");
     }
 
     private static void VerifyWorldVisualStylesAreIdempotent()

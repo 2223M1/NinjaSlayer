@@ -1,12 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Acts;
 using NinjaSlayer.Code.Transition;
 using STS2RitsuLib.Patching.Models;
 using STS2RitsuLib.Utils.HarmonyIl;
@@ -114,75 +110,5 @@ public sealed class NinjaSlayerTransitionAssetFinalizePatch : IPatchMethod
         }
 
         return false;
-    }
-}
-
-public static class NinjaSlayerTransitionGcDeferralPatch
-{
-    private const string PatchIdPrefix = "ninjaslayer_transition_preload_gc_deferral";
-    private static readonly MethodInfo LoadRunAssetsMoveNext = ResolveMoveNext(
-        nameof(PreloadManager.LoadRunAssets),
-        [typeof(IEnumerable<CharacterModel>)]);
-    private static readonly MethodInfo LoadActAssetsMoveNext = ResolveMoveNext(
-        nameof(PreloadManager.LoadActAssets),
-        [typeof(ActModel)]);
-    private static readonly MethodInfo LoadRoomAssetsMoveNext = ResolveMoveNext(
-        "LoadRoomAssets",
-        [typeof(string), typeof(IEnumerable<string>)]);
-    private static readonly MethodInfo GcCollect =
-        AccessTools.Method(typeof(GC), nameof(GC.Collect), Type.EmptyTypes)
-        ?? throw new MissingMethodException(typeof(GC).FullName, nameof(GC.Collect));
-    private static readonly MethodInfo SafeCollect = AccessTools.Method(
-        typeof(NinjaSlayerTransitionLoadSmoothing),
-        nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe))
-        ?? throw new MissingMethodException(
-            typeof(NinjaSlayerTransitionLoadSmoothing).FullName,
-            nameof(NinjaSlayerTransitionLoadSmoothing.CollectWhenSafe));
-
-    public static DynamicPatchInfo[] CreateDynamicPatches()
-    {
-        var harmonyTranspiler = new HarmonyMethod(
-            typeof(NinjaSlayerTransitionGcDeferralPatch),
-            nameof(Transpiler));
-        return
-        [
-            CreateDynamicPatch("load-run-assets", LoadRunAssetsMoveNext, harmonyTranspiler),
-            CreateDynamicPatch("load-act-assets", LoadActAssetsMoveNext, harmonyTranspiler),
-            CreateDynamicPatch("load-room-assets", LoadRoomAssetsMoveNext, harmonyTranspiler)
-        ];
-    }
-
-    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        const string operation = "NinjaSlayer transition GC deferral";
-        var rewriter = HarmonyIlRewriter.From(instructions);
-        HarmonyIlRewriteReport report = rewriter.RedirectCalls(
-            operation,
-            called => called == GcCollect ? SafeCollect : null,
-            code => code.Any(HarmonyIl.IsCall(SafeCollect)));
-        return rewriter.InstructionsChecked(report);
-    }
-
-    private static DynamicPatchInfo CreateDynamicPatch(
-        string idSuffix,
-        MethodInfo moveNext,
-        HarmonyMethod transpiler) =>
-        new(
-            $"{PatchIdPrefix}_{idSuffix}",
-            moveNext,
-            transpiler: transpiler,
-            isCritical: true,
-            description: $"Defer forced GC in PreloadManager {idSuffix}.");
-
-    private static MethodInfo ResolveMoveNext(string methodName, Type[] parameterTypes)
-    {
-        MethodInfo method = AccessTools.Method(typeof(PreloadManager), methodName, parameterTypes)
-            ?? throw new MissingMethodException(typeof(PreloadManager).FullName, methodName);
-        Type stateMachine = method.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
-            ?? throw new MissingMemberException(
-                method.DeclaringType?.FullName,
-                $"{method.Name} async state machine");
-        return AccessTools.Method(stateMachine, "MoveNext", Type.EmptyTypes)
-            ?? throw new MissingMethodException(stateMachine.FullName, "MoveNext");
     }
 }

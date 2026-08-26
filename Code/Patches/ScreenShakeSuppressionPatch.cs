@@ -38,7 +38,9 @@ public sealed class ScreenRumbleCinematicSuppressionPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NScreenShake), nameof(NScreenShake.Rumble), [typeof(ShakeStrength), typeof(ShakeDuration), typeof(RumbleStyle)])];
 
-    public static bool Prefix() => !ScreenMotionPatchPolicy.ShouldSuppressUnroutableMotion;
+    public static bool Prefix() =>
+        !ScreenShakeSuppressionContext.IsSuppressed
+        && !CombatCinematicCameraLease.IsControllingCamera;
 }
 
 public sealed class ScreenTraumaCinematicSuppressionPatch : IPatchMethod
@@ -52,12 +54,7 @@ public sealed class ScreenTraumaCinematicSuppressionPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NScreenShake), nameof(NScreenShake.AddTrauma), [typeof(ShakeStrength)])];
 
-    public static bool Prefix() => !ScreenMotionPatchPolicy.ShouldSuppressUnroutableMotion;
-}
-
-internal static class ScreenMotionPatchPolicy
-{
-    internal static bool ShouldSuppressUnroutableMotion =>
-        ScreenShakeSuppressionContext.IsSuppressed
-        || CombatCinematicCameraLease.IsControllingCamera;
+    public static bool Prefix() =>
+        !ScreenShakeSuppressionContext.IsSuppressed
+        && !CombatCinematicCameraLease.IsControllingCamera;
 }
