@@ -19,7 +19,6 @@ using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Nodes;
 using STS2RitsuLib.Interop.AutoRegistration;
 using NinjaSlayer.Content;
-using NinjaSlayer.Scripts;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
@@ -43,15 +42,7 @@ public sealed class NarakuPower : NinjaSlayerPowerTemplate
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
         NarakuVisualOverlay.Sync(Owner);
-        try
-        {
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn($"Failed to play Naraku entry audio: {ex}");
-        }
-
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner]);
         return Task.CompletedTask;
     }

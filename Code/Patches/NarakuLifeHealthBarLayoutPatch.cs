@@ -54,14 +54,19 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         }
 
         int narakuLife = creature.GetPowerAmount<NarakuLifePower>();
-        RefreshEmbeddedStrip(__instance, creature, narakuLife);
-        if (narakuLife <= 0 || __instance.GetParent()?.GetParent() is not NCreature creatureNode)
+        if (narakuLife <= 0)
         {
+            HideEmbeddedStrip(__instance);
             return;
         }
 
+        RefreshEmbeddedStrip(__instance, creature, narakuLife);
+        NCreature creatureNode = __instance.GetParent()?.GetParent() as NCreature
+            ?? throw new InvalidOperationException(
+                "The active Naraku health bar is not attached to a creature node.");
         Control bounds = creatureNode.Hitbox;
         Control hpBar = __instance.HpBarContainer;
+        Control block = __instance.GetNode<Control>("%BlockContainer");
         float vanillaPadding = (24f - creature.Monster?.HpBarSizeReduction).GetValueOrDefault();
         float vanillaWidth = bounds.Size.X + vanillaPadding;
         float widthMultiplier = vanillaWidth > 0f ? hpBar.Size.X / vanillaWidth : 1f;
@@ -70,28 +75,23 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
             bounds.Size.X,
             vanillaPadding,
             widthMultiplier,
-            __instance.GetNodeOrNull<Control>("%BlockContainer")?.Size.X ?? 0f);
+            block.Size.X);
 
         Vector2 barPosition = hpBar.GlobalPosition;
         barPosition.X = layout.BarLeft;
         hpBar.GlobalPosition = barPosition;
-        Control? block = __instance.GetNodeOrNull<Control>("%BlockContainer");
-        if (block != null)
-        {
-            Vector2 globalPosition = block.GlobalPosition;
-            globalPosition.X = layout.BlockLeft;
-            block.GlobalPosition = globalPosition;
-            OriginalBlockPosition.SetValue(__instance, block.Position);
-        }
+        Vector2 globalPosition = block.GlobalPosition;
+        globalPosition.X = layout.BlockLeft;
+        block.GlobalPosition = globalPosition;
+        OriginalBlockPosition.SetValue(__instance, block.Position);
     }
 
     private static void RefreshEmbeddedStrip(NHealthBar healthBar, Creature creature, int narakuLife)
     {
-        NinePatchRect? poisonTemplate = healthBar.GetNodeOrNull<NinePatchRect>("%PoisonForeground");
-        if (poisonTemplate?.GetParent() is not Control mask)
-        {
-            return;
-        }
+        NinePatchRect poisonTemplate = healthBar.GetNode<NinePatchRect>("%PoisonForeground");
+        Control mask = poisonTemplate.GetParent() as Control
+            ?? throw new InvalidOperationException(
+                "The poison foreground is not attached to the health-bar mask.");
 
         NinePatchRect? strip = mask.GetNodeOrNull<NinePatchRect>(EmbeddedStripName);
         float expectedWidth = ExpectedMaxForegroundWidth.GetValue(healthBar) is float value
@@ -100,7 +100,7 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
                 "NHealthBar._expectedMaxFgWidth has an unexpected runtime type.");
         float maxForegroundWidth = expectedWidth > 0f
             ? expectedWidth
-            : healthBar.GetNodeOrNull<Control>("%HpForegroundContainer")?.Size.X ?? 0f;
+            : healthBar.GetNode<Control>("%HpForegroundContainer").Size.X;
         EmbeddedHealthBarSegment? segment = ExtendedHealthBarLayoutCalculator.CalculateEmbeddedNarakuLife(
             creature.CurrentHp,
             creature.MaxHp,
@@ -118,26 +118,17 @@ public sealed class NarakuLifeHealthBarLayoutPatch : IPatchMethod
         }
 
         strip ??= CreateEmbeddedStrip(healthBar, mask, poisonTemplate);
-        if (strip == null)
-        {
-            return;
-        }
-
         strip.OffsetLeft = segment.Value.OffsetLeft;
         strip.OffsetRight = segment.Value.OffsetRight;
         strip.Visible = true;
     }
 
-    private static NinePatchRect? CreateEmbeddedStrip(
+    private static NinePatchRect CreateEmbeddedStrip(
         NHealthBar healthBar,
         Control mask,
         NinePatchRect poisonTemplate)
     {
-        Control? hpForeground = healthBar.GetNodeOrNull<Control>("%HpForeground");
-        if (hpForeground == null)
-        {
-            return null;
-        }
+        Control hpForeground = healthBar.GetNode<Control>("%HpForeground");
 
         NinePatchRect strip = (NinePatchRect)poisonTemplate.Duplicate();
         strip.Name = EmbeddedStripName;

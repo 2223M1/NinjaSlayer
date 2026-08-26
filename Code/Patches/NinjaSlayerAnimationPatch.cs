@@ -29,7 +29,7 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
             return false;
         }
 
-        NinjaSlayerFinisherCinematic.NotifyPrimaryAttackAnimation(creature, triggerName);
+        FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryAttackAnimation(creature, triggerName);
 
         return !NinjaSlayerCombatAnimations.TryPlayTriggerAnim(creature, triggerName, waitTime, ref __result);
     }

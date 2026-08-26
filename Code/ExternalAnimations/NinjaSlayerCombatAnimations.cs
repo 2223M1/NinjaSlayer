@@ -1,6 +1,8 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
@@ -49,15 +51,30 @@ public static class NinjaSlayerCombatAnimations
                 result = PlayVisualCueTrigger(creature, TornadoFistSpinAnimation.CueTriggerName, waitTime);
                 return true;
             case "Cast":
-                if (NinjaSlayerCombatCastContext.GetCurrentCard(creature) is not ZazenDrink)
                 {
-                    result = Task.CompletedTask;
+                    CardModel? currentCard = null;
+                    if (CombatManager.Instance?.History is { } history)
+                    {
+                        var finishedPlays = history.CardPlaysFinished
+                            .Where(entry => entry.Actor == creature)
+                            .Select(entry => entry.CardPlay)
+                            .ToHashSet();
+                        currentCard = history.CardPlaysStarted
+                            .Where(entry => entry.Actor == creature)
+                            .LastOrDefault(entry => !finishedPlays.Contains(entry.CardPlay))
+                            ?.CardPlay.Card;
+                    }
+
+                    if (currentCard is not ZazenDrink)
+                    {
+                        result = Task.CompletedTask;
+                        return true;
+                    }
+
+                    NinjaSlayerCombatAudioSet.Play(audio.Cast);
+                    result = PlayCastAnimation(creature);
                     return true;
                 }
-
-                NinjaSlayerCombatAudioSet.Play(audio.Cast);
-                result = PlayCastAnimation(creature);
-                return true;
             case "Hit":
                 NinjaSlayerCombatAudioSet.Play(audio.Hurt);
                 if (!DarkStrikeHurtPoseFreezeContext.TryDeferNinjaSlayerHit(creature))

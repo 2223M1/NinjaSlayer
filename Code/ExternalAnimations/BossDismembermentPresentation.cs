@@ -310,8 +310,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
                     prepared,
                     texture,
                     zIndex,
-                    out BossCapturedFragmentRenderSurface? surface)
-                || surface == null)
+                    out BossCapturedFragmentRenderSurface? surface))
             {
                 prepared.Dispose();
                 continue;

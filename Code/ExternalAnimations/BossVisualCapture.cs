@@ -257,8 +257,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                 BodyLocalBounds,
                 _detachedBoneName,
                 out BossSemanticPartBuilder? builder,
-                out string failureReason)
-            || builder == null)
+                out string failureReason))
         {
             throw new InvalidOperationException(failureReason);
         }
@@ -402,8 +401,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                 shader,
                 massRatios[index],
                 BossDismembermentMath.ResolveCollisionPadding(mappedAreas[index]),
-                out BossCapturedFragmentRenderSurface.PreparedResource? prepared)
-            || prepared == null)
+                out BossCapturedFragmentRenderSurface.PreparedResource? prepared))
         {
             throw new InvalidOperationException(
                 $"fragment {descriptor.FragmentIndex} could not be prepared");

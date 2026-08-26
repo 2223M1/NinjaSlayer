@@ -7,7 +7,6 @@ using MegaCrit.Sts2.Core.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Relics;
-using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -24,17 +23,7 @@ public sealed class YamotoKokiFinishedCombatRestorePatch : IPatchMethod
         new(typeof(NCombatRoom), nameof(NCombatRoom._Ready))
     ];
 
-    public static void Postfix(NCombatRoom __instance)
-    {
-        try
-        {
-            RestoreIfNeeded(__instance);
-        }
-        catch (Exception exception)
-        {
-            Entry.Logger.Warn($"Could not restore Yamoto Koki in the combat reward room: {exception}");
-        }
-    }
+    public static void Postfix(NCombatRoom __instance) => RestoreIfNeeded(__instance);
 
     private static void RestoreIfNeeded(NCombatRoom room)
     {
@@ -65,13 +54,12 @@ public sealed class YamotoKokiFinishedCombatRestorePatch : IPatchMethod
             PetOwner = controller.Owner
         };
         room.AddCreature(companion);
-        NCreature? node = room.CreatureNodes.FirstOrDefault(
-            candidate => ReferenceEquals(candidate.Entity, companion));
-        if (node != null)
-        {
-            node.ToggleIsInteractable(false);
-            node.IntentContainer.Visible = false;
-        }
+        NCreature node = room.CreatureNodes.FirstOrDefault(
+                candidate => ReferenceEquals(candidate.Entity, companion))
+            ?? throw new InvalidOperationException(
+                "The combat room did not create a node for the restored Yamoto Koki companion.");
+        node.ToggleIsInteractable(false);
+        node.IntentContainer.Visible = false;
 
         YamotoKokiAllyLayoutPatch.Reflow(room);
     }

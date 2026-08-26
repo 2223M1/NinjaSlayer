@@ -24,7 +24,7 @@ public partial class NYamotoKokiOrigamiMissileHitSparkVfx : NHitSparkVfx
 
     private const string LifetimeParticleNodePath = "vfx_common_specks";
 
-    private NCreature? _targetNode;
+    private NCreature _targetNode = null!;
 
     public new static NHitSparkVfx? Create(Creature target, bool requireInteractable = true)
     {
@@ -34,40 +34,22 @@ public partial class NYamotoKokiOrigamiMissileHitSparkVfx : NHitSparkVfx
             return null;
         }
 
-        NYamotoKokiOrigamiMissileHitSparkVfx? vfx =
-            NinjaSlayerVfxUtil.TryGenModVfxNode<NYamotoKokiOrigamiMissileHitSparkVfx>(ResourceScenePath);
-        if (vfx != null)
-        {
-            vfx._targetNode = targetNode;
-        }
-
+        NYamotoKokiOrigamiMissileHitSparkVfx vfx =
+            NinjaSlayerVfxUtil.GenModVfxNode<NYamotoKokiOrigamiMissileHitSparkVfx>(ResourceScenePath);
+        vfx._targetNode = targetNode;
         return vfx;
     }
 
     public override void _Ready()
     {
-        if (_targetNode == null || !GodotObject.IsInstanceValid(_targetNode))
-        {
-            this.QueueFreeSafely();
-            return;
-        }
-
         GlobalPosition = _targetNode.VfxSpawnPosition;
         foreach (string nodePath in ParticleNodePaths)
         {
-            GetNodeOrNull<GpuParticles2D>(nodePath)?.Restart();
+            GetNode<GpuParticles2D>(nodePath).Restart();
         }
 
-        GpuParticles2D? lifetimeParticles =
-            GetNodeOrNull<GpuParticles2D>(LifetimeParticleNodePath);
-        if (lifetimeParticles != null)
-        {
-            TaskHelper.RunSafely(FreeAfterParticles(lifetimeParticles));
-        }
-        else
-        {
-            this.QueueFreeSafely();
-        }
+        GpuParticles2D lifetimeParticles = GetNode<GpuParticles2D>(LifetimeParticleNodePath);
+        TaskHelper.RunSafely(FreeAfterParticles(lifetimeParticles));
     }
 
     private async Task FreeAfterParticles(GpuParticles2D particles)

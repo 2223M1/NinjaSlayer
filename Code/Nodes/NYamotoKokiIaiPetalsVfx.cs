@@ -24,12 +24,8 @@ public partial class NYamotoKokiIaiPetalsVfx : GpuParticles2D
             return null;
         }
 
-        NYamotoKokiIaiPetalsVfx? vfx = NinjaSlayerVfxUtil.TryGenModVfxNode<NYamotoKokiIaiPetalsVfx>(ScenePath);
-        if (vfx != null)
-        {
-            vfx.GlobalPosition = node.VfxSpawnPosition;
-        }
-
+        NYamotoKokiIaiPetalsVfx vfx = NinjaSlayerVfxUtil.GenModVfxNode<NYamotoKokiIaiPetalsVfx>(ScenePath);
+        vfx.GlobalPosition = node.VfxSpawnPosition;
         return vfx;
     }
 

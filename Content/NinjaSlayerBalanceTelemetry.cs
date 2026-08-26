@@ -53,17 +53,7 @@ public static class NinjaSlayerBalanceTelemetry
     }
 
     internal static void RefreshIdentity(RunState runState)
-    {
-        try
-        {
-            IdentityTracker.Refresh(runState, LocalContext.NetId, BuildPlayerIdentities(runState.Players));
-        }
-        catch (Exception exception)
-        {
-            IdentityTracker.Clear();
-            Entry.Logger.Warn($"Failed to refresh NinjaSlayer telemetry identity: {exception.Message}");
-        }
-    }
+        => IdentityTracker.Refresh(runState, LocalContext.NetId, BuildPlayerIdentities(runState.Players));
 
     internal static void ClearIdentity() => IdentityTracker.Clear();
 

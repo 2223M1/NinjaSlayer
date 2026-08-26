@@ -22,8 +22,11 @@ public sealed class OrobasSeaGlassCharacterPatch : IPatchMethod
 
     public static void Postfix(Orobas __instance, IReadOnlyList<EventOption> __result)
     {
-        CharacterModel? ownerCharacter = __instance.Owner?.Character;
-        if (ownerCharacter == null || ownerCharacter is INinjaSlayerCharacter)
+        var owner = __instance.Owner
+            ?? throw new InvalidOperationException("Orobas generated Sea Glass options without an owning player.");
+        CharacterModel ownerCharacter = owner.Character
+            ?? throw new InvalidOperationException("Orobas generated Sea Glass options without an owning character.");
+        if (ownerCharacter is INinjaSlayerCharacter)
         {
             return;
         }
@@ -39,12 +42,14 @@ public sealed class OrobasSeaGlassCharacterPatch : IPatchMethod
                 continue;
             }
 
-            CharacterModel[] candidates = __instance.Owner!.UnlockState.Characters
+            CharacterModel[] candidates = owner.UnlockState.Characters
                 .Where(candidate => candidate is not INinjaSlayerCharacter && candidate.Id != ownerCharacter.Id)
                 .ToArray();
             CharacterModel replacement = candidates.Length == 0
                 ? ownerCharacter
-                : __instance.Rng.NextItem(candidates) ?? ownerCharacter;
+                : __instance.Rng.NextItem(candidates)
+                  ?? throw new InvalidOperationException(
+                      "Orobas failed to select from a non-empty Sea Glass character candidate set.");
             seaGlass.CharacterId = replacement.Id;
         }
     }

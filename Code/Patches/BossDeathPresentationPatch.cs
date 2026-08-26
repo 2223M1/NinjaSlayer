@@ -81,7 +81,7 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
             }
             Entry.Logger.Error(
                 $"Boss death presentation setup failed for {monster.Id.Entry}: {exception}");
-            return true;
+            throw;
         }
     }
 }

@@ -15,7 +15,6 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
-using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -64,7 +63,7 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
         ref decimal amount,
         out FinisherProtectionToken? __state)
     {
-        NinjaSlayerFinisherCinematic.TryProtectLethalDamage(__instance, ref amount, out __state);
+        FinisherProtectionService.TryProtectLethalDamage(__instance, ref amount, out __state);
     }
 
     [HarmonyPriority(Priority.First)]
@@ -73,27 +72,13 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
         bool __runOriginal,
         FinisherProtectionToken? __state)
     {
-        NinjaSlayerFinisherCinematic.ConfirmProtectedDamageResult(__result, __runOriginal, __state);
+        FinisherProtectionService.ConfirmProtectedDamageResult(__result, __runOriginal, __state);
     }
 
     [HarmonyPriority(Priority.Last)]
     public static Exception? Finalizer(Exception? __exception, FinisherProtectionToken? __state)
     {
-        try
-        {
-            NinjaSlayerFinisherCinematic.FinalizeLethalProtection(__state);
-        }
-        catch (Exception ex)
-        {
-            try
-            {
-                Entry.Logger.Error($"NinjaSlayer finisher lethal-protection Finalizer failed: {ex}");
-            }
-            catch
-            {
-            }
-        }
-
+        FinisherProtectionService.FinalizeLethalProtection(__state);
         return __exception;
     }
 }
@@ -117,7 +102,7 @@ public sealed class NinjaSlayerFinisherDamageNumberPatch : IPatchMethod
         DamageResult result,
         ref NDamageNumVfx? __result)
     {
-        if (!NinjaSlayerFinisherCinematic.TryTakeDamageDisplayOverride(result, out int displayDamage))
+        if (!FinisherProtectionService.TryTakeDamageDisplayOverride(result, out int displayDamage))
         {
             return true;
         }
@@ -187,7 +172,7 @@ public sealed class NinjaSlayerFinisherDeathStartPatch : IPatchMethod
     {
         if (__instance.DeathAnimationTask == null || __instance.DeathAnimationTask.IsCompleted)
         {
-            NinjaSlayerFinisherCinematic.NotifyDeathAnimationStarting(__instance);
+            FinisherSessionRegistry.GetActiveSession()?.NotifyDeathAnimationStarting(__instance);
         }
     }
 }
@@ -225,16 +210,24 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
-        ref Task<IEnumerable<DamageResult>> __result) =>
-        PrefixCore(
+        ref Task<IEnumerable<DamageResult>> __result)
+    {
+        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
+        CardPlay? cardPlay = session != null
+            && session.Actor == dealer
+            && session.CardPlay?.Card == cardSource
+                ? session.CardPlay
+                : null;
+        return PrefixCore(
             choiceContext,
             ref targets,
             amount,
             props,
             dealer,
             cardSource,
-            NinjaSlayerFinisherCinematic.ResolveActiveCardPlay(dealer, cardSource),
+            cardPlay,
             ref __result);
+    }
 #else
     public static bool Prefix(
         PlayerChoiceContext choiceContext,
@@ -267,7 +260,7 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         CardPlay? cardPlay,
         ref Task<IEnumerable<DamageResult>> resultTask)
     {
-        NinjaSlayerFinisherCinematic.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
+        FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
         if (!NinjaSlayerFinisherCinematic.TryInterceptDirectDamage(
                 choiceContext,
                 targets,
@@ -385,7 +378,7 @@ public sealed class NinjaSlayerFinisherAfterCardPlayedPatch : IPatchMethod
 
     public static void Postfix(CardPlay cardPlay, ref Task __result)
     {
-        __result = NinjaSlayerFinisherCinematic.WrapAfterCardPlayed(__result, cardPlay);
+        __result = FinisherCleanupService.CompleteAfterCardPlayed(__result, cardPlay);
     }
 }
 
@@ -405,7 +398,7 @@ public sealed class NinjaSlayerFinisherCardPlayCleanupPatch : IPatchMethod
 
     public static void Postfix(CardModel __instance, ref Task __result)
     {
-        __result = NinjaSlayerFinisherCinematic.WrapCardPlay(__result, __instance);
+        __result = FinisherCleanupService.CleanupAfterCardPlay(__result, __instance);
     }
 }
 

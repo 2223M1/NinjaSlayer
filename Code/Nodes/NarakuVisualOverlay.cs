@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
-using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -30,36 +29,25 @@ public partial class NarakuVisualOverlay : Sprite2D
     private bool hasMirroredState;
 
     public static void Sync(Creature creature)
-    {
-        try
-        {
-            SyncCore(creature);
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Warn($"Failed to synchronize Naraku visual overlay: {ex}");
-        }
-    }
+        => SyncCore(creature);
 
     private static void SyncCore(Creature creature)
     {
         NinjaSlayerVisualRig.SyncShadowScale(creature);
 
-        var visualsRoot = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
-        var source = visualsRoot?.GetNodeOrNull<Sprite2D>("%Visuals");
-        if (visualsRoot == null || source == null)
+        NCreature? creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        if (creatureNode == null)
         {
             return;
         }
 
-        var parent = source.GetParent() ?? (Node)(NinjaSlayerVisualRig.GetAirborneAnchor(visualsRoot) ?? visualsRoot);
-        var overlay = visualsRoot.FindChild(NodeName, recursive: true) as NarakuVisualOverlay;
-        if (overlay == null)
-        {
-            overlay = new NarakuVisualOverlay { Name = NodeName };
-            parent.AddChild(overlay);
-        }
-        else if (overlay.GetParent() != parent)
+        NCreatureVisuals visualsRoot = creatureNode.Visuals;
+        Sprite2D source = visualsRoot.GetNode<Sprite2D>("%Visuals");
+        Node parent = source.GetParent()
+            ?? throw new InvalidOperationException("The NinjaSlayer body sprite has no parent node.");
+        NarakuVisualOverlay overlay = visualsRoot.FindChild(NodeName, recursive: true) as NarakuVisualOverlay
+            ?? throw new InvalidOperationException("The NinjaSlayer visual rig is missing its Naraku overlay.");
+        if (!ReferenceEquals(overlay.GetParent(), parent))
         {
             overlay.Reparent(parent);
         }

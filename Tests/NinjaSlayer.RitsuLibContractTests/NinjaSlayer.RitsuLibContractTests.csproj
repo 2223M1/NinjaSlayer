@@ -37,7 +37,6 @@
     <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
     <Compile Include="..\..\Code\Lifecycle\CardPlayResolutionScope.cs" Link="CardPlayResolutionScope.cs" />
-    <Compile Include="..\..\Code\Lifecycle\ResolutionScopeRegistry.cs" Link="ResolutionScopeRegistry.cs" />
     <Compile Include="..\..\Code\Lifecycle\RapidCardPresentationContext.cs" Link="RapidCardPresentationContext.cs" />
     <Compile Include="..\..\Code\Patches\BlackFlameDamagePatch.cs" Link="BlackFlameDamagePatch.cs" />
     <Compile Include="..\..\Code\Patches\NinjaSlayerTransitionLoadSmoothingPatch.cs" Link="NinjaSlayerTransitionLoadSmoothingPatch.cs" />

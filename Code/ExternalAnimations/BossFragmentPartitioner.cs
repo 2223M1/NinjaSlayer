@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using NinjaSlayer.Code.Combat;
@@ -63,7 +64,7 @@ internal sealed class BossSemanticPartBuilder
         Node2D template,
         Rect2 bodyBounds,
         string? detachedBoneName,
-        out BossSemanticPartBuilder? builder,
+        [NotNullWhen(true)] out BossSemanticPartBuilder? builder,
         out string failureReason)
     {
         builder = null;

@@ -102,32 +102,36 @@ internal static class FinisherSessionRegistry
                 return false;
             }
 
-            if (!ReferenceEquals(_epochCombatState, combatState) || !ReferenceEquals(_epochRoom, room))
-            {
-                _epochCombatState = combatState;
-                _epochRoom = room;
-                _combatEpoch++;
-            }
-
-            long sessionId = ++_nextSessionId;
-            long registryGeneration = ++_registryGeneration;
+            bool startsNewEpoch = !ReferenceEquals(_epochCombatState, combatState)
+                || !ReferenceEquals(_epochRoom, room);
+            long combatEpoch = startsNewEpoch ? _combatEpoch + 1 : _combatEpoch;
+            long sessionId = _nextSessionId + 1;
+            long registryGeneration = _registryGeneration + 1;
             try
             {
                 session = new FinisherSession(
                     sessionId,
-                    _combatEpoch,
+                    combatEpoch,
                     registryGeneration,
                     combatState,
                     room,
                     request);
             }
-            catch (Exception ex)
+            catch
             {
-                session = null;
-                Entry.Logger.Warn($"Could not create NinjaSlayer finisher session {sessionId}: {ex}");
-                return false;
+                request.Camera.Dispose();
+                throw;
             }
 
+            if (startsNewEpoch)
+            {
+                _epochCombatState = combatState;
+                _epochRoom = room;
+                _combatEpoch = combatEpoch;
+            }
+
+            _nextSessionId = sessionId;
+            _registryGeneration = registryGeneration;
             _active = session;
             return true;
         }

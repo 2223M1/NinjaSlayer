@@ -3,7 +3,6 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -90,10 +89,6 @@ internal static class FinisherProtectionService
             {
                 token.Ledger.Confirm(token, result, originalRan);
             }
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Error($"Could not confirm NinjaSlayer finisher lethal protection: {ex}");
         }
         finally
         {

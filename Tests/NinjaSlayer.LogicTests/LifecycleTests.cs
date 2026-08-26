@@ -143,32 +143,7 @@ public sealed class LifecycleTests
     }
 
     [Fact]
-    public void XAttackComboScopesRestoreNestedState()
-    {
-        Assert.False(XAttackComboContext.Active);
-        using (XAttackComboContext.Enter(3))
-        {
-            XAttackComboContext.CurrentHitIndex = 2;
-            using (XAttackComboContext.Enter(5))
-            {
-                Assert.True(XAttackComboContext.Active);
-                Assert.Equal(0, XAttackComboContext.CurrentHitIndex);
-                Assert.Equal(5, XAttackComboContext.TotalHits);
-                XAttackComboContext.CurrentHitIndex = 4;
-            }
-
-            Assert.True(XAttackComboContext.Active);
-            Assert.Equal(2, XAttackComboContext.CurrentHitIndex);
-            Assert.Equal(3, XAttackComboContext.TotalHits);
-        }
-
-        Assert.False(XAttackComboContext.Active);
-        Assert.Equal(0, XAttackComboContext.CurrentHitIndex);
-        Assert.Equal(0, XAttackComboContext.TotalHits);
-    }
-
-    [Fact]
-    public void XAttackScopesTolerateOutOfOrderDisposal()
+    public void XAttackAudioScopesTolerateOutOfOrderDisposal()
     {
         IDisposable audioOuter = XAttackAudioContext.Suppress();
         IDisposable audioInner = XAttackAudioContext.Suppress();
@@ -176,36 +151,6 @@ public sealed class LifecycleTests
         Assert.True(XAttackAudioContext.SuppressAutomaticSfx);
         audioInner.Dispose();
         Assert.False(XAttackAudioContext.SuppressAutomaticSfx);
-
-        IDisposable comboOuter = XAttackComboContext.Enter(3);
-        XAttackComboContext.CurrentHitIndex = 1;
-        IDisposable comboInner = XAttackComboContext.Enter(5);
-        XAttackComboContext.CurrentHitIndex = 4;
-        comboOuter.Dispose();
-        Assert.True(XAttackComboContext.Active);
-        Assert.Equal(4, XAttackComboContext.CurrentHitIndex);
-        Assert.Equal(5, XAttackComboContext.TotalHits);
-        comboInner.Dispose();
-        Assert.False(XAttackComboContext.Active);
-    }
-
-    [Fact]
-    public async Task XAttackComboHitStateIsIsolatedAcrossExecutionContexts()
-    {
-        using (XAttackComboContext.Enter(3))
-        {
-            XAttackComboContext.CurrentHitIndex = 2;
-            await Task.Run(() =>
-            {
-                Assert.Equal(2, XAttackComboContext.CurrentHitIndex);
-                XAttackComboContext.CurrentHitIndex = 1;
-                Assert.Equal(1, XAttackComboContext.CurrentHitIndex);
-            });
-
-            Assert.Equal(2, XAttackComboContext.CurrentHitIndex);
-        }
-
-        Assert.False(XAttackComboContext.Active);
     }
 
     [Fact]
@@ -233,80 +178,4 @@ public sealed class LifecycleTests
         Assert.Equal(1f, FinisherDeathKickTimeline.GetRecoveryProgress(1f, 1f));
     }
 
-    [Fact]
-    public void ResolutionScopesRestoreNestedStateAndCleanUpAfterFailure()
-    {
-        object subject = new();
-        object outerScope = new();
-        object innerScope = new();
-        object stateOwner = new();
-        var scopes = new ResolutionScopeRegistry<object, object>();
-        scopes.Begin(subject, outerScope);
-        Assert.True(scopes.TryGetOrCreateState(
-            outerScope,
-            stateOwner,
-            static () => new List<int>(),
-            out List<int>? created));
-        created!.Add(1);
-        scopes.Begin(subject, innerScope);
-
-        Assert.True(scopes.TryGetLatestScope(subject, out object? latest));
-        Assert.Same(innerScope, latest);
-        scopes.Complete(innerScope);
-        Assert.True(scopes.TryGetLatestScope(subject, out latest));
-        Assert.Same(outerScope, latest);
-        Assert.True(scopes.TryGetState(outerScope, stateOwner, out List<int>? values));
-        Assert.Equal([1], values);
-
-        scopes.CompleteSubject(subject);
-        Assert.False(scopes.TryGetLatestScope(subject, out _));
-    }
-
-    [Fact]
-    public void ResolutionScopesKeyStateByOwnerReferenceAndStateType()
-    {
-        object subject = new();
-        object scope = new();
-        object owner = new();
-        var scopes = new ResolutionScopeRegistry<object, object>();
-        scopes.Begin(subject, scope);
-
-        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int>(), out List<int>? list));
-        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new HashSet<int>(), out HashSet<int>? set));
-        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int>(), out List<int>? sameList));
-
-        Assert.NotNull(list);
-        Assert.NotNull(set);
-        Assert.Same(list, sameList);
-    }
-
-    [Fact]
-    public void ResolutionScopesAtomicallyTakeOwnedState()
-    {
-        object subject = new();
-        object scope = new();
-        object owner = new();
-        var scopes = new ResolutionScopeRegistry<object, object>();
-        scopes.Begin(subject, scope);
-        Assert.True(scopes.TryGetOrCreateState(scope, owner, static () => new List<int> { 3 }, out _));
-
-        Assert.True(scopes.TryTakeState(scope, owner, out List<int>? taken));
-        Assert.Equal([3], taken);
-        Assert.False(scopes.TryTakeState(scope, owner, out List<int>? secondTake));
-        Assert.Null(secondTake);
-        Assert.True(scopes.TryGetLatestScope(subject, out object? activeScope));
-        Assert.Same(scope, activeScope);
-    }
-
-    [Fact]
-    public void ResolutionScopesCanBeForceClearedAtALifecycleBoundary()
-    {
-        var scopes = new ResolutionScopeRegistry<object, object>();
-        object subject = new();
-        scopes.Begin(subject, new object());
-
-        Assert.True(scopes.ForceClear());
-        Assert.False(scopes.TryGetLatestScope(subject, out _));
-        Assert.False(scopes.ForceClear());
-    }
 }

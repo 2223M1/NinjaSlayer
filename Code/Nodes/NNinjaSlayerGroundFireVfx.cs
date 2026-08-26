@@ -39,12 +39,7 @@ public partial class NNinjaSlayerGroundFireVfx : Node2D
             return null;
         }
 
-        var vfx = NinjaSlayerVfxUtil.TryGenVfxNode<NNinjaSlayerGroundFireVfx>(ScenePath);
-        if (vfx == null)
-        {
-            return null;
-        }
-
+        NNinjaSlayerGroundFireVfx vfx = NinjaSlayerVfxUtil.GenVfxNode<NNinjaSlayerGroundFireVfx>(ScenePath);
         vfx.GlobalPosition = creatureNode.GetBottomOfHitbox();
         return vfx;
     }
