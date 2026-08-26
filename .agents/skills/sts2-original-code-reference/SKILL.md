@@ -23,9 +23,10 @@ Do not copy large source blocks into the skill, implementation, or final report.
 
 ## Host Differences
 
-- Represent a proven stable/preview difference with the smallest feature-local compile-time adapter.
-- Do not create a global compatibility facade, runtime feature registry, capability graph, or shared compatibility state machine.
-- Keep the adapter beside the feature that owns the differing behavior and expose only the operation that feature needs.
+- Keep a proven stable/preview difference in the owning feature as a compile-time branch using the channel constants generated from `eng/compatibility.json`.
+- Introduce a feature-local adapter only when it isolates one real external host API boundary. Current examples are `Code/ExternalAnimations/CreatureDeathInteractionAdapter.cs` and `Code/ExternalAnimations/FinisherAttackCommandAdapter.cs`.
+- Keep an adapter beside its owning feature, expose only the operation that feature needs, and prefer a direct local branch when an adapter would only rename one call.
+- Must not reintroduce a global compatibility facade, runtime feature registry, capability graph, shared compatibility state machine, or cross-feature adapter platform.
 
 ## Private API Order
 
@@ -35,12 +36,12 @@ When exact behavior depends on a private API, consider these options in order an
 2. Feature-local Harmony patch.
 3. Feature-local reflection.
 
-Do not promote private access into a global facade or general reflection platform.
+Must not reintroduce a global private-access facade or general reflection platform.
 
 ## Compatibility Evidence Rules
 
-- Do not use method-body fingerprints, IL hashes, metadata tokens, async `MoveNext` fingerprints, or silent fallback as compatibility mechanisms.
-- Historical compatibility requires the exact producer version and a real fixture produced by that version.
+- Must not reintroduce a shared method-body fingerprint platform, runtime host guessing, or silent compatibility fallback. Exact signature-based Patch targeting is distinct from fingerprinting.
+- Must not reintroduce speculative historical-alignment paths. A producer-specific migration is in scope only when the task names the exact producer version and supplies a real fixture, and it must remain feature-local.
 - Do not use best-fit analogies, arbitrary prefix searches, stale-source substitution, or hypothetical forward compatibility.
 - If exact evidence is unavailable, report the gap instead of inventing behavior or architecture.
 

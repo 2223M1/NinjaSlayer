@@ -3,7 +3,7 @@
 ## Active Source Roots
 
 - Read active versions from `eng/compatibility.json` at the repository root.
-- Source exports normally live at `../Slay the Spire 2/Slay the Spire 2 <gameApiVersion>/src`.
+- Source exports normally live at `../Slay the Spire 2/Slay the Spire 2 v<gameApiVersion>/src`.
 - Cards: `src\Core\Models\Cards`
 - Powers: `src\Core\Models\Powers`
 - Relics: `src\Core\Models\Relics`
@@ -17,15 +17,22 @@
 - Audio: `src\gdscript\audio_manager_proxy.gd` and `src\Core\Audio`
 - Serialization: locate the exact model, serializer context, converter, or save-data type named by the task.
 
-An export for a different version is not evidence of current behavior. Historical source may be used only when the task identifies that producer version and supplies a real fixture from it.
+An export for a different version is not evidence of current behavior. Must not reintroduce speculative historical alignment; producer-specific historical evidence requires the exact version and a real fixture from it.
+
+## Current Host-Difference Examples
+
+- Prefer a compile-time branch inside the owning feature, as in `Code/Lifecycle/RapidCardPresentationContext.cs` and `Code/ExternalAnimations/ArchitectExecutionCinematic.cs`.
+- `Code/ExternalAnimations/CreatureDeathInteractionAdapter.cs` isolates the stable manual interaction shutdown from preview's public death-interaction API.
+- `Code/ExternalAnimations/FinisherAttackCommandAdapter.cs` isolates the stable card-play lookup from preview's `AttackCommand.CardPlay` API.
+- These examples are feature boundaries, not precedent for a global host abstraction. Must not reintroduce the retired compatibility facade or adapter platform.
 
 ## Exact Query Templates
 
 ```powershell
 $compatibility = Get-Content -Raw eng/compatibility.json | ConvertFrom-Json
 $sourceExports = Resolve-Path '../Slay the Spire 2'
-$stableSource = Join-Path $sourceExports "Slay the Spire 2 $($compatibility.channels.stable.gameApiVersion)/src"
-$previewSource = Join-Path $sourceExports "Slay the Spire 2 $($compatibility.channels.preview.gameApiVersion)/src"
+$stableSource = Join-Path $sourceExports "Slay the Spire 2 v$($compatibility.channels.stable.gameApiVersion)/src"
+$previewSource = Join-Path $sourceExports "Slay the Spire 2 v$($compatibility.channels.preview.gameApiVersion)/src"
 
 rg -n -F '<ExactTypeOrMember>' $stableSource $previewSource
 rg -n -F '<ExactMethodSignatureFragment>' $stableSource $previewSource
