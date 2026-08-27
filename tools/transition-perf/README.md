@@ -22,12 +22,15 @@ pwsh -NoProfile -File .\tools\transition-perf\Invoke-TransitionPerfMatrix.ps1 `
   -Channel preview `
   -GameRoot C:\private\sts2-preview `
   -RitsuLibRoot C:\private\STS2-RitsuLib `
+  -SpineExtensionDirectory C:\private\spine-windows `
   -InputSnapshotRoot C:\private\fresh-character-select-input `
   -EvidenceRoot C:\evidence\transition-perf `
   -DotNetRoot C:\private\dotnet-9 `
   -Runs 5
 ```
 
-The script refuses a dirty worktree, an occupied game process, a mismatched host MVID, an existing
-evidence directory, or any run without `transition-perf.completed`. `matrix-summary.json` contains
-the per-run raw-data paths and median run p99 for each variant.
+The script verifies the three Spine GDExtension inputs against `eng/compatibility.json`, installs
+them only for packaging, and removes its owned copy afterward. It refuses a dirty worktree, an
+occupied game process, a mismatched host MVID, an existing evidence directory, or any run without
+`transition-perf.completed`. `matrix-summary.json` contains the verified Spine hashes, per-run
+raw-data paths, and median run p99 for each variant.

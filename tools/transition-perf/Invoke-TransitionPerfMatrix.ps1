@@ -14,6 +14,9 @@ param(
     [string]$RitsuLibRoot,
 
     [Parameter(Mandatory)]
+    [string]$SpineExtensionDirectory,
+
+    [Parameter(Mandatory)]
     [string]$InputSnapshotRoot,
 
     [Parameter(Mandatory)]
@@ -34,6 +37,7 @@ Set-StrictMode -Version Latest
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $gameRoot = [IO.Path]::GetFullPath($GameRoot)
 $ritsuLibRoot = [IO.Path]::GetFullPath($RitsuLibRoot)
+$spineSource = [IO.Path]::GetFullPath($SpineExtensionDirectory)
 $snapshotRoot = [IO.Path]::GetFullPath($InputSnapshotRoot)
 $evidenceRoot = [IO.Path]::GetFullPath($EvidenceRoot)
 $gameData = Join-Path $gameRoot 'data_sts2_windows_x86_64'
@@ -42,6 +46,8 @@ $releaseScript = Join-Path $repositoryRoot 'tools\release\Invoke-NinjaSlayerChan
 $driverProject = Join-Path $repositoryRoot 'tools\smoke-harness\NinjaSlayer.SmokeDriver\NinjaSlayer.SmokeDriver.csproj'
 $driverManifest = Join-Path $repositoryRoot 'tools\smoke-harness\NinjaSlayer.SmokeDriver\NinjaSlayer-SmokeDriver.json'
 $compatibilityPath = Join-Path $repositoryRoot 'eng\compatibility.json'
+$spineScript = Join-Path $repositoryRoot '.github\scripts\spine-extension.ps1'
+$spineDestination = Join-Path $repositoryRoot 'addons\spine\windows'
 $seed = 'NINJASLAYER_SMOKE_01'
 $version = '0.1.43'
 
@@ -428,10 +434,10 @@ function Invoke-TransitionRun {
     }
 }
 
-foreach ($path in @($gameRoot, $ritsuLibRoot, $snapshotRoot, (Join-Path $snapshotRoot 'appdata'), (Join-Path $snapshotRoot 'localappdata'))) {
+foreach ($path in @($gameRoot, $ritsuLibRoot, $spineSource, $snapshotRoot, (Join-Path $snapshotRoot 'appdata'), (Join-Path $snapshotRoot 'localappdata'))) {
     Assert-RequiredPath -Path $path -Type Container
 }
-foreach ($path in @($gameExecutable, (Join-Path $gameData 'sts2.dll'), (Join-Path $ritsuLibRoot 'STS2-RitsuLib.dll'), $releaseScript, $driverProject, $driverManifest)) {
+foreach ($path in @($gameExecutable, (Join-Path $gameData 'sts2.dll'), (Join-Path $ritsuLibRoot 'STS2-RitsuLib.dll'), $releaseScript, $driverProject, $driverManifest, $spineScript)) {
     Assert-RequiredPath -Path $path -Type Leaf
 }
 if (![string]::IsNullOrWhiteSpace($DotNetRoot)) {
@@ -441,6 +447,10 @@ if ((Test-IsChildPath -Path $evidenceRoot -Root $repositoryRoot) -or
     $evidenceRoot.Equals($repositoryRoot, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'Transition performance evidence must be outside the repository.'
 }
+if ((Test-IsChildPath -Path $spineSource -Root $repositoryRoot) -or
+    $spineSource.Equals($repositoryRoot, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Transition performance Spine inputs must remain outside the repository.'
+}
 if (Test-Path -LiteralPath $evidenceRoot) {
     throw "Evidence root already exists; refusing to overwrite it: $evidenceRoot"
 }
@@ -448,6 +458,8 @@ if (Get-Process -Name 'SlayTheSpire2' -ErrorAction SilentlyContinue) {
     throw 'Close the running SlayTheSpire2 process before starting the matrix.'
 }
 
+$spineInstallStarted = $false
+$spineFiles = @()
 Push-Location $repositoryRoot
 try {
     $status = @(git status --porcelain)
@@ -466,6 +478,16 @@ try {
     if ($hostMvid -cne [string]$profile.hostContract.moduleMvid) {
         throw "$Channel host MVID is $hostMvid; expected $($profile.hostContract.moduleMvid)."
     }
+    if (Test-Path -LiteralPath $spineDestination) {
+        throw "Refusing to overwrite an existing Spine extension directory: $spineDestination"
+    }
+
+    . $spineScript
+    $spineInstallStarted = $true
+    $spineFiles = @(Copy-NinjaSlayerVerifiedSpineExtension `
+        -Compatibility $compatibility `
+        -SourceDirectory $spineSource `
+        -DestinationDirectory $spineDestination)
 
     [IO.Directory]::CreateDirectory($evidenceRoot) | Out-Null
     $variants = @(
@@ -541,11 +563,15 @@ try {
         frameSource = 'Godot SceneTree.ProcessFrame QPC'
         p99Algorithm = 'nearest-rank over consecutive ProcessFrame QPC deltas'
         snapshotSha256 = $snapshotSha256
+        spineExtension = $spineFiles
         variants = $summaries.ToArray()
     }
     Write-Utf8Json -Value $matrixSummary -Path (Join-Path $evidenceRoot 'matrix-summary.json')
     $matrixSummary | ConvertTo-Json -Depth 5
 }
 finally {
+    if ($spineInstallStarted -and (Test-Path -LiteralPath $spineDestination)) {
+        Remove-ExperimentDirectory -Path $spineDestination -AllowedRoot $repositoryRoot
+    }
     Pop-Location
 }
