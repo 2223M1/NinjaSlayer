@@ -160,6 +160,7 @@ internal sealed partial class SmokeController
 
         TransitionAssetObservation observation = GetTransitionAssetObservation(session);
         observation.AddCounts[path] = observation.AddCounts.GetValueOrDefault(path) + 1;
+        observation.SuccessfullyCached.Add(path);
     }
 
     public void ObserveTransitionAssetProcessCompleted(AssetLoadingSession session)
@@ -173,10 +174,6 @@ internal sealed partial class SmokeController
         observation.CaptureFinalState(session);
         if (session.IsCompleted && observation.DrainQpc == 0)
         {
-            foreach (string path in observation.InitialOutstanding.Where(observation.Cache.ContainsKey))
-            {
-                observation.CachedAtCompletion.Add(path);
-            }
             observation.DrainQpc = Stopwatch.GetTimestamp();
         }
     }
@@ -339,7 +336,7 @@ internal sealed partial class SmokeController
             "TransitionPerf reveal left an AssetLoadingSession queue or in-flight VFX load behind.");
         string[] missingAtCompletion = assets
             .SelectMany(observation => observation.InitialOutstanding
-                .Except(observation.CachedAtCompletion)
+                .Except(observation.SuccessfullyCached)
                 .Select(path => $"{observation.Name}: {path}"))
             .ToArray();
         Require(missingAtCompletion.Length == 0,
@@ -373,13 +370,14 @@ internal sealed partial class SmokeController
         foreach (TransitionAssetObservation asset in assets.OrderBy(asset => asset.Name, StringComparer.Ordinal))
         {
             int cachedAtReport = asset.InitialOutstanding.Count(asset.Cache.ContainsKey);
+            int successfullyCached = asset.InitialOutstanding.Count(asset.SuccessfullyCached.Contains);
             assetResults.Add(new JsonObject
             {
                 ["name"] = asset.Name,
                 ["initialOutstanding"] = asset.InitialOutstanding.Count,
-                ["cached"] = asset.CachedAtCompletion.Count,
+                ["cached"] = successfullyCached,
                 ["cachedAtReport"] = cachedAtReport,
-                ["missingAtReport"] = asset.CachedAtCompletion.Count - cachedAtReport,
+                ["missingAtReport"] = successfullyCached - cachedAtReport,
                 ["addCalls"] = asset.AddCounts.Values.Sum(),
                 ["duplicateAdds"] = asset.AddCounts.Values.Count(count => count > 1),
                 ["drainQpc"] = asset.DrainQpc,
@@ -480,8 +478,8 @@ internal sealed partial class SmokeController
     private sealed class TransitionAssetObservation(string name)
     {
         public Dictionary<string, int> AddCounts { get; } = new(StringComparer.Ordinal);
-        public HashSet<string> CachedAtCompletion { get; } = new(StringComparer.Ordinal);
         public HashSet<string> InitialOutstanding { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> SuccessfullyCached { get; } = new(StringComparer.Ordinal);
         public string Name { get; } = name;
         public ConcurrentDictionary<string, Resource> Cache { get; private set; } = null!;
         public bool AllQueuesEmpty { get; private set; }
@@ -506,6 +504,7 @@ internal sealed partial class SmokeController
             {
                 InitialOutstanding.Add(currentVfxPath);
             }
+            SuccessfullyCached.UnionWith(InitialOutstanding.Where(Cache.ContainsKey));
 
             void AddQueue(FieldInfo field)
             {

@@ -140,8 +140,13 @@ internal static class NinjaSlayerSmokeTransitionPerfAssetProcessPatch
 [HarmonyPatch(typeof(AssetLoadingSession), "AddToCache")]
 internal static class NinjaSlayerSmokeTransitionPerfAssetCachePatch
 {
-    public static void Prefix(AssetLoadingSession __instance, string path) =>
-        SmokeController.Current?.ObserveTransitionAssetCached(__instance, path);
+    public static void Postfix(AssetLoadingSession __instance, Resource? resource, string path)
+    {
+        if (resource != null)
+        {
+            SmokeController.Current?.ObserveTransitionAssetCached(__instance, path);
+        }
+    }
 }
 
 [HarmonyPatch(typeof(MapScreenHandler), nameof(MapScreenHandler.HandleAsync))]

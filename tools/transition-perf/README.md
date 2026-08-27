@@ -16,6 +16,9 @@ visible, the opaque-backdrop tail after video playback, and the real host `Asset
 queue/cache state. The driver rejects an artifact whose source revision or component metadata
 differs from the requested matrix.
 
+Cache completeness is based on successful `AddToCache` completions plus paths already cached when
+the session is first observed. It does not require assets to survive later host-directed unloads.
+
 AutoSlayer normally makes `Cmd.Wait` complete immediately through `NonInteractiveMode`. During the
 measured `NTransition.FadeOut` call only, the driver restores interactive wait semantics long enough
 for the production Patch to create its real 0.2-second Godot timer, then restores AutoSlayer mode.
