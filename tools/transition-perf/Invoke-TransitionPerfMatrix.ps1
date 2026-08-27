@@ -50,6 +50,11 @@ $spineScript = Join-Path $repositoryRoot '.github\scripts\spine-extension.ps1'
 $spineDestination = Join-Path $repositoryRoot 'addons\spine\windows'
 $seed = 'NINJASLAYER_SMOKE_01'
 $version = '0.1.43'
+$transitionPerfModsRoot = Join-Path $gameRoot 'mods'
+$transitionPerfModsBackup = Join-Path $gameRoot '.ninjaslayer-transition-perf-mods-backup'
+$transitionPerfModsEnvironmentOwned = $false
+$transitionPerfOriginalModsExisted = $false
+$transitionPerfOriginalModsManifest = @()
 
 function Assert-RequiredPath {
     param(
@@ -131,6 +136,24 @@ function Get-TreeManifestLines {
                 $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
                 "$hash *$relative"
             })
+}
+
+function Get-ModsManifestLines {
+    param([Parameter(Mandatory)][string]$Root)
+
+    return @(
+        Get-ChildItem -LiteralPath $Root -Recurse -Force |
+            ForEach-Object {
+                $relative = [IO.Path]::GetRelativePath($Root, $_.FullName).Replace('\', '/')
+                if ($_.PSIsContainer) {
+                    "directory *$relative/"
+                }
+                else {
+                    $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                    "$hash *$relative"
+                }
+            } |
+            Sort-Object)
 }
 
 function Get-LinesSha256 {
@@ -235,14 +258,119 @@ function Build-SmokeDriver {
     return $driverAssembly
 }
 
+function Enter-IsolatedModsEnvironment {
+    if ($script:transitionPerfModsEnvironmentOwned) {
+        throw 'Transition performance mods isolation was entered more than once.'
+    }
+    if (Test-Path -LiteralPath $script:transitionPerfModsBackup) {
+        throw "Transition performance mods backup already exists: $script:transitionPerfModsBackup"
+    }
+
+    $script:transitionPerfOriginalModsExisted = Test-Path `
+        -LiteralPath $script:transitionPerfModsRoot `
+        -PathType Container
+    if ((Test-Path -LiteralPath $script:transitionPerfModsRoot) -and
+        -not $script:transitionPerfOriginalModsExisted) {
+        throw "Transition performance mods path is not a directory: $script:transitionPerfModsRoot"
+    }
+    $script:transitionPerfOriginalModsManifest = if ($script:transitionPerfOriginalModsExisted) {
+        @(Get-ModsManifestLines -Root $script:transitionPerfModsRoot)
+    }
+    else {
+        @()
+    }
+
+    if ($script:transitionPerfOriginalModsExisted) {
+        [IO.Directory]::Move(
+            $script:transitionPerfModsRoot,
+            $script:transitionPerfModsBackup)
+    }
+
+    try {
+        [IO.Directory]::CreateDirectory($script:transitionPerfModsRoot) | Out-Null
+        $script:transitionPerfModsEnvironmentOwned = $true
+    }
+    catch {
+        if (Test-Path -LiteralPath $script:transitionPerfModsRoot) {
+            Remove-ExperimentDirectory `
+                -Path $script:transitionPerfModsRoot `
+                -AllowedRoot $gameRoot
+        }
+        if (Test-Path -LiteralPath $script:transitionPerfModsBackup) {
+            [IO.Directory]::Move(
+                $script:transitionPerfModsBackup,
+                $script:transitionPerfModsRoot)
+        }
+        throw
+    }
+}
+
+function Exit-IsolatedModsEnvironment {
+    if (-not $script:transitionPerfModsEnvironmentOwned) {
+        return
+    }
+
+    if (Test-Path -LiteralPath $script:transitionPerfModsRoot) {
+        Remove-ExperimentDirectory `
+            -Path $script:transitionPerfModsRoot `
+            -AllowedRoot $gameRoot
+    }
+    if (Test-Path -LiteralPath $script:transitionPerfModsBackup) {
+        [IO.Directory]::Move(
+            $script:transitionPerfModsBackup,
+            $script:transitionPerfModsRoot)
+    }
+
+    if ($script:transitionPerfOriginalModsExisted) {
+        if (-not (Test-Path -LiteralPath $script:transitionPerfModsRoot -PathType Container)) {
+            throw "Transition performance mods restore did not recreate $script:transitionPerfModsRoot"
+        }
+        $restoredManifest = @(Get-ModsManifestLines -Root $script:transitionPerfModsRoot)
+        if ($restoredManifest.Count -ne $script:transitionPerfOriginalModsManifest.Count -or
+            (Compare-Object `
+                -ReferenceObject $script:transitionPerfOriginalModsManifest `
+                -DifferenceObject $restoredManifest)) {
+            throw 'Transition performance mods restore did not reproduce the original byte manifest.'
+        }
+    }
+    elseif (Test-Path -LiteralPath $script:transitionPerfModsRoot) {
+        throw 'Transition performance mods restore created a mods path that did not originally exist.'
+    }
+    $script:transitionPerfModsEnvironmentOwned = $false
+}
+
 function Stage-Mod {
     param([Parameter(Mandatory)][string]$Source, [Parameter(Mandatory)][string]$Name)
 
-    $modsRoot = Join-Path $gameRoot 'mods'
-    $target = Join-Path $modsRoot $Name
-    [IO.Directory]::CreateDirectory($modsRoot) | Out-Null
+    if (-not $script:transitionPerfModsEnvironmentOwned) {
+        throw 'Stage-Mod requires the isolated Transition performance mods environment.'
+    }
+    $target = Join-Path $script:transitionPerfModsRoot $Name
     Remove-ExperimentDirectory -Path $target -AllowedRoot $gameRoot
     Copy-Item -LiteralPath $Source -Destination $target -Recurse
+}
+
+function Assert-IsolatedModSet {
+    param([Parameter(Mandatory)][string[]]$ExpectedNames)
+
+    if (-not $script:transitionPerfModsEnvironmentOwned) {
+        throw 'Mod-set validation requires the isolated Transition performance mods environment.'
+    }
+    $actual = @(
+        Get-ChildItem -LiteralPath $script:transitionPerfModsRoot -Force |
+            Select-Object -ExpandProperty Name |
+            Sort-Object
+    )
+    $expected = @($ExpectedNames | Sort-Object)
+    if (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) {
+        throw "Transition performance mods set differs from the isolated expected set. " +
+            "Expected: $($expected -join ', '); actual: $($actual -join ', ')."
+    }
+    foreach ($name in $expected) {
+        if (-not (Test-Path -LiteralPath (Join-Path $script:transitionPerfModsRoot $name) -PathType Container)) {
+            throw "Transition performance mod entry is not a directory: $name"
+        }
+    }
 }
 
 function Start-Game {
@@ -315,6 +443,10 @@ function Invoke-TransitionRun {
     )
 
     Stage-Mod -Source $Build.Package -Name 'NinjaSlayer'
+    Assert-IsolatedModSet -ExpectedNames @(
+        'NinjaSlayer',
+        'NinjaSlayer-SmokeDriver',
+        'STS2-RitsuLib')
     $runRoot = Join-Path $evidenceRoot "runs\$($Build.Matrix.Name)\$Label"
     if (Test-Path -LiteralPath $runRoot) {
         throw "Run output already exists: $runRoot"
@@ -517,6 +649,7 @@ try {
     }
 
     $driverAssembly = Build-SmokeDriver -ProductAssembly (Join-Path $builds.baseline.Package 'NinjaSlayer.dll')
+    Enter-IsolatedModsEnvironment
     Stage-Mod -Source $ritsuLibRoot -Name 'STS2-RitsuLib'
     $driverStaging = Join-Path $evidenceRoot 'driver-mod'
     [IO.Directory]::CreateDirectory($driverStaging) | Out-Null
@@ -585,8 +718,13 @@ try {
     $matrixSummary | ConvertTo-Json -Depth 5
 }
 finally {
-    if ($spineInstallStarted -and (Test-Path -LiteralPath $spineDestination)) {
-        Remove-ExperimentDirectory -Path $spineDestination -AllowedRoot $repositoryRoot
+    try {
+        Exit-IsolatedModsEnvironment
     }
-    Pop-Location
+    finally {
+        if ($spineInstallStarted -and (Test-Path -LiteralPath $spineDestination)) {
+            Remove-ExperimentDirectory -Path $spineDestination -AllowedRoot $repositoryRoot
+        }
+        Pop-Location
+    }
 }
