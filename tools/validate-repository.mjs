@@ -392,15 +392,26 @@ const chineseRedesignKeys = Object.keys(redesignCardsByLanguage.zhs).sort();
 if (JSON.stringify(englishRedesignKeys) !== JSON.stringify(chineseRedesignKeys)) {
   errors.push('Redesign V1 card localization keys differ between eng/cards.json and zhs/cards.json');
 }
+const redesignSelectionPromptStems = [
+  'NINJA_SLAYER_CARD_TRUMP_CARD_REDESIGN_V1',
+  'NINJA_SLAYER_CARD_EXECUTION_MOVE_REDESIGN_V1',
+  'NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1',
+];
 for (const language of ['eng', 'zhs']) {
   const cards = redesignCardsByLanguage[language];
-  const stems = new Set(Object.keys(cards).map((key) => key.replace(/\.(?:title|description)$/, '')));
+  const stems = new Set(Object.keys(cards).map((key) => key.replace(/\.(?:title|description|selectionScreenPrompt)$/, '')));
   for (const stem of stems) {
     for (const suffix of ['title', 'description']) {
       const value = cards[`${stem}.${suffix}`];
       if (typeof value !== 'string' || value.trim().length === 0) {
         errors.push(`${language}/cards.json is missing non-empty ${stem}.${suffix}`);
       }
+    }
+  }
+  for (const stem of redesignSelectionPromptStems) {
+    const value = cards[`${stem}.selectionScreenPrompt`];
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      errors.push(`${language}/cards.json is missing non-empty ${stem}.selectionScreenPrompt`);
     }
   }
 }
