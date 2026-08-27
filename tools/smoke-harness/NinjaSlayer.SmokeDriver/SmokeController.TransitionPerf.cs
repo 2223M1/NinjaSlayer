@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Nodes;
@@ -16,11 +17,13 @@ using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.Timeline;
 using MegaCrit.Sts2.Core.Timeline.Epochs;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.SmokeDriver;
 
 internal sealed partial class SmokeController
 {
+    private const double RunLoadStartToleranceMilliseconds = 100d;
     private static readonly FieldInfo AssetName = RequiredAssetField("_name");
     private static readonly FieldInfo AssetToLoad = RequiredAssetField("_toLoad");
     private static readonly FieldInfo AssetLoading = RequiredAssetField("_loading");
@@ -39,9 +42,23 @@ internal sealed partial class SmokeController
     private long _transitionAnimationEndedQpc;
     private long _transitionFirstVisibleQpc;
     private long _transitionRevealQpc;
+    private long _transitionRunLoadStartQpc;
     private long _transitionStartQpc;
 
-    public void ReportCharacterSelectionStarting(string characterId)
+    internal bool TryBeginTransitionPerfInteractiveWait(out Func<bool>? autoSlayerCheck)
+    {
+        autoSlayerCheck = null;
+        if (_configuration.Phase != SmokePhase.TransitionPerf)
+        {
+            return false;
+        }
+
+        autoSlayerCheck = NonInteractiveMode.AutoSlayerCheck;
+        NonInteractiveMode.AutoSlayerCheck = static () => false;
+        return true;
+    }
+
+    public void ObserveTransitionPlaybackStarted()
     {
         if (_configuration.Phase != SmokePhase.TransitionPerf)
         {
@@ -57,7 +74,33 @@ internal sealed partial class SmokeController
                 {
                     ["qpc"] = timestamp,
                     ["qpcFrequency"] = Stopwatch.Frequency,
-                    ["characterId"] = characterId
+                    ["nonInteractiveMode"] = NonInteractiveMode.IsActive,
+                    ["fastMode"] = SaveManager.Instance.PrefsSave.FastMode.ToString(),
+                    ["timeScale"] = Engine.TimeScale
+                });
+        }
+    }
+
+    public void ObserveTransitionRunLoadingStarted()
+    {
+        if (_configuration.Phase != SmokePhase.TransitionPerf)
+        {
+            return;
+        }
+
+        long timestamp = Stopwatch.GetTimestamp();
+        if (Interlocked.CompareExchange(ref _transitionRunLoadStartQpc, timestamp, 0) == 0)
+        {
+            long playbackStart = Volatile.Read(ref _transitionStartQpc);
+            _checkpoints.Write(
+                "transition-perf.run-loading-started",
+                data: new JsonObject
+                {
+                    ["qpc"] = timestamp,
+                    ["millisecondsAfterPlayback"] = playbackStart == 0
+                        ? null
+                        : Stopwatch.GetElapsedTime(playbackStart, timestamp).TotalMilliseconds,
+                    ["nonInteractiveMode"] = NonInteractiveMode.IsActive
                 });
         }
     }
@@ -130,6 +173,10 @@ internal sealed partial class SmokeController
         observation.CaptureFinalState(session);
         if (session.IsCompleted && observation.DrainQpc == 0)
         {
+            foreach (string path in observation.InitialOutstanding.Where(observation.Cache.ContainsKey))
+            {
+                observation.CachedAtCompletion.Add(path);
+            }
             observation.DrainQpc = Stopwatch.GetTimestamp();
         }
     }
@@ -264,8 +311,22 @@ internal sealed partial class SmokeController
         long animationEnd = Volatile.Read(ref _transitionAnimationEndedQpc);
         long firstVisible = Volatile.Read(ref _transitionFirstVisibleQpc);
         long reveal = Volatile.Read(ref _transitionRevealQpc);
-        Require(start != 0 && animationEnd >= start && firstVisible >= animationEnd && reveal >= firstVisible,
+        long runLoadStart = Volatile.Read(ref _transitionRunLoadStartQpc);
+        Require(start != 0
+                && runLoadStart >= start
+                && animationEnd > runLoadStart
+                && firstVisible >= animationEnd
+                && reveal >= firstVisible,
             "TransitionPerf timing anchors were incomplete or out of order.");
+        double runLoadStartMilliseconds = Stopwatch.GetElapsedTime(start, runLoadStart).TotalMilliseconds;
+        double animationEndMilliseconds = Stopwatch.GetElapsedTime(start, animationEnd).TotalMilliseconds;
+        double expectedRunLoadStartMilliseconds = NinjaSlayerAudio.EmbarkLoadStartDelaySeconds * 1000d;
+        Require(
+            Math.Abs(runLoadStartMilliseconds - expectedRunLoadStartMilliseconds)
+                <= RunLoadStartToleranceMilliseconds,
+            $"TransitionPerf run loading started after {runLoadStartMilliseconds:0.###}ms; "
+                + $"expected {expectedRunLoadStartMilliseconds:0.###}ms "
+                + $"(+/- {RunLoadStartToleranceMilliseconds:0.###}ms).");
         Require(_transitionFrameQpcs.Count >= 2,
             "TransitionPerf captured fewer than two frames.");
 
@@ -276,8 +337,14 @@ internal sealed partial class SmokeController
             "TransitionPerf did not observe an active AssetLoadingSession.");
         Require(assets.All(observation => observation.DrainQpc != 0 && observation.AllQueuesEmpty),
             "TransitionPerf reveal left an AssetLoadingSession queue or in-flight VFX load behind.");
-        Require(assets.All(observation => observation.InitialOutstanding.All(observation.Cache.ContainsKey)),
-            "TransitionPerf completed without caching every initially outstanding resource.");
+        string[] missingAtCompletion = assets
+            .SelectMany(observation => observation.InitialOutstanding
+                .Except(observation.CachedAtCompletion)
+                .Select(path => $"{observation.Name}: {path}"))
+            .ToArray();
+        Require(missingAtCompletion.Length == 0,
+            "TransitionPerf completed without caching every initially outstanding resource: "
+                + string.Join(", ", missingAtCompletion));
         Require(assets.All(observation => observation.AddCounts.Values.All(count => count == 1)),
             "TransitionPerf finalized a resource more than once in one loading session.");
 
@@ -305,11 +372,14 @@ internal sealed partial class SmokeController
         var assetResults = new JsonArray();
         foreach (TransitionAssetObservation asset in assets.OrderBy(asset => asset.Name, StringComparer.Ordinal))
         {
+            int cachedAtReport = asset.InitialOutstanding.Count(asset.Cache.ContainsKey);
             assetResults.Add(new JsonObject
             {
                 ["name"] = asset.Name,
                 ["initialOutstanding"] = asset.InitialOutstanding.Count,
-                ["cached"] = asset.InitialOutstanding.Count(asset.Cache.ContainsKey),
+                ["cached"] = asset.CachedAtCompletion.Count,
+                ["cachedAtReport"] = cachedAtReport,
+                ["missingAtReport"] = asset.CachedAtCompletion.Count - cachedAtReport,
                 ["addCalls"] = asset.AddCounts.Values.Sum(),
                 ["duplicateAdds"] = asset.AddCounts.Values.Count(count => count > 1),
                 ["drainQpc"] = asset.DrainQpc,
@@ -330,12 +400,16 @@ internal sealed partial class SmokeController
             ["p99Algorithm"] = "nearest-rank over consecutive ProcessFrame QPC deltas",
             ["qpcFrequency"] = Stopwatch.Frequency,
             ["transitionStartQpc"] = start,
+            ["runLoadStartQpc"] = runLoadStart,
             ["animationEndQpc"] = animationEnd,
             ["firstVisibleGameplayFrameQpc"] = firstVisible,
             ["revealQpc"] = reveal,
             ["queueDrainQpc"] = drain,
             ["frameCount"] = _transitionFrameQpcs.Count,
             ["p99Milliseconds"] = p99,
+            ["runLoadStartMilliseconds"] = runLoadStartMilliseconds,
+            ["animationEndMilliseconds"] = animationEndMilliseconds,
+            ["runLoadingOverlappedAnimation"] = true,
             ["revealMilliseconds"] = Stopwatch.GetElapsedTime(start, reveal).TotalMilliseconds,
             ["queueDrainMilliseconds"] = Stopwatch.GetElapsedTime(start, drain).TotalMilliseconds,
             ["blackScreenHoldMilliseconds"] = Stopwatch.GetElapsedTime(animationEnd, firstVisible).TotalMilliseconds,
@@ -406,6 +480,7 @@ internal sealed partial class SmokeController
     private sealed class TransitionAssetObservation(string name)
     {
         public Dictionary<string, int> AddCounts { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> CachedAtCompletion { get; } = new(StringComparer.Ordinal);
         public HashSet<string> InitialOutstanding { get; } = new(StringComparer.Ordinal);
         public string Name { get; } = name;
         public ConcurrentDictionary<string, Resource> Cache { get; private set; } = null!;

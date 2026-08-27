@@ -375,6 +375,7 @@ function Invoke-TransitionRun {
             'driver.started',
             'mods.loaded',
             'transition-perf.started',
+            'transition-perf.run-loading-started',
             'character.selected',
             'transition-perf.neow-held',
             'transition-perf.revealed',
@@ -386,6 +387,14 @@ function Invoke-TransitionRun {
     if (@($checkpoints | Where-Object Status -ne 'passed').Count -ne 0) {
         throw "TransitionPerf run $Label recorded a failed checkpoint."
     }
+    $transitionStart = $checkpoints | Where-Object Name -eq 'transition-perf.started' | Select-Object -First 1
+    $runLoadingStart = $checkpoints | Where-Object Name -eq 'transition-perf.run-loading-started' | Select-Object -First 1
+    if ([bool]$transitionStart.Data.nonInteractiveMode -or
+        -not [bool]$runLoadingStart.Data.nonInteractiveMode -or
+        [double]$transitionStart.Data.timeScale -ne 1d -or
+        [string]$transitionStart.Data.fastMode -eq 'Instant') {
+        throw "TransitionPerf did not isolate one interactive, real-time embark wait."
+    }
 
     $perf = Get-Content -Raw -LiteralPath $perfPath | ConvertFrom-Json
     if ([string]$perf.candidateSha -cne $CandidateSha -or
@@ -393,6 +402,7 @@ function Invoke-TransitionRun {
         [bool]$perf.warmup -ne $Warmup -or
         [bool]$perf.loadLimitEnabled -ne [bool]$Build.Matrix.LoadLimit -or
         [bool]$perf.finalizeBatchingEnabled -ne [bool]$Build.Matrix.Finalize -or
+        -not [bool]$perf.runLoadingOverlappedAnimation -or
         -not [bool]$perf.cacheComplete -or
         [int]$perf.frameCount -lt 2) {
         throw "TransitionPerf result did not match the requested run identity or postconditions."
@@ -426,6 +436,8 @@ function Invoke-TransitionRun {
         Warmup = $Warmup
         FrameCount = [int]$perf.frameCount
         P99 = [double]$perf.p99Milliseconds
+        RunLoadStart = [double]$perf.runLoadStartMilliseconds
+        AnimationEnd = [double]$perf.animationEndMilliseconds
         Reveal = [double]$perf.revealMilliseconds
         Drain = [double]$perf.queueDrainMilliseconds
         BlackScreen = [double]$perf.blackScreenHoldMilliseconds
@@ -543,6 +555,9 @@ try {
                         label = $_.Label
                         frameCount = $_.FrameCount
                         p99Milliseconds = $_.P99
+                        runLoadStartMilliseconds = $_.RunLoadStart
+                        animationEndMilliseconds = $_.AnimationEnd
+                        runLoadingOverlappedAnimation = $true
                         revealMilliseconds = $_.Reveal
                         queueDrainMilliseconds = $_.Drain
                         blackScreenHoldMilliseconds = $_.BlackScreen

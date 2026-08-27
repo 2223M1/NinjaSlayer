@@ -9,10 +9,16 @@
 | `finalize-off` | on | off |
 
 The protected SmokeDriver samples `SceneTree.ProcessFrame` with `Stopwatch.GetTimestamp()` from
-character selection through the completed Neow reveal. This is the frame-time source for p99. It
-also records the first frame where the Neow room becomes visible, the opaque-backdrop tail after
-video playback, and the real host `AssetLoadingSession` queue/cache state. The driver rejects an
-artifact whose source revision or component metadata differs from the requested matrix.
+actual transition-video playback through the completed Neow reveal. This is the frame-time source
+for p99. It requires `NGame.StartNewSingleplayerRun` to begin at the authored 0.2-second embark cue
+while the video is still playing. It also records the first frame where the Neow room becomes
+visible, the opaque-backdrop tail after video playback, and the real host `AssetLoadingSession`
+queue/cache state. The driver rejects an artifact whose source revision or component metadata
+differs from the requested matrix.
+
+AutoSlayer normally makes `Cmd.Wait` complete immediately through `NonInteractiveMode`. During the
+measured `NTransition.FadeOut` call only, the driver restores interactive wait semantics long enough
+for the production Patch to create its real 0.2-second Godot timer, then restores AutoSlayer mode.
 
 Use a byte-stable fresh character-select profile and a private game mirror. Evidence and build
 outputs must live outside the repository. Example:

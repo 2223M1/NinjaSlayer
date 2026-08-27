@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
@@ -40,7 +41,6 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
 
         if (__instance.Character is NinjaSlayerCharacter)
         {
-            controller.ReportCharacterSelectionStarting(__instance.Character.Id.ToString());
             return true;
         }
 
@@ -57,7 +57,6 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
         {
             _redirecting = true;
             ninjaSlayer.UnlockIfPossible();
-            controller.ReportCharacterSelectionStarting(ninjaSlayer.Character.Id.ToString());
             ninjaSlayer.Select();
             controller.ReportCharacterSelected(ninjaSlayer.Character.Id.ToString());
             return false;
@@ -67,6 +66,42 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
             _redirecting = false;
         }
     }
+}
+
+[HarmonyPatch(
+    typeof(NTransition),
+    nameof(NTransition.FadeOut),
+    [typeof(float), typeof(string), typeof(CancellationToken?)])]
+internal static class NinjaSlayerSmokeTransitionPerfInteractiveWaitPatch
+{
+    [HarmonyPriority(Priority.First)]
+    public static void Prefix(out Func<bool>? __state)
+    {
+        __state = null;
+        SmokeController.Current?.TryBeginTransitionPerfInteractiveWait(out __state);
+    }
+
+    public static Exception? Finalizer(Exception? __exception, Func<bool>? __state)
+    {
+        if (__state != null)
+        {
+            NonInteractiveMode.AutoSlayerCheck = __state;
+        }
+
+        return __exception;
+    }
+}
+
+[HarmonyPatch(typeof(NinjaSlayerTransitionOverlay), nameof(NinjaSlayerTransitionOverlay.PlayAsync))]
+internal static class NinjaSlayerSmokeTransitionPerfPlaybackPatch
+{
+    public static void Postfix() => SmokeController.Current?.ObserveTransitionPlaybackStarted();
+}
+
+[HarmonyPatch(typeof(NGame), nameof(NGame.StartNewSingleplayerRun))]
+internal static class NinjaSlayerSmokeTransitionPerfRunLoadingPatch
+{
+    public static void Prefix() => SmokeController.Current?.ObserveTransitionRunLoadingStarted();
 }
 
 [HarmonyPatch(typeof(EventRoomHandler), "HandleAsync")]
