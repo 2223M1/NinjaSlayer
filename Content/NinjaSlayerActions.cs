@@ -134,9 +134,10 @@ public static class NinjaSlayerActions
         {
             foreach (CardPileAddResult result in results)
             {
-                if (result.success)
+                if (!result.success || !await PrepareCmd.Apply(result.cardAdded))
                 {
-                    await PrepareCmd.Apply(result.cardAdded);
+                    throw new InvalidOperationException(
+                        "Generated Shuriken was not prepared as requested.");
                 }
             }
         }

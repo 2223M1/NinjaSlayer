@@ -1,59 +1,52 @@
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Models;
+using NinjaSlayer.Code.Commands;
 using STS2RitsuLib;
 
 namespace NinjaSlayer.Code.Prepared;
 
 internal sealed class PreparedSafetyLifecycle : IDisposable
 {
-    private readonly IDisposable[] _subscriptions;
-    private int _disposed;
+    private readonly IDisposable _subscription;
+    private bool _disposed;
 
-    private PreparedSafetyLifecycle(IDisposable[] subscriptions)
+    private PreparedSafetyLifecycle(IDisposable subscription)
     {
-        _subscriptions = subscriptions;
+        _subscription = subscription;
     }
 
-    public int SubscriptionCount => _subscriptions.Length;
-
-    public static PreparedSafetyLifecycle Subscribe()
-    {
-        var subscriptions = new List<IDisposable>(3);
-        try
-        {
-            subscriptions.Add(RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(
-                evt => PreparedSafetyService.CompletePileChange(
-                    evt.CombatState,
-                    evt.Card,
-                    evt.PreviousPile),
-                replayCurrentState: false));
-            subscriptions.Add(RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(
-                evt => PreparedSafetyService.RecoverAfterRunLoaded(evt.RunState),
-                replayCurrentState: false));
-            subscriptions.Add(RitsuLibFramework.SubscribeLifecycle<CombatStartingEvent>(
-                evt => PreparedSafetyService.RecoverBeforeCombatStart(evt.CombatState),
-                replayCurrentState: false));
-            return new PreparedSafetyLifecycle(subscriptions.ToArray());
-        }
-        catch
-        {
-            for (int index = subscriptions.Count - 1; index >= 0; index--)
-            {
-                subscriptions[index].Dispose();
-            }
-
-            throw;
-        }
-    }
+    public static PreparedSafetyLifecycle Subscribe() =>
+        new(RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(
+            CompletePileChange,
+            replayCurrentState: false));
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        if (_disposed)
         {
             return;
         }
 
-        for (int index = _subscriptions.Length - 1; index >= 0; index--)
+        _disposed = true;
+        _subscription.Dispose();
+    }
+
+    private static void CompletePileChange(CardMovedBetweenPilesEvent evt)
+    {
+        CardModel card = evt.Card;
+        if (evt.PreviousPile != PileType.Draw
+            || card.Pile?.Type == PileType.Draw
+            || !PrepareCmd.IsPrepared(card))
         {
-            _subscriptions[index].Dispose();
+            return;
+        }
+
+        CardCmd.ClearAffliction(card);
+        if (PrepareCmd.IsPrepared(card))
+        {
+            throw new InvalidOperationException(
+                $"Prepared affliction remained after {card.Id} left the draw pile.");
         }
     }
 }

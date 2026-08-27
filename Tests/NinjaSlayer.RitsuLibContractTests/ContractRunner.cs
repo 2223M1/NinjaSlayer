@@ -1,33 +1,46 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 using System.Net;
 using System.Net.Sockets;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Entities.Powers;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
+using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Events;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.TestSupport;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Afflictions;
+using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Feedback;
 using NinjaSlayer.Code.Patches;
+using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Content;
 using STS2RitsuLib;
 using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
 using STS2RitsuLib.RunData;
 using STS2RitsuLib.Scaffolding.Visuals.Definition;
-using STS2RitsuLib.Utils.HarmonyIl;
 
 namespace NinjaSlayer.RitsuLibContractTests;
 
 public partial class ContractRunner : Node
 {
+    private static ProductPrepareFaultMode _productPrepareFaultMode;
+
     public override void _Ready()
     {
         try
@@ -37,7 +50,7 @@ public partial class ContractRunner : Node
             {
                 RitsuLibFramework.Initialize();
             }
-            VerifyPreparedLifecyclePublishers();
+            VerifyPreparedOwnershipContracts();
             VerifyOrobasSeaGlassPatchContract();
             VerifyBlackFlameDamagePatchContract();
             VerifyProductionDynamicPatchContracts();
@@ -115,111 +128,737 @@ public partial class ContractRunner : Node
         System.IO.File.WriteAllText(fullPath, "passed\n");
     }
 
-    private static void VerifyPreparedLifecyclePublishers()
+    private static void VerifyPreparedOwnershipContracts()
     {
-        Require(RitsuLibFramework.IsInitialized, "RitsuLib did not complete framework initialization.");
-        Type[] eventTypes =
-        [
-            typeof(CardMovedBetweenPilesEvent),
-            typeof(RunLoadedEvent),
-            typeof(CombatStartingEvent)
-        ];
+        ModelDb.Inject(typeof(StrikeIronclad));
+        ModelDb.Inject(typeof(PreparedAffliction));
+        ModelDb.Inject(typeof(DampCultist));
 
-        IDisposable[] subscriptions =
-        [
-            RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(static _ => { }, false),
-            RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(static _ => { }, false),
-            RitsuLibFramework.SubscribeLifecycle<CombatStartingEvent>(static _ => { }, false)
-        ];
+        PreparedSafetyLifecycle lifecycle = PreparedSafetyLifecycle.Subscribe();
+        Harmony faultHarmony = PreparedFaultInjection.Install();
         try
         {
-            Require(subscriptions.Length == eventTypes.Length, "Prepared lifecycle subscriptions were not created.");
+            VerifyPreparedQueueAndDrawExit();
+            VerifyPreparedQueueInvariantFailure();
+            VerifyPreparedQueueDuplicateReferenceFailure();
+            VerifyPreparedFailureRollback(
+                PreparedFaultMode.UnconfirmedAdd,
+                "unconfirmed add",
+                "not confirmed");
+            VerifyPreparedFailureRollback(
+                PreparedFaultMode.RemoveOnce,
+                "remove failure",
+                "injected-remove");
+            VerifyPreparedFailureRollback(
+                PreparedFaultMode.DrawAddOnce,
+                "add failure",
+                "injected-draw-add");
+            VerifyPreparedRepositionRollback();
+            VerifyPreparedFailureRollback(
+                PreparedFaultMode.UnconfirmedAfterMutation,
+                "postcondition failure",
+                "not confirmed");
+            VerifyPreparedRollbackFailure();
+            VerifyPreparedCallerFailurePropagation();
         }
         finally
         {
-            foreach (IDisposable subscription in subscriptions.Reverse())
-            {
-                subscription.Dispose();
-                subscription.Dispose();
-            }
-        }
-
-        Assembly ritsuAssembly = typeof(RitsuLibFramework).Assembly;
-        foreach (Type eventType in eventTypes)
-        {
-            Type publisherPatch = ResolveLifecyclePublisherPatch(ritsuAssembly, eventType);
-            MethodInfo getTargets = publisherPatch.GetMethod(
-                "GetTargets",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-                ?? throw new MissingMethodException(publisherPatch.FullName, nameof(IPatchMethod.GetTargets));
-            var targets = (ModPatchTarget[]?)(getTargets.Invoke(null, null))
-                ?? throw new InvalidOperationException($"{publisherPatch.FullName}.GetTargets() returned null.");
-            Require(targets.Length > 0, $"{eventType.Name} publisher does not declare any patch targets.");
-
-            foreach (ModPatchTarget target in targets)
-            {
-                Require(
-                    target.HarmonyMethodType == MethodType.Normal,
-                    $"{eventType.Name} publisher uses an unsupported Harmony target type.");
-                MethodInfo? original = target.ParameterTypes is null
-                    ? AccessTools.Method(target.TargetType, target.MethodName)
-                    : AccessTools.Method(target.TargetType, target.MethodName, target.ParameterTypes);
-                Require(original is not null, $"Unable to resolve {eventType.Name} publisher target {target}.");
-                Patches patchInfo = Harmony.GetPatchInfo(original!)
-                    ?? throw new InvalidOperationException(
-                        $"Harmony did not report the {eventType.Name} publisher target {target}.");
-                Patch[] matching = patchInfo.Prefixes
-                    .Concat(patchInfo.Postfixes)
-                    .Concat(patchInfo.Transpilers)
-                    .Concat(patchInfo.Finalizers)
-                    .Where(patch =>
-                        patch.PatchMethod.DeclaringType == publisherPatch
-                        && patch.PatchMethod.Module.Assembly == ritsuAssembly)
-                    .ToArray();
-                Require(
-                    matching.Length == 1,
-                    $"{eventType.Name} publisher target {target} has {matching.Length} matching RitsuLib bindings.");
-            }
+            PreparedFaultInjection.Reset();
+            faultHarmony.UnpatchAll();
+            lifecycle.Dispose();
+            lifecycle.Dispose();
         }
     }
 
-    private static Type ResolveLifecyclePublisherPatch(Assembly ritsuAssembly, Type eventType)
+    private static void VerifyPreparedQueueAndDrawExit()
     {
-        Type[] matches = ritsuAssembly.GetTypes()
-            .Where(type =>
-                !type.IsAbstract
-                && typeof(IPatchMethod).IsAssignableFrom(type)
-                && TypeTreeCreatesEvent(type, eventType))
+        using var fixture = new PreparedCombatFixture();
+        CardModel[] cards = Enumerable.Range(0, 4)
+            .Select(index => fixture.CreateCard(index == 0 ? PileType.Draw : PileType.Discard))
             .ToArray();
+        int firstAfflictionChanges = 0;
+        cards[0].AfflictionChanged += () => firstAfflictionChanges++;
+
+        for (int index = 0; index < cards.Length; index++)
+        {
+            Require(
+                PrepareCmd.Apply(cards[index]).GetAwaiter().GetResult(),
+                $"Prepared application {index + 1} was rejected.");
+            RequirePreparedQueue(fixture, cards.Take(index + 1).ToArray());
+        }
+
+        Require(firstAfflictionChanges == 1, "Prepared application changed the first affliction more than once.");
+        CardPileAddResult drawExit = CardPileCmd.Add(
+                cards[0],
+                PileType.Hand.GetPile(fixture.Player))
+            .GetAwaiter()
+            .GetResult();
+        Require(drawExit.success, "Prepared Draw-exit fixture did not move the card.");
+        Require(cards[0].Affliction is null, "Confirmed Draw-exit did not clear Prepared.");
+        Require(firstAfflictionChanges == 2, "Confirmed Draw-exit did not clear Prepared exactly once.");
+
+        CardPileCmd.Add(cards[0], PileType.Discard.GetPile(fixture.Player))
+            .GetAwaiter()
+            .GetResult();
+        Require(firstAfflictionChanges == 2, "A later non-Draw pile event repeated Prepared cleanup.");
+        RequirePreparedQueue(fixture, cards.Skip(1).ToArray());
+
+        int removalEvents = 0;
+        using (RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(evt =>
+               {
+                   if (ReferenceEquals(evt.Card, cards[1]) && evt.PreviousPile == PileType.Draw)
+                   {
+                       removalEvents++;
+                   }
+               }, replayCurrentState: false))
+        {
+            CardPileCmd.RemoveFromCombat(cards[1], skipVisuals: true)
+                .GetAwaiter()
+                .GetResult();
+        }
+        Require(cards[1].Pile is null, "Prepared removal fixture retained a pile.");
+        Require(removalEvents == 1, "Prepared removal did not publish one confirmed Draw-exit event.");
+        Require(cards[1].Affliction is null, "Confirmed Draw removal did not clear Prepared.");
+        RequirePreparedQueue(fixture, cards.Skip(2).ToArray());
+
         Require(
-            matches.Length == 1,
-            $"Expected one RitsuLib IPatchMethod publisher for {eventType.Name}, found {matches.Length}.");
-        return matches[0];
+            !PrepareCmd.Apply(ModelDb.Card<StrikeIronclad>()).GetAwaiter().GetResult(),
+            "Canonical card preparation was not rejected as a legal no-op.");
     }
 
-    private static bool TypeTreeCreatesEvent(Type type, Type eventType)
+    private static void VerifyPreparedQueueInvariantFailure()
     {
-        foreach (MethodBase method in type.GetMethods(
-                     BindingFlags.Public | BindingFlags.NonPublic |
-                     BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-        {
-            if (method.GetMethodBody() is null)
-            {
-                continue;
-            }
+        using var fixture = new PreparedCombatFixture();
+        CardModel prepared = fixture.CreateCard(PileType.Discard);
+        Require(PrepareCmd.Apply(prepared).GetAwaiter().GetResult(), "Prepared prefix fixture was rejected.");
+        CardModel unprepared = fixture.CreateCard(PileType.Draw, index: 0);
+        CardModel target = fixture.CreateCard(PileType.Discard);
 
-            HarmonyIlMethodBody body = method.GetOriginalIl(resolveAsync: false);
-            if (body.Instructions.Any(instruction =>
-                    instruction.opcode == System.Reflection.Emit.OpCodes.Newobj
-                    && instruction.operand is ConstructorInfo constructor
-                    && constructor.DeclaringType == eventType))
+        InvalidOperationException failure = ExpectException<InvalidOperationException>(
+            () => PrepareCmd.Apply(target),
+            "queue prefix");
+        Require(
+            failure.Message.Contains("queue prefix", StringComparison.OrdinalIgnoreCase),
+            "Broken Prepared queue did not surface its invariant failure.");
+        Require(target.Affliction is null, "Queue-prefix rejection mutated the target affliction.");
+        Require(ReferenceEquals(target.Pile, PileType.Discard.GetPile(fixture.Player)),
+            "Queue-prefix rejection moved the target card.");
+        Require(ReferenceEquals(fixture.DrawPile.Cards[0], unprepared),
+            "Queue-prefix rejection rewrote the broken producer state.");
+    }
+
+    private static void VerifyPreparedQueueDuplicateReferenceFailure()
+    {
+        using var fixture = new PreparedCombatFixture();
+        CardModel prepared = fixture.CreateCard(PileType.Discard);
+        Require(PrepareCmd.Apply(prepared).GetAwaiter().GetResult(),
+            "Prepared duplicate-reference fixture was rejected.");
+        fixture.DiscardPile.AddInternal(prepared, index: -1, silent: true);
+        CardModel target = fixture.CreateCard(PileType.Discard);
+
+        _ = ExpectException<InvalidOperationException>(
+            () => PrepareCmd.Apply(target),
+            "exactly one pile reference");
+        Require(target.Affliction is null,
+            "Duplicate Prepared queue rejection mutated the target affliction.");
+        Require(ReferenceEquals(target.Pile, fixture.DiscardPile),
+            "Duplicate Prepared queue rejection moved the target card.");
+    }
+
+    private static void VerifyPreparedFailureRollback(
+        PreparedFaultMode mode,
+        string label,
+        string failureFragment)
+    {
+        using var fixture = new PreparedCombatFixture();
+        CardModel card = fixture.CreateCard(PileType.Discard);
+        int originalIndex = fixture.DiscardPile.Cards.Count - 1;
+        PreparedFaultInjection.Configure(mode, card);
+        try
+        {
+            _ = ExpectException<InvalidOperationException>(
+                () => PrepareCmd.Apply(card),
+                failureFragment);
+        }
+        finally
+        {
+            PreparedFaultInjection.Reset();
+        }
+
+        RequireRestored(fixture, card, fixture.DiscardPile, originalIndex, label);
+    }
+
+    private static void VerifyPreparedRepositionRollback()
+    {
+        using var fixture = new PreparedCombatFixture();
+        CardModel queued = fixture.CreateCard(PileType.Discard);
+        Require(PrepareCmd.Apply(queued).GetAwaiter().GetResult(), "Reposition fixture queue setup failed.");
+        CardModel card = fixture.CreateCard(PileType.Discard);
+        int originalIndex = fixture.DiscardPile.Cards.Count - 1;
+
+        PreparedFaultInjection.Configure(PreparedFaultMode.RepositionAddOnce, card);
+        try
+        {
+            _ = ExpectException<InvalidOperationException>(
+                () => PrepareCmd.Apply(card),
+                "injected-reposition-add");
+        }
+        finally
+        {
+            PreparedFaultInjection.Reset();
+        }
+
+        RequireRestored(fixture, card, fixture.DiscardPile, originalIndex, "reposition failure");
+        RequirePreparedQueue(fixture, [queued]);
+    }
+
+    private static void VerifyPreparedRollbackFailure()
+    {
+        using var fixture = new PreparedCombatFixture();
+        CardModel card = fixture.CreateCard(PileType.Discard);
+        PreparedFaultInjection.Configure(PreparedFaultMode.DrawAndRollbackAdd, card);
+        AggregateException failure;
+        try
+        {
+            failure = ExpectException<AggregateException>(
+                () => PrepareCmd.Apply(card),
+                "transaction and rollback");
+        }
+        finally
+        {
+            PreparedFaultInjection.Reset();
+        }
+
+        Require(failure.InnerExceptions.Count == 2,
+            "Prepared rollback failure did not preserve primary and rollback errors.");
+        Require(failure.ToString().Contains("injected-draw-add", StringComparison.Ordinal),
+            "Prepared rollback aggregate lost the primary add failure.");
+        Require(failure.ToString().Contains("injected-rollback-add", StringComparison.Ordinal),
+            "Prepared rollback aggregate lost the rollback failure.");
+        Require(card.Affliction is null, "Failed Prepared rollback left its partial affliction behind.");
+        Require(card.Pile is null, "Rollback-failure fixture unexpectedly reported a restored pile.");
+    }
+
+    private static void VerifyPreparedCallerFailurePropagation()
+    {
+        string productPath = System.Environment.GetEnvironmentVariable(
+                "NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY")
+            ?? throw new InvalidOperationException(
+                "Prepared caller contracts require NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY.");
+        AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(typeof(ContractRunner).Assembly)
+            ?? throw new InvalidOperationException("The ContractRunner assembly has no load context.");
+        Assembly product = context.LoadFromAssemblyPath(Path.GetFullPath(productPath));
+        RequireMatchingProductMetadata(product, "NinjaSlayerHostChannel");
+        RequireMatchingProductMetadata(product, "NinjaSlayerGameApiVersion");
+
+        Type prepareType = product.GetType("NinjaSlayer.Code.Commands.PrepareCmd", throwOnError: true)!;
+        MethodInfo prepare = AccessTools.Method(prepareType, "Apply", [typeof(CardModel)])
+            ?? throw new MissingMethodException(prepareType.FullName, "Apply");
+        var harmony = new Harmony($"NinjaSlayer.ContractTests.ProductPrepared.{Guid.NewGuid():N}");
+        harmony.Patch(
+            prepare,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductPrepare)));
+        try
+        {
+            VerifyPreparedPowerFailure(product);
+            VerifyGeneratedShurikenPrepareFailure(product);
+        }
+        finally
+        {
+            _productPrepareFaultMode = ProductPrepareFaultMode.None;
+            harmony.UnpatchAll();
+        }
+    }
+
+    private static void VerifyPreparedPowerFailure(Assembly product)
+    {
+        using var fixture = new PreparedCombatFixture();
+        Type powerType = product.GetType(
+            "NinjaSlayer.Powers.NextDiscardPreparedPower",
+            throwOnError: true)!;
+        ModelDb.Inject(powerType);
+        MethodInfo powerLookup = typeof(ModelDb)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(method => method.Name == nameof(ModelDb.Power)
+                && method.IsGenericMethodDefinition
+                && method.GetParameters().Length == 0);
+        var canonical = (PowerModel)(powerLookup.MakeGenericMethod(powerType).Invoke(null, null)
+            ?? throw new InvalidOperationException("Unable to find the Prepared power contract model."));
+        PowerModel power = canonical.ToMutable();
+        power.ApplyInternal(fixture.Player.Creature, 2m);
+        CardModel card = fixture.CreateCard(PileType.Discard);
+        MethodInfo afterPileChange = AccessTools.Method(
+                powerType,
+                nameof(PowerModel.AfterCardChangedPiles),
+                [typeof(CardModel), typeof(PileType), typeof(AbstractModel)])
+            ?? throw new MissingMethodException(powerType.FullName, nameof(PowerModel.AfterCardChangedPiles));
+
+        _productPrepareFaultMode = ProductPrepareFaultMode.Throw;
+        try
+        {
+            _ = ExpectException<InvalidOperationException>(
+                () => ((Task)afterPileChange.Invoke(
+                    power,
+                    [card, PileType.Hand, null])!).GetAwaiter().GetResult(),
+                "injected-product-prepare");
+            Require(power.Amount == 2,
+                "Prepared power decremented after its Prepare transaction faulted.");
+        }
+        finally
+        {
+            _productPrepareFaultMode = ProductPrepareFaultMode.None;
+            power.RemoveInternal();
+        }
+    }
+
+    private static void VerifyGeneratedShurikenPrepareFailure(Assembly product)
+    {
+        using var fixture = new PreparedCombatFixture();
+        Type shurikenType = product.GetType("NinjaSlayer.Cards.ShurikenCard", throwOnError: true)!;
+        ModelDb.Inject(shurikenType);
+        Type actionsType = product.GetType("NinjaSlayer.Content.NinjaSlayerActions", throwOnError: true)!;
+        MethodInfo addGeneratedShuriken = AccessTools.Method(
+                actionsType,
+                "AddGeneratedShuriken",
+                [
+                    typeof(PlayerChoiceContext),
+                    typeof(Player),
+                    typeof(int),
+                    typeof(PileType),
+                    typeof(bool),
+                    typeof(CardPilePosition),
+                    typeof(bool)
+                ])
+            ?? throw new MissingMethodException(actionsType.FullName, "AddGeneratedShuriken");
+
+        _productPrepareFaultMode = ProductPrepareFaultMode.Reject;
+        try
+        {
+            _ = ExpectException<InvalidOperationException>(
+                () => ((Task)addGeneratedShuriken.Invoke(
+                    null,
+                    [
+                        new ThrowingPlayerChoiceContext(),
+                        fixture.Player,
+                        1,
+                        PileType.Draw,
+                        false,
+                        CardPilePosition.Bottom,
+                        true
+                    ])!).GetAwaiter().GetResult(),
+                "Generated Shuriken was not prepared as requested");
+        }
+        finally
+        {
+            _productPrepareFaultMode = ProductPrepareFaultMode.None;
+        }
+
+        CardModel generated = fixture.DrawPile.Cards.Single(card => card.GetType() == shurikenType);
+        fixture.TrackCard(generated);
+        Require(generated.Affliction is null,
+            "Rejected generated Shuriken preparation left a partial affliction.");
+        Require(CountReferences(fixture.Player, generated) == 1,
+            "Rejected generated Shuriken preparation duplicated the generated card.");
+    }
+
+    private static bool PrefixProductPrepare(ref Task<bool> __result)
+    {
+        switch (_productPrepareFaultMode)
+        {
+            case ProductPrepareFaultMode.Reject:
+                __result = Task.FromResult(false);
+                return false;
+            case ProductPrepareFaultMode.Throw:
+                __result = Task.FromException<bool>(
+                    new InvalidOperationException("injected-product-prepare"));
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    private static void RequireMatchingProductMetadata(Assembly product, string key)
+    {
+        string expected = ReadAssemblyMetadata(typeof(ContractRunner).Assembly, key);
+        string actual = ReadAssemblyMetadata(product, key);
+        Require(actual == expected,
+            $"Product assembly metadata {key} was '{actual}', expected '{expected}'.");
+    }
+
+    private static string ReadAssemblyMetadata(Assembly assembly, string key) =>
+        assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == key)
+            .Value
+        ?? throw new InvalidOperationException($"Assembly metadata {key} has no value.");
+
+    private static TException ExpectException<TException>(Action action, string messageFragment)
+        where TException : Exception
+    {
+        Exception? observed = null;
+        try
+        {
+            action();
+        }
+        catch (TargetInvocationException exception) when (exception.InnerException is not null)
+        {
+            observed = exception.InnerException;
+        }
+        catch (Exception exception)
+        {
+            observed = exception;
+        }
+
+        Require(observed is TException,
+            $"Expected {typeof(TException).Name}, observed {observed?.GetType().Name ?? "no failure"}.");
+        Require(observed!.ToString().Contains(messageFragment, StringComparison.OrdinalIgnoreCase),
+            $"{typeof(TException).Name} did not contain '{messageFragment}'.");
+        return (TException)observed;
+    }
+
+    private enum ProductPrepareFaultMode
+    {
+        None,
+        Reject,
+        Throw
+    }
+
+    private static void RequirePreparedQueue(PreparedCombatFixture fixture, IReadOnlyList<CardModel> expected)
+    {
+        Require(fixture.DrawPile.Cards.Count >= expected.Count, "Prepared draw pile is shorter than its queue.");
+        for (int index = 0; index < expected.Count; index++)
+        {
+            CardModel card = expected[index];
+            Require(ReferenceEquals(fixture.DrawPile.Cards[index], card),
+                $"Prepared queue order differs at index {index}.");
+            Require(card.Affliction is PreparedAffliction,
+                $"Prepared queue card {index} lost its affliction.");
+            Require(CountReferences(fixture.Player, card) == 1,
+                $"Prepared queue card {index} does not have exactly one pile reference.");
+        }
+
+        Require(fixture.DrawPile.Cards.Skip(expected.Count).All(card => card.Affliction is not PreparedAffliction),
+            "Prepared card exists outside the queue prefix.");
+    }
+
+    private static void RequireRestored(
+        PreparedCombatFixture fixture,
+        CardModel card,
+        CardPile expectedPile,
+        int expectedIndex,
+        string label)
+    {
+        Require(card.Affliction is null, $"Prepared {label} rollback left an affliction.");
+        Require(ReferenceEquals(card.Pile, expectedPile), $"Prepared {label} rollback restored the wrong pile.");
+        Require(ReferenceEquals(expectedPile.Cards[expectedIndex], card),
+            $"Prepared {label} rollback restored the wrong index.");
+        Require(CountReferences(fixture.Player, card) == 1,
+            $"Prepared {label} rollback did not restore one card reference.");
+    }
+
+    private static TException ExpectException<TException>(Func<Task<bool>> action, string messageFragment)
+        where TException : Exception
+    {
+        Exception? observed = null;
+        try
+        {
+            _ = action().GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            observed = exception;
+        }
+
+        Require(observed is TException,
+            $"Expected {typeof(TException).Name}, observed {observed?.GetType().Name ?? "no failure"}.");
+        Require(observed!.ToString().Contains(messageFragment, StringComparison.OrdinalIgnoreCase),
+            $"{typeof(TException).Name} did not contain '{messageFragment}'.");
+        return (TException)observed;
+    }
+
+    private static int CountReferences(Player player, CardModel card) =>
+        player.Piles.Sum(pile => pile.Cards.Count(candidate => ReferenceEquals(candidate, card)));
+
+    private enum PreparedFaultMode
+    {
+        None,
+        UnconfirmedAdd,
+        UnconfirmedAfterMutation,
+        RemoveOnce,
+        DrawAddOnce,
+        RepositionAddOnce,
+        DrawAndRollbackAdd
+    }
+
+    private static class PreparedFaultInjection
+    {
+        private static PreparedFaultMode _mode;
+        private static CardModel? _target;
+        private static int _drawAddCount;
+
+        public static Harmony Install()
+        {
+            var harmony = new Harmony($"NinjaSlayer.ContractTests.Prepared.{Guid.NewGuid():N}");
+            MethodInfo add = AccessTools.Method(
+                typeof(CardPileCmd),
+                nameof(CardPileCmd.Add),
+                [typeof(CardModel), typeof(CardPile), typeof(CardPilePosition), typeof(AbstractModel), typeof(bool)])
+                ?? throw new MissingMethodException(typeof(CardPileCmd).FullName, nameof(CardPileCmd.Add));
+            MethodInfo addInternal = AccessTools.Method(
+                typeof(CardPile),
+                nameof(CardPile.AddInternal),
+                [typeof(CardModel), typeof(int), typeof(bool)])
+                ?? throw new MissingMethodException(typeof(CardPile).FullName, nameof(CardPile.AddInternal));
+            MethodInfo removeInternal = AccessTools.Method(
+                typeof(CardPile),
+                nameof(CardPile.RemoveInternal),
+                [typeof(CardModel), typeof(bool)])
+                ?? throw new MissingMethodException(typeof(CardPile).FullName, nameof(CardPile.RemoveInternal));
+
+            harmony.Patch(
+                add,
+                prefix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PrefixAdd)),
+                postfix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PostfixAdd)));
+            harmony.Patch(
+                addInternal,
+                prefix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PrefixAddInternal)));
+            harmony.Patch(
+                removeInternal,
+                prefix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PrefixRemoveInternal)));
+            return harmony;
+        }
+
+        public static void Configure(PreparedFaultMode mode, CardModel target)
+        {
+            _mode = mode;
+            _target = target;
+            _drawAddCount = 0;
+        }
+
+        public static void Reset()
+        {
+            _mode = PreparedFaultMode.None;
+            _target = null;
+            _drawAddCount = 0;
+        }
+
+        private static bool PrefixAdd(CardModel card, ref Task<CardPileAddResult> __result)
+        {
+            if (_mode != PreparedFaultMode.UnconfirmedAdd || !ReferenceEquals(card, _target))
             {
                 return true;
             }
+
+            _mode = PreparedFaultMode.None;
+            __result = Task.FromResult(new CardPileAddResult
+            {
+                success = false,
+                cardAdded = card,
+                oldPile = card.Pile
+            });
+            return false;
         }
 
-        return type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
-            .Any(nested => TypeTreeCreatesEvent(nested, eventType));
+        private static void PostfixAdd(CardModel card, ref Task<CardPileAddResult> __result)
+        {
+            if (_mode == PreparedFaultMode.UnconfirmedAfterMutation && ReferenceEquals(card, _target))
+            {
+                __result = ReturnUnconfirmedAfterMutation(__result);
+            }
+        }
+
+        private static async Task<CardPileAddResult> ReturnUnconfirmedAfterMutation(
+            Task<CardPileAddResult> resultTask)
+        {
+            CardPileAddResult result = await resultTask;
+            _mode = PreparedFaultMode.None;
+            result.success = false;
+            return result;
+        }
+
+        private static void PrefixRemoveInternal(CardModel card)
+        {
+            if (_mode != PreparedFaultMode.RemoveOnce || !ReferenceEquals(card, _target))
+            {
+                return;
+            }
+
+            _mode = PreparedFaultMode.None;
+            throw new InvalidOperationException("injected-remove");
+        }
+
+        private static void PrefixAddInternal(CardPile __instance, CardModel card)
+        {
+            if (!ReferenceEquals(card, _target))
+            {
+                return;
+            }
+
+            if (_mode == PreparedFaultMode.DrawAddOnce && __instance.Type == PileType.Draw)
+            {
+                _mode = PreparedFaultMode.None;
+                throw new InvalidOperationException("injected-draw-add");
+            }
+
+            if (_mode == PreparedFaultMode.RepositionAddOnce && __instance.Type == PileType.Draw)
+            {
+                _drawAddCount++;
+                if (_drawAddCount == 2)
+                {
+                    _mode = PreparedFaultMode.None;
+                    throw new InvalidOperationException("injected-reposition-add");
+                }
+            }
+
+            if (_mode == PreparedFaultMode.DrawAndRollbackAdd)
+            {
+                if (__instance.Type == PileType.Draw)
+                {
+                    throw new InvalidOperationException("injected-draw-add");
+                }
+
+                if (__instance.Type == PileType.Discard)
+                {
+                    throw new InvalidOperationException("injected-rollback-add");
+                }
+            }
+        }
+    }
+
+    private sealed class PreparedCombatFixture : IDisposable
+    {
+        private readonly List<CardModel> _cards = [];
+        private readonly bool _previousTestMode;
+        private readonly Action _restoreCombatManager;
+
+        public CombatState CombatState { get; }
+        public Player Player { get; }
+        public CardPile DrawPile => PileType.Draw.GetPile(Player);
+        public CardPile DiscardPile => PileType.Discard.GetPile(Player);
+
+        public PreparedCombatFixture()
+        {
+            _previousTestMode = TestMode.IsOn;
+            TestMode.IsOn = true;
+            CombatState = new CombatState();
+            Player = CreatePlayer(CombatState);
+            AddLivingEnemy(CombatState);
+            _restoreCombatManager = EnterCombat(CombatState);
+        }
+
+        public CardModel CreateCard(PileType pileType, int index = -1)
+        {
+            CardModel card = ModelDb.Card<StrikeIronclad>().ToMutable();
+            CombatState.AddCard(card, Player);
+            pileType.GetPile(Player).AddInternal(card, index, silent: true);
+            _cards.Add(card);
+            return card;
+        }
+
+        public void TrackCard(CardModel card) => _cards.Add(card);
+
+        public void Dispose()
+        {
+            PreparedFaultInjection.Reset();
+            foreach (CardModel card in _cards)
+            {
+                if (card.Affliction is not null)
+                {
+                    CardCmd.ClearAffliction(card);
+                }
+
+                while (card.Pile is { } pile)
+                {
+                    pile.RemoveInternal(card, silent: true);
+                }
+
+                if (CombatState.ContainsCard(card))
+                {
+                    CombatState.RemoveCard(card);
+                }
+            }
+
+            Player.PlayerCombatState?.AfterCombatEnd();
+            _restoreCombatManager();
+            TestMode.IsOn = _previousTestMode;
+        }
+
+        private static Player CreatePlayer(CombatState combatState)
+        {
+            var player = (Player)RuntimeHelpers.GetUninitializedObject(typeof(Player));
+            SetField(player, "<Deck>k__BackingField", new CardPile(PileType.Deck));
+            SetField(player, "_runState", NullRunState.Instance);
+            var creature = new Creature(player, currentHp: 80, maxHp: 80)
+            {
+                CombatState = combatState
+            };
+            SetField(player, "<Creature>k__BackingField", creature);
+            SetField(player, "<PlayerCombatState>k__BackingField", new PlayerCombatState(player));
+            return player;
+        }
+
+        private static void AddLivingEnemy(CombatState combatState)
+        {
+            var enemy = new Creature(
+                ModelDb.Monster<DampCultist>().ToMutable(),
+                CombatSide.Enemy,
+                slotName: null)
+            {
+                CombatState = combatState
+            };
+            combatState.AddCreature(enemy);
+        }
+
+        private static Action EnterCombat(CombatState combatState)
+        {
+            CombatManager manager = CombatManager.Instance;
+            FieldInfo? turnStateField = AccessTools.Field(typeof(CombatManager), "_turnState");
+            if (turnStateField is not null)
+            {
+                object? previous = turnStateField.GetValue(manager);
+                Type turnStateType = turnStateField.FieldType;
+                object turnState = Activator.CreateInstance(
+                        turnStateType,
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        binder: null,
+                        args: [combatState],
+                        culture: null)
+                    ?? throw new InvalidOperationException("Unable to create preview CombatTurnState fixture.");
+                turnStateType.GetProperty("IsInProgress")!.SetValue(turnState, true);
+                turnStateType.GetProperty("IsStarting")!.SetValue(turnState, false);
+                turnStateField.SetValue(manager, turnState);
+                return () => turnStateField.SetValue(manager, previous);
+            }
+
+            FieldInfo stateField = AccessTools.Field(typeof(CombatManager), "_state")
+                ?? throw new MissingFieldException(typeof(CombatManager).FullName, "_state");
+            FieldInfo inProgressField = AccessTools.Field(
+                    typeof(CombatManager),
+                    "<IsInProgress>k__BackingField")
+                ?? throw new MissingFieldException(typeof(CombatManager).FullName, "IsInProgress");
+            FieldInfo startingField = AccessTools.Field(
+                    typeof(CombatManager),
+                    "<IsStarting>k__BackingField")
+                ?? throw new MissingFieldException(typeof(CombatManager).FullName, "IsStarting");
+            object? previousState = stateField.GetValue(manager);
+            bool previousInProgress = (bool)inProgressField.GetValue(manager)!;
+            bool previousStarting = (bool)startingField.GetValue(manager)!;
+            stateField.SetValue(manager, combatState);
+            inProgressField.SetValue(manager, true);
+            startingField.SetValue(manager, false);
+            return () =>
+            {
+                stateField.SetValue(manager, previousState);
+                inProgressField.SetValue(manager, previousInProgress);
+                startingField.SetValue(manager, previousStarting);
+            };
+        }
+
+        private static void SetField(object instance, string name, object value)
+        {
+            FieldInfo field = AccessTools.Field(instance.GetType(), name)
+                ?? throw new MissingFieldException(instance.GetType().FullName, name);
+            field.SetValue(instance, value);
+        }
     }
 
     private static void VerifyOrobasSeaGlassPatchContract()
