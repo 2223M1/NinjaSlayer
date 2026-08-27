@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 using MegaCrit.Sts2.Core.Models;
@@ -140,15 +141,21 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
 
+            int expectedRequiredPatchCount = requiredPatcher.RegisteredPatchCount
+                + requiredPatcher.RegisteredDynamicPatchCount;
             bool requiredPatchFailure = false;
             bool requiredPatchesApplied = RitsuLibFramework.ApplyRequiredPatcher(
                 requiredPatcher,
                 disableMod: () => requiredPatchFailure = true,
                 failureMessage: "Required NinjaSlayer patches failed; initialization will abort.");
-            if (!requiredPatchesApplied || requiredPatchFailure)
+            if (!requiredPatchesApplied
+                || requiredPatchFailure
+                || requiredPatcher.AppliedPatchCount != expectedRequiredPatchCount)
             {
                 LogPatchFailure(requiredPatcher);
-                throw new InvalidOperationException("Required NinjaSlayer patch installation failed.");
+                throw new InvalidOperationException(
+                    "Required NinjaSlayer patch installation failed or was incomplete: "
+                    + $"applied {requiredPatcher.AppliedPatchCount}/{expectedRequiredPatchCount} patches.");
             }
 
             if (!FinisherProtectionService.CanProtectLethalDamage(out string finisherReason))
@@ -179,49 +186,47 @@ public class Entry
         }
         catch (Exception exception)
         {
-            _runRulesSubscription?.Dispose();
+            var failures = new List<Exception> { exception };
+            foreach (IDisposable? subscription in new IDisposable?[]
+                     {
+                         _runRulesSubscription,
+                         _preparedSafetyLifecycle
+                     })
+            {
+                try
+                {
+                    subscription?.Dispose();
+                }
+                catch (Exception cleanupFailure)
+                {
+                    failures.Add(cleanupFailure);
+                }
+            }
             _runRulesSubscription = null;
-            _preparedSafetyLifecycle?.Dispose();
             _preparedSafetyLifecycle = null;
-            TryRollbackPatcher(requiredPatcher, nameof(Entry));
-            Logger.Error($"NinjaSlayer required initialization failed and patches were rolled back: {exception}");
-            throw;
+
+            Exception? rollbackFailure = RollbackPatcherVerified(requiredPatcher, nameof(Entry));
+            if (rollbackFailure is not null)
+            {
+                failures.Add(rollbackFailure);
+            }
+
+            Logger.Error(
+                rollbackFailure is null
+                    ? $"NinjaSlayer required initialization failed; required patches were verified as rolled back: {exception}"
+                    : $"NinjaSlayer required initialization failed and required patch rollback was incomplete: {exception}");
+            if (failures.Count == 1)
+            {
+                throw;
+            }
+
+            throw new AggregateException(
+                "NinjaSlayer required initialization and cleanup failed.",
+                failures);
         }
 
         InstallOptionalPresentations();
-        try
-        {
-            NinjaSlayerBalanceTelemetry.Register();
-
-            ModPatcher telemetryPatcher = RitsuLibFramework.CreatePatcher(
-                NinjaSlayerIds.ModId,
-                "telemetry-identity");
-            try
-            {
-                telemetryPatcher.RegisterPatch<NinjaSlayerTelemetryIdentityLaunchPatch>();
-                telemetryPatcher.RegisterPatch<NinjaSlayerTelemetryIdentityCleanupPatch>();
-                bool patchesApplied = telemetryPatcher.PatchAll();
-                int expectedPatchCount = telemetryPatcher.RegisteredPatchCount;
-                if (!patchesApplied || telemetryPatcher.AppliedPatchCount != expectedPatchCount)
-                {
-                    TryRollbackPatcher(telemetryPatcher, telemetryPatcher.PatcherName);
-                    Logger.Warn(
-                        "Optional NinjaSlayer telemetry identity patches were not installed: " +
-                        $"applied {telemetryPatcher.AppliedPatchCount}/{expectedPatchCount} patches.");
-                }
-            }
-            catch (Exception exception)
-            {
-                TryRollbackPatcher(telemetryPatcher, telemetryPatcher.PatcherName);
-                Logger.Warn(
-                    $"Optional NinjaSlayer telemetry identity patches were not installed: {exception}");
-            }
-        }
-        catch (Exception exception)
-        {
-            Logger.Warn(
-                $"NinjaSlayer telemetry registration failed; identity patches were skipped: {exception}");
-        }
+        InstallOptionalTelemetry();
 
         RegisterFmodBanksIfPresent();
         Log.Info("NinjaSlayer initialized.");
@@ -247,9 +252,31 @@ public class Entry
             .AddStartingCard<TurtleShellRedesignV1>(1, 3);
     }
 
+    private static void InstallOptionalTelemetry()
+    {
+        try
+        {
+            NinjaSlayerBalanceTelemetry.Register();
+        }
+        catch (Exception exception)
+        {
+            Logger.Warn(
+                $"NinjaSlayer telemetry registration failed; identity patches were skipped: {exception}");
+            return;
+        }
+
+        TryInstallOptionalPatches(
+            "telemetry-identity",
+            patcher =>
+            {
+                patcher.RegisterPatch<NinjaSlayerTelemetryIdentityLaunchPatch>();
+                patcher.RegisterPatch<NinjaSlayerTelemetryIdentityCleanupPatch>();
+            });
+    }
+
     private static void InstallOptionalPresentations()
     {
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "KaratePreviewPatchGroup",
             patcher =>
             {
@@ -258,21 +285,21 @@ public class Entry
                 patcher.RegisterPatch<KarateCardPreviewClearPatch>();
                 patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
             });
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "TypographyPatchGroup",
             patcher =>
             {
                 patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
                 patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
             });
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "ChadoPresentationPatchGroup",
             patcher =>
             {
                 patcher.RegisterPatch<ChadoEnergyCostVisualPatch>();
                 patcher.RegisterPatch<ChadoCardNodeLifecyclePatch>();
             });
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "CinematicInfrastructurePatchGroup",
             patcher =>
             {
@@ -282,13 +309,13 @@ public class Entry
                 patcher.RegisterPatch<ScreenTraumaCinematicSuppressionPatch>();
                 patcher.RegisterPatch<NinjaSlayerTransitionPreloadPatch>();
             });
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             nameof(BossBurstPresentationPatchGroup),
             patcher => patcher.RegisterPatches<BossBurstPresentationPatchGroup>());
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "PreparedUiPatchGroup",
             patcher => patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>());
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "RapidCardResolutionPatchGroup",
             patcher =>
             {
@@ -301,7 +328,7 @@ public class Entry
                 .. CombatPresentationPacingPatch.CreateDynamicPatches(),
                 .. RapidCardResolutionStateMachinePatch.CreateDynamicPatches()
             ]);
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             "FinisherPresentationPatchGroup",
             patcher =>
             {
@@ -309,7 +336,7 @@ public class Entry
                 patcher.RegisterPatch<NinjaSlayerFinisherDamageNumberPatch>();
                 patcher.RegisterPatch<NinjaSlayerFinisherCardVisualPatch>();
             });
-        TryInstallOptionalPresentation(
+        TryInstallOptionalPatches(
             nameof(TransitionCorePatchGroup),
             patcher =>
             {
@@ -331,39 +358,50 @@ public class Entry
             });
     }
 
-    private static void TryInstallOptionalPresentation(
+    private static void TryInstallOptionalPatches(
         string patcherName,
         Action<ModPatcher> registerPatches,
         Func<DynamicPatchInfo[]>? dynamicPatchFactory = null)
     {
         ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, patcherName);
+        Exception installFailure;
         try
         {
             registerPatches(patcher);
             DynamicPatchInfo[] dynamicPatches = dynamicPatchFactory?.Invoke() ?? [];
+            int expectedPatchCount = patcher.RegisteredPatchCount + dynamicPatches.Length;
             bool staticPatchesApplied = patcher.PatchAll();
             bool dynamicPatchesApplied = staticPatchesApplied
                 && (dynamicPatches.Length == 0
                     || patcher.ApplyDynamicPatches(
                         dynamicPatches,
                         rollbackOnCriticalFailure: true));
-            int expectedPatchCount = patcher.RegisteredPatchCount + dynamicPatches.Length;
             if (dynamicPatchesApplied && patcher.AppliedPatchCount == expectedPatchCount)
             {
                 return;
             }
 
-            TryRollbackPatcher(patcher, patcherName);
-            Logger.Warn(
-                $"Optional NinjaSlayer presentation '{patcherName}' was not installed: " +
-                $"applied {patcher.AppliedPatchCount}/{expectedPatchCount} patches.");
+            installFailure = new InvalidOperationException(
+                $"Optional NinjaSlayer patch transaction '{patcherName}' was incompletely installed: "
+                + $"applied {patcher.AppliedPatchCount}/{expectedPatchCount} patches.");
         }
         catch (Exception exception)
         {
-            TryRollbackPatcher(patcher, patcherName);
-            Logger.Warn(
-                $"Optional NinjaSlayer presentation '{patcherName}' was not installed: {exception}");
+            installFailure = exception;
         }
+
+        Exception? rollbackFailure = RollbackPatcherVerified(patcher, patcherName);
+        if (rollbackFailure is not null)
+        {
+            throw new AggregateException(
+                $"Optional NinjaSlayer patch transaction '{patcherName}' failed and could not be rolled back.",
+                installFailure,
+                rollbackFailure);
+        }
+
+        Logger.Warn(
+            $"Optional NinjaSlayer patch transaction '{patcherName}' was not installed and was rolled back: "
+            + installFailure);
     }
 
     private static void LogPatchFailure(ModPatcher patcher)
@@ -383,16 +421,61 @@ public class Entry
         }
     }
 
-    private static void TryRollbackPatcher(ModPatcher patcher, string patcherName)
+    private static Exception? RollbackPatcherVerified(ModPatcher patcher, string patcherName)
     {
+        var failures = new List<Exception>();
         try
         {
             patcher.UnpatchAll();
         }
-        catch (Exception rollbackException)
+        catch (Exception exception)
         {
-            Logger.Error($"Patch rollback failed: {patcherName}; {rollbackException}");
+            failures.Add(exception);
         }
+
+        if (patcher.AppliedPatchCount != 0)
+        {
+            failures.Add(new InvalidOperationException(
+                $"Patch transaction '{patcherName}' retained "
+                + $"{patcher.AppliedPatchCount} applied patch(es) after rollback."));
+        }
+
+        foreach (ModPatchInfo patch in patcher.RegisteredPatches)
+        {
+            MethodBase? target;
+            try
+            {
+                target = PatchTargetMethodResolver.Resolve(patch);
+            }
+            catch (Exception exception)
+            {
+                failures.Add(new InvalidOperationException(
+                    $"Could not resolve rollback target for patch '{patch.Id}'.",
+                    exception));
+                continue;
+            }
+
+            if (target is null)
+            {
+                continue;
+            }
+
+            if (Harmony.GetPatchInfo(target)?.Owners.Contains(patcher.PatcherId) == true)
+            {
+                failures.Add(new InvalidOperationException(
+                    $"Patch transaction '{patcherName}' retained Harmony ownership of "
+                    + $"{target.DeclaringType?.FullName}.{target.Name}."));
+            }
+        }
+
+        return failures.Count switch
+        {
+            0 => null,
+            1 => failures[0],
+            _ => new AggregateException(
+                $"Patch transaction '{patcherName}' rollback was incomplete.",
+                failures)
+        };
     }
 
     private static void RegisterFmodBanksIfPresent()
