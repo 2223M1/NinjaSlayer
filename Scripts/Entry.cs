@@ -178,6 +178,10 @@ public class Entry
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
                 .Character<NinjaSlayerRedesignCharacter>(ConfigureRedesignStartingDeck)
+                .Card<NinjaSlayerCardPool, OneBodyOneSoul>()
+                .Card<NinjaSlayerRedesignCardPool, OneBodyOneSoul>()
+                .Card<NinjaSlayerCardPool, ZazenDrink>()
+                .Card<NinjaSlayerRedesignCardPool, ZazenDrink>()
                 .HealthBarForecast<KarateHealthBarForecastSource>("karate")
                 .Apply();
 
