@@ -150,14 +150,21 @@ jobs:
               -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
               -p:Sts2DataDir="$($hostContract.dataDirectory)" `
               -p:NinjaSlayerHostChannel=$channel `
+              -p:NinjaSlayerSourceRevision=${{ steps.candidate.outputs.sha }} `
               -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\private\"
             if ($LASTEXITCODE -ne 0) { throw "Private restore failed for $channel." }
 
             dotnet restore trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj --force-evaluate `
               -p:Sts2DataDir="$($hostContract.dataDirectory)" `
               -p:NinjaSlayerHostChannel=$channel `
-              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\runner\"
-            if ($LASTEXITCODE -ne 0) { throw "Contract restore failed for $channel." }
+              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\source-runner\"
+            if ($LASTEXITCODE -ne 0) { throw "Source-linked Contract restore failed for $channel." }
+
+            dotnet restore trusted/Tests/NinjaSlayer.ProductPreparedContractTests/NinjaSlayer.ProductPreparedContractTests.csproj --force-evaluate `
+              -p:Sts2DataDir="$($hostContract.dataDirectory)" `
+              -p:NinjaSlayerHostChannel=$channel `
+              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\product-prepared-runner\"
+            if ($LASTEXITCODE -ne 0) { throw "Product Prepared Contract restore failed for $channel." }
           }
 
       - name: Prepare trusted network isolation probe
@@ -240,11 +247,15 @@ jobs:
             $env:ALL_PROXY = 'http://127.0.0.1:9'
             $env:NO_PROXY = '127.0.0.1,localhost,::1'
             $previousDotnetRoot = $env:DOTNET_ROOT
+            $previousDotnetRootX64 = $env:DOTNET_ROOT_X64
             $previousMultilevelLookup = $env:DOTNET_MULTILEVEL_LOOKUP
             $previousSuccessMarker = $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER
             $previousIsolationRequirement = $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION
+            $previousProductAssembly = $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY
+            $previousExpectedRevision = $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION
             try {
               $env:DOTNET_ROOT = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
+              $env:DOTNET_ROOT_X64 = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
               $env:DOTNET_MULTILEVEL_LOOKUP = '0'
               $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = '1'
               & $dotnet `
@@ -256,59 +267,115 @@ jobs:
               $contractHosts = ConvertFrom-Json -InputObject $env:CONTRACT_HOSTS_JSON
               foreach ($hostContract in $contractHosts) {
                 $channel = [string]$hostContract.channel
-                $godotOutput = Join-Path $env:GITHUB_WORKSPACE `
-                  'trusted\Tests\NinjaSlayer.RitsuLibContractTests\.godot\mono\temp\bin'
-                Remove-Item -LiteralPath $godotOutput -Recurse -Force -ErrorAction SilentlyContinue
+                $sourceRunnerRoot = Join-Path $env:GITHUB_WORKSPACE `
+                  'trusted\Tests\NinjaSlayer.RitsuLibContractTests'
+                $productPreparedRunnerRoot = Join-Path $env:GITHUB_WORKSPACE `
+                  'trusted\Tests\NinjaSlayer.ProductPreparedContractTests'
+                $sourceGodotOutput = Join-Path $sourceRunnerRoot '.godot\mono\temp\bin'
+                $productPreparedGodotOutput = Join-Path $productPreparedRunnerRoot '.godot\mono\temp\bin'
+                Remove-Item -LiteralPath $sourceGodotOutput -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $productPreparedGodotOutput -Recurse -Force -ErrorAction SilentlyContinue
+
+                $productOutput = [IO.Path]::GetFullPath((Join-Path `
+                  $env:RUNNER_TEMP `
+                  "private-contract-output\$channel"))
+                New-Item -ItemType Directory -Path $productOutput -Force | Out-Null
                 & $dotnet build trusted/tools/private-contract/NinjaSlayer.PrivateBuild.csproj --no-restore -v:minimal `
                   -c Release `
+                  -o $productOutput `
                   -p:CandidateRoot="$env:GITHUB_WORKSPACE\candidate" `
                   -p:Sts2DataDir="$($hostContract.dataDirectory)" `
                   -p:NinjaSlayerHostChannel=$channel `
-                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\private\" `
-                  -p:BaseOutputPath="$env:RUNNER_TEMP\private-contract-output\$channel\"
+                  -p:NinjaSlayerSourceRevision=${{ steps.candidate.outputs.sha }} `
+                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\private\"
                 if ($LASTEXITCODE -ne 0) { throw "Sanitized candidate compile failed for $channel." }
+                $productAssembly = [IO.Path]::GetFullPath((Join-Path `
+                  $productOutput `
+                  'NinjaSlayer.PrivateBuild.dll'))
+                if (-not (Test-Path -LiteralPath $productAssembly -PathType Leaf)) {
+                  throw "$channel private Contract build did not produce the explicit product assembly $productAssembly."
+                }
 
                 & $dotnet build trusted/Tests/NinjaSlayer.RitsuLibContractTests/NinjaSlayer.RitsuLibContractTests.csproj `
                   --no-restore -c Debug -v:minimal `
                   -p:Sts2DataDir="$($hostContract.dataDirectory)" `
                   -p:NinjaSlayerHostChannel=$channel `
-                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\runner\"
-                if ($LASTEXITCODE -ne 0) { throw "RitsuLib Contract runner failed to build for $channel." }
+                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\source-runner\"
+                if ($LASTEXITCODE -ne 0) { throw "Source-linked Contract runner failed to build for $channel." }
 
-                $contractOutput = Join-Path $godotOutput 'Debug'
-                $depsPath = Get-ChildItem -LiteralPath $contractOutput -Filter '*.deps.json' -File |
-                  Select-Object -First 1 -ExpandProperty FullName
-                if ([string]::IsNullOrWhiteSpace($depsPath)) {
-                  throw "RitsuLib Contract runner did not produce a deps file for $channel."
-                }
-                $depsText = Get-Content -LiteralPath $depsPath -Raw -Encoding utf8
-                foreach ($fileName in @($hostContract.runtimeAssemblies)) {
-                  if (-not (Test-Path -LiteralPath (Join-Path $contractOutput $fileName) -PathType Leaf)) {
-                    throw "$channel Contract output is missing runtime assembly $fileName."
+                & $dotnet build trusted/Tests/NinjaSlayer.ProductPreparedContractTests/NinjaSlayer.ProductPreparedContractTests.csproj `
+                  --no-restore -c Debug -v:minimal `
+                  -p:Sts2DataDir="$($hostContract.dataDirectory)" `
+                  -p:NinjaSlayerHostChannel=$channel `
+                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\product-prepared-runner\"
+                if ($LASTEXITCODE -ne 0) { throw "Product Prepared Contract runner failed to build for $channel." }
+
+                $contractOutputs = @(
+                  [pscustomobject]@{
+                    Name = 'source-linked'
+                    Path = Join-Path $sourceGodotOutput 'Debug'
+                    Deps = 'NinjaSlayer.RitsuLibContractTests.deps.json'
                   }
-                  if ($depsText.IndexOf(('"' + [string]$fileName + '"'), [StringComparison]::Ordinal) -lt 0) {
-                    throw "$channel Contract deps file is missing runtime assembly $fileName."
+                  [pscustomobject]@{
+                    Name = 'product-prepared'
+                    Path = Join-Path $productPreparedGodotOutput 'Debug'
+                    Deps = 'NinjaSlayer.ProductPreparedContractTests.deps.json'
+                  }
+                )
+                foreach ($contractOutput in $contractOutputs) {
+                  $depsPath = Join-Path $contractOutput.Path $contractOutput.Deps
+                  if (-not (Test-Path -LiteralPath $depsPath -PathType Leaf)) {
+                    throw "$channel $($contractOutput.Name) Contract runner did not produce $depsPath."
+                  }
+                  $depsText = Get-Content -LiteralPath $depsPath -Raw -Encoding utf8
+                  foreach ($fileName in @($hostContract.runtimeAssemblies)) {
+                    if (-not (Test-Path -LiteralPath (Join-Path $contractOutput.Path $fileName) -PathType Leaf)) {
+                      throw "$channel $($contractOutput.Name) Contract output is missing runtime assembly $fileName."
+                    }
+                    if ($depsText.IndexOf(('"' + [string]$fileName + '"'), [StringComparison]::Ordinal) -lt 0) {
+                      throw "$channel $($contractOutput.Name) Contract deps file is missing runtime assembly $fileName."
+                    }
                   }
                 }
 
-                $marker = Join-Path $env:RUNNER_TEMP "contract-markers\$channel.passed"
-                Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
-                $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $marker
-                & $godot --headless --path trusted/Tests/NinjaSlayer.RitsuLibContractTests
-                $godotExitCode = $LASTEXITCODE
-                for ($attempt = 0; $attempt -lt 50 -and -not (Test-Path -LiteralPath $marker -PathType Leaf); $attempt++) {
+                $markerRoot = Join-Path $env:RUNNER_TEMP 'contract-markers'
+                New-Item -ItemType Directory -Path $markerRoot -Force | Out-Null
+                $sourceMarker = Join-Path $markerRoot "$channel-source-linked.passed"
+                $productPreparedMarker = Join-Path $markerRoot "$channel-product-prepared.passed"
+                Remove-Item -LiteralPath $sourceMarker -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $productPreparedMarker -Force -ErrorAction SilentlyContinue
+
+                $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $productAssembly
+                $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = '${{ steps.candidate.outputs.sha }}'
+                $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $sourceMarker
+                & $godot --headless --path $sourceRunnerRoot
+                $sourceExitCode = $LASTEXITCODE
+                for ($attempt = 0; $attempt -lt 50 -and -not (Test-Path -LiteralPath $sourceMarker -PathType Leaf); $attempt++) {
                   Start-Sleep -Milliseconds 100
                 }
-                if ($godotExitCode -ne 0 -or -not (Test-Path -LiteralPath $marker -PathType Leaf)) {
-                  throw "RitsuLib Contract runner failed for $channel."
+                if ($sourceExitCode -ne 0 -or -not (Test-Path -LiteralPath $sourceMarker -PathType Leaf)) {
+                  throw "Source-linked Contract runner failed for $channel."
+                }
+
+                $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $productPreparedMarker
+                & $godot --headless --path $productPreparedRunnerRoot
+                $productPreparedExitCode = $LASTEXITCODE
+                for ($attempt = 0; $attempt -lt 50 -and -not (Test-Path -LiteralPath $productPreparedMarker -PathType Leaf); $attempt++) {
+                  Start-Sleep -Milliseconds 100
+                }
+                if ($productPreparedExitCode -ne 0 -or -not (Test-Path -LiteralPath $productPreparedMarker -PathType Leaf)) {
+                  throw "Product Prepared Contract runner failed for $channel."
                 }
               }
             }
             finally {
               $env:DOTNET_ROOT = $previousDotnetRoot
+              $env:DOTNET_ROOT_X64 = $previousDotnetRootX64
               $env:DOTNET_MULTILEVEL_LOOKUP = $previousMultilevelLookup
               $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $previousSuccessMarker
               $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = $previousIsolationRequirement
+              $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $previousProductAssembly
+              $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = $previousExpectedRevision
               $env:HTTP_PROXY = $previousHttpProxy
               $env:HTTPS_PROXY = $previousHttpsProxy
               $env:ALL_PROXY = $previousAllProxy
@@ -342,7 +409,10 @@ jobs:
               mode = 'contract'
               result = 'passed'
               workflowRunId = '${{ github.run_id }}'
-              verifiedContracts = @('prepared-lifecycle-publishers')
+              verifiedContracts = @(
+                'prepared-lifecycle-publishers'
+                'product-prepared-transaction'
+              )
             } | ConvertTo-Json | Set-Content `
               -LiteralPath (Join-Path $channelDirectory 'attestation.json') `
               -Encoding utf8

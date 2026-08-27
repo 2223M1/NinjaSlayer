@@ -1,0 +1,13 @@
+[application]
+
+config/name="NinjaSlayer Product Prepared Contract Tests"
+run/main_scene="res://product-prepared-contract.tscn"
+
+[dotnet]
+
+project/assembly_name="NinjaSlayer.ProductPreparedContractTests"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -48,8 +48,13 @@ public partial class ContractRunner : Node
     private const int ExpectedCriticalRequiredPatchTargetCount = 62;
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
-    private static ModPatchInfo[]? _capturedRequiredPatches;
     private static string? _patcherFailureName;
+    private static bool _patcherFailureIsCritical = true;
+    private static string? _suppressedRollbackPatcherName;
+    private static ModPatcher? _pendingRollbackSabotage;
+    private static ModPatcher? _sabotagedPatcher;
+    private static Harmony? _originalPatcherHarmony;
+    private static Harmony? _replacementPatcherHarmony;
     private static readonly Dictionary<Creature, int> ProductFinisherKillCalls =
         new(ReferenceEqualityComparer.Instance);
     private static readonly List<Exception> ProductFinisherKillFailures = [];
@@ -59,7 +64,6 @@ public partial class ContractRunner : Node
     private static Exception? _productFinisherPresentationFailure;
     private static int _productFinisherPresentationTargetCalls;
     private static int _productFinisherUnregisterCalls;
-    private static ProductPrepareFaultMode _productPrepareFaultMode;
     private static Func<object, CancellationToken, Task>? _productTransitionAnimationFactory;
     private static bool _productTransitionForceWatchdogTimeout;
     private static int _productTransitionWatchdogStartedAfterDispose;
@@ -184,8 +188,8 @@ public partial class ContractRunner : Node
                 PreparedFaultMode.UnconfirmedAfterMutation,
                 "postcondition failure",
                 "not confirmed");
+            VerifyPreparedForeignAfflictionRollback();
             VerifyPreparedRollbackFailure();
-            VerifyPreparedCallerFailurePropagation();
         }
         finally
         {
@@ -282,13 +286,17 @@ public partial class ContractRunner : Node
         fixture.DiscardPile.AddInternal(prepared, index: -1, silent: true);
         CardModel target = fixture.CreateCard(PileType.Discard);
 
-        _ = ExpectException<InvalidOperationException>(
+        InvalidOperationException failure = ExpectException<InvalidOperationException>(
             () => PrepareCmd.Apply(target),
-            "exactly one pile reference");
+            "unique pile ownership");
+        Require(failure.Message.Contains("unique pile ownership", StringComparison.OrdinalIgnoreCase),
+            "Duplicate Prepared queue did not surface its ownership invariant failure.");
         Require(target.Affliction is null,
             "Duplicate Prepared queue rejection mutated the target affliction.");
         Require(ReferenceEquals(target.Pile, fixture.DiscardPile),
             "Duplicate Prepared queue rejection moved the target card.");
+        Require(CountReferences(fixture.Player, prepared) == 2,
+            "Duplicate Prepared queue rejection rewrote the broken producer state.");
     }
 
     private static void VerifyPreparedFailureRollback(
@@ -338,6 +346,43 @@ public partial class ContractRunner : Node
         RequirePreparedQueue(fixture, [queued]);
     }
 
+    private static void VerifyPreparedForeignAfflictionRollback()
+    {
+        using var fixture = new PreparedCombatFixture();
+        CardModel card = fixture.CreateCard(PileType.Discard);
+        int originalIndex = fixture.DiscardPile.Cards.Count - 1;
+        PreparedAffliction? replacement = null;
+        AggregateException failure;
+        PreparedFaultInjection.Configure(PreparedFaultMode.ReplacePreparedAfterMutation, card);
+        try
+        {
+            failure = ExpectException<AggregateException>(
+                () => PrepareCmd.Apply(card),
+                "transaction and rollback");
+            replacement = PreparedFaultInjection.ReplacementAffliction;
+        }
+        finally
+        {
+            PreparedFaultInjection.Reset();
+        }
+
+        Require(failure.ToString().Contains(
+                "lost ownership of its affliction",
+                StringComparison.OrdinalIgnoreCase),
+            "Prepared transaction did not expose replacement of its owned affliction.");
+        Require(failure.ToString().Contains(
+                "refused to clear an affliction it does not own",
+                StringComparison.OrdinalIgnoreCase),
+            "Prepared rollback did not expose foreign-affliction ownership.");
+        Require(replacement is not null && ReferenceEquals(card.Affliction, replacement),
+            "Prepared rollback cleared or replaced the foreign affliction.");
+        Require(ReferenceEquals(card.Pile, fixture.DiscardPile)
+            && ReferenceEquals(fixture.DiscardPile.Cards[originalIndex], card),
+            "Prepared foreign-affliction rollback did not restore the original pile position.");
+        Require(CountReferences(fixture.Player, card) == 1,
+            "Prepared foreign-affliction rollback did not restore unique pile ownership.");
+    }
+
     private static void VerifyPreparedRollbackFailure()
     {
         using var fixture = new PreparedCombatFixture();
@@ -365,138 +410,6 @@ public partial class ContractRunner : Node
         Require(card.Pile is null, "Rollback-failure fixture unexpectedly reported a restored pile.");
     }
 
-    private static void VerifyPreparedCallerFailurePropagation()
-    {
-        Assembly product = LoadProductAssembly();
-        RequireMatchingProductMetadata(product, "NinjaSlayerHostChannel");
-        RequireMatchingProductMetadata(product, "NinjaSlayerGameApiVersion");
-
-        Type prepareType = product.GetType("NinjaSlayer.Code.Commands.PrepareCmd", throwOnError: true)!;
-        MethodInfo prepare = AccessTools.Method(prepareType, "Apply", [typeof(CardModel)])
-            ?? throw new MissingMethodException(prepareType.FullName, "Apply");
-        var harmony = new Harmony($"NinjaSlayer.ContractTests.ProductPrepared.{Guid.NewGuid():N}");
-        harmony.Patch(
-            prepare,
-            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductPrepare)));
-        try
-        {
-            VerifyPreparedPowerFailure(product);
-            VerifyGeneratedShurikenPrepareFailure(product);
-        }
-        finally
-        {
-            _productPrepareFaultMode = ProductPrepareFaultMode.None;
-            harmony.UnpatchAll(harmony.Id);
-        }
-    }
-
-    private static void VerifyPreparedPowerFailure(Assembly product)
-    {
-        using var fixture = new PreparedCombatFixture();
-        Type powerType = product.GetType(
-            "NinjaSlayer.Powers.NextDiscardPreparedPower",
-            throwOnError: true)!;
-        ModelDb.Inject(powerType);
-        MethodInfo powerLookup = typeof(ModelDb)
-            .GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .Single(method => method.Name == nameof(ModelDb.Power)
-                && method.IsGenericMethodDefinition
-                && method.GetParameters().Length == 0);
-        var canonical = (PowerModel)(powerLookup.MakeGenericMethod(powerType).Invoke(null, null)
-            ?? throw new InvalidOperationException("Unable to find the Prepared power contract model."));
-        PowerModel power = canonical.ToMutable();
-        power.ApplyInternal(fixture.Player.Creature, 2m);
-        CardModel card = fixture.CreateCard(PileType.Discard);
-        MethodInfo afterPileChange = AccessTools.Method(
-                powerType,
-                nameof(PowerModel.AfterCardChangedPiles),
-                [typeof(CardModel), typeof(PileType), typeof(AbstractModel)])
-            ?? throw new MissingMethodException(powerType.FullName, nameof(PowerModel.AfterCardChangedPiles));
-
-        _productPrepareFaultMode = ProductPrepareFaultMode.Throw;
-        try
-        {
-            _ = ExpectException<InvalidOperationException>(
-                () => ((Task)afterPileChange.Invoke(
-                    power,
-                    [card, PileType.Hand, null])!).GetAwaiter().GetResult(),
-                "injected-product-prepare");
-            Require(power.Amount == 2,
-                "Prepared power decremented after its Prepare transaction faulted.");
-        }
-        finally
-        {
-            _productPrepareFaultMode = ProductPrepareFaultMode.None;
-            power.RemoveInternal();
-        }
-    }
-
-    private static void VerifyGeneratedShurikenPrepareFailure(Assembly product)
-    {
-        using var fixture = new PreparedCombatFixture();
-        Type shurikenType = product.GetType("NinjaSlayer.Cards.ShurikenCard", throwOnError: true)!;
-        ModelDb.Inject(shurikenType);
-        Type actionsType = product.GetType("NinjaSlayer.Content.NinjaSlayerActions", throwOnError: true)!;
-        MethodInfo addGeneratedShuriken = AccessTools.Method(
-                actionsType,
-                "AddGeneratedShuriken",
-                [
-                    typeof(PlayerChoiceContext),
-                    typeof(Player),
-                    typeof(int),
-                    typeof(PileType),
-                    typeof(bool),
-                    typeof(CardPilePosition),
-                    typeof(bool)
-                ])
-            ?? throw new MissingMethodException(actionsType.FullName, "AddGeneratedShuriken");
-
-        _productPrepareFaultMode = ProductPrepareFaultMode.Reject;
-        try
-        {
-            _ = ExpectException<InvalidOperationException>(
-                () => ((Task)addGeneratedShuriken.Invoke(
-                    null,
-                    [
-                        new ThrowingPlayerChoiceContext(),
-                        fixture.Player,
-                        1,
-                        PileType.Draw,
-                        false,
-                        CardPilePosition.Bottom,
-                        true
-                    ])!).GetAwaiter().GetResult(),
-                "Generated Shuriken was not prepared as requested");
-        }
-        finally
-        {
-            _productPrepareFaultMode = ProductPrepareFaultMode.None;
-        }
-
-        CardModel generated = fixture.DrawPile.Cards.Single(card => card.GetType() == shurikenType);
-        fixture.TrackCard(generated);
-        Require(generated.Affliction is null,
-            "Rejected generated Shuriken preparation left a partial affliction.");
-        Require(CountReferences(fixture.Player, generated) == 1,
-            "Rejected generated Shuriken preparation duplicated the generated card.");
-    }
-
-    private static bool PrefixProductPrepare(ref Task<bool> __result)
-    {
-        switch (_productPrepareFaultMode)
-        {
-            case ProductPrepareFaultMode.Reject:
-                __result = Task.FromResult(false);
-                return false;
-            case ProductPrepareFaultMode.Throw:
-                __result = Task.FromException<bool>(
-                    new InvalidOperationException("injected-product-prepare"));
-                return false;
-            default:
-                return true;
-        }
-    }
-
     private static void RequireMatchingProductMetadata(Assembly product, string key)
     {
         string expected = ReadAssemblyMetadata(typeof(ContractRunner).Assembly, key);
@@ -522,10 +435,41 @@ public partial class ContractRunner : Node
                 "NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY")
             ?? throw new InvalidOperationException(
                 "Production ownership contracts require NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY.");
+        if (!Path.IsPathFullyQualified(productPath))
+        {
+            throw new InvalidOperationException(
+                "NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY must be an absolute path.");
+        }
+
+        string fullPath = Path.GetFullPath(productPath);
+        if (!System.IO.File.Exists(fullPath))
+        {
+            throw new FileNotFoundException("The candidate product assembly does not exist.", fullPath);
+        }
+
         AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(typeof(ContractRunner).Assembly)
             ?? throw new InvalidOperationException("The ContractRunner assembly has no load context.");
-        _productAssembly = context.LoadFromAssemblyPath(Path.GetFullPath(productPath));
-        return _productAssembly;
+        string expectedRevision = System.Environment.GetEnvironmentVariable(
+                "NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION")
+            ?? throw new InvalidOperationException(
+                "Production ownership contracts require NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION.");
+        if (expectedRevision.Length != 40 || expectedRevision.Any(character => !Uri.IsHexDigit(character)))
+        {
+            throw new InvalidOperationException(
+                "NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION must be a full 40-character SHA.");
+        }
+
+        Assembly product = context.LoadFromAssemblyPath(fullPath);
+        Require(
+            ReadAssemblyMetadata(product, "NinjaSlayerSourceRevision")
+                .Equals(expectedRevision, StringComparison.OrdinalIgnoreCase),
+            "The production contract assembly source revision does not match the requested candidate SHA.");
+        RequireMatchingProductMetadata(product, "NinjaSlayerHostChannel");
+        RequireMatchingProductMetadata(product, "NinjaSlayerGameApiVersion");
+        RequireMatchingProductMetadata(product, "NinjaSlayerRitsuLibPackageId");
+        RequireMatchingProductMetadata(product, "NinjaSlayerRitsuLibVersion");
+        _productAssembly = product;
+        return product;
     }
 
     private static void VerifyProductionPatchTransactions()
@@ -533,6 +477,8 @@ public partial class ContractRunner : Node
         Assembly product = LoadProductAssembly();
         ModPatchInfo[] requiredPatches = CaptureRequiredPatchesFromFailedInitialization(product);
         ValidateRequiredPatchManifest(product, requiredPatches);
+        VerifyRequiredNonCriticalFailureAbortsInitialization(product);
+        VerifyRequiredRollbackFailureIsObservable(product);
 
         ModPatcher requiredPatcher = CreatePatcher("production-required-contract");
         requiredPatcher.RegisterPatches(requiredPatches);
@@ -555,6 +501,11 @@ public partial class ContractRunner : Node
                 requiredPatcher,
                 requiredPatches,
                 "TransitionCorePatchGroup",
+                "BossBurstPresentationPatchGroup");
+            VerifyOptionalRollbackFailureIsObservable(
+                product,
+                requiredPatcher,
+                requiredPatches,
                 "BossBurstPresentationPatchGroup");
         }
         finally
@@ -584,9 +535,9 @@ public partial class ContractRunner : Node
 
         ModPatcher requiredPatcher = CapturedPatchers.Single(
             patcher => patcher.PatcherName == "Entry");
-        ModPatchInfo[] requiredPatches = _capturedRequiredPatches
-            ?? throw new InvalidOperationException(
-                "The Entry required Patch transaction was not observed before fault injection.");
+        ModPatchInfo[] requiredPatches = requiredPatcher.RegisteredPatches
+            .Where(patch => ReferenceEquals(patch.PatchType.Assembly, product))
+            .ToArray();
         Require(requiredPatches.Length > 0,
             "Entry registered no required production Patch targets.");
         Require(requiredPatcher.AppliedPatchCount == 0,
@@ -595,6 +546,75 @@ public partial class ContractRunner : Node
             "Entry continued into optional Patch installation after required initialization failed.");
         RequirePatcherReleasedTargets(requiredPatcher, requiredPatches);
         return requiredPatches;
+    }
+
+    private static void VerifyRequiredNonCriticalFailureAbortsInitialization(Assembly product)
+    {
+        ResetPatchTransactionInstrumentation();
+        _patcherFailureName = "Entry";
+        _patcherFailureIsCritical = false;
+        Harmony instrumentation = InstallPatchTransactionInstrumentation();
+        try
+        {
+            _ = ExpectException<InvalidOperationException>(
+                () => InvokeProductEntryMethod(product, "Init"),
+                "Required NinjaSlayer patch installation failed");
+        }
+        finally
+        {
+            instrumentation.UnpatchAll(instrumentation.Id);
+            _patcherFailureName = null;
+            _patcherFailureIsCritical = true;
+        }
+
+        ModPatcher requiredPatcher = CapturedPatchers.Single(
+            patcher => patcher.PatcherName == "Entry");
+        ModPatchInfo[] requiredPatches = requiredPatcher.RegisteredPatches
+            .Where(patch => ReferenceEquals(patch.PatchType.Assembly, product))
+            .ToArray();
+        Require(requiredPatcher.AppliedPatchCount == 0,
+            "A non-critical required Patch failure retained partial Patch ownership.");
+        Require(CapturedPatchers.Count == 1,
+            "Entry continued into optional Patch installation after an incomplete required transaction.");
+        RequirePatcherReleasedTargets(requiredPatcher, requiredPatches);
+    }
+
+    private static void VerifyRequiredRollbackFailureIsObservable(Assembly product)
+    {
+        ResetPatchTransactionInstrumentation();
+        _patcherFailureName = "Entry";
+        _patcherFailureIsCritical = true;
+        _suppressedRollbackPatcherName = "Entry";
+        Harmony instrumentation = InstallPatchTransactionInstrumentation();
+        AggregateException failure;
+        try
+        {
+            failure = ExpectException<AggregateException>(
+                () => InvokeProductEntryMethod(product, "Init"),
+                "rollback");
+        }
+        finally
+        {
+            _suppressedRollbackPatcherName = null;
+            instrumentation.UnpatchAll(instrumentation.Id);
+            _patcherFailureName = null;
+            _patcherFailureIsCritical = true;
+        }
+
+        ModPatcher requiredPatcher = CapturedPatchers.Single(
+            patcher => patcher.PatcherName == "Entry");
+        ModPatchInfo[] requiredPatches = requiredPatcher.RegisteredPatches
+            .Where(patch => ReferenceEquals(patch.PatchType.Assembly, product))
+            .ToArray();
+        Require(PatcherOwnsAnyTarget(requiredPatcher, requiredPatcher.RegisteredPatches),
+            "Injected rollback sabotage did not leave observable Patch ownership.");
+        Require(failure.ToString().Contains("rollback", StringComparison.OrdinalIgnoreCase),
+            "Required initialization did not expose its rollback failure.");
+
+        CleanupPatcher(requiredPatcher);
+        Require(requiredPatcher.AppliedPatchCount == 0,
+            "Rollback-failure contract cleanup retained applied patches.");
+        RequirePatcherReleasedTargets(requiredPatcher, requiredPatches);
     }
 
     private static void ValidateRequiredPatchManifest(
@@ -689,10 +709,64 @@ public partial class ContractRunner : Node
         {
             for (int index = CapturedPatchers.Count - 1; index >= 0; index--)
             {
-                CapturedPatchers[index].UnpatchAll();
+                CleanupPatcher(CapturedPatchers[index]);
             }
         }
 
+        RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
+    }
+
+    private static void VerifyOptionalRollbackFailureIsObservable(
+        Assembly product,
+        ModPatcher requiredPatcher,
+        IReadOnlyList<ModPatchInfo> requiredPatches,
+        string failingPatcherName)
+    {
+        ResetPatchTransactionInstrumentation();
+        _patcherFailureName = failingPatcherName;
+        _suppressedRollbackPatcherName = failingPatcherName;
+        Harmony instrumentation = InstallPatchTransactionInstrumentation();
+        AggregateException failure;
+        try
+        {
+            failure = ExpectException<AggregateException>(
+                () => InvokeProductEntryMethod(product, "InstallOptionalPresentations"),
+                "could not be rolled back");
+        }
+        finally
+        {
+            _suppressedRollbackPatcherName = null;
+            instrumentation.UnpatchAll(instrumentation.Id);
+            _patcherFailureName = null;
+        }
+
+        ModPatcher failedPatcher = CapturedPatchers.Single(
+            patcher => patcher.PatcherName == failingPatcherName);
+        Require(failure.InnerExceptions.Count == 2,
+            "Optional rollback residual did not preserve install and rollback failures.");
+        Require(failure.InnerExceptions[0].ToString().Contains(
+                "incompletely installed",
+                StringComparison.OrdinalIgnoreCase),
+            "Optional rollback residual aggregate lost the install failure.");
+        Require(failure.InnerExceptions[1].ToString().Contains(
+                "retained",
+                StringComparison.OrdinalIgnoreCase),
+            "Optional rollback residual aggregate lost the rollback failure.");
+        Require(PatcherOwnsAnyTarget(failedPatcher, failedPatcher.RegisteredPatches),
+            "Injected optional rollback sabotage left no observable residual ownership.");
+        RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
+
+        for (int index = CapturedPatchers.Count - 1; index >= 0; index--)
+        {
+            CleanupPatcher(CapturedPatchers[index]);
+        }
+
+        foreach (ModPatcher patcher in CapturedPatchers)
+        {
+            Require(patcher.AppliedPatchCount == 0,
+                $"Optional rollback contract cleanup retained {patcher.PatcherName} patches.");
+            RequirePatcherReleasedTargets(patcher, patcher.RegisteredPatches);
+        }
         RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
     }
 
@@ -702,45 +776,112 @@ public partial class ContractRunner : Node
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(method => method.Name == nameof(RitsuLibFramework.CreatePatcher)
                 && method.ReturnType == typeof(ModPatcher));
-        MethodInfo patchAll = AccessTools.Method(
-                typeof(ModPatcher),
-                nameof(ModPatcher.PatchAll),
-                Type.EmptyTypes)
-            ?? throw new MissingMethodException(typeof(ModPatcher).FullName, nameof(ModPatcher.PatchAll));
         var harmony = new Harmony($"NinjaSlayer.ContractTests.PatchTransactions.{Guid.NewGuid():N}");
         harmony.Patch(
             createPatcher,
             postfix: new HarmonyMethod(typeof(ContractRunner), nameof(PostfixCreatePatcher)));
-        harmony.Patch(
-            patchAll,
-            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixPatchAll)));
         return harmony;
     }
 
-    private static void PostfixCreatePatcher(ModPatcher __result) =>
-        CapturedPatchers.Add(__result);
-
-    private static void PrefixPatchAll(ModPatcher __instance)
+    private static void PostfixCreatePatcher(ModPatcher __result)
     {
-        if (!string.Equals(__instance.PatcherName, _patcherFailureName, StringComparison.Ordinal))
+        CapturedPatchers.Add(__result);
+        if (!string.Equals(__result.PatcherName, _patcherFailureName, StringComparison.Ordinal))
         {
             return;
         }
 
-        if (_patcherFailureName == "Entry")
+        _patcherFailureName = null;
+        if (string.Equals(
+                __result.PatcherName,
+                _suppressedRollbackPatcherName,
+                StringComparison.Ordinal))
         {
-            _capturedRequiredPatches = __instance.RegisteredPatches.ToArray();
+            _pendingRollbackSabotage = __result;
+            __result.RegisterPatch<RollbackSabotagePatch>();
         }
 
-        _patcherFailureName = null;
-        __instance.RegisterPatch<MissingCriticalPatch>();
+        if (_patcherFailureIsCritical)
+        {
+            __result.RegisterPatch<MissingCriticalPatch>();
+        }
+        else
+        {
+            __result.RegisterPatch<MissingOptionalPatch>();
+        }
+    }
+
+    private static void SabotagePatcherRollback()
+    {
+        ModPatcher patcher = _pendingRollbackSabotage
+            ?? throw new InvalidOperationException("Rollback sabotage had no pending patcher.");
+        _pendingRollbackSabotage = null;
+        FieldInfo harmonyField = AccessTools.Field(typeof(ModPatcher), "_harmony")
+            ?? throw new MissingFieldException(typeof(ModPatcher).FullName, "_harmony");
+        _originalPatcherHarmony = (Harmony)(harmonyField.GetValue(patcher)
+            ?? throw new InvalidOperationException("The patcher had no Harmony owner."));
+        _replacementPatcherHarmony = new Harmony(
+            $"{patcher.PatcherId}.rollback-sabotage.{Guid.NewGuid():N}");
+        harmonyField.SetValue(patcher, _replacementPatcherHarmony);
+        _sabotagedPatcher = patcher;
+    }
+
+    private static void CleanupPatcher(ModPatcher patcher)
+    {
+        bool wasSabotaged = ReferenceEquals(patcher, _sabotagedPatcher);
+        Harmony? originalHarmony = wasSabotaged ? _originalPatcherHarmony : null;
+        Harmony? replacementHarmony = wasSabotaged ? _replacementPatcherHarmony : null;
+        if (wasSabotaged)
+        {
+            FieldInfo harmonyField = AccessTools.Field(typeof(ModPatcher), "_harmony")
+                ?? throw new MissingFieldException(typeof(ModPatcher).FullName, "_harmony");
+            harmonyField.SetValue(patcher, originalHarmony);
+        }
+
+        try
+        {
+            patcher.UnpatchAll();
+            if (!wasSabotaged)
+            {
+                return;
+            }
+
+            var cleanup = new Harmony($"NinjaSlayer.ContractTests.RollbackCleanup.{Guid.NewGuid():N}");
+            foreach (MethodBase target in patcher.RegisteredPatches
+                         .Select(PatchTargetMethodResolver.Resolve)
+                         .OfType<MethodBase>()
+                         .Distinct())
+            {
+                cleanup.Unpatch(target, HarmonyPatchType.All, patcher.PatcherId);
+                if (replacementHarmony is not null)
+                {
+                    cleanup.Unpatch(target, HarmonyPatchType.All, replacementHarmony.Id);
+                }
+            }
+        }
+        finally
+        {
+            if (wasSabotaged)
+            {
+                _sabotagedPatcher = null;
+                _originalPatcherHarmony = null;
+                _replacementPatcherHarmony = null;
+            }
+        }
     }
 
     private static void ResetPatchTransactionInstrumentation()
     {
+        if (_sabotagedPatcher is not null)
+        {
+            throw new InvalidOperationException("The previous rollback sabotage was not cleaned up.");
+        }
+
         CapturedPatchers.Clear();
-        _capturedRequiredPatches = null;
         _patcherFailureName = null;
+        _patcherFailureIsCritical = true;
+        _suppressedRollbackPatcherName = null;
+        _pendingRollbackSabotage = null;
     }
 
     private static void InvokeProductEntryMethod(Assembly product, string methodName)
@@ -765,6 +906,15 @@ public partial class ContractRunner : Node
                 $"Patcher {patcher.PatcherName} does not own {target.DeclaringType?.FullName}.{target.Name}.");
         }
     }
+
+    private static bool PatcherOwnsAnyTarget(
+        ModPatcher patcher,
+        IReadOnlyList<ModPatchInfo> patches) =>
+        patches
+            .Select(PatchTargetMethodResolver.Resolve)
+            .OfType<MethodBase>()
+            .Distinct()
+            .Any(target => Harmony.GetPatchInfo(target)?.Owners.Contains(patcher.PatcherId) == true);
 
     private static void RequirePatcherReleasedTargets(
         ModPatcher patcher,
@@ -803,13 +953,6 @@ public partial class ContractRunner : Node
         Require(observed!.ToString().Contains(messageFragment, StringComparison.OrdinalIgnoreCase),
             $"{typeof(TException).Name} did not contain '{messageFragment}'.");
         return (TException)observed;
-    }
-
-    private enum ProductPrepareFaultMode
-    {
-        None,
-        Reject,
-        Throw
     }
 
     private enum ProductFinisherKillFaultMode
@@ -880,6 +1023,7 @@ public partial class ContractRunner : Node
         None,
         UnconfirmedAdd,
         UnconfirmedAfterMutation,
+        ReplacePreparedAfterMutation,
         RemoveOnce,
         DrawAddOnce,
         RepositionAddOnce,
@@ -891,6 +1035,7 @@ public partial class ContractRunner : Node
         private static PreparedFaultMode _mode;
         private static CardModel? _target;
         private static int _drawAddCount;
+        public static PreparedAffliction? ReplacementAffliction { get; private set; }
 
         public static Harmony Install()
         {
@@ -929,6 +1074,7 @@ public partial class ContractRunner : Node
             _mode = mode;
             _target = target;
             _drawAddCount = 0;
+            ReplacementAffliction = null;
         }
 
         public static void Reset()
@@ -936,6 +1082,7 @@ public partial class ContractRunner : Node
             _mode = PreparedFaultMode.None;
             _target = null;
             _drawAddCount = 0;
+            ReplacementAffliction = null;
         }
 
         private static bool PrefixAdd(CardModel card, ref Task<CardPileAddResult> __result)
@@ -961,6 +1108,11 @@ public partial class ContractRunner : Node
             {
                 __result = ReturnUnconfirmedAfterMutation(__result);
             }
+            else if (_mode == PreparedFaultMode.ReplacePreparedAfterMutation
+                && ReferenceEquals(card, _target))
+            {
+                __result = ReplacePreparedAfterMutation(card, __result);
+            }
         }
 
         private static async Task<CardPileAddResult> ReturnUnconfirmedAfterMutation(
@@ -969,6 +1121,19 @@ public partial class ContractRunner : Node
             CardPileAddResult result = await resultTask;
             _mode = PreparedFaultMode.None;
             result.success = false;
+            return result;
+        }
+
+        private static async Task<CardPileAddResult> ReplacePreparedAfterMutation(
+            CardModel card,
+            Task<CardPileAddResult> resultTask)
+        {
+            CardPileAddResult result = await resultTask;
+            CardCmd.ClearAffliction(card);
+            ReplacementAffliction = await CardCmd.Afflict<PreparedAffliction>(card, 1m)
+                ?? throw new InvalidOperationException(
+                    "Injected Prepared replacement could not apply its foreign affliction.");
+            _mode = PreparedFaultMode.None;
             return result;
         }
 
@@ -3101,6 +3266,14 @@ public partial class ContractRunner : Node
         }
     }
 
+    private static class RollbackSabotageTarget
+    {
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void Execute()
+        {
+        }
+    }
+
     private static class RunOriginalTarget
     {
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -3165,6 +3338,29 @@ public partial class ContractRunner : Node
         public static bool IsCritical => true;
         public static ModPatchTarget[] GetTargets() =>
             [new(typeof(ContractTarget), "MethodThatMustNotExist")];
+        public static void Prefix() { }
+    }
+
+    private sealed class RollbackSabotagePatch : IPatchMethod
+    {
+        public static string PatchId => "contract_rollback_sabotage";
+        public static bool IsCritical => true;
+        public static ModPatchTarget[] GetTargets() =>
+            [new(typeof(RollbackSabotageTarget), nameof(RollbackSabotageTarget.Execute))];
+
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            SabotagePatcherRollback();
+            return instructions;
+        }
+    }
+
+    private sealed class MissingOptionalPatch : IPatchMethod
+    {
+        public static string PatchId => "contract_missing_optional";
+        public static bool IsCritical => false;
+        public static ModPatchTarget[] GetTargets() =>
+            [new(typeof(ContractTarget), "OptionalMethodThatMustNotExist")];
         public static void Prefix() { }
     }
 

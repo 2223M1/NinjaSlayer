@@ -271,6 +271,9 @@ if (compatibility) {
     ...filesUnder(join(root, 'Tests', 'NinjaSlayer.RitsuLibContractTests')).filter(
       path => /\.(?:cs|csproj)$/.test(path),
     ),
+    ...filesUnder(join(root, 'Tests', 'NinjaSlayer.ProductPreparedContractTests')).filter(
+      path => /\.(?:cs|csproj)$/.test(path),
+    ),
   ];
   const activeLiterals = new Set([
     compatibility.ritsuLibVersion,
@@ -533,7 +536,7 @@ if (/RegisterPatches<\w+PatchGroup>/.test(requiredPatcherSource)) {
 }
 const optionalPresentationSource = entrySource.slice(
   entrySource.indexOf('private static void InstallOptionalPresentations'),
-  entrySource.indexOf('private static void TryInstallOptionalPresentation'),
+  entrySource.indexOf('private static void TryInstallOptionalPatches'),
 );
 for (const groupName of retainedPatchGroups) {
   const registrationCount = [...entrySource.matchAll(new RegExp(`RegisterPatches<${groupName}>`, 'g'))].length;

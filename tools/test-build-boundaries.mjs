@@ -22,6 +22,7 @@ const versionPropsPath = join(root, 'eng', 'NinjaSlayer.Version.props');
 const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
 const compatibility = JSON.parse(readFileSync(join(root, 'eng', 'compatibility.json'), 'utf8'));
+const validSourceRevision = 'a'.repeat(40);
 
 function xml(value) {
   return value
@@ -88,6 +89,7 @@ try {
       evaluateCompileFiles(privateProjectPath, {
         CandidateRoot: root,
         NinjaSlayerHostChannel: channel,
+        NinjaSlayerSourceRevision: validSourceRevision,
       }),
       evaluateCompileFiles(projectPath, { NinjaSlayerHostChannel: channel }),
       `The ${channel} private contract must compile exactly the shipping source set.`,
@@ -125,6 +127,7 @@ try {
   const missingChannel = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
     CandidateRoot: root,
     Sts2DataDir: privateReferenceDir,
+    NinjaSlayerSourceRevision: validSourceRevision,
   });
   assert.notEqual(missingChannel.status, 0);
   assert.match(
@@ -135,6 +138,7 @@ try {
   const emptyCandidate = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
     Sts2DataDir: privateReferenceDir,
     NinjaSlayerHostChannel: compatibility.defaultBuildChannel,
+    NinjaSlayerSourceRevision: validSourceRevision,
   });
   assert.notEqual(emptyCandidate.status, 0);
   const emptyCandidateOutput = `${emptyCandidate.stdout}\n${emptyCandidate.stderr}`;
@@ -148,11 +152,45 @@ try {
     CandidateRoot: sandbox,
     Sts2DataDir: privateReferenceDir,
     NinjaSlayerHostChannel: compatibility.defaultBuildChannel,
+    NinjaSlayerSourceRevision: validSourceRevision,
   });
   assert.notEqual(invalidCandidate.status, 0);
   assert.match(
     `${invalidCandidate.stdout}\n${invalidCandidate.stderr}`,
     /does not contain NinjaSlayer\.csproj\./,
+  );
+
+  const missingRevision = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
+    CandidateRoot: root,
+    Sts2DataDir: privateReferenceDir,
+    NinjaSlayerHostChannel: compatibility.defaultBuildChannel,
+  });
+  assert.notEqual(missingRevision.status, 0);
+  assert.match(
+    `${missingRevision.stdout}\n${missingRevision.stderr}`,
+    /NinjaSlayerSourceRevision is required and must be the candidate's full 40-character SHA\./,
+  );
+
+  const invalidRevision = runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
+    CandidateRoot: root,
+    Sts2DataDir: privateReferenceDir,
+    NinjaSlayerHostChannel: compatibility.defaultBuildChannel,
+    NinjaSlayerSourceRevision: 'not-a-full-sha',
+  });
+  assert.notEqual(invalidRevision.status, 0);
+  assert.match(
+    `${invalidRevision.stdout}\n${invalidRevision.stderr}`,
+    /NinjaSlayerSourceRevision must be the candidate's full 40-character SHA\./,
+  );
+
+  requireSuccess(
+    runMsbuild(privateProjectPath, 'ValidateTrustedInputs', {
+      CandidateRoot: root,
+      Sts2DataDir: privateReferenceDir,
+      NinjaSlayerHostChannel: compatibility.defaultBuildChannel,
+      NinjaSlayerSourceRevision: validSourceRevision,
+    }),
+    'private Contract input validation',
   );
 
   const versionHarnessPath = join(sandbox, 'VersionHarness.proj');

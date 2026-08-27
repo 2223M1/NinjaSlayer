@@ -10,6 +10,13 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <CandidateRoot Condition="'$(CandidateRoot)' != ''">$([System.IO.Path]::GetFullPath('$(CandidateRoot)'))</CandidateRoot>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="$(NinjaSlayerHostChannel)" />
+    <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="$(NinjaSlayerGameApiVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="$(NinjaSlayerRitsuLibPackageId)" />
+    <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="$(NinjaSlayerRitsuLibVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerSourceRevision" Value="$(NinjaSlayerSourceRevision)" />
+  </ItemGroup>
   <Target Name="ValidateTrustedInputs" BeforeTargets="PrepareForBuild">
     <Error Condition="'$(NinjaSlayerHostChannelWasExplicit)' != 'true'"
            Text="The private contract requires an explicit NinjaSlayerHostChannel=stable|preview." />
@@ -19,6 +26,10 @@
            Text="CandidateRoot is required and must point to a checked-out NinjaSlayer repository." />
     <Error Condition="'$(CandidateRoot)' != '' and !Exists('$(CandidateRoot)/NinjaSlayer.csproj')"
            Text="CandidateRoot '$(CandidateRoot)' does not contain NinjaSlayer.csproj." />
+    <Error Condition="'$(NinjaSlayerSourceRevision)' == ''"
+           Text="NinjaSlayerSourceRevision is required and must be the candidate's full 40-character SHA." />
+    <Error Condition="'$(NinjaSlayerSourceRevision)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(NinjaSlayerSourceRevision)', '^[0-9a-fA-F]{40}$')) != 'true'"
+           Text="NinjaSlayerSourceRevision must be the candidate's full 40-character SHA." />
     <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll') or !Exists('$(Sts2DataDir)/0Harmony.dll')"
            Text="The private contract requires sts2.dll and 0Harmony.dll." />
   </Target>
