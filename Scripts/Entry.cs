@@ -322,8 +322,12 @@ public class Entry
                 patcher.RegisterPatch<NinjaSlayerTransitionRunMusicPresentationPatch>();
                 patcher.RegisterPatch<NinjaSlayerTransitionParameterizedSfxPresentationPatch>();
                 patcher.RegisterPatch<NinjaSlayerTransitionLoopSfxPresentationPatch>();
+#if NINJASLAYER_TRANSITION_LOAD_LIMIT
                 patcher.RegisterPatch<NinjaSlayerTransitionAssetLoadConcurrencyPatch>();
+#endif
+#if NINJASLAYER_TRANSITION_FINALIZE_BATCHING
                 patcher.RegisterPatch<NinjaSlayerTransitionAssetFinalizePatch>();
+#endif
             });
     }
 

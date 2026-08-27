@@ -98,7 +98,8 @@ internal sealed partial class SmokeController
         SmokePhase.Fresh
         or SmokePhase.FullAutoSlay
         or SmokePhase.SawatariSameCombat
-        or SmokePhase.ReverseFinisher;
+        or SmokePhase.ReverseFinisher
+        or SmokePhase.TransitionPerf;
 
     public void Start()
     {
@@ -1552,7 +1553,14 @@ internal sealed partial class SmokeController
             _checkpoints.Write("driver.started");
             await WaitUntilAsync(() => NGame.Instance?.MainMenu is not null, "main menu did not initialize");
             ValidateLoadedMods();
-            ValidateRedesignContent();
+            if (_configuration.Phase == SmokePhase.TransitionPerf)
+            {
+                _checkpoints.Write("transition-perf.content-audit-skipped");
+            }
+            else
+            {
+                ValidateRedesignContent();
+            }
             if (_configuration.Phase == SmokePhase.Fresh)
             {
                 await RunFreshPhaseAsync();
@@ -1568,6 +1576,10 @@ internal sealed partial class SmokeController
             else if (_configuration.Phase == SmokePhase.SawatariSameCombat)
             {
                 await RunSawatariSameCombatPhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.TransitionPerf)
+            {
+                await RunTransitionPerfPhaseAsync();
             }
             else
             {

@@ -10,7 +10,8 @@ internal enum SmokePhase
     Resume,
     FullAutoSlay,
     SawatariSameCombat,
-    ReverseFinisher
+    ReverseFinisher,
+    TransitionPerf
 }
 
 internal sealed record SmokeConfiguration(
@@ -19,7 +20,12 @@ internal sealed record SmokeConfiguration(
     SmokePhase Phase,
     string CheckpointPath,
     string AutoSlayLogPath,
-    string FailureScreenshotPath)
+    string FailureScreenshotPath,
+    string? TransitionPerfOutputPath = null,
+    string? TransitionVariant = null,
+    bool? TransitionLoadLimitEnabled = null,
+    bool? TransitionFinalizeBatchingEnabled = null,
+    bool TransitionPerfWarmup = false)
 {
     public static SmokeConfiguration Load(string path)
     {
@@ -35,11 +41,23 @@ internal sealed record SmokeConfiguration(
             throw new InvalidDataException("Smoke configuration is missing a valid candidate SHA or seed.");
         }
 
+        if (configuration.Phase == SmokePhase.TransitionPerf
+            && (string.IsNullOrWhiteSpace(configuration.TransitionPerfOutputPath)
+                || configuration.TransitionVariant is not ("baseline" or "load-limit-off" or "finalize-off")
+                || configuration.TransitionLoadLimitEnabled is null
+                || configuration.TransitionFinalizeBatchingEnabled is null))
+        {
+            throw new InvalidDataException("TransitionPerf requires an output path and exact component matrix.");
+        }
+
         return configuration with
         {
             CheckpointPath = Path.GetFullPath(configuration.CheckpointPath),
             AutoSlayLogPath = Path.GetFullPath(configuration.AutoSlayLogPath),
-            FailureScreenshotPath = Path.GetFullPath(configuration.FailureScreenshotPath)
+            FailureScreenshotPath = Path.GetFullPath(configuration.FailureScreenshotPath),
+            TransitionPerfOutputPath = configuration.TransitionPerfOutputPath is null
+                ? null
+                : Path.GetFullPath(configuration.TransitionPerfOutputPath)
         };
     }
 }
