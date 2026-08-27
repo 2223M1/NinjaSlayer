@@ -12,7 +12,6 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Commands;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Patching.Models;
@@ -214,14 +213,17 @@ public sealed class BloodTearsRedesignPower : RedesignV1CounterPower
     {
         if (player == Owner.Player)
         {
-            await GameCompatibility.Damage.Deal(
+            await CreatureCmd.Damage(
                 choiceContext,
                 [Owner],
                 Amount,
                 ValueProp.Unblockable | ValueProp.Unpowered,
                 Owner,
-                null,
-                null);
+                null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , null
+#endif
+            );
         }
     }
 }

@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -50,7 +51,7 @@ public sealed class HellTornadoPower : NinjaSlayerPowerTemplate
             Task presentation = Task.WhenAll(
                 ByrdRiseAnimation.Play(Owner, RiseDistance),
                 SoarSpinAnimation.Accelerate(Owner, RiseDuration));
-            if (NinjaSlayerRapidAnimationCoordinator.IsEnabled)
+            if (RapidCardPresentationContext.IsActive)
             {
                 _ = TaskHelper.RunSafely(presentation);
             }

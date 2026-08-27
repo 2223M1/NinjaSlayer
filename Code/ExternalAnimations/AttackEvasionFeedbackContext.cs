@@ -1,16 +1,20 @@
+using System.Reflection;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class AttackEvasionFeedbackContext
 {
+    private static readonly FieldInfo SingleTarget =
+        AccessTools.Field(typeof(AttackCommand), "_singleTarget")
+        ?? throw new MissingFieldException(typeof(AttackCommand).FullName, "_singleTarget");
     private static readonly AsyncLocal<Frame?> Current = new();
 
     public static Frame? Enter(AttackCommand command)
@@ -153,13 +157,16 @@ internal static class AttackEvasionFeedbackContext
 
     private static IReadOnlyList<Creature> ResolveTargets(Frame frame)
     {
-        if (frame.Command.IsSingleTargeted
-            && GameCompatibility.Finisher.TryReadAttackCommand(
-                frame.Command,
-                out GameCompatibility.AttackCommandState state)
-            && state.SingleTarget is not null)
+        if (frame.Command.IsSingleTargeted)
         {
-            return [state.SingleTarget];
+            Creature? target = SingleTarget.GetValue(frame.Command) switch
+            {
+                null => null,
+                Creature creature => creature,
+                _ => throw new InvalidOperationException(
+                    "AttackCommand._singleTarget has an unexpected runtime type.")
+            };
+            return target is null ? [] : [target];
         }
 
         return frame.Command.IsMultiTargeted && frame.Attacker.CombatState is { } combatState

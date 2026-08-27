@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Code.Combat;
@@ -84,7 +85,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         Shader shader,
         float mass,
         float collisionMargin,
-        out PreparedResource? prepared)
+        [NotNullWhen(true)] out PreparedResource? prepared)
     {
         prepared = null;
         ArrayMesh? mesh = null;
@@ -140,7 +141,7 @@ internal sealed class BossCapturedFragmentRenderSurface : IDisposable
         PreparedResource prepared,
         Texture2D captureTexture,
         int zIndex,
-        out BossCapturedFragmentRenderSurface? surface)
+        [NotNullWhen(true)] out BossCapturedFragmentRenderSurface? surface)
     {
         surface = null;
         Node2D? anchor = null;

@@ -19,11 +19,6 @@ public sealed class NinjaSlayerTransitionSfxPatch : IPatchMethod
 
     public static bool Prefix(string sfx, float volume)
     {
-        if (!NinjaSlayerPatchCapabilities.TransitionEnabled)
-        {
-            return true;
-        }
-
         if (sfx == NinjaSlayerAudio.NinjaSlayerTransitionEvent)
         {
             if (NGame.Instance?.RootSceneContainer.CurrentScene is NRun)
@@ -38,9 +33,8 @@ public sealed class NinjaSlayerTransitionSfxPatch : IPatchMethod
         }
 
         // The volatile session probe runs first so ordinary combat SFX never allocate the
-        // deferral closure or take the capability-registry lock.
+        // deferral closure.
         return !NinjaSlayerTransitionGate.HasActiveSession
-            || !NinjaSlayerPatchCapabilities.TransitionPresentationEnabled
             || !NinjaSlayerTransitionGate.TryDeferPresentation(
                 () => SfxCmd.Play(sfx, volume));
     }

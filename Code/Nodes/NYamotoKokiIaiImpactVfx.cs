@@ -15,10 +15,10 @@ public partial class NYamotoKokiIaiImpactVfx : Node2D
         "res://NinjaSlayer/scenes/vfx/yamoto_koki_iai/vfx_grand_finale_impact.tscn";
 
     [Export]
-    private Node2D? _centerParticles;
+    private Node2D _centerParticles = null!;
 
     [Export]
-    private Node2D? _groundParticles;
+    private Node2D _groundParticles = null!;
 
     private CancellationTokenSource? _cts;
 
@@ -30,8 +30,8 @@ public partial class NYamotoKokiIaiImpactVfx : Node2D
             return null;
         }
 
-        NYamotoKokiIaiImpactVfx? vfx = NinjaSlayerVfxUtil.TryGenModVfxNode<NYamotoKokiIaiImpactVfx>(ScenePath);
-        vfx?.Initialize(node.VfxSpawnPosition, node.GetBottomOfHitbox());
+        NYamotoKokiIaiImpactVfx vfx = NinjaSlayerVfxUtil.GenModVfxNode<NYamotoKokiIaiImpactVfx>(ScenePath);
+        vfx.Initialize(node.VfxSpawnPosition, node.GetBottomOfHitbox());
         return vfx;
     }
 
@@ -51,15 +51,8 @@ public partial class NYamotoKokiIaiImpactVfx : Node2D
 
     private void Initialize(Vector2 centerPosition, Vector2 groundPosition)
     {
-        if (_centerParticles != null)
-        {
-            _centerParticles.GlobalPosition = centerPosition;
-        }
-
-        if (_groundParticles != null)
-        {
-            _groundParticles.GlobalPosition = groundPosition;
-        }
+        _centerParticles.GlobalPosition = centerPosition;
+        _groundParticles.GlobalPosition = groundPosition;
     }
 
     private async Task FreeAfterLifetime(CancellationToken token)

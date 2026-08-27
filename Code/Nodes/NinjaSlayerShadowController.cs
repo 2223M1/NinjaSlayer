@@ -10,8 +10,8 @@ public partial class NinjaSlayerShadowController : Node
     private const float FallenShadowWidthMultiplier = 1.25f;
     private const float FallenShadowHeightMultiplier = 0.65f;
 
-    private Sprite2D? _shadow;
-    private Node2D? _airborneAnchor;
+    private Sprite2D _shadow = null!;
+    private Node2D _airborneAnchor = null!;
     private Vector2 _groundPosition;
     private Color _groundModulate;
     private float _groundAnchorY;
@@ -24,14 +24,10 @@ public partial class NinjaSlayerShadowController : Node
 
     public override void _Ready()
     {
-        Node? rig = GetParent();
-        _shadow = rig?.GetNodeOrNull<Sprite2D>(NinjaSlayerVisualRig.ShadowNodeName);
-        _airborneAnchor = rig?.GetNodeOrNull<Node2D>(NinjaSlayerVisualRig.AirborneAnchorName);
-        if (_shadow == null || _airborneAnchor == null)
-        {
-            SetProcess(false);
-            return;
-        }
+        Node rig = GetParent()
+            ?? throw new InvalidOperationException("The shadow controller has no visual-rig parent.");
+        _shadow = rig.GetNode<Sprite2D>(NinjaSlayerVisualRig.ShadowNodeName);
+        _airborneAnchor = rig.GetNode<Node2D>(NinjaSlayerVisualRig.AirborneAnchorName);
 
         _groundPosition = _shadow.Position;
         _groundModulate = _shadow.Modulate;
@@ -82,14 +78,6 @@ public partial class NinjaSlayerShadowController : Node
 
     private void ApplyPresentation()
     {
-        if (_shadow == null
-            || _airborneAnchor == null
-            || !GodotObject.IsInstanceValid(_shadow)
-            || !GodotObject.IsInstanceValid(_airborneAnchor))
-        {
-            return;
-        }
-
         Vector2 groundPosition = new(
             _mirrored ? -_groundPosition.X : _groundPosition.X,
             _groundPosition.Y);

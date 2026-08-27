@@ -123,38 +123,6 @@ internal static class BossBurstParticipationRegistry
         }
     }
 
-    public static bool ShouldSuppressCombatEndMusicAfterFailure()
-    {
-        try
-        {
-            NCombatRoom? sceneRoom = NCombatRoom.Instance;
-            if (sceneRoom == null)
-            {
-                return false;
-            }
-
-            lock (Gate)
-            {
-                if (!Rooms.TryGetValue(sceneRoom, out RoomState? roomState))
-                {
-                    return false;
-                }
-
-                return BossBurstPresentationPolicy.ResolveCombatEndMusic(
-                        roomState.HasParticipant,
-                        ReferenceEquals(roomState.ModelRoom, roomState.RunState.CurrentRoom),
-                        roomState.ModelRoom.RoomType == RoomType.Boss,
-                        CombatManager.Instance.IsInProgress,
-                        roomState.ActMusicRestoreAttempted)
-                    != BossBurstCombatEndMusicDecision.PassThrough;
-            }
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     public static void Clear(NCombatRoom sceneRoom)
     {
         lock (Gate)

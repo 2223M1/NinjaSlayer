@@ -4,7 +4,6 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Telemetry;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib;
@@ -54,17 +53,7 @@ public static class NinjaSlayerBalanceTelemetry
     }
 
     internal static void RefreshIdentity(RunState runState)
-    {
-        try
-        {
-            IdentityTracker.Refresh(runState, LocalContext.NetId, BuildPlayerIdentities(runState.Players));
-        }
-        catch (Exception exception)
-        {
-            IdentityTracker.Clear();
-            Entry.Logger.Warn($"Failed to refresh NinjaSlayer telemetry identity: {exception.Message}");
-        }
-    }
+        => IdentityTracker.Refresh(runState, LocalContext.NetId, BuildPlayerIdentities(runState.Players));
 
     internal static void ClearIdentity() => IdentityTracker.Clear();
 
@@ -76,11 +65,6 @@ public static class NinjaSlayerBalanceTelemetry
 
     private static bool ShouldCaptureRunHistory(RunEndedEvent evt)
     {
-        if (!NinjaSlayerPatchCapabilities.TelemetryIdentityEnabled)
-        {
-            return false;
-        }
-
         return IdentityTracker.TryCaptureCompletedRun(
             evt.Run,
             evt.IsAbandoned,

@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Powers;
@@ -62,7 +61,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
             return;
         }
 
-        decimal damage = GameCompatibility.Damage.Modify(
+        decimal damage = Hook.ModifyDamage(
             combatState.RunState,
             combatState,
             target,
@@ -70,7 +69,9 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
             0m,
             ValueProp.Move,
             null,
+#if !NINJASLAYER_LEGACY_DAMAGE_API
             null,
+#endif
             ModifyDamageHookType.All,
             CardPreviewMode.Normal,
             out _);
@@ -94,14 +95,17 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
                 NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(target);
             }
 
-            List<DamageResult> results = (await GameCompatibility.Damage.Deal(
+            List<DamageResult> results = (await CreatureCmd.Damage(
                 choiceContext,
                 [target],
                 0m,
                 ValueProp.Move,
                 Owner,
-                null,
-                null)).ToList();
+                null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , null
+#endif
+            )).ToList();
             command.AddResultsInternal(results);
             CombatManager.Instance.History.CreatureAttacked(combatState, Owner, results);
         }

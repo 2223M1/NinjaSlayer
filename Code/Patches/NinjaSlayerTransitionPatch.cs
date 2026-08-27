@@ -26,8 +26,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
 
     public static bool Prefix(float time, string transitionPath, NTransition __instance, ref Task __result, CancellationToken? cancelToken = null)
     {
-        if (!NinjaSlayerPatchCapabilities.TransitionEnabled ||
-            (!NinjaSlayerTransitionGate.Pending && !NinjaSlayerTransitionPaths.IsModPath(transitionPath)))
+        if (!NinjaSlayerTransitionGate.Pending && !NinjaSlayerTransitionPaths.IsModPath(transitionPath))
         {
             return true;
         }
@@ -48,42 +47,10 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
         float delay = wasPending
             ? NinjaSlayerAudio.EmbarkLoadStartDelaySeconds
             : NinjaSlayerAudio.SaveLoadStartDelaySeconds;
-        if (NinjaSlayerPatchCapabilities.TransitionPresentationEnabled)
-        {
-            __result = WaitForViewReadyAndLoadDelayAsync(
-                session,
-                delay,
-                cancelToken ?? CancellationToken.None);
-        }
-        else
-        {
-            __result = WaitForLoadDelayAsync(
-                delay,
-                cancelToken ?? CancellationToken.None);
-        }
+        __result = delay > 0f
+            ? Cmd.Wait(delay, cancelToken ?? CancellationToken.None)
+            : Task.CompletedTask;
         return false;
-    }
-
-    private static async Task WaitForViewReadyAndLoadDelayAsync(
-        NinjaSlayerTransitionSession session,
-        float delay,
-        CancellationToken cancellationToken)
-    {
-        await session.WaitForViewReadyAsync(cancellationToken);
-        if (delay > 0f)
-        {
-            await Cmd.Wait(delay, cancellationToken);
-        }
-    }
-
-    private static async Task WaitForLoadDelayAsync(
-        float delay,
-        CancellationToken cancellationToken)
-    {
-        if (delay > 0f)
-        {
-            await Cmd.Wait(delay, cancellationToken);
-        }
     }
 
     private static async Task BeginNinjaSlayerTransition(
@@ -96,10 +63,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
             return;
         }
 
-        if (NinjaSlayerPatchCapabilities.TransitionLoadSmoothingEnabled)
-        {
-            session.BeginLoadSmoothing();
-        }
+        session.BeginLoadSmoothing();
         NinjaSlayerTransitionOverlay overlay = session.PrepareAnimatedView();
         await PlayOverlayAsync(session, overlay, cancelToken);
     }
@@ -121,10 +85,7 @@ public sealed class NinjaSlayerTransitionPatch : IPatchMethod
                 session.HoldBackdrop();
             }
 
-            // Load smoothing deliberately stays armed past the end of the video. Dropping it here
-            // restored the vanilla 128-wide asset concurrency and unbounded finalize drain in the
-            // same frames as the fade-in, which is exactly where the hitch was visible. The
-            // session ends it during CompleteAsync, after the reveal has finished.
+            // Load smoothing stays armed through reveal and ends with the session.
         }
     }
 }

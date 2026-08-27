@@ -10,7 +10,7 @@ internal sealed class FinisherActorLayerLease : IDisposable
     private readonly CanvasItem _body;
     private readonly int _originalZIndex;
     private readonly bool _originalZAsRelative;
-    private int _disposed;
+    private bool _disposed;
 
     private FinisherActorLayerLease(CanvasItem body)
     {
@@ -57,8 +57,13 @@ internal sealed class FinisherActorLayerLease : IDisposable
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0
-            || !GodotObject.IsInstanceValid(_body))
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        if (!GodotObject.IsInstanceValid(_body))
         {
             return;
         }

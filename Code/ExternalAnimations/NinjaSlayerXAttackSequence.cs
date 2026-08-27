@@ -4,7 +4,7 @@ using NinjaSlayer.Content;
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 /// <summary>
-/// Orchestrates X-cost attack spin SFX, combo context, and lunge movement for NinjaSlayer X attack cards.
+/// Orchestrates X-cost attack spin SFX and lunge movement for NinjaSlayer X attack cards.
 /// Cards must inherit <see cref="Cards.NinjaSlayerXAttackCard"/>; vanilla WithHitCount(X) is not covered.
 /// </summary>
 public static class NinjaSlayerXAttackSequence
@@ -26,30 +26,26 @@ public static class NinjaSlayerXAttackSequence
             || NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
         Func<Action, Task> executeHits = async finishSpinEarly =>
         {
-            using (XAttackComboContext.Enter(hits))
+            try
             {
-                try
+                for (int i = 0; i < hits; i++)
                 {
-                    for (int i = 0; i < hits; i++)
+                    if (useSlowAttack)
                     {
-                        XAttackComboContext.CurrentHitIndex = i;
-                        if (useSlowAttack)
-                        {
-                            NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
-                        }
+                        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
+                    }
 
-                        bool targetKilled = await perHit(i);
-                        if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
-                        {
-                            finishSpinEarly();
-                            break;
-                        }
+                    bool targetKilled = await perHit(i);
+                    if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+                    {
+                        finishSpinEarly();
+                        break;
                     }
                 }
-                finally
-                {
-                    await XAttackComboMovement.EndCombo(creature);
-                }
+            }
+            finally
+            {
+                await XAttackComboMovement.EndCombo(creature);
             }
         };
 

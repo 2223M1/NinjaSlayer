@@ -1,6 +1,7 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.Transition;
@@ -9,6 +10,14 @@ internal sealed class TransitionViewAdapter(NTransition transition)
 {
     private const string SimpleTransitionPath = "SimpleTransition";
     private const string GradientTransitionPath = "GradientTransition";
+    private static readonly PropertyInfo InTransition =
+        AccessTools.Property(typeof(NTransition), nameof(NTransition.InTransition))
+        ?? throw new MissingMemberException(
+            typeof(NTransition).FullName,
+            nameof(NTransition.InTransition));
+    private static readonly FieldInfo TransitionTween =
+        AccessTools.Field(typeof(NTransition), "_tween")
+        ?? throw new MissingFieldException(typeof(NTransition).FullName, "_tween");
     private NinjaSlayerTransitionOverlay? _overlay;
 
     public NTransition Transition { get; } = transition;
@@ -16,15 +25,19 @@ internal sealed class TransitionViewAdapter(NTransition transition)
     public void PrepareInstant()
     {
         EnsureValid();
-        GameCompatibility.Transition.SetInTransition(Transition, true);
+        InTransition.SetValue(Transition, true);
         Transition.Visible = false;
     }
 
     public NinjaSlayerTransitionOverlay PrepareAnimated()
     {
         EnsureValid();
-        GameCompatibility.Transition.KillTween(Transition);
-        GameCompatibility.Transition.SetInTransition(Transition, true);
+        if (ReadTransitionTween() is { } tween)
+        {
+            tween.Kill();
+            TransitionTween.SetValue(Transition, null);
+        }
+        InTransition.SetValue(Transition, true);
         Transition.Visible = true;
         Transition.MouseFilter = Control.MouseFilterEnum.Stop;
 
@@ -63,7 +76,11 @@ internal sealed class TransitionViewAdapter(NTransition transition)
 
         if (forceRelease)
         {
-            GameCompatibility.Transition.KillTween(Transition);
+            if (ReadTransitionTween() is { } tween)
+            {
+                tween.Kill();
+                TransitionTween.SetValue(Transition, null);
+            }
             if (GetBackdrop() is { } backdrop)
             {
                 SetBackdrop(backdrop, opaque: false);
@@ -78,7 +95,7 @@ internal sealed class TransitionViewAdapter(NTransition transition)
         }
 
         Transition.MouseFilter = Control.MouseFilterEnum.Ignore;
-        GameCompatibility.Transition.SetInTransition(Transition, false);
+        InTransition.SetValue(Transition, false);
     }
 
     private ColorRect? GetBackdrop() =>
@@ -93,6 +110,15 @@ internal sealed class TransitionViewAdapter(NTransition transition)
             throw new InvalidOperationException("The transition view is no longer valid.");
         }
     }
+
+    private Tween? ReadTransitionTween() =>
+        TransitionTween.GetValue(Transition) switch
+        {
+            null => null,
+            Tween tween => tween,
+            _ => throw new InvalidOperationException(
+                "NTransition._tween has an unexpected runtime type.")
+        };
 
     private static void SetBackdrop(ColorRect backdrop, bool opaque)
     {

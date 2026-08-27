@@ -1,11 +1,11 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Patching.Models;
@@ -23,7 +23,17 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , typeof(CardPlay)
+#endif
+            ])
     ];
 
     public static void Postfix(

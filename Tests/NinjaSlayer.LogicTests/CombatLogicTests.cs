@@ -161,21 +161,6 @@ public sealed class CombatLogicTests
     }
 
     [Fact]
-    public void ForecastSearchKeysPreserveStructuredStateBoundaries()
-    {
-        var first = new FinisherForecastSearchKey<string>(
-            FinisherForecastSearchStage.Hits, 1, 2, ["1|2", "3"]);
-        var same = new FinisherForecastSearchKey<string>(
-            FinisherForecastSearchStage.Hits, 1, 2, ["1|2", "3"]);
-        var different = new FinisherForecastSearchKey<string>(
-            FinisherForecastSearchStage.Hits, 1, 2, ["1", "2|3"]);
-
-        Assert.Equal(first, same);
-        Assert.Equal(first.GetHashCode(), same.GetHashCode());
-        Assert.NotEqual(first, different);
-    }
-
-    [Fact]
     public void FrameScopedCacheReusesOnlyTheCurrentFrameAndKey()
     {
         var cache = new FrameScopedCache<string, int>();

@@ -43,9 +43,13 @@ public sealed class NextDiscardPreparedPower : NinjaSlayerPowerTemplate
             return;
         }
 
+        if (!await PrepareCmd.Apply(card))
+        {
+            return;
+        }
+
         Flash();
         await PowerCmd.Decrement(this);
-        await PrepareCmd.Apply(card);
     }
 
     public override async Task AfterSideTurnEnd(

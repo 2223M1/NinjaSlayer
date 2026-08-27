@@ -72,7 +72,7 @@ foreach ($artifact in $artifacts) {
             if (Compare-Object @($attestation.PSObject.Properties.Name | Sort-Object) $expectedProperties) {
                 throw "$channelName smoke attestation contains missing or unexpected fields."
             }
-            Assert-NinjaSlayerEqual ([int]$attestation.schemaVersion) 5 "$channelName.schemaVersion"
+            Assert-NinjaSlayerEqual ([int]$attestation.schemaVersion) 6 "$channelName.schemaVersion"
             Assert-NinjaSlayerEqual ([string]$attestation.candidateSha).ToLowerInvariant() $candidate "$channelName.candidateSha"
             Assert-NinjaSlayerEqual ([string]$attestation.bundleVersion) $ExpectedBundleVersion "$channelName.bundleVersion"
             Assert-NinjaSlayerEqual ([string]$attestation.repository) $Repository "$channelName.repository"

@@ -1,7 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -64,7 +64,7 @@ internal sealed class BossSemanticPartBuilder
         Node2D template,
         Rect2 bodyBounds,
         string? detachedBoneName,
-        out BossSemanticPartBuilder? builder,
+        [NotNullWhen(true)] out BossSemanticPartBuilder? builder,
         out string failureReason)
     {
         builder = null;
@@ -118,7 +118,7 @@ internal sealed class BossSemanticPartBuilder
 
         int measured = 0;
         MegaSkeleton skeleton = GetSkeleton(_template);
-        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
+        using IDisposable? skeletonLease = skeleton as IDisposable;
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {
@@ -274,7 +274,7 @@ internal sealed class BossSemanticPartBuilder
         string? detachedBoneName)
     {
         MegaSkeleton skeleton = GetSkeleton(template);
-        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
+        using IDisposable? skeletonLease = skeleton as IDisposable;
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {

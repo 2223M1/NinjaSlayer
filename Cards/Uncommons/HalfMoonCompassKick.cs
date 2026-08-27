@@ -50,7 +50,11 @@ public sealed class HalfMoonCompassKick : NinjaSlayerCardTemplate
         decimal damage = DynamicVars.Damage.BaseValue
             + chadoCards.Count * DynamicVars["ChadoDamage"].BaseValue;
         await DamageCmd.Attack(damage)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Half Moon Compass Kick requires combat."))

@@ -1,36 +1,50 @@
 ---
 name: sts2-original-code-reference
-description: Use when implementing, reviewing, or debugging Slay the Spire 2 mod behavior that is not directly covered by RitsuLib/tutorial documentation. Trigger for requests to follow original game code, compare against vanilla cards/relics/powers/characters/events/audio/animation, or find similar original implementations before writing mod code.
+description: Use as secondary behavioral evidence when NinjaSlayer needs exact vanilla behavior that current RitsuLib tutorials and public APIs do not define. It is not a source of Mod architecture, generic implementation patterns, or speculative compatibility.
 ---
 
 # STS2 Original Code Reference
 
-## Required Workflow
+## Scope
 
-1. Find the repository root containing `eng/compatibility.json`. Read the active stable and preview `gameApiVersion` values from that file, then locate matching original-code exports. They normally live under the sibling directory `../Slay the Spire 2/Slay the Spire 2 <version>/src`.
-2. If an exact export is missing, use the newest available export only as an advisory reference and report the version mismatch. Never silently treat a stale export as the active host.
-3. Search the original code before inventing behavior when the RitsuLib tutorial does not give an example for the specific feature.
-4. Prefer the closest original implementation by gameplay behavior, not just by name. For example, use `Spite` for "lost HP this turn", `Shiv` for generated knife-like attacks, and `SelfFormingClayPower` or `TheGambitPower` for damage-received hooks.
-5. Follow original command order, hook timing, animation trigger style, card tags, history queries, and model property conventions where compatible with mod code.
-6. Do not copy large chunks of original code into a skill or final answer. Use local searches and cite file paths or class names as the implementation reference.
-7. If original code relies on private/internal APIs or patterns that cannot be used from a mod, implement a compatible RitsuLib/project-local equivalent and state the difference.
+Original game source is a behavioral oracle, not a Mod architecture template. Invoke this skill only after the RitsuLib tutorial and public API fail to answer a precise behavior question.
 
-## Reference Map
+Read `references/original-code-map.md` for active-version source roots and exact-query templates.
 
-Read `references/original-code-map.md` for common paths and search commands.
+## Evidence Workflow
 
-## Search First
+1. Find the repository root containing `eng/compatibility.json` and read the active stable and preview `gameApiVersion` values.
+2. Locate the source export matching each active version. Do not silently substitute a different export.
+3. Search for the exact type, member, signature, hook, serialized field, animation call, or audio call required by the task.
+4. Extract only the relevant preconditions, command order, hook timing, player-observable side effects, animation and audio timing, and current serialization semantics.
+5. Stop once the exact active-version evidence answers the behavior question. Cite the version and source path used.
 
-Use `rg` before opening broad directories:
+Do not copy large source blocks into the skill, implementation, or final report.
 
-```powershell
-$compatibility = Get-Content -Raw eng/compatibility.json | ConvertFrom-Json
-$sourceExports = Resolve-Path '../Slay the Spire 2'
-$stableSource = Join-Path $sourceExports "Slay the Spire 2 $($compatibility.channels.stable.gameApiVersion)/src"
-$previewSource = Join-Path $sourceExports "Slay the Spire 2 $($compatibility.channels.preview.gameApiVersion)/src"
-rg -n "class Shiv|CardTag\.Shiv|NShivThrowVfx" $stableSource $previewSource
-rg -n "DamageReceivedEntry|HappenedThisTurn|UnblockedDamage" $stableSource $previewSource
-rg -n "TriggerAnim|WithAttackerAnim|AttackAnimDelay|CastAnimDelay" $stableSource $previewSource
-```
+## Host Differences
 
-Open only the specific matching files needed for the current task.
+- Keep a proven stable/preview difference in the owning feature as a compile-time branch using the channel constants generated from `eng/compatibility.json`.
+- Introduce a feature-local adapter only when it isolates one real external host API boundary. Current examples are `Code/ExternalAnimations/CreatureDeathInteractionAdapter.cs` and `Code/ExternalAnimations/FinisherAttackCommandAdapter.cs`.
+- Keep an adapter beside its owning feature, expose only the operation that feature needs, and prefer a direct local branch when an adapter would only rename one call.
+- Must not reintroduce a global compatibility facade, runtime feature registry, capability graph, shared compatibility state machine, or cross-feature adapter platform.
+
+## Private API Order
+
+When exact behavior depends on a private API, consider these options in order and stop at the first viable one:
+
+1. Public RitsuLib API.
+2. Feature-local Harmony patch.
+3. Feature-local reflection.
+
+Must not reintroduce a global private-access facade or general reflection platform.
+
+## Compatibility Evidence Rules
+
+- Must not reintroduce a shared method-body fingerprint platform, runtime host guessing, or silent compatibility fallback. Exact signature-based Patch targeting is distinct from fingerprinting.
+- Must not reintroduce speculative historical-alignment paths. A producer-specific migration is in scope only when the task names the exact producer version and supplies a real fixture, and it must remain feature-local.
+- Do not use best-fit analogies, arbitrary prefix searches, stale-source substitution, or hypothetical forward compatibility.
+- If exact evidence is unavailable, report the gap instead of inventing behavior or architecture.
+
+## Completion Report
+
+State the active host version, exact source symbols inspected, extracted behavioral facts, any stable/preview difference, and the feature-local mechanism selected. Explicitly report missing evidence.

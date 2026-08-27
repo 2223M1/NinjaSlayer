@@ -31,7 +31,11 @@ public sealed class ShurikenCleave : NinjaSlayerCardTemplate
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(Owner.Creature).FastAttack);
         await JumpAnimation.Play(Owner.Creature);
         await DamageCmd.Attack(DynamicVars.CalculatedDamage)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .TargetingAllOpponents(CombatState ?? throw new InvalidOperationException("Shuriken Cleave requires combat."))
             .ExecuteWithFinisher(choiceContext, this, cardPlay);

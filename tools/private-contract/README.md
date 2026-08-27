@@ -27,4 +27,4 @@ Every private input must match the MVID and runtime assembly list in the compati
 | Attestation | Schema |
 | --- | ---: |
 | Contract | `4` |
-| Smoke | `3` |
+| Smoke | `6` |

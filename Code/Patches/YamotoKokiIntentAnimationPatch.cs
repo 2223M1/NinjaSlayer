@@ -19,11 +19,9 @@ internal static class YamotoKokiIntentVisuals
         IEnumerable<Creature> targets,
         Creature owner)
     {
-        Sprite2D? vanillaIcon = intentNode.GetNodeOrNull<Sprite2D>("%Intent");
-        if (vanillaIcon?.GetParent() is not Node holder)
-        {
-            return;
-        }
+        Sprite2D vanillaIcon = intentNode.GetNode<Sprite2D>("%Intent");
+        Node holder = vanillaIcon.GetParent()
+            ?? throw new InvalidOperationException("The vanilla intent icon has no parent node.");
 
         Sprite2D? customIcon = holder.GetNodeOrNull<Sprite2D>(CustomIconNodeName);
         bool isYamotoKokiIntent = owner.Monster is YamotoKokiMonster

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -7,7 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
-using NinjaSlayer.Code.Compatibility;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Lifecycle;
 using STS2RitsuLib.Patching.Models;
@@ -107,29 +108,45 @@ internal sealed class RapidMultiCardPlayPatch : IPatchMethod
 internal static class RapidCardResolutionStateMachinePatch
 {
     private const string PatchIdPrefix = "ninjaslayer_rapid_card_state_machine";
+    private static readonly MethodInfo CustomWait = RequireMethod(
+        typeof(Cmd),
+        nameof(Cmd.CustomScaledWait),
+        [typeof(float), typeof(float), typeof(bool), typeof(CancellationToken)]);
+    private static readonly MethodInfo AwaitTween = RequireMethod(
+        typeof(TweenHelper),
+        nameof(TweenHelper.AwaitFinished),
+        [typeof(Godot.Tween), typeof(Godot.Node)]);
+    private static readonly MethodInfo RemoveFromCombat = RequireMethod(
+        typeof(CardPileCmd),
+        nameof(CardPileCmd.RemoveFromCombat),
+        [typeof(CardModel), typeof(bool)]);
+    private static readonly MethodInfo Exhaust = RequireMethod(
+        typeof(CardCmd),
+        nameof(CardCmd.Exhaust),
+        [typeof(PlayerChoiceContext), typeof(CardModel), typeof(bool), typeof(bool)]);
 
     public static DynamicPatchInfo[] CreateDynamicPatches()
     {
-        if (!GameCompatibility.RapidCardResolution.TryResolveStateMachines(
-                out GameCompatibility.RuntimePatchTarget[] targets,
-                out string reason))
-        {
-            throw new MissingMethodException(reason);
-        }
+        MethodInfo onPlayWrapper = ResolveAsyncMoveNext(
+            typeof(CardModel),
+            nameof(CardModel.OnPlayWrapper),
+            [typeof(PlayerChoiceContext), typeof(Creature), typeof(bool), typeof(ResourceInfo), typeof(bool)]);
+        MethodInfo addDuringManualPlay = ResolveAsyncMoveNext(
+            typeof(CardPileCmd),
+            nameof(CardPileCmd.AddDuringManualCardPlay),
+            [typeof(CardModel)]);
 
-        return targets
-            .Where(target => target.IdSuffix is "on-play-wrapper" or "add-during-manual-play")
-            .Select(target => new DynamicPatchInfo(
-                $"{PatchIdPrefix}_{target.IdSuffix}",
-                target.Method,
-                transpiler: new HarmonyMethod(
-                    typeof(RapidCardResolutionStateMachinePatch),
-                    target.IdSuffix == "on-play-wrapper"
-                        ? nameof(TranspileOnPlayWrapper)
-                        : nameof(TranspileAddDuringManualPlay)),
-                isCritical: true,
-                description: $"Detach Ninja Slayer card presentation in {target.IdSuffix}."))
-            .ToArray();
+        return
+        [
+            CreateDynamicPatch(
+                "on-play-wrapper",
+                onPlayWrapper,
+                nameof(TranspileOnPlayWrapper)),
+            CreateDynamicPatch(
+                "add-during-manual-play",
+                addDuringManualPlay,
+                nameof(TranspileAddDuringManualPlay))
+        ];
     }
 
     public static IEnumerable<CodeInstruction> TranspileOnPlayWrapper(
@@ -139,19 +156,28 @@ internal static class RapidCardResolutionStateMachinePatch
         Redirect(
             rewriter,
             "rapid-card presentation waits",
-            GameCompatibility.RapidCardResolution.CustomWait,
-            AccessTools.Method(typeof(RapidCardPresentationContext), nameof(RapidCardPresentationContext.WaitUnlessActive)),
+            CustomWait,
+            RequireMethod(
+                typeof(RapidCardPresentationContext),
+                nameof(RapidCardPresentationContext.WaitUnlessActive),
+                [typeof(float), typeof(float), typeof(bool), typeof(CancellationToken)]),
             expectedSites: 2);
         Redirect(
             rewriter,
             "rapid-card removals",
-            GameCompatibility.RapidCardResolution.RemoveFromCombat,
-            AccessTools.Method(typeof(RapidCardPresentationContext), nameof(RapidCardPresentationContext.RemoveFromCombat)));
+            RemoveFromCombat,
+            RequireMethod(
+                typeof(RapidCardPresentationContext),
+                nameof(RapidCardPresentationContext.RemoveFromCombat),
+                [typeof(CardModel), typeof(bool)]));
         Redirect(
             rewriter,
             "rapid-card exhausts",
-            GameCompatibility.RapidCardResolution.Exhaust,
-            AccessTools.Method(typeof(RapidCardPresentationContext), nameof(RapidCardPresentationContext.Exhaust)));
+            Exhaust,
+            RequireMethod(
+                typeof(RapidCardPresentationContext),
+                nameof(RapidCardPresentationContext.Exhaust),
+                [typeof(PlayerChoiceContext), typeof(CardModel), typeof(bool), typeof(bool)]));
         return rewriter.Instructions();
     }
 
@@ -162,23 +188,51 @@ internal static class RapidCardResolutionStateMachinePatch
         Redirect(
             rewriter,
             "rapid-card manual play tween",
-            GameCompatibility.RapidCardResolution.AwaitTween,
-            AccessTools.Method(typeof(RapidCardPresentationContext), nameof(RapidCardPresentationContext.AwaitTweenUnlessActive)));
+            AwaitTween,
+            RequireMethod(
+                typeof(RapidCardPresentationContext),
+                nameof(RapidCardPresentationContext.AwaitTweenUnlessActive),
+                [typeof(Godot.Tween), typeof(Godot.Node)]));
         return rewriter.Instructions();
     }
+
+    private static DynamicPatchInfo CreateDynamicPatch(
+        string idSuffix,
+        MethodInfo target,
+        string transpiler) =>
+        new(
+            $"{PatchIdPrefix}_{idSuffix}",
+            target,
+            transpiler: new HarmonyMethod(typeof(RapidCardResolutionStateMachinePatch), transpiler),
+            isCritical: true,
+            description: $"Detach Ninja Slayer card presentation in {idSuffix}.");
+
+    private static MethodInfo ResolveAsyncMoveNext(
+        Type declaringType,
+        string methodName,
+        Type[] parameterTypes)
+    {
+        MethodInfo method = RequireMethod(declaringType, methodName, parameterTypes);
+        Type stateMachine = method.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
+            ?? throw new MissingMethodException(
+                $"{declaringType.FullName}.{methodName} has no async state machine.");
+        return RequireMethod(stateMachine, nameof(IAsyncStateMachine.MoveNext), Type.EmptyTypes);
+    }
+
+    private static MethodInfo RequireMethod(
+        Type declaringType,
+        string methodName,
+        Type[] parameterTypes) =>
+        AccessTools.Method(declaringType, methodName, parameterTypes)
+        ?? throw new MissingMethodException(declaringType.FullName, methodName);
 
     private static void Redirect(
         HarmonyIlRewriter rewriter,
         string operation,
-        MethodInfo? original,
-        MethodInfo? replacement,
+        MethodInfo original,
+        MethodInfo replacement,
         int expectedSites = 1)
     {
-        if (original == null || replacement == null)
-        {
-            throw new MissingMethodException(operation);
-        }
-
         HarmonyIlRewriteReport report = HarmonyAsyncIl.RedirectAwaitedCalls(
             rewriter,
             operation,

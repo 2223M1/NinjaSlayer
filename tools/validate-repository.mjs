@@ -271,6 +271,9 @@ if (compatibility) {
     ...filesUnder(join(root, 'Tests', 'NinjaSlayer.RitsuLibContractTests')).filter(
       path => /\.(?:cs|csproj)$/.test(path),
     ),
+    ...filesUnder(join(root, 'Tests', 'NinjaSlayer.ProductPreparedContractTests')).filter(
+      path => /\.(?:cs|csproj)$/.test(path),
+    ),
   ];
   const activeLiterals = new Set([
     compatibility.ritsuLibVersion,
@@ -289,13 +292,6 @@ if (compatibility) {
   }
 }
 
-for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
-  const repositoryPath = relative(root, path).replaceAll('\\', '/');
-  if (repositoryPath.startsWith('Code/Compatibility/')) continue;
-  if (/^\s*#(?:if|elif).*NINJASLAYER_(?:STS2|CHANNEL|LEGACY)/m.test(readFileSync(path, 'utf8'))) {
-    errors.push(`${repositoryPath} contains a host conditional outside Code/Compatibility`);
-  }
-}
 const warningAllowlist = readJson(join(root, 'Docs', 'warning-allowlist.json'));
 if (warningAllowlist) {
   const entries = Array.isArray(warningAllowlist.entries) ? warningAllowlist.entries : [];
@@ -396,15 +392,26 @@ const chineseRedesignKeys = Object.keys(redesignCardsByLanguage.zhs).sort();
 if (JSON.stringify(englishRedesignKeys) !== JSON.stringify(chineseRedesignKeys)) {
   errors.push('Redesign V1 card localization keys differ between eng/cards.json and zhs/cards.json');
 }
+const redesignSelectionPromptStems = [
+  'NINJA_SLAYER_CARD_TRUMP_CARD_REDESIGN_V1',
+  'NINJA_SLAYER_CARD_EXECUTION_MOVE_REDESIGN_V1',
+  'NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1',
+];
 for (const language of ['eng', 'zhs']) {
   const cards = redesignCardsByLanguage[language];
-  const stems = new Set(Object.keys(cards).map((key) => key.replace(/\.(?:title|description)$/, '')));
+  const stems = new Set(Object.keys(cards).map((key) => key.replace(/\.(?:title|description|selectionScreenPrompt)$/, '')));
   for (const stem of stems) {
     for (const suffix of ['title', 'description']) {
       const value = cards[`${stem}.${suffix}`];
       if (typeof value !== 'string' || value.trim().length === 0) {
         errors.push(`${language}/cards.json is missing non-empty ${stem}.${suffix}`);
       }
+    }
+  }
+  for (const stem of redesignSelectionPromptStems) {
+    const value = cards[`${stem}.selectionScreenPrompt`];
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      errors.push(`${language}/cards.json is missing non-empty ${stem}.selectionScreenPrompt`);
     }
   }
 }
@@ -478,7 +485,10 @@ for (const path of sourceFiles) {
   }
 }
 
-const patchSources = filesUnder(join(root, 'Code', 'Patches'))
+const patchSources = [
+  ...filesUnder(join(root, 'Code', 'Patches')),
+  ...filesUnder(join(root, 'Powers')),
+]
   .filter((path) => path.endsWith('.cs'))
   .map((path) => readFileSync(path, 'utf8'))
   .join('\n');
@@ -486,14 +496,15 @@ const entrySource = readFileSync(join(root, 'Scripts', 'Entry.cs'), 'utf8');
 const patchGroupSource = readFileSync(join(root, 'Code', 'Patches', 'NinjaSlayerPatchGroups.cs'), 'utf8');
 const patchClasses = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)]
   .map((match) => match[1]);
-const patchRegistrations = [...patchGroupSource.matchAll(/RegisterPatch<(\w+)>/g)]
-  .map((match) => match[1]);
+const patchRegistrationSource = `${entrySource}\n${patchGroupSource}`;
+const patchRegistrations = [...patchRegistrationSource.matchAll(/RegisterPatch<([\w.]+)>/g)]
+  .map((match) => match[1].split('.').at(-1));
 for (const patchClass of patchClasses) {
   const count = patchRegistrations.filter((registered) => registered === patchClass).length;
-  if (count !== 1) errors.push(`${patchClass} must appear in exactly one typed patch group (found ${count})`);
+  if (count !== 1) errors.push(`${patchClass} must appear in exactly one production patch registration (found ${count})`);
 }
 for (const registered of patchRegistrations) {
-  if (!patchClasses.includes(registered)) errors.push(`Typed patch group references unknown patch ${registered}`);
+  if (!patchClasses.includes(registered)) errors.push(`Production patch registration references unknown patch ${registered}`);
 }
 
 const patchDeclarations = [...patchSources.matchAll(/(?:public|internal)\s+sealed\s+(?:partial\s+)?class\s+(\w+)\s*:\s*IPatchMethod/g)];
@@ -501,22 +512,49 @@ const patchBodies = new Map(patchDeclarations.map((match, index) => [
   match[1],
   patchSources.slice(match.index, patchDeclarations[index + 1]?.index ?? patchSources.length),
 ]));
-for (const groupName of [
-  'CardResolutionPatchGroup',
-  'CombatPresentationPacingPatchGroup',
-  'RapidCardResolutionPatchGroup',
-  'PreparedGameplayPatchGroup',
+const retainedPatchGroups = new Set([
   'BossBurstPresentationPatchGroup',
-  'FinisherCorePatchGroup',
   'TransitionCorePatchGroup',
-]) {
+]);
+const declaredPatchGroups = [...patchGroupSource.matchAll(/internal\s+sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
+  .map((match) => match[1]);
+if (declaredPatchGroups.length !== retainedPatchGroups.size
+    || declaredPatchGroups.some((groupName) => !retainedPatchGroups.has(groupName))) {
+  errors.push(`Patch groups must be exactly: ${[...retainedPatchGroups].join(', ')}`);
+}
+for (const groupName of retainedPatchGroups) {
   const groupStart = patchGroupSource.indexOf(`class ${groupName}`);
+  if (groupStart < 0) continue;
   const groupEnd = patchGroupSource.indexOf('\ninternal sealed class ', groupStart + 1);
   const groupBody = patchGroupSource.slice(groupStart, groupEnd < 0 ? undefined : groupEnd);
-  for (const match of groupBody.matchAll(/RegisterPatch<(\w+)>/g)) {
+  const groupRegistrations = [...groupBody.matchAll(/RegisterPatch<(\w+)>/g)];
+  if (groupRegistrations.length < 2) {
+    errors.push(`${groupName} must contain at least two patches`);
+  }
+  for (const match of groupRegistrations) {
     if (!patchBodies.get(match[1])?.includes('IsCritical => true')) {
       errors.push(`${groupName} contains non-critical required patch ${match[1]}`);
     }
+  }
+}
+
+const requiredPatcherSource = entrySource.slice(
+  entrySource.indexOf('ModPatcher requiredPatcher'),
+  entrySource.indexOf('bool requiredPatchFailure'),
+);
+if (/RegisterPatches<\w+PatchGroup>/.test(requiredPatcherSource)) {
+  errors.push('Required patches must be registered directly on the single required patcher');
+}
+const optionalPresentationSource = entrySource.slice(
+  entrySource.indexOf('private static void InstallOptionalPresentations'),
+  entrySource.indexOf('private static void TryInstallOptionalPatches'),
+);
+for (const groupName of retainedPatchGroups) {
+  const registrationCount = [...entrySource.matchAll(new RegExp(`RegisterPatches<${groupName}>`, 'g'))].length;
+  if (registrationCount !== 1
+      || !optionalPresentationSource.includes(`nameof(${groupName})`)
+      || !optionalPresentationSource.includes(`RegisterPatches<${groupName}>`)) {
+    errors.push(`${groupName} must be owned by exactly one independent optional patcher transaction`);
   }
 }
 
@@ -529,37 +567,117 @@ if (patchIds.length !== patchClasses.length) {
   errors.push(`Expected one PatchId per IPatchMethod (${patchClasses.length} classes, ${patchIds.length} ids)`);
 }
 
-const compatibilityOwnedFiles = [
-  'Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs',
-  'Code/Patches/KarateHealthBarPreviewPatch.cs',
-  'Code/Patches/NancyLeeAvailabilityPatches.cs',
-  'Code/Patches/NinjaSlayerFeedbackPatches.cs',
-  'Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs',
-  'Code/Patches/NinjaSlayerTransitionPatch.cs',
-  'Code/Patches/NinjaSlayerTypographyPatch.cs',
-  'Code/Patches/PreparedCardPatches.cs',
-  'Code/Patches/ReporterPassEventOptionPatch.cs',
-];
-const privateReflectionPattern = /AccessTools\.(?:Field|Method|Property)|BindingFlags|GetField\(|GetMethod\(/;
-for (const relativePath of compatibilityOwnedFiles) {
+const localizedPrivateMemberContracts = new Map([
+  ['Code/ExternalAnimations/AttackEvasionFeedbackContext.cs', ['"_singleTarget"']],
+  ['Code/ExternalAnimations/BossBurstMusicSession.cs', ['"_currentTrack"', '"_failedTrack"']],
+  ['Code/ExternalAnimations/CombatDodgeAnimation.cs', [
+    '"_attackerAnimName"',
+    '"_visualAttacker"',
+    '"_waitBeforeHit"',
+    '"_singleTarget"',
+  ]],
+  ['Code/ExternalAnimations/FinisherAttackCommandAdapter.cs', [
+    '"_damagePerHit"',
+    '"_calculatedDamageVar"',
+    '"_hitCount"',
+    '"_singleTarget"',
+  ]],
+  ['Code/Patches/KarateHealthBarPreviewPatch.cs', ['"_creature"', '"_hpLabel"']],
+  ['Code/Patches/NarakuLifeHealthBarLayoutPatch.cs', [
+    '"_creature"',
+    '"_expectedMaxFgWidth"',
+    '"_originalBlockPosition"',
+  ]],
+  ['Code/Patches/NinjaSlayerFeedbackPatches.cs', ['"SendButtonSelected"']],
+  ['Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs', [
+    '"_loading"',
+    '"_finalizing"',
+    '"AddToCache"',
+    '"FinalizeLoading"',
+    '"ProcessLoadingQueue"',
+  ]],
+  ['Code/Patches/NinjaSlayerTransitionPresentationPatch.cs', ['"PlayHealVfxAfterFadeIn"']],
+  ['Code/Patches/NinjaSlayerTypographyPatch.cs', ['"_relics"', '"_index"']],
+  ['Code/Patches/PreparedCardPatches.cs', ['"ShuffleFtueCheck"', '"_grid"']],
+  ['Code/Patches/ReporterPassEventOptionPatch.cs', ['"SetEventFinished"']],
+  ['Code/Transition/TransitionViewAdapter.cs', ['nameof(NTransition.InTransition)', '"_tween"']],
+  ['Events/SawatariEvent.cs', [
+    '"_combatStateForCombatLayout"',
+    '"_combatSynchronizer"',
+    '"CombatStateForLayout"',
+  ]],
+  ['Code/Patches/SawatariEventPatches.cs', ['"_rooms"']],
+  ['Powers/NarakuPower.cs', ['"_powerNodes"', '"UpdatePositions"']],
+]);
+for (const [relativePath, members] of localizedPrivateMemberContracts) {
   const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
-  if (privateReflectionPattern.test(source)) {
-    errors.push(`${relativePath} must obtain private game members through GameCompatibility`);
+  if (members.some(member => !source.includes(member))) {
+    errors.push(`${relativePath} must own its localized private game members: ${members.join(', ')}`);
   }
 }
 
-const capabilityIdSource = readFileSync(
-  join(root, 'Code', 'Compatibility', 'NinjaSlayerCapabilityIds.cs'),
-  'utf8',
-);
-const capabilityIds = [...capabilityIdSource.matchAll(/const\s+string\s+\w+\s*=\s*"([^"]+)"/g)]
-  .map((match) => match[1]);
-for (const capabilityId of new Set(capabilityIds)) {
-  const count = capabilityIds.filter((candidate) => candidate === capabilityId).length;
-  if (count !== 1) errors.push(`Capability id ${capabilityId} is declared ${count} times`);
+const removedStage4AFiles = [
+  'GameCompatibility.ArchitectVictory.cs',
+  'GameCompatibility.CardPlays.cs',
+  'GameCompatibility.Damage.cs',
+  'GameCompatibility.Feedback.cs',
+  'GameCompatibility.KarateHealthBar.cs',
+  'GameCompatibility.MapHistory.cs',
+  'GameCompatibility.NarakuHealthBar.cs',
+  'GameCompatibility.OrobasSeaGlass.cs',
+  'GameCompatibility.Prepared.cs',
+  'GameCompatibility.ReporterPass.cs',
+  'GameCompatibility.Transition.cs',
+  'GameCompatibility.TransitionPresentation.cs',
+  'GameCompatibility.Typography.cs',
+  'HostBlackFlameDamagePatch.cs',
+  'HostDamageApiAdapters.cs',
+  'LegacyAttackCommandExtensions.cs',
+  'OrobasSeaGlassCandidatePolicy.cs',
+  'RedesignCardDestinationAdapter.cs',
+  'GameCompatibility.cs',
+  'GameCompatibility.AssetLoading.cs',
+  'GameCompatibility.BossBurst.cs',
+  'GameCompatibility.CreaturePresentation.cs',
+  'GameCompatibility.EnemyAttackDodge.cs',
+  'GameCompatibility.EventCombat.cs',
+  'GameCompatibility.Finisher.cs',
+  'GameCompatibility.NarakuPowerUi.cs',
+  'PreparedQueueCompatibility.cs',
+];
+for (const file of removedStage4AFiles) {
+  if (existsSync(join(root, 'Code', 'Compatibility', file))) {
+    errors.push(`Code/Compatibility/${file} is a retired Stage 4A facade`);
+  }
 }
-if (/(?:InstallCapability|TryInstallRequiredCapability)<[^>]+>\(\s*"/.test(entrySource)) {
-  errors.push('Entry.cs must use NinjaSlayerCapabilityIds for every capability installation');
+
+const retiredStage4AFacadePattern =
+  /\b(?:GameCompatibility|HostCompatibility|GameApiFacade|CompatibilityManager|CompatibilityService|GameApiRegistry|LegacyAttackCommandExtensions)\b|\bAssociate(?:Player|CardPlay)\b/;
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
+  if (retiredStage4AFacadePattern.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains a retired Stage 4A facade or replacement`);
+  }
+}
+
+const retiredRuntimeCapabilityPattern =
+  /\b(?:CapabilityState|CapabilityProbe|CapabilityStatus|NinjaSlayerCapabilityRegistry|NinjaSlayerCapabilityIds|NinjaSlayerPatchCapabilities|NinjaSlayerRuntimeHealth|MethodBodyFingerprint|StableMethodBodyContract|GameHostContractProfile)\b/;
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
+  if (retiredRuntimeCapabilityPattern.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains a retired runtime capability symbol`);
+  }
+}
+
+const retiredGcControlPattern = /\b(?:System\.)?GC\.(?:TryStartNoGCRegion|Collect)\s*\(/;
+for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/');
+  if (repositoryPath.startsWith('Tests/') || repositoryPath.startsWith('tools/')) continue;
+  if (retiredGcControlPattern.test(readFileSync(path, 'utf8'))) {
+    errors.push(`${repositoryPath} contains retired explicit GC control`);
+  }
 }
 
 const concreteCardSources = filesUnder(join(root, 'Cards'))

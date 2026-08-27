@@ -1,4 +1,6 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
@@ -16,7 +18,6 @@ using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using NinjaSlayer.Code.Commands;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Prepared;
 using STS2RitsuLib.Patching.Models;
 
@@ -41,11 +42,6 @@ public sealed class PreparedDrawPatch : IPatchMethod
         bool fromHandDraw,
         ref Task<IEnumerable<CardModel>> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedGameplayEnabled)
-        {
-            return true;
-        }
-
         CardPile drawPile = PileType.Draw.GetPile(player);
         if (IsAllowedPreparedDraw(player, fromHandDraw)
             || !drawPile.Cards.Any(PrepareCmd.IsPrepared))
@@ -67,6 +63,10 @@ public sealed class PreparedDrawPatch : IPatchMethod
 
 internal static class PreparedDrawService
 {
+    private static readonly MethodInfo ShuffleFtueCheck =
+        AccessTools.Method(typeof(CardPileCmd), "ShuffleFtueCheck")
+        ?? throw new MissingMethodException(typeof(CardPileCmd).FullName, "ShuffleFtueCheck");
+
     public static async Task<IEnumerable<CardModel>> Draw(
         PlayerChoiceContext choiceContext,
         decimal count,
@@ -180,7 +180,9 @@ internal static class PreparedDrawService
             return;
         }
 
-        await GameCompatibility.Prepared.ShowShuffleFtue();
+        Task shuffleFtue = ShuffleFtueCheck.Invoke(null, null) as Task
+            ?? throw new InvalidOperationException("CardPileCmd.ShuffleFtueCheck did not return a Task.");
+        await shuffleFtue;
         List<CardModel> shuffledCards = discardPile.Cards.ToList();
         shuffledCards.StableShuffle(player.RunState.Rng.Shuffle);
         if (player.Creature.CombatState is not { } combatState)
@@ -222,6 +224,10 @@ internal static class PreparedDrawService
 
 public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 {
+    private static readonly FieldInfo Grid =
+        AccessTools.Field(typeof(NCardPileScreen), "_grid")
+        ?? throw new MissingFieldException(typeof(NCardPileScreen).FullName, "_grid");
+
     public static string PatchId => "ninjaslayer_prepared_draw_pile_display_order";
 
     public static string Description =>
@@ -234,15 +240,16 @@ public sealed class PreparedDrawPileDisplayOrderPatch : IPatchMethod
 
     public static void Postfix(NCardPileScreen __instance)
     {
-        if (!NinjaSlayerPatchCapabilities.PreparedUiEnabled)
-        {
-            return;
-        }
-
         CardPile pile = __instance.Pile;
+        NCardGrid? grid = Grid.GetValue(__instance) switch
+        {
+            null => null,
+            NCardGrid value => value,
+            _ => throw new InvalidOperationException(
+                "NCardPileScreen._grid has an unexpected runtime type.")
+        };
         if (pile.Type != PileType.Draw
             || !pile.Cards.Any(PrepareCmd.IsPrepared)
-            || !GameCompatibility.Prepared.TryGetGrid(__instance, out NCardGrid? grid)
             || grid is null)
         {
             return;

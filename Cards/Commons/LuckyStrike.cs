@@ -33,7 +33,11 @@ public sealed class LuckyStrike : NinjaSlayerCardTemplate
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

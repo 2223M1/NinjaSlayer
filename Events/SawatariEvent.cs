@@ -1,4 +1,7 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Players;
@@ -12,7 +15,6 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.TestSupport;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -26,6 +28,23 @@ namespace NinjaSlayer.Events;
 [RegisterActEvent(typeof(Underdocks))]
 public sealed class SawatariEvent : ModEventTemplate
 {
+#if NINJASLAYER_CHANNEL_STABLE
+    private static readonly FieldInfo EmbeddedCombatState =
+        AccessTools.Field(typeof(EventModel), "_combatStateForCombatLayout")
+        ?? throw new MissingFieldException(
+            typeof(EventModel).FullName,
+            "_combatStateForCombatLayout");
+#else
+    private static readonly FieldInfo CombatSynchronizer =
+        AccessTools.Field(typeof(EventModel), "_combatSynchronizer")
+        ?? throw new MissingFieldException(typeof(EventModel).FullName, "_combatSynchronizer");
+    private static readonly PropertyInfo EmbeddedCombatState =
+        AccessTools.Property(CombatSynchronizer.FieldType, "CombatStateForLayout")
+        ?? throw new MissingMemberException(
+            CombatSynchronizer.FieldType.FullName,
+            "CombatStateForLayout");
+#endif
+
     public override bool IsShared => true;
     public override EventLayoutType LayoutType => EventLayoutType.Combat;
 
@@ -73,10 +92,17 @@ public sealed class SawatariEvent : ModEventTemplate
         return BeginLocalEvent(owner);
     }
 
-    internal void BeginEmbeddedCombat() => EnterCombatWithoutExitingEvent(
-        GameCompatibility.ResolveEventCombatEncounter(CanonicalEncounter),
-        [],
-        shouldResumeAfterCombat: false);
+    internal void BeginEmbeddedCombat()
+    {
+        EncounterModel encounter = CanonicalEncounter;
+#if NINJASLAYER_CHANNEL_STABLE
+        encounter = encounter.ToMutable();
+#endif
+        EnterCombatWithoutExitingEvent(
+            encounter,
+            [],
+            shouldResumeAfterCombat: false);
+    }
 
     internal void ShowIntermissionPage()
     {
@@ -122,7 +148,7 @@ public sealed class SawatariEvent : ModEventTemplate
         SawatariEventSession? session = null;
         try
         {
-            var state = GameCompatibility.EventCombat.GetEmbeddedCombatState(this)
+            CombatState state = GetEmbeddedCombatState()
                 ?? throw new InvalidOperationException("Embedded Sawatari combat state is unavailable.");
             NCombatRoom room = NEventRoom.Instance?.EmbeddedCombatRoom
                 ?? throw new InvalidOperationException("Embedded Sawatari combat room is unavailable.");
@@ -151,6 +177,33 @@ public sealed class SawatariEvent : ModEventTemplate
             eventModel.BeginEmbeddedCombat();
         }
         return Task.CompletedTask;
+    }
+
+    private CombatState? GetEmbeddedCombatState()
+    {
+#if NINJASLAYER_CHANNEL_STABLE
+        object? value = EmbeddedCombatState.GetValue(this);
+#else
+        object? synchronizer = CombatSynchronizer.GetValue(this);
+        if (synchronizer == null)
+        {
+            return null;
+        }
+        if (!CombatSynchronizer.FieldType.IsInstanceOfType(synchronizer))
+        {
+            throw new InvalidOperationException(
+                "EventModel._combatSynchronizer has an unexpected runtime type.");
+        }
+
+        object? value = EmbeddedCombatState.GetValue(synchronizer);
+#endif
+        return value switch
+        {
+            null => null,
+            CombatState state => state,
+            _ => throw new InvalidOperationException(
+                "The embedded event combat state has an unexpected runtime type.")
+        };
     }
 
     private Task TakeRegularLoot()

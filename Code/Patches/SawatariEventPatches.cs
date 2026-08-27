@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Hooks;
@@ -15,7 +16,6 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
 using NinjaSlayer.Ancients;
@@ -59,7 +59,7 @@ public sealed class EventValidationRunGenerationPatch : IPatchMethod
             return;
         }
 
-        GameCompatibility.EventCombat.SetAncient(
+        SawatariEventRoute.SetAncient(
             runState.Acts[2],
             ModelDb.AncientEvent<NancyLee>());
     }
@@ -67,6 +67,9 @@ public sealed class EventValidationRunGenerationPatch : IPatchMethod
 
 internal static class SawatariEventRoute
 {
+    private static readonly FieldInfo ActRooms =
+        AccessTools.Field(typeof(ActModel), "_rooms")
+        ?? throw new MissingFieldException(typeof(ActModel).FullName, "_rooms");
     private static readonly ConditionalWeakTable<ActModel, State> States = new();
 
     public static void Reset(ActModel act) => States.Remove(act);
@@ -99,9 +102,19 @@ internal static class SawatariEventRoute
             return state.Encounter;
         }
 
-        return GameCompatibility.EventCombat.GetPreviousNormalEncounter(act)
+        RoomSet rooms = GetRoomSet(act);
+        if (rooms.normalEncounters.Count == 0 || rooms.normalEncountersVisited <= 0)
+        {
+            throw new InvalidOperationException("Sawatari event has no routed normal encounter.");
+        }
+
+        int index = (rooms.normalEncountersVisited - 1) % rooms.normalEncounters.Count;
+        return rooms.normalEncounters[index]
             ?? throw new InvalidOperationException("Sawatari event has no routed normal encounter.");
     }
+
+    public static void SetAncient(ActModel act, AncientEventModel ancient) =>
+        GetRoomSet(act).Ancient = ancient;
 
     public static bool ConsumeSuppressedEventVisit(ActModel act)
     {
@@ -113,6 +126,15 @@ internal static class SawatariEventRoute
         state.SuppressNextEventVisit = false;
         return true;
     }
+
+    private static RoomSet GetRoomSet(ActModel act) =>
+        ActRooms.GetValue(act) switch
+        {
+            RoomSet rooms => rooms,
+            null => throw new InvalidOperationException($"Act {act.Id} has no room set."),
+            _ => throw new InvalidOperationException(
+                $"Act {act.Id} has a room set with an unexpected runtime type.")
+        };
 
     private sealed class State
     {
@@ -254,7 +276,9 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
         float naturalChance = eligible
             ? SawatariEventRules.ResolveMonsterReplacementChance(
                 roll.Odds.EventOdds,
-                GameCompatibility.EventCombat.CountValidEvents(roll.Act, concreteRunState),
+                roll.Act.AllEvents.Count(eventModel =>
+                    eventModel.IsAllowed(concreteRunState)
+                    && !concreteRunState.VisitedEventIds.Contains(eventModel.Id)),
                 roll.OriginalMonsterOdds)
             : 0f;
         roll.ForcedMonsterOdds = NinjaSlayerRunData.IsEventValidationEnabled(concreteRunState)

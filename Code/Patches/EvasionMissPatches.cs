@@ -11,7 +11,6 @@ using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
@@ -213,7 +212,17 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         new(
             typeof(CreatureCmd),
             nameof(CreatureCmd.Damage),
-            GameCompatibility.Damage.CommandParameterTypes)
+            [
+                typeof(PlayerChoiceContext),
+                typeof(IEnumerable<Creature>),
+                typeof(decimal),
+                typeof(ValueProp),
+                typeof(Creature),
+                typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , typeof(CardPlay)
+#endif
+            ])
     ];
 
     public static void Prefix(

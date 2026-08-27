@@ -6,7 +6,6 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 
@@ -20,9 +19,6 @@ internal static class NinjaSlayerRapidAnimationCoordinator
     private static NCombatRoom? _subscribedRoom;
     private static CombatManager? _subscribedCombatManager;
     private static long _visualTailGeneration;
-
-    public static bool IsEnabled => NinjaSlayerPatchCapabilities.RapidCardResolutionEnabled
-        && RapidCardPresentationContext.IsActive;
 
     public static void EnsureLifecycle(Creature creature)
     {
@@ -117,7 +113,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     public static void CardGameplaySettled(Creature creature)
     {
-        if (!IsEnabled
+        if (!RapidCardPresentationContext.IsActive
             || NinjaSlayerFinisherCinematic.IsMovementOwned(creature)
             || !States.TryGetValue(creature, out ActionState? state)
             || !GodotObject.IsInstanceValid(state.CreatureNode))
@@ -251,7 +247,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     public static void CancelVisualTailForAction(Creature creature)
     {
-        if (IsEnabled)
+        if (RapidCardPresentationContext.IsActive)
         {
             CancelVisualTail(creature);
         }

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Reflection;
 using Godot;
@@ -40,8 +39,8 @@ using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Code.Compatibility;
-using NinjaSlayer.Code.Diagnostics;
+using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
@@ -63,6 +62,8 @@ internal sealed partial class SmokeController
     private readonly TaskCompletionSource _firstMapReached =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _sawatariCompleted =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _reverseFinisherCompleted =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Creature? _observedDarkStrikeAttacker;
     private Creature[] _observedDarkStrikeTargets = [];
@@ -95,7 +96,11 @@ internal sealed partial class SmokeController
 
     public static SmokeController? Current { get; private set; }
     public bool ShouldForceCharacter => _configuration.Phase is
-        SmokePhase.Fresh or SmokePhase.FullAutoSlay or SmokePhase.SawatariSameCombat;
+        SmokePhase.Fresh
+        or SmokePhase.FullAutoSlay
+        or SmokePhase.SawatariSameCombat
+        or SmokePhase.ReverseFinisher
+        or SmokePhase.TransitionPerf;
 
     public void Start()
     {
@@ -109,8 +114,13 @@ internal sealed partial class SmokeController
     }
 
     public bool TryClaimFirstCombat() =>
-        _configuration.Phase == SmokePhase.Fresh
+        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher
         && Interlocked.CompareExchange(ref _firstCombatClaimed, 1, 0) == 0;
+
+    public Task ExecuteClaimedCombatAsync(Rng random, CancellationToken cancellationToken) =>
+        _configuration.Phase == SmokePhase.ReverseFinisher
+            ? ExecuteReverseFinisherCombatAsync(cancellationToken)
+            : ExecuteFirstCombatAsync(random, cancellationToken);
 
     public bool TryHoldFirstMap(ref Task result)
     {
@@ -305,7 +315,6 @@ internal sealed partial class SmokeController
             Require(exitCode == 0, $"AutoSlay requested failure exit code {exitCode}.");
             Require(_tutorialUnknownRollCount > 0, "Full AutoSlay did not exercise tutorial unknown-room rolls.");
             Require(_hostFilteredUnknownRollCount > 0, "Full AutoSlay did not exercise host-filtered unknown-room rolls.");
-            ValidateRuntimeIdle("full-autoslay.runtime-idle");
             _checkpoints.Write("full-autoslay.completed");
         }
         catch (Exception exception)
@@ -329,7 +338,17 @@ internal sealed partial class SmokeController
             () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "player play phase did not start",
             cancellationToken);
-        ValidateTeaCounterLayout();
+        NTransition transition = FindDescendant<NTransition>(_tree.Root)
+            ?? throw new InvalidOperationException("The transition node was unavailable after combat started.");
+        NinjaSlayerTransitionOverlay overlay = FindDescendant<NinjaSlayerTransitionOverlay>(transition)
+            ?? throw new InvalidOperationException("The NinjaSlayer transition overlay was not created.");
+        Require(!overlay.Visible, "The NinjaSlayer transition overlay remained visible after reveal.");
+        Require(!transition.InTransition, "The transition remained active after combat started.");
+        Require(
+            transition.MouseFilter == Control.MouseFilterEnum.Ignore,
+            "The transition continued blocking mouse input after reveal.");
+        Require(CombatManager.Instance.IsInProgress, "Combat ended before transition verification.");
+        _checkpoints.Write("transition.completed");
         _checkpoints.Write(
             "combat.started",
             data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });
@@ -365,12 +384,24 @@ internal sealed partial class SmokeController
         Creature focus = combatState.HittableEnemies.FirstOrDefault()
             ?? throw new InvalidOperationException("No hittable enemy remained for the X attack scenario.");
         await VerifyRedesignCardsAndPowers(combatState, player, focus);
+        await WaitUntilAsync(
+            () => !StaggerAnimation.IsActive(player.Creature),
+            "The preceding hit animation did not settle before the X attack scenario.",
+            cancellationToken);
         await PlayerCmd.SetEnergy(1m, player);
         TornadoFist nonLethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(nonLethal, PileType.Hand);
+        NCreature playerNode = NCombatRoom.Instance?.GetCreatureNode(player.Creature)
+            ?? throw new InvalidOperationException("The local player creature node was unavailable.");
+        Vector2 playerPosition = playerNode.Position;
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), nonLethal, focus);
         Require(CombatManager.Instance.IsInProgress && focus.IsAlive, "The non-lethal X attack unexpectedly ended combat.");
-        await WaitForRuntimeIdleAsync(cancellationToken);
+        await WaitUntilAsync(
+            () => GodotObject.IsInstanceValid(playerNode)
+                && playerNode.Position.IsEqualApprox(playerPosition),
+            "The local player did not return to its combat position after the non-lethal X attack.",
+            cancellationToken,
+            TimeSpan.FromSeconds(20));
         _checkpoints.Write("x-attack.nonlethal-completed");
 
         await VerifyCardPlayEvasion(combatState, player, focus);
@@ -394,12 +425,11 @@ internal sealed partial class SmokeController
         }
         Require(focus.IsAlive && focus.CurrentHp <= 3, "Could not prepare a deterministic lethal target.");
 
-        NinjaSlayerRuntimeHealthSnapshot beforeFinisher = NinjaSlayerRuntimeHealth.Capture();
+        FinisherSmokeObserver.Reset(injectPresentationFailure: true);
         await PlayerCmd.SetEnergy(3m, player);
         TornadoFist lethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(lethal, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), lethal, focus);
-        NinjaSlayerRuntimeHealthSnapshot afterLethalCard = NinjaSlayerRuntimeHealth.Capture();
         _checkpoints.Write(
             "finisher.card-returned",
             data: new JsonObject
@@ -408,21 +438,169 @@ internal sealed partial class SmokeController
                 ["focusAlive"] = focus.IsAlive,
                 ["focusCurrentHp"] = focus.CurrentHp,
                 ["focusBlock"] = focus.Block,
-                ["hittableEnemyCount"] = combatState.HittableEnemies.Count,
-                ["runtimeHealth"] = HealthData(afterLethalCard)
+                ["hittableEnemyCount"] = combatState.HittableEnemies.Count
             });
-        await WaitForRuntimeIdleAsync(cancellationToken);
-        NinjaSlayerRuntimeHealthSnapshot afterFinisher = NinjaSlayerRuntimeHealth.Capture();
+        await WaitUntilAsync(
+            () => !focus.IsAlive
+                && focus.CurrentHp == 0
+                && combatState.HittableEnemies.Count == 0,
+            "The lethal X attack did not finish the target and clear hittable enemies.",
+            cancellationToken,
+            TimeSpan.FromSeconds(20));
         Require(!focus.IsAlive && focus.CurrentHp == 0, "The lethal X attack did not kill its focus.");
         Require(combatState.HittableEnemies.Count == 0, "A hittable enemy remained after the lethal X attack.");
+        FinisherSessionSnapshot finisher = await RequireCompletedFinisherAsync(
+            "NinjaSlayerAttack",
+            resolvedHits: 3,
+            focus,
+            cancellationToken);
         Require(
-            afterFinisher.FinisherCompletions > beforeFinisher.FinisherCompletions,
-            "The lethal X attack did not complete a finisher session.");
+            FinisherSmokeObserver.PresentationFailureWasInjected,
+            "The trusted presentation failure injection did not reach FinisherImpactPresentation.Create.");
+        _checkpoints.Write(
+            "finisher.multi-hit.completed",
+            data: new JsonObject
+            {
+                ["sessionId"] = finisher.SessionId,
+                ["resolvedHits"] = finisher.ResolvedHits,
+                ["killAttempts"] = finisher.KillAttempts.GetValueOrDefault(focus),
+                ["successfulKills"] = finisher.SuccessfulKills.GetValueOrDefault(focus)
+            });
+        _checkpoints.Write("finisher.presentation-fallback.completed");
         bool combatEnded = await CombatManager.Instance.CheckWinCondition();
         Require(combatEnded && !CombatManager.Instance.IsInProgress, "The completed finisher did not end combat.");
         ValidateRedesignCombatProgress(combatState);
-        _checkpoints.Write("finisher.completed", data: HealthData(afterFinisher));
+        _checkpoints.Write(
+            "finisher.completed",
+            data: new JsonObject
+            {
+                ["combatInProgress"] = CombatManager.Instance.IsInProgress,
+                ["focusAlive"] = focus.IsAlive,
+                ["focusCurrentHp"] = focus.CurrentHp,
+                ["hittableEnemyCount"] = combatState.HittableEnemies.Count
+            });
         _firstCombatCompleted.TrySetResult();
+    }
+
+    private async Task ExecuteReverseFinisherCombatAsync(CancellationToken cancellationToken)
+    {
+        await WaitUntilAsync(
+            () => CombatManager.Instance.IsInProgress,
+            "reverse Finisher combat did not start",
+            cancellationToken);
+        ICombatState combatState = CombatManager.Instance.DebugOnlyGetState()
+            ?? throw new InvalidOperationException("Reverse Finisher combat state was unavailable.");
+        Player player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())
+            ?? throw new InvalidOperationException("Reverse Finisher local player was unavailable.");
+        ValidateRedesignRunIdentity(player);
+        await WaitUntilAsync(
+            () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
+            "reverse Finisher combat did not reach the player play phase",
+            cancellationToken);
+
+        Creature target = player.Creature;
+        await PowerCmd.Remove<ArtifactPower>(target);
+        await PowerCmd.Remove<EvasionPower>(target);
+        await PowerCmd.Remove<WeakPower>(target);
+        if (target.Block > 0)
+        {
+            await RemoveSmokeBlock(target);
+        }
+
+        await CreatureCmd.SetCurrentHp(target, 1);
+        Creature attacker = await CreatureCmd.Add<DarkNinjaMonster>(combatState);
+        DarkNinjaMonster monster = attacker.Monster as DarkNinjaMonster
+            ?? throw new InvalidOperationException("Reverse Finisher did not create a Dark Ninja attacker.");
+        FinisherSmokeObserver.Reset();
+        await PerformObservedDarkStrike(monster, [target]);
+        await WaitUntilAsync(
+            () => target.IsDead && target.CurrentHp == 0,
+            "Dark Ninja's real move did not kill the one-HP Ninja Slayer",
+            cancellationToken,
+            TimeSpan.FromSeconds(20));
+        FinisherSessionSnapshot reverseFinisher = await RequireCompletedFinisherAsync(
+            "EnemyExecutesNinjaSlayer",
+            resolvedHits: 1,
+            target,
+            cancellationToken);
+
+        await WaitFrames(2);
+        NTransition transition = FindDescendant<NTransition>(_tree.Root)
+            ?? throw new InvalidOperationException("The transition node was unavailable after reverse Finisher.");
+        NinjaSlayerTransitionOverlay? overlay =
+            FindDescendant<NinjaSlayerTransitionOverlay>(transition);
+        Require(!transition.InTransition, "Reverse Finisher left the transition in progress.");
+        Require(
+            transition.MouseFilter == Control.MouseFilterEnum.Ignore,
+            "Reverse Finisher left the transition blocking input.");
+        Require(overlay?.Visible != true, "Reverse Finisher left a black transition overlay visible.");
+        Require(
+            NCombatRoom.Instance?.FindChild(
+                "NinjaSlayerFinisherBackdrop",
+                recursive: true,
+                owned: false) == null,
+            "Reverse Finisher left its black backdrop in the combat tree.");
+        _checkpoints.Write(
+            "finisher.reverse.completed",
+            data: new JsonObject
+            {
+                ["sessionId"] = reverseFinisher.SessionId,
+                ["resolvedHits"] = reverseFinisher.ResolvedHits,
+                ["killAttempts"] = reverseFinisher.KillAttempts.GetValueOrDefault(target),
+                ["successfulKills"] = reverseFinisher.SuccessfulKills.GetValueOrDefault(target),
+                ["targetHp"] = target.CurrentHp
+            });
+        _reverseFinisherCompleted.TrySetResult();
+    }
+
+    private async Task<FinisherSessionSnapshot> RequireCompletedFinisherAsync(
+        string scenario,
+        int resolvedHits,
+        Creature victim,
+        CancellationToken cancellationToken)
+    {
+        FinisherSessionSnapshot? completed = null;
+        await WaitUntilAsync(
+            () =>
+            {
+                FinisherSessionSnapshot[] matches = FinisherSmokeObserver.Snapshots()
+                    .Where(snapshot => snapshot.Scenario == scenario)
+                    .ToArray();
+                completed = matches.Length == 1 && matches[0].CompletionObserved
+                    ? matches[0]
+                    : null;
+                return completed != null;
+            },
+            $"{scenario} Finisher completion was not observed",
+            cancellationToken,
+            TimeSpan.FromSeconds(20));
+
+        FinisherSessionSnapshot snapshot = completed!;
+        Require(
+            FinisherSmokeObserver.Snapshots().Length == 1,
+            "The Finisher smoke window observed more than one session.");
+        Require(snapshot.ResolvedHits == resolvedHits,
+            $"{scenario} Finisher resolved {snapshot.ResolvedHits} hit(s), expected {resolvedHits}.");
+        Require(
+            snapshot.Victims.Count == 1 && ReferenceEquals(snapshot.Victims[0], victim),
+            $"{scenario} Finisher did not own exactly the expected victim.");
+        Require(snapshot.CommitDeaths, $"{scenario} Finisher completed as a cancellation.");
+        Require(snapshot.CompletionFailure == null,
+            $"{scenario} Finisher completion faulted: {snapshot.CompletionFailure}");
+        Require(snapshot.ResourcesReleased,
+            $"{scenario} Finisher completion did not release its session resources.");
+        Require(snapshot.KillAttempts.GetValueOrDefault(victim) == 1,
+            $"{scenario} Finisher attempted to kill its victim more or less than once.");
+        Require(snapshot.SuccessfulKills.GetValueOrDefault(victim) == 1,
+            $"{scenario} Finisher did not complete exactly one successful victim death.");
+        await WaitUntilAsync(
+            () => !FinisherSmokeObserver.HasRegisteredSession()
+                && !FinisherSmokeObserver.HasActiveCameraLease()
+                && FinisherSmokeObserver.ActiveHoverTipLeaseCount() == 0,
+            $"{scenario} Finisher left registry, camera, or hover-tip ownership active",
+            cancellationToken,
+            TimeSpan.FromSeconds(5));
+        return snapshot;
     }
 
     private async Task VerifySawatariEventCombat(CancellationToken cancellationToken)
@@ -443,7 +621,6 @@ internal sealed partial class SmokeController
         object history = manager.History;
         object rng = state.RunState.Rng;
         CardPile[] piles = playerState.AllPiles.ToArray();
-        CardModel[] cards = playerState.AllCards.ToArray();
         AbstractModel[] powers = player.Creature.Powers.Cast<AbstractModel>().ToArray();
 
         _observedSawatariCombat = state;
@@ -456,7 +633,52 @@ internal sealed partial class SmokeController
         {
             Creature[] firstEnemies = state.Enemies.Where(enemy => enemy.IsAlive).ToArray();
             Require(firstEnemies.Length > 0, "Sawatari's first combat had no enemies.");
-            await CreatureCmd.Kill(firstEnemies);
+            Creature finisherTarget = firstEnemies[^1];
+            foreach (Creature enemy in firstEnemies[..^1])
+            {
+                await CreatureCmd.Kill(enemy, force: true);
+            }
+
+            await WaitUntilAsync(
+                () => playerState.Phase == PlayerTurnPhase.Play,
+                "Sawatari's first wave did not reach the player play phase",
+                cancellationToken);
+            if (finisherTarget.CurrentHp > 1)
+            {
+                await CreatureCmd.Damage(
+                    new ThrowingPlayerChoiceContext(),
+                    finisherTarget,
+                    finisherTarget.CurrentHp - 1,
+                    ValueProp.Unblockable | ValueProp.Unpowered,
+                    player.Creature);
+            }
+
+            Require(
+                finisherTarget.IsAlive && finisherTarget.CurrentHp == 1,
+                "Could not prepare Sawatari's first-wave Finisher target at one HP.");
+            FinisherSmokeObserver.Reset();
+            await PlayerCmd.SetEnergy(10m, player);
+            StrikeNinjaSlayerRedesignV1 strike =
+                state.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            await CardPileCmd.Add(strike, PileType.Hand);
+            await CardCmd.AutoPlay(
+                new BlockingPlayerChoiceContext(),
+                strike,
+                finisherTarget);
+            CardModel[] cards = playerState.AllCards.ToArray();
+            FinisherSessionSnapshot normalFinisher = await RequireCompletedFinisherAsync(
+                "NinjaSlayerAttack",
+                resolvedHits: 1,
+                finisherTarget,
+                cancellationToken);
+            _checkpoints.Write(
+                "finisher.normal.completed",
+                data: new JsonObject
+                {
+                    ["sessionId"] = normalFinisher.SessionId,
+                    ["resolvedHits"] = normalFinisher.ResolvedHits,
+                    ["successfulKills"] = normalFinisher.SuccessfulKills.GetValueOrDefault(finisherTarget)
+                });
             await WaitUntilAsync(
                 () => manager.IsPaused && GetSawatariOptions().Count == 2,
                 "Sawatari intermission did not pause combat and show both choices",
@@ -483,6 +705,7 @@ internal sealed partial class SmokeController
             await UiHelper.Click(GetSawatariOptions()[1]);
             await WaitUntilAsync(
                 () => !manager.IsPaused
+                    && !manager.PlayerActionsDisabled
                     && state.Enemies.Any(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster),
                 "Sawatari duel did not resume the original combat",
                 cancellationToken);
@@ -691,14 +914,17 @@ internal sealed partial class SmokeController
             "NINJASLAYER_SMOKE_NON_ATTACK_SOURCE",
             async targets =>
             {
-                await GameCompatibility.Damage.Deal(
+                await CreatureCmd.Damage(
                     new ThrowingPlayerChoiceContext(),
                     targets,
                     1,
                     ValueProp.Move,
                     attacker,
-                    nonAttackSource,
-                    null);
+                    nonAttackSource
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , null
+#endif
+                );
                 await PowerCmd.Apply<WeakPower>(
                     new ThrowingPlayerChoiceContext(),
                     targets,
@@ -1319,19 +1545,11 @@ internal sealed partial class SmokeController
 
     private static Task RemoveSmokeBlock(Creature target)
     {
-        MethodInfo method = typeof(CreatureCmd).GetMethod(
-            nameof(CreatureCmd.LoseBlock),
-            BindingFlags.Public | BindingFlags.Static)
-            ?? throw new MissingMethodException(typeof(CreatureCmd).FullName, nameof(CreatureCmd.LoseBlock));
-        object?[] arguments = method.GetParameters().Length switch
-        {
-            2 => [target, (decimal)target.Block],
-            4 => [new ThrowingPlayerChoiceContext(), target, (decimal)target.Block, null],
-            int count => throw new InvalidOperationException(
-                $"CreatureCmd.LoseBlock has unsupported arity {count}.")
-        };
-        return method.Invoke(null, arguments) as Task
-            ?? throw new InvalidOperationException("CreatureCmd.LoseBlock did not return a Task.");
+#if NINJASLAYER_CHANNEL_STABLE
+        return CreatureCmd.LoseBlock(target, target.Block);
+#else
+        return CreatureCmd.LoseBlock(new ThrowingPlayerChoiceContext(), target, target.Block, null);
+#endif
     }
 
     private async Task RunSafelyAsync()
@@ -1341,8 +1559,14 @@ internal sealed partial class SmokeController
             _checkpoints.Write("driver.started");
             await WaitUntilAsync(() => NGame.Instance?.MainMenu is not null, "main menu did not initialize");
             ValidateLoadedMods();
-            ValidateCoreCapabilities();
-            ValidateRedesignContent();
+            if (_configuration.Phase == SmokePhase.TransitionPerf)
+            {
+                _checkpoints.Write("transition-perf.content-audit-skipped");
+            }
+            else
+            {
+                ValidateRedesignContent();
+            }
             if (_configuration.Phase == SmokePhase.Fresh)
             {
                 await RunFreshPhaseAsync();
@@ -1351,9 +1575,17 @@ internal sealed partial class SmokeController
             {
                 await RunResumePhaseAsync();
             }
+            else if (_configuration.Phase == SmokePhase.ReverseFinisher)
+            {
+                await RunReverseFinisherPhaseAsync();
+            }
             else if (_configuration.Phase == SmokePhase.SawatariSameCombat)
             {
                 await RunSawatariSameCombatPhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.TransitionPerf)
+            {
+                await RunTransitionPerfPhaseAsync();
             }
             else
             {
@@ -1391,7 +1623,7 @@ internal sealed partial class SmokeController
             "The first map gate was reached before combat and rewards completed.");
         await SaveManager.Instance.SaveRun(null);
         Require(SaveManager.Instance.HasRunSave, "Run save was not created after first combat.");
-        ValidateRuntimeIdle("fresh.saved");
+        _checkpoints.Write("fresh.saved");
         _checkpoints.Write("fresh.restart-requested");
         _tree.Quit(RestartRequestedExitCode);
     }
@@ -1403,6 +1635,21 @@ internal sealed partial class SmokeController
         var autoSlayer = new AutoSlayer();
         autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
         await Task.Delay(Timeout.InfiniteTimeSpan);
+    }
+
+    private async Task RunReverseFinisherPhaseAsync()
+    {
+        NGame.Instance!.DebugSeedOverride = _configuration.Seed;
+        SaveManager.Instance.PrefsSave.FastMode = FastModeType.Instant;
+        SaveManager.Instance.SetFtuesEnabled(enabled: false);
+        _checkpoints.Write("finisher.reverse.starting");
+        var autoSlayer = new AutoSlayer();
+        autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        await WaitTaskAsync(
+            _reverseFinisherCompleted.Task,
+            "reverse Finisher scenario did not complete",
+            TimeSpan.FromMinutes(3));
+        _tree.Quit(0);
     }
 
     private async Task RunSawatariSameCombatPhaseAsync()
@@ -1417,7 +1664,6 @@ internal sealed partial class SmokeController
             "Sawatari same-combat scenario did not complete",
             TimeSpan.FromMinutes(3));
         await WaitFrames(2);
-        ValidateRuntimeIdle("sawatari.runtime-idle");
         _checkpoints.Write("sawatari.completed");
         _tree.Quit(0);
     }
@@ -1434,7 +1680,6 @@ internal sealed partial class SmokeController
                 && (NMapScreen.Instance?.IsOpen == true || CombatManager.Instance.IsInProgress),
             "saved run did not load",
             timeout: TimeSpan.FromMinutes(2));
-        await WaitForRuntimeIdleAsync(CancellationToken.None);
         Player player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())
             ?? throw new InvalidOperationException("Resumed local player was unavailable.");
         ValidateRedesignRunIdentity(player);
@@ -1443,7 +1688,6 @@ internal sealed partial class SmokeController
         int lossesBeforeAbandon = SaveManager.Instance.Progress
             .GetOrCreateCharacterStats(canonicalCharacterId)
             .TotalLosses;
-        ValidateRuntimeIdle("resume.loaded");
         _checkpoints.Write("resume.loaded");
 
         Node root = _tree.Root;
@@ -1473,7 +1717,6 @@ internal sealed partial class SmokeController
         Require(
             !SaveManager.Instance.Progress.CharacterStats.ContainsKey(redesignCharacterId),
             "Abandoning the Redesign run created a separate hidden-character progress entry.");
-        ValidateRuntimeIdle("resume.abandoned");
         _checkpoints.Write("resume.completed");
         _tree.Quit(0);
     }
@@ -1513,52 +1756,6 @@ internal sealed partial class SmokeController
         _checkpoints.Write("mods.loaded", data: new JsonObject { ["loaded"] = loadedIds });
     }
 
-    private void ValidateCoreCapabilities()
-    {
-        NinjaSlayerRuntimeHealthSnapshot health = NinjaSlayerRuntimeHealth.Capture();
-        string[] required =
-        [
-            "gameplay", "prepared-safety", "prepared-gameplay", "combat-presentation-pacing",
-            "rapid-card-resolution",
-            "finisher-core", "transition-core"
-        ];
-        string[] unavailable = required
-            .Where(id => !health.Capabilities.TryGetValue(id, out NinjaSlayerCapabilityHealth? status) || !status.IsOperational)
-            .ToArray();
-        Require(unavailable.Length == 0, $"Required capabilities were unavailable: {string.Join(", ", unavailable)}");
-        _checkpoints.Write("capabilities.operational", data: HealthData(health));
-    }
-
-    private void ValidateRuntimeIdle(string checkpoint)
-    {
-        NinjaSlayerRuntimeHealthSnapshot health = NinjaSlayerRuntimeHealth.Capture();
-        Require(!health.FinisherSessionActive, "A finisher session remained active.");
-        Require(!health.TransitionSessionActive && !health.TransitionPending, "A transition session remained active.");
-        Require(!health.CinematicCameraActive, "A cinematic camera lease remained active.");
-        Require(!health.ScreenShakeSuppressed, "Screen shake suppression remained active.");
-        Require(!health.XAttackAudioSuppressed && !health.XAttackComboActive, "An X attack scope remained active.");
-        _checkpoints.Write(checkpoint, data: HealthData(health));
-    }
-
-    private async Task WaitForRuntimeIdleAsync(CancellationToken cancellationToken)
-    {
-        await WaitUntilAsync(
-            () =>
-            {
-                NinjaSlayerRuntimeHealthSnapshot health = NinjaSlayerRuntimeHealth.Capture();
-                return !health.FinisherSessionActive
-                    && !health.TransitionSessionActive
-                    && !health.TransitionPending
-                    && !health.CinematicCameraActive
-                    && !health.ScreenShakeSuppressed
-                    && !health.XAttackAudioSuppressed
-                    && !health.XAttackComboActive;
-            },
-            "runtime ownership did not return to idle",
-            cancellationToken,
-            TimeSpan.FromSeconds(20));
-    }
-
     private async Task WaitUntilAsync(
         Func<bool> predicate,
         string failure,
@@ -1594,6 +1791,24 @@ internal sealed partial class SmokeController
         return node!;
     }
 
+    private static T? FindDescendant<T>(Node root) where T : Node
+    {
+        if (root is T match)
+        {
+            return match;
+        }
+
+        foreach (Node child in root.GetChildren())
+        {
+            if (FindDescendant<T>(child) is { } descendant)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
+    }
+
     private void TryCaptureFailureScreenshot()
     {
         try
@@ -1617,7 +1832,4 @@ internal sealed partial class SmokeController
     private static JsonObject ExceptionData(Exception exception) =>
         new() { ["exception"] = exception.ToString() };
 
-    private static JsonNode HealthData(NinjaSlayerRuntimeHealthSnapshot health) =>
-        JsonSerializer.SerializeToNode(health, SmokeJsonContext.Default.NinjaSlayerRuntimeHealthSnapshot)
-        ?? throw new InvalidOperationException("Runtime health snapshot serialization returned null.");
 }

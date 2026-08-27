@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -9,7 +10,6 @@ using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -170,14 +170,17 @@ public sealed class YukanoMonster : ModMonsterTemplate
 
                 using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                 {
-                    results.AddRange(await GameCompatibility.Damage.Deal(
+                    results.AddRange(await CreatureCmd.Damage(
                         choiceContext,
                         [target],
                         damage,
                         command.DamageProps,
                         Creature,
-                        null,
-                        null));
+                        null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                        , null
+#endif
+                    ));
                 }
             }
         }

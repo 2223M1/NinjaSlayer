@@ -7,7 +7,6 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 
@@ -110,55 +109,13 @@ internal static class NinjaSlayerFinisherCinematic
         return session?.Actor == creature ? session.EnsureActionPeak() : Task.CompletedTask;
     }
 
-    internal static void TryProtectLethalDamage(
-        Creature target,
-        ref decimal amount,
-        out FinisherProtectionToken? token) =>
-        FinisherProtectionService.TryProtectLethalDamage(target, ref amount, out token);
-
-    internal static void ConfirmProtectedDamageResult(
-        DamageResult? result,
-        bool originalRan,
-        FinisherProtectionToken? token) =>
-        FinisherProtectionService.ConfirmProtectedDamageResult(result, originalRan, token);
-
-    internal static void FinalizeLethalProtection(FinisherProtectionToken? token) =>
-        FinisherProtectionService.FinalizeLethalProtection(token);
-
-    internal static bool TryTakeDamageDisplayOverride(DamageResult result, out int displayDamage) =>
-        FinisherProtectionService.TryTakeDamageDisplayOverride(result, out displayDamage);
-
-    internal static void NotifyPrimaryAttackAnimation(Creature creature, string triggerName)
-    {
-        FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryAttackAnimation(creature, triggerName);
-    }
-
-    internal static void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
-    {
-        FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
-    }
-
-    internal static CardPlay? ResolveActiveCardPlay(Creature? dealer, CardModel? cardSource)
-    {
-        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
-        return session != null && session.Actor == dealer && session.CardPlay?.Card == cardSource
-            ? session.CardPlay
-            : null;
-    }
-
-    internal static void NotifyDeathAnimationStarting(MegaCrit.Sts2.Core.Nodes.Combat.NCreature creature)
-    {
-        FinisherSessionRegistry.GetActiveSession()?.NotifyDeathAnimationStarting(creature);
-    }
-
     internal static bool TryInterceptAttackCommand(
         AttackCommand command,
         PlayerChoiceContext? choiceContext,
         out Task<AttackCommand>? result)
     {
         result = null;
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || IsCommandBypassed(command)
+        if (IsCommandBypassed(command)
             || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
             || FinisherEligibilityService.IsExcludedAttackCard(spec.Card))
         {
@@ -184,8 +141,7 @@ internal static class NinjaSlayerFinisherCinematic
         out Task<IEnumerable<DamageResult>>? result)
     {
         result = null;
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || DirectDamageBypassDepth.Value > 0
+        if (DirectDamageBypassDepth.Value > 0
             || dealer?.Player?.Character is not INinjaSlayerCharacter
             || cardSource?.Type != CardType.Attack
             || cardPlay == null
@@ -224,12 +180,6 @@ internal static class NinjaSlayerFinisherCinematic
         return true;
     }
 
-    internal static Task WrapAfterCardPlayed(Task original, CardPlay cardPlay) =>
-        FinisherCleanupService.CompleteAfterCardPlayed(original, cardPlay);
-
-    internal static Task WrapCardPlay(Task original, CardModel card) =>
-        FinisherCleanupService.CleanupAfterCardPlay(original, card);
-
     public static async Task<AttackCommand> ExecuteWithFinisher(
         AttackCommand command,
         PlayerChoiceContext choiceContext,
@@ -261,43 +211,36 @@ internal static class NinjaSlayerFinisherCinematic
             return await ExecuteOriginalCommand(command, choiceContext);
         }
 
-        bool transferred = false;
+        AttackCommand result;
         try
         {
-            await session.Begin();
-            AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
+            session.Begin();
+            result = await ExecuteOriginalCommand(command, choiceContext);
             if (session.RequiresAfterCardPlayed)
             {
                 FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                transferred = true;
+                return result;
             }
-            else
+        }
+        catch (Exception originalFailure)
+        {
+            try
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await session.CompleteAsync(playPose: false);
+            }
+            catch (Exception completionFailure)
+            {
+                throw new AggregateException(
+                    "Finisher card execution and cleanup both failed.",
+                    originalFailure,
+                    completionFailure);
             }
 
-            return result;
-        }
-        catch (Exception ex)
-        {
-            await session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.CommitWithoutPose,
-                ex.Message);
             throw;
         }
-        finally
-        {
-            if (!transferred)
-            {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Cancelled,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Command wrapper exited before normal completion.");
-            }
-        }
+
+        await session.CompleteAsync(playPose: true);
+        return result;
     }
 
     public static async Task ExecuteSequenceWithFinisher(
@@ -315,41 +258,34 @@ internal static class NinjaSlayerFinisherCinematic
             return;
         }
 
-        bool transferred = false;
         try
         {
-            await session.Begin();
+            session.Begin();
             await sequence();
             if (session.RequiresAfterCardPlayed)
             {
                 FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                transferred = true;
-            }
-            else
-            {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                return;
             }
         }
-        catch (Exception ex)
+        catch (Exception originalFailure)
         {
-            await session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.CommitWithoutPose,
-                ex.Message);
+            try
+            {
+                await session.CompleteAsync(playPose: false);
+            }
+            catch (Exception completionFailure)
+            {
+                throw new AggregateException(
+                    "Finisher sequence and cleanup both failed.",
+                    originalFailure,
+                    completionFailure);
+            }
+
             throw;
         }
-        finally
-        {
-            if (!transferred)
-            {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Cancelled,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Sequence wrapper exited before normal completion.");
-            }
-        }
+
+        await session.CompleteAsync(playPose: true);
     }
 
     public static async Task ExecuteDirectWithFinisher(
@@ -376,41 +312,34 @@ internal static class NinjaSlayerFinisherCinematic
             return;
         }
 
-        bool transferred = false;
         try
         {
-            await session.Begin();
+            session.Begin();
             await damageAction();
             if (session.RequiresAfterCardPlayed)
             {
                 FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                transferred = true;
-            }
-            else
-            {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                return;
             }
         }
-        catch (Exception ex)
+        catch (Exception originalFailure)
         {
-            await session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.CommitWithoutPose,
-                ex.Message);
+            try
+            {
+                await session.CompleteAsync(playPose: false);
+            }
+            catch (Exception completionFailure)
+            {
+                throw new AggregateException(
+                    "Finisher direct damage and cleanup both failed.",
+                    originalFailure,
+                    completionFailure);
+            }
+
             throw;
         }
-        finally
-        {
-            if (!transferred)
-            {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Cancelled,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Direct-damage wrapper exited before normal completion.");
-            }
-        }
+
+        await session.CompleteAsync(playPose: true);
     }
 
     private static async Task<IEnumerable<DamageResult>> ExecuteDirectDamageWithFinisher(
@@ -468,14 +397,17 @@ internal static class NinjaSlayerFinisherCinematic
         DirectDamageBypassDepth.Value++;
         try
         {
-            return await GameCompatibility.Damage.Deal(
+            return await CreatureCmd.Damage(
                 choiceContext,
                 targets,
                 amount,
                 props,
                 dealer,
-                cardSource,
-                cardPlay);
+                cardSource
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , cardPlay
+#endif
+            );
         }
         finally
         {

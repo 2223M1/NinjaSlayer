@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -52,7 +51,11 @@ public sealed class PunchRedesignV1 : NinjaSlayerStandaloneCardTemplate
                 async _ =>
                 {
                     AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                        .FromCard(this)
+#else
                         .FromCard(this, cardPlay)
+#endif
                         .WithHeavyBluntHitFx()
                         .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
                         .Targeting(cardPlay.Target!);
@@ -105,7 +108,11 @@ public sealed class IyaEchoRedesignV1 : NinjaSlayerStandaloneCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -159,14 +166,17 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         {
             await CardCmd.Exhaust(choiceContext, status, causedByEthereal: status == this);
             NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner.Creature]);
-            await GameCompatibility.Damage.Deal(
+            await CreatureCmd.Damage(
                 choiceContext,
                 [Owner.Creature],
                 DynamicVars.HpLoss.BaseValue,
                 ValueProp.Unblockable | ValueProp.Unpowered,
                 Owner.Creature,
-                this,
-                null);
+                this
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                , null
+#endif
+            );
 
             IReadOnlyList<Creature> enemies = CombatState?.HittableEnemies ?? [];
             if (enemies.Count > 0)

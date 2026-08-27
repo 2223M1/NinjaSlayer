@@ -26,8 +26,7 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
     {
         MonsterModel? monster = __instance.Entity.Monster;
         NCombatRoom? room = NCombatRoom.Instance;
-        if (!NinjaSlayerPatchCapabilities.BossBurstPresentationEnabled
-            || !shouldRemove
+        if (!shouldRemove
             || monster == null
             || room == null
             || !__instance.Entity.IsPrimaryEnemy
@@ -82,7 +81,7 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
             }
             Entry.Logger.Error(
                 $"Boss death presentation setup failed for {monster.Id.Entry}: {exception}");
-            return true;
+            throw;
         }
     }
 }

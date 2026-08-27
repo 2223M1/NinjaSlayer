@@ -12,7 +12,6 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.TestSupport;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Encounters;
 using NinjaSlayer.Monsters;
@@ -119,8 +118,12 @@ public sealed class DarkNinjaEvent : ModEventTemplate
             DarkNinjaMusicSession.Begin(eventRoom);
         }
 
+        EncounterModel encounter = CanonicalEncounter;
+#if NINJASLAYER_CHANNEL_STABLE
+        encounter = encounter.ToMutable();
+#endif
         EnterCombatWithoutExitingEvent(
-            GameCompatibility.ResolveEventCombatEncounter(CanonicalEncounter),
+            encounter,
             [],
             shouldResumeAfterCombat: true);
         return Task.CompletedTask;

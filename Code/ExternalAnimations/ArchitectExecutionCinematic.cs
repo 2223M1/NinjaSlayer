@@ -11,7 +11,6 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Runs.History;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -301,7 +300,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
             fallDirection = 1f;
         }
 
-        GameCompatibility.CreaturePresentation.DisableInteractionForDeath(_architectNode);
+        CreatureDeathInteractionAdapter.Disable(_architectNode);
         _architectNode.AnimHideIntent();
         _architectNode.AnimDisableUi();
         _architectDeathCommitted = true;
@@ -540,10 +539,20 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private Task CompleteEvent() => _victoryCompletionTask ??= CompleteEventCore();
 
-    private async Task CompleteEventCore()
+    private Task CompleteEventCore()
     {
         ArchitectVictoryCleanup.Mark(_owner);
-        await GameCompatibility.ArchitectVictory.Complete(_owner.Player!, _room);
+#if NINJASLAYER_LEGACY_ARCHITECT_VICTORY_COMPLETION
+        if (_owner.Player!.RunState.Players.Count > 1)
+        {
+            _room.SetWaitingForOtherPlayersOverlayVisible(visible: true);
+        }
+
+        RunManager.Instance.ActChangeSynchronizer.SetLocalPlayerReady();
+        return Task.CompletedTask;
+#else
+        return RunManager.Instance.WinRun();
+#endif
     }
 
     private void HideArchitectVisual()

@@ -47,7 +47,7 @@ public sealed class NinjaSlayerSwipePowerStealPatch : IPatchMethod
     public static string Description =>
         "Resolve a valid RunState deck card before Thieving Hopper removes NinjaSlayer cards from the deck.";
 
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(SwipePower), nameof(SwipePower.Steal), [typeof(CardModel)])];

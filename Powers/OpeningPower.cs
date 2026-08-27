@@ -15,6 +15,25 @@ public sealed partial class OpeningPower : NinjaSlayerPowerTemplate
 
     public override PowerStackType StackType => PowerStackType.Counter;
 
+#if NINJASLAYER_LEGACY_DAMAGE_API
+    public override decimal ModifyDamageMultiplicative(
+        Creature? target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource) =>
+        ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
+#else
+    public override decimal ModifyDamageMultiplicative(
+        Creature? target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay) =>
+        ModifyDamageMultiplicativeCore(target, amount, props, dealer, cardSource);
+#endif
+
     private decimal ModifyDamageMultiplicativeCore(
         Creature? target,
         decimal amount,

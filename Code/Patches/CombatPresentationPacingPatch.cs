@@ -1,7 +1,13 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using STS2RitsuLib.Patching.Models;
 using STS2RitsuLib.Utils.HarmonyIl;
 
@@ -10,15 +16,50 @@ namespace NinjaSlayer.Code.Patches;
 internal static class CombatPresentationPacingPatch
 {
     private const string PatchIdPrefix = "ninjaslayer_combat_presentation_pacing";
+    private static readonly MethodInfo CustomWait = RequireMethod(
+        typeof(Cmd),
+        nameof(Cmd.CustomScaledWait),
+        [typeof(float), typeof(float), typeof(bool), typeof(CancellationToken)]);
 
     public static DynamicPatchInfo[] CreateDynamicPatches()
     {
-        if (!GameCompatibility.CombatPresentationPacing.TryResolveStateMachines(
-                out GameCompatibility.RuntimePatchTarget[] targets,
-                out string reason))
+        var targets = new (string IdSuffix, MethodInfo Method)[]
         {
-            throw new MissingMethodException(reason);
-        }
+            (
+                "creature-damage",
+                ResolveAsyncMoveNext(
+                    typeof(CreatureCmd),
+                    nameof(CreatureCmd.Damage),
+                    [
+                        typeof(PlayerChoiceContext),
+                        typeof(IEnumerable<Creature>),
+                        typeof(decimal),
+                        typeof(ValueProp),
+                        typeof(Creature),
+                        typeof(CardModel)
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                        , typeof(CardPlay)
+#endif
+                    ])),
+            (
+                "power-apply",
+                ResolveAsyncMoveNext(
+                    typeof(PowerCmd),
+                    nameof(PowerCmd.Apply),
+                    [
+                        typeof(PlayerChoiceContext), typeof(PowerModel), typeof(Creature),
+                        typeof(decimal), typeof(Creature), typeof(CardModel), typeof(bool)
+                    ])),
+            (
+                "power-modify-amount",
+                ResolveAsyncMoveNext(
+                    typeof(PowerCmd),
+                    nameof(PowerCmd.ModifyAmount),
+                    [
+                        typeof(PlayerChoiceContext), typeof(PowerModel), typeof(decimal),
+                        typeof(Creature), typeof(CardModel), typeof(bool)
+                    ]))
+        };
 
         var transpiler = new HarmonyMethod(
             typeof(CombatPresentationPacingPatch),
@@ -36,8 +77,6 @@ internal static class CombatPresentationPacingPatch
         IEnumerable<CodeInstruction> instructions,
         MethodBase original)
     {
-        MethodInfo customWait = GameCompatibility.CombatPresentationPacing.CustomWait
-            ?? throw new MissingMethodException("Cmd.CustomScaledWait");
         bool isDamage = original.DeclaringType?.DeclaringType == typeof(MegaCrit.Sts2.Core.Commands.CreatureCmd);
         MethodInfo scopedWait = AccessTools.Method(
                 typeof(CombatPresentationPacingScope),
@@ -49,9 +88,28 @@ internal static class CombatPresentationPacingPatch
         HarmonyIlRewriteReport report = HarmonyAsyncIl.RedirectAwaitedCalls(
             rewriter,
             "NinjaSlayer scoped combat presentation pacing",
-            customWait,
+            CustomWait,
             scopedWait,
             code => code.Any(HarmonyIl.IsCall(scopedWait)));
         return rewriter.InstructionsChecked(report);
     }
+
+    private static MethodInfo ResolveAsyncMoveNext(
+        Type declaringType,
+        string methodName,
+        Type[] parameterTypes)
+    {
+        MethodInfo method = RequireMethod(declaringType, methodName, parameterTypes);
+        Type stateMachine = method.GetCustomAttribute<AsyncStateMachineAttribute>()?.StateMachineType
+            ?? throw new MissingMethodException(
+                $"{declaringType.FullName}.{methodName} has no async state machine.");
+        return RequireMethod(stateMachine, nameof(IAsyncStateMachine.MoveNext), Type.EmptyTypes);
+    }
+
+    private static MethodInfo RequireMethod(
+        Type declaringType,
+        string methodName,
+        Type[] parameterTypes) =>
+        AccessTools.Method(declaringType, methodName, parameterTypes)
+        ?? throw new MissingMethodException(declaringType.FullName, methodName);
 }

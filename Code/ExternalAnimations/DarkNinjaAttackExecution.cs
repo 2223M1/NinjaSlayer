@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
@@ -202,14 +201,17 @@ internal static class DarkNinjaAttackExecution
                 return [];
             }
 
-            List<DamageResult> results = (await GameCompatibility.Damage.Deal(
+            List<DamageResult> results = (await CreatureCmd.Damage(
                     choiceContext,
                     targets,
                     damage,
                     command.DamageProps,
                     attacker,
-                    null,
-                    null))
+                    null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , null
+#endif
+                ))
                 .ToList();
             Results.AddRange(results);
             return results;

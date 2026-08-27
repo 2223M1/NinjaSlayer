@@ -1,5 +1,3 @@
-using Godot;
-using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -8,18 +6,14 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
-using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
-using STS2RitsuLib.Combat.SecondaryResources;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -27,99 +21,72 @@ internal sealed partial class SmokeController
 {
     private void ValidateRedesignContent()
     {
-        Type[] expectedTypes =
+        CardModel[] poolCards = ModelDb.CardPool<NinjaSlayerRedesignCardPool>().AllCards.ToArray();
+        CardModel[] cards = poolCards.OfType<NinjaSlayerRedesignCardTemplate>().ToArray();
+        Require(poolCards.Length == 75, $"Redesign card pool contains {poolCards.Length} cards instead of 72 design cards and 3 Ancient cards.");
+        Require(cards.Length == 72, $"Redesign card pool contains {cards.Length} design cards instead of 72.");
+
+        Type[] expectedBasicTypes =
         [
-            typeof(AlabamaDropRedesignV1),
-            typeof(AssassinationFistRedesignV1),
-            typeof(BackBridgeRedesignV1),
-            typeof(BangBangFistRedesignV1),
-            typeof(BeatPeopleChadoRedesignV1),
-            typeof(BladeDanceRedesignV1),
-            typeof(BladesComeRedesignV1),
-            typeof(BloodTearsRedesignV1),
-            typeof(BorrowedDexterityRedesignV1),
-            typeof(BrewTeaRedesignV1),
-            typeof(BurningStrikeRedesignV1),
-            typeof(ChadoBreathRedesignV1),
-            typeof(ChopRedesignV1),
-            typeof(ClankDrinkTeaRedesignV1),
-            typeof(ColdBrewRedesignV1),
-            typeof(CollapseFist),
-            typeof(ContraptionRedesignV1),
-            typeof(DefendNinjaSlayerRedesignV1),
-            typeof(DrinkTeaRedesignV1),
-            typeof(DrowsyBlackTeaRedesignV1),
-            typeof(EvadeRedesignV1),
-            typeof(EvolutionRedesignV1),
-            typeof(FlowingGuardRedesignV1),
-            typeof(FootworkRedesignV1),
-            typeof(ForgoStrengthRedesignV1),
-            typeof(GreatUkeRedesignV1),
-            typeof(HalfMoonCompassKickRedesignV1),
-            typeof(HandChopRedesignV1),
-            typeof(HellTornadoRedesignV1),
-            typeof(IBlockRedesignV1),
-            typeof(ImpureFlameRedesignV1),
-            typeof(InjectionRedesignV1),
-            typeof(IronShirtRedesignV1),
-            typeof(IyaIronSlashWaveRedesignV1),
-            typeof(KarateFinishRedesignV1),
-            typeof(KarateRollingStoneRedesignV1),
-            typeof(KarateWallRedesignV1),
-            typeof(KillingIntentRedesignV1),
-            typeof(LockOnRedesignV1),
-            typeof(LuckyStrikeRedesignV1),
-            typeof(MasochisticBlissRedesignV1),
-            typeof(MomentumRedesignV1),
-            typeof(MurderFistRedesignV1),
-            typeof(NarakuRecoveryRedesignV1),
-            typeof(NinjaGreetingRedesignV1),
-            typeof(NinjaWhipRedesignV1),
-            typeof(ObserverGuardRedesignV1),
-            typeof(OmnidirectionalThrowRedesignV1),
-            typeof(OneBodyOneSoul),
-            typeof(OpeningGuardRedesignV1),
-            typeof(PalmThrustRedesignV1),
-            typeof(PourTeaRedesignV1),
-            typeof(PursuitStrikeRedesignV1),
-            typeof(ReadyBladeRedesignV1),
-            typeof(RecycleRedesignV1),
-            typeof(RedBlackFlameRedesignV1),
-            typeof(RedoubleRedesignV1),
-            typeof(ReflexGuardRedesignV1),
-            typeof(RepeatSweepRedesignV1),
-            typeof(RetainedForceRedesignV1),
-            typeof(RetainGuardRedesignV1),
-            typeof(RiffleRedesignV1),
-            typeof(RubHandsRedesignV1),
-            typeof(SenchaStormRedesignV1),
-            typeof(ShieldFromNothingRedesignV1),
-            typeof(ShurikenStockRedesignV1),
-            typeof(ShurikenVolleyRedesignV1),
             typeof(StrikeNinjaSlayerRedesignV1),
-            typeof(SweepKickRedesignV1),
-            typeof(ThrowKunaiRedesignV1),
-            typeof(TornadoFistRedesignV1),
+            typeof(DefendNinjaSlayerRedesignV1),
+            typeof(KarateStraightRedesignV1),
+            typeof(TurtleShellRedesignV1)
+        ];
+        HashSet<Type> expectedBasic = [.. expectedBasicTypes];
+        HashSet<Type> actualBasic = [.. cards.Where(card => card.Rarity == CardRarity.Basic).Select(card => card.GetType())];
+        Require(
+            actualBasic.SetEquals(expectedBasic),
+            $"Redesign Basic card mismatch. Missing=[{string.Join(", ", expectedBasic.Except(actualBasic).Select(type => type.Name))}], " +
+            $"Unexpected=[{string.Join(", ", actualBasic.Except(expectedBasic).Select(type => type.Name))}].");
+
+        (CardRarity Rarity, IReadOnlyList<string> ExpectedIds)[] rewardPools =
+        [
+            (CardRarity.Common, RedesignV1Rules.CommonRewardCardIds),
+            (CardRarity.Uncommon, RedesignV1Rules.UncommonRewardCardIds),
+            (CardRarity.Rare, RedesignV1Rules.RareRewardCardIds)
+        ];
+        foreach ((CardRarity rarity, IReadOnlyList<string> expectedIds) in rewardPools)
+        {
+            HashSet<string> expected = [.. expectedIds];
+            HashSet<string> actual =
+            [
+                .. cards
+                    .Where(card => card.Rarity == rarity)
+                    .Select(card => card.GetType().Name)
+            ];
+            Require(
+                actual.SetEquals(expected),
+                $"Redesign {rarity} card mismatch. Missing=[{string.Join(", ", expected.Except(actual))}], " +
+                $"Unexpected=[{string.Join(", ", actual.Except(expected))}].");
+        }
+
+        Type[] expectedAncientTypes =
+        [
+            typeof(CollapseFistRedesignV1),
+            typeof(OneBodyOneSoul),
             typeof(ZazenDrink)
         ];
-        CardModel[] poolCards = ModelDb.CardPool<NinjaSlayerRedesignCardPool>().AllCards.ToArray();
-        HashSet<Type> expected = [.. expectedTypes];
-        HashSet<Type> actual = [.. poolCards.Select(card => card.GetType())];
+        HashSet<Type> expectedAncients = [.. expectedAncientTypes];
+        HashSet<Type> actualAncients = [.. poolCards.Except(cards).Select(card => card.GetType())];
         Require(
-            actual.SetEquals(expected),
-            $"Redesign card pool mismatch. Missing=[{string.Join(", ", expected.Except(actual).Select(type => type.Name))}], " +
-            $"Unexpected=[{string.Join(", ", actual.Except(expected).Select(type => type.Name))}].");
-        Require(poolCards.Length == 72, $"Redesign card pool contains {poolCards.Length} cards instead of 69 design cards and 3 Ancient cards.");
+            actualAncients.SetEquals(expectedAncients),
+            $"Redesign Ancient card mismatch. Missing=[{string.Join(", ", expectedAncients.Except(actualAncients).Select(type => type.Name))}], " +
+            $"Unexpected=[{string.Join(", ", actualAncients.Except(expectedAncients).Select(type => type.Name))}].");
 
-        CardModel[] cards = poolCards.OfType<NinjaSlayerRedesignCardTemplate>().ToArray();
-        Require(cards.Length == 69, $"Redesign card pool contains {cards.Length} cards instead of 69.");
         Require(
             ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.All(card => card is not NinjaSlayerRedesignCardTemplate),
             "Legacy card pool contains a Redesign card.");
         Require(cards.Count(card => card.Rarity == CardRarity.Basic) == 4, "Redesign card pool must contain 4 Basic cards.");
-        Require(cards.Count(card => card.Rarity == CardRarity.Common) == 15, "Redesign card pool must contain 15 Common cards.");
-        Require(cards.Count(card => card.Rarity == CardRarity.Uncommon) == 30, "Redesign card pool must contain 30 Uncommon cards.");
-        Require(cards.Count(card => card.Rarity == CardRarity.Rare) == 20, "Redesign card pool must contain 20 Rare cards.");
+        Require(
+            cards.Count(card => card.Rarity == CardRarity.Common) == RedesignV1Rules.CommonRewardCount,
+            $"Redesign card pool must contain {RedesignV1Rules.CommonRewardCount} Common cards.");
+        Require(
+            cards.Count(card => card.Rarity == CardRarity.Uncommon) == RedesignV1Rules.UncommonRewardCount,
+            $"Redesign card pool must contain {RedesignV1Rules.UncommonRewardCount} Uncommon cards.");
+        Require(
+            cards.Count(card => card.Rarity == CardRarity.Rare) == RedesignV1Rules.RareRewardCount,
+            $"Redesign card pool must contain {RedesignV1Rules.RareRewardCount} Rare cards.");
         Require(cards.Select(card => card.Id).Distinct().Count() == cards.Length, "Redesign card pool contains duplicate IDs.");
 
         foreach (CardModel canonical in poolCards)
@@ -135,10 +102,6 @@ internal sealed partial class SmokeController
             Require(!string.IsNullOrWhiteSpace(canonical.Description.GetRawText()), $"Redesign card {canonical.Id} has an empty description.");
             Require(!string.IsNullOrWhiteSpace(mutable.GetDescriptionForPile(PileType.None)), $"Redesign card {canonical.Id} could not format its description.");
         }
-
-        Require(
-            typeof(NinjaSlayerRedesignCardTemplate).Assembly.GetType("NinjaSlayer.Cards.RedesignV1.RedesignV1ProxyCard`1") is null,
-            "The removed Redesign proxy-card type is still present.");
 
         CharacterModel visible = ModelDb.Character<NinjaSlayerCharacter>();
         CharacterModel redesign = ModelDb.Character<NinjaSlayerRedesignCharacter>();
@@ -200,31 +163,6 @@ internal sealed partial class SmokeController
         }
     }
 
-    private static void ValidateTeaCounterLayout()
-    {
-        NCombatUi ui = NCombatRoom.Instance?.Ui
-            ?? throw new InvalidOperationException("Combat UI was unavailable for the tea counter check.");
-        Control starCounter = ui.GetNode<Control>("%StarCounter");
-        NSecondaryResourceCounter teaCounter = ui.GetChildren()
-            .OfType<NSecondaryResourceCounter>()
-            .Single();
-        NSecondaryResourceIcon icon = teaCounter.GetChildren()
-            .OfType<NSecondaryResourceIcon>()
-            .Single();
-        MegaLabel label = teaCounter.GetChildren()
-            .OfType<MegaLabel>()
-            .Single();
-
-        Require(
-            teaCounter.GlobalPosition.IsEqualApprox(starCounter.GlobalPosition),
-            $"Tea counter did not occupy the Regent star-counter position. " +
-            $"tea={teaCounter.GlobalPosition}, star={starCounter.GlobalPosition}.");
-        Require(teaCounter.Size.IsEqualApprox(starCounter.Size), "Tea counter did not use the Regent star-counter size.");
-        Require(teaCounter.Scale.IsEqualApprox(starCounter.Scale), "Tea counter did not use the Regent star-counter scale.");
-        Require(icon.Position.IsEqualApprox(label.Position), "Tea amount was not centered on its icon.");
-        Require(icon.Size.IsEqualApprox(label.Size), "Tea amount and icon used different layout bounds.");
-    }
-
     private static void ValidateRedesignCombatProgress(ICombatState combatState)
     {
         ModelId visibleId = ModelDb.Character<NinjaSlayerCharacter>().Id;
@@ -255,196 +193,87 @@ internal sealed partial class SmokeController
         var choiceContext = new BlockingPlayerChoiceContext();
         await PlayerCmd.SetEnergy(20m, player);
 
-        ShurikenVolleyRedesignV1 stockGrantingAttack = combatState.CreateCard<ShurikenVolleyRedesignV1>(player);
-        ShurikenStockPower grantedStock = await PowerCmd.Apply<ShurikenStockPower>(
-            choiceContext,
-            player.Creature,
-            2,
-            player.Creature,
-            stockGrantingAttack)
-            ?? throw new InvalidOperationException("Shuriken Stock could not be applied.");
-        await grantedStock.AfterCardPlayed(
-            choiceContext,
-            new CardPlay
-            {
-                Card = stockGrantingAttack,
-                Player = player,
-                Target = target,
-                ResultPile = PileType.Discard,
-                Resources = new ResourceInfo
-                {
-                    EnergySpent = 0,
-                    EnergyValue = 0,
-                    StarsSpent = 0,
-                    StarValue = 0
-                },
-                IsAutoPlay = true,
-                PlayIndex = 0,
-                PlayCount = 1
-            });
-        Require(grantedStock.Amount == 2, "The Attack that granted Shuriken Stock consumed one of its new charges.");
-        await PowerCmd.Remove(grantedStock);
-
-        HandChopRedesignV1 handChop = combatState.CreateCard<HandChopRedesignV1>(player);
-        await CardPileCmd.Add(handChop, PileType.Hand);
-        await CardCmd.AutoPlay(choiceContext, handChop, target);
-        Require(handChop.Pile?.Type == PileType.Hand, "Hand Chop did not return to hand.");
-
-        ChopRedesignV1 chop = combatState.CreateCard<ChopRedesignV1>(player);
-        int strengthBeforeChop = player.Creature.GetPower<StrengthPower>()?.Amount ?? 0;
-        int karateBeforeChop = target.GetPower<KaratePower>()?.Amount ?? 0;
-        await CardPileCmd.Add(chop, PileType.Hand);
-        await CardCmd.AutoPlay(choiceContext, chop, target);
-        Require(player.Creature.GetPower<StrengthPower>()?.Amount == strengthBeforeChop + 3, "Chop did not grant temporary Strength.");
-        Require((target.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeChop, "Chop retained the legacy Karate effect.");
-        ChopTemporaryStrengthPower chopStrength = player.Creature.GetPower<ChopTemporaryStrengthPower>()
-            ?? throw new InvalidOperationException("Chop did not use its native temporary Strength power.");
-        Require(chop.Pile?.Type == PileType.Draw, "Chop did not move to the draw pile.");
-        Require(ReferenceEquals(PileType.Draw.GetPile(player).Cards.First(), chop), "Chop was not placed on top of the draw pile.");
-        await chopStrength.AfterSideTurnEnd(choiceContext, player.Creature.Side, [player.Creature]);
-        Require(player.Creature.GetPower<ChopTemporaryStrengthPower>() is null, "Chop temporary Strength survived the player's turn.");
-        Require((player.Creature.GetPower<StrengthPower>()?.Amount ?? 0) == strengthBeforeChop, "Chop removed the wrong Strength amount.");
-
-        foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
-        {
-            await CardPileCmd.Add(card, PileType.Draw);
-        }
-        DefendNinjaSlayerRedesignV1 repeated = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        SenchaStormRedesignV1 repeat = combatState.CreateCard<SenchaStormRedesignV1>(player);
-        await CardPileCmd.Add(repeated, PileType.Hand);
-        await CardPileCmd.Add(repeat, PileType.Hand);
-        await CardCmd.AutoPlay(choiceContext, repeat, null);
-        await CardCmd.AutoPlay(choiceContext, repeated, player.Creature);
-        Require(repeat.Pile?.Type == PileType.Exhaust, "Sencha Storm did not exhaust.");
-        Require(repeated.Pile?.Type == PileType.Hand, "Sencha Storm did not make the selected card Repeat.");
+        await PowerCmd.Apply<KaratePower>(choiceContext, player.Creature, 3, player.Creature, null);
+        int karateBeforeJujutsu = player.Creature.GetPower<KaratePower>()?.Amount ?? 0;
+        int dexterityBeforeJujutsu = player.Creature.GetPower<DexterityPower>()?.Amount ?? 0;
+        JujutsuStanceRedesignV1 jujutsu = combatState.CreateCard<JujutsuStanceRedesignV1>(player);
+        await CardPileCmd.Add(jujutsu, PileType.Hand);
+        await CardCmd.AutoPlay(choiceContext, jujutsu, player.Creature);
+        Require(jujutsu.Pile?.Type == PileType.Hand, "Jujutsu Stance did not return to hand.");
+        Require(
+            (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeJujutsu - 3,
+            "Jujutsu Stance did not spend its Karate cost.");
+        Require(
+            (player.Creature.GetPower<DexterityPower>()?.Amount ?? 0) == dexterityBeforeJujutsu + 1,
+            "Jujutsu Stance did not grant Dexterity.");
 
         DefendNinjaSlayerRedesignV1 retained = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        RedBlackFlameRedesignV1 redBlackFlame = combatState.CreateCard<RedBlackFlameRedesignV1>(player);
+        NinjaGreetingRedesignV1 greeting = combatState.CreateCard<NinjaGreetingRedesignV1>(player);
         await CardPileCmd.Add(retained, PileType.Hand);
-        await CardPileCmd.Add(redBlackFlame, PileType.Hand);
-        await CardCmd.AutoPlay(choiceContext, redBlackFlame, target);
-        Require(redBlackFlame.Pile?.Type == PileType.Exhaust, "Red Black Flame did not exhaust.");
-        Require(retained.ShouldRetainThisTurn, "Red Black Flame did not retain the hand for this turn.");
-        Require(!retained.Keywords.Contains(CardKeyword.Retain), "Red Black Flame permanently added Retain.");
+        await CardPileCmd.Add(greeting, PileType.Hand);
+        await CardCmd.AutoPlay(choiceContext, greeting, target);
+        Require(greeting.Pile?.Type == PileType.Exhaust, "Ninja Greeting did not exhaust.");
+        Require(retained.ShouldRetainThisTurn, "Ninja Greeting did not retain the hand for this turn.");
+        Require(!retained.Keywords.Contains(CardKeyword.Retain), "Ninja Greeting permanently added Retain.");
         retained.EndOfTurnCleanup();
-        Require(!retained.ShouldRetainThisTurn, "Red Black Flame retain survived end-of-turn cleanup.");
+        Require(!retained.ShouldRetainThisTurn, "Ninja Greeting retain survived end-of-turn cleanup.");
 
-        if (player.Creature.Block > 0)
-        {
-            await RemoveSmokeBlock(player.Creature);
-        }
-        ChadoBlockPower chadoBlock = await PowerCmd.Apply<ChadoBlockPower>(
-            choiceContext, player.Creature, 5, player.Creature, null)
-            ?? throw new InvalidOperationException("Chado Block could not be applied.");
+        AetherEnergyPower aether = await PowerCmd.Apply<AetherEnergyPower>(
+            choiceContext, player.Creature, 2, player.Creature, null)
+            ?? throw new InvalidOperationException("Aether Energy could not be applied.");
         await PlayerCmd.SetEnergy(0m, player);
+        int karateBeforeEnergyGain = player.Creature.GetPower<KaratePower>()?.Amount ?? 0;
         await PlayerCmd.GainEnergy(1m, player);
-        Require(player.Creature.Block == 5, "Chado Block was not resolved before the first energy task completed.");
-        await PlayerCmd.GainEnergy(1m, player);
-        Require(player.Creature.Block == 10, "Chado Block did not trigger for consecutive energy gains.");
+        Require(player.PlayerCombatState!.Energy == 1, "Aether Energy scenario did not gain energy.");
+        Require(
+            (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeEnergyGain + 2,
+            "Aether Energy did not grant Karate after successful energy gain.");
+
         NoEnergyGainPower noEnergy = await PowerCmd.Apply<NoEnergyGainPower>(
             choiceContext, player.Creature, 1, player.Creature, null)
             ?? throw new InvalidOperationException("No Energy Gain could not be applied.");
         int energyBeforeBlockedGain = player.PlayerCombatState!.Energy;
+        int karateBeforeBlockedGain = player.Creature.GetPower<KaratePower>()?.Amount ?? 0;
         await PlayerCmd.GainEnergy(1m, player);
         Require(player.PlayerCombatState.Energy == energyBeforeBlockedGain, "No Energy Gain failed to block energy.");
-        Require(player.Creature.Block == 10, "Chado Block triggered when energy gain was blocked.");
+        Require(
+            (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeBlockedGain,
+            "Aether Energy granted Karate when energy gain was blocked.");
         await PowerCmd.Remove(noEnergy);
-        await PowerCmd.Remove(chadoBlock);
+        await PowerCmd.Remove(aether);
 
-        ChadoEnergyPower chadoEnergy = await PowerCmd.Apply<ChadoEnergyPower>(
+        int hpBeforeGreatUke = player.Creature.CurrentHp;
+        GreatUkeRedesignPower greatUke = await PowerCmd.Apply<GreatUkeRedesignPower>(
             choiceContext, player.Creature, 2, player.Creature, null)
-            ?? throw new InvalidOperationException("Chado Energy could not be applied.");
-        await chadoEnergy.AfterSideTurnEnd(choiceContext, player.Creature.Side, [player.Creature]);
-        Require(player.Creature.GetPower<ChadoEnergyPower>() is null, "Chado Energy survived the turn in which it was applied.");
-
-        int strengthBefore = player.Creature.GetPower<StrengthPower>()?.Amount ?? 0;
-        CarriedStrengthPower carried = await PowerCmd.Apply<CarriedStrengthPower>(
-            choiceContext, player.Creature, 2, player.Creature, null)
-            ?? throw new InvalidOperationException("Carried Strength could not be applied.");
-        await PowerCmd.Apply<CarriedStrengthPower>(choiceContext, player.Creature, 3, player.Creature, null);
-        Require(carried.Amount == 5, "Carried Strength did not accumulate its current amount.");
-        Require(player.Creature.GetPower<StrengthPower>()?.Amount == strengthBefore + 5, "Carried Strength did not grant each positive delta.");
-        await carried.AfterPlayerTurnStart(choiceContext, player);
-        Require(player.Creature.GetPower<CarriedStrengthPower>() is null, "Carried Strength survived the next player turn.");
-        Require((player.Creature.GetPower<StrengthPower>()?.Amount ?? 0) == strengthBefore, "Carried Strength removed the wrong Strength amount.");
-
-        PerCardStrengthPower perCard = await PowerCmd.Apply<PerCardStrengthPower>(
-            choiceContext, player.Creature, 1, player.Creature, null)
-            ?? throw new InvalidOperationException("Per-card Strength could not be applied.");
-        await perCard.AfterSideTurnEnd(choiceContext, player.Creature.Side, [player.Creature]);
-        Require(player.Creature.GetPower<PerCardStrengthPower>() is null, "Per-card Strength survived its owner's turn.");
-
-        if (player.Creature.Block > 0)
-        {
-            await RemoveSmokeBlock(player.Creature);
-        }
-        ThreeTurnBlockPower first = await PowerCmd.Apply<ThreeTurnBlockPower>(
-            choiceContext, player.Creature, 6, player.Creature, null)
-            ?? throw new InvalidOperationException("First three-turn Block instance could not be applied.");
-        await first.AfterPlayerTurnStart(choiceContext, player);
-        ThreeTurnBlockPower second = await PowerCmd.Apply<ThreeTurnBlockPower>(
-            choiceContext, player.Creature, 6, player.Creature, null)
-            ?? throw new InvalidOperationException("Second three-turn Block instance could not be applied.");
-        await first.AfterPlayerTurnStart(choiceContext, player);
-        await second.AfterPlayerTurnStart(choiceContext, player);
-        Require(!player.Creature.Powers.Contains(first) && player.Creature.Powers.Contains(second), "Staggered three-turn Block instances shared a lifetime.");
-        await second.AfterPlayerTurnStart(choiceContext, player);
-        Require(!player.Creature.Powers.Contains(second), "Second three-turn Block instance did not complete independently.");
-        Require(player.Creature.Block == 24, "Three-turn Block produced the wrong staggered total.");
-        await RemoveSmokeBlock(player.Creature);
-
-        SameNameCostPower sameName = await PowerCmd.Apply<SameNameCostPower>(
-            choiceContext, player.Creature, 2, player.Creature, null)
-            ?? throw new InvalidOperationException("Same-name cost power could not be applied.");
-        DefendNinjaSlayerRedesignV1 firstNamed = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        DefendNinjaSlayerRedesignV1 secondNamed = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        DefendNinjaSlayerRedesignV1 thirdNamed = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        DefendNinjaSlayerRedesignV1 fourthNamed = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        StrikeNinjaSlayerRedesignV1 differentName = combatState.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
-        foreach (CardModel card in new CardModel[] { firstNamed, secondNamed, thirdNamed, fourthNamed, differentName })
-        {
-            await CardPileCmd.Add(card, PileType.Hand);
-        }
-        await CardCmd.AutoPlay(choiceContext, firstNamed, player.Creature);
-        Require(sameName.TryModifyEnergyCostInCombatLate(secondNamed, 1, out decimal secondCost) && secondCost == 0, "The first matching card was not free.");
-        Require(!sameName.TryModifyEnergyCostInCombatLate(differentName, 1, out _), "A differently named card became free.");
-        await CardCmd.AutoPlay(choiceContext, secondNamed, player.Creature);
-        Require(sameName.TryModifyEnergyCostInCombatLate(thirdNamed, 1, out decimal thirdCost) && thirdCost == 0, "The upgraded second matching card was not free.");
-        await CardCmd.AutoPlay(choiceContext, thirdNamed, player.Creature);
-        Require(!sameName.TryModifyEnergyCostInCombatLate(fourthNamed, 1, out _), "Same-name cost power exceeded its per-turn limit.");
-        await PowerCmd.Remove(sameName);
-
-        await CreatureCmd.GainBlock(player.Creature, 7, ValueProp.Unpowered, null);
-        RemainingBlockStrengthPower blockStrength = await PowerCmd.Apply<RemainingBlockStrengthPower>(
-            choiceContext, player.Creature, 1, player.Creature, null)
-            ?? throw new InvalidOperationException("Remaining-block Strength could not be applied.");
-        int strengthBeforeBlockConversion = player.Creature.GetPower<StrengthPower>()?.Amount ?? 0;
-        await blockStrength.BeforeSideTurnStart(choiceContext, player.Creature.Side, [player.Creature], combatState);
-        Require(
-            (player.Creature.GetPower<StrengthPower>()?.Amount ?? 0) == strengthBeforeBlockConversion + 7,
-            "Remaining Block did not become temporary Strength.");
-        RetainedForcePower temporaryStrength = player.Creature.GetPower<RetainedForcePower>()
-            ?? throw new InvalidOperationException("Temporary Strength tracker was not applied.");
-        await PowerCmd.Remove(temporaryStrength);
-        Require(
-            (player.Creature.GetPower<StrengthPower>()?.Amount ?? 0) == strengthBeforeBlockConversion,
-            "Temporary Strength was not removed with its tracker.");
-        await RemoveSmokeBlock(player.Creature);
-
-        int hpBeforeNullify = player.Creature.CurrentHp;
-        NullifyHitsPower nullify = await PowerCmd.Apply<NullifyHitsPower>(
-            choiceContext, player.Creature, 2, player.Creature, null)
-            ?? throw new InvalidOperationException("Nullify Hits could not be applied.");
-        await GameCompatibility.Damage.Deal(
-            choiceContext, [player.Creature], 12, ValueProp.Unblockable | ValueProp.Unpowered, target, null, null);
-        Require(player.Creature.CurrentHp == hpBeforeNullify - 12, "A 12-damage hit incorrectly triggered Great Uke.");
-        Require(nullify.Amount == 2, "A 12-damage hit consumed Great Uke.");
-        await GameCompatibility.Damage.Deal(
-            choiceContext, [player.Creature], 13, ValueProp.Unblockable | ValueProp.Unpowered, target, null, null);
-        Require(player.Creature.CurrentHp == hpBeforeNullify - 12, "A hit above 12 damage was not nullified.");
-        Require(nullify.Amount == 1, "A hit above 12 damage did not consume one Great Uke charge.");
-        await PowerCmd.Remove(nullify);
-        await CreatureCmd.Heal(player.Creature, 12);
+            ?? throw new InvalidOperationException("Great Uke could not be applied.");
+        await CreatureCmd.Damage(
+            choiceContext,
+            [player.Creature],
+            10,
+            ValueProp.Unblockable | ValueProp.Unpowered,
+            target,
+            null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
+        Require(player.Creature.CurrentHp == hpBeforeGreatUke - 10, "A 10-damage hit incorrectly triggered Great Uke.");
+        Require(greatUke.Amount == 2, "A 10-damage hit consumed Great Uke.");
+        await CreatureCmd.Damage(
+            choiceContext,
+            [player.Creature],
+            11,
+            ValueProp.Unblockable | ValueProp.Unpowered,
+            target,
+            null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
+        Require(player.Creature.CurrentHp == hpBeforeGreatUke - 10, "A hit above 10 damage was not nullified.");
+        Require(greatUke.Amount == 1, "A hit above 10 damage did not consume one Great Uke charge.");
+        await PowerCmd.Remove(greatUke);
+        await CreatureCmd.Heal(player.Creature, 10);
         _checkpoints.Write("redesign.runtime-contracts-validated");
     }
 }

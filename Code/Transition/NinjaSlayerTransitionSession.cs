@@ -13,12 +13,10 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     private readonly TransitionPresentationBarrier _presentationBarrier = new();
     private readonly object _presentationSync = new();
     private readonly TransitionCompletionProtocol _protocol;
-    private readonly TransitionViewReadiness _viewReadiness = new();
     private readonly TransitionViewAdapter _view;
     private Task _animationTask = Task.CompletedTask;
     private int _loadSmoothingStarted;
     private int _animationSmoothingEnded;
-    private int _loadSmoothingCompleted;
     private int _disposed;
     private TransitionNodeProcessLease? _presentationLease;
     private NRun? _presentationRoot;
@@ -48,8 +46,8 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
         _animationTask = animationFactory(this, _lifetime.Token)
             ?? throw new InvalidOperationException("Transition animation factory returned null.");
-        _ = ObserveAnimationAsync();
         _ = RunWatchdogAsync();
+        _ = ObserveAnimationAsync();
     }
 
     public bool TryClaimReveal() => _protocol.TryClaimReveal();
@@ -57,19 +55,11 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
     public void PrepareInstantView()
     {
         _view.PrepareInstant();
-        _viewReadiness.TryMarkReady();
     }
 
     public NinjaSlayerTransitionOverlay PrepareAnimatedView()
     {
-        NinjaSlayerTransitionOverlay overlay = _view.PrepareAnimated();
-        _viewReadiness.TryMarkReady();
-        return overlay;
-    }
-
-    public async Task WaitForViewReadyAsync(CancellationToken cancellationToken)
-    {
-        _ = await _viewReadiness.WaitAsync(cancellationToken);
+        return _view.PrepareAnimated();
     }
 
     public bool TryAttachPresentationRoot(NRun root)
@@ -200,18 +190,12 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
         }
 
         var cleanupFailures = new List<Exception>();
-        Exception? collectionFailure = null;
-        _viewReadiness.TryMarkUnavailable();
         CaptureCleanup(cleanupFailures, () => CompletePresentation(status));
         CaptureCleanup(cleanupFailures, ReleasePresentationRootLifetime);
         CaptureCleanup(cleanupFailures, _lifetime.Cancel);
         CaptureCleanup(cleanupFailures, _view.StopPlayback);
         CaptureCleanup(cleanupFailures, EndAnimationSmoothing);
         CaptureCleanup(cleanupFailures, () => RestoreTransition(forceRelease));
-        CaptureCleanup(cleanupFailures, () =>
-        {
-            collectionFailure = CompleteLoadSmoothing(TransitionGcCounts.Capture());
-        });
 
         if (cleanupFailures.Count > 0)
         {
@@ -223,13 +207,6 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
             Entry.Logger.Error(
                 $"NinjaSlayer transition session {SessionId} cleanup failed: " +
                 string.Join(System.Environment.NewLine, cleanupFailures));
-        }
-
-        if (collectionFailure is not null)
-        {
-            Entry.Logger.Warn(
-                $"NinjaSlayer transition session {SessionId} could not request optimized non-blocking GC " +
-                $"({collectionFailure.GetType().Name}); natural GC will reclaim the deferred assets.");
         }
 
         var result = new TransitionCompletionResult(SessionId, status, diagnostic);
@@ -246,7 +223,6 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
             return;
         }
 
-        _viewReadiness.TryMarkUnavailable();
         try
         {
             ReleasePresentationLease();
@@ -405,18 +381,6 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
             Entry.Logger.Error(
                 $"NinjaSlayer transition session {SessionId} failed to handle presentation-root exit: {ex}");
         }
-    }
-
-    private Exception? CompleteLoadSmoothing(
-        TransitionGcCounts endingGcCounts)
-    {
-        if (Volatile.Read(ref _loadSmoothingStarted) == 0
-            || Interlocked.CompareExchange(ref _loadSmoothingCompleted, 1, 0) != 0)
-        {
-            return null;
-        }
-
-        return NinjaSlayerTransitionLoadSmoothing.CompleteSession(SessionId, endingGcCounts);
     }
 
     private static void CaptureCleanup(List<Exception> failures, Action cleanup)

@@ -15,7 +15,6 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
@@ -177,14 +176,17 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                     {
-                        results.AddRange(await GameCompatibility.Damage.Deal(
+                        results.AddRange(await CreatureCmd.Damage(
                             choiceContext,
                             [target],
                             SawatariEventRules.AttackDamage,
                             command.DamageProps,
                             attacker,
-                            null,
-                            null));
+                            null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                            , null
+#endif
+                        ));
                     }
                 });
         }

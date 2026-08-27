@@ -159,7 +159,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                 NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
                 if (finisher != null)
                 {
-                    await finisher.Begin();
+                    finisher.Begin();
                 }
 
                 await PlayIaiImpact();
@@ -168,13 +168,15 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             {
                 await YamotoKokiCombatAnimations.PlayIaiSlash(
                     Creature,
-                    async () =>
+                    () =>
                     {
                         NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
                         if (finisher != null)
                         {
-                            await finisher.Begin();
+                            finisher.Begin();
                         }
+
+                        return Task.CompletedTask;
                     },
                     PlayIaiImpact,
                     finisher == null
@@ -182,24 +184,30 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                         : YamotoKokiIaiApproachMode.FinisherCloseRange);
             }
 
-            if (finisher != null)
-            {
-                await finisher.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
-            }
         }
-        catch (Exception ex)
+        catch (Exception originalFailure)
         {
             if (finisher != null)
             {
-                await finisher.CompleteAsync(
-                    FinisherCompletionStatus.Faulted,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    ex.Message);
+                try
+                {
+                    await finisher.CompleteAsync(playPose: false);
+                }
+                catch (Exception completionFailure)
+                {
+                    throw new AggregateException(
+                        "Yamoto Koki Iai execution and finisher cleanup both failed.",
+                        originalFailure,
+                        completionFailure);
+                }
             }
 
             throw;
+        }
+
+        if (finisher != null)
+        {
+            await finisher.CompleteAsync(playPose: true);
         }
     }
 

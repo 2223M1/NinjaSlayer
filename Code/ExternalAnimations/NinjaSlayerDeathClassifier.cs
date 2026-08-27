@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
@@ -106,8 +105,7 @@ internal static class NinjaSlayerDeathClassifier
 
     public static bool TryStartReverseFinisher(Creature target, decimal amount)
     {
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || target.Player?.Character is not INinjaSlayerCharacter
+        if (target.Player?.Character is not INinjaSlayerCharacter
             || target.CombatState is not { } combatState
             || target.CurrentHp <= 0
             || amount < target.CurrentHp
@@ -115,7 +113,7 @@ internal static class NinjaSlayerDeathClassifier
             || capture.IsCompleted
             || capture.Session != null
             || !IsValidEnemyDealer(target, capture.Dealer)
-            || !GameCompatibility.Finisher.CanProtectLethalDamage(out _)
+            || !FinisherProtectionService.CanProtectLethalDamage(out _)
             || !Hook.ShouldDie(target.Player.RunState, combatState, target, out _)
             || NCombatRoom.Instance is not { } room)
         {
@@ -169,7 +167,7 @@ internal static class NinjaSlayerDeathClassifier
 
         try
         {
-            session.Begin().GetAwaiter().GetResult();
+            session.Begin();
             capture.Session = session;
             Entry.Logger.Info(
                 $"Reverse finisher session {session.SessionId} started: dealer={capture.Dealer}, victims={victims.Count}.");
@@ -178,10 +176,7 @@ internal static class NinjaSlayerDeathClassifier
         catch (Exception ex)
         {
             Entry.Logger.Warn($"Could not begin reverse finisher session {session.SessionId}: {ex}");
-            _ = session.CompleteAsync(
-                FinisherCompletionStatus.Faulted,
-                FinisherCompletionMode.ReleaseOnly,
-                ex.Message);
+            _ = CancelFailedSession(session);
             return false;
         }
     }
@@ -197,27 +192,37 @@ internal static class NinjaSlayerDeathClassifier
 
         try
         {
-            IEnumerable<DamageResult> results = await damageTask;
+            IEnumerable<DamageResult> results;
+            try
+            {
+                results = await damageTask;
+            }
+            catch (Exception originalFailure)
+            {
+                if (capture.Session is { } failedSession)
+                {
+                    try
+                    {
+                        await failedSession.CompleteAsync(playPose: false);
+                    }
+                    catch (Exception completionFailure)
+                    {
+                        throw new AggregateException(
+                            "Incoming damage and reverse finisher cleanup both failed.",
+                            originalFailure,
+                            completionFailure);
+                    }
+                }
+
+                throw;
+            }
+
             if (capture.Session is { } session)
             {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Succeeded,
-                    FinisherCompletionMode.PlayPose);
+                await session.CompleteAsync(playPose: true);
             }
 
             return results;
-        }
-        catch
-        {
-            if (capture.Session is { } session)
-            {
-                await session.CompleteAsync(
-                    FinisherCompletionStatus.Faulted,
-                    FinisherCompletionMode.CommitWithoutPose,
-                    "Incoming damage resolution failed during a reverse finisher.");
-            }
-
-            throw;
         }
         finally
         {
@@ -238,6 +243,19 @@ internal static class NinjaSlayerDeathClassifier
                     }
                 }
             }
+        }
+    }
+
+    private static async Task CancelFailedSession(FinisherSession session)
+    {
+        try
+        {
+            await session.CancelAsync();
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Error(
+                $"Reverse finisher session {session.SessionId} cleanup after begin failure failed: {ex}");
         }
     }
 

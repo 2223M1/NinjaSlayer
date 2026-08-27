@@ -106,10 +106,9 @@ public partial class YamotoKokiAllyFacingController : Node
             }
         }
 
-        return YamotoKokiFacingPolicy.ResolveCompanionFacing(
-            ownerFacesLeft,
-            hasEnemyOnLeft,
-            hasEnemyOnRight);
+        return hasEnemyOnLeft && hasEnemyOnRight
+            ? !ownerFacesLeft
+            : ownerFacesLeft;
     }
 
     private static bool IsTrackedCompanion(NCreature node) =>

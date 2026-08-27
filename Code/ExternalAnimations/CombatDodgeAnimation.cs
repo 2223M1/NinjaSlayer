@@ -1,4 +1,6 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -6,7 +8,6 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
 
@@ -180,29 +181,34 @@ internal static class CombatDodgeAnimation
 
 internal static class EnemyAttackDodgeContext
 {
+    private static readonly FieldInfo AttackerAnimName =
+        AccessTools.Field(typeof(AttackCommand), "_attackerAnimName")
+        ?? throw new MissingFieldException(typeof(AttackCommand).FullName, "_attackerAnimName");
+    private static readonly FieldInfo VisualAttacker =
+        AccessTools.Field(typeof(AttackCommand), "_visualAttacker")
+        ?? throw new MissingFieldException(typeof(AttackCommand).FullName, "_visualAttacker");
+    private static readonly FieldInfo WaitBeforeHit =
+        AccessTools.Field(typeof(AttackCommand), "_waitBeforeHit")
+        ?? throw new MissingFieldException(typeof(AttackCommand).FullName, "_waitBeforeHit");
+    private static readonly FieldInfo SingleTarget =
+        AccessTools.Field(typeof(AttackCommand), "_singleTarget")
+        ?? throw new MissingFieldException(typeof(AttackCommand).FullName, "_singleTarget");
     private static readonly AsyncLocal<Frame?> Current = new();
 
     public static Frame? Enter(AttackCommand command)
     {
         if (command.Attacker is not { IsMonster: true, Side: CombatSide.Enemy } attacker
             || command.IsRandomlyTargeted
-            || !command.DamageProps.IsCardOrMonsterMove()
-            || !GameCompatibility.EnemyAttackDodge.TryReadPresentation(
-                command,
-                attacker,
-                out GameCompatibility.EnemyAttackPresentation presentation))
+            || !command.DamageProps.IsCardOrMonsterMove())
         {
             return null;
         }
 
+        EnemyAttackPresentation presentation = ReadPresentation(command, attacker);
         IReadOnlyList<Creature> targets;
-        if (command.IsSingleTargeted
-            && GameCompatibility.Finisher.TryReadAttackCommand(
-                command,
-                out GameCompatibility.AttackCommandState commandState)
-            && commandState.SingleTarget != null)
+        if (command.IsSingleTargeted && ReadSingleTarget(command) is { } singleTarget)
         {
-            targets = [commandState.SingleTarget];
+            targets = [singleTarget];
         }
         else if (command.IsMultiTargeted)
         {
@@ -255,6 +261,45 @@ internal static class EnemyAttackDodgeContext
         Current.Value = frame;
         return frame;
     }
+
+    private static EnemyAttackPresentation ReadPresentation(
+        AttackCommand command,
+        Creature fallbackAttacker)
+    {
+        string triggerName = AttackerAnimName.GetValue(command) as string
+            ?? throw new InvalidOperationException(
+                "AttackCommand._attackerAnimName is not an initialized string.");
+        Creature visualAttacker = VisualAttacker.GetValue(command) switch
+        {
+            null => fallbackAttacker,
+            Creature creature => creature,
+            _ => throw new InvalidOperationException(
+                "AttackCommand._visualAttacker has an unexpected runtime type.")
+        };
+        float[] hitWaits = WaitBeforeHit.GetValue(command) as float[]
+            ?? throw new InvalidOperationException(
+                "AttackCommand._waitBeforeHit has an unexpected runtime type.");
+        if (hitWaits.Length < 2)
+        {
+            throw new InvalidOperationException(
+                "AttackCommand._waitBeforeHit does not contain both hit timings.");
+        }
+
+        return new EnemyAttackPresentation(
+            triggerName,
+            visualAttacker,
+            Math.Max(0f, hitWaits[0]),
+            Math.Max(0f, hitWaits[1]));
+    }
+
+    private static Creature? ReadSingleTarget(AttackCommand command) =>
+        SingleTarget.GetValue(command) switch
+        {
+            null => null,
+            Creature target => target,
+            _ => throw new InvalidOperationException(
+                "AttackCommand._singleTarget has an unexpected runtime type.")
+        };
 
     public static void RestoreCaller(Frame frame)
     {
@@ -317,4 +362,10 @@ internal static class EnemyAttackDodgeContext
         public float StandardHitWait { get; } = standardHitWait;
         public bool IsActive { get; set; } = true;
     }
+
+    private readonly record struct EnemyAttackPresentation(
+        string TriggerName,
+        Creature VisualAttacker,
+        float FastHitWait,
+        float StandardHitWait);
 }

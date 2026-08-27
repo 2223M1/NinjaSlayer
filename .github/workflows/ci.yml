@@ -21,6 +21,7 @@ jobs:
         run: |
           ./tools/test-compatibility-powershell.ps1
           ./tools/test-current-host-release-install.ps1
+          ./tools/test-transition-mod-isolation.ps1
 
   validate:
     if: ${{ always() }}

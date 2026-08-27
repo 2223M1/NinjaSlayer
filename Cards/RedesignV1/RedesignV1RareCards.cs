@@ -14,7 +14,6 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -227,7 +226,11 @@ public sealed class TornadoFistRedesignV1 : RedesignV1RareCard
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.PreserveDamage))
                     {
                         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                            .FromCard(this)
+#else
                             .FromCard(this, cardPlay)
+#endif
                             .WithDefectStrikeHitFx()
                             .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
                             .TargetingAllOpponents(CombatState!)
@@ -251,11 +254,34 @@ public sealed partial class ClankDrinkTeaRedesignV1 : RedesignV1RareCard
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
+
+#if NINJASLAYER_LEGACY_DAMAGE_API
+    public override decimal ModifyDamageAdditive(
+        Creature? target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource) =>
+        ModifyDamageAdditiveCore(target, amount, props, dealer, cardSource);
+#else
+    public override decimal ModifyDamageAdditive(
+        Creature? target,
+        decimal amount,
+        ValueProp props,
+        Creature? dealer,
+        CardModel? cardSource,
+        CardPlay? cardPlay) =>
+        ModifyDamageAdditiveCore(target, amount, props, dealer, cardSource);
+#endif
 
     private decimal ModifyDamageAdditiveCore(
         Creature? target,
@@ -278,7 +304,11 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
@@ -303,7 +333,11 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
         int attacks = CombatManager.Instance.History.CardPlaysFinished.Count(entry =>
             entry.HappenedThisTurn(CombatState!)
             && entry.CardPlay.Card.Type == CardType.Attack
-            && GameCompatibility.CardPlays.GetPlayer(entry.CardPlay) == Owner);
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            && entry.CardPlay.Card.Owner == Owner);
+#else
+            && entry.CardPlay.Player == Owner);
+#endif
         if (attacks > 0 && attacks % DynamicVars.Cards.IntValue == 0)
         {
             await CardPileCmd.Add(this, PileType.Hand);
@@ -330,7 +364,11 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
     {
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiDragonFlyingKickEvent);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithDefectStrikeHitFx()
             .WithNoAttackerAnim()
             .AfterAttackerAnim(() => JumpAnimation.Play(Owner.Creature))
@@ -379,7 +417,11 @@ public sealed class StraightKiRedesignV1 : RedesignV1RareCard
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(this)
+#else
             .FromCard(this, cardPlay)
+#endif
             .WithHeavyBluntHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)

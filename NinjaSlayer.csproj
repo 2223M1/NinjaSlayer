@@ -14,6 +14,16 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <!-- Godot generators and Harmony intentionally emit compatibility types also present in sts2.dll. -->
     <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
+    <NinjaSlayerTransitionLoadLimitEnabled Condition="'$(NinjaSlayerTransitionLoadLimitEnabled)' == ''">true</NinjaSlayerTransitionLoadLimitEnabled>
+    <NinjaSlayerTransitionFinalizeBatchingEnabled Condition="'$(NinjaSlayerTransitionFinalizeBatchingEnabled)' == ''">true</NinjaSlayerTransitionFinalizeBatchingEnabled>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NinjaSlayerTransitionLoadLimitEnabled)' == 'true'">
+    <DefineConstants>$(DefineConstants);NINJASLAYER_TRANSITION_LOAD_LIMIT</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NinjaSlayerTransitionFinalizeBatchingEnabled)' == 'true'">
+    <DefineConstants>$(DefineConstants);NINJASLAYER_TRANSITION_FINALIZE_BATCHING</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(NinjaSlayerIsolatedOutputRoot)' != ''">
@@ -34,7 +44,17 @@
     <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="$(NinjaSlayerGameApiVersion)" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="$(NinjaSlayerRitsuLibPackageId)" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="$(NinjaSlayerRitsuLibVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerSourceRevision" Value="$(RepositoryCommit)" />
+    <AssemblyMetadata Include="NinjaSlayerTransitionLoadLimitEnabled" Value="$(NinjaSlayerTransitionLoadLimitEnabled)" />
+    <AssemblyMetadata Include="NinjaSlayerTransitionFinalizeBatchingEnabled" Value="$(NinjaSlayerTransitionFinalizeBatchingEnabled)" />
   </ItemGroup>
+
+  <Target Name="ValidateTransitionBuildComponents" BeforeTargets="CoreCompile">
+    <Error Condition="'$(NinjaSlayerTransitionLoadLimitEnabled)' != 'true' and '$(NinjaSlayerTransitionLoadLimitEnabled)' != 'false'"
+           Text="NinjaSlayerTransitionLoadLimitEnabled must be true or false." />
+    <Error Condition="'$(NinjaSlayerTransitionFinalizeBatchingEnabled)' != 'true' and '$(NinjaSlayerTransitionFinalizeBatchingEnabled)' != 'false'"
+           Text="NinjaSlayerTransitionFinalizeBatchingEnabled must be true or false." />
+  </Target>
 
   <PropertyGroup>
     <IsWindows>false</IsWindows>
@@ -67,7 +87,6 @@
     <Compile Remove="build\**\*.cs" />
     <Compile Remove="Tests\**\*.cs" />
     <Compile Remove="tools\artifact-contract\**\*.cs" />
-    <Compile Remove="tools\host-contract\**\*.cs" />
     <Compile Remove="tools\loader\**\*.cs" />
     <Compile Remove="tools\smoke-harness\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">

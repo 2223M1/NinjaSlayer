@@ -33,11 +33,31 @@ internal static class FriendlyCompanionTargeting
 
     public static bool Supports(CardModel card) =>
         card.TargetType == TargetType.AnyAlly
-        && FriendlyCompanionTargetPolicy.SupportsCard(card.GetType().Name);
+        && card.GetType().Name is
+            "Blaze" or
+            "Concoct" or
+            "Coordinate" or
+            "DemonicShield" or
+            "Fade" or
+            "Intercept" or
+            "Lift" or
+            "Mimic";
 
     public static bool Supports(PotionModel potion) =>
         potion.TargetType == TargetType.AnyPlayer
-        && FriendlyCompanionTargetPolicy.SupportsPotion(potion.GetType().Name);
+        && potion.GetType().Name is
+            "BlockPotion" or
+            "DexterityPotion" or
+            "FlexPotion" or
+            "FyshOil" or
+            "HeartOfIron" or
+            "LiquidBronze" or
+            "LuckyTonic" or
+            "MazalethsGift" or
+            "RegenPotion" or
+            "ShipInABottle" or
+            "SpeedPotion" or
+            "StrengthPotion";
 
     public static bool HasCompanion(ICombatState? combatState) =>
         combatState?.Creatures.Any(IsFriendlyCompanion) == true;
@@ -289,7 +309,7 @@ public sealed class FriendlyCompanionControllerCardTargetPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_friendly_companion_controller_card_target";
     public static string Description => "Include companions in controller navigation for safe ally cards.";
-    public static bool IsCritical => false;
+    public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets()
     {

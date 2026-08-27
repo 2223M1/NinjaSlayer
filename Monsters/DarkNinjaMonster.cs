@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Audio;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -319,46 +320,24 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
 
     private void ApplyPoseTexture(string texturePath)
     {
-        var visuals = NCombatRoom.Instance?.GetCreatureNode(Creature)?.Visuals;
-        Sprite2D? body = NinjaSlayerVisualRig.GetBodySprite(visuals);
-        if (body == null)
-        {
-            return;
-        }
+        NCreatureVisuals visuals = NCombatRoom.Instance?.GetCreatureNode(Creature)?.Visuals
+            ?? throw new InvalidOperationException("Dark Ninja has no combat visual rig.");
+        Sprite2D body = NinjaSlayerVisualRig.GetBodySprite(visuals)
+            ?? throw new InvalidOperationException("Dark Ninja's visual rig has no body sprite.");
+        Sprite2D shadow = NinjaSlayerVisualRig.GetShadow(visuals)
+            ?? throw new InvalidOperationException("Dark Ninja's visual rig has no shadow sprite.");
+        NinjaSlayerShadowController shadowController =
+            visuals.GetNode<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName);
 
-        try
-        {
-            bool isCombatPose = texturePath == CombatTexturePath;
-            string shadowTexturePath = isCombatPose
-                ? CombatShadowTexturePath
-                : StandingShadowTexturePath;
-            Texture2D bodyTexture = PreloadManager.Cache.GetTexture2D(texturePath);
-            Texture2D shadowTexture = PreloadManager.Cache.GetTexture2D(shadowTexturePath);
-            Vector2 shadowPosition = isCombatPose ? CombatShadowPosition : StandingShadowPosition;
-            Vector2 shadowScale = isCombatPose ? CombatShadowScale : StandingShadowScale;
-            body.Texture = bodyTexture;
-            Sprite2D? shadow = NinjaSlayerVisualRig.GetShadow(visuals);
-            if (shadow != null)
-            {
-                shadow.Texture = shadowTexture;
-            }
-
-            var shadowController = visuals?.GetNodeOrNull<NinjaSlayerShadowController>(
-                NinjaSlayerVisualRig.ShadowControllerNodeName);
-            if (shadowController != null)
-            {
-                shadowController.SetAuthoredPresentation(shadowPosition, shadowScale);
-            }
-            else if (shadow != null)
-            {
-                shadow.Position = shadowPosition;
-                shadow.Scale = shadowScale;
-            }
-        }
-        catch (Exception exception)
-        {
-            Entry.Logger.Warn($"Dark Ninja pose was unavailable: {exception.Message}");
-        }
+        bool isCombatPose = texturePath == CombatTexturePath;
+        string shadowTexturePath = isCombatPose
+            ? CombatShadowTexturePath
+            : StandingShadowTexturePath;
+        body.Texture = PreloadManager.Cache.GetTexture2D(texturePath);
+        shadow.Texture = PreloadManager.Cache.GetTexture2D(shadowTexturePath);
+        shadowController.SetAuthoredPresentation(
+            isCombatPose ? CombatShadowPosition : StandingShadowPosition,
+            isCombatPose ? CombatShadowScale : StandingShadowScale);
     }
 
     internal void PlayEvasionInsultOnce()

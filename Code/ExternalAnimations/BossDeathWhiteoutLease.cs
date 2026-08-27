@@ -3,7 +3,6 @@ using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -213,7 +212,7 @@ internal sealed class BossDeathWhiteoutLease : IDisposable
     {
         MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException("the Boss Spine skeleton is unavailable");
-        using IDisposable skeletonLease = GameCompatibility.NativeHandles.Lease(skeleton);
+        using IDisposable? skeletonLease = skeleton as IDisposable;
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable");

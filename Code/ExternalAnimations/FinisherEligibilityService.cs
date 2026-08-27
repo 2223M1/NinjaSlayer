@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -19,7 +18,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal static class FinisherEligibilityService
 {
-    private static int CompatibilityWarningLogged;
+    private static bool CompatibilityWarningLogged;
 
     internal static bool IsExcludedAttackCard(CardModel card) =>
         card is ShurikenCard or GiantShurikenCard
@@ -33,8 +32,7 @@ internal static class FinisherEligibilityService
         [NotNullWhen(true)] out FinisherSession? session)
     {
         session = null;
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || IsExcludedAttackCard(spec.Card)
+        if (IsExcludedAttackCard(spec.Card)
             || spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
@@ -48,13 +46,13 @@ internal static class FinisherEligibilityService
             return false;
         }
 
-        if (!GameCompatibility.Finisher.CanProtectLethalDamage(out string compatibilityReason))
+        if (!FinisherProtectionService.CanProtectLethalDamage(out string compatibilityReason))
         {
-            if (Interlocked.Exchange(ref CompatibilityWarningLogged, 1) == 0)
+            if (!CompatibilityWarningLogged)
             {
+                CompatibilityWarningLogged = true;
                 Entry.Logger.Warn(
-                    $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason} "
-                    + $"supportedGame={GameCompatibility.SupportedGameVersion}.");
+                    $"NinjaSlayer enhanced finisher disabled for this process: {compatibilityReason}");
             }
 
             return false;
@@ -127,12 +125,11 @@ internal static class FinisherEligibilityService
     {
         session = null;
         List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
-        if (!NinjaSlayerPatchCapabilities.FinisherEnabled
-            || owner.Monster is not YamotoKokiMonster
+        if (owner.Monster is not YamotoKokiMonster
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
             || primaryEnemies.Count == 0
-            || !GameCompatibility.Finisher.CanProtectLethalDamage(out _))
+            || !FinisherProtectionService.CanProtectLethalDamage(out _))
         {
             return false;
         }

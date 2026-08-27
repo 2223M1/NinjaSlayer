@@ -1,5 +1,6 @@
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Rooms;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Screens;
@@ -8,15 +9,18 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Odds;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
 
@@ -30,9 +34,12 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
     public static bool Prefix(NCharacterSelectButton __instance)
     {
         SmokeController? controller = SmokeController.Current;
-        if (_redirecting
-            || controller?.ShouldForceCharacter != true
-            || __instance.Character is NinjaSlayerCharacter)
+        if (_redirecting || controller?.ShouldForceCharacter != true)
+        {
+            return true;
+        }
+
+        if (__instance.Character is NinjaSlayerCharacter)
         {
             return true;
         }
@@ -57,6 +64,87 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
         finally
         {
             _redirecting = false;
+        }
+    }
+}
+
+[HarmonyPatch(
+    typeof(NTransition),
+    nameof(NTransition.FadeOut),
+    [typeof(float), typeof(string), typeof(CancellationToken?)])]
+internal static class NinjaSlayerSmokeTransitionPerfInteractiveWaitPatch
+{
+    [HarmonyPriority(Priority.First)]
+    public static void Prefix(out Func<bool>? __state)
+    {
+        __state = null;
+        SmokeController.Current?.TryBeginTransitionPerfInteractiveWait(out __state);
+    }
+
+    public static Exception? Finalizer(Exception? __exception, Func<bool>? __state)
+    {
+        if (__state != null)
+        {
+            NonInteractiveMode.AutoSlayerCheck = __state;
+        }
+
+        return __exception;
+    }
+}
+
+[HarmonyPatch(typeof(NinjaSlayerTransitionOverlay), nameof(NinjaSlayerTransitionOverlay.PlayAsync))]
+internal static class NinjaSlayerSmokeTransitionPerfPlaybackPatch
+{
+    public static void Postfix() => SmokeController.Current?.ObserveTransitionPlaybackStarted();
+}
+
+[HarmonyPatch(typeof(NGame), nameof(NGame.StartNewSingleplayerRun))]
+internal static class NinjaSlayerSmokeTransitionPerfRunLoadingPatch
+{
+    public static void Prefix() => SmokeController.Current?.ObserveTransitionRunLoadingStarted();
+}
+
+[HarmonyPatch(typeof(EventRoomHandler), "HandleAsync")]
+internal static class NinjaSlayerSmokeTransitionPerfNeowPatch
+{
+    public static bool Prefix(ref Task __result)
+    {
+        SmokeController? controller = SmokeController.Current;
+        return controller is null || !controller.TryHoldTransitionPerfNeow(ref __result);
+    }
+}
+
+[HarmonyPatch(typeof(NTransition), nameof(NTransition.RoomFadeIn), new[] { typeof(bool) })]
+internal static class NinjaSlayerSmokeTransitionPerfRevealPatch
+{
+    public static void Postfix(ref Task __result) =>
+        SmokeController.Current?.TryWrapTransitionPerfReveal(ref __result);
+}
+
+[HarmonyPatch(typeof(NinjaSlayerTransitionOverlay), nameof(NinjaSlayerTransitionOverlay.StopPlayback))]
+internal static class NinjaSlayerSmokeTransitionPerfOverlayPatch
+{
+    public static void Postfix() => SmokeController.Current?.ObserveTransitionOverlayStopped();
+}
+
+[HarmonyPatch(typeof(AssetLoadingSession), nameof(AssetLoadingSession.Process))]
+internal static class NinjaSlayerSmokeTransitionPerfAssetProcessPatch
+{
+    public static void Prefix(AssetLoadingSession __instance) =>
+        SmokeController.Current?.ObserveTransitionAssetProcessStarting(__instance);
+
+    public static void Postfix(AssetLoadingSession __instance) =>
+        SmokeController.Current?.ObserveTransitionAssetProcessCompleted(__instance);
+}
+
+[HarmonyPatch(typeof(AssetLoadingSession), "AddToCache")]
+internal static class NinjaSlayerSmokeTransitionPerfAssetCachePatch
+{
+    public static void Postfix(AssetLoadingSession __instance, Resource? resource, string path)
+    {
+        if (resource != null)
+        {
+            SmokeController.Current?.ObserveTransitionAssetCached(__instance, path);
         }
     }
 }
@@ -92,7 +180,7 @@ internal static class NinjaSlayerSmokeCombatPatch
             return true;
         }
 
-        __result = controller.ExecuteFirstCombatAsync(random, ct);
+        __result = controller.ExecuteClaimedCombatAsync(random, ct);
         return false;
     }
 }

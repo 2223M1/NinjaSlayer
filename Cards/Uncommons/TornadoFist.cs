@@ -49,7 +49,11 @@ public sealed class TornadoFist : NinjaSlayerXAttackCard
         using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.PreserveDamage))
         {
             var command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                .FromCard(this)
+#else
                 .FromCard(this, cardPlay)
+#endif
                 .WithDefectStrikeHitFx()
                 .WithAttackerAnim(AttackerAnimTrigger, attackerAnimDelay)
                 .Targeting(cardPlay.Target!);

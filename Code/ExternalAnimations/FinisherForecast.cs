@@ -17,7 +17,6 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Combat;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
@@ -536,7 +535,7 @@ internal static class FinisherForecast
             return false;
         }
 
-        decimal modified = GameCompatibility.Damage.Modify(
+        decimal modified = Hook.ModifyDamage(
             runState,
             owner.CombatState,
             target,
@@ -544,7 +543,9 @@ internal static class FinisherForecast
             amount,
             props,
             cardSource,
+#if !NINJASLAYER_LEGACY_DAMAGE_API
             cardPlay,
+#endif
             ModifyDamageHookType.All,
             CardPreviewMode.None,
             out _);

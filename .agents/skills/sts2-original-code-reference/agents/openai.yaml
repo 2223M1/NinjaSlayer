@@ -1,4 +1,7 @@
 interface:
   display_name: "STS2 Original Code Reference"
-  short_description: "Find and follow original Slay the Spire 2 code patterns."
-  default_prompt: "Use the local Slay the Spire 2 source export to find original code patterns for this mod task."
+  short_description: "Verify exact vanilla behavior from active source exports."
+  default_prompt: "Use exact active-version Slay the Spire 2 source evidence only when current RitsuLib tutorials and public APIs do not answer the behavior question; do not copy vanilla architecture."
+
+policy:
+  allow_implicit_invocation: false

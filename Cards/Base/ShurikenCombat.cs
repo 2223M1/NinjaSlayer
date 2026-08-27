@@ -78,15 +78,18 @@ internal static class ShurikenCombat
         await PlayStockTokenAnimation(player);
         await PlayStockThrowAnimation(owner, target);
         int bonus = owner.GetPower<ShurikenDamagePower>()?.Amount ?? 0;
-        await Code.Compatibility.GameCompatibility.Damage.Deal(
+        await CreatureCmd.Damage(
             choiceContext,
             [target],
             RedesignV1Rules.ShurikenDamage(bonus),
             MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered
                 | MegaCrit.Sts2.Core.ValueProps.ValueProp.Move,
             owner,
-            source,
-            null);
+            source
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
     }
 
     internal static bool HasSoarSpread(CardModel card) =>
@@ -99,7 +102,11 @@ internal static class ShurikenCombat
         ICombatState? combatState)
     {
         var command = DamageCmd.Attack(damage.BaseValue)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+            .FromCard(card)
+#else
             .FromCard(card, cardPlay)
+#endif
             .WithNoAttackerAnim()
             .AfterAttackerAnim(() => HopAnimation.Play(card.Owner!.Creature))
             .WithHitFx(null, null, TmpSfx.daggerThrow);

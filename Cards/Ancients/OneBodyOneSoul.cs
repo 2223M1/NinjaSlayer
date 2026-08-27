@@ -5,13 +5,10 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
-using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
-[RegisterCard(typeof(NinjaSlayerRedesignCardPool))]
 public sealed class OneBodyOneSoul : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(OneBodyOneSoul), 3, CardType.Power, CardRarity.Ancient, TargetType.Self, true);

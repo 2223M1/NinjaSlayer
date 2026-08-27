@@ -1,4 +1,6 @@
+using System.Reflection;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
@@ -13,7 +15,6 @@ using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Feedback;
-using NinjaSlayer.Code.Compatibility;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
@@ -33,8 +34,7 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
 
     public static bool Prefix(NFeedbackScreenOpener __instance, InputEvent inputEvent)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled ||
-            inputEvent is not InputEventKey { Pressed: not false, Keycode: Key.F2 }
+        if (inputEvent is not InputEventKey { Pressed: not false, Keycode: Key.F2 }
             || !IsLocalNinjaSlayer()
             || NGame.Instance is not { } game
             || game.GetOrCreateFeedbackScreen().Visible
@@ -128,6 +128,11 @@ public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod
 public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 {
     private const string LocTable = "settings_ui";
+    private static readonly MethodInfo SendButtonSelected =
+        AccessTools.Method(typeof(NSendFeedbackScreen), "SendButtonSelected", [typeof(NButton)])
+        ?? throw new MissingMethodException(
+            typeof(NSendFeedbackScreen).FullName,
+            "SendButtonSelected");
 
     public static string PatchId => "ninjaslayer_feedback_confirmation";
     public static string Description => "Require informed confirmation before uploading NinjaSlayer F2 feedback.";
@@ -137,8 +142,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
 
     public static bool Prefix(NSendFeedbackScreen __instance, NButton _)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled
-            || !NinjaSlayerFeedbackSession.TryGetCurrentToken(
+        if (!NinjaSlayerFeedbackSession.TryGetCurrentToken(
                 __instance.GetInstanceId(),
                 out NinjaSlayerFeedbackSessionToken token)
             || NinjaSlayerFeedbackSession.IsConfirmed(token))
@@ -186,9 +190,7 @@ public sealed class NinjaSlayerFeedbackConfirmPatch : IPatchMethod
             return;
         }
 
-        GameCompatibility.Feedback.TrySelectSendButton(
-            screen,
-            screen.GetNode<NButton>("%SendButton"));
+        SendButtonSelected.Invoke(screen, [screen.GetNode<NButton>("%SendButton")]);
     }
 
     private static bool TryLoc(string key, out LocString loc)
@@ -218,8 +220,7 @@ public sealed class NinjaSlayerFeedbackSendPatch : IPatchMethod
         Stream logsMemoryStream,
         ref Task<bool> __result)
     {
-        if (!NinjaSlayerPatchCapabilities.FeedbackEnabled
-            || !NinjaSlayerFeedbackSession.TryGetConfirmedToken(out _))
+        if (!NinjaSlayerFeedbackSession.TryGetConfirmedToken(out _))
         {
             return true;
         }

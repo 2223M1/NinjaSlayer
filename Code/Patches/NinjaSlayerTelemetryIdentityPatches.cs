@@ -1,6 +1,5 @@
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
-using NinjaSlayer.Scripts;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
@@ -32,15 +31,7 @@ public sealed class NinjaSlayerTelemetryIdentityCleanupPatch : IPatchMethod
 
     public static Exception? Finalizer(Exception? __exception)
     {
-        try
-        {
-            NinjaSlayerBalanceTelemetry.ClearIdentity();
-        }
-        catch (Exception cleanupException)
-        {
-            Entry.Logger.Warn($"Failed to clear NinjaSlayer telemetry identity: {cleanupException.Message}");
-        }
-
+        NinjaSlayerBalanceTelemetry.ClearIdentity();
         return __exception;
     }
 }
