@@ -46,8 +46,8 @@ internal sealed class NinjaSlayerTransitionSession : IDisposable
 
         _animationTask = animationFactory(this, _lifetime.Token)
             ?? throw new InvalidOperationException("Transition animation factory returned null.");
-        _ = ObserveAnimationAsync();
         _ = RunWatchdogAsync();
+        _ = ObserveAnimationAsync();
     }
 
     public bool TryClaimReveal() => _protocol.TryClaimReveal();
