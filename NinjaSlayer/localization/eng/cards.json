@@ -152,5 +152,9 @@
   "NINJA_SLAYER_CARD_COMPOSE_HAIKU_REDESIGN_V1.title": "Compose a Haiku",
   "NINJA_SLAYER_CARD_COMPOSE_HAIKU_REDESIGN_V1.description": "If the enemy has less than {Threshold:diff()} HP, kill it.",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1.title": "Collapse Fist",
-  "NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1.description": "Deal {Damage:diff()} damage.\nGain {Karate:diff()} [gold]Karate[/gold]."
+  "NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1.description": "Deal {Damage:diff()} damage.\nGain {Karate:diff()} [gold]Karate[/gold].",
+  "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.title": "One Body, One Soul",
+  "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.description": "You cannot enter [gold]Naraku[/gold] again this combat. Whenever you would enter [gold]Naraku[/gold], instead gain {Energy:diff()} Energy, draw {Cards:diff()} cards, and gain 12 [gold]Naraku Life[/gold].",
+  "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "Zazen Drink",
+  "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "Draw until your hand is full, discarding any [gold]Status[/gold] cards drawn.\n[gold]Scry[/gold] {Cards:diff()}."
 }

@@ -152,5 +152,9 @@
   "NINJA_SLAYER_CARD_COMPOSE_HAIKU_REDESIGN_V1.title": "颂咏俳句吧",
   "NINJA_SLAYER_CARD_COMPOSE_HAIKU_REDESIGN_V1.description": "如果目标生命值小于{Threshold:diff()}，直接将其击杀。",
   "NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1.title": "崩拳",
-  "NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1.description": "造成{Damage:diff()}点伤害。\n获得{Karate:diff()}层[gold]空手道[/gold]。"
+  "NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1.description": "造成{Damage:diff()}点伤害。\n获得{Karate:diff()}层[gold]空手道[/gold]。",
+  "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.title": "一心同体",
+  "NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL.description": "本场战斗不能再进入[gold]奈落[/gold]；每次试图进入[gold]奈落[/gold]，改为获得{Energy:diff()}点能量，抽{Cards:diff()}张牌，并获得12点[gold]奈落生命[/gold]。",
+  "NINJA_SLAYER_CARD_ZAZEN_DRINK.title": "坐禅饮料",
+  "NINJA_SLAYER_CARD_ZAZEN_DRINK.description": "抽牌直到抽满[gold]手牌[/gold]，抽到[gold]状态牌[/gold]时将其丢弃。\n[gold]预见[/gold]{Cards:diff()}。"
 }
