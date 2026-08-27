@@ -217,7 +217,8 @@ jobs:
             -StableSts2DataDir (Join-Path ([string]$stableHost.gameRoot) 'data_sts2_windows_x86_64') `
             -OutputDirectory $bundleDirectory `
             -BuildRoot (Join-Path $buildRoot 'workshop\build') `
-            -Version '${{ steps.candidate.outputs.bundle_version }}'
+            -Version '${{ steps.candidate.outputs.bundle_version }}' `
+            -SourceRevision '${{ steps.candidate.outputs.sha }}'
           foreach ($channelHost in $smokeHosts) {
             $channel = [string]$channelHost.channel
             & trusted/tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1 `

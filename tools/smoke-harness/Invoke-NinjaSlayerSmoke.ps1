@@ -340,6 +340,7 @@ try {
         '--compatibility', $compatibilityManifestPath,
         '--version', $BundleVersion,
         '--ritsulib-version', $RitsuLibVersion,
+        '--source-revision', $CandidateSha,
         '--forbidden-path-root', $CandidateRoot
     ) -WorkingDirectory $CandidateRoot
 

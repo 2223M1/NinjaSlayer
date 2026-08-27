@@ -47,7 +47,10 @@ For an untagged build, `InstallLocal` uses the resolved version core with `+loca
 Local packages take precedence over the unlisted Workshop item. After switching the Steam branch between stable and preview, install the matching published package by host MVID instead of reusing the previous local DLL:
 
 ```powershell
-pwsh .\tools\release\Install-CurrentHostRelease.ps1 -Version 0.1.30
+$sourceRevision = (git rev-parse 'v0.1.30^{commit}').Trim()
+pwsh .\tools\release\Install-CurrentHostRelease.ps1 `
+  -Version 0.1.30 `
+  -SourceRevision $sourceRevision
 ```
 
 The installer refuses unknown hosts and cross-channel archives, validates the published SHA-256 and all four package files, and atomically replaces `mods/NinjaSlayer`. Pass `-GameRoot` for a non-default Steam library or `-ArchivePath` to reuse an already downloaded official ZIP.

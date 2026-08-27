@@ -196,7 +196,8 @@ $bundleDirectory = Join-Path $repositoryRoot 'build\workshop-bundle\NinjaSlayer'
     -StableSts2DataDir $stableDataDirectory `
     -OutputDirectory $bundleDirectory `
     -BuildRoot (Join-Path $repositoryRoot 'build\workshop-bundle\build') `
-    -Version $Version
+    -Version $Version `
+    -SourceRevision $SourceRevision
 
 if (Test-Path -LiteralPath $workshopContentDirectory) {
     Remove-Item -LiteralPath $workshopContentDirectory -Recurse -Force
@@ -213,6 +214,7 @@ Invoke-Native -Command dotnet -Arguments @(
     '--compatibility', (Join-Path $repositoryRoot 'eng\compatibility.json'),
     '--version', $Version,
     '--ritsulib-version', [string]$compatibility.ritsuLibVersion,
+    '--source-revision', $SourceRevision,
     '--forbidden-path-root', $repositoryRoot
 )
 

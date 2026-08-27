@@ -60,6 +60,7 @@ function Assert-NinjaSlayerReleaseArchiveForHost {
         [Parameter(Mandatory)][string]$Version,
         [Parameter(Mandatory)]$Profile,
         [Parameter(Mandatory)][string]$CompatibilityRitsuLibVersion,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string]$SourceRevision,
         [Parameter(Mandatory)][string]$RepositoryRoot
     )
 
@@ -88,6 +89,7 @@ function Assert-NinjaSlayerReleaseArchiveForHost {
         '--game-api-version', [string]$Profile.gameApiVersion,
         '--ritsulib-package-id', [string]$Profile.ritsuLibPackageId,
         '--ritsulib-version', $CompatibilityRitsuLibVersion,
+        '--source-revision', $SourceRevision.ToLowerInvariant(),
         '--forbidden-path-root', $RepositoryRoot
     )
     Invoke-NinjaSlayerInstallCommand -Command 'node' -Arguments @(
@@ -131,6 +133,7 @@ function Install-NinjaSlayerReleaseArchive {
         [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
         [Parameter(Mandatory)][string]$Version,
         [Parameter(Mandatory)]$Compatibility,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string]$SourceRevision,
         [Parameter(Mandatory)][string]$RepositoryRoot,
         [scriptblock]$PromoteDirectory
     )
@@ -163,6 +166,7 @@ function Install-NinjaSlayerReleaseArchive {
             -Version $Version `
             -Profile $profile `
             -CompatibilityRitsuLibVersion ([string]$Compatibility.ritsuLibVersion) `
+            -SourceRevision $SourceRevision `
             -RepositoryRoot $RepositoryRoot
 
         $hadExistingInstall = Test-Path -LiteralPath $resolvedDestination -PathType Container

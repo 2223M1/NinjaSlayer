@@ -7,6 +7,10 @@ param(
     [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string]$Version,
 
+    [Parameter(Mandatory)]
+    [ValidatePattern('^[0-9a-fA-F]{40}$')]
+    [string]$SourceRevision,
+
     [string]$GameRoot = 'C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2',
     [string]$ArchivePath,
     [ValidatePattern('^$|^[0-9a-fA-F]{64}$')]
@@ -108,6 +112,7 @@ try {
         -Channel $selectedHost.Channel `
         -Version $Version `
         -Compatibility $compatibility `
+        -SourceRevision $SourceRevision `
         -RepositoryRoot $repositoryRoot
     Write-Host "Installed NinjaSlayer $Version for $($selectedHost.Channel) STS2 $($selectedHost.Profile.gameApiVersion)." `
         -ForegroundColor Green

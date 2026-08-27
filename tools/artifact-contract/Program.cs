@@ -36,12 +36,14 @@ switch (command)
 static void ValidateAssembly(IReadOnlyDictionary<string, string> options)
 {
     string assemblyPath = ResolveAssembly(options);
+    string sourceRevision = RequiredSourceRevision(options);
     var expectations = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["NinjaSlayerHostChannel"] = Required(options, "channel"),
         ["NinjaSlayerGameApiVersion"] = Required(options, "game-api-version"),
         ["NinjaSlayerRitsuLibPackageId"] = Required(options, "ritsulib-package-id"),
-        ["NinjaSlayerRitsuLibVersion"] = Required(options, "ritsulib-version")
+        ["NinjaSlayerRitsuLibVersion"] = Required(options, "ritsulib-version"),
+        ["NinjaSlayerSourceRevision"] = sourceRevision
     };
 
     ValidateImplementationAssembly(
@@ -104,6 +106,7 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
     string compatibilityPath = Path.GetFullPath(Required(options, "compatibility"));
     string version = Required(options, "version");
     string ritsuLibVersion = Required(options, "ritsulib-version");
+    string sourceRevision = RequiredSourceRevision(options);
     string forbiddenPathRoot = Required(options, "forbidden-path-root");
     if (!Directory.Exists(directory))
     {
@@ -142,7 +145,8 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
             ["NinjaSlayerHostChannel"] = channelName,
             ["NinjaSlayerGameApiVersion"] = gameApiVersion,
             ["NinjaSlayerRitsuLibPackageId"] = profile.GetProperty("ritsuLibPackageId").GetString()!,
-            ["NinjaSlayerRitsuLibVersion"] = ritsuLibVersion
+            ["NinjaSlayerRitsuLibVersion"] = ritsuLibVersion,
+            ["NinjaSlayerSourceRevision"] = sourceRevision
         };
         ValidateImplementationAssembly(selected.AssemblyPath, metadata, forbiddenPathRoot);
     }
@@ -700,8 +704,19 @@ static bool IsAssemblyMetadataTypeDefinition(MetadataReader reader, TypeDefiniti
 static InvalidOperationException Usage() => new(
     "Usage: validate-assembly --assembly <file> --channel <stable|preview> " +
     "--game-api-version <version> --ritsulib-package-id <id> --ritsulib-version <version> " +
-    "--forbidden-path-root <directory> | " +
+    "--source-revision <40-character SHA> --forbidden-path-root <directory> | " +
     "validate-host --assembly <sts2.dll> --module-mvid <guid> | " +
     "validate-pck --pck <file> | " +
     "validate-workshop-bundle --directory <dir> --compatibility <json> --version <version> " +
-    "--ritsulib-version <version> --forbidden-path-root <directory> | test-loader-contract");
+    "--ritsulib-version <version> --source-revision <40-character SHA> " +
+    "--forbidden-path-root <directory> | test-loader-contract");
+
+static string RequiredSourceRevision(IReadOnlyDictionary<string, string> options)
+{
+    string revision = Required(options, "source-revision");
+    if (revision.Length != 40 || revision.Any(character => !Uri.IsHexDigit(character)))
+    {
+        throw new ArgumentException("--source-revision must be a full 40-character SHA.");
+    }
+    return revision.ToLowerInvariant();
+}

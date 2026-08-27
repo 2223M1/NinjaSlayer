@@ -225,7 +225,8 @@ jobs:
             -StableSts2DataDir ([string]$stableHost.dataDirectory) `
             -OutputDirectory $bundleDirectory `
             -BuildRoot (Join-Path $buildRoot 'workshop\build') `
-            -Version $version
+            -Version $version `
+            -SourceRevision $env:RELEASE_SHA
           $smokeBundleHashes = @(Get-ChildItem `
               -LiteralPath (Join-Path $env:RUNNER_TEMP 'smoke-attestation\verified') `
               -File -Filter 'attestation.json' -Recurse |

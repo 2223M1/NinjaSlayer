@@ -31,6 +31,7 @@ function New-InstallFixtureArchive {
         [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$ArchiveChannel,
         [Parameter(Mandatory)]$Compatibility,
         [Parameter(Mandatory)][string]$Version,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string]$SourceRevision,
         [switch]$ExtraFile
     )
 
@@ -58,6 +59,7 @@ function New-InstallFixtureArchive {
     <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="$($assemblyProfile.gameApiVersion)" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="$($assemblyProfile.ritsuLibPackageId)" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="$($Compatibility.ritsuLibVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerSourceRevision" Value="$($SourceRevision.ToLowerInvariant())" />
   </ItemGroup>
 </Project>
 "@
@@ -123,12 +125,14 @@ try {
     $compatibility = Read-NinjaSlayerCompatibility `
         -Path (Join-Path $repositoryRoot 'eng\compatibility.json')
     $version = '9.8.7'
+    $sourceRevision = '0123456789abcdef0123456789abcdef01234567'
     $archive = New-InstallFixtureArchive `
         -Root $temporaryRoot `
         -AssemblyChannel stable `
         -ArchiveChannel stable `
         -Compatibility $compatibility `
-        -Version $version
+        -Version $version `
+        -SourceRevision $sourceRevision
     $modsRoot = Join-Path $temporaryRoot 'game\mods'
     $destination = Join-Path $modsRoot 'NinjaSlayer'
     [IO.Directory]::CreateDirectory($destination) | Out-Null
@@ -140,6 +144,7 @@ try {
         -Channel stable `
         -Version $version `
         -Compatibility $compatibility `
+        -SourceRevision $sourceRevision `
         -RepositoryRoot $repositoryRoot
     if ($first.Channel -cne 'stable' -or
         (Test-Path -LiteralPath (Join-Path $destination 'legacy.txt')) -or
@@ -153,6 +158,7 @@ try {
         -Channel stable `
         -Version $version `
         -Compatibility $compatibility `
+        -SourceRevision $sourceRevision `
         -RepositoryRoot $repositoryRoot
 
     $wrongChannelArchive = New-InstallFixtureArchive `
@@ -160,7 +166,8 @@ try {
         -AssemblyChannel stable `
         -ArchiveChannel preview `
         -Compatibility $compatibility `
-        -Version $version
+        -Version $version `
+        -SourceRevision $sourceRevision
     $beforeWrongChannel = Get-NinjaSlayerSha256 -Path (Join-Path $destination 'NinjaSlayer.dll')
     Assert-Throws {
         Install-NinjaSlayerReleaseArchive `
@@ -169,6 +176,7 @@ try {
             -Channel preview `
             -Version $version `
             -Compatibility $compatibility `
+            -SourceRevision $sourceRevision `
             -RepositoryRoot $repositoryRoot
     } "metadata 'NinjaSlayerHostChannel'"
     if ((Get-NinjaSlayerSha256 -Path (Join-Path $destination 'NinjaSlayer.dll')) -cne $beforeWrongChannel) {
@@ -181,6 +189,7 @@ try {
         -ArchiveChannel stable `
         -Compatibility $compatibility `
         -Version $version `
+        -SourceRevision $sourceRevision `
         -ExtraFile
     Assert-Throws {
         Install-NinjaSlayerReleaseArchive `
@@ -189,6 +198,7 @@ try {
             -Channel stable `
             -Version $version `
             -Compatibility $compatibility `
+            -SourceRevision $sourceRevision `
             -RepositoryRoot $repositoryRoot
     } 'exactly the four'
 
@@ -201,6 +211,7 @@ try {
             -Channel stable `
             -Version $version `
             -Compatibility $compatibility `
+            -SourceRevision $sourceRevision `
             -RepositoryRoot $repositoryRoot `
             -PromoteDirectory { throw 'injected promotion failure' }
     } 'injected promotion failure'
