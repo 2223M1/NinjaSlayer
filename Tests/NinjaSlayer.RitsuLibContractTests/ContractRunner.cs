@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
@@ -5,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -17,6 +19,9 @@ using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Models.Monsters;
+using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -45,7 +50,19 @@ public partial class ContractRunner : Node
     private static Assembly? _productAssembly;
     private static ModPatchInfo[]? _capturedRequiredPatches;
     private static string? _patcherFailureName;
+    private static readonly Dictionary<Creature, int> ProductFinisherKillCalls =
+        new(ReferenceEqualityComparer.Instance);
+    private static readonly List<Exception> ProductFinisherKillFailures = [];
+    private static bool _productFinisherContextIsCurrent = true;
+    private static int _productFinisherCleanupCalls;
+    private static ProductFinisherKillFaultMode _productFinisherKillFaultMode;
+    private static Exception? _productFinisherPresentationFailure;
+    private static int _productFinisherPresentationTargetCalls;
+    private static int _productFinisherUnregisterCalls;
     private static ProductPrepareFaultMode _productPrepareFaultMode;
+    private static Func<object, CancellationToken, Task>? _productTransitionAnimationFactory;
+    private static bool _productTransitionForceWatchdogTimeout;
+    private static int _productTransitionWatchdogStartedAfterDispose;
 
     public override void _Ready()
     {
@@ -65,6 +82,8 @@ public partial class ContractRunner : Node
             VerifyRunOriginalContract();
             VerifyOriginalFeedbackStreamOwnership();
             VerifyFinisherProtectionTransaction();
+            VerifyFinisherSessionCompletionContracts();
+            VerifyTransitionOwnershipContracts();
             VerifyWorldVisualStylesAreIdempotent();
             VerifyCriticalRollback();
             WriteSuccessMarker();
@@ -791,6 +810,13 @@ public partial class ContractRunner : Node
         None,
         Reject,
         Throw
+    }
+
+    private enum ProductFinisherKillFaultMode
+    {
+        None,
+        FirstAttempt,
+        EveryAttempt
     }
 
     private static void RequirePreparedQueue(PreparedCombatFixture fixture, IReadOnlyList<CardModel> expected)
@@ -1595,6 +1621,1384 @@ public partial class ContractRunner : Node
         Require(
             repeatedHitLedger.DeferredDeaths.SetEquals([repeatedHitTarget]),
             "Repeated lethal hits registered the same deferred death more than once.");
+    }
+
+    private static void VerifyFinisherSessionCompletionContracts()
+    {
+        Assembly product = LoadProductAssembly();
+        Harmony instrumentation = InstallProductFinisherInstrumentation(product);
+        try
+        {
+            VerifySuccessfulFinisherCompletion(product);
+            VerifyFinisherEmergencyCommit(product);
+            VerifyFinisherFinalCommitFailure(product);
+            VerifyFinisherPresentationFailure(product);
+            VerifyFinisherCleanupFailure(product);
+            VerifyCombinedFinisherFailures(product);
+            VerifyAfterCardPlayedFinisherCompletion(product);
+            VerifyOnPlayWrapperFinisherCleanup(product);
+            VerifyFinisherRoomExit(product);
+            VerifyStaleFinisherCompletion(product);
+            VerifyReverseFinisherCompletion(product);
+        }
+        finally
+        {
+            ResetProductFinisherRegistry(product);
+            instrumentation.UnpatchAll(instrumentation.Id);
+            ResetProductFinisherInstrumentation();
+        }
+    }
+
+    private static void VerifySuccessfulFinisherCompletion(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 2, hitsPerTarget: 3);
+        Task firstCompletion = fixture.Complete(playPose: false);
+        Task repeatedCompletion = fixture.Complete(playPose: true);
+        Require(ReferenceEquals(firstCompletion, repeatedCompletion),
+            "Repeated Finisher completion did not return the original completion Task.");
+        firstCompletion.GetAwaiter().GetResult();
+        Require(fixture.Targets.All(target => target.IsDead),
+            "Successful multi-target Finisher completion left a confirmed target alive.");
+        Require(fixture.LivingDeferredDeathCount == 0,
+            "Successful Finisher completion retained a living deferred death.");
+        Require(fixture.Targets.All(target => ProductFinisherKillCalls[target] == 1),
+            "Multi-hit Finisher completion committed a target death more than once.");
+        RequireFinisherDetachedOnce(fixture, "successful repeated completion");
+    }
+
+    private static void VerifyFinisherEmergencyCommit(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        _productFinisherKillFaultMode = ProductFinisherKillFaultMode.FirstAttempt;
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        Task completion = fixture.Complete(playPose: false);
+        Task repeatedCompletion = fixture.Complete(playPose: false);
+        Require(ReferenceEquals(completion, repeatedCompletion),
+            "Repeated Finisher completion after a commit failure returned a different Task.");
+        Exception failure = ExpectTaskFailure(completion, "injected-finisher-kill-1");
+        Require(ProductFinisherKillFailures.Count == 1
+            && ContainsExceptionReference(failure, ProductFinisherKillFailures[0]),
+            "Emergency Finisher completion lost the original death-commit failure.");
+        Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
+            "Emergency Finisher commit did not kill the still-living confirmed target.");
+        Require(ProductFinisherKillCalls[fixture.Targets.Single()] == 2,
+            "Emergency Finisher commit did not retry exactly once after the first Kill failure.");
+        RequireFinisherDetachedOnce(fixture, "emergency completion");
+    }
+
+    private static void VerifyFinisherFinalCommitFailure(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        _productFinisherKillFaultMode = ProductFinisherKillFaultMode.EveryAttempt;
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        Exception failure = ExpectTaskFailure(
+            fixture.Complete(playPose: false),
+            "injected-finisher-kill-1");
+        Require(ProductFinisherKillFailures.Count == 2,
+            "Final Finisher commit failure did not exercise primary and emergency Kill attempts.");
+        Require(ProductFinisherKillFailures.All(expected => ContainsExceptionReference(failure, expected)),
+            "Final Finisher commit failure did not preserve both original Kill exceptions.");
+        Require(fixture.Targets.Single().IsAlive && fixture.LivingDeferredDeathCount == 1,
+            "Failed Finisher completion hid its still-living confirmed target.");
+        Require(ProductFinisherKillCalls[fixture.Targets.Single()] == 2,
+            "Failed Finisher completion made an unexpected number of Kill attempts.");
+        RequireFinisherDetachedOnce(fixture, "failed death commit");
+    }
+
+    private static void VerifyFinisherPresentationFailure(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        _productFinisherPresentationFailure = new InvalidOperationException(
+            "injected-finisher-presentation-target");
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.Complete(playPose: true).GetAwaiter().GetResult();
+        Require(_productFinisherPresentationTargetCalls == 1,
+            "Finisher pose contract did not reach the production presentation target lookup.");
+        Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
+            "Presentation failure prevented the confirmed Finisher death from committing.");
+        Require(ProductFinisherKillCalls[fixture.Targets.Single()] == 1,
+            "Presentation fallback committed the confirmed target more than once.");
+        RequireFinisherDetachedOnce(fixture, "presentation fallback");
+    }
+
+    private static void VerifyFinisherCleanupFailure(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        var cleanupFailure = new InvalidOperationException("injected-finisher-cleanup");
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.FailCleanup(cleanupFailure);
+        Exception failure = ExpectTaskFailure(
+            fixture.Complete(playPose: false),
+            cleanupFailure.Message);
+        Require(ContainsExceptionReference(failure, cleanupFailure),
+            "Finisher completion did not preserve the original cleanup exception.");
+        Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
+            "Cleanup failure rolled back an already committed Finisher death.");
+        RequireFinisherDetachedOnce(fixture, "cleanup failure");
+    }
+
+    private static void VerifyCombinedFinisherFailures(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        _productFinisherKillFaultMode = ProductFinisherKillFaultMode.EveryAttempt;
+        var cleanupFailure = new InvalidOperationException("injected-finisher-combined-cleanup");
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.FailCleanup(cleanupFailure);
+        Exception failure = ExpectTaskFailure(
+            fixture.Complete(playPose: false),
+            "injected-finisher-kill-1");
+        Require(ProductFinisherKillFailures.Count == 2
+            && ProductFinisherKillFailures.All(expected => ContainsExceptionReference(failure, expected)),
+            "Combined Finisher failure lost a primary or emergency death-commit exception.");
+        Require(ContainsExceptionReference(failure, cleanupFailure),
+            "Combined Finisher failure lost the cleanup exception.");
+        Require(fixture.Targets.Single().IsAlive && fixture.LivingDeferredDeathCount == 1,
+            "Combined Finisher failure reported a death that never committed.");
+        RequireFinisherDetachedOnce(fixture, "combined death and cleanup failure");
+    }
+
+    private static void VerifyAfterCardPlayedFinisherCompletion(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.TransferToAfterCardPlayed();
+        fixture.CompleteAfterCardPlayed(Task.CompletedTask).GetAwaiter().GetResult();
+        Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
+            "AfterCardPlayed did not commit its pending Finisher death.");
+        Require(ProductFinisherKillCalls[fixture.Targets.Single()] == 1,
+            "AfterCardPlayed committed its pending Finisher death more than once.");
+        RequireFinisherDetachedOnce(fixture, "AfterCardPlayed completion");
+    }
+
+    private static void VerifyOnPlayWrapperFinisherCleanup(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        var cardFailure = new InvalidOperationException("injected-finisher-card-play");
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.TransferToAfterCardPlayed();
+        Exception failure = ExpectTaskFailure(
+            fixture.CleanupAfterCardPlay(Task.FromException(cardFailure)),
+            cardFailure.Message);
+        Require(ContainsExceptionReference(failure, cardFailure),
+            "OnPlayWrapper cleanup did not preserve the original card failure.");
+        Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
+            "OnPlayWrapper early failure skipped its pending Finisher death commit.");
+        Require(ProductFinisherKillCalls[fixture.Targets.Single()] == 1,
+            "OnPlayWrapper early-failure cleanup committed its target more than once.");
+        RequireFinisherDetachedOnce(fixture, "OnPlayWrapper early failure");
+    }
+
+    private static void VerifyFinisherRoomExit(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.InvokeRoomTreeExiting();
+        fixture.CompletionTask.GetAwaiter().GetResult();
+        Require(fixture.Targets.Single().IsAlive,
+            "Room-exit cancellation committed a deferred death into the departing combat.");
+        Require(!ProductFinisherKillCalls.ContainsKey(fixture.Targets.Single()),
+            "Room-exit cancellation called CreatureCmd.Kill.");
+        RequireFinisherDetachedOnce(fixture, "room-exit cancellation");
+    }
+
+    private static void VerifyStaleFinisherCompletion(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        _productFinisherContextIsCurrent = false;
+        using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
+        fixture.MoveTargetsToNewCombat();
+        _ = ExpectTaskFailure(
+            fixture.Complete(playPose: false),
+            "lost combat ownership");
+        Require(fixture.Targets.Single().IsAlive,
+            "Stale Finisher session killed a target now owned by another combat.");
+        Require(!ProductFinisherKillCalls.ContainsKey(fixture.Targets.Single()),
+            "Stale Finisher session called CreatureCmd.Kill in the new combat.");
+        RequireFinisherDetachedOnce(fixture, "stale combat completion");
+    }
+
+    private static void VerifyReverseFinisherCompletion(Assembly product)
+    {
+        ResetProductFinisherInstrumentation();
+        using var fixture = new ProductFinisherSessionFixture(
+            product,
+            targetCount: 1,
+            scenario: "EnemyExecutesNinjaSlayer");
+        fixture.Complete(playPose: false).GetAwaiter().GetResult();
+        Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
+            "Reverse Finisher scenario left its confirmed target alive.");
+        Require(ProductFinisherKillCalls[fixture.Targets.Single()] == 1,
+            "Reverse Finisher scenario committed its target more than once.");
+        RequireFinisherDetachedOnce(fixture, "reverse completion");
+    }
+
+    private static void RequireFinisherDetachedOnce(
+        ProductFinisherSessionFixture fixture,
+        string label)
+    {
+        Require(_productFinisherCleanupCalls == 1,
+            $"Finisher {label} did not restore resources exactly once.");
+        Require(_productFinisherUnregisterCalls == 1 && !fixture.IsRegistered,
+            $"Finisher {label} did not detach registry ownership exactly once.");
+    }
+
+    private static Exception ExpectTaskFailure(Task task, string messageFragment)
+    {
+        Exception? observed = null;
+        try
+        {
+            task.GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            observed = ex;
+        }
+
+        Require(observed != null, "Expected a faulted Task, observed successful completion.");
+        Require(observed!.ToString().Contains(messageFragment, StringComparison.OrdinalIgnoreCase),
+            $"Task failure did not contain '{messageFragment}'.");
+        return observed;
+    }
+
+    private static bool ContainsExceptionReference(Exception observed, Exception expected)
+    {
+        if (ReferenceEquals(observed, expected))
+        {
+            return true;
+        }
+
+        if (observed is AggregateException aggregate
+            && aggregate.InnerExceptions.Any(inner => ContainsExceptionReference(inner, expected)))
+        {
+            return true;
+        }
+
+        return observed.InnerException != null
+            && ContainsExceptionReference(observed.InnerException, expected);
+    }
+
+    private static Harmony InstallProductFinisherInstrumentation(Assembly product)
+    {
+        Type sessionType = ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherSession");
+        Type registryType = ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
+        MethodInfo isCurrentContext = AccessTools.Method(sessionType, "IsCurrentCombatContext", Type.EmptyTypes)
+            ?? throw new MissingMethodException(sessionType.FullName, "IsCurrentCombatContext");
+        MethodInfo restoreResources = AccessTools.Method(sessionType, "RestoreResourcesCore", [typeof(bool)])
+            ?? throw new MissingMethodException(sessionType.FullName, "RestoreResourcesCore");
+        MethodInfo unregister = AccessTools.Method(registryType, "UnregisterSession", [sessionType])
+            ?? throw new MissingMethodException(registryType.FullName, "UnregisterSession");
+        MethodInfo kill = AccessTools.Method(
+                typeof(CreatureCmd),
+                nameof(CreatureCmd.Kill),
+                [typeof(Creature), typeof(bool)])
+            ?? throw new MissingMethodException(typeof(CreatureCmd).FullName, nameof(CreatureCmd.Kill));
+        MethodInfo getCreatureNode = AccessTools.Method(
+                typeof(NCombatRoom),
+                nameof(NCombatRoom.GetCreatureNode),
+                [typeof(Creature)])
+            ?? throw new MissingMethodException(
+                typeof(NCombatRoom).FullName,
+                nameof(NCombatRoom.GetCreatureNode));
+
+        var harmony = new Harmony($"NinjaSlayer.ContractTests.FinisherSession.{Guid.NewGuid():N}");
+        harmony.Patch(
+            isCurrentContext,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductFinisherCurrentContext)));
+        harmony.Patch(
+            restoreResources,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductFinisherCleanup)));
+        harmony.Patch(
+            unregister,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductFinisherUnregister)));
+        harmony.Patch(
+            kill,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductFinisherKill)));
+        harmony.Patch(
+            getCreatureNode,
+            prefix: new HarmonyMethod(
+                typeof(ContractRunner),
+                nameof(PrefixProductFinisherPresentationTarget)));
+        return harmony;
+    }
+
+    private static bool PrefixProductFinisherCurrentContext(ref bool __result)
+    {
+        __result = _productFinisherContextIsCurrent;
+        return false;
+    }
+
+    private static void PrefixProductFinisherCleanup() => _productFinisherCleanupCalls++;
+
+    private static void PrefixProductFinisherUnregister() => _productFinisherUnregisterCalls++;
+
+    private static bool PrefixProductFinisherKill(Creature creature, ref Task __result)
+    {
+        ProductFinisherKillCalls.TryGetValue(creature, out int calls);
+        calls++;
+        ProductFinisherKillCalls[creature] = calls;
+        if (_productFinisherKillFaultMode == ProductFinisherKillFaultMode.None
+            || (_productFinisherKillFaultMode == ProductFinisherKillFaultMode.FirstAttempt
+                && calls > 1))
+        {
+            return true;
+        }
+
+        var failure = new InvalidOperationException($"injected-finisher-kill-{calls}");
+        ProductFinisherKillFailures.Add(failure);
+        __result = Task.FromException(failure);
+        return false;
+    }
+
+    private static bool PrefixProductFinisherPresentationTarget(ref NCreature? __result)
+    {
+        _productFinisherPresentationTargetCalls++;
+        if (_productFinisherPresentationFailure != null)
+        {
+            throw _productFinisherPresentationFailure;
+        }
+
+        __result = null;
+        return false;
+    }
+
+    private static void ResetProductFinisherInstrumentation()
+    {
+        ProductFinisherKillCalls.Clear();
+        ProductFinisherKillFailures.Clear();
+        _productFinisherContextIsCurrent = true;
+        _productFinisherCleanupCalls = 0;
+        _productFinisherKillFaultMode = ProductFinisherKillFaultMode.None;
+        _productFinisherPresentationFailure = null;
+        _productFinisherPresentationTargetCalls = 0;
+        _productFinisherUnregisterCalls = 0;
+    }
+
+    private static void ResetProductFinisherRegistry(Assembly product)
+    {
+        Type registryType = ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
+        SetStaticField(registryType, "_active", null);
+        SetStaticField(registryType, "_pendingAfterCardPlayed", null);
+    }
+
+    private static Type ProductType(Assembly product, string typeName) =>
+        product.GetType(typeName, throwOnError: true)!;
+
+    private static void SetInstanceField(object instance, string fieldName, object? value)
+    {
+        FieldInfo field = AccessTools.Field(instance.GetType(), fieldName)
+            ?? throw new MissingFieldException(instance.GetType().FullName, fieldName);
+        field.SetValue(instance, value);
+    }
+
+    private static void SetStaticField(Type type, string fieldName, object? value)
+    {
+        FieldInfo field = AccessTools.Field(type, fieldName)
+            ?? throw new MissingFieldException(type.FullName, fieldName);
+        field.SetValue(null, value);
+    }
+
+    private sealed class ProductFinisherSessionFixture : IDisposable
+    {
+        private readonly Assembly _product;
+        private readonly PreparedCombatFixture _combat = new();
+        private readonly object _ledger;
+        private readonly object _session;
+        private CardModel? _card;
+        private CardPlay? _cardPlay;
+
+        public ProductFinisherSessionFixture(
+            Assembly product,
+            int targetCount,
+            int hitsPerTarget = 1,
+            string scenario = "NinjaSlayerAttack")
+        {
+            Require(targetCount > 0, "Finisher session fixture requires at least one target.");
+            Require(hitsPerTarget > 0, "Finisher session fixture requires at least one confirmed hit.");
+            _product = product;
+            Targets = Enumerable.Range(0, targetCount)
+                .Select(_ => CreateTarget(_combat.CombatState))
+                .ToArray();
+            _ledger = CreateLedger(product, Targets, _combat.CombatState);
+            foreach (Creature target in Targets)
+            {
+                for (int hit = 0; hit < hitsPerTarget; hit++)
+                {
+                    ConfirmDeferredDeath(_ledger, target);
+                }
+            }
+
+            Type sessionType = ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherSession");
+            _session = RuntimeHelpers.GetUninitializedObject(sessionType);
+            SetInstanceField(_session, "_combatState", _combat.CombatState);
+            SetInstanceField(_session, "_room", RuntimeHelpers.GetUninitializedObject(typeof(NCombatRoom)));
+            SetInstanceField(_session, "_actorNode", null);
+            SetInstanceField(_session, "_focusNode", null);
+            SetInstanceField(_session, "_ledger", _ledger);
+            SetInstanceField(
+                _session,
+                "_committedDeaths",
+                new HashSet<Creature>(ReferenceEqualityComparer.Instance));
+            SetNewFieldValue(_session, "_deathSquashStates");
+            SetNewFieldValue(_session, "_deathKickVisuals");
+            SetInstanceField(_session, "_vfxBaselineChildIds", new HashSet<ulong>());
+            SetInstanceField(_session, "_completion",
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+            SetCompletedTasks(_session);
+            SetSessionLifetimes(product, _session);
+            SetSessionCamera(product, _session);
+            SetInstanceField(_session, "_actionPeakReached", true);
+            SetInstanceField(_session, "_begun", true);
+            SetInstanceField(_session, "<SessionId>k__BackingField", 9001L);
+            SetInstanceField(
+                _session,
+                "<Scenario>k__BackingField",
+                Enum.Parse(
+                    ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherScenarioKind"),
+                    scenario));
+            SetInstanceField(
+                _session,
+                "<CompletionCondition>k__BackingField",
+                Enum.Parse(
+                    ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherCompletionCondition"),
+                    "AnyCandidateLethal"));
+            SetInstanceField(_session, "<Actor>k__BackingField", _combat.Player.Creature);
+            SetInstanceField(_session, "<CardPlay>k__BackingField", null);
+            SetInstanceField(_session, "<RequiresAfterCardPlayed>k__BackingField", false);
+            SetInstanceField(_session, "<ResolvedHits>k__BackingField", 1);
+
+            ResetProductFinisherRegistry(product);
+            Type registryType = ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
+            SetStaticField(registryType, "_active", _session);
+        }
+
+        public IReadOnlyList<Creature> Targets { get; }
+
+        public Task CompletionTask
+        {
+            get
+            {
+                FieldInfo field = AccessTools.Field(_session.GetType(), "_completion")
+                    ?? throw new MissingFieldException(_session.GetType().FullName, "_completion");
+                return ((TaskCompletionSource)field.GetValue(_session)!).Task;
+            }
+        }
+
+        public int LivingDeferredDeathCount
+        {
+            get
+            {
+                MethodInfo method = AccessTools.Method(_ledger.GetType(), "LivingDeferredDeaths", Type.EmptyTypes)
+                    ?? throw new MissingMethodException(_ledger.GetType().FullName, "LivingDeferredDeaths");
+                return ((IReadOnlyCollection<Creature>)method.Invoke(_ledger, null)!).Count;
+            }
+        }
+
+        public bool IsRegistered
+        {
+            get
+            {
+                Type registryType = ProductType(
+                    _product,
+                    "NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
+                MethodInfo method = AccessTools.Method(registryType, "IsSessionCurrent", [_session.GetType()])
+                    ?? throw new MissingMethodException(registryType.FullName, "IsSessionCurrent");
+                return (bool)method.Invoke(null, [_session])!;
+            }
+        }
+
+        public Task Complete(bool playPose)
+        {
+            MethodInfo method = AccessTools.Method(_session.GetType(), "CompleteAsync", [typeof(bool)])
+                ?? throw new MissingMethodException(_session.GetType().FullName, "CompleteAsync");
+            return (Task)(method.Invoke(_session, [playPose])
+                ?? throw new InvalidOperationException("FinisherSession.CompleteAsync returned null."));
+        }
+
+        public void FailCleanup(Exception failure) =>
+            SetInstanceField(_session, "_cameraShakePumpTask", Task.FromException(failure));
+
+        public void MoveTargetsToNewCombat()
+        {
+            var nextCombat = new CombatState();
+            foreach (Creature target in Targets)
+            {
+                target.CombatState = nextCombat;
+            }
+        }
+
+        public void TransferToAfterCardPlayed()
+        {
+            _card = _combat.CreateCard(PileType.Discard);
+            _cardPlay = (CardPlay)RuntimeHelpers.GetUninitializedObject(typeof(CardPlay));
+            SetInstanceField(_cardPlay, "<Card>k__BackingField", _card);
+            SetInstanceField(_session, "<CardPlay>k__BackingField", _cardPlay);
+            SetInstanceField(_session, "<RequiresAfterCardPlayed>k__BackingField", true);
+
+            Type registryType = ProductType(
+                _product,
+                "NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
+            MethodInfo transfer = AccessTools.Method(
+                    registryType,
+                    "TransferToAfterCardPlayed",
+                    [_session.GetType()])
+                ?? throw new MissingMethodException(registryType.FullName, "TransferToAfterCardPlayed");
+            transfer.Invoke(null, [_session]);
+        }
+
+        public Task CompleteAfterCardPlayed(Task original)
+        {
+            Require(_cardPlay != null, "Finisher fixture was not transferred to AfterCardPlayed.");
+            Type cleanupType = ProductType(
+                _product,
+                "NinjaSlayer.Code.ExternalAnimations.FinisherCleanupService");
+            MethodInfo method = AccessTools.Method(
+                    cleanupType,
+                    "CompleteAfterCardPlayed",
+                    [typeof(Task), typeof(CardPlay)])
+                ?? throw new MissingMethodException(cleanupType.FullName, "CompleteAfterCardPlayed");
+            return (Task)(method.Invoke(null, [original, _cardPlay])
+                ?? throw new InvalidOperationException(
+                    "FinisherCleanupService.CompleteAfterCardPlayed returned null."));
+        }
+
+        public Task CleanupAfterCardPlay(Task original)
+        {
+            Require(_card != null, "Finisher fixture was not transferred from OnPlayWrapper.");
+            Type cleanupType = ProductType(
+                _product,
+                "NinjaSlayer.Code.ExternalAnimations.FinisherCleanupService");
+            MethodInfo method = AccessTools.Method(
+                    cleanupType,
+                    "CleanupAfterCardPlay",
+                    [typeof(Task), typeof(CardModel)])
+                ?? throw new MissingMethodException(cleanupType.FullName, "CleanupAfterCardPlay");
+            return (Task)(method.Invoke(null, [original, _card])
+                ?? throw new InvalidOperationException(
+                    "FinisherCleanupService.CleanupAfterCardPlay returned null."));
+        }
+
+        public void InvokeRoomTreeExiting()
+        {
+            MethodInfo method = AccessTools.Method(_session.GetType(), "OnRoomTreeExiting", Type.EmptyTypes)
+                ?? throw new MissingMethodException(_session.GetType().FullName, "OnRoomTreeExiting");
+            method.Invoke(_session, null);
+        }
+
+        public void Dispose()
+        {
+            ResetProductFinisherRegistry(_product);
+            _combat.Dispose();
+        }
+
+        private static Creature CreateTarget(CombatState combatState)
+        {
+            var target = new Creature(
+                ModelDb.Monster<DampCultist>().ToMutable(),
+                CombatSide.Enemy,
+                slotName: null)
+            {
+                CombatState = combatState
+            };
+            target.SetCurrentHpInternal(1);
+            combatState.AddCreature(target);
+            return target;
+        }
+
+        private static object CreateLedger(
+            Assembly product,
+            IReadOnlyList<Creature> targets,
+            ICombatState combatState)
+        {
+            Type ledgerType = ProductType(product, "NinjaSlayer.Code.ExternalAnimations.FinisherDamageLedger");
+            ConstructorInfo constructor = ledgerType
+                .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Single(candidate => candidate.GetParameters().Length == 4);
+            return constructor.Invoke([targets, combatState, (Func<bool>)(() => true), null]);
+        }
+
+        private static void ConfirmDeferredDeath(object ledger, Creature target)
+        {
+            MethodInfo tryProtect = AccessTools.Method(ledger.GetType(), "TryProtect")
+                ?? throw new MissingMethodException(ledger.GetType().FullName, "TryProtect");
+            object?[] protectArguments = [target, false, 10m, null];
+            Require((bool)tryProtect.Invoke(ledger, protectArguments)!,
+                "Product Finisher ledger did not protect a lethal target.");
+            decimal protectedAmount = (decimal)protectArguments[2]!;
+            object token = protectArguments[3]
+                ?? throw new InvalidOperationException("Product Finisher ledger returned no protection token.");
+            DamageResult result = target.LoseHpInternal(protectedAmount, ValueProp.Move);
+            MethodInfo confirm = AccessTools.Method(ledger.GetType(), "Confirm")
+                ?? throw new MissingMethodException(ledger.GetType().FullName, "Confirm");
+            Require((bool)confirm.Invoke(ledger, [token, result, true])!,
+                "Product Finisher ledger did not confirm its lethal protection token.");
+        }
+
+        private static void SetNewFieldValue(object instance, string fieldName)
+        {
+            FieldInfo field = AccessTools.Field(instance.GetType(), fieldName)
+                ?? throw new MissingFieldException(instance.GetType().FullName, fieldName);
+            SetInstanceField(instance, fieldName, Activator.CreateInstance(field.FieldType)!);
+        }
+
+        private static void SetCompletedTasks(object session)
+        {
+            foreach (string fieldName in new[]
+            {
+                "_cameraTransitionTask",
+                "_backdropTransitionTask",
+                "_enhancedImpactTask",
+                "_cameraShakePumpTask",
+                "_returnToBaselineTask",
+                "_actionPeakTask"
+            })
+            {
+                SetInstanceField(session, fieldName, Task.CompletedTask);
+            }
+        }
+
+        private static void SetSessionLifetimes(Assembly product, object session)
+        {
+            Type lifetimeType = ProductType(
+                product,
+                "NinjaSlayer.Code.ExternalAnimations.CinematicSessionLifetime");
+            foreach (string fieldName in new[]
+            {
+                "_impactCancellation",
+                "_actionCancellation",
+                "_watchdogCancellation"
+            })
+            {
+                SetInstanceField(session, fieldName, Activator.CreateInstance(lifetimeType, nonPublic: true)!);
+            }
+        }
+
+        private static void SetSessionCamera(Assembly product, object session)
+        {
+            Type cameraType = ProductType(
+                product,
+                "NinjaSlayer.Code.ExternalAnimations.CombatCinematicCameraLease");
+            object camera = RuntimeHelpers.GetUninitializedObject(cameraType);
+            SetInstanceField(camera, "_disposed", true);
+            SetInstanceField(session, "_camera", camera);
+        }
+    }
+
+    private static void VerifyTransitionOwnershipContracts()
+    {
+        Assembly product = LoadProductAssembly();
+        GD.Print("Transition contract: installing instrumentation.");
+        Harmony instrumentation = InstallProductTransitionInstrumentation(product);
+        try
+        {
+            GD.Print("Transition contract: normal reveal.");
+            VerifyNormalTransitionReveal(product);
+            GD.Print("Transition contract: FastMode Instant.");
+            VerifyInstantTransitionReveal(product);
+            GD.Print("Transition contract: cancellation.");
+            VerifyTransitionCancellation(product);
+            GD.Print("Transition contract: supersede.");
+            VerifyTransitionSupersede(product);
+            GD.Print("Transition contract: animation fault.");
+            VerifyTransitionAnimationFault(product);
+            GD.Print("Transition contract: presentation root exit.");
+            VerifyTransitionPresentationRootExit(product);
+            GD.Print("Transition contract: replacement root.");
+            VerifyTransitionReplacementRoot(product);
+            GD.Print("Transition contract: watchdog.");
+            VerifyTransitionWatchdog(product);
+            GD.Print("Transition contract: finalize drain.");
+            VerifyTransitionFinalizeDrain(product);
+            GD.Print("Transition contract: passed.");
+        }
+        finally
+        {
+            ResetProductTransitionState(product);
+            instrumentation.UnpatchAll(instrumentation.Id);
+        }
+    }
+
+    private static void VerifyNormalTransitionReveal(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (session, _) =>
+        {
+            InvokeProductTransitionMethod(session, "BeginLoadSmoothing");
+            InvokeProductTransitionMethod(session, "PrepareAnimatedView");
+            return Task.CompletedTask;
+        };
+
+        var transition = CreateTransitionFixture();
+        using var fixture = ProductTransitionSessionFixture.Start(product, transition);
+        Require(transition.InTransition && transition.Visible
+            && transition.MouseFilter == Control.MouseFilterEnum.Stop,
+            "Animated Transition startup did not take ownership of the transition view.");
+        Require(ReadProductTransitionLoadLimit(product) == 8,
+            "Animated Transition startup did not activate its feature-local load limit.");
+
+        int deferredPresentations = 0;
+        Require(fixture.TryDeferPresentation(() => deferredPresentations++),
+            "Active Transition did not accept its first deferred presentation operation.");
+        Require(fixture.TryDeferPresentation(() => deferredPresentations++),
+            "Active Transition did not accept its second deferred presentation operation.");
+        Require(deferredPresentations == 0,
+            "Transition presentation ran before reveal was claimed.");
+        Require(fixture.TryClaimRevealThroughGate(),
+            "Normal Transition reveal was not claimed through the production gate.");
+        Require(!fixture.TryClaimRevealThroughGate(),
+            "Normal Transition reveal was claimed more than once.");
+        fixture.ReleasePresentation();
+        Require(deferredPresentations == 2,
+            "Normal Transition reveal did not flush each deferred presentation exactly once.");
+
+        Task firstCompletion = fixture.Complete("Succeeded", forceRelease: false);
+        Task repeatedCompletion = fixture.Complete("Faulted", forceRelease: true);
+        Require(ReferenceEquals(firstCompletion, repeatedCompletion),
+            "Repeated Transition completion did not return the original completion Task.");
+        object result = AwaitProductTransitionResult(firstCompletion);
+        RequireProductTransitionStatus(result, "Succeeded", "normal reveal");
+        RequireTransitionInputRestored(transition, "normal reveal");
+        Require(ReadProductTransitionLoadLimit(product) == 128,
+            "Normal Transition completion retained its animation load limit.");
+        Require(!ReadProductTransitionGateActive(product),
+            "Normal Transition completion remained registered in the production gate.");
+    }
+
+    private static void VerifyInstantTransitionReveal(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (session, _) =>
+        {
+            InvokeProductTransitionMethod(session, "PrepareInstantView");
+            return Task.CompletedTask;
+        };
+
+        var transition = CreateTransitionFixture();
+        using var fixture = ProductTransitionSessionFixture.Start(product, transition);
+        Require(transition.InTransition && !transition.Visible,
+            "FastMode Instant Transition did not prepare the host's instant view.");
+        Require(fixture.TryClaimRevealThroughGate(),
+            "FastMode Instant Transition did not expose one reveal claim.");
+        object result = AwaitProductTransitionResult(
+            fixture.Complete("Succeeded", forceRelease: false));
+        RequireProductTransitionStatus(result, "Succeeded", "FastMode Instant");
+        RequireTransitionInputRestored(transition, "FastMode Instant");
+    }
+
+    private static void VerifyTransitionCancellation(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (session, token) =>
+        {
+            InvokeProductTransitionMethod(session, "BeginLoadSmoothing");
+            InvokeProductTransitionMethod(session, "PrepareAnimatedView");
+            return WaitForCancellation(token);
+        };
+
+        using var cancellation = new CancellationTokenSource();
+        var transition = CreateTransitionFixture();
+        using var fixture = ProductTransitionSessionFixture.Start(
+            product,
+            transition,
+            cancellation.Token);
+        int discardedPresentations = 0;
+        Require(fixture.TryDeferPresentation(() => discardedPresentations++),
+            "Cancelable Transition did not accept a deferred presentation operation.");
+        cancellation.Cancel();
+        object result = AwaitProductTransitionResult(fixture.CompletionTask);
+        RequireProductTransitionStatus(result, "Cancelled", "external cancellation");
+        Require(discardedPresentations == 0,
+            "Cancelled Transition executed presentation work from the discarded scene.");
+        RequireTransitionForceReleased(transition, "external cancellation");
+        Require(ReadProductTransitionLoadLimit(product) == 128,
+            "Cancelled Transition retained its animation load limit.");
+    }
+
+    private static void VerifyTransitionSupersede(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (_, token) => WaitForCancellation(token);
+
+        var firstTransition = CreateTransitionFixture();
+        using var first = ProductTransitionSessionFixture.Start(product, firstTransition);
+        var secondTransition = CreateTransitionFixture();
+        using var second = ProductTransitionSessionFixture.Start(product, secondTransition);
+        object firstResult = AwaitProductTransitionResult(first.CompletionTask);
+        RequireProductTransitionStatus(firstResult, "Superseded", "superseded session");
+        RequireTransitionForceReleased(firstTransition, "superseded session");
+        Require(ReadProductTransitionGateActive(product),
+            "Superseding Transition did not retain the newer active session.");
+
+        object secondResult = AwaitProductTransitionResult(
+            second.Complete("Succeeded", forceRelease: true));
+        RequireProductTransitionStatus(secondResult, "Succeeded", "superseding session");
+        Require(!ReadProductTransitionGateActive(product),
+            "Completed superseding Transition remained active in the production gate.");
+    }
+
+    private static void VerifyTransitionAnimationFault(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        var animationFailure = new InvalidOperationException("injected-transition-animation");
+        _productTransitionAnimationFactory = (session, _) =>
+        {
+            InvokeProductTransitionMethod(session, "BeginLoadSmoothing");
+            InvokeProductTransitionMethod(session, "PrepareAnimatedView");
+            return Task.FromException(animationFailure);
+        };
+
+        var transition = CreateTransitionFixture();
+        using var fixture = ProductTransitionSessionFixture.Start(product, transition);
+        object result = AwaitProductTransitionResult(fixture.CompletionTask);
+        RequireProductTransitionStatus(result, "Faulted", "animation fault");
+        Require(ReadProductTransitionDiagnostic(result).Contains(
+                animationFailure.Message,
+                StringComparison.Ordinal),
+            "Transition animation fault diagnostic lost the original exception.");
+        Require(_productTransitionWatchdogStartedAfterDispose == 0,
+            "Transition animation fault started its watchdog after session disposal.");
+        RequireTransitionForceReleased(transition, "animation fault");
+        Require(ReadProductTransitionLoadLimit(product) == 128,
+            "Faulted Transition retained its animation load limit.");
+    }
+
+    private static void VerifyTransitionPresentationRootExit(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (_, token) => WaitForCancellation(token);
+
+        var transition = CreateTransitionFixture();
+        using var fixture = ProductTransitionSessionFixture.Start(product, transition);
+        var root = new NRun();
+        var stagedChild = new Node { ProcessMode = Node.ProcessModeEnum.Always };
+        root.AddChild(stagedChild);
+        try
+        {
+            Require(fixture.TryAttachPresentationRoot(root),
+                "Transition did not attach its staged NRun presentation root.");
+            Require(stagedChild.ProcessMode == Node.ProcessModeEnum.Disabled,
+                "Transition did not freeze the staged presentation tree.");
+            fixture.InvokePresentationRootTreeExiting();
+            object result = AwaitProductTransitionResult(fixture.CompletionTask);
+            RequireProductTransitionStatus(result, "Cancelled", "presentation root exit");
+            Require(stagedChild.ProcessMode == Node.ProcessModeEnum.Always,
+                "Presentation-root exit did not restore the staged tree process mode.");
+            RequireTransitionForceReleased(transition, "presentation root exit");
+        }
+        finally
+        {
+            root.Free();
+        }
+    }
+
+    private static void VerifyTransitionReplacementRoot(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (_, token) => WaitForCancellation(token);
+
+        var transition = CreateTransitionFixture();
+        using var fixture = ProductTransitionSessionFixture.Start(product, transition);
+        var firstRoot = new NRun();
+        var firstChild = new Node { ProcessMode = Node.ProcessModeEnum.WhenPaused };
+        firstRoot.AddChild(firstChild);
+        var replacementRoot = new NRun();
+        var replacementChild = new Node { ProcessMode = Node.ProcessModeEnum.Always };
+        replacementRoot.AddChild(replacementChild);
+        try
+        {
+            Require(fixture.TryAttachPresentationRoot(firstRoot),
+                "Transition did not attach its first staged presentation root.");
+            Require(!fixture.TryAttachPresentationRoot(replacementRoot),
+                "Transition accepted a replacement presentation root into the same session.");
+            object result = AwaitProductTransitionResult(fixture.CompletionTask);
+            RequireProductTransitionStatus(result, "Cancelled", "replacement root");
+            Require(firstChild.ProcessMode == Node.ProcessModeEnum.WhenPaused,
+                "Replacement-root cancellation did not restore the original staged tree.");
+            Require(replacementChild.ProcessMode == Node.ProcessModeEnum.Always,
+                "Replacement-root cancellation mutated the unowned replacement tree.");
+        }
+        finally
+        {
+            firstRoot.Free();
+            replacementRoot.Free();
+        }
+    }
+
+    private static void VerifyTransitionWatchdog(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        _productTransitionAnimationFactory = (_, token) => WaitForCancellation(token);
+        _productTransitionForceWatchdogTimeout = true;
+        var transition = CreateTransitionFixture();
+        ProductTransitionSessionFixture fixture;
+        try
+        {
+            fixture = ProductTransitionSessionFixture.Start(product, transition);
+        }
+        finally
+        {
+            _productTransitionForceWatchdogTimeout = false;
+        }
+
+        using (fixture)
+        {
+            object result = AwaitProductTransitionResult(fixture.CompletionTask);
+            RequireProductTransitionStatus(result, "TimedOut", "watchdog");
+            Require(ReadProductTransitionDiagnostic(result).Contains(
+                    "30 second watchdog",
+                    StringComparison.OrdinalIgnoreCase),
+                "Transition watchdog result lost its timeout diagnostic.");
+            RequireTransitionForceReleased(transition, "watchdog");
+        }
+    }
+
+    private static void VerifyTransitionFinalizeDrain(Assembly product)
+    {
+        ResetProductTransitionState(product);
+        Type smoothingType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.NinjaSlayerTransitionLoadSmoothing");
+        MethodInfo beginSession = AccessTools.Method(smoothingType, "BeginSession", [typeof(long)])
+            ?? throw new MissingMethodException(smoothingType.FullName, "BeginSession");
+        MethodInfo endAnimation = AccessTools.Method(smoothingType, "EndAnimation", [typeof(long)])
+            ?? throw new MissingMethodException(smoothingType.FullName, "EndAnimation");
+        Type finalizePatchType = ProductType(
+            product,
+            "NinjaSlayer.Code.Patches.NinjaSlayerTransitionAssetFinalizePatch");
+        MethodInfo prefix = AccessTools.Method(
+                finalizePatchType,
+                "Prefix",
+                [typeof(AssetLoadingSession)])
+            ?? throw new MissingMethodException(finalizePatchType.FullName, "Prefix");
+        MethodInfo processLoadingQueue = AccessTools.Method(
+                typeof(AssetLoadingSession),
+                "ProcessLoadingQueue",
+                Type.EmptyTypes)
+            ?? throw new MissingMethodException(
+                typeof(AssetLoadingSession).FullName,
+                "ProcessLoadingQueue");
+        MethodInfo finalizeLoading = AccessTools.Method(
+                typeof(AssetLoadingSession),
+                "FinalizeLoading",
+                Type.EmptyTypes)
+            ?? throw new MissingMethodException(
+                typeof(AssetLoadingSession).FullName,
+                "FinalizeLoading");
+        Require(processLoadingQueue.ReturnType == typeof(void)
+            && finalizeLoading.ReturnType == typeof(void),
+            "Supported host changed a Transition private loading target signature.");
+
+        string[] paths =
+        [
+            "res://transition-contract-a.tres",
+            "res://transition-contract-b.tres"
+        ];
+        foreach (string path in paths)
+        {
+            Require(ResourceLoader.LoadThreadedRequest(path) == Error.Ok,
+                $"Transition finalize fixture could not request {path}.");
+        }
+
+        var cache = new ConcurrentDictionary<string, Resource>();
+        var session = new AssetLoadingSession("transition-contract", [], cache);
+        FieldInfo finalizingField = AccessTools.Field(typeof(AssetLoadingSession), "_finalizing")
+            ?? throw new MissingFieldException(typeof(AssetLoadingSession).FullName, "_finalizing");
+        FieldInfo loadingField = AccessTools.Field(typeof(AssetLoadingSession), "_loading")
+            ?? throw new MissingFieldException(typeof(AssetLoadingSession).FullName, "_loading");
+        FieldInfo totalLoadedField = AccessTools.Field(typeof(AssetLoadingSession), "_totalLoaded")
+            ?? throw new MissingFieldException(typeof(AssetLoadingSession).FullName, "_totalLoaded");
+        Require(loadingField.FieldType == typeof(Queue<string>)
+            && finalizingField.FieldType == typeof(Queue<string>),
+            "Supported host changed a Transition loading queue type.");
+        var finalizing = (Queue<string>)finalizingField.GetValue(session)!;
+        foreach (string path in paths)
+        {
+            finalizing.Enqueue(path);
+        }
+
+        const long sessionId = 4242;
+        beginSession.Invoke(null, [sessionId]);
+        try
+        {
+            Require(ReadProductTransitionLoadLimit(product) == 8,
+                "Transition finalize fixture did not activate animation smoothing.");
+            int calls = 0;
+            while (finalizing.Count > 0)
+            {
+                int before = finalizing.Count;
+                bool runOriginal = (bool)prefix.Invoke(null, [session])!;
+                Require(!runOriginal,
+                    "Transition finalize batching delegated to the host while animation smoothing was active.");
+                Require(finalizing.Count < before,
+                    "Transition finalize batching did not drain at least one queued resource.");
+                calls++;
+                Require(calls <= paths.Length,
+                    "Transition finalize batching exceeded its guaranteed drain bound.");
+            }
+
+            Require(cache.Count == paths.Length && paths.All(cache.ContainsKey),
+                "Transition finalize batching lost a resource before cache insertion.");
+            Require((int)totalLoadedField.GetValue(session)! == paths.Length,
+                "Transition finalize batching finalized a resource more than once.");
+            bool emptyRunOriginal = (bool)prefix.Invoke(null, [session])!;
+            Require(!emptyRunOriginal
+                && (int)totalLoadedField.GetValue(session)! == paths.Length,
+                "Repeated Transition finalize invocation changed an already drained cache.");
+        }
+        finally
+        {
+            endAnimation.Invoke(null, [sessionId]);
+        }
+
+        Require(ReadProductTransitionLoadLimit(product) == 128,
+            "Transition finalize fixture did not restore the host load limit.");
+        Require((bool)prefix.Invoke(null, [session])!,
+            "Transition finalize Patch did not yield to the original host outside animation playback.");
+    }
+
+    private static Harmony InstallProductTransitionInstrumentation(Assembly product)
+    {
+        MethodInfo delay = AccessTools.Method(
+                typeof(Task),
+                nameof(Task.Delay),
+                [typeof(TimeSpan), typeof(CancellationToken)])
+            ?? throw new MissingMethodException(typeof(Task).FullName, nameof(Task.Delay));
+        var harmony = new Harmony($"NinjaSlayer.ContractTests.Transition.{Guid.NewGuid():N}");
+        harmony.Patch(
+            delay,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixProductTransitionDelay)));
+        Type sessionType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.NinjaSlayerTransitionSession");
+        MethodInfo watchdog = AccessTools.Method(sessionType, "RunWatchdogAsync", Type.EmptyTypes)
+            ?? throw new MissingMethodException(sessionType.FullName, "RunWatchdogAsync");
+        harmony.Patch(
+            watchdog,
+            prefix: new HarmonyMethod(
+                typeof(ContractRunner),
+                nameof(PrefixProductTransitionWatchdog)));
+        return harmony;
+    }
+
+    private static bool PrefixProductTransitionDelay(ref Task __result)
+    {
+        if (!_productTransitionForceWatchdogTimeout)
+        {
+            return true;
+        }
+
+        __result = Task.CompletedTask;
+        return false;
+    }
+
+    private static void PrefixProductTransitionWatchdog(object __instance)
+    {
+        FieldInfo disposed = AccessTools.Field(__instance.GetType(), "_disposed")
+            ?? throw new MissingFieldException(__instance.GetType().FullName, "_disposed");
+        if ((int)disposed.GetValue(__instance)! != 0)
+        {
+            _productTransitionWatchdogStartedAfterDispose++;
+        }
+    }
+
+    private static void ResetProductTransitionState(Assembly product)
+    {
+        _productTransitionAnimationFactory = null;
+        _productTransitionForceWatchdogTimeout = false;
+        _productTransitionWatchdogStartedAfterDispose = 0;
+        Type gateType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate");
+        FieldInfo activeField = AccessTools.Field(gateType, "_activeSession")
+            ?? throw new MissingFieldException(gateType.FullName, "_activeSession");
+        if (activeField.GetValue(null) is { } active)
+        {
+            AwaitProductTransitionResult(
+                CompleteProductTransition(product, active, "Cancelled", forceRelease: true));
+        }
+
+        SetStaticField(gateType, "_activeSession", null);
+        SetStaticField(gateType, "_pending", false);
+        SetStaticField(gateType, "_activeSessionPresent", 0);
+        Type smoothingType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.NinjaSlayerTransitionLoadSmoothing");
+        SetStaticField(smoothingType, "animationSessionId", 0L);
+    }
+
+    private static object? InvokeProductTransitionMethod(object session, string methodName)
+    {
+        MethodInfo method = AccessTools.Method(session.GetType(), methodName, Type.EmptyTypes)
+            ?? throw new MissingMethodException(session.GetType().FullName, methodName);
+        return method.Invoke(session, null);
+    }
+
+    private static Delegate CreateProductTransitionAnimationDelegate(Type sessionType)
+    {
+        MethodInfo factory = AccessTools.Method(
+                typeof(ContractRunner),
+                nameof(RunProductTransitionAnimation))
+            ?.MakeGenericMethod(sessionType)
+            ?? throw new MissingMethodException(
+                typeof(ContractRunner).FullName,
+                nameof(RunProductTransitionAnimation));
+        Type delegateType = typeof(Func<,,>).MakeGenericType(
+            sessionType,
+            typeof(CancellationToken),
+            typeof(Task));
+        return Delegate.CreateDelegate(delegateType, factory);
+    }
+
+    private static Task RunProductTransitionAnimation<TSession>(
+        TSession session,
+        CancellationToken token)
+        where TSession : class
+    {
+        Func<object, CancellationToken, Task> factory = _productTransitionAnimationFactory
+            ?? throw new InvalidOperationException(
+                "Product Transition animation factory was not configured.");
+        return factory(session, token)
+            ?? throw new InvalidOperationException(
+                "Product Transition animation factory returned null.");
+    }
+
+    private static Task WaitForCancellation(CancellationToken token)
+    {
+        if (token.IsCancellationRequested)
+        {
+            return Task.FromCanceled(token);
+        }
+
+        var completion = new TaskCompletionSource();
+        _ = token.Register(() => completion.TrySetCanceled(token));
+        return completion.Task;
+    }
+
+    private static NTransition CreateTransitionFixture()
+    {
+        var transition = new NTransition
+        {
+            Visible = true,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        transition.AddChild(new Control
+        {
+            Name = "GradientTransition",
+            Modulate = Colors.White
+        });
+        transition.AddChild(new ColorRect
+        {
+            Name = "SimpleTransition",
+            Color = Colors.Black,
+            Modulate = Colors.White
+        });
+        return transition;
+    }
+
+    private static int ReadProductTransitionLoadLimit(Assembly product)
+    {
+        Type smoothingType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.NinjaSlayerTransitionLoadSmoothing");
+        MethodInfo method = AccessTools.Method(
+                smoothingType,
+                "GetConcurrentAssetLoadLimit",
+                Type.EmptyTypes)
+            ?? throw new MissingMethodException(
+                smoothingType.FullName,
+                "GetConcurrentAssetLoadLimit");
+        return (int)method.Invoke(null, null)!;
+    }
+
+    private static bool ReadProductTransitionGateActive(Assembly product)
+    {
+        Type gateType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate");
+        FieldInfo field = AccessTools.Field(gateType, "_activeSessionPresent")
+            ?? throw new MissingFieldException(gateType.FullName, "_activeSessionPresent");
+        return (int)field.GetValue(null)! != 0;
+    }
+
+    private static Task CompleteProductTransition(
+        Assembly product,
+        object session,
+        string status,
+        bool forceRelease)
+    {
+        Type statusType = ProductType(
+            product,
+            "NinjaSlayer.Code.Transition.TransitionCompletionStatus");
+        MethodInfo method = AccessTools.Method(
+                session.GetType(),
+                "CompleteAsync",
+                [statusType, typeof(bool), typeof(string)])
+            ?? throw new MissingMethodException(session.GetType().FullName, "CompleteAsync");
+        object statusValue = Enum.Parse(statusType, status);
+        return (Task)(method.Invoke(session, [statusValue, forceRelease, null])
+            ?? throw new InvalidOperationException(
+                "NinjaSlayerTransitionSession.CompleteAsync returned null."));
+    }
+
+    private static object AwaitProductTransitionResult(Task completion)
+    {
+        completion.GetAwaiter().GetResult();
+        PropertyInfo resultProperty = completion.GetType().GetProperty(nameof(Task<object>.Result))
+            ?? throw new MissingMemberException(completion.GetType().FullName, nameof(Task<object>.Result));
+        return resultProperty.GetValue(completion)
+            ?? throw new InvalidOperationException("Transition completion returned a null result.");
+    }
+
+    private static void RequireProductTransitionStatus(
+        object result,
+        string expected,
+        string label)
+    {
+        PropertyInfo status = result.GetType().GetProperty("Status")
+            ?? throw new MissingMemberException(result.GetType().FullName, "Status");
+        Require(string.Equals(status.GetValue(result)?.ToString(), expected, StringComparison.Ordinal),
+            $"Transition {label} returned {status.GetValue(result)}, expected {expected}.");
+    }
+
+    private static string ReadProductTransitionDiagnostic(object result)
+    {
+        PropertyInfo diagnostic = result.GetType().GetProperty("Diagnostic")
+            ?? throw new MissingMemberException(result.GetType().FullName, "Diagnostic");
+        return diagnostic.GetValue(result) as string ?? string.Empty;
+    }
+
+    private static void RequireTransitionInputRestored(NTransition transition, string label)
+    {
+        Require(!transition.InTransition
+            && transition.MouseFilter == Control.MouseFilterEnum.Ignore,
+            $"Transition {label} did not restore host input ownership.");
+    }
+
+    private static void RequireTransitionForceReleased(NTransition transition, string label)
+    {
+        RequireTransitionInputRestored(transition, label);
+        ColorRect backdrop = transition.GetNode<ColorRect>("SimpleTransition");
+        Control gradient = transition.GetNode<Control>("GradientTransition");
+        Require(!transition.Visible
+            && backdrop.Modulate.A == 0f
+            && gradient.Modulate.A == 0f,
+            $"Transition {label} did not clear its FadeOut/FadeIn cover.");
+    }
+
+    private sealed class ProductTransitionSessionFixture : IDisposable
+    {
+        private readonly Assembly _product;
+        private readonly object _session;
+        private readonly NTransition _transition;
+
+        private ProductTransitionSessionFixture(
+            Assembly product,
+            object session,
+            NTransition transition)
+        {
+            _product = product;
+            _session = session;
+            _transition = transition;
+        }
+
+        public Task CompletionTask
+        {
+            get
+            {
+                PropertyInfo property = _session.GetType().GetProperty("Completion")
+                    ?? throw new MissingMemberException(_session.GetType().FullName, "Completion");
+                return (Task)(property.GetValue(_session)
+                    ?? throw new InvalidOperationException(
+                        "NinjaSlayerTransitionSession.Completion returned null."));
+            }
+        }
+
+        public static ProductTransitionSessionFixture Start(
+            Assembly product,
+            NTransition transition,
+            CancellationToken cancellationToken = default)
+        {
+            Type sessionType = ProductType(
+                product,
+                "NinjaSlayer.Code.Transition.NinjaSlayerTransitionSession");
+            Type gateType = ProductType(
+                product,
+                "NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate");
+            Delegate animation = CreateProductTransitionAnimationDelegate(sessionType);
+            MethodInfo start = gateType
+                .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Single(method => method.Name == "TryStartSession"
+                    && method.GetParameters().Length == 4);
+            object?[] arguments = [transition, animation, cancellationToken, null];
+            bool started = (bool)start.Invoke(null, arguments)!;
+            Require(started && arguments[3] != null,
+                "Production Transition gate rejected the contract session.");
+            return new ProductTransitionSessionFixture(product, arguments[3]!, transition);
+        }
+
+        public bool TryClaimRevealThroughGate()
+        {
+            Type gateType = ProductType(
+                _product,
+                "NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate");
+            MethodInfo method = gateType
+                .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Single(candidate => candidate.Name == "TryClaimReveal"
+                    && candidate.GetParameters().Length == 2);
+            object?[] arguments = [_transition, null];
+            bool claimed = (bool)method.Invoke(null, arguments)!;
+            Require(!claimed || ReferenceEquals(arguments[1], _session),
+                "Transition gate returned a reveal claim for a different session.");
+            return claimed;
+        }
+
+        public bool TryAttachPresentationRoot(NRun root)
+        {
+            Type gateType = ProductType(
+                _product,
+                "NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate");
+            MethodInfo method = AccessTools.Method(
+                    gateType,
+                    "TryAttachPresentationRoot",
+                    [typeof(NRun)])
+                ?? throw new MissingMethodException(gateType.FullName, "TryAttachPresentationRoot");
+            return (bool)method.Invoke(null, [root])!;
+        }
+
+        public bool TryDeferPresentation(Action operation)
+        {
+            MethodInfo method = AccessTools.Method(
+                    _session.GetType(),
+                    "TryDeferPresentation",
+                    [typeof(Action)])
+                ?? throw new MissingMethodException(
+                    _session.GetType().FullName,
+                    "TryDeferPresentation");
+            return (bool)method.Invoke(_session, [operation])!;
+        }
+
+        public void ReleasePresentation() =>
+            InvokeProductTransitionMethod(_session, "ReleasePresentation");
+
+        public void InvokePresentationRootTreeExiting() =>
+            InvokeProductTransitionMethod(_session, "OnPresentationRootTreeExiting");
+
+        public Task Complete(string status, bool forceRelease) =>
+            CompleteProductTransition(_product, _session, status, forceRelease);
+
+        public void Dispose()
+        {
+            if (!CompletionTask.IsCompleted)
+            {
+                AwaitProductTransitionResult(
+                    Complete("Cancelled", forceRelease: true));
+            }
+
+            if (GodotObject.IsInstanceValid(_transition))
+            {
+                _transition.Free();
+            }
+        }
     }
 
     private static void VerifyWorldVisualStylesAreIdempotent()
