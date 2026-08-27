@@ -39,6 +39,12 @@ namespace NinjaSlayer.RitsuLibContractTests;
 
 public partial class ContractRunner : Node
 {
+    private const int ExpectedRequiredPatchTargetCount = 95;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 62;
+    private static readonly List<ModPatcher> CapturedPatchers = [];
+    private static Assembly? _productAssembly;
+    private static ModPatchInfo[]? _capturedRequiredPatches;
+    private static string? _patcherFailureName;
     private static ProductPrepareFaultMode _productPrepareFaultMode;
 
     public override void _Ready()
@@ -51,6 +57,7 @@ public partial class ContractRunner : Node
                 RitsuLibFramework.Initialize();
             }
             VerifyPreparedOwnershipContracts();
+            VerifyProductionPatchTransactions();
             VerifyOrobasSeaGlassPatchContract();
             VerifyBlackFlameDamagePatchContract();
             VerifyProductionDynamicPatchContracts();
@@ -164,7 +171,7 @@ public partial class ContractRunner : Node
         finally
         {
             PreparedFaultInjection.Reset();
-            faultHarmony.UnpatchAll();
+            faultHarmony.UnpatchAll(faultHarmony.Id);
             lifecycle.Dispose();
             lifecycle.Dispose();
         }
@@ -341,13 +348,7 @@ public partial class ContractRunner : Node
 
     private static void VerifyPreparedCallerFailurePropagation()
     {
-        string productPath = System.Environment.GetEnvironmentVariable(
-                "NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY")
-            ?? throw new InvalidOperationException(
-                "Prepared caller contracts require NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY.");
-        AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(typeof(ContractRunner).Assembly)
-            ?? throw new InvalidOperationException("The ContractRunner assembly has no load context.");
-        Assembly product = context.LoadFromAssemblyPath(Path.GetFullPath(productPath));
+        Assembly product = LoadProductAssembly();
         RequireMatchingProductMetadata(product, "NinjaSlayerHostChannel");
         RequireMatchingProductMetadata(product, "NinjaSlayerGameApiVersion");
 
@@ -366,7 +367,7 @@ public partial class ContractRunner : Node
         finally
         {
             _productPrepareFaultMode = ProductPrepareFaultMode.None;
-            harmony.UnpatchAll();
+            harmony.UnpatchAll(harmony.Id);
         }
     }
 
@@ -490,6 +491,276 @@ public partial class ContractRunner : Node
             .Single(attribute => attribute.Key == key)
             .Value
         ?? throw new InvalidOperationException($"Assembly metadata {key} has no value.");
+
+    private static Assembly LoadProductAssembly()
+    {
+        if (_productAssembly is not null)
+        {
+            return _productAssembly;
+        }
+
+        string productPath = System.Environment.GetEnvironmentVariable(
+                "NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY")
+            ?? throw new InvalidOperationException(
+                "Production ownership contracts require NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY.");
+        AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(typeof(ContractRunner).Assembly)
+            ?? throw new InvalidOperationException("The ContractRunner assembly has no load context.");
+        _productAssembly = context.LoadFromAssemblyPath(Path.GetFullPath(productPath));
+        return _productAssembly;
+    }
+
+    private static void VerifyProductionPatchTransactions()
+    {
+        Assembly product = LoadProductAssembly();
+        ModPatchInfo[] requiredPatches = CaptureRequiredPatchesFromFailedInitialization(product);
+        ValidateRequiredPatchManifest(product, requiredPatches);
+
+        ModPatcher requiredPatcher = CreatePatcher("production-required-contract");
+        requiredPatcher.RegisterPatches(requiredPatches);
+        try
+        {
+            Require(requiredPatcher.PatchAll(),
+                "The captured production required Patch transaction did not apply.");
+            Require(requiredPatcher.AppliedPatchCount == requiredPatches.Length,
+                "The production required Patch transaction did not apply every registered target.");
+            RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
+
+            VerifyOptionalFailureIsolation(
+                product,
+                requiredPatcher,
+                requiredPatches,
+                "BossBurstPresentationPatchGroup",
+                "TransitionCorePatchGroup");
+            VerifyOptionalFailureIsolation(
+                product,
+                requiredPatcher,
+                requiredPatches,
+                "TransitionCorePatchGroup",
+                "BossBurstPresentationPatchGroup");
+        }
+        finally
+        {
+            requiredPatcher.UnpatchAll();
+        }
+
+        RequirePatcherReleasedTargets(requiredPatcher, requiredPatches);
+    }
+
+    private static ModPatchInfo[] CaptureRequiredPatchesFromFailedInitialization(Assembly product)
+    {
+        ResetPatchTransactionInstrumentation();
+        _patcherFailureName = "Entry";
+        Harmony instrumentation = InstallPatchTransactionInstrumentation();
+        try
+        {
+            _ = ExpectException<InvalidOperationException>(
+                () => InvokeProductEntryMethod(product, "Init"),
+                "Required NinjaSlayer patch installation failed");
+        }
+        finally
+        {
+            instrumentation.UnpatchAll(instrumentation.Id);
+            _patcherFailureName = null;
+        }
+
+        ModPatcher requiredPatcher = CapturedPatchers.Single(
+            patcher => patcher.PatcherName == "Entry");
+        ModPatchInfo[] requiredPatches = _capturedRequiredPatches
+            ?? throw new InvalidOperationException(
+                "The Entry required Patch transaction was not observed before fault injection.");
+        Require(requiredPatches.Length > 0,
+            "Entry registered no required production Patch targets.");
+        Require(requiredPatcher.AppliedPatchCount == 0,
+            "Entry retained required patches after its injected critical failure.");
+        Require(CapturedPatchers.Count == 1,
+            "Entry continued into optional Patch installation after required initialization failed.");
+        RequirePatcherReleasedTargets(requiredPatcher, requiredPatches);
+        return requiredPatches;
+    }
+
+    private static void ValidateRequiredPatchManifest(
+        Assembly product,
+        IReadOnlyList<ModPatchInfo> requiredPatches)
+    {
+        Require(requiredPatches.Count == ExpectedRequiredPatchTargetCount,
+            $"The required Patch transaction registered {requiredPatches.Count} targets; " +
+            $"expected {ExpectedRequiredPatchTargetCount}.");
+        Require(requiredPatches.Count(patch => patch.IsCritical)
+                == ExpectedCriticalRequiredPatchTargetCount,
+            "The required Patch transaction changed its critical target markers.");
+        Require(requiredPatches.Select(patch => patch.Id).Distinct().Count() == requiredPatches.Count,
+            "The required Patch transaction contains duplicate target IDs.");
+        foreach (ModPatchInfo patch in requiredPatches)
+        {
+            Require(ReferenceEquals(patch.PatchType.Assembly, product),
+                $"Required Patch {patch.Id} did not come from the production assembly.");
+            Require(PatchTargetMethodResolver.Resolve(patch) is not null,
+                $"Required Patch target {FormatPatchTarget(patch)} did not resolve.");
+        }
+
+        string? manifestPath = System.Environment.GetEnvironmentVariable(
+            "NINJASLAYER_CONTRACT_PATCH_MANIFEST");
+        if (!string.IsNullOrWhiteSpace(manifestPath))
+        {
+            string fullPath = Path.GetFullPath(manifestPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            IEnumerable<string> lines =
+            [
+                $"channel={ReadAssemblyMetadata(product, "NinjaSlayerHostChannel")}",
+                $"gameApi={ReadAssemblyMetadata(product, "NinjaSlayerGameApiVersion")}",
+                $"hostMvid={typeof(CombatState).Assembly.ManifestModule.ModuleVersionId:D}",
+                $"count={requiredPatches.Count}",
+                .. requiredPatches.Select(FormatPatchTarget).Order(StringComparer.Ordinal)
+            ];
+            System.IO.File.WriteAllLines(fullPath, lines);
+        }
+    }
+
+    private static string FormatPatchTarget(ModPatchInfo patch)
+    {
+        string parameters = patch.ParameterTypes is { Length: > 0 }
+            ? string.Join(",", patch.ParameterTypes.Select(type => type.FullName))
+            : "";
+        return string.Join(
+            "|",
+            patch.Id,
+            patch.IsCritical,
+            patch.PatchType.FullName,
+            patch.TargetType?.FullName,
+            patch.MethodName,
+            parameters,
+            patch.HarmonyMethodType,
+            patch.IgnoreIfTargetMissing);
+    }
+
+    private static void VerifyOptionalFailureIsolation(
+        Assembly product,
+        ModPatcher requiredPatcher,
+        IReadOnlyList<ModPatchInfo> requiredPatches,
+        string failingPatcherName,
+        string survivingPatcherName)
+    {
+        ResetPatchTransactionInstrumentation();
+        _patcherFailureName = failingPatcherName;
+        Harmony instrumentation = InstallPatchTransactionInstrumentation();
+        try
+        {
+            InvokeProductEntryMethod(product, "InstallOptionalPresentations");
+        }
+        finally
+        {
+            instrumentation.UnpatchAll(instrumentation.Id);
+            _patcherFailureName = null;
+        }
+
+        try
+        {
+            ModPatcher failedPatcher = CapturedPatchers.Single(
+                patcher => patcher.PatcherName == failingPatcherName);
+            ModPatcher survivingPatcher = CapturedPatchers.Single(
+                patcher => patcher.PatcherName == survivingPatcherName);
+            Require(failedPatcher.AppliedPatchCount == 0,
+                $"Optional Patch transaction {failingPatcherName} retained partial patches.");
+            Require(survivingPatcher.RegisteredPatchCount > 0
+                && survivingPatcher.AppliedPatchCount == survivingPatcher.RegisteredPatchCount,
+                $"Failure of {failingPatcherName} prevented {survivingPatcherName} from applying.");
+            RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
+        }
+        finally
+        {
+            for (int index = CapturedPatchers.Count - 1; index >= 0; index--)
+            {
+                CapturedPatchers[index].UnpatchAll();
+            }
+        }
+
+        RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
+    }
+
+    private static Harmony InstallPatchTransactionInstrumentation()
+    {
+        MethodInfo createPatcher = typeof(RitsuLibFramework)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(method => method.Name == nameof(RitsuLibFramework.CreatePatcher)
+                && method.ReturnType == typeof(ModPatcher));
+        MethodInfo patchAll = AccessTools.Method(
+                typeof(ModPatcher),
+                nameof(ModPatcher.PatchAll),
+                Type.EmptyTypes)
+            ?? throw new MissingMethodException(typeof(ModPatcher).FullName, nameof(ModPatcher.PatchAll));
+        var harmony = new Harmony($"NinjaSlayer.ContractTests.PatchTransactions.{Guid.NewGuid():N}");
+        harmony.Patch(
+            createPatcher,
+            postfix: new HarmonyMethod(typeof(ContractRunner), nameof(PostfixCreatePatcher)));
+        harmony.Patch(
+            patchAll,
+            prefix: new HarmonyMethod(typeof(ContractRunner), nameof(PrefixPatchAll)));
+        return harmony;
+    }
+
+    private static void PostfixCreatePatcher(ModPatcher __result) =>
+        CapturedPatchers.Add(__result);
+
+    private static void PrefixPatchAll(ModPatcher __instance)
+    {
+        if (!string.Equals(__instance.PatcherName, _patcherFailureName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        if (_patcherFailureName == "Entry")
+        {
+            _capturedRequiredPatches = __instance.RegisteredPatches.ToArray();
+        }
+
+        _patcherFailureName = null;
+        __instance.RegisterPatch<MissingCriticalPatch>();
+    }
+
+    private static void ResetPatchTransactionInstrumentation()
+    {
+        CapturedPatchers.Clear();
+        _capturedRequiredPatches = null;
+        _patcherFailureName = null;
+    }
+
+    private static void InvokeProductEntryMethod(Assembly product, string methodName)
+    {
+        Type entryType = product.GetType("NinjaSlayer.Scripts.Entry", throwOnError: true)!;
+        MethodInfo method = AccessTools.Method(entryType, methodName, Type.EmptyTypes)
+            ?? throw new MissingMethodException(entryType.FullName, methodName);
+        method.Invoke(null, null);
+    }
+
+    private static void RequirePatcherOwnsTargets(
+        ModPatcher patcher,
+        IReadOnlyList<ModPatchInfo> patches)
+    {
+        foreach (MethodBase target in patches
+            .Select(PatchTargetMethodResolver.Resolve)
+            .OfType<MethodBase>()
+            .Distinct())
+        {
+            Patches? info = Harmony.GetPatchInfo(target);
+            Require(info?.Owners.Contains(patcher.PatcherId) == true,
+                $"Patcher {patcher.PatcherName} does not own {target.DeclaringType?.FullName}.{target.Name}.");
+        }
+    }
+
+    private static void RequirePatcherReleasedTargets(
+        ModPatcher patcher,
+        IReadOnlyList<ModPatchInfo> patches)
+    {
+        foreach (MethodBase target in patches
+            .Select(PatchTargetMethodResolver.Resolve)
+            .OfType<MethodBase>()
+            .Distinct())
+        {
+            Patches? info = Harmony.GetPatchInfo(target);
+            Require(info?.Owners.Contains(patcher.PatcherId) != true,
+                $"Patcher {patcher.PatcherName} retained {target.DeclaringType?.FullName}.{target.Name}.");
+        }
+    }
 
     private static TException ExpectException<TException>(Action action, string messageFragment)
         where TException : Exception

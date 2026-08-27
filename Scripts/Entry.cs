@@ -122,13 +122,23 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
             requiredPatcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
             requiredPatcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
-            requiredPatcher.RegisterPatches<CardResolutionPatchGroup>();
+            requiredPatcher.RegisterPatch<CardPlayResolutionBeforePatch>();
+            requiredPatcher.RegisterPatch<CardPlayResolutionAfterPatch>();
+            requiredPatcher.RegisterPatch<CardResolutionCleanupPatch>();
             requiredPatcher.RegisterPatch<PreparedDrawPatch>();
             requiredPatcher.RegisterPatch<ReporterPassEventOptionPatch>();
             requiredPatcher.RegisterPatch<NancyLeeCandidatePatch>();
-            requiredPatcher.RegisterPatches<FinisherCorePatchGroup>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDeathCompletionPatch>();
-            requiredPatcher.RegisterPatches<FeedbackPatchGroup>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackOpenerPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackOpenPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
 
             bool requiredPatchFailure = false;
             bool requiredPatchesApplied = RitsuLibFramework.ApplyRequiredPatcher(

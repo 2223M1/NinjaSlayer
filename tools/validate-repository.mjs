@@ -498,17 +498,15 @@ const patchBodies = new Map(patchDeclarations.map((match, index) => [
   match[1],
   patchSources.slice(match.index, patchDeclarations[index + 1]?.index ?? patchSources.length),
 ]));
-const retainedPatchGroups = [
+const retainedPatchGroups = new Set([
   'BossBurstPresentationPatchGroup',
-  'CardResolutionPatchGroup',
-  'FinisherCorePatchGroup',
   'TransitionCorePatchGroup',
-  'FeedbackPatchGroup',
-];
+]);
 const declaredPatchGroups = [...patchGroupSource.matchAll(/internal\s+sealed\s+class\s+(\w+PatchGroup)\s*:\s*IModPatches/g)]
   .map((match) => match[1]);
-if (declaredPatchGroups.join(',') !== retainedPatchGroups.join(',')) {
-  errors.push(`Patch groups must be exactly: ${retainedPatchGroups.join(', ')}`);
+if (declaredPatchGroups.length !== retainedPatchGroups.size
+    || declaredPatchGroups.some((groupName) => !retainedPatchGroups.has(groupName))) {
+  errors.push(`Patch groups must be exactly: ${[...retainedPatchGroups].join(', ')}`);
 }
 for (const groupName of retainedPatchGroups) {
   const groupStart = patchGroupSource.indexOf(`class ${groupName}`);
@@ -523,6 +521,26 @@ for (const groupName of retainedPatchGroups) {
     if (!patchBodies.get(match[1])?.includes('IsCritical => true')) {
       errors.push(`${groupName} contains non-critical required patch ${match[1]}`);
     }
+  }
+}
+
+const requiredPatcherSource = entrySource.slice(
+  entrySource.indexOf('ModPatcher requiredPatcher'),
+  entrySource.indexOf('bool requiredPatchFailure'),
+);
+if (/RegisterPatches<\w+PatchGroup>/.test(requiredPatcherSource)) {
+  errors.push('Required patches must be registered directly on the single required patcher');
+}
+const optionalPresentationSource = entrySource.slice(
+  entrySource.indexOf('private static void InstallOptionalPresentations'),
+  entrySource.indexOf('private static void TryInstallOptionalPresentation'),
+);
+for (const groupName of retainedPatchGroups) {
+  const registrationCount = [...entrySource.matchAll(new RegExp(`RegisterPatches<${groupName}>`, 'g'))].length;
+  if (registrationCount !== 1
+      || !optionalPresentationSource.includes(`nameof(${groupName})`)
+      || !optionalPresentationSource.includes(`RegisterPatches<${groupName}>`)) {
+    errors.push(`${groupName} must be owned by exactly one independent optional patcher transaction`);
   }
 }
 

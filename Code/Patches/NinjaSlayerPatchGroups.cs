@@ -15,28 +15,6 @@ internal sealed class BossBurstPresentationPatchGroup : IModPatches
     }
 }
 
-internal sealed class CardResolutionPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<CardPlayResolutionBeforePatch>();
-        patcher.RegisterPatch<CardPlayResolutionAfterPatch>();
-        patcher.RegisterPatch<CardResolutionCleanupPatch>();
-    }
-}
-
-internal sealed class FinisherCorePatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
-        patcher.RegisterPatch<NinjaSlayerFinisherCardPlayCleanupPatch>();
-    }
-}
-
 internal sealed class TransitionCorePatchGroup : IModPatches
 {
     public static void AddTo(ModPatcher patcher)
@@ -45,17 +23,5 @@ internal sealed class TransitionCorePatchGroup : IModPatches
         patcher.RegisterPatch<NinjaSlayerTransitionPatch>();
         patcher.RegisterPatch<NinjaSlayerRoomFadeInGatePatch>();
         patcher.RegisterPatch<NinjaSlayerFadeInGatePatch>();
-    }
-}
-
-internal sealed class FeedbackPatchGroup : IModPatches
-{
-    public static void AddTo(ModPatcher patcher)
-    {
-        patcher.RegisterPatch<NinjaSlayerFeedbackOpenerPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackOpenPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
-        patcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
     }
 }
