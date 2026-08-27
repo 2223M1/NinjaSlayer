@@ -40,6 +40,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Afflictions;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
@@ -383,6 +384,10 @@ internal sealed partial class SmokeController
         Creature focus = combatState.HittableEnemies.FirstOrDefault()
             ?? throw new InvalidOperationException("No hittable enemy remained for the X attack scenario.");
         await VerifyRedesignCardsAndPowers(combatState, player, focus);
+        await WaitUntilAsync(
+            () => !StaggerAnimation.IsActive(player.Creature),
+            "The preceding hit animation did not settle before the X attack scenario.",
+            cancellationToken);
         await PlayerCmd.SetEnergy(1m, player);
         TornadoFist nonLethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(nonLethal, PileType.Hand);
