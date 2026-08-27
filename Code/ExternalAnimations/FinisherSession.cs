@@ -32,6 +32,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly NCreature _actorNode;
     private readonly NCreature _focusNode;
     private readonly FinisherDamageLedger _ledger;
+    private readonly HashSet<Creature> _committedDeaths =
+        new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<Node2D, DeathSquashVisualState> _deathSquashStates = [];
     private readonly Dictionary<NCreature, DeathKickVisual> _deathKickVisuals = [];
     private readonly CombatCinematicCameraLease _camera;
@@ -66,7 +68,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _enhancedImpactFailed;
     private bool _impactAudioPlayed;
     private bool _committing;
-    private bool _deathCommitStarted;
     private bool _returnTimelineStarted;
     private bool _returnTimelineCompleted;
     private float _returnTimelineProgress;
@@ -321,7 +322,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     public void NotifyDeathAnimationStarting(NCreature creatureNode)
     {
         if (_disposed
-            || !_deathCommitStarted
+            || !_committing
             || !_deathKickVisuals.TryGetValue(creatureNode, out DeathKickVisual? visual)
             || visual.Triggered)
         {
@@ -406,69 +407,95 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private async Task CompleteCore(bool commitDeaths, bool playPose)
     {
+        var failures = new List<Exception>();
+        if (commitDeaths)
+        {
+            if (!IsCurrentCombatContext())
+            {
+                int uncommittedDeaths = _ledger.LivingDeferredDeaths().Count;
+                if (uncommittedDeaths > 0)
+                {
+                    var ownershipFailure = new InvalidOperationException(
+                        $"Finisher session {SessionId} lost combat ownership with "
+                        + $"{uncommittedDeaths} confirmed death(s) still living.");
+                    failures.Add(ownershipFailure);
+                    Entry.Logger.Error(ownershipFailure.Message);
+                }
+            }
+            else
+            {
+                try
+                {
+                    if (playPose)
+                    {
+                        await CommitDeathsWithPoseCore();
+                    }
+                    else
+                    {
+                        await CommitDeferredDeathsWithoutPoseCore();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failures.Add(ex);
+                    Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} death commit failed: {ex}");
+                    try
+                    {
+                        await CommitConfirmedDeathsEmergencyCore();
+                    }
+                    catch (Exception fallbackEx)
+                    {
+                        failures.Add(fallbackEx);
+                        Entry.Logger.Error(
+                            $"NinjaSlayer finisher session {SessionId} fallback death commit failed: {fallbackEx}");
+                    }
+                }
+            }
+        }
+
+        bool mayRestoreCurrentCombat = commitDeaths && IsCurrentCombatContext();
         try
         {
-            if (commitDeaths && IsCurrentCombatContext())
+            await RestoreResourcesCore(mayRestoreCurrentCombat);
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+            Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} restoration failed: {ex}");
+        }
+
+        try
+        {
+            FinisherSessionRegistry.UnregisterSession(this);
+            if (FinisherSessionRegistry.IsSessionCurrent(this))
             {
-                if (playPose)
-                {
-                    await CommitDeathsWithPoseCore();
-                }
-                else
-                {
-                    await CommitDeferredDeathsWithoutPoseCore();
-                }
+                throw new InvalidOperationException(
+                    $"Finisher session {SessionId} remained registered after detach.");
             }
         }
         catch (Exception ex)
         {
-            Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} completion failed: {ex}");
-            if (commitDeaths && IsCurrentCombatContext())
-            {
-                try
-                {
-                    await CommitConfirmedDeathsEmergencyCore();
-                }
-                catch (Exception fallbackEx)
-                {
-                    Entry.Logger.Error(
-                        $"NinjaSlayer finisher session {SessionId} fallback death commit failed: {fallbackEx}");
-                }
-            }
+            failures.Add(ex);
+            Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} unregister failed: {ex}");
         }
-        finally
-        {
-            bool mayRestoreCurrentCombat = commitDeaths && IsCurrentCombatContext();
 
-            try
-            {
-                await RestoreResourcesCore(mayRestoreCurrentCombat);
-            }
-            catch (Exception ex)
-            {
-                Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} restoration failed: {ex}");
-            }
-            finally
-            {
-                try
-                {
-                    FinisherSessionRegistry.UnregisterSession(this);
-                }
-                catch (Exception ex)
-                {
-                    Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} unregister failed: {ex}");
-                }
-                finally
-                {
-                    _completion.TrySetResult();
-                }
-            }
+        if (failures.Count == 0)
+        {
+            _completion.TrySetResult();
+        }
+        else
+        {
+            _completion.TrySetException(
+                failures.Count == 1
+                    ? failures[0]
+                    : new AggregateException(
+                        $"Finisher session {SessionId} failed to complete.",
+                        failures));
         }
     }
 
     private async Task CommitDeathsWithPoseCore()
     {
-        await EnsureActionPeak();
         _committing = true;
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
         bool guaranteedClearMatchedRuntime = IsCompletionConditionSatisfied();
@@ -481,16 +508,37 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             return;
         }
 
+        try
+        {
+            await EnsureActionPeak();
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn(
+                $"Finisher session {SessionId} action pose failed; committing deaths without it: {ex}");
+        }
+
         if (CompletionCondition == FinisherCompletionCondition.AllCandidatesLethal)
         {
             YamotoKokiIntentLifecycle.InvalidateCombat(_combatState);
         }
 
-        List<NCreature> targetNodes = toKill
-            .Select(creature => _room.GetCreatureNode(creature))
-            .Where(node => node != null && GodotObject.IsInstanceValid(node))
-            .Cast<NCreature>()
-            .ToList();
+        List<NCreature> targetNodes;
+        try
+        {
+            targetNodes = toKill
+                .Select(creature => _room.GetCreatureNode(creature))
+                .Where(node => node != null && GodotObject.IsInstanceValid(node))
+                .Cast<NCreature>()
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn(
+                $"Finisher session {SessionId} could not resolve pose targets; committing deaths without them: {ex}");
+            targetNodes = [];
+        }
+
         if (toKill.Count > 0 && targetNodes.Count == 0)
         {
             await KillDeferredDeathsOnce(toKill, useDeathKick: false);
@@ -499,22 +547,30 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         if (targetNodes.Count > 0)
         {
-            await PrepareReverseImpactLead();
-
-            TryScheduleEnhancedImpact();
-            await _enhancedImpactTask;
-
-            if (!_enhancedImpactScheduled
-                || _enhancedImpactFailed)
+            try
             {
-                if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
-                {
-                    _finalZoomStarted = false;
-                }
+                await PrepareReverseImpactLead();
 
-                StartFinalZoom();
-                await _cameraTransitionTask;
-                await PlayDoomPoseImpact(targetNodes);
+                TryScheduleEnhancedImpact();
+                await _enhancedImpactTask;
+
+                if (!_enhancedImpactScheduled
+                    || _enhancedImpactFailed)
+                {
+                    if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+                    {
+                        _finalZoomStarted = false;
+                    }
+
+                    StartFinalZoom();
+                    await _cameraTransitionTask;
+                    await PlayDoomPoseImpact(targetNodes);
+                }
+            }
+            catch (Exception ex)
+            {
+                Entry.Logger.Warn(
+                    $"Finisher session {SessionId} impact presentation failed; committing gameplay deaths: {ex}");
             }
         }
 
@@ -523,7 +579,15 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
             {
-                StartReturnTimeline(includeSettle: true);
+                try
+                {
+                    StartReturnTimeline(includeSettle: true);
+                }
+                catch (Exception ex)
+                {
+                    Entry.Logger.Warn(
+                        $"Finisher session {SessionId} return presentation could not start: {ex}");
+                }
             }
         }
     }
@@ -531,9 +595,18 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private async Task CommitDeferredDeathsWithoutPoseCore()
     {
         _committing = true;
-        _actionCancellation.Cancel();
-        _impactCancellation.Cancel();
-        await _enhancedImpactTask;
+        try
+        {
+            _actionCancellation.Cancel();
+            _impactCancellation.Cancel();
+            await _enhancedImpactTask;
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Warn(
+                $"Finisher session {SessionId} could not stop its presentation before committing deaths: {ex}");
+        }
+
         _ledger.ReleasePendingProtections(mayRestoreCurrentCombat: true);
         await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths(), useDeathKick: false);
     }
@@ -541,6 +614,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private async Task CommitConfirmedDeathsEmergencyCore()
     {
         _committing = true;
+        var failures = new List<Exception>();
         try
         {
             _impactCancellation.Cancel();
@@ -557,27 +631,47 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            Entry.Logger.Warn(
-                $"Finisher session {SessionId} could not release every pending protection during fallback commit: {ex}");
+            failures.Add(ex);
         }
 
-        await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths(), useDeathKick: false);
+        try
+        {
+            await KillDeferredDeathsOnce(_ledger.LivingDeferredDeaths(), useDeathKick: false);
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+
+        if (failures.Count == 1)
+        {
+            throw failures[0];
+        }
+
+        if (failures.Count > 1)
+        {
+            throw new AggregateException(
+                $"Finisher session {SessionId} emergency commit encountered multiple failures.",
+                failures);
+        }
     }
 
     private async Task<bool> KillDeferredDeathsOnce(
         IEnumerable<Creature> deferredDeaths,
         bool useDeathKick)
     {
-        if (_deathCommitStarted || !IsCurrentCombatContext())
+        List<Creature> toKill = deferredDeaths
+            .Where(creature => creature.IsAlive && !_committedDeaths.Contains(creature))
+            .ToList();
+        if (toKill.Count == 0)
         {
             return false;
         }
 
-        List<Creature> toKill = deferredDeaths.Where(creature => creature.IsAlive).Distinct().ToList();
-        if (toKill.Count == 0)
+        if (!IsCurrentCombatContext())
         {
-            _deathCommitStarted = true;
-            return false;
+            throw new InvalidOperationException(
+                $"Finisher session {SessionId} lost its combat before committing {toKill.Count} confirmed death(s).");
         }
 
         try
@@ -590,19 +684,57 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 $"Finisher session {SessionId} could not restore a death squash before committing deaths: {ex}");
         }
 
-        if (useDeathKick && Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+        try
         {
-            FinisherDeathContinuationRegistry.Arm(toKill, SessionId);
-            StartReturnTimeline(includeSettle: false);
+            if (useDeathKick && Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+            {
+                FinisherDeathContinuationRegistry.Arm(toKill, SessionId);
+                StartReturnTimeline(includeSettle: false);
+            }
+            else if (useDeathKick)
+            {
+                ArmDeathKicks(toKill);
+            }
         }
-        else if (useDeathKick)
+        catch (Exception ex)
         {
-            ArmDeathKicks(toKill);
+            Entry.Logger.Warn(
+                $"Finisher session {SessionId} could not prepare death presentation; committing deaths without it: {ex}");
         }
 
-        _deathCommitStarted = true;
-        await CreatureCmd.Kill(toKill);
-        return true;
+        bool committedAny = false;
+        foreach (Creature target in toKill)
+        {
+            if (!target.IsAlive || _committedDeaths.Contains(target))
+            {
+                continue;
+            }
+
+            if (!IsCurrentCombatContext())
+            {
+                throw new InvalidOperationException(
+                    $"Finisher session {SessionId} lost its combat while committing confirmed deaths.");
+            }
+
+            await CreatureCmd.Kill(target);
+            if (target.IsAlive)
+            {
+                throw new InvalidOperationException(
+                    $"CreatureCmd.Kill completed without killing a confirmed finisher target in session {SessionId}.");
+            }
+
+            _committedDeaths.Add(target);
+            committedAny = true;
+        }
+
+        List<Creature> remaining = _ledger.LivingDeferredDeaths();
+        if (remaining.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"Finisher session {SessionId} left {remaining.Count} confirmed death(s) uncommitted.");
+        }
+
+        return committedAny;
     }
 
     private async Task RestoreResourcesCore(bool mayRestoreCurrentCombat)
@@ -729,13 +861,26 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         catch (Exception ex)
         {
             Entry.Logger.Error($"NinjaSlayer finisher session {SessionId} watchdog failed: {ex}");
-            if (IsCurrentCombatContext())
+            if (_completionStarted)
             {
-                await CompleteAsync(playPose: false);
+                return;
             }
-            else
+
+            try
             {
-                await CancelAsync();
+                if (IsCurrentCombatContext())
+                {
+                    await CompleteAsync(playPose: false);
+                }
+                else
+                {
+                    await CancelAsync();
+                }
+            }
+            catch (Exception completionEx)
+            {
+                Entry.Logger.Error(
+                    $"NinjaSlayer finisher session {SessionId} watchdog cleanup failed: {completionEx}");
             }
         }
     }

@@ -13,9 +13,10 @@ The fresh process uses the original `AutoSlayer` for menu, reward, and map navig
 3. Plays a non-lethal `TornadoFist` and verifies combat continues, the target survives, and the player returns to its combat position.
 4. Instantiates Yamoto Koki's origami-missile scene and verifies its native node resolves as `SpineSprite`.
 5. Exercises Dark Strike normal hit, full block, evasion, mixed sequential targets, injected hook failure, and lethal Thorns retaliation.
-6. Reduces the final enemy to a deterministic lethal state, plays `TornadoFist`, and verifies the target reaches 0 HP, no hittable enemy remains, and combat ends.
+6. Reduces the final enemy to a deterministic lethal state, injects one Finisher presentation-construction failure, plays a three-hit `TornadoFist`, and verifies the observed session still commits exactly one death and releases all ownership.
 7. Holds AutoSlay at the first map, saves, and exits with code `20`.
 8. A second process clicks Continue, verifies the saved run and canonical character progress, abandons the run, returns to the main menu, and exits `0`.
+9. A third fresh process uses Instant mode, executes a real Dark Ninja move against a one-HP Ninja Slayer, and verifies the reverse Finisher commits one death without leaving registry, camera, input-suppression, or black-overlay ownership.
 
 Failures capture a screenshot when a viewport exists. JSONL checkpoints include only bounded player-observable assertions and identifiers; they do not expose mutable game objects. The attestation records the requested bundle SemVer, both the pinned RitsuLib compile baseline and the actual Workshop runtime version, plus the SHA-256 of the universal bundle's checksum manifest. Stable and preview attestations must carry the same bundle identity. The launcher also rejects loader, managed/native library, NinjaSlayer resource, and Spine errors found in the game logs.
 
@@ -55,4 +56,4 @@ Multiplayer smoke remains deferred until the single-player harness has stable fi
 
 ## Sawatari Same-Combat Gate
 
-Run `SawatariSameCombat` to verify the event's two decision pauses and duel in one real combat. The trusted SmokeDriver replaces only the first event returned by the host with Sawatari, then exercises the production event and combat code. It requires the original `CombatState`, `NCombatRoom`, history, RNG, card piles, and powers to survive the intermission; requires exactly one duel combat-start banner without another `BeforeCombatStart`; and requires exactly one final `AfterCombatEnd`. The process exits as soon as these assertions pass, so unrelated AutoSlayer failures later in the seeded run cannot mask this gate.
+Run `SawatariSameCombat` to verify the event's two decision pauses and duel in one real combat. The trusted SmokeDriver replaces only the first event returned by the host with Sawatari, kills all but one first-wave target, and uses a real single-hit Ninja Slayer Strike to observe normal Finisher completion before the intermission. It then requires the original `CombatState`, `NCombatRoom`, history, RNG, card piles, and powers to survive the intermission; requires exactly one duel combat-start banner without another `BeforeCombatStart`; and requires exactly one final `AfterCombatEnd`. The process exits as soon as these assertions pass, so unrelated AutoSlayer failures later in the seeded run cannot mask this gate.

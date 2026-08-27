@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Scripts;
@@ -114,6 +113,19 @@ internal static class FinisherSessionRegistry
     {
         Entry.Logger.Warn(
             $"Released stale finisher session {session.SessionId} before entering a new combat.");
-        TaskHelper.RunSafely(session.CancelAsync());
+        _ = CancelStaleSession(session);
+    }
+
+    private static async Task CancelStaleSession(FinisherSession session)
+    {
+        try
+        {
+            await session.CancelAsync();
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Error(
+                $"Stale finisher session {session.SessionId} cleanup failed: {ex}");
+        }
     }
 }

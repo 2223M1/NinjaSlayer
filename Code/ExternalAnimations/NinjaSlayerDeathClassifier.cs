@@ -176,7 +176,7 @@ internal static class NinjaSlayerDeathClassifier
         catch (Exception ex)
         {
             Entry.Logger.Warn($"Could not begin reverse finisher session {session.SessionId}: {ex}");
-            _ = session.CancelAsync();
+            _ = CancelFailedSession(session);
             return false;
         }
     }
@@ -192,22 +192,37 @@ internal static class NinjaSlayerDeathClassifier
 
         try
         {
-            IEnumerable<DamageResult> results = await damageTask;
+            IEnumerable<DamageResult> results;
+            try
+            {
+                results = await damageTask;
+            }
+            catch (Exception originalFailure)
+            {
+                if (capture.Session is { } failedSession)
+                {
+                    try
+                    {
+                        await failedSession.CompleteAsync(playPose: false);
+                    }
+                    catch (Exception completionFailure)
+                    {
+                        throw new AggregateException(
+                            "Incoming damage and reverse finisher cleanup both failed.",
+                            originalFailure,
+                            completionFailure);
+                    }
+                }
+
+                throw;
+            }
+
             if (capture.Session is { } session)
             {
                 await session.CompleteAsync(playPose: true);
             }
 
             return results;
-        }
-        catch
-        {
-            if (capture.Session is { } session)
-            {
-                await session.CompleteAsync(playPose: false);
-            }
-
-            throw;
         }
         finally
         {
@@ -228,6 +243,19 @@ internal static class NinjaSlayerDeathClassifier
                     }
                 }
             }
+        }
+    }
+
+    private static async Task CancelFailedSession(FinisherSession session)
+    {
+        try
+        {
+            await session.CancelAsync();
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Error(
+                $"Reverse finisher session {session.SessionId} cleanup after begin failure failed: {ex}");
         }
     }
 

@@ -9,7 +9,8 @@ internal enum SmokePhase
     Fresh,
     Resume,
     FullAutoSlay,
-    SawatariSameCombat
+    SawatariSameCombat,
+    ReverseFinisher
 }
 
 internal sealed record SmokeConfiguration(

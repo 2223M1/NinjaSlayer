@@ -8,6 +8,7 @@
     <AssemblyName>NinjaSlayer-SmokeDriver</AssemblyName>
     <RootNamespace>NinjaSlayer.SmokeDriver</RootNamespace>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**</DefaultItemExcludes>
     <NinjaSlayerRitsuLibPackagePathId>$(NinjaSlayerRitsuLibPackageId.ToLowerInvariant())</NinjaSlayerRitsuLibPackagePathId>
     <PinnedRitsuLibAssemblyPath>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', '$(NinjaSlayerRitsuLibPackagePathId)', '$(NinjaSlayerRitsuLibVersion)', 'lib/net9.0/STS2-RitsuLib.dll'))</PinnedRitsuLibAssemblyPath>
   </PropertyGroup>

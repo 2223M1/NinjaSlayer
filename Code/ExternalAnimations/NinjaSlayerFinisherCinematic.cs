@@ -211,35 +211,36 @@ internal static class NinjaSlayerFinisherCinematic
             return await ExecuteOriginalCommand(command, choiceContext);
         }
 
-        bool transferred = false;
+        AttackCommand result;
         try
         {
             session.Begin();
-            AttackCommand result = await ExecuteOriginalCommand(command, choiceContext);
+            result = await ExecuteOriginalCommand(command, choiceContext);
             if (session.RequiresAfterCardPlayed)
             {
                 FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                transferred = true;
+                return result;
             }
-            else
-            {
-                await session.CompleteAsync(playPose: true);
-            }
-
-            return result;
         }
-        catch
+        catch (Exception originalFailure)
         {
-            await session.CompleteAsync(playPose: false);
-            throw;
-        }
-        finally
-        {
-            if (!transferred)
+            try
             {
                 await session.CompleteAsync(playPose: false);
             }
+            catch (Exception completionFailure)
+            {
+                throw new AggregateException(
+                    "Finisher card execution and cleanup both failed.",
+                    originalFailure,
+                    completionFailure);
+            }
+
+            throw;
         }
+
+        await session.CompleteAsync(playPose: true);
+        return result;
     }
 
     public static async Task ExecuteSequenceWithFinisher(
@@ -257,7 +258,6 @@ internal static class NinjaSlayerFinisherCinematic
             return;
         }
 
-        bool transferred = false;
         try
         {
             session.Begin();
@@ -265,25 +265,27 @@ internal static class NinjaSlayerFinisherCinematic
             if (session.RequiresAfterCardPlayed)
             {
                 FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                transferred = true;
-            }
-            else
-            {
-                await session.CompleteAsync(playPose: true);
+                return;
             }
         }
-        catch
+        catch (Exception originalFailure)
         {
-            await session.CompleteAsync(playPose: false);
-            throw;
-        }
-        finally
-        {
-            if (!transferred)
+            try
             {
                 await session.CompleteAsync(playPose: false);
             }
+            catch (Exception completionFailure)
+            {
+                throw new AggregateException(
+                    "Finisher sequence and cleanup both failed.",
+                    originalFailure,
+                    completionFailure);
+            }
+
+            throw;
         }
+
+        await session.CompleteAsync(playPose: true);
     }
 
     public static async Task ExecuteDirectWithFinisher(
@@ -310,7 +312,6 @@ internal static class NinjaSlayerFinisherCinematic
             return;
         }
 
-        bool transferred = false;
         try
         {
             session.Begin();
@@ -318,25 +319,27 @@ internal static class NinjaSlayerFinisherCinematic
             if (session.RequiresAfterCardPlayed)
             {
                 FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                transferred = true;
-            }
-            else
-            {
-                await session.CompleteAsync(playPose: true);
+                return;
             }
         }
-        catch
+        catch (Exception originalFailure)
         {
-            await session.CompleteAsync(playPose: false);
-            throw;
-        }
-        finally
-        {
-            if (!transferred)
+            try
             {
                 await session.CompleteAsync(playPose: false);
             }
+            catch (Exception completionFailure)
+            {
+                throw new AggregateException(
+                    "Finisher direct damage and cleanup both failed.",
+                    originalFailure,
+                    completionFailure);
+            }
+
+            throw;
         }
+
+        await session.CompleteAsync(playPose: true);
     }
 
     private static async Task<IEnumerable<DamageResult>> ExecuteDirectDamageWithFinisher(

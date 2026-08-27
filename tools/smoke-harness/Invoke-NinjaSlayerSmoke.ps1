@@ -135,7 +135,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'FullAutoSlay', 'SawatariSameCombat')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -148,6 +148,7 @@ function Invoke-SmokePhase {
             'Resume' { 1 }
             'FullAutoSlay' { 2 }
             'SawatariSameCombat' { 3 }
+            'ReverseFinisher' { 4 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -311,6 +312,7 @@ $isolatedGameRoot = Join-Path $sessionRoot 'game'
 $appDataDirectory = Join-Path $sessionRoot 'appdata'
 $localAppDataDirectory = Join-Path $sessionRoot 'localappdata'
 $driverOutput = Join-Path $sessionRoot 'driver'
+$driverIntermediate = Join-Path $sessionRoot 'driver-obj'
 $configurationPath = Join-Path $sessionRoot 'smoke-config.json'
 $checkpointPath = Join-Path $OutputDirectory 'checkpoints.jsonl'
 $firewallLease = $null
@@ -324,7 +326,7 @@ $effectivePhaseTimeoutSeconds = if ($PhaseTimeoutSeconds -gt 0) {
 }
 
 try {
-    New-Item -ItemType Directory -Path $sessionRoot, $appDataDirectory, $localAppDataDirectory, $driverOutput -Force | Out-Null
+    New-Item -ItemType Directory -Path $sessionRoot, $appDataDirectory, $localAppDataDirectory, $driverOutput, $driverIntermediate -Force | Out-Null
 
     $gameDataDirectory = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64'
     Invoke-Native -Command dotnet -Arguments @(
@@ -357,6 +359,8 @@ try {
     Add-MsBuildProperty $driverArguments 'Sts2DataDir' $gameDataDirectory
     Add-MsBuildProperty $driverArguments 'NinjaSlayerHostChannel' $Channel
     Add-MsBuildProperty $driverArguments 'NinjaSlayerAssemblyPath' $candidateAssembly
+    Add-MsBuildProperty $driverArguments 'BaseIntermediateOutputPath' ($driverIntermediate + [IO.Path]::DirectorySeparatorChar)
+    Add-MsBuildProperty $driverArguments 'MSBuildProjectExtensionsPath' ($driverIntermediate + [IO.Path]::DirectorySeparatorChar)
     try {
         Invoke-Native -Command dotnet -Arguments $driverArguments.ToArray() -WorkingDirectory $TrustedRoot
     }
@@ -419,6 +423,7 @@ try {
     else {
         Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 20
         Invoke-SmokePhase -Phase Resume -ExpectedExitCode 0
+        Invoke-SmokePhase -Phase ReverseFinisher -ExpectedExitCode 0
     }
 
     $gameLogsDirectory = Join-Path $appDataDirectory 'SlayTheSpire2\logs'
@@ -431,10 +436,10 @@ try {
         @('full-autoslay.starting', 'full-autoslay.completed')
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
-        @('sawatari.starting', 'sawatari.same-combat-completed', 'sawatari.completed')
+        @('sawatari.starting', 'finisher.normal.completed', 'sawatari.same-combat-completed', 'sawatari.completed')
     }
     else {
-        @('transition.completed', 'prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed')
+        @('transition.completed', 'prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.multi-hit.completed', 'finisher.presentation-fallback.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed', 'finisher.reverse.starting', 'finisher.reverse.completed')
     }
     $missing = @($requiredCheckpoints | Where-Object { $_ -notin $checkpoints.Name })
     if ($missing.Count -gt 0 -or @($checkpoints | Where-Object Status -ne 'passed').Count -gt 0) {
@@ -444,7 +449,7 @@ try {
     $gameAssemblyPath = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64\sts2.dll'
     $gameVersion = [Reflection.AssemblyName]::GetAssemblyName($gameAssemblyPath).Version.ToString()
     [ordered]@{
-        schemaVersion = 5
+        schemaVersion = 6
         candidateSha = $CandidateSha.ToLowerInvariant()
         bundleVersion = $BundleVersion
         result = 'passed'

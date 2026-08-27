@@ -184,19 +184,30 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                         : YamotoKokiIaiApproachMode.FinisherCloseRange);
             }
 
-            if (finisher != null)
-            {
-                await finisher.CompleteAsync(playPose: true);
-            }
         }
-        catch
+        catch (Exception originalFailure)
         {
             if (finisher != null)
             {
-                await finisher.CompleteAsync(playPose: false);
+                try
+                {
+                    await finisher.CompleteAsync(playPose: false);
+                }
+                catch (Exception completionFailure)
+                {
+                    throw new AggregateException(
+                        "Yamoto Koki Iai execution and finisher cleanup both failed.",
+                        originalFailure,
+                        completionFailure);
+                }
             }
 
             throw;
+        }
+
+        if (finisher != null)
+        {
+            await finisher.CompleteAsync(playPose: true);
         }
     }
 

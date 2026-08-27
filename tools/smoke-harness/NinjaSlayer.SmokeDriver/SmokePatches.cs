@@ -92,7 +92,7 @@ internal static class NinjaSlayerSmokeCombatPatch
             return true;
         }
 
-        __result = controller.ExecuteFirstCombatAsync(random, ct);
+        __result = controller.ExecuteClaimedCombatAsync(random, ct);
         return false;
     }
 }
