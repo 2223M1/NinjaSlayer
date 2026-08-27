@@ -621,7 +621,6 @@ internal sealed partial class SmokeController
         object history = manager.History;
         object rng = state.RunState.Rng;
         CardPile[] piles = playerState.AllPiles.ToArray();
-        CardModel[] cards = playerState.AllCards.ToArray();
         AbstractModel[] powers = player.Creature.Powers.Cast<AbstractModel>().ToArray();
 
         _observedSawatariCombat = state;
@@ -666,6 +665,7 @@ internal sealed partial class SmokeController
                 new BlockingPlayerChoiceContext(),
                 strike,
                 finisherTarget);
+            CardModel[] cards = playerState.AllCards.ToArray();
             FinisherSessionSnapshot normalFinisher = await RequireCompletedFinisherAsync(
                 "NinjaSlayerAttack",
                 resolvedHits: 1,
@@ -705,6 +705,7 @@ internal sealed partial class SmokeController
             await UiHelper.Click(GetSawatariOptions()[1]);
             await WaitUntilAsync(
                 () => !manager.IsPaused
+                    && !manager.PlayerActionsDisabled
                     && state.Enemies.Any(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster),
                 "Sawatari duel did not resume the original combat",
                 cancellationToken);
