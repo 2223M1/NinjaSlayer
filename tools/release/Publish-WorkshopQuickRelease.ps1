@@ -3,6 +3,10 @@
 
 [CmdletBinding()]
 param(
+    [Parameter(Mandatory)]
+    [ValidatePattern('^[0-9a-fA-F]{40}$')]
+    [string] $SourceRevision,
+
     [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string] $Version,
 
@@ -72,6 +76,21 @@ if (-not $Confirm) {
 
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 Set-Location $repositoryRoot
+$worktreeStatus = & git status --porcelain
+if ($LASTEXITCODE -ne 0) {
+    throw 'Unable to inspect the candidate worktree.'
+}
+if ($worktreeStatus) {
+    throw 'Workshop quick release requires a clean candidate worktree.'
+}
+$head = (& git rev-parse HEAD | Out-String).Trim().ToLowerInvariant()
+if ($LASTEXITCODE -ne 0) {
+    throw 'Unable to resolve the candidate HEAD.'
+}
+$SourceRevision = $SourceRevision.ToLowerInvariant()
+if ($SourceRevision -ne $head) {
+    throw "SourceRevision $SourceRevision does not match candidate HEAD $head."
+}
 $compatibility = Get-Content -LiteralPath (Join-Path $repositoryRoot 'eng\compatibility.json') `
     -Raw -Encoding utf8 | ConvertFrom-Json
 $releaseDirectory = Join-Path $repositoryRoot 'build\releases'
@@ -162,6 +181,7 @@ foreach ($channel in @('stable', 'preview')) {
         Sts2DataDir = if ($channel -eq 'stable') { $stableDataDirectory } else { $previewDataDirectory }
         Target = 'PackageMod'
         BuildRoot = $buildRoot
+        SourceRevision = $SourceRevision
     }
     if (-not [string]::IsNullOrWhiteSpace($GodotExe)) {
         $channelBuildParameters.GodotExe = $GodotExe
@@ -176,7 +196,8 @@ $bundleDirectory = Join-Path $repositoryRoot 'build\workshop-bundle\NinjaSlayer'
     -StableSts2DataDir $stableDataDirectory `
     -OutputDirectory $bundleDirectory `
     -BuildRoot (Join-Path $repositoryRoot 'build\workshop-bundle\build') `
-    -Version $Version
+    -Version $Version `
+    -SourceRevision $SourceRevision
 
 if (Test-Path -LiteralPath $workshopContentDirectory) {
     Remove-Item -LiteralPath $workshopContentDirectory -Recurse -Force
@@ -193,6 +214,7 @@ Invoke-Native -Command dotnet -Arguments @(
     '--compatibility', (Join-Path $repositoryRoot 'eng\compatibility.json'),
     '--version', $Version,
     '--ritsulib-version', [string]$compatibility.ritsuLibVersion,
+    '--source-revision', $SourceRevision,
     '--forbidden-path-root', $repositoryRoot
 )
 

@@ -8,6 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$sourceRevision = '0123456789abcdef0123456789abcdef01234567'
 . (Join-Path $repositoryRoot '.github\scripts\compatibility.ps1')
 . (Join-Path $repositoryRoot '.github\scripts\release-artifact.ps1')
 . (Join-Path $repositoryRoot '.github\scripts\actions-provenance.ps1')
@@ -83,6 +84,7 @@ function Invoke-ArtifactValidator([string]$AssemblyPath, [string]$ForbiddenPathR
         '--game-api-version', '0.107.1',
         '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.107.1',
         '--ritsulib-version', '0.5.1',
+        '--source-revision', $sourceRevision,
         '--forbidden-path-root', $ForbiddenPathRoot
     )
 }
@@ -255,7 +257,8 @@ try {
             -PreviewPackageDirectory $previewPathFixture `
             -StableSts2DataDir $stableDataFixture `
             -OutputDirectory (Join-Path $stablePathFixture 'NinjaSlayer') `
-            -Version '0.1.0'
+            -Version '0.1.0' `
+            -SourceRevision $sourceRevision
     } 'dedicated NinjaSlayer directory'
     Assert-Throws {
         & $bundleScript `
@@ -263,7 +266,8 @@ try {
             -PreviewPackageDirectory $previewPathFixture `
             -StableSts2DataDir $stableDataFixture `
             -OutputDirectory (Split-Path -Parent $repositoryRoot) `
-            -Version '0.1.0'
+            -Version '0.1.0' `
+            -SourceRevision $sourceRevision
     } 'dedicated NinjaSlayer directory'
     Assert-Throws {
         & $bundleScript `
@@ -272,7 +276,8 @@ try {
             -StableSts2DataDir $stableDataFixture `
             -OutputDirectory (Join-Path $bundlePathFixture 'bundle\NinjaSlayer') `
             -BuildRoot $stablePathFixture `
-            -Version '0.1.0'
+            -Version '0.1.0' `
+            -SourceRevision $sourceRevision
     } 'Loader output must not overlap'
 
     $pckFixtureRoot = Join-Path $temporaryRoot 'pck-fixtures'
@@ -474,6 +479,7 @@ try {
     <AssemblyMetadata Include="NinjaSlayerGameApiVersion" Value="0.107.1" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibPackageId" Value="STS2.RitsuLib.Compat.0.107.1" />
     <AssemblyMetadata Include="NinjaSlayerRitsuLibVersion" Value="0.5.1" />
+    <AssemblyMetadata Include="NinjaSlayerSourceRevision" Value="0123456789abcdef0123456789abcdef01234567" />
   </ItemGroup>
 </Project>
 '@,
@@ -488,6 +494,16 @@ try {
         throw 'Unable to build the CodeView artifact fixture.'
     }
     $fixtureAssembly = Join-Path $assemblyFixture 'bin\Release\net9.0\ArtifactFixture.dll'
+    Assert-Throws {
+        Invoke-ArtifactContract @(
+            'validate-assembly',
+            '--assembly', $fixtureAssembly,
+            '--channel', 'stable',
+            '--game-api-version', '0.107.1',
+            '--ritsulib-package-id', 'STS2.RitsuLib.Compat.0.107.1',
+            '--ritsulib-version', '0.5.1',
+            '--forbidden-path-root', $assemblyFixture)
+    } 'source-revision'
     Assert-Throws {
         Invoke-ArtifactValidator $fixtureAssembly $assemblyFixture
     } 'CodeView/PDB path'

@@ -10,6 +10,9 @@ param(
     [Parameter(Mandatory)]
     [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string]$Version,
+    [Parameter(Mandatory)]
+    [ValidatePattern('^[0-9a-fA-F]{40}$')]
+    [string]$SourceRevision,
     [string]$BuildRoot,
     [string]$CompatibilityManifestPath
 )
@@ -98,6 +101,7 @@ if ([string]::IsNullOrWhiteSpace($CompatibilityManifestPath)) {
 . (Join-Path $repositoryRoot '.github\scripts\compatibility.ps1')
 
 $compatibility = Read-NinjaSlayerCompatibility -Path $CompatibilityManifestPath
+$SourceRevision = $SourceRevision.ToLowerInvariant()
 $stableProfile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel stable
 $previewProfile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel preview
 $stablePackage = Resolve-RequiredDirectory $StablePackageDirectory 'Stable package directory'
@@ -236,6 +240,7 @@ Invoke-Native dotnet @(
     '--compatibility', ([IO.Path]::GetFullPath($CompatibilityManifestPath)),
     '--version', $Version,
     '--ritsulib-version', [string]$compatibility.ritsuLibVersion,
+    '--source-revision', $SourceRevision,
     '--forbidden-path-root', $repositoryRoot
 )
 

@@ -21,6 +21,8 @@ const privateProjectPath = join(root, 'tools', 'private-contract', 'NinjaSlayer.
 const versionPropsPath = join(root, 'eng', 'NinjaSlayer.Version.props');
 const versionTargetsPath = join(root, 'eng', 'NinjaSlayer.Version.targets');
 const packagingTargetsPath = join(root, 'eng', 'NinjaSlayer.Packaging.targets');
+const channelBuildScriptPath = join(root, 'tools', 'release', 'Invoke-NinjaSlayerChannelBuild.ps1');
+const workshopQuickReleasePath = join(root, 'tools', 'release', 'Publish-WorkshopQuickRelease.ps1');
 const compatibility = JSON.parse(readFileSync(join(root, 'eng', 'compatibility.json'), 'utf8'));
 const validSourceRevision = 'a'.repeat(40);
 
@@ -84,6 +86,28 @@ function fileHash(path) {
 
 const sandbox = mkdtempSync(join(tmpdir(), 'ninjaslayer-build-boundaries-'));
 try {
+  for (const [script, scriptArguments] of [
+    [channelBuildScriptPath, [
+      '-Channel', 'stable',
+      '-Version', '0.1.0',
+      '-Sts2DataDir', sandbox,
+      '-Target', 'PackageMod',
+    ]],
+    [workshopQuickReleasePath, []],
+  ]) {
+    const missingSourceRevision = spawnSync(
+      'pwsh',
+      ['-NoLogo', '-NoProfile', '-NonInteractive', '-File', script, ...scriptArguments],
+      { cwd: root, encoding: 'utf8' },
+    );
+    assert.notEqual(missingSourceRevision.status, 0);
+    assert.match(
+      `${missingSourceRevision.stdout}\n${missingSourceRevision.stderr}`,
+      /SourceRevision/,
+      `${script} must reject a missing candidate source revision before building or publishing.`,
+    );
+  }
+
   for (const channel of ['stable', 'preview']) {
     assert.deepEqual(
       evaluateCompileFiles(privateProjectPath, {

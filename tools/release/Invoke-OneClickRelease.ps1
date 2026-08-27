@@ -706,7 +706,8 @@ try {
                 -OutputDirectory $bundleDirectory `
                 -BuildRoot (Join-Path $buildRoot 'workshop\build') `
                 -CompatibilityManifestPath (Join-Path $candidate.Root 'eng\compatibility.json') `
-                -Version $Version
+                -Version $Version `
+                -SourceRevision $head
             $bundleFiles = Get-NinjaSlayerWorkshopBundleFiles -Compatibility $compatibility
             New-NinjaSlayerExactZip `
                 -SourceDirectory $bundleDirectory `
@@ -785,6 +786,7 @@ try {
             $activeArchive = $archivePaths[$activeHost.Channel]
             & (Join-Path $repositoryRoot 'tools\release\Install-CurrentHostRelease.ps1') `
                 -Version $Version `
+                -SourceRevision $head `
                 -GameRoot $activeGameRoot `
                 -ArchivePath $activeArchive `
                 -ExpectedArchiveSha256 (Get-NinjaSlayerSha256 -Path $activeArchive)

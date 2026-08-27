@@ -146,6 +146,7 @@ jobs:
             --compatibility ".\eng\compatibility.json" `
             --version $env:RELEASE_VERSION `
             --ritsulib-version $env:RITSULIB_VERSION `
+            --source-revision $env:RELEASE_SHA `
             --forbidden-path-root "$env:GITHUB_WORKSPACE"
           if ($LASTEXITCODE -ne 0) { throw 'Universal Workshop bundle validation failed.' }
 
