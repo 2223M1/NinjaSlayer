@@ -220,16 +220,16 @@ function Build-SmokeDriver {
     [IO.Directory]::CreateDirectory($output) | Out-Null
     $common = @(
         $driverProject,
-        '-p:NinjaSlayerHostChannel=' + $Channel,
-        '-p:Sts2DataDir=' + $gameData,
-        '-p:NinjaSlayerAssemblyPath=' + $ProductAssembly,
-        '-p:BaseIntermediateOutputPath=' + ($intermediate + [IO.Path]::DirectorySeparatorChar),
-        '-p:MSBuildProjectExtensionsPath=' + ($intermediate + [IO.Path]::DirectorySeparatorChar)
+        ('-p:NinjaSlayerHostChannel=' + $Channel),
+        ('-p:Sts2DataDir=' + $gameData),
+        ('-p:NinjaSlayerAssemblyPath=' + $ProductAssembly),
+        ('-p:BaseIntermediateOutputPath=' + $intermediate + [IO.Path]::DirectorySeparatorChar),
+        ('-p:MSBuildProjectExtensionsPath=' + $intermediate + [IO.Path]::DirectorySeparatorChar)
     )
-    Invoke-Native -Executable 'dotnet' -ArgumentList @('restore') + $common -LogPath (Join-Path $driverRoot 'restore.log')
-    Invoke-Native -Executable 'dotnet' -ArgumentList @(
+    Invoke-Native -Executable 'dotnet' -ArgumentList (@('restore') + $common) -LogPath (Join-Path $driverRoot 'restore.log')
+    Invoke-Native -Executable 'dotnet' -ArgumentList (@(
         'build', '--no-restore', '-c', 'Release', '-v:minimal', '-o', $output
-    ) + $common -LogPath (Join-Path $driverRoot 'build.log')
+    ) + $common) -LogPath (Join-Path $driverRoot 'build.log')
     $driverAssembly = Join-Path $output 'NinjaSlayer-SmokeDriver.dll'
     Assert-RequiredPath -Path $driverAssembly -Type Leaf
     return $driverAssembly
