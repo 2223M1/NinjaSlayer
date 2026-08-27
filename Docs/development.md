@@ -91,16 +91,18 @@ Routine releases deliberately do not wait for Contract, Smoke, protected environ
 
 ### Workshop-only player test or emergency upload
 
-To upload an uncommitted working tree only to Workshop, use the separate player-test path:
+To upload one committed candidate only to Workshop, use the separate player-test path:
 
 ```powershell
+$sourceRevision = (git rev-parse HEAD).Trim()
 pwsh .\tools\release\Publish-WorkshopQuickRelease.ps1 `
+  -SourceRevision $sourceRevision `
   -StableDataDir C:\path\to\stable\data_sts2_windows_x86_64 `
   -PreviewDataDir C:\path\to\preview\data_sts2_windows_x86_64 `
   -Confirm
 ```
 
-This path automatically selects the next local patch version, builds both exact host implementations, assembles and validates one universal bundle, and uploads that bundle. It performs no GitHub operation or local game installation. The two data-directory parameters may instead be supplied through `NINJASLAYER_STS2_STABLE_DATA_DIR` and `NINJASLAYER_STS2_PREVIEW_DATA_DIR`.
+This path requires a clean worktree and a source revision equal to `HEAD`, automatically selects the next local patch version, builds both exact host implementations, assembles and validates one universal bundle, and uploads that bundle. It performs no GitHub operation or local game installation. The two data-directory parameters may instead be supplied through `NINJASLAYER_STS2_STABLE_DATA_DIR` and `NINJASLAYER_STS2_PREVIEW_DATA_DIR`.
 
 ### Optional protected audit release
 

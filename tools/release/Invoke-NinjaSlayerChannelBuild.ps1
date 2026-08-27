@@ -21,7 +21,8 @@ param(
     [string]$GodotExe,
     [string]$SteamModDir,
     [string]$BuildRoot,
-    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [Parameter(Mandatory)]
+    [ValidatePattern('^[0-9a-fA-F]{40}$')]
     [string]$SourceRevision,
     [switch]$ReuseCache
 )
@@ -130,12 +131,10 @@ Add-MsBuildProperty $commonArguments 'NinjaSlayerIsolatedOutputRoot' ($outputDir
 Add-MsBuildProperty $commonArguments 'PostBuildModDir' ($packageDirectory + [IO.Path]::DirectorySeparatorChar)
 Add-MsBuildProperty $commonArguments 'GodotExe' $GodotExe
 Add-MsBuildProperty $commonArguments 'SteamModDir' $SteamModDir
-if (-not [string]::IsNullOrWhiteSpace($SourceRevision)) {
-    $normalizedSourceRevision = $SourceRevision.ToLowerInvariant()
-    Add-MsBuildProperty $commonArguments 'GitDescribe' $normalizedSourceRevision
-    Add-MsBuildProperty $commonArguments 'GitReleaseTags' "v$Version"
-    Add-MsBuildProperty $commonArguments 'RepositoryCommit' $normalizedSourceRevision
-}
+$normalizedSourceRevision = $SourceRevision.ToLowerInvariant()
+Add-MsBuildProperty $commonArguments 'GitDescribe' $normalizedSourceRevision
+Add-MsBuildProperty $commonArguments 'GitReleaseTags' "v$Version"
+Add-MsBuildProperty $commonArguments 'RepositoryCommit' $normalizedSourceRevision
 
 $restoreArguments = [Collections.Generic.List[string]]::new()
 $restoreArguments.Add('restore')
@@ -190,7 +189,7 @@ Write-Output ([pscustomobject]@{
     Target = $Target
     GameApiVersion = [string]$profile.gameApiVersion
     RitsuLibPackageId = [string]$profile.ritsuLibPackageId
-    SourceRevision = $SourceRevision
+    SourceRevision = $normalizedSourceRevision
     AssetsPath = $assetsPath
     PackageDirectory = $packageDirectory
 })

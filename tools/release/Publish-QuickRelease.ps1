@@ -12,6 +12,8 @@ param(
     [string]$StableDataDir,
     [string]$PreviewDataDir,
     [string]$GodotExe,
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$SourceRevision,
     [switch]$SkipGitHub,
     [switch]$SkipWorkshop,
     [switch]$Confirm
@@ -53,9 +55,13 @@ if ($SkipGitHub -and $SkipWorkshop) {
 }
 
 if ($SkipGitHub) {
+    if ([string]::IsNullOrWhiteSpace($SourceRevision)) {
+        throw 'Workshop quick release requires -SourceRevision with the candidate full SHA.'
+    }
     $workshopParameters = @{
         Version = $Version
         ReleaseNoteFile = $ReleaseNoteFile
+        SourceRevision = $SourceRevision
         Confirm = $true
     }
     if (-not [string]::IsNullOrWhiteSpace($WorkshopUploadRoot)) {
