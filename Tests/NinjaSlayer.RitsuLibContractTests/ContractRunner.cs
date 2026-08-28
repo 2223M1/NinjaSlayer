@@ -479,6 +479,7 @@ public partial class ContractRunner : Node
         ValidateRequiredPatchManifest(product, requiredPatches);
         VerifyRequiredNonCriticalFailureAbortsInitialization(product);
         VerifyRequiredRollbackFailureIsObservable(product);
+        VerifyDynamicRollbackFailureIsObservable(product);
 
         ModPatcher requiredPatcher = CreatePatcher("production-required-contract");
         requiredPatcher.RegisterPatches(requiredPatches);
@@ -768,6 +769,99 @@ public partial class ContractRunner : Node
             RequirePatcherReleasedTargets(patcher, patcher.RegisteredPatches);
         }
         RequirePatcherOwnsTargets(requiredPatcher, requiredPatches);
+    }
+
+    private static void VerifyDynamicRollbackFailureIsObservable(Assembly product)
+    {
+        DynamicPatchInfo[] dynamicPatches =
+            CombatPresentationPacingPatch.CreateDynamicPatches();
+        MethodBase[] dynamicTargets = dynamicPatches
+            .Select(patch => (MethodBase)patch.OriginalMethod)
+            .Distinct()
+            .ToArray();
+        ModPatcher patcher = CreatePatcher(
+            "production-dynamic-rollback-verification");
+        Require(
+            patcher.ApplyDynamicPatches(
+                dynamicPatches,
+                rollbackOnCriticalFailure: true),
+            "The dynamic rollback verification fixture could not install its patches.");
+        Require(
+            patcher.AppliedPatchCount == dynamicTargets.Length,
+            "The dynamic rollback verification fixture did not install every target.");
+
+        FieldInfo harmonyField = AccessTools.Field(typeof(ModPatcher), "_harmony")
+            ?? throw new MissingFieldException(
+                typeof(ModPatcher).FullName,
+                "_harmony");
+        Harmony originalHarmony = (Harmony)(harmonyField.GetValue(patcher)
+            ?? throw new InvalidOperationException(
+                "The dynamic rollback verification patcher had no Harmony owner."));
+        var replacementHarmony = new Harmony(
+            $"{patcher.PatcherId}.dynamic-rollback-sabotage.{Guid.NewGuid():N}");
+        harmonyField.SetValue(patcher, replacementHarmony);
+
+        try
+        {
+            Type entryType = ProductType(
+                product,
+                "NinjaSlayer.Scripts.Entry");
+            MethodInfo rollback = AccessTools.Method(
+                    entryType,
+                    "RollbackPatcherVerified",
+                    [
+                        typeof(ModPatcher),
+                        typeof(string),
+                        typeof(IReadOnlyCollection<MethodBase>)
+                    ])
+                ?? throw new MissingMethodException(
+                    entryType.FullName,
+                    "RollbackPatcherVerified");
+            Exception failure = (Exception?)rollback.Invoke(
+                    null,
+                    [patcher, patcher.PatcherName, dynamicTargets])
+                ?? throw new InvalidOperationException(
+                    "Production rollback verification accepted residual dynamic patches.");
+
+            foreach (MethodBase target in dynamicTargets)
+            {
+                string targetName =
+                    $"{target.DeclaringType?.FullName}.{target.Name}";
+                Require(
+                    failure.ToString().Contains(
+                        targetName,
+                        StringComparison.Ordinal),
+                    $"Production rollback verification did not report {targetName}.");
+                Require(
+                    Harmony.GetPatchInfo(target)?.Owners.Contains(
+                        patcher.PatcherId) == true,
+                    $"Rollback sabotage did not retain {targetName}.");
+            }
+        }
+        finally
+        {
+            harmonyField.SetValue(patcher, originalHarmony);
+            patcher.UnpatchAll();
+            var cleanup = new Harmony(
+                $"NinjaSlayer.ContractTests.DynamicRollbackCleanup.{Guid.NewGuid():N}");
+            foreach (MethodBase target in dynamicTargets)
+            {
+                cleanup.Unpatch(
+                    target,
+                    HarmonyPatchType.All,
+                    patcher.PatcherId);
+            }
+            replacementHarmony.UnpatchAll(replacementHarmony.Id);
+        }
+
+        foreach (MethodBase target in dynamicTargets)
+        {
+            Require(
+                !(Harmony.GetPatchInfo(target)?.Owners.Contains(
+                    patcher.PatcherId) ?? false),
+                $"Dynamic rollback verification cleanup retained "
+                + $"{target.DeclaringType?.FullName}.{target.Name}.");
+        }
     }
 
     private static Harmony InstallPatchTransactionInstrumentation()

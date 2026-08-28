@@ -369,10 +369,15 @@ public class Entry
     {
         ModPatcher patcher = RitsuLibFramework.CreatePatcher(NinjaSlayerIds.ModId, patcherName);
         Exception installFailure;
+        MethodBase[] dynamicTargets = [];
         try
         {
             registerPatches(patcher);
             DynamicPatchInfo[] dynamicPatches = dynamicPatchFactory?.Invoke() ?? [];
+            dynamicTargets = dynamicPatches
+                .Select(patch => (MethodBase)patch.OriginalMethod)
+                .Distinct()
+                .ToArray();
             int expectedPatchCount = patcher.RegisteredPatchCount + dynamicPatches.Length;
             bool staticPatchesApplied = patcher.PatchAll();
             bool dynamicPatchesApplied = staticPatchesApplied
@@ -394,7 +399,10 @@ public class Entry
             installFailure = exception;
         }
 
-        Exception? rollbackFailure = RollbackPatcherVerified(patcher, patcherName);
+        Exception? rollbackFailure = RollbackPatcherVerified(
+            patcher,
+            patcherName,
+            dynamicTargets);
         if (rollbackFailure is not null)
         {
             throw new AggregateException(
@@ -425,7 +433,10 @@ public class Entry
         }
     }
 
-    private static Exception? RollbackPatcherVerified(ModPatcher patcher, string patcherName)
+    private static Exception? RollbackPatcherVerified(
+        ModPatcher patcher,
+        string patcherName,
+        IReadOnlyCollection<MethodBase>? additionalTargets = null)
     {
         var failures = new List<Exception>();
         try
@@ -442,6 +453,22 @@ public class Entry
             failures.Add(new InvalidOperationException(
                 $"Patch transaction '{patcherName}' retained "
                 + $"{patcher.AppliedPatchCount} applied patch(es) after rollback."));
+        }
+
+        var inspectedTargets = new HashSet<MethodBase>();
+        void InspectTarget(MethodBase target)
+        {
+            if (!inspectedTargets.Add(target))
+            {
+                return;
+            }
+
+            if (Harmony.GetPatchInfo(target)?.Owners.Contains(patcher.PatcherId) == true)
+            {
+                failures.Add(new InvalidOperationException(
+                    $"Patch transaction '{patcherName}' retained Harmony ownership of "
+                    + $"{target.DeclaringType?.FullName}.{target.Name}."));
+            }
         }
 
         foreach (ModPatchInfo patch in patcher.RegisteredPatches)
@@ -464,11 +491,14 @@ public class Entry
                 continue;
             }
 
-            if (Harmony.GetPatchInfo(target)?.Owners.Contains(patcher.PatcherId) == true)
+            InspectTarget(target);
+        }
+
+        if (additionalTargets is not null)
+        {
+            foreach (MethodBase target in additionalTargets)
             {
-                failures.Add(new InvalidOperationException(
-                    $"Patch transaction '{patcherName}' retained Harmony ownership of "
-                    + $"{target.DeclaringType?.FullName}.{target.Name}."));
+                InspectTarget(target);
             }
         }
 
