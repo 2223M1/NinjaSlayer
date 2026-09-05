@@ -18,7 +18,7 @@ public static class ChadoBreathCmd
 {
     private const string ForgeSfx = "event:/sfx/characters/regent/regent_refine";
 
-    public static async Task Apply(Player player, int amount, AbstractModel? source)
+    public static async Task Apply(Player player, int amount)
     {
         if (amount <= 0 || CombatManager.Instance.IsOverOrEnding)
         {
@@ -51,7 +51,7 @@ public static class ChadoBreathCmd
 
     private static void PlayForgeFeedback(List<ChadoEnergyRedesignV1> cards)
     {
-        if (cards.Count == 0 || !LocalContext.IsMine(cards[0]) || NCombatRoom.Instance is not { } room)
+        if (!LocalContext.IsMine(cards[0]) || NCombatRoom.Instance is not { } room)
         {
             return;
         }

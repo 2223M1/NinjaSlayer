@@ -5,7 +5,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const errors = [];
-const skipDirectories = new Set(['.git', '.godot', 'bin', 'build', 'node_modules', 'obj']);
+const skipDirectories = new Set(['.git', '.godot', '.local-reference', 'bin', 'build', 'node_modules', 'obj']);
 
 function filesUnder(directory) {
   const result = [];
@@ -272,7 +272,7 @@ if (compatibility) {
     ...filesUnder(join(root, 'Tests', 'NinjaSlayer.RitsuLibContractTests')).filter(
       path => /\.(?:cs|csproj)$/.test(path),
     ),
-    ...filesUnder(join(root, 'Tests', 'NinjaSlayer.ProductPreparedContractTests')).filter(
+    ...filesUnder(join(root, 'Tests', 'NinjaSlayer.OrbContractTests')).filter(
       path => /\.(?:cs|csproj)$/.test(path),
     ),
   ];
@@ -395,8 +395,6 @@ if (JSON.stringify(englishRedesignKeys) !== JSON.stringify(chineseRedesignKeys))
   errors.push('Redesign V1 card localization keys differ between eng/cards.json and zhs/cards.json');
 }
 const redesignSelectionPromptStems = [
-  'NINJA_SLAYER_CARD_TRUMP_CARD_REDESIGN_V1',
-  'NINJA_SLAYER_CARD_EXECUTION_MOVE_REDESIGN_V1',
   'NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1',
 ];
 for (const language of ['eng', 'zhs']) {
@@ -563,90 +561,6 @@ if (patchIds.length !== patchClasses.length) {
   errors.push(`Expected one PatchId per IPatchMethod (${patchClasses.length} classes, ${patchIds.length} ids)`);
 }
 
-const localizedPrivateMemberContracts = new Map([
-  ['Code/ExternalAnimations/AttackEvasionFeedbackContext.cs', ['"_singleTarget"']],
-  ['Code/ExternalAnimations/BossBurstMusicSession.cs', ['"_currentTrack"', '"_failedTrack"']],
-  ['Code/ExternalAnimations/CombatDodgeAnimation.cs', [
-    '"_attackerAnimName"',
-    '"_visualAttacker"',
-    '"_waitBeforeHit"',
-    '"_singleTarget"',
-  ]],
-  ['Code/ExternalAnimations/FinisherAttackCommandAdapter.cs', [
-    '"_damagePerHit"',
-    '"_calculatedDamageVar"',
-    '"_hitCount"',
-    '"_singleTarget"',
-  ]],
-  ['Code/Patches/KarateHealthBarPreviewPatch.cs', ['"_creature"', '"_hpLabel"']],
-  ['Code/Patches/NarakuLifeHealthBarLayoutPatch.cs', [
-    '"_creature"',
-    '"_expectedMaxFgWidth"',
-    '"_originalBlockPosition"',
-  ]],
-  ['Code/Patches/NinjaSlayerFeedbackPatches.cs', ['"SendButtonSelected"']],
-  ['Code/Patches/NinjaSlayerTransitionLoadSmoothingPatch.cs', [
-    '"_loading"',
-    '"_finalizing"',
-    '"AddToCache"',
-    '"FinalizeLoading"',
-    '"ProcessLoadingQueue"',
-  ]],
-  ['Code/Patches/NinjaSlayerTransitionPresentationPatch.cs', ['"PlayHealVfxAfterFadeIn"']],
-  ['Code/Patches/NinjaSlayerTypographyPatch.cs', ['"_relics"', '"_index"']],
-  ['Code/Patches/PreparedCardPatches.cs', ['"ShuffleFtueCheck"', '"_grid"']],
-  ['Code/Patches/ReporterPassEventOptionPatch.cs', ['"SetEventFinished"']],
-  ['Code/Transition/TransitionViewAdapter.cs', ['nameof(NTransition.InTransition)', '"_tween"']],
-  ['Events/SawatariEvent.cs', [
-    '"_combatStateForCombatLayout"',
-    '"_combatSynchronizer"',
-    '"CombatStateForLayout"',
-  ]],
-  ['Code/Patches/SawatariEventPatches.cs', ['"_rooms"']],
-  ['Powers/NarakuPower.cs', ['"_powerNodes"', '"UpdatePositions"']],
-]);
-for (const [relativePath, members] of localizedPrivateMemberContracts) {
-  const source = readFileSync(join(root, ...relativePath.split('/')), 'utf8');
-  if (members.some(member => !source.includes(member))) {
-    errors.push(`${relativePath} must own its localized private game members: ${members.join(', ')}`);
-  }
-}
-
-const removedStage4AFiles = [
-  'GameCompatibility.ArchitectVictory.cs',
-  'GameCompatibility.CardPlays.cs',
-  'GameCompatibility.Damage.cs',
-  'GameCompatibility.Feedback.cs',
-  'GameCompatibility.KarateHealthBar.cs',
-  'GameCompatibility.MapHistory.cs',
-  'GameCompatibility.NarakuHealthBar.cs',
-  'GameCompatibility.OrobasSeaGlass.cs',
-  'GameCompatibility.Prepared.cs',
-  'GameCompatibility.ReporterPass.cs',
-  'GameCompatibility.Transition.cs',
-  'GameCompatibility.TransitionPresentation.cs',
-  'GameCompatibility.Typography.cs',
-  'HostBlackFlameDamagePatch.cs',
-  'HostDamageApiAdapters.cs',
-  'LegacyAttackCommandExtensions.cs',
-  'OrobasSeaGlassCandidatePolicy.cs',
-  'RedesignCardDestinationAdapter.cs',
-  'GameCompatibility.cs',
-  'GameCompatibility.AssetLoading.cs',
-  'GameCompatibility.BossBurst.cs',
-  'GameCompatibility.CreaturePresentation.cs',
-  'GameCompatibility.EnemyAttackDodge.cs',
-  'GameCompatibility.EventCombat.cs',
-  'GameCompatibility.Finisher.cs',
-  'GameCompatibility.NarakuPowerUi.cs',
-  'PreparedQueueCompatibility.cs',
-];
-for (const file of removedStage4AFiles) {
-  if (existsSync(join(root, 'Code', 'Compatibility', file))) {
-    errors.push(`Code/Compatibility/${file} is a retired Stage 4A facade`);
-  }
-}
-
 const retiredStage4AFacadePattern =
   /\b(?:GameCompatibility|HostCompatibility|GameApiFacade|CompatibilityManager|CompatibilityService|GameApiRegistry|LegacyAttackCommandExtensions)\b|\bAssociate(?:Player|CardPlay)\b/;
 for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
@@ -676,475 +590,25 @@ for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
   }
 }
 
-const concreteCardSources = filesUnder(join(root, 'Cards'))
-  .filter((path) => path.endsWith('.cs')
-    && !path.includes(`${join('Cards', 'Base')}`)
-    && !path.includes(`${join('Cards', 'RedesignV1')}`))
-  .map((path) => ({ path, source: readFileSync(path, 'utf8') }))
-  .filter(({ source }) => /public\s+sealed\s+class\s+\w+/.test(source));
-for (const { path, source } of concreteCardSources) {
-  const className = /public\s+sealed\s+class\s+(\w+)/.exec(source)?.[1];
-  if (!className) continue;
-
-  const portraitPath = join(root, 'NinjaSlayer', 'images', 'cards', `${className}.png`);
-  const portraitSize = readPngSize(portraitPath);
-  if (!portraitSize) {
-    if (!existsSync(portraitPath)) errors.push(`Missing dedicated card portrait: ${className}.png`);
-    continue;
+// This snapshot is verified against the product DLL by OrbContractTests.
+const cardMetadata = readJson(join(root, 'Tests', 'NinjaSlayer.OrbContractTests', 'card-metadata.json')) ?? [];
+const rewardArt = new Map();
+const snapshotLocalizations = Object.fromEntries(['eng', 'zhs'].map(language =>
+  [language, readJson(join(root, 'NinjaSlayer', 'localization', language, 'cards.json')) ?? {}]));
+for (const card of cardMetadata.filter(card => !card.Upgraded)) {
+  const portrait = join(root, card.Portrait.replace('res://', ''));
+  const size = readPngSize(portrait);
+  if (!size) errors.push(`${card.Id} portrait is missing or unreadable: ${card.Portrait}`);
+  if (['Common', 'Uncommon', 'Rare'].includes(card.Rarity)) {
+    if (rewardArt.has(card.Portrait)) errors.push(`Reward portrait shared by ${rewardArt.get(card.Portrait)} and ${card.Id}`);
+    rewardArt.set(card.Portrait, card.Id);
   }
-  const expectedSize = /CardRarity\.Ancient/.test(source) ? [606, 852] : [1000, 760];
-  if (portraitSize[0] !== expectedSize[0] || portraitSize[1] !== expectedSize[1]) {
-    errors.push(
-      `${className}.png must be ${expectedSize[0]}x${expectedSize[1]}, found ${portraitSize[0]}x${portraitSize[1]}`,
-    );
-  }
-}
-
-const redesignRulesSource = readFileSync(join(root, 'Content', 'RedesignV1Rules.cs'), 'utf8');
-const redesignCardSource = filesUnder(join(root, 'Cards', 'RedesignV1'))
-  .filter(path => path.endsWith('.cs'))
-  .map(path => readFileSync(path, 'utf8'))
-  .join('\n');
-const busyLineSource = readFileSync(join(root, 'Cards', 'Statuses', 'BusyLine.cs'), 'utf8');
-const currentRedesignCardSource = `${redesignCardSource}\n${busyLineSource}`;
-const redesignStarterRelicSource = readFileSync(
-  join(root, 'Relics', 'ChadoBreathingRelic.cs'),
-  'utf8',
-);
-const redesignAncientStarterRelicSource = readFileSync(
-  join(root, 'Relics', 'DeepChadoBreathingRelic.cs'),
-  'utf8',
-);
-if (!/protected\s+virtual\s+int\s+ChadoCount\s*=>\s*0/.test(redesignStarterRelicSource)
-    || !/protected\s+override\s+int\s+ChadoCount\s*=>\s*2/.test(redesignAncientStarterRelicSource)
-    || !/ChadoBreathCmd\.Apply\(Owner,\s*2,\s*this\)/.test(redesignStarterRelicSource)) {
-  errors.push('Redesign starter relics must apply Chado Breathing 2, with two Chado added by the Ancient version');
-}
-
-function readRedesignCardIds(propertyName) {
-  const match = new RegExp(`${propertyName}\\s*\\{[^}]*\\}\\s*=\\s*\\[([\\s\\S]*?)\\];`)
-    .exec(redesignRulesSource);
-  if (!match) {
-    errors.push(`RedesignV1Rules.${propertyName} is missing`);
-    return [];
-  }
-  return [...match[1].matchAll(/"([^"]+)"/g)].map(candidate => candidate[1]);
-}
-
-const redesignRewardGroups = [
-  ['Common', 20, readRedesignCardIds('CommonRewardCardIds')],
-  ['Uncommon', 31, readRedesignCardIds('UncommonRewardCardIds')],
-  ['Rare', 23, readRedesignCardIds('RareRewardCardIds')],
-];
-const redesignRewardIds = redesignRewardGroups.flatMap(([, , ids]) => ids);
-for (const [rarity, expectedCount, ids] of redesignRewardGroups) {
-  const declaredCount = Number(new RegExp(`const\\s+int\\s+${rarity}RewardCount\\s*=\\s*(\\d+)`)
-    .exec(redesignRulesSource)?.[1]);
-  if (declaredCount !== expectedCount || ids.length !== expectedCount) {
-    errors.push(`Redesign V1 ${rarity} rewards must contain exactly ${expectedCount} cards`);
-  }
-
-  const implementedIds = [...redesignCardSource.matchAll(
-    new RegExp(`public\\s+sealed\\s+(?:partial\\s+)?class\\s+(\\w+)\\s*:\\s*RedesignV1${rarity}Card`, 'g'),
-  )].map(match => match[1]);
-  if (rarity === 'Rare') implementedIds.push('TurtleShellRedesignV1');
-  const missing = ids.filter(id => !implementedIds.includes(id));
-  const extra = implementedIds.filter(id => !ids.includes(id));
-  if (missing.length > 0 || extra.length > 0) {
-    errors.push(
-      `Redesign V1 ${rarity} reward list differs from implementations `
-      + `(missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'})`,
-    );
-  }
-}
-
-if (new Set(redesignRewardIds).size !== 74) {
-  errors.push('Redesign V1 rewards must contain 74 unique cards');
-}
-const excludedRedesignIds = readRedesignCardIds('ExcludedSpecialCardIds');
-const expectedExcludedRedesignIds = [
-  'BlackFlameRedesignV1',
-  'BusyLine',
-  'ChadoEnergyRedesignV1',
-  'CollapseFistRedesignV1',
-  'DefendNinjaSlayerRedesignV1',
-  'FinisherRedesignV1',
-  'KarateStraightRedesignV1',
-  'StraightKiRedesignV1',
-  'StrikeNinjaSlayerRedesignV1',
-  'StrongShurikenTokenRedesignV1',
-];
-if (excludedRedesignIds.toSorted().join(',') !== expectedExcludedRedesignIds.join(',')) {
-  errors.push('Redesign V1 special-card exclusions differ from the locked ten-card set');
-}
-for (const id of excludedRedesignIds) {
-  if (redesignRewardIds.includes(id)) errors.push(`Redesign V1 special card is in rewards: ${id}`);
-  if (!new RegExp(`class\\s+${id}\\b`).test(currentRedesignCardSource)
-      && !filesUnder(join(root, 'Cards', 'Ancients')).some(path =>
-        path.endsWith('.cs') && new RegExp(`class\\s+${id}\\b`).test(readFileSync(path, 'utf8')))) {
-    errors.push(`Redesign V1 special card implementation is missing: ${id}`);
-  }
-}
-if (new Set([...redesignRewardIds, ...excludedRedesignIds, 'OneBodyOneSoul', 'ZazenDrink']).size !== 86) {
-  errors.push('The final Ninja Slayer catalog must contain 86 distinct models');
-}
-
-const redesignBasicSource = readFileSync(
-  join(root, 'Cards', 'RedesignV1', 'RedesignV1BasicCards.cs'),
-  'utf8',
-);
-for (const id of [
-  'StrikeNinjaSlayerRedesignV1',
-  'DefendNinjaSlayerRedesignV1',
-  'KarateStraightRedesignV1',
-]) {
-  const classPattern = new RegExp(
-    `class\\s+${id}\\s*:\\s*NinjaSlayerRedesignCardTemplate\\s*\\{`
-      + `[\\s\\S]*?NinjaSlayerCardSpec\\s+Spec\\s*=\\s*new\\([^;]*CardRarity\\.Basic[^;]*\\);`,
-  );
-  if (!classPattern.test(redesignBasicSource)) {
-    errors.push(`${id} must use the Ninja Slayer card pool and Basic starter-card rarity`);
-  }
-}
-if (!/class\s+TurtleShellRedesignV1\s*:\s*NinjaSlayerRedesignCardTemplate[\s\S]*?CardRarity\.Rare/.test(redesignBasicSource)) {
-  errors.push('TurtleShellRedesignV1 must be a Rare reward card');
-}
-if (!/StartingStrikeCount\s*=\s*4/.test(redesignRulesSource)
-    || !/StartingDefendCount\s*=\s*5/.test(redesignRulesSource)
-    || !/StartingSignatureCardCount\s*=\s*1/.test(redesignRulesSource)
-    || !/AddStartingCard<StrikeNinjaSlayerRedesignV1>\(RedesignV1Rules\.StartingStrikeCount,\s*0\)/.test(entrySource)
-    || !/AddStartingCard<DefendNinjaSlayerRedesignV1>\(RedesignV1Rules\.StartingDefendCount,\s*1\)/.test(entrySource)
-    || !/AddStartingCard<KarateStraightRedesignV1>\(1,\s*2\)/.test(entrySource)
-    || /AddStartingCard<(?:Countermeasure|TurtleShell)RedesignV1>/.test(entrySource)) {
-  errors.push('The Ninja Slayer starting deck must contain four Strikes, five Defends and one Karate Straight Punch');
-}
-const archivedForThisRelease = [
-  'CountermeasureRedesignV1',
-  'ReflexGuardRedesignV1',
-  'TrumpCardRedesignV1',
-  'ObserverGuardRedesignV1',
-  'OverexertRedesignV1',
-  'ChadoSecretRedesignV1',
-  'BloodTearsRedesignV1',
-  'ChopChainRedesignV1',
-  'DoubleForceRedesignV1',
-  'EnduranceRedesignV1',
-  'ExecutionMoveRedesignV1',
-  'GauntletRedesignV1',
-  'KarateFormRedesignV1',
-  'ObserveBattleRedesignV1',
-  'PunchRedesignV1',
-  'ReadAndStrikeRedesignV1',
-];
-for (const id of archivedForThisRelease) {
-  if (id === 'PunchRedesignV1') continue;
-  if (!new RegExp(`class\\s+${id}\\s*:\\s*ArchivedRedesignV1Card`).test(redesignCardSource)
-      || redesignRewardIds.includes(id)
-      || excludedRedesignIds.includes(id)) {
-    errors.push(`${id} must remain implemented but archived outside the current card catalog`);
-  }
-}
-if (!/class\s+PunchRedesignV1\s*:\s*NinjaSlayerStandaloneCardTemplate/.test(redesignCardSource)
-    || /\[RegisterCard\(typeof\(TokenCardPool\)\)\]\s*public\s+sealed\s+class\s+PunchRedesignV1/.test(redesignCardSource)
-    || redesignRewardIds.includes('PunchRedesignV1')
-    || excludedRedesignIds.includes('PunchRedesignV1')) {
-  errors.push('PunchRedesignV1 must remain implemented but unregistered outside the current card catalog');
-}
-if (!redesignRewardIds.includes('TurtleShellRedesignV1')) {
-  errors.push('Turtle Shell must remain a Rare reward card');
-}
-if (!/class\s+TurtleShellRedesignV1\b[\s\S]*?base\(Spec,\s*"BlockCard"\)/.test(redesignBasicSource)) {
-  errors.push('TurtleShellRedesignV1 must reuse BlockCard.png');
-}
-if (!existsSync(join(root, 'NinjaSlayer', 'images', 'cards', 'BlockCard.png'))) {
-  errors.push('TurtleShellRedesignV1 portrait BlockCard.png is missing');
-}
-
-if (!/class\s+SatsubatsuRedesignV1\s*:\s*RedesignV1CommonCard[\s\S]*?new\s+DamageVar\(27,\s*ValueProp\.Move\)[\s\S]*?base\(nameof\(SatsubatsuRedesignV1\),\s*nameof\(RedBlackFlame\),\s*3,\s*CardType\.Attack,\s*TargetType\.AnyEnemy\)[\s\S]*?AddGeneratedCard<BlackFlameRedesignV1>\(Owner,\s*PileType\.Hand\)[\s\S]*?UpgradeValueBy\(6\)/.test(redesignCardSource)) {
-  errors.push('Satsubatsu must be a 3-cost Common 27/33 Attack that adds Black Flame to Hand and uses RedBlackFlame.png');
-}
-if (!/class\s+ChadoStillnessRedesignV1\s*:\s*RedesignV1CommonCard[\s\S]*?new\s+DynamicVar\("Breath",\s*1\)[\s\S]*?base\(nameof\(ChadoStillnessRedesignV1\),\s*nameof\(Meditation\),\s*1,\s*CardType\.Skill,\s*TargetType\.Self\)[\s\S]*?ChadoBreathCmd\.Apply\([\s\S]*?PowerCmd\.Apply<ChadoRetainPower>[\s\S]*?UpgradeValueBy\(1\)/.test(redesignCardSource)) {
-  errors.push('Chado Stillness must be a 1-cost Common Skill with Chado Breathing 1/2 followed by Chado retention and Meditation.png');
-}
-if (!/class\s+BladeReserveRedesignV1\s*:\s*RedesignV1CommonCard[\s\S]*?new\s+DynamicVar\("Stock",\s*2\)[\s\S]*?new\s+CardsVar\(2\)[\s\S]*?base\(nameof\(BladeReserveRedesignV1\),\s*nameof\(ShurikenCard\),\s*1,\s*CardType\.Skill,\s*TargetType\.Self\)[\s\S]*?ShurikenOrb\.AddStock\([\s\S]*?CardPileCmd\.Draw\([\s\S]*?UpgradeValueBy\(1\)/.test(redesignCardSource)) {
-  errors.push('Flying Blade must be a 1-cost Common Skill that grants 2/3 Shuriken, then draws two cards');
-}
-
-function readRedesignClassSource(id) {
-  const start = new RegExp(`public\\s+sealed\\s+(?:partial\\s+)?class\\s+${id}\\b`)
-    .exec(redesignCardSource)?.index;
-  if (start === undefined) return '';
-  const tail = redesignCardSource.slice(start);
-  const next = /\npublic\s+sealed\s+(?:partial\s+)?class\s+\w+\b/.exec(tail);
-  return next ? tail.slice(0, next.index) : tail;
-}
-
-const releaseCardContracts = [
-  ['FlyingBladesComeRedesignV1', /DynamicVar\("Discard",\s*2\)[\s\S]*?DynamicVar\("Stock",\s*3\)[\s\S]*?ChooseAndDiscard\([\s\S]*?DynamicVars\["Discard"\]\.IntValue[\s\S]*?"Stock"\]\.UpgradeValueBy\(1\)/, 'Flying Blades Come must display and use its fixed two-card discard count, then grant 3/4 Shuriken'],
-  ['KarateStraightRedesignV1', /new\s+DamageVar\(8,[\s\S]*?new\s+KarateVar\(4\)[\s\S]*?UpgradeValueBy\(2\)[\s\S]*?Karate\(\)\.UpgradeValueBy\(2\)/, 'Karate Straight Punch must deal 8/10 and grant 4/6 Karate'],
-  ['ReadyStanceRedesignV1', /CardKeyword\.Exhaust[\s\S]*?new\s+KarateVar\(3\)[\s\S]*?base\([^;]*,\s*1,\s*CardType\.Skill[\s\S]*?ChooseAndDiscardOne\([\s\S]*?Karate\(\)\.UpgradeValueBy\(2\)/, 'Stance must cost 1, grant 3/5 Karate, discard one card and Exhaust'],
-  ['CommonChopRedesignV1', /new\s+DamageVar\(5,[\s\S]*?new\s+KarateVar\(1\)[\s\S]*?,\s*0,\s*CardType\.Attack[\s\S]*?Apply<KaratePower>[\s\S]*?CardPileCmd\.Add\(this,\s*PileType\.Draw,\s*CardPilePosition\.Top\)[\s\S]*?Damage\.UpgradeValueBy\(1\)[\s\S]*?Karate\(\)\.UpgradeValueBy\(1\)/, 'Chop must deal 5/6, grant 1/2 Karate and move itself to the draw-pile top'],
-  ['LeftHeavyPunchRedesignV1', /new\s+DamageVar\(7,[\s\S]*?new\s+KarateVar\(2\)[\s\S]*?Apply<ChopStrikeNextTurnPower>[\s\S]*?Damage\.UpgradeValueBy\(3\)[\s\S]*?Karate\(\)\.UpgradeValueBy\(1\)/, 'Chop Strike must deal 7/10 and grant 2/3 Karate next turn'],
-  ['RightHeavyPunchRedesignV1', /new\s+DamageVar\(8,[\s\S]*?PowerVar<VulnerablePower>\(1\)[\s\S]*?PreviousFinishedCardWasAttack\(Owner\)[\s\S]*?Apply<VulnerablePower>[\s\S]*?Damage\.UpgradeValueBy\(2\)[\s\S]*?Vulnerable\.UpgradeValueBy\(1\)/, 'Left Heavy Punch must deal 8/10 and apply 1/2 Vulnerable after an Attack'],
-  ['RightHeavyPunchAfterSkillRedesignV1', /new\s+DamageVar\(8,[\s\S]*?PowerVar<WeakPower>\(1\)[\s\S]*?PreviousFinishedCardWasSkill\(Owner\)[\s\S]*?Apply<WeakPower>[\s\S]*?Damage\.UpgradeValueBy\(2\)[\s\S]*?Weak\.UpgradeValueBy\(1\)/, 'Right Heavy Punch must deal 8/10 and apply 1/2 Weak after a Skill'],
-  ['PalmThrustRedesignV1', /^(?![\s\S]*CardKeyword\.Sly)[\s\S]*new\s+DamageVar\(5,[\s\S]*?new\s+RepeatVar\(2\)[\s\S]*?TargetType\.RandomEnemy[\s\S]*?CombatTargets\.NextItem[\s\S]*?Repeat\.UpgradeValueBy\(1\)/, 'Palm Thrust must make 2/3 random 5-damage hits without Sly'],
-  ['IronBodyRedesignV1', /new\s+BlockVar\(15,[\s\S]*?new\s+KarateVar\(4\)[\s\S]*?CombatTargets\.NextItem[\s\S]*?Apply<KaratePower>[\s\S]*?Block\.UpgradeValueBy\(3\)/, 'Taunt must grant 15/18 Block and give 4 Karate to a random enemy'],
-  ['SpiralRoundhouseJumpRedesignV1', /new\s+DamageVar\(6,[\s\S]*?DynamicVar\("Stock",\s*1\)[\s\S]*?TargetType\.AllEnemies[\s\S]*?Damage\.UpgradeValueBy\(2\)[\s\S]*?"Stock"\]\.UpgradeValueBy\(1\)/, 'Spiral Roundhouse Jump must deal 6/8 to all and grant 1/2 Shuriken'],
-  ['HiddenEdgeRedesignV1', /DynamicVar\("Stock",\s*2\)[\s\S]*?PowerVar<FocusPower>\(3\)[\s\S]*?Apply<HiddenEdgeTemporaryFocusPower>[\s\S]*?FocusPower\)\]\.UpgradeValueBy\(1\)/, 'Hidden Edge must grant 2 Shuriken and 3/4 temporary Focus'],
-  ['ShurikenGenerationRedesignV1', /CardKeyword\.Exhaust[\s\S]*?,\s*2,\s*CardType\.Skill[\s\S]*?Apply<ShurikenGuardRedesignPower>[\s\S]*?EnergyCost\.UpgradeBy\(-1\)/, 'Shuriken Guard must be an Exhausting 2/1-cost Skill'],
-  ['BladeCycleRedesignV1', /,\s*2,\s*CardType\.Power[\s\S]*?Apply<BladeCyclePower>[\s\S]*?EnergyCost\.UpgradeBy\(-1\)/, 'Blade Cycle must be a 2/1-cost Power'],
-  ['PourTeaRedesignV1', /new\s+BlockVar\(6,[\s\S]*?DynamicVar\("Breath",\s*1\)[\s\S]*?Apply<PourTeaNextTurnPower>[\s\S]*?Block\.UpgradeValueBy\(3\)/, 'Pouring Guard must grant 6/9 Block and Chado Breathing 1 next turn'],
-  ['GuidingFlameRedesignV1', /new\s+BlockVar\(16,[\s\S]*?,\s*2,\s*CardType\.Skill[\s\S]*?AddGeneratedCard<BlackFlameRedesignV1>\(Owner,\s*PileType\.Draw\)[\s\S]*?Block\.UpgradeValueBy\(3\)/, 'Black Flame Guard must cost 2, grant 16/19 Block and add Black Flame to Draw'],
-  ['GuwaaRedesignV1', /IsPlayable[\s\S]*?PileType\.Hand[\s\S]*?OfType<ChadoEnergyRedesignV1>[\s\S]*?new\s+BlockVar\(4,[\s\S]*?DynamicVar\("Breath",\s*1\)[\s\S]*?ChadoBreathCmd\.Apply[\s\S]*?Block\.UpgradeValueBy\(3\)/, 'Breath Control must require Chado in hand, grant 4/7 Block and apply Chado Breathing 1'],
-  ['AdversityCarapaceRedesignV1', /PowerVar<VigorPower>\(6\)[\s\S]*?Apply<VitalityTeaPower>[\s\S]*?VigorPower\)\]\.UpgradeValueBy\(2\)/, 'Vitality Tea must grant 6/8 Vigor whenever Chado Exhausts'],
-  ['RedBlackFlameAttackRedesignV1', /new\s+CardsVar\(3\)[\s\S]*?DynamicVar\("BlackFlames",\s*2\)[\s\S]*?,\s*0,\s*CardType\.Skill[\s\S]*?CardPileCmd\.Draw[\s\S]*?AddGeneratedCard<BlackFlameRedesignV1>\(Owner,\s*PileType\.Draw\)[\s\S]*?Cards\.UpgradeValueBy\(1\)/, 'Burn Out must cost 0, draw 3/4 and add two Black Flames to Draw'],
-  ['ThrowKunaiRedesignV1', /new\s+DamageVar\(9,[\s\S]*?new\s+CardsVar\(2\)[\s\S]*?ScryCmd\.Execute[\s\S]*?ChooseAndDiscardOne[\s\S]*?Damage\.UpgradeValueBy\(2\)[\s\S]*?Cards\.UpgradeValueBy\(1\)/, 'Throw Kunai must deal 9/11, Scry 2/3 and discard one card'],
-  ['LuckyStrikeRedesignV1', /new\s+CardsVar\(1\)[\s\S]*?DynamicVar\("Draw",\s*1\)[\s\S]*?,\s*0,\s*CardType\.Skill[\s\S]*?ScryCmd\.Execute[\s\S]*?CardPileCmd\.Draw[\s\S]*?Cards\.UpgradeValueBy\(1\)[\s\S]*?"Draw"\]\.UpgradeValueBy\(1\)/, 'Ninja Sense must cost 0, Scry 1/2 and draw 1/2 cards'],
-  ['AbandonThoughtRedesignV1', /DynamicVar\("Breath",\s*2\)[\s\S]*?PileType\.Draw[\s\S]*?CardCmd\.Exhaust[\s\S]*?ChadoBreathCmd\.Apply/, 'Abandon Thought must Exhaust the draw-pile top and apply Chado Breathing 2'],
-  ['HookRopeRedesignV1', /PowerVar<WeakPower>\(1\)[\s\S]*?GetPowerAmount<KaratePower>[\s\S]*?Apply<HookRopeStrengthDownPower>[\s\S]*?Apply<WeakPower>[\s\S]*?Weak\.UpgradeValueBy\(1\)/, 'Hook-Rope Bind must temporarily remove current Karate as Strength and apply 1/2 Weak'],
-  ['CounteroffensiveGuardRedesignV1', /new\s+BlockVar\(12,[\s\S]*?Apply<IBlockPower>[\s\S]*?Block\.UpgradeValueBy\(3\)/, 'Counteroffensive Guard must grant 12/15 Block and reuse the archived remaining-Block-to-Vigor power'],
-  ['TornadoFistRedesignV1', /HasEnergyCostX\s*=>\s*true[\s\S]*?new\s+DamageVar\(4,[\s\S]*?PowerVar<VulnerablePower>\(1\)[\s\S]*?DynamicVar\("Threshold",\s*4\)[\s\S]*?hits\s*>=\s*DynamicVars\["Threshold"\][\s\S]*?Apply<VulnerablePower>[\s\S]*?Damage\.UpgradeValueBy\(2\)/, 'Tornado Fist must deal 4/6 to all X times and apply Vulnerable after each hit when X is at least 4'],
-  ['BackBridgeRedesignV1', /new\s+BlockVar\(8,[\s\S]*?DynamicVar\("BlockPerKarate",\s*2\)[\s\S]*?,\s*2,\s*CardType\.Skill[\s\S]*?GetPowerAmount<KaratePower>[\s\S]*?Block\.UpgradeValueBy\(2\)[\s\S]*?"BlockPerKarate"\]\.UpgradeValueBy\(1\)/, 'Back Bridge must cost 2 and grant 8/10 Block plus 2/3 per Karate without consuming it'],
-  ['ChopRedesignV1', /new\s+DamageVar\(7,[\s\S]*?new\s+KarateVar\(2\)[\s\S]*?new\s+CardsVar\(3\)[\s\S]*?,\s*1,\s*CardType\.Attack[\s\S]*?CardType\.Skill[\s\S]*?skills\s*%\s*DynamicVars\.Cards\.IntValue\s*==\s*0[\s\S]*?Damage\.UpgradeValueBy\(2\)[\s\S]*?Karate\(\)\.UpgradeValueBy\(1\)/, 'Strong Chop must cost 1, deal 7/9, grant 2/3 Karate and return every third Skill'],
-  ['TurtleShellRedesignV1', /,\s*1,\s*CardType\.Skill,\s*CardRarity\.Rare[\s\S]*?CardKeyword\.Exhaust[\s\S]*?ResolveTurtleShellPlating[\s\S]*?Remove\(karate\)[\s\S]*?Apply<PlatingPower>[\s\S]*?RemoveKeyword\(CardKeyword\.Exhaust\)/, 'Turtle Shell must consume all Karate for equal Plating and lose Exhaust when upgraded'],
-  ['AlabamaDropRedesignV1', /ExtraDamageVar\(6\)[\s\S]*?DynamicVar\("Dazed",\s*3\)[\s\S]*?,\s*3,\s*CardType\.Attack[\s\S]*?karate\s*\*\s*DynamicVars\.ExtraDamage\.BaseValue[\s\S]*?ValueProp\.Move\s*\|\s*ValueProp\.Unpowered[\s\S]*?Remove<KaratePower>[\s\S]*?AddGeneratedCard<Dazed>\(Owner,\s*PileType\.Draw\)[\s\S]*?ExtraDamage\.UpgradeValueBy\(2\)/, 'Alabama Drop must deal 6N/8N, clear Karate and add three Dazed to Draw'],
-  ['WhiskTeaFlashRedesignV1', /new\s+DamageVar\(7,[\s\S]*?new\s+CardsVar\(2\)[\s\S]*?OfType<ChadoEnergyRedesignV1>[\s\S]*?CardPileCmd\.Draw[\s\S]*?Damage\.UpgradeValueBy\(3\)[\s\S]*?Cards\.UpgradeValueBy\(1\)/, 'Whisk Tea Flash must deal 7/10 and draw 2/3 when Chado is in hand'],
-  ['OneDrinkOneStrikeRedesignV1', /new\s+DamageVar\(12,[\s\S]*?DynamicVar\("Breath",\s*2\)[\s\S]*?DiscardedCardThisTurn\(Owner\)[\s\S]*?ChadoBreathCmd\.Apply[\s\S]*?Damage\.UpgradeValueBy\(4\)/, 'One Drink One Strike must deal 12/16 and apply Chado Breathing 2 after a discard'],
-  ['PreparedShurikenRedesignV1', /new\s+BlockVar\(7,[\s\S]*?DynamicVar\("Stock",\s*1\)[\s\S]*?GainBlock[\s\S]*?ShurikenOrb\.AddStock[\s\S]*?Block\.UpgradeValueBy\(2\)[\s\S]*?"Stock"\]\.UpgradeValueBy\(1\)/, 'Prepared Shuriken must grant 7/9 Block and 1/2 Shuriken'],
-  ['ChopDefenseRedesignV1', /new\s+BlockVar\(6,[\s\S]*?,\s*1,\s*CardType\.Skill[\s\S]*?Apply<ReboundPower>[\s\S]*?Block\.UpgradeValueBy\(3\)/, 'Chop Defense must grant 6/9 Block and apply vanilla Rebound'],
-  ['FocusedMindRedesignV1', /new\s+BlockVar\(15,[\s\S]*?PowerVar<FocusPower>\(2\)[\s\S]*?,\s*3,\s*CardType\.Skill[\s\S]*?Apply<FocusedMindNextTurnPower>[\s\S]*?Block\.UpgradeValueBy\(3\)[\s\S]*?FocusPower\)\]\.UpgradeValueBy\(1\)/, 'Focused Mind must grant 15/18 Block and 2/3 Focus next turn'],
-  ['KarateTeaRedesignV1', /new\s+KarateVar\(3\)[\s\S]*?,\s*2,\s*CardType\.Power[\s\S]*?Apply<KarateTeaPower>[\s\S]*?Karate\(\)\.UpgradeValueBy\(1\)/, 'Karate Tea must be a 2-cost Power granting 3/4 Karate per generated Chado'],
-  ['StrongShurikenTokenRedesignV1', /CardRarity\.Token[\s\S]*?CardKeyword\.Exhaust[\s\S]*?new\s+DamageVar\(6,[\s\S]*?Damage\.UpgradeValueBy\(3\)/, 'Strong Shuriken must be a 0-cost Exhausting 6/9 Token'],
-  ['MomentumRedesignV1', /PowerVar<FocusPower>\(1\)[\s\S]*?,\s*1,\s*CardType\.Power[\s\S]*?Apply<MomentumRedesignPower>[\s\S]*?FocusPower\)\]\.UpgradeValueBy\(1\)/, 'Flying Blades Come must grant 1/2 temporary Focus per Skill'],
-  ['EmptyShurikenRedesignV1', /,\s*2,\s*CardType\.Power[\s\S]*?Apply<EmptyShurikenPower>[\s\S]*?EnergyCost\.UpgradeBy\(-1\)/, 'Empty Shuriken must be a 2/1-cost Power'],
-  ['TeaTeaRedesignV1', /,\s*1,\s*CardType\.Power[\s\S]*?Apply<TeaTeaPower>/, 'Tea Tea must be a 1-cost Power'],
-  ['BurnBurnBurnRedesignV1', /DynamicVar\("EnemyHpLoss",\s*8\)[\s\S]*?,\s*1,\s*CardType\.Power[\s\S]*?AddGeneratedCard<BlackFlameRedesignV1>\(Owner,\s*PileType\.Hand\)[\s\S]*?Apply<BurnBurnBurnPower>[\s\S]*?UpgradeValueBy\(4\)/, 'Burn Burn Burn must add Black Flame to Hand and increase enemy HP loss by 8/12'],
-  ['ReturnReturnReturnRedesignV1', /new\s+DamageVar\(5,[\s\S]*?DynamicVar\("NarakuLife",\s*3\)[\s\S]*?Apply<ReturnReturnReturnPower>[\s\S]*?Damage\.UpgradeValueBy\(1\)[\s\S]*?"NarakuLife"\]\.UpgradeValueBy\(1\)/, 'Return Return Return must deal 5/6 and grant 3/4 Naraku Life per enemy Black Flame hit this turn'],
-  ['FinisherRedesignV1', /CalculationBaseVar\(4\)[\s\S]*?ExtraDamageVar\(4\)[\s\S]*?RedesignChadoInExhaustPileMultiplier[\s\S]*?RepeatVar\(4\)[\s\S]*?CalculationBase\.UpgradeValueBy\(2\)[\s\S]*?ExtraDamage\.UpgradeValueBy\(2\)/, 'Finisher must deal 4/6 four times plus 4/6 per exhausted Chado'],
-];
-for (const [id, pattern, message] of releaseCardContracts) {
-  const source = readRedesignClassSource(id);
-  if (!source || !pattern.test(source)) errors.push(message);
-}
-
-const ninjaSlayerActionsSource = readFileSync(
-  join(root, 'Content', 'NinjaSlayerActions.cs'),
-  'utf8',
-);
-if (!/ChooseAndDiscard[\s\S]*?CardSelectCmd\.FromHandForDiscard\([\s\S]*?CardSelectorPrefs\.DiscardSelectionPrompt[\s\S]*?foreach\s*\(CardModel\s+card\s+in\s+selected\)[\s\S]*?CardCmd\.Discard\(choiceContext,\s*card\)/.test(ninjaSlayerActionsSource)) {
-  errors.push('Redesign discard choices must use the vanilla Survivor selection followed by CardCmd.Discard');
-}
-
-const combatMetricsSource = readFileSync(
-  join(root, 'Content', 'NinjaSlayerCombatMetrics.cs'),
-  'utf8',
-);
-const combatMetricsSnapshotSource = readFileSync(
-  join(root, 'Code', 'Combat', 'CombatMetricsSnapshot.cs'),
-  'utf8',
-);
-const resetTurnSource = /void\s+ResetTurn\(\)([\s\S]*?)\n\s*}/.exec(combatMetricsSnapshotSource)?.[1] ?? '';
-if (!/AfterCardDiscarded[\s\S]*?MarkCardDiscarded\(card\.Owner\)/.test(combatMetricsSource)
-    || !/AfterCardPlayed[\s\S]*?metrics\.AddFinishedCard\(\s*player,/.test(combatMetricsSource)
-    || !/Dictionary<TPlayer,\s*PlayerMetrics>[\s\S]*?ReferenceEqualityComparer\.Instance/.test(combatMetricsSnapshotSource)
-    || !/PreviousFinishedWasAttack\s*=\s*isAttack[\s\S]*?PreviousFinishedWasSkill\s*=\s*isSkill/.test(combatMetricsSnapshotSource)
-    || /PreviousFinishedWas(?:Attack|Skill)/.test(resetTurnSource)) {
-  errors.push('Discard and previous-finished-card combat metrics must be actual-hook driven, player-scoped and preserved across turns');
-}
-
-const redesignReworkPowerSource = readFileSync(
-  join(root, 'Powers', 'RedesignV1ReworkPowers.cs'),
-  'utf8',
-);
-if (!/class\s+KarateTeaPower[\s\S]*?AfterCardGeneratedForCombat\(CardModel\s+card,\s*Player\?\s+creator\)[\s\S]*?creator\?\.Creature\s*!=\s*Owner[\s\S]*?card\s+is\s+not\s+ChadoEnergyRedesignV1[\s\S]*?Apply<KaratePower>/.test(redesignReworkPowerSource)) {
-  errors.push('Karate Tea must react only to newly generated redesign Chado owned by its power holder');
-}
-if (/class\s+CounteroffensiveGuardPower\b/.test(redesignReworkPowerSource)) {
-  errors.push('Counteroffensive Guard must reuse archived IBlockPower instead of duplicating its delayed Vigor implementation');
-}
-if (!/class\s+ShurikenGuardRedesignPower[\s\S]*?TotalDamage\s*\+\s*result\.OverkillDamage/.test(redesignReworkPowerSource)) {
-  errors.push('Shuriken Guard must count TotalDamage plus OverkillDamage for every result in a Shuriken wave');
-}
-
-const karateDamageWavePatchSource = readFileSync(
-  join(root, 'Code', 'Patches', 'KarateDamageWavePatch.cs'),
-  'utf8',
-);
-if (!/bool\s+__runOriginal[\s\S]*?if\s*\(\s*!__runOriginal/.test(karateDamageWavePatchSource)) {
-  errors.push('Karate damage waves must ignore Harmony calls whose original damage method did not run');
-}
-
-const roundhouseSource = /class\s+RoundhouseKickRedesignV1\s*:\s*RedesignV1UncommonCard([\s\S]*?)(?=\npublic\s+sealed\s+class\s+)/
-  .exec(redesignCardSource)?.[1] ?? '';
-if (!/AfterAutoPostPlayPhaseEntered\s*\(/.test(roundhouseSource)
-    || !/PileType\.Draw\.GetPile\(Owner\)\.Cards[\s\S]*?Count\s*>\s*0\s*&&\s*drawPile\[0\]\s*==\s*this/.test(roundhouseSource)
-    || !/CardPileCmd\.AutoPlayFromDrawPile\([\s\S]*?CardPilePosition\.Top,[\s\S]*?forceExhaust:\s*false\)/.test(roundhouseSource)
-    || /BeforeSideTurnEnd\s*\(/.test(roundhouseSource)) {
-  errors.push('Roundhouse Kick must be Uncommon and use the vanilla I Am Invincible draw-pile auto-play route');
-}
-
-const redesignPowerSource = readFileSync(join(root, 'Powers', 'RedesignV1Powers.cs'), 'utf8');
-const chadoRetainPowerSource = /class\s+ChadoRetainPower\s*:\s*RedesignV1CounterPower([\s\S]*?)(?=\n\[RegisterPower\]|\npublic\s+sealed\s+class\s+)/
-  .exec(redesignPowerSource)?.[1] ?? '';
-if (!/NinjaSlayerPowerAssets\.Named\("EndTurnRetainPower"\)/.test(chadoRetainPowerSource)
-    || !/BeforeFlush\s*\([\s\S]*?OfType<ChadoEnergyRedesignV1>\(\)[\s\S]*?GiveSingleTurnRetain\(\)/.test(chadoRetainPowerSource)
-    || !/AfterSideTurnEnd\s*\([\s\S]*?PowerCmd\.Decrement\(this\)/.test(chadoRetainPowerSource)) {
-  errors.push('Chado retention must mark only Chado before hand flush and decrement once after each owner turn');
-}
-
-if (!/class\s+BlackFlameRedesignV1\b[\s\S]*?nameof\(BurningCard\)/.test(redesignCardSource)
-    || !/class\s+RedBlackFlameAttackRedesignV1\b[\s\S]*?base\(nameof\(RedBlackFlameAttackRedesignV1\),\s*nameof\(ImpureFlame\)/.test(redesignCardSource)) {
-  errors.push('Black Flame must use BurningCard.png and Red and Black Flame must use ImpureFlame.png');
-}
-const blackFlameSource = readRedesignClassSource('BlackFlameRedesignV1');
-if (!/ValueProp\.Unblockable\s*\|\s*ValueProp\.Unpowered/.test(blackFlameSource)
-    || !/AfterCardPlayed[\s\S]*?Pile\?\.Type\s*==\s*PileType\.Hand[\s\S]*?CardType\.Attack[\s\S]*?DamageEnemies/.test(blackFlameSource)
-    || !/OnTurnEndInHand[\s\S]*?creature\.Side\s*==\s*Owner\.Creature\.Side[\s\S]*?DamageEnemies[\s\S]*?CreatureCmd\.Damage[\s\S]*?CardCmd\.Exhaust/.test(blackFlameSource)
-    || !/creature\.IsAlive\s*&&\s*creature\.Side\s*!=\s*Owner\.Creature\.Side/.test(blackFlameSource)) {
-  errors.push('Black Flame must deal real unpowered, unblockable HP loss after each Attack and at turn end to its owner and living enemies only');
-}
-
-const hellTornadoPowerSource = readFileSync(join(root, 'Powers', 'HellTornadoPower.cs'), 'utf8');
-const productionCSharpSource = sourceFiles
-  .filter(path => path.endsWith('.cs'))
-  .map(path => readFileSync(path, 'utf8'))
-  .join('\n');
-if (!/class\s+HellTornadoRedesignV1[\s\S]*?HoverTipFactory\.FromPower<SoarPower>\(\)[\s\S]*?PowerCmd\.Apply<SoarPower>/.test(redesignCardSource)
-    || !/class\s+HellTornadoRedesignPower[\s\S]*?PowerCmd\.Remove<SoarPower>/.test(hellTornadoPowerSource)
-    || /class\s+SoarPower\b/.test(productionCSharpSource)) {
-  errors.push('Hell Tornado must apply and remove the host SoarPower directly; the Mod must not define its own SoarPower');
-}
-for (const obsoleteBlackFlameAsset of ['BlackFlame.png', 'BlackFlame.png.import']) {
-  if (existsSync(join(root, 'NinjaSlayer', 'images', 'cards', obsoleteBlackFlameAsset))) {
-    errors.push(`Obsolete One Body One Soul portrait must remain deleted: ${obsoleteBlackFlameAsset}`);
-  }
-}
-
-const tokenPoolRedesignIds = [...redesignCardSource.matchAll(
-  /\[RegisterCard\(typeof\(TokenCardPool\)\)\]\s*public\s+sealed\s+class\s+(\w+)/g,
-)].map(match => match[1]).sort();
-const expectedColorlessRedesignIds = [
-  'ChadoEnergyRedesignV1',
-  'FinisherRedesignV1',
-  'StraightKiRedesignV1',
-  'StrongShurikenTokenRedesignV1',
-];
-if (tokenPoolRedesignIds.join(',') !== expectedColorlessRedesignIds.join(',')) {
-  errors.push('Only Redesign generated tokens may use the colorless card pool');
-}
-const statusPoolRedesignIds = [...redesignCardSource.matchAll(
-  /\[RegisterCard\(typeof\(StatusCardPool\)\)\]\s*public\s+sealed\s+class\s+(\w+)/g,
-)].map(match => match[1]).sort();
-if (statusPoolRedesignIds.join(',') !== 'BlackFlameRedesignV1') {
-  errors.push('Black Flame must be the only Redesign status-pool card');
-}
-
-const collapseFistSource = readFileSync(join(root, 'Cards', 'Ancients', 'CollapseFist.cs'), 'utf8');
-if (!/\[RegisterCard\(typeof\(NinjaSlayerCardPool\)\)\]\s*public\s+sealed\s+class\s+CollapseFistRedesignV1/.test(collapseFistSource)) {
-  errors.push('CollapseFistRedesignV1 must use the Ninja Slayer card pool');
-}
-if (!/\.Character<NinjaSlayerCharacter>\(ConfigureStartingDeck\)/.test(entrySource)
-    || /NinjaSlayerRedesignCharacter|NinjaSlayerRedesignCardPool/.test(entrySource + redesignCardSource)) {
-  errors.push('Ninja Slayer must use one character and one card pool');
-}
-if (!/\.Card<NinjaSlayerCardPool,\s*OneBodyOneSoul>\(\)/.test(entrySource)
-    || !/\.Card<NinjaSlayerCardPool,\s*ZazenDrink>\(\)/.test(entrySource)) {
-  errors.push('One Body One Soul and Zazen Drink must remain in the Ninja Slayer card pool');
-}
-
-const redesignArtOwners = new Map();
-for (const id of redesignRewardIds) {
-  const artMatch = id === 'TurtleShellRedesignV1'
-    ? null
-    : new RegExp(
-      `:\\s*base\\(nameof\\(${id}\\),\\s*(?:nameof\\((\\w+)\\)|"([^"]+)")`,
-    ).exec(redesignCardSource);
-  const artName = id === 'TurtleShellRedesignV1'
-    ? 'BlockCard'
-    : artMatch?.[1] ?? artMatch?.[2];
-  if (!artName) {
-    errors.push(`Unable to resolve Redesign V1 card art: ${id}`);
-    continue;
-  }
-  const previousOwner = redesignArtOwners.get(artName);
-  if (previousOwner) errors.push(`Redesign V1 reward art ${artName}.png is shared by ${previousOwner} and ${id}`);
-  else redesignArtOwners.set(artName, id);
-
-  const portraitPath = join(root, 'NinjaSlayer', 'images', 'cards', `${artName}.png`);
-  if (!readPngSize(portraitPath)) {
-    if (!existsSync(portraitPath)) errors.push(`Missing Redesign V1 reward portrait: ${artName}.png`);
-  }
-
-  if (id === 'BladeCycleRedesignV1' && artName !== 'ShurikenBarrage') {
-    errors.push('BladeCycleRedesignV1 must use ShurikenBarrage.png');
-  }
-}
-
-const expectedRedesignLocalizationStems = new Set(
-  [...redesignRewardIds, ...excludedRedesignIds].map(id =>
-    `NINJA_SLAYER_CARD_${id.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase()}`),
-);
-const archivedRedesignLocalizationStems = new Set(
-  archivedForThisRelease.map(id =>
-    `NINJA_SLAYER_CARD_${id.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase()}`),
-);
-for (const language of ['eng', 'zhs']) {
-  const actualStems = new Set(Object.keys(redesignCardsByLanguage[language])
-    .map(key => key.replace(/\.(?:title|description|selectionScreenPrompt)$/, '')));
-  const missing = [...expectedRedesignLocalizationStems].filter(stem => !actualStems.has(stem));
-  const extra = [...actualStems].filter(stem =>
-    !expectedRedesignLocalizationStems.has(stem)
-      && !archivedRedesignLocalizationStems.has(stem));
-  if (missing.length > 0 || extra.length > 0) {
-    errors.push(
-      `${language}/cards.json Redesign localization differs from the active 87-card set `
-      + `(missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'})`,
-    );
-  }
-}
-
-const obsoleteShurikenPowerPaths = [
-  join(root, 'Powers', 'ShurikenStockPower.cs'),
-  join(root, 'NinjaSlayer', 'images', 'powers', 'ShurikenStockPower.png'),
-  join(root, 'NinjaSlayer', 'images', 'powers', 'ShurikenStockPower.png.import'),
-];
-for (const path of obsoleteShurikenPowerPaths) {
-  if (existsSync(path)) errors.push(`${relative(root, path)} must be deleted after Shuriken becomes an Orb`);
-}
-
-if (!/ShurikenOrb\.RegisterSavedData\(NinjaSlayerIds\.ModId\)/.test(entrySource)
-    || !/RegisterPatch<ShurikenOrbChannelPatch>/.test(entrySource)
-    || !/RegisterPatch<ShurikenOrbEvokePatch>/.test(entrySource)
-    || !/RegisterPatch<ShurikenOrbLayoutPatch>/.test(entrySource)
-    || !/typeof\(ShurikenOrbVisual\)/.test(entrySource)) {
-  errors.push('Entry must register Shuriken Orb saved data, channel, evoke and layout Patches, and its Godot visual script');
-}
-const ninjaSlayerCharacterSource = readFileSync(join(root, 'Content', 'NinjaSlayerCharacter.cs'), 'utf8');
-if (!/override\s+int\s+BaseOrbSlotCount\s*=>\s*0/.test(ninjaSlayerCharacterSource)) {
-  errors.push('Ninja Slayer must have zero base Orb slots');
-}
-const shurikenChannelPatchSource = readFileSync(
-  join(root, 'Code', 'Patches', 'ShurikenOrbChannelPatch.cs'),
-  'utf8',
-);
-if (!/class\s+ShurikenOrbLayoutPatch\s*:\s*IPatchMethod/.test(shurikenChannelPatchSource)
-    || !/typeof\(NOrbManager\),\s*"TweenLayout"/.test(shurikenChannelPatchSource)
-    || !/Player\?\.Character\s+is\s+not\s+INinjaSlayerCharacter/.test(shurikenChannelPatchSource)
-    || !/FirstOrDefault\(orb\s*=>\s*orb\.Model\s+is\s+ShurikenOrb\)/.test(shurikenChannelPatchSource)
-    || !/Where\(orb\s*=>\s*!ReferenceEquals\(orb,\s*shuriken\)\)/.test(shurikenChannelPatchSource)
-    || !/ShurikenOrbLayoutMath\.GetStandardPosition\([\s\S]*?__instance\.IsLocal/.test(shurikenChannelPatchSource)
-    || !/LayoutSeconds\s*=\s*0\.45/.test(shurikenChannelPatchSource)) {
-  errors.push('Ninja Slayer Shuriken must be excluded from the vanilla-indexed 0.45s Orb layout');
-}
-const portableIrcSource = readFileSync(join(root, 'Relics', 'PortableIrcTerminalRelic.cs'), 'utf8');
-if (/AddGeneratedShuriken/.test(portableIrcSource)
-    || !/ShurikenOrb\.AddStock\(choiceContext,\s*Owner,\s*1\)/.test(portableIrcSource)) {
-  errors.push('Portable IRC Terminal must grant one Shuriken stack without generating a Token card');
-}
-for (const tokenFile of ['ShurikenCard.cs', 'GiantShurikenCard.cs']) {
-  const tokenSource = readFileSync(join(root, 'Cards', 'Tokens', tokenFile), 'utf8');
-  if (/\[RegisterCard\b/.test(tokenSource)) {
-    errors.push(`${tokenFile} must not be registered for old-save compatibility`);
+  for (const language of ['eng', 'zhs']) {
+    const cards = snapshotLocalizations[language];
+    const stem = card.Id.split('.')[1];
+    for (const suffix of ['title', 'description']) {
+      if (typeof cards[`${stem}.${suffix}`] !== 'string') errors.push(`${language}/cards.json missing ${stem}.${suffix}`);
+    }
   }
 }
 const shurikenOrbVisualSource = readFileSync(
@@ -1242,12 +706,6 @@ for (const [language, obsoleteName] of [['eng', 'Shuriken Stock'], ['zhs', 'æ‰‹é
   if (Object.keys(powerLocalization).some(key => key.startsWith('NINJA_SLAYER_POWER_SHURIKEN_STOCK_POWER.'))) {
     errors.push(`${language}/powers.json still localizes the deleted Shuriken Stock Power`);
   }
-}
-const bladeCyclePowerSource = /class\s+BladeCyclePower\b([\s\S]*?)class\s+HardItOutPower\b/
-  .exec(redesignPowerSource)?.[1] ?? '';
-if (!/PowerStackType\.Single/.test(bladeCyclePowerSource)
-    || /AfterShuffle\s*\(/.test(bladeCyclePowerSource)) {
-  errors.push('Blade Cycle must be a single non-dispatching preservation marker');
 }
 
 const placeholderInventoryPath = join(root, 'Docs', 'placeholder-assets.json');

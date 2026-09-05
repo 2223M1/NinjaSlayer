@@ -16,7 +16,6 @@ public partial class ShurikenOrbVisual : Node2D
     private static readonly Color GlowColor = new(GlowColorHex);
     private static readonly Vector2 NormalHandAnchor = new(851.5152f, -75.75758f);
     private static readonly Vector2 FullyReleasedHandAnchor = new(432f, 390f);
-    private static readonly Vector2 OneBodyOneSoulHandAnchor = new(-624.9158f, -847.587f);
     private static readonly NodePath OverlayPath = new("AirborneAnchor/NarakuVisualOverlay");
 
     private Node2D _deformedVisuals = null!;
@@ -136,7 +135,7 @@ public partial class ShurikenOrbVisual : Node2D
 
         _orbNode.Position = orbPosition;
 
-        float authoredScale = ResolveAuthoredScale(body, presentation.Kind);
+        float authoredScale = ResolveAuthoredScale(presentation.Kind);
         if (authoredScale <= 0f)
         {
             return;
@@ -193,7 +192,6 @@ public partial class ShurikenOrbVisual : Node2D
         {
             NinjaSlayerFormKind.Normal or NinjaSlayerFormKind.Naraku => NormalHandAnchor,
             NinjaSlayerFormKind.FullyReleasedNaraku => FullyReleasedHandAnchor,
-            NinjaSlayerFormKind.OneBodyOneSoul => OneBodyOneSoulHandAnchor,
             _ => throw new ArgumentOutOfRangeException(nameof(formKind), formKind, null)
         };
 
@@ -214,7 +212,6 @@ public partial class ShurikenOrbVisual : Node2D
     }
 
     private static float ResolveAuthoredScale(
-        Sprite2D body,
         NinjaSlayerFormKind formKind)
     {
         return formKind switch
@@ -222,11 +219,6 @@ public partial class ShurikenOrbVisual : Node2D
             NinjaSlayerFormKind.Normal or NinjaSlayerFormKind.Naraku =>
                 NinjaSlayerCombatVisuals.BodySpriteBaseScale,
             NinjaSlayerFormKind.FullyReleasedNaraku => 0.5f,
-            NinjaSlayerFormKind.OneBodyOneSoul when body.Texture?.GetHeight() > 0 =>
-                NinjaSlayerFormPresentationCatalog.ReferenceBodyTextureHeight
-                * NinjaSlayerCombatVisuals.BodySpriteBaseScale
-                / body.Texture.GetHeight(),
-            NinjaSlayerFormKind.OneBodyOneSoul => NinjaSlayerCombatVisuals.BodySpriteBaseScale,
             _ => throw new ArgumentOutOfRangeException(nameof(formKind), formKind, null)
         };
     }

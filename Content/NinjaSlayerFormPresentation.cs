@@ -4,8 +4,7 @@ public enum NinjaSlayerFormKind
 {
     Normal,
     Naraku,
-    FullyReleasedNaraku,
-    OneBodyOneSoul
+    FullyReleasedNaraku
 }
 
 public enum NinjaSlayerBodyTextureMode
@@ -49,8 +48,6 @@ public static class NinjaSlayerFormPresentationCatalog
         "res://NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_";
     public const string FullyReleasedNarakuTexturePath =
         "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png";
-    public const string OneBodyOneSoulTexturePath =
-        "res://NinjaSlayer/images/characters/ninja_slayer/one_body_one_soul.png";
     public const int NormalIdleFrameCount = 22;
     public const int NarakuIdleFrameCount = 22;
     public const float ReferenceBodyTextureHeight = 1080f;
@@ -97,31 +94,16 @@ public static class NinjaSlayerFormPresentationCatalog
         UseNormalSpinPivot: false,
         ForcePerHitComboAudio: true);
 
-    public static NinjaSlayerFormPresentation OneBodyOneSoul { get; } = new(
-        NinjaSlayerFormKind.OneBodyOneSoul,
-        NinjaSlayerBodyTextureMode.Static,
-        NinjaSlayerBodyTransformMode.LegacyCentered,
-        StaticTexturePath: OneBodyOneSoulTexturePath,
-        IdleTexturePrefix: null,
-        IdleFrameCount: 0,
-        FixedBodyScale: null,
-        BodyYOffset: 0f,
-        ShadowScaleMultiplier: 1f,
-        UsesNarakuAudio: false,
-        UseNormalSpinPivot: false,
-        ForcePerHitComboAudio: false);
-
     public static NinjaSlayerFormPresentation Resolve(
         bool hasNarakuPower,
-        bool hasNarakuWithinRelic,
-        bool hasOneBodyOneSoulPower)
+        bool hasNarakuWithinRelic)
     {
         if (hasNarakuPower)
         {
             return hasNarakuWithinRelic ? FullyReleasedNaraku : Naraku;
         }
 
-        return hasOneBodyOneSoulPower ? OneBodyOneSoul : Normal;
+        return Normal;
     }
 
     public static string NormalIdleTexturePath(int frame) =>

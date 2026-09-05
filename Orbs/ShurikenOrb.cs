@@ -33,7 +33,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
     public override decimal PassiveVal => StackCount;
     public override decimal EvokeVal => IsMutable
-        ? ModifyOrbValue(ShurikenCombat.GetStockBaseDamage(Owner.Creature))
+        ? ModifyOrbValue(RedesignV1Rules.ShurikenBaseDamage)
         : RedesignV1Rules.ShurikenBaseDamage;
     public override ModOrbValueDisplayMode ValueDisplayMode => ModOrbValueDisplayMode.Both;
     public override Color DarkenedColor => new("805900");
@@ -161,7 +161,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets.UnionWith(shotTargets);
             if (!generatedStrongShuriken)
             {
-                generatedStrongShuriken = await TryGenerateStrongShuriken(playerChoiceContext);
+                generatedStrongShuriken = await TryGenerateStrongShuriken();
             }
         }
 
@@ -208,7 +208,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
             if (!generatedStrongShuriken)
             {
-                generatedStrongShuriken = await TryGenerateStrongShuriken(choiceContext);
+                generatedStrongShuriken = await TryGenerateStrongShuriken();
             }
         }
 
@@ -259,7 +259,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return;
         }
 
-        int stockBeforeResolution = StackCount;
         bool generatedStrongShuriken = false;
         bool fired = false;
         for (int index = 0; index < resolution.Shots; index++)
@@ -272,11 +271,11 @@ public sealed class ShurikenOrb : ModOrbTemplate
             fired = true;
             if (!generatedStrongShuriken)
             {
-                generatedStrongShuriken = await TryGenerateStrongShuriken(choiceContext);
+                generatedStrongShuriken = await TryGenerateStrongShuriken();
             }
         }
 
-        if (!fired || resolution.RemainingStock >= stockBeforeResolution)
+        if (!fired)
         {
             return;
         }
@@ -334,14 +333,14 @@ public sealed class ShurikenOrb : ModOrbTemplate
         return targets;
     }
 
-    private async Task<bool> TryGenerateStrongShuriken(PlayerChoiceContext choiceContext)
+    private async Task<bool> TryGenerateStrongShuriken()
     {
         if (Owner.Creature.GetPower<StarlessNightRedesignPower>() is not { } power)
         {
             return false;
         }
 
-        await power.GenerateStrongShuriken(choiceContext);
+        await power.GenerateStrongShuriken();
         return true;
     }
 

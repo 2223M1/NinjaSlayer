@@ -120,16 +120,12 @@ internal static class FinisherForecast
         }
 
         decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
-        decimal? narakuHpLoss = owner.GetPower<NarakuPower>() is { } naraku && descriptor.Props.IsPoweredAttack()
-            ? naraku.DynamicVars.HpLoss.BaseValue
-            : null;
         var cacheKey = new FinisherForecastFrameKey(
             owner,
             spec,
             command,
             enemies,
             damageByTarget,
-            narakuHpLoss,
             hits,
             singleTarget,
             forecastEffects);
@@ -168,9 +164,9 @@ internal static class FinisherForecast
             targeting,
             state => state.Hp > 0,
             state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
-            (current, targets, hitIndex) =>
+            (current, targets, _) =>
             {
-                ApplyHit(owner, enemies, current, spec, damageByTarget, narakuHpLoss, targets, hitIndex);
+                ApplyHit(owner, enemies, current, spec, damageByTarget, targets);
                 return true;
             },
             singleTargetIndex,
@@ -397,9 +393,7 @@ internal static class FinisherForecast
         ForecastState[] states,
         FinisherAttackSpec spec,
         decimal[] damageByTarget,
-        decimal? narakuHpLoss,
-        IReadOnlyList<int> targets,
-        int hitIndex)
+        IReadOnlyList<int> targets)
     {
         List<(int Target, bool TriggerKarate)> damageResults = [];
         foreach (int targetIndex in targets)
@@ -409,12 +403,7 @@ internal static class FinisherForecast
                 continue;
             }
 
-            Creature target = enemies[targetIndex];
             decimal rawDamage = damageByTarget[targetIndex];
-            decimal postHookMultiplier = spec.Card is TornadoFist && hitIndex > 0
-                && target.GetPowerAmount<MegaCrit.Sts2.Core.Models.Powers.VulnerablePower>() <= 0
-                    ? 1.5m
-                    : 1m;
 
             bool dealtDamage = ApplyDamage(
                 owner,
@@ -425,8 +414,7 @@ internal static class FinisherForecast
                 spec.Forecast.Props,
                 owner,
                 spec.Card,
-                spec.CardPlay,
-                postHookMultiplier);
+                spec.CardPlay);
             damageResults.Add((targetIndex, dealtDamage));
         }
 
@@ -440,25 +428,6 @@ internal static class FinisherForecast
             spec.Card,
             triggersKarate: true);
 
-        for (int resultIndex = 0; resultIndex < damageResults.Count; resultIndex++)
-        {
-            if (narakuHpLoss.HasValue)
-            {
-                foreach (int enemy in AliveTargets(states))
-                {
-                    ApplyDamage(
-                        owner,
-                        enemies,
-                        states,
-                        enemy,
-                        narakuHpLoss.Value,
-                        ValueProp.Unblockable | ValueProp.Unpowered,
-                        owner,
-                        spec.Card,
-                        null);
-                }
-            }
-        }
     }
 
     private static void ApplyKarateWave(
@@ -570,9 +539,6 @@ internal static class FinisherForecast
         };
         return modified > 0m;
     }
-
-    private static IEnumerable<int> AliveTargets(IReadOnlyList<ForecastState> states) =>
-        Enumerable.Range(0, states.Count).Where(index => states[index].Hp > 0);
 
     private static IRunState? ResolveRunState(Creature owner) =>
         owner.Player?.RunState ?? owner.PetOwner?.RunState;

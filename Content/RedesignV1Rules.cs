@@ -112,9 +112,6 @@ public static class RedesignV1Rules
         "BusyLine"
     ];
 
-    public static int ShurikenDamage(int bonus) =>
-        ShurikenBaseDamage + Math.Max(0, bonus);
-
     internal static bool ShouldOwnTransientShurikenSlot(int baseOrbSlotCount, int capacity) =>
         baseOrbSlotCount == 0 && capacity == 0;
 

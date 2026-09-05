@@ -23,7 +23,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
     private readonly EffectSnapshot[] _effects;
     private readonly ValueProp _props;
     private readonly FinisherTargeting _targeting;
-    private readonly decimal? _narakuHpLoss;
     private readonly int _hits;
     private readonly int _ownerKarate;
     private readonly int _hashCode;
@@ -34,7 +33,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         AttackCommand? command,
         IReadOnlyList<Creature> enemies,
         decimal[] damageByTarget,
-        decimal? narakuHpLoss,
         int hits,
         Creature? singleTarget,
         IReadOnlyList<FinisherForecastEffect> effects)
@@ -48,7 +46,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         _fixedTargets = descriptor.FixedTargets?.ToArray() ?? [];
         _props = descriptor.Props;
         _targeting = descriptor.Targeting;
-        _narakuHpLoss = narakuHpLoss;
         _hits = hits;
         _ownerKarate = owner.GetPowerAmount<KaratePower>();
         _enemies = enemies.Select((enemy, index) => new EnemySnapshot(
@@ -68,7 +65,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         hash.Add(ReferenceHashCode(_singleTarget));
         hash.Add(_props);
         hash.Add(_targeting);
-        hash.Add(_narakuHpLoss);
         hash.Add(_hits);
         hash.Add(_ownerKarate);
         AddReferenceSequenceHash(ref hash, _fixedTargets);
@@ -94,7 +90,6 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         && ReferenceEquals(_singleTarget, other._singleTarget)
         && _props == other._props
         && _targeting == other._targeting
-        && _narakuHpLoss == other._narakuHpLoss
         && _hits == other._hits
         && _ownerKarate == other._ownerKarate
         && ReferenceSequenceEqual(_fixedTargets, other._fixedTargets)

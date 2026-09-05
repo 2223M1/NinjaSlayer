@@ -384,6 +384,7 @@ static void ValidatePckPath(string path)
 {
     string firstSegment = path.Split('/')[0];
     if (firstSegment.Equals("output", StringComparison.OrdinalIgnoreCase)
+        || firstSegment.Equals(".local-reference", StringComparison.OrdinalIgnoreCase)
         || firstSegment.Equals(".sts2build", StringComparison.OrdinalIgnoreCase))
     {
         throw new InvalidDataException($"PCK contains a local work directory: {path}");

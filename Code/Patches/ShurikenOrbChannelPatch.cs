@@ -91,6 +91,15 @@ public sealed class ShurikenOrbEvokePatch : IPatchMethod
     }
 }
 
+public sealed class ShurikenOrbChannelSoundPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_shuriken_orb_channel_sound";
+    public static string Description => "Keep stock acquisition silent instead of loading a nonexistent vanilla debug sound.";
+    public static bool IsCritical => false;
+    public static ModPatchTarget[] GetTargets() => [new(typeof(OrbModel), nameof(OrbModel.PlayChannelSfx), [])];
+    public static bool Prefix(OrbModel __instance) => __instance is not ShurikenOrb;
+}
+
 public sealed class ShurikenOrbLayoutPatch : IPatchMethod
 {
     private const double LayoutSeconds = 0.45;

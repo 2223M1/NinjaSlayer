@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Content;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -22,6 +23,9 @@ public sealed class NarakuEvent : ModEventTemplate
     private static readonly int[] NarakuDamage = [5, 6, 7];
 
     private int _numberOfCalls;
+
+    public override EventAssetProfile AssetProfile => new(
+        InitialPortraitPath: "res://NinjaSlayer/images/cards/NarakuFormRedesignV1.png");
 
     [SavedProperty]
     private int NumberOfCalls
@@ -46,7 +50,10 @@ public sealed class NarakuEvent : ModEventTemplate
             : GenerateNarakuOptions("INITIAL");
 
     private static bool HasNarakuThemedDeckCard(Player player) =>
-        PileType.Deck.GetPile(player).Cards.Any(card => card is NarakuThemedCardTemplate);
+        PileType.Deck.GetPile(player).Cards.Any(card => card is
+            GuidingFlameRedesignV1 or SatsubatsuRedesignV1 or AbyssStrengthRedesignV1
+            or HardItOutRedesignV1 or RedBlackFlameAttackRedesignV1 or BurnBurnBurnRedesignV1
+            or NarakuFormRedesignV1 or ReturnReturnReturnRedesignV1 or OneBodyOneSoul);
 
     private IReadOnlyList<EventOption> GenerateNarakuOptions(string page) =>
         [

@@ -37,7 +37,6 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Afflictions;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.ExternalAnimations;
@@ -45,6 +44,7 @@ using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -354,12 +354,12 @@ internal sealed partial class SmokeController
             data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });
 
         await PlayerCmd.SetEnergy(10m, player);
-        ReadyBlade readyBlade = combatState.CreateCard<ReadyBlade>(player);
+        PreparedShurikenRedesignV1 readyBlade = combatState.CreateCard<PreparedShurikenRedesignV1>(player);
         await CardPileCmd.Add(readyBlade, PileType.Hand);
-        await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, null);
-        bool preparedCreated = player.PlayerCombatState!.AllCards.Any(card => card.Affliction is PreparedAffliction);
-        Require(preparedCreated, "ReadyBlade did not create a Prepared card.");
-        _checkpoints.Write("prepared.created");
+        await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, player.Creature);
+        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 1,
+            "Prepared Shuriken did not create one stock.");
+        _checkpoints.Write("shuriken.created");
 
         var enemyTurnStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         PlayerCmd.EndTurn(
@@ -376,20 +376,25 @@ internal sealed partial class SmokeController
                 && player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "next player turn did not start",
             cancellationToken);
-        bool illegalPrepared = player.PlayerCombatState!.AllCards.Any(card =>
-            card.Affliction is PreparedAffliction && card.Pile?.Type != PileType.Draw);
-        Require(!illegalPrepared, "A Prepared card left the draw pile without clearing its affliction.");
-        _checkpoints.Write("prepared.lifecycle-cleared");
+        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 1,
+            "End-turn hand cleanup incorrectly consumed shuriken stock.");
+        var discarded = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+        await CardPileCmd.Add(discarded, PileType.Hand);
+        await CardCmd.Discard(new BlockingPlayerChoiceContext(), discarded);
+        Require(!player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
+            "An actual discard did not consume and remove the last shuriken stock.");
+        _checkpoints.Write("shuriken.lifecycle-cleared");
 
         Creature focus = combatState.HittableEnemies.FirstOrDefault()
             ?? throw new InvalidOperationException("No hittable enemy remained for the X attack scenario.");
         await VerifyRedesignCardsAndPowers(combatState, player, focus);
+        await VerifyCurrentPresentation(combatState, player, focus, cancellationToken);
         await WaitUntilAsync(
             () => !StaggerAnimation.IsActive(player.Creature),
             "The preceding hit animation did not settle before the X attack scenario.",
             cancellationToken);
         await PlayerCmd.SetEnergy(1m, player);
-        TornadoFist nonLethal = combatState.CreateCard<TornadoFist>(player);
+        TornadoFistRedesignV1 nonLethal = combatState.CreateCard<TornadoFistRedesignV1>(player);
         await CardPileCmd.Add(nonLethal, PileType.Hand);
         NCreature playerNode = NCombatRoom.Instance?.GetCreatureNode(player.Creature)
             ?? throw new InvalidOperationException("The local player creature node was unavailable.");
@@ -427,7 +432,7 @@ internal sealed partial class SmokeController
 
         FinisherSmokeObserver.Reset(injectPresentationFailure: true);
         await PlayerCmd.SetEnergy(3m, player);
-        TornadoFist lethal = combatState.CreateCard<TornadoFist>(player);
+        TornadoFistRedesignV1 lethal = combatState.CreateCard<TornadoFistRedesignV1>(player);
         await CardPileCmd.Add(lethal, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), lethal, focus);
         _checkpoints.Write(
@@ -785,7 +790,7 @@ internal sealed partial class SmokeController
             1,
             target,
             null);
-        NinjaWhip first = combatState.CreateCard<NinjaWhip>(player);
+        RightHeavyPunchRedesignV1 first = combatState.CreateCard<RightHeavyPunchRedesignV1>(player);
         await CardPileCmd.Add(first, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), first, target);
         Require(target.GetPower<EvasionPower>()?.Amount is null or 0, "Evasion was not consumed by an attack card.");
@@ -805,7 +810,7 @@ internal sealed partial class SmokeController
             1,
             target,
             null);
-        NinjaWhip second = combatState.CreateCard<NinjaWhip>(player);
+        RightHeavyPunchRedesignV1 second = combatState.CreateCard<RightHeavyPunchRedesignV1>(player);
         await CardPileCmd.Add(second, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), second, target);
 
@@ -909,7 +914,7 @@ internal sealed partial class SmokeController
         Require(target.HasPower<WeakPower>(), "A connected hit incorrectly suppressed its move debuff.");
         await PowerCmd.Remove<WeakPower>(target);
 
-        DefendNinjaSlayer nonAttackSource = combatState.CreateCard<DefendNinjaSlayer>(player);
+        DefendNinjaSlayerRedesignV1 nonAttackSource = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
         var nonAttackSourceMove = new MoveState(
             "NINJASLAYER_SMOKE_NON_ATTACK_SOURCE",
             async targets =>

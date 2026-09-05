@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -27,22 +28,18 @@ public sealed class ZbrAmpoulePotion : ModPotionTemplate
     );
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new PowerVar<StrengthPower>(2),
         new NarakuLifeVar(12)
     ];
 
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        HoverTipFactory.FromPower<StrengthPower>()
+        HoverTipFactory.FromPower<NarakuLifePower>()
     ];
 
     protected override async Task OnUse(PlayerChoiceContext choiceContext, Creature? target)
     {
         AssertValidForTargetedPotion(target);
         NCombatRoom.Instance?.PlaySplashVfx(target, new Color("D32020FF"));
-        await PowerCmd.Apply<StrengthPower>(choiceContext, target!, DynamicVars.Strength.BaseValue, Owner.Creature, null);
-        if (target!.Player != null)
-        {
-            await NinjaSlayerActions.EnterNaraku(choiceContext, target.Player, DynamicVars.NarakuLife().BaseValue);
-        }
+        await PowerCmd.Apply<NarakuLifePower>(
+            choiceContext, target!, DynamicVars.NarakuLife().BaseValue, Owner.Creature, null);
     }
 }

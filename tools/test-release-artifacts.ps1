@@ -290,6 +290,7 @@ try {
         @{ Name = 'spine'; Entries = @('addons/spine/spine_godot_extension.gdextension'); Pattern = 'build-only Spine' },
         @{ Name = 'output'; Entries = @('output/energy-counter-redesign/master.png.import'); Pattern = 'local work directory' },
         @{ Name = 'sts2build'; Entries = @('.sts2build/stable/NinjaSlayer.pck'); Pattern = 'local work directory' },
+        @{ Name = 'local-reference'; Entries = @('.local-reference/legacy/old-card.png'); Pattern = 'local work directory' },
         @{ Name = 'dll'; Entries = @('native/spine.dll'); Pattern = 'native platform library' },
         @{ Name = 'so'; Entries = @('native/libspine.so'); Pattern = 'native platform library' },
         @{ Name = 'dylib'; Entries = @('native/libspine.dylib'); Pattern = 'native platform library' },

@@ -27,12 +27,12 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.TestSupport;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Afflictions;
-using NinjaSlayer.Code.Commands;
+
+
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Feedback;
 using NinjaSlayer.Code.Patches;
-using NinjaSlayer.Code.Prepared;
+
 using NinjaSlayer.Content;
 using STS2RitsuLib;
 using STS2RitsuLib.Patching.Core;
@@ -45,7 +45,7 @@ namespace NinjaSlayer.RitsuLibContractTests;
 public partial class ContractRunner : Node
 {
     private const int ExpectedRequiredPatchTargetCount = 90;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 57;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 56;
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
     private static string? _patcherFailureName;
@@ -77,7 +77,7 @@ public partial class ContractRunner : Node
             {
                 RitsuLibFramework.Initialize();
             }
-            VerifyPreparedOwnershipContracts();
+
             VerifyProductionPatchTransactions();
             VerifyOrobasSeaGlassPatchContract();
             VerifyBlackFlameDamagePatchContract();
@@ -85,6 +85,8 @@ public partial class ContractRunner : Node
             VerifyFinalizerOrderingAndTypedState();
             VerifyRunOriginalContract();
             VerifyOriginalFeedbackStreamOwnership();
+            ModelDb.Inject(typeof(StrikeIronclad));
+            ModelDb.Inject(typeof(DampCultist));
             VerifyFinisherProtectionTransaction();
             VerifyFinisherSessionCompletionContracts();
             VerifyTransitionOwnershipContracts();
@@ -156,258 +158,6 @@ public partial class ContractRunner : Node
         string fullPath = Path.GetFullPath(markerPath);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
         System.IO.File.WriteAllText(fullPath, "passed\n");
-    }
-
-    private static void VerifyPreparedOwnershipContracts()
-    {
-        ModelDb.Inject(typeof(StrikeIronclad));
-        ModelDb.Inject(typeof(PreparedAffliction));
-        ModelDb.Inject(typeof(DampCultist));
-
-        PreparedSafetyLifecycle lifecycle = PreparedSafetyLifecycle.Subscribe();
-        Harmony faultHarmony = PreparedFaultInjection.Install();
-        try
-        {
-            VerifyPreparedQueueAndDrawExit();
-            VerifyPreparedQueueInvariantFailure();
-            VerifyPreparedQueueDuplicateReferenceFailure();
-            VerifyPreparedFailureRollback(
-                PreparedFaultMode.UnconfirmedAdd,
-                "unconfirmed add",
-                "not confirmed");
-            VerifyPreparedFailureRollback(
-                PreparedFaultMode.RemoveOnce,
-                "remove failure",
-                "injected-remove");
-            VerifyPreparedFailureRollback(
-                PreparedFaultMode.DrawAddOnce,
-                "add failure",
-                "injected-draw-add");
-            VerifyPreparedRepositionRollback();
-            VerifyPreparedFailureRollback(
-                PreparedFaultMode.UnconfirmedAfterMutation,
-                "postcondition failure",
-                "not confirmed");
-            VerifyPreparedForeignAfflictionRollback();
-            VerifyPreparedRollbackFailure();
-        }
-        finally
-        {
-            PreparedFaultInjection.Reset();
-            faultHarmony.UnpatchAll(faultHarmony.Id);
-            lifecycle.Dispose();
-            lifecycle.Dispose();
-        }
-    }
-
-    private static void VerifyPreparedQueueAndDrawExit()
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel[] cards = Enumerable.Range(0, 4)
-            .Select(index => fixture.CreateCard(index == 0 ? PileType.Draw : PileType.Discard))
-            .ToArray();
-        int firstAfflictionChanges = 0;
-        cards[0].AfflictionChanged += () => firstAfflictionChanges++;
-
-        for (int index = 0; index < cards.Length; index++)
-        {
-            Require(
-                PrepareCmd.Apply(cards[index]).GetAwaiter().GetResult(),
-                $"Prepared application {index + 1} was rejected.");
-            RequirePreparedQueue(fixture, cards.Take(index + 1).ToArray());
-        }
-
-        Require(firstAfflictionChanges == 1, "Prepared application changed the first affliction more than once.");
-        CardPileAddResult drawExit = CardPileCmd.Add(
-                cards[0],
-                PileType.Hand.GetPile(fixture.Player))
-            .GetAwaiter()
-            .GetResult();
-        Require(drawExit.success, "Prepared Draw-exit fixture did not move the card.");
-        Require(cards[0].Affliction is null, "Confirmed Draw-exit did not clear Prepared.");
-        Require(firstAfflictionChanges == 2, "Confirmed Draw-exit did not clear Prepared exactly once.");
-
-        CardPileCmd.Add(cards[0], PileType.Discard.GetPile(fixture.Player))
-            .GetAwaiter()
-            .GetResult();
-        Require(firstAfflictionChanges == 2, "A later non-Draw pile event repeated Prepared cleanup.");
-        RequirePreparedQueue(fixture, cards.Skip(1).ToArray());
-
-        int removalEvents = 0;
-        using (RitsuLibFramework.SubscribeLifecycle<CardMovedBetweenPilesEvent>(evt =>
-               {
-                   if (ReferenceEquals(evt.Card, cards[1]) && evt.PreviousPile == PileType.Draw)
-                   {
-                       removalEvents++;
-                   }
-               }, replayCurrentState: false))
-        {
-            CardPileCmd.RemoveFromCombat(cards[1], skipVisuals: true)
-                .GetAwaiter()
-                .GetResult();
-        }
-        Require(cards[1].Pile is null, "Prepared removal fixture retained a pile.");
-        Require(removalEvents == 1, "Prepared removal did not publish one confirmed Draw-exit event.");
-        Require(cards[1].Affliction is null, "Confirmed Draw removal did not clear Prepared.");
-        RequirePreparedQueue(fixture, cards.Skip(2).ToArray());
-
-        Require(
-            !PrepareCmd.Apply(ModelDb.Card<StrikeIronclad>()).GetAwaiter().GetResult(),
-            "Canonical card preparation was not rejected as a legal no-op.");
-    }
-
-    private static void VerifyPreparedQueueInvariantFailure()
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel prepared = fixture.CreateCard(PileType.Discard);
-        Require(PrepareCmd.Apply(prepared).GetAwaiter().GetResult(), "Prepared prefix fixture was rejected.");
-        CardModel unprepared = fixture.CreateCard(PileType.Draw, index: 0);
-        CardModel target = fixture.CreateCard(PileType.Discard);
-
-        InvalidOperationException failure = ExpectException<InvalidOperationException>(
-            () => PrepareCmd.Apply(target),
-            "queue prefix");
-        Require(
-            failure.Message.Contains("queue prefix", StringComparison.OrdinalIgnoreCase),
-            "Broken Prepared queue did not surface its invariant failure.");
-        Require(target.Affliction is null, "Queue-prefix rejection mutated the target affliction.");
-        Require(ReferenceEquals(target.Pile, PileType.Discard.GetPile(fixture.Player)),
-            "Queue-prefix rejection moved the target card.");
-        Require(ReferenceEquals(fixture.DrawPile.Cards[0], unprepared),
-            "Queue-prefix rejection rewrote the broken producer state.");
-    }
-
-    private static void VerifyPreparedQueueDuplicateReferenceFailure()
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel prepared = fixture.CreateCard(PileType.Discard);
-        Require(PrepareCmd.Apply(prepared).GetAwaiter().GetResult(),
-            "Prepared duplicate-reference fixture was rejected.");
-        fixture.DiscardPile.AddInternal(prepared, index: -1, silent: true);
-        CardModel target = fixture.CreateCard(PileType.Discard);
-
-        InvalidOperationException failure = ExpectException<InvalidOperationException>(
-            () => PrepareCmd.Apply(target),
-            "unique pile ownership");
-        Require(failure.Message.Contains("unique pile ownership", StringComparison.OrdinalIgnoreCase),
-            "Duplicate Prepared queue did not surface its ownership invariant failure.");
-        Require(target.Affliction is null,
-            "Duplicate Prepared queue rejection mutated the target affliction.");
-        Require(ReferenceEquals(target.Pile, fixture.DiscardPile),
-            "Duplicate Prepared queue rejection moved the target card.");
-        Require(CountReferences(fixture.Player, prepared) == 2,
-            "Duplicate Prepared queue rejection rewrote the broken producer state.");
-    }
-
-    private static void VerifyPreparedFailureRollback(
-        PreparedFaultMode mode,
-        string label,
-        string failureFragment)
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel card = fixture.CreateCard(PileType.Discard);
-        int originalIndex = fixture.DiscardPile.Cards.Count - 1;
-        PreparedFaultInjection.Configure(mode, card);
-        try
-        {
-            _ = ExpectException<InvalidOperationException>(
-                () => PrepareCmd.Apply(card),
-                failureFragment);
-        }
-        finally
-        {
-            PreparedFaultInjection.Reset();
-        }
-
-        RequireRestored(fixture, card, fixture.DiscardPile, originalIndex, label);
-    }
-
-    private static void VerifyPreparedRepositionRollback()
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel queued = fixture.CreateCard(PileType.Discard);
-        Require(PrepareCmd.Apply(queued).GetAwaiter().GetResult(), "Reposition fixture queue setup failed.");
-        CardModel card = fixture.CreateCard(PileType.Discard);
-        int originalIndex = fixture.DiscardPile.Cards.Count - 1;
-
-        PreparedFaultInjection.Configure(PreparedFaultMode.RepositionAddOnce, card);
-        try
-        {
-            _ = ExpectException<InvalidOperationException>(
-                () => PrepareCmd.Apply(card),
-                "injected-reposition-add");
-        }
-        finally
-        {
-            PreparedFaultInjection.Reset();
-        }
-
-        RequireRestored(fixture, card, fixture.DiscardPile, originalIndex, "reposition failure");
-        RequirePreparedQueue(fixture, [queued]);
-    }
-
-    private static void VerifyPreparedForeignAfflictionRollback()
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel card = fixture.CreateCard(PileType.Discard);
-        int originalIndex = fixture.DiscardPile.Cards.Count - 1;
-        PreparedAffliction? replacement = null;
-        AggregateException failure;
-        PreparedFaultInjection.Configure(PreparedFaultMode.ReplacePreparedAfterMutation, card);
-        try
-        {
-            failure = ExpectException<AggregateException>(
-                () => PrepareCmd.Apply(card),
-                "transaction and rollback");
-            replacement = PreparedFaultInjection.ReplacementAffliction;
-        }
-        finally
-        {
-            PreparedFaultInjection.Reset();
-        }
-
-        Require(failure.ToString().Contains(
-                "lost ownership of its affliction",
-                StringComparison.OrdinalIgnoreCase),
-            "Prepared transaction did not expose replacement of its owned affliction.");
-        Require(failure.ToString().Contains(
-                "refused to clear an affliction it does not own",
-                StringComparison.OrdinalIgnoreCase),
-            "Prepared rollback did not expose foreign-affliction ownership.");
-        Require(replacement is not null && ReferenceEquals(card.Affliction, replacement),
-            "Prepared rollback cleared or replaced the foreign affliction.");
-        Require(ReferenceEquals(card.Pile, fixture.DiscardPile)
-            && ReferenceEquals(fixture.DiscardPile.Cards[originalIndex], card),
-            "Prepared foreign-affliction rollback did not restore the original pile position.");
-        Require(CountReferences(fixture.Player, card) == 1,
-            "Prepared foreign-affliction rollback did not restore unique pile ownership.");
-    }
-
-    private static void VerifyPreparedRollbackFailure()
-    {
-        using var fixture = new PreparedCombatFixture();
-        CardModel card = fixture.CreateCard(PileType.Discard);
-        PreparedFaultInjection.Configure(PreparedFaultMode.DrawAndRollbackAdd, card);
-        AggregateException failure;
-        try
-        {
-            failure = ExpectException<AggregateException>(
-                () => PrepareCmd.Apply(card),
-                "transaction and rollback");
-        }
-        finally
-        {
-            PreparedFaultInjection.Reset();
-        }
-
-        Require(failure.InnerExceptions.Count == 2,
-            "Prepared rollback failure did not preserve primary and rollback errors.");
-        Require(failure.ToString().Contains("injected-draw-add", StringComparison.Ordinal),
-            "Prepared rollback aggregate lost the primary add failure.");
-        Require(failure.ToString().Contains("injected-rollback-add", StringComparison.Ordinal),
-            "Prepared rollback aggregate lost the rollback failure.");
-        Require(card.Affliction is null, "Failed Prepared rollback left its partial affliction behind.");
-        Require(card.Pile is null, "Rollback-failure fixture unexpectedly reported a restored pile.");
     }
 
     private static void RequireMatchingProductMetadata(Assembly product, string key)
@@ -1057,231 +807,7 @@ public partial class ContractRunner : Node
         EveryAttempt
     }
 
-    private static void RequirePreparedQueue(PreparedCombatFixture fixture, IReadOnlyList<CardModel> expected)
-    {
-        Require(fixture.DrawPile.Cards.Count >= expected.Count, "Prepared draw pile is shorter than its queue.");
-        for (int index = 0; index < expected.Count; index++)
-        {
-            CardModel card = expected[index];
-            Require(ReferenceEquals(fixture.DrawPile.Cards[index], card),
-                $"Prepared queue order differs at index {index}.");
-            Require(card.Affliction is PreparedAffliction,
-                $"Prepared queue card {index} lost its affliction.");
-            Require(CountReferences(fixture.Player, card) == 1,
-                $"Prepared queue card {index} does not have exactly one pile reference.");
-        }
-
-        Require(fixture.DrawPile.Cards.Skip(expected.Count).All(card => card.Affliction is not PreparedAffliction),
-            "Prepared card exists outside the queue prefix.");
-    }
-
-    private static void RequireRestored(
-        PreparedCombatFixture fixture,
-        CardModel card,
-        CardPile expectedPile,
-        int expectedIndex,
-        string label)
-    {
-        Require(card.Affliction is null, $"Prepared {label} rollback left an affliction.");
-        Require(ReferenceEquals(card.Pile, expectedPile), $"Prepared {label} rollback restored the wrong pile.");
-        Require(ReferenceEquals(expectedPile.Cards[expectedIndex], card),
-            $"Prepared {label} rollback restored the wrong index.");
-        Require(CountReferences(fixture.Player, card) == 1,
-            $"Prepared {label} rollback did not restore one card reference.");
-    }
-
-    private static TException ExpectException<TException>(Func<Task<bool>> action, string messageFragment)
-        where TException : Exception
-    {
-        Exception? observed = null;
-        try
-        {
-            _ = action().GetAwaiter().GetResult();
-        }
-        catch (Exception exception)
-        {
-            observed = exception;
-        }
-
-        Require(observed is TException,
-            $"Expected {typeof(TException).Name}, observed {observed?.GetType().Name ?? "no failure"}.");
-        Require(observed!.ToString().Contains(messageFragment, StringComparison.OrdinalIgnoreCase),
-            $"{typeof(TException).Name} did not contain '{messageFragment}'.");
-        return (TException)observed;
-    }
-
-    private static int CountReferences(Player player, CardModel card) =>
-        player.Piles.Sum(pile => pile.Cards.Count(candidate => ReferenceEquals(candidate, card)));
-
-    private enum PreparedFaultMode
-    {
-        None,
-        UnconfirmedAdd,
-        UnconfirmedAfterMutation,
-        ReplacePreparedAfterMutation,
-        RemoveOnce,
-        DrawAddOnce,
-        RepositionAddOnce,
-        DrawAndRollbackAdd
-    }
-
-    private static class PreparedFaultInjection
-    {
-        private static PreparedFaultMode _mode;
-        private static CardModel? _target;
-        private static int _drawAddCount;
-        public static PreparedAffliction? ReplacementAffliction { get; private set; }
-
-        public static Harmony Install()
-        {
-            var harmony = new Harmony($"NinjaSlayer.ContractTests.Prepared.{Guid.NewGuid():N}");
-            MethodInfo add = AccessTools.Method(
-                typeof(CardPileCmd),
-                nameof(CardPileCmd.Add),
-                [typeof(CardModel), typeof(CardPile), typeof(CardPilePosition), typeof(AbstractModel), typeof(bool)])
-                ?? throw new MissingMethodException(typeof(CardPileCmd).FullName, nameof(CardPileCmd.Add));
-            MethodInfo addInternal = AccessTools.Method(
-                typeof(CardPile),
-                nameof(CardPile.AddInternal),
-                [typeof(CardModel), typeof(int), typeof(bool)])
-                ?? throw new MissingMethodException(typeof(CardPile).FullName, nameof(CardPile.AddInternal));
-            MethodInfo removeInternal = AccessTools.Method(
-                typeof(CardPile),
-                nameof(CardPile.RemoveInternal),
-                [typeof(CardModel), typeof(bool)])
-                ?? throw new MissingMethodException(typeof(CardPile).FullName, nameof(CardPile.RemoveInternal));
-
-            harmony.Patch(
-                add,
-                prefix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PrefixAdd)),
-                postfix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PostfixAdd)));
-            harmony.Patch(
-                addInternal,
-                prefix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PrefixAddInternal)));
-            harmony.Patch(
-                removeInternal,
-                prefix: new HarmonyMethod(typeof(PreparedFaultInjection), nameof(PrefixRemoveInternal)));
-            return harmony;
-        }
-
-        public static void Configure(PreparedFaultMode mode, CardModel target)
-        {
-            _mode = mode;
-            _target = target;
-            _drawAddCount = 0;
-            ReplacementAffliction = null;
-        }
-
-        public static void Reset()
-        {
-            _mode = PreparedFaultMode.None;
-            _target = null;
-            _drawAddCount = 0;
-            ReplacementAffliction = null;
-        }
-
-        private static bool PrefixAdd(CardModel card, ref Task<CardPileAddResult> __result)
-        {
-            if (_mode != PreparedFaultMode.UnconfirmedAdd || !ReferenceEquals(card, _target))
-            {
-                return true;
-            }
-
-            _mode = PreparedFaultMode.None;
-            __result = Task.FromResult(new CardPileAddResult
-            {
-                success = false,
-                cardAdded = card,
-                oldPile = card.Pile
-            });
-            return false;
-        }
-
-        private static void PostfixAdd(CardModel card, ref Task<CardPileAddResult> __result)
-        {
-            if (_mode == PreparedFaultMode.UnconfirmedAfterMutation && ReferenceEquals(card, _target))
-            {
-                __result = ReturnUnconfirmedAfterMutation(__result);
-            }
-            else if (_mode == PreparedFaultMode.ReplacePreparedAfterMutation
-                && ReferenceEquals(card, _target))
-            {
-                __result = ReplacePreparedAfterMutation(card, __result);
-            }
-        }
-
-        private static async Task<CardPileAddResult> ReturnUnconfirmedAfterMutation(
-            Task<CardPileAddResult> resultTask)
-        {
-            CardPileAddResult result = await resultTask;
-            _mode = PreparedFaultMode.None;
-            result.success = false;
-            return result;
-        }
-
-        private static async Task<CardPileAddResult> ReplacePreparedAfterMutation(
-            CardModel card,
-            Task<CardPileAddResult> resultTask)
-        {
-            CardPileAddResult result = await resultTask;
-            CardCmd.ClearAffliction(card);
-            ReplacementAffliction = await CardCmd.Afflict<PreparedAffliction>(card, 1m)
-                ?? throw new InvalidOperationException(
-                    "Injected Prepared replacement could not apply its foreign affliction.");
-            _mode = PreparedFaultMode.None;
-            return result;
-        }
-
-        private static void PrefixRemoveInternal(CardModel card)
-        {
-            if (_mode != PreparedFaultMode.RemoveOnce || !ReferenceEquals(card, _target))
-            {
-                return;
-            }
-
-            _mode = PreparedFaultMode.None;
-            throw new InvalidOperationException("injected-remove");
-        }
-
-        private static void PrefixAddInternal(CardPile __instance, CardModel card)
-        {
-            if (!ReferenceEquals(card, _target))
-            {
-                return;
-            }
-
-            if (_mode == PreparedFaultMode.DrawAddOnce && __instance.Type == PileType.Draw)
-            {
-                _mode = PreparedFaultMode.None;
-                throw new InvalidOperationException("injected-draw-add");
-            }
-
-            if (_mode == PreparedFaultMode.RepositionAddOnce && __instance.Type == PileType.Draw)
-            {
-                _drawAddCount++;
-                if (_drawAddCount == 2)
-                {
-                    _mode = PreparedFaultMode.None;
-                    throw new InvalidOperationException("injected-reposition-add");
-                }
-            }
-
-            if (_mode == PreparedFaultMode.DrawAndRollbackAdd)
-            {
-                if (__instance.Type == PileType.Draw)
-                {
-                    throw new InvalidOperationException("injected-draw-add");
-                }
-
-                if (__instance.Type == PileType.Discard)
-                {
-                    throw new InvalidOperationException("injected-rollback-add");
-                }
-            }
-        }
-    }
-
-    private sealed class PreparedCombatFixture : IDisposable
+    private sealed class CombatFixture : IDisposable
     {
         private readonly List<CardModel> _cards = [];
         private readonly bool _previousTestMode;
@@ -1292,7 +818,7 @@ public partial class ContractRunner : Node
         public CardPile DrawPile => PileType.Draw.GetPile(Player);
         public CardPile DiscardPile => PileType.Discard.GetPile(Player);
 
-        public PreparedCombatFixture()
+        public CombatFixture()
         {
             _previousTestMode = TestMode.IsOn;
             TestMode.IsOn = true;
@@ -1315,7 +841,7 @@ public partial class ContractRunner : Node
 
         public void Dispose()
         {
-            PreparedFaultInjection.Reset();
+
             foreach (CardModel card in _cards)
             {
                 if (card.Affliction is not null)
@@ -2261,7 +1787,7 @@ public partial class ContractRunner : Node
     private sealed class ProductFinisherSessionFixture : IDisposable
     {
         private readonly Assembly _product;
-        private readonly PreparedCombatFixture _combat = new();
+        private readonly CombatFixture _combat = new();
         private readonly object _ledger;
         private readonly object _session;
         private CardModel? _card;

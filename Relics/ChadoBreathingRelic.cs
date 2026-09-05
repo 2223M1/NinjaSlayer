@@ -41,7 +41,7 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
             await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
         }
 
-        await ChadoBreathCmd.Apply(Owner, 2, this);
+        await ChadoBreathCmd.Apply(Owner, 2);
         Flash();
     }
 }

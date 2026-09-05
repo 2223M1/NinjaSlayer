@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 
@@ -158,20 +159,6 @@ internal sealed partial class SmokeController
         var choiceContext = new BlockingPlayerChoiceContext();
         await PlayerCmd.SetEnergy(20m, player);
 
-        await PowerCmd.Apply<KaratePower>(choiceContext, player.Creature, 3, player.Creature, null);
-        int karateBeforeJujutsu = player.Creature.GetPower<KaratePower>()?.Amount ?? 0;
-        int dexterityBeforeJujutsu = player.Creature.GetPower<DexterityPower>()?.Amount ?? 0;
-        JujutsuStanceRedesignV1 jujutsu = combatState.CreateCard<JujutsuStanceRedesignV1>(player);
-        await CardPileCmd.Add(jujutsu, PileType.Hand);
-        await CardCmd.AutoPlay(choiceContext, jujutsu, player.Creature);
-        Require(jujutsu.Pile?.Type == PileType.Hand, "Jujutsu Stance did not return to hand.");
-        Require(
-            (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeJujutsu - 3,
-            "Jujutsu Stance did not spend its Karate cost.");
-        Require(
-            (player.Creature.GetPower<DexterityPower>()?.Amount ?? 0) == dexterityBeforeJujutsu + 1,
-            "Jujutsu Stance did not grant Dexterity.");
-
         DefendNinjaSlayerRedesignV1 retained = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
         NinjaGreetingRedesignV1 greeting = combatState.CreateCard<NinjaGreetingRedesignV1>(player);
         await CardPileCmd.Add(retained, PileType.Hand);
@@ -183,16 +170,28 @@ internal sealed partial class SmokeController
         retained.EndOfTurnCleanup();
         Require(!retained.ShouldRetainThisTurn, "Ninja Greeting retain survived end-of-turn cleanup.");
 
-        AetherEnergyPower aether = await PowerCmd.Apply<AetherEnergyPower>(
-            choiceContext, player.Creature, 2, player.Creature, null)
-            ?? throw new InvalidOperationException("Aether Energy could not be applied.");
+        foreach (ChadoEnergyRedesignV1 heldTea in PileType.Hand.GetPile(player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray())
+            await CardCmd.Exhaust(choiceContext, heldTea);
+        KarateTeaRedesignV1 karateTea = combatState.CreateCard<KarateTeaRedesignV1>(player);
+        await CardPileCmd.Add(karateTea, PileType.Hand);
+        await CardCmd.AutoPlay(choiceContext, karateTea, player.Creature);
+        int karateBeforeGeneration = player.Creature.GetPowerAmount<KaratePower>();
+        await ChadoBreathCmd.Apply(player, 2);
+        ChadoEnergyRedesignV1 tea = PileType.Hand.GetPile(player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
+        Require(tea.DynamicVars.Energy.BaseValue == 2
+            && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 3,
+            "New Chado did not trigger Karate Tea exactly once.");
+        await ChadoBreathCmd.Apply(player, 1);
+        Require(tea.DynamicVars.Energy.BaseValue == 3
+            && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 3,
+            "Increasing held Chado incorrectly triggered generation again.");
         await PlayerCmd.SetEnergy(0m, player);
         int karateBeforeEnergyGain = player.Creature.GetPower<KaratePower>()?.Amount ?? 0;
         await PlayerCmd.GainEnergy(1m, player);
-        Require(player.PlayerCombatState!.Energy == 1, "Aether Energy scenario did not gain energy.");
+        Require(player.PlayerCombatState!.Energy == 1, "The energy scenario did not gain energy.");
         Require(
-            (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeEnergyGain + 2,
-            "Aether Energy did not grant Karate after successful energy gain.");
+            (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeEnergyGain,
+            "Energy gain incorrectly triggered Karate Tea.");
 
         NoEnergyGainPower noEnergy = await PowerCmd.Apply<NoEnergyGainPower>(
             choiceContext, player.Creature, 1, player.Creature, null)
@@ -203,9 +202,10 @@ internal sealed partial class SmokeController
         Require(player.PlayerCombatState.Energy == energyBeforeBlockedGain, "No Energy Gain failed to block energy.");
         Require(
             (player.Creature.GetPower<KaratePower>()?.Amount ?? 0) == karateBeforeBlockedGain,
-            "Aether Energy granted Karate when energy gain was blocked.");
+            "Blocked energy gain incorrectly granted Karate.");
         await PowerCmd.Remove(noEnergy);
-        await PowerCmd.Remove(aether);
+        await PowerCmd.Remove(player.Creature.GetPower<KarateTeaPower>()!);
+        await PowerCmd.Remove(player.Creature.GetPower<KaratePower>()!);
 
         int hpBeforeGreatUke = player.Creature.CurrentHp;
         GreatUkeRedesignPower greatUke = await PowerCmd.Apply<GreatUkeRedesignPower>(

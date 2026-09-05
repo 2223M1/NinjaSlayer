@@ -3,34 +3,11 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.addons.mega_text;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Screens.InspectScreens;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
-
-public sealed class NinjaSlayerCardTitleTypographyPatch : IPatchMethod
-{
-    public static string PatchId => "ninjaslayer_card_title_typography";
-
-    public static string Description => "Apply Farrier title font to NinjaSlayer mod cards.";
-
-    public static bool IsCritical => false;
-
-    public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(NCard), "UpdateTitleLabel")];
-
-    public static void Postfix(NCard __instance)
-    {
-        if (__instance.Model?.Pool is not NinjaSlayerCardPoolTemplate)
-        {
-            return;
-        }
-
-        NinjaSlayerTypography.ApplyTitleFont(__instance.GetNode<MegaLabel>("%TitleLabel"));
-    }
-}
 
 public sealed class NinjaSlayerInspectRelicTypographyPatch : IPatchMethod
 {

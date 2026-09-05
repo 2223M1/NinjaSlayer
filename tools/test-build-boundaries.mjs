@@ -109,6 +109,9 @@ try {
   }
 
   for (const channel of ['stable', 'preview']) {
+    assert(!evaluateCompileFiles(projectPath, { NinjaSlayerHostChannel: channel })
+      .some(file => file.startsWith('.local-reference/')),
+    'Local reference code must not enter the shipping assembly.');
     assert.deepEqual(
       evaluateCompileFiles(privateProjectPath, {
         CandidateRoot: root,
