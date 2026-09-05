@@ -130,6 +130,7 @@ jobs:
             [ordered]@{
               channel = $channelName
               gameApiVersion = [string]$profile.gameApiVersion
+              moduleMvid = $actualMvid
               ritsuLibPackageId = [string]$profile.ritsuLibPackageId
               ritsuLibVersion = [string]$compatibility.ritsuLibVersion
               runtimeAssemblies = @($profile.runtimeAssemblies | ForEach-Object { [string]$_ })
@@ -160,11 +161,11 @@ jobs:
               -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\source-runner\"
             if ($LASTEXITCODE -ne 0) { throw "Source-linked Contract restore failed for $channel." }
 
-            dotnet restore trusted/Tests/NinjaSlayer.ProductPreparedContractTests/NinjaSlayer.ProductPreparedContractTests.csproj --force-evaluate `
+            dotnet restore trusted/Tests/NinjaSlayer.OrbContractTests/NinjaSlayer.OrbContractTests.csproj --force-evaluate `
               -p:Sts2DataDir="$($hostContract.dataDirectory)" `
               -p:NinjaSlayerHostChannel=$channel `
-              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\product-prepared-runner\"
-            if ($LASTEXITCODE -ne 0) { throw "Product Prepared Contract restore failed for $channel." }
+              -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\product-orb-runner\"
+            if ($LASTEXITCODE -ne 0) { throw "Product Orb Contract restore failed for $channel." }
           }
 
       - name: Prepare trusted network isolation probe
@@ -253,6 +254,7 @@ jobs:
             $previousIsolationRequirement = $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION
             $previousProductAssembly = $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY
             $previousExpectedRevision = $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION
+            $previousHostMvid = $env:NINJASLAYER_CONTRACT_HOST_MVID
             try {
               $env:DOTNET_ROOT = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
               $env:DOTNET_ROOT_X64 = $env:NINJASLAYER_CONTRACT_DOTNET_ROOT
@@ -269,12 +271,12 @@ jobs:
                 $channel = [string]$hostContract.channel
                 $sourceRunnerRoot = Join-Path $env:GITHUB_WORKSPACE `
                   'trusted\Tests\NinjaSlayer.RitsuLibContractTests'
-                $productPreparedRunnerRoot = Join-Path $env:GITHUB_WORKSPACE `
-                  'trusted\Tests\NinjaSlayer.ProductPreparedContractTests'
+                $productOrbRunnerRoot = Join-Path $env:GITHUB_WORKSPACE `
+                  'trusted\Tests\NinjaSlayer.OrbContractTests'
                 $sourceGodotOutput = Join-Path $sourceRunnerRoot '.godot\mono\temp\bin'
-                $productPreparedGodotOutput = Join-Path $productPreparedRunnerRoot '.godot\mono\temp\bin'
+                $productOrbGodotOutput = Join-Path $productOrbRunnerRoot '.godot\mono\temp\bin'
                 Remove-Item -LiteralPath $sourceGodotOutput -Recurse -Force -ErrorAction SilentlyContinue
-                Remove-Item -LiteralPath $productPreparedGodotOutput -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $productOrbGodotOutput -Recurse -Force -ErrorAction SilentlyContinue
 
                 $productOutput = [IO.Path]::GetFullPath((Join-Path `
                   $env:RUNNER_TEMP `
@@ -303,12 +305,13 @@ jobs:
                   -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\source-runner\"
                 if ($LASTEXITCODE -ne 0) { throw "Source-linked Contract runner failed to build for $channel." }
 
-                & $dotnet build trusted/Tests/NinjaSlayer.ProductPreparedContractTests/NinjaSlayer.ProductPreparedContractTests.csproj `
+                & $dotnet build trusted/Tests/NinjaSlayer.OrbContractTests/NinjaSlayer.OrbContractTests.csproj `
                   --no-restore -c Debug -v:minimal `
+                  -p:NinjaSlayerAssemblyPath="$productAssembly" `
                   -p:Sts2DataDir="$($hostContract.dataDirectory)" `
                   -p:NinjaSlayerHostChannel=$channel `
-                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\product-prepared-runner\"
-                if ($LASTEXITCODE -ne 0) { throw "Product Prepared Contract runner failed to build for $channel." }
+                  -p:BaseIntermediateOutputPath="$env:RUNNER_TEMP\contract-obj\$channel\product-orb-runner\"
+                if ($LASTEXITCODE -ne 0) { throw "Product Orb Contract runner failed to build for $channel." }
 
                 $contractOutputs = @(
                   [pscustomobject]@{
@@ -317,9 +320,9 @@ jobs:
                     Deps = 'NinjaSlayer.RitsuLibContractTests.deps.json'
                   }
                   [pscustomobject]@{
-                    Name = 'product-prepared'
-                    Path = Join-Path $productPreparedGodotOutput 'Debug'
-                    Deps = 'NinjaSlayer.ProductPreparedContractTests.deps.json'
+                    Name = 'product-orb'
+                    Path = Join-Path $productOrbGodotOutput 'Debug'
+                    Deps = 'NinjaSlayer.OrbContractTests.deps.json'
                   }
                 )
                 foreach ($contractOutput in $contractOutputs) {
@@ -341,11 +344,12 @@ jobs:
                 $markerRoot = Join-Path $env:RUNNER_TEMP 'contract-markers'
                 New-Item -ItemType Directory -Path $markerRoot -Force | Out-Null
                 $sourceMarker = Join-Path $markerRoot "$channel-source-linked.passed"
-                $productPreparedMarker = Join-Path $markerRoot "$channel-product-prepared.passed"
+                $productOrbMarker = Join-Path $markerRoot "$channel-product-orb.passed"
                 Remove-Item -LiteralPath $sourceMarker -Force -ErrorAction SilentlyContinue
-                Remove-Item -LiteralPath $productPreparedMarker -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $productOrbMarker -Force -ErrorAction SilentlyContinue
 
                 $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $productAssembly
+                $env:NINJASLAYER_CONTRACT_HOST_MVID = $hostContract.moduleMvid
                 $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = '${{ steps.candidate.outputs.sha }}'
                 $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $sourceMarker
                 & $godot --headless --path $sourceRunnerRoot
@@ -357,14 +361,14 @@ jobs:
                   throw "Source-linked Contract runner failed for $channel."
                 }
 
-                $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $productPreparedMarker
-                & $godot --headless --path $productPreparedRunnerRoot
-                $productPreparedExitCode = $LASTEXITCODE
-                for ($attempt = 0; $attempt -lt 50 -and -not (Test-Path -LiteralPath $productPreparedMarker -PathType Leaf); $attempt++) {
+                $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $productOrbMarker
+                & $godot --headless --path $productOrbRunnerRoot
+                $productOrbExitCode = $LASTEXITCODE
+                for ($attempt = 0; $attempt -lt 50 -and -not (Test-Path -LiteralPath $productOrbMarker -PathType Leaf); $attempt++) {
                   Start-Sleep -Milliseconds 100
                 }
-                if ($productPreparedExitCode -ne 0 -or -not (Test-Path -LiteralPath $productPreparedMarker -PathType Leaf)) {
-                  throw "Product Prepared Contract runner failed for $channel."
+                if ($productOrbExitCode -ne 0 -or -not (Test-Path -LiteralPath $productOrbMarker -PathType Leaf)) {
+                  throw "Product Orb Contract runner failed for $channel."
                 }
               }
             }
@@ -376,6 +380,7 @@ jobs:
               $env:NINJASLAYER_CONTRACT_REQUIRE_NETWORK_ISOLATION = $previousIsolationRequirement
               $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $previousProductAssembly
               $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = $previousExpectedRevision
+              $env:NINJASLAYER_CONTRACT_HOST_MVID = $previousHostMvid
               $env:HTTP_PROXY = $previousHttpProxy
               $env:HTTPS_PROXY = $previousHttpsProxy
               $env:ALL_PROXY = $previousAllProxy
@@ -410,8 +415,8 @@ jobs:
               result = 'passed'
               workflowRunId = '${{ github.run_id }}'
               verifiedContracts = @(
-                'prepared-lifecycle-publishers'
-                'product-prepared-transaction'
+                'patch-transactions-and-presentation'
+                'current-cards-orbs-and-saves'
               )
             } | ConvertTo-Json | Set-Content `
               -LiteralPath (Join-Path $channelDirectory 'attestation.json') `

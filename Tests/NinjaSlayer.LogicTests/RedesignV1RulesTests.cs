@@ -120,13 +120,6 @@ public sealed class RedesignV1RulesTests
             RedesignV1Rules.ResolveChadoBreathIncrease(amount, hasChadoInHand));
     }
 
-    [Fact]
-    public void ShurikenDamageIncludesEnhancementOnly()
-    {
-        Assert.Equal(7, RedesignV1Rules.ShurikenDamage(3));
-        Assert.Equal(4, RedesignV1Rules.ShurikenDamage(-3));
-    }
-
     [Theory]
     [InlineData(0, 0, true)]
     [InlineData(0, 1, false)]

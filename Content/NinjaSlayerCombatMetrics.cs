@@ -19,15 +19,6 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
 {
     private static ConditionalWeakTable<ICombatState, CombatMetricsSnapshot<Player>> _snapshots = new();
 
-    public static int ChadoGeneratedThisCombat(Player player) =>
-        GetSnapshot(player.Creature.CombatState).GeneratedChado(player);
-
-    public static bool ChadoExhaustedThisTurn(Player player) =>
-        GetSnapshot(player.Creature.CombatState).ChadoExhausted(player);
-
-    public static bool ChadoDiscardedThisTurn(Player player) =>
-        GetSnapshot(player.Creature.CombatState).ChadoDiscarded(player);
-
     public static bool DiscardedCardThisTurn(Player player) =>
         GetSnapshot(player.Creature.CombatState).DiscardedCard(player);
 
@@ -59,50 +50,13 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         return Task.CompletedTask;
     }
 
-    public override Task AfterCardGeneratedForCombat(CardModel card, Player? creator)
-    {
-        if (card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
-        {
-            EnsureTurn(metrics, state);
-            if (card is ChadoCard && creator == card.Owner)
-            {
-                metrics.AddGeneratedChado(card.Owner);
-            }
-        }
-
-        return Task.CompletedTask;
-    }
-
     public override Task AfterCardDiscarded(PlayerChoiceContext choiceContext, CardModel card)
     {
         if (card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
+            && NeedsIncrementalUpdate(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             metrics.MarkCardDiscarded(card.Owner);
-            if (card is ChadoCard)
-            {
-                metrics.MarkChadoDiscarded(card.Owner);
-            }
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public override Task AfterCardExhausted(
-        PlayerChoiceContext choiceContext,
-        CardModel card,
-        bool causedByEthereal)
-    {
-        if (card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
-        {
-            EnsureTurn(metrics, state);
-            if (card is ChadoCard)
-            {
-                metrics.MarkChadoExhausted(card.Owner);
-            }
         }
 
         return Task.CompletedTask;
@@ -111,7 +65,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (cardPlay.Card.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
+            && NeedsIncrementalUpdate(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
@@ -140,7 +94,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         if (result.UnblockedDamage > 0
             && target.Player is { } player
             && target.CombatState is { } state
-            && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
+            && NeedsIncrementalUpdate(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
             metrics.MarkHpLost(player);
@@ -167,7 +121,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
         return snapshot;
     }
 
-    private static bool TryGetExisting(
+    private static bool NeedsIncrementalUpdate(
         ICombatState combatState,
         out CombatMetricsSnapshot<Player> snapshot)
     {
@@ -185,33 +139,11 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
     private static CombatMetricsSnapshot<Player> BuildFromHistory(ICombatState combatState)
     {
         var snapshot = new CombatMetricsSnapshot<Player>(combatState.RoundNumber, (int)combatState.CurrentSide);
-        foreach (CardGeneratedEntry entry in CombatManager.Instance.History.Entries.OfType<CardGeneratedEntry>())
-        {
-            if (entry.Creator is { } creator && creator == entry.Card.Owner && entry.Card is ChadoCard)
-            {
-                snapshot.AddGeneratedChado(creator);
-            }
-        }
-
         foreach (CardDiscardedEntry entry in CombatManager.Instance.History.Entries
                      .OfType<CardDiscardedEntry>()
                      .Where(entry => entry.HappenedThisTurn(combatState)))
         {
             snapshot.MarkCardDiscarded(entry.Card.Owner);
-            if (entry.Card is ChadoCard)
-            {
-                snapshot.MarkChadoDiscarded(entry.Card.Owner);
-            }
-        }
-
-        foreach (CardExhaustedEntry entry in CombatManager.Instance.History.Entries
-                     .OfType<CardExhaustedEntry>()
-                     .Where(entry => entry.HappenedThisTurn(combatState)))
-        {
-            if (entry.Card is ChadoCard)
-            {
-                snapshot.MarkChadoExhausted(entry.Card.Owner);
-            }
         }
 
         foreach (DamageReceivedEntry entry in CombatManager.Instance.History.Entries

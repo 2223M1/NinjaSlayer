@@ -18,7 +18,7 @@ public sealed class BlanketRelic : NinjaSlayerRelicTemplate
 
     public override async Task AfterPowerAmountChanged(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, PowerModel power, decimal amount, MegaCrit.Sts2.Core.Entities.Creatures.Creature? applier, CardModel? cardSource)
     {
-        if (power is NarakuPower && power.Owner == Owner.Creature && amount > 0)
+        if (power is NarakuFormRedesignPower && power.Owner == Owner.Creature && amount > 0)
         {
             Flash();
             await MegaCrit.Sts2.Core.Commands.PowerCmd.Apply<NarakuLifePower>(choiceContext, Owner.Creature, DynamicVars.NarakuLife().BaseValue, Owner.Creature, null);

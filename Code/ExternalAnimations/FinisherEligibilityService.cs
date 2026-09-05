@@ -21,8 +21,7 @@ internal static class FinisherEligibilityService
     private static bool CompatibilityWarningLogged;
 
     internal static bool IsExcludedAttackCard(CardModel card) =>
-        card is ShurikenCard or GiantShurikenCard
-        || card.Tags.Contains(CardTag.Shiv)
+        card.Tags.Contains(CardTag.Shiv)
         || card.Tags.Contains(NinjaSlayerCardTags.Shuriken);
 
     internal static bool TryCreateSession(

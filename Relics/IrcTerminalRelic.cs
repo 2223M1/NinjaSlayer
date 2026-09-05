@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Commands;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -23,6 +24,6 @@ public sealed class IrcTerminalRelic : NinjaSlayerRelicTemplate
 
         Flash();
         await PlayerCmd.GainEnergy(1, Owner);
-        await NinjaSlayerActions.AddGeneratedCard<BusyLine>(Owner, PileType.Hand);
+        await NinjaSlayerCardCmd.AddGeneratedCard<BusyLine>(Owner, PileType.Hand);
     }
 }

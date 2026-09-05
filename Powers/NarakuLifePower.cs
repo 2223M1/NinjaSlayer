@@ -1,4 +1,3 @@
-using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
@@ -7,8 +6,6 @@ using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Combat.HealthBars;
-using STS2RitsuLib.Interop.AutoRegistration;
-using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 

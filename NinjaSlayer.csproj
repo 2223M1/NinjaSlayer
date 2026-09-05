@@ -85,6 +85,7 @@
 
   <ItemGroup>
     <Compile Remove="build\**\*.cs" />
+    <Compile Remove=".local-reference\**\*.cs" />
     <Compile Remove="Tests\**\*.cs" />
     <Compile Remove="tools\artifact-contract\**\*.cs" />
     <Compile Remove="tools\loader\**\*.cs" />

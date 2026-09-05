@@ -10,7 +10,6 @@ using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
-using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Content;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
@@ -28,7 +27,6 @@ namespace NinjaSlayer.Scripts;
 public class Entry
 {
     public static readonly Logger Logger = RitsuLibFramework.CreateLogger(NinjaSlayerIds.ModId);
-    private static PreparedSafetyLifecycle? _preparedSafetyLifecycle;
     private static readonly Type[] GodotSceneScriptTypes =
     [
         typeof(NinjaSlayerSpinPivot),
@@ -73,6 +71,8 @@ public class Entry
             requiredPatcher.RegisterPatch<ShurikenOrbChannelPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbEvokePatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbLayoutPatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbVisualPatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbChannelSoundPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
             requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
@@ -82,7 +82,6 @@ public class Entry
             requiredPatcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
             requiredPatcher.RegisterPatch<EventValidationRunGenerationPatch>();
-            requiredPatcher.RegisterPatch<AetherEnergyPower.EnergyGainPatch>();
             requiredPatcher.RegisterPatch<SawatariActRoomGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
@@ -125,7 +124,6 @@ public class Entry
             requiredPatcher.RegisterPatch<CardPlayResolutionBeforePatch>();
             requiredPatcher.RegisterPatch<CardPlayResolutionAfterPatch>();
             requiredPatcher.RegisterPatch<CardResolutionCleanupPatch>();
-            requiredPatcher.RegisterPatch<PreparedDrawPatch>();
             requiredPatcher.RegisterPatch<ReporterPassEventOptionPatch>();
             requiredPatcher.RegisterPatch<NancyLeeCandidatePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
@@ -163,7 +161,6 @@ public class Entry
                     $"Required NinjaSlayer finisher contract is unavailable: {finisherReason}");
             }
 
-            _preparedSafetyLifecycle = PreparedSafetyLifecycle.Subscribe();
             RitsuLibFramework.EnsureGodotScriptsRegistered(assembly, Logger);
             ModTypeDiscoveryHub.RegisterModAssembly(NinjaSlayerIds.ModId, assembly);
 
@@ -185,22 +182,6 @@ public class Entry
         catch (Exception exception)
         {
             var failures = new List<Exception> { exception };
-            foreach (IDisposable? subscription in new IDisposable?[]
-                     {
-                         _preparedSafetyLifecycle
-                     })
-            {
-                try
-                {
-                    subscription?.Dispose();
-                }
-                catch (Exception cleanupFailure)
-                {
-                    failures.Add(cleanupFailure);
-                }
-            }
-            _preparedSafetyLifecycle = null;
-
             Exception? rollbackFailure = RollbackPatcherVerified(requiredPatcher, nameof(Entry));
             if (rollbackFailure is not null)
             {
@@ -274,15 +255,7 @@ public class Entry
             "TypographyPatchGroup",
             patcher =>
             {
-                patcher.RegisterPatch<NinjaSlayerCardTitleTypographyPatch>();
                 patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
-            });
-        TryInstallOptionalPatches(
-            "ChadoPresentationPatchGroup",
-            patcher =>
-            {
-                patcher.RegisterPatch<ChadoEnergyCostVisualPatch>();
-                patcher.RegisterPatch<ChadoCardNodeLifecyclePatch>();
             });
         TryInstallOptionalPatches(
             "CinematicInfrastructurePatchGroup",
@@ -297,9 +270,6 @@ public class Entry
         TryInstallOptionalPatches(
             nameof(BossBurstPresentationPatchGroup),
             patcher => patcher.RegisterPatches<BossBurstPresentationPatchGroup>());
-        TryInstallOptionalPatches(
-            "PreparedUiPatchGroup",
-            patcher => patcher.RegisterPatch<PreparedDrawPileDisplayOrderPatch>());
         TryInstallOptionalPatches(
             "RapidCardResolutionPatchGroup",
             patcher =>

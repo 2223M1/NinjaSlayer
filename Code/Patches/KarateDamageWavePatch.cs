@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -92,7 +93,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
             int multiplier = cardSource is ClankDrinkTeaRedesignV1 assassination
                 ? assassination.KarateMultiplier
                 : 1;
-            await NinjaSlayerActions.TriggerKarateWave(
+            await TriggerKarateWave(
                 choiceContext,
                 dealer,
                 targets,
@@ -102,5 +103,29 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         }
 
         return results;
+    }
+private static async Task TriggerKarateWave(
+        PlayerChoiceContext choiceContext,
+        Creature dealer,
+        List<Creature> targets,
+        KaratePower karate,
+        int extraDamage,
+        CardModel? cardSource)
+    {
+        if (targets.Count == 0 || extraDamage <= 0)
+        {
+            return;
+        }
+
+        using var _ = ScreenShakeSuppressionContext.Suppress();
+        await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
+
+        int amountBeforeConsumption = karate.Amount;
+        await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+        if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
+        {
+            // PowerCmd rejects amount changes after the bonus ends combat, but the triggering wave still resolves its stack change.
+            karate.SetAmount(Math.Max(0, amountBeforeConsumption - 1), silent: true);
+        }
     }
 }

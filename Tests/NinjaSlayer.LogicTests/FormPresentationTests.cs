@@ -5,24 +5,18 @@ namespace NinjaSlayer.LogicTests;
 public sealed class FormPresentationTests
 {
     [Theory]
-    [InlineData(false, false, false, NinjaSlayerFormKind.Normal)]
-    [InlineData(false, true, false, NinjaSlayerFormKind.Normal)]
-    [InlineData(false, false, true, NinjaSlayerFormKind.OneBodyOneSoul)]
-    [InlineData(false, true, true, NinjaSlayerFormKind.OneBodyOneSoul)]
-    [InlineData(true, false, false, NinjaSlayerFormKind.Naraku)]
-    [InlineData(true, false, true, NinjaSlayerFormKind.Naraku)]
-    [InlineData(true, true, false, NinjaSlayerFormKind.FullyReleasedNaraku)]
-    [InlineData(true, true, true, NinjaSlayerFormKind.FullyReleasedNaraku)]
+    [InlineData(false, false, NinjaSlayerFormKind.Normal)]
+    [InlineData(false, true, NinjaSlayerFormKind.Normal)]
+    [InlineData(true, false, NinjaSlayerFormKind.Naraku)]
+    [InlineData(true, true, NinjaSlayerFormKind.FullyReleasedNaraku)]
     public void ResolvePreservesFormPriority(
         bool hasNarakuPower,
         bool hasNarakuWithinRelic,
-        bool hasOneBodyOneSoulPower,
         NinjaSlayerFormKind expected)
     {
         NinjaSlayerFormPresentation actual = NinjaSlayerFormPresentationCatalog.Resolve(
             hasNarakuPower,
-            hasNarakuWithinRelic,
-            hasOneBodyOneSoulPower);
+            hasNarakuWithinRelic);
 
         Assert.Equal(expected, actual.Kind);
     }
@@ -55,14 +49,6 @@ public sealed class FormPresentationTests
         Assert.True(fullyReleased.ForcePerHitComboAudio);
         Assert.Equal(2f, fullyReleased.ShadowScaleMultiplier);
 
-        NinjaSlayerFormPresentation oneBodyOneSoul = NinjaSlayerFormPresentationCatalog.OneBodyOneSoul;
-        Assert.Equal(NinjaSlayerBodyTextureMode.Static, oneBodyOneSoul.BodyTextureMode);
-        Assert.Equal(NinjaSlayerBodyTransformMode.LegacyCentered, oneBodyOneSoul.BodyTransformMode);
-        Assert.Null(oneBodyOneSoul.FixedBodyScale);
-        Assert.False(oneBodyOneSoul.UsesNarakuAudio);
-        Assert.False(oneBodyOneSoul.UseNormalSpinPivot);
-        Assert.False(oneBodyOneSoul.ForcePerHitComboAudio);
-        Assert.Equal(1f, oneBodyOneSoul.ShadowScaleMultiplier);
     }
 
     [Theory]
@@ -143,11 +129,6 @@ public sealed class FormPresentationTests
             NinjaSlayerFormPresentationCatalog.FullyReleasedNarakuTexturePath,
             NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath(
                 NinjaSlayerFormPresentationCatalog.FullyReleasedNaraku,
-                sourceTexturePath: null));
-        Assert.Equal(
-            NinjaSlayerFormPresentationCatalog.OneBodyOneSoulTexturePath,
-            NinjaSlayerFormPresentationCatalog.ResolveBodyTexturePath(
-                NinjaSlayerFormPresentationCatalog.OneBodyOneSoul,
                 sourceTexturePath: null));
     }
 

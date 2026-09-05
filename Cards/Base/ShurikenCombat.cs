@@ -67,11 +67,6 @@ internal static class ShurikenCombat
         ShurikenOrb originOrb,
         Action beforeThrow)
     {
-        if (targets.Count == 0)
-        {
-            return [];
-        }
-
         await PlayStockThrowAnimation(owner, targets, originOrb, beforeThrow);
         IReadOnlyList<DamageResult> results = (await CreatureCmd.Damage(
             choiceContext,
@@ -87,24 +82,16 @@ internal static class ShurikenCombat
         )).ToList();
         if (owner.GetPower<ShurikenGuardRedesignPower>() is { } guard)
         {
-            await guard.AfterShurikenDamage(choiceContext, results);
+            await guard.AfterShurikenDamage(results);
         }
 
         return results;
     }
 
-    internal static int GetStockBaseDamage(Creature owner) =>
-        RedesignV1Rules.ShurikenDamage(
-            owner.GetPower<ShurikenDamagePower>()?.Amount ?? 0);
-
-    internal static bool HasSoarSpread(CardModel card) =>
-        card.IsMutable && card.Owner != null && card.Owner.Creature.HasPower<HellTornadoPower>();
-
     internal static AttackCommand BuildAttackCommand(
         CardModel card,
         CardPlay cardPlay,
-        DynamicVar damage,
-        ICombatState? combatState)
+        DynamicVar damage)
     {
         var command = DamageCmd.Attack(damage.BaseValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
@@ -116,18 +103,6 @@ internal static class ShurikenCombat
             .AfterAttackerAnim(() => HopAnimation.Play(card.Owner!.Creature))
             .WithHitFx(null, null, TmpSfx.daggerThrow);
 
-        if (HasSoarSpread(card))
-        {
-            Creature? vfxTarget = cardPlay.Target!;
-            if (vfxTarget == null && combatState?.HittableEnemies is { Count: > 0 } enemies)
-            {
-                vfxTarget = enemies[^1];
-            }
-
-            return command
-                .TargetingAllOpponents(combatState ?? throw new InvalidOperationException("Shuriken attacks require combat."))
-                .WithHitVfxNode(_ => vfxTarget == null ? null : CreateThrowVfx(card.Owner!.Creature, vfxTarget));
-        }
         return command
             .Targeting(cardPlay.Target!)
             .WithHitVfxNode(t => CreateThrowVfx(card.Owner!.Creature, t));

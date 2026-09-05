@@ -32,8 +32,6 @@
     <Compile Include="..\..\Code\Combat\CombatPresentationPacingScope.cs" Link="CombatPresentationPacingScope.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameDamageReceiverSet.cs" Link="BlackFlameDamageReceiverSet.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameHitTracker.cs" Link="BlackFlameHitTracker.cs" />
-    <Compile Include="..\..\Afflictions\PreparedAffliction.cs" Link="PreparedAffliction.cs" />
-    <Compile Include="..\..\Code\Commands\PrepareCmd.cs" Link="PrepareCmd.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\FinisherDamageLedger.cs" Link="FinisherDamageLedger.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
     <Compile Include="..\..\Code\Lifecycle\AsyncScopeDepth.cs" Link="AsyncScopeDepth.cs" />
@@ -43,7 +41,6 @@
     <Compile Include="..\..\Code\Patches\OrobasSeaGlassCharacterPatch.cs" Link="OrobasSeaGlassCharacterPatch.cs" />
     <Compile Include="..\..\Code\Patches\CombatPresentationPacingPatch.cs" Link="CombatPresentationPacingPatch.cs" />
     <Compile Include="..\..\Code\Patches\RapidCardResolutionPatches.cs" Link="RapidCardResolutionPatches.cs" />
-    <Compile Include="..\..\Code\Prepared\PreparedSafetyLifecycle.cs" Link="PreparedSafetyLifecycle.cs" />
     <Compile Include="..\..\Content\INinjaSlayerCharacter.cs" Link="INinjaSlayerCharacter.cs" />
     <Compile Include="..\..\Content\NinjaSlayerWorldVisualProfile.cs" Link="NinjaSlayerWorldVisualProfile.cs" />
     <Reference Include="sts2">

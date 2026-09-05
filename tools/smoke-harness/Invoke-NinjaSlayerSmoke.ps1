@@ -17,7 +17,8 @@ param(
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
     [string]$Repository = 'local',
-    [string]$RunId = 'local'
+    [string]$RunId = 'local',
+    [switch]$DevelopmentPackage
 )
 
 $ErrorActionPreference = 'Stop'
@@ -170,7 +171,7 @@ function Invoke-SmokePhase {
             "--ninjaslayer-smoke-config=$configurationPath"
         )
         $process = Start-Process -FilePath $gameExecutable -ArgumentList $arguments `
-            -WorkingDirectory $isolatedGameRoot -PassThru
+            -WorkingDirectory $isolatedGameRoot -WindowStyle Hidden -PassThru
         if (-not $process.WaitForExit($effectivePhaseTimeoutSeconds * 1000)) {
             Stop-ProcessTree -Process $process
             throw "$Phase smoke phase exceeded $effectivePhaseTimeoutSeconds seconds."
@@ -291,9 +292,7 @@ foreach ($required in @(
     (Join-Path $RitsuLibModDirectory 'mod_manifest.json'),
     (Join-Path $BundleDirectory 'NinjaSlayer.dll'),
     (Join-Path $BundleDirectory 'NinjaSlayer.json'),
-    (Join-Path $BundleDirectory 'NinjaSlayer.pck'),
-    (Join-Path $BundleDirectory 'ninjaslayer-variants.manifest'),
-    (Join-Path $BundleDirectory "lib\$GameApiVersion\NinjaSlayer.dll")
+    (Join-Path $BundleDirectory 'NinjaSlayer.pck')
 )) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Missing smoke input: $required" }
 }
@@ -329,7 +328,23 @@ try {
     New-Item -ItemType Directory -Path $sessionRoot, $appDataDirectory, $localAppDataDirectory, $driverOutput, $driverIntermediate -Force | Out-Null
 
     $gameDataDirectory = Join-Path $GameRootDirectory 'data_sts2_windows_x86_64'
-    Invoke-Native -Command dotnet -Arguments @(
+    if ($DevelopmentPackage) {
+        $candidateAssembly = Join-Path $BundleDirectory 'NinjaSlayer.dll'
+        Invoke-Native -Command dotnet -Arguments @(
+            'run', '--project', (Join-Path $CandidateRoot 'tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj'),
+            '--configuration', 'Release', '--no-launch-profile', '--', 'validate-assembly',
+            '--assembly', $candidateAssembly, '--channel', $Channel,
+            '--game-api-version', $GameApiVersion, '--ritsulib-package-id', $RitsuLibPackageId,
+            '--ritsulib-version', $RitsuLibVersion, '--source-revision', $CandidateSha,
+            '--forbidden-path-root', $CandidateRoot
+        ) -WorkingDirectory $CandidateRoot
+        Invoke-Native -Command dotnet -Arguments @(
+            'run', '--project', (Join-Path $CandidateRoot 'tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj'),
+            '--configuration', 'Release', '--no-launch-profile', '--', 'validate-pck',
+            '--pck', (Join-Path $BundleDirectory 'NinjaSlayer.pck')
+        ) -WorkingDirectory $CandidateRoot
+    } else {
+      Invoke-Native -Command dotnet -Arguments @(
         'run',
         '--project', (Join-Path $CandidateRoot 'tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj'),
         '--configuration', 'Release',
@@ -344,7 +359,8 @@ try {
         '--forbidden-path-root', $CandidateRoot
     ) -WorkingDirectory $CandidateRoot
 
-    $candidateAssembly = Join-Path $BundleDirectory "lib\$GameApiVersion\NinjaSlayer.dll"
+      $candidateAssembly = Join-Path $BundleDirectory "lib\$GameApiVersion\NinjaSlayer.dll"
+    }
     $driverArguments = [Collections.Generic.List[string]]::new()
     foreach ($argument in @(
             'build',
@@ -440,7 +456,7 @@ try {
         @('sawatari.starting', 'finisher.normal.completed', 'sawatari.same-combat-completed', 'sawatari.completed')
     }
     else {
-        @('transition.completed', 'prepared.created', 'prepared.lifecycle-cleared', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.multi-hit.completed', 'finisher.presentation-fallback.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed', 'finisher.reverse.starting', 'finisher.reverse.completed')
+        @('transition.completed', 'shuriken.created', 'shuriken.lifecycle-cleared', 'hell-tornado.presentation-completed', 'naraku.presentation-completed', 'cards.presentation-validated', 'x-attack.nonlethal-completed', 'spine.platform-extension-completed', 'dark-strike.completed', 'finisher.multi-hit.completed', 'finisher.presentation-fallback.completed', 'finisher.completed', 'fresh.saved', 'fresh.restart-requested', 'resume.loaded', 'resume.completed', 'finisher.reverse.starting', 'finisher.reverse.completed')
     }
     $missing = @($requiredCheckpoints | Where-Object { $_ -notin $checkpoints.Name })
     if ($missing.Count -gt 0 -or @($checkpoints | Where-Object Status -ne 'passed').Count -gt 0) {
@@ -463,11 +479,11 @@ try {
         ritsuLibRuntimeVersion = $RitsuLibRuntimeVersion
         bundleSha256 = $bundleSha256
         compatibilityManifestSha256 = $compatibilityManifestSha256
-        mode = switch ($Mode) {
+        mode = if ($DevelopmentPackage) { "development-$Mode" } else { switch ($Mode) {
             'FullAutoSlay' { 'singleplayer-full-autoslay' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             default { 'singleplayer-first-combat-restart' }
-        }
+        } }
         repository = $Repository
         workflowRunId = $RunId
         completedAtUtc = [DateTimeOffset]::UtcNow.ToString('O')

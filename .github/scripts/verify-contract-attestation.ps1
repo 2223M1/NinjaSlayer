@@ -79,9 +79,9 @@ foreach ($artifact in $artifacts) {
             Assert-NinjaSlayerEqual ([string]$attestation.workflowRunId) ([string]$run.id) "$channelName.workflowRunId"
             $verifiedContracts = @($attestation.verifiedContracts)
             if ($verifiedContracts.Count -ne 2
-                -or $verifiedContracts[0] -ne 'prepared-lifecycle-publishers'
-                -or $verifiedContracts[1] -ne 'product-prepared-transaction') {
-                throw "$channelName.verifiedContracts does not prove prepared-lifecycle-publishers and product-prepared-transaction."
+                -or $verifiedContracts[0] -ne 'patch-transactions-and-presentation'
+                -or $verifiedContracts[1] -ne 'current-cards-orbs-and-saves') {
+                throw "$channelName.verifiedContracts does not prove patch-transactions-and-presentation and current-cards-orbs-and-saves."
             }
 
             $verifiedHostDirectory = Join-Path $verifiedDirectory $channelName

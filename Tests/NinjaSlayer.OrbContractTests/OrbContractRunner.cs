@@ -70,13 +70,26 @@ public partial class OrbContractRunner : Node
             GD.Print($"Candidate {expected}: {productPath}; SHA256 {Convert.ToHexString(SHA256.HashData(productBytes))}; host MVID {typeof(Player).Assembly.ManifestModule.ModuleVersionId}");
             TestMode.IsOn = true;
             AccessTools.Property(typeof(ModManager), nameof(ModManager.State)).SetValue(null, ModManagerState.Initialized);
+            var productMod = new Mod
+            {
+                path = "res://", manifest = new ModManifest { id = "NinjaSlayer" },
+                state = ModLoadState.Loaded,
+#if NINJASLAYER_CHANNEL_STABLE
+                assembly = product
+#else
+                assemblies = [product]
+#endif
+            };
+            ((List<Mod>)AccessTools.Field(typeof(ModManager), "_mods").GetValue(null)!).Add(productMod);
 #if !NINJASLAYER_CHANNEL_STABLE
             AssemblyInfo.Init();
-            AssemblyInfo.ModMap![product] = new Mod { path = "res://", manifest = new ModManifest { id = "NinjaSlayer" } };
+            AssemblyInfo.ModMap![product] = productMod;
             AssemblyInfo.ModMap[GetType().Assembly] = new Mod { path = "res://", manifest = new ModManifest { id = "NinjaSlayer.OrbContracts" } };
 #endif
-            ModelDb.Init();
             _ = MegaCrit.Sts2.Core.Saves.SaveManager.Instance;
+            string? hostPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_PACK");
+            if (hostPack is not null)
+                Require(ProjectSettings.LoadResourcePack(hostPack, replaceFiles: false), "Could not mount the host resource pack.");
             RitsuLibFramework.Initialize();
             using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer.OrbContracts"))
                 AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
@@ -92,8 +105,7 @@ public partial class OrbContractRunner : Node
             // Run the framework's post-mod-load discovery without loading menu/localization assets.
             AccessTools.Method(typeof(RitsuLibFramework).Assembly.GetType("STS2RitsuLib.Interop.Patches.ModTypeDiscoveryPatch", true), "Prefix")
                 .Invoke(null, null);
-            foreach (Type type in product.GetTypes().Where(type => !type.IsAbstract && typeof(AbstractModel).IsAssignableFrom(type)))
-                ModelDb.Inject(type);
+            ModelDb.Init();
             ModelDb.Inject(typeof(EvokeObserver));
             MegaCrit.Sts2.Core.Multiplayer.Serialization.ModelIdSerializationCache.Init();
 
@@ -105,12 +117,25 @@ public partial class OrbContractRunner : Node
             var presentation = new Harmony("NinjaSlayer.OrbContracts.Presentation");
             presentation.Patch(AccessTools.Method(product.GetType("NinjaSlayer.Cards.ShurikenCombat", true), "PlayStockThrowAnimation"),
                 prefix: new HarmonyMethod(GetType(), nameof(SkipThrowAnimation)));
+            string? networkRole = System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_ROLE");
+            if (networkRole is not null)
+            {
+                await VerifyMultiplayer(networkRole);
+                GD.Print("NinjaSlayer multiplayer product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             await VerifyLifecycle();
             await VerifyDiscards();
             await VerifyMultipleEvoke();
             await VerifyShuffleAndReplacement();
             await VerifyVolleyAndSave();
             await VerifyRunSaves();
+            VerifyCardMetadata();
+            await VerifyCurrentCardInteractions();
+            string? successMarker = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SUCCESS_MARKER");
+            if (!string.IsNullOrWhiteSpace(successMarker))
+                System.IO.File.WriteAllText(successMarker, "passed\n");
             GD.Print("NinjaSlayer orb product contracts passed.");
             GetTree().Quit(0);
         }
@@ -308,6 +333,47 @@ public partial class OrbContractRunner : Node
     private static Task AddStock(Player player, int amount) =>
         (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [Choice, player, amount])!;
 
+    private static void VerifyCardMetadata()
+    {
+        CardModel[] catalog = ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.Concat(new CardModel[]
+        {
+            ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
+            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
+            ModelDb.Card<FinisherRedesignV1>(), ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
+        }).Distinct().OrderBy(card => card.Id.ToString(), StringComparer.Ordinal).ToArray();
+        var states = catalog.SelectMany(canonical => new[] { false, true }.Select(upgraded =>
+        {
+            CardModel card = canonical.ToMutable();
+            if (upgraded) card.UpgradeInternal();
+            return new
+            {
+                Id = card.Id.ToString(), Upgraded = upgraded,
+                Cost = card.EnergyCost.GetWithModifiers(CostModifiers.Local),
+                X = card.EnergyCost.CostsX, Type = card.Type.ToString(), Rarity = card.Rarity.ToString(),
+                Target = card.TargetType.ToString(), card.CanBeGeneratedInCombat, card.CanBeGeneratedByModifiers,
+                Keywords = card.Keywords.Select(value => value.ToString()).Order(StringComparer.Ordinal).ToArray(),
+                Tags = card.Tags.Select(value => value.ToString()).Order(StringComparer.Ordinal).ToArray(),
+                Portrait = ((ModCardTemplate)card).AssetProfile.PortraitPath,
+                Vars = card.DynamicVars.Keys.Order(StringComparer.Ordinal).ToDictionary(key => key, key => card.DynamicVars[key].BaseValue)
+            };
+        })).ToArray();
+        string actual = JsonSerializer.Serialize(states, new JsonSerializerOptions { WriteIndented = true });
+        string? snapshot = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_CARD_SNAPSHOT");
+        if (snapshot is not null)
+        {
+            System.IO.File.WriteAllText(snapshot, actual);
+            GD.Print($"Card metadata snapshot: {snapshot}");
+        }
+        else
+        {
+            string expected = System.IO.File.ReadAllText(ProjectSettings.GlobalizePath("res://card-metadata.json"));
+            Require(System.Text.Json.Nodes.JsonNode.DeepEquals(
+                System.Text.Json.Nodes.JsonNode.Parse(expected), System.Text.Json.Nodes.JsonNode.Parse(actual)),
+                "Current card metadata differs from the approved baseline.");
+            GD.Print("PASS 86 cards: IDs, costs, types, rarity, targets, generation, keywords, tags, art and base/upgraded values");
+        }
+    }
+
     private static bool SkipThrowAnimation(Action beforeThrow, ref Task __result)
     {
         beforeThrow();
@@ -344,12 +410,13 @@ public partial class OrbContractRunner : Node
         public int Capacity => Queue.Capacity;
         public int Tokens => Player.Piles.SelectMany(pile => pile.Cards).Count(card => card is StrongShurikenTokenRedesignV1);
 
-        public OrbCombat()
+        public OrbCombat(bool ninjaSlayer = false)
         {
-            Player = Player.CreateForNewRun<Ironclad>(UnlockState.all, 1);
+            Player = ninjaSlayer
+                ? Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1)
+                : Player.CreateForNewRun<Ironclad>(UnlockState.all, 1);
             Player.InitializeSeed("orb-contract");
-            Player.Creature.CombatState = State;
-            State.AddCreature(Player.Creature);
+            State.AddPlayer(Player);
             Player.ResetCombatState();
             Enemy = AddEnemy();
 #if NINJASLAYER_CHANNEL_STABLE
@@ -368,6 +435,7 @@ public partial class OrbContractRunner : Node
         public Creature AddEnemy()
         {
             var enemy = new Creature(ModelDb.Monster<DampCultist>().ToMutable(), CombatSide.Enemy, null) { CombatState = State };
+            AccessTools.Method(typeof(CombatState), "AttachCreature").Invoke(State, [enemy]);
             State.AddCreature(enemy);
             enemy.SetMaxHpInternal(1000);
             enemy.SetCurrentHpInternal(1000);

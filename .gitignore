@@ -38,6 +38,7 @@ desktop.ini
 
 # Private Ninja Slayer source-text cache (never commit extracted books)
 .lore-cache/
+.local-reference/
 
 # Python tool caches
 __pycache__/
