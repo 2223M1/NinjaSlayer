@@ -96,13 +96,12 @@ public static class NinjaSlayerBalanceTelemetry
         IEnumerable<SerializablePlayer> players)
     {
         ModelId officialId = ModelDb.Character<NinjaSlayerCharacter>().Id;
-        ModelId redesignId = ModelDb.Character<NinjaSlayerRedesignCharacter>().Id;
         return players.Select(player => new NinjaSlayerTelemetryPlayerIdentity(
                 player.NetId,
                 player.CharacterId switch
                 {
                     null => NinjaSlayerTelemetryCharacterKind.Unknown,
-                    { } characterId when characterId == officialId || characterId == redesignId =>
+                    { } characterId when characterId == officialId =>
                         NinjaSlayerTelemetryCharacterKind.Official,
                     _ => NinjaSlayerTelemetryCharacterKind.Other
                 }))

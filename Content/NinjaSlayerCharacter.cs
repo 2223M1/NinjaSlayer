@@ -23,6 +23,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
     public override Color NameColor => NinjaSlayerCharacterStats.NameColor;
     public override int StartingHp => NinjaSlayerCharacterStats.StartingHp;
     public override int StartingGold => NinjaSlayerCharacterStats.StartingGold;
+    public override int BaseOrbSlotCount => 0;
     public override Color EnergyLabelOutlineColor => NinjaSlayerCharacterStats.EnergyLabelOutlineColor;
     public override Color DialogueColor => NinjaSlayerCharacterStats.DialogueColor;
     public override VfxColor SpeechBubbleColor => NinjaSlayerCharacterStats.SpeechBubbleColor;
@@ -38,7 +39,8 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
     protected override IEnumerable<string> ExtraAssetPaths =>
         BossBurstPresentationCoordinator.AssetPaths
             .Concat(BossDismembermentPresentation.AssetPaths)
-            .Concat(BossDeathWhiteoutLease.AssetPaths);
+            .Concat(BossDeathWhiteoutLease.AssetPaths)
+            .Append(ShurikenCombat.ProjectileTexturePath);
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
         RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(NinjaSlayerAssetProfile.VisualsPath);

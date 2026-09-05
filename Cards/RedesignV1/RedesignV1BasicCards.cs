@@ -9,9 +9,11 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
+using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
+[RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class StrikeNinjaSlayerRedesignV1 : NinjaSlayerRedesignCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
@@ -42,6 +44,7 @@ public sealed class StrikeNinjaSlayerRedesignV1 : NinjaSlayerRedesignCardTemplat
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3);
 }
 
+[RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class DefendNinjaSlayerRedesignV1 : NinjaSlayerRedesignCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
@@ -64,6 +67,7 @@ public sealed class DefendNinjaSlayerRedesignV1 : NinjaSlayerRedesignCardTemplat
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);
 }
 
+[RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class KarateStraightRedesignV1 : NinjaSlayerRedesignCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
@@ -75,7 +79,7 @@ public sealed class KarateStraightRedesignV1 : NinjaSlayerRedesignCardTemplate
         true);
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(10, ValueProp.Move), new KarateVar(3)];
+        [new DamageVar(8, ValueProp.Move), new KarateVar(4)];
 
     public KarateStraightRedesignV1() : base(Spec, nameof(KarateStraight)) { }
 
@@ -101,22 +105,23 @@ public sealed class KarateStraightRedesignV1 : NinjaSlayerRedesignCardTemplate
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(4);
-        DynamicVars.Karate().UpgradeValueBy(1);
+        DynamicVars.Damage.UpgradeValueBy(2);
+        DynamicVars.Karate().UpgradeValueBy(2);
     }
 }
 
+[RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class TurtleShellRedesignV1 : NinjaSlayerRedesignCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
         nameof(TurtleShellRedesignV1),
         1,
         CardType.Skill,
-        CardRarity.Basic,
+        CardRarity.Rare,
         TargetType.Self,
         true);
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("BonusPlating", 0)];
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<KaratePower>(), HoverTipFactory.FromPower<PlatingPower>()];
 
@@ -125,9 +130,7 @@ public sealed class TurtleShellRedesignV1 : NinjaSlayerRedesignCardTemplate
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         KaratePower? karate = Owner.Creature.GetPower<KaratePower>();
-        int plating = RedesignV1Rules.ResolveTurtleShellPlating(
-            karate?.Amount ?? 0,
-            DynamicVars["BonusPlating"].IntValue);
+        int plating = RedesignV1Rules.ResolveTurtleShellPlating(karate?.Amount ?? 0);
         if (karate != null)
         {
             await PowerCmd.Remove(karate);
@@ -144,7 +147,7 @@ public sealed class TurtleShellRedesignV1 : NinjaSlayerRedesignCardTemplate
         }
     }
 
-    protected override void OnUpgrade() => DynamicVars["BonusPlating"].UpgradeValueBy(2);
+    protected override void OnUpgrade() => RemoveKeyword(CardKeyword.Exhaust);
 }
 
 public interface IReturnToHandAfterPlay;

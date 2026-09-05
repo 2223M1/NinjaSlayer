@@ -42,6 +42,13 @@ size, center, and foot baseline through the unchanged source Sprite transform.
 
 Use `NinjaSlayer/images/characters/ninja_slayer/` for future character UI replacements.
 
+Ninja Slayer's Shuriken Orb and thrown projectile use
+`NinjaSlayer/images/projectiles/ninja_slayer_shuriken.png`, copied without pixel changes from
+`06_shuriken_transparent_crop.png`. The source is a `355x355` RGBA image with visible Alpha bounds
+`x=6..348, y=6..348`; SHA-256 `64E3C2B46E765EFE5E2FD4A957DFD2C44BB538B4EE2EFAD933C666BC45A4AAA0`.
+The orb scene renders the unchanged gray body at about 60px with a procedural additive `#FFB300`
+edge glow, activation ring, and sparks; it does not add another bitmap or a character-body anchor.
+
 ## Combat Shadow Images
 
 All custom ground shadows are project-local `510x96 RGBA` textures under
@@ -90,7 +97,7 @@ The foundational shared portraits include:
 
 New cards should use a `{ClassName}.png`. Temporary aliases must also be recorded in `Docs/placeholder-assets.json`; replacing an alias with dedicated art requires removing both its `AssetName` and inventory entry.
 
-All current card classes resolve to dedicated class-name portraits. `Docs/placeholder-assets.json` contains no outstanding card-art aliases.
+The active Redesign reward pool keeps a one-to-one portrait mapping. Approved reuse from retired models is explicit: `SatsubatsuRedesignV1` uses `RedBlackFlame.png`, `ChadoStillnessRedesignV1` uses `Meditation.png`, `BladeReserveRedesignV1` uses `ShurikenCard.png`, `RedBlackFlameAttackRedesignV1` uses `ImpureFlame.png`, `EmptyShurikenRedesignV1` uses `SmokeRead.png`, `TeaTeaRedesignV1` uses `ColdBrew.png`, `BurnBurnBurnRedesignV1` uses `BloodTears.png`, `ReturnReturnReturnRedesignV1` uses `AssassinationFist.png`, and `LingeringMeleeRedesignV1` uses `IHit.png`. `FinisherRedesignV1` reuses the retired `PunchRedesignV1` portrait `ComboFist.png`; `HellTornadoRedesignV1` restores the archived `HellTornado.png` portrait. `BlackFlameRedesignV1` uses the old status portrait `BurningCard.png`; the erroneous `BlackFlame.png` One Body One Soul form portrait and its import metadata are intentionally deleted. These are final mappings, not outstanding placeholder aliases.
 
 Standard card portraits use `1000x760` and Ancient card portraits use `606x852`. `KarateStraight.png` remains at its restored source size of `1438x1093`, and the unchanged Shuriken Token `ShurikenCard.png` remains at `1439x1093`, as explicit source-art exceptions.
 

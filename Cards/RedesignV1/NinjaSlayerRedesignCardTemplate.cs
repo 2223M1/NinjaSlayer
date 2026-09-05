@@ -2,12 +2,10 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using NinjaSlayer.Content;
-using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
-[RegisterCard(typeof(NinjaSlayerRedesignCardPool), Inherit = true)]
 public abstract partial class NinjaSlayerRedesignCardTemplate(
     NinjaSlayerCardSpec cardSpec,
     string legacyArtName) : NinjaSlayerStandaloneCardTemplate(cardSpec)
@@ -41,3 +39,13 @@ public abstract partial class NinjaSlayerRedesignCardTemplate(
     }
 #endif
 }
+
+public abstract class ArchivedRedesignV1Card(
+    string id,
+    string art,
+    int cost,
+    CardType type,
+    CardRarity rarity,
+    TargetType target) : NinjaSlayerRedesignCardTemplate(
+        new NinjaSlayerCardSpec(id, cost, type, rarity, target, true),
+        art);

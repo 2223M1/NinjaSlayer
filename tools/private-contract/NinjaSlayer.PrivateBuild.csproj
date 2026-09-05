@@ -43,6 +43,7 @@
     <Compile Include="$(CandidateRoot)\Encounters\**\*.cs" />
     <Compile Include="$(CandidateRoot)\Events\**\*.cs" />
     <Compile Include="$(CandidateRoot)\Monsters\**\*.cs" />
+    <Compile Include="$(CandidateRoot)\Orbs\**\*.cs" />
     <Compile Include="$(CandidateRoot)\Potions\**\*.cs" />
     <Compile Include="$(CandidateRoot)\Powers\**\*.cs" />
     <Compile Include="$(CandidateRoot)\Relics\**\*.cs" />

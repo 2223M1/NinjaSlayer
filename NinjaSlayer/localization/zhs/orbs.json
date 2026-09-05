@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "手里剑",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "手里剑：每当你弃掉一张牌，激发手里剑并失去1层。同一个多重激发效果只失去1层。被替换时，激发所有剩余层数。",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[gold]手里剑：[/gold][blue]{Passive}[/blue]层\n[gold]弃牌：[/gold]每当你弃掉一张牌，[gold]激发[/gold]手里剑，然后失去1层[gold]手里剑[/gold]。每张实际弃掉的牌分别触发。\n[gold]激发：[/gold]对随机一名敌人造成[blue]{Evoke}[/blue]点伤害。同一个效果无论激发多少次，都只失去1层[gold]手里剑[/gold]。\n[gold]替换：[/gold]每有1层剩余[gold]手里剑[/gold]，依次激发1次，然后失去所有[gold]手里剑[/gold]。"
+}

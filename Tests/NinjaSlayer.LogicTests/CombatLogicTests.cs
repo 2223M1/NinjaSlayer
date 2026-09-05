@@ -273,27 +273,38 @@ public sealed class CombatLogicTests
     public void CombatMetricsResetOnlyTurnScopedValues()
     {
         object player = new();
+        object otherPlayer = new();
         var metrics = new CombatMetricsSnapshot<object>(1, 0);
         metrics.AddGeneratedChado(player);
+        metrics.MarkCardDiscarded(player);
         metrics.MarkChadoDiscarded(player);
         metrics.MarkChadoExhausted(player);
         metrics.MarkHpLost(player);
-        metrics.AddFinishedCard(player, isAttack: true, isMelee: true);
+        metrics.AddFinishedCard(player, isAttack: true, isSkill: false, isMelee: true);
+        metrics.AddFinishedCard(otherPlayer, isAttack: false, isSkill: true, isMelee: false);
 
         Assert.Equal(1, metrics.GeneratedChado(player));
+        Assert.True(metrics.DiscardedCard(player));
         Assert.True(metrics.ChadoDiscarded(player));
         Assert.True(metrics.ChadoExhausted(player));
         Assert.True(metrics.LostHp(player));
         Assert.True(metrics.PreviousFinishedWasAttack(player));
+        Assert.False(metrics.PreviousFinishedWasSkill(player));
+        Assert.False(metrics.PreviousFinishedWasAttack(otherPlayer));
+        Assert.True(metrics.PreviousFinishedWasSkill(otherPlayer));
         Assert.Equal(1, metrics.MeleeAttacks(player));
 
         metrics.EnsureTurn(2, 0);
 
         Assert.Equal(1, metrics.GeneratedChado(player));
+        Assert.False(metrics.DiscardedCard(player));
         Assert.False(metrics.ChadoDiscarded(player));
         Assert.False(metrics.ChadoExhausted(player));
         Assert.False(metrics.LostHp(player));
         Assert.True(metrics.PreviousFinishedWasAttack(player));
+        Assert.False(metrics.PreviousFinishedWasSkill(player));
+        Assert.False(metrics.PreviousFinishedWasAttack(otherPlayer));
+        Assert.True(metrics.PreviousFinishedWasSkill(otherPlayer));
         Assert.Equal(0, metrics.MeleeAttacks(player));
     }
 

@@ -4,12 +4,10 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
-using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool), Inherit = true)]
 public abstract class NinjaSlayerCardTemplate : ModCardTemplate, IHitPreviewProvider
 {
     private readonly NinjaSlayerCardSpec _cardSpec;

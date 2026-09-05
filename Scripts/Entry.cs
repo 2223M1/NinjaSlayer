@@ -12,6 +12,7 @@ using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Code.Prepared;
 using NinjaSlayer.Content;
+using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
 using STS2RitsuLib;
@@ -27,7 +28,6 @@ namespace NinjaSlayer.Scripts;
 public class Entry
 {
     public static readonly Logger Logger = RitsuLibFramework.CreateLogger(NinjaSlayerIds.ModId);
-    private static IDisposable? _runRulesSubscription;
     private static PreparedSafetyLifecycle? _preparedSafetyLifecycle;
     private static readonly Type[] GodotSceneScriptTypes =
     [
@@ -35,6 +35,7 @@ public class Entry
         typeof(NinjaSlayerSpinMotionBlur),
         typeof(NinjaSlayerShadowController),
         typeof(NarakuVisualOverlay),
+        typeof(ShurikenOrbVisual),
         typeof(NinjaSlayerTransitionOverlay),
         typeof(NNinjaSlayerGroundFireVfx),
         typeof(NYamotoKokiIaiPetalsVfx),
@@ -53,6 +54,7 @@ public class Entry
         try
         {
             requiredPatcher.RegisterPatch<NinjaSlayerAnimationPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerRunSavePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
@@ -68,6 +70,9 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
             requiredPatcher.RegisterPatch<BlackFlameDamagePatch>();
             requiredPatcher.RegisterPatch<KarateDamageWavePatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbChannelPatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbEvokePatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
             requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
@@ -77,12 +82,6 @@ public class Entry
             requiredPatcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
             requiredPatcher.RegisterPatch<EventValidationRunGenerationPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerSingleplayerRunRulesCharacterPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerRunRulesCharacterPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerCanonicalCharacterIdPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerRunProgressIdentityPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerGameOverBadgeIdentityPatch>();
-            requiredPatcher.RegisterPatch<NinjaSlayerCombatProgressIdentityPatch>();
             requiredPatcher.RegisterPatch<AetherEnergyPower.EnergyGainPatch>();
             requiredPatcher.RegisterPatch<SawatariActRoomGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
@@ -172,20 +171,15 @@ public class Entry
             {
                 NinjaSlayerSettings.Register(NinjaSlayerIds.ModId);
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
+                ShurikenOrb.RegisterSavedData(NinjaSlayerIds.ModId);
             }
-            _runRulesSubscription = NinjaSlayerRunRulesRuntime.Subscribe();
-
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
-                .Character<NinjaSlayerRedesignCharacter>(ConfigureRedesignStartingDeck)
                 .Card<NinjaSlayerCardPool, OneBodyOneSoul>()
-                .Card<NinjaSlayerRedesignCardPool, OneBodyOneSoul>()
                 .Card<NinjaSlayerCardPool, ZazenDrink>()
-                .Card<NinjaSlayerRedesignCardPool, ZazenDrink>()
                 .HealthBarForecast<KarateHealthBarForecastSource>("karate")
                 .Apply();
 
-            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraight, CollapseFist>();
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, CollapseFistRedesignV1>();
         }
         catch (Exception exception)
@@ -193,7 +187,6 @@ public class Entry
             var failures = new List<Exception> { exception };
             foreach (IDisposable? subscription in new IDisposable?[]
                      {
-                         _runRulesSubscription,
                          _preparedSafetyLifecycle
                      })
             {
@@ -206,7 +199,6 @@ public class Entry
                     failures.Add(cleanupFailure);
                 }
             }
-            _runRulesSubscription = null;
             _preparedSafetyLifecycle = null;
 
             Exception? rollbackFailure = RollbackPatcherVerified(requiredPatcher, nameof(Entry));
@@ -240,20 +232,9 @@ public class Entry
         where TCharacter : CharacterModel
     {
         character
-            .AddStartingCard<StrikeNinjaSlayer>(4, 0)
-            .AddStartingCard<DefendNinjaSlayer>(4, 1)
-            .AddStartingCard<Meditation>(1, 2)
-            .AddStartingCard<KarateStraight>(1, 3);
-    }
-
-    private static void ConfigureRedesignStartingDeck<TCharacter>(CharacterRegistrationEntry<TCharacter> character)
-        where TCharacter : CharacterModel
-    {
-        character
-            .AddStartingCard<StrikeNinjaSlayerRedesignV1>(4, 0)
-            .AddStartingCard<DefendNinjaSlayerRedesignV1>(4, 1)
-            .AddStartingCard<KarateStraightRedesignV1>(1, 2)
-            .AddStartingCard<TurtleShellRedesignV1>(1, 3);
+            .AddStartingCard<StrikeNinjaSlayerRedesignV1>(RedesignV1Rules.StartingStrikeCount, 0)
+            .AddStartingCard<DefendNinjaSlayerRedesignV1>(RedesignV1Rules.StartingDefendCount, 1)
+            .AddStartingCard<KarateStraightRedesignV1>(1, 2);
     }
 
     private static void InstallOptionalTelemetry()

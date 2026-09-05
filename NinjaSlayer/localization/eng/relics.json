@@ -1,4 +1,10 @@
 {
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.title": "Chado Breathing",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "At the start of each combat, [gold]Chado Breathing[/gold] 2.",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.flavor": "Chado. Furin Kazan. Then Chado again.",
+  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.title": "Deep Chado Breathing",
+  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "At the start of each combat, add 2 [gold]Chado[/gold] to your [gold]Hand[/gold]. [gold]Chado Breathing[/gold] 2.",
+  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.flavor": "The numbness recedes. Fingers, palms, and arms regain their freedom in turn.",
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.title": "Naraku Within",
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.description": "At the start of combat, [gold]become Naraku[/gold].",
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.flavor": "The furnace of hatred never went cold. In the depths of his neurons, the old man opens his eyes.",
@@ -9,11 +15,5 @@
 
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.title": "Torii Pact",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.description": "For the next [blue]{Combats}[/blue] combats, Yukano will fight beside you.",
-  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "‘Ninja Slayer-san, I will travel with you for a while.’",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.title": "Experimental Chado Breathing",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.description": "At the start of each combat, [gold]Chado Breathing[/gold] 2.",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.flavor": "Breathe, compose, strike.",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.title": "Experimental Deep Chado Breathing",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.description": "At the start of each combat, add 2 [gold]Chado[/gold] to your hand. [gold]Chado Breathing[/gold] 2.",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.flavor": "Breath flows through the whole body."
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "‘Ninja Slayer-san, I will travel with you for a while.’"
 }

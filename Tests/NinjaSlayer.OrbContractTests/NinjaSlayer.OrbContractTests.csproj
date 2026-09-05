@@ -1,0 +1,25 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <Import Project="../../eng/NinjaSlayer.Dependencies.props" />
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NinjaSlayer" HintPath="$(NinjaSlayerAssemblyPath)" />
+    <Reference Include="sts2" HintPath="$(Sts2DataDir)/sts2.dll" />
+    <Reference Include="0Harmony" HintPath="$(Sts2DataDir)/0Harmony.dll" />
+    <Reference Include="GodotSharp" HintPath="$(Sts2DataDir)/GodotSharp.dll" />
+    <_RuntimeReference Include="$(NinjaSlayerRuntimeAssemblies)" />
+    <Reference Include="@(_RuntimeReference)" HintPath="$(Sts2DataDir)/%(Identity)" />
+    <PackageReference Include="$(NinjaSlayerRitsuLibPackageId)" Version="$(NinjaSlayerRitsuLibVersion)" />
+    <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="$(NinjaSlayerHostChannel)" />
+  </ItemGroup>
+  <Target Name="ValidateInputs" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(NinjaSlayerHostChannelWasExplicit)' != 'true'" Text="Specify NinjaSlayerHostChannel." />
+    <Error Condition="!Exists('$(NinjaSlayerAssemblyPath)')" Text="Specify the candidate NinjaSlayerAssemblyPath." />
+    <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')" Text="Specify the exact channel Sts2DataDir." />
+  </Target>
+</Project>

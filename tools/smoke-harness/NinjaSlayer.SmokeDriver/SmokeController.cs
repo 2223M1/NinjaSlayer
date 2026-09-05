@@ -1684,7 +1684,6 @@ internal sealed partial class SmokeController
             ?? throw new InvalidOperationException("Resumed local player was unavailable.");
         ValidateRedesignRunIdentity(player);
         ModelId canonicalCharacterId = ModelDb.Character<NinjaSlayerCharacter>().Id;
-        ModelId redesignCharacterId = ModelDb.Character<NinjaSlayerRedesignCharacter>().Id;
         int lossesBeforeAbandon = SaveManager.Instance.Progress
             .GetOrCreateCharacterStats(canonicalCharacterId)
             .TotalLosses;
@@ -1714,9 +1713,6 @@ internal sealed partial class SmokeController
         Require(
             SaveManager.Instance.Progress.GetOrCreateCharacterStats(canonicalCharacterId).TotalLosses == lossesBeforeAbandon + 1,
             "Abandoning the Redesign run did not record exactly one canonical Ninja Slayer loss.");
-        Require(
-            !SaveManager.Instance.Progress.CharacterStats.ContainsKey(redesignCharacterId),
-            "Abandoning the Redesign run created a separate hidden-character progress entry.");
         _checkpoints.Write("resume.completed");
         _tree.Quit(0);
     }

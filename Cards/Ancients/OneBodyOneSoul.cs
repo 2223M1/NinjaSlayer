@@ -19,25 +19,22 @@ public sealed class OneBodyOneSoul : NinjaSlayerStandaloneCardTemplate
         CardKeyword.Ethereal
     ];
 
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        EnergyHoverTip
-    ];
-
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new EnergyVar(2),
-        new CardsVar(2)
+        new DynamicVar("NarakuLife", 30)
     ];
 
     public OneBodyOneSoul() : base(CardSpec) { }
 
-    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
-    {
-        await PowerCmd.Remove<NarakuPower>(Owner.Creature);
-        await PowerCmd.Apply<OneBodyOneSoulPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
-    }
+    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+        PowerCmd.Apply<NarakuLifePower>(
+            choiceContext,
+            Owner.Creature,
+            DynamicVars["NarakuLife"].BaseValue,
+            Owner.Creature,
+            this);
 
     protected override void OnUpgrade()
     {
-        EnergyCost.UpgradeBy(-1);
+        DynamicVars["NarakuLife"].UpgradeValueBy(10);
     }
 }

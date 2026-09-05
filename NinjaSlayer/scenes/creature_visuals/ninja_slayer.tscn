@@ -64,6 +64,10 @@ position = Vector2(25.4, -173)
 unique_name_in_owner = true
 position = Vector2(0, -293)
 
+[node name="OrbPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -328)
+
 [node name="TalkPos" type="Marker2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(24, -248)

@@ -1,0 +1,77 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://Code/Nodes/ShurikenOrbVisual.cs" id="1_visual"]
+[ext_resource type="Texture2D" path="res://NinjaSlayer/images/projectiles/ninja_slayer_shuriken.png" id="2_shuriken"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_additive"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_soft_glow"]
+offsets = PackedFloat32Array(0, 0.45, 1)
+colors = PackedColorArray(1, 0.701961, 0, 1, 1, 0.701961, 0, 0.42, 1, 0.701961, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_soft_glow"]
+gradient = SubResource("Gradient_soft_glow")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="Gradient_spark_color"]
+offsets = PackedFloat32Array(0, 0.35, 1)
+colors = PackedColorArray(1, 0.701961, 0, 1, 1, 0.85098, 0.35, 0.9, 1, 0.701961, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_spark_color"]
+gradient = SubResource("Gradient_spark_color")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparks"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 72.0
+initial_velocity_max = 132.0
+gravity = Vector3(0, 0, 0)
+damping_min = 85.0
+damping_max = 125.0
+scale_min = 0.08
+scale_max = 0.16
+color_ramp = SubResource("GradientTexture1D_spark_color")
+
+[node name="ShurikenOrbVisual" type="Node2D"]
+script = ExtResource("1_visual")
+
+[node name="DeformedVisuals" type="Node2D" parent="."]
+
+[node name="Art" type="Node2D" parent="DeformedVisuals"]
+scale = Vector2(0.784314, 0.784314)
+
+[node name="EdgeGlow" type="Sprite2D" parent="DeformedVisuals/Art"]
+material = SubResource("CanvasItemMaterial_additive")
+modulate = Color(1, 0.701961, 0, 0.24)
+scale = Vector2(0.195, 0.195)
+texture = ExtResource("2_shuriken")
+
+[node name="PulseTemplate" type="Sprite2D" parent="DeformedVisuals/Art"]
+visible = false
+z_index = 1
+material = SubResource("CanvasItemMaterial_additive")
+texture = SubResource("GradientTexture2D_soft_glow")
+
+[node name="Body" type="Sprite2D" parent="DeformedVisuals/Art"]
+z_index = 2
+scale = Vector2(0.175, 0.175)
+texture = ExtResource("2_shuriken")
+
+[node name="Sparks" type="GPUParticles2D" parent="DeformedVisuals/Art"]
+z_index = 3
+material = SubResource("CanvasItemMaterial_additive")
+emitting = false
+amount = 10
+texture = SubResource("GradientTexture2D_soft_glow")
+lifetime = 0.34
+one_shot = true
+explosiveness = 1.0
+randomness = 0.2
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_sparks")

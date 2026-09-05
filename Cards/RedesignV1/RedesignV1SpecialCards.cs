@@ -5,22 +5,24 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
-[RegisterCard(typeof(TokenCardPool))]
 public sealed class PunchRedesignV1 : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
         nameof(PunchRedesignV1),
-        0,
+        2,
         CardType.Attack,
         CardRarity.Token,
         TargetType.AnyEnemy,
@@ -32,7 +34,7 @@ public sealed class PunchRedesignV1 : NinjaSlayerStandaloneCardTemplate
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Retain, CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(4, ValueProp.Move), new RepeatVar(4), new DynamicVar("Growth", 3)];
+        [new DamageVar(4, ValueProp.Move), new RepeatVar(4), new DynamicVar("Growth", 2)];
 
     public PunchRedesignV1() : base(Spec) { }
 
@@ -80,12 +82,75 @@ public sealed class PunchRedesignV1 : NinjaSlayerStandaloneCardTemplate
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(1);
+        DynamicVars.Damage.UpgradeValueBy(2);
         DynamicVars["Growth"].UpgradeValueBy(1);
     }
 }
 
 [RegisterCard(typeof(TokenCardPool))]
+public sealed class FinisherRedesignV1 : NinjaSlayerStandaloneCardTemplate
+{
+    private static readonly NinjaSlayerCardSpec Spec = new(
+        nameof(FinisherRedesignV1),
+        2,
+        CardType.Attack,
+        CardRarity.Token,
+        TargetType.AnyEnemy,
+        false,
+        "ComboFist");
+
+    public override bool CanBeGeneratedInCombat => false;
+    public override bool CanBeGeneratedByModifiers => false;
+    public override IEnumerable<CardKeyword> CanonicalKeywords =>
+        [CardKeyword.Retain, CardKeyword.Exhaust];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new CalculationBaseVar(4),
+        new ExtraDamageVar(4),
+        new CalculatedDamageVar(ValueProp.Move)
+            .WithMultiplier(NinjaSlayerActions.RedesignChadoInExhaustPileMultiplier),
+        new RepeatVar(4)
+    ];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>()];
+
+    public FinisherRedesignV1() : base(Spec) { }
+
+    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        int hits = DynamicVars.Repeat.IntValue;
+        return this.ExecuteSequenceWithFinisher(
+            choiceContext,
+            cardPlay,
+            hits,
+            () => NinjaSlayerXAttackSequence.Run(
+                Owner.Creature,
+                hits,
+                Owner.Character.AttackAnimDelay,
+                Owner.Character.AttackAnimDelay,
+                async _ =>
+                {
+                    AttackCommand command = DamageCmd.Attack(DynamicVars.CalculatedDamage)
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+                        .FromCard(this)
+#else
+                        .FromCard(this, cardPlay)
+#endif
+                        .WithHeavyBluntHitFx()
+                        .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
+                        .Targeting(cardPlay.Target!);
+                    await command.Execute(choiceContext);
+                    return !cardPlay.Target!.IsAlive;
+                }));
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars.CalculationBase.UpgradeValueBy(2);
+        DynamicVars.ExtraDamage.UpgradeValueBy(2);
+    }
+}
+
 public sealed class IyaEchoRedesignV1 : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec Spec = new(
@@ -140,7 +205,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         CardRarity.Status,
         TargetType.Self,
         false,
-        "BlackFlame");
+        nameof(BurningCard));
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
@@ -148,48 +213,80 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Unplayable, CardKeyword.Ethereal];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new HpLossVar(2), new DamageVar(6, ValueProp.Unpowered | ValueProp.Move)];
+        [new DamageVar(RedesignV1Rules.BlackFlameDamage, ValueProp.Unblockable | ValueProp.Unpowered)];
+    protected override IEnumerable<string> ExtraRunAssetPaths =>
+        NNinjaSlayerGroundFireVfx.AssetPaths;
 
     public BlackFlameRedesignV1() : base(Spec) { }
 
+    public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+        Pile?.Type == PileType.Hand
+        && cardPlay.Card.Owner == Owner
+        && cardPlay.Card.Type == CardType.Attack
+            ? DamageEnemies(choiceContext)
+            : Task.CompletedTask;
+
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
     {
-        if (Pile?.Type != PileType.Hand)
-        {
-            return;
-        }
-
-        List<CardModel> statuses = PileType.Hand.GetPile(Owner).Cards
-            .Where(card => card.Type == CardType.Status)
+        ICombatState combatState = CombatState
+            ?? throw new InvalidOperationException("Black Flame requires combat.");
+        List<Creature> enemies = combatState.Creatures
+            .Where(creature => RedesignV1Rules.IsBlackFlameTurnEndTarget(
+                creature.IsAlive,
+                false,
+                creature.Side == Owner.Creature.Side))
             .ToList();
-        foreach (CardModel status in statuses)
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies.Prepend(Owner.Creature));
+        await DamageEnemies(choiceContext, enemies);
+        if (Owner.Creature.IsAlive)
         {
-            await CardCmd.Exhaust(choiceContext, status, causedByEthereal: status == this);
-            NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner.Creature]);
             await CreatureCmd.Damage(
                 choiceContext,
                 [Owner.Creature],
-                DynamicVars.HpLoss.BaseValue,
-                ValueProp.Unblockable | ValueProp.Unpowered,
+                DynamicVars.Damage.BaseValue,
+                DynamicVars.Damage.Props,
                 Owner.Creature,
                 this
 #if !NINJASLAYER_LEGACY_DAMAGE_API
                 , null
 #endif
             );
-
-            IReadOnlyList<Creature> enemies = CombatState?.HittableEnemies ?? [];
-            if (enemies.Count > 0)
-            {
-                NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies);
-                await CreatureCmd.Damage(
-                    choiceContext,
-                    enemies,
-                    DynamicVars.Damage.BaseValue,
-                    DynamicVars.Damage.Props,
-                    Owner.Creature);
-            }
         }
+
+        await CardCmd.Exhaust(choiceContext, this, causedByEthereal: true);
+    }
+
+    private Task DamageEnemies(PlayerChoiceContext choiceContext)
+    {
+        ICombatState combatState = CombatState
+            ?? throw new InvalidOperationException("Black Flame requires combat.");
+        List<Creature> enemies = combatState.Creatures
+            .Where(creature => creature.IsAlive && creature.Side != Owner.Creature.Side)
+            .ToList();
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies);
+        return DamageEnemies(choiceContext, enemies);
+    }
+
+    private Task DamageEnemies(PlayerChoiceContext choiceContext, IReadOnlyList<Creature> enemies)
+    {
+        if (enemies.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        int damage = (int)DynamicVars.Damage.BaseValue
+            + Owner.Creature.GetPowerAmount<BurnBurnBurnPower>();
+        return CreatureCmd.Damage(
+            choiceContext,
+            enemies,
+            damage,
+            DynamicVars.Damage.Props,
+            Owner.Creature,
+            this
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            , null
+#endif
+        );
     }
 
     protected override void OnUpgrade() { }

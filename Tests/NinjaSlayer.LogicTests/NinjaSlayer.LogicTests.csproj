@@ -50,6 +50,7 @@
     <Compile Include="..\..\Code\Combat\FinisherForecastEngine.cs" Link="FinisherForecastEngine.cs" />
     <Compile Include="..\..\Code\Combat\FinisherActionTrajectory.cs" Link="FinisherActionTrajectory.cs" />
     <Compile Include="..\..\Code\Combat\RapidAttackTrajectory.cs" Link="RapidAttackTrajectory.cs" />
+    <Compile Include="..\..\Code\Combat\ShurikenOrbLayoutMath.cs" Link="ShurikenOrbLayoutMath.cs" />
     <Compile Include="..\..\Code\Combat\FinisherSquashAnchorPolicy.cs" Link="FinisherSquashAnchorPolicy.cs" />
     <Compile Include="..\..\Code\Combat\FrameScopedCache.cs" Link="FrameScopedCache.cs" />
     <Compile Include="..\..\Code\Combat\KarateCombatPreviewContext.cs" Link="KarateCombatPreviewContext.cs" />
@@ -73,7 +74,6 @@
     <Compile Include="..\..\Content\NinjaSlayerFormPresentation.cs" Link="NinjaSlayerFormPresentation.cs" />
     <Compile Include="..\..\Content\NinjaSlayerRunState.cs" Link="NinjaSlayerRunState.cs" />
     <Compile Include="..\..\Content\NinjaSlayerSettingsData.cs" Link="NinjaSlayerSettingsData.cs" />
-    <Compile Include="..\..\Content\NinjaSlayerRunRules.cs" Link="NinjaSlayerRunRules.cs" />
     <Compile Include="..\..\Content\RedesignV1Rules.cs" Link="RedesignV1Rules.cs" />
   </ItemGroup>
 </Project>

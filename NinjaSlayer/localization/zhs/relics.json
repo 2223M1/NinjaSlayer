@@ -1,15 +1,15 @@
 {
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.title": "茶道呼吸",
-  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将一张[sine]茶道[/sine]加入你的手牌。",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "每场战斗开始时，[gold]茶道呼吸[/gold]2。",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.flavor": "“茶道。风林火山。然后再茶道。”",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.title": "茶道呼吸·真髓",
-  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将2张[sine]茶道[/sine]加入你的手牌。",
+  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将2张[gold]茶道[/gold]加入你的[gold]手牌[/gold]。[gold]茶道呼吸[/gold]2。",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.flavor": "麻痹褪去。手指、手掌、手臂，依次重获自由。",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.title": "精神的棉被",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.description": "每当你[gold]化身奈落[/gold]时，额外获得{NarakuLife:diff()}层[gold]奈落生命[/gold]。",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.flavor": "肉体被夺走后，藤木户只能反复看着同一个恶梦。",
   "NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC.title": "道具社手里剑匣",
-  "NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC.description": "每场战斗开始时，将1张手里剑加入你的手牌。",
+  "NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC.description": "每场战斗开始时，获得1层[gold]手里剑[/gold]。",
   "NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC.flavor": "三郎不留顾客名录；所有订单只存在他的脑中。",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.title": "鲔鱼寿司便当",
   "NINJA_SLAYER_RELIC_MAGURO_SUSHI_RELIC.description": "拾起时，回复所有生命。",
@@ -43,11 +43,5 @@
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.flavor": "“咱会跟上。”",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.title": "鸟居之约",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.description": "接下来的[blue]{Combats}[/blue]场战斗中，由佳乃会与你并肩作战。",
-  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "“忍者杀手=SAN，我跟你走一段。”",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.title": "茶道呼吸·实验型",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.description": "每场战斗开始时，[gold]茶道呼吸[/gold]2。",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_CHADO_BREATHING_RELIC.flavor": "呼吸、整顿、出击。",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.title": "茶道呼吸·真髓·实验型",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将2张[gold]茶道[/gold]加入你的手牌。[gold]茶道呼吸[/gold]2。",
-  "NINJA_SLAYER_RELIC_REDESIGN_V1_DEEP_CHADO_BREATHING_RELIC.flavor": "气息贯通全身。"
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "“忍者杀手=SAN，我跟你走一段。”"
 }
