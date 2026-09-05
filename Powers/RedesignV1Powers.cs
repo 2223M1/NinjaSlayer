@@ -31,6 +31,37 @@ public abstract class RedesignV1CounterPower : NinjaSlayerPowerTemplate
     public override PowerStackType StackType => PowerStackType.Counter;
 }
 
+public sealed class ChadoRetainPower : RedesignV1CounterPower
+{
+    public override PowerAssetProfile AssetProfile =>
+        NinjaSlayerPowerAssets.Named("EndTurnRetainPower");
+
+    public override Task BeforeFlush(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (player == Owner.Player)
+        {
+            foreach (ChadoEnergyRedesignV1 chado in PileType.Hand.GetPile(player).Cards
+                         .OfType<ChadoEnergyRedesignV1>())
+            {
+                chado.GiveSingleTurnRetain();
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public override async Task AfterSideTurnEnd(
+        PlayerChoiceContext choiceContext,
+        CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        if (participants.Contains(Owner))
+        {
+            await PowerCmd.Decrement(this);
+        }
+    }
+}
+
 [RegisterPower]
 public sealed class HookRopeStrengthDownPower : TemporaryStrengthPower, IModPowerAssetOverrides
 {
@@ -84,6 +115,8 @@ public sealed class MetabolicAccelerationPower : RedesignV1CounterPower
         {
             await CardCmd.Exhaust(choiceContext, status);
         }
+
+        await PowerCmd.Remove(this);
     }
 }
 
@@ -120,6 +153,7 @@ public sealed class AetherEnergyPower : RedesignV1CounterPower
             new(typeof(PlayerCmd), nameof(PlayerCmd.GainEnergy), [typeof(decimal), typeof(Player)])
         ];
 
+#pragma warning disable CA1707 // Harmony reserves double-underscore parameter names.
         public static void Prefix(
             Player player,
             out (Player Player, int Energy, AetherEnergyPower? Power) __state) =>
@@ -132,6 +166,7 @@ public sealed class AetherEnergyPower : RedesignV1CounterPower
             ref Task __result,
             (Player Player, int Energy, AetherEnergyPower? Power) __state) =>
             __result = Complete(__result, __state);
+#pragma warning restore CA1707
 
         private static async Task Complete(
             Task task,
@@ -175,9 +210,9 @@ public sealed class ShuffleBlockPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(IBlockPower));
 
-    public override async Task AfterShuffle(PlayerChoiceContext choiceContext, Player player)
+    public override async Task AfterShuffle(PlayerChoiceContext choiceContext, Player shuffler)
     {
-        if (player == Owner.Player)
+        if (shuffler == Owner.Player)
         {
             Flash();
             await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null);
@@ -284,6 +319,59 @@ public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(NarakuPower));
 
+    public override bool TryModifyEnergyCostInCombatLate(
+        CardModel card,
+        decimal originalCost,
+        out decimal modifiedCost)
+    {
+        if (card.Owner.Creature != Owner || card.Type != CardType.Attack)
+        {
+            modifiedCost = originalCost;
+            return false;
+        }
+
+        modifiedCost = 0;
+        return true;
+    }
+
+#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
+    public override (PileType, CardPilePosition) ModifyCardPlayResultPileTypeAndPosition(
+        CardModel card,
+        bool isAutoPlay,
+        ResourceInfo resources,
+        PileType pileType,
+        CardPilePosition position) =>
+        card.Owner.Creature == Owner && card.Type == CardType.Attack
+            ? (PileType.Exhaust, position)
+            : (pileType, position);
+#else
+    public override CardLocation ModifyCardPlayResultLocation(
+        CardModel card,
+        bool isAutoPlay,
+        ResourceInfo resources,
+        CardLocation cardLocation)
+    {
+        if (card.Owner.Creature == Owner && card.Type == CardType.Attack)
+        {
+            cardLocation.pileType = PileType.Exhaust;
+        }
+
+        return cardLocation;
+    }
+
+    public override Task AfterModifyingCardPlayResultLocation(
+        CardModel card,
+        CardLocation cardLocation)
+    {
+        if (card.Owner.Creature == Owner && card.Type == CardType.Attack)
+        {
+            Flash();
+        }
+
+        return Task.CompletedTask;
+    }
+#endif
+
     public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (cardPlay.Card.Owner.Creature != Owner || cardPlay.Card.Type != CardType.Attack)
@@ -292,7 +380,6 @@ public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
         }
 
         Flash();
-        await PowerCmd.Apply<KaratePower>(choiceContext, Owner, Amount, Owner, cardPlay.Card);
         await NinjaSlayerActions.AddGeneratedCard<BlackFlameRedesignV1>(
             Owner.Player!,
             PileType.Draw,

@@ -1,8 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using NinjaSlayer.Cards;
-using NinjaSlayer.Content;
+using NinjaSlayer.Orbs;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -17,7 +16,7 @@ public sealed class PortableIrcTerminalRelic : NinjaSlayerRelicTemplate
         if (player == Owner && Owner.PlayerCombatState?.TurnNumber == 1)
         {
             Flash();
-            await NinjaSlayerActions.AddGeneratedShuriken(choiceContext, Owner, 1, MegaCrit.Sts2.Core.Entities.Cards.PileType.Hand);
+            await ShurikenOrb.AddStock(choiceContext, Owner, 1);
         }
     }
 }

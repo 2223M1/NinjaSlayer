@@ -2,7 +2,7 @@
   "title": "忍者杀手 Ninja Slayer 人物拓展包",
   "description": "《杀戮尖塔 2》的忍者杀手角色 Mod，包含完整角色机制、卡牌、遗物、事件、动画与音效。",
   "visibility": "unlisted",
-  "changeNote": "Redesign V1 更新为72点生命、19白/32蓝/17金共68张奖励牌，并调整龟壳、对策、初始遗物和洗牌手里剑；通用包同时支持 stable 0.107.1 与 preview 0.111.0。",
+  "changeNote": "0.1.48 将奖励池调整为20白/31蓝/23金，新增空·手里剑、地狱龙卷、终结、茶茶、烧烧烧和回回回，重做黑炎、奈落形态、半月圆规踢及多张茶道与手里剑牌；通用包支持 stable 0.107.1 与 preview 0.111.0。",
   "tags": ["mod", "Simplified Chinese"],
   "dependencies": [3747602295],
   "contentDescriptors": []

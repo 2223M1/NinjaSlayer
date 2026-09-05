@@ -6,7 +6,8 @@ namespace NinjaSlayer.Code.Combat;
 
 public static class KarateTriggerRules
 {
-    public static bool CanTriggerFromCardSource(CardModel? _) => true;
+    public static bool CanTriggerFromCardSource(CardModel? card) =>
+        card?.GetType().Name != "AlabamaDropRedesignV1";
 
     public static bool IsMeleeAttack(CardModel card) =>
         card.Type == CardType.Attack

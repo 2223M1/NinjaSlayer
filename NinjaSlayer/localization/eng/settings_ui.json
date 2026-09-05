@@ -7,8 +7,5 @@
   "NINJA_SLAYER_SETTINGS_PAGE_TITLE": "Ninja Slayer Settings",
   "NINJA_SLAYER_SETTINGS_VALIDATION_SECTION_TITLE": "Validation",
   "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_TITLE": "Force each event once",
-  "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_DESCRIPTION": "Prioritizes each eligible Ninja Slayer event once in subsequently created single-player runs. Existing runs are unchanged.",
-  "NINJA_SLAYER_SETTINGS_EXPERIMENTS_SECTION_TITLE": "Experiments",
-  "NINJA_SLAYER_SETTINGS_USE_REDESIGN_V1_TITLE": "Redesigned deck experiment",
-  "NINJA_SLAYER_SETTINGS_USE_REDESIGN_V1_DESCRIPTION": "Uses the redesigned health, deck, Chado, and starter relic in subsequently created Ninja Slayer runs. Existing runs are unchanged."
+  "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_DESCRIPTION": "Prioritizes each eligible Ninja Slayer event once in subsequently created single-player runs. Existing runs are unchanged."
 }

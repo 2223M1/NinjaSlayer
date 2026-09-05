@@ -11,7 +11,6 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Cards;
 
-[RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec CardSpec = new(nameof(CollapseFist), 2, CardType.Attack, CardRarity.Ancient, TargetType.AnyEnemy, true);
@@ -45,7 +44,7 @@ public sealed class CollapseFist : NinjaSlayerStandaloneCardTemplate
     }
 }
 
-[RegisterCard(typeof(NinjaSlayerRedesignCardPool))]
+[RegisterCard(typeof(NinjaSlayerCardPool))]
 public sealed class CollapseFistRedesignV1 : NinjaSlayerStandaloneCardTemplate
 {
     private static readonly NinjaSlayerCardSpec CardSpec = new(

@@ -44,8 +44,8 @@ namespace NinjaSlayer.RitsuLibContractTests;
 
 public partial class ContractRunner : Node
 {
-    private const int ExpectedRequiredPatchTargetCount = 95;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 62;
+    private const int ExpectedRequiredPatchTargetCount = 89;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 56;
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
     private static string? _patcherFailureName;
@@ -625,9 +625,10 @@ public partial class ContractRunner : Node
         Require(requiredPatches.Count == ExpectedRequiredPatchTargetCount,
             $"The required Patch transaction registered {requiredPatches.Count} targets; " +
             $"expected {ExpectedRequiredPatchTargetCount}.");
-        Require(requiredPatches.Count(patch => patch.IsCritical)
-                == ExpectedCriticalRequiredPatchTargetCount,
-            "The required Patch transaction changed its critical target markers.");
+        int criticalPatchCount = requiredPatches.Count(patch => patch.IsCritical);
+        Require(criticalPatchCount == ExpectedCriticalRequiredPatchTargetCount,
+            $"The required Patch transaction registered {criticalPatchCount} critical targets; " +
+            $"expected {ExpectedCriticalRequiredPatchTargetCount}.");
         Require(requiredPatches.Select(patch => patch.Id).Distinct().Count() == requiredPatches.Count,
             "The required Patch transaction contains duplicate target IDs.");
         foreach (ModPatchInfo patch in requiredPatches)

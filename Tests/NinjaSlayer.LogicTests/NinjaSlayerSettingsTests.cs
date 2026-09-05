@@ -17,22 +17,19 @@ public sealed class NinjaSlayerSettingsTests
     {
         var settings = new NinjaSlayerSettingsData
         {
-            ForceAllEventsOnce = false,
-            UseRedesignV1 = true
+            ForceAllEventsOnce = false
         };
 
         string json = JsonSerializer.Serialize(settings);
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         Assert.Equal(
-            ["ForceAllEventsOnce", "UseRedesignV1"],
+            ["ForceAllEventsOnce"],
             root.EnumerateObject().Select(property => property.Name).ToArray());
         Assert.False(root.GetProperty("ForceAllEventsOnce").GetBoolean());
-        Assert.True(root.GetProperty("UseRedesignV1").GetBoolean());
 
         NinjaSlayerSettingsData restored = JsonSerializer.Deserialize<NinjaSlayerSettingsData>(json)!;
         Assert.False(restored.ForceAllEventsOnce);
-        Assert.True(restored.UseRedesignV1);
     }
 
     [Fact]
@@ -70,17 +67,4 @@ public sealed class NinjaSlayerSettingsTests
         Assert.Equal(["act1:boss", "act2:boss"], restored.CompletedBossGreetingRoomKeys);
     }
 
-    [Fact]
-    public void RunRulesVersionRemainsANumericJsonEnum()
-    {
-        string json = JsonSerializer.Serialize(new NinjaSlayerRunRules());
-        using JsonDocument document = JsonDocument.Parse(json);
-        JsonElement rulesVersion = document.RootElement.GetProperty("RulesVersion");
-
-        Assert.Equal(JsonValueKind.Number, rulesVersion.ValueKind);
-        Assert.Equal(1, rulesVersion.GetInt32());
-        Assert.Equal(
-            NinjaSlayerRulesVersion.RedesignV1,
-            JsonSerializer.Deserialize<NinjaSlayerRunRules>(json)!.RulesVersion);
-    }
 }

@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -7,6 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
+using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Powers;
@@ -65,6 +67,85 @@ public static class NinjaSlayerActions
 
     public static decimal ChadoInExhaustPileMultiplier(CardModel card, Creature? _) =>
         PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c is ChadoCard);
+
+    public static decimal RedesignChadoInExhaustPileMultiplier(CardModel card, Creature? _) =>
+        PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c is ChadoEnergyRedesignV1);
+
+    public static async Task<bool> ChooseAndDiscardOne(
+        PlayerChoiceContext choiceContext,
+        Player owner,
+        CardModel source) =>
+        await ChooseAndDiscard(choiceContext, owner, 1, source) > 0;
+
+    public static async Task<int> ChooseAndDiscard(
+        PlayerChoiceContext choiceContext,
+        Player owner,
+        int count,
+        CardModel source)
+    {
+        int available = PileType.Hand.GetPile(owner).Cards.Count;
+        int selectionCount = Math.Min(Math.Max(0, count), available);
+        if (selectionCount == 0)
+        {
+            return 0;
+        }
+
+        List<CardModel> selected = (await CardSelectCmd.FromHandForDiscard(
+            choiceContext,
+            owner,
+            new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, selectionCount),
+            null,
+            source)).ToList();
+        foreach (CardModel card in selected)
+        {
+            await CardCmd.Discard(choiceContext, card);
+        }
+
+        return selected.Count;
+    }
+
+    public static bool HasRedesignChadoInHand(Player owner) =>
+        PileType.Hand.GetPile(owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();
+
+    public static async Task<bool> ChooseAndExhaustRedesignChado(
+        PlayerChoiceContext choiceContext,
+        Player owner,
+        CardModel source)
+    {
+        CardModel? selected = (await CardSelectCmd.FromHand(
+            choiceContext,
+            owner,
+            new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 1),
+            card => card is ChadoEnergyRedesignV1,
+            source)).FirstOrDefault();
+        if (selected is null)
+        {
+            return false;
+        }
+
+        await CardCmd.Exhaust(choiceContext, selected);
+        return true;
+    }
+
+    public static async Task<int> ChooseAndExhaustAnyRedesignChado(
+        PlayerChoiceContext choiceContext,
+        Player owner,
+        CardModel source)
+    {
+        int available = PileType.Hand.GetPile(owner).Cards.OfType<ChadoEnergyRedesignV1>().Count();
+        List<CardModel> selected = (await CardSelectCmd.FromHand(
+            choiceContext,
+            owner,
+            new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, available),
+            card => card is ChadoEnergyRedesignV1,
+            source)).ToList();
+        foreach (CardModel card in selected)
+        {
+            await CardCmd.Exhaust(choiceContext, card);
+        }
+
+        return selected.Count;
+    }
 
     public static async Task AddGeneratedCard<T>(Player owner, PileType pile, CardPilePosition position = CardPilePosition.Bottom)
         where T : CardModel
@@ -207,11 +288,13 @@ public static class NinjaSlayerActions
         }
 
         int amountBeforeConsumption = karate.Amount;
-        await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+        int change = dealer.HasPower<KarateFormPower>() ? 1 : -1;
+        dealer.GetPower<KarateFormPower>()?.Trigger();
+        await PowerCmd.ModifyAmount(choiceContext, karate, change, dealer, cardSource);
         if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
         {
-            // PowerCmd rejects amount changes after the bonus ends combat, but the triggering wave still consumes.
-            karate.SetAmount(Math.Max(0, amountBeforeConsumption - 1), silent: true);
+            // PowerCmd rejects amount changes after the bonus ends combat, but the triggering wave still resolves its stack change.
+            karate.SetAmount(Math.Max(0, amountBeforeConsumption + change), silent: true);
         }
     }
 

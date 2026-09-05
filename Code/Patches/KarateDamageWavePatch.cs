@@ -41,19 +41,34 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         ValueProp props,
         Creature? dealer,
         CardModel? cardSource,
+        bool __runOriginal,
         ref Task<IEnumerable<DamageResult>> __result)
     {
-        KaratePower? karate = dealer?.GetPower<KaratePower>();
-        if (dealer == null || karate == null || karate.Amount <= 0 || !props.IsPoweredAttack())
+        if (!__runOriginal
+            || dealer == null
+            || !props.IsPoweredAttack()
+            || !KarateTriggerRules.CanTriggerFromCardSource(cardSource))
         {
             return;
         }
 
-        int stacks = karate.Amount;
-        __result = ApplyKarate(__result, choiceContext, props, dealer, cardSource, karate, stacks);
+        KaratePower? karate = dealer.GetPower<KaratePower>();
+        if (karate == null || karate.Amount <= 0)
+        {
+            return;
+        }
+
+        __result = ApplyWaveEffects(
+            __result,
+            choiceContext,
+            props,
+            dealer,
+            cardSource,
+            karate,
+            karate.Amount);
     }
 
-    private static async Task<IEnumerable<DamageResult>> ApplyKarate(
+    private static async Task<IEnumerable<DamageResult>> ApplyWaveEffects(
         Task<IEnumerable<DamageResult>> damageTask,
         PlayerChoiceContext choiceContext,
         ValueProp props,

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bjfuts3hb3a33"
-path="res://.godot/imported/ShurikenStockPower.png-e25954ba5b7376d676e88537db62f295.ctex"
+uid="uid://cbwj825qdah88"
+path="res://.godot/imported/ninja_slayer_shuriken.png-67b01223cdbbfed1be56333b600cf157.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/powers/ShurikenStockPower.png"
-dest_files=["res://.godot/imported/ShurikenStockPower.png-e25954ba5b7376d676e88537db62f295.ctex"]
+source_file="res://NinjaSlayer/images/projectiles/ninja_slayer_shuriken.png"
+dest_files=["res://.godot/imported/ninja_slayer_shuriken.png-67b01223cdbbfed1be56333b600cf157.ctex"]
 
 [params]
 

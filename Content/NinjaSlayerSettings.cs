@@ -11,10 +11,8 @@ public static class NinjaSlayerSettings
     private const string SettingsTable = "settings_ui";
 
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool> _forceAllEventsOnce = null!;
-    private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool> _useRedesignV1 = null!;
 
     public static bool ForceAllEventsOnce => _forceAllEventsOnce.Read();
-    public static bool UseRedesignV1 => _useRedesignV1.Read();
 
     public static void Register(string modId)
     {
@@ -32,13 +30,6 @@ public static class NinjaSlayerSettings
             SaveScope.Global,
             static settings => settings.ForceAllEventsOnce,
             static (settings, value) => settings.ForceAllEventsOnce = value);
-
-        _useRedesignV1 = new ModSettingsValueBinding<NinjaSlayerSettingsData, bool>(
-            modId,
-            DataKey,
-            SaveScope.Global,
-            static settings => settings.UseRedesignV1,
-            static (settings, value) => settings.UseRedesignV1 = value);
 
         RitsuLibFramework.RegisterModSettings(modId, page => page
             .WithTitle(Text(
@@ -66,20 +57,7 @@ public static class NinjaSlayerSettings
                     _forceAllEventsOnce,
                     Text(
                         "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_DESCRIPTION",
-                        "Applies to subsequently created single-player Ninja Slayer runs.")))
-            .AddSection("experiments", section => section
-                .WithTitle(Text(
-                    "NINJA_SLAYER_SETTINGS_EXPERIMENTS_SECTION_TITLE",
-                    "Experiments"))
-                .AddToggle(
-                    "use_redesign_v1",
-                    Text(
-                        "NINJA_SLAYER_SETTINGS_USE_REDESIGN_V1_TITLE",
-                        "Redesigned deck experiment"),
-                    _useRedesignV1,
-                    Text(
-                        "NINJA_SLAYER_SETTINGS_USE_REDESIGN_V1_DESCRIPTION",
-                        "Uses the redesigned Ninja Slayer deck in subsequently created runs. Existing runs are unchanged."))));
+                        "Applies to subsequently created single-player Ninja Slayer runs."))));
     }
 
     private static ModSettingsText Text(string key, string fallback) =>

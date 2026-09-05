@@ -8,7 +8,6 @@ namespace NinjaSlayer.Content;
 public static class NinjaSlayerRunData
 {
     public static PlayerRunSavedData<NinjaSlayerRunState> PlayerState { get; private set; } = null!;
-    public static RunSavedData<NinjaSlayerRunRules> Rules { get; private set; } = null!;
 
     public static void Register(string modId)
     {
@@ -20,18 +19,7 @@ public static class NinjaSlayerRunData
             {
                 WritePolicy = RunSavedDataWritePolicy.WhenNonDefault
             });
-        Rules = store.Register(
-            key: "ninja_slayer_run_rules",
-            defaultFactory: static () => new NinjaSlayerRunRules(),
-            options: new RunSavedDataOptions
-            {
-                WritePolicy = RunSavedDataWritePolicy.WhenNonDefault,
-                SyncLobbyOnChange = true
-            });
     }
-
-    public static NinjaSlayerRulesVersion GetRulesVersion(RunState runState) =>
-        Rules.Get(runState).RulesVersion;
 
     public static void MarkPendingAncientEntranceAnimation(Player player)
     {

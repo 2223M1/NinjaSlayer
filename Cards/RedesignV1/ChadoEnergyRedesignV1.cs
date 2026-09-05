@@ -22,8 +22,7 @@ public sealed class ChadoEnergyRedesignV1 : NinjaSlayerStandaloneCardTemplate
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
-    public override IEnumerable<CardKeyword> CanonicalKeywords =>
-        [CardKeyword.Retain, CardKeyword.Exhaust];
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new EnergyVar(1)];
 
     public ChadoEnergyRedesignV1() : base(Spec) { }

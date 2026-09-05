@@ -12,11 +12,15 @@ namespace NinjaSlayer.Code.Commands;
 
 public static class ScryCmd
 {
-    public static async Task Execute(PlayerChoiceContext choiceContext, Player player, int amount)
+    public static async Task<ScryResult> Execute(
+        PlayerChoiceContext choiceContext,
+        Player player,
+        int amount,
+        bool exhaustDiscarded = false)
     {
         if (amount <= 0)
         {
-            return;
+            return default;
         }
 
         CardPile drawPile = PileType.Draw.GetPile(player);
@@ -26,7 +30,7 @@ public static class ScryCmd
             .ToList();
         if (cardsToScry.Count == 0)
         {
-            return;
+            return default;
         }
 
         var prefs = new CardSelectorPrefs(
@@ -42,6 +46,7 @@ public static class ScryCmd
             prefs
         )).ToList();
 
+        int exhaustedCards = 0;
         foreach (CardModel card in cardsToDiscard)
         {
             if (card is ReflexGuardRedesignV1)
@@ -52,6 +57,12 @@ public static class ScryCmd
                      && player.Creature.HasPower<ScryStatusExhaustPower>())
             {
                 await CardCmd.Exhaust(choiceContext, card);
+                exhaustedCards++;
+            }
+            else if (exhaustDiscarded)
+            {
+                await CardCmd.Exhaust(choiceContext, card);
+                exhaustedCards++;
             }
             else
             {
@@ -70,5 +81,9 @@ public static class ScryCmd
         {
             await WatcherScryHookInterop.OnScryed(choiceContext, player, viewedAmount, discardedAmount);
         }
+
+        return new ScryResult(viewedAmount, discardedAmount, exhaustedCards);
     }
 }
+
+public readonly record struct ScryResult(int Viewed, int Discarded, int ExhaustedCards);

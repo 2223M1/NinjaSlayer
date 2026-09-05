@@ -25,18 +25,13 @@ public static class ChadoBreathCmd
             return;
         }
 
-        CardPile draw = PileType.Draw.GetPile(player);
         CardPile hand = PileType.Hand.GetPile(player);
-        CardPile discard = PileType.Discard.GetPile(player);
-        List<ChadoEnergyRedesignV1> cards =
-        [
-            .. draw.Cards.OfType<ChadoEnergyRedesignV1>(),
-            .. hand.Cards.OfType<ChadoEnergyRedesignV1>(),
-            .. discard.Cards.OfType<ChadoEnergyRedesignV1>()
-        ];
+        List<ChadoEnergyRedesignV1> cards = hand.Cards
+            .OfType<ChadoEnergyRedesignV1>()
+            .ToList();
 
-        bool generated = cards.Count == 0;
-        if (generated)
+        bool hasChadoInHand = cards.Count > 0;
+        if (!hasChadoInHand)
         {
             ICombatState combatState = player.Creature.CombatState
                 ?? throw new InvalidOperationException("Chado Breathing requires combat.");
@@ -45,7 +40,7 @@ public static class ChadoBreathCmd
             cards.Add(card);
         }
 
-        int increase = RedesignV1Rules.ResolveChadoBreathIncrease(amount, !generated);
+        int increase = RedesignV1Rules.ResolveChadoBreathIncrease(amount, hasChadoInHand);
         foreach (ChadoEnergyRedesignV1 card in cards)
         {
             card.IncreaseEnergy(increase);
@@ -54,9 +49,9 @@ public static class ChadoBreathCmd
         PlayForgeFeedback(cards);
     }
 
-    private static void PlayForgeFeedback(IReadOnlyCollection<ChadoEnergyRedesignV1> cards)
+    private static void PlayForgeFeedback(List<ChadoEnergyRedesignV1> cards)
     {
-        if (cards.Count == 0 || !LocalContext.IsMine(cards.First()) || NCombatRoom.Instance is not { } room)
+        if (cards.Count == 0 || !LocalContext.IsMine(cards[0]) || NCombatRoom.Instance is not { } room)
         {
             return;
         }
@@ -64,15 +59,10 @@ public static class ChadoBreathCmd
         SfxCmd.Play(ForgeSfx);
         foreach (ChadoEnergyRedesignV1 card in cards)
         {
-            if (card.Pile?.Type == PileType.Hand && room.Ui.Hand.GetCard(card) is { } node)
+            if (room.Ui.Hand.GetCard(card) is { } node)
             {
                 NRun.Instance?.GlobalUi.AboveTopBarVfxContainer.AddChildSafely(
                     NCardSmithVfx.Create(node, playSfx: false));
-            }
-            else
-            {
-                NRun.Instance?.GlobalUi.CardPreviewContainer.AddChildSafely(
-                    NCardSmithVfx.Create([card], playSfx: false));
             }
         }
     }

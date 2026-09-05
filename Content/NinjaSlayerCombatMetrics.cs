@@ -28,8 +28,14 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
     public static bool ChadoDiscardedThisTurn(Player player) =>
         GetSnapshot(player.Creature.CombatState).ChadoDiscarded(player);
 
+    public static bool DiscardedCardThisTurn(Player player) =>
+        GetSnapshot(player.Creature.CombatState).DiscardedCard(player);
+
     public static bool PreviousFinishedCardWasAttack(Player player) =>
         GetSnapshot(player.Creature.CombatState).PreviousFinishedWasAttack(player);
+
+    public static bool PreviousFinishedCardWasSkill(Player player) =>
+        GetSnapshot(player.Creature.CombatState).PreviousFinishedWasSkill(player);
 
     public static int MeleeAttacksPlayedThisTurn(Player player) =>
         GetSnapshot(player.Creature.CombatState).MeleeAttacks(player);
@@ -74,6 +80,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
             && TryGetExisting(state, out CombatMetricsSnapshot<Player> metrics))
         {
             EnsureTurn(metrics, state);
+            metrics.MarkCardDiscarded(card.Owner);
             if (card is ChadoCard)
             {
                 metrics.MarkChadoDiscarded(card.Owner);
@@ -115,6 +122,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
             metrics.AddFinishedCard(
                 player,
                 cardPlay.Card.Type == CardType.Attack,
+                cardPlay.Card.Type == CardType.Skill,
                 KarateTriggerRules.IsMeleeAttack(cardPlay.Card));
         }
 
@@ -189,6 +197,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
                      .OfType<CardDiscardedEntry>()
                      .Where(entry => entry.HappenedThisTurn(combatState)))
         {
+            snapshot.MarkCardDiscarded(entry.Card.Owner);
             if (entry.Card is ChadoCard)
             {
                 snapshot.MarkChadoDiscarded(entry.Card.Owner);
@@ -225,7 +234,11 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
 #endif
             if (previous is not null)
             {
-                snapshot.AddFinishedCard(player, previous.CardPlay.Card.Type == CardType.Attack, isMelee: false);
+                snapshot.AddFinishedCard(
+                    player,
+                    previous.CardPlay.Card.Type == CardType.Attack,
+                    previous.CardPlay.Card.Type == CardType.Skill,
+                    isMelee: false);
             }
         }
 
@@ -240,6 +253,7 @@ public sealed class NinjaSlayerCombatMetrics : NinjaSlayerCombatSingletonTemplat
             snapshot.AddFinishedCard(
                 player,
                 entry.CardPlay.Card.Type == CardType.Attack,
+                entry.CardPlay.Card.Type == CardType.Skill,
                 KarateTriggerRules.IsMeleeAttack(entry.CardPlay.Card));
         }
 

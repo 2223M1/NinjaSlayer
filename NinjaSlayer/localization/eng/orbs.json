@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Shuriken: Whenever you discard a card, Evoke it and lose 1 stack. A single multi-Evoke effect loses only 1 stack. When replaced, Evokes all remaining stacks.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[gold]Shuriken:[/gold] [blue]{Passive}[/blue] {Passive:plural:stack|stacks}.\n[gold]Discard:[/gold] Whenever you discard a card, [gold]Evoke[/gold] it, then lose 1 [gold]Shuriken[/gold]. Each card discarded triggers separately.\n[gold]Evoke:[/gold] Deal [blue]{Evoke}[/blue] damage to a random enemy. A single effect that Evokes this multiple times only removes 1 [gold]Shuriken[/gold].\n[gold]Replaced:[/gold] Evoke once for each remaining [gold]Shuriken[/gold], then remove ALL [gold]Shuriken[/gold]."
+}

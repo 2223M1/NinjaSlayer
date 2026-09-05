@@ -3,126 +3,157 @@ namespace NinjaSlayer.Content;
 public static class RedesignV1Rules
 {
     public const int StartingHp = 72;
-    public const int CommonRewardCount = 19;
-    public const int UncommonRewardCount = 32;
-    public const int RareRewardCount = 17;
+    public const int StartingStrikeCount = 4;
+    public const int StartingDefendCount = 5;
+    public const int StartingSignatureCardCount = 1;
+    public const int CommonRewardCount = 20;
+    public const int UncommonRewardCount = 31;
+    public const int RareRewardCount = 23;
     public const int ShurikenBaseDamage = 4;
+    public const int BlackFlameDamage = 4;
 
     public static IReadOnlyList<string> CommonRewardCardIds { get; } =
     [
-        "CountermeasureRedesignV1",
         "SpiralRoundhouseJumpRedesignV1",
-        "HiddenEdgeRedesignV1",
+        "BladeReserveRedesignV1",
         "PourTeaRedesignV1",
-        "OverexertRedesignV1",
+        "ChadoStillnessRedesignV1",
         "GuidingFlameRedesignV1",
+        "SatsubatsuRedesignV1",
         "ThrowKunaiRedesignV1",
-        "ObserverGuardRedesignV1",
-        "ReflexGuardRedesignV1",
+        "LuckyStrikeRedesignV1",
         "ReadyStanceRedesignV1",
-        "StormFistRedesignV1",
-        "AbandonThoughtRedesignV1",
-        "BodyguardRedesignV1",
+        "CommonChopRedesignV1",
+        "IronBodyRedesignV1",
         "LeftHeavyPunchRedesignV1",
         "RightHeavyPunchRedesignV1",
-        "TrumpCardRedesignV1",
         "HookRopeRedesignV1",
-        "RoundhouseKickRedesignV1",
-        "PalmThrustRedesignV1"
+        "PalmThrustRedesignV1",
+        "WhiskTeaFlashRedesignV1",
+        "OneDrinkOneStrikeRedesignV1",
+        "PreparedShurikenRedesignV1",
+        "ChopDefenseRedesignV1",
+        "RightHeavyPunchAfterSkillRedesignV1"
     ];
 
     public static IReadOnlyList<string> UncommonRewardCardIds { get; } =
     [
         "FlyingBladesComeRedesignV1",
         "ShurikenGenerationRedesignV1",
+        "BladeSweepRedesignV1",
+        "RecycledBladesRedesignV1",
         "CombatAdjustmentRedesignV1",
         "SweepKickRedesignV1",
         "TeaStormRedesignV1",
         "MetabolicAccelerationRedesignV1",
         "GuwaaRedesignV1",
-        "AlabamaDropRedesignV1",
         "AdversityCarapaceRedesignV1",
         "RedBlackFlameAttackRedesignV1",
+        "RoundhouseKickRedesignV1",
         "TechniqueSearchRedesignV1",
-        "DoubleForceRedesignV1",
         "FlyingBladeDanceRedesignV1",
-        "NinjaSixthSenseRedesignV1",
-        "DecidedOutcomeRedesignV1",
-        "AetherEnergyRedesignV1",
+        "BattlefieldInsightRedesignV1",
         "AbyssStrengthRedesignV1",
         "DisadvantageTacticsRedesignV1",
         "KarateTrainingRedesignV1",
-        "JujutsuStanceRedesignV1",
-        "IyaRedesignV1",
+        "ChopStrikeRedesignV1",
         "BackBridgeRedesignV1",
-        "ChadoSecretRedesignV1",
+        "KarateReversalRedesignV1",
+        "TornadoFistRedesignV1",
         "MaskRedesignV1",
-        "ExecutionMoveRedesignV1",
         "WasshoiRedesignV1",
-        "ObserveBattleRedesignV1",
-        "EnduranceRedesignV1",
-        "EmptyMindRedesignV1",
-        "GauntletRedesignV1",
-        "BloodTearsRedesignV1",
-        "BladeCycleRedesignV1"
+        "CounteroffensiveGuardRedesignV1",
+        "BladeCycleRedesignV1",
+        "HiddenEdgeRedesignV1",
+        "AbandonThoughtRedesignV1",
+        "FocusedMindRedesignV1",
+        "BurnBurnBurnRedesignV1",
+        "ReturnReturnReturnRedesignV1"
     ];
 
     public static IReadOnlyList<string> RareRewardCardIds { get; } =
     [
-        "HellTornadoRedesignV1",
-        "GiantShurikenRedesignV1",
-        "KarateRallyRedesignV1",
+        "TurtleShellRedesignV1",
         "FurinKazanChadoRedesignV1",
         "HardItOutRedesignV1",
         "NarakuFormRedesignV1",
         "OnlyKarateRedesignV1",
-        "TornadoFistRedesignV1",
         "ClankDrinkTeaRedesignV1",
         "ChopRedesignV1",
         "DragonFlyingKickRedesignV1",
         "KillingIntentRedesignV1",
-        "StraightKiRedesignV1",
         "ChadoFurinKazanRedesignV1",
         "GreatUkeRedesignV1",
         "NinjaGreetingRedesignV1",
-        "ComposeHaikuRedesignV1"
+        "ComposeHaikuRedesignV1",
+        "DecidedOutcomeRedesignV1",
+        "MomentumRedesignV1",
+        "LingeringMeleeRedesignV1",
+        "AlabamaDropRedesignV1",
+        "KarateTeaRedesignV1",
+        "GiantShurikenRedesignV1",
+        "StormFistRedesignV1",
+        "EmptyShurikenRedesignV1",
+        "HellTornadoRedesignV1",
+        "TeaTeaRedesignV1"
     ];
 
     public static IReadOnlyList<string> ExcludedSpecialCardIds { get; } =
     [
+        "StrikeNinjaSlayerRedesignV1",
+        "DefendNinjaSlayerRedesignV1",
         "KarateStraightRedesignV1",
-        "TurtleShellRedesignV1",
         "ChadoEnergyRedesignV1",
-        "PunchRedesignV1",
-        "IyaEchoRedesignV1",
+        "StraightKiRedesignV1",
         "BlackFlameRedesignV1",
-        "CollapseFistRedesignV1"
+        "CollapseFistRedesignV1",
+        "StrongShurikenTokenRedesignV1",
+        "FinisherRedesignV1",
+        "BusyLine"
     ];
 
-    public static int ShurikenDamage(int bonus) => ShurikenBaseDamage + Math.Max(0, bonus);
+    public static int ShurikenDamage(int bonus) =>
+        ShurikenBaseDamage + Math.Max(0, bonus);
 
-    public static int ResolveChadoBreathIncrease(int amount, bool hasChadoEnergy) =>
-        Math.Max(0, amount - (hasChadoEnergy ? 0 : 1));
+    internal static bool ShouldOwnTransientShurikenSlot(int baseOrbSlotCount, int capacity) =>
+        baseOrbSlotCount == 0 && capacity == 0;
 
-    internal static ShurikenShuffleResolution ResolveShurikenShuffle(
+    public static int ResolveChadoBreathIncrease(int amount, bool hasChadoInHand) =>
+        Math.Max(0, amount - (hasChadoInHand ? 0 : 1));
+
+    internal static ShurikenStockResolution ResolveShurikenDiscard(
         int stock,
-        bool preserveStock,
+        bool isOwnerDiscard,
+        int targetCount)
+    {
+        int availableStock = Math.Max(0, stock);
+        return !isOwnerDiscard || availableStock == 0 || targetCount <= 0
+            ? new ShurikenStockResolution(0, availableStock)
+            : new ShurikenStockResolution(1, availableStock - 1);
+    }
+
+    internal static ShurikenStockResolution ResolveBladeCycleShuffle(
+        int stock,
+        bool hasBladeCycle,
         bool isOwnerShuffle,
         int targetCount)
     {
         int availableStock = Math.Max(0, stock);
-        return !isOwnerShuffle || availableStock == 0 || targetCount <= 0
-            ? new ShurikenShuffleResolution(0, availableStock)
-            : new ShurikenShuffleResolution(
-                availableStock,
-                preserveStock ? availableStock : 0);
+        return !hasBladeCycle || !isOwnerShuffle || availableStock == 0 || targetCount <= 0
+            ? new ShurikenStockResolution(0, availableStock)
+            : new ShurikenStockResolution(availableStock, availableStock - 1);
     }
 
-    internal static int ResolveTurtleShellPlating(int karate, int bonusPlating) =>
-        Math.Max(0, karate) + Math.Max(0, bonusPlating);
+    internal static bool IsBlackFlameTurnEndTarget(
+        bool isAlive,
+        bool isOwner,
+        bool isSameSide) =>
+        isAlive && (isOwner || !isSameSide);
+
+    internal static int ResolveTurtleShellPlating(int karate) => Math.Max(0, karate);
 
     public static int ResolveHardItOutWounds(int accumulatedDamage, int threshold) =>
         threshold <= 0 ? 0 : Math.Max(0, accumulatedDamage) / threshold;
 }
 
-internal readonly record struct ShurikenShuffleResolution(int Shots, int RemainingStock);
+internal readonly record struct ShurikenStockResolution(int Shots, int RemainingStock);

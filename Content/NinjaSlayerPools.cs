@@ -22,10 +22,6 @@ public sealed class NinjaSlayerCardPool : NinjaSlayerCardPoolTemplate
 {
 }
 
-public sealed class NinjaSlayerRedesignCardPool : NinjaSlayerCardPoolTemplate
-{
-}
-
 public sealed class NinjaSlayerRelicPool : TypeListRelicPoolModel
 {
     public override string? TextEnergyIconPath => NinjaSlayerAssetPaths.Image("energy_ninja_slayer.png");
