@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
+using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Content;
@@ -21,17 +22,15 @@ internal sealed partial class SmokeController
 {
     private void ValidateRedesignContent()
     {
-        CardModel[] poolCards = ModelDb.CardPool<NinjaSlayerRedesignCardPool>().AllCards.ToArray();
-        CardModel[] cards = poolCards.OfType<NinjaSlayerRedesignCardTemplate>().ToArray();
-        Require(poolCards.Length == 75, $"Redesign card pool contains {poolCards.Length} cards instead of 72 design cards and 3 Ancient cards.");
-        Require(cards.Length == 72, $"Redesign card pool contains {cards.Length} design cards instead of 72.");
+        CardModel[] poolCards = ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.ToArray();
+        CardModel[] cards = ModelDb.CardPool<NinjaSlayerCardPool>()
+            .GetUnlockedCards(UnlockState.all, CardMultiplayerConstraint.SingleplayerOnly).ToArray();
 
         Type[] expectedBasicTypes =
         [
             typeof(StrikeNinjaSlayerRedesignV1),
             typeof(DefendNinjaSlayerRedesignV1),
-            typeof(KarateStraightRedesignV1),
-            typeof(TurtleShellRedesignV1)
+            typeof(KarateStraightRedesignV1)
         ];
         HashSet<Type> expectedBasic = [.. expectedBasicTypes];
         HashSet<Type> actualBasic = [.. cards.Where(card => card.Rarity == CardRarity.Basic).Select(card => card.GetType())];
@@ -68,16 +67,13 @@ internal sealed partial class SmokeController
             typeof(ZazenDrink)
         ];
         HashSet<Type> expectedAncients = [.. expectedAncientTypes];
-        HashSet<Type> actualAncients = [.. poolCards.Except(cards).Select(card => card.GetType())];
+        HashSet<Type> actualAncients = [.. poolCards.Where(card => card.Rarity == CardRarity.Ancient).Select(card => card.GetType())];
         Require(
             actualAncients.SetEquals(expectedAncients),
             $"Redesign Ancient card mismatch. Missing=[{string.Join(", ", expectedAncients.Except(actualAncients).Select(type => type.Name))}], " +
             $"Unexpected=[{string.Join(", ", actualAncients.Except(expectedAncients).Select(type => type.Name))}].");
 
-        Require(
-            ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.All(card => card is not NinjaSlayerRedesignCardTemplate),
-            "Legacy card pool contains a Redesign card.");
-        Require(cards.Count(card => card.Rarity == CardRarity.Basic) == 4, "Redesign card pool must contain 4 Basic cards.");
+        Require(cards.Count(card => card.Rarity == CardRarity.Basic) == 3, "Ninja Slayer must have 3 Basic card models.");
         Require(
             cards.Count(card => card.Rarity == CardRarity.Common) == RedesignV1Rules.CommonRewardCount,
             $"Redesign card pool must contain {RedesignV1Rules.CommonRewardCount} Common cards.");
@@ -89,7 +85,14 @@ internal sealed partial class SmokeController
             $"Redesign card pool must contain {RedesignV1Rules.RareRewardCount} Rare cards.");
         Require(cards.Select(card => card.Id).Distinct().Count() == cards.Length, "Redesign card pool contains duplicate IDs.");
 
-        foreach (CardModel canonical in poolCards)
+        CardModel[] visibleCards = poolCards.Concat(new CardModel[]
+        {
+            ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
+            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
+            ModelDb.Card<FinisherRedesignV1>(), ModelDb.Card<BusyLine>()
+        }).Distinct().ToArray();
+        Require(visibleCards.Length == 86, $"Current card catalog contains {visibleCards.Length} models instead of 86.");
+        foreach (CardModel canonical in visibleCards)
         {
             Require(canonical.IsCanonical, $"Redesign card pool returned mutable card {canonical.Id}.");
             CardModel mutable = canonical.ToMutable();
@@ -99,27 +102,21 @@ internal sealed partial class SmokeController
             Require(canonical.TitleLocString.Exists(), $"Redesign card {canonical.Id} has no title in the active locale.");
             Require(canonical.Description.Exists(), $"Redesign card {canonical.Id} has no description in the active locale.");
             Require(!string.IsNullOrWhiteSpace(canonical.TitleLocString.GetRawText()), $"Redesign card {canonical.Id} has an empty title.");
-            Require(!string.IsNullOrWhiteSpace(canonical.Description.GetRawText()), $"Redesign card {canonical.Id} has an empty description.");
-            Require(!string.IsNullOrWhiteSpace(mutable.GetDescriptionForPile(PileType.None)), $"Redesign card {canonical.Id} could not format its description.");
+            string description = mutable.GetDescriptionForPile(PileType.None);
+            Require(canonical is BusyLine || !string.IsNullOrWhiteSpace(description), $"Card {canonical.Id} could not format its description.");
+            mutable.UpgradeInternal();
+            Require(canonical is BusyLine || !string.IsNullOrWhiteSpace(mutable.GetDescriptionForPile(PileType.None)), $"Upgraded card {canonical.Id} could not format its description.");
         }
 
         CharacterModel visible = ModelDb.Character<NinjaSlayerCharacter>();
-        CharacterModel redesign = ModelDb.Character<NinjaSlayerRedesignCharacter>();
-        Require(visible.Title.GetRawText() == redesign.Title.GetRawText(), "Visible and Redesign character titles differ.");
-        Require(visible.TitleObject.GetRawText() == redesign.TitleObject.GetRawText(), "Visible and Redesign character object titles differ.");
-        CardModel[] lobbyCards =
-        [
-            ModelDb.Card<StrikeNinjaSlayer>(),
-            ModelDb.Card<DefendNinjaSlayer>(),
-            ModelDb.Card<Meditation>(),
-            ModelDb.Card<KarateStraight>(),
-            ModelDb.Card<ChadoCard>()
-        ];
-        foreach (CardModel card in lobbyCards)
-        {
-            Require(card.TitleLocString.Exists(), $"Lobby card {card.Id} has no title in the active locale.");
-            Require(card.Description.Exists(), $"Lobby card {card.Id} has no description in the active locale.");
-        }
+        Require(ModelDb.AllCharacters.Count(character => character is INinjaSlayerCharacter) == 1,
+            "Exactly one Ninja Slayer character must be registered.");
+        CardModel[] starter = visible.StartingDeck.ToArray();
+        Require(starter.Length == 10
+            && starter.Count(card => card is StrikeNinjaSlayerRedesignV1) == 4
+            && starter.Count(card => card is DefendNinjaSlayerRedesignV1) == 5
+            && starter.Count(card => card is KarateStraightRedesignV1) == 1,
+            "Ninja Slayer starting deck must be 4 Strikes, 5 Defends and 1 Karate Straight.");
 
         _checkpoints.Write("redesign.content-validated", data: new System.Text.Json.Nodes.JsonObject { ["cardCount"] = cards.Length });
     }
@@ -127,46 +124,16 @@ internal sealed partial class SmokeController
     private static void ValidateRedesignRunIdentity(Player player)
     {
         ModelId visibleId = ModelDb.Character<NinjaSlayerCharacter>().Id;
-        ModelId redesignId = ModelDb.Character<NinjaSlayerRedesignCharacter>().Id;
-        RunState runState = RunManager.Instance.DebugOnlyGetState()
-            ?? throw new InvalidOperationException("The active Redesign run state was unavailable.");
-        Require(
-            NinjaSlayerRunData.GetRulesVersion(runState) == NinjaSlayerRulesVersion.RedesignV1,
-            "The active run did not snapshot the Redesign V1 rules.");
-        Require(player.Character is NinjaSlayerRedesignCharacter, "The Redesign run did not use the hidden Redesign character model.");
+        Require(player.Character is NinjaSlayerCharacter, "The run did not use the registered Ninja Slayer character.");
 
         SerializableRun save = RunManager.Instance.ToSave(null);
         SerializablePlayer serializedPlayer = save.Players.Single(candidate => candidate.NetId == player.NetId);
-        Require(serializedPlayer.CharacterId == redesignId, "The active Redesign run did not serialize the Redesign character ID.");
-
-        ProgressState progress = SaveManager.Instance.Progress;
-        CharacterStats visibleStats = progress.GetOrCreateCharacterStats(visibleId);
-        CharacterStats redesignStats = progress.GetOrCreateCharacterStats(redesignId);
-        Require(ReferenceEquals(visibleStats, redesignStats), "Redesign progress lookup did not resolve to visible Ninja Slayer stats.");
-        Require(!progress.CharacterStats.ContainsKey(redesignId), "Progress contains a separate hidden Redesign character entry.");
-
-        var ancientStats = new AncientStats
-        {
-            Id = ModelId.none,
-            CharStats =
-            [
-                new AncientCharacterStats { Character = visibleId, Wins = 2, Losses = 1 }
-            ]
-        };
-        Require(ancientStats.GetVisitsAs(redesignId) == 3, "Ancient visit lookup did not use visible Ninja Slayer identity.");
-        foreach (AncientEventModel ancient in ModelDb.AllAncients)
-        {
-            Require(
-                ancient.DialogueSet.GetValidDialogues(visibleId, 1, 2, true)
-                    .SequenceEqual(ancient.DialogueSet.GetValidDialogues(redesignId, 1, 2, true)),
-                $"Ancient dialogue identity differs for {ancient.Id}.");
-        }
+        Require(serializedPlayer.CharacterId == visibleId, "The run did not serialize the canonical Ninja Slayer character ID.");
     }
 
     private static void ValidateRedesignCombatProgress(ICombatState combatState)
     {
         ModelId visibleId = ModelDb.Character<NinjaSlayerCharacter>().Id;
-        ModelId redesignId = ModelDb.Character<NinjaSlayerRedesignCharacter>().Id;
         EncounterModel encounter = combatState.Encounter
             ?? throw new InvalidOperationException("The completed smoke combat had no encounter.");
         ProgressState progress = SaveManager.Instance.Progress;
@@ -175,7 +142,6 @@ internal sealed partial class SmokeController
             throw new InvalidOperationException("Completed encounter stats were not recorded.");
         }
         Require(encounterStats.FightStats.Any(stats => stats.Character == visibleId), "Completed encounter was not recorded for visible Ninja Slayer.");
-        Require(encounterStats.FightStats.All(stats => stats.Character != redesignId), "Completed encounter retained hidden Redesign stats.");
 
         foreach (ModelId enemyId in encounter.SpawnedEnemies.Select(enemy => enemy.Id).Distinct())
         {
@@ -184,7 +150,6 @@ internal sealed partial class SmokeController
                 throw new InvalidOperationException($"Enemy stats were not recorded for {enemyId}.");
             }
             Require(enemyStats.FightStats.Any(stats => stats.Character == visibleId), $"Enemy {enemyId} was not recorded for visible Ninja Slayer.");
-            Require(enemyStats.FightStats.All(stats => stats.Character != redesignId), $"Enemy {enemyId} retained hidden Redesign stats.");
         }
     }
 
