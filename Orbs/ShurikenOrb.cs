@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Cards;
@@ -150,7 +151,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         for (int index = 0; index < shots; index++)
         {
             IReadOnlyList<Creature> shotTargets =
-                await FireOne(playerChoiceContext, null, evoke: true);
+                await FireOne(playerChoiceContext, null, notifyEvokeHooks: false);
             if (shotTargets.Count == 0)
             {
                 break;
@@ -200,7 +201,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         bool generatedStrongShuriken = false;
         for (int index = 0; index < stock * triggersPerStock; index++)
         {
-            if ((await FireOne(choiceContext, source, evoke: false)).Count == 0)
+            if ((await FireOne(choiceContext, source)).Count == 0)
             {
                 break;
             }
@@ -263,7 +264,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         bool fired = false;
         for (int index = 0; index < resolution.Shots; index++)
         {
-            if ((await FireOne(choiceContext, source, evoke: false)).Count == 0)
+            if ((await FireOne(choiceContext, source)).Count == 0)
             {
                 break;
             }
@@ -294,7 +295,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
     private async Task<IReadOnlyList<Creature>> FireOne(
         PlayerChoiceContext choiceContext,
         CardModel? source,
-        bool evoke)
+        bool notifyEvokeHooks = true)
     {
         IReadOnlyList<Creature> candidates = CombatState.HittableEnemies;
         if (candidates.Count == 0)
@@ -318,16 +319,18 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets = [target];
         }
 
-        Action activate = evoke
-            ? () => ActivateEvokeFeedback(targets)
-            : ActivatePassiveFeedback;
         await ShurikenCombat.TriggerStockWave(
             choiceContext,
             Owner.Creature,
             targets,
             source,
             this,
-            activate);
+            () => ActivateEvokeFeedback(targets));
+        // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
+        if (notifyEvokeHooks && Owner.Creature.CombatState is { } combatState)
+        {
+            await Hook.AfterOrbEvoked(choiceContext, combatState, this, targets);
+        }
         return targets;
     }
 

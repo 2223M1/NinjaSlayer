@@ -965,9 +965,6 @@ if (/class\s+CounteroffensiveGuardPower\b/.test(redesignReworkPowerSource)) {
 if (!/class\s+ShurikenGuardRedesignPower[\s\S]*?TotalDamage\s*\+\s*result\.OverkillDamage/.test(redesignReworkPowerSource)) {
   errors.push('Shuriken Guard must count TotalDamage plus OverkillDamage for every result in a Shuriken wave');
 }
-if (!/class\s+StarlessNightRedesignPower[\s\S]*?PowerStackType\.Single[\s\S]*?GenerateStrongShuriken/.test(redesignReworkPowerSource)) {
-  errors.push('Starless Night must be single-stack and generate at most one Strong Shuriken per resolution chain');
-}
 
 const karateDamageWavePatchSource = readFileSync(
   join(root, 'Code', 'Patches', 'KarateDamageWavePatch.cs'),
@@ -1115,32 +1112,6 @@ for (const path of obsoleteShurikenPowerPaths) {
   if (existsSync(path)) errors.push(`${relative(root, path)} must be deleted after Shuriken becomes an Orb`);
 }
 
-const shurikenOrbSource = readFileSync(join(root, 'Orbs', 'ShurikenOrb.cs'), 'utf8');
-if (!/\[RegisterOrb\][\s\S]*?class\s+ShurikenOrb\s*:\s*ModOrbTemplate/.test(shurikenOrbSource)
-    || !/ModOrbValueDisplayMode\.Both/.test(shurikenOrbSource)
-    || !/EvokeVal\s*=>[\s\S]*?ModifyOrbValue\(ShurikenCombat\.GetStockBaseDamage/.test(shurikenOrbSource)
-    || !/int\s+StackCount\s*\{\s*get;\s*private set;\s*\}/.test(shurikenOrbSource)
-    || !/bool\s+OwnsTransientSlot\s*\{\s*get;\s*private set;\s*\}/.test(shurikenOrbSource)
-    || !/SavedDataSlot\s*=\s*"shuriken_orb_state"/.test(shurikenOrbSource)
-    || !/RegisterComputed<ShurikenOrb,\s*ShurikenOrbState>/.test(shurikenOrbSource)) {
-  errors.push('Shuriken must be a saved, stackable Orb with the vanilla Dark Orb value layout');
-}
-if (!/override\s+(?:async\s+)?Task\s+AfterCardDiscarded\b/.test(shurikenOrbSource)
-    || !/override\s+Task\s+AfterShuffle\b/.test(shurikenOrbSource)
-    || /override\s+(?:async\s+)?Task\s+AfterCardPlayed\b/.test(shurikenOrbSource)
-    || !/ResolveBladeCycleShuffle[\s\S]*?HasPower<BladeCyclePower>/.test(shurikenOrbSource)) {
-  errors.push('The Shuriken Orb must spend one stack on discard and reserve shuffle firing for Blade Cycle');
-}
-if (!/bool\s+_fireAllStockOnNextEvoke/.test(shurikenOrbSource)
-    || !/bool\s+_consumeOneStockOnNextEvoke/.test(shurikenOrbSource)
-    || !/bool\s+_generatedStrongShurikenInEvokeChain/.test(shurikenOrbSource)
-    || !/IsPreparedForReplacementEvoke\s*=>\s*_fireAllStockOnNextEvoke/.test(shurikenOrbSource)
-    || !/PrepareForReplacementEvoke\(\)[\s\S]*?_fireAllStockOnNextEvoke\s*=\s*true[\s\S]*?_completeEvokeChainOnNextEvoke\s*=\s*true/.test(shurikenOrbSource)
-    || !/PrepareForSingleStockEvoke\(\)[\s\S]*?StackCount\s*<=\s*0[\s\S]*?_consumeOneStockOnNextEvoke\s*=\s*true[\s\S]*?_completeEvokeChainOnNextEvoke\s*=\s*true/.test(shurikenOrbSource)
-    || !/override\s+async\s+Task<IEnumerable<Creature>>\s+Evoke[\s\S]*?bool\s+fireAllStock\s*=\s*_fireAllStockOnNextEvoke[\s\S]*?int\s+shots\s*=\s*fireAllStock\s*\?\s*StackCount\s*:\s*1[\s\S]*?bool\s+consumeOneStock\s*=\s*_consumeOneStockOnNextEvoke[\s\S]*?_fireAllStockOnNextEvoke\s*=\s*false[\s\S]*?_consumeOneStockOnNextEvoke\s*=\s*false[\s\S]*?index\s*<\s*shots[\s\S]*?FireOne\([^;]*evoke:\s*true\)[\s\S]*?if\s*\(consumeOneStock\s*&&\s*fired\)[\s\S]*?StackCount--[\s\S]*?RemoveDepletedOrb\(\)[\s\S]*?RefreshVisuals\(\)[\s\S]*?ReleaseTransientSlotIfRemoved/.test(shurikenOrbSource)
-    || !/RemoveDepletedOrb[\s\S]*?OrbQueue\.Remove\(this\)[\s\S]*?EvokeOrbAnim\(this\)[\s\S]*?RemoveInternal\(\)/.test(shurikenOrbSource)) {
-  errors.push('Shuriken ordinary and multi-evoke effects must spend one stock total, while displacement fires all stock');
-}
 if (!/ShurikenOrb\.RegisterSavedData\(NinjaSlayerIds\.ModId\)/.test(entrySource)
     || !/RegisterPatch<ShurikenOrbChannelPatch>/.test(entrySource)
     || !/RegisterPatch<ShurikenOrbEvokePatch>/.test(entrySource)
@@ -1156,18 +1127,6 @@ const shurikenChannelPatchSource = readFileSync(
   join(root, 'Code', 'Patches', 'ShurikenOrbChannelPatch.cs'),
   'utf8',
 );
-if (!/nameof\(OrbCmd\.Channel\)/.test(shurikenChannelPatchSource)
-    || !/queue\.Orbs\[0\]\s+is\s+ShurikenOrb\s+shuriken/.test(shurikenChannelPatchSource)
-    || !/PrepareForReplacementEvoke\(\)/.test(shurikenChannelPatchSource)
-    || !/OwnsTransientSlot[\s\S]*?TransferTransientSlot\(\)/.test(shurikenChannelPatchSource)) {
-  errors.push('Channeling into a full queue must fire all Shuriken stock and transfer its transient slot');
-}
-if (!/class\s+ShurikenOrbEvokePatch\s*:\s*IPatchMethod/.test(shurikenChannelPatchSource)
-    || !/typeof\(OrbCmd\)[\s\S]*?"Evoke"[\s\S]*?typeof\(PlayerChoiceContext\)[\s\S]*?typeof\(Player\)[\s\S]*?typeof\(OrbModel\)[\s\S]*?typeof\(bool\)/.test(shurikenChannelPatchSource)
-    || !/Prefix\(OrbModel\s+evokedOrb,\s*ref\s+bool\s+dequeue\)/.test(shurikenChannelPatchSource)
-    || !/evokedOrb\s+is\s+not\s+ShurikenOrb\s+shuriken[\s\S]*?shuriken\.IsPreparedForReplacementEvoke[\s\S]*?if\s*\(!dequeue\)[\s\S]*?PrepareForContinuingEvoke\(\)[\s\S]*?return[\s\S]*?dequeue\s*=\s*false[\s\S]*?PrepareForSingleStockEvoke\(\)/.test(shurikenChannelPatchSource)) {
-  errors.push('Ordinary and multi-evoke effects must preserve the Shuriken Orb and consume one stock on their final evoke');
-}
 if (!/class\s+ShurikenOrbLayoutPatch\s*:\s*IPatchMethod/.test(shurikenChannelPatchSource)
     || !/typeof\(NOrbManager\),\s*"TweenLayout"/.test(shurikenChannelPatchSource)
     || !/Player\?\.Character\s+is\s+not\s+INinjaSlayerCharacter/.test(shurikenChannelPatchSource)

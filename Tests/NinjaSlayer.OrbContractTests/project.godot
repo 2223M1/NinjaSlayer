@@ -1,0 +1,7 @@
+[application]
+config/name="NinjaSlayer Orb Contracts"
+run/main_scene="res://contracts.tscn"
+[dotnet]
+project/assembly_name="NinjaSlayer.OrbContractTests"
+[rendering]
+renderer/rendering_method="gl_compatibility"

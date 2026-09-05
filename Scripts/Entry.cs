@@ -54,6 +54,7 @@ public class Entry
         try
         {
             requiredPatcher.RegisterPatch<NinjaSlayerAnimationPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerRunSavePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
