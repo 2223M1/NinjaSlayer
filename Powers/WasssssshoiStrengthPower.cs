@@ -8,8 +8,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Powers;
 
 [RegisterPower]
-public sealed class MomentumTemporaryFocusPower
-    : ModTemporaryAppliedPowerTemplate<MomentumRedesignV1, FocusPower>
+public sealed class WasssssshoiStrengthPower : ModTemporaryAppliedPowerTemplate<Wasssssshoi, StrengthPower>
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DamageFocusPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
 }

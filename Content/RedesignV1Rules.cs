@@ -4,11 +4,12 @@ public static class RedesignV1Rules
 {
     public const int StartingHp = 72;
     public const int StartingStrikeCount = 4;
-    public const int StartingDefendCount = 5;
+    public const int StartingDefendCount = 4;
     public const int StartingSignatureCardCount = 1;
+    public const int StartingPrejudgeCount = 1;
     public const int CommonRewardCount = 20;
-    public const int UncommonRewardCount = 31;
-    public const int RareRewardCount = 23;
+    public const int UncommonRewardCount = 35;
+    public const int RareRewardCount = 25;
     public const int ShurikenBaseDamage = 4;
     public const int BlackFlameDamage = 4;
 
@@ -38,7 +39,7 @@ public static class RedesignV1Rules
 
     public static IReadOnlyList<string> UncommonRewardCardIds { get; } =
     [
-        "FlyingBladesComeRedesignV1",
+        "ShurikenCreation",
         "ShurikenGenerationRedesignV1",
         "BladeSweepRedesignV1",
         "RecycledBladesRedesignV1",
@@ -46,7 +47,7 @@ public static class RedesignV1Rules
         "SweepKickRedesignV1",
         "TeaStormRedesignV1",
         "MetabolicAccelerationRedesignV1",
-        "GuwaaRedesignV1",
+        "SipTea",
         "AdversityCarapaceRedesignV1",
         "RedBlackFlameAttackRedesignV1",
         "RoundhouseKickRedesignV1",
@@ -54,19 +55,23 @@ public static class RedesignV1Rules
         "FlyingBladeDanceRedesignV1",
         "BattlefieldInsightRedesignV1",
         "AbyssStrengthRedesignV1",
-        "DisadvantageTacticsRedesignV1",
+        "GatherKi",
         "KarateTrainingRedesignV1",
         "ChopStrikeRedesignV1",
         "BackBridgeRedesignV1",
-        "KarateReversalRedesignV1",
+        "Endurance",
         "TornadoFistRedesignV1",
-        "MaskRedesignV1",
+        "ObserveBattlefield",
         "WasshoiRedesignV1",
         "CounteroffensiveGuardRedesignV1",
         "BladeCycleRedesignV1",
         "HiddenEdgeRedesignV1",
         "AbandonThoughtRedesignV1",
-        "FocusedMindRedesignV1",
+        "BlackFlameRecovery",
+        "TonyRetention",
+        "StatusDraw",
+        "PlaceholderBlueDefense01",
+        "PlaceholderBlueDefense02",
         "BurnBurnBurnRedesignV1",
         "ReturnReturnReturnRedesignV1"
     ];
@@ -78,7 +83,7 @@ public static class RedesignV1Rules
         "HardItOutRedesignV1",
         "NarakuFormRedesignV1",
         "OnlyKarateRedesignV1",
-        "ClankDrinkTeaRedesignV1",
+        "ChopChain",
         "ChopRedesignV1",
         "DragonFlyingKickRedesignV1",
         "KillingIntentRedesignV1",
@@ -87,13 +92,15 @@ public static class RedesignV1Rules
         "NinjaGreetingRedesignV1",
         "ComposeHaikuRedesignV1",
         "DecidedOutcomeRedesignV1",
-        "MomentumRedesignV1",
+        "Wasssssshoi",
         "LingeringMeleeRedesignV1",
         "AlabamaDropRedesignV1",
         "KarateTeaRedesignV1",
         "GiantShurikenRedesignV1",
         "StormFistRedesignV1",
-        "EmptyShurikenRedesignV1",
+        "ShurikenStorm",
+        "KarateScry",
+        "PlaceholderGoldDefense01",
         "HellTornadoRedesignV1",
         "TeaTeaRedesignV1"
     ];
@@ -103,12 +110,12 @@ public static class RedesignV1Rules
         "StrikeNinjaSlayerRedesignV1",
         "DefendNinjaSlayerRedesignV1",
         "KarateStraightRedesignV1",
+        "Prejudge",
         "ChadoEnergyRedesignV1",
         "StraightKiRedesignV1",
         "BlackFlameRedesignV1",
         "CollapseFistRedesignV1",
         "StrongShurikenTokenRedesignV1",
-        "FinisherRedesignV1",
         "BusyLine"
     ];
 

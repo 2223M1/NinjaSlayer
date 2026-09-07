@@ -84,6 +84,11 @@ internal static class ShurikenCombat
         {
             await guard.AfterShurikenDamage(results);
         }
+        if (owner.GetPower<WasssssshoiPower>() is { } wasshoi)
+        {
+            foreach (DamageResult result in results.Where(result => result.TotalDamage > 0 && result.Receiver.Side != owner.Side))
+                await wasshoi.GainTemporaryStats(choiceContext, source);
+        }
 
         return results;
     }

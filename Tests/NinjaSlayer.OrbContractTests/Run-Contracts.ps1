@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
     [Parameter(Mandatory)][string]$NinjaSlayerAssemblyPath,
     [Parameter(Mandatory)][string]$Sts2DataDir,
+    [Parameter(Mandatory)][string]$HostPack,
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$SourceRevision,
     [Parameter(Mandatory)][string]$GodotPath,
     [Parameter(Mandatory)][string]$DotnetRoot,
@@ -26,6 +27,7 @@ $environment = @{
     NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = $SourceRevision
     NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $product
     NINJASLAYER_CONTRACT_HOST_MVID = $hostMvid
+    NINJASLAYER_CONTRACT_HOST_PACK = (Resolve-Path -LiteralPath $HostPack).Path
 }
 try {
     foreach ($name in $environment.Keys) {

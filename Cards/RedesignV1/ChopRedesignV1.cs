@@ -26,10 +26,10 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class ChopRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(7, ValueProp.Move), new KarateVar(2), new CardsVar(3)];
+        [new DamageVar(5, ValueProp.Move), new KarateVar(1), new CardsVar(3)];
 
     public ChopRedesignV1()
-        : base(nameof(ChopRedesignV1), "Chop", 1, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(ChopRedesignV1), "Chop", 0, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -54,21 +54,21 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
     public override async Task AfterCardPlayedLate(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (cardPlay.Card.Owner != Owner
-            || cardPlay.Card.Type != CardType.Skill
+            || cardPlay.Card.Type != CardType.Attack
             || Pile?.Type == PileType.Hand)
         {
             return;
         }
 
-        int skills = CombatManager.Instance.History.CardPlaysFinished.Count(entry =>
+        int attacks = CombatManager.Instance.History.CardPlaysFinished.Count(entry =>
             entry.HappenedThisTurn(CombatState!)
-            && entry.CardPlay.Card.Type == CardType.Skill
+            && entry.CardPlay.Card.Type == CardType.Attack
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             && entry.CardPlay.Card.Owner == Owner);
 #else
             && entry.CardPlay.Player == Owner);
 #endif
-        if (skills > 0 && skills % DynamicVars.Cards.IntValue == 0)
+        if (attacks > 0 && attacks % DynamicVars.Cards.IntValue == 0)
         {
             await CardPileCmd.Add(this, PileType.Hand);
         }
@@ -76,7 +76,7 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(2);
+        DynamicVars.Damage.UpgradeValueBy(1);
         DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

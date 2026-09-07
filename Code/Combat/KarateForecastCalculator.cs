@@ -21,10 +21,7 @@ public static class KarateForecastCalculator
             && KarateCombatPreviewContext.TryGetCard(target) == previewCard
             && KarateTriggerRules.CanTriggerFromCardSource(previewCard);
         int hits = isPreviewTarget ? ResolveHitCount(previewCard!, target) : 1;
-        int multiplier = previewCard is ClankDrinkTeaRedesignV1 assassination
-            ? assassination.KarateMultiplier
-            : 1;
-        return KarateDamageMath.ForecastDamage(stacks, hits, isPreviewTarget) * multiplier;
+        return KarateDamageMath.ForecastDamage(stacks, hits, isPreviewTarget);
     }
 
     public static int ResolveHpPreviewDamage(int stacks, CardModel? previewCard, Creature target)
@@ -38,10 +35,7 @@ public static class KarateForecastCalculator
             && KarateCombatPreviewContext.TryGetCard(target) == previewCard
             && KarateTriggerRules.CanTriggerFromCardSource(previewCard);
         int hits = isPreviewTarget ? ResolveHitCount(previewCard!, target) : 1;
-        int multiplier = previewCard is ClankDrinkTeaRedesignV1 assassination
-            ? assassination.KarateMultiplier
-            : 1;
-        return KarateDamageMath.HpPreviewDamage(stacks, hits, isPreviewTarget) * multiplier;
+        return KarateDamageMath.HpPreviewDamage(stacks, hits, isPreviewTarget);
     }
 
     public static int CumulativeDamage(int stack, int hits)

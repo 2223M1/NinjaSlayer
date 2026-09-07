@@ -19,7 +19,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class OneDrinkOneStrikeRedesignV1 : RedesignV1CommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(12, ValueProp.Move), new DynamicVar("Breath", 2)];
+        [new DamageVar(14, ValueProp.Move), new DynamicVar("Breath", 2)];
 
     public OneDrinkOneStrikeRedesignV1()
         : base(nameof(OneDrinkOneStrikeRedesignV1), "PursuitStrike", 2, CardType.Attack, TargetType.AnyEnemy) { }

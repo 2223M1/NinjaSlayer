@@ -39,14 +39,20 @@ public partial class OrbContractRunner
         MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
         string directory = System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_DIRECTORY")!;
         ushort port = ushort.Parse(System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_PORT")!);
+#if !NINJASLAYER_CHANNEL_STABLE
         var version = new PeerVersionInfo
         {
             version = Metadata(typeof(ShurikenOrb).Assembly, "NinjaSlayerGameApiVersion"), idDatabaseHash = ModelIdSerializationCache.Hash,
             gameplayAffectingMods = ["NinjaSlayer"], otherMods = []
         };
+#endif
         if (role == "host")
         {
+#if NINJASLAYER_CHANNEL_STABLE
+            var host = new NetHostGameService();
+#else
             var host = new NetHostGameService(version);
+#endif
             var transport = new ENetHost(host);
             // Native ENetHost hardcodes 0.0.0.0; bind this test's socket to loopback only.
             var connection = new ENetConnection();
@@ -62,7 +68,11 @@ public partial class OrbContractRunner
         else
         {
             await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "listening")), "host startup");
+#if NINJASLAYER_CHANNEL_STABLE
+            var client = new NetClientGameService();
+#else
             var client = new NetClientGameService(version);
+#endif
             var transport = new ENetClient(client);
             client.Initialize(transport, PlatformType.None);
             _network = client;
@@ -131,6 +141,50 @@ public partial class OrbContractRunner
         Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlameRedesignV1>().Count() == 1
             && !PileType.Draw.GetPile(second).Cards.OfType<BlackFlameRedesignV1>().Any(),
             "Black Flame generation crossed player ownership.");
+#if !NINJASLAYER_CHANNEL_STABLE
+        int localSelections = 0;
+        using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+        {
+            localSelections++;
+            Player owner = options[0].Owner;
+            var synchronizer = RunManager.Instance.PlayerChoiceSynchronizer;
+            uint choiceId = synchronizer.ChoiceIds[run.Players.ToList().IndexOf(owner)] - 1;
+            // Native LocalSelector bypasses the UI branch that sends its result.
+            synchronizer.SyncLocalChoice(owner, choiceId, options[0].Pile?.Type == PileType.Hand
+                ? PlayerChoiceResult.FromMutableCombatCards(options.Take(1))
+                : PlayerChoiceResult.FromIndexes([0]));
+            return options.Take(1);
+        }), localOnly: true);
+        foreach (Player player in run.Players)
+        {
+            foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
+                await CardPileCmd.Add(card, PileType.Discard);
+            var discard = combat.State.CreateCard<ShurikenGenerationRedesignV1>(player);
+            var sly = combat.State.CreateCard<ShurikenCreation>(player);
+            var nested = combat.State.CreateCard<ShurikenCreation>(player);
+            var last = combat.State.CreateCard<DefendIronclad>(player);
+            await CardPileCmd.Add(discard, PileType.Hand);
+            await CardPileCmd.Add(sly, PileType.Hand);
+            await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Hand);
+            await CardPileCmd.Add(last, PileType.Draw, CardPilePosition.Top);
+            await CardPileCmd.Add(nested, PileType.Draw, CardPilePosition.Top);
+            int before = completed;
+            string fixture = $"choices-{player.NetId}";
+            System.IO.File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+            await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                && System.IO.File.Exists(Path.Combine(directory, $"client.{fixture}")), "both choice fixtures");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(discard, null));
+            await WaitNetwork(() => completed > before, $"player {player.NetId} hand discard and nested Scry choices");
+            Require(sly.Pile?.Type == PileType.Discard && nested.Pile?.Type == PileType.Discard
+                && last.Pile?.Type == PileType.Discard && discard.Pile?.Type == PileType.Exhaust,
+                "Native synchronized choices must resolve both Sly cards and the nested discard.");
+            Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 4,
+                "Nested discard chains must finish before each Sly card replenishes its stock.");
+        }
+        Require(localSelections == 3, "Only the local player may make the three synchronized choices.");
+        GD.Print("PASS synchronized hand discard and nested Scry/Sly choices");
+#endif
         var snapshot = new
         {
             EnemyHp = new[] { combat.Enemy.CurrentHp, otherEnemy.CurrentHp },
@@ -146,7 +200,7 @@ public partial class OrbContractRunner
             && System.IO.File.Exists(Path.Combine(directory, "client.json")), "both final snapshots");
         Require(System.IO.File.ReadAllText(Path.Combine(directory, "host.json"))
             == System.IO.File.ReadAllText(Path.Combine(directory, "client.json")), "Host/client product states diverged.");
-        GD.Print("PASS two-process native ENet/action-queue stock, multi-evoke, Naraku ownership, card destinations and RNG agreement");
+        GD.Print("PASS two-process native ENet/action-queue stock, multi-evoke, Naraku ownership and RNG agreement");
     }
 
     private static async Task WaitNetwork(Func<bool> predicate, string operation)

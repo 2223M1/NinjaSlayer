@@ -31,7 +31,8 @@ internal sealed partial class SmokeController
         [
             typeof(StrikeNinjaSlayerRedesignV1),
             typeof(DefendNinjaSlayerRedesignV1),
-            typeof(KarateStraightRedesignV1)
+            typeof(KarateStraightRedesignV1),
+            typeof(Prejudge)
         ];
         HashSet<Type> expectedBasic = [.. expectedBasicTypes];
         HashSet<Type> actualBasic = [.. cards.Where(card => card.Rarity == CardRarity.Basic).Select(card => card.GetType())];
@@ -74,7 +75,7 @@ internal sealed partial class SmokeController
             $"Redesign Ancient card mismatch. Missing=[{string.Join(", ", expectedAncients.Except(actualAncients).Select(type => type.Name))}], " +
             $"Unexpected=[{string.Join(", ", actualAncients.Except(expectedAncients).Select(type => type.Name))}].");
 
-        Require(cards.Count(card => card.Rarity == CardRarity.Basic) == 3, "Ninja Slayer must have 3 Basic card models.");
+        Require(cards.Count(card => card.Rarity == CardRarity.Basic) == 4, "Ninja Slayer must have 4 Basic card models.");
         Require(
             cards.Count(card => card.Rarity == CardRarity.Common) == RedesignV1Rules.CommonRewardCount,
             $"Redesign card pool must contain {RedesignV1Rules.CommonRewardCount} Common cards.");
@@ -90,9 +91,9 @@ internal sealed partial class SmokeController
         {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
             ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<FinisherRedesignV1>(), ModelDb.Card<BusyLine>()
+            ModelDb.Card<BusyLine>()
         }).Distinct().ToArray();
-        Require(visibleCards.Length == 86, $"Current card catalog contains {visibleCards.Length} models instead of 86.");
+        Require(visibleCards.Length == 92, $"Current card catalog contains {visibleCards.Length} models instead of 92.");
         foreach (CardModel canonical in visibleCards)
         {
             Require(canonical.IsCanonical, $"Redesign card pool returned mutable card {canonical.Id}.");
@@ -115,9 +116,10 @@ internal sealed partial class SmokeController
         CardModel[] starter = visible.StartingDeck.ToArray();
         Require(starter.Length == 10
             && starter.Count(card => card is StrikeNinjaSlayerRedesignV1) == 4
-            && starter.Count(card => card is DefendNinjaSlayerRedesignV1) == 5
-            && starter.Count(card => card is KarateStraightRedesignV1) == 1,
-            "Ninja Slayer starting deck must be 4 Strikes, 5 Defends and 1 Karate Straight.");
+            && starter.Count(card => card is DefendNinjaSlayerRedesignV1) == 4
+            && starter.Count(card => card is KarateStraightRedesignV1) == 1
+            && starter.Count(card => card is Prejudge) == 1,
+            "Ninja Slayer starting deck must be 4 Strikes, 4 Defends, 1 Karate Straight and 1 Prejudge.");
 
         _checkpoints.Write("redesign.content-validated", data: new System.Text.Json.Nodes.JsonObject { ["cardCount"] = cards.Length });
     }
@@ -208,9 +210,11 @@ internal sealed partial class SmokeController
         await PowerCmd.Remove(player.Creature.GetPower<KaratePower>()!);
 
         int hpBeforeGreatUke = player.Creature.CurrentHp;
-        GreatUkeRedesignPower greatUke = await PowerCmd.Apply<GreatUkeRedesignPower>(
-            choiceContext, player.Creature, 2, player.Creature, null)
-            ?? throw new InvalidOperationException("Great Uke could not be applied.");
+        GreatUkeRedesignV1 greatUke = combatState.CreateCard<GreatUkeRedesignV1>(player);
+        await CardPileCmd.Add(greatUke, PileType.Hand);
+        await CardCmd.AutoPlay(choiceContext, greatUke, null);
+        Require(tea.Pile?.Type == PileType.Exhaust && player.Creature.GetPowerAmount<BufferPower>() == 1,
+            "Great Uke must play and exhaust Chado and grant one Buffer.");
         await CreatureCmd.Damage(
             choiceContext,
             [player.Creature],
@@ -222,8 +226,7 @@ internal sealed partial class SmokeController
             , null
 #endif
         );
-        Require(player.Creature.CurrentHp == hpBeforeGreatUke - 10, "A 10-damage hit incorrectly triggered Great Uke.");
-        Require(greatUke.Amount == 2, "A 10-damage hit consumed Great Uke.");
+        Require(player.Creature.CurrentHp == hpBeforeGreatUke, "Great Uke Buffer did not prevent the first hit.");
         await CreatureCmd.Damage(
             choiceContext,
             [player.Creature],
@@ -235,10 +238,8 @@ internal sealed partial class SmokeController
             , null
 #endif
         );
-        Require(player.Creature.CurrentHp == hpBeforeGreatUke - 10, "A hit above 10 damage was not nullified.");
-        Require(greatUke.Amount == 1, "A hit above 10 damage did not consume one Great Uke charge.");
-        await PowerCmd.Remove(greatUke);
-        await CreatureCmd.Heal(player.Creature, 10);
+        Require(player.Creature.CurrentHp == hpBeforeGreatUke - 11, "Great Uke incorrectly prevented a second hit.");
+        await CreatureCmd.Heal(player.Creature, 11);
         _checkpoints.Write("redesign.runtime-contracts-validated");
     }
 }

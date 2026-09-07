@@ -12,7 +12,8 @@ public sealed class RedesignV1RulesTests
             10,
             RedesignV1Rules.StartingStrikeCount
                 + RedesignV1Rules.StartingDefendCount
-                + RedesignV1Rules.StartingSignatureCardCount);
+                + RedesignV1Rules.StartingSignatureCardCount
+                + RedesignV1Rules.StartingPrejudgeCount);
     }
 
     [Fact]
@@ -28,13 +29,13 @@ public sealed class RedesignV1RulesTests
             .. RedesignV1Rules.UncommonRewardCardIds,
             .. RedesignV1Rules.RareRewardCardIds
         ];
-        Assert.Equal(74, all.Length);
+        Assert.Equal(80, all.Length);
         Assert.Equal(all.Length, all.Distinct(StringComparer.Ordinal).Count());
         Assert.DoesNotContain(RedesignV1Rules.ExcludedSpecialCardIds, all.Contains);
         Assert.Contains("TurtleShellRedesignV1", RedesignV1Rules.RareRewardCardIds);
         Assert.DoesNotContain("CountermeasureRedesignV1", RedesignV1Rules.ExcludedSpecialCardIds);
         Assert.Contains("StrongShurikenTokenRedesignV1", RedesignV1Rules.ExcludedSpecialCardIds);
-        Assert.Contains("FinisherRedesignV1", RedesignV1Rules.ExcludedSpecialCardIds);
+        Assert.Contains("Prejudge", RedesignV1Rules.ExcludedSpecialCardIds);
         Assert.Contains("BusyLine", RedesignV1Rules.ExcludedSpecialCardIds);
         Assert.DoesNotContain("PunchRedesignV1", RedesignV1Rules.ExcludedSpecialCardIds);
         Assert.Contains("SatsubatsuRedesignV1", RedesignV1Rules.CommonRewardCardIds);
@@ -42,7 +43,7 @@ public sealed class RedesignV1RulesTests
         Assert.Contains("BladeReserveRedesignV1", RedesignV1Rules.CommonRewardCardIds);
         Assert.DoesNotContain("RoundhouseKickRedesignV1", RedesignV1Rules.CommonRewardCardIds);
         Assert.Contains("RoundhouseKickRedesignV1", RedesignV1Rules.UncommonRewardCardIds);
-        Assert.Contains("EmptyShurikenRedesignV1", RedesignV1Rules.RareRewardCardIds);
+        Assert.Contains("ShurikenStorm", RedesignV1Rules.RareRewardCardIds);
         Assert.Contains("HellTornadoRedesignV1", RedesignV1Rules.RareRewardCardIds);
         Assert.Contains("TeaTeaRedesignV1", RedesignV1Rules.RareRewardCardIds);
         Assert.Contains("BurnBurnBurnRedesignV1", RedesignV1Rules.UncommonRewardCardIds);
@@ -57,7 +58,7 @@ public sealed class RedesignV1RulesTests
         Assert.DoesNotContain("ObserveBattleRedesignV1", all);
         Assert.DoesNotContain("ReadAndStrikeRedesignV1", all);
         Assert.Contains("LuckyStrikeRedesignV1", RedesignV1Rules.CommonRewardCardIds);
-        Assert.Contains("KarateReversalRedesignV1", RedesignV1Rules.UncommonRewardCardIds);
+        Assert.Contains("Endurance", RedesignV1Rules.UncommonRewardCardIds);
         Assert.Contains("BladeCycleRedesignV1", RedesignV1Rules.UncommonRewardCardIds);
 
         foreach (string archived in new[]
@@ -95,7 +96,7 @@ public sealed class RedesignV1RulesTests
                      "PreparedShurikenRedesignV1",
                      "ChopDefenseRedesignV1",
                      "RightHeavyPunchAfterSkillRedesignV1",
-                     "FocusedMindRedesignV1",
+                     "BlackFlameRecovery",
                      "KarateTeaRedesignV1"
                  })
         {

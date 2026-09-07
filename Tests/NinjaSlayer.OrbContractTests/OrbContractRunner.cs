@@ -112,6 +112,7 @@ public partial class OrbContractRunner : Node
             var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.OrbContracts", "Product");
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
             patcher.RegisterPatch<ShurikenOrbEvokePatch>();
+            patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
             Require(patcher.PatchAll(), "Orb patches failed to install.");
             var presentation = new Harmony("NinjaSlayer.OrbContracts.Presentation");
@@ -152,10 +153,10 @@ public partial class OrbContractRunner : Node
         {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
             ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<FinisherRedesignV1>(), ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
+            ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
         }).Distinct().ToArray();
-        Require(catalog.Length == 86 && ModelDb.AllCharacters.Count(character => character is INinjaSlayerCharacter) == 1,
-            "Current content must have 86 visible cards and one Ninja Slayer character.");
+        Require(catalog.Length == 92 && ModelDb.AllCharacters.Count(character => character is INinjaSlayerCharacter) == 1,
+            "Current content must have 92 cards and one Ninja Slayer character.");
         CardModel[] rewards = ModelDb.CardPool<NinjaSlayerCardPool>()
             .GetUnlockedCards(UnlockState.all, CardMultiplayerConstraint.SingleplayerOnly).ToArray();
         foreach (var (rarity, expected) in new[]
@@ -170,8 +171,9 @@ public partial class OrbContractRunner : Node
         player.InitializeSeed("save-contract");
         Require(player.Deck.Cards.Count == 10
             && player.Deck.Cards.Count(card => card is StrikeNinjaSlayerRedesignV1) == 4
-            && player.Deck.Cards.Count(card => card is DefendNinjaSlayerRedesignV1) == 5
-            && player.Deck.Cards.Count(card => card is KarateStraightRedesignV1) == 1, "New run must use the 4/5/1 starting deck.");
+            && player.Deck.Cards.Count(card => card is DefendNinjaSlayerRedesignV1) == 4
+            && player.Deck.Cards.Count(card => card is KarateStraightRedesignV1) == 1
+            && player.Deck.Cards.Count(card => card is Prejudge) == 1, "New run must use the 4/4/1/1 starting deck.");
         var store = new MockGodotFileIo("user://orb-contract-saves");
         var saves = new RunSaveManager(1, store, new MigrationManager(store), forceSynchronous: true);
         var run = new SerializableRun { SchemaVersion = saves.SchemaVersion, Players = [player.ToSerializable()] };
@@ -285,7 +287,7 @@ public partial class OrbContractRunner : Node
             int hp = combat.Enemy.CurrentHp;
             int before = _evoked;
             await Hook.AfterShuffle(combat.State, Choice, combat.Player);
-            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 16 && combat.Stock == 2 && combat.Tokens == 1,
+            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 24 && combat.Stock == 2 && combat.Tokens == 1,
                 "Shuffle must fire all stock, consume one and produce one token.");
             Require(second.CurrentHp < hp && combat.Enemy.CurrentHp < hp, "Blade Sweep must hit both enemies on the first shot.");
             Require(_evoked == before + 3, "Shuffle shots must dispatch the host evoke hook.");
@@ -339,7 +341,7 @@ public partial class OrbContractRunner : Node
         {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
             ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<FinisherRedesignV1>(), ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
+            ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
         }).Distinct().OrderBy(card => card.Id.ToString(), StringComparer.Ordinal).ToArray();
         var states = catalog.SelectMany(canonical => new[] { false, true }.Select(upgraded =>
         {
@@ -370,7 +372,7 @@ public partial class OrbContractRunner : Node
             Require(System.Text.Json.Nodes.JsonNode.DeepEquals(
                 System.Text.Json.Nodes.JsonNode.Parse(expected), System.Text.Json.Nodes.JsonNode.Parse(actual)),
                 "Current card metadata differs from the approved baseline.");
-            GD.Print("PASS 86 cards: IDs, costs, types, rarity, targets, generation, keywords, tags, art and base/upgraded values");
+            GD.Print("PASS 92 cards: IDs, costs, types, rarity, targets, generation, keywords, tags, art and base/upgraded values");
         }
     }
 
@@ -412,6 +414,7 @@ public partial class OrbContractRunner : Node
 
         public OrbCombat(bool ninjaSlayer = false)
         {
+            CombatManager.Instance.History.Clear();
             Player = ninjaSlayer
                 ? Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1)
                 : Player.CreateForNewRun<Ironclad>(UnlockState.all, 1);

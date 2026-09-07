@@ -45,17 +45,18 @@ public static class ScryCmd
         )).ToList();
 
         int exhaustedCards = 0;
-        foreach (CardModel card in cardsToDiscard)
+        if (exhaustDiscarded)
         {
-            if (exhaustDiscarded)
+            foreach (CardModel card in cardsToDiscard)
             {
                 await CardCmd.Exhaust(choiceContext, card);
-                exhaustedCards++;
+                if (card.Pile?.Type == PileType.Exhaust)
+                    exhaustedCards++;
             }
-            else
-            {
-                await CardCmd.Discard(choiceContext, card);
-            }
+        }
+        else
+        {
+            await CardCmd.Discard(choiceContext, cardsToDiscard);
         }
 
         int discardedAmount = cardsToDiscard.Count;

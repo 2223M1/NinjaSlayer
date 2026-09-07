@@ -37,10 +37,7 @@ public static class NinjaSlayerCardCmd
             new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, selectionCount),
             null,
             source)).ToList();
-        foreach (CardModel card in selected)
-        {
-            await CardCmd.Discard(choiceContext, card);
-        }
+        await CardCmd.Discard(choiceContext, selected);
 
         return selected.Count;
     }

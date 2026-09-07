@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ChadoStillnessRedesignV1 : RedesignV1CommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Breath", 1)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Breath", 2), new DynamicVar("Turns", 1)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromKeyword(CardKeyword.Retain)];
 
@@ -23,10 +23,10 @@ public sealed class ChadoStillnessRedesignV1 : RedesignV1CommonCard
         await PowerCmd.Apply<ChadoRetainPower>(
             choiceContext,
             Owner.Creature,
-            1,
+            DynamicVars["Turns"].IntValue,
             Owner.Creature,
             this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["Breath"].UpgradeValueBy(1);
+    protected override void OnUpgrade() => DynamicVars["Turns"].UpgradeValueBy(1);
 }

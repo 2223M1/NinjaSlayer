@@ -14,7 +14,7 @@ public sealed class IronBodyRedesignV1 : RedesignV1CommonCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new BlockVar(15, ValueProp.Move), new KarateVar(4)];
+        [new BlockVar(14, ValueProp.Move), new KarateVar(3)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
     public IronBodyRedesignV1()
