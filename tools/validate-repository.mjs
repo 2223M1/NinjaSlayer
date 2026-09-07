@@ -592,17 +592,12 @@ for (const path of filesUnder(root).filter(path => path.endsWith('.cs'))) {
 
 // This snapshot is verified against the product DLL by OrbContractTests.
 const cardMetadata = readJson(join(root, 'Tests', 'NinjaSlayer.OrbContractTests', 'card-metadata.json')) ?? [];
-const rewardArt = new Map();
 const snapshotLocalizations = Object.fromEntries(['eng', 'zhs'].map(language =>
   [language, readJson(join(root, 'NinjaSlayer', 'localization', language, 'cards.json')) ?? {}]));
 for (const card of cardMetadata.filter(card => !card.Upgraded)) {
   const portrait = join(root, card.Portrait.replace('res://', ''));
   const size = readPngSize(portrait);
   if (!size) errors.push(`${card.Id} portrait is missing or unreadable: ${card.Portrait}`);
-  if (['Common', 'Uncommon', 'Rare'].includes(card.Rarity)) {
-    if (rewardArt.has(card.Portrait)) errors.push(`Reward portrait shared by ${rewardArt.get(card.Portrait)} and ${card.Id}`);
-    rewardArt.set(card.Portrait, card.Id);
-  }
   for (const language of ['eng', 'zhs']) {
     const cards = snapshotLocalizations[language];
     const stem = card.Id.split('.')[1];

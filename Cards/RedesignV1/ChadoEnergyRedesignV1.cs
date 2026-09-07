@@ -13,7 +13,7 @@ public sealed class ChadoEnergyRedesignV1 : NinjaSlayerStandaloneCardTemplate
     private static readonly NinjaSlayerCardSpec Spec = new(
         nameof(ChadoEnergyRedesignV1),
         1,
-        CardType.Skill,
+        CardType.Status,
         CardRarity.Token,
         TargetType.Self,
         false,

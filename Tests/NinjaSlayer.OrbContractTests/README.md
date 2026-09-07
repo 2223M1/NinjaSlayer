@@ -7,7 +7,8 @@ source. Run each channel sequentially because Godot uses one project output.
 ```powershell
 ./Tests/NinjaSlayer.OrbContractTests/Run-Contracts.ps1 `
   -Channel preview -NinjaSlayerAssemblyPath <candidate-dll> `
-  -Sts2DataDir <exact-host-data-directory> -SourceRevision <full-candidate-sha> `
+  -Sts2DataDir <exact-host-data-directory> -HostPack <game-pck> `
+  -SourceRevision <full-candidate-sha> `
   -GodotPath <godot-mono-console-executable> -DotnetRoot <isolated-net9-runtime> `
   -LogPath <output-log>
 ```
@@ -30,8 +31,17 @@ replaced; damage, powers, orb commands and event dispatch remain production code
 The content pack uses Entry's actual starting-deck configuration. This is not the
 full Entry initialization or rendered FirstCombatRestart smoke: it does not test
 menu navigation, animation, textures, sound, Steam, or a complete run restart.
-Without the game resource pack, RitsuLib UI initialization reports missing
-vanilla fonts; these tests do not make a visual-resource acceptance claim.
+The game resource pack supplies vanilla localization and fonts. The runner
+formats all 92 base and upgraded cards in both languages and checks their
+metadata against the approved fixture. These checks do not establish rendered
+appearance; a preview resource pack used with the stable DLL is not stable
+visual-resource evidence.
+
+New-pool scenarios exercise native batch hand discard and Scry, nested Sly
+choices, status autoplay/exhaust, accumulated Chado, Chop counters, Storm Fist,
+damage-source filtering, temporary stats, copying, retention and turn expiry.
+The separate multiplayer runner uses two real ENet processes and native card
+actions, including local-only selectors whose choices cross the network.
 
 Run saves store player inventory and base orb slots, not the mid-combat orb queue.
 The separate SavedProperties roundtrip therefore tests model data, while the

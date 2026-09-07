@@ -1,4 +1,7 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.CardPools;
@@ -27,6 +30,13 @@ public sealed class StrongShurikenTokenRedesignV1 : NinjaSlayerStandaloneCardTem
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(6, ValueProp.Move)];
 
     public StrongShurikenTokenRedesignV1() : base(Spec) { }
+
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props,
+        Creature? dealer, CardModel? cardSource
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+        , CardPlay? cardPlay
+#endif
+    ) => cardSource == this && props.IsPoweredAttack() ? Owner.Creature.GetPowerAmount<FocusPower>() : 0;
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         ShurikenCombat.BuildAttackCommand(this, cardPlay, DynamicVars.Damage)

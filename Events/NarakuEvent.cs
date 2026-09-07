@@ -53,7 +53,7 @@ public sealed class NarakuEvent : ModEventTemplate
         PileType.Deck.GetPile(player).Cards.Any(card => card is
             GuidingFlameRedesignV1 or SatsubatsuRedesignV1 or AbyssStrengthRedesignV1
             or HardItOutRedesignV1 or RedBlackFlameAttackRedesignV1 or BurnBurnBurnRedesignV1
-            or NarakuFormRedesignV1 or ReturnReturnReturnRedesignV1 or OneBodyOneSoul);
+            or NarakuFormRedesignV1 or ReturnReturnReturnRedesignV1 or BlackFlameRecovery or OneBodyOneSoul);
 
     private IReadOnlyList<EventOption> GenerateNarakuOptions(string page) =>
         [

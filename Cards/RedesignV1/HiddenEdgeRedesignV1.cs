@@ -17,12 +17,12 @@ public sealed class HiddenEdgeRedesignV1 : RedesignV1UncommonCard
         [HoverTipFactory.FromOrb<ShurikenOrb>(), HoverTipFactory.FromPower<FocusPower>()];
 
     public HiddenEdgeRedesignV1()
-        : base(nameof(HiddenEdgeRedesignV1), "ShurikenStock", 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(HiddenEdgeRedesignV1), "ShurikenStock", 1, CardType.Power, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await ShurikenOrb.AddStock(choiceContext, Owner, DynamicVars["Stock"].IntValue);
-        await PowerCmd.Apply<HiddenEdgeTemporaryFocusPower>(
+        await PowerCmd.Apply<FocusPower>(
             choiceContext,
             Owner.Creature,
             DynamicVars[nameof(FocusPower)].BaseValue,
@@ -30,5 +30,5 @@ public sealed class HiddenEdgeRedesignV1 : RedesignV1UncommonCard
             this);
     }
 
-    protected override void OnUpgrade() => DynamicVars[nameof(FocusPower)].UpgradeValueBy(1);
+    protected override void OnUpgrade() => DynamicVars[nameof(FocusPower)].UpgradeValueBy(2);
 }

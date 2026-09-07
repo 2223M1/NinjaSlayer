@@ -215,6 +215,7 @@ public class Entry
         character
             .AddStartingCard<StrikeNinjaSlayerRedesignV1>(RedesignV1Rules.StartingStrikeCount, 0)
             .AddStartingCard<DefendNinjaSlayerRedesignV1>(RedesignV1Rules.StartingDefendCount, 1)
+            .AddStartingCard<Prejudge>(RedesignV1Rules.StartingPrejudgeCount, 3)
             .AddStartingCard<KarateStraightRedesignV1>(1, 2);
     }
 

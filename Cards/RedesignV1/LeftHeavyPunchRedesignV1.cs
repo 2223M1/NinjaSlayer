@@ -23,7 +23,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class LeftHeavyPunchRedesignV1 : RedesignV1CommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(7, ValueProp.Move), new KarateVar(2)];
+        [new DamageVar(9, ValueProp.Move), new KarateVar(2)];
 
     public LeftHeavyPunchRedesignV1()
         : base(nameof(LeftHeavyPunchRedesignV1), "MasochisticBliss", 1, CardType.Attack, TargetType.AnyEnemy) { }
@@ -50,7 +50,7 @@ public sealed class LeftHeavyPunchRedesignV1 : RedesignV1CommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(3);
+        DynamicVars.Damage.UpgradeValueBy(1);
         DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

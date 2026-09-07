@@ -90,15 +90,12 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         KarateWaveResolution wave = KarateWaveRules.Resolve(stacks, props.IsPoweredAttack(), targets.Count);
         if (wave.Triggered)
         {
-            int multiplier = cardSource is ClankDrinkTeaRedesignV1 assassination
-                ? assassination.KarateMultiplier
-                : 1;
             await TriggerKarateWave(
                 choiceContext,
                 dealer,
                 targets,
                 karate,
-                wave.BonusDamagePerTarget * multiplier,
+                wave.BonusDamagePerTarget,
                 cardSource);
         }
 

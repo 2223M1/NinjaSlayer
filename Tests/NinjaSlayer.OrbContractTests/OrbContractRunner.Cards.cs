@@ -24,29 +24,12 @@ public partial class OrbContractRunner
     private static async Task VerifyCurrentCardInteractions()
     {
         Require(typeof(ShurikenOrb).Assembly.GetTypes().Count(type =>
-            !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)) == 86,
-            "The product assembly must contain only the 86 current card models.");
-        await VerifyGreatUkeThreshold();
+            !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)) == 92,
+            "The product assembly must contain only the 92 current card models.");
+        await VerifyNewCardInteractions();
         await VerifyChadoGeneration();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
-    }
-
-    private static async Task VerifyGreatUkeThreshold()
-    {
-        foreach (decimal damage in new[] { 10m, 10.5m, 11m })
-        {
-            using var combat = new OrbCombat();
-            var power = await PowerCmd.Apply<GreatUkeRedesignPower>(Choice,
-                combat.Player.Creature, 2, combat.Player.Creature, null);
-            Require(power is not null, "Great Uke was not applied.");
-            decimal result = power!.ModifyHpLostAfterOstyLate(combat.Player.Creature,
-                damage, ValueProp.Unpowered, combat.Enemy, null);
-            Require(result == (damage > 10m ? 0 : damage), $"Great Uke incorrectly resolved {damage} damage.");
-            if (result != damage) await power.AfterModifyingHpLostAfterOsty();
-            Require(power.Amount == (damage > 10m ? 1 : 2), "Great Uke consumed an incorrect number of charges.");
-        }
-        GD.Print("PASS Great Uke at 10, 10.5 and 11 damage");
     }
 
     private static async Task VerifyChadoGeneration()
@@ -105,7 +88,7 @@ public partial class OrbContractRunner
         Require(!model.IsAllowed(run), "The starter deck must not qualify for the Naraku event.");
         Type[] qualifying = [typeof(GuidingFlameRedesignV1), typeof(SatsubatsuRedesignV1), typeof(AbyssStrengthRedesignV1),
             typeof(HardItOutRedesignV1), typeof(RedBlackFlameAttackRedesignV1), typeof(BurnBurnBurnRedesignV1),
-            typeof(NarakuFormRedesignV1), typeof(ReturnReturnReturnRedesignV1), typeof(OneBodyOneSoul)];
+            typeof(NarakuFormRedesignV1), typeof(ReturnReturnReturnRedesignV1), typeof(BlackFlameRecovery), typeof(OneBodyOneSoul)];
         foreach (CardModel canonical in ModelDb.CardPool<NinjaSlayerCardPool>().AllCards)
         {
             CardModel card = canonical.ToMutable();

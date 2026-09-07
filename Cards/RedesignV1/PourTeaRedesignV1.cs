@@ -11,7 +11,7 @@ public sealed class PourTeaRedesignV1 : RedesignV1CommonCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new BlockVar(6, ValueProp.Move), new DynamicVar("Breath", 1)];
+        [new BlockVar(7, ValueProp.Move), new DynamicVar("Breath", 2)];
 
     public PourTeaRedesignV1()
         : base(nameof(PourTeaRedesignV1), "PourTea", 1, CardType.Skill, TargetType.Self) { }

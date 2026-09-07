@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class TechniqueSearchRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new CardsVar(3), new DynamicVar("Scry", 1)];
+        [new CardsVar(1), new DynamicVar("Scry", 4)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
 
     public TechniqueSearchRedesignV1()
@@ -19,9 +19,13 @@ public sealed class TechniqueSearchRedesignV1 : RedesignV1UncommonCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars["Scry"].IntValue);
+        await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1);
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Cards.UpgradeValueBy(1);
+        DynamicVars["Scry"].UpgradeValueBy(2);
+    }
 }

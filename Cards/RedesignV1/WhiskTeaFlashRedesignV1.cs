@@ -19,7 +19,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class WhiskTeaFlashRedesignV1 : RedesignV1CommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(7, ValueProp.Move), new CardsVar(2)];
+        [new DamageVar(9, ValueProp.Move), new CardsVar(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>()];
 
@@ -46,7 +46,7 @@ public sealed class WhiskTeaFlashRedesignV1 : RedesignV1CommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(3);
+        DynamicVars.Damage.UpgradeValueBy(2);
         DynamicVars.Cards.UpgradeValueBy(1);
     }
 }

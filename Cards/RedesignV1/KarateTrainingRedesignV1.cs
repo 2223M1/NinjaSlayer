@@ -9,7 +9,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class KarateTrainingRedesignV1 : RedesignV1UncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(2)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(3)];
 
     public KarateTrainingRedesignV1()
         : base(nameof(KarateTrainingRedesignV1), "Evolution", 2, CardType.Power, TargetType.Self) { }
@@ -22,5 +22,5 @@ public sealed class KarateTrainingRedesignV1 : RedesignV1UncommonCard
             Owner.Creature,
             this);
 
-    protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(1);
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

@@ -52,7 +52,7 @@ public sealed class AlabamaDropRedesignV1 : RedesignV1RareCard
 
             resolved = true;
             int karate = Owner.Creature.GetPowerAmount<KaratePower>();
-            await CreatureCmd.Damage(
+            var results = await CreatureCmd.Damage(
                 choiceContext,
                 cardPlay.Target!,
                 karate * DynamicVars.ExtraDamage.BaseValue,
@@ -62,6 +62,9 @@ public sealed class AlabamaDropRedesignV1 : RedesignV1RareCard
                 , cardPlay
 #endif
             );
+            if (Owner.Creature.GetPower<WasssssshoiPower>() is { } wasshoi)
+                foreach (var hit in results.Where(hit => hit.TotalDamage > 0 && hit.Receiver.Side != Owner.Creature.Side))
+                    await wasshoi.GainTemporaryStats(choiceContext, this);
         }
 
         await AlabamaDropAnimation.Play(Owner.Creature, cardPlay.Target!, ResolveImpact);

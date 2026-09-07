@@ -303,10 +303,9 @@ public sealed class ShurikenOrb : ModOrbTemplate
         }
 
         IReadOnlyList<Creature> targets;
-        if (Owner.Creature.GetPower<BladeSweepPower>() is { } sweep)
+        if (Owner.Creature.HasPower<BladeSweepPower>())
         {
             targets = candidates.ToArray();
-            await PowerCmd.Remove(sweep);
         }
         else
         {

@@ -8,8 +8,7 @@ using STS2RitsuLib.Scaffolding.Content;
 namespace NinjaSlayer.Powers;
 
 [RegisterPower]
-public sealed class HiddenEdgeTemporaryFocusPower
-    : ModTemporaryAppliedPowerTemplate<HiddenEdgeRedesignV1, FocusPower>
+public sealed class WasssssshoiFocusPower : ModTemporaryAppliedPowerTemplate<Wasssssshoi, FocusPower>
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DamageFocusPower");
 }
