@@ -12,12 +12,13 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat')]
+    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
     [string]$Repository = 'local',
     [string]$RunId = 'local',
+    [string[]]$AdditionalModDirectories = @(),
     [switch]$DevelopmentPackage
 )
 
@@ -136,7 +137,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -150,10 +151,14 @@ function Invoke-SmokePhase {
             'FullAutoSlay' { 2 }
             'SawatariSameCombat' { 3 }
             'ReverseFinisher' { 4 }
+            'BossFresh' { 6 }
+            'BossResume' { 7 }
+            'BossVerify' { 8 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
         FailureScreenshotPath = (Join-Path $OutputDirectory "failure-$($Phase.ToLowerInvariant()).png")
+        AdditionalModIds = @($additionalMods | ForEach-Object { $_.id })
     }
     $configuration | ConvertTo-Json | Set-Content -LiteralPath $configurationPath -Encoding utf8
 
@@ -267,6 +272,15 @@ $TrustedRoot = Resolve-RequiredPath $TrustedRoot
 $GameRootDirectory = Resolve-RequiredPath $GameRootDirectory
 $RitsuLibModDirectory = Resolve-RequiredPath $RitsuLibModDirectory
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
+$additionalMods = @(foreach ($directory in $AdditionalModDirectories) {
+    $resolved = Resolve-RequiredPath $directory
+    $manifests = @(Get-ChildItem -LiteralPath $resolved -File -Filter '*.json' | ForEach-Object {
+        $metadata = Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json -AsHashtable
+        if ($metadata.ContainsKey('id')) { $metadata }
+    })
+    if ($manifests.Count -ne 1) { throw "Expected one mod manifest in $resolved." }
+    @{ id = [string]$manifests[0].id; directory = $resolved; version = [string]$manifests[0].version }
+})
 $networkIsolationScript = Join-Path $TrustedRoot '.github\scripts\process-network-isolation.ps1'
 if (-not (Test-Path -LiteralPath $networkIsolationScript -PathType Leaf)) {
     throw "Trusted process network isolation helper was not found: $networkIsolationScript"
@@ -400,6 +414,9 @@ try {
     New-Item -ItemType Directory -Path $modsDirectory -Force | Out-Null
     Copy-Item -LiteralPath $BundleDirectory -Destination (Join-Path $modsDirectory 'NinjaSlayer') -Recurse
     Copy-Item -LiteralPath $RitsuLibModDirectory -Destination (Join-Path $modsDirectory 'STS2-RitsuLib') -Recurse
+    foreach ($mod in $additionalMods) {
+        Copy-Item -LiteralPath $mod.directory -Destination (Join-Path $modsDirectory $mod.id) -Recurse
+    }
     $smokeModDirectory = Join-Path $modsDirectory 'NinjaSlayer-SmokeDriver'
     New-Item -ItemType Directory -Path $smokeModDirectory -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $driverOutput 'NinjaSlayer-SmokeDriver.dll') -Destination $smokeModDirectory
@@ -420,6 +437,9 @@ try {
             )
         }
     }
+    $settings.mod_settings.mod_list += @($additionalMods | ForEach-Object {
+        @{ id = $_.id; is_enabled = $true; source = 'mods_directory' }
+    })
     $settings | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $settingsDirectory 'settings.save') -Encoding utf8
 
     $gameExecutable = Join-Path $isolatedGameRoot 'SlayTheSpire2.exe'
@@ -431,7 +451,12 @@ try {
         -RulePrefix "NinjaSlayer-Smoke-$Channel-$($CandidateSha.Substring(0, 12))" `
         -ForbiddenRoot @($CandidateRoot, $TrustedRoot, $BundleDirectory)
 
-    if ($Mode -eq 'FullAutoSlay') {
+    if ($Mode -eq 'BossReload') {
+        Invoke-SmokePhase -Phase BossFresh -ExpectedExitCode 20
+        Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
+        Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
+    }
+    elseif ($Mode -eq 'FullAutoSlay') {
         Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -449,7 +474,10 @@ try {
         -HarnessLogsDirectory $OutputDirectory
 
     $checkpoints = @(Get-Content -LiteralPath $checkpointPath | ForEach-Object { $_ | ConvertFrom-Json })
-    $requiredCheckpoints = if ($Mode -eq 'FullAutoSlay') {
+    $requiredCheckpoints = if ($Mode -eq 'BossReload') {
+        @('boss.first-snapshot', 'boss.reload-identical', 'boss.same-process-identical', 'boss.second-greeting')
+    }
+    elseif ($Mode -eq 'FullAutoSlay') {
         @('full-autoslay.starting', 'full-autoslay.completed')
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -477,11 +505,13 @@ try {
         ritsuLibPackageId = $RitsuLibPackageId
         ritsuLibVersion = $RitsuLibVersion
         ritsuLibRuntimeVersion = $RitsuLibRuntimeVersion
+        additionalMods = @($additionalMods | ForEach-Object { @{ id = $_.id; version = $_.version } })
         bundleSha256 = $bundleSha256
         compatibilityManifestSha256 = $compatibilityManifestSha256
         mode = if ($DevelopmentPackage) { "development-$Mode" } else { switch ($Mode) {
             'FullAutoSlay' { 'singleplayer-full-autoslay' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
+            'BossReload' { 'singleplayer-double-boss-reload' }
             default { 'singleplayer-first-combat-restart' }
         } }
         repository = $Repository

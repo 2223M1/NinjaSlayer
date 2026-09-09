@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -9,6 +11,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class FurinKazanChadoRedesignV1 : RedesignV1RareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Innate, CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new PowerVar<ArtifactPower>(1), new DynamicVar("Breath", 2)];

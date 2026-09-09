@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$NinjaSlayerAssemblyPath,
     [Parameter(Mandatory)][string]$Sts2DataDir,
     [Parameter(Mandatory)][string]$HostPack,
+    [Parameter(Mandatory)][string]$ProductPack,
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$SourceRevision,
     [Parameter(Mandatory)][string]$GodotPath,
     [Parameter(Mandatory)][string]$DotnetRoot,
@@ -19,6 +20,7 @@ $resolvedHost = Resolve-NinjaSlayerCompatibilityHost -Manifest $manifest -Module
 if ($resolvedHost.Channel -cne $Channel) { throw "Host belongs to $($resolvedHost.Channel), not $Channel." }
 $product = (Resolve-Path -LiteralPath $NinjaSlayerAssemblyPath).Path
 $pack = (Resolve-Path -LiteralPath $HostPack).Path
+$productPackPath = (Resolve-Path -LiteralPath $ProductPack).Path
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath $output) { throw 'Use a fresh output directory.' }
 New-Item -ItemType Directory -Path $output | Out-Null
@@ -33,6 +35,7 @@ $environment = @{
     NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = $SourceRevision
     NINJASLAYER_CONTRACT_HOST_MVID = $hostMvid
     NINJASLAYER_CONTRACT_HOST_PACK = $pack
+    NINJASLAYER_CONTRACT_PRODUCT_PACK = $productPackPath
     NINJASLAYER_MULTIPLAYER_DIRECTORY = $output
     NINJASLAYER_MULTIPLAYER_PORT = [string]$Port
 }

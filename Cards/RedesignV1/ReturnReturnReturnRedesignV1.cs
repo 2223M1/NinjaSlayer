@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -9,7 +11,10 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ReturnReturnReturnRedesignV1 : RedesignV1UncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("NarakuLife", 4)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromCardWithCardHoverTips<BlackFlameRedesignV1>();
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(4)];
     public ReturnReturnReturnRedesignV1()
         : base(nameof(ReturnReturnReturnRedesignV1), "AssassinationFist", 1, CardType.Power, TargetType.Self) { }
 

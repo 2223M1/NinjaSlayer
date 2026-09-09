@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -8,6 +10,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class GreatUkeRedesignV1 : RedesignV1RareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.BufferPower>()];
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     public GreatUkeRedesignV1()
         : base(nameof(GreatUkeRedesignV1), "OmnidirectionalThrow", 2, CardType.Skill, TargetType.Self) { }

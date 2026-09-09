@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.HoverTips;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -11,6 +12,9 @@ namespace NinjaSlayer.Relics;
 public sealed class BlanketRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;
+
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromPower<NarakuFormRedesignPower>(), HoverTipFactory.FromPower<NarakuLifePower>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
         new NarakuLifeVar(3)

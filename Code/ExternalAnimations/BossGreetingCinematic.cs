@@ -19,11 +19,11 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
-using MegaCrit.Sts2.Core.Saves;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Audio;
+using STS2RitsuLib;
 using System.Runtime.CompilerServices;
 using static NinjaSlayer.Code.ExternalAnimations.BossGreetingTimeline;
 
@@ -37,6 +37,21 @@ public static class BossGreetingCinematic
     private static readonly ConditionalWeakTable<IRunState, ProcessedRoomState> ProcessedRooms = new();
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
+
+    public static void RegisterLifecycle()
+    {
+        RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(evt =>
+            ProcessedRooms.GetOrCreateValue(evt.RunState).ResumedLocation = evt.RunState.MapLocation);
+        RitsuLibFramework.SubscribeLifecycle<RoomExitedEvent>(evt =>
+        {
+            if (evt.RunManager.DebugOnlyGetState() is { } runState
+                && ProcessedRooms.TryGetValue(runState, out ProcessedRoomState? state))
+            {
+                state.ResumedLocation = null;
+            }
+        });
+    }
+
     public static bool ShouldStage(Player player)
     {
         ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
@@ -65,8 +80,6 @@ public static class BossGreetingCinematic
         {
             NinjaSlayerRunData.MarkBossGreetingCompleted(player, roomKey);
         }
-
-        await SaveManager.Instance.SaveRun(null, saveProgress: false);
 
         var context = new BossGreetingSession(room, run.GlobalUi, StableHash(roomKey));
         try
@@ -504,7 +517,7 @@ public static class BossGreetingCinematic
 
         lock (state.Gate)
         {
-            return state.RoomKeys.Contains(roomKey);
+            return state.ResumedLocation == runState.MapLocation || state.RoomKeys.Contains(roomKey);
         }
     }
 
@@ -537,6 +550,7 @@ public static class BossGreetingCinematic
     {
         public Lock Gate { get; } = new();
         public HashSet<string> RoomKeys { get; } = [];
+        public MapLocation? ResumedLocation { get; set; }
     }
 
     private sealed class BossGreetingSession : ICinematicAnimationContext, IDisposable

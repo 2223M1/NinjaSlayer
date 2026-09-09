@@ -18,6 +18,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class OneDrinkOneStrikeRedesignV1 : RedesignV1CommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(14, ValueProp.Move), new DynamicVar("Breath", 2)];
 

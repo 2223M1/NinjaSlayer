@@ -75,8 +75,6 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
 #endif
             );
         }
-
-        await CardCmd.Exhaust(choiceContext, this, causedByEthereal: true);
     }
 
     private Task DamageEnemies(PlayerChoiceContext choiceContext)

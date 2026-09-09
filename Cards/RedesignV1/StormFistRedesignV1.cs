@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -12,6 +13,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class StormFistRedesignV1 : RedesignV1RareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>();
+
     private IEnumerable<CardModel> AvailableChado => new[] { PileType.Draw, PileType.Hand, PileType.Discard }
         .SelectMany(pile => pile.GetPile(Owner).Cards).OfType<ChadoEnergyRedesignV1>();
     protected override bool IsPlayable => AvailableChado.Count() >= 3;

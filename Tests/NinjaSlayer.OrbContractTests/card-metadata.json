@@ -1698,8 +1698,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png",
     "Vars": {
-      "Cards": 2,
-      "Draw": 2
+      "Cards": 3,
+      "Draw": 1
     }
   },
   {

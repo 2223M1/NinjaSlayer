@@ -178,6 +178,7 @@ public class Entry
                 .Apply();
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, CollapseFistRedesignV1>();
+            BossGreetingCinematic.RegisterLifecycle();
         }
         catch (Exception exception)
         {

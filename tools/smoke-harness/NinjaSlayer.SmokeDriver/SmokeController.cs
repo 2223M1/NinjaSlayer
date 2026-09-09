@@ -354,6 +354,7 @@ internal sealed partial class SmokeController
             data: new JsonObject { ["enemyCount"] = combatState.Enemies.Count });
 
         await PlayerCmd.SetEnergy(10m, player);
+        await VerifyExhaustPileUi(combatState, player);
         PreparedShurikenRedesignV1 readyBlade = combatState.CreateCard<PreparedShurikenRedesignV1>(player);
         await CardPileCmd.Add(readyBlade, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, player.Creature);
@@ -1572,7 +1573,11 @@ internal sealed partial class SmokeController
             {
                 ValidateRedesignContent();
             }
-            if (_configuration.Phase == SmokePhase.Fresh)
+            if (_configuration.Phase is SmokePhase.BossFresh or SmokePhase.BossResume or SmokePhase.BossVerify)
+            {
+                await RunBossReloadPhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.Fresh)
             {
                 await RunFreshPhaseAsync();
             }
@@ -1724,7 +1729,7 @@ internal sealed partial class SmokeController
 
     private void ValidateLoadedMods()
     {
-        string[] required = ["STS2-RitsuLib", "NinjaSlayer", "NinjaSlayer-SmokeDriver"];
+        string[] required = ["STS2-RitsuLib", "NinjaSlayer", "NinjaSlayer-SmokeDriver", .. _configuration.AdditionalModIds ?? []];
         var loadedMods = MegaCrit.Sts2.Core.Modding.ModManager.Mods
             .Where(mod => mod.state.ToString() == "Loaded" && mod.manifest?.id is not null)
             .ToArray();

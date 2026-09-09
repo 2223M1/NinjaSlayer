@@ -12,7 +12,8 @@ public sealed class KillingIntentRedesignV1 : RedesignV1RareCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(9, ValueProp.Move)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<StraightKiRedesignV1>()];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromCardWithCardHoverTips<StraightKiRedesignV1>(IsUpgraded);
 
     public KillingIntentRedesignV1()
         : base(nameof(KillingIntentRedesignV1), "KillingIntent", 1, CardType.Skill, TargetType.Self) { }

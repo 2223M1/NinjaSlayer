@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -9,6 +11,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class PourTeaRedesignV1 : RedesignV1CommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new BlockVar(7, ValueProp.Move), new DynamicVar("Breath", 2)];

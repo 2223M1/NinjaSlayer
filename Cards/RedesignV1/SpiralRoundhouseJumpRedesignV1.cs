@@ -22,6 +22,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class SpiralRoundhouseJumpRedesignV1 : RedesignV1CommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(6, ValueProp.Move), new DynamicVar("Stock", 1)];
 

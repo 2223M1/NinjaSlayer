@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$NinjaSlayerAssemblyPath,
     [Parameter(Mandatory)][string]$Sts2DataDir,
     [Parameter(Mandatory)][string]$HostPack,
+    [Parameter(Mandatory)][string]$ProductPack,
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$SourceRevision,
     [Parameter(Mandatory)][string]$GodotPath,
     [Parameter(Mandatory)][string]$DotnetRoot,
@@ -28,6 +29,7 @@ $environment = @{
     NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $product
     NINJASLAYER_CONTRACT_HOST_MVID = $hostMvid
     NINJASLAYER_CONTRACT_HOST_PACK = (Resolve-Path -LiteralPath $HostPack).Path
+    NINJASLAYER_CONTRACT_PRODUCT_PACK = (Resolve-Path -LiteralPath $ProductPack).Path
 }
 try {
     foreach ($name in $environment.Keys) {
@@ -36,7 +38,7 @@ try {
     }
     & $GodotPath --headless --path $PSScriptRoot --quit-after 1500 *> $LogPath
     $contractExit = $LASTEXITCODE
-    Get-Content -LiteralPath $LogPath
+    Get-Content -LiteralPath $LogPath | Select-String -Pattern '^Candidate |^PASS |contracts passed|ERROR: System\.'
     if ($contractExit -ne 0 -or !(Select-String -LiteralPath $LogPath -SimpleMatch 'NinjaSlayer orb product contracts passed.')) {
         throw "Orb contracts failed or timed out. Exit: $contractExit. Log: $LogPath"
     }

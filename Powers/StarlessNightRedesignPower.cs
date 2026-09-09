@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Powers;
+using MegaCrit.Sts2.Core.HoverTips;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
@@ -14,6 +15,8 @@ public sealed class StarlessNightRedesignPower : NinjaSlayerPowerTemplate
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("StarlessNightPower");
 
     public bool GenerateUpgradedToken { get; set; }
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromCardWithCardHoverTips<StrongShurikenTokenRedesignV1>(GenerateUpgradedToken);
 
     internal async Task GenerateStrongShuriken()
     {

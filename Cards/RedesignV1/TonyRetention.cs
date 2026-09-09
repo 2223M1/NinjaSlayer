@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -10,6 +12,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class TonyRetention : RedesignV1UncommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry), HoverTipFactory.FromKeyword(CardKeyword.Retain)];
+
     public TonyRetention() : base(nameof(TonyRetention), "ReadyBlade", 2, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(12, ValueProp.Move), new DynamicVar("Scry", 2)];

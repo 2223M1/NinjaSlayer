@@ -26,6 +26,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class SweepKickRedesignV1 : RedesignV1UncommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>();
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(5, ValueProp.Move)];
 
