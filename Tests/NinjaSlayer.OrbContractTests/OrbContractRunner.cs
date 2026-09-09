@@ -44,6 +44,7 @@ namespace NinjaSlayer.OrbContractTests;
 public partial class OrbContractRunner : Node
 {
     private static int _evoked;
+    private static bool _hasPresentationResources;
     private static readonly BlockingPlayerChoiceContext Choice = new();
 
     public override async void _Ready()
@@ -87,9 +88,17 @@ public partial class OrbContractRunner : Node
             AssemblyInfo.ModMap[GetType().Assembly] = new Mod { path = "res://", manifest = new ModManifest { id = "NinjaSlayer.OrbContracts" } };
 #endif
             _ = MegaCrit.Sts2.Core.Saves.SaveManager.Instance;
-            string? hostPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_PACK");
-            if (hostPack is not null)
-                Require(ProjectSettings.LoadResourcePack(hostPack, replaceFiles: false), "Could not mount the host resource pack.");
+            string hostPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_PACK")
+                ?? throw new InvalidOperationException("Product gameplay contracts require the host resource pack for native selection prompts.");
+            Require(ProjectSettings.LoadResourcePack(hostPack, replaceFiles: false), "Could not mount the host resource pack.");
+            string? productPack = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_PRODUCT_PACK");
+            if (productPack is not null)
+            {
+                Require(ProjectSettings.LoadResourcePack(productPack, replaceFiles: true), "Could not mount the product resource pack.");
+                _hasPresentationResources = true;
+            }
+            else
+                GD.Print("NOT RUN: tooltip and native event presentation contracts (no product resource pack supplied).");
             RitsuLibFramework.Initialize();
             using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer.OrbContracts"))
                 AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);

@@ -21,9 +21,15 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 
     public override RelicRarity Rarity => RelicRarity.Starter;
 
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [
-        HoverTipFactory.FromCard<ChadoEnergyRedesignV1>()
-    ];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips
+    {
+        get
+        {
+            var tea = ModelDb.Card<ChadoEnergyRedesignV1>().ToMutable();
+            tea.AddKeyword(CardKeyword.Retain);
+            return [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromCard(tea), .. tea.HoverTips];
+        }
+    }
 
     public override async Task BeforeHandDraw(
         Player player,
@@ -38,10 +44,11 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         for (int i = 0; i < ChadoCount; i++)
         {
             ChadoEnergyRedesignV1 chado = combatState.CreateCard<ChadoEnergyRedesignV1>(Owner);
+            chado.AddKeyword(CardKeyword.Retain);
             await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
         }
 
-        await ChadoBreathCmd.Apply(Owner, 2);
+        await ChadoBreathCmd.Apply(Owner, 2, retainGeneratedCard: true);
         Flash();
     }
 }

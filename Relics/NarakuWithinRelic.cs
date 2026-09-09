@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -11,6 +12,9 @@ namespace NinjaSlayer.Relics;
 public sealed class NarakuWithinRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
+
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromPowerWithPowerHoverTips<NarakuFormRedesignPower>();
 
     public override async Task BeforeCombatStart()
     {

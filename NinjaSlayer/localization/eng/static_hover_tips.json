@@ -1,1 +1,4 @@
-{}
+{
+  "NINJA_SLAYER_CHADO_BREATHING.title": "Chado Breathing",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "Increase the Energy provided by each [gold]Chado[/gold] in your hand by the given amount. If you have none, spend 1 Chado Breathing to create a Chado, then increase its Energy by the remaining amount."
+}

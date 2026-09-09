@@ -1,9 +1,9 @@
 {
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.title": "茶道呼吸",
-  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "每场战斗开始时，[gold]茶道呼吸[/gold]2。",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "每场战斗开始时，[gold]茶道呼吸[/gold]2，[gold]茶道[/gold]获得[gold]保留[/gold]。",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.flavor": "“茶道。风林火山。然后再茶道。”",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.title": "茶道呼吸·真髓",
-  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将2张[gold]茶道[/gold]加入你的[gold]手牌[/gold]。[gold]茶道呼吸[/gold]2。",
+  "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "每场战斗开始时，将2张[gold]茶道[/gold]加入你的[gold]手牌[/gold]，[gold]茶道[/gold]获得[gold]保留[/gold]。[gold]茶道呼吸[/gold]2。",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.flavor": "麻痹褪去。手指、手掌、手臂，依次重获自由。",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.title": "精神的棉被",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.description": "每当你[gold]化身奈落[/gold]时，额外获得{NarakuLife:diff()}层[gold]奈落生命[/gold]。",

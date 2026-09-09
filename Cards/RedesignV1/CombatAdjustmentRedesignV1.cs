@@ -26,6 +26,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class CombatAdjustmentRedesignV1 : RedesignV1UncommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(7, ValueProp.Move), new DynamicVar("Breath", 1)];
 

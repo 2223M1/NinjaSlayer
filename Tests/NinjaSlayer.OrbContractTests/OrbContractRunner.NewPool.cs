@@ -24,25 +24,7 @@ public partial class OrbContractRunner
         MegaCrit.Sts2.Core.Context.LocalContext.NetId = 1;
         MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitSettingsDataForTest();
         MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitPrefsDataForTest();
-        MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
-        string localizationRoot = Path.GetFullPath(Path.Combine(ProjectSettings.GlobalizePath("res://"), "../../NinjaSlayer/localization"));
-        foreach (string language in new[] { "eng", "zhs" })
-        {
-            MegaCrit.Sts2.Core.Localization.LocManager.Instance.SetLanguage(language);
-            foreach (string table in new[] { "cards", "powers", "card_keywords" })
-                MegaCrit.Sts2.Core.Localization.LocManager.Instance.GetTable(table).MergeWith(
-                    System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
-                        System.IO.File.ReadAllText(Path.Combine(localizationRoot, language, table + ".json")))!);
-            using var combat = new OrbCombat();
-            foreach (Type type in typeof(Prejudge).Assembly.GetTypes().Where(type => !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)))
-            {
-                CardModel card = ModelDb.GetById<CardModel>(ModelDb.GetId(type)).ToMutable();
-                card.Owner = combat.Player;
-                _ = card.GetDescriptionForPile(PileType.None);
-                card.UpgradeInternal();
-                _ = card.GetDescriptionForPile(PileType.None);
-            }
-        }
+        VerifyCardPresentation();
         AccessTools.Property(typeof(MegaCrit.Sts2.Core.Runs.RunManager), "NetService").SetValue(
             MegaCrit.Sts2.Core.Runs.RunManager.Instance, new MegaCrit.Sts2.Core.Multiplayer.NetSingleplayerGameService());
         await VerifyScryAndSly();
@@ -52,6 +34,39 @@ public partial class OrbContractRunner
         await VerifyDamageSourceMatrix();
         await VerifySweepDuration();
         await VerifyTurnAndSelectionEffects();
+    }
+
+    private static void VerifyCardPresentation()
+    {
+        MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+        string localizationRoot = Path.GetFullPath(Path.Combine(ProjectSettings.GlobalizePath("res://"), "../../NinjaSlayer/localization"));
+        foreach (string language in new[] { "eng", "zhs" })
+        {
+            MegaCrit.Sts2.Core.Localization.LocManager.Instance.SetLanguage(language);
+            foreach (string table in new[] { "cards", "powers", "card_keywords", "characters", "relics", "static_hover_tips" })
+                MegaCrit.Sts2.Core.Localization.LocManager.Instance.GetTable(table).MergeWith(
+                    System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        System.IO.File.ReadAllText(Path.Combine(localizationRoot, language, table + ".json")))!);
+            using var combat = new OrbCombat();
+            foreach (Type type in typeof(Prejudge).Assembly.GetTypes().Where(type => !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)))
+            {
+                CardModel card = ModelDb.GetById<CardModel>(ModelDb.GetId(type)).ToMutable();
+                card.Owner = combat.Player;
+                _ = card.GetDescriptionForPile(PileType.None);
+                if (_hasPresentationResources) VerifyHoverTipText(card);
+                card.UpgradeInternal();
+                _ = card.GetDescriptionForPile(PileType.None);
+                if (_hasPresentationResources) VerifyHoverTipText(card);
+            }
+            if (_hasPresentationResources)
+            {
+                VerifyCharacterText();
+                VerifyHoverTips(combat);
+            }
+        }
+        GD.Print("PASS bilingual base/upgraded card descriptions");
+        if (_hasPresentationResources)
+            GD.Print("PASS mechanism tips, generated previews and native event text");
     }
 
     private static T AddCard<T>(OrbCombat combat, PileType pile = PileType.Hand, bool upgraded = false) where T : CardModel

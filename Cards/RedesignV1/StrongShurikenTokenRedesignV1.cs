@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
@@ -14,6 +15,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 [RegisterCard(typeof(TokenCardPool))]
 public sealed class StrongShurikenTokenRedesignV1 : NinjaSlayerStandaloneCardTemplate
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.FocusPower>()];
+
     private static readonly NinjaSlayerCardSpec Spec = new(
         nameof(StrongShurikenTokenRedesignV1),
         0,

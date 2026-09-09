@@ -26,6 +26,10 @@ param(
 
     [string]$GameDataDirectoryPreview,
 
+    [string]$GameResourcePackStable,
+
+    [string]$GameResourcePackPreview,
+
     [string]$GameRootDirectoryStable,
 
     [string]$GameRootDirectoryPreview,
@@ -64,6 +68,7 @@ $gameRoots = @{
     stable = $GameRootDirectoryStable
     preview = $GameRootDirectoryPreview
 }
+$gamePacks = @{ stable = $GameResourcePackStable; preview = $GameResourcePackPreview }
 $baseRequiredReferences = @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll')
 $hostInputs = foreach ($channelName in $channelNames) {
     $profile = Get-NinjaSlayerCompatibilityChannel -Manifest $compatibility -Channel $channelName
@@ -75,6 +80,7 @@ $hostInputs = foreach ($channelName in $channelNames) {
         GameRootDirectory = $gameRoots[$channelName]
         RuntimeReferences = @($profile.runtimeAssemblies | ForEach-Object { [string]$_ })
         ExpectedMvid = [string]$profile.hostContract.moduleMvid
+        ResourcePack = $gamePacks[$channelName]
     }
 }
 
@@ -93,6 +99,12 @@ if ($RunnerPurpose -in @('Contract', 'Release')) {
         $actualMvid = Get-NinjaSlayerGameModuleMvid -AssemblyPath (Join-Path $hostInput.DataDirectory 'sts2.dll')
         if ($actualMvid -ne $hostInput.ExpectedMvid) {
             throw "$($hostInput.Channel) sts2.dll MVID $actualMvid does not match compatibility.json."
+        }
+        if ($RunnerPurpose -eq 'Contract') {
+            if ([string]::IsNullOrWhiteSpace($hostInput.ResourcePack)) {
+                throw "GameResourcePack for $($hostInput.Channel) is required for native card selection and localization contracts."
+            }
+            $hostInput.ResourcePack = (Resolve-Path -LiteralPath $hostInput.ResourcePack -ErrorAction Stop).Path
         }
     }
 }
@@ -277,6 +289,11 @@ try {
             foreach ($fileName in @($baseRequiredReferences + $hostInput.RuntimeReferences)) {
                 $destination = Join-Path $hostReferenceDirectory $fileName
                 Copy-Item -LiteralPath (Join-Path $hostInput.DataDirectory $fileName) -Destination $destination
+                (Get-Item -LiteralPath $destination).IsReadOnly = $true
+            }
+            if ($RunnerPurpose -eq 'Contract') {
+                $destination = Join-Path $hostReferenceDirectory 'SlayTheSpire2.pck'
+                Copy-Item -LiteralPath $hostInput.ResourcePack -Destination $destination
                 (Get-Item -LiteralPath $destination).IsReadOnly = $true
             }
         }

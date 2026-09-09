@@ -7,7 +7,7 @@ source. Run each channel sequentially because Godot uses one project output.
 ```powershell
 ./Tests/NinjaSlayer.OrbContractTests/Run-Contracts.ps1 `
   -Channel preview -NinjaSlayerAssemblyPath <candidate-dll> `
-  -Sts2DataDir <exact-host-data-directory> -HostPack <game-pck> `
+  -Sts2DataDir <exact-host-data-directory> -HostPack <game-pck> -ProductPack <candidate-pck> `
   -SourceRevision <full-candidate-sha> `
   -GodotPath <godot-mono-console-executable> -DotnetRoot <isolated-net9-runtime> `
   -LogPath <output-log>
@@ -40,6 +40,12 @@ visual-resource evidence.
 New-pool scenarios exercise native batch hand discard and Scry, nested Sly
 choices, status autoplay/exhaust, accumulated Chado, Chop counters, Storm Fist,
 damage-source filtering, temporary stats, copying, retention and turn expiry.
+They also execute the native Black Flame turn-end lifecycle, check opening-only
+tea retention, generated-card previews and character lines inside vanilla events.
+The protected runner mounts the host pack for native selection and localization,
+but reports tooltip presentation checks as NOT RUN without a product pack.
+Local release acceptance supplies both packs through Run-Contracts.ps1;
+gameplay and bilingual card formatting contracts run in both modes.
 The separate multiplayer runner uses two real ENet processes and native card
 actions, including local-only selectors whose choices cross the network.
 

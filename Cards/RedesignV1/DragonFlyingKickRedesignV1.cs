@@ -25,6 +25,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(18, ValueProp.Move), new CardsVar(10), new DynamicVar("Breath", 2)];

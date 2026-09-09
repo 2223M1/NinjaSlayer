@@ -1,4 +1,11 @@
 {
+  "NINJA_SLAYER_POWER_I_BLOCK_POWER.title": "Counteroffensive Guard",
+  "NINJA_SLAYER_POWER_I_BLOCK_POWER.description": "At the start of your next turn, gain Vigor equal to your remaining Block.",
+  "NINJA_SLAYER_POWER_I_BLOCK_POWER.smartDescription": "At the start of your next turn, gain [gold]Vigor[/gold] equal to your remaining [gold]Block[/gold].",
+  "NINJA_SLAYER_POWER_EVASION_POWER.title": "Evasion",
+  "NINJA_SLAYER_POWER_EVASION_POWER.description": "Avoid the next hit from an enemy Attack, losing neither HP nor Block. At the start of your next turn, lose all [gold]Evasion[/gold].",
+  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.title": "Naraku Life",
+  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "Absorbs damage before HP. Removed when you leave [gold]Naraku[/gold] form.",
   "NINJA_SLAYER_POWER_KARATE_POWER.title": "Karate",
   "NINJA_SLAYER_POWER_KARATE_POWER.description": "Each time an Attack deals damage, deal {Amount} additional damage to each enemy hit, then lose 1 Karate. This damage is unaffected by Strength, Weak, or Vulnerable.",
   "NINJA_SLAYER_POWER_KARATE_POWER.smartDescription": "Each time an [gold]Attack[/gold] deals damage, deal {Amount} additional damage to each enemy hit, then lose 1 [gold]Karate[/gold]. This damage is unaffected by [gold]Strength[/gold], [gold]Weak[/gold], or [gold]Vulnerable[/gold].",

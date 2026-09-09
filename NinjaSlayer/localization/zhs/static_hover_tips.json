@@ -1,1 +1,4 @@
-{}
+{
+  "NINJA_SLAYER_CHADO_BREATHING.title": "茶道呼吸",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "使你手牌中的所有[gold]茶道[/gold]提供的能量增加相应数值。若没有茶道，先用1点茶道呼吸生成1张茶道，再以剩余数值强化它。"
+}

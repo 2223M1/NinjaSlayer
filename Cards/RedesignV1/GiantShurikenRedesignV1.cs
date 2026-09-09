@@ -9,7 +9,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class GiantShurikenRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [HoverTipFactory.FromCard<StrongShurikenTokenRedesignV1>(), HoverTipFactory.FromPower<StarlessNightRedesignPower>()];
+        [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>(), .. HoverTipFactory.FromCardWithCardHoverTips<StrongShurikenTokenRedesignV1>(IsUpgraded)];
 
     public GiantShurikenRedesignV1()
         : base(nameof(GiantShurikenRedesignV1), "StarlessNight", 2, CardType.Power, TargetType.Self) { }

@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -8,6 +10,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ChopChain : RedesignV1RareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromPower<NinjaSlayer.Powers.KaratePower>(), .. NinjaSlayerHoverTips.ExhaustingChop(IsUpgraded)];
+
     public ChopChain() : base(nameof(ChopChain), "Chop", 2, CardType.Power, TargetType.Self) { }
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

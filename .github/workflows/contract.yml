@@ -119,7 +119,7 @@ jobs:
             if ($referenceDirectory.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
               throw "Private $channelName references must remain outside the repository workspace."
             }
-            foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll') + @($profile.runtimeAssemblies)) {
+            foreach ($fileName in @('sts2.dll', '0Harmony.dll', 'GodotSharp.dll', 'SlayTheSpire2.pck') + @($profile.runtimeAssemblies)) {
               $file = Get-Item -LiteralPath (Join-Path $referenceDirectory $fileName) -ErrorAction Stop
               if (-not $file.IsReadOnly) { throw "$channelName/$fileName must be mounted read-only." }
             }
@@ -350,6 +350,7 @@ jobs:
 
                 $env:NINJASLAYER_CONTRACT_PRODUCT_ASSEMBLY = $productAssembly
                 $env:NINJASLAYER_CONTRACT_HOST_MVID = $hostContract.moduleMvid
+                $env:NINJASLAYER_CONTRACT_HOST_PACK = Join-Path $hostContract.dataDirectory 'SlayTheSpire2.pck'
                 $env:NINJASLAYER_CONTRACT_EXPECTED_SOURCE_REVISION = '${{ steps.candidate.outputs.sha }}'
                 $env:NINJASLAYER_CONTRACT_SUCCESS_MARKER = $sourceMarker
                 & $godot --headless --path $sourceRunnerRoot

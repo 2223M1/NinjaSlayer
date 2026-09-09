@@ -1,17 +1,10 @@
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-using MegaCrit.Sts2.Core.Nodes.Vfx;
-#endif
-using MegaCrit.Sts2.Core.Nodes.Vfx.Cards;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
@@ -52,55 +45,6 @@ internal static class RapidCardPresentationContext
         return Task.FromResult(true);
     }
 
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-    public static async Task Exhaust(
-        PlayerChoiceContext choiceContext,
-        CardModel card,
-        bool causedByEthereal,
-        bool skipVisuals)
-    {
-        if (!IsActive || skipVisuals)
-        {
-            await CardCmd.Exhaust(choiceContext, card, causedByEthereal, skipVisuals);
-            return;
-        }
-
-        NCard? cardNode = FindOrCreateCardNode(card);
-        await CardCmd.Exhaust(
-            choiceContext,
-            card,
-            causedByEthereal,
-            skipVisuals: true);
-        StartLegacyExhaust(cardNode);
-    }
-#else
-    public static async Task<CardPileAddResult?> Exhaust(
-        PlayerChoiceContext choiceContext,
-        CardModel card,
-        bool causedByEthereal,
-        bool skipVisuals)
-    {
-        if (!IsActive || skipVisuals)
-        {
-            return await CardCmd.Exhaust(choiceContext, card, causedByEthereal, skipVisuals);
-        }
-
-        NCard? cardNode = FindOrCreateCardNode(card);
-        CardPileAddResult? result = await CardCmd.Exhaust(
-            choiceContext,
-            card,
-            causedByEthereal,
-            skipVisuals: true);
-        StopPlayPileTween(cardNode);
-        if (cardNode != null && NCardExhaustQuickVfx.Create(cardNode) is { } exhaustVfx)
-        {
-            _ = TaskHelper.RunSafely(exhaustVfx.PlayAnimation());
-        }
-
-        return result;
-    }
-#endif
-
     public static async Task RemoveFromCombat(CardModel card, bool skipVisuals)
     {
         if (!IsActive || skipVisuals)
@@ -134,49 +78,6 @@ internal static class RapidCardPresentationContext
         {
             StopPlayPileTween(NCard.FindOnTable(card));
         }
-    }
-
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-    private static void StartLegacyExhaust(NCard? cardNode)
-    {
-        if (cardNode == null
-            || !GodotObject.IsInstanceValid(cardNode)
-            || NCombatRoom.Instance is not { } room)
-        {
-            return;
-        }
-
-        StopPlayPileTween(cardNode);
-        if (NExhaustVfx.Create(cardNode) is { } exhaustVfx)
-        {
-            room.Ui.AddChildSafely(exhaustVfx);
-        }
-
-        Tween tween = cardNode.CreateTween().SetParallel();
-        tween.TweenProperty(cardNode, "modulate:a", 0f, 0.15f);
-        tween.TweenProperty(cardNode, "scale", Vector2.Zero, 0.15f);
-        tween.Chain().TweenCallback(Callable.From(cardNode.QueueFreeSafely));
-    }
-#endif
-
-    private static NCard? FindOrCreateCardNode(CardModel card)
-    {
-        NCard? node = NCard.FindOnTable(card);
-        if (node != null || NCombatRoom.Instance is not { } room)
-        {
-            return node;
-        }
-
-        node = NCard.Create(card);
-        if (node == null)
-        {
-            return null;
-        }
-
-        room.Ui.AddChildSafely(node);
-        node.Position = (card.Pile?.Type ?? PileType.Play).GetTargetPosition(node);
-        node.UpdateVisuals(PileType.Play, CardPreviewMode.Normal);
-        return node;
     }
 
     private static void StopPlayPileTween(NCard? cardNode)

@@ -1,3 +1,4 @@
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -9,7 +10,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class TeaTeaRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>()];
+        [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 
     public TeaTeaRedesignV1()
         : base(nameof(TeaTeaRedesignV1), "ColdBrew", 1, CardType.Power, TargetType.Self) { }

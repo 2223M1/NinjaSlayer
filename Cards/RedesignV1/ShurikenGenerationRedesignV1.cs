@@ -14,7 +14,7 @@ public sealed class ShurikenGenerationRedesignV1 : RedesignV1UncommonCard
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 1)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [HoverTipFactory.FromPower<ShurikenGuardRedesignPower>()];
+        [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>(), HoverTipFactory.FromPower<ShurikenGuardRedesignPower>()];
 
     public ShurikenGenerationRedesignV1()
         : base(nameof(ShurikenGenerationRedesignV1), "ShurikenGuard", 1, CardType.Skill, TargetType.Self) { }

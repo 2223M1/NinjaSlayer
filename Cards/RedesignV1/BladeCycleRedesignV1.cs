@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -7,6 +9,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class BladeCycleRedesignV1 : RedesignV1UncommonCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
+
     public BladeCycleRedesignV1()
         : base(nameof(BladeCycleRedesignV1), "ShurikenBarrage", 2, CardType.Power, TargetType.Self) { }
 

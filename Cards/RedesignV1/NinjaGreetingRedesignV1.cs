@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -7,6 +9,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class NinjaGreetingRedesignV1 : RedesignV1RareCard
 {
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromKeyword(CardKeyword.Retain)];
+
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
         [CardKeyword.Innate, CardKeyword.Ethereal, CardKeyword.Exhaust];
 

@@ -22,6 +22,15 @@ Failures capture a screenshot when a viewport exists. JSONL checkpoints include 
 
 ## Isolation
 
+`FirstCombatRestart` also checks the native exhaust badge against the opened
+pile at every speed and captures mechanism/IRC/retained-tea tooltip previews.
+`BossReload` starts the first Act 3 boss at A10 with Pantograph, compares HP,
+encounter and card order after two process restarts and a same-process reload,
+then verifies that only the second boss plays another greeting.
+`-AdditionalModDirectories` stages explicitly requested local Workshop mod
+directories in the isolated profile, verifies their IDs loaded, and records
+their versions. This is scenario coverage, not a guarantee of every mod path.
+
 `Invoke-NinjaSlayerSmoke.ps1` requires an elevated Windows host with:
 
 - PowerShell 7 (`pwsh`); Windows PowerShell 5.1 is not supported.

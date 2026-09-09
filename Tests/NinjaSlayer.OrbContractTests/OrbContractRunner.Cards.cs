@@ -1,5 +1,6 @@
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
@@ -28,6 +29,8 @@ public partial class OrbContractRunner
             "The product assembly must contain only the 92 current card models.");
         await VerifyNewCardInteractions();
         await VerifyChadoGeneration();
+        await VerifyOpeningChadoRetention();
+        await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
     }
@@ -48,6 +51,60 @@ public partial class OrbContractRunner
         await retain!.BeforeFlush(Choice, combat.Player);
         Require(tea.ShouldRetainThisTurn && !strike.ShouldRetainThisTurn, "Chado retention affected another card.");
         GD.Print("PASS first/repeated Chado Breathing, generation hooks and Chado-only retention");
+    }
+
+    private static async Task VerifyOpeningChadoRetention()
+    {
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            RelicModel relic = upgraded
+                ? ModelDb.Relic<DeepChadoBreathingRelic>().ToMutable()
+                : ModelDb.Relic<ChadoBreathingRelic>().ToMutable();
+            combat.Player.AddRelicInternal(relic);
+            await relic.BeforeHandDraw(combat.Player, Choice, combat.State);
+            var opening = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray();
+            Require(opening.Length == (upgraded ? 2 : 1)
+                && opening.All(card => card.Keywords.Contains(CardKeyword.Retain)
+                    && card.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2)),
+                "Opening relic tea must retain and preserve its existing energy/count.");
+            foreach (var tea in opening)
+                await CardPileCmd.Add(tea, PileType.Discard);
+            await ChadoBreathCmd.Apply(combat.Player, 2);
+            var later = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
+            Require(!later.Keywords.Contains(CardKeyword.Retain), "Later tea must not inherit the opening relic's Retain.");
+            await CardPileCmd.Add(opening[0], PileType.Hand);
+            Require(opening[0].Keywords.Contains(CardKeyword.Retain), "Opening tea must retain after changing piles.");
+            Require(opening[0].MutableClone() is CardModel copy && copy.Keywords.Contains(CardKeyword.Retain),
+                "Native copies must preserve opening tea's Retain.");
+            combat.Player.PlayerCombatState!.IncrementTurnNumber();
+            int count = PileType.Hand.GetPile(combat.Player).Cards.Count;
+            await relic.BeforeHandDraw(combat.Player, Choice, combat.State);
+            Require(PileType.Hand.GetPile(combat.Player).Cards.Count == count && later.DynamicVars.Energy.BaseValue == 2,
+                "Opening relic effects must not repeat on later turns.");
+        }
+        GD.Print("PASS both opening relics: retained instances, later ordinary tea, pile changes, copies and later turns");
+    }
+
+    private static async Task VerifyBlackFlameTurnEnd()
+    {
+        using var combat = new OrbCombat();
+        await PowerCmd.Apply<ReturnReturnReturnPower>(Choice, combat.Player.Creature, 6, combat.Player.Creature, null);
+        var flames = new[] { AddCard<BlackFlameRedesignV1>(combat), AddCard<BlackFlameRedesignV1>(combat) };
+        foreach (var flame in flames)
+        {
+#if NINJASLAYER_CHANNEL_STABLE
+            await flame.OnTurnEndInHandWrapper(Choice);
+#else
+            await (Task)AccessTools.Method(typeof(CombatManager), "ResolveTurnEndCardEffects")
+                .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
+#endif
+        }
+        // The second flame spends four of the first flame's six Naraku Life before granting six more.
+        Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 8
+            && PileType.Exhaust.GetPile(combat.Player).Cards.Count == 2,
+            "Native end-turn must exhaust each Black Flame once and trigger Return Return Return once per card.");
+        GD.Print("PASS native Black Flame end-turn and stacked Return Return Return without duplicate exhaust");
     }
 
     private static async Task VerifyNarakuForms()

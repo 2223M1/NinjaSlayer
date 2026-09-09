@@ -11,7 +11,10 @@ internal enum SmokePhase
     FullAutoSlay,
     SawatariSameCombat,
     ReverseFinisher,
-    TransitionPerf
+    TransitionPerf,
+    BossFresh,
+    BossResume,
+    BossVerify
 }
 
 internal sealed record SmokeConfiguration(
@@ -25,7 +28,8 @@ internal sealed record SmokeConfiguration(
     string? TransitionVariant = null,
     bool? TransitionLoadLimitEnabled = null,
     bool? TransitionFinalizeBatchingEnabled = null,
-    bool TransitionPerfWarmup = false)
+    bool TransitionPerfWarmup = false,
+    string[]? AdditionalModIds = null)
 {
     public static SmokeConfiguration Load(string path)
     {

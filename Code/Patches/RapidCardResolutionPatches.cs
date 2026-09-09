@@ -120,10 +120,6 @@ internal static class RapidCardResolutionStateMachinePatch
         typeof(CardPileCmd),
         nameof(CardPileCmd.RemoveFromCombat),
         [typeof(CardModel), typeof(bool)]);
-    private static readonly MethodInfo Exhaust = RequireMethod(
-        typeof(CardCmd),
-        nameof(CardCmd.Exhaust),
-        [typeof(PlayerChoiceContext), typeof(CardModel), typeof(bool), typeof(bool)]);
 
     public static DynamicPatchInfo[] CreateDynamicPatches()
     {
@@ -170,14 +166,6 @@ internal static class RapidCardResolutionStateMachinePatch
                 typeof(RapidCardPresentationContext),
                 nameof(RapidCardPresentationContext.RemoveFromCombat),
                 [typeof(CardModel), typeof(bool)]));
-        Redirect(
-            rewriter,
-            "rapid-card exhausts",
-            Exhaust,
-            RequireMethod(
-                typeof(RapidCardPresentationContext),
-                nameof(RapidCardPresentationContext.Exhaust),
-                [typeof(PlayerChoiceContext), typeof(CardModel), typeof(bool), typeof(bool)]));
         return rewriter.Instructions();
     }
 

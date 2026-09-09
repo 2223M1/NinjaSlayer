@@ -25,7 +25,6 @@ public sealed class LuckyStrikeRedesignV1 : RedesignV1CommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Cards.UpgradeValueBy(1);
-        DynamicVars["Draw"].UpgradeValueBy(1);
+        DynamicVars.Cards.UpgradeValueBy(2);
     }
 }

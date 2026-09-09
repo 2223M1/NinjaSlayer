@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.Commands;
@@ -14,6 +15,9 @@ namespace NinjaSlayer.Relics;
 public sealed class IrcTerminalRelic : NinjaSlayerRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
+
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        HoverTipFactory.FromCardWithCardHoverTips<BusyLine>();
 
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
