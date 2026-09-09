@@ -28,8 +28,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
     public bool OwnsTransientSlot { get; private set; }
     private bool _fireAllStockOnNextEvoke;
     private bool _consumeOneStockOnNextEvoke;
-    private bool _completeEvokeChainOnNextEvoke;
-    private bool _generatedStrongShurikenInEvokeChain;
 
     public override decimal PassiveVal => StackCount;
     public override decimal EvokeVal => IsMutable
@@ -133,7 +131,8 @@ public sealed class ShurikenOrb : ModOrbTemplate
                 StackCount,
                 Owner.Creature.HasPower<BladeCyclePower>(),
                 shuffler == Owner,
-                CombatState.HittableEnemies.Count),
+                CombatState.HittableEnemies.Count,
+                Owner.Creature.GetPowerAmount<BladeCyclePower>()),
             null);
 
     public override async Task<IEnumerable<Creature>> Evoke(PlayerChoiceContext playerChoiceContext)
@@ -141,11 +140,8 @@ public sealed class ShurikenOrb : ModOrbTemplate
         bool fireAllStock = _fireAllStockOnNextEvoke;
         int shots = fireAllStock ? StackCount : 1;
         bool consumeOneStock = _consumeOneStockOnNextEvoke;
-        bool completeEvokeChain = fireAllStock || _completeEvokeChainOnNextEvoke;
         _fireAllStockOnNextEvoke = false;
         _consumeOneStockOnNextEvoke = false;
-        _completeEvokeChainOnNextEvoke = false;
-        bool generatedStrongShuriken = _generatedStrongShurikenInEvokeChain;
         bool fired = false;
         HashSet<Creature> targets = [];
         for (int index = 0; index < shots; index++)
@@ -159,10 +155,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
             fired = true;
             targets.UnionWith(shotTargets);
-            if (!generatedStrongShuriken)
-            {
-                generatedStrongShuriken = await TryGenerateStrongShuriken();
-            }
         }
 
         if (consumeOneStock && fired)
@@ -178,9 +170,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             }
         }
 
-        _generatedStrongShurikenInEvokeChain = completeEvokeChain
-            ? false
-            : generatedStrongShuriken;
         ReleaseTransientSlotIfRemoved();
         return targets;
     }
@@ -198,7 +187,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
         StackCount = 0;
         RefreshVisuals();
-        bool generatedStrongShuriken = false;
         for (int index = 0; index < stock * triggersPerStock; index++)
         {
             if ((await FireOne(choiceContext, source)).Count == 0)
@@ -206,10 +194,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
                 break;
             }
 
-            if (!generatedStrongShuriken)
-            {
-                generatedStrongShuriken = await TryGenerateStrongShuriken();
-            }
         }
 
         RemoveDepletedOrb();
@@ -222,10 +206,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
     internal void PrepareForReplacementEvoke()
     {
         _fireAllStockOnNextEvoke = true;
-        _completeEvokeChainOnNextEvoke = true;
     }
-
-    internal void PrepareForContinuingEvoke() => _completeEvokeChainOnNextEvoke = false;
 
     internal void PrepareForSingleStockEvoke()
     {
@@ -235,7 +216,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
         }
 
         _consumeOneStockOnNextEvoke = true;
-        _completeEvokeChainOnNextEvoke = true;
     }
 
     internal void RefreshVisuals()
@@ -259,7 +239,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return;
         }
 
-        bool generatedStrongShuriken = false;
         bool fired = false;
         for (int index = 0; index < resolution.Shots; index++)
         {
@@ -269,10 +248,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             }
 
             fired = true;
-            if (!generatedStrongShuriken)
-            {
-                generatedStrongShuriken = await TryGenerateStrongShuriken();
-            }
         }
 
         if (!fired)
@@ -317,30 +292,26 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets = [target];
         }
 
-        await ShurikenCombat.TriggerStockWave(
-            choiceContext,
-            Owner.Creature,
-            targets,
-            source,
-            this,
-            () => ActivateEvokeFeedback(targets));
+        if (Owner.Creature.GetPower<StarlessNightRedesignPower>() is { } starless)
+        {
+            await starless.GenerateStrongShuriken((int)EvokeVal);
+        }
+        else
+        {
+            await ShurikenCombat.TriggerStockWave(
+                choiceContext,
+                Owner.Creature,
+                targets,
+                source,
+                this,
+                () => ActivateEvokeFeedback(targets));
+        }
         // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
         if (notifyEvokeHooks && Owner.Creature.CombatState is { } combatState)
         {
             await Hook.AfterOrbEvoked(choiceContext, combatState, this, targets);
         }
         return targets;
-    }
-
-    private async Task<bool> TryGenerateStrongShuriken()
-    {
-        if (Owner.Creature.GetPower<StarlessNightRedesignPower>() is not { } power)
-        {
-            return false;
-        }
-
-        await power.GenerateStrongShuriken();
-        return true;
     }
 
     private void RemoveDepletedOrb()

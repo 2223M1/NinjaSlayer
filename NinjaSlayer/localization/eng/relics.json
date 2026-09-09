@@ -1,6 +1,6 @@
 {
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.title": "Mental Blanket",
-  "NINJA_SLAYER_RELIC_BLANKET_RELIC.description": "Whenever you enter [gold]Naraku Form[/gold], gain {NarakuLife:diff()} additional [gold]Naraku Life[/gold].",
+  "NINJA_SLAYER_RELIC_BLANKET_RELIC.description": "At the start of your turn, gain {NarakuLife:diff()} [gold]Naraku Life[/gold].",
   "NINJA_SLAYER_RELIC_BLANKET_RELIC.flavor": "With his body taken from him, Fujikido can only relive the same nightmare.",
   "NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC.title": "Dogusha Shuriken Case",
   "NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC.description": "At the start of each combat, gain 1 [gold]Shuriken[/gold].",
@@ -30,7 +30,7 @@
   "NINJA_SLAYER_RELIC_NANCY_ZAZEN_DRINK_RELIC.description": "Upon pickup, add 1 Zazen Drink and 2 Poor Sleep to your deck.",
   "NINJA_SLAYER_RELIC_NANCY_ZAZEN_DRINK_RELIC.flavor": "Five bottles hang at her waist like a bandolier. The final job begins.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.title": "Chado Breathing",
-  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "At the start of each combat, [gold]Chado Breathing[/gold] 2. The generated [gold]Chado[/gold] gains [gold]Retain[/gold].",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "At the start of each combat, [gold]Chado Breathing[/gold] 3.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.flavor": "Chado. Furin Kazan. Then Chado again.",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.title": "Deep Chado Breathing",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "At the start of each combat, add 2 [gold]Chado[/gold] to your [gold]Hand[/gold]. They gain [gold]Retain[/gold]. [gold]Chado Breathing[/gold] 2.",
@@ -38,11 +38,9 @@
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.title": "Naraku Within",
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.description": "At the start of combat, gain [gold]Naraku Form[/gold] and fully release Naraku.",
   "NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC.flavor": "The furnace of hatred never went cold. In the depths of his neurons, the old man opens his eyes.",
-
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.title": "Origami Pact",
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.description": "For the next [blue]{Combats}[/blue] combats, Yamoto Koki will fight beside you.",
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.flavor": "I'll keep up.",
-
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.title": "Torii Pact",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.description": "For the next [blue]{Combats}[/blue] combats, Yukano will fight beside you.",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "‘Ninja Slayer-san, I will travel with you for a while.’"

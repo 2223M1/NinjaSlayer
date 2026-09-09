@@ -29,7 +29,7 @@ public sealed class AlabamaDropRedesignV1 : RedesignV1RareCard
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         new CalculationBaseVar(0),
-        new ExtraDamageVar(6),
+        new ExtraDamageVar(5),
         new CalculatedDamageVar(ValueProp.Move | ValueProp.Unpowered)
             .WithMultiplier(static (card, _) => card.Owner.Creature.GetPowerAmount<KaratePower>()),
         new DynamicVar("Dazed", 3)
@@ -69,7 +69,6 @@ public sealed class AlabamaDropRedesignV1 : RedesignV1RareCard
 
         await AlabamaDropAnimation.Play(Owner.Creature, cardPlay.Target!, ResolveImpact);
         await ResolveImpact();
-        await PowerCmd.Remove<KaratePower>(Owner.Creature);
         for (int index = 0; index < DynamicVars["Dazed"].IntValue; index++)
         {
             await NinjaSlayerCardCmd.AddGeneratedCard<Dazed>(Owner, PileType.Draw);

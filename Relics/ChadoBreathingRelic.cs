@@ -18,6 +18,7 @@ namespace NinjaSlayer.Relics;
 public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 {
     protected virtual int ChadoCount => 0;
+    protected virtual int BreathAmount => 3;
 
     public override RelicRarity Rarity => RelicRarity.Starter;
 
@@ -26,7 +27,7 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         get
         {
             var tea = ModelDb.Card<ChadoEnergyRedesignV1>().ToMutable();
-            tea.AddKeyword(CardKeyword.Retain);
+            if (ChadoCount > 0) tea.AddKeyword(CardKeyword.Retain);
             return [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromCard(tea), .. tea.HoverTips];
         }
     }
@@ -48,7 +49,7 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
             await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
         }
 
-        await ChadoBreathCmd.Apply(Owner, 2, retainGeneratedCard: true);
+        await ChadoBreathCmd.Apply(Owner, BreathAmount);
         Flash();
     }
 }

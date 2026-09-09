@@ -30,10 +30,10 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
 
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(18, ValueProp.Move), new CardsVar(10), new DynamicVar("Breath", 2)];
+        [new DamageVar(15, ValueProp.Move), new DynamicVar("Breath", 2)];
 
     public DragonFlyingKickRedesignV1()
-        : base(nameof(DragonFlyingKickRedesignV1), "NinjaSlayerFootwork", 3, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(DragonFlyingKickRedesignV1), "NinjaSlayerFootwork", 4, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -49,9 +49,13 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
             .AfterAttackerAnim(() => JumpAnimation.Play(Owner.Creature))
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
+        await CardPileCmd.Draw(choiceContext, Math.Max(0, CardPile.MaxCardsInHand - PileType.Hand.GetPile(Owner).Cards.Count), Owner);
         await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
     }
 
-    protected override void OnUpgrade() { }
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Damage.UpgradeValueBy(5);
+        DynamicVars["Breath"].UpgradeValueBy(1);
+    }
 }

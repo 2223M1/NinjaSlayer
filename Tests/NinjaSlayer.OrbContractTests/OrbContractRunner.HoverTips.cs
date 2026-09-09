@@ -58,8 +58,8 @@ public partial class OrbContractRunner
             Require(chop is CommonChopRedesignV1 && chop.IsUpgraded == upgraded && chop.Keywords.Contains(CardKeyword.Exhaust),
                 "Chop Chain must preview the generated upgraded/exhausting Chop.");
             var starless = AddCard<GiantShurikenRedesignV1>(combat, upgraded: upgraded);
-            Require(starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded == upgraded,
-                "Starless Night must preview the generated token's upgrade.");
+            Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
+                "Starless Night must preview an unupgraded token even when the power card is upgraded.");
             var guard = AddCard<KillingIntentRedesignV1>(combat, upgraded: upgraded);
             Require(guard.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded == upgraded,
                 "Killing Intent must preview the generated Straight Ki's upgrade.");
@@ -67,8 +67,8 @@ public partial class OrbContractRunner
         Require(ModelDb.Relic<IrcTerminalRelic>().HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BusyLine),
             "IRC Terminal must expose its Busy Line card preview.");
         foreach (RelicModel relic in new RelicModel[] { ModelDb.Relic<ChadoBreathingRelic>(), ModelDb.Relic<DeepChadoBreathingRelic>() })
-            Require(relic.HoverTips.OfType<CardHoverTip>().Single().Card.Keywords.Contains(CardKeyword.Retain),
-                "Both starter relics must preview retained tea.");
+            Require(relic.HoverTips.OfType<CardHoverTip>().Single().Card.Keywords.Contains(CardKeyword.Retain)
+                == (relic is DeepChadoBreathingRelic), "Only the ancient starter relic must preview retained tea.");
         Require(!ModelDb.Card<ChadoEnergyRedesignV1>().Keywords.Contains(CardKeyword.Retain),
             "Relic previews must not mutate the canonical tea model.");
     }

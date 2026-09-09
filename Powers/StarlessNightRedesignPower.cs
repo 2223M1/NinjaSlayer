@@ -14,18 +14,14 @@ public sealed class StarlessNightRedesignPower : NinjaSlayerPowerTemplate
     public override PowerStackType StackType => PowerStackType.Single;
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("StarlessNightPower");
 
-    public bool GenerateUpgradedToken { get; set; }
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        HoverTipFactory.FromCardWithCardHoverTips<StrongShurikenTokenRedesignV1>(GenerateUpgradedToken);
+        HoverTipFactory.FromCardWithCardHoverTips<StrongShurikenTokenRedesignV1>();
 
-    internal async Task GenerateStrongShuriken()
+    internal async Task GenerateStrongShuriken(int damage)
     {
         StrongShurikenTokenRedesignV1 card =
             CombatState.CreateCard<StrongShurikenTokenRedesignV1>(Owner.Player!);
-        if (GenerateUpgradedToken)
-        {
-            CardCmd.Upgrade(card);
-        }
+        card.SnapshotDamage = damage;
 
         Flash();
         await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, Owner.Player!);

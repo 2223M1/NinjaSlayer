@@ -1,4 +1,3 @@
-using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -49,15 +48,16 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
         return Task.CompletedTask;
     }
 
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal decimal AbsorbHpLoss(decimal amount)
     {
-        if (target != Owner || result.UnblockedDamage <= 0 || Amount <= 0)
-        {
-            return;
-        }
+        int absorbed = Math.Min(Amount, Math.Max(0, (int)amount));
+        if (absorbed == 0) return amount;
 
-        int absorbed = Math.Min(Amount, result.UnblockedDamage);
-        await CreatureCmd.Heal(Owner, absorbed, playAnim: false);
-        await PowerCmd.ModifyAmount(choiceContext, this, -absorbed, Owner, cardSource, silent: true);
+        // HP loss is synchronous. Commit the shield before the host evaluates death,
+        // using the model operations that raise the native power/UI notifications.
+        SetAmount(Amount - absorbed, silent: true);
+        if (Amount == 0) RemoveInternal();
+        CombatHealthBar.Refresh(Owner);
+        return amount - absorbed;
     }
 }

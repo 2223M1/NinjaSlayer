@@ -11,7 +11,7 @@
   "NINJA_SLAYER_POWER_CHADO_RETAIN_POWER.description": "本回合[gold]保留[/gold]你的[gold]茶道[/gold]。",
   "NINJA_SLAYER_POWER_CHADO_RETAIN_POWER.smartDescription": "在接下来的[blue]{Amount}[/blue]个回合内[gold]保留[/gold]你的[gold]茶道[/gold]。",
   "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.title": "奈落生命",
-  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "优先承受生命伤害。退出[gold]奈落[/gold]时清空。",
+  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "优先承受格挡和减伤后的生命伤害。",
   "NINJA_SLAYER_POWER_IAI_POWER.title": "居合",
   "NINJA_SLAYER_POWER_IAI_POWER.description": "再受到{Amount}次攻击时，立即反击攻击者。反击的基础伤害为0。",
   "NINJA_SLAYER_POWER_COMBAT_ADJUSTMENT_POWER.title": "战斗调节",
@@ -23,8 +23,8 @@
   "NINJA_SLAYER_POWER_WASSHOI_DUPLICATION_POWER.title": "Wasshoi!",
   "NINJA_SLAYER_POWER_WASSHOI_DUPLICATION_POWER.description": "目标攻击牌额外打出{Amount}次。",
   "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.title": "飞刃轮转",
-  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.description": "每当你将[gold]抽牌堆[/gold]洗牌时，每有1层[gold]手里剑[/gold]，将其[gold]激发[/gold]1次，然后失去1层[gold]手里剑[/gold]。",
-  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.smartDescription": "每当你将[gold]抽牌堆[/gold]洗牌时，每有1层[gold]手里剑[/gold]，将其[gold]激发[/gold]1次，然后失去1层[gold]手里剑[/gold]。",
+  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.description": "抽牌堆洗牌时，激发所有[gold]手里剑[/gold]，然后失去{Amount}层手里剑。",
+  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.smartDescription": "抽牌堆洗牌时，激发所有[gold]手里剑[/gold]，然后失去{Amount}层手里剑。",
   "NINJA_SLAYER_POWER_NARAKU_FORM_REDESIGN_POWER.title": "奈落形态",
   "NINJA_SLAYER_POWER_NARAKU_FORM_REDESIGN_POWER.description": "攻击牌的费用变为0。每当你打出一张攻击牌时，[gold]消耗[/gold]它，并将1张[gold]黑炎[/gold]加入你的[gold]抽牌堆[/gold]。",
   "NINJA_SLAYER_POWER_KILLING_INTENT_REDESIGN_POWER.title": "杀气",
@@ -46,7 +46,7 @@
   "NINJA_SLAYER_POWER_VITALITY_TEA_POWER.title": "活力茶",
   "NINJA_SLAYER_POWER_VITALITY_TEA_POWER.description": "每当[gold]茶道[/gold]被[gold]消耗[/gold]时，获得{Amount}点[gold]活力[/gold]。",
   "NINJA_SLAYER_POWER_STARLESS_NIGHT_REDESIGN_POWER.title": "无星之夜",
-  "NINJA_SLAYER_POWER_STARLESS_NIGHT_REDESIGN_POWER.description": "每当你[gold]激发[/gold]手里剑，将1张[gold]强·手里剑[/gold]加入你的[gold]手牌[/gold]。每次手里剑结算只触发一次。",
+  "NINJA_SLAYER_POWER_STARLESS_NIGHT_REDESIGN_POWER.description": "每当你的[gold]手里剑[/gold]将要发射时，改为将1张同等伤害的[gold]强·手里剑[/gold]加入你的手牌。",
   "NINJA_SLAYER_POWER_KARATE_TEA_POWER.title": "空手道茶",
   "NINJA_SLAYER_POWER_KARATE_TEA_POWER.description": "每当生成1张[gold]茶道[/gold]时，获得{Amount}层[gold]空手道[/gold]。",
   "NINJA_SLAYER_POWER_TEA_TEA_POWER.title": "茶茶",
@@ -82,5 +82,7 @@
   "NINJA_SLAYER_POWER_WASSSSSSHOI_FOCUS_POWER.description": "本回合获得{Amount}点集中。",
   "NINJA_SLAYER_POWER_WASSSSSSHOI_FOCUS_POWER.smartDescription": "本回合获得{Amount}点集中。",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.smartDescription": "本回合激发手里剑会攻击所有敌人。",
-  "NINJA_SLAYER_POWER_RETURN_RETURN_RETURN_POWER.smartDescription": "每当你的黑炎被消耗，获得{Amount}层奈落生命。"
+  "NINJA_SLAYER_POWER_RETURN_RETURN_RETURN_POWER.smartDescription": "每当你的黑炎被消耗，获得{Amount}层奈落生命。",
+  "NINJA_SLAYER_POWER_BLACK_FLAME_RECOVERY_POWER.title": "黑炎恢复",
+  "NINJA_SLAYER_POWER_BLACK_FLAME_RECOVERY_POWER.description": "本回合每打出1张攻击牌，获得{Amount}点[gold]奈落生命[/gold]。"
 }

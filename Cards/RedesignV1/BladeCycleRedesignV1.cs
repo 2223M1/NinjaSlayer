@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.HoverTips;
 using NinjaSlayer.Content;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -15,8 +16,17 @@ public sealed class BladeCycleRedesignV1 : RedesignV1UncommonCard
     public BladeCycleRedesignV1()
         : base(nameof(BladeCycleRedesignV1), "ShurikenBarrage", 2, CardType.Power, TargetType.Self) { }
 
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        PowerCmd.Apply<BladeCyclePower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("StockLoss", 3)];
 
-    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        decimal stockLoss = DynamicVars["StockLoss"].BaseValue;
+        var existing = Owner.Creature.GetPower<BladeCyclePower>();
+        if (existing is null)
+            await PowerCmd.Apply<BladeCyclePower>(choiceContext, Owner.Creature, stockLoss, Owner.Creature, this);
+        else if (stockLoss < existing.Amount)
+            await PowerCmd.ModifyAmount(choiceContext, existing, stockLoss - existing.Amount, Owner.Creature, this);
+    }
+
+    protected override void OnUpgrade() => DynamicVars["StockLoss"].UpgradeValueBy(-2);
 }

@@ -1,22 +1,20 @@
 using MegaCrit.Sts2.Core.HoverTips;
-using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
-using NinjaSlayer.Code.Commands;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class FurinKazanChadoRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+        [HoverTipFactory.FromPower<ArtifactPower>()];
 
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Innate, CardKeyword.Exhaust];
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new PowerVar<ArtifactPower>(1), new DynamicVar("Breath", 2)];
+        [new PowerVar<ArtifactPower>(1)];
 
     public FurinKazanChadoRedesignV1()
         : base(nameof(FurinKazanChadoRedesignV1), "TeaSamadhi", 2, CardType.Skill, TargetType.Self) { }
@@ -29,8 +27,7 @@ public sealed class FurinKazanChadoRedesignV1 : RedesignV1RareCard
             DynamicVars[nameof(ArtifactPower)].BaseValue,
             Owner.Creature,
             this);
-        await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
     }
 
-    protected override void OnUpgrade() => DynamicVars["Breath"].UpgradeValueBy(1);
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

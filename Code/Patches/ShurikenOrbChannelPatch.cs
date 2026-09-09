@@ -82,7 +82,6 @@ public sealed class ShurikenOrbEvokePatch : IPatchMethod
 
         if (!dequeue)
         {
-            shuriken.PrepareForContinuingEvoke();
             return;
         }
 

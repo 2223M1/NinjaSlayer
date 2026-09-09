@@ -5,7 +5,7 @@
   "NINJA_SLAYER_POWER_EVASION_POWER.title": "Evasion",
   "NINJA_SLAYER_POWER_EVASION_POWER.description": "Avoid the next hit from an enemy Attack, losing neither HP nor Block. At the start of your next turn, lose all [gold]Evasion[/gold].",
   "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.title": "Naraku Life",
-  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "Absorbs damage before HP. Removed when you leave [gold]Naraku[/gold] form.",
+  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "Absorbs HP damage remaining after Block and damage prevention.",
   "NINJA_SLAYER_POWER_KARATE_POWER.title": "Karate",
   "NINJA_SLAYER_POWER_KARATE_POWER.description": "Each time an Attack deals damage, deal {Amount} additional damage to each enemy hit, then lose 1 Karate. This damage is unaffected by Strength, Weak, or Vulnerable.",
   "NINJA_SLAYER_POWER_KARATE_POWER.smartDescription": "Each time an [gold]Attack[/gold] deals damage, deal {Amount} additional damage to each enemy hit, then lose 1 [gold]Karate[/gold]. This damage is unaffected by [gold]Strength[/gold], [gold]Weak[/gold], or [gold]Vulnerable[/gold].",
@@ -23,8 +23,8 @@
   "NINJA_SLAYER_POWER_WASSHOI_DUPLICATION_POWER.title": "Wasshoi!",
   "NINJA_SLAYER_POWER_WASSHOI_DUPLICATION_POWER.description": "Play the targeted Attack {Amount} additional {Amount:plural:time|times}.",
   "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.title": "Blade Cycle",
-  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.description": "Whenever you shuffle your [gold]Draw Pile[/gold], [gold]Evoke[/gold] Shuriken once for each stack, then lose 1 [gold]Shuriken[/gold].",
-  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.smartDescription": "Whenever you shuffle your [gold]Draw Pile[/gold], [gold]Evoke[/gold] Shuriken once for each stack, then lose 1 [gold]Shuriken[/gold].",
+  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.description": "Whenever your draw pile is shuffled, evoke all [gold]Shuriken[/gold], then lose {Amount} stock.",
+  "NINJA_SLAYER_POWER_BLADE_CYCLE_POWER.smartDescription": "Whenever your draw pile is shuffled, evoke all [gold]Shuriken[/gold], then lose {Amount} stock.",
   "NINJA_SLAYER_POWER_NARAKU_FORM_REDESIGN_POWER.title": "Naraku Form",
   "NINJA_SLAYER_POWER_NARAKU_FORM_REDESIGN_POWER.description": "Attacks cost 0. Whenever you play an Attack, [gold]Exhaust[/gold] it and add 1 [gold]Black Flame[/gold] into your [gold]Draw Pile[/gold].",
   "NINJA_SLAYER_POWER_KILLING_INTENT_REDESIGN_POWER.title": "Killing Intent",
@@ -46,7 +46,7 @@
   "NINJA_SLAYER_POWER_VITALITY_TEA_POWER.title": "Vitality Tea",
   "NINJA_SLAYER_POWER_VITALITY_TEA_POWER.description": "Whenever [gold]Chado[/gold] is [gold]Exhausted[/gold], gain {Amount} [gold]Vigor[/gold].",
   "NINJA_SLAYER_POWER_STARLESS_NIGHT_REDESIGN_POWER.title": "Starless Night",
-  "NINJA_SLAYER_POWER_STARLESS_NIGHT_REDESIGN_POWER.description": "Whenever you [gold]Evoke[/gold] Shuriken, add 1 [gold]Strong Shuriken[/gold] into your [gold]Hand[/gold]. Triggers only once per Shuriken resolution.",
+  "NINJA_SLAYER_POWER_STARLESS_NIGHT_REDESIGN_POWER.description": "Whenever a [gold]Shuriken[/gold] would fire, instead add a [gold]Strong Shuriken[/gold] with the same damage to your hand.",
   "NINJA_SLAYER_POWER_KARATE_TEA_POWER.title": "Karate Tea",
   "NINJA_SLAYER_POWER_KARATE_TEA_POWER.description": "Whenever you generate a [gold]Chado[/gold], gain {Amount} [gold]Karate[/gold].",
   "NINJA_SLAYER_POWER_TEA_TEA_POWER.title": "Tea Tea",
@@ -82,5 +82,7 @@
   "NINJA_SLAYER_POWER_WASSSSSSHOI_FOCUS_POWER.description": "Gain {Amount} Focus this turn.",
   "NINJA_SLAYER_POWER_WASSSSSSHOI_FOCUS_POWER.smartDescription": "Gain {Amount} Focus this turn.",
   "NINJA_SLAYER_POWER_BLADE_SWEEP_POWER.smartDescription": "Evoking Shuriken hits ALL enemies this turn.",
-  "NINJA_SLAYER_POWER_RETURN_RETURN_RETURN_POWER.smartDescription": "Whenever your Black Flame is Exhausted, gain {Amount} Naraku Life."
+  "NINJA_SLAYER_POWER_RETURN_RETURN_RETURN_POWER.smartDescription": "Whenever your Black Flame is Exhausted, gain {Amount} Naraku Life.",
+  "NINJA_SLAYER_POWER_BLACK_FLAME_RECOVERY_POWER.title": "Black Flame Recovery",
+  "NINJA_SLAYER_POWER_BLACK_FLAME_RECOVERY_POWER.description": "Whenever you play an Attack this turn, gain {Amount} [gold]Naraku Life[/gold]."
 }

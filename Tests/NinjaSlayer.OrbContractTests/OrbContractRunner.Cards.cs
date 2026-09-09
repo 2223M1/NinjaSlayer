@@ -65,25 +65,25 @@ public partial class OrbContractRunner
             await relic.BeforeHandDraw(combat.Player, Choice, combat.State);
             var opening = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray();
             Require(opening.Length == (upgraded ? 2 : 1)
-                && opening.All(card => card.Keywords.Contains(CardKeyword.Retain)
-                    && card.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2)),
-                "Opening relic tea must retain and preserve its existing energy/count.");
+                && opening.All(card => card.Keywords.Contains(CardKeyword.Retain) == upgraded
+                    && card.DynamicVars.Energy.BaseValue == 3),
+                "Starter breathes three without Retain; ancient generates two retained tea then breathes two.");
             foreach (var tea in opening)
                 await CardPileCmd.Add(tea, PileType.Discard);
             await ChadoBreathCmd.Apply(combat.Player, 2);
             var later = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
             Require(!later.Keywords.Contains(CardKeyword.Retain), "Later tea must not inherit the opening relic's Retain.");
             await CardPileCmd.Add(opening[0], PileType.Hand);
-            Require(opening[0].Keywords.Contains(CardKeyword.Retain), "Opening tea must retain after changing piles.");
-            Require(opening[0].MutableClone() is CardModel copy && copy.Keywords.Contains(CardKeyword.Retain),
-                "Native copies must preserve opening tea's Retain.");
+            Require(opening[0].Keywords.Contains(CardKeyword.Retain) == upgraded, "Pile changes must preserve opening tea's keywords.");
+            Require(opening[0].MutableClone() is CardModel copy && copy.Keywords.Contains(CardKeyword.Retain) == upgraded,
+                "Native copies must preserve opening tea's keywords.");
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
             int count = PileType.Hand.GetPile(combat.Player).Cards.Count;
             await relic.BeforeHandDraw(combat.Player, Choice, combat.State);
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == count && later.DynamicVars.Energy.BaseValue == 2,
                 "Opening relic effects must not repeat on later turns.");
         }
-        GD.Print("PASS both opening relics: retained instances, later ordinary tea, pile changes, copies and later turns");
+        GD.Print("PASS starter breath three without Retain; ancient retained tea, later ordinary tea, piles and copies");
     }
 
     private static async Task VerifyBlackFlameTurnEnd()

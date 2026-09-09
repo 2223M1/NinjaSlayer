@@ -159,11 +159,11 @@ public sealed class RedesignV1RulesTests
 
     [Theory]
     [InlineData(4, false, true, 1, 0, 4)]
-    [InlineData(4, true, true, 1, 4, 3)]
+    [InlineData(4, true, true, 1, 4, 1)]
     [InlineData(4, true, false, 1, 0, 4)]
     [InlineData(4, true, true, 0, 0, 4)]
     [InlineData(0, true, true, 1, 0, 0)]
-    public void OnlyBladeCycleShuffleFiresAndConsumesOneStock(
+    public void OnlyBladeCycleShuffleFiresAndConsumesThreeStock(
         int stock,
         bool hasBladeCycle,
         bool isOwnerShuffle,
