@@ -185,6 +185,31 @@ public partial class OrbContractRunner
         Require(localSelections == 3, "Only the local player may make the three synchronized choices.");
         GD.Print("PASS synchronized hand discard and nested Scry/Sly choices");
 #endif
+        foreach (Player player in run.Players)
+        {
+            await AddStock(player, 2);
+            await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.FocusPower>(Choice, player.Creature, 2, player.Creature, null);
+            int stock = player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount;
+            foreach (CardModel card in new CardModel[]
+            {
+                combat.State.CreateCard<GiantShurikenRedesignV1>(player),
+                combat.State.CreateCard<OyeahThrowSword>(player)
+            })
+            {
+                await CardPileCmd.Add(card, PileType.Hand);
+                int before = completed;
+                string fixture = $"conversion-{player.NetId}-{card.Id.Entry}";
+                System.IO.File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+                await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                    && System.IO.File.Exists(Path.Combine(directory, $"client.{fixture}")), "both conversion fixtures");
+                if (player.NetId == _network.NetId)
+                    RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, null));
+                await WaitNetwork(() => completed > before, "native converted volley action");
+            }
+            var tokens = player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().ToArray();
+            Require(tokens.Length == stock && tokens.All(card => card.SnapshotDamage == 6),
+                "Each original shot must create one synchronized six-damage snapshot token.");
+        }
         var snapshot = new
         {
             EnemyHp = new[] { combat.Enemy.CurrentHp, otherEnemy.CurrentHp },
@@ -192,7 +217,8 @@ public partial class OrbContractRunner
             {
                 player.NetId, player.PlayerCombatState!.Energy,
                 Orbs = player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Select(orb => new { orb.StackCount, orb.OwnsTransientSlot }),
-                Cards = player.PlayerCombatState.AllCards.Select(card => new { Id = card.Id.ToString(), Pile = card.Pile?.Type.ToString() })
+                Cards = player.PlayerCombatState.AllCards.Select(card => new { Id = card.Id.ToString(), Pile = card.Pile?.Type.ToString(),
+                    Snapshot = (card as StrongShurikenTokenRedesignV1)?.SnapshotDamage })
             })
         };
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".json"), JsonSerializer.Serialize(snapshot));
@@ -201,6 +227,7 @@ public partial class OrbContractRunner
         Require(System.IO.File.ReadAllText(Path.Combine(directory, "host.json"))
             == System.IO.File.ReadAllText(Path.Combine(directory, "client.json")), "Host/client product states diverged.");
         GD.Print("PASS two-process native ENet/action-queue stock, multi-evoke, Naraku ownership and RNG agreement");
+        GD.Print("PASS synchronized Starless conversion, per-shot token count and Focus damage snapshots");
     }
 
     private static async Task WaitNetwork(Func<bool> predicate, string operation)

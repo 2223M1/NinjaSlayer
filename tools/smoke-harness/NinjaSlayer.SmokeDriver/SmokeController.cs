@@ -355,6 +355,22 @@ internal sealed partial class SmokeController
 
         await PlayerCmd.SetEnergy(10m, player);
         await VerifyExhaustPileUi(combatState, player);
+        await VerifyTransformPoolReuse(combatState, player);
+        int originalHp = player.Creature.CurrentHp;
+        foreach (var (hit, expectedHp, expectedLife) in new[] { (15, 10, 5), (25, 5, 0) })
+        {
+            await CreatureCmd.SetCurrentHp(player.Creature, 10);
+            await PowerCmd.Apply<NarakuLifePower>(new BlockingPlayerChoiceContext(), player.Creature,
+                20, player.Creature, null);
+            await CreatureCmd.Damage(new BlockingPlayerChoiceContext(), player.Creature,
+                hit, ValueProp.Unpowered, combatState.Enemies.First());
+            Require(player.Creature.CurrentHp == expectedHp
+                && player.Creature.GetPowerAmount<NarakuLifePower>() == expectedLife && !player.Creature.IsDead,
+                "A rendered enemy hit bypassed Naraku Life or marked the player dead.");
+            await PowerCmd.Remove<NarakuLifePower>(player.Creature);
+        }
+        await CreatureCmd.SetCurrentHp(player.Creature, originalHp);
+        _checkpoints.Write("naraku.lethal-hit-absorption");
         PreparedShurikenRedesignV1 readyBlade = combatState.CreateCard<PreparedShurikenRedesignV1>(player);
         await CardPileCmd.Add(readyBlade, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, player.Creature);

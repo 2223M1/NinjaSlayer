@@ -21,3 +21,14 @@ public sealed class CardTransformShineSfxPatch : IPatchMethod
         SfxCmd.Play(FmodSfx.transform);
     }
 }
+
+public sealed class CardTransformShineCleanupPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_card_transform_shine_cleanup";
+    public static string Description => "Release cancelled transform overlays before their parent card is reused from the pool.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() =>
+        [new(typeof(NCardTransformShineVfx), nameof(NCardTransformShineVfx._ExitTree), [])];
+
+    public static void Postfix(NCardTransformShineVfx __instance) => __instance.QueueFree();
+}

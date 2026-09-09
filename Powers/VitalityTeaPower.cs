@@ -10,7 +10,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class VitalityTeaPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DrinkTeaPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("TeaDrinkingSwordPower");
 
     public override async Task AfterCardExhausted(
         PlayerChoiceContext choiceContext,

@@ -14,7 +14,7 @@ public sealed class ReturnReturnReturnRedesignV1 : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         HoverTipFactory.FromCardWithCardHoverTips<BlackFlameRedesignV1>();
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(4)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(3)];
     public ReturnReturnReturnRedesignV1()
         : base(nameof(ReturnReturnReturnRedesignV1), "AssassinationFist", 1, CardType.Power, TargetType.Self) { }
 

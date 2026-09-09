@@ -18,7 +18,7 @@ public static class ChadoBreathCmd
 {
     private const string ForgeSfx = "event:/sfx/characters/regent/regent_refine";
 
-    public static async Task Apply(Player player, int amount, bool retainGeneratedCard = false)
+    public static async Task Apply(Player player, int amount)
     {
         if (amount <= 0 || CombatManager.Instance.IsOverOrEnding)
         {
@@ -36,10 +36,6 @@ public static class ChadoBreathCmd
             ICombatState combatState = player.Creature.CombatState
                 ?? throw new InvalidOperationException("Chado Breathing requires combat.");
             ChadoEnergyRedesignV1 card = combatState.CreateCard<ChadoEnergyRedesignV1>(player);
-            if (retainGeneratedCard)
-            {
-                card.AddKeyword(CardKeyword.Retain);
-            }
             await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, player);
             cards.Add(card);
         }

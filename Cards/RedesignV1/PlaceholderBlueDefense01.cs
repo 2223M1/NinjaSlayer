@@ -3,6 +3,8 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
+using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
@@ -10,8 +12,16 @@ public sealed class PlaceholderBlueDefense01 : RedesignV1UncommonCard
 {
     public PlaceholderBlueDefense01() : base(nameof(PlaceholderBlueDefense01), "BlockCard", 1, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(11, ValueProp.Move)];
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(4);
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(7, ValueProp.Move), new PowerVar<ThornsPower>(2)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ThornsPower>()];
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        await PowerCmd.Apply<ThornsPower>(choiceContext, Owner.Creature, DynamicVars[nameof(ThornsPower)].BaseValue, Owner.Creature, this);
+    }
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Block.UpgradeValueBy(3);
+        DynamicVars[nameof(ThornsPower)].UpgradeValueBy(1);
+    }
 }

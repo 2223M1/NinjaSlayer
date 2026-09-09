@@ -26,6 +26,30 @@ using NinjaSlayer.Events;
 
 namespace NinjaSlayer.SmokeDriver;
 
+[HarmonyPatch(typeof(AutoSlayer), "HandleRoomAsync")]
+internal static class NinjaSlayerSmokeShopRewardsPatch
+{
+    public static void Postfix(AutoSlayer __instance, RoomType roomType, CancellationToken ct, ref Task __result)
+    {
+        if (roomType == RoomType.Shop) __result = CompletePurchase(__instance, __result, ct);
+    }
+
+    private static async Task CompletePurchase(AutoSlayer autoSlayer, Task room, CancellationToken ct)
+    {
+        // Orrery's native purchase waits for rewards to close before the shop handler returns.
+        while (!room.IsCompleted)
+        {
+            if (MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack.Instance?.Peek()
+                is MegaCrit.Sts2.Core.Nodes.Screens.NRewardsScreen)
+            {
+                await (Task)AccessTools.Method(typeof(AutoSlayer), "DrainOverlayScreensAsync").Invoke(autoSlayer, [ct])!;
+            }
+            else await Task.Delay(100, ct);
+        }
+        await room;
+    }
+}
+
 [HarmonyPatch(typeof(NCharacterSelectButton), nameof(NCharacterSelectButton.Select))]
 internal static class NinjaSlayerSmokeCharacterSelectionPatch
 {

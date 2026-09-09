@@ -11,7 +11,7 @@ namespace NinjaSlayer.Powers;
 public sealed class TeaTeaPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile =>
-        NinjaSlayerPowerAssets.Named("EndTurnRetainPower");
+        NinjaSlayerPowerAssets.Named("DrinkTeaPower");
 
     public override Task BeforeFlush(PlayerChoiceContext choiceContext, Player player)
     {

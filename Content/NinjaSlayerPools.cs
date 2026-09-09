@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Models;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Utils;
 
@@ -20,6 +21,11 @@ public abstract class NinjaSlayerCardPoolTemplate : TypeListCardPoolModel
 
 public sealed class NinjaSlayerCardPool : NinjaSlayerCardPoolTemplate
 {
+    private static readonly List<string> RewardOrder =
+        [.. RedesignV1Rules.CommonRewardCardIds, .. RedesignV1Rules.UncommonRewardCardIds, .. RedesignV1Rules.RareRewardCardIds];
+
+    public override IEnumerable<CardModel> AllCards =>
+        base.AllCards.OrderBy(card => RewardOrder.IndexOf(card.GetType().Name));
 }
 
 public sealed class NinjaSlayerRelicPool : TypeListRelicPoolModel

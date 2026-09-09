@@ -154,12 +154,22 @@ public partial class OrbContractRunner
             var wound = AddCard<Wound>(combat);
             combat.Player.Creature.SetCurrentHpInternal(30);
             await PowerCmd.Apply<ReturnReturnReturnPower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first, second]));
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first]));
             await CardCmd.AutoPlay(Choice, recovery, null);
-            Require(combat.Player.Creature.CurrentHp == 36 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 8,
-                "Recovery must transform two cards, exhaust three statuses and heal two per exhausted status.");
-            Require(wound.Pile?.Type == PileType.Exhaust && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<BlackFlameRedesignV1>().Count() == 2,
-                "Recovery must create and exhaust the replacement Black Flames.");
+            Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
+                "Recovery must not heal or exhaust hand statuses.");
+            Require(wound.Pile?.Type == PileType.Hand && second.Pile?.Type == PileType.Hand
+                && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlameRedesignV1>().Count() == 1,
+                "Recovery must transform exactly one selected card.");
+            await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 2,
+                "Recovery must grant Naraku Life once per attack played.");
+#if NINJASLAYER_CHANNEL_STABLE
+            await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#else
+            await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
+#endif
+            Require(!combat.Player.Creature.HasPower<BlackFlameRecoveryPower>(), "Recovery must expire this turn.");
         }
         using (var combat = new OrbCombat())
         {
@@ -170,7 +180,7 @@ public partial class OrbContractRunner
             await CardPileCmd.Draw(Choice, 1, combat.Player);
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3, "Status Draw must chain across successive drawn statuses.");
         }
-        GD.Print("PASS status autoplay/exhaust, recovery transformation/healing and chained Status Draw");
+        GD.Print("PASS status autoplay/exhaust, recovery transformation and turn expiry and chained Status Draw");
     }
 
     private static async Task VerifyTeaAndChop()
@@ -210,14 +220,14 @@ public partial class OrbContractRunner
         {
             var storm = AddCard<StormFistRedesignV1>(combat);
             await PlayerCmd.SetEnergy(10, combat.Player);
-            Require(!storm.CanPlay(), "Storm Fist must require three available Chado for manual play.");
+            Require(storm.CanPlay(), "Storm Fist must be playable without Chado.");
             foreach (var pile in new[] { PileType.Draw, PileType.Hand, PileType.Discard, PileType.Exhaust }) AddCard<ChadoEnergyRedesignV1>(combat, pile);
             Require(storm.CanPlay(), "Three Chado across active piles must enable Storm Fist.");
             await CardCmd.AutoPlay(Choice, storm, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 888 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 4,
-                "Storm Fist must exhaust before calculating four hits of 4 + 4*6.");
+            Require(combat.Enemy.CurrentHp == 920 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 4,
+                "Storm Fist must exhaust before calculating four hits of 4 + 4*4.");
         }
-        GD.Print("PASS accumulated Chado, Sip Tea duration, Chop changes/removal/exhaust and Storm Fist threshold/damage");
+        GD.Print("PASS accumulated Chado, Sip Tea duration, Chop changes/removal/exhaust and Storm Fist playability/damage");
     }
 
     private static async Task VerifyTemporaryStats()
@@ -327,7 +337,7 @@ public partial class OrbContractRunner
             var retained = AddCard<DefendIronclad>(combat);
             var card = AddCard<TonyRetention>(combat);
             await CardCmd.AutoPlay(Choice, card, null);
-            Require(retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 12, "Tony Retention must retain the current hand for one turn.");
+            Require(retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 5, "Tony Retention must retain the current hand for one turn.");
             retained.EndOfTurnCleanup();
             Require(!retained.ShouldRetainThisTurn, "Tony Retention must not grant permanent Retain.");
         }
@@ -343,11 +353,14 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var second = combat.AddEnemy();
-            await CardCmd.AutoPlay(Choice, AddCard<ObserveBattlefield>(combat, upgraded: true), null);
-            Require(combat.State.HittableEnemies.All(enemy => enemy.GetPowerAmount<VulnerablePower>() == 2 && enemy.GetPowerAmount<WeakPower>() == 2),
-                "Observe Battlefield must apply both debuffs to every enemy.");
+            var tea = AddCard<ChadoEnergyRedesignV1>(combat);
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
+            await CardCmd.AutoPlay(Choice, AddCard<ObserveBattlefield>(combat, upgraded: true), combat.Enemy);
+            Require(combat.Enemy.GetPowerAmount<WeakPower>() == 2 && !second.HasPower<WeakPower>()
+                && combat.Player.Creature.Block == 7 && tea.Pile?.Type == PileType.Exhaust,
+                "Sudden Guard must consume tea, grant seven Block and weaken only its selected target.");
         }
-        GD.Print("PASS Endurance turn history, Strong Chop attack counter, two-card copying, retention, Shuriken Storm and AOE debuffs");
+        GD.Print("PASS Endurance turn history, Strong Chop attack counter, two-card copying, retention, Shuriken Storm and selected-target Weak");
     }
 
     private sealed class SelectCards(Func<CardModel[], IEnumerable<CardModel>> select) : ICardSelector

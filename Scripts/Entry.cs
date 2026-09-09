@@ -62,6 +62,8 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerAbandonMerchantDeathPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
             requiredPatcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
+            requiredPatcher.RegisterPatch<NarakuLifeDamagePatch>();
+            requiredPatcher.RegisterPatch<CardTransformShineCleanupPatch>();
             requiredPatcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
             requiredPatcher.RegisterPatch<ArchitectExecutionStartPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
@@ -169,6 +171,7 @@ public class Entry
                 NinjaSlayerSettings.Register(NinjaSlayerIds.ModId);
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
                 ShurikenOrb.RegisterSavedData(NinjaSlayerIds.ModId);
+                StrongShurikenTokenRedesignV1.RegisterSavedData(NinjaSlayerIds.ModId);
             }
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
