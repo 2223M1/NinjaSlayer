@@ -13,7 +13,7 @@ public sealed class BladeSweepPower : NinjaSlayerPowerTemplate
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
     public override PowerAssetProfile AssetProfile =>
-        NinjaSlayerPowerAssets.Named("ExhaustForShurikenPower");
+        NinjaSlayerPowerAssets.Named("HellTornadoPower");
 
     public override Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side,
         IEnumerable<Creature> participants) => participants.Contains(Owner)

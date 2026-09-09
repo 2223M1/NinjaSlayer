@@ -7,7 +7,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ScryDrawPower : RedesignV1CounterPower, IRedesignScryListener
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DiscardDefensePower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ScryDrawPower));
 
     public async Task AfterScry(PlayerChoiceContext choiceContext, int viewed, int discarded)
     {

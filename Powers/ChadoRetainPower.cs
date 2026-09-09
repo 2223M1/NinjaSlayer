@@ -13,7 +13,7 @@ namespace NinjaSlayer.Powers;
 public sealed class ChadoRetainPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile =>
-        NinjaSlayerPowerAssets.Named("EndTurnRetainPower");
+        NinjaSlayerPowerAssets.Named(nameof(ChadoRetainPower));
 
     public override Task BeforeFlush(PlayerChoiceContext choiceContext, Player player)
     {

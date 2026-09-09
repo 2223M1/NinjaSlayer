@@ -9,7 +9,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class StatusDrawPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DrinkTeaPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DamageFocusPower");
     public override Task AfterCardDrawn(PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw) =>
         card.Owner.Creature == Owner && card.Type == CardType.Status
             ? CardPileCmd.Draw(choiceContext, Amount, Owner.Player!) : Task.CompletedTask;

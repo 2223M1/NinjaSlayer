@@ -10,7 +10,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ShurikenGuardRedesignPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(IBlockPower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ShurikenGuardRedesignPower));
 
     internal async Task AfterShurikenDamage(
         IReadOnlyCollection<DamageResult> results)
