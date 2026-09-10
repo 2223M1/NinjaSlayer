@@ -122,6 +122,7 @@ public static class AlabamaDropAnimation
         Vector2 ownerStartPos = ownerAuthoredBaseline;
         Vector2 targetStartPos = targetRig.CreatureNode.Position;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
+        NinjaSlayerAimPose? aimPose = NinjaSlayerAimPose.Get(owner);
         Vector2 ownerChargeScale = new(
             ownerSnapshot.BodyScale.X * LandingSquashScaleX,
             ownerSnapshot.BodyScale.Y * LandingSquashScaleY);
@@ -137,15 +138,26 @@ public static class AlabamaDropAnimation
         try
         {
             float directionToTarget = Mathf.Sign(targetStartPos.X - ownerStartPos.X);
-            await FastAttackAnimation.PlayOutwardLunge(owner, LungeDuration, directionToTarget);
-            ownerRig.CreatureNode.Position = ownerLandingPos;
+            if (aimPose != null)
+            {
+                await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(owner,
+                    NinjaSlayerCombatVisuals.AttackLungeDistance, LungeDuration,
+                    FinisherActionTrajectory.FastProgress, useConsecutiveGate: false);
+                aimPose.BeginAction(target, exclusive: true);
+                aimPose.PlaceAtImpact(target, ownerLandingPos.X);
+            }
+            else
+            {
+                await FastAttackAnimation.PlayOutwardLunge(owner, LungeDuration, directionToTarget);
+                ownerRig.CreatureNode.Position = ownerLandingPos;
+            }
 
             PlayGrabFeedback(target);
             NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
             doomPoseFrozen = DoomHurtPoseController.TryFreeze(targetRig.CreatureNode);
             await WaitTweenInterval(ownerRig.CreatureNode, GrabHoldDuration);
 
-            await TweenBodyScales(
+            await Task.WhenAll(aimPose?.BlendToNeutral(CompressionDuration) ?? Task.CompletedTask, TweenBodyScales(
                 ownerRig.CreatureNode,
                 ownerPivot,
                 ownerSnapshot.BodyRotationDegrees,
@@ -155,7 +167,7 @@ public static class AlabamaDropAnimation
                 targetSnapshot.BodyRotationDegrees,
                 targetSnapshot.BodyScale,
                 targetChargeScale,
-                CompressionDuration);
+                CompressionDuration));
 
             RestoreBodyTransform(ownerRig.Body, ownerSnapshot);
             RestoreBodyTransform(targetRig.Body, targetSnapshot);
@@ -246,6 +258,7 @@ public static class AlabamaDropAnimation
         }
         finally
         {
+            aimPose?.Reset();
             RestoreTargetBodyProcessMode();
             if (impactResolutionStarted && !impactResolutionJoined)
             {

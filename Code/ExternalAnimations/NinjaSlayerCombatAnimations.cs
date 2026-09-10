@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -48,7 +49,9 @@ public static class NinjaSlayerCombatAnimations
                 result = PlayVisualCueTrigger(creature, triggerName, waitTime);
                 return true;
             case TornadoFistSpinAnimation.TriggerName:
-                result = PlayVisualCueTrigger(creature, TornadoFistSpinAnimation.CueTriggerName, waitTime);
+                result = NinjaSlayerAimPose.Get(creature)?.IsTornado == true
+                    ? Cmd.CustomScaledWait(Mathf.Min(waitTime * 0.5f, 0.25f), waitTime)
+                    : PlayVisualCueTrigger(creature, TornadoFistSpinAnimation.CueTriggerName, waitTime);
                 return true;
             case "Cast":
                 {
@@ -117,12 +120,16 @@ public static class NinjaSlayerCombatAnimations
 
     private static async Task PlayAttackAnimation(Creature creature, float waitTime)
     {
+        if (NinjaSlayerAttackExecution.TakeDeferredRecovery())
+            await Cmd.Wait(CombatActionTimingRuntime.DamageRecoverySeconds);
         await FastAttackAnimation.Play(creature, waitTime);
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }
 
     private static async Task PlaySlowAttackAnimation(Creature creature)
     {
+        if (NinjaSlayerAttackExecution.TakeDeferredRecovery())
+            await Cmd.Wait(CombatActionTimingRuntime.DamageRecoverySeconds);
         await SlowAttackAnimation.Play(creature);
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }

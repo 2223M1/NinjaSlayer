@@ -496,45 +496,6 @@ public sealed class CombatLogicTests
         Assert.Equal(FinisherActionTrajectory.SlowTravelPixels, MathF.Abs(impactX - startX));
     }
 
-    [Theory]
-    [InlineData(200f, 100f, true)]
-    [InlineData(100.6f, 100f, true)]
-    [InlineData(100.5f, 100f, false)]
-    [InlineData(90f, 100f, false)]
-    public void FinisherLeapOnlyAlignsNinjaSlayerUpward(
-        float actorCenterY,
-        float targetCenterY,
-        bool expected)
-    {
-        Assert.Equal(expected, FinisherLeapTrajectory.ShouldAlign(actorCenterY, targetCenterY));
-    }
-
-    [Theory]
-    [InlineData(100f, 200f, 6f)]
-    [InlineData(200f, 100f, -6f)]
-    public void FinisherLeapTiltsTowardTheFocusedVictim(
-        float actorCenterX,
-        float targetCenterX,
-        float expectedDegrees)
-    {
-        Assert.Equal(
-            expectedDegrees,
-            FinisherLeapTrajectory.ResolveTiltDegrees(actorCenterX, targetCenterX));
-    }
-
-    [Theory]
-    [InlineData(40f, 10f)]
-    [InlineData(200f, 24f)]
-    public void FinisherLeapReturnAddsAClampedUpwardArc(float liftDistance, float expectedArcHeight)
-    {
-        float arcHeight = FinisherLeapTrajectory.ResolveArcHeight(liftDistance);
-
-        Assert.Equal(expectedArcHeight, arcHeight);
-        Assert.Equal(0f, FinisherLeapTrajectory.ResolveReturnArcFactor(0f));
-        Assert.Equal(0f, FinisherLeapTrajectory.ResolveReturnArcFactor(1f));
-        Assert.Equal(1f, FinisherLeapTrajectory.ResolveReturnArcFactor(0.5f));
-    }
-
     [Fact]
     public void DoomSquashKeepsHorizontalOriginAndAnchorsVerticalBottom()
     {

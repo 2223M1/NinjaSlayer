@@ -86,6 +86,9 @@ internal static class NinjaSlayerFacingState
     internal static bool ResolveFacingLeft(NCreature creatureNode)
     {
         Creature creature = creatureNode.Entity;
+        Node2D? posedAnchor = NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals);
+        if (posedAnchor?.GetNodeOrNull<NinjaSlayerAimPose>("AimPose")?.IsAiming == true)
+            return posedAnchor.Scale.X < 0f;
         if (creature.Player?.Character is not INinjaSlayerCharacter)
         {
             return FacingScaleMath.IsFacingLeft(creatureNode.Body.Scale.X);

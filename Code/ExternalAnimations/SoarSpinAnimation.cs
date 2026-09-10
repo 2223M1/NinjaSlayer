@@ -212,7 +212,8 @@ public static class SoarSpinAnimation
 
     public static void EnsureAirborneSpin(Creature creature)
     {
-        if (!SoarVisualState.IsAirborne(creature) || IsSpinning(creature))
+        if (!SoarVisualState.IsAirborne(creature) || IsSpinning(creature)
+            || NinjaSlayerAimPose.Get(creature)?.OwnsSpin == true)
         {
             return;
         }

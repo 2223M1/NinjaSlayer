@@ -86,7 +86,7 @@ public static class RedesignV1Rules
         "OnlyKarateRedesignV1",
         "AlabamaDropRedesignV1",
         "ChopRedesignV1",
-        "ChopChain",
+        "AntiAirBangBangFist",
         "TurtleShellRedesignV1",
         "GiantShurikenRedesignV1",
         "HellTornadoRedesignV1",

@@ -11,6 +11,8 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ObserveBattlefield : RedesignV1UncommonCard
 {
+    protected override bool ShouldGlowGoldInternal => CombatState != null && IsPlayable;
+
     public ObserveBattlefield() : base(nameof(ObserveBattlefield), "ReadyBlade", 0, CardType.Skill, TargetType.AnyEnemy) { }
     public override bool GainsBlock => true;
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();

@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -44,6 +45,7 @@ public sealed class ZazenDrink : NinjaSlayerStandaloneCardTemplate
 
     private async Task DrawUntilFullDiscardingStatuses(PlayerChoiceContext choiceContext)
     {
+        using var drawBatch = NinjaSlayerDrawAnimationBatch.Enter(Owner);
         HashSet<CardModel> discardedStatuses = new(ReferenceEqualityComparer.Instance);
 
         while (MissingCardsInHand() > 0)

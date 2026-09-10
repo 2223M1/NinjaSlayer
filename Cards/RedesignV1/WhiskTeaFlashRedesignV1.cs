@@ -18,6 +18,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class WhiskTeaFlashRedesignV1 : RedesignV1CommonCard
 {
+    private bool MeetsBonusCondition => PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();
+    protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(9, ValueProp.Move), new CardsVar(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
@@ -38,7 +41,7 @@ public sealed class WhiskTeaFlashRedesignV1 : RedesignV1CommonCard
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        if (PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any())
+        if (MeetsBonusCondition)
         {
             await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.IntValue, Owner);
         }

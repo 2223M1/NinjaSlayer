@@ -11,15 +11,18 @@ namespace NinjaSlayer.Powers;
 
 public sealed class EndurancePower : RedesignV1CounterPower
 {
+    internal static bool HasNotAttackedThisTurn(MegaCrit.Sts2.Core.Entities.Players.Player player) =>
+        !CombatManager.Instance.History.CardPlaysFinished.Any(entry =>
+            entry.HappenedThisTurn(player.Creature.CombatState!) && entry.CardPlay.Card.Owner == player
+            && entry.CardPlay.Card.Type == CardType.Attack);
+
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side,
         IEnumerable<Creature> participants)
     {
         if (!participants.Contains(Owner)) return;
-        bool attacked = CombatManager.Instance.History.CardPlaysFinished.Any(entry =>
-            entry.HappenedThisTurn(Owner.CombatState!) && entry.CardPlay.Card.Owner == Owner.Player
-            && entry.CardPlay.Card.Type == CardType.Attack);
-        if (!attacked) await PowerCmd.Apply<KaratePower>(choiceContext, Owner, Amount, Owner, null);
+        if (HasNotAttackedThisTurn(Owner.Player!))
+            await PowerCmd.Apply<KaratePower>(choiceContext, Owner, Amount, Owner, null);
         await PowerCmd.Remove(this);
     }
 }

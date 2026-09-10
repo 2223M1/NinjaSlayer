@@ -48,12 +48,11 @@ internal static class ShurikenCombat
         ShurikenOrb originOrb,
         Action beforeThrow)
     {
-        await HopAnimation.Play(owner);
+        BeginThrowPose(owner, targets.Count > 0 ? targets[0] : null);
         beforeThrow();
-        NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow);
         foreach (Creature target in targets)
         {
-            target.GetVfxContainer()?.AddChildSafely(CreateThrowVfx(owner, target, originOrb));
+            QueueThrowVfx(owner, target, originOrb);
         }
 
         await Cmd.CustomScaledWait(FlightSeconds, FlightSeconds);
@@ -105,12 +104,50 @@ internal static class ShurikenCombat
             .FromCard(card, cardPlay)
 #endif
             .WithNoAttackerAnim()
-            .AfterAttackerAnim(() => HopAnimation.Play(card.Owner!.Creature))
-            .WithHitFx(null, null, TmpSfx.daggerThrow);
+            .AfterAttackerAnim(() =>
+            {
+                BeginThrowPose(card.Owner!.Creature, cardPlay.Target);
+                return Task.CompletedTask;
+            })
+            .WithHitFx(null, null, null);
 
         return command
             .Targeting(cardPlay.Target!)
-            .WithHitVfxNode(t => CreateThrowVfx(card.Owner!.Creature, t));
+            .WithHitVfxNode(t =>
+            {
+                QueueThrowVfx(card.Owner!.Creature, t);
+                return null;
+            });
+    }
+
+    private static void BeginThrowPose(Creature owner, Creature? target)
+    {
+        NinjaSlayerAimPose.Get(owner)?.BeginShurikenThrow(target);
+        AtRelease(owner, () => NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow));
+    }
+
+    private static void QueueThrowVfx(Creature owner, Creature target, ShurikenOrb? originOrb = null) =>
+        AtRelease(owner, () => target.GetVfxContainer()?.AddChildSafely(CreateThrowVfx(owner, target, originOrb)));
+
+    private static void AtRelease(Creature owner, Action play)
+    {
+        NCombatRoom? room = NCombatRoom.Instance;
+        if (room == null || !room.IsInsideTree()) return;
+        void Release()
+        {
+            if (GodotObject.IsInstanceValid(room) && room.IsInsideTree()
+                && ReferenceEquals(NCombatRoom.Instance, room) && !owner.IsDead)
+            {
+                NinjaSlayerAimPose.Get(owner)?.SyncNow();
+                play();
+            }
+        }
+        float seconds = NinjaSlayerAimPose.ShurikenWindupSeconds;
+        if (seconds <= 0f) { Release(); return; }
+        // Bound to the room, independent of gameplay and any subsequent body animation.
+        Tween tween = room.CreateTween();
+        tween.TweenInterval(seconds);
+        tween.TweenCallback(Callable.From(Release));
     }
 
     private static NShivThrowVfx? CreateThrowVfx(
@@ -128,7 +165,9 @@ internal static class ShurikenCombat
 
         Vector2 origin = TryGetOrbThrowOrigin(owner, originOrb, out Vector2 orbOrigin)
             ? orbOrigin
-            : ownerNode.VfxSpawnPosition;
+            : ShurikenOrbVisual.TryGetHandCanvasPosition(ownerNode, out Vector2 handOrigin)
+                ? ownerNode.GetCanvasTransform().AffineInverse() * handOrigin
+                : ownerNode.VfxSpawnPosition;
         Vector2 targetPosition = targetNode.VfxSpawnPosition;
         NShivThrowVfx? vfx = NShivThrowVfx.Create(origin, targetPosition, TrailTint);
         if (vfx == null)

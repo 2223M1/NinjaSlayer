@@ -98,7 +98,8 @@ public partial class NinjaSlayerShadowController : Node
             return;
         }
 
-        float altitude = Mathf.Max(0f, _groundAnchorY - _airborneAnchor.Position.Y);
+        float aimedAltitude = _airborneAnchor.GetNodeOrNull<NinjaSlayerAimPose>("AimPose")?.VerticalTravel ?? 0f;
+        float altitude = Mathf.Max(0f, _groundAnchorY - _airborneAnchor.Position.Y - aimedAltitude);
         float airborneProgress = Mathf.Clamp(altitude / AirborneFadeDistance, 0f, 1f);
         float scaleMultiplier = Mathf.Lerp(1f, MinimumAirborneScale, airborneProgress);
         _shadow.Position = groundPosition;

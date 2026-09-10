@@ -53,7 +53,8 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
 
     public override async Task AfterCardPlayedLate(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (cardPlay.Card.Owner != Owner
+        if (cardPlay.Card == this
+            || cardPlay.Card.Owner != Owner
             || cardPlay.Card.Type != CardType.Attack
             || Pile?.Type == PileType.Hand)
         {
@@ -62,6 +63,7 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
 
         int attacks = CombatManager.Instance.History.CardPlaysFinished.Count(entry =>
             entry.HappenedThisTurn(CombatState!)
+            && entry.CardPlay.Card != this
             && entry.CardPlay.Card.Type == CardType.Attack
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             && entry.CardPlay.Card.Owner == Owner);

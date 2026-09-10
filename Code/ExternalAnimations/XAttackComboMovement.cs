@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -34,6 +35,7 @@ public static class XAttackComboMovement
         if (RapidCardPresentationContext.IsActive
             && creature.Player?.Character is INinjaSlayerCharacter)
         {
+            NinjaSlayerAimPose.Get(creature)?.BeginTornado(NinjaSlayerAimPose.Focus(creature));
             ComboStates[creature] = new ComboMovementState(
                 NinjaSlayerRapidAnimationCoordinator.BeginHeldSlowApproach(creature, approachDuration));
             return;

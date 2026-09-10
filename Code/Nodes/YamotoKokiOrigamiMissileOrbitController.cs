@@ -124,8 +124,7 @@ public partial class YamotoKokiOrigamiMissileOrbitController : Node
             int layoutCount = Math.Max(
                 missiles.Count,
                 _reservedMissileCounts.GetValueOrDefault(owner, missiles.Count));
-            Vector2 center = yamotoKoki.Position
-                + yamotoKoki.Visuals.VfxSpawnPosition.Position;
+            Vector2 centerCanvas = yamotoKoki.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
             Color ownerModulate = yamotoKoki.Visuals.Modulate;
             for (int i = 0; i < missiles.Count; i++)
             {
@@ -134,6 +133,8 @@ public partial class YamotoKokiOrigamiMissileOrbitController : Node
                 ApplyMissileVisuals(missileNode, ownerModulate);
 
                 (float x, float y) = YamotoKokiOrbitMath.GetOffset(layoutCount, i);
+                Vector2 center = missileNode.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                    .AffineInverse() * centerCanvas;
                 Vector2 target = center + new Vector2(x, y);
                 _targets[missileNode] = target;
                 if (snapNewMissiles && isNew)

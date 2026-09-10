@@ -42,6 +42,8 @@
     <Compile Include="..\..\Code\Combat\BossBurstPresentationPolicy.cs" Link="BossBurstPresentationPolicy.cs" />
     <Compile Include="..\..\Code\Combat\CinematicCameraContainment.cs" Link="CinematicCameraContainment.cs" />
     <Compile Include="..\..\Code\Combat\CombatActionTiming.cs" Link="CombatActionTiming.cs" />
+    <Compile Include="..\..\Code\Combat\GroundedPoseMath.cs" Link="GroundedPoseMath.cs" />
+    <Compile Include="..\..\Code\Combat\CombatBodyContours.cs" Link="CombatBodyContours.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
     <Compile Include="..\..\Code\Combat\CombatHealthBar.cs" Link="CombatHealthBar.cs" />
     <Compile Include="..\..\Code\Combat\ExtendedHealthBarLayout.cs" Link="ExtendedHealthBarLayout.cs" />

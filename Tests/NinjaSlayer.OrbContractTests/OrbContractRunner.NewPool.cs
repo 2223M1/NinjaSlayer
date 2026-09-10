@@ -204,18 +204,6 @@ public partial class OrbContractRunner
             Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single().DynamicVars.Energy.BaseValue == 4
                 && !combat.Player.Creature.HasPower<SipTeaPower>(), "Sip Tea must expire after exactly three turn starts.");
         }
-        foreach (bool upgraded in new[] { false, true })
-        {
-            using var combat = new OrbCombat();
-            await CardCmd.AutoPlay(Choice, AddCard<ChopChain>(combat, upgraded: upgraded), null);
-            for (int i = 0; i < 6; i++) await PowerCmd.Apply<KaratePower>(Choice, combat.Enemy, 3, combat.Player.Creature, null);
-            Require(!PileType.Hand.GetPile(combat.Player).Cards.OfType<CommonChopRedesignV1>().Any(), "Each layer change is one event, not one event per layer.");
-            await PowerCmd.Remove<KaratePower>(combat.Enemy);
-            var chop = PileType.Hand.GetPile(combat.Player).Cards.OfType<CommonChopRedesignV1>().Single();
-            Require(chop.IsUpgraded == upgraded && chop.Keywords.Contains(CardKeyword.Exhaust), "Seventh change, including direct removal, must generate the correct Chop.");
-            await CardCmd.AutoPlay(Choice, chop, combat.Enemy);
-            Require(chop.Pile?.Type == PileType.Exhaust, "Generated Chop's Exhaust must take precedence over its draw-top return.");
-        }
         using (var combat = new OrbCombat())
         {
             var storm = AddCard<StormFistRedesignV1>(combat);
@@ -227,7 +215,7 @@ public partial class OrbContractRunner
             Require(combat.Enemy.CurrentHp == 920 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 4,
                 "Storm Fist must exhaust before calculating four hits of 4 + 4*4.");
         }
-        GD.Print("PASS accumulated Chado, Sip Tea duration, Chop changes/removal/exhaust and Storm Fist playability/damage");
+        GD.Print("PASS accumulated Chado, Sip Tea duration, Storm Fist playability/damage");
     }
 
     private static async Task VerifyTemporaryStats()

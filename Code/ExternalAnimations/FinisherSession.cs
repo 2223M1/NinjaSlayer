@@ -82,7 +82,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
     private FinisherActorLayerLease? _actorLayerLease;
-    private FinisherActorLeapPose? _actorLeapPose;
+    private NinjaSlayerAimPose? _actorAimPose;
     private FinisherImpactPresentation? _presentation;
 
     public FinisherSession(
@@ -104,6 +104,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             request.Victims,
             combatState,
             IsCurrentCombatContext);
+        _usesJumpDeathSquash = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
+            && JumpAnimation.IsActive(request.Actor);
         _actorStartPosition = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
             ? NinjaSlayerRapidAnimationCoordinator.ClaimExclusiveBaseline(request.Actor, request.ActorNode)
             : request.ActorNode.Position;
@@ -114,8 +116,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(_room).ToHashSet();
         _room.TreeExiting += OnRoomTreeExiting;
         _lastFrameMsec = Time.GetTicksMsec();
-        _usesJumpDeathSquash = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
-            && JumpAnimation.IsActive(request.Actor);
         _usesNinjaSlayerSignatureImpact = request.UsesNinjaSlayerSignatureImpact;
         CardPlay = request.CardPlay;
         RequiresAfterCardPlayed = request.RequiresAfterCardPlayed;
@@ -176,7 +176,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             try
             {
-                _actorLeapPose = FinisherActorLeapPose.TryCreate(Actor, _actorNode, _focusNode);
+                _actorAimPose = NinjaSlayerAimPose.Get(Actor);
+                if (CardPlay?.Card is NinjaSlayer.Cards.RedesignV1.TornadoFistRedesignV1)
+                    _actorAimPose?.BeginTornado(_focusNode.Entity, exclusive: true);
+                else
+                    _actorAimPose?.BeginAction(_focusNode.Entity, exclusive: true);
             }
             catch (Exception ex)
             {
@@ -221,7 +225,10 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         else
         {
-            _actorNode.Position = _impactPosition;
+            if (_actorAimPose != null)
+                _actorAimPose.PlaceAtImpact(_focusNode.Entity, _impactPosition.X);
+            else
+                _actorNode.Position = _impactPosition;
             _actionStarted = true;
             _actionPeakReached = true;
             _actionPeakTask = Task.CompletedTask;
@@ -252,6 +259,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     public Task PlayActionToPeak(Creature creature, float repeatWaitSeconds)
     {
+        if (!_disposed && creature == Actor && Scenario == FinisherScenarioKind.NinjaSlayerAttack)
+            return PlayAimedAction(repeatWaitSeconds);
         if (_disposed
             || creature != Actor
             || Scenario != FinisherScenarioKind.YamotoKokiIaiSlash)
@@ -270,6 +279,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         return startedNow
             ? _actionPeakTask
             : Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
+    }
+
+    private async Task PlayAimedAction(float seconds)
+    {
+        if (_actorAimPose != null) await _actorAimPose.PrepareKick(CardPlay);
+        await Cmd.Wait(Math.Max(0f, seconds));
     }
 
     internal bool OwnsProtection(FinisherProtectionToken token) =>
@@ -820,8 +835,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private void RestoreActorLeapPose()
     {
-        _actorLeapPose?.Restore();
-        _actorLeapPose = null;
+        _actorAimPose?.Reset();
+        _actorAimPose = null;
     }
 
     private async Task RunWatchdog()

@@ -46,7 +46,7 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
 #endif
             .WithDefectStrikeHitFx()
             .WithNoAttackerAnim()
-            .AfterAttackerAnim(() => JumpAnimation.Play(Owner.Creature))
+            .AfterAttackerAnim(() => JumpAnimation.PlayFlyingKick(Owner.Creature))
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await CardPileCmd.Draw(choiceContext, Math.Max(0, CardPile.MaxCardsInHand - PileType.Hand.GetPile(Owner).Cards.Count), Owner);

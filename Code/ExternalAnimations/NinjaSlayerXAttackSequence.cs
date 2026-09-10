@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -14,14 +15,17 @@ public static class NinjaSlayerXAttackSequence
         int hits,
         float perHitDelay,
         float audioHitDuration,
-        Func<int, Task<bool>> perHit)
+        Func<int, Task<bool>> perHit,
+        bool heldApproach = false)
     {
         if (hits <= 0)
         {
             return;
         }
 
-        XAttackComboMovement.BeginCombo(creature, perHitDelay);
+        using var cadence = NinjaSlayerAttackExecution.EnterSequence(hits);
+        if (heldApproach)
+            XAttackComboMovement.BeginCombo(creature, perHitDelay);
         bool useSlowAttack = hits <= 4
             || NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
         Func<Action, Task> executeHits = async finishSpinEarly =>
@@ -30,6 +34,7 @@ public static class NinjaSlayerXAttackSequence
             {
                 for (int i = 0; i < hits; i++)
                 {
+                    cadence.SetHit(i);
                     if (useSlowAttack)
                     {
                         NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
@@ -45,7 +50,8 @@ public static class NinjaSlayerXAttackSequence
             }
             finally
             {
-                await XAttackComboMovement.EndCombo(creature);
+                if (heldApproach)
+                    await XAttackComboMovement.EndCombo(creature);
             }
         };
 

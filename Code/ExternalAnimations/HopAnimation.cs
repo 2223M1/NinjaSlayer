@@ -27,6 +27,12 @@ public static class HopAnimation
 
     public static async Task Play(Creature creature)
     {
+        if (NinjaSlayerAimPose.Get(creature) is { } pose)
+        {
+            pose.BeginAirMotion(hop: true);
+            await Cmd.Wait(CombatActionTimingRuntime.CastSeconds);
+            return;
+        }
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null)
         {
@@ -106,7 +112,7 @@ public static class HopAnimation
             state.TailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(
                 creature,
                 () => Takeover(state),
-                () => StopForAirChannel(creature));
+                () => StopForAirChannel(creature), independentAirChannel: true);
         }
 
         await Cmd.Wait(actionDuration);

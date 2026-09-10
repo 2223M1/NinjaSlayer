@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Relics;
@@ -18,7 +19,7 @@ namespace NinjaSlayer.Relics;
 public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 {
     protected virtual int ChadoCount => 0;
-    protected virtual int BreathAmount => 3;
+    protected virtual int BreathAmount => 2;
 
     public override RelicRarity Rarity => RelicRarity.Starter;
 
@@ -28,7 +29,7 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         {
             var tea = ModelDb.Card<ChadoEnergyRedesignV1>().ToMutable();
             if (ChadoCount > 0) tea.AddKeyword(CardKeyword.Retain);
-            return [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromCard(tea), .. tea.HoverTips];
+            return [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), HoverTipFactory.FromCard(tea), .. tea.HoverTips];
         }
     }
 
@@ -50,6 +51,8 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         }
 
         await ChadoBreathCmd.Apply(Owner, BreathAmount);
+        if (ChadoCount == 0)
+            await PowerCmd.Apply<ChadoRetainPower>(choiceContext, Owner.Creature, 1, Owner.Creature, null);
         Flash();
     }
 }

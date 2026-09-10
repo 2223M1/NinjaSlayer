@@ -16,7 +16,7 @@ public partial class ShurikenOrbVisual : Node2D
     private static readonly Color GlowColor = new(GlowColorHex);
     private static readonly Vector2 NormalHandAnchor = new(851.5152f, -75.75758f);
     private static readonly Vector2 FullyReleasedHandAnchor = new(432f, 390f);
-    private static readonly NodePath OverlayPath = new("AirborneAnchor/NarakuVisualOverlay");
+    private static readonly NodePath OverlayPath = new("AirborneAnchor/AimPose/NarakuVisualOverlay");
 
     private Node2D _deformedVisuals = null!;
     private Node2D _art = null!;
@@ -84,6 +84,8 @@ public partial class ShurikenOrbVisual : Node2D
 
     internal void SyncNow()
     {
+        if (_creatureNode != null)
+            NinjaSlayerAimPose.Get(_creatureNode.Entity)?.SyncNow();
         bool hasStock = _orb is { StackCount: > 0 };
         Visible = hasStock;
         _labelContainer.Visible = hasStock;
@@ -182,6 +184,20 @@ public partial class ShurikenOrbVisual : Node2D
         }
 
         return null;
+    }
+
+    internal static bool TryGetHandCanvasPosition(NCreature creature, out Vector2 position)
+    {
+        position = default;
+        if (creature.Entity.Player?.Character is not INinjaSlayerCharacter) return false;
+        NinjaSlayerAimPose.Get(creature.Entity)?.SyncNow();
+        NinjaSlayerFormPresentation form = NinjaSlayerFormState.GetPresentation(creature.Entity);
+        Sprite2D? overlay = creature.Visuals.GetNodeOrNull<Sprite2D>(OverlayPath);
+        Sprite2D? body = overlay != null && (form.UsesOverlay || overlay.Visible)
+            ? overlay : NinjaSlayerVisualRig.GetBodySprite(creature.Visuals);
+        if (body == null || !GodotObject.IsInstanceValid(body)) return false;
+        position = body.GetGlobalTransformWithCanvas() * ResolveHandPoint(body, form.Kind);
+        return true;
     }
 
     private static Vector2 ResolveHandPoint(

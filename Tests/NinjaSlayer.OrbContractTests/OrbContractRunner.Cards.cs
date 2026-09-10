@@ -66,8 +66,8 @@ public partial class OrbContractRunner
             var opening = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray();
             Require(opening.Length == (upgraded ? 2 : 1)
                 && opening.All(card => card.Keywords.Contains(CardKeyword.Retain) == upgraded
-                    && card.DynamicVars.Energy.BaseValue == 3),
-                "Starter breathes three without Retain; ancient generates two retained tea then breathes two.");
+                    && card.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2)),
+                "Starter breathes two with first-turn tea retention; ancient generates two retained tea then breathes two.");
             foreach (var tea in opening)
                 await CardPileCmd.Add(tea, PileType.Discard);
             await ChadoBreathCmd.Apply(combat.Player, 2);
@@ -83,7 +83,7 @@ public partial class OrbContractRunner
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == count && later.DynamicVars.Energy.BaseValue == 2,
                 "Opening relic effects must not repeat on later turns.");
         }
-        GD.Print("PASS starter breath three without Retain; ancient retained tea, later ordinary tea, piles and copies");
+        GD.Print("PASS starter breath two; ancient retained tea, later ordinary tea, piles and copies");
     }
 
     private static async Task VerifyBlackFlameTurnEnd()

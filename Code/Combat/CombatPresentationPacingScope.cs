@@ -26,14 +26,19 @@ internal static class CombatPresentationPacingScope
         float fastSeconds,
         float standardSeconds,
         bool ignoreCombatEnd,
-        CancellationToken cancellationToken) =>
-        Current.Value?.Policy.SkipDamageRecovery == true
-            ? Task.CompletedTask
-            : Cmd.CustomScaledWait(
+        CancellationToken cancellationToken)
+    {
+        if (Current.Value?.Policy.SkipDamageRecovery == true && !NinjaSlayerAttackExecution.NeedsDamageRecovery)
+        {
+            NinjaSlayerAttackExecution.DeferFinalRecovery();
+            return Task.CompletedTask;
+        }
+        return Cmd.CustomScaledWait(
                 fastSeconds,
                 standardSeconds,
                 ignoreCombatEnd,
                 cancellationToken);
+    }
 
     public static Task WaitForPowerRecovery(
         float fastSeconds,

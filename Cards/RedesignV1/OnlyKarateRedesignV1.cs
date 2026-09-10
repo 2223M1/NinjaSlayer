@@ -12,7 +12,7 @@ public sealed class OnlyKarateRedesignV1 : RedesignV1RareCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<NinjaSlayer.Powers.KaratePower>()];
 
-    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal, CardKeyword.Exhaust];
 
     public OnlyKarateRedesignV1()
         : base(nameof(OnlyKarateRedesignV1), nameof(OneBodyOneSoul), 1, CardType.Skill, TargetType.Self) { }
@@ -25,5 +25,5 @@ public sealed class OnlyKarateRedesignV1 : RedesignV1RareCard
             : Task.CompletedTask;
     }
 
-    protected override void OnUpgrade() => AddKeyword(CardKeyword.Retain);
+    protected override void OnUpgrade() => RemoveKeyword(CardKeyword.Ethereal);
 }
