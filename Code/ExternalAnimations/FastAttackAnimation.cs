@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -21,6 +22,7 @@ public static class FastAttackAnimation
         }
 
         Vector2 originalPosition = creatureNode.Position;
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Attack, duration, CombatActionTimingRuntime.DamageRecoverySeconds);
         float normalizedDirection = Mathf.Sign(direction);
         if (Mathf.IsZeroApprox(normalizedDirection))
         {
@@ -52,6 +54,7 @@ public static class FastAttackAnimation
     public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
         float peakSeconds = CombatActionTimingRuntime.AttackSeconds;
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Attack, peakSeconds, CombatActionTimingRuntime.DamageRecoverySeconds);
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, peakSeconds, out Task action))
         {
             await action;

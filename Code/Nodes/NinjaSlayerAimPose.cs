@@ -145,7 +145,10 @@ public partial class NinjaSlayerAimPose : Node2D
         {
             float targetX = hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.X
                 ?? pointerCanvas.X;
-            bool left = targetX < CoreCanvas.X;
+            // Mirroring moves the off-center hit marker across the root. Using that
+            // marker here makes a stationary overhead pointer flip the body every frame.
+            float side = targetX - _airborne.GetGlobalTransformWithCanvas().Origin.X;
+            bool left = Mathf.IsZeroApprox(side) ? FacingSign < 0f : side < 0f;
             if (left != (FacingSign < 0f)) NinjaSlayerFacingState.SetFacing(_actor, left);
         }
         if (card is TornadoFistRedesignV1 && !_charging && !_tornado)

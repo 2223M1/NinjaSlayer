@@ -420,30 +420,21 @@ internal static class DarkNinjaSpecialAttackPresentation
         private readonly Node2D _focus;
         private readonly CanvasItem _anchorParent;
         private readonly Vector2 _anchorPosition;
-        private readonly Sprite2D? _shadow;
-        private readonly bool _shadowVisible;
         private int _disposed;
 
         private DarkNinjaBodyMotionLease(
             NCreature owner,
             Node2D anchor,
             Node2D focus,
-            CanvasItem anchorParent,
-            Sprite2D? shadow)
+            CanvasItem anchorParent)
         {
             Owner = owner;
             _anchor = anchor;
             _focus = focus;
             _anchorParent = anchorParent;
             _anchorPosition = anchor.Position;
-            _shadow = shadow;
-            _shadowVisible = shadow?.Visible ?? false;
             FocusCanvasPosition = focus.GetGlobalTransformWithCanvas().Origin;
             HalfWidth = owner.Visuals.Bounds.GetGlobalRect().Size.X * 0.5f;
-            if (shadow != null)
-            {
-                shadow.Visible = false;
-            }
         }
 
         internal NCreature Owner { get; }
@@ -481,8 +472,7 @@ internal static class DarkNinjaSpecialAttackPresentation
                 owner,
                 anchor,
                 focus,
-                parent,
-                NinjaSlayerVisualRig.GetShadow(owner.Visuals));
+                parent);
         }
 
         internal void SetFocusCanvasPosition(Vector2 desiredCanvasPosition)
@@ -515,10 +505,6 @@ internal static class DarkNinjaSpecialAttackPresentation
                 _anchor.Position = _anchorPosition;
             }
 
-            if (_shadow != null && GodotObject.IsInstanceValid(_shadow))
-            {
-                _shadow.Visible = _shadowVisible;
-            }
         }
     }
 

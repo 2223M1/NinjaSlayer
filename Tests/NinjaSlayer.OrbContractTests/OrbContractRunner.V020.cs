@@ -66,24 +66,24 @@ public partial class OrbContractRunner
             Require(combat.Stock == (upgraded ? 2 : 1) && combat.Tokens == 3 && combat.Enemy.CurrentHp == 1000,
                 "Oyeah Throw Sword must convert/consume the old stock before replenishing it.");
             var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
-            Require(token.SnapshotDamage == 6, "Conversion must snapshot the four base damage and two Focus.");
+            Require(token.SnapshotDamage == 8, "Conversion must snapshot the six base damage and two Focus.");
             CardCmd.Upgrade(token);
-            Require(token.DynamicVars.Damage.BaseValue == 10, "Strong Shuriken upgrade must add four damage.");
+            Require(token.DynamicVars.Damage.BaseValue == 12, "Strong Shuriken upgrade must add four damage.");
             var clone = (StrongShurikenTokenRedesignV1)token.CreateClone();
-            Require(clone.SnapshotDamage == 6 && clone.DynamicVars.Damage.BaseValue == 10,
+            Require(clone.SnapshotDamage == 8 && clone.DynamicVars.Damage.BaseValue == 12,
                 "Card cloning must retain the snapshot and upgrade.");
             var restored = (StrongShurikenTokenRedesignV1)CardModel.FromSerializable(token.ToSerializable());
-            Require(restored.SnapshotDamage == 6 && restored.DynamicVars.Damage.BaseValue == 10,
+            Require(restored.SnapshotDamage == 8 && restored.DynamicVars.Damage.BaseValue == 12,
                 $"Card serialization must retain the snapshot and upgrade: snapshot={restored.SnapshotDamage}, damage={restored.DynamicVars.Damage.BaseValue}, level={restored.CurrentUpgradeLevel}; saved={System.Text.Json.JsonSerializer.Serialize(token.ToSerializable(), new System.Text.Json.JsonSerializerOptions { IncludeFields = true })}.");
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 8, combat.Player.Creature, null);
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, token, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 987, "Snapshot token must gain Strength but not count Focus twice.");
+            Require(combat.Enemy.CurrentHp == 985, "Snapshot token must gain Strength but not count Focus twice.");
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
             var nextToken = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
             await CardCmd.AutoPlay(Choice, nextToken, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 977, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
+            Require(combat.Enemy.CurrentHp == 973, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
         }
         using (var combat = new OrbCombat())
         {
@@ -97,7 +97,7 @@ public partial class OrbContractRunner
                 int hp = combat.Enemy.CurrentHp;
                 await Hook.AfterShuffle(combat.State, Choice, combat.Player);
                 int loss = combat.Player.Creature.GetPowerAmount<BladeCyclePower>();
-                Require(combat.Stock == Math.Max(0, stock - loss) && combat.Enemy.CurrentHp == hp - stock * 4,
+                Require(combat.Stock == Math.Max(0, stock - loss) && combat.Enemy.CurrentHp == hp - stock * 6,
                     "Shuffle must fire all current stock before losing three (one upgraded).");
             }
         }

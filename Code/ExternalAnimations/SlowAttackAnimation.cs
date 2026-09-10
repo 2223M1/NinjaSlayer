@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -35,6 +36,7 @@ public static class SlowAttackAnimation
         float returnSeconds,
         Func<Task>? impactAtPeak)
     {
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.SlowAttack, peakSeconds, returnSeconds);
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, peakSeconds, out Task action))
         {
             await action;
@@ -147,6 +149,8 @@ public static class SlowAttackAnimation
         }
 
         Vector2 originalPos = creatureNode.Position;
+        NinjaSlayerShadowController? shadow = NinjaSlayerShadowController.Get(creature);
+        shadow?.BeginAction(ShadowActionKind.SlowAttack, firstPeakDuration, returnDuration, hold: true);
         float direction = creature.Side == CombatSide.Player ? 1f : -1f;
         float peakOffset = LungeDistance * direction;
         float retreatOffset = peakOffset * 0.5f;
@@ -166,6 +170,7 @@ public static class SlowAttackAnimation
             await impactAtPeak();
             for (int hitIndex = 1; hitIndex < hitCount; hitIndex++)
             {
+                shadow?.BeginAction(ShadowActionKind.SlowAttack, hitSpacing, returnDuration, hold: true);
                 float retreatDuration = hitSpacing * 0.5f;
                 if (!await TweenOffset(
                         creatureNode,
@@ -188,6 +193,7 @@ public static class SlowAttackAnimation
                 await impactAtPeak();
             }
 
+            shadow?.BeginReturn(returnDuration);
             await TweenOffset(
                 creatureNode,
                 originalPos,
@@ -198,6 +204,7 @@ public static class SlowAttackAnimation
         }
         finally
         {
+            if (GodotObject.IsInstanceValid(shadow)) shadow!.ResetAction();
             if (GodotObject.IsInstanceValid(creatureNode))
             {
                 creatureNode.Position = originalPos;

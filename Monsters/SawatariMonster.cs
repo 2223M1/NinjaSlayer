@@ -269,9 +269,6 @@ public sealed class SawatariMonster : ModMonsterTemplate
             body.FlipH = playerSide;
         }
 
-        if (NinjaSlayerVisualRig.GetShadow(visuals) is { } shadow)
-        {
-            shadow.FlipH = playerSide;
-        }
+        visuals?.GetNode<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName).SetMirrored(playerSide);
     }
 }

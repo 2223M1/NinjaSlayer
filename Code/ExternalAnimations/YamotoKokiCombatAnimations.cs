@@ -1,4 +1,5 @@
 using Godot;
+using NinjaSlayer.Code.Nodes;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -117,6 +118,9 @@ internal static class YamotoKokiCombatAnimations
         bool isFinisherApproach = approachMode == YamotoKokiIaiApproachMode.FinisherCloseRange;
         if (isFinisherApproach)
         {
+            NinjaSlayerShadowController.Get(creature)?.BeginAction(
+                ShadowActionKind.SlowAttack, SlowAttackAnimation.CompanionPeakSeconds,
+                CombatActionTimingRuntime.CompanionDamageRecoverySeconds);
             await approachStarted();
             if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
                     creature,

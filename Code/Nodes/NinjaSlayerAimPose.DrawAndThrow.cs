@@ -8,7 +8,7 @@ namespace NinjaSlayer.Code.Nodes;
 
 public partial class NinjaSlayerAimPose
 {
-    internal static float ShurikenWindupSeconds => CombatActionTimingRuntime.Resolve(0.075f, 0.0375f);
+    internal static float ShurikenWindupSeconds => CombatActionTimingRuntime.Resolve(0.166f, 0.083f);
     private float _bodyHeight;
     private float _flipDuration;
     private float _flipElapsed;
@@ -57,7 +57,7 @@ public partial class NinjaSlayerAimPose
         if (_actor == null || _actor.Entity.IsDead || _exclusive
             || NinjaSlayerFinisherCinematic.IsMovementOwned(_actor.Entity) || IsBackflipping) return;
         SyncNow();
-        float duration = CombatActionTimingRuntime.Resolve(1f / 3f, 1f / 6f);
+        float duration = CombatActionTimingRuntime.Resolve(2f / 3f, 1f / 3f);
         if (duration <= 0f) return;
         NinjaSlayerRapidAnimationCoordinator.EnsureLifecycle(_actor.Entity);
         _flipDuration = duration;
@@ -82,7 +82,7 @@ public partial class NinjaSlayerAimPose
         _throwStartAngle = angle;
         _throwStartOffset = _throwOffset;
         _throwDuration = seconds;
-        _throwReturnDuration = seconds;
+        _throwReturnDuration = CombatActionTimingRuntime.Resolve(0.168f, 0.084f);
         _throwElapsed = 0f;
         _throwReleased = false;
         SyncNow();

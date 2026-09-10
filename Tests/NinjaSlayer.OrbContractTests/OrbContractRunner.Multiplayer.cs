@@ -207,8 +207,8 @@ public partial class OrbContractRunner
                 await WaitNetwork(() => completed > before, "native converted volley action");
             }
             var tokens = player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().ToArray();
-            Require(tokens.Length == stock && tokens.All(card => card.SnapshotDamage == 6),
-                "Each original shot must create one synchronized six-damage snapshot token.");
+            Require(tokens.Length == stock && tokens.All(card => card.SnapshotDamage == 8),
+                "Each original shot must create one synchronized eight-damage snapshot token.");
         }
         var snapshot = new
         {

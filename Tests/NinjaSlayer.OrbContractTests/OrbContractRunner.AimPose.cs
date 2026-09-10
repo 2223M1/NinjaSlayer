@@ -1,5 +1,6 @@
 using System.Reflection;
 using Godot;
+using MegaCrit.Sts2.Core.Assets;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -29,6 +30,14 @@ public partial class OrbContractRunner
         var target = new AimContractCreature { Position = new(700f, 0f) };
         STS2RitsuLib.RitsuLibFramework.EnsureGodotScriptsRegistered(typeof(ShurikenOrb).Assembly,
             STS2RitsuLib.RitsuLibFramework.CreateLogger("Aim contracts"));
+        foreach (string path in new[]
+        {
+            "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn",
+            "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn",
+            "res://NinjaSlayer/images/characters/ninja_slayer/kill_idle/NinjaSlayer_kill_idle_0001.png",
+            "res://NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_0001.png",
+            "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png"
+        }) PreloadManager.Cache.SetAsset(path, GD.Load(path));
         NCreatureVisuals rig = STS2RitsuLib.Scaffolding.Godot.RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(
             "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn")!;
         var targetRig = new AimContractVisuals();
@@ -57,6 +66,40 @@ public partial class OrbContractRunner
         try
         {
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");
+            var facingDrag = new Node();
+            stage.AddChild(facingDrag);
+            var aimedCard = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
+            Sprite2D facingOverlay = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
+            foreach (bool locked in new[] { false, true })
+            foreach (float pointerX in new[] { 0f, -15f, 15f, -100f, 100f })
+            {
+                target.Position = new(pointerX, 0f);
+                targetCenter.Position = new(0f, -500f);
+                Creature? hovered = locked ? combat.Enemy : null;
+                Invoke("Drag", facingDrag, aimedCard, new Vector2(pointerX, -500f), hovered);
+                float expectedFacing = Math.Sign(anchor.Scale.X);
+                for (int frame = 0; frame < 30; frame++)
+                {
+                    Invoke("Drag", facingDrag, aimedCard, new Vector2(pointerX, -500f), hovered);
+                    await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                    Invoke("SyncNow");
+                    Require(Math.Sign(anchor.Scale.X) == expectedFacing,
+                        $"Stationary overhead pointer at X={pointerX} flipped facing again on frame {frame}.");
+                    Require(sprite.Visible != facingOverlay.Visible,
+                        "Overhead aiming must draw exactly one body layer.");
+                    Sprite2D visibleBody = facingOverlay.Visible ? facingOverlay : sprite;
+                    for (Node? node = visibleBody; node != null; node = node.GetParent())
+                        if (node is CanvasItem canvas)
+                            Require(Mathf.IsEqualApprox(canvas.Modulate.A, 1f), "Overhead aiming faded the body.");
+                    Require(Mathf.IsEqualApprox(visibleBody.SelfModulate.A, 1f)
+                        && visibleBody.Material == null, "Overhead aiming enabled a faded or blurred body material.");
+                }
+                if (pointerX != 0f)
+                    Require(expectedFacing == Math.Sign(pointerX), "Drag facing must follow the pointer side.");
+            }
+            Invoke("Reset");
+            facingDrag.Free();
+            GD.Print("PASS overhead aiming: stationary pointer and locked target retain one opaque body and stable facing across scene frames.");
             foreach (float side in new[] { -1f, 1f })
             foreach (float altitude in new[] { 0f, -150f })
             foreach (float height in new[] { -500f, -173f, -40f })
@@ -154,6 +197,7 @@ public partial class OrbContractRunner
                     Vector2 feet = (active.GetGlobalTransformWithCanvas() * footPoint - center.GetGlobalTransformWithCanvas().Origin).Normalized();
                     Vector2 aim = (targetCenter.GetGlobalTransformWithCanvas().Origin - center.GetGlobalTransformWithCanvas().Origin).Normalized();
                     Require(feet.Dot(aim) > 0.999f, "Kick feet do not face the target core.");
+                    VerifyAimedGroundShadow(rig, formIndex);
                     Invoke("BeginReturn");
                     Invoke("ApplyReturn", 1f);
                 }
@@ -161,6 +205,18 @@ public partial class OrbContractRunner
                 VerifyDrawAndThrowPose(combat, pose, anchor, formOverlay.Visible ? formOverlay : sprite, center, target, formIndex);
             }
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            Invoke("Reset");
+            actor.Position = Vector2.Zero;
+            Node shadowController = rig.GetNode("ShadowController");
+            AccessTools.Method(shadowController.GetType(), "SyncNow").Invoke(shadowController, null);
+            float groundedShadowY = rig.GetNode<Sprite2D>("Shadow").GlobalPosition.Y;
+            AccessTools.Method(shadowController.GetType(), "TrackRootHop").Invoke(shadowController, [actor, 0f]);
+            actor.Position = new(0f, -70f);
+            AccessTools.Method(shadowController.GetType(), "SyncNow").Invoke(shadowController, null);
+            Require(Math.Abs(rig.GetNode<Sprite2D>("Shadow").GlobalPosition.Y - groundedShadowY) < .1f,
+                "Whole-root return hop lifted the shadow off the ground.");
+            actor.Position = Vector2.Zero;
+            AccessTools.Method(shadowController.GetType(), "SyncNow").Invoke(shadowController, null);
             GD.Print("PASS actual packaged AimPose: high/low targets, both facings, airborne, normal/half/full forms, affine core tracking, kicks, Tornado foot height and return.");
             NCreatureVisuals koki = STS2RitsuLib.Scaffolding.Godot.RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(
                 "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn")!;

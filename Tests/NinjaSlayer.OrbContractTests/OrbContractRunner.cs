@@ -163,6 +163,7 @@ public partial class OrbContractRunner : Node
             await VerifyRunSaves();
             await VerifyAttackCadence();
             await VerifyAimPose();
+            await VerifyGroundShadows();
             VerifyCardMetadata();
             await VerifyCurrentCardInteractions();
             await VerifyV020();
@@ -274,7 +275,7 @@ public partial class OrbContractRunner : Node
             int hp = combat.Enemy.CurrentHp;
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card(), combat.Card() });
             Require(combat.Stock == Math.Max(stock, 1), $"Discard recycling duplicated or lost stock at initial {stock}.");
-            Require(hp - combat.Enemy.CurrentHp == (stock == 0 ? 2 : 3) * 4, "Each actual discard must fire old stock before replenishing.");
+            Require(hp - combat.Enemy.CurrentHp == (stock == 0 ? 2 : 3) * 6, "Each actual discard must fire old stock before replenishing.");
         }
         using (var combat = new OrbCombat())
         {
@@ -331,7 +332,7 @@ public partial class OrbContractRunner : Node
             ShurikenOrb old = combat.Orb!;
             int hp = combat.Enemy.CurrentHp;
             await OrbCmd.Channel<LightningOrb>(Choice, combat.Player);
-            Require(hp - combat.Enemy.CurrentHp == 12, "Replacement must fire the pre-replacement stock.");
+            Require(hp - combat.Enemy.CurrentHp == 18, "Replacement must fire the pre-replacement stock.");
             Require(combat.Capacity == 1 && combat.Queue.Orbs.Single() is LightningOrb && !old.OwnsTransientSlot,
                 "Replacement must transfer the temporary slot to the incoming orb.");
         }

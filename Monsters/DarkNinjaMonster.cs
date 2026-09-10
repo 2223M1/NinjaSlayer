@@ -30,10 +30,10 @@ namespace NinjaSlayer.Monsters;
 [RegisterMonster]
 public sealed class DarkNinjaMonster : ModMonsterTemplate
 {
-    private static readonly Vector2 StandingShadowPosition = new(-8f, -20.625f);
-    private static readonly Vector2 StandingShadowScale = new(0.432f, 0.245f);
+    private static readonly Vector2 StandingShadowPosition = new(3f, -20.625f);
+    private static readonly Vector2 StandingShadowScale = new(0.39f, 0.245f);
     private static readonly Vector2 CombatShadowPosition = new(5f, -20.625f);
-    private static readonly Vector2 CombatShadowScale = new(0.589f, 0.275f);
+    private static readonly Vector2 CombatShadowScale = new(0.57f, 0.275f);
 
     internal const string StandingTexturePath =
         "res://NinjaSlayer/images/monsters/dark_ninja_standing.png";

@@ -515,10 +515,7 @@ internal sealed class SawatariEventSession
             body.FlipH = faceRight;
         }
 
-        if (NinjaSlayerVisualRig.GetShadow(visuals) is { } shadow)
-        {
-            shadow.FlipH = faceRight;
-        }
+        visuals?.GetNode<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName).SetMirrored(faceRight);
     }
 
     internal void AbortBeforeCombat()

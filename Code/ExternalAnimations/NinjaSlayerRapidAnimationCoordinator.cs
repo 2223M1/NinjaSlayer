@@ -73,6 +73,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         float duration = useConsecutiveGate && pose?.IsTornado != true && isContinuation && !NinjaSlayerAttackExecution.IsMultiHit && !samePlay
             ? CombatActionTimingRuntime.ConsecutiveAttackSeconds
             : firstPeakSeconds;
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(
+            distance >= NinjaSlayerCombatVisuals.SlowAttackLungeDistance ? ShadowActionKind.SlowAttack : ShadowActionKind.Attack,
+            duration, returnSeconds, hold: true);
         var motion = new AttackMotion();
         state.Motions.Add(motion);
         float forwardSign = heldTornado ? direction : state.ForwardSign;
@@ -195,6 +198,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     private static void StartReturn(Creature creature, ActionState state)
     {
+        NinjaSlayerShadowController.Get(creature)?.BeginReturn(state.ReturnSeconds);
         if (state.Motions.Any(motion => !motion.Completed)) return;
         state.StopActiveTween();
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(creature);
@@ -252,6 +256,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     public static Vector2 ClaimExclusiveBaseline(Creature creature, NCreature creatureNode)
     {
+        NinjaSlayerShadowController.Get(creature)?.ResetAction();
         if (VisualTails.Remove(creature, out VisualTailState? tail))
         {
             RapidMotionHandoff? handoff = tail.TryTakeover?.Invoke();
@@ -283,6 +288,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
         Participants.Remove(creature);
         NinjaSlayerAimPose.Get(creature)?.Reset();
+        NinjaSlayerShadowController.Get(creature)?.ResetAction();
     }
 
     public static long RegisterReturnTail(

@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -45,6 +46,7 @@ public static class StaggerAnimation
         }
 
         var visuals = creatureNode.Visuals;
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Hurt, 0f, StaggerDuration);
         var bodyAnchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals)
             ?? NinjaSlayerVisualRig.GetBodySprite(visuals);
         var tween = creatureNode.CreateTween();

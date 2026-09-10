@@ -50,6 +50,9 @@ public static class NinjaSlayerVisualRig
         return visuals?.GetNodeOrNull<Sprite2D>(ShadowPath);
     }
 
+    internal static Node2D? GetGroundContact(NCreatureVisuals? visuals) =>
+        visuals?.GetNodeOrNull<Marker2D>("GroundContact");
+
     public static void SyncShadowScale(Creature creature)
     {
         var visuals = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;

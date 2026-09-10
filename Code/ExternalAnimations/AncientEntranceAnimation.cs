@@ -347,7 +347,7 @@ public static class AncientEntranceAnimation
         NCreatureVisuals visuals,
         Node2D body)
     {
-        Sprite2D? shadow = NinjaSlayerVisualRig.GetShadow(visuals);
+        Node2D? shadow = NinjaSlayerVisualRig.GetGroundContact(visuals);
         Sprite2D? bodySprite = NinjaSlayerVisualRig.GetBodySprite(visuals);
         return shadow != null
             && ReferenceEquals(body, bodySprite)
@@ -361,7 +361,7 @@ public static class AncientEntranceAnimation
         Node2D body)
     {
         Node2D? bodyMarker = NinjaSlayerVisualRig.GetCinematicFocus(visuals);
-        Sprite2D? shadow = NinjaSlayerVisualRig.GetShadow(visuals);
+        Node2D? shadow = NinjaSlayerVisualRig.GetGroundContact(visuals);
         if (bodyMarker == null
             || shadow == null
             || !ReferenceEquals(body, NinjaSlayerVisualRig.GetBodySprite(visuals)))

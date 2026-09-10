@@ -79,15 +79,7 @@ public partial class YamotoKokiAllyFacingController : Node
                 FacingScaleMath.WithFacing(body.Scale.X, faceLeft),
                 body.Scale.Y);
 
-            if (NinjaSlayerVisualRig.GetShadow(companion.Visuals) is { } shadow)
-            {
-                shadow.FlipH = faceLeft;
-                if (companion.Entity.Monster is YukanoMonster)
-                {
-                    float centerX = Mathf.Abs(shadow.Position.X);
-                    shadow.Position = new Vector2(faceLeft ? -centerX : centerX, shadow.Position.Y);
-                }
-            }
+            NinjaSlayerShadowController.Get(companion.Entity)?.SetMirrored(faceLeft);
         }
     }
 

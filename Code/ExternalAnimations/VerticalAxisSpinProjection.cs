@@ -13,6 +13,7 @@ internal sealed class VerticalAxisSpinProjection
     private readonly Vector2 _basePosition;
     private readonly float _baseRotationDegrees;
     private readonly Vector2 _baseScale;
+    private readonly NinjaSlayerShadowController? _shadow;
 
     private VerticalAxisSpinProjection(
         Node2D body,
@@ -32,6 +33,12 @@ internal sealed class VerticalAxisSpinProjection
         _basePosition = basePosition;
         _baseRotationDegrees = baseRotationDegrees;
         _baseScale = baseScale;
+        for (Node? node = body.GetParent(); node != null; node = node.GetParent())
+            if (node.GetNodeOrNull<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName) is { } shadow)
+            {
+                _shadow = shadow;
+                break;
+            }
     }
 
     internal static VerticalAxisSpinProjection CaptureCurrent(
@@ -90,6 +97,7 @@ internal sealed class VerticalAxisSpinProjection
         }
 
         float ratio = VerticalSpinMath.GetScaleRatio(degrees);
+        if (GodotObject.IsInstanceValid(_shadow)) _shadow!.SetSpin(this, Mathf.DegToRad(degrees));
         if (_body is Sprite2D sprite)
         {
             sprite.Offset = Vector2.Zero;
@@ -105,6 +113,7 @@ internal sealed class VerticalAxisSpinProjection
 
     internal void Restore()
     {
+        if (GodotObject.IsInstanceValid(_shadow)) _shadow!.ClearSpin(this);
         if (!IsValid())
         {
             return;

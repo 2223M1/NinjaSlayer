@@ -339,6 +339,12 @@ internal sealed partial class DarkNinjaBattleFireRoot : Node2D
             {
                 Rect2 rect = sprite.GetRect();
                 Transform2D transform = toContainer * sprite.GetGlobalTransform();
+                if (sprite.Name == NinjaSlayerVisualRig.ShadowNodeName
+                    && root.GetNodeOrNull<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName) is { } shadowController)
+                {
+                    rect = shadowController.GroundReferenceRect;
+                    transform = toContainer * ((Node2D)root).GlobalTransform;
+                }
                 float top = new[]
                     {
                         rect.Position,

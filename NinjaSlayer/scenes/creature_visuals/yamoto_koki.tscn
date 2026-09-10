@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/yamoto_koki.png" id="1_yamoto_koki"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/yamoto_koki_shadow.png" id="2_shadow"]
+[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerShadowController.cs" id="3_shadow_controller"]
 
 [node name="YamotoKoki" type="Node2D"]
 metadata/_edit_group_ = true
@@ -11,6 +12,12 @@ metadata/_edit_lock_ = true
 position = Vector2(13.5, -20.625)
 scale = Vector2(0.29, 0.28)
 texture = ExtResource("2_shadow")
+
+[node name="GroundContact" type="Marker2D" parent="."]
+position = Vector2(13.5, -20.625)
+
+[node name="ShadowController" type="Node" parent="."]
+script = ExtResource("3_shadow_controller")
 
 [node name="Visuals" type="Node2D" parent="."]
 unique_name_in_owner = true
