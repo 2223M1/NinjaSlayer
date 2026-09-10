@@ -508,6 +508,7 @@ public static class AlabamaDropAnimation
         Action<float>? onProgress = null)
     {
         Vector2 start = creatureNode.Position;
+        NinjaSlayerShadowController.Get(creatureNode.Entity)?.TrackRootHop(creatureNode, target.Y);
         var tween = creatureNode.CreateTween();
         onTweenCreated?.Invoke(tween);
         tween.TweenMethod(

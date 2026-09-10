@@ -1,16 +1,23 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/monsters/sawatari_bamboo.png" id="1_sawatari"]
 [ext_resource type="Texture2D" path="res://NinjaSlayer/images/shadows/sawatari_shadow.png" id="2_shadow"]
+[ext_resource type="Script" path="res://Code/Nodes/NinjaSlayerShadowController.cs" id="3_shadow_controller"]
 
 [node name="Sawatari" type="Node2D"]
 metadata/_edit_group_ = true
 metadata/_edit_lock_ = true
 
 [node name="Shadow" type="Sprite2D" parent="."]
-position = Vector2(0, -20.625)
-scale = Vector2(0.44, 0.27)
+position = Vector2(-2, -20.625)
+scale = Vector2(0.46, 0.27)
 texture = ExtResource("2_shadow")
+
+[node name="GroundContact" type="Marker2D" parent="."]
+position = Vector2(0, -20.625)
+
+[node name="ShadowController" type="Node" parent="."]
+script = ExtResource("3_shadow_controller")
 
 [node name="AirborneAnchor" type="Node2D" parent="."]
 

@@ -10,7 +10,7 @@ public static class RedesignV1Rules
     public const int CommonRewardCount = 20;
     public const int UncommonRewardCount = 35;
     public const int RareRewardCount = 25;
-    public const int ShurikenBaseDamage = 4;
+    public const int ShurikenBaseDamage = 6;
     public const int BlackFlameDamage = 4;
 
     public static IReadOnlyList<string> CommonRewardCardIds { get; } =

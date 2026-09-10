@@ -98,7 +98,7 @@ public partial class OrbContractRunner
                 return [nested];
             }));
             await CardCmd.AutoPlay(Choice, judge, null);
-            Require(selection == 2 && combat.Stock == 2 && combat.Enemy.CurrentHp == 988,
+            Require(selection == 2 && combat.Stock == 2 && combat.Enemy.CurrentHp == 982,
                 "Scry/Sly must dispatch three discards and then gain two stock exactly once.");
             Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
                 "Prejudge must count its two discards only; discard powers must also see the nested discard.");
@@ -272,7 +272,7 @@ public partial class OrbContractRunner
         await AddStock(combat.Player, 3);
         await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
-        Require(combat.Enemy.CurrentHp == 992 && second.CurrentHp == 992 && combat.Player.Creature.HasPower<BladeSweepPower>(),
+        Require(combat.Enemy.CurrentHp == 988 && second.CurrentHp == 988 && combat.Player.Creature.HasPower<BladeSweepPower>(),
             "Blade Sweep must affect every shot this turn.");
 #if NINJASLAYER_CHANNEL_STABLE
         await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
@@ -280,7 +280,7 @@ public partial class OrbContractRunner
         await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #endif
         await CardCmd.Discard(Choice, combat.Card());
-        Require(combat.Enemy.CurrentHp + second.CurrentHp == 1980 && !combat.Player.Creature.HasPower<BladeSweepPower>(),
+        Require(combat.Enemy.CurrentHp + second.CurrentHp == 1970 && !combat.Player.Creature.HasPower<BladeSweepPower>(),
             "Blade Sweep must expire at turn end and restore single-target shots.");
         GD.Print("PASS Blade Sweep repeated shots and turn-end expiry");
     }
@@ -335,7 +335,7 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat);
             AddCard<DefendIronclad>(combat);
             await CardCmd.AutoPlay(Choice, storm, null);
-            Require(combat.Stock == 3 && combat.Enemy.CurrentHp == 992 && storm.Pile?.Type == PileType.Exhaust,
+            Require(combat.Stock == 3 && combat.Enemy.CurrentHp == 988 && storm.Pile?.Type == PileType.Exhaust,
                 "Shuriken Storm must grant initial stock, dispatch every hand discard, then replenish by discarded count.");
         }
         using (var combat = new OrbCombat())

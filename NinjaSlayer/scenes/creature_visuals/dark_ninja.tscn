@@ -9,9 +9,12 @@ metadata/_edit_group_ = true
 metadata/_edit_lock_ = true
 
 [node name="Shadow" type="Sprite2D" parent="."]
-position = Vector2(-8, -20.625)
-scale = Vector2(0.432, 0.245)
+position = Vector2(3, -20.625)
+scale = Vector2(0.39, 0.245)
 texture = ExtResource("2_shadow")
+
+[node name="GroundContact" type="Marker2D" parent="."]
+position = Vector2(-8, -20.625)
 
 [node name="AirborneAnchor" type="Node2D" parent="."]
 

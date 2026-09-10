@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pj1pblkqat8f"
-path="res://.godot/imported/ninja_slayer_merchant_idle.png-60b7380ec72703cca845fd67a06d5257.ctex"
+uid="uid://s40g1j6wqufk"
+path="res://.godot/imported/ninja_slayer_merchant_source_cutout.png-cbce7d549e1c260cc9a9f6740dfdca56.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/characters/ninja_slayer/merchant/ninja_slayer_merchant_idle.png"
-dest_files=["res://.godot/imported/ninja_slayer_merchant_idle.png-60b7380ec72703cca845fd67a06d5257.ctex"]
+source_file="res://NinjaSlayer/images/characters/ninja_slayer/merchant/ninja_slayer_merchant_source_cutout.png"
+dest_files=["res://.godot/imported/ninja_slayer_merchant_source_cutout.png-cbce7d549e1c260cc9a9f6740dfdca56.ctex"]
 
 [params]
 

@@ -27,6 +27,8 @@ public static class HopAnimation
 
     public static async Task Play(Creature creature)
     {
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(
+            ShadowActionKind.Cast, CombatActionTimingRuntime.CastSeconds, CombatActionTimingRuntime.DamageRecoverySeconds);
         if (NinjaSlayerAimPose.Get(creature) is { } pose)
         {
             pose.BeginAirMotion(hop: true);

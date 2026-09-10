@@ -298,8 +298,8 @@ public static class SoarSpinAnimation
     private static Node2D? GetSpinFocus(Creature creature) =>
         NinjaSlayerVisualRig.GetCinematicFocus(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
 
-    private static Sprite2D? GetSpinAxis(Creature creature) =>
-        NinjaSlayerVisualRig.GetShadow(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
+    private static Node2D? GetSpinAxis(Creature creature) =>
+        NinjaSlayerVisualRig.GetGroundContact(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
 
     private static void RestoreVerticalSpin(Creature creature, Node2D visuals)
     {

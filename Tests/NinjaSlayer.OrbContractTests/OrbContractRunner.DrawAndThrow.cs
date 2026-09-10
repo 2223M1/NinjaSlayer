@@ -49,7 +49,7 @@ public partial class OrbContractRunner
                 "Stock damage or feedback waited for the frozen body animation.");
             Require(_throwDirectWaits == 0 && ThrowGameplayWaits.Count > 0
                 && Math.Abs(ThrowGameplayWaits[0] - 0.15f) < 0.00001f
-                && ThrowGameplayWaits.All(t => Math.Abs(t - 0.075f) > 0.00001f),
+                && ThrowGameplayWaits.All(t => Math.Abs(t - 0.166f) > 0.00001f),
                 $"Stock throw waits: direct={_throwDirectWaits}, scaled={string.Join(',', ThrowGameplayWaits)}.");
             var card = combat.Card();
             var play = new CardPlay { Card = card,
@@ -64,7 +64,7 @@ public partial class OrbContractRunner
                 .Invoke(null, [card, play, card.DynamicVars.Damage])!;
             await attack.Execute(Choice);
             Require(attack.Results.Count() == 1 && _throwDirectWaits == 0
-                && ThrowGameplayWaits.All(t => Math.Abs(t - 0.075f) > 0.00001f),
+                && ThrowGameplayWaits.All(t => Math.Abs(t - 0.166f) > 0.00001f),
                 "Shuriken attack blocked on its body windup.");
             Require((float)AccessTools.Field(pose.GetType(), "_throwElapsed").GetValue(pose)! == 0f,
                 "The nonblocking test advanced animation time to finish gameplay.");
@@ -125,7 +125,7 @@ public partial class OrbContractRunner
                 Vector2 coreBaseline = center.GlobalPosition;
                 float ground = contour.Max(p => (baseline * new Vector2(p.X, p.Y)).Y);
                 Call("BeginBackflip");
-                float duration = mode == FastModeType.Normal ? 1f / 3f : mode == FastModeType.Fast ? 1f / 6f : 0f;
+                float duration = mode == FastModeType.Normal ? 2f / 3f : mode == FastModeType.Fast ? 1f / 3f : 0f;
                 if (duration == 0f)
                 {
                     Require(!Flipping() && body.GetGlobalTransformWithCanvas().IsEqualApprox(baseline), "Instant draw created a flip.");
@@ -160,27 +160,27 @@ public partial class OrbContractRunner
             Call("SyncNow");
             Transform2D idle = body.GetGlobalTransformWithCanvas();
             Call("BeginBackflip");
-            pose._Process(0.20);
+            pose._Process(0.40);
             float flipElapsed = Field("_flipElapsed");
             Call("BeginShurikenThrow", combat.Enemy);
             Require(Flipping() && Field("_flipElapsed") == flipElapsed, "Throw restarted or interrupted the backflip.");
-            pose._Process(0.074);
-            Require(!(bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw released before 0.075 seconds.");
+            pose._Process(0.165);
+            Require(!(bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw released before 0.166 seconds.");
             pose._Process(0.00101);
             Require((bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)! && Flipping(),
-                "Throw did not release at 0.075 seconds during the flip.");
+                "Throw did not release at 0.166 seconds during the flip.");
             object?[] handArgs = [AimActors[combat.Player.Creature], null];
             Type orbVisual = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Nodes.ShurikenOrbVisual", true)!;
             Require((bool)AccessTools.Method(orbVisual, "TryGetHandCanvasPosition").Invoke(null, handArgs)!, "Missing throw hand anchor.");
             Require(((Vector2)handArgs[1]!).DistanceTo(body.GetGlobalTransformWithCanvas() * handPoint) < 0.1f,
                 "Throw origin does not follow the flipping hand.");
-            pose._Process(0.065);
+            pose._Process(0.11);
             Require(!Flipping() && Field("_throwDuration") > 0f, "Finishing the flip also cleared the throw recovery.");
             target.Position = new(-700f, 0f);
             Transform2D beforeTargetChange = body.GetGlobalTransformWithCanvas();
             Call("BeginShurikenThrow", combat.Enemy);
             Require(body.GetGlobalTransformWithCanvas().IsEqualApprox(beforeTargetChange), "Changing throw targets snapped the body.");
-            pose._Process(0.15);
+            pose._Process(0.33401);
             Require(body.GetGlobalTransformWithCanvas().IsEqualApprox(idle), "Concurrent motions did not return to the authored pose.");
 
             Call("BeginBackflip");
@@ -195,7 +195,7 @@ public partial class OrbContractRunner
             Call("ApplyReturn", 1f);
             Require(Flipping() && Math.Abs(Field("_flipElapsed") - 0.17f) < 0.0001f,
                 "Returning from an attack cleared or restarted the ongoing flip.");
-            pose._Process(1f / 3f - 0.17f + 0.00001f);
+            pose._Process(2f / 3f - 0.17f + 0.00001f);
             Require(body.GetGlobalTransformWithCanvas().IsEqualApprox(idle), "Flip did not finish independently after attack return.");
             Call("BeginShurikenThrow", combat.Enemy);
             pose._Process(0.04);
@@ -208,7 +208,7 @@ public partial class OrbContractRunner
             Call("BeginReturn");
             Call("ApplyReturn", 1f);
             Require(Field("_throwDuration") > 0f, "Returning from an attack cancelled throw recovery.");
-            pose._Process(0.06001);
+            pose._Process(0.24401);
             Require(body.GetGlobalTransformWithCanvas().IsEqualApprox(idle), "Throw did not finish independently after attack return.");
             VerifyTripleMotion(combat, pose, anchor, body, center, target, corePoint, handPoint);
             var dragOwner = new Node();
@@ -231,11 +231,16 @@ public partial class OrbContractRunner
             {
                 SaveManager.Instance.PrefsSave.FastMode = mode;
                 Call("BeginShurikenThrow", combat.Enemy);
-                float expectedGate = mode == FastModeType.Normal ? 0.075f : mode == FastModeType.Fast ? 0.0375f : 0f;
+                float expectedGate = mode == FastModeType.Normal ? 0.166f : mode == FastModeType.Fast ? 0.083f : 0f;
+                float expectedTotal = mode == FastModeType.Normal ? 0.334f : mode == FastModeType.Fast ? 0.167f : 0f;
                 Require(Math.Abs(Field("_throwDuration") - expectedGate) < 0.00001f, "Throw timing did not follow game speed.");
                 if (expectedGate > 0f)
                 {
-                    pose._Process(expectedGate * 2f - 0.001f);
+                    pose._Process(expectedGate - 0.001f);
+                    Require(!(bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw released early for the selected speed.");
+                    pose._Process(0.00101f);
+                    Require((bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw missed its release time for the selected speed.");
+                    pose._Process(expectedTotal - expectedGate - 0.00101f);
                     Require(Field("_throwDuration") > 0f, "Throw recovery ended early.");
                 }
                 pose._Process(0.00101f);
@@ -296,7 +301,7 @@ public partial class OrbContractRunner
             pose._Process(0.02f * speed);
             Call("BeginAction", combat.Enemy, false, false);
             bool returning = false;
-            for (int frame = 1; frame <= 48; frame++)
+            for (int frame = 1; frame <= 84; frame++)
             {
                 float time = frame / 120f;
                 pose._Process(speed / 120f);
@@ -316,18 +321,20 @@ public partial class OrbContractRunner
                 float flipTime = 0.06f + time;
                 float throwTime = 0.02f + time;
                 bool flipping = (bool)AccessTools.Property(type, "IsBackflipping").GetValue(pose)!;
-                Require(flipping == (flipTime < 1f / 3f - 0.00001f), "Attack changed the flip duration.");
-                Require((Field("_throwDuration") > 0f) == (throwTime < 0.15f - 0.00001f),
+                Require(flipping == (flipTime < 2f / 3f - 0.00001f), "Attack changed the flip duration.");
+                Require((Field("_throwDuration") > 0f) == (throwTime < 0.334f - 0.00001f),
                     "Attack changed the throw duration.");
                 if (flipping) Require(Math.Abs(Field("_flipElapsed") - flipTime * speed) < 0.00001f,
                     "Attack paused or restarted the flip clock.");
-                float flipAngle = flipping ? -facing * Mathf.Tau * flipTime * 3f : 0f;
+                float flipAngle = flipping ? -facing * Mathf.Tau * flipTime * 1.5f : 0f;
                 float throwAngle = 0f;
-                if (throwTime < 0.075f)
+                if (throwTime < 0.166f * 0.25f)
+                    throwAngle = -Mathf.DegToRad(6f) * facing * Mathf.SmoothStep(0f, 1f, throwTime / (0.166f * 0.25f));
+                else if (throwTime < 0.166f)
                     throwAngle = Mathf.DegToRad(Mathf.Lerp(-6f, 8f,
-                        Mathf.SmoothStep(0f, 1f, Mathf.Clamp((throwTime / 0.075f - 0.25f) / 0.45f, 0f, 1f)))) * facing;
-                else if (throwTime < 0.15f)
-                    throwAngle = Mathf.DegToRad(8f) * facing * (1f - Mathf.SmoothStep(0f, 1f, (throwTime - 0.075f) / 0.075f));
+                        Mathf.SmoothStep(0f, 1f, Mathf.Clamp((throwTime / 0.166f - 0.25f) / 0.45f, 0f, 1f)))) * facing;
+                else if (throwTime < 0.334f)
+                    throwAngle = Mathf.DegToRad(8f) * facing * (1f - Mathf.SmoothStep(0f, 1f, (throwTime - 0.166f) / 0.168f));
                 float expected = unposedAngle + Field("_baseDisplayAngle") + flipAngle + throwAngle;
                 Require(Math.Abs(Mathf.Wrap(body.GetGlobalTransformWithCanvas().X.Angle() - expected, -Mathf.Pi, Mathf.Pi)) < 0.002f,
                     "Attack, flip and throw rotations did not compose on the actual sprite.");

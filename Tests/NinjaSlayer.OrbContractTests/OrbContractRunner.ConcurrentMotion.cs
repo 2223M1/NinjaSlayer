@@ -93,7 +93,7 @@ public partial class OrbContractRunner
             Tween combinedTween = MotionTween(combinedState, 0);
             combinedTween.Pause();
             combinedTween.CustomStep(0.075);
-            pose._Process(0.075);
+            pose._Process(0.16601);
             Require((bool)AccessTools.Property(pose.GetType(), "IsBackflipping").GetValue(pose)!
                 && (bool)AccessTools.Property(pose.GetType(), "IsJumping").GetValue(pose)!
                 && (bool)AccessTools.Field(pose.GetType(), "_throwReleased").GetValue(pose)!

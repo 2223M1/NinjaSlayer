@@ -49,6 +49,27 @@ Ninja Slayer's Shuriken Orb and thrown projectile use
 The orb scene renders the unchanged gray body at about 60px with a procedural additive `#FFB300`
 edge glow, activation ring, and sparks; it does not add another bitmap or a character-body anchor.
 
+## Merchant Character Image
+
+`NinjaSlayer/images/characters/ninja_slayer/merchant/ninja_slayer_merchant_source_cutout.png`
+is a `620x770 RGBA` composite of the rightmost character from the user-provided
+`pic_chara_01__wayback_20150315051433_ALRAEUTINJ.png` (source SHA-256
+`9735681BA87301EE464E315C69C5E826CB355D43CFA6670037BD28E46173A6F5`).
+The connected subject occupies source bounds `x=331..829, y=25..724`; its original
+pixels are mirrored to the existing shop-facing direction and placed at `(30,12)`.
+No original figure pixels are rescaled during compositing.
+
+The shadow uses the STS2 `0.111.0` merchant Ironclad atlas region
+`animations/merchant/ironclad/ironclad_shop.png`, `x=402, y=230, w=460, h=87`.
+Its black Alpha brush is resized to `390x56` under both feet; a `245x42` copy at
+42% Alpha extends beneath the low scarf. Layers combine by maximum Alpha, capped
+by the native peak `101`, replacing the previous opaque Photoshop ellipse.
+The runtime Scale is `0.8`, Position `(0,-240.8)`: lowest foot Y is `20px`,
+hood top approximately `-472.8px`, about `17px` above the native Ironclad mask top
+in its `relaxed_loop` setup sample at scene Scale `0.47`. The scarf is excluded
+from the height comparison. Final PNG SHA-256:
+`2B5C386C3B6F1565871F0A20FFC11ED433A9D3E1108660E12B1178EB46CDF6A0`.
+
 ## Combat Shadow Images
 
 All custom ground shadows are project-local `510x96 RGBA` textures under
@@ -63,7 +84,7 @@ The hand-painted Alpha references were cropped from the recovered STS2 `0.110.0`
 - Defect: `animations/characters/defect/defect.png`, `x=2, y=440, w=344, h=81`, Alpha max `89`
 - Regent: `animations/characters/regent/regent.png`, `x=414, y=134, w=262, h=62`, Alpha max `68`
 
-The final textures retain the existing scene dimensions and use only crops, affine resizing,
+The final textures use only crops, affine resizing,
 mirroring, contour trimming, and layered Alpha adjustment of those original brush masks. All
 grounded shadows except Yukano match Ironclad's authored Alpha distribution. Yukano keeps a light
 projection beneath the raised left leg while its grounded right-foot core uses the Ironclad
@@ -75,6 +96,24 @@ distribution:
 - `dark_ninja_combat_shadow.png`: Defect and Ironclad-derived; Alpha bounds `x=4..505, y=1..94`; SHA-256 `0B8FC40D35064CBC945A0166015C822FB91ED9CE1995B68CB1363EB93EC4211A`
 - `sawatari_shadow.png`: Ironclad-calibrated Silent foot core plus a low-Alpha Regent cloak projection; Alpha bounds `x=94..505, y=1..94`; SHA-256 `D83C9F959B9B414A37486B8FC4AD21B30A95B7B2C9346D3B386106C4EAF09A8C`
 - `yukano_shadow.png`: lighter Silent and Regent-derived projection with an Ironclad-calibrated grounded right-foot core; Alpha bounds `x=4..505, y=1..94`; SHA-256 `467657682D76BC8224FC405704C6A4D894CF2046148E69631408B5041CEE37CE`
+
+Idle footprint calibration uses the current character textures and scene scales, not weapon bounds.
+Ninja Slayer uses horizontal shadow scale `0.39`; Koki retains `0.29` and its `13.5px` pivot.
+Dark Ninja standing uses center X `3px`, scale `0.39x0.245`; combat uses X `5px`,
+scale `0.57x0.275`. Sawatari uses X `-2px`, scale `0.46x0.27` to include the low cloak
+in the existing lighter brush layer. Yukano uses X `38px`, scale `0.299x0.262`, retaining
+the darker grounded-foot side. All retain the `-20.625px` shadow center line and unchanged PNGs.
+Separate `GroundContact` markers retain the previous rotation references; animated shadow
+geometry never feeds back into body pivots or the fire-wall's initial layout measurement.
+
+Dynamic action proportions are sampled from the STS2 `0.111.0` Ironclad Spine `4.2.43`
+shadow bone: Attack `1.2475132x0.7855182`, heavy `1.0878955x1.0878956`,
+cast `0.9755064x1`, hurt `0.92226x1`; the final death key uses
+`1.6093761x1.7040393` and `34.2089deg` shear. These proportions are adapted to the
+existing Mod action phases, not used to change their timings. Ground support under free
+rotation uses authored solid-body contours; pillar spin and altitude use restrained procedural
+interpolation, not copied native timelines or literal human-shaped projection. The referenced
+Spine files remain external research inputs and are not included in the Mod.
 
 ## Card Images
 
