@@ -25,6 +25,10 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
 {
+    protected override bool ShouldGlowGoldInternal => CombatState != null
+        && MegaCrit.Sts2.Core.Hooks.Hook.ModifyXValue(CombatState, this, Owner.PlayerCombatState!.Energy)
+            >= DynamicVars["Threshold"].IntValue;
+
     protected override bool HasEnergyCostX => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(4, ValueProp.Move), new PowerVar<VulnerablePower>(1), new DynamicVar("Threshold", 4)];
@@ -48,7 +52,7 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
                 async _ =>
                 {
                     AttackCommand command;
-                    using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.PreserveDamage))
+                    using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.RapidCard))
                     {
                         command = await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
@@ -80,7 +84,7 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
                     }
 
                     return CombatState!.HittableEnemies.Count == 0;
-                }));
+                }, heldApproach: true));
     }
 
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2);

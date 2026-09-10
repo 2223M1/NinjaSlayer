@@ -49,6 +49,22 @@ public partial class OrbContractRunner : Node
 
     public override async void _Ready()
     {
+        GD.Print("Starting orb product contracts.");
+        try
+        {
+            Task run = RunContracts();
+            await run;
+        }
+        catch (Exception error)
+        {
+            GD.PushError(error.ToString());
+            GetTree().Quit(1);
+        }
+    }
+
+
+    private async Task RunContracts()
+    {
         try
         {
             Assembly product = typeof(ShurikenOrb).Assembly;
@@ -145,9 +161,12 @@ public partial class OrbContractRunner : Node
             await VerifyShuffleAndReplacement();
             await VerifyVolleyAndSave();
             await VerifyRunSaves();
+            await VerifyAttackCadence();
+            await VerifyAimPose();
             VerifyCardMetadata();
             await VerifyCurrentCardInteractions();
             await VerifyV020();
+            await VerifyV17();
             string? successMarker = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SUCCESS_MARKER");
             if (!string.IsNullOrWhiteSpace(successMarker))
                 System.IO.File.WriteAllText(successMarker, "passed\n");
@@ -384,8 +403,11 @@ public partial class OrbContractRunner : Node
         else
         {
             string expected = System.IO.File.ReadAllText(ProjectSettings.GlobalizePath("res://card-metadata.json"));
+            JsonElement[] orderedExpected = JsonSerializer.Deserialize<JsonElement[]>(expected)!
+                .OrderBy(item => item.GetProperty("Id").GetString(), StringComparer.Ordinal)
+                .ThenBy(item => item.GetProperty("Upgraded").GetBoolean()).ToArray();
             Require(System.Text.Json.Nodes.JsonNode.DeepEquals(
-                System.Text.Json.Nodes.JsonNode.Parse(expected), System.Text.Json.Nodes.JsonNode.Parse(actual)),
+                JsonSerializer.SerializeToNode(orderedExpected), System.Text.Json.Nodes.JsonNode.Parse(actual)),
                 "Current card metadata differs from the approved baseline.");
             GD.Print("PASS 92 cards: IDs, costs, types, rarity, targets, generation, keywords, tags, art and base/upgraded values");
         }
@@ -450,6 +472,7 @@ public partial class OrbContractRunner : Node
             Player.ResetCombatState();
             Enemy = AddEnemy();
 #if NINJASLAYER_CHANNEL_STABLE
+            AccessTools.Field(typeof(CombatManager), "_pendingLoss").SetValue(CombatManager.Instance, null);
             AccessTools.Field(typeof(CombatManager), "_state").SetValue(CombatManager.Instance, State);
             AccessTools.Property(typeof(CombatManager), nameof(CombatManager.IsInProgress)).SetValue(CombatManager.Instance, true);
 #else

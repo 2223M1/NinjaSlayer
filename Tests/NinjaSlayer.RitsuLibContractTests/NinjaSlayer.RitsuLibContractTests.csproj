@@ -29,6 +29,7 @@
   <ItemGroup>
     <Compile Include="ContractRunner.cs" />
     <Compile Include="ContractSupport.cs" />
+    <Compile Include="..\..\Code\Combat\NinjaSlayerAttackExecution.cs" Link="NinjaSlayerAttackExecution.cs" />
     <Compile Include="..\..\Code\Combat\CombatPresentationPacingScope.cs" Link="CombatPresentationPacingScope.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameDamageReceiverSet.cs" Link="BlackFlameDamageReceiverSet.cs" />
     <Compile Include="..\..\Code\Combat\BlackFlameHitTracker.cs" Link="BlackFlameHitTracker.cs" />

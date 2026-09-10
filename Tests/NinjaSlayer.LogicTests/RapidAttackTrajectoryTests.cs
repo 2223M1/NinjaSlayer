@@ -22,14 +22,4 @@ public sealed class RapidAttackTrajectoryTests
 
         Assert.Equal(0.425f, pending, precision: 5);
     }
-
-    [Fact]
-    public void ContinuationRetreatsHalfwayBeforeReturningToPeak()
-    {
-        static float Linear(float progress) => progress;
-
-        Assert.Equal(120f, RapidAttackTrajectory.GetContinuationOffset(0f, 120f, 60f, 120f, Linear));
-        Assert.Equal(60f, RapidAttackTrajectory.GetContinuationOffset(0.5f, 120f, 60f, 120f, Linear));
-        Assert.Equal(120f, RapidAttackTrajectory.GetContinuationOffset(1f, 120f, 60f, 120f, Linear));
-    }
 }

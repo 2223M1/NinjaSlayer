@@ -585,6 +585,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
 
         Vector2 ownerFrom = _actorNode.Position;
+        _actorAimPose?.BeginReturn();
         Vector2 cameraFrom = _camera.CurrentPosition;
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
@@ -603,7 +604,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 : Mathf.SmoothStep(0f, 1f, Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f));
             ApplyDeathKickRecovery(cameraLinearProgress);
             _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
-            _actorLeapPose?.ApplyReturn(actorProgress);
+            _actorAimPose?.ApplyReturn(actorProgress);
             _camera.SetTransform(
                 cameraFrom.Lerp(_camera.BaselinePosition, cameraProgress),
                 Mathf.Lerp(scaleFrom, _camera.BaselineScale.X, cameraProgress));

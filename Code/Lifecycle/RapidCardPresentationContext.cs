@@ -18,7 +18,7 @@ internal static class RapidCardPresentationContext
     {
         ScopeFrame? previous = Current.Value;
         bool active = card.Owner.Creature.Player?.Character is INinjaSlayerCharacter;
-        Current.Value = new ScopeFrame(active, previous);
+        Current.Value = new ScopeFrame(active, card, previous);
         CombatPresentationPacingScope.ScopeLease? pacing = active
             ? CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.RapidCard)
             : null;
@@ -71,6 +71,7 @@ internal static class RapidCardPresentationContext
     }
 
     public static bool IsActive => Current.Value?.IsActive == true;
+    internal static CardModel? CurrentCard => Current.Value?.Card;
 
     public static void PreparePowerFly(CardModel card)
     {
@@ -95,7 +96,7 @@ internal static class RapidCardPresentationContext
         cardNode.PlayPileTween = null;
     }
 
-    internal sealed record ScopeFrame(bool IsActive, ScopeFrame? Previous);
+    internal sealed record ScopeFrame(bool IsActive, CardModel Card, ScopeFrame? Previous);
 
     internal readonly struct ScopeLease(
         ScopeFrame? previous,

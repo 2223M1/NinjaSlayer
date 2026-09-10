@@ -18,6 +18,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class OneDrinkOneStrikeRedesignV1 : RedesignV1CommonCard
 {
+    private bool MeetsBonusCondition => NinjaSlayerCombatMetrics.DiscardedCardThisTurn(Owner);
+    protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
+
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 
@@ -39,7 +42,7 @@ public sealed class OneDrinkOneStrikeRedesignV1 : RedesignV1CommonCard
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        if (NinjaSlayerCombatMetrics.DiscardedCardThisTurn(Owner))
+        if (MeetsBonusCondition)
         {
             await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
         }

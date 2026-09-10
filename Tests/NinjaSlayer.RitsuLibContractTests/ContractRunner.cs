@@ -44,8 +44,8 @@ namespace NinjaSlayer.RitsuLibContractTests;
 
 public partial class ContractRunner : Node
 {
-    private const int ExpectedRequiredPatchTargetCount = 92;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 58;
+    private const int ExpectedRequiredPatchTargetCount = 101;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 65;
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
     private static string? _patcherFailureName;

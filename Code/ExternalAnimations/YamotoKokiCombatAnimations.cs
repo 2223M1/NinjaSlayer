@@ -26,8 +26,6 @@ internal static class YamotoKokiCombatAnimations
     private const float FarewellHoldSeconds = 0.2f;
     private const float FarewellReturnSeconds = 0.3f;
     private const float FarewellExitSeconds = 0.5f;
-    private const float GroundOffsetFromPivot = 14.625f;
-    private static readonly Vector2 RightFootContactFromPivot = new(51.995f, 9.137f);
 
     public static bool TryPlayTriggerAnim(
         Creature creature,
@@ -75,12 +73,15 @@ internal static class YamotoKokiCombatAnimations
         }
 
         Node2D body = creatureNode.Body;
+        Marker2D center = creatureNode.Visuals.VfxSpawnPosition;
+        Vector2 originalCenter = center.Position;
         Vector2 originalBodyPosition = body.Position;
         float originalRotation = body.RotationDegrees;
         try
         {
             await TweenTilt(
                 body,
+                center, originalCenter,
                 originalBodyPosition,
                 originalRotation,
                 0f,
@@ -89,6 +90,7 @@ internal static class YamotoKokiCombatAnimations
             await summonAtPeak();
             await TweenTilt(
                 body,
+                center, originalCenter,
                 originalBodyPosition,
                 originalRotation,
                 TiltDegrees,
@@ -97,6 +99,7 @@ internal static class YamotoKokiCombatAnimations
         }
         finally
         {
+            if (GodotObject.IsInstanceValid(center)) center.Position = originalCenter;
             if (GodotObject.IsInstanceValid(body))
             {
                 body.Position = originalBodyPosition;
@@ -180,6 +183,8 @@ internal static class YamotoKokiCombatAnimations
         }
 
         Node2D body = creatureNode.Body;
+        Marker2D center = creatureNode.Visuals.VfxSpawnPosition;
+        Vector2 originalCenter = center.Position;
         Vector2 originalPosition = creatureNode.Position;
         Vector2 originalBodyPosition = body.Position;
         float originalRotation = body.RotationDegrees;
@@ -188,6 +193,7 @@ internal static class YamotoKokiCombatAnimations
         {
             await TweenTilt(
                 body,
+                center, originalCenter,
                 originalBodyPosition,
                 originalRotation,
                 0f,
@@ -196,6 +202,7 @@ internal static class YamotoKokiCombatAnimations
             await Cmd.Wait(FarewellHoldSeconds, ignoreCombatEnd: true);
             await TweenTilt(
                 body,
+                center, originalCenter,
                 originalBodyPosition,
                 originalRotation,
                 TiltDegrees,
@@ -211,6 +218,7 @@ internal static class YamotoKokiCombatAnimations
         }
         finally
         {
+            if (GodotObject.IsInstanceValid(center)) center.Position = originalCenter;
             if (GodotObject.IsInstanceValid(body))
             {
                 body.Position = originalBodyPosition;
@@ -226,6 +234,8 @@ internal static class YamotoKokiCombatAnimations
 
     private static async Task TweenTilt(
         Node2D node,
+        Marker2D center,
+        Vector2 centerBaseline,
         Vector2 basePosition,
         float baseRotation,
         float fromDegrees,
@@ -237,22 +247,30 @@ internal static class YamotoKokiCombatAnimations
             return;
         }
 
+        Sprite2D sprite = node.GetChildren().OfType<Sprite2D>().First();
+        Transform2D baseline = new(Mathf.DegToRad(baseRotation), node.Scale, node.Skew, basePosition);
+        Transform2D parentCanvas = node.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+        Vector2 pivot = parentCanvas.AffineInverse()
+            * (center.GetParent<CanvasItem>().GetGlobalTransformWithCanvas() * centerBaseline);
+        var offsets = CombatBodyContours.YamotoKoki.Select(point =>
+        {
+            Vector2 pixel = new(point.X * (sprite.FlipH ? -1f : 1f), point.Y);
+            Vector2 offset = baseline * (sprite.Transform * (pixel + sprite.Offset)) - pivot;
+            return new System.Numerics.Vector2(offset.X, offset.Y);
+        }).ToArray();
+        float ground = pivot.Y + GroundedPoseMath.SupportY(offsets, 0f);
         Tween tween = node.CreateTween();
         tween.TweenMethod(
                 Callable.From<float>(progress =>
                 {
                     float tiltDegrees = Mathf.Lerp(fromDegrees, toDegrees, progress);
-                    node.RotationDegrees = baseRotation + tiltDegrees;
-                    float facingSign = FacingScaleMath.IsFacingLeft(node.Scale.X) ? -1f : 1f;
-                    Vector2 footContact = new(
-                        RightFootContactFromPivot.X * facingSign,
-                        RightFootContactFromPivot.Y);
-                    Vector2 rotatedFoot = footContact.Rotated(
-                        Mathf.DegToRad(tiltDegrees));
-                    float groundY = basePosition.Y + GroundOffsetFromPivot;
-                    float footY = basePosition.Y + rotatedFoot.Y;
-                    float lift = Mathf.Max(0f, footY - groundY);
-                    node.Position = basePosition + Vector2.Up * lift;
+                    float angle = Mathf.DegToRad(tiltDegrees);
+                    Vector2 posedCore = new(pivot.X, ground - GroundedPoseMath.SupportY(offsets, angle));
+                    Transform2D rotation = new(angle, Vector2.Zero);
+                    rotation.Origin = posedCore - rotation.BasisXform(pivot);
+                    node.Transform = rotation * baseline;
+                    center.Position = center.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                        .AffineInverse() * (parentCanvas * posedCore);
                 }),
                 0f,
                 1f,

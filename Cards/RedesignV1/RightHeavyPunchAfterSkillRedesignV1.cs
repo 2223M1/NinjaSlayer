@@ -18,6 +18,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class RightHeavyPunchAfterSkillRedesignV1 : RedesignV1CommonCard
 {
+    private bool MeetsBonusCondition => NinjaSlayerCombatMetrics.PreviousFinishedCardWasSkill(Owner);
+    protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(8, ValueProp.Move), new PowerVar<WeakPower>(1)];
 
@@ -36,7 +39,7 @@ public sealed class RightHeavyPunchAfterSkillRedesignV1 : RedesignV1CommonCard
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        if (NinjaSlayerCombatMetrics.PreviousFinishedCardWasSkill(Owner)
+        if (MeetsBonusCondition
             && cardPlay.Target is { IsAlive: true } target)
         {
             await PowerCmd.Apply<WeakPower>(

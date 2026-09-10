@@ -12,7 +12,7 @@ public sealed class GiantShurikenRedesignV1 : RedesignV1RareCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>(), .. HoverTipFactory.FromCardWithCardHoverTips<StrongShurikenTokenRedesignV1>()];
 
     public GiantShurikenRedesignV1()
-        : base(nameof(GiantShurikenRedesignV1), "StarlessNight", 2, CardType.Power, TargetType.Self) { }
+        : base(nameof(GiantShurikenRedesignV1), "StarlessNight", 1, CardType.Power, TargetType.Self) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<StarlessNightRedesignPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);

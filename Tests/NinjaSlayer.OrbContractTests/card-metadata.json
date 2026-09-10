@@ -578,34 +578,46 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_CHAIN",
+    "Id": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
-    "Type": "Power",
+    "Type": "Attack",
     "Rarity": "Rare",
-    "Target": "Self",
+    "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
-    "Vars": {}
+    "Vars": {
+      "Damage": 8,
+      "Repeat": 1,
+      "CalculationBase": 0,
+      "CalculationExtra": 1,
+      "CalculatedHits": 0
+    }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_CHAIN",
+    "Id": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
-    "Type": "Power",
+    "Type": "Attack",
     "Rarity": "Rare",
-    "Target": "Self",
+    "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
-    "Vars": {}
+    "Vars": {
+      "Damage": 10,
+      "Repeat": 1,
+      "CalculationBase": 0,
+      "CalculationExtra": 1,
+      "CalculatedHits": 0
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_CHOP_DEFENSE_REDESIGN_V1",
@@ -1150,7 +1162,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
     "Upgraded": false,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Power",
     "Rarity": "Rare",
@@ -1165,7 +1177,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
     "Upgraded": true,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Power",
     "Rarity": "Rare",
@@ -1563,7 +1575,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_KILLING_INTENT_REDESIGN_V1",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Skill",
     "Rarity": "Rare",
@@ -1580,7 +1592,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_KILLING_INTENT_REDESIGN_V1",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Skill",
     "Rarity": "Rare",
@@ -1927,6 +1939,7 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
+      "Ethereal",
       "Exhaust"
     ],
     "Tags": [],
@@ -1944,8 +1957,7 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
-      "Exhaust",
-      "Retain"
+      "Exhaust"
     ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OneBodyOneSoul.png",

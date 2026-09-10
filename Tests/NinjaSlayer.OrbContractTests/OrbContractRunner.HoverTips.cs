@@ -53,10 +53,6 @@ public partial class OrbContractRunner
             Require(flame.HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BlackFlameRedesignV1)
                 && flame.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<NarakuLifePower>().Id),
                 "Return Return Return must preview Black Flame and explain Naraku Life.");
-            var chain = AddCard<ChopChain>(combat, upgraded: upgraded);
-            CardModel chop = chain.HoverTips.OfType<CardHoverTip>().Single().Card;
-            Require(chop is CommonChopRedesignV1 && chop.IsUpgraded == upgraded && chop.Keywords.Contains(CardKeyword.Exhaust),
-                "Chop Chain must preview the generated upgraded/exhausting Chop.");
             var starless = AddCard<GiantShurikenRedesignV1>(combat, upgraded: upgraded);
             Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Starless Night must preview an unupgraded token even when the power card is upgraded.");

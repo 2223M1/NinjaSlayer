@@ -11,7 +11,7 @@ public sealed class MetabolicAccelerationRedesignV1 : RedesignV1UncommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();
-    protected override bool ShouldGlowGoldInternal => IsPlayable;
+    protected override bool ShouldGlowGoldInternal => CombatState != null && IsPlayable;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Heal", 5)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>()];
 

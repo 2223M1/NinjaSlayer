@@ -30,7 +30,7 @@
   "NINJA_SLAYER_RELIC_NANCY_ZAZEN_DRINK_RELIC.description": "Upon pickup, add 1 Zazen Drink and 2 Poor Sleep to your deck.",
   "NINJA_SLAYER_RELIC_NANCY_ZAZEN_DRINK_RELIC.flavor": "Five bottles hang at her waist like a bandolier. The final job begins.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.title": "Chado Breathing",
-  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "At the start of each combat, [gold]Chado Breathing[/gold] 3.",
+  "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.description": "At the start of each combat, [gold]Chado Breathing[/gold] 2.\n[gold]Retain[/gold] your [gold]Chado[/gold] for the next 1 turn.",
   "NINJA_SLAYER_RELIC_CHADO_BREATHING_RELIC.flavor": "Chado. Furin Kazan. Then Chado again.",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.title": "Chado Mastery",
   "NINJA_SLAYER_RELIC_DEEP_CHADO_BREATHING_RELIC.description": "At the start of each combat, add 2 [gold]Chado[/gold] to your [gold]Hand[/gold]. They gain [gold]Retain[/gold]. [gold]Chado Breathing[/gold] 2.",

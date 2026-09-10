@@ -52,6 +52,14 @@ public class Entry
         try
         {
             requiredPatcher.RegisterPatch<NinjaSlayerAnimationPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAttackExecutionPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAttackHitCountPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAimStartPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAimHoverPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAimUnhoverPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAimFinishPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerDrawBatchPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerDrawBackflipPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerRunSavePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();

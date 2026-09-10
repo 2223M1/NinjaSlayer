@@ -17,7 +17,8 @@ public static class JumpAnimation
     private static readonly Dictionary<Creature, JumpState> ActiveTweens = [];
 
     internal static bool IsActive(Creature creature) =>
-        ActiveTweens.TryGetValue(creature, out JumpState? state)
+        NinjaSlayerAimPose.Get(creature)?.IsJumping == true
+        || ActiveTweens.TryGetValue(creature, out JumpState? state)
         && state.Tween.IsValid()
         && state.Tween.IsRunning();
 
@@ -29,14 +30,43 @@ public static class JumpAnimation
 
     internal static void StopForAirChannel(Creature creature)
     {
+        NinjaSlayerAimPose.Get(creature)?.ClearAirMotions();
         if (ActiveTweens.Remove(creature, out JumpState? state))
         {
             state.StopAndRestore();
         }
     }
 
-    public static async Task Play(Creature creature)
+    public static Task Play(Creature creature) => Play(creature, alongsideAttack: false);
+
+    internal static async Task PlayFlyingKick(Creature creature)
     {
+        float seconds = CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f);
+        if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, seconds, out Task owned))
+        {
+            await owned;
+            return;
+        }
+        var node = creature.GetCreatureNode();
+        if (node == null) return;
+        NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, node);
+        NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(creature);
+        pose?.BeginAction(NinjaSlayerAttackExecution.Target);
+        if (pose != null) await pose.PrepareKick(NinjaSlayerAttackExecution.CurrentPlay);
+        Task approach = NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(
+            creature, 120f, seconds, FinisherActionTrajectory.SlowProgress,
+            returnSeconds: CombatActionTimingRuntime.DamageRecoverySeconds, useConsecutiveGate: false);
+        await Task.WhenAll(approach, Play(creature, alongsideAttack: true));
+    }
+
+    private static async Task Play(Creature creature, bool alongsideAttack)
+    {
+        if (NinjaSlayerAimPose.Get(creature) is { } pose)
+        {
+            pose.BeginAirMotion(hop: false);
+            await Cmd.Wait(CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f));
+            return;
+        }
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null)
         {
@@ -51,7 +81,7 @@ public static class JumpAnimation
 
         Node2D target = NinjaSlayerVisualRig.GetAirborneAnchor(visuals) ?? visuals;
         bool rapid = RapidCardPresentationContext.IsActive;
-        if (rapid)
+        if (rapid && !alongsideAttack)
         {
             NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, creatureNode);
         }
@@ -62,6 +92,9 @@ public static class JumpAnimation
         }
 
         Vector2 originalPos = target.Position;
+        float actionSeconds = CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f);
+        float animationSeconds = CombatActionTimingRuntime.Resolve(AnimationDuration, AnimationDuration * 0.5f);
+        if (animationSeconds <= 0f) return;
         var tween = creatureNode.CreateTween();
         var state = new JumpState(tween, target, originalPos);
         tween.TweenMethod(
@@ -73,7 +106,7 @@ public static class JumpAnimation
                 }),
                 0f,
                 1f,
-                AnimationDuration)
+                animationSeconds)
             .SetTrans(Tween.TransitionType.Linear);
 
         ActiveTweens[creature] = state;
@@ -82,10 +115,10 @@ public static class JumpAnimation
             state.TailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(
                 creature,
                 () => Takeover(creature, state),
-                () => StopForAirChannel(creature));
+                () => StopForAirChannel(creature), independentAirChannel: true);
         }
         _ = TaskHelper.RunSafely(ClearWhenFinished(creature, creatureNode, state));
-        await Cmd.Wait(ActionDuration);
+        await Cmd.Wait(actionSeconds);
     }
 
     private static async Task ClearWhenFinished(Creature creature, Node owner, JumpState state)

@@ -19,40 +19,38 @@ public sealed class KillingIntentRedesignPower : NinjaSlayerPowerTemplate
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("KillingIntentPower");
     public bool GenerateUpgradedCard { get; set; }
 
-    public override async Task AfterDamageReceived(
-        PlayerChoiceContext choiceContext,
-        Creature target,
-        DamageResult result,
-        ValueProp props,
-        Creature? dealer,
-        CardModel? cardSource)
+    private bool _receivedDamage;
+    private bool _attackIntentAtTurnEnd;
+
+    internal void RecordDamage() => _receivedDamage = true;
+
+    public override Task AfterDamageReceived(
+        PlayerChoiceContext choiceContext, Creature target, DamageResult result,
+        ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Owner
-            || dealer == null
-            || dealer.Side == Owner.Side
-            || !props.IsPoweredAttack()
-            || !result.WasFullyBlocked
-            || result.TotalDamage <= 0)
-        {
-            return;
-        }
-
-        StraightKiRedesignV1 card = CombatState.CreateCard<StraightKiRedesignV1>(Owner.Player!);
-        if (GenerateUpgradedCard)
-        {
-            CardCmd.Upgrade(card);
-        }
-
-        Flash();
-        await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, Owner.Player!);
-        await PowerCmd.Remove(this);
+        if (target == Owner && result.UnblockedDamage > 0) RecordDamage();
+        return Task.CompletedTask;
     }
 
-    public override Task AfterSideTurnStart(
-        CombatSide side,
-        IReadOnlyList<Creature> participants,
-        ICombatState combatState) =>
-        side == Owner.Side && participants.Contains(Owner)
-            ? PowerCmd.Remove(this)
-            : Task.CompletedTask;
+    public override Task AfterSideTurnEndLate(
+        PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
+    {
+        if (side == Owner.Side && participants.Contains(Owner))
+            _attackIntentAtTurnEnd = CombatState.HittableEnemies.Any(enemy => enemy.Monster?.IntendsToAttack == true);
+        return Task.CompletedTask;
+    }
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext,
+        MegaCrit.Sts2.Core.Entities.Players.Player player)
+    {
+        if (player != Owner.Player) return;
+        if (_attackIntentAtTurnEnd && !_receivedDamage)
+        {
+            StraightKiRedesignV1 card = CombatState.CreateCard<StraightKiRedesignV1>(player);
+            if (GenerateUpgradedCard) CardCmd.Upgrade(card);
+            Flash();
+            await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, player);
+        }
+        await PowerCmd.Remove(this);
+    }
 }

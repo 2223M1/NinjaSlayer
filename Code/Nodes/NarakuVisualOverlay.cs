@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.ExternalAnimations;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -30,6 +31,12 @@ public partial class NarakuVisualOverlay : Sprite2D
 
     public static void Sync(Creature creature)
         => SyncCore(creature);
+
+    internal void SyncForPose()
+    {
+        TryBindFromTree();
+        UpdateVisual();
+    }
 
     private static void SyncCore(Creature creature)
     {
@@ -88,7 +95,7 @@ public partial class NarakuVisualOverlay : Sprite2D
         string? facingTexturePath = presentation == NinjaSlayerFormPresentationCatalog.Normal
             ? NinjaSlayerFormPresentationCatalog.ResolveFacingIdleTexturePath(
                 sourceTexture?.ResourcePath,
-                source.GetParent() is Node2D anchor && anchor.Scale.X < 0f)
+                creature.GetCreatureNode() is { } actor && NinjaSlayerFacingState.ResolveFacingLeft(actor))
             : null;
         bool usesOverlay = presentation.UsesOverlay || facingTexturePath != null;
         source.Visible = !usesOverlay;

@@ -10,6 +10,8 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class GatherKi : RedesignV1UncommonCard
 {
+    protected override bool ShouldGlowGoldInternal => CombatState != null && IsPlayable;
+
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<NinjaSlayer.Powers.KaratePower>(), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 

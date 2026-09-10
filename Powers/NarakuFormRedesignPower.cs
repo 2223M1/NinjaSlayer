@@ -103,6 +103,6 @@ public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
         await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(
             Owner.Player!,
             PileType.Draw,
-            CardPilePosition.Top);
+            CardPilePosition.Random);
     }
 }

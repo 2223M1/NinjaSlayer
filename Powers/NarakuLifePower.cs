@@ -53,6 +53,8 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
         int absorbed = Math.Min(Amount, Math.Max(0, (int)amount));
         if (absorbed == 0) return amount;
 
+        Owner.GetPower<KillingIntentRedesignPower>()?.RecordDamage();
+
         // HP loss is synchronous. Commit the shield before the host evaluates death,
         // using the model operations that raise the native power/UI notifications.
         SetAmount(Amount - absorbed, silent: true);
