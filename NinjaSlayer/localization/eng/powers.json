@@ -34,7 +34,7 @@
   "NINJA_SLAYER_POWER_RECYCLED_BLADES_POWER.title": "Recycled Blades",
   "NINJA_SLAYER_POWER_RECYCLED_BLADES_POWER.description": "Whenever you [gold]Scry[/gold], gain {Amount} [gold]Shuriken[/gold].",
   "NINJA_SLAYER_POWER_SCRY_DRAW_POWER.title": "Battlefield Insight",
-  "NINJA_SLAYER_POWER_SCRY_DRAW_POWER.description": "Draw 1 card for every {Amount} cards discarded. {CardsLeft} remaining.",
+  "NINJA_SLAYER_POWER_SCRY_DRAW_POWER.description": "Draw 1 card for every {Amount} cards discarded.",
   "NINJA_SLAYER_POWER_LINGERING_MELEE_POWER.title": "Relentless",
   "NINJA_SLAYER_POWER_LINGERING_MELEE_POWER.description": "At the end of your turn, play the top {Amount} {Amount:plural:card|cards} of your [gold]Draw Pile[/gold].",
   "NINJA_SLAYER_POWER_POUR_TEA_NEXT_TURN_POWER.title": "Chado Next Turn",

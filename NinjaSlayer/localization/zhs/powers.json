@@ -34,7 +34,7 @@
   "NINJA_SLAYER_POWER_RECYCLED_BLADES_POWER.title": "弃刃成锋",
   "NINJA_SLAYER_POWER_RECYCLED_BLADES_POWER.description": "每当你[gold]预见[/gold]时，获得{Amount}层[gold]手里剑[/gold]。",
   "NINJA_SLAYER_POWER_SCRY_DRAW_POWER.title": "战局洞见",
-  "NINJA_SLAYER_POWER_SCRY_DRAW_POWER.description": "每丢弃{Amount}张牌，抽1张牌。还需丢弃{CardsLeft}张。",
+  "NINJA_SLAYER_POWER_SCRY_DRAW_POWER.description": "每丢弃{Amount}张牌，抽1张牌。",
   "NINJA_SLAYER_POWER_LINGERING_MELEE_POWER.title": "攻势不息",
   "NINJA_SLAYER_POWER_LINGERING_MELEE_POWER.description": "回合结束时，打出[gold]抽牌堆[/gold]顶部的{Amount}张牌。",
   "NINJA_SLAYER_POWER_POUR_TEA_NEXT_TURN_POWER.title": "下回合茶道",

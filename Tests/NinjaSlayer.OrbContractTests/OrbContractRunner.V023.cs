@@ -20,6 +20,48 @@ public partial class OrbContractRunner
 {
     private static async Task VerifyV023()
     {
+        foreach (bool upgraded in new[] { false, true })
+        foreach (int energy in new[] { 0, 2 })
+        foreach (bool chemicalX in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            if (chemicalX)
+                combat.Player.AddRelicInternal(ModelDb.Relic<MegaCrit.Sts2.Core.Models.Relics.ChemicalX>().ToMutable());
+            await PlayerCmd.SetEnergy(energy, combat.Player);
+            await CardCmd.AutoPlay(Choice, AddCard<TeaStormRedesignV1>(combat, upgraded: upgraded), null);
+            int breaths = 2 * (energy + (chemicalX ? 2 : 0)) + (upgraded ? 1 : 0);
+            Require(!combat.Player.Piles.SelectMany(p => p.Cards).OfType<ChadoEnergyRedesignV1>().Any(),
+                "Long Breath must wait until the next owner turn.");
+            await PlayerCmd.SetEnergy(9, combat.Player);
+            await Hook.BeforeSideTurnStart(combat.State, CombatSide.Enemy, [combat.Enemy]);
+            Require(combat.Player.Creature.GetPowerAmount<PourTeaNextTurnPower>() == breaths,
+                "Enemy turn must preserve captured X and delayed breathing.");
+            await Hook.BeforeSideTurnStart(combat.State, CombatSide.Player, [combat.Player.Creature]);
+            var tea = combat.Player.Piles.SelectMany(p => p.Cards).OfType<ChadoEnergyRedesignV1>().SingleOrDefault();
+            Require((tea?.DynamicVars.Energy.IntValue ?? 0) == breaths
+                && !combat.Player.Creature.HasPower<PourTeaNextTurnPower>(),
+                "Long Breath uses native X modifiers and 2X/2X+1 exactly once.");
+        }
+        foreach (bool upgraded in new[] { false, true })
+        foreach (bool lethal in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            combat.AddEnemy();
+            combat.Enemy.SetCurrentHpInternal(lethal ? 20 : 1000);
+            await CardCmd.AutoPlay(Choice, AddCard<Slaughter>(combat, upgraded: upgraded), combat.Enemy);
+            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == (lethal ? (upgraded ? 6 : 5) : 0),
+                "Slaughter awards Karate only when its own attack kills.");
+        }
+        using (var combat = new OrbCombat())
+        {
+            await CardCmd.AutoPlay(Choice, AddCard<RecycledBladesRedesignV1>(combat), null);
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            await ScryCmd.Execute(Choice, combat.Player, 2);
+            Require(combat.Stock == 0, "Empty Scry must not award stock.");
+            AddCard<DefendIronclad>(combat, PileType.Draw);
+            await ScryCmd.Execute(Choice, combat.Player, 2);
+            Require(combat.Stock == 1, "Nonempty Scry awards stock even when no card is selected.");
+        }
         foreach (int layers in new[] { 0, 1, 2 })
         foreach (int flameCount in new[] { 0, 2 })
         {
