@@ -324,6 +324,7 @@ public partial class OrbContractRunner
         {
             var retained = AddCard<DefendIronclad>(combat);
             var card = AddCard<TonyRetention>(combat);
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [retained]));
             await CardCmd.AutoPlay(Choice, card, null);
             Require(retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 11, "Macaco must give the selected card Retain.");
             retained.EndOfTurnCleanup();

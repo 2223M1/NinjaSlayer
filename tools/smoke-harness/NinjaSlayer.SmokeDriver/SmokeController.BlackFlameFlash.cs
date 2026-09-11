@@ -28,8 +28,10 @@ internal sealed partial class SmokeController
         var flashes = flames.Select(flame => ((NHandCardHolder)room.Ui.Hand.GetCardHolder(flame)!).GetNode<Control>("Flash")).ToArray();
         bool[] observed = new bool[flames.Length];
         bool captured = false;
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
         Task play = CardCmd.AutoPlay(choice, attack, target);
-        while (!play.IsCompleted)
+        // Instant mode can finish card play before the native flash tween's first frame.
+        while (!play.IsCompleted || elapsed.ElapsedMilliseconds < 600)
         {
             for (int i = 0; i < flashes.Length; i++)
                 observed[i] |= flashes[i].IsVisibleInTree() && flashes[i].Modulate.A > 0.05f;
