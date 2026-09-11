@@ -3,11 +3,12 @@ using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using NinjaSlayer.Code.Commands;
+using MegaCrit.Sts2.Core.Commands;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
-public sealed class TeaStormRedesignV1 : RedesignV1UncommonCard
+public sealed class TeaStormRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
@@ -22,7 +23,8 @@ public sealed class TeaStormRedesignV1 : RedesignV1UncommonCard
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         int x = ResolveEnergyXValue();
-        return ChadoBreathCmd.Apply(Owner, (x + DynamicVars["ExtraX"].IntValue) * DynamicVars["BreathPerX"].IntValue);
+        return PowerCmd.Apply<PourTeaNextTurnPower>(choiceContext, Owner.Creature,
+            x * DynamicVars["BreathPerX"].IntValue + DynamicVars["ExtraX"].IntValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade() => DynamicVars["ExtraX"].UpgradeValueBy(1);

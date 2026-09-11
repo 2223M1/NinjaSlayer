@@ -100,7 +100,8 @@ internal sealed partial class SmokeController
         or SmokePhase.FullAutoSlay
         or SmokePhase.SawatariSameCombat
         or SmokePhase.ReverseFinisher
-        or SmokePhase.TransitionPerf;
+        or SmokePhase.TransitionPerf
+        or SmokePhase.TornadoPreview;
 
     public void Start()
     {
@@ -114,11 +115,13 @@ internal sealed partial class SmokeController
     }
 
     public bool TryClaimFirstCombat() =>
-        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher
+        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher or SmokePhase.TornadoPreview
         && Interlocked.CompareExchange(ref _firstCombatClaimed, 1, 0) == 0;
 
     public Task ExecuteClaimedCombatAsync(Rng random, CancellationToken cancellationToken) =>
-        _configuration.Phase == SmokePhase.ReverseFinisher
+        _configuration.Phase == SmokePhase.TornadoPreview
+            ? ExecuteTornadoPreviewAsync(cancellationToken)
+            : _configuration.Phase == SmokePhase.ReverseFinisher
             ? ExecuteReverseFinisherCombatAsync(cancellationToken)
             : ExecuteFirstCombatAsync(random, cancellationToken);
 
@@ -1592,6 +1595,10 @@ internal sealed partial class SmokeController
             if (_configuration.Phase is SmokePhase.BossFresh or SmokePhase.BossResume or SmokePhase.BossVerify)
             {
                 await RunBossReloadPhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.TornadoPreview)
+            {
+                await RunTornadoPreviewAsync();
             }
             else if (_configuration.Phase == SmokePhase.Fresh)
             {

@@ -4,5 +4,3 @@
 
 [resource]
 shader = ExtResource("1_blur")
-shader_parameter/blur_strength = 0.0
-shader_parameter/blur_sign = 1.0

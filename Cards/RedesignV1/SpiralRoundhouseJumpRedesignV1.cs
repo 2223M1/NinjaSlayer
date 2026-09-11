@@ -26,7 +26,7 @@ public sealed class SpiralRoundhouseJumpRedesignV1 : RedesignV1CommonCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(6, ValueProp.Move), new DynamicVar("Stock", 1)];
+        [new DamageVar(8, ValueProp.Move), new DynamicVar("Stock", 1)];
 
     public SpiralRoundhouseJumpRedesignV1()
         : base(nameof(SpiralRoundhouseJumpRedesignV1), "ShurikenSpread", 1, CardType.Attack, TargetType.AllEnemies) { }

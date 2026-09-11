@@ -35,6 +35,12 @@ public partial class NinjaSlayerSpinPivot : Node2D
         }
 
         creature ??= FindCreature();
+        if (creature != null && (SoarSpinAnimation.IsVerticalSpinActive(creature)
+            || NinjaSlayerAimPose.Get(creature)?.OwnsSpin == true))
+        {
+            lastRawPosition = null;
+            return;
+        }
         if (creature?.IsDead == true)
         {
             return;

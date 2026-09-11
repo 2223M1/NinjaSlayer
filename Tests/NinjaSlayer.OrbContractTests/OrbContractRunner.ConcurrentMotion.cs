@@ -41,25 +41,27 @@ public partial class OrbContractRunner
                 Pose("SyncNow");
                 target.Position = new(facing * 150f, 0f);
                 targetCenter.Position = new(0f, center.GlobalPosition.Y);
+                Vector2 attackCore = center.GlobalPosition;
                 Task first = Attack(120f, 0.2f);
                 object state = State();
                 Tween firstTween = MotionTween(state, 0);
                 firstTween.Pause();
                 firstTween.CustomStep(0.05);
-                float firstOffset = actor.Position.X - actorBaseline.X;
+                float firstOffset = center.GlobalPosition.X - attackCore.X;
                 Require(Math.Abs(firstOffset - facing * 30f) < 0.01f, "First attack did not advance independently.");
                 Task second = Attack(90f, 0.15f);
                 Tween secondTween = MotionTween(state, 1);
                 secondTween.Pause();
                 Require(firstTween.IsValid() && !first.IsCompleted,
                     "Second attack cancelled the first attack's active tween.");
-                Require(Math.Abs(actor.Position.X - actorBaseline.X - firstOffset) < 0.01f,
+                Require(Math.Abs(center.GlobalPosition.X - attackCore.X - firstOffset) < 0.01f,
                     "Second attack snapped the first attack back to baseline.");
                 firstTween.CustomStep(0.151);
                 secondTween.CustomStep(0.151);
                 await Task.WhenAll(first, second);
-                Require(Math.Abs(actor.Position.X - actorBaseline.X - facing * 210f) < 0.1f,
-                    $"Overlapping attacks failed to sum full displacement: {actor.Position.X - actorBaseline.X}.");
+                Require(Math.Abs(center.GlobalPosition.X - attackCore.X - facing * 210f) < 0.1f,
+                    $"Overlapping attacks failed to sum full displacement: {center.GlobalPosition.X - attackCore.X}.");
+                Require(actor.Position.IsEqualApprox(actorBaseline), "Ordinary attacks moved the combat UI root.");
                 Task third = Attack(120f, 0.2f);
                 Tween thirdTween = MotionTween(state, 2);
                 thirdTween.Pause();
@@ -68,7 +70,7 @@ public partial class OrbContractRunner
                     "Return started while an attack was still advancing.");
                 thirdTween.CustomStep(0.201);
                 await third;
-                Require(Math.Abs(actor.Position.X - actorBaseline.X - facing * 330f) < 0.1f,
+                Require(Math.Abs(center.GlobalPosition.X - attackCore.X - facing * 330f) < 0.1f,
                     "Attack reversed direction or stopped accumulating after crossing the target.");
                 Require(((Vector2)Run("GetBaseline", combat.Player.Creature, actor)!).DistanceTo(actorBaseline) < 0.001f,
                     "Repeated attacks replaced the original return baseline.");
@@ -97,7 +99,7 @@ public partial class OrbContractRunner
             Require((bool)AccessTools.Property(pose.GetType(), "IsBackflipping").GetValue(pose)!
                 && (bool)AccessTools.Property(pose.GetType(), "IsJumping").GetValue(pose)!
                 && (bool)AccessTools.Field(pose.GetType(), "_throwReleased").GetValue(pose)!
-                && actor.Position.X > actorBaseline.X,
+                && center.GlobalPosition.X > coreBaseline.X,
                 "Actual attack movement suppressed flip, jump or throw release.");
             Task combinedSecond = Attack(120f, 0.2f);
             Tween combinedSecondTween = MotionTween(combinedState, 1);

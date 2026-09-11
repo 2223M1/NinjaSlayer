@@ -6,7 +6,7 @@ using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
-public sealed class GiantShurikenRedesignV1 : RedesignV1RareCard
+public sealed class GiantShurikenRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>(), .. HoverTipFactory.FromCardWithCardHoverTips<StrongShurikenTokenRedesignV1>()];
@@ -17,5 +17,5 @@ public sealed class GiantShurikenRedesignV1 : RedesignV1RareCard
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<StarlessNightRedesignPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
 
-    protected override void OnUpgrade() => AddKeyword(CardKeyword.Innate);
+    protected override void OnUpgrade() => AddKeyword(CardKeyword.Retain);
 }

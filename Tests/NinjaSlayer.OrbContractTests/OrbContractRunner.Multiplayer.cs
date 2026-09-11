@@ -115,7 +115,7 @@ public partial class OrbContractRunner
         plays[0].Card.UpgradeInternal();
         plays[5].Card.AddKeyword(CardKeyword.Exhaust);
         PileType?[] destinations = [PileType.Discard, PileType.Discard, PileType.Discard,
-            PileType.Discard, PileType.Hand, PileType.Exhaust, null, PileType.Discard, PileType.Exhaust];
+            PileType.Discard, PileType.Hand, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
         foreach (var (card, _) in plays) await CardPileCmd.Add(card, PileType.Hand);
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".ready"), "ready");
         await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "host.ready"))
@@ -136,11 +136,11 @@ public partial class OrbContractRunner
             && !second.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
             "One player's evoke consumed another player's stock.");
         Require(first.Creature.HasPower<NarakuFormRedesignPower>() && !second.Creature.HasPower<NarakuFormRedesignPower>()
-            && plays[7].Card.Pile?.Type == PileType.Discard && plays[8].Card.Pile?.Type == PileType.Exhaust,
-            "Naraku Form crossed player ownership or lost its exhaust behavior.");
-        Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlameRedesignV1>().Count() == 1
+            && plays[7].Card.Pile?.Type == PileType.Discard && plays[8].Card.Pile?.Type == PileType.Discard,
+            "Naraku Form crossed player ownership or changed the attack destination.");
+        Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlameRedesignV1>().Count() == 0
             && !PileType.Draw.GetPile(second).Cards.OfType<BlackFlameRedesignV1>().Any(),
-            "Black Flame generation crossed player ownership.");
+            "Naraku must no longer generate Black Flame cards.");
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;
         using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
@@ -159,7 +159,7 @@ public partial class OrbContractRunner
         {
             foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
                 await CardPileCmd.Add(card, PileType.Discard);
-            var discard = combat.State.CreateCard<ShurikenGenerationRedesignV1>(player);
+            var discard = combat.State.CreateCard<ReadyStanceRedesignV1>(player);
             var sly = combat.State.CreateCard<ShurikenCreation>(player);
             var nested = combat.State.CreateCard<ShurikenCreation>(player);
             var last = combat.State.CreateCard<DefendIronclad>(player);

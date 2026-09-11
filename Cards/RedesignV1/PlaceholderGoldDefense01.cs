@@ -1,9 +1,13 @@
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using MegaCrit.Sts2.Core.HoverTips;
+using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
@@ -11,15 +15,23 @@ public sealed class PlaceholderGoldDefense01 : RedesignV1RareCard
 {
     public PlaceholderGoldDefense01() : base(nameof(PlaceholderGoldDefense01), "BlockCard", 1, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(10, ValueProp.Move), new DynamicVar("ExtraBlock", 4)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>();
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        CreatureCmd.GainBlock(Owner.Creature,
-            DynamicVars.Block.BaseValue + PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Count() * DynamicVars["ExtraBlock"].BaseValue,
-            ValueProp.Move, cardPlay);
+    private bool ExhaustedTeaThisTurn => CombatState != null && CombatManager.Instance.History.Entries
+        .OfType<CardExhaustedEntry>().Any(e => e.HappenedThisTurn(CombatState)
+            && e.Card.Owner == Owner && e.Card is ChadoEnergyRedesignV1);
+    protected override bool ShouldGlowGoldInternal => ExhaustedTeaThisTurn;
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(5, ValueProp.Move), new KarateVar(3)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+        [HoverTipFactory.FromPower<KaratePower>(), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        bool gainKarate = ExhaustedTeaThisTurn;
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+        if (gainKarate)
+            await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature, DynamicVars.Karate().BaseValue, Owner.Creature, this);
+    }
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(1);
-        DynamicVars["ExtraBlock"].UpgradeValueBy(2);
+        DynamicVars.Block.UpgradeValueBy(2);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

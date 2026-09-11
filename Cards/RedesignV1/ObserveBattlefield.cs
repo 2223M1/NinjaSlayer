@@ -16,7 +16,7 @@ public sealed class ObserveBattlefield : RedesignV1UncommonCard
     public ObserveBattlefield() : base(nameof(ObserveBattlefield), "ReadyBlade", 0, CardType.Skill, TargetType.AnyEnemy) { }
     public override bool GainsBlock => true;
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(6, ValueProp.Move), new PowerVar<WeakPower>(1)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(6, ValueProp.Move), new PowerVar<WeakPower>(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<WeakPower>(), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

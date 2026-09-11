@@ -16,7 +16,7 @@ public sealed class SipTea : RedesignV1UncommonCard
     public SipTea() : base(nameof(SipTea), "DrinkTea", 1, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (IsUpgraded) await ChadoBreathCmd.Apply(Owner, 1);
+        if (IsUpgraded) await ChadoBreathCmd.Apply(choiceContext, Owner, 1);
         await PowerCmd.Apply<SipTeaPower>(choiceContext, Owner.Creature, 3, Owner.Creature, this);
     }
     protected override void OnUpgrade() { }

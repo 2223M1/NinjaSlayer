@@ -15,7 +15,7 @@ public sealed class SipTeaPower : RedesignV1CounterPower
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (player != Owner.Player) return;
-        await ChadoBreathCmd.Apply(player, 1);
+        await ChadoBreathCmd.Apply(choiceContext, player, 1);
         await PowerCmd.Decrement(this);
     }
 }

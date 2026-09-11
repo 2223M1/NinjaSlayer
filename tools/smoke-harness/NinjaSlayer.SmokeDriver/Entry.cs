@@ -17,6 +17,11 @@ public static class Entry
         }
 
         SmokeConfiguration configuration = SmokeConfiguration.Load(configurationPath);
+        if (configuration.Phase == SmokePhase.TornadoPreview)
+        {
+            DisplayServer.WindowSetFlag(DisplayServer.WindowFlags.NoFocus, true);
+            DisplayServer.WindowSetPosition(new Vector2I(-3000, 100));
+        }
         new Harmony("NinjaSlayer.SmokeDriver").PatchAll(typeof(Entry).Assembly);
         var tree = (SceneTree)Engine.GetMainLoop();
         var controller = new SmokeController(configuration, tree);

@@ -28,7 +28,7 @@ public sealed class AbandonThoughtRedesignV1 : RedesignV1UncommonCard
             await CardCmd.Exhaust(choiceContext, cards[0]);
         }
 
-        await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
+        await ChadoBreathCmd.Apply(choiceContext, Owner, DynamicVars["Breath"].IntValue);
     }
 
     protected override void OnUpgrade() => RemoveKeyword(CardKeyword.Exhaust);

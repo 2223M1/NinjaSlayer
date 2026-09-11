@@ -12,7 +12,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 /// <summary>
 /// Single routing point for NinjaSlayer combat TriggerAnim calls.
-/// Attack/Hit/Cast/BlockedHit play ExternalAnimations; XAttackCue uses VisualCue state machine only.
+/// Visual cues select textures; procedural movement owns continuous body transforms.
 /// </summary>
 public static class NinjaSlayerCombatAnimations
 {
@@ -159,7 +159,13 @@ public static class NinjaSlayerCombatAnimations
             return;
         }
 
-        creatureNode.SetAnimationTrigger(triggerName);
+        if (NinjaSlayerAimPose.Get(creature)?.OwnsSpin != true)
+        {
+            creatureNode.SetAnimationTrigger(triggerName);
+            float duration = triggerName == TornadoFistSpinAnimation.CueTriggerName
+                ? TornadoFistSpinAnimation.TurnSeconds : .24f;
+            _ = SoarSpinAnimation.PlayCueSpin(creature, duration);
+        }
         await Cmd.CustomScaledWait(Mathf.Min(waitTime * 0.5f, 0.25f), waitTime);
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }

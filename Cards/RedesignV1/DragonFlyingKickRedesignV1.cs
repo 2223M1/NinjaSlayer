@@ -50,7 +50,7 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await CardPileCmd.Draw(choiceContext, Math.Max(0, CardPile.MaxCardsInHand - PileType.Hand.GetPile(Owner).Cards.Count), Owner);
-        await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
+        await ChadoBreathCmd.Apply(choiceContext, Owner, DynamicVars["Breath"].IntValue);
     }
 
     protected override void OnUpgrade()

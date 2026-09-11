@@ -161,16 +161,15 @@ internal sealed partial class SmokeController
         var choiceContext = new BlockingPlayerChoiceContext();
         await PlayerCmd.SetEnergy(20m, player);
 
-        DefendNinjaSlayerRedesignV1 retained = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        NinjaGreetingRedesignV1 greeting = combatState.CreateCard<NinjaGreetingRedesignV1>(player);
+        ChadoEnergyRedesignV1 retained = combatState.CreateCard<ChadoEnergyRedesignV1>(player);
+        TeaTeaRedesignV1 meditation = combatState.CreateCard<TeaTeaRedesignV1>(player);
         await CardPileCmd.Add(retained, PileType.Hand);
-        await CardPileCmd.Add(greeting, PileType.Hand);
-        await CardCmd.AutoPlay(choiceContext, greeting, target);
-        Require(greeting.Pile?.Type == PileType.Exhaust, "Ninja Greeting did not exhaust.");
-        Require(retained.ShouldRetainThisTurn, "Ninja Greeting did not retain the hand for this turn.");
-        Require(!retained.Keywords.Contains(CardKeyword.Retain), "Ninja Greeting permanently added Retain.");
+        await CardPileCmd.Add(meditation, PileType.Hand);
+        await CardCmd.AutoPlay(choiceContext, meditation, null);
+        Require(retained.Keywords.Contains(CardKeyword.Retain), "Meditation did not grant native Retain to tea.");
         retained.EndOfTurnCleanup();
-        Require(!retained.ShouldRetainThisTurn, "Ninja Greeting retain survived end-of-turn cleanup.");
+        Require(retained.ShouldRetainThisTurn, "Meditation Retain did not survive turn cleanup.");
+        await PowerCmd.Remove<TeaTeaPower>(player.Creature);
 
         foreach (ChadoEnergyRedesignV1 heldTea in PileType.Hand.GetPile(player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray())
             await CardCmd.Exhaust(choiceContext, heldTea);
@@ -178,12 +177,12 @@ internal sealed partial class SmokeController
         await CardPileCmd.Add(karateTea, PileType.Hand);
         await CardCmd.AutoPlay(choiceContext, karateTea, player.Creature);
         int karateBeforeGeneration = player.Creature.GetPowerAmount<KaratePower>();
-        await ChadoBreathCmd.Apply(player, 2);
+        await ChadoBreathCmd.Apply(choiceContext, player, 2);
         ChadoEnergyRedesignV1 tea = PileType.Hand.GetPile(player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
         Require(tea.DynamicVars.Energy.BaseValue == 2
             && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 3,
             "New Chado did not trigger Karate Tea exactly once.");
-        await ChadoBreathCmd.Apply(player, 1);
+        await ChadoBreathCmd.Apply(choiceContext, player, 1);
         Require(tea.DynamicVars.Energy.BaseValue == 3
             && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 3,
             "Increasing held Chado incorrectly triggered generation again.");

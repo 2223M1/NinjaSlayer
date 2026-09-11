@@ -14,7 +14,8 @@ internal enum SmokePhase
     TransitionPerf,
     BossFresh,
     BossResume,
-    BossVerify
+    BossVerify,
+    TornadoPreview
 }
 
 internal sealed record SmokeConfiguration(
@@ -29,7 +30,9 @@ internal sealed record SmokeConfiguration(
     bool? TransitionLoadLimitEnabled = null,
     bool? TransitionFinalizeBatchingEnabled = null,
     bool TransitionPerfWarmup = false,
-    string[]? AdditionalModIds = null)
+    string[]? AdditionalModIds = null,
+    string? TornadoPreviewDirectory = null,
+    bool TornadoHitStop = false)
 {
     public static SmokeConfiguration Load(string path)
     {

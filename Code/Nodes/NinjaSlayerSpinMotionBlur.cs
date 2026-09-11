@@ -1,7 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.ExternalAnimations;
 
 namespace NinjaSlayer.Code.Nodes;
@@ -9,172 +8,114 @@ namespace NinjaSlayer.Code.Nodes;
 [GlobalClass]
 public partial class NinjaSlayerSpinMotionBlur : Node
 {
-    private const string BlurMaterialPath = "res://NinjaSlayer/materials/vfx/ninja_slayer_spin_motion_blur_mat.tres";
+    // All three authored bodies span 816 texture pixels, excluding scarf and smoke.
+    private const float BodyHeight = 816f;
+    private readonly SpinExposureHistory _history = new();
+    private readonly float[] _angles = new float[SpinExposureHistory.SampleCount];
+    private Sprite2D _body = null!;
+    private NarakuVisualOverlay? _overlay;
+    private Creature? _creature;
+    private SpinExposureRenderer? _renderer;
+    private VerticalAxisSpinProjection? _projection;
+    private double _time;
+    private float _ratio = 1f;
+    private float _degrees;
+    private float _angleBasis;
+    private bool _hasExposure;
+    private bool _projecting;
+    private bool _subscribed;
 
-    private const float SpinSpeedThreshold = 0.8f;
-    private const float MaxSpinSpeed = 6f;
-    private const float MaxBlurStrength = 0.65f;
-    private const float SoarSpinIntensityFloor = 0.45f;
-
-    private static readonly StringName BlurStrengthParam = new("blur_strength");
-    private static readonly StringName BlurSignParam = new("blur_sign");
-
-    // The template resource is loaded once per process; each creature keeps its own duplicated
-    // instance for the lifetime of its body sprite. Re-duplicating on every spin threshold
-    // crossing swapped a live sprite's material several times per second.
-    private static ShaderMaterial? blurMaterialTemplate;
-
-    private Sprite2D? body;
-    private Creature? creature;
-    private Material? originalBodyMaterial;
-    private ShaderMaterial? blurMaterialInstance;
-    private bool blurArmed;
-    private float lastScaleX;
-    private bool hasLastScaleX;
+    public override void _EnterTree()
+    {
+        if (IsNodeReady() && !_subscribed)
+        {
+            RenderingServer.FramePreDraw += SyncNow;
+            _subscribed = true;
+        }
+    }
 
     public override void _Ready()
     {
-        var anchor = GetParent()?.GetNodeOrNull<Node2D>(NinjaSlayerVisualRig.AirborneAnchorName);
-        body = anchor?.GetNodeOrNull<Sprite2D>("%Visuals");
-
-        creature = FindCreature();
+        _body = GetParent().GetNode<Sprite2D>("%Visuals");
+        _overlay = _body.GetParent().GetNodeOrNull<NarakuVisualOverlay>("NarakuVisualOverlay");
+        for (Node? node = this; node != null; node = node.GetParent())
+            if (node is NCreature actor) { _creature = actor.Entity; break; }
+        // Advance only here, before animation writers. PreDraw never advances time.
+        ProcessPriority = -1000;
+        RenderingServer.FramePreDraw += SyncNow;
+        _subscribed = true;
     }
 
     public override void _Process(double delta)
     {
-        if (body == null || !GodotObject.IsInstanceValid(body))
+        if (_creature?.IsDead == true) { Reset(); return; }
+        if (!_body.CanProcess()) return;
+        if (Engine.TimeScale > 0d) _time += delta / Engine.TimeScale;
+    }
+
+    internal void Record(VerticalAxisSpinProjection projection, float degrees,
+        Func<double, double>? angleAtSecondsBefore, float angleBasis = 0f)
+    {
+        if (!IsInsideTree() || !CanProcess() || !_body.CanProcess() || Engine.TimeScale <= 0d) return;
+        _projection = projection;
+        _projecting = true;
+        _degrees = degrees + angleBasis;
+        _angleBasis = angleBasis;
+        _ratio = VerticalSpinMath.GetScaleRatio(degrees);
+        double timeScale = Engine.TimeScale;
+        _history.Record(_time, _degrees, angleAtSecondsBefore == null ? null
+            : age => angleAtSecondsBefore(age * timeScale));
+        _hasExposure = true;
+    }
+
+    internal void Stop(VerticalAxisSpinProjection projection)
+    {
+        if (ReferenceEquals(_projection, projection))
         {
-            return;
+            _ratio = 1f;
+            _projecting = false;
+            _history.Record(_time, _angleBasis + 360d * Math.Round((_degrees - _angleBasis) / 360d), discontinuity: true);
         }
+    }
 
-        creature ??= FindCreature();
-        if (creature?.IsDead == true)
-        {
-            Reset();
-            return;
-        }
+    internal void ProjectVariant(Sprite2D sprite)
+    {
+        if (!_projecting || _projection == null) return;
+        sprite.Scale = new Vector2(sprite.Scale.X / _ratio, sprite.Scale.Y);
+        sprite.Rotation = _body.Rotation;
+        _projection.ProjectVariant(sprite, _ratio);
+    }
 
-        float deltaSeconds = (float)delta;
-        if (deltaSeconds <= 0f)
-        {
-            return;
-        }
-
-        float currentScaleX = body.Scale.X;
-        float spinSpeed = hasLastScaleX ? Mathf.Abs(currentScaleX - lastScaleX) / deltaSeconds : 0f;
-        float intensity = Mathf.Clamp(
-            (spinSpeed - SpinSpeedThreshold) / (MaxSpinSpeed - SpinSpeedThreshold),
-            0f,
-            1f);
-
-        if (creature != null && SoarSpinAnimation.IsVerticalSpinActive(creature))
-        {
-            intensity = Mathf.Max(intensity, SoarSpinIntensityFloor);
-        }
-
-        if (intensity <= 0f)
-        {
-            Disarm();
-            lastScaleX = currentScaleX;
-            hasLastScaleX = true;
-            return;
-        }
-
-        EnsureBlurMaterial();
-        if (blurMaterialInstance != null)
-        {
-            float blurSign = hasLastScaleX && currentScaleX < lastScaleX ? -1f : 1f;
-            blurMaterialInstance.SetShaderParameter(BlurStrengthParam, intensity * MaxBlurStrength);
-            blurMaterialInstance.SetShaderParameter(BlurSignParam, blurSign);
-        }
-
-        lastScaleX = currentScaleX;
-        hasLastScaleX = true;
+    internal void SyncNow()
+    {
+        if (!_hasExposure || !IsInsideTree() || !CanProcess() || !_body.CanProcess() || Engine.TimeScale <= 0d) return;
+        if (_creature?.IsDead == true) { Reset(); return; }
+        if (!_history.SampleAngles(_time, _angles)) { _renderer?.Reset(); return; }
+        for (int i = 0; i < _angles.Length; i++) _angles[i] -= _angleBasis;
+        _overlay?.SyncForPose();
+        Sprite2D sprite = _overlay?.Visible == true ? _overlay : _body;
+        _renderer ??= new SpinExposureRenderer(this);
+        _renderer.Apply(sprite, _projection!.AxisInSprite(sprite).X, _ratio, _angles, BodyHeight);
     }
 
     public void Reset()
     {
-        Disarm();
-        blurMaterialInstance = null;
-        hasLastScaleX = false;
+        _renderer?.Reset();
+        _history.Clear();
+        _projection = null;
+        _projecting = false;
+        _hasExposure = false;
     }
 
-    /// <summary>
-    /// Detaches the blur without discarding the duplicated material, so re-arming on the next
-    /// spin costs a single material assignment instead of another <c>Duplicate()</c>.
-    /// </summary>
-    private void Disarm()
+    public override void _ExitTree()
     {
-        if (!blurArmed)
-        {
-            return;
-        }
-
-        blurArmed = false;
-        if (body != null && GodotObject.IsInstanceValid(body))
-        {
-            body.Material = originalBodyMaterial;
-        }
+        if (_subscribed) RenderingServer.FramePreDraw -= SyncNow;
+        _subscribed = false;
+        Reset();
+        _renderer?.Dispose();
+        _renderer = null;
     }
 
-    public static NinjaSlayerSpinMotionBlur? Get(Creature creature)
-    {
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        var visuals = creatureNode?.Visuals;
-        if (visuals == null)
-        {
-            return null;
-        }
-
-        return visuals.GetNodeOrNull<NinjaSlayerSpinMotionBlur>("SpinMotionBlur");
-    }
-
-    private void EnsureBlurMaterial()
-    {
-        if (body == null)
-        {
-            return;
-        }
-
-        if (blurMaterialInstance == null)
-        {
-            if (blurMaterialTemplate == null || !GodotObject.IsInstanceValid(blurMaterialTemplate))
-            {
-                blurMaterialTemplate = GD.Load<ShaderMaterial>(BlurMaterialPath);
-            }
-
-            if (blurMaterialTemplate == null)
-            {
-                return;
-            }
-
-            blurMaterialInstance = (ShaderMaterial)blurMaterialTemplate.Duplicate();
-        }
-
-        if (!blurArmed)
-        {
-            // Re-read the sprite's own material on every arm, so a material another system
-            // installed between spins is still the one restored on disarm.
-            if (!ReferenceEquals(body.Material, blurMaterialInstance))
-            {
-                originalBodyMaterial = body.Material;
-            }
-
-            blurArmed = true;
-            body.Material = blurMaterialInstance;
-        }
-    }
-
-    private Creature? FindCreature()
-    {
-        for (Node? node = this; node != null; node = node.GetParent())
-        {
-            if (node is NCreature creatureNode)
-            {
-                return creatureNode.Entity;
-            }
-        }
-
-        return null;
-    }
+    public static NinjaSlayerSpinMotionBlur? Get(Creature creature) =>
+        creature.GetCreatureNode()?.Visuals.GetNodeOrNull<NinjaSlayerSpinMotionBlur>("SpinMotionBlur");
 }

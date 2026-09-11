@@ -14,7 +14,7 @@ public sealed class RedBlackFlameAttackRedesignV1 : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<BlackFlameRedesignV1>()];
 
     public RedBlackFlameAttackRedesignV1()
-        : base(nameof(RedBlackFlameAttackRedesignV1), "ImpureFlame", 0, CardType.Skill, TargetType.Self) { }
+        : base(nameof(RedBlackFlameAttackRedesignV1), "ImpureFlame", 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -95,7 +95,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             Vector2 offset = state.BaseOffset;
             foreach (AttackMotion contribution in state.Motions) offset += contribution.Offset;
             if (pose != null)
-                pose.SetTravel(state.Baseline, offset, outboundCurve(progress));
+                pose.SetTravel(offset, outboundCurve(progress));
             else
                 creatureNode.Position = state.Baseline + offset;
         }
@@ -146,6 +146,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     public static void CardGameplaySettled(Creature creature)
     {
+        if (RapidCardPresentationContext.IsActive)
+            NinjaSlayerAimPose.Get(creature)?.CancelPendingCharge(RapidCardPresentationContext.CurrentCard);
         if (!RapidCardPresentationContext.IsActive
             || NinjaSlayerFinisherCinematic.IsMovementOwned(creature)
             || !States.TryGetValue(creature, out ActionState? state)

@@ -1,13 +1,11 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 /// <summary>
-/// Continuous vertical-axis spin during Soar. Tutorial has no equivalent; uses code tween on body sprite
-/// while VisualCue idle/attack cues handle textures. Scale-only (no X lunge) to avoid SpinPivot ghosting.
+/// Continuous vertical-axis projection; cues select textures without sampling transforms.
 /// </summary>
 public static class SoarSpinAnimation
 {
@@ -22,6 +20,26 @@ public static class SoarSpinAnimation
     public static bool IsSpinning(Creature creature) => activeSpinTweens.ContainsKey(creature);
 
     public static bool IsVerticalSpinActive(Creature creature) => activeVerticalSpins.Contains(creature);
+
+    internal static async Task PlayCueSpin(Creature creature, float duration)
+    {
+        VerticalAxisSpinProjection? projection = CreateNinjaSlayerProjection(creature);
+        if (projection == null) return;
+        try
+        {
+            await PlayFiniteVerticalAxisProjection(creature, duration,
+                p => projection.ApplyDegrees(360f * p,
+                    age => 360d * Math.Max(0d, p - age / duration)));
+        }
+        finally
+        {
+            if (!IsSpinning(creature) && NinjaSlayerAimPose.Get(creature)?.OwnsSpin != true)
+            {
+                projection.Restore();
+                EnsureAirborneSpin(creature);
+            }
+        }
+    }
 
     public static async Task Accelerate(Creature creature, float duration)
     {
@@ -45,9 +63,10 @@ public static class SoarSpinAnimation
         {
             await Play(creature, duration, MaxDegreesPerSecond, accelerating: false);
         }
-        finally
+        catch
         {
             ResetSpinVisual(creature);
+            throw;
         }
     }
 
@@ -55,7 +74,7 @@ public static class SoarSpinAnimation
     {
         StopAirborneSpin(creature);
 
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        var creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
         {
             return;
@@ -69,14 +88,18 @@ public static class SoarSpinAnimation
 
         activeVerticalSpins.Add(creature);
         float startingDegrees = spinDegrees.GetValueOrDefault(creature);
+        VerticalAxisSpinProjection projection = CreateNinjaSlayerProjection(creature)!;
+        projection.ApplyDegrees(startingDegrees);
         var tween = creatureNode.CreateTween();
         tween.SetLoops();
         tween.TweenMethod(
             Callable.From<float>(degrees =>
             {
-                float currentDegrees = startingDegrees + degrees;
-                spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
-                ApplyVerticalSpin(creature, currentDegrees);
+                double time = tween.GetTotalElapsedTime();
+                float currentDegrees = startingDegrees + degreesPerSecond * (float)time;
+                spinDegrees[creature] = currentDegrees;
+                projection.ApplyDegrees(currentDegrees,
+                    age => startingDegrees + degreesPerSecond * Math.Max(0d, time - age));
             }),
             0f,
             FullTurnDegrees,
@@ -99,14 +122,16 @@ public static class SoarSpinAnimation
         }
 
         float startingDegrees = spinDegrees.GetValueOrDefault(creature);
+        projection.ApplyDegrees(startingDegrees);
         await PlayFiniteVerticalAxisProjection(
             creature,
             duration,
             progress =>
             {
                 float currentDegrees = startingDegrees + angleDegreesAtProgress(progress);
-                spinDegrees[creature] = Mathf.PosMod(currentDegrees, FullTurnDegrees);
-                projection.ApplyDegrees(currentDegrees);
+                spinDegrees[creature] = currentDegrees;
+                projection.ApplyDegrees(currentDegrees, age => startingDegrees + angleDegreesAtProgress(
+                    duration > 0f ? Mathf.Max(0f, progress - (float)age / duration) : progress));
             },
             cinematicContext,
             keepActivityAfterCompletion: true);
@@ -121,13 +146,20 @@ public static class SoarSpinAnimation
     {
         StopAirborneSpin(creature);
 
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        var creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
         {
             return;
         }
 
         activeVerticalSpins.Add(creature);
+        applyAtProgress(0f);
+        if (duration <= 0f)
+        {
+            applyAtProgress(1f);
+            if (!keepActivityAfterCompletion) activeVerticalSpins.Remove(creature);
+            return;
+        }
         var tween = creatureNode.CreateTween();
         tween.TweenMethod(
                 Callable.From<float>(applyAtProgress),
@@ -223,7 +255,7 @@ public static class SoarSpinAnimation
 
     private static async Task Play(Creature creature, float duration, float maxDegreesPerSecond, bool accelerating)
     {
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
+        var creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
         {
             return;
@@ -235,39 +267,25 @@ public static class SoarSpinAnimation
             return;
         }
 
-        float elapsed = 0f;
-        float degrees = spinDegrees.GetValueOrDefault(creature);
-        var tween = creatureNode.CreateTween();
-        tween.TweenMethod(
-            Callable.From<float>(t =>
+        float startingDegrees = spinDegrees.GetValueOrDefault(creature);
+        VerticalAxisSpinProjection projection = CreateNinjaSlayerProjection(creature)!;
+        float Angle(float p) => startingDegrees + maxDegreesPerSecond * duration
+            * (accelerating ? p * p * p / 3f : p - p * p + p * p * p / 3f);
+        await PlayFiniteVerticalAxisProjection(creature, duration,
+            p =>
             {
-                float delta = Mathf.Max(0f, t - elapsed);
-                elapsed = t;
-                float ratio = duration <= 0f ? 1f : Mathf.Clamp(t / duration, 0f, 1f);
-                float speed = maxDegreesPerSecond * (accelerating ? ratio * ratio : (1f - ratio) * (1f - ratio));
-                degrees += speed * delta;
-                spinDegrees[creature] = Mathf.PosMod(degrees, FullTurnDegrees);
-                ApplyVerticalSpin(creature, degrees);
-            }),
-            0f,
-            duration,
-            duration);
-
-        if (!await TweenPlayback.AwaitCompletion(tween, creatureNode))
-        {
-            return;
-        }
+                float degrees = Angle(p);
+                spinDegrees[creature] = degrees;
+                projection.ApplyDegrees(degrees,
+                    age => Angle(duration > 0f ? Mathf.Max(0f, p - (float)age / duration) : p));
+            }, keepActivityAfterCompletion: true);
 
         if (!accelerating)
         {
             spinDegrees.Remove(creature);
-            RestoreVerticalSpin(creature, visuals);
+            activeVerticalSpins.Remove(creature);
+            projection.Restore();
         }
-    }
-
-    private static void ApplyVerticalSpin(Creature creature, float degrees)
-    {
-        CreateNinjaSlayerProjection(creature)?.ApplyDegrees(degrees);
     }
 
     private static VerticalAxisSpinProjection? CreateNinjaSlayerProjection(Creature creature)
@@ -286,7 +304,7 @@ public static class SoarSpinAnimation
 
     private static Sprite2D? GetSpinVisual(Creature creature)
     {
-        var visualsRoot = NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals;
+        var visualsRoot = creature.GetCreatureNode()?.Visuals;
         if (visualsRoot == null)
         {
             return null;
@@ -296,10 +314,10 @@ public static class SoarSpinAnimation
     }
 
     private static Node2D? GetSpinFocus(Creature creature) =>
-        NinjaSlayerVisualRig.GetCinematicFocus(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
+        NinjaSlayerVisualRig.GetCinematicFocus(creature.GetCreatureNode()?.Visuals);
 
     private static Node2D? GetSpinAxis(Creature creature) =>
-        NinjaSlayerVisualRig.GetGroundContact(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
+        NinjaSlayerVisualRig.GetGroundContact(creature.GetCreatureNode()?.Visuals);
 
     private static void RestoreVerticalSpin(Creature creature, Node2D visuals)
     {

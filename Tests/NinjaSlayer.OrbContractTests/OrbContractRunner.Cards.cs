@@ -39,11 +39,11 @@ public partial class OrbContractRunner
     {
         using var combat = new OrbCombat();
         await PowerCmd.Apply<KarateTeaPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
-        await ChadoBreathCmd.Apply(combat.Player, 2);
+        await ChadoBreathCmd.Apply(Choice, combat.Player, 2);
         ChadoEnergyRedesignV1 tea = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
         Require(tea.DynamicVars.Energy.BaseValue == 2 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
             "First Chado Breathing must create one 2-energy Chado and trigger Karate Tea once.");
-        await ChadoBreathCmd.Apply(combat.Player, 2);
+        await ChadoBreathCmd.Apply(Choice, combat.Player, 2);
         Require(tea.DynamicVars.Energy.BaseValue == 4 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
             "Increasing held Chado must preserve its identity and not trigger generation effects.");
         var retain = await PowerCmd.Apply<ChadoRetainPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
@@ -70,7 +70,7 @@ public partial class OrbContractRunner
                 "Starter breathes two with first-turn tea retention; ancient generates two retained tea then breathes two.");
             foreach (var tea in opening)
                 await CardPileCmd.Add(tea, PileType.Discard);
-            await ChadoBreathCmd.Apply(combat.Player, 2);
+            await ChadoBreathCmd.Apply(Choice, combat.Player, 2);
             var later = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
             Require(!later.Keywords.Contains(CardKeyword.Retain), "Later tea must not inherit the opening relic's Retain.");
             await CardPileCmd.Add(opening[0], PileType.Hand);
@@ -123,8 +123,8 @@ public partial class OrbContractRunner
         Require(NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.Naraku,
             "Naraku Form must select the half-Naraku presentation.");
         CardModel attack = combat.Card();
-        Require(form!.TryModifyEnergyCostInCombatLate(attack, 1, out decimal cost) && cost == 0,
-            "Naraku Form must make attacks free.");
+        Require(!form!.TryModifyEnergyCostInCombatLate(attack, 1, out _),
+            "Naraku Form must preserve native attack costs.");
         await PowerCmd.Remove(form);
         Require(NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.Normal,
             "Removing Naraku Form must restore normal presentation.");

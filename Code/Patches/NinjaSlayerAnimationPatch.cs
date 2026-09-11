@@ -19,6 +19,7 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
 
     public static bool Prefix(Creature creature, string triggerName, float waitTime, ref Task __result)
     {
+        Nodes.TornadoHurtPause.Cancel(creature);
         if (YamotoKokiCombatAnimations.TryPlayTriggerAnim(creature, triggerName, waitTime, ref __result))
         {
             return false;
@@ -37,5 +38,6 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
     public static void Postfix(Creature creature, string triggerName)
     {
         DarkStrikeHurtPoseFreezeContext.NotifyHitTriggered(creature, triggerName);
+        TornadoFistSpinAnimation.NotifyHitTriggered(creature, triggerName);
     }
 }

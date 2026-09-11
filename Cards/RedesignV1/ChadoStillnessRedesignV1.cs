@@ -20,7 +20,7 @@ public sealed class ChadoStillnessRedesignV1 : RedesignV1CommonCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
+        await ChadoBreathCmd.Apply(choiceContext, Owner, DynamicVars["Breath"].IntValue);
         await PowerCmd.Apply<ChadoRetainPower>(
             choiceContext,
             Owner.Creature,

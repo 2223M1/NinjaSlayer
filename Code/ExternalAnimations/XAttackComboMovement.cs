@@ -35,7 +35,9 @@ public static class XAttackComboMovement
         if (RapidCardPresentationContext.IsActive
             && creature.Player?.Character is INinjaSlayerCharacter)
         {
-            NinjaSlayerAimPose.Get(creature)?.BeginTornado(NinjaSlayerAimPose.Focus(creature));
+            bool empowered = RapidCardPresentationContext.CurrentCard is Cards.RedesignV1.TornadoFistRedesignV1 card
+                && card.IsEmpowered(NinjaSlayerAttackExecution.SequenceHitCount);
+            NinjaSlayerAimPose.Get(creature)?.BeginTornado(NinjaSlayerAimPose.Focus(creature), empowered: empowered);
             ComboStates[creature] = new ComboMovementState(
                 NinjaSlayerRapidAnimationCoordinator.BeginHeldSlowApproach(creature, approachDuration));
             return;

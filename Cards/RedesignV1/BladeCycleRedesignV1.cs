@@ -8,7 +8,7 @@ using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
-public sealed class BladeCycleRedesignV1 : RedesignV1UncommonCard
+public sealed class BladeCycleRedesignV1 : RedesignV1RareCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];

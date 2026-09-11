@@ -7,7 +7,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 /// <summary>
 /// Spin-combo FMOD for X-cost multi-hit attacks.
-/// SfxCmd.Play/PlayLoop/StopLoop follow OwlMagistrate; card-level orchestration follows Whirlwind.
+/// The custom bank's loop has no native "loop" stop parameter.
 /// </summary>
 public static class SpinComboAudio
 {
@@ -56,7 +56,7 @@ public static class SpinComboAudio
         {
             if (loopPlayDuration > 0f)
             {
-                SfxCmd.PlayLoop(creature, audio.LoopSpinAttack);
+                SfxCmd.PlayLoop(audio.LoopSpinAttack, usesLoopParam: false);
                 loopStarted = true;
                 await Cmd.Wait(loopPlayDuration);
             }
@@ -68,7 +68,7 @@ public static class SpinComboAudio
         {
             if (loopStarted)
             {
-                SfxCmd.StopLoop(creature, audio.LoopSpinAttack);
+                SfxCmd.StopLoop(audio.LoopSpinAttack);
             }
         }
     }
@@ -101,7 +101,7 @@ public static class SpinComboAudio
 
             if (loopStarted)
             {
-                SfxCmd.StopLoop(creature, audio.LoopSpinAttack);
+                SfxCmd.StopLoop(audio.LoopSpinAttack);
                 loopStarted = false;
             }
 
@@ -135,7 +135,7 @@ public static class SpinComboAudio
 
             if (loopPlayDuration > 0f)
             {
-                SfxCmd.PlayLoop(creature, audio.LoopSpinAttack);
+                SfxCmd.PlayLoop(audio.LoopSpinAttack, usesLoopParam: false);
                 loopStarted = true;
                 completed = await Task.WhenAny(
                     Cmd.Wait(loopPlayDuration),
@@ -161,7 +161,7 @@ public static class SpinComboAudio
         {
             if (loopStarted)
             {
-                SfxCmd.StopLoop(creature, audio.LoopSpinAttack);
+                SfxCmd.StopLoop(audio.LoopSpinAttack);
             }
         }
     }

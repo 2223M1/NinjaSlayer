@@ -43,6 +43,7 @@
     <Compile Include="..\..\Code\Combat\CinematicCameraContainment.cs" Link="CinematicCameraContainment.cs" />
     <Compile Include="..\..\Code\Combat\CombatActionTiming.cs" Link="CombatActionTiming.cs" />
     <Compile Include="..\..\Code\Combat\GroundedPoseMath.cs" Link="GroundedPoseMath.cs" />
+    <Compile Include="..\..\Code\Combat\DragPoseMath.cs" Link="DragPoseMath.cs" />
     <Compile Include="..\..\Code\Combat\GroundShadowMath.cs" Link="GroundShadowMath.cs" />
     <Compile Include="..\..\Code\Combat\CombatBodyContours.cs" Link="CombatBodyContours.cs" />
     <Compile Include="..\..\Code\Combat\CombatMetricsSnapshot.cs" Link="CombatMetricsSnapshot.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="..\..\Code\ExternalAnimations\FinisherDeathKickTimeline.cs" Link="FinisherDeathKickTimeline.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\FixedPivotMath.cs" Link="FixedPivotMath.cs" />
     <Compile Include="..\..\Code\ExternalAnimations\VerticalSpinMath.cs" Link="VerticalSpinMath.cs" />
+    <Compile Include="..\..\Code\ExternalAnimations\SpinExposureHistory.cs" Link="SpinExposureHistory.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackHttpClient.cs" Link="FeedbackHttpClient.cs" />
     <Compile Include="..\..\Code\Feedback\FeedbackStreamOwnership.cs" Link="FeedbackStreamOwnership.cs" />
     <Compile Include="..\..\Code\Feedback\NinjaSlayerFeedbackSession.cs" Link="NinjaSlayerFeedbackSession.cs" />

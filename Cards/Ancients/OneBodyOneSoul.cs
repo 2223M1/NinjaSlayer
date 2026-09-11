@@ -20,21 +20,21 @@ public sealed class OneBodyOneSoul : NinjaSlayerStandaloneCardTemplate
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new DynamicVar("NarakuLife", 30)
+        new KarateVar(3)
     ];
 
     public OneBodyOneSoul() : base(CardSpec) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
-        PowerCmd.Apply<NarakuLifePower>(
+        PowerCmd.Apply<OneBodyOneSoulPower>(
             choiceContext,
             Owner.Creature,
-            DynamicVars["NarakuLife"].BaseValue,
+            DynamicVars.Karate().BaseValue,
             Owner.Creature,
             this);
 
     protected override void OnUpgrade()
     {
-        DynamicVars["NarakuLife"].UpgradeValueBy(10);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }
