@@ -283,21 +283,38 @@ public partial class OrbContractRunner
             Vector2 bodyBaseline = kokiBody.Position;
             var kokiContour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.CombatBodyContours"), "YamotoKoki").GetValue(null)!;
             MethodInfo tilt = AccessTools.Method(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.YamotoKokiCombatAnimations"), "TweenTilt");
+            MethodInfo withFacing = AccessTools.Method(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Nodes.YamotoKokiAllyFacingController"), "WithFacing");
             foreach (float facing in new[] { -1f, 1f })
             {
+                kokiBody.Transform = Transform2D.Identity;
+                kokiBody.Position = bodyBaseline;
                 kokiBody.Scale = new(facing, 1f);
+                Transform2D authoredBody = kokiBody.Transform;
+                async Task TiltWithFacing(float from, float to, float seconds)
+                {
+                    Task animation = (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, authoredBody, from, to, seconds])!;
+                    while (!animation.IsCompleted)
+                    {
+                        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                        kokiBody.Transform = (Transform2D)withFacing.Invoke(null, [kokiBody.Transform, facing < 0f])!;
+                        Require(kokiBody.Transform.Y.Y > 0f, "Facing updates inverted Koki during her summon tilt.");
+                    }
+                    await animation;
+                }
                 Vector2 coreLocal = kokiBody.ToLocal(kokiCenter.GlobalPosition);
                 float ground = kokiContour.Max(p => (kokiSprite.GetGlobalTransformWithCanvas() * new Vector2(p.X, p.Y)).Y);
-                await (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, bodyBaseline, 0f, 0f, 15f, 0.1f])!;
+                await TiltWithFacing(0f, 15f, 0.1f);
                 float bottom = kokiContour.Max(p => (kokiSprite.GetGlobalTransformWithCanvas() * new Vector2(p.X, p.Y)).Y);
                 Require(Math.Abs(bottom - ground) < 0.1f, "Koki contour left its ground line.");
                 Require(kokiBody.ToGlobal(coreLocal).DistanceTo(kokiCenter.GlobalPosition) < 0.1f, "Koki summon origin did not follow its pivot.");
-                await (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, bodyBaseline, 0f, 15f, 0f, 0.2f])!;
+                await TiltWithFacing(15f, 0f, 0.2f);
                 Require(kokiBody.Position.DistanceTo(bodyBaseline) < 0.01f && kokiCenter.Position.DistanceTo(centerBaseline) < 0.01f,
                     "Koki return did not restore its body and core.");
+                Require(kokiBody.Transform.IsEqualApprox(authoredBody), "Koki return inverted the authored body transform.");
             }
             koki.Free();
-            GD.Print("PASS Koki actual summon tilt: both facings, contour grounding, core/origin tracking and exact return.");
+            GD.Print("PASS Koki actual summon tilt: per-frame mirrored facing, contour grounding, core/origin tracking and exact transform return.");
+            await VerifySawatariHurt(combat, stage);
         }
         finally
         {

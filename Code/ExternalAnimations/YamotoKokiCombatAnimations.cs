@@ -76,15 +76,13 @@ internal static class YamotoKokiCombatAnimations
         Node2D body = creatureNode.Body;
         Marker2D center = creatureNode.Visuals.VfxSpawnPosition;
         Vector2 originalCenter = center.Position;
-        Vector2 originalBodyPosition = body.Position;
-        float originalRotation = body.RotationDegrees;
+        Transform2D originalBody = body.Transform;
         try
         {
             await TweenTilt(
                 body,
                 center, originalCenter,
-                originalBodyPosition,
-                originalRotation,
+                originalBody,
                 0f,
                 TiltDegrees,
                 SummonTiltSeconds);
@@ -92,8 +90,7 @@ internal static class YamotoKokiCombatAnimations
             await TweenTilt(
                 body,
                 center, originalCenter,
-                originalBodyPosition,
-                originalRotation,
+                originalBody,
                 TiltDegrees,
                 0f,
                 SummonReturnSeconds);
@@ -103,8 +100,8 @@ internal static class YamotoKokiCombatAnimations
             if (GodotObject.IsInstanceValid(center)) center.Position = originalCenter;
             if (GodotObject.IsInstanceValid(body))
             {
-                body.Position = originalBodyPosition;
-                body.RotationDegrees = originalRotation;
+                body.Transform = YamotoKokiAllyFacingController.WithFacing(
+                    originalBody, body.Transform.Determinant() < 0f);
             }
         }
     }
@@ -190,16 +187,14 @@ internal static class YamotoKokiCombatAnimations
         Marker2D center = creatureNode.Visuals.VfxSpawnPosition;
         Vector2 originalCenter = center.Position;
         Vector2 originalPosition = creatureNode.Position;
-        Vector2 originalBodyPosition = body.Position;
-        float originalRotation = body.RotationDegrees;
+        Transform2D originalBody = body.Transform;
 
         try
         {
             await TweenTilt(
                 body,
                 center, originalCenter,
-                originalBodyPosition,
-                originalRotation,
+                originalBody,
                 0f,
                 TiltDegrees,
                 FarewellTiltSeconds);
@@ -207,8 +202,7 @@ internal static class YamotoKokiCombatAnimations
             await TweenTilt(
                 body,
                 center, originalCenter,
-                originalBodyPosition,
-                originalRotation,
+                originalBody,
                 TiltDegrees,
                 0f,
                 FarewellReturnSeconds);
@@ -225,8 +219,8 @@ internal static class YamotoKokiCombatAnimations
             if (GodotObject.IsInstanceValid(center)) center.Position = originalCenter;
             if (GodotObject.IsInstanceValid(body))
             {
-                body.Position = originalBodyPosition;
-                body.RotationDegrees = originalRotation;
+                body.Transform = YamotoKokiAllyFacingController.WithFacing(
+                    originalBody, body.Transform.Determinant() < 0f);
             }
 
             if (GodotObject.IsInstanceValid(creatureNode) && creatureNode.Visible)
@@ -240,8 +234,7 @@ internal static class YamotoKokiCombatAnimations
         Node2D node,
         Marker2D center,
         Vector2 centerBaseline,
-        Vector2 basePosition,
-        float baseRotation,
+        Transform2D authoredBody,
         float fromDegrees,
         float toDegrees,
         float duration)
@@ -252,21 +245,27 @@ internal static class YamotoKokiCombatAnimations
         }
 
         Sprite2D sprite = node.GetChildren().OfType<Sprite2D>().First();
-        Transform2D baseline = new(Mathf.DegToRad(baseRotation), node.Scale, node.Skew, basePosition);
         Transform2D parentCanvas = node.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
         Vector2 pivot = parentCanvas.AffineInverse()
             * (center.GetParent<CanvasItem>().GetGlobalTransformWithCanvas() * centerBaseline);
-        var offsets = CombatBodyContours.YamotoKoki.Select(point =>
+        Vector2[] bodyPoints = CombatBodyContours.YamotoKoki.Select(point =>
         {
             Vector2 pixel = new(point.X * (sprite.FlipH ? -1f : 1f), point.Y);
-            Vector2 offset = baseline * (sprite.Transform * (pixel + sprite.Offset)) - pivot;
-            return new System.Numerics.Vector2(offset.X, offset.Y);
+            return sprite.Transform * (pixel + sprite.Offset);
         }).ToArray();
-        float ground = pivot.Y + GroundedPoseMath.SupportY(offsets, 0f);
+        var offsets = new System.Numerics.Vector2[bodyPoints.Length];
         Tween tween = node.CreateTween();
         tween.TweenMethod(
                 Callable.From<float>(progress =>
                 {
+                    Transform2D baseline = YamotoKokiAllyFacingController.WithFacing(
+                        authoredBody, node.Transform.Determinant() < 0f);
+                    for (int index = 0; index < bodyPoints.Length; index++)
+                    {
+                        Vector2 offset = baseline * bodyPoints[index] - pivot;
+                        offsets[index] = new(offset.X, offset.Y);
+                    }
+                    float ground = pivot.Y + GroundedPoseMath.SupportY(offsets, 0f);
                     float tiltDegrees = Mathf.Lerp(fromDegrees, toDegrees, progress);
                     float angle = Mathf.DegToRad(tiltDegrees);
                     Vector2 posedCore = new(pivot.X, ground - GroundedPoseMath.SupportY(offsets, angle));
