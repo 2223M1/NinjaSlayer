@@ -646,7 +646,6 @@ internal sealed partial class SmokeController
         object history = manager.History;
         object rng = state.RunState.Rng;
         CardPile[] piles = playerState.AllPiles.ToArray();
-        AbstractModel[] powers = player.Creature.Powers.Cast<AbstractModel>().ToArray();
 
         _observedSawatariCombat = state;
         _sawatariBeforeCombatStartCount = 0;
@@ -668,6 +667,8 @@ internal sealed partial class SmokeController
                 () => playerState.Phase == PlayerTurnPhase.Play,
                 "Sawatari's first wave did not reach the player play phase",
                 cancellationToken);
+            // Starter effects finish during hand draw, after combat enters IsInProgress.
+            AbstractModel[] powers = player.Creature.Powers.Cast<AbstractModel>().ToArray();
             if (finisherTarget.CurrentHp > 1)
             {
                 await CreatureCmd.Damage(
