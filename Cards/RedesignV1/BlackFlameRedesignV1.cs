@@ -1,4 +1,6 @@
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -46,7 +48,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         Pile?.Type == PileType.Hand
         && cardPlay.Card.Owner == Owner
         && cardPlay.Card.Type == CardType.Attack
-            ? DamageEnemies(choiceContext)
+            ? TriggerFromAttack(choiceContext)
             : Task.CompletedTask;
 
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
@@ -61,7 +63,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
             .ToList();
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies.Prepend(Owner.Creature));
         await DamageEnemies(choiceContext, enemies);
-        if (Owner.Creature.IsAlive)
+        if (Owner.Creature.IsAlive && !Owner.Creature.HasPower<OneBodyOneSoulPower>())
         {
             await CreatureCmd.Damage(
                 choiceContext,
@@ -77,33 +79,27 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         }
     }
 
-    private Task DamageEnemies(PlayerChoiceContext choiceContext)
+    private Task TriggerFromAttack(PlayerChoiceContext choiceContext)
     {
-        ICombatState combatState = CombatState
-            ?? throw new InvalidOperationException("Black Flame requires combat.");
-        List<Creature> enemies = combatState.Creatures
-            .Where(creature => creature.IsAlive && creature.Side != Owner.Creature.Side)
-            .ToList();
-        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies);
-        return DamageEnemies(choiceContext, enemies);
+        if (CombatState!.HittableEnemies.Count == 0) return Task.CompletedTask;
+        if (LocalContext.IsMine(this)
+            && MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance?.Ui.Hand.GetCardHolder(this) is NHandCardHolder holder)
+            holder.Flash();
+        return DamageEnemies(choiceContext, Owner, (int)DynamicVars.Damage.BaseValue, this);
     }
 
-    private Task DamageEnemies(PlayerChoiceContext choiceContext, List<Creature> enemies)
-    {
-        if (enemies.Count == 0)
-        {
-            return Task.CompletedTask;
-        }
+    private Task DamageEnemies(PlayerChoiceContext choiceContext, List<Creature> enemies) =>
+        DamageEnemies(choiceContext, Owner, (int)DynamicVars.Damage.BaseValue, this, enemies);
 
-        int damage = (int)DynamicVars.Damage.BaseValue
-            + Owner.Creature.GetPowerAmount<BurnBurnBurnPower>();
-        return CreatureCmd.Damage(
-            choiceContext,
-            enemies,
-            damage,
-            DynamicVars.Damage.Props,
-            Owner.Creature,
-            this
+    internal static Task DamageEnemies(PlayerChoiceContext choiceContext, Player player,
+        int baseDamage, CardModel? source, IReadOnlyList<Creature>? targets = null)
+    {
+        targets ??= player.Creature.CombatState!.HittableEnemies;
+        if (targets.Count == 0) return Task.CompletedTask;
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
+        return CreatureCmd.Damage(choiceContext, targets,
+            baseDamage + player.Creature.GetPowerAmount<BurnBurnBurnPower>(),
+            ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, source
 #if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
 #endif

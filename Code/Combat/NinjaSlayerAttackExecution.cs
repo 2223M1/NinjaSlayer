@@ -45,6 +45,9 @@ internal static class NinjaSlayerAttackExecution
     }
 
     internal static Creature? Target => Commands.Value?.Target ?? CurrentPlay?.Target;
+    internal static AttackCommand? CurrentCommand => Commands.Value?.Command;
+    internal static int SequenceHitCount => Sequences.Value?.Count ?? 0;
+    internal static bool IsFinalSequenceHit => Sequences.Value is { } sequence && sequence.Index + 1 == sequence.Count;
     internal static bool IsMultiHit => Sequences.Value is { Count: > 1 }
         || Commands.Value is { Hits: > 1 };
     internal static bool NeedsDamageRecovery => Sequences.Value is { } sequence && sequence.Index + 1 < sequence.Count

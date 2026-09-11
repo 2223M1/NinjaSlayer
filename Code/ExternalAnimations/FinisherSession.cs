@@ -141,6 +141,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
 
         _begun = true;
+        foreach (Creature victim in _ledger.Victims) TornadoHurtPause.Cancel(victim);
         if (Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
         {
             foreach (Creature victim in _ledger.Victims.Where(victim =>
@@ -177,8 +178,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             try
             {
                 _actorAimPose = NinjaSlayerAimPose.Get(Actor);
-                if (CardPlay?.Card is NinjaSlayer.Cards.RedesignV1.TornadoFistRedesignV1)
-                    _actorAimPose?.BeginTornado(_focusNode.Entity, exclusive: true);
+                if (CardPlay?.Card is NinjaSlayer.Cards.RedesignV1.TornadoFistRedesignV1 tornado)
+                    _actorAimPose?.BeginTornado(_focusNode.Entity, exclusive: true, empowered: tornado.IsEmpowered(ResolvedHits));
                 else
                     _actorAimPose?.BeginAction(_focusNode.Entity, exclusive: true);
             }

@@ -25,9 +25,10 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
 {
-    protected override bool ShouldGlowGoldInternal => CombatState != null
-        && MegaCrit.Sts2.Core.Hooks.Hook.ModifyXValue(CombatState, this, Owner.PlayerCombatState!.Energy)
-            >= DynamicVars["Threshold"].IntValue;
+    internal bool IsEmpowered(decimal x) => x >= DynamicVars["Threshold"].IntValue;
+    internal bool ShouldCharge => CombatState != null
+        && IsEmpowered(MegaCrit.Sts2.Core.Hooks.Hook.ModifyXValue(CombatState, this, Owner.PlayerCombatState!.Energy));
+    protected override bool ShouldGlowGoldInternal => ShouldCharge;
 
     protected override bool HasEnergyCostX => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
@@ -40,6 +41,7 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
     {
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLongjuanquanEvent);
         int hits = ResolveEnergyXValue();
+        bool empowered = IsEmpowered(hits);
         return this.ExecuteSequenceWithFinisher(
             choiceContext,
             cardPlay,
@@ -49,12 +51,12 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
                 hits,
                 TornadoFistSpinAnimation.TurnSeconds,
                 CombatActionTimingRuntime.AttackSeconds + CombatActionTimingRuntime.DamageRecoverySeconds,
-                async _ =>
+                async index =>
                 {
                     AttackCommand command;
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.RapidCard))
                     {
-                        command = await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+                        command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
                             .FromCard(this)
 #else
@@ -62,11 +64,11 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
 #endif
                             .WithDefectStrikeHitFx()
                             .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
-                            .TargetingAllOpponents(CombatState!)
-                            .Execute(choiceContext);
+                            .TargetingAllOpponents(CombatState!);
+                        await command.Execute(choiceContext);
                     }
 
-                    if (hits >= DynamicVars["Threshold"].IntValue)
+                    if (empowered)
                     {
                         foreach (Creature target in command.Results
                                      .SelectMany(results => results)

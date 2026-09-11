@@ -20,6 +20,8 @@ public static class NinjaSlayerXAttackSequence
     {
         if (hits <= 0)
         {
+            if (heldApproach)
+                Nodes.NinjaSlayerAimPose.Get(creature)?.ReleaseEmptyTornado();
             return;
         }
 

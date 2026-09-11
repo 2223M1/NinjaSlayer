@@ -48,5 +48,5 @@ public sealed class AntiAirBangBangFist : RedesignV1RareCard
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2);
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3);
 }

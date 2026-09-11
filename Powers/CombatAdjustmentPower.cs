@@ -18,7 +18,7 @@ public sealed class CombatAdjustmentPower : RedesignV1CounterPower
         if (cardPlay.Card.Owner.Creature == Owner && cardPlay.Card.Type == CardType.Skill)
         {
             Flash();
-            await ChadoBreathCmd.Apply(Owner.Player!, Amount);
+            await ChadoBreathCmd.Apply(choiceContext, Owner.Player!, Amount);
         }
     }
 

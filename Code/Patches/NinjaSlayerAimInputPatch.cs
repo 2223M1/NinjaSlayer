@@ -1,7 +1,9 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Cards.RedesignV1;
@@ -69,6 +71,25 @@ internal sealed class NinjaSlayerAimFinishPatch : IPatchMethod
         __instance.GetNodeOrNull<NinjaSlayerAimInput>("NinjaSlayerAimInput")?.Finish(isFinished);
 }
 
+internal sealed class NinjaSlayerAimCancelledPlayPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_card_aim_cancelled_play";
+    public static string Description => "Release a charged drag when its queued card is cancelled.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(NCardPlayQueue), nameof(NCardPlayQueue.RemoveCardFromQueueForCancellation), [typeof(PlayCardAction)]),
+        new(typeof(NCardPlayQueue), nameof(NCardPlayQueue.RemoveCardFromQueueForCancellation), [typeof(NCard), typeof(bool)])
+    ];
+
+    public static void Prefix(object __0)
+    {
+        CardModel? card = __0 is PlayCardAction action ? action.NetCombatCard.ToCardModelOrNull() : ((NCard)__0).Model;
+        if (card?.Owner.Character is INinjaSlayerCharacter)
+            NinjaSlayerAimPose.Get(card.Owner.Creature)?.CancelPendingCharge(card);
+    }
+}
+
 public partial class NinjaSlayerAimInput : Node
 {
     internal CardModel Card { get; init; } = null!;
@@ -81,16 +102,13 @@ public partial class NinjaSlayerAimInput : Node
         if (_finished || !GodotObject.IsInstanceValid(Pose)) return;
         Vector2 pointer = GetViewport().GetMousePosition();
         Creature? target = Hovered;
-        if (GetParent() is NMouseCardPlay && NCombatRoom.Instance is { } room)
+        if (Card is TornadoFistRedesignV1) target = null;
+        else if (GetParent() is NMouseCardPlay && NCombatRoom.Instance is { } room)
         {
             target = room.CreatureNodes.FirstOrDefault(node =>
             {
                 if (!node.Entity.IsAlive || !node.Entity.IsHittable) return false;
-                if (Card is TornadoFistRedesignV1)
-                {
-                    if (node.Entity.Side == Card.Owner.Creature.Side) return false;
-                }
-                else if (!Card.CanPlayTargeting(node.Entity)) return false;
+                if (!Card.CanPlayTargeting(node.Entity)) return false;
                 Vector2 local = node.Hitbox.GetGlobalTransformWithCanvas().AffineInverse() * pointer;
                 return new Rect2(Vector2.Zero, node.Hitbox.Size).HasPoint(local);
             })?.Entity;

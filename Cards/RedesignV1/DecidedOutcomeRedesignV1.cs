@@ -7,7 +7,7 @@ using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
-public sealed class DecidedOutcomeRedesignV1 : RedesignV1RareCard
+public sealed class DecidedOutcomeRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
@@ -23,7 +23,7 @@ public sealed class DecidedOutcomeRedesignV1 : RedesignV1RareCard
             Owner,
             DynamicVars.Cards.IntValue,
             exhaustDiscarded: true);
-        await ChadoBreathCmd.Apply(Owner, result.ExhaustedCards);
+        await ChadoBreathCmd.Apply(choiceContext, Owner, result.ExhaustedCards);
     }
 
     protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(2);

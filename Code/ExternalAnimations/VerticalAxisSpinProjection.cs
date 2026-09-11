@@ -13,7 +13,10 @@ internal sealed class VerticalAxisSpinProjection
     private readonly Vector2 _basePosition;
     private readonly float _baseRotationDegrees;
     private readonly Vector2 _baseScale;
+    private readonly Vector2 _baseOffset;
     private readonly NinjaSlayerShadowController? _shadow;
+    private readonly NinjaSlayerSpinMotionBlur? _blur;
+    private readonly NinjaSlayerAimPose? _aim;
 
     private VerticalAxisSpinProjection(
         Node2D body,
@@ -26,6 +29,7 @@ internal sealed class VerticalAxisSpinProjection
         Vector2 baseScale)
     {
         _body = body;
+        _aim = body.GetParent() as NinjaSlayerAimPose;
         _parent = parent;
         _markerBodyLocal = markerBodyLocal;
         _markerParentLocal = markerParentLocal;
@@ -33,12 +37,16 @@ internal sealed class VerticalAxisSpinProjection
         _basePosition = basePosition;
         _baseRotationDegrees = baseRotationDegrees;
         _baseScale = baseScale;
+        _baseOffset = body is Sprite2D sprite ? sprite.Offset : Vector2.Zero;
         for (Node? node = body.GetParent(); node != null; node = node.GetParent())
+        {
+            _blur ??= node.GetNodeOrNull<NinjaSlayerSpinMotionBlur>("SpinMotionBlur");
             if (node.GetNodeOrNull<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName) is { } shadow)
             {
                 _shadow = shadow;
                 break;
             }
+        }
     }
 
     internal static VerticalAxisSpinProjection CaptureCurrent(
@@ -84,18 +92,33 @@ internal sealed class VerticalAxisSpinProjection
             new Vector2(NinjaSlayerVisualRig.SpinPivotDeltaX, axisBodyLocalY),
             bodyMarkerParentLocal,
             axisParentX,
-            body.Position,
+            new Vector2(bodyMarkerParentLocal.X - NinjaSlayerVisualRig.SpinPivotDeltaX * baseScale.X, body.Position.Y),
             0f,
             baseScale);
     }
 
-    internal void ApplyDegrees(float degrees)
+    internal Vector2 AxisInSprite(Sprite2D sprite) => sprite.GetGlobalTransformWithCanvas().AffineInverse()
+        * (_parent.GetGlobalTransformWithCanvas() * new Vector2(_axisParentX, _markerParentLocal.Y));
+
+    internal void ProjectVariant(Sprite2D sprite, float ratio)
+    {
+        Transform2D transform = sprite.Transform;
+        transform.X.X *= ratio;
+        transform.Y.X *= ratio;
+        transform.Origin.X = VerticalSpinMath.ProjectCoordinate(_axisParentX, transform.Origin.X, ratio);
+        sprite.Transform = transform;
+    }
+
+    internal void ApplyDegrees(float degrees, Func<double, double>? angleAtSecondsBefore = null)
     {
         if (!IsValid())
         {
             return;
         }
 
+        float basis = 0f;
+        if (_aim != null)
+            (degrees, basis, angleAtSecondsBefore) = _aim.ComposeFacingSpin(this, degrees, angleAtSecondsBefore);
         float ratio = VerticalSpinMath.GetScaleRatio(degrees);
         if (GodotObject.IsInstanceValid(_shadow)) _shadow!.SetSpin(this, Mathf.DegToRad(degrees));
         if (_body is Sprite2D sprite)
@@ -109,10 +132,12 @@ internal sealed class VerticalAxisSpinProjection
             VerticalSpinMath.ProjectCoordinate(_axisParentX, _markerParentLocal.X, ratio),
             _markerParentLocal.Y);
         _body.Position = projectedMarker - _body.Transform.BasisXform(_markerBodyLocal);
+        _blur?.Record(this, degrees, angleAtSecondsBefore, basis);
     }
 
     internal void Restore()
     {
+        _blur?.Stop(this);
         if (GodotObject.IsInstanceValid(_shadow)) _shadow!.ClearSpin(this);
         if (!IsValid())
         {
@@ -124,7 +149,7 @@ internal sealed class VerticalAxisSpinProjection
         _body.Scale = _baseScale;
         if (_body is Sprite2D sprite)
         {
-            sprite.Offset = Vector2.Zero;
+            sprite.Offset = _baseOffset;
         }
     }
 

@@ -11,6 +11,8 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Content;
+using NinjaSlayer.Powers;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 
 namespace NinjaSlayer.Code.Commands;
 
@@ -18,7 +20,7 @@ public static class ChadoBreathCmd
 {
     private const string ForgeSfx = "event:/sfx/characters/regent/regent_refine";
 
-    public static async Task Apply(Player player, int amount)
+    public static async Task Apply(PlayerChoiceContext choiceContext, Player player, int amount)
     {
         if (amount <= 0 || CombatManager.Instance.IsOverOrEnding)
         {
@@ -47,6 +49,10 @@ public static class ChadoBreathCmd
         }
 
         PlayForgeFeedback(cards);
+        if (player.Creature.GetPower<OneBodyOneSoulPower>() is { } soul)
+        {
+            await soul.AfterBreathing(choiceContext);
+        }
     }
 
     private static void PlayForgeFeedback(List<ChadoEnergyRedesignV1> cards)

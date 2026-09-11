@@ -12,22 +12,22 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class HiddenEdgeRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DynamicVar("Stock", 2), new PowerVar<FocusPower>(3)];
+        [new PowerVar<FocusPower>(3), new PowerVar<DexterityPower>(1)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [HoverTipFactory.FromOrb<ShurikenOrb>(), HoverTipFactory.FromPower<FocusPower>()];
+        [HoverTipFactory.FromPower<DexterityPower>(), HoverTipFactory.FromPower<FocusPower>()];
 
     public HiddenEdgeRedesignV1()
         : base(nameof(HiddenEdgeRedesignV1), "ShurikenStock", 1, CardType.Power, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await ShurikenOrb.AddStock(choiceContext, Owner, DynamicVars["Stock"].IntValue);
         await PowerCmd.Apply<FocusPower>(
             choiceContext,
             Owner.Creature,
             DynamicVars[nameof(FocusPower)].BaseValue,
             Owner.Creature,
             this);
+        await PowerCmd.Apply<DexterityPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
     }
 
     protected override void OnUpgrade() => DynamicVars[nameof(FocusPower)].UpgradeValueBy(2);

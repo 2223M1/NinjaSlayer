@@ -12,8 +12,8 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class FlyingBladeDanceRedesignV1 : RedesignV1UncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(3, ValueProp.Move)];
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(2, ValueProp.Move)];
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ScryBlockPower>()];
 
     public FlyingBladeDanceRedesignV1()
         : base(nameof(FlyingBladeDanceRedesignV1), nameof(BladeDance), 1, CardType.Power, TargetType.Self) { }

@@ -13,10 +13,10 @@ public sealed class TeaTeaRedesignV1 : RedesignV1RareCard
         [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 
     public TeaTeaRedesignV1()
-        : base(nameof(TeaTeaRedesignV1), "ColdBrew", 1, CardType.Power, TargetType.Self) { }
+        : base(nameof(TeaTeaRedesignV1), "ColdBrew", 2, CardType.Power, TargetType.Self) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<TeaTeaPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
 
-    protected override void OnUpgrade() { }
+    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
 }

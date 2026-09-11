@@ -113,7 +113,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<RecycledBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             if (scry) await ScryCmd.Execute(Choice, combat.Player, 2);
             else await NinjaSlayerCardCmd.ChooseAndDiscard(Choice, combat.Player, 2, source);
-            Require(combat.Stock == 3 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
+            Require(combat.Stock == (scry ? 3 : 2) && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
                 "Hand selection and Scry must share native batch discard/Sly semantics.");
         }
         using (var combat = new OrbCombat())
@@ -324,10 +324,11 @@ public partial class OrbContractRunner
         {
             var retained = AddCard<DefendIronclad>(combat);
             var card = AddCard<TonyRetention>(combat);
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [retained]));
             await CardCmd.AutoPlay(Choice, card, null);
-            Require(retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 5, "Tony Retention must retain the current hand for one turn.");
+            Require(retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 11, "Macaco must give the selected card Retain.");
             retained.EndOfTurnCleanup();
-            Require(!retained.ShouldRetainThisTurn, "Tony Retention must not grant permanent Retain.");
+            Require(retained.ShouldRetainThisTurn, "Macaco must grant permanent combat Retain.");
         }
         using (var combat = new OrbCombat())
         {
@@ -344,7 +345,7 @@ public partial class OrbContractRunner
             var tea = AddCard<ChadoEnergyRedesignV1>(combat);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, AddCard<ObserveBattlefield>(combat, upgraded: true), combat.Enemy);
-            Require(combat.Enemy.GetPowerAmount<WeakPower>() == 2 && !second.HasPower<WeakPower>()
+            Require(combat.Enemy.GetPowerAmount<WeakPower>() == 3 && !second.HasPower<WeakPower>()
                 && combat.Player.Creature.Block == 7 && tea.Pile?.Type == PileType.Exhaust,
                 "Sudden Guard must consume tea, grant seven Block and weaken only its selected target.");
         }

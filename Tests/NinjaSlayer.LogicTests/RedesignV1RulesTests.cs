@@ -59,7 +59,9 @@ public sealed class RedesignV1RulesTests
         Assert.DoesNotContain("ReadAndStrikeRedesignV1", all);
         Assert.Contains("LuckyStrikeRedesignV1", RedesignV1Rules.CommonRewardCardIds);
         Assert.Contains("Endurance", RedesignV1Rules.UncommonRewardCardIds);
-        Assert.Contains("BladeCycleRedesignV1", RedesignV1Rules.UncommonRewardCardIds);
+        Assert.Contains("BladeCycleRedesignV1", RedesignV1Rules.RareRewardCardIds);
+        Assert.Contains("Slaughter", RedesignV1Rules.UncommonRewardCardIds);
+        Assert.DoesNotContain("NinjaGreetingRedesignV1", all);
 
         foreach (string archived in new[]
                  {

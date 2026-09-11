@@ -75,12 +75,21 @@ public partial class YamotoKokiAllyFacingController : Node
                 facingByOwner.Add(owner, faceLeft);
             }
 
-            body.Scale = new Vector2(
-                FacingScaleMath.WithFacing(body.Scale.X, faceLeft),
-                body.Scale.Y);
+            body.Transform = WithFacing(body.Transform, faceLeft);
 
             NinjaSlayerShadowController.Get(companion.Entity)?.SetMirrored(faceLeft);
         }
+    }
+
+    internal static Transform2D WithFacing(Transform2D transform, bool faceLeft)
+    {
+        // Godot decomposes a mirrored matrix into a half-turn and negative Y scale.
+        // Mirror the basis directly so facing updates preserve the current tilt.
+        if ((transform.Determinant() < 0f) != faceLeft)
+        {
+            transform.X = -transform.X;
+        }
+        return transform;
     }
 
     private static bool ResolveCompanionFacing(NCreature ownerNode)

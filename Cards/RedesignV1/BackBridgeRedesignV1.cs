@@ -16,25 +16,24 @@ public sealed class BackBridgeRedesignV1 : RedesignV1UncommonCard
 
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new BlockVar(8, ValueProp.Move), new DynamicVar("BlockPerKarate", 2)];
+        [new BlockVar(15, ValueProp.Move), new KarateVar(5)];
 
     public BackBridgeRedesignV1()
-        : base(nameof(BackBridgeRedesignV1), "BackBridge", 2, CardType.Skill, TargetType.Self) { }
+        : base(nameof(BackBridgeRedesignV1), "BackBridge", 3, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(
             Owner.Creature,
-            DynamicVars.Block.BaseValue
-                + Owner.Creature.GetPowerAmount<KaratePower>()
-                * DynamicVars["BlockPerKarate"].IntValue,
+            DynamicVars.Block.BaseValue,
             ValueProp.Move,
             cardPlay);
+        await PowerCmd.Apply<KaratePower>(choiceContext, Owner.Creature, DynamicVars.Karate().BaseValue, Owner.Creature, this);
     }
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(2);
-        DynamicVars["BlockPerKarate"].UpgradeValueBy(1);
+        DynamicVars.Block.UpgradeValueBy(4);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

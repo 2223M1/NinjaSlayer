@@ -18,6 +18,17 @@ public static class StaggerAnimation
 
     public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature);
 
+    internal static Action? PauseCurrent(Creature creature)
+    {
+        if (!ActiveStates.TryGetValue(creature, out StaggerState? state)) return null;
+        state.Pause();
+        return () =>
+        {
+            if (ActiveStates.TryGetValue(creature, out StaggerState? current) && ReferenceEquals(current, state))
+                state.Resume();
+        };
+    }
+
     internal static bool TryTakeover(Creature creature, out HandoffLease? lease)
     {
         if (!ActiveStates.Remove(creature, out StaggerState? state))
@@ -109,6 +120,18 @@ public static class StaggerAnimation
         private bool _stopped;
 
         public Tween Tween { get; } = tween;
+
+        public void Pause()
+        {
+            if (_stopped || !Tween.IsValid()) return;
+            if (Tween.GetTotalElapsedTime() == 0d) Apply(0f);
+            Tween.SetSpeedScale(0f);
+        }
+
+        public void Resume()
+        {
+            if (!_stopped && Tween.IsValid()) Tween.SetSpeedScale(1f);
+        }
 
         public void Apply(float progress)
         {

@@ -163,11 +163,13 @@ public partial class OrbContractRunner : Node
             await VerifyRunSaves();
             await VerifyAttackCadence();
             await VerifyAimPose();
+            await VerifyEntangledSpinExposure();
             await VerifyGroundShadows();
             VerifyCardMetadata();
             await VerifyCurrentCardInteractions();
             await VerifyV020();
             await VerifyV17();
+            await VerifyV023();
             string? successMarker = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SUCCESS_MARKER");
             if (!string.IsNullOrWhiteSpace(successMarker))
                 System.IO.File.WriteAllText(successMarker, "passed\n");
@@ -274,8 +276,8 @@ public partial class OrbContractRunner : Node
             await PowerCmd.Apply<RecycledBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             int hp = combat.Enemy.CurrentHp;
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card(), combat.Card() });
-            Require(combat.Stock == Math.Max(stock, 1), $"Discard recycling duplicated or lost stock at initial {stock}.");
-            Require(hp - combat.Enemy.CurrentHp == (stock == 0 ? 2 : 3) * 6, "Each actual discard must fire old stock before replenishing.");
+            Require(combat.Stock == Math.Max(stock - 3, 0), $"Discard must consume existing stock at initial {stock}.");
+            Require(hp - combat.Enemy.CurrentHp == Math.Min(stock, 3) * 6, "Recycled Blades must not replenish stock on discard.");
         }
         using (var combat = new OrbCombat())
         {

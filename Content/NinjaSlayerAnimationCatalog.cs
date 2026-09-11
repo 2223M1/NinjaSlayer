@@ -9,15 +9,13 @@ namespace NinjaSlayer.Content;
 public static class NinjaSlayerAnimationCatalog
 {
     private const float IdleFrameDuration = 1f / 24f;
-    private const float XAttackSpinDuration = 0.24f;
-    private const float XAttackSpinFps = 60f;
     private const string AttackTexturePath =
         "res://NinjaSlayer/images/characters/ninja_slayer/attack/attack_0001.png";
     public static readonly VisualCueSet CombatVisualCues = ModVisualCues.CueSet()
         .Sequence("idle", AddIdleFrames)
         .Single("attack", NinjaSlayerFormPresentationCatalog.NormalIdleFirstTexturePath, 0.01f, CueStyle(offsetX: 0f))
-        .Sequence("x_attack", AddXAttackSpinFrames)
-        .Sequence("tornado_fist", AddTornadoFistSpinFrames)
+        .Single("x_attack", AttackTexturePath, 0.24f, CueStyle(offsetX: 0f))
+        .Single("tornado_fist", AttackTexturePath, TornadoFistSpinAnimation.TurnSeconds, CueStyle(offsetX: 0f))
         .Single("hit", NinjaSlayerFormPresentationCatalog.NormalIdleFirstTexturePath, 0.01f, CueStyle(offsetX: 0f))
         .Single("blocked_hit", NinjaSlayerFormPresentationCatalog.NormalIdleFirstTexturePath, 0.01f, CueStyle(offsetX: 0f))
         .Single("cast", "res://NinjaSlayer/images/characters/ninja_slayer/cast/cast_0001.png", 0.2f, CueStyle(offsetX: 0f))
@@ -36,55 +34,6 @@ public static class NinjaSlayerAnimationCatalog
         }
 
         sequence.Loop();
-    }
-
-    private static void AddXAttackSpinFrames(VisualFrameSequenceBuilder sequence)
-    {
-        AddVerticalSpinFrames(sequence, XAttackSpinDuration, XAttackSpinFps, moveDistance: 0f);
-    }
-
-    private static void AddTornadoFistSpinFrames(VisualFrameSequenceBuilder sequence)
-    {
-        const float fps = 60f;
-        int frameCount = Mathf.CeilToInt(TornadoFistSpinAnimation.TurnSeconds * fps);
-        float frameDuration = TornadoFistSpinAnimation.TurnSeconds / frameCount;
-        float pivotOffset = NinjaSlayerVisualRig.SpinPivotDeltaX * NinjaSlayerCombatVisuals.BodySpriteBaseScale;
-
-        for (int frame = 0; frame < frameCount; frame++)
-        {
-            float progress = frame / (float)frameCount;
-            float scaleX = ClampEdgeOnScale(Mathf.Cos(progress * Mathf.Tau));
-            float fixedPivotOffsetX = pivotOffset * (1f - scaleX);
-            sequence.Frame(AttackTexturePath, frameDuration, CueStyle(fixedPivotOffsetX, scaleX: scaleX));
-        }
-    }
-
-    private static void AddVerticalSpinFrames(
-        VisualFrameSequenceBuilder sequence,
-        float duration,
-        float fps,
-        float moveDistance)
-    {
-        int frameCount = Mathf.CeilToInt(duration * fps);
-        float frameDuration = duration / frameCount;
-
-        for (int frame = 0; frame < frameCount; frame++)
-        {
-            float progress = frameCount == 1 ? 1f : frame / (frameCount - 1f);
-            float scaleX = ClampEdgeOnScale(Mathf.Cos(progress * Mathf.Pi * 2f));
-            float offsetX = Mathf.Sin(progress * Mathf.Pi) * moveDistance;
-            sequence.Frame(AttackTexturePath, frameDuration, CueStyle(offsetX, scaleX: scaleX));
-        }
-    }
-
-    private static float ClampEdgeOnScale(float scaleX)
-    {
-        if (Mathf.Abs(scaleX) >= 0.18f)
-        {
-            return scaleX;
-        }
-
-        return scaleX < 0f ? -0.18f : 0.18f;
     }
 
     private static VisualNodeStyle CueStyle(float offsetX, float rotationDegrees = 0f, float scaleX = 1f) =>

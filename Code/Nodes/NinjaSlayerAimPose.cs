@@ -21,6 +21,7 @@ public partial class NinjaSlayerAimPose : Node2D
     private Transform2D _centerBaseline;
     private readonly V2[] _offsets = new V2[64];
     private Creature? _target;
+    private Vector2? _finisherTargetLocal;
     private Node? _dragOwner;
     private CardPlay? _preparedKick;
     private Vector2 _pointer;
@@ -49,7 +50,10 @@ public partial class NinjaSlayerAimPose : Node2D
     private float _launch;
     private bool _charging;
     private bool _tornado;
+    private bool _tornadoEmpowered;
+    private float _spinPauseRemaining;
     private float _spinDegrees;
+    private Func<double, double>? _spinExposure;
     private VerticalAxisSpinProjection? _spin;
     private Tween? _poseTween;
     private long _generation;
@@ -73,7 +77,9 @@ public partial class NinjaSlayerAimPose : Node2D
 
     internal Vector2 Travel => _travel + Vector2.Right * _chargeBack;
     internal bool IsTornado => _tornado;
-    internal bool OwnsSpin => _spin != null;
+    internal bool IsEmpoweredTornado => _tornado && _tornadoEmpowered;
+    internal bool UseTornadoHitStop { get; set; } = true;
+    internal bool OwnsSpin => _spin != null || Turning;
     internal bool IsAiming => _enabled;
     internal bool IsExclusive => _exclusive;
     internal bool IsBusy => _busy || _exclusive;
@@ -99,6 +105,7 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_subscribed)
             RenderingServer.FramePreDraw -= SyncNow;
         _subscribed = false;
+        ClearDragPresentation();
         ClearPresentation();
         StopPoseTween();
         _spin?.Restore();
@@ -114,20 +121,23 @@ public partial class NinjaSlayerAimPose : Node2D
             return;
         }
         AdvancePresentation((float)delta);
+        AdvanceTurn((float)delta);
         if (_dragOwner != null && !GodotObject.IsInstanceValid(_dragOwner))
             EndDrag(_dragOwner, false);
+        UpdateTornadoCharge();
         if (_charging && !_busy && !_exclusive)
-        {
-            _chargeSeconds += (float)delta;
-            float p = Mathf.Clamp(_chargeSeconds / 0.30f, 0f, 1f);
-            _chargeBack = -FacingSign * 24f * Mathf.SmoothStep(0f, 1f, p);
-            _spinDegrees += 2400f * p * (float)delta;
-        }
+            AdvanceCharge((float)delta);
         else if (_tornado)
         {
-            float speed = CombatActionTimingRuntime.CurrentSpeed == CombatActionSpeed.Fast ? 4800f : 2400f;
-            _spinDegrees += speed * (float)delta;
+            float speed = _tornadoEmpowered ? 12000f
+                : CombatActionTimingRuntime.CurrentSpeed == CombatActionSpeed.Fast ? 4800f : 2400f;
+            double stopped = Math.Min(delta, _spinPauseRemaining);
+            _spinPauseRemaining = (float)Math.Max(0d, _spinPauseRemaining - stopped);
+            double from = _spinDegrees;
+            _spinDegrees += speed * (float)(delta - stopped);
+            _spinExposure = age => from + speed * Math.Clamp(delta - age - stopped, 0d, delta - stopped);
         }
+        else _spinExposure = null;
         SyncNow();
     }
 
@@ -135,13 +145,22 @@ public partial class NinjaSlayerAimPose : Node2D
 
     internal void Drag(Node owner, CardModel card, Vector2 pointerCanvas, Creature? hovered)
     {
-        if (_dragOwner == null) _dragFacingBaseline = FacingSign < 0f;
+        if (_dragOwner == null)
+        {
+            _dragFacingBaseline = FacingSign < 0f;
+            if (_returning && !IsBusy) { StopPoseTween(); _returning = false; }
+        }
         _dragOwner = owner;
+        _dragCard = card;
         _pointer = pointerCanvas;
         _hovered = hovered;
         if (IsBusy) return;
         _enabled = true;
-        if (_actor != null)
+        if (card is TornadoFistRedesignV1)
+        {
+            UpdateTornadoCharge();
+        }
+        else if (_actor != null)
         {
             float targetX = hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.X
                 ?? pointerCanvas.X;
@@ -149,13 +168,7 @@ public partial class NinjaSlayerAimPose : Node2D
             // marker here makes a stationary overhead pointer flip the body every frame.
             float side = targetX - _airborne.GetGlobalTransformWithCanvas().Origin.X;
             bool left = Mathf.IsZeroApprox(side) ? FacingSign < 0f : side < 0f;
-            if (left != (FacingSign < 0f)) NinjaSlayerFacingState.SetFacing(_actor, left);
-        }
-        if (card is TornadoFistRedesignV1 && !_charging && !_tornado)
-        {
-            _charging = true;
-            _chargeSeconds = 0f;
-            StartSpin();
+            RequestTurn(left);
         }
         SyncNow();
     }
@@ -164,9 +177,10 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         if (!ReferenceEquals(owner, _dragOwner)) return;
         _dragOwner = null;
+        _dragCard = null;
         _hovered = null;
         if (!played && !IsBusy && _actor != null && _dragFacingBaseline is { } left)
-            NinjaSlayerFacingState.SetFacing(_actor, left);
+            RequestTurn(left);
         _dragFacingBaseline = null;
         if (IsBusy) return;
         if (played && _charging)
@@ -174,6 +188,7 @@ public partial class NinjaSlayerAimPose : Node2D
             // Preserve the charged frame until the queued card claims it. There is no
             // gameplay charge duration, and cancellation/room cleanup still owns it.
             _charging = false;
+            _chargePending = true;
             return;
         }
         _charging = false;
@@ -184,6 +199,13 @@ public partial class NinjaSlayerAimPose : Node2D
     private async Task ReturnPreview()
     {
         await TweenPose(0.2f, ApplyReturn);
+    }
+
+    internal void ReleaseEmptyTornado()
+    {
+        if (IsBusy || _dragOwner != null || !HasCharge && _spin == null) return;
+        BeginReturn();
+        _ = ReturnPreview();
     }
 
     internal void BeginAction(Creature? target, bool exclusive = false, bool preserveTornado = false)
@@ -198,12 +220,19 @@ public partial class NinjaSlayerAimPose : Node2D
         _actionStartAngle = _baseDisplayAngle;
         _actionBlend = exclusive ? 1f : 0f;
         _target = target ?? (_actor != null ? Focus(_actor.Entity) : null);
+        _finisherTargetLocal = exclusive && _target?.GetCreatureNode() is { } focus
+            ? _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+                * focus.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin
+            : null;
         _busy = true;
         _exclusive = exclusive;
         _returning = false;
         _enabled = true;
         _contactOffset = null;
         _charging = false;
+        _chargePending = false;
+        _chargeCard = null;
+        _chargeActionScale = _chargeScale;
         if (!preserveTornado && _spin != null)
         {
             _travel.Y = _baseEffectiveTravelY;
@@ -211,8 +240,8 @@ public partial class NinjaSlayerAimPose : Node2D
             StopSpin();
         }
         if (_actor != null && _target?.GetCreatureNode() is { } node)
-            NinjaSlayerFacingState.SetFacing(_actor, AttackForwardSign is { } forward
-                ? forward < 0f : node.GlobalPosition.X < _actor.GlobalPosition.X);
+            FaceForAction(AttackForwardSign is { } forward
+                ? forward < 0f : node.GlobalPosition.X < _actor.GlobalPosition.X, exclusive);
         SyncNow();
     }
 
@@ -241,13 +270,20 @@ public partial class NinjaSlayerAimPose : Node2D
         });
     }
 
-    internal void BeginTornado(Creature? target, bool exclusive = false)
+    internal void BeginTornado(Creature? target, bool exclusive = false, bool empowered = false)
     {
         _tornado = true;
+        _tornadoEmpowered = empowered;
+        _spinPauseRemaining = 0f;
         _launch = exclusive ? 1f : 0f;
         BeginAction(target, exclusive, preserveTornado: true);
         _kick = 0f;
         StartSpin();
+    }
+
+    internal void PauseTornadoSpin(float seconds)
+    {
+        if (_tornado && !_exclusive) _spinPauseRemaining = Math.Max(_spinPauseRemaining, seconds);
     }
 
     internal void PlaceAtImpact(Creature target, float impactRootX)
@@ -255,12 +291,17 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_actor == null) return;
         Vector2 incoming = (TargetCanvas() - CoreCanvas).Normalized();
         if (incoming.LengthSquared() < 0.001f) incoming = Vector2.Right * FacingSign;
+        // Exclusive placement owns root movement; discard the preceding visual lunge.
+        _travel.X = 0f;
+        _chargeBack = 0f;
+        SyncNow();
         CanvasItem parent = _actor.GetParent<CanvasItem>();
         Transform2D parentCanvas = parent.GetGlobalTransformWithCanvas();
         Vector2 targetCanvas = target.GetCreatureNode()!.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
         Vector2 rootShift = parentCanvas.BasisXform(new(impactRootX - _actor.Position.X, 0f));
         float separation = Math.Abs(targetCanvas.X - (CoreCanvas.X + rootShift.X));
-        _contactOffset = -incoming * (separation / Math.Max(0.15f, Math.Abs(incoming.X)));
+        _contactOffset = parentCanvas.AffineInverse().BasisXform(
+            -incoming * (separation / Math.Max(0.15f, Math.Abs(incoming.X))));
         _actor.Position = new(impactRootX, _actor.Position.Y);
         SyncNow();
     }
@@ -275,6 +316,9 @@ public partial class NinjaSlayerAimPose : Node2D
         Node2D marker = NinjaSlayerVisualRig.GetCinematicFocus(_actor.Visuals)!;
         Vector2 pivot = marker.GetGlobalTransformWithCanvas().Origin;
         _spin = VerticalAxisSpinProjection.CaptureCurrent(body, pivot.X, pivot);
+        _spinDegrees = 0f;
+        _spinExposure = null;
+        _spin.ApplyDegrees(0f);
         Transform = old;
     }
 
@@ -282,8 +326,11 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         _spin?.Restore();
         _spin = null;
+        _spinExposure = null;
         _charging = false;
         _tornado = false;
+        _tornadoEmpowered = false;
+        _spinPauseRemaining = 0f;
         _launch = 0f;
         if (_actor != null && !_actor.Entity.IsDead)
             SoarSpinAnimation.EnsureAirborneSpin(_actor.Entity);
@@ -298,13 +345,17 @@ public partial class NinjaSlayerAimPose : Node2D
             .AffineInverse().BasisXform(direction).Normalized();
     }
 
-    internal void SetTravel(Vector2 baseline, Vector2 offset, float launchProgress = 1f)
+    internal void SetTravel(Vector2 offset, float launchProgress = 1f)
     {
         if (_actor == null || _exclusive) return;
-        if (launchProgress >= 1f) _actionBlend = 1f;
+        if (launchProgress >= 1f)
+        {
+            _actionBlend = 1f;
+            if (Turning) FinishTurn(_turnTo > 90f);
+        }
+        _chargeScale = _chargeActionScale.Lerp(Vector2.One, Mathf.Clamp(launchProgress, 0f, 1f));
         _travel = offset;
         _chargeBack = 0f;
-        _actor.Position = new Vector2(baseline.X + offset.X, _actor.Position.Y);
         if (_tornado) _launch = launchProgress;
         SyncNow();
     }
@@ -317,6 +368,9 @@ public partial class NinjaSlayerAimPose : Node2D
         _exclusive = false;
         _returning = true;
         _charging = false;
+        _chargePending = false;
+        _chargeCard = null;
+        _returnChargeScale = _chargeScale;
         _returnAngle = _baseDisplayAngle;
         _returnKick = _kick;
         _returnLaunch = _launch;
@@ -332,6 +386,7 @@ public partial class NinjaSlayerAimPose : Node2D
         float p = Mathf.Clamp(progress, 0f, 1f);
         _travel = _returnTravel * (1f - p);
         _chargeBack = _returnBack * (1f - p);
+        _chargeScale = _returnChargeScale.Lerp(Vector2.One, p);
         _kick = _returnKick * (1f - p);
         _launch = _returnLaunch * (1f - p);
         _angle = _returnAngle * (1f - p);
@@ -341,9 +396,11 @@ public partial class NinjaSlayerAimPose : Node2D
         SyncNow();
         if (p >= 1f)
         {
+            if (Turning) FinishTurn(_turnTo > 90f);
             StopSpin();
+            _finisherTargetLocal = null;
             _returning = false;
-            _enabled = _dragOwner != null;
+            _enabled = _dragOwner != null && (_dragCard is not TornadoFistRedesignV1 tornado || tornado.ShouldCharge);
             if (!_enabled) Transform = Transform2D.Identity;
             SyncNow();
         }
@@ -351,6 +408,8 @@ public partial class NinjaSlayerAimPose : Node2D
 
     internal void Reset()
     {
+        ClearDragPresentation();
+        if (_actor != null) NinjaSlayerSpinMotionBlur.Get(_actor.Entity)?.Reset();
         ClearPresentation();
         foreach (RapidMotionChannel channel in _exclusiveChannels)
             if (GodotObject.IsInstanceValid(channel.Target)) channel.SetPosition(channel.Baseline);
@@ -360,6 +419,7 @@ public partial class NinjaSlayerAimPose : Node2D
         StopSpin();
         _dragOwner = null;
         _target = null;
+        _finisherTargetLocal = null;
         _dragFacingBaseline = null;
         _hovered = null;
         _preparedKick = null;
@@ -408,6 +468,21 @@ public partial class NinjaSlayerAimPose : Node2D
 
     private Vector2 TargetCanvas()
     {
+        // The cinematic still owns its victim after lethal damage. Keep that
+        // focus through death/removal; a fallback relative to our moving core
+        // would feed the contact pose back into itself on every render frame.
+        if (_finisherTargetLocal is { } lastTarget)
+        {
+            Transform2D parentCanvas = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
+            if (_target?.GetCreatureNode() is { } victim && GodotObject.IsInstanceValid(victim)
+                && !victim.IsQueuedForDeletion())
+            {
+                Vector2 victimCenter = victim.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
+                _finisherTargetLocal = parentCanvas.AffineInverse() * victimCenter;
+                return victimCenter;
+            }
+            return parentCanvas * lastTarget;
+        }
         bool preview = !_busy && !_exclusive && _dragOwner != null;
         Creature? target = preview ? _hovered : _target;
         if (target?.IsAlive == true && target.GetCreatureNode() is { } targetNode)
@@ -429,7 +504,8 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         if (_actor == null || !GodotObject.IsInstanceValid(_actor) || _actor.Entity == null || _actor.Visuals == null || _actor.Entity.IsDead
             || !GodotObject.IsInstanceValid(_center)) return;
-        _spin?.ApplyDegrees(_spinDegrees);
+        _spin?.ApplyDegrees(_spinDegrees, _spinExposure);
+        ApplyTurnProjection();
         Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
         NarakuVisualOverlay overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
         overlay.SyncForPose();
@@ -446,6 +522,7 @@ public partial class NinjaSlayerAimPose : Node2D
         for (int i = 0; i < contour.Length; i++)
         {
             Vector2 point = unposedBody * SpritePoint(body, new(contour[i].X, contour[i].Y)) - core;
+            point *= _chargeScale;
             _offsets[i] = new(point.X, point.Y);
             top = Math.Min(top, point.Y);
             bottom = Math.Max(bottom, point.Y);
@@ -468,7 +545,7 @@ public partial class NinjaSlayerAimPose : Node2D
         float standingY = full ? 15.5f : -6.45f;
         float altitude = Math.Max(0f, -_airborne.Position.Y);
         float travelY = GroundedPoseMath.ClampDescent(_travel.Y, altitude);
-        Vector2 travelCanvas = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(new(_chargeBack, travelY));
+        Vector2 travelCanvas = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(new(_travel.X + _chargeBack, travelY));
         core += travelCanvas;
         float line = (parentCanvas * new Vector2(0f, standingY)).Y + travelCanvas.Y;
         float originalLine = line;
@@ -478,11 +555,13 @@ public partial class NinjaSlayerAimPose : Node2D
         _effectiveTravelY = travelY + _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
             .AffineInverse().BasisXform(new Vector2(0f, line - originalLine)).Y;
         float reference = FacingSign < 0f ? Mathf.Pi : 0f;
-        Vector2 footDirection = unposedBody * footPoint - (core - travelCanvas);
+        Vector2 footDirection = (unposedBody * footPoint - (core - travelCanvas)) * _chargeScale;
         float feetAngle = footDirection.Angle();
         reference += GroundedPoseMath.WrapAngle(feetAngle - reference) * _kick;
         if (!_returning || _dragOwner != null && !_exclusive)
-            _angle = GroundedPoseMath.AimAngle(offsets, new(core.X, core.Y), new(target.X, target.Y), line, reference, _angle);
+            _angle = ChargePreview ? 0f
+                : !IsBusy && _dragOwner != null ? PreviewAngle(offsets, core, target, line, reference)
+                : GroundedPoseMath.AimAngle(offsets, new(core.X, core.Y), new(target.X, target.Y), line, reference, _angle);
         float rotation = _angle * (_tornado ? 1f - _launch : 1f);
         if (_busy && !_exclusive && !_tornado)
             rotation = Mathf.LerpAngle(_actionStartAngle, rotation, Mathf.SmoothStep(0f, 1f, _actionBlend));
@@ -490,8 +569,9 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_tornado && _launch > 0f)
             support = Mathf.Lerp(support, footDirection.Rotated(rotation).Y, _launch);
         Vector2 finalCore = new(core.X, line - support);
-        if (_exclusive && _contactOffset is { } contact && !_tornado)
+        if (_exclusive && _contactOffset is { } localContact && !_tornado)
         {
+            Vector2 contact = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(localContact);
             finalCore = target + contact;
             for (int i = 0; i < 64; i++)
             {
@@ -508,7 +588,7 @@ public partial class NinjaSlayerAimPose : Node2D
                 .AffineInverse().BasisXform(finalCore - new Vector2(finalCore.X, originalLine - lowest)).Y;
         }
         ComposePresentation(offsets, ref rotation, ref finalCore);
-        Transform2D worldRotation = new(rotation, Vector2.Zero);
+        Transform2D worldRotation = new(rotation, _chargeScale, 0f, Vector2.Zero);
         _displayAngle = rotation;
         worldRotation.Origin = finalCore - worldRotation.BasisXform(core - travelCanvas);
         Transform = parentCanvas.AffineInverse() * worldRotation * parentCanvas;

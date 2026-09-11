@@ -386,7 +386,8 @@ public static class AncientEntranceAnimation
         await SoarSpinAnimation.PlayFiniteVerticalAxisProjection(
             creature,
             duration,
-            progress => projection.ApplyDegrees(angleDegreesAtProgress(progress)),
+            progress => projection.ApplyDegrees(angleDegreesAtProgress(progress), age => angleDegreesAtProgress(
+                duration > 0f ? Mathf.Max(0f, progress - (float)age / duration) : progress)),
             cinematicContext,
             keepActivityAfterCompletion: true);
         projection.ApplyDegrees(angleDegreesAtProgress(1f));

@@ -21,5 +21,5 @@ public sealed class NarakuFormRedesignV1 : RedesignV1RareCard
             Owner.Creature,
             this);
 
-    protected override void OnUpgrade() { }
+    protected override void OnUpgrade() => AddKeyword(CardKeyword.Retain);
 }

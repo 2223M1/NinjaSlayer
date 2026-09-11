@@ -15,6 +15,7 @@ public partial class NarakuVisualOverlay : Sprite2D
 
     private Creature? creature;
     private Sprite2D? source;
+    private NinjaSlayerSpinMotionBlur? spinBlur;
     private string? activeTexturePath;
 
     // UpdateVisual runs every frame. The texture path only changes when the presentation or the
@@ -156,6 +157,7 @@ public partial class NarakuVisualOverlay : Sprite2D
             if (source == null && node is NCreatureVisuals visuals)
             {
                 source = NinjaSlayerVisualRig.GetBodySprite(visuals);
+                spinBlur = visuals.GetNodeOrNull<NinjaSlayerSpinMotionBlur>("SpinMotionBlur");
             }
 
             if (creature == null && node is NCreature creatureNode)
@@ -234,6 +236,7 @@ public partial class NarakuVisualOverlay : Sprite2D
             scale);
         Rotation = 0f;
         Skew = 0f;
+        spinBlur?.ProjectVariant(this);
     }
 
     private float GetLegacyFormScale(NinjaSlayerFormPresentation presentation)

@@ -123,8 +123,8 @@ public partial class OrbContractRunner
             AddCard<ChadoEnergyRedesignV1>(combat);
             int block = combat.Player.Creature.Block;
             await CardCmd.AutoPlay(Choice, AddCard<PlaceholderGoldDefense01>(combat, upgraded: upgraded), null);
-            Require(combat.Player.Creature.Block - block == (upgraded ? 23 : 18),
-                "Chado Guard must count only hand tea for its extra block.");
+            Require(combat.Player.Creature.Block - block == (upgraded ? 7 : 5),
+                "Tea Guard grants only its base block when no tea has been exhausted.");
         }
         foreach (bool upgraded in new[] { false, true })
         {

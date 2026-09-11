@@ -25,7 +25,7 @@ public sealed class AbyssStrengthRedesignV1 : RedesignV1UncommonCard
             DynamicVars.Karate().BaseValue,
             Owner.Creature,
             this);
-        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(Owner, PileType.Draw);
+        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(Owner, PileType.Hand);
     }
 
     protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(2);

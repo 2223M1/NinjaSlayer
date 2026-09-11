@@ -1,4 +1,7 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using NinjaSlayer.Cards.RedesignV1;
@@ -13,17 +16,17 @@ public sealed class TeaTeaPower : RedesignV1CounterPower
     public override PowerAssetProfile AssetProfile =>
         NinjaSlayerPowerAssets.Named("DrinkTeaPower");
 
-    public override Task BeforeFlush(PlayerChoiceContext choiceContext, Player player)
+    public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
-        if (player == Owner.Player)
-        {
-            foreach (ChadoEnergyRedesignV1 chado in PileType.Hand.GetPile(player).Cards
-                         .OfType<ChadoEnergyRedesignV1>())
-            {
-                chado.GiveSingleTurnRetain();
-            }
-        }
+        foreach (CardModel card in Owner.Player!.PlayerCombatState!.AllCards.OfType<ChadoEnergyRedesignV1>())
+            CardCmd.ApplyKeyword(card, CardKeyword.Retain);
+        return Task.CompletedTask;
+    }
 
+    public override Task AfterCardEnteredCombat(CardModel card)
+    {
+        if (card.Owner == Owner.Player && card is ChadoEnergyRedesignV1)
+            CardCmd.ApplyKeyword(card, CardKeyword.Retain);
         return Task.CompletedTask;
     }
 
@@ -35,6 +38,6 @@ public sealed class TeaTeaPower : RedesignV1CounterPower
         }
 
         Flash();
-        await ChadoBreathCmd.Apply(player, Amount);
+        await ChadoBreathCmd.Apply(choiceContext, player, Amount);
     }
 }

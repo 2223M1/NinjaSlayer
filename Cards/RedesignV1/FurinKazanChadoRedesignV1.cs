@@ -17,7 +17,7 @@ public sealed class FurinKazanChadoRedesignV1 : RedesignV1RareCard
         [new PowerVar<ArtifactPower>(1)];
 
     public FurinKazanChadoRedesignV1()
-        : base(nameof(FurinKazanChadoRedesignV1), "TeaSamadhi", 2, CardType.Skill, TargetType.Self) { }
+        : base(nameof(FurinKazanChadoRedesignV1), "TeaSamadhi", 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

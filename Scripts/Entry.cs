@@ -58,6 +58,7 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerAimHoverPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAimUnhoverPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAimFinishPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerAimCancelledPlayPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDrawBatchPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDrawBackflipPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerRunSavePatch>();

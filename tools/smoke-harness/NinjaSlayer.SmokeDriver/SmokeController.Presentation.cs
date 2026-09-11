@@ -33,6 +33,7 @@ internal sealed partial class SmokeController
         int originalMaxHp = target.MaxHp;
         target.SetMaxHpInternal(1000);
         await CreatureCmd.SetCurrentHp(target, 1000);
+        await VerifyBlackFlameFlash(combat, player, target);
         var visuals = NCombatRoom.Instance!.GetCreatureNode(player.Creature)!.Visuals;
         Node2D anchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals)!;
 

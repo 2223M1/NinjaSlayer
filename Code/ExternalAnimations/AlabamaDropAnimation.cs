@@ -48,6 +48,7 @@ public static class AlabamaDropAnimation
         bool visualTailOwnsRestore = false;
         Task impactResolutionTask = Task.CompletedTask;
         Node2D? targetBody = null;
+        EntangledSpinMotionBlur? targetSpinBlur = null;
         Node.ProcessModeEnum targetBodyProcessMode = Node.ProcessModeEnum.Inherit;
 
         void RestoreTargetBodyProcessMode()
@@ -73,6 +74,7 @@ public static class AlabamaDropAnimation
             }
 
             impactPlayed = true;
+            targetSpinBlur?.Stop();
             SfxCmd.PlayDamage(target.Monster, 0);
             NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
             if (targetNode != null)
@@ -115,6 +117,9 @@ public static class AlabamaDropAnimation
             ? NinjaSlayerRapidAnimationCoordinator.GetBaseline(owner, ownerRig.CreatureNode)
             : ownerRig.CreatureNode.Position;
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
+        Rect2 targetBodyBounds = targetRig.Body.GetGlobalTransformWithCanvas().AffineInverse()
+            * targetRig.Visuals.Bounds.GetGlobalTransformWithCanvas()
+            * new Rect2(Vector2.Zero, targetRig.Visuals.Bounds.Size);
         SoarSpinAnimation.SuspendForCinematic(owner);
         var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         BodyPivotCompensation ownerPivot = BodyPivotCompensation.Capture(ownerRig);
@@ -189,6 +194,7 @@ public static class AlabamaDropAnimation
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
             targetPivot.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
 
+            targetSpinBlur = EntangledSpinMotionBlur.Create(targetRig.Body, targetBodyBounds);
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await Task.WhenAll(
                 ByrdFallAnimation.Play(owner, RiseDistance, FallDuration, playImpact: true, PlayImpact),
@@ -196,7 +202,8 @@ public static class AlabamaDropAnimation
                 PlayEntangledFall(
                     ownerRig,
                     targetRig,
-                    FallDuration));
+                    FallDuration,
+                    targetSpinBlur));
 
             ownerRig.Body.RotationDegrees = ownerInvertedRotation;
             ownerRig.Body.Scale = ownerSnapshot.BodyScale;
@@ -258,6 +265,7 @@ public static class AlabamaDropAnimation
         }
         finally
         {
+            targetSpinBlur?.Stop();
             aimPose?.Reset();
             RestoreTargetBodyProcessMode();
             if (impactResolutionStarted && !impactResolutionJoined)
@@ -403,7 +411,8 @@ public static class AlabamaDropAnimation
     private static async Task PlayEntangledFall(
         CreatureRig ownerRig,
         CreatureRig targetRig,
-        float duration)
+        float duration,
+        EntangledSpinMotionBlur targetBlur)
     {
         Vector2 ownerCenter = ResolveOwnerSpinCenter(ownerRig);
         Vector2 targetCenter = targetRig.Visuals.Bounds.GetGlobalRect().GetCenter();
@@ -425,8 +434,11 @@ public static class AlabamaDropAnimation
                 progress =>
                 {
                     float degrees = GetTumbleAngleDegrees(progress);
-                    ownerProjection.ApplyDegrees(degrees);
+                    double AngleBefore(double age) => GetTumbleAngleDegrees(
+                        duration > 0f ? Mathf.Max(0f, progress - (float)age / duration) : progress);
+                    ownerProjection.ApplyDegrees(degrees, AngleBefore);
                     targetProjection.ApplyDegrees(degrees);
+                    targetBlur.Record(targetProjection, degrees, AngleBefore);
                 });
 
             ownerProjection.ApplyDegrees(TotalTumbleDegrees);
@@ -434,6 +446,7 @@ public static class AlabamaDropAnimation
         }
         finally
         {
+            targetBlur.Stop();
             ownerProjection.Restore();
             targetProjection.Restore();
         }

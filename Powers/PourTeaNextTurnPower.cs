@@ -24,7 +24,7 @@ public sealed class PourTeaNextTurnPower : RedesignV1CounterPower
         }
 
         Flash();
-        await ChadoBreathCmd.Apply(Owner.Player!, Amount);
+        await ChadoBreathCmd.Apply(choiceContext, Owner.Player!, Amount);
         await PowerCmd.Remove(this);
     }
 }

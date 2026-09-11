@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
 using NinjaSlayer.Orbs;
@@ -53,7 +54,16 @@ public partial class OrbContractRunner
         AimActors.Add(combat.Player.Creature, actor);
         AimActors.Add(combat.Enemy, target);
         var stage = new Node2D();
-        AddChild(stage);
+        SubViewport? spinViewport = null;
+        if (System.Environment.GetEnvironmentVariable("NINJASLAYER_SPIN_RENDER_DIR") != null
+            || System.Environment.GetEnvironmentVariable("NINJASLAYER_DRAG_RENDER_DIR") != null)
+        {
+            spinViewport = new SubViewport { Size = new(1400, 900), TransparentBg = true,
+                RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
+            AddChild(spinViewport);
+            spinViewport.AddChild(stage);
+        }
+        else AddChild(stage);
         stage.AddChild(actor);
         stage.AddChild(target);
         Node2D pose = rig.GetNode<Node2D>("%AimPose");
@@ -68,7 +78,7 @@ public partial class OrbContractRunner
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");
             var facingDrag = new Node();
             stage.AddChild(facingDrag);
-            var aimedCard = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
+            var aimedCard = combat.State.CreateCard<SatsubatsuRedesignV1>(combat.Player);
             Sprite2D facingOverlay = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
             foreach (bool locked in new[] { false, true })
             foreach (float pointerX in new[] { 0f, -15f, 15f, -100f, 100f })
@@ -77,25 +87,27 @@ public partial class OrbContractRunner
                 targetCenter.Position = new(0f, -500f);
                 Creature? hovered = locked ? combat.Enemy : null;
                 Invoke("Drag", facingDrag, aimedCard, new Vector2(pointerX, -500f), hovered);
-                float expectedFacing = Math.Sign(anchor.Scale.X);
+                float expectedFacing = pointerX == 0f ? Math.Sign(anchor.Scale.X) : Math.Sign(pointerX);
+                int flips = 0;
+                float lastFacing = Math.Sign(anchor.Scale.X);
                 for (int frame = 0; frame < 30; frame++)
                 {
                     Invoke("Drag", facingDrag, aimedCard, new Vector2(pointerX, -500f), hovered);
                     await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                     Invoke("SyncNow");
-                    Require(Math.Sign(anchor.Scale.X) == expectedFacing,
-                        $"Stationary overhead pointer at X={pointerX} flipped facing again on frame {frame}.");
+                    float facing = Math.Sign(anchor.Scale.X);
+                    if (facing != lastFacing) { flips++; lastFacing = facing; }
+                    Require(flips <= 1, $"Stationary overhead pointer at X={pointerX} repeatedly flipped facing.");
                     Require(sprite.Visible != facingOverlay.Visible,
                         "Overhead aiming must draw exactly one body layer.");
                     Sprite2D visibleBody = facingOverlay.Visible ? facingOverlay : sprite;
                     for (Node? node = visibleBody; node != null; node = node.GetParent())
                         if (node is CanvasItem canvas)
                             Require(Mathf.IsEqualApprox(canvas.Modulate.A, 1f), "Overhead aiming faded the body.");
-                    Require(Mathf.IsEqualApprox(visibleBody.SelfModulate.A, 1f)
-                        && visibleBody.Material == null, "Overhead aiming enabled a faded or blurred body material.");
+                    Require(Mathf.IsEqualApprox(visibleBody.SelfModulate.A, 1f), "Overhead aiming faded its body material.");
                 }
                 if (pointerX != 0f)
-                    Require(expectedFacing == Math.Sign(pointerX), "Drag facing must follow the pointer side.");
+                    Require(expectedFacing == Math.Sign(anchor.Scale.X), "Drag turn did not finish facing the pointer side.");
             }
             Invoke("Reset");
             facingDrag.Free();
@@ -121,9 +133,14 @@ public partial class OrbContractRunner
             anchor.Position = Vector2.Zero;
             target.Position = new(700f, 0f);
             targetCenter.Position = new(0f, -300f);
-            Invoke("BeginTornado", combat.Enemy, false);
-            Invoke("SetTravel", Vector2.Zero, new Vector2(120f, 0f), 1f);
+            Invoke("BeginTornado", combat.Enemy, false, false);
+            Vector2 tornadoRoot = actor.Position;
+            float tornadoStartX = center.GlobalPosition.X;
+            Invoke("SetTravel", new Vector2(120f, 0f), 1f);
             Invoke("SyncNow");
+            Require(actor.Position.IsEqualApprox(tornadoRoot), "Tornado moved the creature root and attached combat UI.");
+            Require(Math.Abs(center.GlobalPosition.X - tornadoStartX - 120f) < 0.1f,
+                "Tornado did not move its actual hit center with the body.");
             float foot = (sprite.GetGlobalTransformWithCanvas() * new Vector2(295f, 535f)).Y;
             Require(Math.Abs(foot - targetCenter.GlobalPosition.Y) < 0.5f, "Tornado feet did not reach the target core.");
             Vector2 tornadoCore = center.GlobalPosition;
@@ -138,12 +155,36 @@ public partial class OrbContractRunner
                 actor.Position = Vector2.Zero;
                 anchor.Position = new(0f, -150f);
                 targetCenter.Position = new(0f, targetY);
+                Invoke("BeginAction", combat.Enemy, false, false);
+                Invoke("SetTravel", new Vector2(90f, 0f), 1f);
                 Invoke("BeginAction", combat.Enemy, true, false);
                 Invoke("PlaceAtImpact", combat.Enemy, 600f);
                 Require(actor.Position.X == 600f, "Finisher no longer places the actor directly at impact.");
+                Require(Math.Abs(((Vector2)AccessTools.Property(poseType, "Travel").GetValue(pose)!).X) < 0.01f,
+                    "Finisher applied the preceding attack displacement a second time.");
                 Vector2 aimedForward = pose.GetGlobalTransformWithCanvas().BasisXform(Vector2.Right).Normalized();
                 Vector2 aimedTarget = (targetCenter.GlobalPosition - center.GlobalPosition).Normalized();
                 Require(aimedForward.Dot(aimedTarget) > 0.999f, "Finisher impact pose lost its dynamic incoming direction.");
+                Vector2 impactCore = center.GlobalPosition;
+                int targetHp = combat.Enemy.CurrentHp;
+                combat.Enemy.SetCurrentHpInternal(0);
+                for (int frame = 0; frame < 30; frame++) Invoke("SyncNow");
+                Require(center.GlobalPosition.DistanceTo(impactCore) < 0.5f,
+                    "Finisher actor chased its own fallback core after lethal impact.");
+                AimActors.Remove(combat.Enemy);
+                for (int frame = 0; frame < 30; frame++) Invoke("SyncNow");
+                Require(center.GlobalPosition.DistanceTo(impactCore) < 0.5f,
+                    "Finisher actor drifted when its victim node was removed.");
+                Transform2D stageBefore = stage.Transform;
+                Vector2 localImpactCore = stage.ToLocal(impactCore);
+                stage.Position += new Vector2(-120f, 35f);
+                stage.Scale *= 1.2f;
+                for (int frame = 0; frame < 30; frame++) Invoke("SyncNow");
+                Require(stage.ToLocal(center.GlobalPosition).DistanceTo(localImpactCore) < 0.5f,
+                    "Finisher cached focus did not follow the cinematic camera after victim removal.");
+                stage.Transform = stageBefore;
+                AimActors.Add(combat.Enemy, target);
+                combat.Enemy.SetCurrentHpInternal(targetHp);
                 Invoke("BeginReturn");
                 Invoke("ApplyReturn", 1f);
             }
@@ -155,13 +196,25 @@ public partial class OrbContractRunner
             var dragOwner = new Node();
             stage.AddChild(dragOwner);
             var tornadoCard = combat.State.CreateCard<TornadoFistRedesignV1>(combat.Player);
+            PileType.Hand.GetPile(combat.Player).AddInternal(tornadoCard, -1, silent: true);
+            combat.Player.PlayerCombatState!.GainEnergy(4);
             Invoke("Drag", dragOwner, tornadoCard, new Vector2(700f, -300f), combat.Enemy);
             pose._Process(0.3);
             Vector2 chargedTravel = (Vector2)AccessTools.Property(poseType, "Travel").GetValue(pose)!;
-            Require(Math.Abs(chargedTravel.X + 24f) < 0.01f, "Tornado drag did not stop at its 24px backstep.");
+            Require(Math.Abs(Math.Abs(chargedTravel.X) - 32f) < 0.01f, "Tornado drag did not reach its authored backstep.");
             Invoke("EndDrag", dragOwner, false);
             await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
             Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Cancelled drag left its charge pose active.");
+            Transform2D unchargedBody = sprite.Transform;
+            Invoke("Drag", dragOwner, tornadoCard, new Vector2(700f, -300f), combat.Enemy);
+            pose._Process(0.27);
+            Invoke("EndDrag", dragOwner, true);
+            await NinjaSlayerXAttackSequence.Run(combat.Player.Creature, 0, 0.15f, 0.35f,
+                _ => throw new InvalidOperationException("Zero-hit Tornado dealt damage."), heldApproach: true);
+            await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+            Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Zero-hit Tornado retained its charged pose.");
+            Require(sprite.Transform.IsEqualApprox(unchargedBody), "Zero-hit Tornado left the body flattened or displaced.");
+            Require(!(bool)AccessTools.Property(poseType, "OwnsSpin").GetValue(pose)!, "Zero-hit Tornado retained spin ownership.");
             dragOwner.Free();
             foreach (int formIndex in new[] { 0, 1, 2 })
             {
@@ -203,6 +256,8 @@ public partial class OrbContractRunner
                 }
                 Sprite2D formOverlay = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
                 VerifyDrawAndThrowPose(combat, pose, anchor, formOverlay.Visible ? formOverlay : sprite, center, target, formIndex);
+                await VerifyDragControls(combat, actor, target, targetCenter, rig, formIndex);
+                await VerifySpinExposure(rig, formIndex);
             }
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             Invoke("Reset");
@@ -228,21 +283,38 @@ public partial class OrbContractRunner
             Vector2 bodyBaseline = kokiBody.Position;
             var kokiContour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.CombatBodyContours"), "YamotoKoki").GetValue(null)!;
             MethodInfo tilt = AccessTools.Method(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.YamotoKokiCombatAnimations"), "TweenTilt");
+            MethodInfo withFacing = AccessTools.Method(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Nodes.YamotoKokiAllyFacingController"), "WithFacing");
             foreach (float facing in new[] { -1f, 1f })
             {
+                kokiBody.Transform = Transform2D.Identity;
+                kokiBody.Position = bodyBaseline;
                 kokiBody.Scale = new(facing, 1f);
+                Transform2D authoredBody = kokiBody.Transform;
+                async Task TiltWithFacing(float from, float to, float seconds)
+                {
+                    Task animation = (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, authoredBody, from, to, seconds])!;
+                    while (!animation.IsCompleted)
+                    {
+                        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                        kokiBody.Transform = (Transform2D)withFacing.Invoke(null, [kokiBody.Transform, facing < 0f])!;
+                        Require(kokiBody.Transform.Y.Y > 0f, "Facing updates inverted Koki during her summon tilt.");
+                    }
+                    await animation;
+                }
                 Vector2 coreLocal = kokiBody.ToLocal(kokiCenter.GlobalPosition);
                 float ground = kokiContour.Max(p => (kokiSprite.GetGlobalTransformWithCanvas() * new Vector2(p.X, p.Y)).Y);
-                await (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, bodyBaseline, 0f, 0f, 15f, 0.1f])!;
+                await TiltWithFacing(0f, 15f, 0.1f);
                 float bottom = kokiContour.Max(p => (kokiSprite.GetGlobalTransformWithCanvas() * new Vector2(p.X, p.Y)).Y);
                 Require(Math.Abs(bottom - ground) < 0.1f, "Koki contour left its ground line.");
                 Require(kokiBody.ToGlobal(coreLocal).DistanceTo(kokiCenter.GlobalPosition) < 0.1f, "Koki summon origin did not follow its pivot.");
-                await (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, bodyBaseline, 0f, 15f, 0f, 0.2f])!;
+                await TiltWithFacing(15f, 0f, 0.2f);
                 Require(kokiBody.Position.DistanceTo(bodyBaseline) < 0.01f && kokiCenter.Position.DistanceTo(centerBaseline) < 0.01f,
                     "Koki return did not restore its body and core.");
+                Require(kokiBody.Transform.IsEqualApprox(authoredBody), "Koki return inverted the authored body transform.");
             }
             koki.Free();
-            GD.Print("PASS Koki actual summon tilt: both facings, contour grounding, core/origin tracking and exact return.");
+            GD.Print("PASS Koki actual summon tilt: per-frame mirrored facing, contour grounding, core/origin tracking and exact transform return.");
+            await VerifySawatariHurt(combat, stage);
         }
         finally
         {
@@ -250,6 +322,7 @@ public partial class OrbContractRunner
             actor.Free();
             target.Free();
             stage.Free();
+            spinViewport?.Free();
             AimActors.Clear();
             harmony.UnpatchAll(harmony.Id);
         }

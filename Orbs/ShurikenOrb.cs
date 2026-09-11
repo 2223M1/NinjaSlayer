@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using MegaCrit.Sts2.Core.Combat;
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -23,6 +25,17 @@ public sealed class ShurikenOrb : ModOrbTemplate
     internal const string SavedDataSlot = "shuriken_orb_state";
     internal const string VisualsScenePath =
         "res://NinjaSlayer/scenes/orbs/shuriken_orb.tscn";
+
+    private sealed class EvokeTurn
+    {
+        public int Round;
+        public CombatSide Side;
+    }
+    private static readonly ConditionalWeakTable<PlayerCombatState, EvokeTurn> LastEvoke = new();
+    internal static bool HasEvokedThisTurn(Player player) =>
+        player.PlayerCombatState is { } state && player.Creature.CombatState is { } combat
+        && LastEvoke.TryGetValue(state, out EvokeTurn? turn)
+        && turn.Round == combat.RoundNumber && turn.Side == combat.CurrentSide;
 
     public int StackCount { get; private set; }
     public bool OwnsTransientSlot { get; private set; }
@@ -117,11 +130,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
                 isOwnerDiscard,
                 CombatState.HittableEnemies.Count),
             card);
-        if (isOwnerDiscard
-            && Owner.Creature.GetPower<RecycledBladesPower>() is { } recycled)
-        {
-            await recycled.AddStockAfterDiscard(choiceContext);
-        }
     }
 
     public override Task AfterShuffle(PlayerChoiceContext choiceContext, Player shuffler) =>
@@ -276,6 +284,10 @@ public sealed class ShurikenOrb : ModOrbTemplate
         {
             return [];
         }
+
+        EvokeTurn turn = LastEvoke.GetOrCreateValue(Owner.PlayerCombatState!);
+        turn.Round = CombatState.RoundNumber;
+        turn.Side = CombatState.CurrentSide;
 
         IReadOnlyList<Creature> targets;
         if (Owner.Creature.HasPower<BladeSweepPower>())

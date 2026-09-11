@@ -36,5 +36,5 @@ public sealed class KillingIntentRedesignV1 : RedesignV1RareCard
         }
     }
 
-    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(4);
+    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);
 }

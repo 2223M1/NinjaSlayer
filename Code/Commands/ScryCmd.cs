@@ -45,6 +45,11 @@ public static class ScryCmd
         )).ToList();
 
         int exhaustedCards = 0;
+        if (player.Creature.GetPower<ScryPlanningPower>() is { } planning)
+        {
+            planning.ApplyToUnselectedCards(cardsToScry.Except(cardsToDiscard));
+        }
+
         if (exhaustDiscarded)
         {
             foreach (CardModel card in cardsToDiscard)

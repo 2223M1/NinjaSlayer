@@ -44,7 +44,7 @@ public sealed class OneDrinkOneStrikeRedesignV1 : RedesignV1CommonCard
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         if (MeetsBonusCondition)
         {
-            await ChadoBreathCmd.Apply(Owner, DynamicVars["Breath"].IntValue);
+            await ChadoBreathCmd.Apply(choiceContext, Owner, DynamicVars["Breath"].IntValue);
         }
     }
 

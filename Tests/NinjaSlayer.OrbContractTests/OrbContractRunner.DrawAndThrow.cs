@@ -309,13 +309,12 @@ public partial class OrbContractRunner
                 {
                     float p = time / peak;
                     float distance = peak < 0.2f ? 90f : 120f;
-                    Call("SetTravel", actorBaseline, new Vector2(facing * distance * p, -30f * p), p);
+                    Call("SetTravel", new Vector2(facing * distance * p, -30f * p), p);
                 }
                 else
                 {
                     if (!returning) { Call("BeginReturn"); returning = true; }
                     float p = Math.Min(1f, (time - peak) / 0.2f);
-                    actor.Position = new(actorBaseline.X + facing * (peak < 0.2f ? 90f : 120f) * (1f - p), actorBaseline.Y);
                     Call("ApplyReturn", p);
                 }
                 float flipTime = 0.06f + time;

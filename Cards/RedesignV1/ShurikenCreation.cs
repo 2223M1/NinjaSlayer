@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ShurikenCreation : RedesignV1UncommonCard
 {
-    public ShurikenCreation() : base(nameof(ShurikenCreation), "ShurikenStock", 1, CardType.Skill, TargetType.Self) { }
+    public ShurikenCreation() : base(nameof(ShurikenCreation), "ShurikenStock", 2, CardType.Skill, TargetType.Self) { }
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Sly];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Scry", 1), new DynamicVar("Stock", 2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
