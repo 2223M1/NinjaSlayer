@@ -1,0 +1,7 @@
+{
+  "name": "ninjaslayer-architect-spine-authoring",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node author.mjs" },
+  "dependencies": { "@esotericsoftware/spine-core": "4.2.43" }
+}

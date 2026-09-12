@@ -277,6 +277,19 @@ internal sealed partial class SoftFragmentBody
 
     }
 
+    internal void TransformPinnedPose(BossFragmentPoint basisX, BossFragmentPoint basisY)
+    {
+        BossFragmentPoint center = Center;
+        for (int index = 0; index < ParticleCount; index++)
+        {
+            SoftParticle particle = _particles[index];
+            BossFragmentPoint offset = Subtract(particle.Position, center);
+            particle.Position = Add(center, Add(Multiply(basisX, offset.X), Multiply(basisY, offset.Y)));
+            particle.PreviousPosition = particle.Position;
+            _particles[index] = particle;
+        }
+    }
+
     public void Release(BossFragmentPoint linearVelocity, float angularVelocityRadians)
     {
         BossFragmentPoint center = Center;

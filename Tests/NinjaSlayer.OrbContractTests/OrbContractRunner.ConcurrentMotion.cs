@@ -63,30 +63,56 @@ public partial class OrbContractRunner
                     $"Overlapping attacks failed to sum full displacement: {center.GlobalPosition.X - attackCore.X}.");
                 Require(actor.Position.IsEqualApprox(actorBaseline), "Ordinary attacks moved the combat UI root.");
                 Task third = Attack(120f, 0.2f);
+                Tween firstRecovery = MotionTween(state, 0), secondRecovery = MotionTween(state, 1);
+                firstRecovery.Pause();
+                secondRecovery.Pause();
                 Tween thirdTween = MotionTween(state, 2);
                 thirdTween.Pause();
                 Run("CardGameplaySettled", combat.Player.Creature);
                 Require(AccessTools.Property(state.GetType(), "ActiveTween").GetValue(state) == null,
                     "Return started while an attack was still advancing.");
+                firstRecovery.CustomStep(0.201);
+                secondRecovery.CustomStep(0.201);
                 thirdTween.CustomStep(0.201);
                 await third;
-                Require(Math.Abs(center.GlobalPosition.X - attackCore.X - facing * 330f) < 0.1f,
-                    "Attack reversed direction or stopped accumulating after crossing the target.");
+                Vector2 thirdTravel = (Vector2)AccessTools.Property(pose.GetType(), "Travel").GetValue(pose)!;
+                Require(Math.Abs(thirdTravel.Length() - 120f) < 0.1f && thirdTravel.X * facing > 0f,
+                    $"Completed attacks retained their displacement over the next attack: {thirdTravel}.");
                 Require(((Vector2)Run("GetBaseline", combat.Player.Creature, actor)!).DistanceTo(actorBaseline) < 0.001f,
                     "Repeated attacks replaced the original return baseline.");
                 Tween returning = (Tween)AccessTools.Property(state.GetType(), "ActiveTween").GetValue(state)!;
                 returning.Pause();
-                returning.CustomStep(0.201);
+                returning.CustomStep(0.08);
+                Vector2 midReturn = center.GlobalPosition;
+                Task fourth = Attack(90f, 0.15f);
+                IList motions = (IList)AccessTools.Property(state.GetType(), "Motions").GetValue(state)!;
+                Tween fourthTween = MotionTween(state, motions.Count - 1);
+                fourthTween.Pause();
+                Require(center.GlobalPosition.DistanceTo(midReturn) < .1f, "Return-to-attack snapped the current pose.");
+                Tween thirdRecovery = MotionTween(state, motions.Count - 2);
+                thirdRecovery.Pause();
+                thirdRecovery.CustomStep(.201);
+                fourthTween.CustomStep(.151);
+                await fourth;
+                Vector2 fourthTravel = (Vector2)AccessTools.Property(pose.GetType(), "Travel").GetValue(pose)!;
+                Require(Math.Abs(fourthTravel.Length() - 90f) < .1f && fourthTravel.X * facing > 0f,
+                    "An old return overwrote the new attack or retained an offset.");
+                Run("CardGameplaySettled", combat.Player.Creature);
+                returning = (Tween)AccessTools.Property(state.GetType(), "ActiveTween").GetValue(state)!;
+                returning.Pause();
+                returning.CustomStep(.201);
                 await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                 Require(actor.Position.DistanceTo(actorBaseline) < 0.001f && pose.Transform.IsEqualApprox(Transform2D.Identity),
                     "Overlapping attacks failed to restore the original root and pose.");
             }
+            await VerifyStandardComboRecovery(combat, pose);
             Run("CancelAndRestore", combat.Player.Creature);
             anchor.Transform = Transform2D.Identity;
             actor.Position = actorBaseline;
             target.Position = new(700f, 0f);
             Pose("SyncNow");
             Vector2 coreBaseline = center.GlobalPosition;
+            VerifyIndependentPresentation(combat, pose, center);
             Pose("BeginBackflip");
             Pose("BeginShurikenThrow", combat.Enemy);
             Pose("BeginAirMotion", false);
@@ -98,7 +124,7 @@ public partial class OrbContractRunner
             pose._Process(0.16601);
             Require((bool)AccessTools.Property(pose.GetType(), "IsBackflipping").GetValue(pose)!
                 && (bool)AccessTools.Property(pose.GetType(), "IsJumping").GetValue(pose)!
-                && (bool)AccessTools.Field(pose.GetType(), "_throwReleased").GetValue(pose)!
+                && ThrowReleased(pose)
                 && center.GlobalPosition.X > coreBaseline.X,
                 "Actual attack movement suppressed flip, jump or throw release.");
             Task combinedSecond = Attack(120f, 0.2f);
@@ -114,7 +140,7 @@ public partial class OrbContractRunner
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             Require((bool)AccessTools.Property(pose.GetType(), "IsBackflipping").GetValue(pose)!
                 && (bool)AccessTools.Property(pose.GetType(), "IsJumping").GetValue(pose)!
-                && (float)AccessTools.Field(pose.GetType(), "_throwDuration").GetValue(pose)! > 0f,
+                && MotionNumber(pose, "Throw", "Duration") > 0f,
                 "Completing the actual attack return cleared independent motions.");
             pose._Process(0.626);
             Require(actor.Position.DistanceTo(actorBaseline) < 0.001f
@@ -148,6 +174,7 @@ public partial class OrbContractRunner
             Require(actor.Position.DistanceTo(actorBaseline) < 0.001f && pose.Transform.IsEqualApprox(Transform2D.Identity),
                 "Lifecycle cleanup left an active attack or airborne contribution.");
             GD.Print("PASS actual concurrent motion: overlapping 120+90+120 attacks, crossing both sides, original baseline, repeated jumps and hop during attack.");
+            VerifyArchitectNativeDeath();
         }
         finally
         {

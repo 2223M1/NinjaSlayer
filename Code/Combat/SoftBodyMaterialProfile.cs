@@ -25,15 +25,4 @@ internal readonly record struct SoftBodyMaterialProfile(
         MaximumEdgeRatio: 2.2f,
         MaximumResidualRmsRatio: 0.448f);
 
-    public static SoftBodyMaterialProfile ArchitectLead { get; } = new(
-        StructuralCompliance: 0.00045f,
-        ShearCompliance: 0.00125f,
-        BendCompliance: 0.0048f,
-        AreaCompliance: 0.000025f,
-        ShapeMemoryFrequencyHz: 3.2f,
-        ShapeMemoryDampingRatio: 0.3f,
-        MinimumAreaFraction: 0.28f,
-        MinimumEdgeRatio: 0.62f,
-        MaximumEdgeRatio: 1.35f,
-        MaximumResidualRmsRatio: 0.25f);
 }

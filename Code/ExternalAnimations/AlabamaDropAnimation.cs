@@ -46,6 +46,7 @@ public static class AlabamaDropAnimation
         bool impactResolutionJoined = false;
         bool targetBodyDisabled = false;
         bool visualTailOwnsRestore = false;
+        bool poseTailOwnsRestore = false;
         Task impactResolutionTask = Task.CompletedTask;
         Node2D? targetBody = null;
         EntangledSpinMotionBlur? targetSpinBlur = null;
@@ -104,10 +105,12 @@ public static class AlabamaDropAnimation
             return;
         }
 
+        using var freeControlLease = NinjaSlayerFreeControl.Get(owner)?.SuspendForCinematic(
+            NinjaSlayerRapidAnimationCoordinator.GetBaseline(owner, ownerRig.CreatureNode));
         targetBody = targetRig.Body;
         targetBodyProcessMode = targetRig.Body.ProcessMode;
         var ownerRestoreSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
-        bool rapid = RapidCardPresentationContext.IsActive;
+        bool rapid = RapidCardPresentationContext.IsActive && freeControlLease == null;
         if (rapid)
         {
             NinjaSlayerRapidAnimationCoordinator.PrepareAction(owner, ownerRig.CreatureNode);
@@ -213,19 +216,37 @@ public static class AlabamaDropAnimation
                 ownerRestoreSnapshot,
                 targetSnapshot,
                 ownerAuthoredBaseline);
+            Task ownerRecovery;
+            if (rapid && aimPose != null)
+            {
+                Transform2D impactBody = ownerRig.Body.GetGlobalTransformWithCanvas();
+                NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(owner);
+                ownerRestoreSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
+                aimPose.SyncNow();
+                Transform2D restoredBody = ownerRig.Body.GetGlobalTransformWithCanvas();
+                Transform2D delta = impactBody * restoredBody.AffineInverse();
+                Vector2 core = aimPose.CoreCanvas;
+                var recovery = aimPose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Recovery, StandUpDuration);
+                if (recovery != null)
+                {
+                    recovery.Offset = ownerRig.CreatureNode.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                        .AffineInverse().BasisXform(delta * core - core);
+                    recovery.Rotation = delta.Rotation;
+                    recovery.Stretch = delta.Scale;
+                    recovery.Height = ReturnHopHeight;
+                    aimPose.SyncNow();
+                }
+                visualTail.TransferOwner(recovery);
+                poseTailOwnsRestore = true;
+                ownerRecovery = recovery?.Completion ?? Task.CompletedTask;
+            }
+            else ownerRecovery = Task.WhenAll(
+                TweenHopNodePosition(ownerRig.CreatureNode, ownerRig.Visuals,
+                    ownerRestoreSnapshot.VisualsPosition, StandUpDuration, visualTail.Track, visualTail.SetProgress),
+                TweenBodyRotation(ownerRig.Body, ownerSnapshot.BodyRotationDegrees + 360f,
+                    StandUpDuration, onTweenCreated: visualTail.Track));
             Task standUpTask = Task.WhenAll(
-                TweenHopNodePosition(
-                    ownerRig.CreatureNode,
-                    ownerRig.Visuals,
-                    ownerRestoreSnapshot.VisualsPosition,
-                    StandUpDuration,
-                    visualTail.Track,
-                    visualTail.SetProgress),
-                TweenBodyRotation(
-                    ownerRig.Body,
-                    ownerSnapshot.BodyRotationDegrees + 360f,
-                    StandUpDuration,
-                    onTweenCreated: visualTail.Track),
+                ownerRecovery,
                 TweenBodyRotation(
                     targetRig.Body,
                     targetSnapshot.BodyRotationDegrees + 360f,
@@ -249,7 +270,8 @@ public static class AlabamaDropAnimation
                 long tailGeneration = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(
                     owner,
                     visualTail.TryTakeover,
-                    visualTail.CancelAndRestore);
+                    visualTail.CancelAndRestore,
+                    independentAirChannel: poseTailOwnsRestore);
                 visualTailOwnsRestore = true;
                 _ = TaskHelper.RunSafely(CompleteVisualTail(
                     owner,
@@ -265,7 +287,7 @@ public static class AlabamaDropAnimation
         finally
         {
             targetSpinBlur?.Stop();
-            aimPose?.Reset();
+            if (!poseTailOwnsRestore) aimPose?.Reset();
             RestoreTargetBodyProcessMode();
             if (impactResolutionStarted && !impactResolutionJoined)
             {
@@ -612,15 +634,23 @@ public static class AlabamaDropAnimation
         Vector2 ownerAuthoredBaseline)
     {
         private readonly List<Tween> _tweens = [];
-        private int _cancelled;
+        private bool _cancelled;
         private float _progress;
+        private bool _ownerTransferred;
+        private NinjaSlayerAimPose.VisualMotion? _ownerMotion;
+
+        public void TransferOwner(NinjaSlayerAimPose.VisualMotion? motion)
+        {
+            _ownerTransferred = true;
+            _ownerMotion = motion;
+        }
 
         public void SetProgress(float progress) => _progress = progress;
 
         public void Track(Tween tween)
         {
             _tweens.Add(tween);
-            if (Volatile.Read(ref _cancelled) != 0 && tween.IsValid())
+            if (_cancelled && tween.IsValid())
             {
                 tween.Kill();
             }
@@ -628,11 +658,13 @@ public static class AlabamaDropAnimation
 
         public void CancelAndRestore()
         {
-            if (Interlocked.Exchange(ref _cancelled, 1) != 0)
+            if (_cancelled)
             {
                 return;
             }
 
+            _cancelled = true;
+            _ownerMotion?.Dispose();
             foreach (Tween tween in _tweens)
             {
                 if (GodotObject.IsInstanceValid(tween) && tween.IsValid())
@@ -646,11 +678,13 @@ public static class AlabamaDropAnimation
 
         public RapidMotionHandoff? TryTakeover()
         {
-            if (Interlocked.Exchange(ref _cancelled, 1) != 0)
+            if (_cancelled)
             {
                 return null;
             }
 
+            _cancelled = true;
+            _ownerMotion?.Dispose();
             Vector2 currentPosition = ownerSnapshot.Visuals.Position;
             foreach (Tween tween in _tweens)
             {
@@ -668,7 +702,7 @@ public static class AlabamaDropAnimation
 
         public void RestoreAfterCompletion()
         {
-            if (Volatile.Read(ref _cancelled) == 0)
+            if (!_cancelled)
             {
                 RestoreSnapshots();
             }
@@ -677,6 +711,7 @@ public static class AlabamaDropAnimation
         private void RestoreSnapshots(Vector2? ownerPosition = null)
         {
             targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
+            if (_ownerTransferred) return;
             ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
             if (GodotObject.IsInstanceValid(ownerSnapshot.CreatureNode))
             {

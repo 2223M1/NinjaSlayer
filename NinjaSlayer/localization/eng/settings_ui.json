@@ -5,6 +5,9 @@
   "NINJA_SLAYER_FEEDBACK_CONFIRM_CANCEL": "Cancel",
   "NINJA_SLAYER_FEEDBACK_CONFIRM_SEND": "Confirm and send",
   "NINJA_SLAYER_SETTINGS_PAGE_TITLE": "Ninja Slayer Settings",
+  "NINJA_SLAYER_SETTINGS_HIDDEN_TITLE": "Hidden features",
+  "NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE": "Free control (playground)",
+  "NINJA_SLAYER_SETTINGS_FREE_CONTROL_DESCRIPTION": "Single-player play phase only. Free movement, dragging and attacks. Returns home when the turn ends.",
   "NINJA_SLAYER_SETTINGS_VALIDATION_SECTION_TITLE": "Validation",
   "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_TITLE": "Force each event once",
   "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_DESCRIPTION": "Prioritizes each eligible Ninja Slayer event once in subsequently created single-player runs. Existing runs are unchanged."

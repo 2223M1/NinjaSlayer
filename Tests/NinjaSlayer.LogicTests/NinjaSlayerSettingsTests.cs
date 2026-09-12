@@ -9,6 +9,7 @@ public sealed class NinjaSlayerSettingsTests
     public void ValidationDefaultsOnButRequiresARunSnapshot()
     {
         Assert.True(new NinjaSlayerSettingsData().ForceAllEventsOnce);
+        Assert.False(new NinjaSlayerSettingsData().FreeControlEnabled);
         Assert.False(new NinjaSlayerRunState().EventValidationEnabled);
     }
 
@@ -24,7 +25,7 @@ public sealed class NinjaSlayerSettingsTests
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         Assert.Equal(
-            ["ForceAllEventsOnce"],
+            ["ForceAllEventsOnce", "FreeControlEnabled"],
             root.EnumerateObject().Select(property => property.Name).ToArray());
         Assert.False(root.GetProperty("ForceAllEventsOnce").GetBoolean());
 

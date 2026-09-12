@@ -10,6 +10,8 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
+using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -78,6 +80,13 @@ internal static class CombatDodgeAnimation
 
             baseline = node.Position;
             state.Node = node;
+            state.Pose = NinjaSlayerAimPose.Get(state.Creature);
+            if (state.Pose != null)
+            {
+                state.Motion = state.Pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, float.MaxValue);
+                if (state.Motion == null) return;
+                baseline = Vector2.Zero;
+            }
             float direction = state.Creature.Side == CombatSide.Player ? -1f : 1f;
             if (!await TweenPosition(
                 state,
@@ -111,7 +120,12 @@ internal static class CombatDodgeAnimation
         finally
         {
             state.ActiveTween?.Kill();
-            if (node != null && GodotObject.IsInstanceValid(node))
+            if (state.Pose != null)
+            {
+                state.Motion?.Dispose();
+                if (GodotObject.IsInstanceValid(state.Pose)) state.Pose.SyncNow();
+            }
+            else if (node != null && GodotObject.IsInstanceValid(node))
             {
                 node.Position = baseline;
             }
@@ -137,9 +151,22 @@ internal static class CombatDodgeAnimation
             return false;
         }
 
+        duration = CombatActionTimingRuntime.Resolve(duration, duration * 0.5f);
+        void Apply(Vector2 position)
+        {
+            if (state.Pose != null)
+            {
+                if (state.Motion is not { Active: true }) { state.ActiveTween?.Kill(); return; }
+                state.Motion.Offset = position;
+                state.Pose.SyncNow();
+            }
+            else node.Position = position;
+        }
+        if (duration <= 0f) { Apply(target); return true; }
+        Vector2 from = state.Pose != null ? state.Motion!.Offset : node.Position;
         Tween tween = node.CreateTween();
         state.ActiveTween = tween;
-        tween.TweenProperty(node, new NodePath("position"), target, duration)
+        tween.TweenMethod(Callable.From<Vector2>(Apply), from, target, duration)
             .SetEase(ease)
             .SetTrans(transition);
         if (!await TweenPlayback.AwaitCompletion(tween, node))
@@ -148,7 +175,7 @@ internal static class CombatDodgeAnimation
         }
         if (GodotObject.IsInstanceValid(node))
         {
-            node.Position = target;
+            Apply(target);
         }
 
         if (ReferenceEquals(state.ActiveTween, tween))
@@ -169,6 +196,8 @@ internal static class CombatDodgeAnimation
         public Task Completion { get; set; } = Task.CompletedTask;
         public NCreature? Node { get; set; }
         public Tween? ActiveTween { get; set; }
+        public NinjaSlayerAimPose? Pose { get; set; }
+        public NinjaSlayerAimPose.VisualMotion? Motion { get; set; }
         public int ImpactVersion { get; private set; }
 
         public void NotifyImpact()
@@ -206,7 +235,7 @@ internal static class EnemyAttackDodgeContext
 
         EnemyAttackPresentation presentation = ReadPresentation(command, attacker);
         IReadOnlyList<Creature> targets;
-        if (command.IsSingleTargeted && ReadSingleTarget(command) is { } singleTarget)
+        if (command.IsSingleTargeted && (Creature?)SingleTarget.GetValue(command) is { } singleTarget)
         {
             targets = [singleTarget];
         }
@@ -269,21 +298,8 @@ internal static class EnemyAttackDodgeContext
         string triggerName = AttackerAnimName.GetValue(command) as string
             ?? throw new InvalidOperationException(
                 "AttackCommand._attackerAnimName is not an initialized string.");
-        Creature visualAttacker = VisualAttacker.GetValue(command) switch
-        {
-            null => fallbackAttacker,
-            Creature creature => creature,
-            _ => throw new InvalidOperationException(
-                "AttackCommand._visualAttacker has an unexpected runtime type.")
-        };
-        float[] hitWaits = WaitBeforeHit.GetValue(command) as float[]
-            ?? throw new InvalidOperationException(
-                "AttackCommand._waitBeforeHit has an unexpected runtime type.");
-        if (hitWaits.Length < 2)
-        {
-            throw new InvalidOperationException(
-                "AttackCommand._waitBeforeHit does not contain both hit timings.");
-        }
+        Creature visualAttacker = (Creature?)VisualAttacker.GetValue(command) ?? fallbackAttacker;
+        var hitWaits = (float[])WaitBeforeHit.GetValue(command)!;
 
         return new EnemyAttackPresentation(
             triggerName,
@@ -291,15 +307,6 @@ internal static class EnemyAttackDodgeContext
             Math.Max(0f, hitWaits[0]),
             Math.Max(0f, hitWaits[1]));
     }
-
-    private static Creature? ReadSingleTarget(AttackCommand command) =>
-        SingleTarget.GetValue(command) switch
-        {
-            null => null,
-            Creature target => target,
-            _ => throw new InvalidOperationException(
-                "AttackCommand._singleTarget has an unexpected runtime type.")
-        };
 
     public static void RestoreCaller(Frame frame)
     {

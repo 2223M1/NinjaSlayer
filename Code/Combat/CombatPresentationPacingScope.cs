@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Commands;
+using NinjaSlayer.Code.ExternalAnimations;
 
 namespace NinjaSlayer.Code.Combat;
 
@@ -33,6 +34,9 @@ internal static class CombatPresentationPacingScope
             NinjaSlayerAttackExecution.DeferFinalRecovery();
             return Task.CompletedTask;
         }
+        if (NinjaSlayerAttackExecution.CurrentCommand?.Attacker is { } attacker)
+            NinjaSlayerRapidAnimationCoordinator.BeginDamageRecovery(
+                attacker, fastSeconds, standardSeconds);
         return Cmd.CustomScaledWait(
                 fastSeconds,
                 standardSeconds,

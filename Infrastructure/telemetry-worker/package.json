@@ -2,11 +2,13 @@
   "name": "ninja-slayer-telemetry-worker",
   "private": true,
   "type": "module",
+  "engines": { "node": ">=24" },
   "scripts": {
     "test": "node --test",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "feedback": "node scripts/feedback-admin.js"
+    "feedback": "node scripts/feedback-admin.js",
+    "dashboard": "node dashboard/server.mjs"
   },
   "devDependencies": {
     "wrangler": "4.118.0"

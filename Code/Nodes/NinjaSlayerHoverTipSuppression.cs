@@ -4,7 +4,6 @@ namespace NinjaSlayer.Code.Nodes;
 
 internal sealed class NinjaSlayerHoverTipSuppression : IDisposable
 {
-    private static readonly object Sync = new();
     private static int _activeLeases;
     private static bool _previousBlockState;
 
@@ -16,36 +15,29 @@ internal sealed class NinjaSlayerHoverTipSuppression : IDisposable
 
     public static NinjaSlayerHoverTipSuppression Acquire()
     {
-        lock (Sync)
+        if (_activeLeases == 0)
         {
-            if (_activeLeases == 0)
-            {
-                _previousBlockState = NHoverTipSet.shouldBlockHoverTips;
-                NHoverTipSet.Clear();
-                NHoverTipSet.shouldBlockHoverTips = true;
-            }
-
-            _activeLeases++;
+            _previousBlockState = NHoverTipSet.shouldBlockHoverTips;
+            NHoverTipSet.Clear();
+            NHoverTipSet.shouldBlockHoverTips = true;
         }
 
+        _activeLeases++;
         return new NinjaSlayerHoverTipSuppression();
     }
 
     public void Dispose()
     {
-        lock (Sync)
+        if (_disposed)
         {
-            if (_disposed)
-            {
-                return;
-            }
+            return;
+        }
 
-            _disposed = true;
-            _activeLeases--;
-            if (_activeLeases == 0)
-            {
-                NHoverTipSet.shouldBlockHoverTips = _previousBlockState;
-            }
+        _disposed = true;
+        _activeLeases--;
+        if (_activeLeases == 0)
+        {
+            NHoverTipSet.shouldBlockHoverTips = _previousBlockState;
         }
     }
 }

@@ -17,7 +17,7 @@ public static class Entry
         }
 
         SmokeConfiguration configuration = SmokeConfiguration.Load(configurationPath);
-        if (configuration.Phase == SmokePhase.TornadoPreview)
+        if (configuration.Phase is SmokePhase.TornadoPreview or SmokePhase.ActionPreview)
         {
             DisplayServer.WindowSetFlag(DisplayServer.WindowFlags.NoFocus, true);
             DisplayServer.WindowSetPosition(new Vector2I(-3000, 100));

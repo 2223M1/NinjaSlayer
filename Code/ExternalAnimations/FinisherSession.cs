@@ -28,6 +28,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal sealed partial class FinisherSession : IAsyncDisposable
 {
+    private readonly NinjaSlayerFreeControl.CinematicLease? _freeControlLease;
     private readonly ICombatState _combatState;
     private readonly NCreature _actorNode;
     private readonly NCreature _focusNode;
@@ -109,6 +110,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _actorStartPosition = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
             ? NinjaSlayerRapidAnimationCoordinator.ClaimExclusiveBaseline(request.Actor, request.ActorNode)
             : request.ActorNode.Position;
+        _freeControlLease = NinjaSlayerFreeControl.Get(request.Actor)?.SuspendForCinematic(_actorStartPosition);
+        if (_freeControlLease != null) _actorStartPosition = _freeControlLease.Baseline;
         _actionStartPosition = request.ActorNode.Position;
         _impactPosition = request.ActorNode.Position;
         _actionPeakReached = request.Scenario != FinisherScenarioKind.YamotoKokiIaiSlash;
@@ -814,6 +817,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         Capture(() => _actorLayerLease?.Dispose());
         _actorLayerLease = null;
         Capture(RestoreActorLeapPose);
+        Capture(() => _freeControlLease?.Dispose());
         Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
         Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
         Capture(RestoreDeathSquashes);

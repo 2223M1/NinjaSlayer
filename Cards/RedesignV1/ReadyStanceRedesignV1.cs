@@ -1,8 +1,8 @@
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
-using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 
@@ -24,7 +24,10 @@ public sealed class ReadyStanceRedesignV1 : RedesignV1CommonCard
             DynamicVars.Karate().BaseValue,
             Owner.Creature,
             this);
-        await NinjaSlayerCardCmd.ChooseAndDiscard(choiceContext, Owner, 1, this);
+        await CardCmd.Discard(choiceContext, await CardSelectCmd.FromHandForDiscard(
+            choiceContext, Owner,
+            new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, 1),
+            null, this));
     }
 
     protected override void OnUpgrade() => DynamicVars.Karate().UpgradeValueBy(2);

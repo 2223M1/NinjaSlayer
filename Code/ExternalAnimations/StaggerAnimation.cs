@@ -16,10 +16,12 @@ public static class StaggerAnimation
 
     private static readonly Dictionary<Creature, StaggerState> ActiveStates = [];
 
-    public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature);
+    public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature)
+        || NinjaSlayerAimPose.Get(creature)?.HasHurt == true;
 
     internal static Action? PauseCurrent(Creature creature)
     {
+        if (NinjaSlayerAimPose.Get(creature) is { } pose) return pose.PauseHurt();
         if (!ActiveStates.TryGetValue(creature, out StaggerState? state)) return null;
         state.Pause();
         return () =>
@@ -45,6 +47,14 @@ public static class StaggerAnimation
         Creature creature,
         float rotationDegrees = DefaultRotationDegrees)
     {
+        if (NinjaSlayerAimPose.Get(creature) is { } pose)
+        {
+            var motion = pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Hurt,
+                CombatActionTimingRuntime.Resolve(StaggerDuration, StaggerDuration * 0.5f));
+            pose.SyncNow();
+            if (motion != null) await motion.Completion;
+            return;
+        }
         if (ActiveStates.Remove(creature, out StaggerState? previous))
         {
             previous.StopAndRestore();
@@ -102,6 +112,7 @@ public static class StaggerAnimation
 
     public static void Reset(Creature creature)
     {
+        NinjaSlayerAimPose.Get(creature)?.ClearHurt();
         if (ActiveStates.Remove(creature, out StaggerState? state))
         {
             state.StopAndRestore();

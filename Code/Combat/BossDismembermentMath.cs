@@ -26,15 +26,6 @@ internal sealed record BossFragmentCell(
     public BossFragmentPoint Centroid => BossDismembermentMath.PolygonCentroid(Vertices);
 }
 
-internal readonly record struct ArchitectRagdollTopologyPart(
-    ulong BoneId,
-    float Weight,
-    int DrawOrder,
-    IReadOnlyList<ulong> AncestorBoneIds);
-
-internal readonly record struct ArchitectRagdollTopologyNode(
-    ulong BoneId,
-    ulong? ParentBoneId);
 
 internal static class BossDismembermentMath
 {
@@ -51,82 +42,6 @@ internal static class BossDismembermentMath
         return Math.Clamp(MathF.Sqrt(visibleArea) * 0.08f, 18f, 42f);
     }
 
-    public static BossFragmentPoint ResolveArchitectLeadVelocity(
-        float impactDirection,
-        float unitSample)
-    {
-        float direction = MathF.Abs(impactDirection) <= 0.0001f
-            ? 1f
-            : MathF.CopySign(1f, impactDirection);
-        float speed = 200f + 200f * Math.Clamp(unitSample, 0f, 1f);
-        return new BossFragmentPoint(direction * speed, 0f);
-    }
-
-    public static IReadOnlyList<ArchitectRagdollTopologyNode> ResolveArchitectRagdollTopology(
-        IReadOnlyList<ArchitectRagdollTopologyPart> parts)
-    {
-        if (parts.Count == 0)
-        {
-            return [];
-        }
-
-        Dictionary<ulong, ArchitectRagdollTopologyPart> byId = parts
-            .ToDictionary(part => part.BoneId);
-        var naturalParents = new Dictionary<ulong, ulong?>();
-        foreach (ArchitectRagdollTopologyPart part in parts)
-        {
-            naturalParents[part.BoneId] = part.AncestorBoneIds
-                .Where(byId.ContainsKey)
-                .Select(ancestorId => (ulong?)ancestorId)
-                .FirstOrDefault();
-        }
-
-        ArchitectRagdollTopologyPart root = parts
-            .Where(part => naturalParents[part.BoneId] == null)
-            .DefaultIfEmpty(parts
-                .OrderByDescending(part => part.Weight)
-                .ThenBy(part => part.DrawOrder)
-                .ThenBy(part => part.BoneId)
-                .First())
-            .OrderByDescending(part => part.Weight)
-            .ThenBy(part => part.DrawOrder)
-            .ThenBy(part => part.BoneId)
-            .First();
-        Dictionary<ulong, ulong?> parents = parts.ToDictionary(
-            part => part.BoneId,
-            part => part.BoneId == root.BoneId
-                ? (ulong?)null
-                : naturalParents[part.BoneId] ?? root.BoneId);
-
-        var result = new List<ArchitectRagdollTopologyNode>(parts.Count);
-        var pending = new Queue<ulong>();
-        pending.Enqueue(root.BoneId);
-        while (pending.TryDequeue(out ulong parentId))
-        {
-            result.Add(new ArchitectRagdollTopologyNode(parentId, parents[parentId]));
-            foreach (ArchitectRagdollTopologyPart child in parts
-                         .Where(part => parents[part.BoneId] == parentId)
-                         .OrderBy(part => part.DrawOrder)
-                         .ThenBy(part => part.BoneId))
-            {
-                pending.Enqueue(child.BoneId);
-            }
-        }
-
-        if (result.Count != parts.Count)
-        {
-            throw new InvalidOperationException("The Architect Spine topology contains a cycle.");
-        }
-
-        return result;
-    }
-
-    public static float ResolveArchitectLocalBoneRotation(
-        float originalRotationDegrees,
-        float segmentRotationRadians,
-        float parentRotationRadians) =>
-        originalRotationDegrees
-        + (segmentRotationRadians - parentRotationRadians) * (180f / MathF.PI);
 
     public static ulong ResolveMotionSeed(
         ulong snapshotSeed,

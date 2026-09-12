@@ -13,6 +13,26 @@ Source WAV files and FMOD Studio project files are development inputs and are no
 
 ## Character Images
 
+### Architect Death Track
+
+`NinjaSlayer/animations/architect/architect.spskel` preserves the native Spine
+4.2.43 skeleton, skins, weighted meshes and eight original animations, and appends
+the 0.9-second `ninjaslayer_soft_death` track. Runtime uses the original atlas
+resource. `tools/architect-spine/author.mjs` authors the additional bone curves and weighted cloth deforms
+using the matching pinned Spine runtime at build time; no runtime bone solver is
+used for the collapse.
+
+The source imported resource is
+`.godot/imported/architect.skel-445839f36d2cd881c23a23af001a18d8.spskel`
+(105,842 bytes, SHA-256
+`ceeb9dd6ec98ef1f60016d5cc7bf6f3941416c33504f4c2d42bb9723ea4570ea`).
+The source bytes are unchanged apart from the animation count at offset 48,506.
+Output SHA-256:
+`ad1dc090912f5fb09272346123da95a2a080bc48254b71cbe9ed931da306d19d`.
+`NinjaSlayer/animations/architect/SOURCE.json` records the source and export metadata.
+
+### Ninja Slayer
+
 The character scene uses these namespaced resources:
 
 - `NinjaSlayer/images/characters/ninja_slayer/idle/NinjaSlayer_idle_0001.png` through `NinjaSlayer_idle_0022.png` at 24 fps
@@ -113,7 +133,7 @@ cast `0.9755064x1`, hurt `0.92226x1`; the final death key uses
 existing Mod action phases, not used to change their timings. Ground support under free
 rotation uses authored solid-body contours; pillar spin and altitude use restrained procedural
 interpolation, not copied native timelines or literal human-shaped projection. The referenced
-Spine files remain external research inputs and are not included in the Mod.
+Spine files used for these shadow references remain external research inputs and are not included in the Mod.
 
 ## Card Images
 

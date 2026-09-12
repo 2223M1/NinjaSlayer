@@ -18,6 +18,18 @@ MVID, and logs the input DLL path and SHA-256. A timeout without the completion
 marker is a failure. Final acceptance uses a clean committed candidate build;
 metadata supplied to a dirty development build is not immutable SHA evidence.
 
+For the Black Flame autoplay regression, set `NINJASLAYER_CONTRACT_ONLY_V024=1`
+before invoking the same command. It covers Naval Warhammer and vanilla BeatDown,
+base/upgraded repeat counts, one to three held flames, multi-hit attacks and one
+amplification per merged burn, plus the existing v0.2.4 scenarios.
+Run again in a fresh process with `NINJASLAYER_CONTRACT_EARLY_AUTOPLAY=1`: an identity
+transpiler compiles the native AutoPlay state machine before framework initialization,
+reproducing the early-mod loading order that can inline OnPlayWrapper before its
+scope patches exist. The scenario installs the product's rapid/finisher cleanup
+patches and yields during play-count generation to cover asynchronous completion.
+Unset both variables to run the full suite. This models the relevant loading-order
+interaction; it does not claim a full run with the player's other mods installed.
+
 Coverage includes temporary slot ownership, depletion beside another orb,
 actual discard dispatch and recycling at 0/1/multiple stock, native double and
 quadruple evoke command sequences, independent Starless Night chains, AOE

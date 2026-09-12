@@ -87,12 +87,12 @@ internal sealed class SpineBoneFlight : IDisposable
     {
         MegaSprite? sprite = creature.Visuals.SpineBody;
         MegaSkeleton? skeleton = sprite?.GetSkeleton();
-        using IDisposable? skeletonLease = skeleton as IDisposable;
+        using GodotObject? skeletonLease = skeleton?.BoundObject;
         MegaBone? bone = skeleton?.FindBone(boneName);
         if (sprite == null || bone == null)
         {
             Entry.Logger.Warn($"Spine bone flight skipped: bone '{boneName}' was not found on {ownerId}.");
-            (bone as IDisposable)?.Dispose();
+            bone?.BoundObject.Dispose();
             return null;
         }
 
@@ -105,7 +105,7 @@ internal sealed class SpineBoneFlight : IDisposable
         if (methods.Any(method => !native.HasMethod(method)))
         {
             Entry.Logger.Warn($"Spine bone methods are unavailable for {ownerId}/{boneName}.");
-            (bone as IDisposable)?.Dispose();
+            bone?.BoundObject.Dispose();
             return null;
         }
 
@@ -131,7 +131,7 @@ internal sealed class SpineBoneFlight : IDisposable
         }
         catch
         {
-            (bone as IDisposable)?.Dispose();
+            bone?.BoundObject.Dispose();
             throw;
         }
     }
@@ -170,7 +170,7 @@ internal sealed class SpineBoneFlight : IDisposable
             _bone.SetScaleY(_originalScaleY);
         }
 
-        (_bone as IDisposable)?.Dispose();
+        _bone?.BoundObject.Dispose();
     }
 
     private void Apply()

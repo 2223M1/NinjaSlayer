@@ -1,9 +1,10 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using MegaCrit.Sts2.Core.Context;
-using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Runs;
-using MegaCrit.Sts2.Core.Saves.Runs;
+using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Saves;
 using NinjaSlayer.Code.Telemetry;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib;
@@ -16,14 +17,12 @@ public static class NinjaSlayerBalanceTelemetry
 {
     public const string BalanceContextContributionId = "ninja_slayer_balance_context";
 
-    private static readonly NinjaSlayerTelemetryIdentityTracker IdentityTracker = new();
+    public const string BalanceRequestId = "balance_runs";
 
     public static void Register()
     {
-        RitsuLibFramework.SubscribeLifecycle<RunStartedEvent>(evt => BeginRun(evt.RunState));
-        RitsuLibFramework.SubscribeLifecycle<RunLoadedEvent>(evt => BeginRun(evt.RunState));
+        NinjaSlayerCombatTelemetry.Register();
         RitsuLibFramework.SubscribeLifecycle<RunEndedEvent>(ObserveRunEnded);
-        RitsuLibFramework.SubscribeLifecycle<MainMenuReadyEvent>(_ => IdentityTracker.Clear());
 
         RitsuLibFramework.RegisterTelemetryContributionProvider(new NinjaSlayerBalanceContributionProvider());
 
@@ -40,72 +39,63 @@ public static class NinjaSlayerBalanceTelemetry
                 ),
                 Requests =
                 [
-                    TelemetryRequest.RunHistory(
-                        ModSettingsText.Literal(
-                            "Completed run history, including card reward choices, final decks and victory results, for balance analysis."),
-                        sharedContributionSubscriptions: [BalanceContextContributionId],
-                        captureFilter: ShouldCaptureRunHistory
-                    ),
+                    // A custom request avoids the framework's automatic run_history capture.
+                    // The added combat measurements require their own explicit player consent.
+                    new TelemetryRequest
+                    {
+                        RequestId = BalanceRequestId,
+                        Category = TelemetryDataCategory.RunHistory,
+                        Description = "Completed runs: card reward choices, final decks, results and per-combat draws, plays and resources paid, for balance analysis.",
+                        ContributionSubscriptions = [BalanceContextContributionId]
+                    }
                 ],
             }
         );
 
     }
 
-    internal static void RefreshIdentity(RunState runState)
-        => IdentityTracker.Refresh(runState, LocalContext.NetId, BuildPlayerIdentities(runState.Players));
-
-    internal static void ClearIdentity() => IdentityTracker.Clear();
-
-    private static void BeginRun(RunState runState)
-    {
-        IdentityTracker.BeginRun(runState);
-        RefreshIdentity(runState);
-    }
-
-    private static bool ShouldCaptureRunHistory(RunEndedEvent evt)
-    {
-        return IdentityTracker.TryCaptureCompletedRun(
-            evt.Run,
-            evt.IsAbandoned,
-            LocalContext.NetId,
-            BuildPlayerIdentities(evt.Run.Players));
-    }
-
     private static void ObserveRunEnded(RunEndedEvent evt)
     {
-        IdentityTracker.ObserveRunEnded(
-            evt.Run,
-            evt.IsAbandoned,
-            LocalContext.NetId,
-            BuildPlayerIdentities(evt.Run.Players));
+        if (evt.IsAbandoned
+            || LocalContext.GetMe(evt.Run)?.CharacterId != ModelDb.Character<NinjaSlayerCharacter>().Id
+            || !TelemetryApi.GetClient(NinjaSlayerIds.ModId).IsEnabled(BalanceRequestId)) return;
+
+        // RitsuLib publishes this synchronously from RunManager.OnEnded while State still owns the run.
+        RunState run = RunManager.Instance.DebugOnlyGetState()
+            ?? throw new InvalidOperationException("RunEnded was published without its active run.");
+        if (!evt.IsVictory && run.CurrentRoom is CombatRoom room)
+            NinjaSlayerCombatTelemetry.Record(run, room, won: false);
+
+        TelemetryApi.GetClient(NinjaSlayerIds.ModId).CapturePayload("run_history.completed", BalanceRequestId,
+            new JsonObject
+            {
+                ["run_history"] = BuildRunPayload(evt.Run),
+                ["mod_payload"] = NinjaSlayerCombatTelemetry.Export(run)
+            },
+            properties: new Dictionary<string, object?>
+            {
+                ["is_victory"] = evt.IsVictory,
+                ["is_abandoned"] = evt.IsAbandoned,
+                ["occurred_at_utc"] = evt.OccurredAtUtc.ToString("O"),
+                ["run_floor_reached"] = evt.Run.FloorReached,
+                ["run_ascension"] = evt.Run.Ascension,
+                ["run_player_count"] = evt.Run.Players.Count,
+                ["run_game_mode"] = evt.Run.GameMode.ToString(),
+                ["run_reload_count"] = evt.Run.NumReloads
+            });
     }
 
-    private static NinjaSlayerTelemetryPlayerIdentity[] BuildPlayerIdentities(IEnumerable<Player> players) =>
-        players.Select(player => new NinjaSlayerTelemetryPlayerIdentity(
-                player.NetId,
-                player.Character switch
-                {
-                    INinjaSlayerCharacter => NinjaSlayerTelemetryCharacterKind.Official,
-                    null => NinjaSlayerTelemetryCharacterKind.Unknown,
-                    _ => NinjaSlayerTelemetryCharacterKind.Other
-                }))
-            .ToArray();
-
-    private static NinjaSlayerTelemetryPlayerIdentity[] BuildPlayerIdentities(
-        IEnumerable<SerializablePlayer> players)
+    internal static JsonNode BuildRunPayload(SerializableRun run)
     {
-        ModelId officialId = ModelDb.Character<NinjaSlayerCharacter>().Id;
-        return players.Select(player => new NinjaSlayerTelemetryPlayerIdentity(
-                player.NetId,
-                player.CharacterId switch
-                {
-                    null => NinjaSlayerTelemetryCharacterKind.Unknown,
-                    { } characterId when characterId == officialId =>
-                        NinjaSlayerTelemetryCharacterKind.Official,
-                    _ => NinjaSlayerTelemetryCharacterKind.Other
-                }))
-            .ToArray();
+        JsonNode json = JsonSerializer.SerializeToNode(run, JsonSerializationUtility.GetTypeInfo<SerializableRun>())!;
+        // The backend uses JavaScript numbers. UInt64 IDs must cross that boundary as exact digits.
+        foreach (JsonNode? player in json["players"]!.AsArray())
+            player!["net_id"] = player["net_id"]!.ToJsonString();
+        foreach (JsonNode? act in json["map_point_history"]?.AsArray() ?? [])
+        foreach (JsonNode? floor in act!.AsArray())
+        foreach (JsonNode? player in floor!["player_stats"]!.AsArray())
+            player!["player_id"] = player["player_id"]!.ToJsonString();
+        return json;
     }
 
     public class NinjaSlayerBalanceContributionProvider : ITelemetryContributionProvider
@@ -124,7 +114,7 @@ public static class NinjaSlayerBalanceTelemetry
             return new JsonObject
             {
                 ["version"] = NinjaSlayerVersion.Current,
-                ["balance_schema"] = "ninja_slayer_run_history_v1",
+                ["balance_schema"] = "ninja_slayer_run_history_v2",
             };
         }
     }

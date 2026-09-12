@@ -23,6 +23,10 @@ namespace NinjaSlayer.Code.ExternalAnimations
         {
         }
 
+        public static void BeginDamageRecovery(Creature creature, float fastSeconds, float standardSeconds)
+        {
+        }
+
         public static void CancelAndRestore(Creature creature)
         {
         }

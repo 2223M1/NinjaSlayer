@@ -103,18 +103,15 @@ public partial class OrbContractRunner
             Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
                 "Prejudge must count its two discards only; discard powers must also see the nested discard.");
         }
-        foreach (bool scry in new[] { false, true })
+        using (var combat = new OrbCombat())
         {
-            using var combat = new OrbCombat();
-            var source = AddCard<Prejudge>(combat);
-            var sly = AddCard<ShurikenCreation>(combat, scry ? PileType.Draw : PileType.Hand);
-            var second = AddCard<DefendIronclad>(combat, scry ? PileType.Draw : PileType.Hand);
+            var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
+            var second = AddCard<DefendIronclad>(combat, PileType.Draw);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [sly, second]));
             await PowerCmd.Apply<RecycledBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
-            if (scry) await ScryCmd.Execute(Choice, combat.Player, 2);
-            else await NinjaSlayerCardCmd.ChooseAndDiscard(Choice, combat.Player, 2, source);
-            Require(combat.Stock == (scry ? 3 : 2) && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
-                "Hand selection and Scry must share native batch discard/Sly semantics.");
+            await ScryCmd.Execute(Choice, combat.Player, 2);
+            Require(combat.Stock == 3 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
+                "Scry must dispatch both discards before Sly generates new stock.");
         }
         using (var combat = new OrbCombat())
         {

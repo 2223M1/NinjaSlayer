@@ -63,6 +63,7 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerDrawBackflipPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerRunSavePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDebuffShakePatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFreeControlPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSurroundedFacingPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerAttackFacingPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerDeathAnimPatch>();
@@ -73,6 +74,7 @@ public class Entry
             requiredPatcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
             requiredPatcher.RegisterPatch<NarakuLifeDamagePatch>();
             requiredPatcher.RegisterPatch<CardTransformShineCleanupPatch>();
+            requiredPatcher.RegisterPatch<ArchitectDeathResourcePatch>();
             requiredPatcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
             requiredPatcher.RegisterPatch<ArchitectExecutionStartPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
@@ -241,17 +243,8 @@ public class Entry
         catch (Exception exception)
         {
             Logger.Warn(
-                $"NinjaSlayer telemetry registration failed; identity patches were skipped: {exception}");
-            return;
+                $"NinjaSlayer telemetry registration failed: {exception}");
         }
-
-        TryInstallOptionalPatches(
-            "telemetry-identity",
-            patcher =>
-            {
-                patcher.RegisterPatch<NinjaSlayerTelemetryIdentityLaunchPatch>();
-                patcher.RegisterPatch<NinjaSlayerTelemetryIdentityCleanupPatch>();
-            });
     }
 
     private static void InstallOptionalPresentations()

@@ -5,44 +5,11 @@ using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Scripts;
+using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 internal readonly record struct BossDismembermentSpawn(bool Spawned, Task Completion);
-
-internal sealed class ArchitectBossSoftBodyLead : IDisposable
-{
-    private BossDismembermentPresentation? _presentation;
-    private readonly Task _completion;
-
-    internal ArchitectBossSoftBodyLead(BossDismembermentPresentation presentation)
-    {
-        _presentation = presentation;
-        _completion = presentation.Completion;
-    }
-
-    public BossDismembermentSpawn TriggerBurst()
-    {
-        BossDismembermentPresentation? presentation =
-            Interlocked.Exchange(ref _presentation, null);
-        return presentation != null
-            && GodotObject.IsInstanceValid(presentation)
-            && presentation.IsInsideTree()
-            && presentation.TriggerArchitectBurst()
-            ? new BossDismembermentSpawn(true, _completion)
-            : new BossDismembermentSpawn(false, _completion);
-    }
-
-    public void Dispose()
-    {
-        BossDismembermentPresentation? presentation =
-            Interlocked.Exchange(ref _presentation, null);
-        if (presentation != null && GodotObject.IsInstanceValid(presentation))
-        {
-            presentation.CancelPresentation();
-        }
-    }
-}
 
 internal sealed class BossDismembermentSnapshot : IDisposable
 {
@@ -101,7 +68,11 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private readonly List<SoftBodyLaunchActuator> _launchActuators = [];
     private readonly BossSoftBodySolver _solver = new();
     private BossVisualCapture? _capture;
-    private ArchitectSpineRagdoll? _architectRagdoll;
+    internal const string ArchitectSkeletonPath = "res://NinjaSlayer/animations/architect/architect.spskel";
+    internal const string ArchitectDeathAnimation = "ninjaslayer_soft_death";
+    private MegaSprite? _architectSprite;
+    private int _architectUpdateMode;
+    private readonly Dictionary<string, Transform2D> _architectBoneBaselines = [];
     private Node2D? _architectBody;
     private NCombatRoom _room = null!;
     private Transform2D _bodyToPresentation;
@@ -127,7 +98,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
     private string _monsterId = "unknown";
 
     public static IEnumerable<string> AssetPaths =>
-        [BossCapturedFragmentRenderSurface.ShaderPath];
+        [BossCapturedFragmentRenderSurface.ShaderPath, ArchitectSkeletonPath];
 
     internal Task Completion => _completion.Task;
 
@@ -159,6 +130,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
             }
 
             _elapsed += seconds;
+            if (_mode == PresentationMode.ArchitectLead && !_burstTriggered && _architectBody != null)
+                _architectBody.Call("update_skeleton", seconds);
             _physicsAccumulator += seconds;
             int catchUpSteps = 0;
             while (_physicsAccumulator >= PhysicsStep && catchUpSteps < MaximumCatchUpSteps)
@@ -249,7 +222,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
         IReadOnlyList<BossCapturedFragmentRenderSurface.PreparedResource> preparedFragments,
         int zIndex,
         PresentationMode mode,
-        float architectFallDirection,
         Vector2? detachedExplosionCenter)
     {
         IReadOnlyList<BossCapturedFragmentDescriptor> descriptors = partition.Fragments;
@@ -362,11 +334,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
         if (mode == PresentationMode.ArchitectLead)
         {
-            InitializeArchitectLead(
-                creature,
-                partition,
-                rng,
-                architectFallDirection);
+            InitializeArchitectLead(creature, partition);
         }
         else
         {
@@ -496,31 +464,28 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     private void InitializeArchitectLead(
         NCreature creature,
-        BossFragmentPartition partition,
-        RandomNumberGenerator rng,
-        float fallDirection)
+        BossFragmentPartition partition)
     {
         _architectBody = creature.Body;
-        BossFragmentPoint velocity = BossDismembermentMath.ResolveArchitectLeadVelocity(
-            fallDirection,
-            rng.Randf());
-        _architectRagdoll = ArchitectSpineRagdoll.TryCreate(
-            this,
-            creature,
-            partition,
-            _bodyToPresentation,
-            _visualBodyToPresentation,
-            velocity,
-            out string failureReason);
-        if (_architectRagdoll == null)
-        {
-            Entry.Logger.Warn(
-                $"Architect Spine ragdoll unavailable for {_monsterId}: {failureReason}; "
-                + "keeping the frozen death pose until Body Burst.");
-            return;
-        }
-
-        _bodies.AddRange(_architectRagdoll.Bodies);
+        _architectSprite = creature.Visuals.SpineBody
+            ?? throw new InvalidOperationException("Architect has no native Spine body.");
+        foreach (string boneName in partition.Fragments.Select(f => f.Part.PrimaryBoneName).Distinct())
+            _architectBoneBaselines[boneName] = _capture!.CapturedBoneTransforms[boneName];
+        _architectUpdateMode = _architectBody.Call("get_update_mode").AsInt32();
+        _architectBody.Call("set_update_mode", 2);
+        DoomHurtPoseController.Resume(creature);
+        var state = _architectSprite.GetAnimationState();
+        using GodotObject stateLease = state.BoundObject;
+        state.BoundObject.Call("clear_track", 1);
+        state.SetTimeScale(1f);
+        using Variant started = stateLease.Call("set_animation", ArchitectDeathAnimation, false, 0);
+        var track = state.GetCurrent(0);
+        using GodotObject? trackLease = track?.BoundObject;
+        track!.SetMixDuration(0.05f);
+        track.SetTimeScale(1f);
+        foreach (string path in new[] { "TrailSlot/TrailInner", "TrailSlot/TrailOuter" })
+            if (_architectBody.GetNodeOrNull<CanvasItem>(path) is { } trail) trail.Visible = false;
+        _architectBody.Call("update_skeleton", 0f);
     }
 
     internal bool TriggerArchitectBurst()
@@ -539,10 +504,25 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _elapsed = 0f;
         _physicsAccumulator = 0f;
         _floorY = null;
-        if (_architectRagdoll != null)
+        if (_architectSprite != null && _architectBody != null)
         {
-            BossFragmentPoint ragdollCenter = _architectRagdoll.ResolveBurstOrigin();
-            _burstOrigin = new Vector2(ragdollCenter.X, ragdollCenter.Y);
+            float weight = 0f;
+            Vector2 weightedCenter = Vector2.Zero;
+            foreach (SoftFragmentRuntime fragment in _fragments)
+            {
+                string boneName = fragment.Surface.Descriptor.Part.PrimaryBoneName;
+                Transform2D bone = _architectBody.GlobalTransform.AffineInverse()
+                    * _architectBody.Call("get_global_bone_transform", boneName).AsTransform2D();
+                Transform2D pose = _visualBodyToPresentation * bone * _architectBoneBaselines[boneName].AffineInverse()
+                    * _bodyToPresentation.AffineInverse();
+                fragment.DeathBasis = pose;
+                Vector2 center = pose * ToVector2(fragment.Body.RestCenter);
+                fragment.CompressionOrigin = center;
+                float area = fragment.Surface.Descriptor.BodyAreaRatio;
+                weightedCenter += center * area;
+                weight += area;
+            }
+            _burstOrigin = weightedCenter / weight;
         }
 
         _bodies.Clear();
@@ -554,10 +534,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
             fragment.Body.SetMaterial(SoftBodyMaterialProfile.FountainJelly);
             fragment.Body.ConfigureDeformation(
                 _motionSeed ^ unchecked((ulong)(index + 1) * 0x9E3779B97F4A7C15UL));
-            fragment.CompressionOrigin = ToVector2(
-                BossBurstCompressionLayout.ResolvePackedOrigin(
-                    ToBossFragmentPoint(_burstOrigin),
-                    fragment.RestCenterOffset));
+            fragment.CompressionOrigin = _burstOrigin.Lerp(fragment.CompressionOrigin, 0.35f);
             float phase = fragment.CompressionPhase;
             Vector2 compressionOrigin = fragment.CompressionOrigin;
             BossFragmentPoint compressedCenter = new(
@@ -569,6 +546,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 phase,
                 slideRadius: 0f,
                 squashAmount: fragment.SquashAmount);
+            if (fragment.DeathBasis is { } basis)
+                fragment.Body.TransformPinnedPose(ToBossFragmentPoint(basis.X), ToBossFragmentPoint(basis.Y));
         }
 
         ApplyFountainPlan();
@@ -576,8 +555,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
         // Upload the compressed pose immediately so the first visible burst frame
         // cannot expose the lead pose.
         ApplyFragmentFrames();
-        _architectRagdoll?.Dispose();
-        _architectRagdoll = null;
         if (_architectBody != null && GodotObject.IsInstanceValid(_architectBody))
         {
             _architectBody.Visible = false;
@@ -597,7 +574,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
     {
         if (!_burstTriggered)
         {
-            SolveSoftBodies(seconds, _floorY);
             return;
         }
 
@@ -620,6 +596,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
                     phase,
                     slideRadius: 0.8f,
                     squashAmount: fragment.SquashAmount);
+                if (fragment.DeathBasis is { } basis)
+                    fragment.Body.TransformPinnedPose(ToBossFragmentPoint(basis.X), ToBossFragmentPoint(basis.Y));
             }
 
             _burstElapsed += seconds;
@@ -667,10 +645,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
     private void SolveSoftBodies(float seconds, float? floorY)
     {
-        bool architectLead = _mode == PresentationMode.ArchitectLead && !_burstTriggered;
         float flightSeconds = Math.Max(0f, _burstElapsed - CompressionSeconds);
-        SoftHorizontalBoundary? horizontalBoundary = !architectLead
-            && _burstReleased
+        SoftHorizontalBoundary? horizontalBoundary = _burstReleased
             && flightSeconds >= 0.1f
             ? new SoftHorizontalBoundary(
                 _visibleSceneBounds.Position.X,
@@ -678,14 +654,12 @@ public sealed partial class BossDismembermentPresentation : Node2D
             : null;
         _solver.Step(
             _bodies,
-            architectLead && _architectRagdoll != null
-                ? _architectRagdoll.Links
-                : [],
+            [],
             seconds,
-            architectLead ? 860f : _gravity,
-            architectLead ? 0.08f : BossFountainLaunchProfile.LinearAirDrag,
+            _gravity,
+            BossFountainLaunchProfile.LinearAirDrag,
             floorY,
-            architectLead ? 0f : BossFountainLaunchProfile.QuadraticAirDrag,
+            BossFountainLaunchProfile.QuadraticAirDrag,
             _burstReleased ? _launchActuators : null,
             _centerSpeedLimit,
             horizontalBoundary);
@@ -695,7 +669,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
     {
         if (_mode == PresentationMode.ArchitectLead && !_burstTriggered)
         {
-            _architectRagdoll?.ApplyVisualPose();
             return;
         }
 
@@ -763,8 +736,23 @@ public sealed partial class BossDismembermentPresentation : Node2D
         _fragments.Clear();
         _bodies.Clear();
         _launchActuators.Clear();
-        _architectRagdoll?.Dispose();
-        _architectRagdoll = null;
+        if (_architectBody != null && GodotObject.IsInstanceValid(_architectBody))
+        {
+            using Variant state = _architectBody.Call("get_animation_state");
+            using GodotObject stateObject = state.AsGodotObject();
+            using Variant track = stateObject.Call("get_current", 0);
+            using GodotObject? current = track.AsGodotObject();
+            if (current != null)
+            {
+                using Variant animation = current.Call("get_animation");
+                using GodotObject animationObject = animation.AsGodotObject();
+                if (animationObject.Call("get_name").AsString() == ArchitectDeathAnimation)
+                    stateObject.Call("clear_track", 0);
+            }
+            _architectBody.Call("set_update_mode", _architectUpdateMode);
+        }
+        _architectSprite = null;
+        _architectBoneBaselines.Clear();
         _architectBody = null;
     }
 
@@ -908,5 +896,6 @@ public sealed partial class BossDismembermentPresentation : Node2D
         public float CompressionSpeed { get; } = compressionSpeed;
         public Vector2 CompressionOrigin { get; set; } = compressionOrigin;
         public BossFragmentPoint RestCenterOffset { get; } = restCenterOffset;
+        public Transform2D? DeathBasis { get; set; }
     }
 }

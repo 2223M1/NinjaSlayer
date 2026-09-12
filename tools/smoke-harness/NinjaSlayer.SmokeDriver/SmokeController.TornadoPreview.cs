@@ -57,9 +57,10 @@ internal sealed partial class SmokeController
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
         SaveManager.Instance.SetFtuesEnabled(false);
         Engine.MaxFps = 60;
-        new AutoSlayer().Start(_configuration.Seed, _configuration.AutoSlayLogPath);
+        _previewAutoSlayer = new AutoSlayer();
+        _previewAutoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
         await WaitTaskAsync(_firstCombatCompleted.Task, "Tornado preview did not complete", TimeSpan.FromMinutes(4));
-        AccessTools.Method(typeof(AutoSlayer), "QuitGame").Invoke(null, [0]);
+        await FinishPreviewAsync();
     }
 
     private async Task ExecuteTornadoPreviewAsync(CancellationToken cancellationToken)
@@ -197,8 +198,6 @@ internal sealed partial class SmokeController
             Require(actor.Position.IsEqualApprox(baseline), "Replacement hurt drifted after old pause cleanup.");
             _checkpoints.Write("tornado.png-pause-ownership");
             AutoSlayer.CurrentWatchdog?.Reset("Tornado preview cleanup");
-            await NGame.Instance!.ReturnToMainMenu();
-            await WaitFrames(10);
             _firstCombatCompleted.TrySetResult();
             // The preview owns this combat until shutdown; AutoSlayer must not seek rewards.
             await Task.Delay(Timeout.Infinite, cancellationToken);
@@ -271,18 +270,24 @@ internal static class TornadoPreviewDamageObserver
 
 internal sealed class TornadoViewportRecording(Viewport viewport, string directory)
 {
+    private static TornadoViewportRecording? _active;
     private readonly Channel<(byte[] Pixels, int Repeats)> _frames = Channel.CreateUnbounded<(byte[], int)>(
         new UnboundedChannelOptions { SingleReader = true, SingleWriter = true });
     private Process? _encoder;
     private Task? _writer;
     private long _start;
     private int _frameCount;
+    private byte[]? _previousFrame;
+    private readonly List<(long Timestamp, int Frame)> _capturedFrames = [];
+    private readonly List<(long Timestamp, string Event)> _audioEvents = [];
     private bool _recording;
     private Exception? _failure;
+    internal long StartTimestamp => _start;
 
     internal async Task Start()
     {
         await viewport.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        _start = Stopwatch.GetTimestamp();
         using Image image = viewport.GetTexture().GetImage();
         var start = new ProcessStartInfo("ffmpeg")
         {
@@ -300,11 +305,21 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
                 for (int i = 0; i < repeats; i++) await _encoder.StandardInput.BaseStream.WriteAsync(pixels);
             _encoder.StandardInput.Close();
         });
-        _start = Stopwatch.GetTimestamp();
+        image.Convert(Image.Format.Rgba8);
+        _previousFrame = image.GetData();
+        _frames.Writer.TryWrite((_previousFrame, 1));
+        _frameCount = 1;
+        _capturedFrames.Add((_start, 0));
         File.WriteAllText(Path.Combine(directory, "recording-start.json"), new JsonObject
         { ["timestamp"] = _start, ["frequency"] = Stopwatch.Frequency }.ToJsonString());
         _recording = true;
+        _active = this;
         RenderingServer.FramePostDraw += Capture;
+    }
+
+    internal static void ObserveAudio(string eventPath)
+    {
+        _active?._audioEvents.Add((Stopwatch.GetTimestamp(), eventPath));
     }
 
     private void Capture()
@@ -312,20 +327,28 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
         if (!_recording) return;
         try
         {
-            int expected = (int)Math.Floor(Stopwatch.GetElapsedTime(_start).TotalSeconds * 60) + 1;
+            long timestamp = Stopwatch.GetTimestamp();
+            int expected = (int)Math.Floor((timestamp - _start) * 60d / Stopwatch.Frequency) + 1;
             if (expected <= _frameCount) return;
             using Image image = viewport.GetTexture().GetImage();
             image.Convert(Image.Format.Rgba8);
-            if (!_frames.Writer.TryWrite((image.GetData(), expected - _frameCount)))
+            if (expected - _frameCount > 1 && !_frames.Writer.TryWrite((_previousFrame!, expected - _frameCount - 1)))
                 throw new IOException("Preview encoder stopped accepting frames.");
+            byte[] pixels = image.GetData();
+            if (!_frames.Writer.TryWrite((pixels, 1)))
+                throw new IOException("Preview encoder stopped accepting frames.");
+            _previousFrame = pixels;
             _frameCount = expected;
+            _capturedFrames.Add((timestamp, expected - 1));
         }
         catch (Exception exception) { _failure = exception; _recording = false; }
     }
 
     internal async Task Stop()
     {
+        long stop = Stopwatch.GetTimestamp();
         _recording = false;
+        _active = null;
         RenderingServer.FramePostDraw -= Capture;
         _frames.Writer.TryComplete();
         if (_writer != null) await _writer;
@@ -337,7 +360,17 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
             _encoder.Dispose();
         }
         File.WriteAllText(Path.Combine(directory, "recording-stop.json"), new JsonObject
-        { ["timestamp"] = Stopwatch.GetTimestamp(), ["frames"] = _frameCount }.ToJsonString());
+        { ["timestamp"] = stop, ["frames"] = _frameCount }.ToJsonString());
+        File.WriteAllLines(Path.Combine(directory, "video-frames.csv"),
+            new[] { "qpc,frame" }.Concat(_capturedFrames.Select(f => $"{f.Timestamp},{f.Frame}")));
+        File.WriteAllLines(Path.Combine(directory, "audio-events.jsonl"), _audioEvents.Select(e =>
+            new JsonObject { ["qpc"] = e.Timestamp, ["event"] = e.Event }.ToJsonString()));
         if (_failure != null) throw new IOException("Preview capture failed.", _failure);
     }
+}
+
+[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.Play), [typeof(string), typeof(float)])]
+internal static class PreviewAudioTimestampObserver
+{
+    private static void Prefix(string sfx) => TornadoViewportRecording.ObserveAudio(sfx);
 }

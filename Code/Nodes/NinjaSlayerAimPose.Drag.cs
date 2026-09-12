@@ -91,11 +91,19 @@ public partial class NinjaSlayerAimPose
     internal (float Degrees, float Basis, Func<double, double>? Before) ComposeFacingSpin(
         VerticalAxisSpinProjection projection, float degrees, Func<double, double>? before)
     {
+        float authoredDegrees = degrees;
+        Func<double, double>? authoredBefore = before;
+        float freeYaw = FreeControl?.AdditionalYaw(projection) ?? 0f;
+        if (freeYaw != 0f)
+        {
+            degrees += freeYaw;
+            if (before is { } previous) before = age => previous(age) + freeYaw;
+        }
         if (!ReferenceEquals(projection, _turnProjection) && !ReferenceEquals(projection, _spin) && !_turnReplaying)
         {
             _externalSpin = projection;
-            _externalSpinDegrees = degrees;
-            _externalSpinExposure = before;
+            _externalSpinDegrees = authoredDegrees;
+            _externalSpinExposure = authoredBefore;
         }
         if (!Turning)
         {
@@ -140,6 +148,7 @@ public partial class NinjaSlayerAimPose
             if (ReferenceEquals(candidate, _actor.Entity) || !candidate.IsAlive || !candidate.IsHittable
                 || !_dragCard.CanPlayTargeting(candidate) || candidate.GetCreatureNode() is not { } node) continue;
             Vector2 point = node.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
+            if (FreeControl is { Active: true } free) point = free.UntransformTarget(point);
             if ((point.X - axis) * FacingSign <= 0f) continue;
             _aimTargets.Add(new(point.X, point.Y));
         }
