@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   writeFileSync,
   cpSync,
   rmSync,
@@ -13,6 +14,19 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+test("checked-in runtime catalogs preserve their exported fingerprints", () => {
+  const root = new URL("../../../Website/content/", import.meta.url);
+  const current = JSON.parse(readFileSync(new URL("current.json", root)));
+  for (const version of readdirSync(new URL("versions/", root))) {
+    const folder = new URL(`versions/${version}/`, root);
+    const fingerprint = createHash("sha256")
+      .update(readFileSync(new URL("catalog.json", folder)))
+      .digest("hex");
+    assert.equal(fingerprint, readFileSync(new URL("fingerprint.txt", folder), "utf8").trim());
+    if (version === current.version) assert.equal(fingerprint, current.fingerprint);
+  }
+});
 
 test("release catalog changes names, text and art by version without rewriting history", () => {
   const root = mkdtempSync(join(tmpdir(), "ninjaslayer-catalog-"));
