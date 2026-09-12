@@ -1,15 +1,11 @@
+import { selectGroups } from './charts.mjs';
 export const choiceCounters = ['offered', 'picked', 'held', 'wins', 'removed', 'upgraded', 'pickFloorTotal', 'chosenRuns', 'chosenWins', 'skippedRuns', 'skippedWins'];
 export const combatCounters = ['combatSamples', 'drawn', 'started', 'finished', 'manual_plays', 'auto_plays', 'energy_spent', 'stars_spent'];
 const counters = [...choiceCounters, ...combatCounters];
 
 export function summarizePublic(snapshot, filters = {}, now = Date.now()) {
   const { catalog, groups, sources, feedback, excluded } = snapshot;
-  const cutoff = filters.days ? new Date(Date.UTC(new Date(now).getUTCFullYear(), new Date(now).getUTCMonth(), new Date(now).getUTCDate())
-    - (Number(filters.days) - 1) * 86_400_000).toISOString().slice(0, 10) : '';
-  const selected = groups.filter(group => (!cutoff || group.date >= cutoff)
-    && (!filters.version || group.version === filters.version) && (!filters.gameVersion || group.gameVersion === filters.gameVersion)
-    && (!filters.mode || group.mode === filters.mode) && (!filters.party || group.party === filters.party)
-    && (!filters.reloads || group.noReloads) && (filters.ascension === '' || filters.ascension == null || group.ascension === Number(filters.ascension)));
+  const selected = selectGroups(snapshot, filters, now);
   const cards = new Map(catalog.map(card => [card.id, { ...card, ...Object.fromEntries(counters.map(key => [key, 0])) }]));
   const result = { runs: 0, wins: 0, playerSamples: 0, measuredCombats: 0, totalCombats: 0, floorTotal: 0 };
   const dates = new Map();

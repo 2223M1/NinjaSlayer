@@ -9,6 +9,7 @@ import {
   readBodyLimited,
 } from './limits.js';
 import { consumeDailyQuota } from './security.js';
+import { reserveStorage } from './free-storage.js';
 import {
   FEEDBACK_METADATA_SCHEMA_VERSION,
   buildCompletionMarker,
@@ -182,7 +183,8 @@ export async function processFeedbackRequest(request, env, coordinator) {
     const existing = await coordinator.inspect(expectedSubmissionId, initialNow);
     if (existing?.status === 'completed') {
       try {
-        await coordinator.publishCompletion(existing.marker);
+        const repair = await coordinator.publishCompletion(existing.marker);
+        if (!repair.ok) return repair;
         return responseForCompletion(existing.marker);
       } catch (error) {
         console.error(`[feedback] failed to repair completion marker for ${expectedSubmissionId}: ${error}`);
@@ -214,7 +216,8 @@ export async function processFeedbackRequest(request, env, coordinator) {
   const acquisition = await coordinator.acquireLease(data.modContext.submissionId, proposedLease, receivedAt);
   if (acquisition.status === 'completed') {
     try {
-      await coordinator.publishCompletion(acquisition.marker);
+      const repair = await coordinator.publishCompletion(acquisition.marker);
+      if (!repair.ok) return repair;
       return responseForCompletion(acquisition.marker);
     } catch (error) {
       console.error(`[feedback] failed to repair completion marker for ${data.modContext.submissionId}: ${error}`);
@@ -226,6 +229,12 @@ export async function processFeedbackRequest(request, env, coordinator) {
   }
 
   const lease = acquisition.lease;
+  const reservation = await reserveStorage(env, data.screenshot.size + data.logs.size + 65536,
+    lease.logChunkKeys.length + 5, 180);
+  if (!reservation.ok) {
+    await coordinator.abortLease(lease);
+    return reservation;
+  }
   const expiration = { expirationTtl: FEEDBACK_RETENTION_SECONDS };
   try {
     await env.FEEDBACK_KV.put(
@@ -378,11 +387,14 @@ export class FeedbackSubmissionCoordinator {
   }
 
   publishCompletion(marker) {
-    return this.env.FEEDBACK_KV.put(
-      feedbackIndexKey(marker.submissionId),
-      JSON.stringify(marker),
-      { expirationTtl: FEEDBACK_RETENTION_SECONDS },
-    );
+    return this.withStateLock(async () => {
+      const key = feedbackIndexKey(marker.submissionId), value = JSON.stringify(marker);
+      if (await this.env.FEEDBACK_KV.get(key) === value) return jsonResponse(200, { ok: true });
+      const budget = await reserveStorage(this.env, value.length * 3, 1, 180);
+      if (!budget.ok) return budget;
+      await this.env.FEEDBACK_KV.put(key, value, { expirationTtl: FEEDBACK_RETENTION_SECONDS });
+      return jsonResponse(200, { ok: true });
+    });
   }
 
   async alarm() {

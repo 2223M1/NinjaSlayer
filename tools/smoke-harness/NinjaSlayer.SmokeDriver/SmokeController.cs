@@ -1600,6 +1600,13 @@ internal sealed partial class SmokeController
             await WaitUntilAsync(() => NGame.Instance?.MainMenu is not null, "main menu did not initialize");
             await DismissTelemetryNoticeAsync();
             ValidateLoadedMods();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CATALOG_OUTPUT") is { } catalogOutput)
+            {
+                WebsiteCatalogExporter.Export(catalogOutput);
+                _checkpoints.Write("catalog.exported");
+                _tree.Quit(0);
+                return;
+            }
             if (_configuration.Phase == SmokePhase.TransitionPerf)
             {
                 _checkpoints.Write("transition-perf.content-audit-skipped");
@@ -1663,6 +1670,7 @@ internal sealed partial class SmokeController
 
     private async Task RunFreshPhaseAsync()
     {
+        StartTelemetryCapture();
         NGame.Instance!.DebugSeedOverride = _configuration.Seed;
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Fast;
         SaveManager.Instance.SetFtuesEnabled(enabled: false);
@@ -1688,7 +1696,18 @@ internal sealed partial class SmokeController
         _checkpoints.Write("full-autoslay.starting");
         var autoSlayer = new AutoSlayer();
         autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
-        await Task.Delay(Timeout.InfiniteTimeSpan);
+        // Native CombatRoomHandler cannot operate event choices shown inside an ongoing combat.
+        while (true)
+        {
+            if (CombatManager.Instance.IsPaused
+                && RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any()
+                && GetSawatariOptions().FirstOrDefault(button => button.IsVisibleInTree() && button.IsEnabled) is { } option)
+            {
+                await UiHelper.Click(option);
+                _checkpoints.Write("full-autoslay.sawatari-choice");
+            }
+            await WaitFrames(1);
+        }
     }
 
     private async Task RunReverseFinisherPhaseAsync()
@@ -1724,6 +1743,7 @@ internal sealed partial class SmokeController
 
     private async Task RunResumePhaseAsync()
     {
+        StartTelemetryCapture();
         Control mainMenu = _tree.Root.GetNode<Control>("/root/Game/RootSceneContainer/MainMenu");
         NButton continueButton = mainMenu.GetNode<NButton>("MainMenuTextButtons/ContinueButton");
         await WaitUntilAsync(() => continueButton.Visible && continueButton.IsEnabled, "continue button was unavailable");

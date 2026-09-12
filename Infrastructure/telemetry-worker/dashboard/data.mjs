@@ -71,7 +71,7 @@ export function normalizeEvents(input) {
     }
     const identity = JSON.stringify([history.rng.seed, history.start_time, [...ids].sort()]);
     const balance = p.payload.private_contributions?.NinjaSlayer?.ninja_slayer_balance_context;
-    const metrics = balance?.balance_schema === 'ninja_slayer_run_history_v2'
+    const metrics = ['ninja_slayer_run_history_v2', 'ninja_slayer_run_history_v3'].includes(balance?.balance_schema)
       ? readCombats(p.payload.applicant_payload.mod_payload, rooms, new Set(ids)) : { combats: [], invalid: 0 };
     invalidCombats += metrics.invalid;
     const run = {
@@ -79,13 +79,26 @@ export function normalizeEvents(input) {
       mode: p.run_game_mode ?? history.game_mode, reloads: history.num_reloads ?? null,
       ascension: history.ascension, win: p.is_victory, floor: rooms.length,
       players, playerCount: history.players.length, rooms, combats: metrics.combats,
+      duration: history.run_time ?? null, winTime: history.win_time ?? null, daily: history.dailyTime ?? null,
+      actFloors: history.map_point_history.map(act => act.length),
+      floorMeasurements: balance?.balance_schema === 'ninja_slayer_run_history_v3' ? p.payload.applicant_payload.mod_payload?.floors ?? {} : {},
     };
     const previous = byRun.get(identity);
     if (previous) {
       duplicates++;
-      if (previous.win !== run.win) conflicted.add(identity);
-      // Prefer a snapshot with combat measurements; never sum repeated uploads of one run.
-      if (previous.combats.length > run.combats.length || (previous.combats.length === run.combats.length && previous.at >= run.at)) continue;
+      if (previous.reloads !== null && run.reloads !== null && previous.reloads > run.reloads) continue;
+      if (previous.reloads !== run.reloads) conflicted.delete(identity);
+      if (previous.win !== run.win && previous.reloads === run.reloads) conflicted.add(identity);
+      if (previous.reloads === run.reloads && previous.win === run.win) {
+        run.floorMeasurements = { ...previous.floorMeasurements, ...run.floorMeasurements };
+        for (const combat of previous.combats) {
+          const current = run.combats.find(item => item.floor === combat.floor && item.room_index === combat.room_index);
+          if (!current) run.combats.push(combat);
+          else for (const player of combat.players)
+            if (!current.players.some(item => item.player_id === player.player_id)) current.players.push(player);
+        }
+      }
+      // Always retain the merged contributors. Higher-reload outcomes replace all earlier attempts.
     }
     byRun.set(identity, run);
   }

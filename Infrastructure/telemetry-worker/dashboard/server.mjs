@@ -3,12 +3,15 @@ import { readFile, readdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { parseData, normalizeEvents, summarize } from './data.mjs';
-import { readCatalog } from './publish.mjs';
+import { summarizePublic } from './public-data.mjs';
+import { readCatalog, readCurrentRelease, publishSnapshot, publicFeedback } from './publish.mjs';
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
 import { loadFeedback, readCompletedFeedback, readFeedbackObject } from '../scripts/feedback-reader.js';
 import { UUID_PATTERN } from '../src/validation.js';
 
 const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
+for (const file of ['charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
+publicFiles.set('/vendor/chart.umd.js', ['../node_modules/chart.js/dist/chart.umd.js', 'text/javascript']);
 
 async function body(request) {
   const chunks = [];
@@ -64,7 +67,7 @@ export async function createDashboardServer() {
     const url = new URL(request.url, `http://${expectedHost}`);
     const send = (status, data, type = 'application/json; charset=utf-8', extra = {}) => {
       response.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
-        'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'", ...extra });
+        'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://ninja-slayer-telemetry.theonetrue2223.workers.dev; object-src 'none'; frame-ancestors 'none'; base-uri 'none'", ...extra });
       response.end(type.startsWith('application/json') ? JSON.stringify(data) : data);
     };
     try {
@@ -72,9 +75,14 @@ export async function createDashboardServer() {
         const [file, type] = publicFiles.get(url.pathname);
         const bytes = await readFile(new URL(file, import.meta.url));
         send(200, file === 'index.html' ? bytes.toString('utf8').replaceAll('{{view}}', 'admin') : bytes, type.startsWith('image/') ? type : `${type}; charset=utf-8`);
+      } else if (request.method === 'GET' && /^\/content\/(images\/[a-f0-9]{64}\.webp|versions\/\d+\.\d+\.\d+\/catalog\.json)$/.test(url.pathname)) {
+        const bytes = await readFile(new URL('../../../Website' + url.pathname, import.meta.url));
+        send(200, url.pathname.endsWith('.json') ? JSON.parse(bytes) : bytes, url.pathname.endsWith('.json') ? 'application/json' : 'image/webp');
+      } else if (request.method === 'GET' && url.pathname === '/api/snapshot') {
+        send(200, { ...publishSnapshot(telemetry, catalog), currentVersion: (await readCurrentRelease()).version, sources, feedback: publicFeedback(feedback) });
       } else if (request.method === 'GET' && url.pathname === '/api/view') {
         const filters = Object.fromEntries(url.searchParams);
-        send(200, { application: 'NinjaSlayerDashboard', ...summarize(telemetry.runs, catalog, filters), sources, feedback, feedbackWarnings,
+        send(200, { application: 'NinjaSlayerDashboard', ...summarizePublic(publishSnapshot(telemetry, catalog), filters), sources, feedback, feedbackWarnings,
           rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts,
           invalidCombats: telemetry.invalidCombats,
           connection: { host: config.host, projectId: config.projectId, configured: Boolean(config.key) } });

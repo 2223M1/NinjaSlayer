@@ -79,7 +79,7 @@ export function validateTelemetryBody(body, maximumBatchSize) {
     if (!event || typeof event !== 'object' || Array.isArray(event) || !hasOnlyFields(event, TELEMETRY_EVENT_FIELDS)) {
       return `batch[${index}] contains unsupported fields`;
     }
-    if (event.event !== 'run_history.completed') return `batch[${index}].event is not allowed`;
+    if (!['run_history.completed', 'battle_report.completed'].includes(event.event)) return `batch[${index}].event is not allowed`;
     if (!event.properties || typeof event.properties !== 'object' || Array.isArray(event.properties)
       || !hasOnlyFields(event.properties, TELEMETRY_PROPERTY_FIELDS)) {
       return `batch[${index}].properties contains unsupported fields`;
@@ -88,7 +88,7 @@ export function validateTelemetryBody(body, maximumBatchSize) {
     if (properties.schema !== 'ritsulib.telemetry.v1'
       || properties.applicant_id !== 'NinjaSlayer'
       || properties.owner_mod_id !== 'NinjaSlayer'
-      || !['run_history', 'balance_runs'].includes(properties.request_id)
+      || !(event.event === 'battle_report.completed' ? properties.request_id === 'public_replays' : ['run_history', 'balance_runs'].includes(properties.request_id))
       || properties.category !== 'RunHistory') {
       return `batch[${index}] is not a NinjaSlayer RunHistory envelope`;
     }
@@ -97,7 +97,7 @@ export function validateTelemetryBody(body, maximumBatchSize) {
       return `batch[${index}].distinct_id is invalid`;
     }
     if (!properties.payload || typeof properties.payload !== 'object' || Array.isArray(properties.payload)
-      || !validateJsonComplexity(properties.payload)) {
+      || (event.event !== 'battle_report.completed' && !validateJsonComplexity(properties.payload))) {
       return `batch[${index}].properties.payload is invalid`;
     }
     if (event.timestamp !== undefined && event.timestamp !== null

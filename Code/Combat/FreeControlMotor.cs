@@ -9,6 +9,9 @@ internal sealed class FreeControlMotor
     internal const float JumpSpeed = 850f;
     internal const float DashSpeed = 1200f;
     internal const float DashSeconds = .18f;
+    internal const float CollisionDamageThreshold = 2500f;
+    internal const float MaximumDamageSpeed = 10000f;
+    internal const int MaximumCollisionDamage = 10;
     internal Vector2 Velocity;
     internal bool HasAirJump { get; private set; } = true;
     internal bool HasAirDash { get; private set; } = true;
@@ -75,8 +78,13 @@ internal sealed class FreeControlMotor
     private static float MoveTowards(float from, float to, float step) =>
         from + Math.Clamp(to - from, -step, step);
 
-    internal static int CollisionDamage(float relativeSpeed) => relativeSpeed < 200f ? 0
-        : Math.Clamp((int)MathF.Floor(MathF.Pow(relativeSpeed / 200f, 2f)), 1, 100);
+    internal static int CollisionDamage(float relativeSpeed)
+    {
+        if (relativeSpeed < CollisionDamageThreshold) return 0;
+        float progress = Math.Clamp((relativeSpeed - CollisionDamageThreshold)
+            / (MaximumDamageSpeed - CollisionDamageThreshold), 0f, 1f);
+        return 1 + (int)MathF.Floor((MaximumCollisionDamage - 1) * progress * progress);
+    }
 
     internal static int AttackTier(float heldSeconds) => heldSeconds < .15f ? 0 : heldSeconds < .5f ? 1 : 2;
 }

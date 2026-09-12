@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Reflection;
+using System.IO.Compression;
 using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Combat.History.Entries;
@@ -8,6 +9,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
@@ -76,12 +78,16 @@ internal sealed partial class SmokeController
         await WaitUntilAsync(() => CombatManager.Instance.History.Entries.OfType<CardPlayFinishedEntry>()
             .Any(entry => ReferenceEquals(entry.CardPlay.Card, card)), "paid card action did not finish", cancellationToken);
         Require(energyBefore - player.PlayerCombatState.Energy == 1, "Native action did not actually spend one energy.");
-        await CreatureCmd.Kill(player.Creature);
+        int realHpBefore = player.Creature.CurrentHp;
+        _checkpoints.Write("telemetry.before-lethal", data: new JsonObject { ["hp"] = realHpBefore });
+        await CreatureCmd.Damage(new BlockingPlayerChoiceContext(), player.Creature, 10000,
+            MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, CombatManager.Instance.DebugOnlyGetState()!.Enemies.First());
         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
     }
 
     private void StartTelemetryCapture()
     {
+        TelemetryPerformance.Start();
         TelemetryApplicant original = TelemetryRegistry.GetApplicants().Single(applicant => applicant.ApplicantId == "NinjaSlayer");
         _telemetryCapture = new LocalTelemetryCapture(Path.ChangeExtension(_configuration.CheckpointPath, ".telemetry.json"));
         TelemetryRegistry.RegisterApplicant(new TelemetryApplicant
@@ -95,6 +101,9 @@ internal sealed partial class SmokeController
         Require(!TelemetryApi.GetClient("NinjaSlayer").IsEnabled(NinjaSlayerBalanceTelemetry.BalanceRequestId), "Denied telemetry request remained enabled.");
         RitsuLibFramework.SetTelemetryApplicantConsent("NinjaSlayer", TelemetryConsentState.Granted, [NinjaSlayerBalanceTelemetry.BalanceRequestId]);
         Require(TelemetryApi.GetClient("NinjaSlayer").IsEnabled(NinjaSlayerBalanceTelemetry.BalanceRequestId), "Local test telemetry was not enabled.");
+        var consent = typeof(NinjaSlayerSettings).Assembly.GetType("NinjaSlayer.Content.NinjaSlayerTelemetryConsent", true)!;
+        HarmonyLib.AccessTools.Method(consent, "SetReplayEnabled").Invoke(null, [true]);
+        Require(TelemetryApi.GetClient("NinjaSlayer").IsEnabled(NinjaSlayerBalanceTelemetry.ReplayRequestId), "Explicit replay opt-in did not enable the local capture.");
     }
 
     private void ValidateTelemetryCapture()
@@ -112,6 +121,31 @@ internal sealed partial class SmokeController
             player!["cards"]!.AsObject().Any(card => card.Value!["started"]!.GetValue<int>() > 0))),
             "Completed AutoSlay did not measure actual card plays.");
         _checkpoints.Write("telemetry.captured", data: new JsonObject { ["combats"] = combats.Count, ["nativeCombats"] = nativeCombats });
+        Require(_telemetryCapture.Report is not null, "Completed run omitted its explicitly enabled public report.");
+        var report = _telemetryCapture.Report!;
+        Require(report["coverage"]!.GetValue<string>() == "complete", "Fresh full-run report has missing segments.");
+        var frames = report["frames"]!.AsArray();
+        if (_configuration.Phase == SmokePhase.TelemetryLoss)
+            Require(frames.Any(frame => frame!["action"]!["kind"]!.GetValue<string>() == "hit"
+                && frame["action"]!["target"]?.GetValue<string>() == "self"
+                && frame["action"]!["killed"]?.GetValue<bool>() == true), "Deferred lethal damage omitted its final death.");
+        foreach (var combat in combats.Select(pair => pair.Value!))
+        {
+            var actions = frames.Where(frame => frame!["floor"]!.GetValue<int>() == combat["floor"]!.GetValue<int>()
+                && frame["room"]!.GetValue<int>() == combat["room_index"]!.GetValue<int>()).Select(frame => frame!["action"]!).ToArray();
+            int started = combat["players"]![0]!["cards"]!.AsObject().Sum(card => card.Value!["started"]!.GetValue<int>());
+            Require(started == actions.Count(action => action["kind"]!.GetValue<string>() == "play"), "Report and aggregate native plays differ.");
+            decimal lost = combat["players"]![0]!["metrics"]!["hp_lost"]!.GetValue<decimal>();
+            Require(lost == actions.Where(action => action["kind"]!.GetValue<string>() == "hp_loss"
+                && action["actor"]?.GetValue<string>() == "self").Sum(action => action["amount"]!.GetValue<decimal>()),
+                "Report and aggregate actual HP loss differ.");
+            decimal healed = combat["players"]![0]!["metrics"]!["healed"]!.GetValue<decimal>();
+            Require(healed == actions.Where(action => action["kind"]!.GetValue<string>() == "heal"
+                && action["actor"]?.GetValue<string>() == "self").Sum(action => action["amount"]!.GetValue<decimal>()),
+                "Report and aggregate player healing differ.");
+        }
+        _checkpoints.Write("replay.captured", data: new JsonObject { ["actions"] = frames.Count, ["coverage"] = "complete" });
+        _checkpoints.Write("telemetry.performance", data: TelemetryPerformance.Snapshot());
     }
 
     private sealed class LocalTelemetryCapture(string path) : ITelemetryAdapter
@@ -120,20 +154,32 @@ internal sealed partial class SmokeController
         public string EndpointDescription => "isolated smoke fixture";
         public TaskCompletionSource<JsonNode> Captured { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int CaptureCount { get; private set; }
+        public JsonNode? Report { get; private set; }
 
         public ValueTask<TelemetrySendResult> SendAsync(TelemetryApplicant applicant,
             IReadOnlyList<TelemetryEnvelope> events, CancellationToken cancellationToken = default)
         {
-            foreach (TelemetryEnvelope item in events.Where(item => item.EventName == "run_history.completed"))
+            foreach (TelemetryEnvelope item in events)
             {
                 // Exercise the actual PostHog wire mapping without a production network request.
                 var buildProperties = typeof(PostHogTelemetryAdapter).GetMethod("BuildProperties", BindingFlags.Static | BindingFlags.NonPublic)!;
                 var properties = JsonSerializer.SerializeToNode(buildProperties.Invoke(null, [item]))!.AsObject();
-                File.WriteAllText(path, new JsonArray(new JsonObject
+                var wire = new JsonArray(new JsonObject
                 {
                     ["event"] = item.EventName, ["timestamp"] = item.TimestampUtc.ToString("O"),
                     ["distinct_id"] = properties["anonymous_install_id"]!.DeepClone(), ["properties"] = properties
-                }).ToJsonString());
+                });
+                if (item.EventName == "battle_report.completed")
+                {
+                    File.WriteAllText(Path.ChangeExtension(path, ".replay.json"), wire.ToJsonString());
+                    var payload = item.Payload!["applicant_payload"]!;
+                    using var compressed = new MemoryStream(Convert.FromBase64String(payload["report"]!.GetValue<string>()));
+                    using var gzip = new GZipStream(compressed, CompressionMode.Decompress);
+                    Report = JsonNode.Parse(gzip);
+                    continue;
+                }
+                if (item.EventName != "run_history.completed") continue;
+                File.WriteAllText(path, wire.ToJsonString());
                 CaptureCount++;
                 Captured.TrySetResult(item.Payload!.DeepClone());
             }

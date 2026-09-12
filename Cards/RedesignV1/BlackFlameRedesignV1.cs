@@ -117,18 +117,19 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
     private Task DamageEnemies(PlayerChoiceContext choiceContext, List<Creature> enemies) =>
         DamageEnemies(choiceContext, Owner, (int)DynamicVars.Damage.BaseValue, this, enemies);
 
-    internal static Task DamageEnemies(PlayerChoiceContext choiceContext, Player player,
+    internal static async Task DamageEnemies(PlayerChoiceContext choiceContext, Player player,
         int baseDamage, CardModel? source, IReadOnlyList<Creature>? targets = null)
     {
         targets ??= player.Creature.CombatState!.HittableEnemies;
-        if (targets.Count == 0) return Task.CompletedTask;
-        return CreatureCmd.Damage(choiceContext, targets,
+        if (targets.Count == 0) return;
+        var results = await CreatureCmd.Damage(choiceContext, targets,
             baseDamage + player.Creature.GetPowerAmount<BurnBurnBurnPower>(),
             ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, source
 #if !NINJASLAYER_LEGACY_DAMAGE_API
             , null
 #endif
         );
+        Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "black_flame");
     }
 
     protected override void OnUpgrade() { }

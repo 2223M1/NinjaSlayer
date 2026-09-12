@@ -78,8 +78,22 @@ public sealed class FreeControlMotorTests
     }
 
     [Theory]
-    [InlineData(0f, 0)] [InlineData(199f, 0)] [InlineData(200f, 1)]
-    [InlineData(400f, 4)] [InlineData(1000f, 25)] [InlineData(3000f, 100)]
+    [InlineData(0f, 0)] [InlineData(2000f, 0)] [InlineData(2499f, 0)]
+    [InlineData(2500f, 1)] [InlineData(5000f, 2)] [InlineData(7500f, 5)]
+    [InlineData(9999f, 9)] [InlineData(10000f, 10)] [InlineData(30000f, 10)]
     public void ContactDamageUsesSpeedThresholdAndCap(float speed, int damage) =>
         Assert.Equal(damage, FreeControlMotor.CollisionDamage(speed));
+
+    [Fact]
+    public void RunningJumpingDashingAndFastFallingNeverReachContactDamageThreshold()
+    {
+        var motor = new FreeControlMotor();
+        for (int frame = 0; frame < 240; frame++)
+        {
+            motor.Step(1f / 60f, 1f, frame is 30 or 45, true, frame == 60,
+                frame > 80, frame < 30, 0f, 1f);
+            Assert.Equal(0, FreeControlMotor.CollisionDamage(motor.Velocity.Length()));
+        }
+        Assert.Equal(new Vector2(FreeControlMotor.RunSpeed, 2400f), motor.Velocity);
+    }
 }

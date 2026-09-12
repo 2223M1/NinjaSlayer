@@ -5,16 +5,28 @@ NinjaSlayer provides an in-game data-sharing setting and a separate confirmation
 ## Balance Telemetry
 
 - Only completed, non-abandoned NinjaSlayer run-history events are accepted.
-- Accepted envelopes are limited to the RitsuLib `run_history.completed` schema for applicant `NinjaSlayer`.
+- Accepted envelopes use the RitsuLib `run_history.completed` and separately authorized `battle_report.completed` schemas for applicant `NinjaSlayer`.
 - The Worker does not add, forward, log, or persist the player's real IP address.
 - A server-secret HMAC of the transient Cloudflare source IP is used only as a one-minute rate-limit key.
 - The same non-reversible HMAC is limited to 25 MiB of accepted telemetry per UTC day by a Durable Object.
 - Telemetry is forwarded to PostHog for aggregate balance analysis.
-- The `balance_runs` request covers run history plus per-combat card draws, manual/automatic plays, repeated resolutions and energy/stars actually paid. No damage-to-card attribution is inferred.
+- The `balance_runs` request covers native choices and per-combat card use, paid resources, actual HP loss, healing, block, status changes and NinjaSlayer mechanics. Direct card sources are recorded; independent effects retain their own source. No last-played-card attribution is inferred.
 - Data sharing defaults on with a first-launch notice before delivery. Accepting enables it immediately; dismissing keeps delivery off for that process and enables it on the next game launch. Explicit rejection or disabling in NinjaSlayer settings persists. Existing RitsuLib rejection and a historical `run_history`-only grant are preserved. No historical runs are backfilled.
 - Combat summaries use RitsuLib run saved data and are sent only with a permitted completed-run event. Replaying a saved room replaces its previous measurement; older or unmeasured rooms remain missing.
-- The existing native snapshot contains run/player identifiers used to join choices to players. UInt64 identifiers cross JavaScript services as decimal strings to preserve precision. Public artifacts contain aggregate counters, without identifiers, seeds, complete decks or raw runs.
+- The existing native snapshot contains run/player identifiers used to join choices to players. UInt64 identifiers cross JavaScript services as decimal strings to preserve precision. Public artifacts contain aggregate counters, without identifiers or seeds. Anonymous full reports require the separate opt-in below.
 - The public observatory is hosted at https://2223m1.github.io/NinjaSlayer/ and updated by GitHub Actions. Query credentials remain in Actions secrets. The private developer dashboard listens only on loopback and holds its query credentials in the local process; attachments are read on demand there. See `Infrastructure/telemetry-worker/dashboard/README.md` for the statistical definitions and refresh behavior.
+
+## Public Battle Reports
+
+- `public_replays` defaults off. Both the explicit NinjaSlayer setting and the native RitsuLib request grant are required. Old grants do not enable publication.
+- Opt-in during combat begins recording at the next combat. Earlier room choices are excluded. Opt-out withdraws the active journal; loading an older save does not restore its permission. Re-enabling starts a new journal.
+- Native history changes are snapshotted as they happen. An anonymous local journal survives save rewinds so separate combat attempts remain distinguishable. It is flushed locally at turn/room boundaries; no network request is made per turn.
+- Reports contain the contributing player's cards and actions, monster actions, route and choices. Other players' identities, cards, HP and powers are not published. Their presence is marked uncollected.
+- Names supplied by players, account/install IDs, seeds, filesystem paths, screenshots and logs are excluded by an explicit server schema. A private run digest is HMACed with a server secret before becoming the public report ID.
+- Completed-run reports are compressed and queued through RitsuLib independently of balance telemetry. They go to KV, never PostHog. Retries and duplicate contributions do not create extra public samples.
+- Local and remote full reports expire after 90 days. Remote retention starts at first acceptance and retries cannot extend it. Pages contains only the index; details are fetched on demand with at most five minutes of cache, bounded by expiry. Previously downloaded public copies cannot be recalled.
+- Limits are 50,000 actions, 12 MiB expanded and 2 MiB compressed. Incomplete/truncated capture is labeled; oversized or failed local storage does not claim a complete upload. The settings status distinguishes queued delivery from a remote receipt.
+- Feedback and reports share a conservative 800 MiB / 800 KV writes per day budget, leaving headroom under the existing free allocation. Exceeding it returns a retryable response without replacing existing data. No paid storage or R2 is enabled.
 
 ## F2 Feedback
 

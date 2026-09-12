@@ -5,6 +5,7 @@ import {
   TELEMETRY_DAILY_BYTES,
   jsonResponse,
 } from './limits.js';
+import { consumeStorage, storeReport, expireReceipts } from './free-storage.js';
 
 const DAILY_LIMITS = {
   telemetry: { count: Number.MAX_SAFE_INTEGER, bytes: TELEMETRY_DAILY_BYTES },
@@ -56,8 +57,9 @@ export async function consumeDailyQuota(env, clientKey, category, bytes) {
 }
 
 export class AnonymousQuotaGuard {
-  constructor(state) {
+  constructor(state, env) {
     this.storage = state.storage;
+    this.env = env;
     this.pending = Promise.resolve();
   }
 
@@ -69,6 +71,12 @@ export class AnonymousQuotaGuard {
 
   async consume(request) {
     if (request.method !== 'POST') return jsonResponse(405, { error: 'method_not_allowed' });
+    const path = new URL(request.url).pathname;
+    if (path === '/storage' || path === '/report') {
+      const now = new Date(request.headers.get('X-Test-Now') || Date.now());
+      const data = await request.json();
+      return path === '/storage' ? consumeStorage(this.storage, data, now) : storeReport(this.storage, this.env, data, now);
+    }
     const category = request.headers.get('X-Quota-Category');
     const limits = DAILY_LIMITS[category];
     const bytes = Number.parseInt(request.headers.get('X-Quota-Bytes') || '-1', 10);
@@ -91,4 +99,6 @@ export class AnonymousQuotaGuard {
     await this.storage.put(key, { day, count: usage.count + 1, bytes: usage.bytes + bytes });
     return jsonResponse(200, { ok: true });
   }
+
+  alarm() { return expireReceipts(this.storage); }
 }

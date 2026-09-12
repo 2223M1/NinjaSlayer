@@ -326,8 +326,8 @@ main {
   color: var(--red);
 }
 .filters {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
   gap: 14px;
   margin-bottom: 23px;
 }
@@ -909,7 +909,7 @@ dialog p {
     font-size: 12px;
   }
   .hero-ninja {
-    right: -100px;
+    right: -20px;
     top: -40px;
     width: 330px;
     opacity: 0.38;
@@ -1003,5 +1003,218 @@ dialog p {
 @media (prefers-reduced-motion: reduce) {
   .spinning {
     animation: none;
+  }
+}
+.chart-frame {
+  height: 380px;
+  padding: 18px 24px;
+}
+.chart-frame canvas {
+  max-width: 100%;
+}
+.filters {
+  margin-bottom: 22px;
+}
+.filters input {
+  width: 140px;
+  background: #191519;
+  color: #e8dadd;
+  border: 1px solid #47343a;
+  border-radius: 5px;
+  padding: 9px;
+}
+.card-thumbnail {
+  width: 54px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 4px;
+  float: left;
+  margin-right: 12px;
+}
+.card-link {
+  min-height: 44px;
+}
+.preview-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 30px;
+  padding: 15px 0 25px;
+}
+.game-card {
+  position: relative;
+  border: 2px solid #795453;
+  border-radius: 20px;
+  background: linear-gradient(#4a2228, #191316);
+  padding: 20px;
+  box-shadow: 0 12px 45px #0008;
+}
+.game-card img {
+  width: 100%;
+  border-radius: 8px;
+  aspect-ratio: 1.4;
+  object-fit: cover;
+}
+.game-card h3 {
+  text-align: center;
+  font-size: 23px;
+}
+.card-description {
+  white-space: pre-line;
+  line-height: 1.8;
+  color: #f3e2ce;
+}
+.energy-cost {
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  border-radius: 50%;
+  background: #910b1e;
+  border: 2px solid #d4b878;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 22px;
+}
+.card-tips section {
+  border-left: 2px solid #b83645;
+  padding: 0 16px;
+}
+.card-tips h4 {
+  color: #e8bb76;
+  margin-bottom: 8px;
+}
+.card-tips p {
+  white-space: pre-line;
+  line-height: 1.6;
+}
+.report-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  padding: 20px 26px;
+  text-align: left;
+  border-bottom: 1px solid #ffffff0c;
+  background: none;
+  color: #e2d6d6;
+}
+.report-row small {
+  margin-left: auto;
+  color: #afa0a2;
+}
+.replay-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 22px 0;
+  position: sticky;
+  top: 0;
+  background: #1c161b;
+  z-index: 2;
+}
+.replay-controls input {
+  flex: 1;
+  min-width: 80px;
+  accent-color: #e83150;
+}
+.current-action {
+  padding: 20px;
+  background: #331b24;
+  line-height: 1.8;
+}
+.current-action button {
+  margin-left: 14px;
+}
+.replay-route details {
+  border-left: 1px solid #694149;
+  padding: 10px 0 10px 18px;
+  margin: 10px 0;
+}
+.replay-route summary {
+  cursor: pointer;
+  line-height: 1.8;
+}
+.replay-route p {
+  color: #bdb0b2;
+  line-height: 1.7;
+}
+.action-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+  background: transparent;
+  border: 0;
+  color: #d5c7ca;
+  cursor: pointer;
+}
+.action-row:hover {
+  background: #6e233a40;
+}
+#report-detail {
+  padding: 28px;
+  overflow-wrap: anywhere;
+}
+#charts-page .panel {
+  margin-bottom: 24px;
+}
+#charts-page details {
+  padding: 20px;
+}
+.panel > .footnote {
+  padding: 0 25px;
+}
+#mechanic-rows td:first-child {
+  cursor: pointer;
+}
+.chart-frame .empty {
+  height: 100%;
+  display: grid;
+  place-content: center;
+}
+#chart-note {
+  line-height: 1.7;
+}
+#card-dialog {
+  max-width: 870px;
+}
+@media (max-width: 700px) {
+  .preview-layout {
+    grid-template-columns: 1fr;
+  }
+  .game-card {
+    max-width: 310px;
+    margin: auto;
+  }
+  .chart-frame {
+    height: 310px;
+    padding: 12px;
+  }
+  .report-row {
+    display: grid;
+    gap: 8px;
+  }
+  .report-row small {
+    margin: 0;
+  }
+  .replay-controls {
+    flex-wrap: wrap;
+  }
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filters input,
+  .filters select {
+    width: 100%;
+    min-width: 0;
+  }
+  .table-tools {
+    flex-wrap: wrap;
+  }
+  #chart-select {
+    max-width: 100%;
   }
 }

@@ -11,6 +11,7 @@ public sealed class NinjaSlayerSettingsTests
         Assert.True(new NinjaSlayerSettingsData().ForceAllEventsOnce);
         Assert.False(new NinjaSlayerSettingsData().FreeControlEnabled);
         Assert.False(new NinjaSlayerSettingsData().TelemetryNoticeShown);
+        Assert.False(new NinjaSlayerSettingsData().PublicReplayEnabled);
         Assert.False(new NinjaSlayerRunState().EventValidationEnabled);
     }
 
@@ -20,20 +21,23 @@ public sealed class NinjaSlayerSettingsTests
         var settings = new NinjaSlayerSettingsData
         {
             ForceAllEventsOnce = false,
-            TelemetryNoticeShown = true
+            TelemetryNoticeShown = true,
+            PublicReplayEnabled = true
         };
 
         string json = JsonSerializer.Serialize(settings);
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         Assert.Equal(
-            ["ForceAllEventsOnce", "FreeControlEnabled", "TelemetryNoticeShown"],
+            ["ForceAllEventsOnce", "FreeControlEnabled", "TelemetryNoticeShown", "PublicReplayEnabled"],
             root.EnumerateObject().Select(property => property.Name).ToArray());
         Assert.False(root.GetProperty("ForceAllEventsOnce").GetBoolean());
 
         NinjaSlayerSettingsData restored = JsonSerializer.Deserialize<NinjaSlayerSettingsData>(json)!;
         Assert.False(restored.ForceAllEventsOnce);
         Assert.True(restored.TelemetryNoticeShown);
+        Assert.True(restored.PublicReplayEnabled);
+        Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"TelemetryNoticeShown\":true}")!.PublicReplayEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"ForceAllEventsOnce\":false}")!.TelemetryNoticeShown);
     }
 

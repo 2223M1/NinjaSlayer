@@ -736,6 +736,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                     $"Finisher session {SessionId} lost its combat while committing confirmed deaths.");
             }
 
+            Telemetry.NinjaSlayerCombatTelemetry.BeforeFinisherDeath(target);
             await CreatureCmd.Kill(target);
             if (target.IsAlive)
             {

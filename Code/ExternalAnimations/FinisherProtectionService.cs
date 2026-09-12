@@ -90,6 +90,7 @@ internal static class FinisherProtectionService
 
         try
         {
+            Telemetry.NinjaSlayerCombatTelemetry.ProtectedDamage(result, token);
             token.Ledger.PresentProtectedDamage(token, result);
         }
         finally

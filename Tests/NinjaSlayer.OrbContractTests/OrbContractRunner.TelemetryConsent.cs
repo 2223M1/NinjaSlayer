@@ -43,7 +43,8 @@ public partial class OrbContractRunner
             {
                 ApplicantId = "NinjaSlayer", OwnerModId = "NinjaSlayer", DisplayName = "Ninja Slayer",
                 Adapter = new ConsentTestAdapter(), Requests = [new TelemetryRequest
-                { RequestId = NinjaSlayerBalanceTelemetry.BalanceRequestId, Category = TelemetryDataCategory.RunHistory, Description = "Consent contract" }]
+                { RequestId = NinjaSlayerBalanceTelemetry.BalanceRequestId, Category = TelemetryDataCategory.RunHistory, Description = "Consent contract" },
+                new TelemetryRequest { RequestId = NinjaSlayerBalanceTelemetry.ReplayRequestId, Category = TelemetryDataCategory.RunHistory, Description = "Explicit public report consent" }]
             });
             LocManager.Instance.GetTable("settings_ui").MergeWith(JsonSerializer.Deserialize<Dictionary<string, string>>(
                 System.IO.File.ReadAllText(ProjectSettings.GlobalizePath("res://../../NinjaSlayer/localization/zhs/settings_ui.json")))!);
@@ -53,7 +54,7 @@ public partial class OrbContractRunner
             void reset()
             {
                 _nativeConsentDocument.SetValue(null, Activator.CreateInstance(_nativeConsentDocument.FieldType));
-                store.Modify<NinjaSlayerSettingsData>("ninja_slayer_settings", data => data.TelemetryNoticeShown = false);
+                store.Modify<NinjaSlayerSettingsData>("ninja_slayer_settings", data => { data.TelemetryNoticeShown = false; data.PublicReplayEnabled = false; });
                 _consentPrompts = 0;
             }
 
@@ -83,6 +84,17 @@ public partial class OrbContractRunner
             RitsuLibFramework.SetTelemetryApplicantConsent("NinjaSlayer", TelemetryConsentState.Granted, ["run_history"]);
             newProcess();
             Require(!enabled() && _consentPrompts == 0, "Historical run_history permission must not grant balance_runs.");
+            var replayEnabled = AccessTools.PropertyGetter(product, "ReplayEnabled").CreateDelegate<Func<bool>>();
+            var setReplay = AccessTools.Method(product, "SetReplayEnabled").CreateDelegate<Action<bool>>();
+            RitsuLibFramework.SetTelemetryApplicantConsent("NinjaSlayer", TelemetryConsentState.Granted,
+                [NinjaSlayerBalanceTelemetry.BalanceRequestId, NinjaSlayerBalanceTelemetry.ReplayRequestId]);
+            Require(!replayEnabled(), "Native or historical blanket permission must not enable public collection without its explicit local opt-in.");
+            setReplay(true);
+            Require(replayEnabled() && enabled(), "Explicit replay consent must preserve the separate balance choice.");
+            setEnabled(false);
+            Require(replayEnabled() && !enabled(), "Disabling balance must not withdraw an independently authorized public report.");
+            setReplay(false);
+            Require(!replayEnabled() && !enabled(), "Disabling both switches must revoke both requests.");
             GD.Print("PASS telemetry notice, immediate toggle, dismissal, native rejection and saved consent");
         }
         finally

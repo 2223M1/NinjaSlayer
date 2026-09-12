@@ -273,7 +273,8 @@ test('invalid telemetry never consumes daily quota while valid telemetry does', 
     assert.equal((await handleRequest(telemetryRequest(), env)).status, 200);
   });
   assert.equal(env.ANONYMOUS_QUOTAS.instances.size, 1);
-  const [quotaCoordinator] = env.ANONYMOUS_QUOTAS.instances.values();
+  const quotaCoordinator = [...env.ANONYMOUS_QUOTAS.instances.values()]
+    .find(instance => instance.storage.objects.has('quota:telemetry'));
   const quota = quotaCoordinator.storage.objects.get('quota:telemetry');
   assert.equal(quota.count, 1);
   assert.equal(quota.bytes, new TextEncoder().encode(JSON.stringify(RITSU_FIXTURE)).byteLength);
@@ -355,7 +356,7 @@ test('a concurrent retry observes the active lease without consuming a second wr
   const processing = await second.json();
   assert.equal(processing.processing, true);
   assert.equal(processing.attemptId, activeMarker.lease.attemptId);
-  const [quotaCoordinator] = env.ANONYMOUS_QUOTAS.instances.values();
+  const quotaCoordinator = [...env.ANONYMOUS_QUOTAS.instances.values()].find(instance => instance.storage.objects.has('quota:feedback'));
   assert.equal(quotaCoordinator.storage.objects.get('quota:feedback').count, 1);
 
   barrier.release();
