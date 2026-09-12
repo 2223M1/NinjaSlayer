@@ -23,6 +23,7 @@ public partial class OrbContractRunner
     private async Task VerifyFreeControl()
     {
         using var combat = new OrbCombat(ninjaSlayer: true);
+        RunState run = RunState.CreateForTest([combat.Player]);
         var harmony = new Harmony("NinjaSlayer.OrbContracts.FreeControl");
         harmony.Patch(AccessTools.Method(typeof(Creature), nameof(Creature.GetCreatureNode)),
             prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveAimActor)));
@@ -62,6 +63,8 @@ public partial class OrbContractRunner
         {
             control.SetProcess(false); // Drive eligibility separately; native physics remains live.
             Invoke("Start");
+            Require((bool)AccessTools.Method(type, "WasUsed").Invoke(null, [run])!,
+                "Free control must exclude this run from balance uploads.");
             CharacterBody2D walker = Get<CharacterBody2D>("_walker");
             RigidBody2D body = Get<RigidBody2D>("_ragdoll");
             await Frames(8);
@@ -205,6 +208,8 @@ public partial class OrbContractRunner
             control._Process(.016);
             Require(!(bool)AccessTools.Property(type, "Active").GetValue(control)!, "Free damage mode activated in multiplayer.");
             GD.Print("PASS free control gates: default/setting, immediate disable, player phase, turn generation and single-player-only.");
+            Require((bool)AccessTools.Method(type, "WasUsed").Invoke(null, [run])!,
+                "Disabling free control must not restore balance eligibility.");
         }
         finally
         {

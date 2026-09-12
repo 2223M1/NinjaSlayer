@@ -11,11 +11,21 @@ using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
+using STS2RitsuLib;
+using STS2RitsuLib.RunData;
 
 namespace NinjaSlayer.Code.Nodes;
 
 internal sealed partial class NinjaSlayerFreeControl : Node
 {
+    private static RunSavedData<FreeControlRunData> _usedInRun = null!;
+
+    internal static void RegisterSavedData(string modId) =>
+        _usedInRun = RitsuLibFramework.GetRunSavedDataStore(modId).Register<FreeControlRunData>("free_control_used",
+            options: new RunSavedDataOptions { WritePolicy = RunSavedDataWritePolicy.WhenNonDefault });
+
+    internal static bool WasUsed(RunState run) => _usedInRun.Get(run).Used;
+
     internal NCreature Actor = null!;
     internal NinjaSlayerAimPose Pose = null!;
     internal bool Active { get; private set; }
@@ -107,6 +117,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
     internal void Start()
     {
         if (Active) return;
+        _usedInRun.Modify((RunState)Actor.Entity.Player!.RunState, data => data.Used = true);
         Pose.SyncNow();
         _spaceToCanvas = Actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas();
         _baseCore = _spaceToCanvas.AffineInverse() * Pose.CoreCanvas;
@@ -437,4 +448,9 @@ internal sealed partial class FreeControlRigidBody : RigidBody2D
         TravelSpin = state.AngularVelocity * scale;
         _previousScale = scale;
     }
+}
+
+public sealed class FreeControlRunData
+{
+    public bool Used { get; set; }
 }

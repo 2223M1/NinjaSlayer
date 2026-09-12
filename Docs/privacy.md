@@ -26,3 +26,5 @@ NinjaSlayer can send two kinds of data after the player enables or confirms the 
 - A valid lease returns a processing response; an expired lease can be taken over. Losing attempts can delete only their own paths, while administrative deletion leaves a retained UUID tombstone so retries cannot recreate removed feedback.
 
 The endpoints are anonymous but enforce server-side HMAC rate limits. No raw source IP or `X-Forwarded-For` value is sent to PostHog or stored in Workers KV.
+
+启用过自由操控的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。

@@ -122,6 +122,8 @@ public partial class OrbContractRunner : Node
             using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer.OrbContracts"))
             {
                 AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
+                AccessTools.Method(product.GetType("NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl"), "RegisterSavedData")
+                    .Invoke(null, ["NinjaSlayer.OrbContracts"]);
                 AccessTools.Method(typeof(StrongShurikenTokenRedesignV1), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
             }
             ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", product);

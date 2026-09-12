@@ -182,6 +182,7 @@ public class Entry
                 NinjaSlayerSettings.Register(NinjaSlayerIds.ModId);
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
                 ShurikenOrb.RegisterSavedData(NinjaSlayerIds.ModId);
+                NinjaSlayerFreeControl.RegisterSavedData(NinjaSlayerIds.ModId);
                 StrongShurikenTokenRedesignV1.RegisterSavedData(NinjaSlayerIds.ModId);
             }
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)

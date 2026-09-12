@@ -60,3 +60,5 @@ Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。
 `npm test` 包含独立统计样例、重复/冲突/多人记录、64 位 ID、版本和读档筛选、缺失测量、查询分页、密钥隔离、HTTP 访问边界与导入失败保留旧视图。设置 `NINJASLAYER_TELEMETRY_FIXTURE` 可额外验证双宿主产品契约生成的原生 JSON；公共 CI 没有宿主时明确跳过该项。
 
 产品 OrbContractTests 验证原生抽牌、手动系列、Echo Form 重复、免费自动打出及精确 ID。FullAutoSlay 和 TelemetryLoss 使用隔离 APPDATA 和本地文件遥测适配器，不向线上发送测试记录；结束时要求每场战斗都能与原生房间数对应。TelemetryLoss 还验证失败结算与重复 OnEnded 的单次上报。
+
+启用过自由操控的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。

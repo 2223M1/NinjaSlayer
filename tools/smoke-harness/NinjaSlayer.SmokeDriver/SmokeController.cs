@@ -799,6 +799,9 @@ internal sealed partial class SmokeController
         Player player,
         Creature target)
     {
+        // The preceding presentation scenarios may draw Black Flame; its independent burn is not evaded.
+        foreach (CardModel flame in PileType.Hand.GetPile(player).Cards.OfType<BlackFlameRedesignV1>().ToArray())
+            await CardPileCmd.Add(flame, PileType.Discard);
         await PowerCmd.Remove<ArtifactPower>(target);
         await PowerCmd.Remove<VulnerablePower>(target);
         Require(
@@ -842,7 +845,11 @@ internal sealed partial class SmokeController
         await CardPileCmd.Add(second, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), second, target);
 
-        Require(target.CurrentHp == initialHp, "An evaded attack card reduced HP.");
+        Require(target.CurrentHp == initialHp,
+            $"An evaded attack card reduced HP ({initialHp} -> {target.CurrentHp}). Damage sources: " +
+            string.Join(", ", CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
+                .Where(entry => ReferenceEquals(entry.Receiver, target)).Skip(initialHistoryEntries)
+                .Select(entry => $"{entry.CardSource?.Id}: {entry.Result.TotalDamage}")));
         Require(target.Block == initialBlock, "An evaded attack card reduced Block.");
         Require(
             target.GetPower<VulnerablePower>()?.Amount == vulnerableBefore,

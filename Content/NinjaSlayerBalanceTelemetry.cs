@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Saves;
 using NinjaSlayer.Code.Telemetry;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib;
 using STS2RitsuLib.Settings;
@@ -63,6 +64,7 @@ public static class NinjaSlayerBalanceTelemetry
         // RitsuLib publishes this synchronously from RunManager.OnEnded while State still owns the run.
         RunState run = RunManager.Instance.DebugOnlyGetState()
             ?? throw new InvalidOperationException("RunEnded was published without its active run.");
+        if (NinjaSlayerFreeControl.WasUsed(run)) return;
         if (!evt.IsVictory && run.CurrentRoom is CombatRoom room)
             NinjaSlayerCombatTelemetry.Record(run, room, won: false);
 

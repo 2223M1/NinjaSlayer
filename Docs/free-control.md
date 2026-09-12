@@ -1,6 +1,6 @@
 # Free Control
 
-The default-off **Free control (playground)** toggle is in Ninja Slayer settings under **Hidden features**. It can be changed from the main menu or a paused run. It applies only to the single-player Ninja Slayer during the player's Play phase. Free transforms are not saved.
+The default-off **Free control** toggle is in Ninja Slayer settings under **Hidden features**. It can be changed from the main menu or a paused run. It applies only to the single-player Ninja Slayer during the player's Play phase. Free transforms are not saved.
 
 | Input | Action |
 | --- | --- |
@@ -22,3 +22,5 @@ Contact speed includes angular motion around the center of mass. Below 200 px/s 
 Free attacks consume no cards, energy, or shuriken stock. Cards retain their normal gameplay queue and compose their visuals with free movement. Cinematic finishers and Alabama Drop temporarily suspend control and return to the saved free position. Ending the turn, disabling the setting, dying, or leaving combat clears free actions and restores the authored battle placement. Overlays, pause, and loss of focus suspend controls.
 
 Movement and free actions use real time regardless of combat animation speed. Movement tuning: run 420 px/s, jump 850 px/s, gravity 1800 px/s², dash 1200 px/s for 0.18 seconds, coyote time 0.08 seconds and jump buffer 0.10 seconds.
+
+启用过自由操控的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。

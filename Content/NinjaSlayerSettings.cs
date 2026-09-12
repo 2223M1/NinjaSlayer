@@ -66,7 +66,7 @@ public static class NinjaSlayerSettings
             .AddSection("hidden", section => section
                 .WithTitle(Text("NINJA_SLAYER_SETTINGS_HIDDEN_TITLE", "Hidden features"))
                 .AddToggle("free_control",
-                    Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE", "Free control (playground)"),
+                    Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE", "Free control"),
                     _freeControl,
                     Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_DESCRIPTION",
                         "Single-player play phase only. Free movement and attacks; returns home when the turn ends."))));
