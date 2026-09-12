@@ -1696,11 +1696,10 @@ internal sealed partial class SmokeController
         _checkpoints.Write("full-autoslay.starting");
         var autoSlayer = new AutoSlayer();
         autoSlayer.Start(_configuration.Seed, _configuration.AutoSlayLogPath);
-        // Native CombatRoomHandler cannot operate event choices shown inside an ongoing combat.
+        // AutoSlay disables native Pause(), so operate visible in-combat choices directly.
         while (true)
         {
-            if (CombatManager.Instance.IsPaused
-                && RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any()
+            if (RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any()
                 && GetSawatariOptions().FirstOrDefault(button => button.IsVisibleInTree() && button.IsEnabled) is { } option)
             {
                 await UiHelper.Click(option);
