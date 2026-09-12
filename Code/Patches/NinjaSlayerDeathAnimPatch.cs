@@ -33,6 +33,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
     {
         if (__instance.Entity.Player?.Character is INinjaSlayerCharacter)
         {
+            NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl.Get(__instance.Entity)?.Stop();
             NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(__instance.Entity);
         }
 

@@ -59,7 +59,7 @@ internal sealed record FinisherAttackSpec(
             _ => FinisherTargeting.Single
         };
         int hitCount = hitCountOverride
-            ?? (HitPreviewResolver.TryResolve(card, cardPlay.Target, out int resolvedHits) ? resolvedHits : 0);
+            ?? (VanillaHitPreviewCompatibility.TryGetHitCount(card, cardPlay.Target, out int resolvedHits) ? resolvedHits : 0);
         return new FinisherAttackSpec(
             card,
             cardPlay,

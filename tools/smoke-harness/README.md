@@ -2,6 +2,34 @@
 
 This harness verifies runtime integration that RefLib and ABI contracts cannot cover. It is intentionally separate from the distributed mod.
 
+## Preview Recording
+
+`NinjaSlayer.AudioCapture` captures WASAPI loopback packets using the endpoint's
+100 ns QPC timestamps. It preserves silent packets and gaps. Launch its executable
+with the recording output directory, wait for `audio-ready`, then start the game
+on the inactive desktop. It stops after `recording-stop.json` appears.
+
+The viewport recorder uses the same QPC clock. Missed video intervals retain the
+previous frame; they never repeat the next frame backward in time. It writes
+`video-frames.csv` and timestamps actual `SfxCmd.Play` calls in `audio-events.jsonl`.
+
+After capture, run `python tools/smoke-harness/sync_preview_audio.py <directory>
+--output <video.mp4>`. This requires ffmpeg, NumPy and SciPy. It matches actual
+Slow Attack and hurt waveforms to their source WAV files, measures this recording's
+FMOD output latency, then muxes and checks the encoded audio against the captured
+frames. `audio-sync.json` records the measurements and residuals. Include at least
+two identifiable reference cues; missing matches or excessive drift fail validation.
+This adjusts exported media only and does not change game audio or action timing.
+
+Preview shutdown stops AutoSlayer through its normal cancellation/finally path,
+then calls native `NGame.Quit` while game-owned UI and input services are alive.
+It does not free native pools or unload resources ahead of the host's exit callbacks.
+`PreviewCleanupBaseline=true` selects an idle Ironclad for comparison without the
+Ninja Slayer action sequence; NinjaSlayer and RitsuLib are still loaded in that test.
+`PreviewMenuReturnCheck=true` checks a native return from live combat to the main
+menu. Action previews also verify that the host's model-ID sorting input contains
+unique types and IDs. These options and checks belong only to the SmokeDriver.
+
 The current automation controls the Windows client. macOS and Linux/Steam Deck validation uses the same scenario requirements as a manual release gate until platform-native harness runners exist.
 
 ## Scenario

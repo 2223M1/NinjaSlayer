@@ -1,0 +1,21 @@
+{
+  "spineVersion": "4.2.43",
+  "runtimePackage": "@esotericsoftware/spine-core@4.2.43",
+  "source": ".godot/imported/architect.skel-445839f36d2cd881c23a23af001a18d8.spskel",
+  "sourceSha256": "ceeb9dd6ec98ef1f60016d5cc7bf6f3941416c33504f4c2d42bb9723ea4570ea",
+  "sourceBytes": 105842,
+  "animationCountOffset": 48506,
+  "originalAnimations": [
+    "attack",
+    "hurt",
+    "idle_loop",
+    "_tracks/head_normal",
+    "_tracks/head_reading",
+    "_tracks/head_reading2",
+    "_tracks/head_stop_reading",
+    "_tracks/head_stop_reading2"
+  ],
+  "addedAnimation": "ninjaslayer_soft_death",
+  "duration": 0.9,
+  "outputSha256": "ad1dc090912f5fb09272346123da95a2a080bc48254b71cbe9ed931da306d19d"
+}

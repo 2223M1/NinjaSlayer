@@ -34,7 +34,7 @@ internal sealed partial class TornadoHurtPause : Node
                 pause._trackSpeed = track.BoundObject.Call("get_time_scale").AsSingle();
                 track.SetTimeScale(0f);
             }
-            else (track as IDisposable)?.Dispose();
+            else track?.BoundObject.Dispose();
         }
         if (pause._resumeStagger == null && pause._track == null) { pause.Free(); return; }
         node.AddChild(pause);
@@ -63,12 +63,12 @@ internal sealed partial class TornadoHurtPause : Node
             if (GodotObject.IsInstanceValid(_target) && !_target.Entity.IsDead && _target.SpineAnimation.IsValid)
             {
                 MegaTrackEntry? current = _target.SpineAnimation.GetCurrentTrack();
-                using IDisposable? lease = current as IDisposable;
+                using GodotObject? lease = current?.BoundObject;
                 if (current?.GetAnimationName() == "hurt" && Mathf.IsEqualApprox(current.GetTrackTime(), _trackTime))
                     _track.SetTimeScale(_trackSpeed);
             }
         }
-        finally { (_track as IDisposable)?.Dispose(); _track = null; }
+        finally { _track.BoundObject.Dispose(); _track = null; }
     }
 
     public override void _ExitTree() => Resume();

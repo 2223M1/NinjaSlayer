@@ -1,6 +1,10 @@
 # NinjaSlayer Telemetry Worker
 
-This Worker accepts the RitsuLib `run_history.completed` envelope and anonymous
+For the loopback-only card statistics and F2 feedback dashboard, see
+[观测室启动与统计口径](dashboard/README.md). Run `npm run dashboard` locally;
+this does not deploy the Worker.
+
+This Worker accepts the RitsuLib `run_history.completed` envelope (`run_history` or `balance_runs` requests) and anonymous
 F2 feedback. Inputs are strictly validated before telemetry is forwarded to
 PostHog or feedback is committed to Workers KV.
 

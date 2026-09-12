@@ -11,8 +11,10 @@ public static class NinjaSlayerSettings
     private const string SettingsTable = "settings_ui";
 
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool> _forceAllEventsOnce = null!;
+    private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool>? _freeControl;
 
     public static bool ForceAllEventsOnce => _forceAllEventsOnce.Read();
+    internal static bool FreeControlEnabled => _freeControl?.Read() == true;
 
     public static void Register(string modId)
     {
@@ -31,6 +33,11 @@ public static class NinjaSlayerSettings
             static settings => settings.ForceAllEventsOnce,
             static (settings, value) => settings.ForceAllEventsOnce = value);
 
+        _freeControl = new ModSettingsValueBinding<NinjaSlayerSettingsData, bool>(
+            modId, DataKey, SaveScope.Global,
+            static settings => settings.FreeControlEnabled,
+            static (settings, value) => settings.FreeControlEnabled = value);
+
         RitsuLibFramework.RegisterModSettings(modId, page => page
             .WithTitle(Text(
                 "NINJA_SLAYER_SETTINGS_PAGE_TITLE",
@@ -42,10 +49,8 @@ public static class NinjaSlayerSettings
                 ModSettingsHostSurface.MainMenu
                 | ModSettingsHostSurface.RunPause
                 | ModSettingsHostSurface.CombatPause)
-            .WithReadOnlyOnHostSurfaces(
-                ModSettingsHostSurface.RunPause
-                | ModSettingsHostSurface.CombatPause)
             .AddSection("validation", section => section
+                .WithReadOnlyOnHostSurfaces(ModSettingsHostSurface.RunPause | ModSettingsHostSurface.CombatPause)
                 .WithTitle(Text(
                     "NINJA_SLAYER_SETTINGS_VALIDATION_SECTION_TITLE",
                     "Validation"))
@@ -57,7 +62,14 @@ public static class NinjaSlayerSettings
                     _forceAllEventsOnce,
                     Text(
                         "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_DESCRIPTION",
-                        "Applies to subsequently created single-player Ninja Slayer runs."))));
+                        "Applies to subsequently created single-player Ninja Slayer runs.")))
+            .AddSection("hidden", section => section
+                .WithTitle(Text("NINJA_SLAYER_SETTINGS_HIDDEN_TITLE", "Hidden features"))
+                .AddToggle("free_control",
+                    Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE", "Free control"),
+                    _freeControl,
+                    Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_DESCRIPTION",
+                        "Single-player play phase only. Free movement and attacks; returns home when the turn ends."))));
     }
 
     private static ModSettingsText Text(string key, string fallback) =>

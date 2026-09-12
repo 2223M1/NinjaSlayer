@@ -14,7 +14,7 @@ internal static class DoomHurtPoseController
         }
 
         MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-        using IDisposable? trackLease = track as IDisposable;
+        using GodotObject? trackLease = track?.BoundObject;
         if (track?.GetAnimationName() != "hurt")
         {
             return false;
@@ -33,7 +33,7 @@ internal static class DoomHurtPoseController
 
         creatureNode.SetAnimationTrigger("Hit");
         MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-        using IDisposable? trackLease = track as IDisposable;
+        using GodotObject? trackLease = track?.BoundObject;
         if (track?.GetAnimationName() != "hurt")
         {
             return false;
@@ -57,7 +57,7 @@ internal static class DoomHurtPoseController
         }
 
         MegaTrackEntry? track = creatureNode.SpineAnimation.GetCurrentTrack();
-        using IDisposable? trackLease = track as IDisposable;
+        using GodotObject? trackLease = track?.BoundObject;
         if (track?.GetAnimationName() == "hurt")
         {
             track.SetTimeScale(1f);

@@ -15,6 +15,8 @@ namespace NinjaSlayer.Code.Nodes;
 [GlobalClass]
 public partial class NinjaSlayerAimPose : Node2D
 {
+    internal NinjaSlayerFreeControl? FreeControl { get; private set; }
+    internal bool HasCardDrag => _dragOwner != null;
     private NCreature? _actor;
     private Node2D _airborne = null!;
     private Marker2D _center = null!;
@@ -98,6 +100,11 @@ public partial class NinjaSlayerAimPose : Node2D
         RenderingServer.FramePreDraw += SyncNow;
         _subscribed = true;
         SyncNow();
+        if (_actor != null)
+        {
+            FreeControl = new NinjaSlayerFreeControl { Name = "FreeControl", Actor = _actor, Pose = this };
+            AddChild(FreeControl);
+        }
     }
 
     public override void _ExitTree()
@@ -162,8 +169,10 @@ public partial class NinjaSlayerAimPose : Node2D
         }
         else if (_actor != null)
         {
-            float targetX = hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.X
-                ?? pointerCanvas.X;
+            Vector2 dragTarget = hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin
+                ?? pointerCanvas;
+            if (FreeControl is { Active: true } free) dragTarget = free.UntransformTarget(dragTarget);
+            float targetX = dragTarget.X;
             // Mirroring moves the off-center hit marker across the root. Using that
             // marker here makes a stationary overhead pointer flip the body every frame.
             float side = targetX - _airborne.GetGlobalTransformWithCanvas().Origin.X;
@@ -241,7 +250,7 @@ public partial class NinjaSlayerAimPose : Node2D
         }
         if (_actor != null && _target?.GetCreatureNode() is { } node)
             FaceForAction(AttackForwardSign is { } forward
-                ? forward < 0f : node.GlobalPosition.X < _actor.GlobalPosition.X, exclusive);
+                ? forward < 0f : node.GlobalPosition.X < (FreeControl is { Active: true } ? CoreCanvas.X : _actor.GlobalPosition.X), exclusive);
         SyncNow();
     }
 
@@ -313,6 +322,7 @@ public partial class NinjaSlayerAimPose : Node2D
     private void StartSpin()
     {
         if (_spin != null || _actor == null) return;
+        FreeControl?.ReleaseSpinProjection();
         SoarSpinAnimation.SuspendForCinematic(_actor.Entity);
         Sprite2D body = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
         Transform2D old = Transform;
@@ -358,9 +368,16 @@ public partial class NinjaSlayerAimPose : Node2D
             if (Turning) FinishTurn(_turnTo > 90f);
         }
         _chargeScale = _chargeActionScale.Lerp(Vector2.One, Mathf.Clamp(launchProgress, 0f, 1f));
-        _travel = offset;
+        _travel = FreeControl?.UnrotateTravel(offset) ?? offset;
         _chargeBack = 0f;
         if (_tornado) _launch = launchProgress;
+        SyncNow();
+    }
+
+    internal void SetRecoveryTravel(Vector2 offset)
+    {
+        if (_exclusive) return;
+        _travel = FreeControl?.UnrotateTravel(offset) ?? offset;
         SyncNow();
     }
 
@@ -539,7 +556,7 @@ public partial class NinjaSlayerAimPose : Node2D
             Vector2 presentedCore = core;
             float presentedRotation = 0f;
             ComposePresentation(offsets, ref presentedRotation, ref presentedCore);
-            Transform2D presentation = new(presentedRotation, Vector2.Zero);
+            Transform2D presentation = new(presentedRotation, _presentationScale, 0f, Vector2.Zero);
             presentation.Origin = presentedCore - presentation.BasisXform(core);
             Transform = parentCanvas.AffineInverse() * presentation * parentCanvas;
             _displayAngle = presentedRotation;
@@ -547,13 +564,14 @@ public partial class NinjaSlayerAimPose : Node2D
             return;
         }
         float standingY = full ? 15.5f : -6.45f;
-        float altitude = Math.Max(0f, -_airborne.Position.Y);
+        float altitude = Math.Max(0f, -_airborne.Position.Y) + (FreeControl?.Altitude ?? 0f);
         float travelY = GroundedPoseMath.ClampDescent(_travel.Y, altitude);
         Vector2 travelCanvas = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(new(_travel.X + _chargeBack, travelY));
         core += travelCanvas;
         float line = (parentCanvas * new Vector2(0f, standingY)).Y + travelCanvas.Y;
         float originalLine = line;
         Vector2 target = TargetCanvas();
+        if (FreeControl is { Active: true } freeControl) target = freeControl.UntransformTarget(target);
         if (_tornado)
             line = Mathf.Lerp(line, target.Y, _launch);
         _effectiveTravelY = travelY + _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
@@ -592,15 +610,18 @@ public partial class NinjaSlayerAimPose : Node2D
                 .AffineInverse().BasisXform(finalCore - new Vector2(finalCore.X, originalLine - lowest)).Y;
         }
         ComposePresentation(offsets, ref rotation, ref finalCore);
-        Transform2D worldRotation = new(rotation, _chargeScale, 0f, Vector2.Zero);
+        Transform2D worldRotation = new(rotation, _chargeScale * _presentationScale, 0f, Vector2.Zero);
         _displayAngle = rotation;
         worldRotation.Origin = finalCore - worldRotation.BasisXform(core - travelCanvas);
         Transform = parentCanvas.AffineInverse() * worldRotation * parentCanvas;
         SetCore(finalCore);
     }
 
-    private void SetCore(Vector2 canvas) => _center.Position = _center.GetParent<CanvasItem>()
-        .GetGlobalTransformWithCanvas().AffineInverse() * canvas;
+    private void SetCore(Vector2 canvas)
+    {
+        FreeControl?.Compose(ref canvas);
+        _center.Position = _center.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse() * canvas;
+    }
 
     private static Vector2 SpritePoint(Sprite2D sprite, Vector2 centeredPoint)
     {

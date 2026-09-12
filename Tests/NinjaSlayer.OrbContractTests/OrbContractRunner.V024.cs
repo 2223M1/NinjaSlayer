@@ -15,6 +15,8 @@ public partial class OrbContractRunner
 {
     private static async Task VerifyV024()
     {
+        MegaCrit.Sts2.Core.Context.LocalContext.NetId = 1;
+        await VerifyBlackFlameAutoPlay();
         foreach (bool upgraded in new[] { false, true })
         foreach (bool vulnerable in new[] { false, true })
         foreach (bool weak in new[] { false, true })

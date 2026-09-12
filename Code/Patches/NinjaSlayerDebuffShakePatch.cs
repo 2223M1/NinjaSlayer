@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
 
@@ -21,7 +22,7 @@ public sealed class NinjaSlayerDebuffShakePatch : IPatchMethod
             return true;
         }
 
-        NinjaSlayerDebuffShakeAnimation.Play(__instance);
+        NinjaSlayerAimPose.Get(__instance.Entity)?.BeginDebuffShake();
         return false;
     }
 }

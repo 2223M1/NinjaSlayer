@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
@@ -14,7 +15,6 @@ using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
-using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -24,6 +24,9 @@ namespace NinjaSlayer.Cards.RedesignV1;
 [RegisterCard(typeof(StatusCardPool))]
 public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
 {
+    // Native CardPlay identity survives nested autoplay and patches installed before our wrapper hooks.
+    private static readonly ConditionalWeakTable<CardPlay, AttackBurn> AttackBurns = new();
+
     private static readonly NinjaSlayerCardSpec Spec = new(
         nameof(BlackFlameRedesignV1),
         -2,
@@ -88,8 +91,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
     private Task TriggerFromAttack(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (CombatState!.HittableEnemies.Count == 0) return Task.CompletedTask;
-        AttackBurn burn = CardPlayResolutionScope.GetOrCreatePlayState(cardPlay, Owner, () => new AttackBurn())
-            ?? throw new InvalidOperationException("Black Flame requires an active card play.");
+        AttackBurn burn = AttackBurns.GetOrCreateValue(cardPlay);
         if (burn.Resolved) return Task.CompletedTask;
         burn.Resolved = true;
         var flames = PileType.Hand.GetPile(Owner).Cards.OfType<BlackFlameRedesignV1>().ToArray();

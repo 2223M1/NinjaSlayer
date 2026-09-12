@@ -8,6 +8,7 @@ using NinjaSlayer.Cards;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
+using NinjaSlayer.Orbs;
 using STS2RitsuLib.Scaffolding.Characters;
 using STS2RitsuLib.Scaffolding.Godot;
 using STS2RitsuLib.Scaffolding.Visuals.StateMachine;
@@ -40,7 +41,16 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
         BossBurstPresentationCoordinator.AssetPaths
             .Concat(BossDismembermentPresentation.AssetPaths)
             .Concat(BossDeathWhiteoutLease.AssetPaths)
-            .Append(ShurikenCombat.ProjectileTexturePath);
+            .Append(ShurikenCombat.ProjectileTexturePath)
+            .Append(ShurikenOrb.VisualsScenePath)
+            .Append(NinjaSlayerAssetPaths.Image("energy_ninja_slayer.png"))
+            .Concat(Enumerable.Range(1, NinjaSlayerFormPresentationCatalog.NormalIdleFrameCount)
+                .SelectMany(frame => new[]
+                {
+                    NinjaSlayerFormPresentationCatalog.NormalIdleTexturePath(frame),
+                    NinjaSlayerFormPresentationCatalog.KillIdleTexturePath(frame),
+                    $"{NinjaSlayerFormPresentationCatalog.NarakuIdleTexturePrefix}{frame:D4}.png"
+                }));
 
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
         RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(NinjaSlayerAssetProfile.VisualsPath);

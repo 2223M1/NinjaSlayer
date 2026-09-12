@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using NinjaSlayer.Code.Lifecycle;
 using STS2RitsuLib.Patching.Models;
 
@@ -16,8 +17,8 @@ internal sealed class NinjaSlayerDrawBatchPatch : IPatchMethod
     public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(CardPileCmd), nameof(CardPileCmd.Draw), [typeof(PlayerChoiceContext), typeof(decimal), typeof(Player), typeof(bool)])];
-    public static void Prefix(Player player, out NinjaSlayerDrawAnimationBatch.Lease __state) =>
-        __state = NinjaSlayerDrawAnimationBatch.Enter(player);
+    public static void Prefix(Player player, bool fromHandDraw, out NinjaSlayerDrawAnimationBatch.Lease __state) =>
+        __state = NinjaSlayerDrawAnimationBatch.Enter(player, fromHandDraw);
     public static void Postfix(NinjaSlayerDrawAnimationBatch.Lease __state) => __state.Dispose();
     public static Exception? Finalizer(Exception? __exception, NinjaSlayerDrawAnimationBatch.Lease __state)
     {
@@ -32,6 +33,6 @@ internal sealed class NinjaSlayerDrawBackflipPatch : IPatchMethod
     public static string Description => "Start a visual backflip on the first successful extra draw in a batch.";
     public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() =>
-        [new(typeof(Hook), nameof(Hook.AfterCardDrawn), [typeof(ICombatState), typeof(PlayerChoiceContext), typeof(CardModel), typeof(bool)])];
-    public static void Prefix(CardModel card, bool fromHandDraw) => NinjaSlayerDrawAnimationBatch.CardDrawn(card, fromHandDraw);
+        [new(typeof(CardPileCmd), nameof(CardPileCmd.Add), [typeof(CardModel), typeof(CardPile), typeof(CardPilePosition), typeof(AbstractModel), typeof(bool)])];
+    public static void Prefix(CardModel card, CardPile newPile) => NinjaSlayerDrawAnimationBatch.MovingToHand(card, newPile);
 }

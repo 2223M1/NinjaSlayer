@@ -118,7 +118,7 @@ internal sealed class BossSemanticPartBuilder
 
         int measured = 0;
         MegaSkeleton skeleton = GetSkeleton(_template);
-        using IDisposable? skeletonLease = skeleton as IDisposable;
+        using GodotObject skeletonLease = skeleton.BoundObject;
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {
@@ -274,7 +274,7 @@ internal sealed class BossSemanticPartBuilder
         string? detachedBoneName)
     {
         MegaSkeleton skeleton = GetSkeleton(template);
-        using IDisposable? skeletonLease = skeleton as IDisposable;
+        using GodotObject skeletonLease = skeleton.BoundObject;
         Godot.Collections.Array<GodotObject> slots = GetSlots(skeleton);
         try
         {

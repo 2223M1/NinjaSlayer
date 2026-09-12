@@ -17,12 +17,8 @@ internal static class YamotoKokiIntentLifecycle
     public static YamotoKokiIntentGeneration BeginCombat(Creature creature)
     {
         GenerationState state = States.GetOrCreateValue(creature);
-        long generation;
-        lock (state)
-        {
-            generation = ++state.Generation;
-            state.IsActive = true;
-        }
+        long generation = ++state.Generation;
+        state.IsActive = true;
 
         ShowContainer(creature);
         return new YamotoKokiIntentGeneration(creature, generation);
@@ -31,10 +27,7 @@ internal static class YamotoKokiIntentLifecycle
     public static YamotoKokiIntentGeneration Capture(Creature creature)
     {
         GenerationState state = States.GetOrCreateValue(creature);
-        lock (state)
-        {
-            return new YamotoKokiIntentGeneration(creature, state.Generation);
-        }
+        return new YamotoKokiIntentGeneration(creature, state.Generation);
     }
 
     public static bool IsCurrent(YamotoKokiIntentGeneration generation)
@@ -44,10 +37,7 @@ internal static class YamotoKokiIntentLifecycle
             return false;
         }
 
-        lock (state)
-        {
-            return state.IsActive && state.Generation == generation.Value;
-        }
+        return state.IsActive && state.Generation == generation.Value;
     }
 
     public static bool IsActive(Creature creature)
@@ -57,20 +47,14 @@ internal static class YamotoKokiIntentLifecycle
             return false;
         }
 
-        lock (state)
-        {
-            return state.IsActive;
-        }
+        return state.IsActive;
     }
 
     public static void Invalidate(Creature creature)
     {
         GenerationState state = States.GetOrCreateValue(creature);
-        lock (state)
-        {
-            state.Generation++;
-            state.IsActive = false;
-        }
+        state.Generation++;
+        state.IsActive = false;
 
         HideContainer(creature);
     }
@@ -118,12 +102,9 @@ internal static class YamotoKokiIntentLifecycle
             return;
         }
 
-        lock (state)
+        if (state.IsActive)
         {
-            if (state.IsActive)
-            {
-                return;
-            }
+            return;
         }
 
         HideContainer(generation.Creature);

@@ -85,7 +85,7 @@
     <MakeDir Directories="$(PostBuildModDir)" />
   </Target>
 
-  <Target Name="ImportGodotProjectForPackage">
+  <Target Name="ImportGodotProjectForPackage" Condition="'$(NinjaSlayerSharedResourcePack)' == ''">
     <Error Condition="!Exists('$(GodotExe)')" Text="Godot 4.5.1 Mono not found at $(GodotExe)." />
     <Exec Command="&quot;$(GodotExe)&quot; --headless --import"
           WorkingDirectory="$(MSBuildProjectDirectory)"
@@ -94,8 +94,12 @@
   </Target>
 
   <Target Name="ExportPckForPackage">
-    <Error Condition="!Exists('$(GodotExe)')" Text="Godot 4.5.1 Mono not found at $(GodotExe)." />
+    <Copy Condition="'$(NinjaSlayerSharedResourcePack)' != ''"
+          SourceFiles="$(NinjaSlayerSharedResourcePack)"
+          DestinationFiles="$(PostBuildModDir)$(NinjaSlayerArtifactName).pck" />
+    <Error Condition="'$(NinjaSlayerSharedResourcePack)' == '' and !Exists('$(GodotExe)')" Text="Godot 4.5.1 Mono not found at $(GodotExe)." />
     <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;$(GodotExportPreset)&quot; &quot;$(PostBuildModDir)$(NinjaSlayerArtifactName).pck&quot;"
+          Condition="'$(NinjaSlayerSharedResourcePack)' == ''"
           WorkingDirectory="$(MSBuildProjectDirectory)"
           EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
           CustomErrorRegularExpression="System\.[A-Za-z0-9_.]+Exception:|SCRIPT ERROR:|ERROR:" />

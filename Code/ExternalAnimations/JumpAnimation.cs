@@ -41,7 +41,7 @@ public static class JumpAnimation
 
     internal static async Task PlayFlyingKick(Creature creature)
     {
-        float seconds = SlowAttackAnimation.PeakSeconds;
+        float seconds = CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f);
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, seconds, out Task owned))
         {
             await owned;

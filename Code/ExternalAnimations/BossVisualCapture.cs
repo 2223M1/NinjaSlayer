@@ -62,6 +62,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     public Rect2 BodyBaselineScreenBounds { get; private set; }
     public string FailureReason { get; private set; } = string.Empty;
     internal BossFragmentPartition? Partition { get; private set; }
+    internal Dictionary<string, Transform2D> CapturedBoneTransforms { get; } = [];
     public bool IsReady => _state == CaptureState.Ready
         && _viewport is { } viewport
         && GodotObject.IsInstanceValid(viewport)
@@ -110,7 +111,8 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         CombatSceneBaseline baseline,
         bool canSplitSpine,
         ulong seed,
-        string? detachedBoneName)
+        string? detachedBoneName,
+        bool architectDeath)
     {
         BossVisualCapture? capture = null;
         try
@@ -147,6 +149,20 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             template.Scale = Vector2.One;
             template.Skew = 0f;
             FreezeSpineAnimation(template);
+            if (architectDeath)
+            {
+                // Prepare burst pieces from the same native end pose, including
+                // weighted cloth folds, while the live character plays the lead.
+                using Variant state = template.Call("get_animation_state");
+                using GodotObject stateObject = state.AsGodotObject();
+                stateObject.Call("clear_tracks");
+                using Variant track = stateObject.Call("set_animation",
+                    BossDismembermentPresentation.ArchitectDeathAnimation, false, 0);
+                using GodotObject trackObject = track.AsGodotObject();
+                trackObject.Call("set_mix_duration", 0f);
+                trackObject.Call("set_track_time", 0.9f);
+                template.Call("update_skeleton", 0f);
+            }
 
             capture.BodyLocalBounds = bodyLocalBounds;
             ValidateBounds(capture.BodyLocalBounds);
@@ -277,6 +293,9 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         }
 
         _semanticParts = builder.Complete();
+        foreach (string bone in _semanticParts.Select(part => part.PrimaryBoneName).Distinct())
+            CapturedBoneTransforms[bone] = _template!.GlobalTransform.AffineInverse()
+                * _template.Call("get_global_bone_transform", bone).AsTransform2D();
         PrepareAtlas();
         _state = CaptureState.BuildingAtlas;
     }
@@ -682,7 +701,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
     {
         var sprite = new MegaSprite(Variant.CreateFrom(visual));
         MegaAnimationState? animation = sprite.TryGetAnimationState();
-        using IDisposable? animationLease = animation as IDisposable;
+        using GodotObject? animationLease = animation?.BoundObject;
         animation?.SetTimeScale(0f);
     }
 
@@ -692,7 +711,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException(
                 "The isolated Spine clone has no skeleton.");
-        using IDisposable? skeletonLease = skeleton as IDisposable;
+        using GodotObject skeletonLease = skeleton.BoundObject;
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");
@@ -732,7 +751,7 @@ public sealed partial class BossVisualCapture : Node, IDisposable
         MegaSkeleton skeleton = sprite.GetSkeleton()
             ?? throw new InvalidOperationException(
                 "The isolated Spine clone has no skeleton.");
-        using IDisposable? skeletonLease = skeleton as IDisposable;
+        using GodotObject skeletonLease = skeleton.BoundObject;
         if (!skeleton.BoundObject.HasMethod("get_slots"))
         {
             throw new MissingMethodException("SpineSkeleton.get_slots is unavailable.");

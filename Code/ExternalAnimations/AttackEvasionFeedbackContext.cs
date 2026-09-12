@@ -159,13 +159,7 @@ internal static class AttackEvasionFeedbackContext
     {
         if (frame.Command.IsSingleTargeted)
         {
-            Creature? target = SingleTarget.GetValue(frame.Command) switch
-            {
-                null => null,
-                Creature creature => creature,
-                _ => throw new InvalidOperationException(
-                    "AttackCommand._singleTarget has an unexpected runtime type.")
-            };
+            var target = (Creature?)SingleTarget.GetValue(frame.Command);
             return target is null ? [] : [target];
         }
 

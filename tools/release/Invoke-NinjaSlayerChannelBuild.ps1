@@ -19,6 +19,7 @@ param(
     [string]$Target,
 
     [string]$GodotExe,
+    [string]$SharedResourcePack,
     [string]$SteamModDir,
     [string]$BuildRoot,
     [Parameter(Mandatory)]
@@ -130,6 +131,7 @@ Add-MsBuildProperty $commonArguments 'NinjaSlayerIsolatedIntermediateRoot' ($int
 Add-MsBuildProperty $commonArguments 'NinjaSlayerIsolatedOutputRoot' ($outputDirectory + [IO.Path]::DirectorySeparatorChar)
 Add-MsBuildProperty $commonArguments 'PostBuildModDir' ($packageDirectory + [IO.Path]::DirectorySeparatorChar)
 Add-MsBuildProperty $commonArguments 'GodotExe' $GodotExe
+Add-MsBuildProperty $commonArguments 'NinjaSlayerSharedResourcePack' $SharedResourcePack
 Add-MsBuildProperty $commonArguments 'SteamModDir' $SteamModDir
 $normalizedSourceRevision = $SourceRevision.ToLowerInvariant()
 Add-MsBuildProperty $commonArguments 'GitDescribe' $normalizedSourceRevision

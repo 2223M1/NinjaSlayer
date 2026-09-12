@@ -10,6 +10,10 @@ NinjaSlayer can send two kinds of data after the player enables or confirms the 
 - A server-secret HMAC of the transient Cloudflare source IP is used only as a one-minute rate-limit key.
 - The same non-reversible HMAC is limited to 25 MiB of accepted telemetry per UTC day by a Durable Object.
 - Telemetry is forwarded to PostHog for aggregate balance analysis.
+- The `balance_runs` request requires new player consent and covers run history plus per-combat card draws, manual/automatic plays, repeated resolutions and energy/stars actually paid. Previous `run_history` consent does not enable these additional measurements. No damage-to-card attribution is inferred.
+- Combat summaries use RitsuLib run saved data and are sent only with a permitted completed-run event. Replaying a saved room replaces its previous measurement; older or unmeasured rooms remain missing.
+- The existing native snapshot contains run/player identifiers used to join choices to players. UInt64 identifiers cross JavaScript services as decimal strings to preserve precision. The local dashboard does not expose them in its tables or CSV.
+- The developer dashboard listens only on loopback. PostHog query credentials stay in the local server process; screenshot and log attachments are read only when requested. See `Infrastructure/telemetry-worker/dashboard/README.md` for the exact statistical definitions.
 
 ## F2 Feedback
 
@@ -22,3 +26,5 @@ NinjaSlayer can send two kinds of data after the player enables or confirms the 
 - A valid lease returns a processing response; an expired lease can be taken over. Losing attempts can delete only their own paths, while administrative deletion leaves a retained UUID tombstone so retries cannot recreate removed feedback.
 
 The endpoints are anonymous but enforce server-side HMAC rate limits. No raw source IP or `X-Forwarded-For` value is sent to PostHog or stored in Workers KV.
+
+启用过自由操控的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。

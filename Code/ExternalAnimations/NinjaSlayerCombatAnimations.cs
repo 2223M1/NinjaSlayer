@@ -70,7 +70,9 @@ public static class NinjaSlayerCombatAnimations
 
                     if (currentCard is not ZazenDrink)
                     {
-                        result = Task.CompletedTask;
+                        NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Cast,
+                            CombatActionTimingRuntime.CastSeconds);
+                        result = Cmd.Wait(CombatActionTimingRuntime.CastSeconds);
                         return true;
                     }
 
@@ -114,14 +116,20 @@ public static class NinjaSlayerCombatAnimations
 
     private static async Task PlayCastAnimation(Creature creature)
     {
-        await HopAnimation.Play(creature);
+        NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Cast,
+            CombatActionTimingRuntime.CastSeconds);
+        NinjaSlayerAimPose.Get(creature)?.BeginAirMotion(true);
+        await Cmd.Wait(CombatActionTimingRuntime.CastSeconds);
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }
 
     private static async Task PlayAttackAnimation(Creature creature, float waitTime)
     {
         if (NinjaSlayerAttackExecution.TakeDeferredRecovery())
+        {
+            NinjaSlayerRapidAnimationCoordinator.BeginDamageRecovery(creature);
             await Cmd.Wait(CombatActionTimingRuntime.DamageRecoverySeconds);
+        }
         await FastAttackAnimation.Play(creature, waitTime);
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }
@@ -129,7 +137,10 @@ public static class NinjaSlayerCombatAnimations
     private static async Task PlaySlowAttackAnimation(Creature creature)
     {
         if (NinjaSlayerAttackExecution.TakeDeferredRecovery())
+        {
+            NinjaSlayerRapidAnimationCoordinator.BeginDamageRecovery(creature);
             await Cmd.Wait(CombatActionTimingRuntime.DamageRecoverySeconds);
+        }
         await SlowAttackAnimation.Play(creature);
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }
@@ -142,7 +153,9 @@ public static class NinjaSlayerCombatAnimations
 
     private static async Task PlayBlockedHitAnimation(Creature creature, float duration)
     {
-        await ShakeAnimation.Play(creature, duration, duration);
+        var motion = NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Brace,
+            CombatActionTimingRuntime.Resolve(duration, duration * 0.5f));
+        if (motion != null) await motion.Completion;
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }
 

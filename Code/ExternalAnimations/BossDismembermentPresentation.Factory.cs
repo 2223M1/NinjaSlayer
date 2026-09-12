@@ -61,7 +61,8 @@ public sealed partial class BossDismembermentPresentation
                 baseline,
                 canSplitSpine,
                 seed,
-                detachedBoneName);
+                detachedBoneName,
+                creature.Entity.Monster is MegaCrit.Sts2.Core.Models.Monsters.Architect);
             if (capture == null)
             {
                 return null;
@@ -98,18 +99,16 @@ public sealed partial class BossDismembermentPresentation
             detachedExplosionCenter,
             zIndex,
             PresentationMode.CompressedBurst,
-            architectFallDirection: 0f,
             out string failureReason);
         return presentation == null
             ? CompleteWithoutFragments(creature, failureReason)
             : new BossDismembermentSpawn(true, presentation.Completion);
     }
 
-    internal static ArchitectBossSoftBodyLead? TrySpawnArchitectLead(
+    internal static BossDismembermentPresentation? TrySpawnArchitectLead(
         NCombatRoom room,
         NCreature creature,
         BossDismembermentSnapshot? snapshot,
-        float fallDirection,
         int zIndex = BossBurstPresentationCoordinator.FragmentZIndex)
     {
         Vector2 burstOrigin = snapshot?.BodyGlobalCenter ?? Vector2.Zero;
@@ -121,11 +120,10 @@ public sealed partial class BossDismembermentPresentation
             detachedExplosionCenter: null,
             zIndex,
             PresentationMode.ArchitectLead,
-            fallDirection,
             out string failureReason);
         if (presentation != null)
         {
-            return new ArchitectBossSoftBodyLead(presentation);
+            return presentation;
         }
 
         CompleteWithoutFragments(creature, failureReason);
@@ -140,7 +138,6 @@ public sealed partial class BossDismembermentPresentation
         Vector2? detachedExplosionCenter,
         int zIndex,
         PresentationMode mode,
-        float architectFallDirection,
         out string failureReason)
     {
         failureReason = string.Empty;
@@ -237,7 +234,6 @@ public sealed partial class BossDismembermentPresentation
                 preparedFragments,
                 zIndex,
                 mode,
-                architectFallDirection,
                 detachedExplosionCenter);
             presentation.FollowArchitectCamera();
             if (mode != PresentationMode.ArchitectLead

@@ -1,0 +1,124 @@
+using System.Collections;
+using Godot;
+using HarmonyLib;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Settings;
+using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Orbs;
+
+namespace NinjaSlayer.OrbContractTests;
+
+public partial class OrbContractRunner
+{
+    private async Task VerifyStandardComboRecovery(OrbCombat combat, Node2D pose)
+    {
+        var product = typeof(ShurikenOrb).Assembly;
+        Type coordinator = product.GetType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerRapidAnimationCoordinator", true)!;
+        Type execution = product.GetType("NinjaSlayer.Code.Combat.NinjaSlayerAttackExecution", true)!;
+        Type pacing = product.GetType("NinjaSlayer.Code.Combat.CombatPresentationPacingScope", true)!;
+        Type scope = product.GetType("NinjaSlayer.Code.Lifecycle.CardPlayResolutionScope", true)!;
+        object? Run(string name, params object?[] args) => AccessTools.Method(coordinator, name).Invoke(null, args);
+        object State() => ((IDictionary)AccessTools.Field(coordinator, "States").GetValue(null)!)[combat.Player.Creature]!;
+        IList Motions() => (IList)AccessTools.Property(State().GetType(), "Motions").GetValue(State())!;
+        Vector2 Travel() => (Vector2)AccessTools.Property(pose.GetType(), "Travel").GetValue(pose)!;
+        Task Attack(float distance, float seconds, float recoverySeconds, bool held = false) => (Task)Run("PlayAttackToPeak", combat.Player.Creature,
+            distance, seconds, (Func<float, float>)(p => p), false, recoverySeconds, true, held)!;
+        Task Recover() => (Task)AccessTools.Method(pacing, "WaitForDamageRecovery").Invoke(null,
+            [0.1f, 0.2f, false, CancellationToken.None])!;
+
+        var card = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
+        var play = new CardPlay { Card = card,
+#if !NINJASLAYER_CHANNEL_STABLE
+            Player = combat.Player,
+#endif
+            Target = combat.Enemy, ResultPile = PileType.Discard,
+            Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
+            IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
+        object resolution = AccessTools.Method(scope, "BeginCard").Invoke(null, [card])!;
+        AccessTools.Method(scope, "BeginPlay").Invoke(null, [play]);
+        var command = DamageCmd.Attack(1)
+#if NINJASLAYER_CHANNEL_STABLE
+            .FromCard(card)
+#else
+            .FromCard(card, play)
+#endif
+            .Targeting(combat.Enemy);
+        object commandLease = AccessTools.Method(execution, "Enter").Invoke(null, [command, combat.Enemy])!;
+        object sequence = AccessTools.Method(execution, "EnterSequence").Invoke(null, [2])!;
+        FastModeType originalSpeed = SaveManager.Instance.PrefsSave.FastMode;
+        try
+        {
+            foreach (var (speed, scale) in new[] { (FastModeType.Normal, 1f), (FastModeType.Fast, 0.5f), (FastModeType.Instant, 0f) })
+            foreach (float distance in new[] { 90f, 120f })
+            {
+                SaveManager.Instance.PrefsSave.FastMode = speed;
+                Run("CancelAndRestore", combat.Player.Creature);
+                float gate = (distance == 90f ? 0.15f : 0.2f) * scale;
+                for (int hit = 0; hit < 2; hit++)
+                {
+                    AccessTools.Method(sequence.GetType(), "SetHit").Invoke(sequence, [hit]);
+                    Task attack = Attack(distance, gate, .2f * scale);
+                    object motion = Motions()[^1]!;
+                    if (scale > 0f)
+                    {
+                        var outbound = (Tween)AccessTools.Field(motion.GetType(), "Tween").GetValue(motion)!;
+                        outbound.Pause();
+                        outbound.CustomStep(gate / 2f);
+                        Require(Math.Abs(Travel().Length() - distance / 2f) < .1f,
+                            "A same-card hit inherited the previous lunge or used a shortened cross-card gate.");
+                        outbound.CustomStep(gate / 2f + .001f);
+                    }
+                    await attack;
+                    Require(Math.Abs(Travel().Length() - distance) < .1f, "Combo peak accumulated displacement.");
+                    if (hit != 0) continue;
+                    Task recovery = Recover();
+                    if (scale > 0f)
+                    {
+                        Require((bool)AccessTools.Field(motion.GetType(), "Returning").GetValue(motion)!,
+                            "Standard damage recovery held the first kick at its peak until the second kick.");
+                        var returning = (Tween)AccessTools.Field(motion.GetType(), "Tween").GetValue(motion)!;
+                        returning.Pause();
+                        returning.CustomStep(.1f * scale);
+                        Require(Math.Abs(Travel().Length() - distance / 2f) < .1f, "Combo recovery does not use the standard recovery duration.");
+                        returning.CustomStep(.1f * scale + .001f);
+                    }
+                    await recovery;
+                    Require(Travel().Length() < .1f, "Next combo hit would start before the preceding lunge recovered.");
+                    Require((float)AccessTools.Field(pose.GetType(), "_kick").GetValue(pose)! == 1f,
+                        "Per-hit lunge recovery reset the shared kick stance.");
+                }
+                Run("CardGameplaySettled", combat.Player.Creature);
+                if (scale > 0f)
+                {
+                    var finalReturn = (Tween)AccessTools.Property(State().GetType(), "ActiveTween").GetValue(State())!;
+                    finalReturn.Pause();
+                    finalReturn.CustomStep(.2f * scale + .001f);
+                }
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Combo final recovery retained its kick pose.");
+            }
+            SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
+            AccessTools.Method(sequence.GetType(), "SetHit").Invoke(sequence, [0]);
+            Task tornado = Attack(120f, .15f, .2f, held: true);
+            object heldMotion = Motions()[^1]!;
+            var heldTween = (Tween)AccessTools.Field(heldMotion.GetType(), "Tween").GetValue(heldMotion)!;
+            heldTween.Pause();
+            heldTween.CustomStep(.151f);
+            await tornado;
+            await Recover();
+            Require(!(bool)AccessTools.Field(heldMotion.GetType(), "Returning").GetValue(heldMotion)!
+                && Math.Abs(Travel().Length() - 120f) < .1f, "Tornado's shared lunge returned between hits.");
+            GD.Print("PASS same-card Attack/Slow kick recovery: Normal/Fast/Instant, full gates, per-hit return, shared kick stance and held Tornado exclusion.");
+        }
+        finally
+        {
+            Run("CancelAndRestore", combat.Player.Creature);
+            SaveManager.Instance.PrefsSave.FastMode = originalSpeed;
+            ((IDisposable)sequence).Dispose();
+            AccessTools.Method(commandLease.GetType(), "RestoreCaller").Invoke(commandLease, null);
+            AccessTools.Method(scope, "CompleteCard").Invoke(null, [resolution]);
+        }
+    }
+}

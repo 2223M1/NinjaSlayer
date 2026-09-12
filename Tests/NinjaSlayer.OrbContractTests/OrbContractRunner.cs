@@ -115,10 +115,15 @@ public partial class OrbContractRunner : Node
             }
             else
                 GD.Print("NOT RUN: tooltip and native event presentation contracts (no product resource pack supplied).");
+            // Reproduce a mod patching AutoPlay before RitsuLib/NinjaSlayer install wrapper hooks.
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_EARLY_AUTOPLAY") == "1")
+                PatchAutoplayBeforeFramework();
             RitsuLibFramework.Initialize();
             using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer.OrbContracts"))
             {
                 AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
+                AccessTools.Method(product.GetType("NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl"), "RegisterSavedData")
+                    .Invoke(null, ["NinjaSlayer.OrbContracts"]);
                 AccessTools.Method(typeof(StrongShurikenTokenRedesignV1), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
             }
             ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", product);
@@ -158,6 +163,20 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_V024") == "1")
+            {
+                await VerifyV024();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            await VerifyFreeControl();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FREE_CONTROL") == "1")
+            {
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             await VerifyLifecycle();
             await VerifyDiscards();
             await VerifyMultipleEvoke();
@@ -174,6 +193,8 @@ public partial class OrbContractRunner : Node
             await VerifyV17();
             await VerifyV023();
             await VerifyV024();
+            await VerifyMaintenanceRefactor();
+            await VerifyBalanceTelemetry();
             string? successMarker = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SUCCESS_MARKER");
             if (!string.IsNullOrWhiteSpace(successMarker))
                 System.IO.File.WriteAllText(successMarker, "passed\n");

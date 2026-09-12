@@ -1,5 +1,4 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -7,8 +6,8 @@ import {
   feedbackIndexKey,
   feedbackTombstoneKey,
   parseFeedbackIndexMarker,
-  validateCompletedFeedbackMetadata,
 } from '../src/feedback-storage.js';
+import { verifyFeedbackMetadata } from './feedback-reader.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const wrangler = join(root, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
@@ -55,14 +54,7 @@ function readCompletedFeedback(indexKey, expectedSubmissionId = null) {
   const marker = parseFeedbackIndexMarker(readText(indexKey), expectedSubmissionId);
   if (!marker || marker.state !== 'completed') throw new Error(`${indexKey} is not a valid completed submission.`);
   const metadataText = readText(marker.completion.metadataKey);
-  const metadataSha256 = createHash('sha256').update(metadataText, 'utf8').digest('hex');
-  if (metadataSha256 !== marker.completion.metadataSha256) {
-    throw new Error(`${indexKey} metadata hash does not match its completion marker.`);
-  }
-  const metadata = JSON.parse(metadataText);
-  if (!validateCompletedFeedbackMetadata(metadata, marker)) {
-    throw new Error(`${indexKey} metadata does not belong to its completed attempt.`);
-  }
+  const metadata = verifyFeedbackMetadata(marker, Buffer.from(metadataText, 'utf8'));
   return { marker, metadata, metadataText };
 }
 

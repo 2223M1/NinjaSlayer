@@ -26,7 +26,7 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
         else if (body.IsClass(MegaSprite.spineClassName))
         {
             MegaSkeleton? skeleton = new MegaSprite(body).GetSkeleton();
-            using IDisposable? skeletonLease = skeleton as IDisposable;
+            using GodotObject? skeletonLease = skeleton?.BoundObject;
             bounds = skeleton?.GetBounds() ?? fallbackBodyBounds;
         }
         if (!bounds.HasArea()) bounds = fallbackBodyBounds;

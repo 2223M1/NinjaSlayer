@@ -165,6 +165,11 @@ internal static class ShurikenCombat
                 ? ownerNode.GetCanvasTransform().AffineInverse() * handOrigin
                 : ownerNode.VfxSpawnPosition;
         Vector2 targetPosition = targetNode.VfxSpawnPosition;
+        return CreateFreeThrowVfx(origin, targetPosition);
+    }
+
+    internal static NShivThrowVfx? CreateFreeThrowVfx(Vector2 origin, Vector2 targetPosition)
+    {
         NShivThrowVfx? vfx = NShivThrowVfx.Create(origin, targetPosition, TrailTint);
         if (vfx == null)
         {

@@ -43,7 +43,10 @@ public sealed class ThrowKunaiRedesignV1 : RedesignV1CommonCard
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
-        await NinjaSlayerCardCmd.ChooseAndDiscard(choiceContext, Owner, 1, this);
+        await CardCmd.Discard(choiceContext, await CardSelectCmd.FromHandForDiscard(
+            choiceContext, Owner,
+            new CardSelectorPrefs(CardSelectorPrefs.DiscardSelectionPrompt, 1),
+            null, this));
     }
 
     protected override void OnUpgrade()

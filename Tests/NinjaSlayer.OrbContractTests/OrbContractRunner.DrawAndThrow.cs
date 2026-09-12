@@ -23,6 +23,28 @@ public partial class OrbContractRunner
     private static readonly List<float> ThrowGameplayWaits = [];
     private static int _throwDirectWaits;
 
+    private static object? LatestPresentation(Node2D pose, string kind) =>
+        ((System.Collections.IEnumerable)AccessTools.Field(pose.GetType(), "_presentations").GetValue(pose)!)
+        .Cast<object>().LastOrDefault(m => AccessTools.Field(m.GetType(), "Kind").GetValue(m)!.ToString() == kind);
+
+    private static float MotionNumber(Node2D pose, string kind, string field)
+    {
+        object? motion = LatestPresentation(pose, kind);
+        return motion == null ? 0f : (float)AccessTools.Field(motion.GetType(), field).GetValue(motion)!;
+    }
+
+    private static bool ThrowReleased(Node2D pose) => LatestPresentation(pose, "Throw") != null
+        && MotionNumber(pose, "Throw", "Elapsed") >= MotionNumber(pose, "Throw", "Duration") * (0.166f / 0.334f);
+
+    private static float PresentationNumber(Node2D pose, string field) => field switch
+    {
+        "_flipElapsed" => MotionNumber(pose, "Backflip", "Elapsed"),
+        "_flipDirection" => -MotionNumber(pose, "Backflip", "Facing"),
+        "_throwElapsed" => MotionNumber(pose, "Throw", "Elapsed"),
+        "_throwDuration" => MotionNumber(pose, "Throw", "Duration") * (0.166f / 0.334f),
+        _ => (float)AccessTools.Field(pose.GetType(), field).GetValue(pose)!
+    };
+
     private static async Task VerifyNonblockingThrow(OrbCombat combat, Node2D pose)
     {
         await AddStock(combat.Player, 1);
@@ -66,7 +88,7 @@ public partial class OrbContractRunner
             Require(attack.Results.Count() == 1 && _throwDirectWaits == 0
                 && ThrowGameplayWaits.All(t => Math.Abs(t - 0.166f) > 0.00001f),
                 "Shuriken attack blocked on its body windup.");
-            Require((float)AccessTools.Field(pose.GetType(), "_throwElapsed").GetValue(pose)! == 0f,
+            Require(MotionNumber(pose, "Throw", "Elapsed") == 0f,
                 "The nonblocking test advanced animation time to finish gameplay.");
             GD.Print("PASS shuriken gameplay with frozen animation: stock and attack damage complete without a body-animation wait.");
         }
@@ -100,7 +122,7 @@ public partial class OrbContractRunner
         Type type = pose.GetType();
         void Call(string name, params object?[] args) => AccessTools.Method(type, name).Invoke(pose, args);
         bool Flipping() => (bool)AccessTools.Property(type, "IsBackflipping").GetValue(pose)!;
-        float Field(string name) => (float)AccessTools.Field(type, name).GetValue(pose)!;
+        float Field(string name) => PresentationNumber(pose, name);
         Vector2 corePoint = formIndex == 2 ? new(50.8f, 120f) : new(580f, 30.30303f);
         Vector2 handPoint = formIndex == 2 ? new(432f, 390f) : new(851.5152f, -75.75758f);
         var contour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly
@@ -139,8 +161,8 @@ public partial class OrbContractRunner
                     float current = body.GetGlobalTransformWithCanvas().X.Angle();
                     float change = Mathf.Wrap(current - previous, -Mathf.Pi, Mathf.Pi);
                     turns += change;
-                    Require(Math.Abs(change + facing * Mathf.Tau / 24f) < 0.002f,
-                        $"Backflip paused or jumped: form={formIndex}, mode={mode}, facing={facing}, height={height}, frame={frame}, change={change}, expected={-facing * Mathf.Tau / 24f}, elapsed={Field("_flipElapsed")}, direction={Field("_flipDirection")}.");
+                    Require(change * -facing >= -0.002f && Math.Abs(change) < 0.5f,
+                        $"Backflip reversed or jumped: form={formIndex}, mode={mode}, frame={frame}, delta={change}.");
                     Require((body.GetGlobalTransformWithCanvas() * corePoint).DistanceTo(center.GlobalPosition) < 0.1f,
                         "Backflip detached the creature hit center.");
                     Require(Math.Abs(center.GlobalPosition.X - coreBaseline.X) < 0.1f, "Backflip drifted horizontally.");
@@ -160,14 +182,14 @@ public partial class OrbContractRunner
             Call("SyncNow");
             Transform2D idle = body.GetGlobalTransformWithCanvas();
             Call("BeginBackflip");
-            pose._Process(0.40);
+            pose._Process(0.47);
             float flipElapsed = Field("_flipElapsed");
             Call("BeginShurikenThrow", combat.Enemy);
             Require(Flipping() && Field("_flipElapsed") == flipElapsed, "Throw restarted or interrupted the backflip.");
             pose._Process(0.165);
-            Require(!(bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw released before 0.166 seconds.");
+            Require(!ThrowReleased(pose), "Throw released before 0.166 seconds.");
             pose._Process(0.00101);
-            Require((bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)! && Flipping(),
+            Require(ThrowReleased(pose) && Flipping(),
                 "Throw did not release at 0.166 seconds during the flip.");
             object?[] handArgs = [AimActors[combat.Player.Creature], null];
             Type orbVisual = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Nodes.ShurikenOrbVisual", true)!;
@@ -237,9 +259,9 @@ public partial class OrbContractRunner
                 if (expectedGate > 0f)
                 {
                     pose._Process(expectedGate - 0.001f);
-                    Require(!(bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw released early for the selected speed.");
+                    Require(!ThrowReleased(pose), "Throw released early for the selected speed.");
                     pose._Process(0.00101f);
-                    Require((bool)AccessTools.Field(type, "_throwReleased").GetValue(pose)!, "Throw missed its release time for the selected speed.");
+                    Require(ThrowReleased(pose), "Throw missed its release time for the selected speed.");
                     pose._Process(expectedTotal - expectedGate - 0.00101f);
                     Require(Field("_throwDuration") > 0f, "Throw recovery ended early.");
                 }
@@ -275,7 +297,7 @@ public partial class OrbContractRunner
     {
         Type type = pose.GetType();
         void Call(string name, params object?[] args) => AccessTools.Method(type, name).Invoke(pose, args);
-        float Field(string name) => (float)AccessTools.Field(type, name).GetValue(pose)!;
+        float Field(string name) => PresentationNumber(pose, name);
         var actor = AimActors[combat.Player.Creature];
         Transform2D anchorBaseline = anchor.Transform;
         Vector2 actorBaseline = actor.Position;
@@ -325,7 +347,7 @@ public partial class OrbContractRunner
                     "Attack changed the throw duration.");
                 if (flipping) Require(Math.Abs(Field("_flipElapsed") - flipTime * speed) < 0.00001f,
                     "Attack paused or restarted the flip clock.");
-                float flipAngle = flipping ? -facing * Mathf.Tau * flipTime * 1.5f : 0f;
+                float flipAngle = flipping ? -facing * Mathf.Tau * (1f - Mathf.Pow(1f - Math.Min(1f, flipTime / (0.88f * 2f / 3f)), 1.3f)) : 0f;
                 float throwAngle = 0f;
                 if (throwTime < 0.166f * 0.25f)
                     throwAngle = -Mathf.DegToRad(6f) * facing * Mathf.SmoothStep(0f, 1f, throwTime / (0.166f * 0.25f));
@@ -369,7 +391,7 @@ public partial class OrbContractRunner
             Type patch = product.GetType("NinjaSlayer.Code.Patches." + name, true)!;
             MethodInfo target = name.Contains("Batch", StringComparison.Ordinal)
                 ? AccessTools.Method(typeof(CardPileCmd), nameof(CardPileCmd.Draw), [typeof(PlayerChoiceContext), typeof(decimal), typeof(Player), typeof(bool)])
-                : AccessTools.Method(typeof(Hook), nameof(Hook.AfterCardDrawn));
+                : AccessTools.Method(typeof(CardPileCmd), nameof(CardPileCmd.Add), [typeof(CardModel), typeof(CardPile), typeof(CardPilePosition), typeof(AbstractModel), typeof(bool)]);
             harmony.Patch(target, prefix: new HarmonyMethod(AccessTools.Method(patch, "Prefix")),
                 postfix: AccessTools.Method(patch, "Postfix") is { } post ? new HarmonyMethod(post) : null,
                 finalizer: AccessTools.Method(patch, "Finalizer") is { } final ? new HarmonyMethod(final) : null);
@@ -414,7 +436,7 @@ public partial class OrbContractRunner
             await PowerCmd.Remove(combat.Player.Creature.GetPower<StatusDrawPower>()!);
             ResetBatch();
             Type batches = product.GetType("NinjaSlayer.Code.Lifecycle.NinjaSlayerDrawAnimationBatch", true)!;
-            using ((IDisposable)AccessTools.Method(batches, "Enter").Invoke(null, [combat.Player])!)
+            using ((IDisposable)AccessTools.Method(batches, "Enter").Invoke(null, [combat.Player, false])!)
                 for (int i = 0; i < 3; i++)
                 {
                     AddCard<StrikeIronclad>(combat, PileType.Draw);

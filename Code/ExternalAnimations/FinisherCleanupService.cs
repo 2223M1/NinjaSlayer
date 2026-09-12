@@ -21,9 +21,9 @@ internal static class FinisherCleanupService
         Exception? completionFailure = null;
         try
         {
-            if (FinisherSessionRegistry.GetPendingSession(cardPlay) != null)
+            if (FinisherSessionRegistry.GetPendingSession(cardPlay) is { } session)
             {
-                await CleanupPending(cardPlay.Card, playPose: originalFailure == null);
+                await session.CompleteAsync(playPose: originalFailure == null);
             }
         }
         catch (Exception ex)
@@ -49,9 +49,9 @@ internal static class FinisherCleanupService
         Exception? completionFailure = null;
         try
         {
-            if (FinisherSessionRegistry.GetPendingSession(card) != null)
+            if (FinisherSessionRegistry.GetPendingSession(card) is { } session)
             {
-                await CleanupPending(card, playPose: false);
+                await session.CompleteAsync(playPose: false);
             }
         }
         catch (Exception ex)
@@ -60,17 +60,6 @@ internal static class FinisherCleanupService
         }
 
         ThrowFailures(originalFailure, completionFailure);
-    }
-
-    private static async Task CleanupPending(CardModel card, bool playPose)
-    {
-        FinisherSession? session = FinisherSessionRegistry.GetPendingSession(card);
-        if (session == null)
-        {
-            return;
-        }
-
-        await session.CompleteAsync(playPose);
     }
 
     private static void ThrowFailures(Exception? originalFailure, Exception? completionFailure)

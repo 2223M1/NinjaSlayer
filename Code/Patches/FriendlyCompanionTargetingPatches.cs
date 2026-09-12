@@ -9,6 +9,8 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Models.Potions;
 using MegaCrit.Sts2.Core.Multiplayer.Game.PeerInput;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -33,31 +35,18 @@ internal static class FriendlyCompanionTargeting
 
     public static bool Supports(CardModel card) =>
         card.TargetType == TargetType.AnyAlly
-        && card.GetType().Name is
-            "Blaze" or
-            "Concoct" or
-            "Coordinate" or
-            "DemonicShield" or
-            "Fade" or
-            "Intercept" or
-            "Lift" or
-            "Mimic";
+        && card is
+#if NINJASLAYER_CHANNEL_PREVIEW
+            Blaze or Concoct or Fade or
+#endif
+            Coordinate or DemonicShield or Intercept or Lift or Mimic;
 
     public static bool Supports(PotionModel potion) =>
         potion.TargetType == TargetType.AnyPlayer
-        && potion.GetType().Name is
-            "BlockPotion" or
-            "DexterityPotion" or
-            "FlexPotion" or
-            "FyshOil" or
-            "HeartOfIron" or
-            "LiquidBronze" or
-            "LuckyTonic" or
-            "MazalethsGift" or
-            "RegenPotion" or
-            "ShipInABottle" or
-            "SpeedPotion" or
-            "StrengthPotion";
+        && potion is
+            BlockPotion or DexterityPotion or FlexPotion or FyshOil or
+            HeartOfIron or LiquidBronze or LuckyTonic or MazalethsGift or
+            RegenPotion or ShipInABottle or SpeedPotion or StrengthPotion;
 
     public static bool HasCompanion(ICombatState? combatState) =>
         combatState?.Creatures.Any(IsFriendlyCompanion) == true;

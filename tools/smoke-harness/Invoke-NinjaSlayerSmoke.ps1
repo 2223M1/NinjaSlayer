@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload')]
+    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -137,7 +137,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -154,6 +154,7 @@ function Invoke-SmokePhase {
             'BossFresh' { 6 }
             'BossResume' { 7 }
             'BossVerify' { 8 }
+            'TelemetryLoss' { 10 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -456,8 +457,8 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -eq 'FullAutoSlay') {
-        Invoke-SmokePhase -Phase FullAutoSlay -ExpectedExitCode 0
+    elseif ($Mode -in @('FullAutoSlay', 'TelemetryLoss')) {
+        Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
         Invoke-SmokePhase -Phase SawatariSameCombat -ExpectedExitCode 0
@@ -479,6 +480,9 @@ try {
     }
     elseif ($Mode -eq 'FullAutoSlay') {
         @('full-autoslay.starting', 'full-autoslay.completed')
+    }
+    elseif ($Mode -eq 'TelemetryLoss') {
+        @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
         @('sawatari.starting', 'finisher.normal.completed', 'sawatari.same-combat-completed', 'sawatari.completed')
@@ -510,6 +514,7 @@ try {
         compatibilityManifestSha256 = $compatibilityManifestSha256
         mode = if ($DevelopmentPackage) { "development-$Mode" } else { switch ($Mode) {
             'FullAutoSlay' { 'singleplayer-full-autoslay' }
+            'TelemetryLoss' { 'singleplayer-telemetry-loss' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }
             default { 'singleplayer-first-combat-restart' }

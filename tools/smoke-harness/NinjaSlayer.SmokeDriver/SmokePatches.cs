@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
@@ -63,7 +64,9 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
             return true;
         }
 
-        if (__instance.Character is NinjaSlayerCharacter)
+        bool IsRequestedCharacter(NCharacterSelectButton button) => controller.UseNativePreviewCharacter
+            ? button.Character is Ironclad : button.Character is NinjaSlayerCharacter;
+        if (IsRequestedCharacter(__instance))
         {
             return true;
         }
@@ -71,10 +74,10 @@ internal static class NinjaSlayerSmokeCharacterSelectionPatch
         NCharacterSelectButton? ninjaSlayer = __instance.GetParent()
             .GetChildren()
             .OfType<NCharacterSelectButton>()
-            .FirstOrDefault(button => button.Character is NinjaSlayerCharacter);
+            .FirstOrDefault(IsRequestedCharacter);
         if (ninjaSlayer is null)
         {
-            throw new InvalidOperationException("NinjaSlayer character button was not present.");
+            throw new InvalidOperationException("The smoke character button was not present.");
         }
 
         try
@@ -388,6 +391,19 @@ internal static class NinjaSlayerSmokeDarkStrikeVfxPatch
 [HarmonyPatch(typeof(AutoSlayer), "QuitGame")]
 internal static class NinjaSlayerSmokeAutoSlayExitPatch
 {
-    public static void Prefix(ref int exitCode) =>
+    public static bool Prefix(ref int exitCode)
+    {
         SmokeController.Current?.BeforeFullAutoSlayExit(ref exitCode);
+        return SmokeController.Current?.CapturePreviewExit(exitCode) != true;
+    }
+}
+
+[HarmonyPatch(typeof(AutoSlayer), "PlayRunAsync")]
+internal static class NinjaSlayerSmokePreviewCancellationPatch
+{
+    public static void Postfix(ref Task __result)
+    {
+        if (SmokeController.Current is { IsPreview: true } controller)
+            __result = controller.CompletePreviewRunOnCancellation(__result);
+    }
 }

@@ -48,28 +48,10 @@ internal static class FinisherAttackCommandAdapter
             return false;
         }
 
-        decimal damagePerHit = DamagePerHit.GetValue(command) is decimal damageValue
-            ? damageValue
-            : throw new InvalidOperationException(
-                "AttackCommand._damagePerHit has an unexpected runtime type.");
-        CalculatedDamageVar? calculatedDamage = CalculatedDamage.GetValue(command) switch
-        {
-            null => null,
-            CalculatedDamageVar value => value,
-            _ => throw new InvalidOperationException(
-                "AttackCommand._calculatedDamageVar has an unexpected runtime type.")
-        };
-        int hitCount = HitCount.GetValue(command) is int count
-            ? count
-            : throw new InvalidOperationException(
-                "AttackCommand._hitCount has an unexpected runtime type.");
-        Creature? singleTarget = SingleTarget.GetValue(command) switch
-        {
-            null => null,
-            Creature target => target,
-            _ => throw new InvalidOperationException(
-                "AttackCommand._singleTarget has an unexpected runtime type.")
-        };
+        decimal damagePerHit = (decimal)DamagePerHit.GetValue(command)!;
+        var calculatedDamage = (CalculatedDamageVar?)CalculatedDamage.GetValue(command);
+        int hitCount = (int)HitCount.GetValue(command)!;
+        var singleTarget = (Creature?)SingleTarget.GetValue(command);
         FinisherTargeting? targeting = command.IsRandomlyTargeted
             ? FinisherTargeting.Random
             : command.IsSingleTargeted

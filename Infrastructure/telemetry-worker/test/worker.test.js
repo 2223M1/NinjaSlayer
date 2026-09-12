@@ -207,6 +207,16 @@ test('real RitsuLib 0.4.62 envelope is accepted and camelCase or extra propertie
   assert.equal((await handleRequest(telemetryRequest(extra), workerEnv())).status, 400);
 });
 
+test('balance combat request is accepted without broadening the envelope allowlist', async () => {
+  const body = structuredClone(RITSU_FIXTURE);
+  body.batch[0].properties.request_id = 'balance_runs';
+  await withSuccessfulPostHog(async () => {
+    assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 200);
+  });
+  body.batch[0].properties.request_id = 'unregistered';
+  assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 400);
+});
+
 test('telemetry rejects excessive JSON depth and streaming bodies over the limit', async () => {
   const nested = structuredClone(RITSU_FIXTURE);
   let cursor = nested.batch[0].properties.payload;

@@ -15,7 +15,9 @@ internal enum SmokePhase
     BossFresh,
     BossResume,
     BossVerify,
-    TornadoPreview
+    TornadoPreview,
+    TelemetryLoss,
+    ActionPreview
 }
 
 internal sealed record SmokeConfiguration(
@@ -32,7 +34,10 @@ internal sealed record SmokeConfiguration(
     bool TransitionPerfWarmup = false,
     string[]? AdditionalModIds = null,
     string? TornadoPreviewDirectory = null,
-    bool TornadoHitStop = false)
+    bool TornadoHitStop = false,
+    string? ActionPreviewDirectory = null,
+    bool PreviewCleanupBaseline = false,
+    bool PreviewMenuReturnCheck = false)
 {
     public static SmokeConfiguration Load(string path)
     {

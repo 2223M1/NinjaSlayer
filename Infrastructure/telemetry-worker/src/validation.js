@@ -88,7 +88,7 @@ export function validateTelemetryBody(body, maximumBatchSize) {
     if (properties.schema !== 'ritsulib.telemetry.v1'
       || properties.applicant_id !== 'NinjaSlayer'
       || properties.owner_mod_id !== 'NinjaSlayer'
-      || properties.request_id !== 'run_history'
+      || !['run_history', 'balance_runs'].includes(properties.request_id)
       || properties.category !== 'RunHistory') {
       return `batch[${index}] is not a NinjaSlayer RunHistory envelope`;
     }

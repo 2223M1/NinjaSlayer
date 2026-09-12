@@ -53,7 +53,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         {
             if (!state.HasPlayedAction || !ReferenceEquals(state.LastTarget, target))
                 state.ForwardSign = target?.GetCreatureNode() is { } node
-                    && node.GlobalPosition.X < creatureNode.GlobalPosition.X ? -1f : 1f;
+                    && node.GlobalPosition.X < (pose.FreeControl is { Active: true } ? pose.CoreCanvas.X : creatureNode.GlobalPosition.X) ? -1f : 1f;
             state.LastTarget = target;
             pose.AttackForwardSign = state.ForwardSign;
             pose.BeginAction(target);
@@ -77,7 +77,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         NinjaSlayerShadowController.Get(creature)?.BeginAction(
             distance >= NinjaSlayerCombatVisuals.SlowAttackLungeDistance ? ShadowActionKind.SlowAttack : ShadowActionKind.Attack,
             duration, returnSeconds, hold: true);
-        var motion = new AttackMotion();
+        var motion = new AttackMotion { HoldUntilCardSettled = heldTornado };
         state.Motions.Add(motion);
         float forwardSign = heldTornado ? direction : state.ForwardSign;
         Vector2 initialDirection = pose?.DirectionLocal() ?? Vector2.Right * direction;
@@ -93,12 +93,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             }
             Vector2 peakOffset = attackDirection * distance * (reverseDirection ? -1f : 1f);
             motion.Offset = (peakOffset - (heldTornado ? state.BaseOffset : Vector2.Zero)) * outboundCurve(progress);
-            Vector2 offset = state.BaseOffset;
-            foreach (AttackMotion contribution in state.Motions) offset += contribution.Offset;
-            if (pose != null)
-                pose.SetTravel(offset, outboundCurve(progress));
-            else
-                creatureNode.Position = state.Baseline + offset;
+            ApplyMotions(creature, state, outboundCurve(progress));
         }
         if (Mathf.IsZeroApprox(duration))
         {
@@ -168,18 +163,39 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         StartReturn(creature, state);
     }
 
+    internal static void BeginDamageRecovery(
+        Creature creature,
+        float fastSeconds = CombatActionTiming.DamageRecoveryFastSeconds,
+        float standardSeconds = CombatActionTiming.DamageRecoveryNormalSeconds)
+    {
+        if (!States.TryGetValue(creature, out ActionState? state)
+            || !GodotObject.IsInstanceValid(state.CreatureNode)) return;
+
+        float seconds = CombatActionTimingRuntime.Resolve(standardSeconds, fastSeconds);
+        bool recovering = false;
+        foreach (AttackMotion motion in state.Motions
+            .Where(m => m.Completed && !m.Returning && !m.HoldUntilCardSettled).ToArray())
+        {
+            StartMotionReturn(creature, state, motion, seconds);
+            recovering = true;
+        }
+        if (!recovering) return;
+        if (state.Motions.All(m => m.Returning))
+            NinjaSlayerShadowController.Get(creature)?.BeginReturn(seconds);
+        ApplyMotions(creature, state);
+    }
+
     public static void PrepareAction(Creature creature, NCreature creatureNode)
     {
         ActionState state = GetOrCreateState(creature, creatureNode);
         state.GameplaySettled = false;
         if (state.ActiveTween != null)
         {
-            state.BaseOffset = NinjaSlayerAimPose.Get(creature)?.Travel
-                ?? creatureNode.Position - state.Baseline;
-            state.Motions.Clear();
             state.StopActiveTween();
             state.Generation++;
         }
+        foreach (AttackMotion motion in state.Motions.Where(m => m.Completed && !m.Returning).ToArray())
+            StartMotionReturn(creature, state, motion, state.ReturnSeconds);
         if (VisualTails.TryGetValue(creature, out VisualTailState? tail) && !tail.IndependentAirChannel)
         {
             VisualTails.Remove(creature);
@@ -201,6 +217,47 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             ? state.Baseline
             : creatureNode.Position;
 
+    private static void ApplyMotions(Creature creature, ActionState state, float? progress = null)
+    {
+        Vector2 offset = state.BaseOffset;
+        foreach (AttackMotion motion in state.Motions) offset += motion.Offset;
+        if (NinjaSlayerAimPose.Get(creature) is { } pose)
+        {
+            if (progress is { } launch) pose.SetTravel(offset, launch);
+            else pose.SetRecoveryTravel(offset);
+        }
+        else state.CreatureNode.Position = state.Baseline + offset;
+    }
+
+    private static void StartMotionReturn(Creature creature, ActionState state, AttackMotion motion, float seconds)
+    {
+        motion.Returning = true;
+        Vector2 from = motion.Offset;
+        if (seconds <= 0f)
+        {
+            state.Motions.Remove(motion);
+            return;
+        }
+        Tween tween = state.CreatureNode.CreateTween();
+        motion.Tween = tween;
+        tween.TweenMethod(Callable.From<float>(p =>
+        {
+            if (!IsCurrentState(creature, state)) return;
+            motion.Offset = from * (1f - Mathf.SmoothStep(0f, 1f, p));
+            // A newer group return owns the combined pose while it is active.
+            if (state.ActiveTween == null) ApplyMotions(creature, state);
+        }), 0f, 1f, seconds);
+        TaskHelper.RunSafely(FinishMotionReturn());
+        async Task FinishMotionReturn()
+        {
+            if (await TweenPlayback.AwaitCompletion(tween, state.CreatureNode) && IsCurrentState(creature, state))
+            {
+                state.Motions.Remove(motion);
+                if (state.ActiveTween == null) ApplyMotions(creature, state);
+            }
+        }
+    }
+
     private static void StartReturn(Creature creature, ActionState state)
     {
         NinjaSlayerShadowController.Get(creature)?.BeginReturn(state.ReturnSeconds);
@@ -219,6 +276,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         }
 
         float returnSeconds = state.ReturnSeconds;
+        Vector2 baseStart = state.BaseOffset;
+        var returningMotions = state.Motions.Where(m => !m.Returning).Select(m => (Motion: m, Start: m.Offset)).ToArray();
         Vector2[] returnStarts = channels.Select(channel => channel.GetPosition()).ToArray();
         if (Mathf.IsZeroApprox(returnSeconds))
         {
@@ -242,6 +301,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                         returnSeconds,
                         progress);
                     float eased = Mathf.SmoothStep(0f, 1f, progress);
+                    state.BaseOffset = baseStart * (1f - eased);
+                    foreach (var item in returningMotions) item.Motion.Offset = item.Start * (1f - eased);
                     for (int index = 0; index < channels.Length; index++)
                     {
                         RapidMotionChannel channel = channels[index];
@@ -251,6 +312,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                         }
                     }
                     pose?.ApplyReturn(eased);
+                    // Position contributions continue independently when a new card
+                    // begins; only orientation uses the segment's shared recovery.
+                    if (pose != null && !pose.IsExclusive) ApplyMotions(creature, state);
                 }),
                 0f,
                 1f,
@@ -425,6 +489,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         }
 
         state.ActiveTween = null;
+        state.StopMotions();
         RestoreChannels(state.Channels.ToArray());
         NinjaSlayerAimPose.Get(creature)?.ApplyReturn(1f);
         States.Remove(creature);
@@ -517,6 +582,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         internal Vector2 Offset;
         internal Tween? Tween;
         internal bool Completed;
+        internal bool Returning;
+        internal bool HoldUntilCardSettled;
     }
 
     private sealed record VisualTailState(

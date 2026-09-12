@@ -290,6 +290,7 @@ public static class SoarSpinAnimation
 
     private static VerticalAxisSpinProjection? CreateNinjaSlayerProjection(Creature creature)
     {
+        NinjaSlayerFreeControl.Get(creature)?.ReleaseSpinProjection();
         Sprite2D? visuals = GetSpinVisual(creature);
         Node2D? focus = GetSpinFocus(creature);
         Node2D? axis = GetSpinAxis(creature) ?? focus;

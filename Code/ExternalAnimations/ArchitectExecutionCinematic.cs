@@ -44,7 +44,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private CombatCinematicCameraLease? _camera;
     private FinisherImpactPresentation? _presentation;
     private BossDismembermentSnapshot? _dismembermentSnapshot;
-    private ArchitectBossSoftBodyLead? _softBodyLead;
+    private BossDismembermentPresentation? _deathPresentation;
     private Vector2 _ownerStartPosition;
     private Vector2 _architectBodyPosition;
     private Vector2 _architectBodyScale;
@@ -104,8 +104,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
     {
         _runLifetime.Dispose();
         Interlocked.Exchange(ref _exitLifetime, null)?.Dispose();
-        _softBodyLead?.Dispose();
-        _softBodyLead = null;
+        CancelDeathPresentation();
         DisposeDismembermentSnapshot();
         HideArchitectVisual();
         if (_initialized)
@@ -169,8 +168,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
                 _exitLifetime?.Cancel();
             }
 
-            _softBodyLead?.Dispose();
-            _softBodyLead = null;
+            CancelDeathPresentation();
             DisposeDismembermentSnapshot();
             HideArchitectVisual();
             RestoreTemporaryState(restoreOwnerPosition: _exitTask == null);
@@ -294,12 +292,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private async Task PlayArchitectDeath(CancellationToken cancelToken)
     {
-        float fallDirection = Mathf.Sign(_architectNode.Position.X - _ownerNode.Position.X);
-        if (Mathf.IsZeroApprox(fallDirection))
-        {
-            fallDirection = 1f;
-        }
-
         CreatureDeathInteractionAdapter.Disable(_architectNode);
         _architectNode.AnimHideIntent();
         _architectNode.AnimDisableUi();
@@ -309,11 +301,10 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _dismembermentSnapshot = null;
         try
         {
-            _softBodyLead = BossDismembermentPresentation.TrySpawnArchitectLead(
+            _deathPresentation = BossDismembermentPresentation.TrySpawnArchitectLead(
                 _room,
                 _architectNode,
                 snapshot,
-                fallDirection,
                 BossBurstPresentationCoordinator.FragmentZIndex);
         }
         finally
@@ -322,7 +313,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
 
         string monsterId = _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT";
-        bool fragmentReplacementReady = _softBodyLead != null;
+        bool fragmentReplacementReady = _deathPresentation != null;
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
             _room,
             new BossBurstParticipant(
@@ -351,9 +342,16 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private BossDismembermentSpawn SpawnArchitectBurst()
     {
-        ArchitectBossSoftBodyLead? lead = Interlocked.Exchange(ref _softBodyLead, null);
-        return lead?.TriggerBurst()
-            ?? new BossDismembermentSpawn(false, Task.CompletedTask);
+        BossDismembermentPresentation? lead = Interlocked.Exchange(ref _deathPresentation, null);
+        return lead != null && GodotObject.IsInstanceValid(lead) && lead.IsInsideTree()
+            ? new BossDismembermentSpawn(lead.TriggerArchitectBurst(), lead.Completion)
+            : new BossDismembermentSpawn(false, Task.CompletedTask);
+    }
+
+    private void CancelDeathPresentation()
+    {
+        BossDismembermentPresentation? lead = Interlocked.Exchange(ref _deathPresentation, null);
+        if (lead != null && GodotObject.IsInstanceValid(lead)) lead.CancelPresentation();
     }
 
     private void StartExitScene()

@@ -98,10 +98,12 @@ internal sealed partial class SmokeController
     public bool ShouldForceCharacter => _configuration.Phase is
         SmokePhase.Fresh
         or SmokePhase.FullAutoSlay
+        or SmokePhase.TelemetryLoss
         or SmokePhase.SawatariSameCombat
         or SmokePhase.ReverseFinisher
         or SmokePhase.TransitionPerf
-        or SmokePhase.TornadoPreview;
+        or SmokePhase.TornadoPreview
+        or SmokePhase.ActionPreview;
 
     public void Start()
     {
@@ -115,11 +117,15 @@ internal sealed partial class SmokeController
     }
 
     public bool TryClaimFirstCombat() =>
-        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher or SmokePhase.TornadoPreview
+        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher or SmokePhase.TornadoPreview or SmokePhase.TelemetryLoss or SmokePhase.ActionPreview
         && Interlocked.CompareExchange(ref _firstCombatClaimed, 1, 0) == 0;
 
     public Task ExecuteClaimedCombatAsync(Rng random, CancellationToken cancellationToken) =>
-        _configuration.Phase == SmokePhase.TornadoPreview
+        _configuration.Phase == SmokePhase.ActionPreview
+            ? ExecuteActionPreviewAsync(cancellationToken)
+            : _configuration.Phase == SmokePhase.TelemetryLoss
+            ? ExecuteTelemetryLossAsync(cancellationToken)
+            : _configuration.Phase == SmokePhase.TornadoPreview
             ? ExecuteTornadoPreviewAsync(cancellationToken)
             : _configuration.Phase == SmokePhase.ReverseFinisher
             ? ExecuteReverseFinisherCombatAsync(cancellationToken)
@@ -318,6 +324,7 @@ internal sealed partial class SmokeController
             Require(exitCode == 0, $"AutoSlay requested failure exit code {exitCode}.");
             Require(_tutorialUnknownRollCount > 0, "Full AutoSlay did not exercise tutorial unknown-room rolls.");
             Require(_hostFilteredUnknownRollCount > 0, "Full AutoSlay did not exercise host-filtered unknown-room rolls.");
+            ValidateTelemetryCapture();
             _checkpoints.Write("full-autoslay.completed");
         }
         catch (Exception exception)
@@ -792,6 +799,9 @@ internal sealed partial class SmokeController
         Player player,
         Creature target)
     {
+        // The preceding presentation scenarios may draw Black Flame; its independent burn is not evaded.
+        foreach (CardModel flame in PileType.Hand.GetPile(player).Cards.OfType<BlackFlameRedesignV1>().ToArray())
+            await CardPileCmd.Add(flame, PileType.Discard);
         await PowerCmd.Remove<ArtifactPower>(target);
         await PowerCmd.Remove<VulnerablePower>(target);
         Require(
@@ -835,7 +845,11 @@ internal sealed partial class SmokeController
         await CardPileCmd.Add(second, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), second, target);
 
-        Require(target.CurrentHp == initialHp, "An evaded attack card reduced HP.");
+        Require(target.CurrentHp == initialHp,
+            $"An evaded attack card reduced HP ({initialHp} -> {target.CurrentHp}). Damage sources: " +
+            string.Join(", ", CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
+                .Where(entry => ReferenceEquals(entry.Receiver, target)).Skip(initialHistoryEntries)
+                .Select(entry => $"{entry.CardSource?.Id}: {entry.Result.TotalDamage}")));
         Require(target.Block == initialBlock, "An evaded attack card reduced Block.");
         Require(
             target.GetPower<VulnerablePower>()?.Amount == vulnerableBefore,
@@ -1597,7 +1611,7 @@ internal sealed partial class SmokeController
             {
                 await RunBossReloadPhaseAsync();
             }
-            else if (_configuration.Phase == SmokePhase.TornadoPreview)
+            else if (_configuration.Phase is SmokePhase.TornadoPreview or SmokePhase.ActionPreview)
             {
                 await RunTornadoPreviewAsync();
             }
@@ -1620,6 +1634,10 @@ internal sealed partial class SmokeController
             else if (_configuration.Phase == SmokePhase.TransitionPerf)
             {
                 await RunTransitionPerfPhaseAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.TelemetryLoss)
+            {
+                await RunTelemetryLossPhaseAsync();
             }
             else
             {
@@ -1664,6 +1682,7 @@ internal sealed partial class SmokeController
 
     private async Task RunFullAutoSlayPhaseAsync()
     {
+        StartTelemetryCapture();
         NGame.Instance!.DebugSeedOverride = _configuration.Seed;
         _checkpoints.Write("full-autoslay.starting");
         var autoSlayer = new AutoSlayer();
