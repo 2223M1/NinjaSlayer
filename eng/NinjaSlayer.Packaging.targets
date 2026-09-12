@@ -112,7 +112,7 @@
   </Target>
 
   <Target Name="ValidatePackageOutput">
-    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-physics --directory &quot;$(PostBuildModDir)&quot;" />
+    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-physics --directory &quot;$(PostBuildModDir).&quot;" />
     <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')"
            Text="Packaging requires the target game's sts2.dll at $(Sts2DataDir)." />
     <Error Condition="!Exists('$(PostBuildModDir)$(NinjaSlayerArtifactName).dll')"
