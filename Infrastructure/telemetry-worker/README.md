@@ -5,7 +5,7 @@ For the GitHub Pages public observatory and loopback-only private dashboard, see
 
 This Worker accepts the RitsuLib `run_history.completed` envelope (`run_history` or `balance_runs` requests) and anonymous
 F2 feedback. Inputs are strictly validated before telemetry is forwarded to
-PostHog or feedback is committed to Workers KV.
+PostHog or feedback is committed to Workers KV. Separately authorized `battle_report.completed` envelopes are validated, anonymized and compressed into KV for 90 days; they never enter PostHog. The public report index/detail routes expose only the validated projection. Feedback and replays share the free storage/write budget in `src/free-storage.js`.
 
 Raw IP addresses are never stored or forwarded. A server-secret HMAC of the
 transient Cloudflare source IP is used for minute limits and Durable Object

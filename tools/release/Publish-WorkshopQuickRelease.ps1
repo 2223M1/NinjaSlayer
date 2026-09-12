@@ -15,6 +15,8 @@ param(
     [string] $StableDataDir,
     [string] $PreviewDataDir,
     [string] $GodotExe,
+    [Parameter(Mandatory)][string] $GameRootDirectory,
+    [Parameter(Mandatory)][string] $RitsuLibModDirectory,
     [switch] $Confirm
 )
 
@@ -201,6 +203,19 @@ $bundleDirectory = Join-Path $repositoryRoot 'build\workshop-bundle\NinjaSlayer'
     -BuildRoot (Join-Path $repositoryRoot 'build\workshop-bundle\build') `
     -Version $Version `
     -SourceRevision $SourceRevision
+
+$catalogDirectory = Join-Path $releaseDirectory "website-$tag-$($SourceRevision.Substring(0, 12))"
+& (Join-Path $repositoryRoot 'tools\smoke-harness\Invoke-NinjaSlayerSmoke.ps1') `
+    -CandidateSha $SourceRevision -BundleVersion $Version -CandidateRoot $repositoryRoot `
+    -BundleDirectory $bundleDirectory -TrustedRoot $repositoryRoot `
+    -GameRootDirectory $GameRootDirectory -RitsuLibModDirectory $RitsuLibModDirectory `
+    -OutputDirectory $catalogDirectory -Channel stable -Mode Catalog -PhaseTimeoutSeconds 600
+$catalog = Get-Content -LiteralPath (Join-Path $catalogDirectory 'content\catalog.json') -Raw | ConvertFrom-Json
+if ($catalog.version -cne $Version -or $catalog.sourceRevision -cne $SourceRevision) {
+    throw 'Runtime website catalog does not match the candidate.'
+}
+# Import and advance Website/content/current.json only after remote package verification,
+# using import-website-catalog.mjs with the release evidence. Upload success alone is insufficient.
 
 if (Test-Path -LiteralPath $workshopContentDirectory) {
     Remove-Item -LiteralPath $workshopContentDirectory -Recurse -Force

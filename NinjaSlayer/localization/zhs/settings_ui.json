@@ -13,7 +13,7 @@
   "NINJA_SLAYER_SETTINGS_FORCE_ALL_EVENTS_ONCE_DESCRIPTION": "在随后新建的单人跑局中，让每个满足原有条件的忍者杀手事件优先触发一次。已有跑局不受影响。",
   "NINJA_SLAYER_TELEMETRY_TITLE": "数据分享",
   "NINJA_SLAYER_TELEMETRY_TOGGLE": "分享对局数据",
-  "NINJA_SLAYER_TELEMETRY_DESCRIPTION": "发送已结束对局的奖励选择、结束牌组、结果，以及每场战斗的抽牌、打出和资源消耗，用于分析卡牌平衡。公开网页仅展示汇总统计；反馈截图和日志不随遥测上传。可随时在此关闭。",
+  "NINJA_SLAYER_TELEMETRY_DESCRIPTION": "发送已结束对局的路线、选择、牌组、结果及战斗使用、伤害、防御和资源统计，用于分析卡牌平衡。汇总分享不公开逐场战报，不上传截图或日志。可随时在此关闭。",
   "NINJA_SLAYER_TELEMETRY_PENDING": "等待首次选择：本次不上传。若忽略首次告知，下次启动游戏后默认开启。",
   "NINJA_SLAYER_TELEMETRY_ENABLED": "已开启：对局结束后发送，用于公开汇总统计。",
   "NINJA_SLAYER_TELEMETRY_DISABLED": "已关闭：不会发送对局数据。",
@@ -22,5 +22,15 @@
   "NINJA_SLAYER_TELEMETRY_DECLINE": "关闭分享",
   "NINJA_SLAYER_TELEMETRY_ACCEPT": "现在开启",
   "NINJA_SLAYER_TELEMETRY_WEBSITE": "公开观测室",
-  "NINJA_SLAYER_TELEMETRY_OPEN_WEBSITE": "查看统计与反馈"
+  "NINJA_SLAYER_TELEMETRY_OPEN_WEBSITE": "查看统计与反馈",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_TOGGLE": "公开完整战报",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_DESCRIPTION": "默认关闭。开启后记录后续房间的路线、选择与逐回合行动，并在公开观测室匿名展示90天。不包含账号、种子、截图或日志；联机只公开你授权的玩家明细。可随时关闭，未采集的部分标记为缺段。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_IDLE": "尚未开始记录公开战报。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_WAITING": "已开启，将从后续房间开始记录。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_RECORDING": "正在记录；对局结束后提交。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_DISABLED": "公开战报已关闭。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_TRUNCATED": "战报达到本地记录上限，已有内容保留并标记不完整。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_STORAGE_ERROR": "本地战报读写失败；已有文件保留，此记录可能缺段。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_OVERSIZED": "战报超出免费上传大小上限，仍保存在本机，尚未上传。",
+  "NINJA_SLAYER_TELEMETRY_REPLAY_SUBMITTED": "已交给 RitsuLib 提交；断网时按其队列重试，远端收录以网站为准。"
 }

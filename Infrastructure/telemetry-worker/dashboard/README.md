@@ -51,19 +51,19 @@ RitsuLib 0.5.12/0.5.20 的 `run_history.completed` 内部是原生 **Serializabl
 | 开始 / 完成结算 | 原生 CardPlayStarted / CardPlayFinished，重复效果逐次计入。自伤死亡可能只有开始而无完成。 |
 | 实付能量 / 星数 | 首发 ResourceInfo.EnergySpent/StarsSpent；重复系列只计一次，不用 EnergyValue/StarValue。指已开始打出系列的支付，不包括在开始之前被取消的操作。 |
 
-基础与升级牌的使用统计合并：原生历史持有可变卡牌引用，结束时的升级状态不能倒推打出时的状态。生成牌可以不经抽牌而打出，**打出÷抽到不是使用概率**。不提供猜测的卡牌伤害归因、综合强度分数、因果胜率或玩家水平评估。
+卡牌总表合并基础与升级；新版机制表按事件发生时的升级状态分别统计。旧版没有即时快照，升级状态保持缺测。生成牌可以不经抽牌而打出，**打出÷抽到不是使用概率**。伤害只关联命令明确提供的卡牌来源；黑炎、空手道和充能球单独列出。不提供综合强度分数或因果胜率。A10 胜率分组需要至少 20 场有效 A10 对局，属于样本分组，不是玩家身份检索。
 
-同种子、同开始时间、同玩家集合的上传按一局去重；优先保留有较多战斗测量的记录。同局胜负冲突的记录排除并提示。旧版经过 JavaScript 后已丢失的 ID 精度无法恢复；新版在发送端把 ID 写为精确十进制字符串。身份发生碰撞的记录排除。
+同种子、同开始时间、同玩家集合的上传按一局去重；先采用较高读档次数对应的最终结果，同一次读档合并不同角色贡献；较多测量只在同一结果中补齐覆盖。同局胜负冲突的记录排除并提示。旧版经过 JavaScript 后已丢失的 ID 精度无法恢复；新版在发送端把 ID 写为精确十进制字符串。身份发生碰撞的记录排除。
 
 查询固定上界并按 timestamp、uuid 排序分页，最多载入最近 50,000 条事件；达到上限会显示截断提示。筛选只作用于已载入数据。少于 20 次提供会提示小样本；20 次并非统计显著性的门槛。持有胜率有存活偏差，建议结合进阶、宿主、版本、模式、人数、读档和抓取时机看待。
 
 ## 新增采集
 
-`balance_schema = ninja_slayer_run_history_v2` 在 `applicant_payload.mod_payload.combats` 保存按楼层/房间键控的战斗汇总。每项含 encounter、rounds、won、采集版本、各角色及卡牌计数。使用独立的 `balance_runs` 申请项，沿用 RitsuLib 的队列、适配器和原有 Worker。忍者杀手设置提供开关与说明。未知授权默认显示开启，但首次告知前不投递；确认立即开启，忽略本次不上传、下次进程启动默认开启，明确拒绝持续关闭。已有 RitsuLib 拒绝和仅有旧 `run_history` 的授权不会被升级覆盖，不补传历史对局。
+`balance_schema = ninja_slayer_run_history_v3` 在 `applicant_payload.mod_payload.combats` 保存按楼层/房间键控的战斗汇总。每项含 encounter、rounds、won、采集版本、各角色及卡牌计数。使用独立的 `balance_runs` 申请项，沿用 RitsuLib 的队列、适配器和原有 Worker。忍者杀手设置提供开关与说明。未知授权默认显示开启，但首次告知前不投递；确认立即开启，忽略本次不上传、下次进程启动默认开启，明确拒绝持续关闭。已有 RitsuLib 拒绝和仅有旧 `run_history` 的授权不会被升级覆盖，不补传历史对局。
 
 Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。新请求的 Worker 校验改动须在分发新版 DLL 前部署。
 
-胜利在 RitsuLib CombatEndedEvent（原生历史清空前）汇总；终局失败在 RunEndedEvent 汇总仍存活的历史。战斗数据通过 RitsuLib RunSavedData 保存，重打同一房间替换该项，不累加已放弃的尝试。此前版本或不同同意状态导致的缺口由覆盖率显示。退出/放弃不会上传半局。
+逐项数据在 CombatHistory.Changed 和原生回调内即时快照，胜利在 CombatEndedEvent 保存该场测量；终局失败在 RunEndedEvent 保存当前测量。战斗数据通过 RitsuLib RunSavedData 保存，重打同一房间替换该项，不累加已放弃的尝试。此前版本或不同同意状态导致的缺口由覆盖率显示。退出/放弃不会上传半局。
 
 ## 本地验证
 
@@ -72,3 +72,13 @@ Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。
 产品 OrbContractTests 验证原生抽牌、手动系列、Echo Form 重复、免费自动打出及精确 ID。FullAutoSlay 和 TelemetryLoss 使用隔离 APPDATA 和本地文件遥测适配器，不向线上发送测试记录；结束时要求每场战斗都能与原生房间数对应。TelemetryLoss 还验证失败结算与重复 OnEnded 的单次上报。
 
 启用过自由操控的整局不会上报平衡统计。标记随该局存档保存，中途关闭开关或读档不恢复统计资格。
+
+## 图表、战报和内容版本
+
+26 类图表由 `charts.mjs` 定义，独立统计聚合在 `chart-data.mjs`。日期、版本、进阶、模式、人数、胜负、读档和 A10 分组写入 URL；比例使用 Wilson 95% 区间。图表显示样本单位和测量点数，缺测不补零。机制表的“涉及战斗”按已完整测量的角色战斗计数，只包含出现该项的战斗；版本不同的机制行不合并。每实付能量伤害包含免费效果的伤害，不能解释为卡牌固有效率。
+
+公开战报使用独立默认关闭授权、`ninja_slayer_replay_v1` 白名单和 RitsuLib 队列。KV 保留 90 天，Pages 定期拉取匿名索引，详情按需读取。路线依次展开房间、读档尝试、回合和行动。未授权队友不公开明细，缺段和过期明确显示。撤销授权保存在本地 journal sidecar，不能被旧存档恢复。
+
+反馈正文静态进入 Pages；原始反馈、截图、日志仍在 KV，不进入 PostHog。KV 的反馈与战报共同使用免费预算，超额响应可重试，不自动付费。详情见 `Docs/privacy.md`。
+
+网站卡牌名称、双语原生格式化文案、升级、关键词与卡图均来自实际 DLL 的 `WebsiteCatalogExporter`。运行 Smoke 的 `Catalog` 模式导出后，用 `tools/release/import-website-catalog.mjs` 校验内容和图片 SHA-256；历史版本只写一次。`Website/content/current.json` 只能在 Workshop 远端版本、说明和包校验通过后推进。查看旧战报使用其版本目录，目录缺失显示缺测，不能用测试规格代替生产内容。

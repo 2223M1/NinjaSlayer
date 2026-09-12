@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss')]
+    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -452,7 +452,13 @@ try {
         -RulePrefix "NinjaSlayer-Smoke-$Channel-$($CandidateSha.Substring(0, 12))" `
         -ForbiddenRoot @($CandidateRoot, $TrustedRoot, $BundleDirectory)
 
-    if ($Mode -eq 'BossReload') {
+    if ($Mode -eq 'Catalog') {
+        $env:NINJASLAYER_CATALOG_OUTPUT = Join-Path $OutputDirectory 'content'
+        $env:NINJASLAYER_CATALOG_VERSION = $BundleVersion
+        Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 0
+        Remove-Item Env:NINJASLAYER_CATALOG_OUTPUT, Env:NINJASLAYER_CATALOG_VERSION
+    }
+    elseif ($Mode -eq 'BossReload') {
         Invoke-SmokePhase -Phase BossFresh -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
@@ -465,6 +471,9 @@ try {
     }
     else {
         Invoke-SmokePhase -Phase Fresh -ExpectedExitCode 20
+        $saveFiles = @(Get-ChildItem -LiteralPath $appDataDirectory -Recurse -File -Filter 'current_run.save')
+        if ($saveFiles.Count -ne 1) { throw 'Expected one isolated native run save after the fresh phase.' }
+        Copy-Item -LiteralPath $saveFiles[0].FullName -Destination (Join-Path $OutputDirectory 'run-save.json')
         Invoke-SmokePhase -Phase Resume -ExpectedExitCode 0
         Invoke-SmokePhase -Phase ReverseFinisher -ExpectedExitCode 0
     }
@@ -475,7 +484,10 @@ try {
         -HarnessLogsDirectory $OutputDirectory
 
     $checkpoints = @(Get-Content -LiteralPath $checkpointPath | ForEach-Object { $_ | ConvertFrom-Json })
-    $requiredCheckpoints = if ($Mode -eq 'BossReload') {
+    $requiredCheckpoints = if ($Mode -eq 'Catalog') {
+        @('catalog.exported')
+    }
+    elseif ($Mode -eq 'BossReload') {
         @('boss.first-snapshot', 'boss.reload-identical', 'boss.same-process-identical', 'boss.second-greeting')
     }
     elseif ($Mode -eq 'FullAutoSlay') {
@@ -517,6 +529,7 @@ try {
             'TelemetryLoss' { 'singleplayer-telemetry-loss' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }
+            'Catalog' { 'runtime-content-export' }
             default { 'singleplayer-first-combat-restart' }
         } }
         repository = $Repository

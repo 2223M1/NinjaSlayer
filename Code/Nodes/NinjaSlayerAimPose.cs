@@ -112,7 +112,9 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_subscribed)
             RenderingServer.FramePreDraw -= SyncNow;
         _subscribed = false;
-        ClearDragPresentation();
+        // Child visuals have already exited; release the projection without applying a facing pose.
+        _turnProjection?.Restore();
+        _turnProjection = null;
         ClearPresentation();
         StopPoseTween();
         _spin?.Restore();

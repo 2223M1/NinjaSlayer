@@ -1,4 +1,8 @@
 import { summarizePublic } from './public-data.mjs';
+import { renderCharts } from './chart-view.mjs';
+import { renderReports } from './replay-view.mjs';
+import { cardPreview, loadCatalog } from './catalog-view.mjs';
+import { wilson } from './charts.mjs';
 const isPages = document.body.dataset.view === 'pages';
 const isPublic = document.body.dataset.view !== 'admin';
 const $ = selector => document.querySelector(selector);
@@ -11,8 +15,8 @@ const el = (tag, className, text) => {
 const percent = (n, d) => d ? `${(100 * n / d).toFixed(1)}%` : '—';
 const time = value => new Date(value).toLocaleString('zh-CN', { hour12: false });
 const categoryName = value => ({ bug: '问题报告', balance: '平衡建议', feedback: '其他反馈', translation: '文本问题' }[value] ?? value);
-let view, displayedCards = [], sort = 'pickRate', direction = -1, page = 'cards', toastTimer;
-const filterIds = ['days', 'version', 'ascension', 'gameVersion', 'mode', 'party', 'reloads'];
+let view, snapshot, displayedCards = [], sort = 'pickRate', direction = -1, page = 'cards', toastTimer;
+const filterIds = ['days', 'version', 'ascension', 'gameVersion', 'mode', 'party', 'reloads', 'outcome', 'a10', 'from', 'to'];
 
 async function api(path, options) {
   const response = await fetch(path, options);
@@ -33,7 +37,23 @@ function fillOptions(select, values, first, label = value => value) {
 }
 async function loadView() {
   const query = new URLSearchParams(Object.fromEntries(filterIds.map(key => [key, $(`#${key}`).value])));
-  view = isPages ? summarizePublic(await api('./data.json'), Object.fromEntries(query)) : await api(`/api/view?${query}`);
+  snapshot = await api(isPages ? './data.json' : '/api/snapshot');
+  view = isPages ? summarizePublic(snapshot, Object.fromEntries(query)) : await api(`/api/view?${query}`);
+  const versionCatalog = await loadCatalog(query.get('version') || snapshot.currentVersion);
+  const models = new Map((versionCatalog?.languages.zhs ?? []).map(model => [model.id, model]));
+  snapshot.entities = models;
+  snapshot.labels = versionCatalog?.labels?.zhs ?? {};
+  const measuredVersions = [...new Set(snapshot.groups.flatMap(group => (group.mechanisms ?? []).map(row => row.version)))];
+  snapshot.measuredContent = new Map(await Promise.all(measuredVersions.map(async version => {
+    const catalog = await loadCatalog(version);
+    return [version, new Map((catalog?.languages.zhs ?? []).map(model => [model.id, model]))];
+  })));
+  const cardLabels = card => {
+    const model = models.get(card.id);
+    return { ...card, name: model?.variants?.[0].name ?? card.id, image: model?.image, thumbnail: model?.thumbnail };
+  };
+  view.cards = view.cards.map(cardLabels);
+  snapshot.catalog = snapshot.catalog.map(cardLabels);
   fillOptions($('#version'), view.versions, '所有版本');
   fillOptions($('#ascension'), view.ascensions, '所有进阶', value => `进阶 ${value}`);
   fillOptions($('#gameVersion'), view.gameVersions, '所有宿主');
@@ -47,9 +67,9 @@ async function loadView() {
   $('#feedback-nav-count').textContent = view.sources.feedback.at ? view.feedback.length : '—';
   $('#sample-detail').textContent = connected ? `${view.playerSamples} 个忍者杀手角色样本 · 已去重` : '等待连接对局数据';
   $('#win-detail').textContent = connected ? `${view.wins} 场通关 / ${view.runs} 场完成对局` : '已完成且未放弃的对局';
-  for (const [key, name] of [['telemetry', '对局统计'], ['feedback', '玩家反馈']]) {
-    const source = view.sources[key];
-    $(`#${key}-state`).textContent = `${name} · ${{ ready: source.label, error: '同步失败', unconnected: '未连接', unloaded: '等待同步' }[source.state]}`;
+  for (const [key, name] of [['telemetry', '对局统计'], ['feedback', '玩家反馈'], ['replays', '公开战报']]) {
+    const source = view.sources[key] ?? {state:'unloaded'};
+    $(`#${key}-state`).textContent = `${name} · ${{ ready: source.label ?? '已同步', error: '同步失败', unconnected: '未连接', unloaded: '等待同步' }[source.state]}`;
     $(`#${key}-state`).className = `source-pill ${source.state}`;
   }
   const latest = [view.sources.telemetry.at, view.sources.feedback.at].filter(Boolean).sort().at(-1);
@@ -65,6 +85,8 @@ async function loadView() {
   $('#notice').hidden = !notices.length;
   $('#combat-coverage').textContent = `战斗测量覆盖：${view.measuredCombats} / ${view.totalCombats} 个角色战斗。旧版或未采集记录不补零；跨版本读档时，版本筛选也会过滤测量时的版本。`;
   renderCards(); renderTrend(); renderFeedback();
+  if (page === 'charts') renderCharts(snapshot, Object.fromEntries(query), openCardId);
+  if (page === 'reports') renderReports(snapshot, Object.fromEntries(query), openCardId);
 }
 function renderCards() {
   const use = $('#table-mode').value === 'use';
@@ -94,6 +116,7 @@ function renderCards() {
   for (const card of displayedCards) {
     const row = el('tr');
     const name = el('td'), link = el('button', 'card-link');
+    if (card.thumbnail) { const image = el('img', 'card-thumbnail'); image.src = `./content/${card.thumbnail}`; image.alt = ''; image.loading = 'lazy'; link.append(image); }
     link.append(el('span', 'card-name', card.name), el('span', 'card-type', card.type));
     link.addEventListener('click', () => openCard(card)); name.append(link); name.title = card.id;
     const rarityCell = el('td'); rarityCell.append(el('span', `badge ${card.rarity === '蓝卡' ? 'blue' : card.rarity === '金卡' ? 'gold' : ''}`, card.rarity));
@@ -104,6 +127,7 @@ function renderCards() {
     }
     const rateCell = el('td', 'number');
     const rate = el('span', 'rate', percent(card.picked, card.offered));
+    if (card.offered) { const ci = wilson(card.picked, card.offered); rate.title = `Wilson 95% CI ${(ci[0] * 100).toFixed(1)}–${(ci[1] * 100).toFixed(1)}% · n=${card.offered}`; }
     if (card.offered) {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('viewBox', '0 0 100 10'); svg.setAttribute('aria-hidden', 'true');
@@ -128,7 +152,14 @@ function renderCards() {
   $('#card-count').textContent = displayedCards.length;
   $('#table-summary').textContent = `${displayedCards.length} 张卡牌 · ${view.playerSamples} 个角色样本`;
 }
-function openCard(card) {
+function openCardId(id, version) {
+  const card = view.cards.find(card => card.id === id);
+  if (card) openCard(card, version);
+  else { $('#card-detail').replaceChildren(); $('#card-detail-title').textContent = id;
+    cardPreview(id, version || $('#version').value || snapshot.currentVersion, $('#card-preview'), openCardId).catch(error => toast(error.message));
+    if (!$('#card-dialog').open) $('#card-dialog').showModal(); }
+}
+function openCard(card, version) {
   $('#card-detail-title').textContent = card.name;
   const grid = el('div', 'detail-grid');
   const countRate = (n, d) => `${percent(n, d)} (${n}/${d})`;
@@ -143,7 +174,8 @@ function openCard(card) {
     const box = el('div'); box.append(el('small', '', label), el('strong', '', value)); grid.append(box);
   }
   $('#card-detail').replaceChildren(grid);
-  $('#card-dialog').showModal();
+  cardPreview(card.id, version || $('#version').value || snapshot.currentVersion, $('#card-preview'), openCardId).catch(error => toast(error.message));
+  if (!$('#card-dialog').open) $('#card-dialog').showModal();
 }
 function renderTrend() {
   const entries = view.trend.slice(-14);
@@ -214,11 +246,18 @@ for (const button of document.querySelectorAll('[data-close]')) button.addEventL
 for (const button of document.querySelectorAll('[data-page]')) button.addEventListener('click', () => {
   page = button.dataset.page;
   for (const nav of document.querySelectorAll('[data-page]')) nav.classList.toggle('active', nav === button);
-  $('#cards-page').hidden = page !== 'cards'; $('#feedback-page').hidden = page !== 'feedback'; $('#export').hidden = page !== 'cards';
-  $('#page-title').textContent = page === 'cards' ? '卡池观察' : '玩家来信';
-  $('#page-subtitle').textContent = page === 'cards' ? '卡牌选择、战斗使用与玩家反馈。' : '经玩家确认公开的问题与建议。';
+  for (const name of ['cards', 'charts', 'reports', 'feedback']) $(`#${name}-page`).hidden = page !== name;
+  $('#export').hidden = !['cards','charts'].includes(page);
+  $('#page-title').textContent = { cards: '卡池观察', charts: '平衡图表', reports: '公开战报', feedback: '玩家来信' }[page];
+  $('#page-subtitle').textContent = '真实样本 · 原生记录 · 忍者杀手';
+  const url = new URL(location.href); url.searchParams.set('page', page); history.replaceState(null, '', url);
+  loadView().catch(error => toast(error.message));
 });
-for (const id of filterIds) $(`#${id}`).addEventListener('change', () => loadView().catch(error => toast(error.message)));
+for (const id of filterIds) $(`#${id}`).addEventListener('change', () => {
+  const url = new URL(location.href);
+  for (const key of filterIds) { if ($(`#${key}`).value) url.searchParams.set(key, $(`#${key}`).value); else url.searchParams.delete(key); }
+  history.replaceState(null, '', url); loadView().catch(error => toast(error.message));
+});
 $('#table-mode').addEventListener('change', () => { sort = $('#table-mode').value === 'use' ? 'finished' : 'pickRate'; direction = -1; renderCards(); });
 for (const id of ['card-search', 'rarity']) $(`#${id}`).addEventListener('input', renderCards);
 for (const id of ['feedback-search', 'feedback-category']) $(`#${id}`).addEventListener('input', renderFeedback);
@@ -246,13 +285,21 @@ $('#import-file').addEventListener('change', async event => {
 }
 $('#export').addEventListener('click', () => {
   const cell = value => `"${String(value).replace(/^[=+@-]/, "'$&").replaceAll('"', '""')}"`;
-  const rows = [['卡牌', '模型 ID', '稀有度', '提供次数', '选中次数', '抓取率', '持有角色数', '持有率', '持有通关率', '平均抓取楼层', '曾抓取样本', '曾抓取通关', '只跳过样本', '只跳过通关', '移除', '升级', '涉及战斗', '抽到', '手动打出', '自动打出', '开始结算', '完成结算', '实付能量', '实付星数'],
+  const rows = page==='charts' ? [['图表', $('#chart-title').textContent],['说明', $('#chart-note').textContent],['分组','统计值','样本 n','95% 置信区间'],
+    ...[...$('#chart-rows').rows].map(row=>[...row.cells].map(cell=>cell.textContent))] : [['卡牌', '模型 ID', '稀有度', '提供次数', '选中次数', '抓取率', '持有角色数', '持有率', '持有通关率', '平均抓取楼层', '曾抓取样本', '曾抓取通关', '只跳过样本', '只跳过通关', '移除', '升级', '涉及战斗', '抽到', '手动打出', '自动打出', '开始结算', '完成结算', '实付能量', '实付星数'],
     ...displayedCards.map(card => [card.name, card.id, card.rarity, card.offered, card.picked, percent(card.picked, card.offered), card.held, percent(card.held, view.playerSamples), percent(card.wins, card.held),
       card.picked ? card.pickFloorTotal / card.picked : '', card.chosenRuns, card.chosenWins, card.skippedRuns, card.skippedWins, card.removed, card.upgraded,
       card.combatSamples, ...['drawn', 'manual_plays', 'auto_plays', 'started', 'finished', 'energy_spent', 'stars_spent'].map(field => card.combatSamples ? card[field] : '')])];
   const url = URL.createObjectURL(new Blob(['\ufeff', rows.map(row => row.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
-  const link = el('a'); link.href = url; link.download = `忍者杀手_卡池统计_${new Date().toISOString().slice(0, 10)}.csv`; link.click();
+  const link = el('a'); link.href = url; link.download = `忍者杀手_${page==='charts'?'图表数据':'卡池统计'}_${new Date().toISOString().slice(0, 10)}.csv`; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
-await loadView().then(() => { if (!isPublic) return refresh(); }).catch(error => toast(error.message));
+await loadView().then(async () => {
+  const params = new URLSearchParams(location.search);
+  for (const key of filterIds) if (params.has(key)) $(`#${key}`).value = params.get(key);
+  const requested = params.get('page');
+  if (['cards', 'charts', 'reports', 'feedback'].includes(requested)) document.querySelector(`[data-page="${requested}"]`).click();
+  else await loadView();
+  if (!isPublic) return refresh();
+}).catch(error => toast(error.message));
 setInterval(() => loadView().catch(error => toast(error.message)), 60_000);

@@ -101,6 +101,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         if (existing is not null)
         {
             existing.StackCount += amount;
+            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", player.Creature, amount);
             existing.RefreshVisuals();
             existing.ActivatePassiveFeedback();
             return;
@@ -115,6 +116,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         await OrbCmd.Channel(choiceContext, orb, player);
         if (player.PlayerCombatState.OrbQueue.Orbs.Contains(orb))
         {
+            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", player.Creature, amount);
             orb.RefreshVisuals();
             orb.ActivatePassiveFeedback();
         }
@@ -168,6 +170,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         if (consumeOneStock && fired)
         {
             StackCount--;
+            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", Owner.Creature, -1);
             if (StackCount == 0)
             {
                 RemoveDepletedOrb();
@@ -194,6 +197,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         }
 
         StackCount = 0;
+        Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", Owner.Creature, -stock);
         RefreshVisuals();
         for (int index = 0; index < stock * triggersPerStock; index++)
         {
@@ -263,6 +267,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return;
         }
 
+        Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", Owner.Creature, resolution.RemainingStock - StackCount);
         StackCount = resolution.RemainingStock;
         if (StackCount == 0)
         {
@@ -306,6 +311,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
         if (Owner.Creature.GetPower<StarlessNightRedesignPower>() is { } starless)
         {
+            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_converted", Owner.Creature, 1);
             await starless.GenerateStrongShuriken((int)EvokeVal);
         }
         else
@@ -319,6 +325,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
                 () => ActivateEvokeFeedback(targets));
         }
         // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
+        Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_evoked", Owner.Creature, 1);
         if (notifyEvokeHooks && Owner.Creature.CombatState is { } combatState)
         {
             await Hook.AfterOrbEvoked(choiceContext, combatState, this, targets);

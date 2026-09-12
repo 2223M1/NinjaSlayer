@@ -24,7 +24,7 @@ public partial class OrbContractRunner
         MegaCrit.Sts2.Core.Context.LocalContext.NetId = 1;
         MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitSettingsDataForTest();
         MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitPrefsDataForTest();
-        VerifyCardPresentation();
+        await VerifyCardPresentation();
         AccessTools.Property(typeof(MegaCrit.Sts2.Core.Runs.RunManager), "NetService").SetValue(
             MegaCrit.Sts2.Core.Runs.RunManager.Instance, new MegaCrit.Sts2.Core.Multiplayer.NetSingleplayerGameService());
         await VerifyScryAndSly();
@@ -36,7 +36,7 @@ public partial class OrbContractRunner
         await VerifyTurnAndSelectionEffects();
     }
 
-    private static void VerifyCardPresentation()
+    private static async Task VerifyCardPresentation()
     {
         MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
         string localizationRoot = Path.GetFullPath(Path.Combine(ProjectSettings.GlobalizePath("res://"), "../../NinjaSlayer/localization"));
@@ -63,10 +63,58 @@ public partial class OrbContractRunner
                 VerifyCharacterText();
                 VerifyHoverTips(combat);
             }
+            await VerifyDynamicCardNumbers();
         }
         GD.Print("PASS bilingual base/upgraded card descriptions");
         if (_hasPresentationResources)
             GD.Print("PASS mechanism tips, generated previews and native event text");
+    }
+
+    private static async Task VerifyDynamicCardNumbers()
+    {
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            var palm = AddCard<PalmThrustRedesignV1>(combat, upgraded: upgraded);
+            var adjustment = AddCard<CombatAdjustmentRedesignV1>(combat, upgraded: upgraded);
+            var judge = AddCard<Prejudge>(combat, upgraded: upgraded);
+            var storm = AddCard<StormFistRedesignV1>(combat, upgraded: upgraded);
+            AddCard<ChadoEnergyRedesignV1>(combat, PileType.Exhaust);
+
+            void Expect(CardModel card, int expected, bool block = false)
+            {
+                card.UpdateDynamicVarPreview(CardPreviewMode.Normal, combat.Enemy, card.DynamicVars);
+                string text = System.Text.RegularExpressions.Regex.Replace(
+                    card.GetDescriptionForPile(PileType.Hand, combat.Enemy), @"\[[^\]]*\]", "");
+                string pattern = block ? @"(?:获得|Gain\s+)(\d+)" : @"(?:造成|Deal\s+)(\d+)";
+                var match = System.Text.RegularExpressions.Regex.Match(text, pattern);
+                Require(match.Success && int.Parse(match.Groups[1].Value) == expected,
+                    $"{card.Id} must display {expected} {(block ? "block" : "damage")}, upgraded={upgraded}: {text}");
+            }
+
+            await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+            await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
+            Expect(palm, 8);
+            Expect(adjustment, 10);
+            Expect(judge, 6, block: true);
+            Expect(storm, upgraded ? 15 : 11);
+
+            await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, -5, combat.Player.Creature, null);
+            await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, -4, combat.Player.Creature, null);
+            Expect(palm, 3);
+            Expect(adjustment, 5);
+            Expect(judge, 2, block: true);
+            Expect(storm, upgraded ? 10 : 6);
+
+            await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
+            await PowerCmd.Apply<FrailPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
+            await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
+            Expect(palm, 3);
+            Expect(adjustment, 5);
+            Expect(judge, 1, block: true);
+            Expect(storm, upgraded ? 11 : 6);
+        }
+        GD.Print("PASS native card-number previews: positive/negative Strength and Dexterity, Weak, Vulnerable, Frail, exhaust scaling and upgrades");
     }
 
     private static T AddCard<T>(OrbCombat combat, PileType pile = PileType.Hand, bool upgraded = false) where T : CardModel

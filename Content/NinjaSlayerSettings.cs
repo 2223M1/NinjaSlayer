@@ -57,6 +57,11 @@ public static class NinjaSlayerSettings
                         static () => { }), // The native consent setter persists immediately.
                     NinjaSlayerTelemetryConsent.Text("DESCRIPTION"))
                 .AddParagraph("telemetry_status", ModSettingsText.DynamicFullRefreshOnly(NinjaSlayerTelemetryConsent.StatusText))
+                .AddToggle("public_replay", NinjaSlayerTelemetryConsent.Text("REPLAY_TOGGLE"),
+                    ModSettingsBindings.Callback(modId, "public_replay",
+                        () => NinjaSlayerTelemetryConsent.ReplayEnabled, NinjaSlayerTelemetryConsent.SetReplayEnabled,
+                        static () => { }), NinjaSlayerTelemetryConsent.Text("REPLAY_DESCRIPTION"))
+                .AddParagraph("replay_status", ModSettingsText.DynamicFullRefreshOnly(NinjaSlayerTelemetryConsent.ReplayStatusText))
                 .AddButton("observatory", NinjaSlayerTelemetryConsent.Text("WEBSITE"),
                     NinjaSlayerTelemetryConsent.Text("OPEN_WEBSITE"),
                     () => Godot.OS.ShellOpen(NinjaSlayerTelemetryConsent.ObservatoryUrl)))

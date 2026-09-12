@@ -13,6 +13,7 @@ import { feedbackTombstoneKey } from './feedback-storage.js';
 import { AnonymousQuotaGuard, consumeDailyQuota, enforceMinuteRateLimit } from './security.js';
 import { UUID_PATTERN, validateTelemetryBody } from './validation.js';
 import { handleObservatory } from './observatory.js';
+import { acceptReplay, readPublicReplay } from './replays.js';
 
 async function handleTelemetry(request, env, ctx) {
   if (request.method !== 'POST') {
@@ -46,9 +47,16 @@ async function handleTelemetry(request, env, ctx) {
   const quotaResponse = await consumeDailyQuota(env, rateLimit.clientKey, 'telemetry', bodyBytes.byteLength);
   if (!quotaResponse.ok) return quotaResponse;
 
+  for (const event of body.batch.filter(event => event.event === 'battle_report.completed')) {
+    const response = await acceptReplay(event, env);
+    if (!response.ok) return response;
+  }
+  const balanceEvents = body.batch.filter(event => event.event === 'run_history.completed');
+  if (balanceEvents.length === 0) return jsonResponse(200, { ok: true, accepted: body.batch.length, rejected: 0 });
+
   const cleanBody = {
     api_key: env.POSTHOG_API_KEY,
-    batch: body.batch.map((event) => ({
+    batch: balanceEvents.map((event) => ({
       event: event.event,
       properties: event.properties,
       distinct_id: event.distinct_id,
@@ -115,6 +123,14 @@ async function handleFeedback(request, env) {
 
 export async function handleRequest(request, env, ctx = { waitUntil() {} }) {
   const path = new URL(request.url).pathname.replace(/\/+$/, '') || '/';
+  if (path === '/observatory/replays' || path.startsWith('/observatory/replays/')) {
+    if (request.method !== 'GET') return readPublicReplay(request, env);
+    const cached = await caches.default.match(request);
+    if (cached) return cached;
+    const response = await readPublicReplay(request, env);
+    if (response.ok) ctx.waitUntil(caches.default.put(request, response.clone()));
+    return response;
+  }
   if (path.startsWith('/observatory/')) return handleObservatory(request, env);
   if (path === '/feedback') return handleFeedback(request, env);
   if (path === '/') return handleTelemetry(request, env, ctx);

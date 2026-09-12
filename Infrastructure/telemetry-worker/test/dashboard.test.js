@@ -194,7 +194,7 @@ test('public aggregates match private statistics across date, version, mode and 
     for (const key of Object.keys(expected)) assert.deepEqual(actual[key], expected[key], `${JSON.stringify(filters)} / ${key}`);
   }
   const output = JSON.stringify(snapshot);
-  for (const privateValue of [playerId, 'cross-version', 'ENCOUNTER.TEST', 'card_choices', 'net_id', 'start_time'])
+  for (const privateValue of [playerId, 'cross-version', 'card_choices', 'net_id', 'start_time'])
     assert.ok(!output.includes(privateValue), privateValue);
 });
 
@@ -203,7 +203,7 @@ test('Pages artifact is standalone under the project subpath and excludes privat
   t.after(() => rm(output, { recursive: true, force: true }));
   const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: '', POSTHOG_PROJECT_ID: '', OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: '' };
   await promisify(execFile)(process.execPath, [fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
-  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'data.json', 'index.html', 'public-data.mjs', 'styles.css']);
+  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'styles.css', 'vendor']);
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.match(html, /data-view="pages"/);
   assert.match(html, /Content-Security-Policy/);

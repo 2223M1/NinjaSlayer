@@ -1,4 +1,6 @@
 using MegaCrit.Sts2.Core.CardSelection;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
@@ -61,7 +63,11 @@ public static class ScryCmd
         }
         else
         {
+            int historyStart = CombatManager.Instance.History.Entries.Count();
             await CardCmd.Discard(choiceContext, cardsToDiscard);
+            int actual = CombatManager.Instance.History.Entries.Skip(historyStart).OfType<CardDiscardedEntry>()
+                .Select(entry => entry.Card).Intersect(cardsToDiscard).Count();
+            Telemetry.NinjaSlayerCombatTelemetry.Mechanic("scry_discard", player.Creature, actual);
         }
 
         int discardedAmount = cardsToDiscard.Count;

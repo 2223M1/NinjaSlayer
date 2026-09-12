@@ -6,8 +6,7 @@ on:
     paths:
       - '.github/workflows/observatory.yml'
       - 'Infrastructure/telemetry-worker/**'
-      - 'NinjaSlayer/localization/zhs/cards.json'
-      - 'Tests/NinjaSlayer.OrbContractTests/card-metadata.json'
+      - 'Website/content/**'
   workflow_dispatch:
   schedule:
     - cron: '7,22,37,52 * * * *'
@@ -35,7 +34,9 @@ jobs:
           POSTHOG_QUERY_HOST: ${{ secrets.POSTHOG_QUERY_HOST }}
           OBSERVATORY_READ_TOKEN: ${{ secrets.OBSERVATORY_READ_TOKEN }}
           OBSERVATORY_PREVIOUS_URL: https://2223m1.github.io/NinjaSlayer/data.json
-        run: node Infrastructure/telemetry-worker/dashboard/build-pages.mjs build/pages
+        run: |
+          npm ci --prefix Infrastructure/telemetry-worker
+          node Infrastructure/telemetry-worker/dashboard/build-pages.mjs build/pages
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: build/pages

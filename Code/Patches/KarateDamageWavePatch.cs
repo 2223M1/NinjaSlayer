@@ -114,7 +114,10 @@ public sealed class KarateDamageWavePatch : IPatchMethod
 
         using var _ = ScreenShakeSuppressionContext.Suppress();
         if (targets.Count > 0)
-            await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
+        {
+            var damage = await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
+            Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(damage, "karate");
+        }
 
         int amountBeforeConsumption = karate.Amount;
         await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);

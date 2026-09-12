@@ -19,6 +19,7 @@ public static class NinjaSlayerBalanceTelemetry
     public const string BalanceContextContributionId = "ninja_slayer_balance_context";
 
     public const string BalanceRequestId = "balance_runs";
+    public const string ReplayRequestId = "public_replays";
 
     public static void Register()
     {
@@ -48,6 +49,13 @@ public static class NinjaSlayerBalanceTelemetry
                         Description = "Completed runs: card reward choices, final decks, results and per-combat draws, plays and resources paid, for balance analysis.",
                         DescriptionText = NinjaSlayerTelemetryConsent.Text("DESCRIPTION"),
                         ContributionSubscriptions = [BalanceContextContributionId]
+                    },
+                    new TelemetryRequest
+                    {
+                        RequestId = ReplayRequestId,
+                        Category = TelemetryDataCategory.RunHistory,
+                        Description = "Publish an anonymous action-by-action battle report for 90 days. Off until explicitly enabled.",
+                        DescriptionText = NinjaSlayerTelemetryConsent.Text("REPLAY_DESCRIPTION")
                     }
                 ],
             }
@@ -58,8 +66,7 @@ public static class NinjaSlayerBalanceTelemetry
     private static void ObserveRunEnded(RunEndedEvent evt)
     {
         if (evt.IsAbandoned
-            || LocalContext.GetMe(evt.Run)?.CharacterId != ModelDb.Character<NinjaSlayerCharacter>().Id
-            || !TelemetryApi.GetClient(NinjaSlayerIds.ModId).IsEnabled(BalanceRequestId)) return;
+            || LocalContext.GetMe(evt.Run)?.CharacterId != ModelDb.Character<NinjaSlayerCharacter>().Id) return;
 
         // RitsuLib publishes this synchronously from RunManager.OnEnded while State still owns the run.
         RunState run = RunManager.Instance.DebugOnlyGetState()
@@ -67,6 +74,13 @@ public static class NinjaSlayerBalanceTelemetry
         if (NinjaSlayerFreeControl.WasUsed(run)) return;
         if (!evt.IsVictory && run.CurrentRoom is CombatRoom room)
             NinjaSlayerCombatTelemetry.Record(run, room, won: false);
+
+        if (NinjaSlayerReplay.BuildUpload(run, evt.Run, evt.IsVictory) is { } replay)
+        {
+            TelemetryApi.GetClient(NinjaSlayerIds.ModId).CapturePayload("battle_report.completed", ReplayRequestId, replay);
+            NinjaSlayerReplay.Submitted();
+        }
+        if (!TelemetryApi.GetClient(NinjaSlayerIds.ModId).IsEnabled(BalanceRequestId)) return;
 
         TelemetryApi.GetClient(NinjaSlayerIds.ModId).CapturePayload("run_history.completed", BalanceRequestId,
             new JsonObject
@@ -116,7 +130,7 @@ public static class NinjaSlayerBalanceTelemetry
             return new JsonObject
             {
                 ["version"] = NinjaSlayerVersion.Current,
-                ["balance_schema"] = "ninja_slayer_run_history_v2",
+                ["balance_schema"] = "ninja_slayer_run_history_v3",
             };
         }
     }
