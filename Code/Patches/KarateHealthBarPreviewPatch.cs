@@ -50,7 +50,6 @@ public sealed class KarateCardPreviewTargetPatch : IPatchMethod
 
     private static bool CanPreviewKarate(CardModel card, Creature target) =>
         card.Type == CardType.Attack
-        && KarateTriggerRules.CanTriggerFromCardSource(card)
         && card.Owner.Creature.CombatState != null
         && card.Owner.Creature.CombatState == target.CombatState;
 }

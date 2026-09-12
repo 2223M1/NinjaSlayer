@@ -48,6 +48,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         ActionState state = GetOrCreateState(creature, creatureNode);
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(creature);
         Creature? target = NinjaSlayerAttackExecution.Target ?? NinjaSlayerAimPose.Focus(creature);
+        Task kick = Task.CompletedTask;
         if (pose != null && !heldTornado)
         {
             if (!state.HasPlayedAction || !ReferenceEquals(state.LastTarget, target))
@@ -56,7 +57,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             state.LastTarget = target;
             pose.AttackForwardSign = state.ForwardSign;
             pose.BeginAction(target);
-            await pose.PrepareKick(NinjaSlayerAttackExecution.CurrentPlay);
+            kick = pose.PrepareKick(NinjaSlayerAttackExecution.CurrentPlay);
             if (creature.IsDead || !States.TryGetValue(creature, out ActionState? current)
                 || !ReferenceEquals(current, state) || pose.IsExclusive)
                 return;
@@ -123,7 +124,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                 duration)
             .SetTrans(Tween.TransitionType.Linear);
 
-        bool completed = await TweenPlayback.AwaitCompletion(tween, creatureNode);
+        Task<bool> playback = TweenPlayback.AwaitCompletion(tween, creatureNode);
+        await Task.WhenAll(kick, playback);
+        bool completed = await playback;
         if (completed && IsCurrentState(creature, state))
         {
             Apply(1f);

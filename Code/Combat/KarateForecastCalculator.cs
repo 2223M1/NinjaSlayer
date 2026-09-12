@@ -18,8 +18,7 @@ public static class KarateForecastCalculator
         }
 
         bool isPreviewTarget = previewCard?.Type == CardType.Attack
-            && KarateCombatPreviewContext.TryGetCard(target) == previewCard
-            && KarateTriggerRules.CanTriggerFromCardSource(previewCard);
+            && KarateCombatPreviewContext.TryGetCard(target) == previewCard;
         int hits = isPreviewTarget ? ResolveHitCount(previewCard!, target) : 1;
         return KarateDamageMath.ForecastDamage(stacks, hits, isPreviewTarget);
     }
@@ -32,8 +31,7 @@ public static class KarateForecastCalculator
         }
 
         bool isPreviewTarget = previewCard?.Type == CardType.Attack
-            && KarateCombatPreviewContext.TryGetCard(target) == previewCard
-            && KarateTriggerRules.CanTriggerFromCardSource(previewCard);
+            && KarateCombatPreviewContext.TryGetCard(target) == previewCard;
         int hits = isPreviewTarget ? ResolveHitCount(previewCard!, target) : 1;
         return KarateDamageMath.HpPreviewDamage(stacks, hits, isPreviewTarget);
     }

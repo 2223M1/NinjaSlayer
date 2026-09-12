@@ -47,8 +47,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
     {
         if (!__runOriginal
             || dealer == null
-            || !props.IsPoweredAttack()
-            || !KarateTriggerRules.CanTriggerFromCardSource(cardSource))
+            || !props.IsPoweredAttack())
         {
             return;
         }
@@ -82,8 +81,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
         List<Creature> targets = results
             .Where(result => KarateWaveRules.IsEligibleHit(
                 result.TotalDamage,
-                result.Receiver.Side != dealer.Side,
-                !result.Receiver.IsDead))
+                result.Receiver.Side != dealer.Side))
             .Select(result => result.Receiver)
             .Distinct()
             .ToList();
@@ -93,7 +91,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
             await TriggerKarateWave(
                 choiceContext,
                 dealer,
-                targets,
+                targets.Where(target => !target.IsDead).ToList(),
                 karate,
                 wave.BonusDamagePerTarget,
                 cardSource);
@@ -101,7 +99,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
 
         return results;
     }
-private static async Task TriggerKarateWave(
+    private static async Task TriggerKarateWave(
         PlayerChoiceContext choiceContext,
         Creature dealer,
         List<Creature> targets,
@@ -109,13 +107,14 @@ private static async Task TriggerKarateWave(
         int extraDamage,
         CardModel? cardSource)
     {
-        if (targets.Count == 0 || extraDamage <= 0)
+        if (extraDamage <= 0)
         {
             return;
         }
 
         using var _ = ScreenShakeSuppressionContext.Suppress();
-        await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
+        if (targets.Count > 0)
+            await CreatureCmd.Damage(choiceContext, targets, extraDamage, ValueProp.Unpowered, dealer);
 
         int amountBeforeConsumption = karate.Amount;
         await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);

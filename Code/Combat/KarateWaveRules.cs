@@ -10,8 +10,8 @@ public readonly record struct KarateWaveResolution(
 
 public static class KarateWaveRules
 {
-    public static bool IsEligibleHit(int totalDamage, bool isOpposingSide, bool canReceiveBonus) =>
-        totalDamage > 0 && isOpposingSide && canReceiveBonus;
+    public static bool IsEligibleHit(int totalDamage, bool isOpposingSide) =>
+        totalDamage > 0 && isOpposingSide;
 
     public static KarateWaveResolution Resolve(int stacks, bool isPoweredAttack, int eligibleTargetCount)
     {

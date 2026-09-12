@@ -28,6 +28,7 @@ internal sealed partial class SmokeController
         var flashes = flames.Select(flame => ((NHandCardHolder)room.Ui.Hand.GetCardHolder(flame)!).GetNode<Control>("Flash")).ToArray();
         bool[] observed = new bool[flames.Length];
         bool captured = false;
+        bool simultaneous = false;
         var elapsed = System.Diagnostics.Stopwatch.StartNew();
         Task play = CardCmd.AutoPlay(choice, attack, target);
         // Instant mode can finish card play before the native flash tween's first frame.
@@ -35,6 +36,7 @@ internal sealed partial class SmokeController
         {
             for (int i = 0; i < flashes.Length; i++)
                 observed[i] |= flashes[i].IsVisibleInTree() && flashes[i].Modulate.A > 0.05f;
+            simultaneous |= flashes.All(flash => flash.IsVisibleInTree() && flash.Modulate.A > 0.05f);
             if (!captured && observed.All(value => value))
             {
                 await CapturePresentation("black-flame-native-flash");
@@ -44,6 +46,7 @@ internal sealed partial class SmokeController
         }
         await play;
         Require(observed.All(value => value), "Every triggered hand Black Flame must show the native Flash animation.");
+        Require(simultaneous, "All held Black Flames must flash together in the same rendered frame.");
         Require(flames.All(flame => flame.Pile?.Type == PileType.Hand), "Black Flame feedback moved a card out of hand.");
         await Task.Delay(600);
         Require(flashes.All(flash => flash.Modulate.A < 0.01f), "Native Black Flame flash did not fade out.");

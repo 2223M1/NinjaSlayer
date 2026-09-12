@@ -214,17 +214,20 @@ internal sealed partial class SmokeController
     private async Task PlayWithStationaryCombatUi(CardModel card, Creature target)
     {
         NCreature actor = NCombatRoom.Instance!.GetCreatureNode(card.Owner.Creature)!;
-        Control stateDisplay = actor.GetNode<Control>("%HealthBar");
-        CanvasItem combatLayout = actor.GetParent<CanvasItem>();
-        Vector2 UiPosition() => combatLayout.GetGlobalTransformWithCanvas().AffineInverse()
-            * stateDisplay.GetGlobalTransformWithCanvas().Origin;
-        Vector2 root = actor.Position;
-        Vector2 ui = UiPosition();
+        NCreature[] actors = card is AlabamaDropRedesignV1
+            ? [actor, NCombatRoom.Instance.GetCreatureNode(target)!] : [actor];
+        Vector2 UiPosition(NCreature actor) => actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+            * actor.GetNode<Control>("%HealthBar").GetGlobalTransformWithCanvas().Origin;
+        Vector2[] roots = actors.Select(actor => actor.Position).ToArray();
+        Vector2[] ui = actors.Select(UiPosition).ToArray();
         float maxRootShift = 0f, maxUiShift = 0f;
         void Sample()
         {
-            maxRootShift = Math.Max(maxRootShift, actor.Position.DistanceTo(root));
-            maxUiShift = Math.Max(maxUiShift, UiPosition().DistanceTo(ui));
+            for (int i = 0; i < actors.Length; i++)
+            {
+                maxRootShift = Math.Max(maxRootShift, actors[i].Position.DistanceTo(roots[i]));
+                maxUiShift = Math.Max(maxUiShift, UiPosition(actors[i]).DistanceTo(ui[i]));
+            }
         }
         RenderingServer.FramePreDraw += Sample;
         try

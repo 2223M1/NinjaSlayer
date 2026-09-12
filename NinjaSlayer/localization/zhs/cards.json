@@ -74,7 +74,7 @@
   "NINJA_SLAYER_CARD_METABOLIC_ACCELERATION_REDESIGN_V1.title": "嘶哈",
   "NINJA_SLAYER_CARD_METABOLIC_ACCELERATION_REDESIGN_V1.description": "[gold]消耗[/gold]1张[gold]手牌[/gold]中的[gold]茶道[/gold]。\n回复{Heal:diff()}点生命。",
   "NINJA_SLAYER_CARD_ALABAMA_DROP_REDESIGN_V1.title": "阿拉巴马落",
-  "NINJA_SLAYER_CARD_ALABAMA_DROP_REDESIGN_V1.description": "造成你[gold]空手道[/gold]层数{ExtraDamage:diff()}倍的伤害。\n将{Dazed}张[gold]晕眩[/gold]加入你的[gold]抽牌堆[/gold]。",
+  "NINJA_SLAYER_CARD_ALABAMA_DROP_REDESIGN_V1.description": "造成你[gold]空手道[/gold]层数{ExtraDamage:diff()}倍的伤害。{InCombat:\\n（造成{CalculatedDamage:diff()}点伤害）|}\n将{Dazed}张[gold]晕眩[/gold]加入你的[gold]抽牌堆[/gold]。",
   "NINJA_SLAYER_CARD_ADVERSITY_CARAPACE_REDESIGN_V1.title": "蓄势",
   "NINJA_SLAYER_CARD_ADVERSITY_CARAPACE_REDESIGN_V1.description": "每当[gold]茶道[/gold]被[gold]消耗[/gold]时，获得{VigorPower:diff()}点[gold]活力[/gold]。",
   "NINJA_SLAYER_CARD_RED_BLACK_FLAME_ATTACK_REDESIGN_V1.title": "燃烧殆尽",

@@ -73,9 +73,9 @@ public partial class OrbContractRunner
             for (int i = 0; i < flameCount; i++) AddCard<BlackFlameRedesignV1>(combat);
             var attack = AddCard<StrikeIronclad>(combat);
             await CardCmd.AutoPlay(Choice, attack, combat.Enemy);
-            int extra = (layers > 0 ? layers * 4 + 3 : 0) + flameCount * 7;
+            int extra = (layers > 0 ? layers * 4 + 3 : 0) + (flameCount > 0 ? flameCount * 4 + 3 : 0);
             Require(combat.Enemy.CurrentHp == 1000 - 6 - extra,
-                $"Naraku {layers}, hand flames {flameCount}: one stacked bonus and independent hand flames.");
+                $"Naraku {layers}, hand flames {flameCount}: separate Naraku and merged hand damage, each amplified once.");
             Require(attack.Pile?.Type == PileType.Discard
                 && combat.Player.Piles.SelectMany(p => p.Cards).OfType<BlackFlameRedesignV1>().Count() == flameCount,
                 "Naraku must not exhaust attacks or generate flames.");
