@@ -213,8 +213,9 @@ internal sealed partial class SmokeController
 
     private async Task PlayWithStationaryCombatUi(CardModel card, Creature target)
     {
-        NCreature[] actors = [NCombatRoom.Instance!.GetCreatureNode(card.Owner.Creature)!,
-            NCombatRoom.Instance.GetCreatureNode(target)!];
+        NCreature actor = NCombatRoom.Instance!.GetCreatureNode(card.Owner.Creature)!;
+        NCreature[] actors = card is AlabamaDropRedesignV1
+            ? [actor, NCombatRoom.Instance.GetCreatureNode(target)!] : [actor];
         Vector2 UiPosition(NCreature actor) => actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
             * actor.GetNode<Control>("%HealthBar").GetGlobalTransformWithCanvas().Origin;
         Vector2[] roots = actors.Select(actor => actor.Position).ToArray();

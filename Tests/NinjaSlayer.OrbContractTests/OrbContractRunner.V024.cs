@@ -85,6 +85,19 @@ public partial class OrbContractRunner
                 }
             }
         }
+        using (var combat = new OrbCombat())
+        {
+            AddCard<BlackFlameRedesignV1>(combat);
+            AddCard<BlackFlameRedesignV1>(combat);
+            var observer = combat.Player.Creature.GetPower<EvokeObserver>()!;
+            observer.NestedFlameAttack = AddCard<StrikeIronclad>(combat);
+            await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
+            var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
+                .Where(e => e.CardSource is BlackFlameRedesignV1).ToArray();
+            Require(observer.NestedFlameAttack == null && combat.Enemy.CurrentHp == 972
+                && burns.Length == 2 && burns.All(e => e.Result.TotalDamage == 8),
+                "An attack nested inside Black Flame damage gets its own merged wave without re-triggering the outer play.");
+        }
         foreach (bool upgraded in new[] { false, true })
         foreach (int selectedCount in new[] { 0, 2 })
         {

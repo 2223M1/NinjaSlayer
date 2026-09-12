@@ -433,6 +433,17 @@ public partial class OrbContractRunner : Node
 
     public sealed class EvokeObserver : PowerModel
     {
+        public CardModel? NestedFlameAttack { get; set; }
+        public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result,
+            MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)
+        {
+            if (cardSource is BlackFlameRedesignV1 && NestedFlameAttack is { } attack)
+            {
+                NestedFlameAttack = null;
+                return CardCmd.AutoPlay(choiceContext, attack, target);
+            }
+            return Task.CompletedTask;
+        }
         public int Deaths { get; private set; }
         public decimal Healing { get; private set; }
         public override PowerType Type => PowerType.Buff;
