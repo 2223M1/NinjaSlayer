@@ -308,6 +308,19 @@ try {
   }
 
   requireSuccess(runMsbuild(harnessPath, 'InstallLocal'), 'temporary InstallLocal');
+  const sharedPack = join(sandbox, 'shared.pck');
+  writeFileSync(sharedPack, 'shared-platform-neutral-resources');
+  for (const target of ['ImportGodotProjectForPackage', 'ExportPckForPackage']) {
+    requireSuccess(runMsbuild(harnessPath, target, {
+      GodotExe: fakeGodotPath,
+      NinjaSlayerSharedResourcePack: sharedPack,
+    }), `${target} reuses resources without launching Godot`);
+  }
+  assert.equal(readFileSync(join(packageDir, 'NinjaSlayer.pck'), 'utf8'), readFileSync(sharedPack, 'utf8'));
+  assert.notEqual(runMsbuild(harnessPath, 'ExportPckForPackage', {
+    NinjaSlayerSharedResourcePack: join(sandbox, 'missing.pck'),
+  }).status, 0, 'A missing shared resource pack must fail.');
+  requireSuccess(runMsbuild(harnessPath, 'InstallLocal'), 'restore temporary InstallLocal fixture');
   const artifactNames = ['NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck'];
   for (const name of [...artifactNames, 'SHA256SUMS']) {
     assert(existsSync(join(packageDir, name)), `Package is missing ${name}.`);

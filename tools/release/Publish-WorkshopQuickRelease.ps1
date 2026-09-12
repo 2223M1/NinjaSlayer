@@ -186,6 +186,9 @@ foreach ($channel in @('stable', 'preview')) {
     if (-not [string]::IsNullOrWhiteSpace($GodotExe)) {
         $channelBuildParameters.GodotExe = $GodotExe
     }
+    if ($channel -eq 'preview') {
+        $channelBuildParameters.SharedResourcePack = Join-Path $buildRoot 'stable\package\NinjaSlayer\NinjaSlayer.pck'
+    }
     & (Join-Path $PSScriptRoot 'Invoke-NinjaSlayerChannelBuild.ps1') @channelBuildParameters
 }
 
