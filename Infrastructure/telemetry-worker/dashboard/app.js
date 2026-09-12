@@ -37,7 +37,7 @@ function fillOptions(select, values, first, label = value => value) {
 }
 async function loadView() {
   const query = new URLSearchParams(Object.fromEntries(filterIds.map(key => [key, $(`#${key}`).value])));
-  snapshot = await api(isPages ? './data.json' : '/api/snapshot');
+  snapshot = await api(isPages ? './data.json' : '/api/snapshot', { cache: 'no-cache' });
   view = isPages ? summarizePublic(snapshot, Object.fromEntries(query)) : await api(`/api/view?${query}`);
   const versionCatalog = await loadCatalog(query.get('version') || snapshot.currentVersion);
   const models = new Map((versionCatalog?.languages.zhs ?? []).map(model => [model.id, model]));
