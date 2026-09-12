@@ -1,14 +1,14 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { parseData, normalizeEvents, summarize } from './data.mjs';
+import { readCatalog } from './publish.mjs';
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
 import { loadFeedback, readCompletedFeedback, readFeedbackObject } from '../scripts/feedback-reader.js';
 import { UUID_PATTERN } from '../src/validation.js';
 
-const repo = new URL('../../../', import.meta.url);
-const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']]]);
+const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
 
 async function body(request) {
   const chunks = [];
@@ -22,13 +22,11 @@ async function body(request) {
 }
 
 export async function createDashboardServer() {
-  const names = JSON.parse(await readFile(new URL('NinjaSlayer/localization/zhs/cards.json', repo), 'utf8'));
-  const specs = JSON.parse(await readFile(new URL('Tests/NinjaSlayer.OrbContractTests/card-metadata.json', repo), 'utf8'));
-  const catalog = specs.filter(card => !card.Upgraded).map(card => ({
-    id: card.Id, name: names[`${card.Id.split('.').at(-1)}.title`] ?? card.Id,
-    rarity: { Common: '白卡', Uncommon: '蓝卡', Rare: '金卡', Basic: '初始', Token: '衍生', Ancient: '先古', Event: '事件', Special: '特殊' }[card.Rarity] ?? card.Rarity,
-    type: { Attack: '攻击', Skill: '技能', Power: '能力', Status: '状态', Curse: '诅咒' }[card.Type],
-  }));
+  const catalog = await readCatalog();
+  for (const name of await readdir(new URL('assets/', import.meta.url))) {
+    const type = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif' }[name.split('.').at(-1)];
+    if (type) publicFiles.set('/assets/' + name, ['assets/' + name, type]);
+  }
   let config = { host: process.env.POSTHOG_QUERY_HOST ?? QUERY_HOSTS[0], projectId: process.env.POSTHOG_PROJECT_ID ?? '', key: process.env.POSTHOG_PERSONAL_API_KEY ?? '' };
   let telemetry = { runs: [], rejected: 0, duplicates: 0 }, feedback = [], feedbackWarnings = [];
   const sources = { telemetry: { state: 'unconnected' }, feedback: { state: 'unloaded' } };
@@ -72,7 +70,8 @@ export async function createDashboardServer() {
     try {
       if (request.method === 'GET' && publicFiles.has(url.pathname)) {
         const [file, type] = publicFiles.get(url.pathname);
-        send(200, await readFile(new URL(file, import.meta.url)), `${type}; charset=utf-8`);
+        const bytes = await readFile(new URL(file, import.meta.url));
+        send(200, file === 'index.html' ? bytes.toString('utf8').replaceAll('{{view}}', 'admin') : bytes, type.startsWith('image/') ? type : `${type}; charset=utf-8`);
       } else if (request.method === 'GET' && url.pathname === '/api/view') {
         const filters = Object.fromEntries(url.searchParams);
         send(200, { application: 'NinjaSlayerDashboard', ...summarize(telemetry.runs, catalog, filters), sources, feedback, feedbackWarnings,

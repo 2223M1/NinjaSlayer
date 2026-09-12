@@ -52,3 +52,17 @@ export async function loadFeedback() {
   }
   return { feedback: feedback.sort((a, b) => b.at.localeCompare(a.at)), warnings };
 }
+
+export async function loadRemoteFeedback(token) {
+  const feedback = [], warnings = [];
+  let cursor;
+  do {
+    const response = await fetch(`https://ninja-slayer-telemetry.theonetrue2223.workers.dev/observatory/feedback${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, {
+      headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(90_000),
+    });
+    if (!response.ok) throw new Error(`反馈读取失败（HTTP ${response.status}）。`);
+    const page = await response.json();
+    feedback.push(...page.feedback); warnings.push(...page.warnings); cursor = page.cursor;
+  } while (cursor);
+  return { feedback: feedback.sort((a, b) => b.at.localeCompare(a.at)), warnings };
+}

@@ -41,18 +41,18 @@ public static class NinjaSlayerBalanceTelemetry
                 Requests =
                 [
                     // A custom request avoids the framework's automatic run_history capture.
-                    // The added combat measurements require their own explicit player consent.
                     new TelemetryRequest
                     {
                         RequestId = BalanceRequestId,
                         Category = TelemetryDataCategory.RunHistory,
                         Description = "Completed runs: card reward choices, final decks, results and per-combat draws, plays and resources paid, for balance analysis.",
+                        DescriptionText = NinjaSlayerTelemetryConsent.Text("DESCRIPTION"),
                         ContributionSubscriptions = [BalanceContextContributionId]
                     }
                 ],
             }
         );
-
+        NinjaSlayerTelemetryConsent.Register();
     }
 
     private static void ObserveRunEnded(RunEndedEvent evt)

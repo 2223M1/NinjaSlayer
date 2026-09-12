@@ -1,6 +1,16 @@
 # 忍者杀手观测室
 
-本机卡牌统计和 F2 反馈管理页。使用原生 Node HTTP、HTML/CSS/JavaScript，不需要前端构建。
+公开观测室：https://2223m1.github.io/NinjaSlayer/ 。使用 GitHub Pages、原生 HTML/CSS/JavaScript；本机关机不影响访问。本机仍提供私有反馈管理页。
+
+## 公开网站
+
+`.github/workflows/observatory.yml` 在相关 main 更新、手动运行及每 15 分钟计划执行时生成静态快照并部署。GitHub 的计划任务可能延迟，页面显示每个数据源最近成功同步时间；按钮只重新读取已发布的快照。同步失败保留最近成功数据并显示错误，首次尚未配置时显示未连接，不放入示例数据。
+
+Actions secrets：`POSTHOG_PERSONAL_API_KEY`（项目查询权限）、`POSTHOG_PROJECT_ID`、`POSTHOG_QUERY_HOST`（美国或欧洲区）以及与 Worker 同值的 `OBSERVATORY_READ_TOKEN`。仅构建步骤读取这些凭据，Pages 产物只包含匿名汇总和明确同意公开的反馈正文。没有服务器端运行时，不需要本机服务、自启动任务或隧道。
+
+`node Infrastructure/telemetry-worker/dashboard/build-pages.mjs build/pages` 生成站点。`OBSERVATORY_PREVIOUS_URL` 用于保留上一份成功快照。公开数据按 UTC 日期、模组与宿主版本、模式、人数、进阶及读档情况汇总；卡牌统计保留分母，跨版本对局仍按战斗采集版本过滤使用次数。不会输出玩家 ID、种子、完整牌组或原始对局。
+
+仅 `mod_context.publishDescription=true` 的新反馈公开正文、分类、时间与版本；旧反馈不公开。截图和日志不进入 Pages，公开导出接口也不提供附件。反馈保留 180 天；管理删除在下一次成功同步后从网页消失。网站素材来源及 SHA-256 记录在 `assets/sources.json`，正文沿用官网系统字体栈。
 
 ## 启动
 
@@ -20,7 +30,7 @@ pwsh -NoProfile -File tools/Start-NinjaSlayerDashboard.ps1
 - 对局数据在“连接设置”填写 PostHog 区域、数字项目 ID 和具有该项目查询权限的个人 API key。游戏使用的 ingestion key 无读取权限。
 - 连接凭据只存在于本次 Node 进程内，不发送给浏览器、不写入项目或 localStorage。重启后重新输入；也可通过 `POSTHOG_QUERY_HOST`、`POSTHOG_PROJECT_ID`、`POSTHOG_PERSONAL_API_KEY` 环境变量提供。
 - 可导入 RitsuLib batch、PostHog 查询响应或事件数组 JSON；导入只替换本机视图，不改远端。PostHog 查询列顺序为 `uuid, timestamp, properties`。
-- “同步数据”重新读取远端；若已配置 PostHog，远端数据会替换导入视图。没有后台定时刷新。
+- 本机页面打开后同步一次；“同步数据”重新读取远端，若已配置 PostHog则替换导入视图。每分钟重读内存视图，不自动重复查询远端。
 - 未连接、读取失败、真实零条记录分别显示。反馈截图和日志按需读取。私有页面拒绝跨站访问和非本机 Host，所有外部文本使用 textContent。
 
 ## 统计口径
@@ -49,7 +59,7 @@ RitsuLib 0.5.12/0.5.20 的 `run_history.completed` 内部是原生 **Serializabl
 
 ## 新增采集
 
-`balance_schema = ninja_slayer_run_history_v2` 在 `applicant_payload.mod_payload.combats` 保存按楼层/房间键控的战斗汇总。每项含 encounter、rounds、won、采集版本、各角色及卡牌计数。新增数据使用独立的 `balance_runs` 申请项，需要玩家重新同意；旧 `run_history` 同意不会自动启用。沿用 RitsuLib 的队列、适配器和原有 Worker，不增设网络服务。
+`balance_schema = ninja_slayer_run_history_v2` 在 `applicant_payload.mod_payload.combats` 保存按楼层/房间键控的战斗汇总。每项含 encounter、rounds、won、采集版本、各角色及卡牌计数。使用独立的 `balance_runs` 申请项，沿用 RitsuLib 的队列、适配器和原有 Worker。忍者杀手设置提供开关与说明。未知授权默认显示开启，但首次告知前不投递；确认立即开启，忽略本次不上传、下次进程启动默认开启，明确拒绝持续关闭。已有 RitsuLib 拒绝和仅有旧 `run_history` 的授权不会被升级覆盖，不补传历史对局。
 
 Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。新请求的 Worker 校验改动须在分发新版 DLL 前部署。
 

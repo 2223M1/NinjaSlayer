@@ -32,7 +32,7 @@ const FEEDBACK_PAYLOAD_FIELDS = new Set([
 const FEEDBACK_CONTEXT_FIELDS = new Set([
   'submissionId', 'submittedAtUtc', 'modVersion', 'characterId', 'seed',
   'currentActIndex', 'actId', 'actFloor', 'totalFloor', 'room', 'roomType', 'ascensionLevel',
-  'gameMode', 'playerCount',
+  'gameMode', 'playerCount', 'publishDescription',
 ]);
 
 function hasOnlyFields(value, allowed) {
@@ -147,6 +147,8 @@ async function hasFileSignature(file, signatures) {
 export async function validateFeedbackForm(form, expectedSubmissionId) {
   const payload = parseJsonField(form, 'payload_json', FEEDBACK_PAYLOAD_FIELDS);
   const modContext = parseJsonField(form, 'mod_context', FEEDBACK_CONTEXT_FIELDS);
+  if (modContext.publishDescription !== undefined && typeof modContext.publishDescription !== 'boolean')
+    throw new FeedbackValidationError('mod_context.publishDescription must be a boolean');
   if (!FEEDBACK_CATEGORIES.has(payload.category)) throw new FeedbackValidationError('Unsupported feedback category');
   if (typeof payload.description !== 'string' || payload.description.length === 0 || payload.description.length > 8000) {
     throw new FeedbackValidationError('Feedback description must contain 1 to 8000 characters');

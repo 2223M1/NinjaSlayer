@@ -5,3 +5,5 @@ run/main_scene="res://contracts.tscn"
 project/assembly_name="NinjaSlayer.OrbContractTests"
 [rendering]
 renderer/rendering_method="gl_compatibility"
+[physics]
+2d/physics_engine="Dummy"

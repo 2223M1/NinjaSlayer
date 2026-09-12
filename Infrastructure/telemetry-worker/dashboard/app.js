@@ -1,3 +1,6 @@
+import { summarizePublic } from './public-data.mjs';
+const isPages = document.body.dataset.view === 'pages';
+const isPublic = document.body.dataset.view !== 'admin';
 const $ = selector => document.querySelector(selector);
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -30,7 +33,7 @@ function fillOptions(select, values, first, label = value => value) {
 }
 async function loadView() {
   const query = new URLSearchParams(Object.fromEntries(filterIds.map(key => [key, $(`#${key}`).value])));
-  view = await api(`/api/view?${query}`);
+  view = isPages ? summarizePublic(await api('./data.json'), Object.fromEntries(query)) : await api(`/api/view?${query}`);
   fillOptions($('#version'), view.versions, '所有版本');
   fillOptions($('#ascension'), view.ascensions, '所有进阶', value => `进阶 ${value}`);
   fillOptions($('#gameVersion'), view.gameVersions, '所有宿主');
@@ -52,7 +55,7 @@ async function loadView() {
   const latest = [view.sources.telemetry.at, view.sources.feedback.at].filter(Boolean).sort().at(-1);
   $('#last-sync').textContent = latest ? `最近读取 ${time(latest)}` : '连接后显示真实数据';
   $('#footer-time').textContent = new Date().toLocaleDateString('zh-CN');
-  const notices = Object.values(view.sources).filter(source => source.message).map(source => `${source.message}${source.at ? ' 当前保留上次成功读取的数据。' : ''}`);
+  const notices = Object.values(view.sources).filter(source => source.message).map(source => source.message);
   if (view.sources.telemetry.truncated) notices.push('当前载入最近 50,000 条事件，未覆盖全部历史；筛选只作用于已载入范围。');
   if (view.rejected) notices.push(`${view.rejected} 条无效、放弃或非忍者杀手记录未计入统计。`);
   if (view.conflicts) notices.push(`${view.conflicts} 场重复上传的胜负冲突，已排除。`);
@@ -104,7 +107,7 @@ function renderCards() {
     if (card.offered) {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('viewBox', '0 0 100 10'); svg.setAttribute('aria-hidden', 'true');
-      for (const [width, color] of [[100, '#ecefe7'], [100 * card.picked / card.offered, '#ad5448']]) {
+      for (const [width, color] of [[100, '#302727'], [100 * card.picked / card.offered, '#ff0202']]) {
         const rect = document.createElementNS(svg.namespaceURI, 'rect');
         rect.setAttribute('width', width); rect.setAttribute('height', '10'); rect.setAttribute('rx', '3'); rect.setAttribute('fill', color); svg.append(rect);
       }
@@ -150,7 +153,7 @@ function renderTrend() {
   const max = Math.max(...entries.map(entry => entry.runs));
   const step = 550 / entries.length;
   entries.forEach((entry, index) => {
-    for (const [n, color, dx] of [[entry.runs, '#cbd4bf', 0], [entry.wins, '#ab4940', Math.min(step * .28, 12)]]) {
+    for (const [n, color, dx] of [[entry.runs, '#625454', 0], [entry.wins, '#ff0202', Math.min(step * .28, 12)]]) {
       const rect = document.createElementNS(svg.namespaceURI, 'rect');
       for (const [attr, val] of Object.entries({ x: 8 + index * step + dx, y: 85 - n / max * 68, width: Math.min(step * .26, 11), height: n / max * 68, fill: color, rx: 2 })) rect.setAttribute(attr, val);
       const title = document.createElementNS(svg.namespaceURI, 'title'); title.textContent = `${entry.date}：${entry.runs} 场对局，${entry.wins} 场通关`; rect.append(title); svg.append(rect);
@@ -176,7 +179,7 @@ function renderFeedback() {
   if (!records.length) {
     const empty = el('div', 'empty');
     empty.append(el('strong', '', view.sources.feedback.at ? '暂时没有反馈' : '还未读取玩家反馈'),
-      el('span', '', view.sources.feedback.at ? '当前筛选中没有已完成的反馈。新反馈将在下次同步时出现。' : '点击“同步数据”，读取玩家通过 F2 提交的反馈。'));
+      el('span', '', view.sources.feedback.at ? '当前筛选中没有已完成的反馈。新反馈将在下次同步时出现。' : isPublic ? '等待网站同步玩家通过 F2 提交的公开反馈。' : '点击“同步数据”，读取玩家通过 F2 提交的反馈。'));
     fragment.append(empty);
   }
   $('#feedback-list').replaceChildren(fragment);
@@ -184,16 +187,20 @@ function renderFeedback() {
 function openFeedback(item) {
   $('#feedback-detail-title').textContent = categoryName(item.category);
   $('#feedback-description').textContent = item.description;
-  $('#feedback-detail-meta').replaceChildren(...[time(item.at), `模组 ${item.context.modVersion}`, `游戏 ${item.gameVersion ?? '—'}`, `进阶 ${item.context.ascensionLevel ?? '—'}`, `楼层 ${item.context.totalFloor ?? '—'}`].map(text => el('span', 'badge', text)));
+  const metadata = [time(item.at), `模组 ${item.context.modVersion}`, `游戏 ${item.gameVersion ?? '—'}`];
+  if (!isPublic) metadata.push(`进阶 ${item.context.ascensionLevel ?? '—'}`, `楼层 ${item.context.totalFloor ?? '—'}`);
+  $('#feedback-detail-meta').replaceChildren(...metadata.map(text => el('span', 'badge', text)));
+  if (!isPublic) {
   const path = `/api/feedback/${encodeURIComponent(item.id)}`;
   $('#screenshot-link').href = `${path}/screenshot`; $('#logs-link').href = `${path}/logs`;
   $('#screenshot-error').hidden = true; $('#feedback-screenshot').hidden = false;
   $('#feedback-screenshot').src = `${path}/screenshot`;
+  }
   $('#feedback-dialog').showModal();
 }
 async function refresh() {
   $('#refresh').disabled = true; $('#refresh-icon').classList.add('spinning');
-  try { await api('/api/refresh', { method: 'POST' }); await loadView(); }
+  try { if (!isPublic) await api('/api/refresh', { method: 'POST' }); await loadView(); }
   catch (error) { toast(error.message); }
   finally { $('#refresh').disabled = false; $('#refresh-icon').classList.remove('spinning'); }
 }
@@ -202,20 +209,21 @@ function openConnection() {
   form.elements.host.value = view.connection.host; form.elements.projectId.value = view.connection.projectId;
   $('#connection-error').textContent = ''; $('#connection-dialog').showModal();
 }
-for (const id of ['connect-nav', 'connection-button']) $(`#${id}`).addEventListener('click', openConnection);
+if (!isPublic) for (const id of ['connect-nav', 'connection-button']) $(`#${id}`).addEventListener('click', openConnection);
 for (const button of document.querySelectorAll('[data-close]')) button.addEventListener('click', () => $(`#${button.dataset.close}`).close());
 for (const button of document.querySelectorAll('[data-page]')) button.addEventListener('click', () => {
   page = button.dataset.page;
   for (const nav of document.querySelectorAll('[data-page]')) nav.classList.toggle('active', nav === button);
   $('#cards-page').hidden = page !== 'cards'; $('#feedback-page').hidden = page !== 'feedback'; $('#export').hidden = page !== 'cards';
   $('#page-title').textContent = page === 'cards' ? '卡池观察' : '玩家来信';
-  $('#page-subtitle').textContent = page === 'cards' ? '让每一次抓取，都成为调整的依据。' : '问题、建议与游戏现场，放在一起看。';
+  $('#page-subtitle').textContent = page === 'cards' ? '卡牌选择、战斗使用与玩家反馈。' : '经玩家确认公开的问题与建议。';
 });
 for (const id of filterIds) $(`#${id}`).addEventListener('change', () => loadView().catch(error => toast(error.message)));
 $('#table-mode').addEventListener('change', () => { sort = $('#table-mode').value === 'use' ? 'finished' : 'pickRate'; direction = -1; renderCards(); });
 for (const id of ['card-search', 'rarity']) $(`#${id}`).addEventListener('input', renderCards);
 for (const id of ['feedback-search', 'feedback-category']) $(`#${id}`).addEventListener('input', renderFeedback);
 $('#refresh').addEventListener('click', refresh);
+if (!isPublic) {
 $('#feedback-screenshot').addEventListener('error', () => { $('#feedback-screenshot').hidden = true; $('#screenshot-error').hidden = false; });
 $('#connection-form').addEventListener('submit', async event => {
   event.preventDefault();
@@ -235,6 +243,7 @@ $('#import-file').addEventListener('change', async event => {
   } catch (error) { $('#connection-error').textContent = error.message; }
   finally { event.target.value = ''; }
 });
+}
 $('#export').addEventListener('click', () => {
   const cell = value => `"${String(value).replace(/^[=+@-]/, "'$&").replaceAll('"', '""')}"`;
   const rows = [['卡牌', '模型 ID', '稀有度', '提供次数', '选中次数', '抓取率', '持有角色数', '持有率', '持有通关率', '平均抓取楼层', '曾抓取样本', '曾抓取通关', '只跳过样本', '只跳过通关', '移除', '升级', '涉及战斗', '抽到', '手动打出', '自动打出', '开始结算', '完成结算', '实付能量', '实付星数'],
@@ -245,4 +254,5 @@ $('#export').addEventListener('click', () => {
   const link = el('a'); link.href = url; link.download = `忍者杀手_卡池统计_${new Date().toISOString().slice(0, 10)}.csv`; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
-await loadView().then(refresh).catch(error => toast(error.message));
+await loadView().then(() => { if (!isPublic) return refresh(); }).catch(error => toast(error.message));
+setInterval(() => loadView().catch(error => toast(error.message)), 60_000);

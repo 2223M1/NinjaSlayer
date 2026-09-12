@@ -53,7 +53,7 @@ function Test-IsSameOrChildPath([string]$Path, [string]$Root) {
 }
 
 function Assert-ChannelPackage([string]$Directory, [string]$Channel, $Profile, [string]$RitsuVersion) {
-    $expected = @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'SHA256SUMS')
+    $expected = @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'Box2D.NET.dll', 'LICENSE.Box2D.NET.txt', 'SHA256SUMS')
     $actualFiles = @(Get-ChildItem -LiteralPath $Directory -File -Force)
     $actualDirectories = @(Get-ChildItem -LiteralPath $Directory -Directory -Force)
     $difference = Compare-Object `
@@ -61,7 +61,7 @@ function Assert-ChannelPackage([string]$Directory, [string]$Channel, $Profile, [
         -DifferenceObject @($actualFiles.Name | Sort-Object) `
         -CaseSensitive
     if ($actualDirectories.Count -ne 0 -or $actualFiles.Count -ne $expected.Count -or $null -ne $difference) {
-        throw "$Channel package must contain exactly the four channel artifacts."
+        throw "$Channel package must contain exactly the six channel artifacts."
     }
 
     $manifest = Get-Content -LiteralPath (Join-Path $Directory 'NinjaSlayer.json') -Raw -Encoding utf8 |
@@ -83,8 +83,8 @@ function Assert-ChannelPackage([string]$Directory, [string]$Channel, $Profile, [
         }
         $checksums[$Matches[2]] = $Matches[1].ToLowerInvariant()
     }
-    if ($checksums.Count -ne 3) {
-        throw "$Channel SHA256SUMS must contain exactly three entries."
+    if ($checksums.Count -ne 5) {
+        throw "$Channel SHA256SUMS must contain exactly five entries."
     }
     foreach ($name in $expected | Where-Object { $_ -ne 'SHA256SUMS' }) {
         $actual = (Get-FileHash -LiteralPath (Join-Path $Directory $name) -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -188,6 +188,12 @@ if (Test-Path -LiteralPath $output) {
 Copy-Item -LiteralPath $loaderAssembly -Destination (Join-Path $output 'NinjaSlayer.dll')
 Copy-Item -LiteralPath (Join-Path $stablePackage 'NinjaSlayer.json') -Destination $output
 Copy-Item -LiteralPath (Join-Path $stablePackage 'NinjaSlayer.pck') -Destination $output
+foreach ($dependency in @('Box2D.NET.dll', 'LICENSE.Box2D.NET.txt')) {
+    if ((Get-FileHash (Join-Path $stablePackage $dependency)).Hash -ne (Get-FileHash (Join-Path $previewPackage $dependency)).Hash) {
+        throw "Channel dependency mismatch: $dependency"
+    }
+    Copy-Item -LiteralPath (Join-Path $stablePackage $dependency) -Destination $output
+}
 
 $variants = [Collections.Generic.List[object]]::new()
 foreach ($channelName in @('stable', 'preview')) {

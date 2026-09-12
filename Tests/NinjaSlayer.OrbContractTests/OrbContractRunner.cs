@@ -195,6 +195,7 @@ public partial class OrbContractRunner : Node
             await VerifyV024();
             await VerifyMaintenanceRefactor();
             await VerifyBalanceTelemetry();
+            VerifyTelemetryConsent();
             string? successMarker = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SUCCESS_MARKER");
             if (!string.IsNullOrWhiteSpace(successMarker))
                 System.IO.File.WriteAllText(successMarker, "passed\n");

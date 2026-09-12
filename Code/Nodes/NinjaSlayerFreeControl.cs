@@ -31,31 +31,27 @@ internal sealed partial class NinjaSlayerFreeControl : Node
     internal bool Active { get; private set; }
     internal int Generation { get; private set; }
     private readonly FreeControlMotor _motor = new();
-    private SubViewport? _world;
-    private CharacterBody2D _walker = null!;
-    private FreeControlRigidBody _ragdoll = null!;
-    private CollisionShape2D _walkShape = null!, _ragShape = null!;
-    private StaticBody2D _mouseBody = null!;
-    private PinJoint2D? _joint;
+    private FreeControlPhysics _physics = null!;
+    private double _physicsRemainder;
     private Transform2D _spaceToCanvas, _baselinePose;
     private Vector2 _baseCore;
     private Rect2 _arena;
     private Vector2[] _localHull = [];
     private Vector2[] _worldHull = [];
-    private bool _ragging, _paused, _left, _right, _down, _jumpHeld, _jumpPressed, _dashPressed;
+    private bool _paused, _left, _right, _down, _jumpHeld, _jumpPressed, _dashPressed;
+    private bool _ragging => Active && _physics.Ragging;
     private bool _pressOnBody, _mouseDown, _tornadoTriggered;
     private Vector2 _pressPoint, _grabLocal;
     private float _held, _facing = 1f, _standUp, _standFrom, _time;
     private int _endedTurn = -1, _exclusiveDepth;
     private Sprite2D _body = null!;
     private FreeControlMotionBlur? _blur;
-    private Vector2 _savedRagdollVelocity;
-    private float _savedRagdollSpin;
-    private readonly Dictionary<Creature, StaticBody2D> _enemyBodies = [];
 
     internal static NinjaSlayerFreeControl? Get(Creature creature) => NinjaSlayerAimPose.Get(creature)?.FreeControl;
-    private Transform2D PhysicsTransform => _ragging ? _ragdoll.Transform : _walker.Transform;
-    private Vector2 Velocity => _ragging ? _ragdoll.RealVelocity : _walker.Velocity;
+    private Transform2D PhysicsTransform => new(_physics.Rotation, ToGodot(_physics.Position));
+    private Vector2 Velocity => ToGodot(_physics.Velocity);
+    private static System.Numerics.Vector2 ToPhysics(Vector2 value) => new(value.X, value.Y);
+    private static Vector2 ToGodot(System.Numerics.Vector2 value) => new(value.X, value.Y);
     private bool InPlayPhase => Actor.Entity.IsAlive && Actor.Entity.Player?.PlayerCombatState?.Phase == PlayerTurnPhase.Play;
 
     public override void _Ready()
@@ -79,12 +75,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         {
             _paused = paused;
             ClearInput();
-            if (_ragging)
-            {
-                if (paused) { _savedRagdollVelocity = _ragdoll.RealVelocity; _savedRagdollSpin = _ragdoll.RealSpin; }
-                else { _ragdoll.RealVelocity = _savedRagdollVelocity; _ragdoll.RealSpin = _savedRagdollSpin; }
-                _ragdoll.Freeze = paused;
-            }
+            _physicsRemainder = 0d;
             PauseAttacks(paused);
         }
         if (!paused && Engine.TimeScale > 0d)
@@ -92,10 +83,11 @@ internal sealed partial class NinjaSlayerFreeControl : Node
             float dt = (float)(delta / Engine.TimeScale);
             _time += dt;
             AdvanceAttacks(dt);
+            if (_mouseDown && !_physics.Grabbing && (IsCardInputActive() || !CanUsePointer())) CancelMouseGesture();
             if (_mouseDown)
             {
                 _held += dt;
-                if (_pressOnBody && _joint == null && (_held >= .15f || PointerWorld().DistanceTo(_pressPoint) > 4f)) Grab();
+                if (_pressOnBody && !_physics.Grabbing && (_held >= .15f || PointerWorld().DistanceTo(_pressPoint) > 4f)) Grab();
                 if (!_pressOnBody && !_tornadoTriggered && _held >= .5f)
                 {
                     _tornadoTriggered = true;
@@ -127,44 +119,18 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Vector2 bottomRight = _spaceToCanvas.AffineInverse() * visible.End;
         float floor = _worldHull.Max(p => p.Y);
         _arena = new(topLeft, new Vector2(bottomRight.X - topLeft.X, floor - topLeft.Y));
-        _world = new SubViewport { Name = "FreeControlPhysics", World2D = new World2D(),
-            Disable3D = true, GuiDisableInput = true, Size = Vector2I.One * 2,
-            RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled, ProcessMode = ProcessModeEnum.Always };
-        AddChild(_world);
-        _walker = new CharacterBody2D { Name = "Walker", Position = _baseCore,
-            CollisionLayer = 2, CollisionMask = 1, FloorSnapLength = 5f, SafeMargin = .2f };
-        _ragdoll = new FreeControlRigidBody { Name = "ThrownBody", Position = _baseCore,
-            CollisionLayer = 0, CollisionMask = 5, Freeze = true, Mass = 1f, CustomIntegrator = true,
-            ContactMonitor = true, MaxContactsReported = 16,
-            GravityScale = FreeControlMotor.Gravity / ProjectSettings.GetSetting("physics/2d/default_gravity", 980f).AsSingle(),
-            LinearDamp = .3f, AngularDamp = .25f, ContinuousCd = RigidBody2D.CcdMode.CastShape,
-            PhysicsMaterialOverride = new PhysicsMaterial { Friction = .65f, Bounce = .25f } };
-        _walkShape = new CollisionShape2D { Shape = new ConvexPolygonShape2D { Points = _localHull } };
-        _ragShape = new CollisionShape2D { Shape = new ConvexPolygonShape2D { Points = _localHull }, Disabled = true };
-        _walker.AddChild(_walkShape); _ragdoll.AddChild(_ragShape);
-        _world.AddChild(_walker); _world.AddChild(_ragdoll);
-        AddBoundary("Floor", new(_arena.GetCenter().X, floor + 50f), new(_arena.Size.X + 200f, 100f));
-        AddBoundary("Ceiling", new(_arena.GetCenter().X, _arena.Position.Y - 50f), new(_arena.Size.X + 200f, 100f));
-        AddBoundary("LeftWall", new(_arena.Position.X - 50f, _arena.GetCenter().Y), new(100f, _arena.Size.Y + 200f));
-        AddBoundary("RightWall", new(_arena.End.X + 50f, _arena.GetCenter().Y), new(100f, _arena.Size.Y + 200f));
-        _mouseBody = new StaticBody2D { Name = "MouseAnchor", CollisionLayer = 0, CollisionMask = 0 };
-        _world.AddChild(_mouseBody);
+        _physics = new(ToPhysics(_baseCore), ToPhysics(_arena.Position), ToPhysics(_arena.End), _localHull.Select(ToPhysics).ToArray());
+        _physicsRemainder = 0d;
         _motor.Reset();
         _standUp = _standFrom = _held = 0f;
         _lastThrow = -10f;
         _tornadoTriggered = false;
-        _ragging = _paused = false;
+        _paused = false;
         Active = true; Generation++;
+        ConnectPointerSurfaces();
         SetPhysicsProcess(true);
         _blur = new FreeControlMotionBlur { Name = "FreeRotationExposure", Visible = false };
         Actor.Visuals.AddChild(_blur);
-    }
-
-    private void AddBoundary(string name, Vector2 position, Vector2 size)
-    {
-        var wall = new StaticBody2D { Name = name, Position = position, CollisionLayer = 1, CollisionMask = 2 };
-        wall.AddChild(new CollisionShape2D { Shape = new RectangleShape2D { Size = size } });
-        _world!.AddChild(wall);
     }
 
     private void ReadHull()
@@ -189,37 +155,46 @@ internal sealed partial class NinjaSlayerFreeControl : Node
 
     public override void _PhysicsProcess(double delta)
     {
-        if (!Active || _paused || _exclusiveDepth > 0 || Engine.TimeScale <= 0d) return;
-        float dt = (float)(delta / Engine.TimeScale);
+        if (!Active || _paused || _exclusiveDepth > 0 || Engine.TimeScale <= 0d || IsBlocked())
+        { _physicsRemainder = 0d; return; }
+        _physicsRemainder += delta / Engine.TimeScale;
+        while (_physicsRemainder + 1e-9 >= FreeControlPhysics.StepSeconds)
+        {
+            _physicsRemainder -= FreeControlPhysics.StepSeconds;
+            StepPhysics();
+        }
+    }
+
+    private void StepPhysics()
+    {
+        const float dt = FreeControlPhysics.StepSeconds;
         if (_ragging)
         {
-            if (_joint != null) _mouseBody.Position = _mouseBody.Position.MoveToward(PointerWorld(), 2400f * dt);
-            else if (_left || _right || _jumpPressed || _dashPressed) ResumeWalking();
+            if (!_physics.Grabbing && (_left || _right || _jumpPressed || _dashPressed)) ResumeWalking();
         }
         if (!_ragging)
         {
             float axis = (_right ? 1f : 0f) - (_left ? 1f : 0f);
             if (axis != 0f) _facing = axis;
-            _motor.Velocity = new(_walker.Velocity.X, _walker.Velocity.Y);
+            _motor.Velocity = _physics.Velocity;
             _motor.Step(dt, axis, _jumpPressed, _jumpHeld, _dashPressed, _down,
-                _walker.IsOnFloor(), _walker.IsOnWall() ? _walker.GetWallNormal().X : 0f, _facing);
-            _walker.Velocity = new(_motor.Velocity.X, _motor.Velocity.Y);
+                _physics.Grounded, _physics.WallNormal, _facing);
+            _physics.Velocity = _motor.Velocity;
             if (_standUp > 0f)
             {
                 _standUp = Math.Max(0f, _standUp - dt);
-                _walker.Rotation = _standFrom * Mathf.SmoothStep(0f, 1f, _standUp / .18f);
+                _physics.SetTransform(_physics.Position, _standFrom * Mathf.SmoothStep(0f, 1f, _standUp / .18f));
             }
-            _walker.Velocity /= (float)Engine.TimeScale;
-            _walker.MoveAndSlide();
-            _walker.Velocity *= (float)Engine.TimeScale;
             if (axis != 0f && !Pose.IsBusy) NinjaSlayerFacingState.SetFacing(Actor, axis < 0f);
         }
         _jumpPressed = _dashPressed = false;
         Pose.SyncNow();
         ReadHull();
-        ((ConvexPolygonShape2D)_walkShape.Shape).Points = _localHull;
-        ((ConvexPolygonShape2D)_ragShape.Shape).Points = _localHull;
+        _physics.UpdateHull(_localHull.Select(ToPhysics).ToArray());
         UpdateEnemyBodies();
+        _physics.Step(ToPhysics(PointerWorld()));
+        Pose.SyncNow();
+        ReadHull();
         DetectHits(dt);
     }
 
@@ -234,7 +209,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Pose.Transform = parent.AffineInverse() * freeCanvas * parent * Pose.Transform;
         coreCanvas = freeCanvas * coreCanvas;
         _blur?.Record(_body, PhysicsTransform.Origin, _spaceToCanvas, _time, Velocity,
-            _ragging ? _ragdoll.RealSpin : 0f, _ragging);
+            _ragging ? _physics.AngularVelocity : 0f, _ragging);
     }
 
     internal Vector2 UntransformTarget(Vector2 canvas) => !Active || _exclusiveDepth > 0 ? canvas
@@ -246,118 +221,26 @@ internal sealed partial class NinjaSlayerFreeControl : Node
 
     private void Grab()
     {
-        if (_joint != null) return;
-        if (!_ragging)
-        {
-            _ragdoll.Transform = _walker.Transform;
-            _ragdoll.RealVelocity = _walker.Velocity;
-            _ragdoll.RealSpin = 0f;
-            _walkShape.Disabled = true;
-            _ragShape.Disabled = false;
-            _ragdoll.CollisionLayer = 2;
-            _ragdoll.Freeze = false;
-            _ragging = true;
-        }
-        _mouseBody.Position = PhysicsTransform * _grabLocal;
-        _joint = new PinJoint2D { Name = "HandGrip", Position = _mouseBody.Position, Softness = 0f };
-        _world!.AddChild(_joint);
-        _joint.NodeA = _mouseBody.GetPath();
-        _joint.NodeB = _ragdoll.GetPath();
+        _physics.Grab(ToPhysics(_grabLocal));
     }
 
     private void ReleaseGrip()
     {
-        _joint?.QueueFree();
-        _joint = null;
+        _physics.Release();
     }
 
     private void ResumeWalking()
     {
-        _walker.Transform = _ragdoll.Transform;
-        _walker.Velocity = _ragdoll.RealVelocity;
-        _standFrom = Mathf.Wrap(_walker.Rotation, -Mathf.Pi, Mathf.Pi);
+        _standFrom = Mathf.Wrap(_physics.Rotation, -Mathf.Pi, Mathf.Pi);
         _standUp = .18f;
-        _ragdoll.Freeze = true;
-        _ragdoll.CollisionLayer = 0;
-        _ragShape.Disabled = true;
-        _walkShape.Disabled = false;
-        _ragging = false;
-        _motor.Reset(new(_walker.Velocity.X, _walker.Velocity.Y));
+        _physics.ResumeWalking();
+        _motor.Reset(_physics.Velocity);
     }
-
-    private Vector2 PointerWorld() => _spaceToCanvas.AffineInverse() * GetViewport().GetMousePosition();
-
-    public override void _Input(InputEvent input)
-    {
-        if (!Active || _paused || _exclusiveDepth > 0 || IsBlocked()) return;
-        bool cardInput = IsCardInputActive();
-        if (input is InputEventKey key && GetViewport().GuiGetFocusOwner() is not LineEdit and not TextEdit)
-        {
-            Key code = key.PhysicalKeycode == Key.None ? key.Keycode : key.PhysicalKeycode;
-            bool handled = true;
-            switch (code)
-            {
-                case Key.A: _left = key.Pressed; break;
-                case Key.D: _right = key.Pressed; break;
-                case Key.S: _down = key.Pressed; break;
-                case Key.W:
-                case Key.Space: _jumpHeld = key.Pressed; _jumpPressed |= key.Pressed && !key.Echo; break;
-                case Key.Shift: _dashPressed |= key.Pressed && !key.Echo; break;
-                default: handled = false; break;
-            }
-            if (handled) GetViewport().SetInputAsHandled();
-        }
-        if (input is not InputEventMouseButton mouse) return;
-        if (mouse.ButtonIndex == MouseButton.Left && !mouse.Pressed && _mouseDown)
-        {
-            if (!_pressOnBody && !_tornadoTriggered && !cardInput) BeginAttack(FreeControlMotor.AttackTier(_held));
-            _mouseDown = false;
-            ReleaseGrip();
-            GetViewport().SetInputAsHandled();
-            return;
-        }
-        if (!mouse.Pressed || cardInput || IsPointerOverUi()) return;
-        if (mouse.ButtonIndex == MouseButton.Left)
-        {
-            ReadHull();
-            _pressPoint = PointerWorld();
-            _pressOnBody = Geometry2D.IsPointInPolygon(_pressPoint, _worldHull);
-            _grabLocal = PhysicsTransform.AffineInverse() * _pressPoint;
-            if (!_pressOnBody && IsPointerOverEnemy()) return;
-            _mouseDown = true; _held = 0f; _tornadoTriggered = false;
-            GetViewport().SetInputAsHandled();
-        }
-        else if (mouse.ButtonIndex == MouseButton.Right)
-        {
-            BeginThrow();
-            GetViewport().SetInputAsHandled();
-        }
-    }
-
-    private bool IsPointerOverEnemy() => Actor.Entity.CombatState?.HittableEnemies.Any(enemy =>
-        enemy.GetCreatureNode() is { } node && new Rect2(Vector2.Zero, node.Hitbox.Size).HasPoint(
-            node.Hitbox.GetGlobalTransformWithCanvas().AffineInverse() * GetViewport().GetMousePosition())) == true;
-
-    private bool IsPointerOverUi()
-    {
-        for (Node? n = GetViewport().GuiGetHoveredControl(); n != null; n = n.GetParent())
-        {
-            if (n is NCreature) return false;
-            if (n is NCombatRoom) return false;
-            if (n is BaseButton || n.GetType().Namespace?.Contains("Cards", StringComparison.Ordinal) == true
-                || n.GetType().Name.Contains("Potion", StringComparison.Ordinal)) return true;
-        }
-        return false;
-    }
-
-    private bool IsCardInputActive() => Pose.HasCardDrag || NCombatRoom.Instance?.Ui?.Hand?.InCardPlay == true
-        || NCombatRoom.Instance?.Ui?.Hand?.IsInCardSelection == true;
 
     private void ClearInput()
     {
-        _left = _right = _down = _jumpHeld = _jumpPressed = _dashPressed = _mouseDown = false;
-        _chargeMotion?.Dispose(); _chargeMotion = null;
-        ReleaseGrip();
+        _left = _right = _down = _jumpHeld = _jumpPressed = _dashPressed = false;
+        CancelMouseGesture();
     }
 
     internal void EndTurn()
@@ -375,9 +258,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         if (_blur != null) _blur.Visible = false;
         ClearInput();
         ClearAttacks();
-        _savedRagdollVelocity = _ragdoll.RealVelocity;
-        _savedRagdollSpin = _ragdoll.RealSpin;
-        _ragdoll.Freeze = true;
+        _physicsRemainder = 0d;
         Actor.Position += translation;
         Pose.SyncNow();
         return new CinematicLease(this, authoredRoot, translation);
@@ -395,9 +276,6 @@ internal sealed partial class NinjaSlayerFreeControl : Node
             if (GodotObject.IsInstanceValid(owner.Actor)) owner.Actor.Position = authored;
             if (owner.Active)
             {
-                owner._ragdoll.RealVelocity = owner._savedRagdollVelocity;
-                owner._ragdoll.RealSpin = owner._savedRagdollSpin;
-                owner._ragdoll.Freeze = !owner._ragging || owner._paused;
                 owner.Pose.SyncNow();
             }
         }
@@ -409,45 +287,14 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Active = false; Generation++;
         ClearInput();
         ClearAttacks();
-        _world?.QueueFree(); _world = null;
-        _enemyBodies.Clear();
+        DisconnectPointerSurfaces();
+        _physics.Dispose();
         _blur?.QueueFree(); _blur = null;
         SetPhysicsProcess(false);
         if (GodotObject.IsInstanceValid(Pose)) { Pose.Transform = _baselinePose; Pose.SyncNow(); }
     }
 
     public override void _ExitTree() => Stop();
-}
-
-internal sealed partial class FreeControlRigidBody : RigidBody2D
-{
-    private static float TimeScale => Math.Max(.001f, (float)Engine.TimeScale);
-    internal Vector2 RealVelocity { get => LinearVelocity * TimeScale; set { _previousScale = TimeScale; LinearVelocity = value / TimeScale; } }
-    internal float RealSpin { get => AngularVelocity * TimeScale; set { _previousScale = TimeScale; AngularVelocity = value / TimeScale; } }
-    private float _previousScale = 1f;
-    internal Vector2 TravelVelocity { get; private set; }
-    internal float TravelSpin { get; private set; }
-    internal readonly Dictionary<ulong, (Vector2 Point, Vector2 Velocity)> Contacts = [];
-    public override void _IntegrateForces(PhysicsDirectBodyState2D state)
-    {
-        Contacts.Clear();
-        Vector2 massCenter = state.Transform * state.CenterOfMassLocal;
-        for (int i = 0; i < state.GetContactCount(); i++)
-        {
-            Vector2 point = state.GetContactLocalPosition(i), radius = point - massCenter;
-            Contacts[state.GetContactColliderId(i)] = (point,
-                TravelVelocity + new Vector2(-radius.Y, radius.X) * TravelSpin);
-        }
-        float scale = TimeScale, dt = state.Step / scale;
-        Vector2 velocity = state.LinearVelocity * _previousScale;
-        velocity.Y += FreeControlMotor.Gravity * dt;
-        state.LinearVelocity = (velocity * MathF.Exp(-.3f * dt)).LimitLength(2400f) / scale;
-        state.AngularVelocity = Mathf.Clamp(state.AngularVelocity * _previousScale * MathF.Exp(-.25f * dt),
-            -Mathf.Tau * 20f, Mathf.Tau * 20f) / scale;
-        TravelVelocity = state.LinearVelocity * scale;
-        TravelSpin = state.AngularVelocity * scale;
-        _previousScale = scale;
-    }
 }
 
 public sealed class FreeControlRunData

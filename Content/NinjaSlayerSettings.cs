@@ -49,6 +49,17 @@ public static class NinjaSlayerSettings
                 ModSettingsHostSurface.MainMenu
                 | ModSettingsHostSurface.RunPause
                 | ModSettingsHostSurface.CombatPause)
+            .AddSection("telemetry", section => section
+                .WithTitle(NinjaSlayerTelemetryConsent.Text("TITLE"))
+                .AddToggle("balance_telemetry", NinjaSlayerTelemetryConsent.Text("TOGGLE"),
+                    ModSettingsBindings.Callback(modId, "balance_telemetry",
+                        () => NinjaSlayerTelemetryConsent.SwitchEnabled, NinjaSlayerTelemetryConsent.SetEnabled,
+                        static () => { }), // The native consent setter persists immediately.
+                    NinjaSlayerTelemetryConsent.Text("DESCRIPTION"))
+                .AddParagraph("telemetry_status", ModSettingsText.DynamicFullRefreshOnly(NinjaSlayerTelemetryConsent.StatusText))
+                .AddButton("observatory", NinjaSlayerTelemetryConsent.Text("WEBSITE"),
+                    NinjaSlayerTelemetryConsent.Text("OPEN_WEBSITE"),
+                    () => Godot.OS.ShellOpen(NinjaSlayerTelemetryConsent.ObservatoryUrl)))
             .AddSection("validation", section => section
                 .WithReadOnlyOnHostSurfaces(ModSettingsHostSurface.RunPause | ModSettingsHostSurface.CombatPause)
                 .WithTitle(Text(

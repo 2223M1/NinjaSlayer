@@ -20,6 +20,22 @@ internal sealed partial class SmokeController
 {
     private LocalTelemetryCapture? _telemetryCapture;
 
+    private async Task DismissTelemetryNoticeAsync()
+    {
+        await WaitFrames(2);
+        var modal = NGame.Instance!.GetNodeOrNull<Godot.CanvasLayer>("RitsuModSettingsStyledModal");
+        if (modal is null) return; // Resumed profiles have already seen the first-launch notice.
+        Require(!TelemetryApi.GetClient("NinjaSlayer").IsEnabled(NinjaSlayerBalanceTelemetry.BalanceRequestId),
+            "First-launch notice must precede telemetry delivery.");
+        Godot.Input.ParseInputEvent(new Godot.InputEventKey { Keycode = Godot.Key.Escape, Pressed = true });
+        await WaitFrames(2);
+        Godot.Input.ParseInputEvent(new Godot.InputEventKey { Keycode = Godot.Key.Escape, Pressed = false });
+        Require(!Godot.GodotObject.IsInstanceValid(modal), "Native Escape did not dismiss the telemetry notice.");
+        Require(!TelemetryApi.GetClient("NinjaSlayer").IsEnabled(NinjaSlayerBalanceTelemetry.BalanceRequestId),
+            "Dismissing the notice must not enable telemetry in this process.");
+        _checkpoints.Write("telemetry.notice-dismissed");
+    }
+
     private async Task RunTelemetryLossPhaseAsync()
     {
         StartTelemetryCapture();

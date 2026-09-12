@@ -40,7 +40,7 @@ function Assert-NinjaSlayerInstallDirectory {
     if ($actualDirectories.Count -ne 0 -or
         $actualFiles.Count -ne $expectedFiles.Count -or
         $null -ne $difference) {
-        throw "NinjaSlayer install directory must contain exactly the four package files: $resolved"
+        throw "NinjaSlayer install directory must contain exactly the six package files: $resolved"
     }
 
     foreach ($file in $expectedFiles) {

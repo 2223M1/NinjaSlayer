@@ -45,6 +45,8 @@ public partial class OrbContractRunner
         asyncAutoplay.Patch(
             AccessTools.Method(typeof(CardModel), "GeneratePlayCount"),
             postfix: new HarmonyMethod(typeof(OrbContractRunner), nameof(DelayPlayCount)));
+        asyncAutoplay.Patch(AccessTools.Method(typeof(SfxCmd), nameof(SfxCmd.Play), [typeof(string), typeof(float)]),
+            prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(RecordBlackFlameSound)));
         var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.OrbContracts", "AutoplayPresentation");
         try
         {
@@ -54,6 +56,7 @@ public partial class OrbContractRunner
             Require(patcher.PatchAll(), "Autoplay presentation patches failed to install.");
             var dynamicPatches = (DynamicPatchInfo[])AccessTools.Method(product.GetType("NinjaSlayer.Code.Patches.RapidCardResolutionStateMachinePatch", true), "CreateDynamicPatches").Invoke(null, null)!;
             Require(patcher.ApplyDynamicPatches(dynamicPatches, rollbackOnCriticalFailure: true), "Autoplay state-machine patches failed to install.");
+            await VerifyBlackFlameTiming();
             foreach (int flameCount in new[] { 1, 2, 3 })
             foreach (bool upgraded in new[] { false, true })
             foreach (bool beatDown in new[] { false, true })

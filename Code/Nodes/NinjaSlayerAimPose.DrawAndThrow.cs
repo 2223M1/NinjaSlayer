@@ -80,7 +80,7 @@ public partial class NinjaSlayerAimPose
     {
         if (!CanPresent) return;
         SyncNow();
-        if (BeginVisualMotion(MotionKind.Backflip, CombatActionTimingRuntime.Resolve(2f / 3f, 1f / 3f)) is { } motion)
+        if (BeginVisualMotion(MotionKind.Backflip, CombatActionTimingRuntime.Resolve(0.5f, 0.25f)) is { } motion)
             motion.Height = _bodyHeight * 0.30f;
     }
 

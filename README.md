@@ -73,6 +73,7 @@ dotnet build .\NinjaSlayer.csproj --no-restore -c Release -v:minimal
 - [Steam 创意工坊（非公开链接）](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)
 - [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases)
 - [问题反馈](https://github.com/2223M1/NinjaSlayer/issues)
+- [公开观测室：卡牌统计与玩家反馈](https://2223m1.github.io/NinjaSlayer/)
 - [卡牌目录](Docs/card-catalog.md)
 - [隐私说明](Docs/privacy.md)
 

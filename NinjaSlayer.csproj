@@ -106,8 +106,12 @@
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="SmartFormat" Version="$(NinjaSlayerSmartFormatVersion)" />
+    <PackageReference Include="Box2D.NET" Version="$(NinjaSlayerBox2DVersion)" GeneratePathProperty="true" />
   </ItemGroup>
 
   <Import Project="eng\NinjaSlayer.Version.targets" />
+  <Target Name="CopyFreeControlPhysicsDependency" AfterTargets="Build">
+    <Copy SourceFiles="$(PkgBox2D_NET)/lib/net9.0/Box2D.NET.dll;$(MSBuildProjectDirectory)/LICENSE.Box2D.NET.txt" DestinationFolder="$(TargetDir)" />
+  </Target>
   <Import Project="eng\NinjaSlayer.Packaging.targets" />
 </Project>

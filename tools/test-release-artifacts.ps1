@@ -163,7 +163,9 @@ function New-PackageArchive(
     $artifactNames = @(
         $(if ($WrongCase) { 'ninjaslayer.dll' } else { 'NinjaSlayer.dll' }),
         'NinjaSlayer.json',
-        'NinjaSlayer.pck'
+        'NinjaSlayer.pck',
+        'Box2D.NET.dll',
+        'LICENSE.Box2D.NET.txt'
     )
     foreach ($name in $artifactNames) {
         [IO.File]::WriteAllText(
@@ -408,14 +410,14 @@ try {
         -Directory (Join-Path $temporaryRoot 'package-extra') `
         -ArchivePath $extraArchive `
         -ExtraFile
-    Assert-Throws { Read-NinjaSlayerPackageArchive $extraArchive } 'exactly the four'
+    Assert-Throws { Read-NinjaSlayerPackageArchive $extraArchive } 'exactly the six'
 
     $wrongCaseArchive = Join-Path $temporaryRoot 'wrong-case.zip'
     New-PackageArchive `
         -Directory (Join-Path $temporaryRoot 'package-wrong-case') `
         -ArchivePath $wrongCaseArchive `
         -WrongCase
-    Assert-Throws { Read-NinjaSlayerPackageArchive $wrongCaseArchive } 'exactly the four'
+    Assert-Throws { Read-NinjaSlayerPackageArchive $wrongCaseArchive } 'exactly the six'
 
     $tamperedChecksumArchive = Join-Path $temporaryRoot 'tampered-checksum.zip'
     New-PackageArchive `
@@ -451,7 +453,7 @@ try {
         $duplicate.Dispose()
     }
     Assert-Throws { Read-NinjaSlayerPackageArchive $duplicateArchive } `
-        '(exactly the four|duplicate ZIP entries)'
+        '(exactly the six|duplicate ZIP entries)'
 
     $unsafeArchive = Join-Path $temporaryRoot 'unsafe.zip'
     $unsafe = [IO.Compression.ZipFile]::Open($unsafeArchive, [IO.Compression.ZipArchiveMode]::Create)
@@ -463,7 +465,7 @@ try {
     finally {
         $unsafe.Dispose()
     }
-    Assert-Throws { Read-NinjaSlayerPackageArchive $unsafeArchive } '(exactly the four|unsafe ZIP entry)'
+    Assert-Throws { Read-NinjaSlayerPackageArchive $unsafeArchive } '(exactly the six|unsafe ZIP entry)'
 
     $assemblyFixture = Join-Path $temporaryRoot 'assembly-fixture'
     [IO.Directory]::CreateDirectory($assemblyFixture) | Out-Null

@@ -290,6 +290,8 @@ try {
     <WriteLinesToFile File="$(PostBuildModDir)NinjaSlayer.dll" Lines="dll-fixture" Overwrite="true" />
     <WriteLinesToFile File="$(PostBuildModDir)NinjaSlayer.json" Lines="json-fixture" Overwrite="true" />
     <WriteLinesToFile File="$(PostBuildModDir)NinjaSlayer.pck" Lines="pck-fixture" Overwrite="true" />
+    <WriteLinesToFile File="$(PostBuildModDir)Box2D.NET.dll" Lines="physics-fixture" Overwrite="true" />
+    <WriteLinesToFile File="$(PostBuildModDir)LICENSE.Box2D.NET.txt" Lines="license-fixture" Overwrite="true" />
   </Target>
 </Project>
 `.trimStart(), 'utf8');
@@ -321,7 +323,7 @@ try {
     NinjaSlayerSharedResourcePack: join(sandbox, 'missing.pck'),
   }).status, 0, 'A missing shared resource pack must fail.');
   requireSuccess(runMsbuild(harnessPath, 'InstallLocal'), 'restore temporary InstallLocal fixture');
-  const artifactNames = ['NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck'];
+  const artifactNames = ['NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'Box2D.NET.dll', 'LICENSE.Box2D.NET.txt'];
   for (const name of [...artifactNames, 'SHA256SUMS']) {
     assert(existsSync(join(packageDir, name)), `Package is missing ${name}.`);
     assert(existsSync(join(installDir, name)), `Temporary install is missing ${name}.`);

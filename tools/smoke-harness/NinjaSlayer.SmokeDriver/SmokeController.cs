@@ -1598,6 +1598,7 @@ internal sealed partial class SmokeController
         {
             _checkpoints.Write("driver.started");
             await WaitUntilAsync(() => NGame.Instance?.MainMenu is not null, "main menu did not initialize");
+            await DismissTelemetryNoticeAsync();
             ValidateLoadedMods();
             if (_configuration.Phase == SmokePhase.TransitionPerf)
             {

@@ -188,31 +188,15 @@ internal sealed partial class NinjaSlayerFreeControl
 
     private void UpdateEnemyBodies()
     {
-        var current = new HashSet<Creature>();
-        foreach ((Creature creature, Vector2[] polygon) in EnemyPolygons())
-        {
-            current.Add(creature);
-            if (!_enemyBodies.TryGetValue(creature, out StaticBody2D? proxy))
-            {
-                proxy = new StaticBody2D { CollisionLayer = 4, CollisionMask = 2 };
-                proxy.AddChild(new CollisionShape2D { Shape = new ConvexPolygonShape2D() });
-                _world!.AddChild(proxy);
-                _enemyBodies.Add(creature, proxy);
-            }
-            ((ConvexPolygonShape2D)proxy.GetChild<CollisionShape2D>(0).Shape).Points = polygon;
-        }
-        foreach (Creature creature in _enemyBodies.Keys.Where(c => !current.Contains(c)).ToArray())
-        {
-            _enemyBodies[creature].QueueFree();
-            _enemyBodies.Remove(creature);
-        }
+        _physics.UpdateEnemies(EnemyPolygons().Select(pair =>
+            (pair.Creature.GetCreatureNode()!.GetInstanceId(), pair.Polygon.Select(ToPhysics).ToArray())));
     }
 
     private void DetectHits(float dt)
     {
         var hits = new Dictionary<Creature, int>();
         Transform2D current = PhysicsTransform;
-        float angular = _ragging ? _ragdoll.RealSpin : 0f;
+        float angular = _ragging ? _physics.AngularVelocity : 0f;
         int samples = Math.Clamp((int)MathF.Ceiling(Math.Max(Math.Abs(angular * dt) / Mathf.DegToRad(10f),
             Velocity.Length() * dt / 16f)), 1, 32);
         foreach ((Creature enemy, Vector2[] polygon) in EnemyPolygons())
@@ -220,11 +204,10 @@ internal sealed partial class NinjaSlayerFreeControl
             Vector2 enemyCenter = (polygon[0] + polygon[2]) * .5f;
             Vector2 enemyVelocity = _enemyPositions.TryGetValue(enemy, out Vector2 previous) ? (enemyCenter - previous) / dt : Vector2.Zero;
             _enemyPositions[enemy] = enemyCenter;
-            (Vector2 Point, Vector2 Velocity) physicalContact = default;
-            bool rigidContact = _ragging && _enemyBodies.TryGetValue(enemy, out StaticBody2D? proxy)
-                && _ragdoll.Contacts.TryGetValue(proxy.GetInstanceId(), out physicalContact);
+            (System.Numerics.Vector2 Point, System.Numerics.Vector2 Velocity) physicalContact = default;
+            bool rigidContact = _ragging && _physics.Contacts.TryGetValue(enemy.GetCreatureNode()!.GetInstanceId(), out physicalContact);
             bool contact = rigidContact;
-            Vector2 contactPoint = rigidContact ? physicalContact.Point : enemyCenter;
+            Vector2 contactPoint = rigidContact ? ToGodot(physicalContact.Point) : enemyCenter;
             for (int sample = 0; !rigidContact && sample <= samples; sample++)
             {
                 float p = (float)sample / samples;
@@ -240,7 +223,7 @@ internal sealed partial class NinjaSlayerFreeControl
             if (contact && (!_hitTimes.TryGetValue(enemy, out float last) || _time - last >= .15f))
             {
                 Vector2 radius = contactPoint - current.Origin;
-                Vector2 velocity = (rigidContact ? physicalContact.Velocity
+                Vector2 velocity = (rigidContact ? ToGodot(physicalContact.Velocity)
                     : Velocity + new Vector2(-radius.Y, radius.X) * angular) - enemyVelocity;
                 int damage = FreeControlMotor.CollisionDamage(velocity.Length());
                 foreach (FreeStrike strike in _strikes)
