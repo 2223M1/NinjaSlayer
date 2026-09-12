@@ -13,6 +13,8 @@ $script:NinjaSlayerPackageFiles = @(
     'NinjaSlayer.dll',
     'NinjaSlayer.json',
     'NinjaSlayer.pck',
+    'Box2D.NET.dll',
+    'LICENSE.Box2D.NET.txt',
     'SHA256SUMS'
 )
 
@@ -55,7 +57,7 @@ function Read-NinjaSlayerPackageArchive {
     return Read-NinjaSlayerChecksummedArchive `
         -Path $Path `
         -ExpectedFileNames $script:NinjaSlayerPackageFiles `
-        -ExactSetDescription 'exactly the four NinjaSlayer package files'
+        -ExactSetDescription 'exactly the six NinjaSlayer package files'
 }
 
 function Get-NinjaSlayerWorkshopBundleFiles {
@@ -67,6 +69,8 @@ function Get-NinjaSlayerWorkshopBundleFiles {
             'NinjaSlayer.dll',
             'NinjaSlayer.json',
             'NinjaSlayer.pck',
+            'Box2D.NET.dll',
+            'LICENSE.Box2D.NET.txt',
             'ninjaslayer-variants.manifest',
             'SHA256SUMS')) {
         $files.Add($name)
@@ -448,8 +452,8 @@ function Assert-NinjaSlayerReleaseAttestation {
             "$channelName.archive.length"
         Assert-NinjaSlayerReleaseEqual ([string]$channel.archive.sha256).ToLowerInvariant() $actual.sha256 `
             "$channelName.archive.sha256"
-        if (@($channel.files).Count -ne 4) {
-            throw "$channelName.files must contain exactly four entries."
+        if (@($channel.files).Count -ne 6) {
+            throw "$channelName.files must contain exactly six entries."
         }
         for ($index = 0; $index -lt 4; $index++) {
             $expectedFile = @($channel.files)[$index]

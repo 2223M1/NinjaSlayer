@@ -147,7 +147,7 @@ public partial class OrbContractRunner
                 Vector2 coreBaseline = center.GlobalPosition;
                 float ground = contour.Max(p => (baseline * new Vector2(p.X, p.Y)).Y);
                 Call("BeginBackflip");
-                float duration = mode == FastModeType.Normal ? 2f / 3f : mode == FastModeType.Fast ? 1f / 3f : 0f;
+                float duration = mode == FastModeType.Normal ? 0.5f : mode == FastModeType.Fast ? 0.25f : 0f;
                 if (duration == 0f)
                 {
                     Require(!Flipping() && body.GetGlobalTransformWithCanvas().IsEqualApprox(baseline), "Instant draw created a flip.");
@@ -182,7 +182,7 @@ public partial class OrbContractRunner
             Call("SyncNow");
             Transform2D idle = body.GetGlobalTransformWithCanvas();
             Call("BeginBackflip");
-            pose._Process(0.47);
+            pose._Process(0.30);
             float flipElapsed = Field("_flipElapsed");
             Call("BeginShurikenThrow", combat.Enemy);
             Require(Flipping() && Field("_flipElapsed") == flipElapsed, "Throw restarted or interrupted the backflip.");
@@ -217,7 +217,7 @@ public partial class OrbContractRunner
             Call("ApplyReturn", 1f);
             Require(Flipping() && Math.Abs(Field("_flipElapsed") - 0.17f) < 0.0001f,
                 "Returning from an attack cleared or restarted the ongoing flip.");
-            pose._Process(2f / 3f - 0.17f + 0.00001f);
+            pose._Process(0.5f - 0.17f + 0.00001f);
             Require(body.GetGlobalTransformWithCanvas().IsEqualApprox(idle), "Flip did not finish independently after attack return.");
             Call("BeginShurikenThrow", combat.Enemy);
             pose._Process(0.04);
@@ -342,12 +342,12 @@ public partial class OrbContractRunner
                 float flipTime = 0.06f + time;
                 float throwTime = 0.02f + time;
                 bool flipping = (bool)AccessTools.Property(type, "IsBackflipping").GetValue(pose)!;
-                Require(flipping == (flipTime < 2f / 3f - 0.00001f), "Attack changed the flip duration.");
+                Require(flipping == (flipTime < 0.5f - 0.00001f), "Attack changed the flip duration.");
                 Require((Field("_throwDuration") > 0f) == (throwTime < 0.334f - 0.00001f),
                     "Attack changed the throw duration.");
                 if (flipping) Require(Math.Abs(Field("_flipElapsed") - flipTime * speed) < 0.00001f,
                     "Attack paused or restarted the flip clock.");
-                float flipAngle = flipping ? -facing * Mathf.Tau * (1f - Mathf.Pow(1f - Math.Min(1f, flipTime / (0.88f * 2f / 3f)), 1.3f)) : 0f;
+                float flipAngle = flipping ? -facing * Mathf.Tau * (1f - Mathf.Pow(1f - Math.Min(1f, flipTime / (0.88f * 0.5f)), 1.3f)) : 0f;
                 float throwAngle = 0f;
                 if (throwTime < 0.166f * 0.25f)
                     throwAngle = -Mathf.DegToRad(6f) * facing * Mathf.SmoothStep(0f, 1f, throwTime / (0.166f * 0.25f));

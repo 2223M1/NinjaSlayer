@@ -2,9 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { get } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir, mkdtemp, rm } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 import { normalizeEvents, parseData, summarize } from '../dashboard/data.mjs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createDashboardServer } from '../dashboard/server.mjs';
+import { publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
+import { summarizePublic } from '../dashboard/public-data.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
 
 const cardA = 'CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER_REDESIGN_V1';
@@ -156,4 +163,55 @@ test('dashboard accepts an exact native product fixture when supplied by host co
   assert.equal(normalized.rejected, 0);
   assert.equal(normalized.runs.length, 1);
   assert.equal(summarize(normalized.runs, catalog).totalCombats, 2);
+});
+
+
+test('public feedback projection excludes old notices and private context', () => {
+  const item = { id: 'id', at: '2026-09-12', description: '<script>hello</script>', category: 'bug', gameVersion: 'v',
+    context: { publishDescription: true, modVersion: '0.2.6', seed: 'secret-seed', characterId: 'private', playerCount: 2 } };
+  assert.deepEqual(publicFeedback([item, { ...item, context: { modVersion: 'old' } }]), [{
+    id: 'id', at: '2026-09-12', description: '<script>hello</script>', category: 'bug', gameVersion: 'v', context: { modVersion: '0.2.6' }
+  }]);
+});
+
+test('public aggregates match private statistics across date, version, mode and multiplayer filters', () => {
+  const old = event({ seed: 'old', won: false, version: '0.2.3' });
+  old.timestamp = '2026-09-11T23:30:00Z';
+  old.properties.payload.applicant_payload.run_history.ascension = 0;
+  old.properties.payload.applicant_payload.run_history.num_reloads = 2;
+  old.properties.game_version = '0.111.0';
+  old.properties.run_game_mode = 'Daily';
+  const mixed = event({ seed: 'cross-version' });
+  mixed.properties.payload.applicant_payload.mod_payload.combats['1/0'].version = '0.2.3';
+  const multi = event({ seed: 'multiplayer' });
+  multi.properties.payload.applicant_payload.run_history.players.push({ character_id: character, net_id: '76561198000000002', deck: [{ id: cardB }] });
+  const telemetry = normalizeEvents([event(), old, mixed, multi]);
+  const snapshot = { ...publishSnapshot(telemetry, catalog), sources: {}, feedback: [] };
+  for (const filters of [{}, { days: '1' }, { days: '2' }, { version: '0.2.4' }, { version: '0.2.3' },
+    { ascension: '0' }, { ascension: '10', reloads: 'none' }, { party: 'multi' }, { party: 'solo' }, { gameVersion: '0.111.0' }, { mode: 'Daily' }, { mode: 'empty' }]) {
+    const actual = summarizePublic(snapshot, filters, now);
+    const expected = summarize(telemetry.runs, snapshot.catalog, filters, now);
+    for (const key of Object.keys(expected)) assert.deepEqual(actual[key], expected[key], `${JSON.stringify(filters)} / ${key}`);
+  }
+  const output = JSON.stringify(snapshot);
+  for (const privateValue of [playerId, 'cross-version', 'ENCOUNTER.TEST', 'card_choices', 'net_id', 'start_time'])
+    assert.ok(!output.includes(privateValue), privateValue);
+});
+
+test('Pages artifact is standalone under the project subpath and excludes private controls and data', async t => {
+  const output = await mkdtemp(join(tmpdir(), 'ninjaslayer-pages-'));
+  t.after(() => rm(output, { recursive: true, force: true }));
+  const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: '', POSTHOG_PROJECT_ID: '', OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: '' };
+  await promisify(execFile)(process.execPath, [fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
+  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'data.json', 'index.html', 'public-data.mjs', 'styles.css']);
+  const html = await readFile(join(output, 'index.html'), 'utf8');
+  assert.match(html, /data-view="pages"/);
+  assert.match(html, /Content-Security-Policy/);
+  assert.doesNotMatch(html, /connection-dialog|screenshot-link|logs-link|feedback-screenshot|\{\{view\}\}/);
+  for (const [, local] of html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) await readFile(join(output, local));
+  const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
+  assert.equal(snapshot.catalog.length, 92);
+  assert.equal(summarizePublic(snapshot).runs, 0);
+  assert.equal(snapshot.sources.telemetry.state, 'unconnected');
+  assert.deepEqual(snapshot.feedback, []);
 });

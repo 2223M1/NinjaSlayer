@@ -1,0 +1,32 @@
+[
+  {
+    "file": "logo.png",
+    "url": "http://www.ninjaslayer-animation.com/images/index/logo.png",
+    "sha256": "1f3055e51e915386fb4bf91b590ee1851f8fefeacb5876a40769cfe2955d6285"
+  },
+  {
+    "file": "background.jpg",
+    "url": "http://www.ninjaslayer-animation.com/images/common/bg_ninjaslayer.jpg",
+    "sha256": "4da946f7a99989e8dc89a9cac5df0920b6d536b12e6b4529a5189a5e08ff1867"
+  },
+  {
+    "file": "shuriken.png",
+    "url": "http://www.ninjaslayer-animation.com/images/index/ico_shuriken.png",
+    "sha256": "45ba6cb131bd26bc974adf357c7a9464e1fe260f0c18aa0d4f52f288244507e3"
+  },
+  {
+    "file": "heading.png",
+    "url": "http://www.ninjaslayer-animation.com/images/common/ico_tit.png",
+    "sha256": "6219c627eb7f4a2923b4b23e28e881ffa73a17c4a5e5d3ae70d16a2e8f809a20"
+  },
+  {
+    "file": "copyright.png",
+    "url": "http://www.ninjaslayer-animation.com/images/common/txt_copyright.png",
+    "sha256": "8c0e82e15ee39d06948cfa9ac48538c3782aef7d01fc0544d3dc69bfc683d7b5"
+  },
+  {
+    "file": "ninja.png",
+    "url": "http://www.ninjaslayer-animation.com/images/index/main-ninja.png",
+    "sha256": "3478c447a00ead0c2362ee916d3cf221946eeaa42bfd6989e268f2a03e9604e8"
+  }
+]

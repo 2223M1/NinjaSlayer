@@ -77,21 +77,18 @@ public static class NinjaSlayerCombatVfx
 
     public static void PlayBurnStatusFeedback(IEnumerable<Creature> targets)
     {
-        NCombatRoom? room = NCombatRoom.Instance;
-        if (room == null)
+        if (NCombatRoom.Instance is { } room)
         {
-            return;
-        }
-
-        foreach (Creature target in targets)
-        {
-            NNinjaSlayerGroundFireVfx? vfx = NNinjaSlayerGroundFireVfx.Create(target);
-            if (vfx is not null)
+            foreach (Creature target in targets)
             {
-                room.CombatVfxContainer.AddChildSafely(vfx);
+                NNinjaSlayerGroundFireVfx? vfx = NNinjaSlayerGroundFireVfx.Create(target);
+                if (vfx is not null)
+                {
+                    room.CombatVfxContainer.AddChildSafely(vfx);
+                }
             }
         }
-
+        // Match vanilla Burn: audio follows the visual command even without a combat scene.
         SfxCmd.Play(BurnDamageSfx);
     }
 }

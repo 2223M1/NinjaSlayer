@@ -106,11 +106,13 @@
   </Target>
 
   <Target Name="CopyPackageArtifacts">
+    <Copy SourceFiles="$(TargetDir)Box2D.NET.dll;$(MSBuildProjectDirectory)/LICENSE.Box2D.NET.txt" DestinationFolder="$(PostBuildModDir)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(PostBuildModDir)$(NinjaSlayerArtifactName).dll" />
     <Copy SourceFiles="$(GeneratedManifest)" DestinationFiles="$(PostBuildModDir)$(NinjaSlayerArtifactName).json" />
   </Target>
 
   <Target Name="ValidatePackageOutput">
+    <Exec Command="&quot;$(DotNetExe)&quot; run --project &quot;$(MSBuildProjectDirectory)\tools\artifact-contract\NinjaSlayer.ArtifactContract.csproj&quot; --configuration Release --no-launch-profile -- validate-physics --directory &quot;$(PostBuildModDir)&quot;" />
     <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')"
            Text="Packaging requires the target game's sts2.dll at $(Sts2DataDir)." />
     <Error Condition="!Exists('$(PostBuildModDir)$(NinjaSlayerArtifactName).dll')"
@@ -129,6 +131,7 @@
       <_PackageFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).dll" />
       <_PackageFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).json" />
       <_PackageFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).pck" />
+      <_PackageFiles Include="$(PostBuildModDir)Box2D.NET.dll;$(PostBuildModDir)LICENSE.Box2D.NET.txt" />
     </ItemGroup>
     <GetFileHash Files="@(_PackageFiles)" Algorithm="SHA256">
       <Output TaskParameter="Items" ItemName="_HashedPackageFiles" />
@@ -151,11 +154,12 @@
       <_InstallFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).json" />
       <_InstallFiles Include="$(PostBuildModDir)$(NinjaSlayerArtifactName).pck" />
       <_InstallFiles Include="$(PackageHashManifest)" />
+      <_InstallFiles Include="$(PostBuildModDir)Box2D.NET.dll;$(PostBuildModDir)LICENSE.Box2D.NET.txt" />
     </ItemGroup>
     <Copy SourceFiles="@(_InstallFiles)" DestinationFolder="$(SteamModDir)" SkipUnchangedFiles="false" />
     <VerifyMatchingFiles SourceDirectory="$(PostBuildModDir)"
                          DestinationDirectory="$(SteamModDir)"
-                         FileNames="$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck;SHA256SUMS" />
+                         FileNames="$(NinjaSlayerArtifactName).dll;$(NinjaSlayerArtifactName).json;$(NinjaSlayerArtifactName).pck;Box2D.NET.dll;LICENSE.Box2D.NET.txt;SHA256SUMS" />
     <Message Text="Installed NinjaSlayer to $(SteamModDir)" Importance="high" />
   </Target>
 

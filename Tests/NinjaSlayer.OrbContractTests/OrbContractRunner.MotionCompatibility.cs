@@ -18,7 +18,7 @@ public partial class OrbContractRunner
         Call("BeginBackflip");
         object second = LatestPresentation(pose, "Backflip")!;
         Require(!ReferenceEquals(first, second) && pose.Transform.IsEqualApprox(before), "Repeated draw lost a flip or snapped its first frame.");
-        pose._Process(.55);
+        pose._Process(.39);
         Require(!(bool)AccessTools.Field(first.GetType(), "Active").GetValue(first)!
             && (bool)AccessTools.Field(second.GetType(), "Active").GetValue(second)!, "Finishing an old flip removed the next flip.");
         pose._Process(.12);

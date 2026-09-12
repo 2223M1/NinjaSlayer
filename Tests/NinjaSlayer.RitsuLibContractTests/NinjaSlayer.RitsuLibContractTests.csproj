@@ -62,5 +62,6 @@
       <Private>true</Private>
     </Reference>
     <PackageReference Include="$(NinjaSlayerRitsuLibPackageId)" Version="$(NinjaSlayerRitsuLibVersion)" PrivateAssets="all" />
+    <PackageReference Include="Box2D.NET" Version="$(NinjaSlayerBox2DVersion)" />
   </ItemGroup>
 </Project>

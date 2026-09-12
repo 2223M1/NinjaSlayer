@@ -94,7 +94,7 @@ export function normalizeEvents(input) {
 }
 
 export function summarize(runs, catalog, filters = {}, now = Date.now()) {
-  const cutoff = filters.days ? now - Number(filters.days) * 86400000 : -Infinity;
+  const cutoff = filters.days ? Date.parse(new Date(now).toISOString().slice(0, 10)) - (Number(filters.days) - 1) * 86400000 : -Infinity;
   const selected = runs.filter(run => Date.parse(run.at) >= cutoff
     && (!filters.version || run.version === filters.version)
     && (!filters.gameVersion || run.gameVersion === filters.gameVersion)
@@ -163,4 +163,3 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
     ascensions: [...new Set(runs.map(run => run.ascension))].sort((a, b) => a - b),
   };
 }
-

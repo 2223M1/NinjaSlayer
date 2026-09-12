@@ -3,17 +3,14 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -48,10 +45,21 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
 
     public BlackFlameRedesignV1() : base(Spec) { }
 
-    public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+    private bool IsHeldForAttack(CardPlay cardPlay) =>
         Pile?.Type == PileType.Hand
         && cardPlay.Card.Owner == Owner
-        && cardPlay.Card.Type == CardType.Attack
+        && cardPlay.Card.Type == CardType.Attack;
+
+    public override Task BeforeCardPlayed(CardPlay cardPlay)
+    {
+        if (IsHeldForAttack(cardPlay))
+            AttackBurns.GetValue(cardPlay, _ => new AttackBurn(
+                PileType.Hand.GetPile(Owner).Cards.OfType<BlackFlameRedesignV1>().ToArray()));
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
+        IsHeldForAttack(cardPlay)
             ? TriggerFromAttack(choiceContext, cardPlay)
             : Task.CompletedTask;
 
@@ -83,22 +91,26 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         }
     }
 
-    private sealed class AttackBurn
+    private sealed class AttackBurn(BlackFlameRedesignV1[] flames)
     {
+        public BlackFlameRedesignV1[] Flames { get; } = flames;
         public bool Resolved;
     }
 
     private Task TriggerFromAttack(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (CombatState!.HittableEnemies.Count == 0) return Task.CompletedTask;
-        AttackBurn burn = AttackBurns.GetOrCreateValue(cardPlay);
-        if (burn.Resolved) return Task.CompletedTask;
+        // Cards generated during this attack did not observe its BeforeCardPlayed hook.
+        if (!AttackBurns.TryGetValue(cardPlay, out AttackBurn? burn) || burn.Resolved)
+            return Task.CompletedTask;
         burn.Resolved = true;
-        var flames = PileType.Hand.GetPile(Owner).Cards.OfType<BlackFlameRedesignV1>().ToArray();
+        var flames = burn.Flames.Where(flame => flame.Pile?.Type == PileType.Hand && flame.Owner == Owner).ToArray();
+        if (flames.Length == 0) return Task.CompletedTask;
         foreach (var flame in flames)
             if (LocalContext.IsMine(flame)
                 && MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance?.Ui.Hand.GetCardHolder(flame) is NHandCardHolder holder)
                 holder.Flash();
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(CombatState.HittableEnemies);
         return DamageEnemies(choiceContext, Owner, flames.Sum(flame => (int)flame.DynamicVars.Damage.BaseValue), this);
     }
 
@@ -110,7 +122,6 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
     {
         targets ??= player.Creature.CombatState!.HittableEnemies;
         if (targets.Count == 0) return Task.CompletedTask;
-        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
         return CreatureCmd.Damage(choiceContext, targets,
             baseDamage + player.Creature.GetPowerAmount<BurnBurnBurnPower>(),
             ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, source

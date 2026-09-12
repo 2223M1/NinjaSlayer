@@ -29,6 +29,9 @@ switch (command)
     case "test-loader-contract":
         TestLoaderContract();
         break;
+    case "validate-physics":
+        ValidatePhysics(Required(options, "directory"));
+        break;
     default:
         throw Usage();
 }
@@ -51,6 +54,29 @@ static void ValidateAssembly(IReadOnlyDictionary<string, string> options)
         expectations,
         Required(options, "forbidden-path-root"));
     Console.WriteLine($"Validated package assembly {assemblyPath}");
+}
+
+static void ValidatePhysics(string directory)
+{
+    string root = Path.GetFullPath(directory);
+    string license = File.ReadAllText(Path.Combine(root, "LICENSE.Box2D.NET.txt"));
+    if (!license.Contains("MIT License", StringComparison.Ordinal) || !license.Contains("Choi Ikpil", StringComparison.Ordinal))
+        throw new InvalidDataException("Packaged Box2D license is missing or invalid.");
+    var context = new System.Runtime.Loader.AssemblyLoadContext("Packaged physics check", isCollectible: true);
+    try
+    {
+        var assembly = context.LoadFromAssemblyPath(Path.Combine(root, "Box2D.NET.dll"));
+        string? revision = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(assembly)?.InformationalVersion;
+        if (revision != "1.0.0+5efc96def866edbb4e5a9368d84de5bf8c2dcaca")
+            throw new InvalidDataException("Packaged physics differs from pinned Box2D.NET 3.1.654.");
+        Type worlds = assembly.GetType("Box2D.NET.B2Worlds", true)!;
+        object definition = assembly.GetType("Box2D.NET.B2Types", true)!.GetMethod("b2DefaultWorldDef")!.Invoke(null, null)!;
+        object world = worlds.GetMethod("b2CreateWorld")!.Invoke(null, [definition])!;
+        try { worlds.GetMethod("b2World_Step")!.Invoke(null, [world, 1f / 60f, 4]); }
+        finally { worlds.GetMethod("b2DestroyWorld")!.Invoke(null, [world]); }
+        Console.WriteLine("Packaged Box2D.NET loaded and stepped without host physics or NuGet resolution.");
+    }
+    finally { context.Unload(); }
 }
 
 static void ValidateImplementationAssembly(
@@ -122,6 +148,8 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
         "NinjaSlayer.dll",
         "NinjaSlayer.json",
         "NinjaSlayer.pck",
+        "Box2D.NET.dll",
+        "LICENSE.Box2D.NET.txt",
         VariantBundleContract.ManifestFileName,
         "SHA256SUMS"
     };
@@ -199,6 +227,7 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
     }
 
     ValidatePckFile(Path.Combine(directory, "NinjaSlayer.pck"));
+    ValidatePhysics(directory);
     ValidateChecksums(directory, expectedPaths);
     Console.WriteLine($"Validated universal Workshop bundle {directory}");
 }

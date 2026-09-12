@@ -11,8 +11,16 @@ using MegaCrit.Sts2.Core.Multiplayer;
 using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Orbs;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 
 namespace NinjaSlayer.OrbContractTests;
+
+public partial class FreeInputContractRoom : NCombatRoom
+{
+    public override void _Ready() { }
+    public override void _Process(double delta) { }
+    public override void _ExitTree() { }
+}
 
 public partial class OrbContractRunner
 {
@@ -20,6 +28,7 @@ public partial class OrbContractRunner
     private static bool CaptureFreeImpact(GameAction action) { FreeImpacts.Add(action); return false; }
     private static bool _freeSetting;
     private static bool FreeSetting(ref bool __result) { __result = _freeSetting; return false; }
+    private static bool FreeHeadlessFocus(ref bool __result) { __result = false; return false; }
     private async Task VerifyFreeControl()
     {
         using var combat = new OrbCombat(ninjaSlayer: true);
@@ -50,10 +59,28 @@ public partial class OrbContractRunner
         Node2D pose = rig.GetNode<Node2D>("%AimPose");
         Node control = pose.GetNode("FreeControl");
         Type type = control.GetType();
+        harmony.Patch(AccessTools.Method(type, "IsBlocked"), prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(FreeHeadlessFocus)));
+        harmony.Patch(AccessTools.PropertyGetter(typeof(NinjaSlayerSettings), "FreeControlEnabled"),
+            prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(FreeSetting)));
+        _hurtRoom = new FreeInputContractRoom { Size = viewport.Size, MouseFilter = Control.MouseFilterEnum.Stop };
+        var backSurface = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
+        _hurtRoom.AddChild(backSurface);
+        AccessTools.Property(typeof(NCombatRoom), "BackCombatVfxContainer").SetValue(_hurtRoom, backSurface);
+        stage.AddChild(_hurtRoom); stage.MoveChild(_hurtRoom, 0);
+        harmony.Patch(AccessTools.PropertyGetter(typeof(NCombatRoom), nameof(NCombatRoom.Instance)),
+            prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveHurtRoom)));
+        _freeSetting = true;
         object? Invoke(string name, params object?[] args) => AccessTools.Method(type, name).Invoke(control, args);
         void Set(string name, object value) => AccessTools.Field(type, name).SetValue(control, value);
         T Get<T>(string name) => (T)AccessTools.Field(type, name).GetValue(control)!;
         void Sync() => AccessTools.Method(pose.GetType(), "SyncNow").Invoke(pose, null);
+        void KeyInput(Key key, bool pressed) => viewport.PushInput(new InputEventKey { Keycode = key, PhysicalKeycode = key, Pressed = pressed });
+        void Pointer(Vector2 position) => viewport.PushInput(new InputEventMouseMotion { Position = position, GlobalPosition = position }, true);
+        void Click(Vector2 position, MouseButton button, bool pressed)
+        {
+            Pointer(position);
+            viewport.PushInput(new InputEventMouseButton { Position = position, GlobalPosition = position, ButtonIndex = button, Pressed = pressed }, true);
+        }
         async Task Frames(int count)
         {
             for (int i = 0; i < count; i++) await ToSignal(GetTree(), SceneTree.SignalName.PhysicsFrame);
@@ -61,47 +88,84 @@ public partial class OrbContractRunner
         Vector2 original = actor.Position;
         try
         {
-            control.SetProcess(false); // Drive eligibility separately; native physics remains live.
             Invoke("Start");
             Require((bool)AccessTools.Method(type, "WasUsed").Invoke(null, [run])!,
                 "Free control must exclude this run from balance uploads.");
-            CharacterBody2D walker = Get<CharacterBody2D>("_walker");
-            RigidBody2D body = Get<RigidBody2D>("_ragdoll");
+            object physics = Get<object>("_physics");
+            T Physics<T>(string name) => (T)AccessTools.Property(physics.GetType(), name).GetValue(physics)!;
+            Vector2 Position() { var p = Physics<System.Numerics.Vector2>("Position"); return new(p.X, p.Y); }
+            void Place(Vector2 p) => AccessTools.Method(physics.GetType(), "SetTransform").Invoke(physics, [new System.Numerics.Vector2(p.X, p.Y), 0f]);
             await Frames(8);
-            Require(walker.IsOnFloor(), $"Free walker never reached the actual authored ground: {walker.Position}.");
-            Vector2 start = walker.Position;
-            Set("_right", true); await Frames(12); Set("_right", false);
-            Require(walker.Position.X > start.X + 45f, "Free movement did not move the body across the arena.");
+            Require(Physics<bool>("Grounded"), $"Free walker never reached the actual authored ground: {Position()}.");
+            Vector2 start = Position(), startCore = rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
+            KeyInput(Key.D, true); await Frames(12); KeyInput(Key.D, false);
+            Require(Position().X > start.X + 45f, "Free movement did not move the body across the arena.");
+            Require(rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.X > startCore.X + 45f,
+                "Physical movement failed to move the visible character core.");
             Require(actor.Position.IsEqualApprox(original), "Free movement contaminated the card animation's authored root.");
-            Set("_jumpPressed", true); Set("_jumpHeld", true); await Frames(8);
-            Require(walker.Position.Y < start.Y - 50f, "Jump did not lift the physical body.");
-            Set("_jumpPressed", true); await Frames(1);
-            Require(walker.Velocity.Y < -750f, "Air jump did not launch again.");
-            Set("_jumpHeld", false); await Frames(80);
-            Require(walker.IsOnFloor() && Math.Abs(walker.Position.Y - start.Y) < 1f,
+            KeyInput(Key.Space, true); await Frames(8);
+            Require(Position().Y < start.Y - 50f, "Jump did not lift the physical body.");
+            KeyInput(Key.Space, false); KeyInput(Key.Space, true); await Frames(2);
+            Require(Physics<System.Numerics.Vector2>("Velocity").Y < -750f, "Air jump did not launch again.");
+            KeyInput(Key.Space, false); await Frames(80);
+            Require(Physics<bool>("Grounded") && Math.Abs(Position().Y - start.Y) < 1f,
                 "Walking and double jump did not return to the original floor.");
 
+            Require(ProjectSettings.GetSetting("physics/2d/physics_engine").AsString() == "Dummy",
+                "Input regression must run with the actual host's Dummy physics backend.");
+            var nativeButton = new NButton { Position = new(20f, 20f), Size = new(160f, 65f) };
+            stage.AddChild(nativeButton);
+            int nativePresses = 0, nativeReleases = 0;
+            nativeButton.Connect(NClickableControl.SignalName.MousePressed, Callable.From<InputEvent>(_ => nativePresses++));
+            nativeButton.Connect(NClickableControl.SignalName.MouseReleased, Callable.From<InputEvent>(_ => nativeReleases++));
+            Vector2 buttonPoint = new(50f, 45f), blank = new(1100f, 300f);
+            foreach (MouseButton button in new[] { MouseButton.Left, MouseButton.Right })
+            {
+                Click(buttonPoint, button, true); Click(buttonPoint, button, false); await Frames(2);
+            }
+            Require(nativePresses == 2 && nativeReleases == 2, "Free mode stole a native button press or release.");
+            Require(Get<System.Collections.ICollection>("_strikes").Count == 0
+                && Get<System.Collections.ICollection>("_projectiles").Count == 0, "Native button clicks also triggered free combat.");
+            Click(blank, MouseButton.Left, true); await Frames(5);
+            Pointer(buttonPoint); await Frames(3); Click(buttonPoint, MouseButton.Left, false); await Frames(2);
+            Require(!Get<bool>("_mouseDown") && Get<System.Collections.ICollection>("_strikes").Count == 0,
+                "Moving a blank-space charge over UI did not cancel it.");
+            var dragOwner = new Node(); stage.AddChild(dragOwner);
+            var dragCard = MegaCrit.Sts2.Core.Models.ModelDb.Card<NinjaSlayer.Cards.RedesignV1.SatsubatsuRedesignV1>().ToMutable();
+            dragCard.Owner = combat.Player;
+            AccessTools.Method(pose.GetType(), "Drag").Invoke(pose, [dragOwner, dragCard, blank, null]);
+            Click(blank, MouseButton.Right, true);
+            AccessTools.Method(pose.GetType(), "EndDrag").Invoke(pose, [dragOwner, false]);
+            Click(blank, MouseButton.Right, false); await Frames(2);
+            Require(Get<System.Collections.ICollection>("_projectiles").Count == 0, "Cancelling a card drag also fired a shuriken.");
+            AccessTools.Method(pose.GetType(), "Reset").Invoke(pose, null);
+            Click(blank, MouseButton.Left, true); Click(blank, MouseButton.Left, false); await Frames(2);
+            Require(Get<System.Collections.ICollection>("_strikes").Count == 1, "Blank background did not receive a light attack.");
+            Invoke("ClearAttacks");
+            Click(blank, MouseButton.Right, true); Click(blank, MouseButton.Right, false);
+            Require(Get<System.Collections.ICollection>("_projectiles").Count == 1, "Blank background did not receive a free shuriken.");
+            Invoke("ClearAttacks"); Set("_lastThrow", -10f);
+            nativeButton.QueueFree(); dragOwner.QueueFree(); await Frames(2);
+            GD.Print("PASS Dummy physics and real Viewport input: movement/core, jump, native left/right UI, charge cancellation, card drag and blank attacks.");
+
             // Lift by an off-center real body point, then keep the mouse completely still.
-            Vector2 grab = new(-40f, -70f);
-            Set("_grabLocal", grab);
-            Invoke("Grab");
-            var joint = Get<PinJoint2D>("_joint");
-            var anchor = Get<StaticBody2D>("_mouseBody");
-            Vector2 fixedPoint = anchor.Position - new Vector2(0f, 280f);
-            control.SetPhysicsProcess(false); // Hold the cursor anchor fixed, do not inject a mouse swing.
-            anchor.Position = fixedPoint;
-            body.Position -= new Vector2(0f, 280f);
+            Sync(); Invoke("ReadHull");
+            Vector2[] hull = Get<Vector2[]>("_worldHull");
+            Vector2 grab = hull.Aggregate(Vector2.Zero, (sum, p) => sum + p) / hull.Length + new Vector2(5f, -25f);
+            Click(grab, MouseButton.Left, true); await Frames(12);
+            Require(Physics<bool>("Grabbing"), "A viewport mouse press on the actual body did not start the grip.");
+            Vector2 fixedPoint = grab - new Vector2(0f, 300f);
+            for (int i = 1; i <= 30; i++) { Pointer(grab.Lerp(fixedPoint, i / 30f)); await Frames(1); }
             await Frames(80);
-            Require(joint.MotorEnabled == false && joint.AngularLimitEnabled == false,
-                "Grip must remain a passive unconstrained joint.");
-            Require((body.Transform * grab).DistanceTo(fixedPoint) < 3f,
-                $"The physical grip slipped away from the clicked point: {(body.Transform * grab).DistanceTo(fixedPoint)}px.");
-            Require(Math.Abs(body.Rotation) > .1f, "Gravity did not rotate the off-center body around the grip.");
-            Require(body.Position.Y > fixedPoint.Y, "Suspended body did not hang below the grip.");
-            body.AngularVelocity = 12f;
-            Invoke("ReleaseGrip");
+            var gripPoint = Physics<System.Numerics.Vector2>("GripPoint");
+            Require(new Vector2(gripPoint.X, gripPoint.Y).DistanceTo(fixedPoint) < 3f, "The physical grip slipped away from the cursor.");
+            Require(Position().Y < start.Y - 150f, "Dragging moved only the cursor, not the character.");
+            Require(Math.Abs(Physics<float>("Rotation")) > .1f, "Gravity did not rotate the off-center body around the grip.");
+            AccessTools.Property(physics.GetType(), "AngularVelocity").SetValue(physics, 12f);
+            Click(fixedPoint, MouseButton.Left, false);
             await Frames(2);
-            Require(Math.Abs(body.AngularVelocity) > 5f, "Releasing the mouse erased physical angular momentum.");
+            Require(!Physics<bool>("Grabbing") && Math.Abs(Physics<float>("AngularVelocity")) > 5f,
+                "Releasing the mouse erased physical angular momentum.");
             Set("_time", .1f); Sync();
             Node2D exposure = Get<Node2D>("_blur");
             Require(exposure.Visible && exposure.GetChildCount() == 1,
@@ -113,9 +177,8 @@ public partial class OrbContractRunner
                 Require(Invoke("SuspendForCinematic", original) == null && actor.Position == claimed,
                     "Nested cinematics applied the free offset twice.");
             }
-            control.SetPhysicsProcess(true);
-            Set("_right", true); await Frames(20); Set("_right", false);
-            Require(!Get<bool>("_ragging") && Math.Abs(walker.Rotation) < .001f,
+            KeyInput(Key.D, true); await Frames(20); KeyInput(Key.D, false);
+            Require(!Physics<bool>("Ragging") && Math.Abs(Physics<float>("Rotation")) < .001f,
                 "Keyboard movement did not resume smoothly after throwing.");
             Sync();
             Vector2 freeCore = rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
@@ -142,7 +205,7 @@ public partial class OrbContractRunner
             Require(FreeImpacts.Count == 0, "Free light attack damaged an enemy outside its physical reach.");
             target.Position = rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
             Get<System.Collections.IDictionary>("_enemyPositions").Clear(); // Test relocation is not enemy motion.
-            walker.Velocity = Vector2.Zero;
+            AccessTools.Property(physics.GetType(), "Velocity").SetValue(physics, System.Numerics.Vector2.Zero);
             Invoke("DetectHits", 1f / 60f);
             Require(FreeImpacts.Count == 1, "Contact did not enqueue exactly one native gameplay action.");
             var impacts = FreeImpacts.ToArray(); FreeImpacts.Clear();
@@ -152,13 +215,13 @@ public partial class OrbContractRunner
             Invoke("DetectHits", 1f / 60f);
             Require(FreeImpacts.Count == 0, "Same contact was counted twice inside the cooldown.");
             Invoke("ClearAttacks");
-            walker.Position -= new Vector2(0f, 200f); Sync();
+            Place(Position() - new Vector2(0f, 200f)); Sync();
             AccessTools.Method(pose.GetType(), "BeginAction").Invoke(pose, [combat.Enemy, false, false]);
             AccessTools.Method(pose.GetType(), "SetTravel").Invoke(pose, [new Vector2(0f, 80f), 1f]);
             Require((float)AccessTools.Property(pose.GetType(), "VerticalTravel").GetValue(pose)! > 79f,
                 "A card's downward lunge was incorrectly clamped as grounded during a physical jump.");
             AccessTools.Method(pose.GetType(), "Reset").Invoke(pose, null);
-            walker.Position += new Vector2(0f, 200f); Sync();
+            Place(Position() + new Vector2(0f, 200f)); Sync();
             target.Position = new(1300f, 100f);
             Invoke("BeginThrow");
             Require(Get<System.Collections.ICollection>("_projectiles").Count == 1, "Free throw failed without stock.");
@@ -186,11 +249,6 @@ public partial class OrbContractRunner
             AimActors.Remove(combat.Enemy);
             GD.Print("PASS free control: actual Godot floor, locomotion, double jump, passive gravity grip, release momentum, cinematic lease and turn reset.");
             await VerifyFreeShivParticles(stage);
-            harmony.Patch(AccessTools.PropertyGetter(typeof(NinjaSlayerSettings), "FreeControlEnabled"),
-                prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(FreeSetting)));
-            _hurtRoom = new NCombatRoom();
-            harmony.Patch(AccessTools.PropertyGetter(typeof(NCombatRoom), nameof(NCombatRoom.Instance)),
-                prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveHurtRoom)));
             _freeSetting = true;
             control._Process(.016);
             Require(!(bool)AccessTools.Property(type, "Active").GetValue(control)!, "Mode restarted after end-turn in the same turn.");

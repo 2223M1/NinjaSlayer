@@ -22,6 +22,10 @@ For the Black Flame autoplay regression, set `NINJASLAYER_CONTRACT_ONLY_V024=1`
 before invoking the same command. It covers Naval Warhammer and vanilla BeatDown,
 base/upgraded repeat counts, one to three held flames, multi-hit attacks and one
 amplification per merged burn, plus the existing v0.2.4 scenarios.
+It also checks BS1260-generated flames start on the next actual attack play,
+including replayed kicks, and compares Black Flame's sound event against vanilla
+Burn. Turn-end tests use each host's native card-resolution path and verify one
+sound per card, Ethereal exhaust, unblockable self-damage and Naraku/One Body protection.
 Run again in a fresh process with `NINJASLAYER_CONTRACT_EARLY_AUTOPLAY=1`: an identity
 transpiler compiles the native AutoPlay state machine before framework initialization,
 reproducing the early-mod loading order that can inline OnPlayWrapper before its

@@ -2,5 +2,6 @@
   <Import Project="NinjaSlayer.Compatibility.g.props" />
   <PropertyGroup>
     <NinjaSlayerSmartFormatVersion>3.3.0</NinjaSlayerSmartFormatVersion>
+    <NinjaSlayerBox2DVersion>3.1.654</NinjaSlayerBox2DVersion>
   </PropertyGroup>
 </Project>

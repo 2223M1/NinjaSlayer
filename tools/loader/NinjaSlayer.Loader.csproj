@@ -18,6 +18,7 @@
   </Target>
 
   <ItemGroup>
+    <Compile Include="../../Code/FreeControlDependency.cs" Link="FreeControlDependency.cs" />
     <Reference Include="sts2" HintPath="$(Sts2DataDir)\sts2.dll" Private="false" />
   </ItemGroup>
 </Project>

@@ -138,6 +138,7 @@ public static class NinjaSlayerFeedbackClient
         {
             submissionId,
             submittedAtUtc,
+            publishDescription = true,
             modVersion = NinjaSlayerVersion.Current,
             characterId = player?.Character.Id.ToString() ?? "unknown",
             seed = runState?.Rng.StringSeed,

@@ -1,8 +1,7 @@
 # NinjaSlayer Telemetry Worker
 
-For the loopback-only card statistics and F2 feedback dashboard, see
-[观测室启动与统计口径](dashboard/README.md). Run `npm run dashboard` locally;
-this does not deploy the Worker.
+For the GitHub Pages public observatory and loopback-only private dashboard, see
+[观测室部署、启动与统计口径](dashboard/README.md). Run `npm run dashboard` for private administration.
 
 This Worker accepts the RitsuLib `run_history.completed` envelope (`run_history` or `balance_runs` requests) and anonymous
 F2 feedback. Inputs are strictly validated before telemetry is forwarded to
@@ -56,3 +55,9 @@ Downloads are written to `feedback-downloads/<submission UUID>/` with
 accepts completed schema-2 index markers whose attempt, metadata path, and
 metadata SHA-256 agree; writing, malformed, and legacy weak markers are not
 treated as completed submissions.
+
+The Pages export job reads `GET /observatory/feedback` with an
+`OBSERVATORY_READ_TOKEN` bearer secret shared with Actions. Pagination uses the
+returned cursor. It reads completed metadata only and does not serve attachments.
+Only new feedback carrying the explicit `publishDescription: true` notice flag
+is projected into the public artifact; historical feedback remains private.

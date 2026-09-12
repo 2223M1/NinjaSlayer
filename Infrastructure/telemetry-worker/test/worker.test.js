@@ -40,7 +40,18 @@ class MockKv {
   failNextKey = null;
   blockedPut = null;
 
-  async get(key) { return this.objects.get(key) ?? null; }
+  async get(key, type) {
+    const value = this.objects.get(key) ?? null;
+    if (value === null) return null;
+    if (type === 'json') return JSON.parse(value);
+    if (type === 'arrayBuffer' && typeof value === 'string') return new TextEncoder().encode(value).buffer;
+    return value;
+  }
+  async list({ prefix, limit, cursor }) {
+    const keys = [...this.objects.keys()].filter(key => key.startsWith(prefix)).sort();
+    const start = Number(cursor ?? 0), end = start + limit;
+    return { keys: keys.slice(start, end).map(name => ({ name })), list_complete: end >= keys.length, cursor: String(end) };
+  }
   async put(key, value, options) {
     if (this.blockedPut && key.endsWith(this.blockedPut.suffix)) {
       const blocked = this.blockedPut;
@@ -485,4 +496,21 @@ test('feedback enforces the streaming limit without Content-Length', async () =>
   });
   assert.equal(request.headers.has('content-length'), false);
   assert.equal((await handleRequest(request, workerEnv())).status, 413);
+});
+
+test('feedback export preserves notice flags and verifies metadata without serving attachments', async () => {
+  const env = workerEnv({ OBSERVATORY_READ_TOKEN: 'service-only-secret' });
+  assert.equal((await handleRequest(feedbackRequest({ contextFields: { publishDescription: true } }), env)).status, 200);
+  const read = (path, authorized = true) => handleRequest(new Request('https://worker.test/observatory/' + path,
+    { headers: authorized ? { Authorization: `Bearer ${env.OBSERVATORY_READ_TOKEN}` } : {} }), env);
+  const list = await (await read('feedback')).json();
+  assert.equal(list.feedback.length, 1); assert.equal(list.feedback[0].context.publishDescription, true);
+  assert.equal(list.warnings.length, 0);
+  for (const path of ['feedback', `feedback/${UUID}/screenshot`, `feedback/${UUID}/logs`]) assert.equal((await read(path, false)).status, 403);
+  assert.equal((await read(`feedback/${UUID}/screenshot`)).status, 404);
+  assert.equal((await read(`feedback/${UUID}/logs`)).status, 404);
+  const marker = JSON.parse(await env.FEEDBACK_KV.get(`feedback-index/${UUID}`));
+  await env.FEEDBACK_KV.put(marker.completion.metadataKey, '{}');
+  assert.equal((await (await read('feedback')).json()).feedback.length, 0);
+  assert.equal((await handleRequest(feedbackRequest({ submissionId: SECOND_UUID, contextFields: { publishDescription: 'yes' } }), env)).status, 400);
 });

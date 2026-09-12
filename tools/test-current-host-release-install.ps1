@@ -101,7 +101,10 @@ function New-InstallFixtureArchive {
         (Join-Path $packageRoot 'NinjaSlayer.json'),
         ($manifest | ConvertTo-Json -Depth 5),
         [Text.UTF8Encoding]::new($false))
-    $checksumLines = foreach ($name in @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck')) {
+    foreach ($name in @('Box2D.NET.dll', 'LICENSE.Box2D.NET.txt')) {
+        [IO.File]::WriteAllText((Join-Path $packageRoot $name), "fixture:$name")
+    }
+    $checksumLines = foreach ($name in @('NinjaSlayer.dll', 'NinjaSlayer.json', 'NinjaSlayer.pck', 'Box2D.NET.dll', 'LICENSE.Box2D.NET.txt')) {
         "$(Get-NinjaSlayerSha256 -Path (Join-Path $packageRoot $name)) *$name"
     }
     [IO.File]::WriteAllLines(
@@ -148,7 +151,7 @@ try {
         -RepositoryRoot $repositoryRoot
     if ($first.Channel -cne 'stable' -or
         (Test-Path -LiteralPath (Join-Path $destination 'legacy.txt')) -or
-        @(Get-ChildItem -LiteralPath $destination -File).Count -ne 4) {
+        @(Get-ChildItem -LiteralPath $destination -File).Count -ne 6) {
         throw 'A valid stable archive was not installed as an exact replacement.'
     }
 
@@ -200,7 +203,7 @@ try {
             -Compatibility $compatibility `
             -SourceRevision $sourceRevision `
             -RepositoryRoot $repositoryRoot
-    } 'exactly the four'
+    } 'exactly the six'
 
     $markerPath = Join-Path $destination 'rollback-marker.txt'
     [IO.File]::WriteAllText($markerPath, 'restore me')

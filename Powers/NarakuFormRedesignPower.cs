@@ -28,8 +28,11 @@ public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
     {
         if (cardPlay.Card.Owner.Creature != Owner || cardPlay.Card.Type != CardType.Attack)
             return Task.CompletedTask;
+        var targets = Owner.CombatState!.HittableEnemies;
+        if (targets.Count == 0) return Task.CompletedTask;
         Flash();
+        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
         return BlackFlameRedesignV1.DamageEnemies(choiceContext, Owner.Player!,
-            RedesignV1Rules.BlackFlameDamage * Amount, null);
+            RedesignV1Rules.BlackFlameDamage * Amount, null, targets);
     }
 }
