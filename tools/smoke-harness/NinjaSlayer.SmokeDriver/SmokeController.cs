@@ -1699,7 +1699,8 @@ internal sealed partial class SmokeController
         // AutoSlay disables native Pause(), so operate visible in-combat choices directly.
         while (true)
         {
-            if (RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any()
+            if (CombatManager.Instance.IsInProgress
+                && RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any()
                 && GetSawatariOptions().FirstOrDefault(button => button.IsVisibleInTree() && button.IsEnabled) is { } option)
             {
                 await UiHelper.Click(option);
