@@ -284,8 +284,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private async Task PlayAimedAction(float seconds)
     {
-        if (_actorAimPose != null) await _actorAimPose.PrepareKick(CardPlay);
-        await Cmd.Wait(Math.Max(0f, seconds));
+        await Task.WhenAll(
+            _actorAimPose?.PrepareKick(CardPlay) ?? Task.CompletedTask,
+            Cmd.Wait(Math.Max(0f, seconds)));
     }
 
     internal bool OwnsProtection(FinisherProtectionToken token) =>

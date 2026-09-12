@@ -37,7 +37,7 @@ public partial class NinjaSlayerShadowController : Node
     private float _actionOut;
     private float _actionReturn;
     private bool _actionHeld;
-    private NCreature? _hoppingRoot;
+    private Node2D? _hoppingRoot;
     private float _hopGroundY;
     private bool _rootHasLifted;
 
@@ -146,7 +146,7 @@ public partial class NinjaSlayerShadowController : Node
     }
     public void ClearDeathFall() { _fall = 0f; ResetAction(); }
 
-    internal void TrackRootHop(NCreature root, float groundY)
+    internal void TrackRootHop(Node2D root, float groundY)
     {
         _hoppingRoot = root;
         _hopGroundY = groundY;

@@ -14,6 +14,7 @@ using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Lifecycle;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -48,7 +49,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         Pile?.Type == PileType.Hand
         && cardPlay.Card.Owner == Owner
         && cardPlay.Card.Type == CardType.Attack
-            ? TriggerFromAttack(choiceContext)
+            ? TriggerFromAttack(choiceContext, cardPlay)
             : Task.CompletedTask;
 
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
@@ -79,13 +80,24 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         }
     }
 
-    private Task TriggerFromAttack(PlayerChoiceContext choiceContext)
+    private sealed class AttackBurn
+    {
+        public bool Resolved;
+    }
+
+    private Task TriggerFromAttack(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (CombatState!.HittableEnemies.Count == 0) return Task.CompletedTask;
-        if (LocalContext.IsMine(this)
-            && MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance?.Ui.Hand.GetCardHolder(this) is NHandCardHolder holder)
-            holder.Flash();
-        return DamageEnemies(choiceContext, Owner, (int)DynamicVars.Damage.BaseValue, this);
+        AttackBurn burn = CardPlayResolutionScope.GetOrCreatePlayState(cardPlay, Owner, () => new AttackBurn())
+            ?? throw new InvalidOperationException("Black Flame requires an active card play.");
+        if (burn.Resolved) return Task.CompletedTask;
+        burn.Resolved = true;
+        var flames = PileType.Hand.GetPile(Owner).Cards.OfType<BlackFlameRedesignV1>().ToArray();
+        foreach (var flame in flames)
+            if (LocalContext.IsMine(flame)
+                && MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance?.Ui.Hand.GetCardHolder(flame) is NHandCardHolder holder)
+                holder.Flash();
+        return DamageEnemies(choiceContext, Owner, flames.Sum(flame => (int)flame.DynamicVars.Damage.BaseValue), this);
     }
 
     private Task DamageEnemies(PlayerChoiceContext choiceContext, List<Creature> enemies) =>

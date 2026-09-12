@@ -286,12 +286,12 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_tornado && !_exclusive) _spinPauseRemaining = Math.Max(_spinPauseRemaining, seconds);
     }
 
-    internal void PlaceAtImpact(Creature target, float impactRootX)
+    internal void PlaceAtImpact(Creature target, float impactRootX, bool moveRoot = true)
     {
         if (_actor == null) return;
         Vector2 incoming = (TargetCanvas() - CoreCanvas).Normalized();
         if (incoming.LengthSquared() < 0.001f) incoming = Vector2.Right * FacingSign;
-        // Exclusive placement owns root movement; discard the preceding visual lunge.
+        // Discard the preceding visual lunge before placing the actor at impact.
         _travel.X = 0f;
         _chargeBack = 0f;
         SyncNow();
@@ -302,7 +302,11 @@ public partial class NinjaSlayerAimPose : Node2D
         float separation = Math.Abs(targetCanvas.X - (CoreCanvas.X + rootShift.X));
         _contactOffset = parentCanvas.AffineInverse().BasisXform(
             -incoming * (separation / Math.Max(0.15f, Math.Abs(incoming.X))));
-        _actor.Position = new(impactRootX, _actor.Position.Y);
+        if (moveRoot)
+            _actor.Position = new(impactRootX, _actor.Position.Y);
+        else
+            _actor.Visuals.Position += _actor.Visuals.GetParent<CanvasItem>()
+                .GetGlobalTransformWithCanvas().AffineInverse().BasisXform(rootShift);
         SyncNow();
     }
 

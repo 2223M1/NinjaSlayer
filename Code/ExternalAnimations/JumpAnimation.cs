@@ -41,7 +41,7 @@ public static class JumpAnimation
 
     internal static async Task PlayFlyingKick(Creature creature)
     {
-        float seconds = CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f);
+        float seconds = SlowAttackAnimation.PeakSeconds;
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, seconds, out Task owned))
         {
             await owned;
@@ -52,11 +52,11 @@ public static class JumpAnimation
         NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, node);
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(creature);
         pose?.BeginAction(NinjaSlayerAttackExecution.Target);
-        if (pose != null) await pose.PrepareKick(NinjaSlayerAttackExecution.CurrentPlay);
         Task approach = NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(
-            creature, 120f, seconds, FinisherActionTrajectory.SlowProgress,
-            returnSeconds: CombatActionTimingRuntime.DamageRecoverySeconds, useConsecutiveGate: false);
-        await Task.WhenAll(approach, Play(creature, alongsideAttack: true));
+            creature, NinjaSlayer.Content.NinjaSlayerCombatVisuals.SlowAttackLungeDistance, seconds, FinisherActionTrajectory.SlowProgress,
+            returnSeconds: CombatActionTimingRuntime.DamageRecoverySeconds);
+        await Play(creature, alongsideAttack: true);
+        await approach;
     }
 
     private static async Task Play(Creature creature, bool alongsideAttack)
@@ -64,7 +64,8 @@ public static class JumpAnimation
         if (NinjaSlayerAimPose.Get(creature) is { } pose)
         {
             pose.BeginAirMotion(hop: false);
-            await Cmd.Wait(CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f));
+            if (!alongsideAttack)
+                await Cmd.Wait(CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f));
             return;
         }
         var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
@@ -118,7 +119,7 @@ public static class JumpAnimation
                 () => StopForAirChannel(creature), independentAirChannel: true);
         }
         _ = TaskHelper.RunSafely(ClearWhenFinished(creature, creatureNode, state));
-        await Cmd.Wait(actionSeconds);
+        if (!alongsideAttack) await Cmd.Wait(actionSeconds);
     }
 
     private static async Task ClearWhenFinished(Creature creature, Node owner, JumpState state)

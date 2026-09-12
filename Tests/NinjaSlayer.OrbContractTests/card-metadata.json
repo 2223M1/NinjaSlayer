@@ -913,7 +913,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/KarateFinish.png",
     "Vars": {
@@ -930,7 +932,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/KarateFinish.png",
     "Vars": {

@@ -125,7 +125,6 @@ public static class AlabamaDropAnimation
         BodyPivotCompensation ownerPivot = BodyPivotCompensation.Capture(ownerRig);
         BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
         Vector2 ownerStartPos = ownerAuthoredBaseline;
-        Vector2 targetStartPos = targetRig.CreatureNode.Position;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
         NinjaSlayerAimPose? aimPose = NinjaSlayerAimPose.Get(owner);
         Vector2 ownerChargeScale = new(
@@ -142,19 +141,18 @@ public static class AlabamaDropAnimation
 
         try
         {
-            float directionToTarget = Mathf.Sign(targetStartPos.X - ownerStartPos.X);
             if (aimPose != null)
             {
                 await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(owner,
                     NinjaSlayerCombatVisuals.AttackLungeDistance, LungeDuration,
                     FinisherActionTrajectory.FastProgress, useConsecutiveGate: false);
                 aimPose.BeginAction(target, exclusive: true);
-                aimPose.PlaceAtImpact(target, ownerLandingPos.X);
+                aimPose.PlaceAtImpact(target, ownerLandingPos.X, moveRoot: false);
             }
             else
             {
-                await FastAttackAnimation.PlayOutwardLunge(owner, LungeDuration, directionToTarget);
-                ownerRig.CreatureNode.Position = ownerLandingPos;
+                await TweenHopNodePosition(ownerRig.CreatureNode, ownerRig.Visuals,
+                    ownerRig.Visuals.Position + ownerLandingPos - ownerStartPos, LungeDuration, hopHeight: 0f);
             }
 
             PlayGrabFeedback(target);
@@ -218,7 +216,8 @@ public static class AlabamaDropAnimation
             Task standUpTask = Task.WhenAll(
                 TweenHopNodePosition(
                     ownerRig.CreatureNode,
-                    ownerStartPos,
+                    ownerRig.Visuals,
+                    ownerRestoreSnapshot.VisualsPosition,
                     StandUpDuration,
                     visualTail.Track,
                     visualTail.SetProgress),
@@ -515,13 +514,15 @@ public static class AlabamaDropAnimation
 
     private static async Task TweenHopNodePosition(
         NCreature creatureNode,
+        Node2D motionNode,
         Vector2 target,
         float duration,
         Action<Tween>? onTweenCreated = null,
-        Action<float>? onProgress = null)
+        Action<float>? onProgress = null,
+        float hopHeight = ReturnHopHeight)
     {
-        Vector2 start = creatureNode.Position;
-        NinjaSlayerShadowController.Get(creatureNode.Entity)?.TrackRootHop(creatureNode, target.Y);
+        Vector2 start = motionNode.Position;
+        NinjaSlayerShadowController.Get(creatureNode.Entity)?.TrackRootHop(motionNode, target.Y);
         var tween = creatureNode.CreateTween();
         onTweenCreated?.Invoke(tween);
         tween.TweenMethod(
@@ -529,9 +530,9 @@ public static class AlabamaDropAnimation
             {
                 onProgress?.Invoke(progress);
                 float easedProgress = progress * progress * (3f - 2f * progress);
-                float yOffset = Mathf.Sin(progress * Mathf.Pi) * ReturnHopHeight;
+                float yOffset = Mathf.Sin(progress * Mathf.Pi) * hopHeight;
                 Vector2 pos = start.Lerp(target, easedProgress);
-                creatureNode.Position = new Vector2(pos.X, pos.Y - yOffset);
+                motionNode.Position = new Vector2(pos.X, pos.Y - yOffset);
             }),
             0f,
             1f,
@@ -542,7 +543,7 @@ public static class AlabamaDropAnimation
         {
             return;
         }
-        creatureNode.Position = target;
+        motionNode.Position = target;
     }
 
     private static async Task WaitTweenInterval(Node owner, float duration)
@@ -650,7 +651,7 @@ public static class AlabamaDropAnimation
                 return null;
             }
 
-            Vector2 currentPosition = ownerSnapshot.CreatureNode.Position;
+            Vector2 currentPosition = ownerSnapshot.Visuals.Position;
             foreach (Tween tween in _tweens)
             {
                 if (GodotObject.IsInstanceValid(tween) && tween.IsValid())
@@ -661,7 +662,7 @@ public static class AlabamaDropAnimation
 
             RestoreSnapshots(currentPosition);
             return new(
-                [RapidMotionChannel.For(ownerSnapshot.CreatureNode, ownerAuthoredBaseline)],
+                [RapidMotionChannel.For(ownerSnapshot.Visuals, ownerSnapshot.VisualsPosition)],
                 RapidAttackTrajectory.RemainingReturnSeconds(StandUpDuration, _progress));
         }
 
@@ -679,7 +680,8 @@ public static class AlabamaDropAnimation
             ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
             if (GodotObject.IsInstanceValid(ownerSnapshot.CreatureNode))
             {
-                ownerSnapshot.CreatureNode.Position = ownerPosition ?? ownerAuthoredBaseline;
+                ownerSnapshot.CreatureNode.Position = ownerAuthoredBaseline;
+                ownerSnapshot.Visuals.Position = ownerPosition ?? ownerSnapshot.VisualsPosition;
             }
         }
     }

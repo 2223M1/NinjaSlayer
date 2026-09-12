@@ -9,6 +9,8 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class DecidedOutcomeRedesignV1 : RedesignV1UncommonCard
 {
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
+
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry), NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];

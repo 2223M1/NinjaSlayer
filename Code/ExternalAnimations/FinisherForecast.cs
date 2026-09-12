@@ -443,7 +443,6 @@ internal static class FinisherForecast
         int stacks = states.Length > 0 ? states[0].Karate : 0;
         int[] targets = primaryResults
             .Where(result => result.TriggerKarate
-                && states[result.Target].Hp > 0
                 && enemies[result.Target].Side != dealer.Side)
             .Select(result => result.Target)
             .Distinct()
@@ -451,15 +450,14 @@ internal static class FinisherForecast
         KarateWaveResolution wave = KarateWaveRules.Resolve(
             stacks,
             triggersKarate
-                && props.IsPoweredAttack()
-                && KarateTriggerRules.CanTriggerFromCardSource(cardSource),
+                && props.IsPoweredAttack(),
             targets.Length);
         if (!wave.Triggered)
         {
             return;
         }
 
-        foreach (int target in targets)
+        foreach (int target in targets.Where(target => states[target].Hp > 0))
         {
             ApplyDamage(
                 owner,

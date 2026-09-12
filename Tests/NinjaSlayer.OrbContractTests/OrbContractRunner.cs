@@ -143,6 +143,9 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
             patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
+            foreach (string name in new[] { "CardPlayResolutionBeforePatch", "CardPlayResolutionAfterPatch", "CardResolutionCleanupPatch" })
+                typeof(ModPatcherExtensions).GetMethod("RegisterPatch")!
+                    .MakeGenericMethod(product.GetType("NinjaSlayer.Code.Patches." + name, true)!).Invoke(null, [patcher]);
             Require(patcher.PatchAll(), "Orb patches failed to install.");
             var presentation = new Harmony("NinjaSlayer.OrbContracts.Presentation");
             presentation.Patch(AccessTools.Method(product.GetType("NinjaSlayer.Cards.ShurikenCombat", true), "PlayStockThrowAnimation"),
@@ -170,6 +173,7 @@ public partial class OrbContractRunner : Node
             await VerifyV020();
             await VerifyV17();
             await VerifyV023();
+            await VerifyV024();
             string? successMarker = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_SUCCESS_MARKER");
             if (!string.IsNullOrWhiteSpace(successMarker))
                 System.IO.File.WriteAllText(successMarker, "passed\n");
@@ -248,9 +252,6 @@ public partial class OrbContractRunner : Node
                 or MockGodotFileIo.Methods.deleteFile or MockGodotFileIo.Methods.renameFile)),
                 "Unsupported run loading must preserve the original file without writes or deletion.");
         }
-        Require(NinjaSlayer.Code.Combat.KarateTriggerRules.CanTriggerFromCardSource(null)
-            && !NinjaSlayer.Code.Combat.KarateTriggerRules.CanTriggerFromCardSource(ModelDb.Card<AlabamaDropRedesignV1>()),
-            "Alabama Drop excludes its own Karate trigger while a null source remains eligible.");
         GD.Print("PASS new character inventory save/reload and removed-model file preservation");
     }
 

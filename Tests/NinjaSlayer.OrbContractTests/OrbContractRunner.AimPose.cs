@@ -158,7 +158,7 @@ public partial class OrbContractRunner
                 Invoke("BeginAction", combat.Enemy, false, false);
                 Invoke("SetTravel", new Vector2(90f, 0f), 1f);
                 Invoke("BeginAction", combat.Enemy, true, false);
-                Invoke("PlaceAtImpact", combat.Enemy, 600f);
+                Invoke("PlaceAtImpact", combat.Enemy, 600f, true);
                 Require(actor.Position.X == 600f, "Finisher no longer places the actor directly at impact.");
                 Require(Math.Abs(((Vector2)AccessTools.Property(poseType, "Travel").GetValue(pose)!).X) < 0.01f,
                     "Finisher applied the preceding attack displacement a second time.");
@@ -190,6 +190,27 @@ public partial class OrbContractRunner
             }
             actor.Position = Vector2.Zero;
             anchor.Position = Vector2.Zero;
+            Vector2 rigBaseline = rig.Position;
+            Vector2 targetBaseline = target.Position;
+            var health = new Control { Position = new(10f, 20f) };
+            var status = new Control { Position = new(10f, 40f) };
+            actor.AddChild(health);
+            actor.AddChild(status);
+            Vector2 healthBefore = health.GlobalPosition, statusBefore = status.GlobalPosition;
+            Invoke("BeginAction", combat.Enemy, true, false);
+            Invoke("PlaceAtImpact", combat.Enemy, 600f, false);
+            for (int frame = 0; frame < 10; frame++)
+            {
+                Invoke("SyncNow");
+                Require(actor.Position == Vector2.Zero && target.Position == targetBaseline
+                    && health.GlobalPosition == healthBefore && status.GlobalPosition == statusBefore,
+                    "Alabama visual placement moved a creature root or health/status UI.");
+            }
+            Require(rig.Position != rigBaseline, "Alabama must still move the body to impact.");
+            Invoke("BeginReturn");
+            Invoke("ApplyReturn", 1f);
+            rig.Position = rigBaseline;
+            health.Free(); status.Free();
             await VerifyNativeDrawBatches(combat, pose);
             await VerifyNonblockingThrow(combat, pose);
             await VerifyConcurrentMotion(combat, pose, anchor, center, target);
@@ -265,12 +286,13 @@ public partial class OrbContractRunner
             Node shadowController = rig.GetNode("ShadowController");
             AccessTools.Method(shadowController.GetType(), "SyncNow").Invoke(shadowController, null);
             float groundedShadowY = rig.GetNode<Sprite2D>("Shadow").GlobalPosition.Y;
-            AccessTools.Method(shadowController.GetType(), "TrackRootHop").Invoke(shadowController, [actor, 0f]);
-            actor.Position = new(0f, -70f);
+            AccessTools.Method(shadowController.GetType(), "TrackRootHop").Invoke(shadowController, [rig, 0f]);
+            rig.Position = new(0f, -70f);
             AccessTools.Method(shadowController.GetType(), "SyncNow").Invoke(shadowController, null);
             Require(Math.Abs(rig.GetNode<Sprite2D>("Shadow").GlobalPosition.Y - groundedShadowY) < .1f,
-                "Whole-root return hop lifted the shadow off the ground.");
-            actor.Position = Vector2.Zero;
+                "Visual return hop lifted the shadow off the ground.");
+            Require(actor.Position == Vector2.Zero, "Visual return hop moved the health/status root.");
+            rig.Position = Vector2.Zero;
             AccessTools.Method(shadowController.GetType(), "SyncNow").Invoke(shadowController, null);
             GD.Print("PASS actual packaged AimPose: high/low targets, both facings, airborne, normal/half/full forms, affine core tracking, kicks, Tornado foot height and return.");
             NCreatureVisuals koki = STS2RitsuLib.Scaffolding.Godot.RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(

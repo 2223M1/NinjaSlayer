@@ -49,19 +49,17 @@ public sealed class CombatLogicTests
     }
 
     [Theory]
-    [InlineData(6, true, true, true)]
-    [InlineData(0, true, true, false)]
-    [InlineData(6, false, true, false)]
-    [InlineData(6, true, false, false)]
+    [InlineData(6, true, true)]
+    [InlineData(0, true, false)]
+    [InlineData(6, false, false)]
     public void KarateWaveFiltersDamageResults(
         int totalDamage,
         bool isOpposingSide,
-        bool canReceiveBonus,
         bool expected)
     {
         Assert.Equal(
             expected,
-            KarateWaveRules.IsEligibleHit(totalDamage, isOpposingSide, canReceiveBonus));
+            KarateWaveRules.IsEligibleHit(totalDamage, isOpposingSide));
     }
 
     [Fact]
@@ -89,9 +87,6 @@ public sealed class CombatLogicTests
         shuriken.Tags.Add(NinjaSlayerCardTags.Shuriken);
         var shiv = new CardModel { Type = CardType.Attack };
         shiv.Tags.Add(CardTag.Shiv);
-
-        Assert.True(KarateTriggerRules.CanTriggerFromCardSource(shuriken));
-        Assert.True(KarateTriggerRules.CanTriggerFromCardSource(shiv));
         Assert.False(KarateTriggerRules.IsMeleeAttack(shuriken));
         Assert.False(KarateTriggerRules.IsMeleeAttack(shiv));
     }

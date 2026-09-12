@@ -38,7 +38,7 @@ public sealed class SatsubatsuRedesignV1 : RedesignV1CommonCard
             .FromCard(this, cardPlay)
 #endif
             .WithDefectStrikeHitFx()
-            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(Owner, PileType.Hand);
