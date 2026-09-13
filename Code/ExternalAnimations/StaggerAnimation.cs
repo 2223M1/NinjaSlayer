@@ -1,242 +1,107 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Logging;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Code.Nodes;
+using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class StaggerAnimation
 {
-    private const float StaggerDuration = 0.3f;
-    private const float StaggerDistance = 20f;
-    internal const float DefaultRotationDegrees = -15f;
-    internal const float MirroredRotationDegrees = 15f;
-
+    internal const float DefaultRotationDegrees = -18f;
+    internal const float MirroredRotationDegrees = 18f;
     private static readonly Dictionary<Creature, StaggerState> ActiveStates = [];
 
     public static bool IsActive(Creature creature) => ActiveStates.ContainsKey(creature)
         || NinjaSlayerAimPose.Get(creature)?.HasHurt == true;
 
+    internal static async Task WaitForCompletion(Creature creature)
+    {
+        while (ActiveStates.TryGetValue(creature, out StaggerState? state))
+            await state.Completion.Task;
+    }
+
     internal static Action? PauseCurrent(Creature creature)
     {
         if (NinjaSlayerAimPose.Get(creature) is { } pose) return pose.PauseHurt();
         if (!ActiveStates.TryGetValue(creature, out StaggerState? state)) return null;
-        state.Pause();
-        return () =>
-        {
-            if (ActiveStates.TryGetValue(creature, out StaggerState? current) && ReferenceEquals(current, state))
-                state.Resume();
-        };
+        state.Tween.Pause();
+        return () => { if (state.Active && state.Tween.IsValid()) state.Tween.Play(); };
     }
 
-    internal static bool TryTakeover(Creature creature, out HandoffLease? lease)
+    public static async Task Play(Creature creature, float rotationDegrees = DefaultRotationDegrees)
     {
-        if (!ActiveStates.Remove(creature, out StaggerState? state))
-        {
-            lease = null;
-            return false;
-        }
-
-        lease = state.TransferOwnership();
-        return true;
-    }
-
-    public static async Task Play(
-        Creature creature,
-        float rotationDegrees = DefaultRotationDegrees)
-    {
+        float duration = CombatActionTimingRuntime.VisualSeconds(0.15f);
         if (NinjaSlayerAimPose.Get(creature) is { } pose)
         {
-            var motion = pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Hurt,
-                CombatActionTimingRuntime.Resolve(StaggerDuration, StaggerDuration * 0.5f));
+            var motion = pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Hurt, duration);
             pose.SyncNow();
             if (motion != null) await motion.Completion;
             return;
         }
-        if (ActiveStates.Remove(creature, out StaggerState? previous))
+        Reset(creature);
+        if (duration <= 0f || creature.GetCreatureNode() is not { } node) return;
+        Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(node.Visuals);
+        if (anchor == null) return;
+        NinjaSlayerRapidAnimationCoordinator.EnsureLifecycle(creature);
+        var state = new StaggerState(node.CreateTween(), anchor, node.Visuals.VfxSpawnPosition);
+        ActiveStates.Add(creature, state);
+        float direction = creature.Side == CombatSide.Player ? -1f : 1f;
+        void Apply(float progress)
         {
-            previous.StopAndRestore();
+            if (!state.Active) return;
+            float envelope = 1f - progress * progress;
+            var transform = new Transform2D(Mathf.DegToRad(rotationDegrees * envelope),
+                new Vector2(1f + .04f * envelope, 1f - .045f * envelope), 0f, Vector2.Zero);
+            transform.Origin = state.CenterPosition + Vector2.Right * (28f * direction * envelope)
+                - transform.BasisXform(state.CenterPosition);
+            anchor.Transform = transform * state.AnchorTransform;
+            state.Center.Position = transform * state.CenterPosition;
         }
-
-        var creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
-        if (creatureNode == null)
-        {
-            return;
-        }
-
-        var visuals = creatureNode.Visuals;
-        NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Hurt, 0f, StaggerDuration);
-        var bodyAnchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals)
-            ?? NinjaSlayerVisualRig.GetBodySprite(visuals);
-        var tween = creatureNode.CreateTween();
-        var state = new StaggerState(
-            tween,
-            creatureNode,
-            bodyAnchor,
-            creatureNode.Position,
-            bodyAnchor?.RotationDegrees ?? 0f,
-            creature.IsPlayer ? -1f : 1f,
-            rotationDegrees);
-        ActiveStates[creature] = state;
-
+        Apply(0f);
+        NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Hurt, 0f, duration);
         try
         {
-            tween.TweenMethod(
-                Callable.From<float>(state.Apply),
-                0f,
-                1f,
-                StaggerDuration
-            ).SetTrans(Tween.TransitionType.Linear);
-            await TweenPlayback.AwaitCompletion(tween, creatureNode);
+            state.Tween.TweenMethod(Callable.From<float>(Apply), 0f, 1f, duration);
+            await TweenPlayback.AwaitCompletion(state.Tween, node);
         }
         finally
         {
-            if (ActiveStates.TryGetValue(creature, out StaggerState? active)
-                && ReferenceEquals(active, state))
-            {
+            if (ActiveStates.TryGetValue(creature, out var current) && ReferenceEquals(current, state))
                 ActiveStates.Remove(creature);
-                state.StopAndRestore();
-            }
+            state.Restore();
         }
     }
 
     public static void Reset()
     {
-        foreach (Creature creature in ActiveStates.Keys.ToArray())
-        {
-            Reset(creature);
-        }
+        foreach (Creature creature in ActiveStates.Keys.ToArray()) Reset(creature);
     }
 
     public static void Reset(Creature creature)
     {
         NinjaSlayerAimPose.Get(creature)?.ClearHurt();
-        if (ActiveStates.Remove(creature, out StaggerState? state))
-        {
-            state.StopAndRestore();
-        }
+        if (ActiveStates.Remove(creature, out var state)) state.Restore();
     }
 
-    private sealed class StaggerState(
-        Tween tween,
-        Control creatureNode,
-        Node2D? bodyAnchor,
-        Vector2 originalPosition,
-        float originalBodyRotation,
-        float direction,
-        float rotationDegrees)
+    private sealed class StaggerState(Tween tween, Node2D anchor, Node2D center)
     {
-        private bool _stopped;
+        internal readonly Tween Tween = tween;
+        internal readonly Node2D Center = center;
+        internal readonly Transform2D AnchorTransform = anchor.Transform;
+        internal readonly Vector2 CenterPosition = center.Position;
+        internal readonly TaskCompletionSource Completion = new();
+        internal bool Active = true;
 
-        public Tween Tween { get; } = tween;
-
-        public void Pause()
+        internal void Restore()
         {
-            if (_stopped || !Tween.IsValid()) return;
-            if (Tween.GetTotalElapsedTime() == 0d) Apply(0f);
-            Tween.SetSpeedScale(0f);
-        }
-
-        public void Resume()
-        {
-            if (!_stopped && Tween.IsValid()) Tween.SetSpeedScale(1f);
-        }
-
-        public void Apply(float progress)
-        {
-            if (_stopped || !GodotObject.IsInstanceValid(creatureNode))
-            {
-                return;
-            }
-
-            float easedProgress = progress * progress;
-            float xOffset = Mathf.Lerp(StaggerDistance, 0f, easedProgress) * direction;
-            creatureNode.Position = new Vector2(originalPosition.X + xOffset, originalPosition.Y);
-            if (bodyAnchor != null && GodotObject.IsInstanceValid(bodyAnchor))
-            {
-                bodyAnchor.RotationDegrees = originalBodyRotation
-                    + Mathf.Lerp(rotationDegrees, 0f, easedProgress);
-            }
-        }
-
-        public void StopAndRestore()
-        {
-            if (_stopped)
-            {
-                return;
-            }
-
-            _stopped = true;
-            try
-            {
-                if (GodotObject.IsInstanceValid(Tween) && Tween.IsValid())
-                {
-                    Tween.Kill();
-                }
-            }
-            finally
-            {
-                if (GodotObject.IsInstanceValid(creatureNode))
-                {
-                    creatureNode.Position = originalPosition;
-                }
-
-                if (bodyAnchor != null && GodotObject.IsInstanceValid(bodyAnchor))
-                {
-                    bodyAnchor.RotationDegrees = originalBodyRotation;
-                }
-            }
-        }
-
-        public HandoffLease TransferOwnership()
-        {
-            if (!_stopped)
-            {
-                _stopped = true;
-                if (GodotObject.IsInstanceValid(Tween) && Tween.IsValid())
-                {
-                    Tween.Kill();
-                }
-            }
-
-            return new HandoffLease(
-                creatureNode,
-                bodyAnchor,
-                originalPosition,
-                originalBodyRotation,
-                creatureNode.Position,
-                bodyAnchor?.RotationDegrees ?? originalBodyRotation);
-        }
-    }
-
-    internal sealed class HandoffLease(
-        Control creatureNode,
-        Node2D? bodyAnchor,
-        Vector2 baselinePosition,
-        float baselineBodyRotation,
-        Vector2 currentPosition,
-        float currentBodyRotation)
-    {
-        public Control CreatureNode { get; } = creatureNode;
-        public Node2D? BodyAnchor { get; } = bodyAnchor;
-        public Vector2 BaselinePosition { get; } = baselinePosition;
-        public float BaselineBodyRotation { get; } = baselineBodyRotation;
-        public Vector2 CurrentPosition { get; } = currentPosition;
-        public float CurrentBodyRotation { get; } = currentBodyRotation;
-
-        public void Restore()
-        {
-            if (GodotObject.IsInstanceValid(CreatureNode))
-            {
-                CreatureNode.Position = BaselinePosition;
-            }
-
-            if (BodyAnchor != null && GodotObject.IsInstanceValid(BodyAnchor))
-            {
-                BodyAnchor.RotationDegrees = BaselineBodyRotation;
-            }
+            if (!Active) return;
+            Active = false;
+            if (Tween.IsValid()) Tween.Kill();
+            if (GodotObject.IsInstanceValid(anchor)) anchor.Transform = AnchorTransform;
+            if (GodotObject.IsInstanceValid(Center)) Center.Position = CenterPosition;
+            Completion.TrySetResult();
         }
     }
 }

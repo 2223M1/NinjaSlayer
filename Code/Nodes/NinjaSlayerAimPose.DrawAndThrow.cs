@@ -8,7 +8,7 @@ namespace NinjaSlayer.Code.Nodes;
 
 public partial class NinjaSlayerAimPose
 {
-    internal static float ShurikenWindupSeconds => CombatActionTimingRuntime.Resolve(0.166f, 0.083f);
+    internal static float ShurikenWindupSeconds => CombatActionTimingRuntime.VisualSeconds(0.083f);
     private float _bodyHeight;
     private float _baseDisplayAngle;
     private float _baseEffectiveTravelY;
@@ -65,9 +65,12 @@ public partial class NinjaSlayerAimPose
 
     internal void BeginAirMotion(bool hop)
     {
-        float duration = CombatActionTimingRuntime.Resolve(hop ? 0.28f : 0.7f, hop ? 0.14f : 0.35f);
+        float duration = CombatActionTimingRuntime.VisualSeconds(hop ? 0.14f : 0.35f);
         if (BeginVisualMotion(hop ? MotionKind.Hop : MotionKind.Jump, duration) is { } motion)
+        {
             motion.Height = hop ? 60f : 150f;
+            if (!hop) motion.Elapsed = -KickPreparationSeconds(NinjaSlayerAttackExecution.CurrentPlay);
+        }
     }
 
     internal void ClearAirMotions()
@@ -80,13 +83,13 @@ public partial class NinjaSlayerAimPose
     {
         if (!CanPresent) return;
         SyncNow();
-        if (BeginVisualMotion(MotionKind.Backflip, CombatActionTimingRuntime.Resolve(0.5f, 0.25f)) is { } motion)
+        if (BeginVisualMotion(MotionKind.Backflip, CombatActionTimingRuntime.VisualSeconds(0.25f)) is { } motion)
             motion.Height = _bodyHeight * 0.30f;
     }
 
     internal void BeginShurikenThrow(Creature? target)
     {
-        if (BeginVisualMotion(MotionKind.Throw, CombatActionTimingRuntime.Resolve(0.334f, 0.167f)) is { } motion)
+        if (BeginVisualMotion(MotionKind.Throw, CombatActionTimingRuntime.VisualSeconds(0.167f)) is { } motion)
             motion.Target = target;
     }
 
@@ -137,6 +140,7 @@ public partial class NinjaSlayerAimPose
         Vector2 shift = Vector2.Zero;
         foreach (VisualMotion motion in _presentations)
         {
+            if (motion.Elapsed < 0f) continue;
             float p = Mathf.Clamp(motion.Elapsed / motion.Duration, 0f, 1f);
             float envelope;
             switch (motion.Kind)
@@ -149,11 +153,6 @@ public partial class NinjaSlayerAimPose
                     float turn = Mathf.Clamp(p / 0.88f, 0f, 1f);
                     angle -= motion.Facing * Mathf.Tau * (1f - Mathf.Pow(1f - turn, 1.3f));
                     shift.Y -= 4f * motion.Height * turn * (1f - turn);
-                    if (p > 0.88f)
-                    {
-                        envelope = Mathf.Sin((p - 0.88f) / 0.12f * Mathf.Pi);
-                        _presentationScale *= new Vector2(1f + 0.035f * envelope, 1f - 0.06f * envelope);
-                    }
                     break;
                 case MotionKind.Throw:
                     float windup = motion.Duration * (0.166f / 0.334f);

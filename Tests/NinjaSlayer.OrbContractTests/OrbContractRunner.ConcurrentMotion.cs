@@ -121,7 +121,7 @@ public partial class OrbContractRunner
             Tween combinedTween = MotionTween(combinedState, 0);
             combinedTween.Pause();
             combinedTween.CustomStep(0.075);
-            pose._Process(0.16601);
+            pose._Process(0.10001);
             Require((bool)AccessTools.Property(pose.GetType(), "IsBackflipping").GetValue(pose)!
                 && (bool)AccessTools.Property(pose.GetType(), "IsJumping").GetValue(pose)!
                 && ThrowReleased(pose)
@@ -154,9 +154,9 @@ public partial class OrbContractRunner
             pose._Process(0.1);
             Pose("BeginReturn");
             Pose("ApplyReturn", 1f);
-            float expectedLift = 150f * 4f * (0.2f / 0.7f) * (1f - 0.2f / 0.7f)
-                + 150f * 4f * (0.1f / 0.7f) * (1f - 0.1f / 0.7f)
-                + 60f * Mathf.Sin(0.1f / 0.28f * Mathf.Pi);
+            float expectedLift = 150f * 4f * (0.2f / 0.35f) * (1f - 0.2f / 0.35f)
+                + 150f * 4f * (0.1f / 0.35f) * (1f - 0.1f / 0.35f)
+                + 60f * Mathf.Sin(0.1f / 0.14f * Mathf.Pi);
             Require(Math.Abs(center.GlobalPosition.Y - coreBaseline.Y + expectedLift) < 0.1f,
                 "Repeated jumps, hop and attack did not preserve all airborne contributions.");
             pose._Process(0.601);

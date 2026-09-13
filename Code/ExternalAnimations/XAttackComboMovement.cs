@@ -142,7 +142,7 @@ public static class XAttackComboMovement
             }
 
             Vector2 returnStart = state.CreatureNode.Position;
-            float returnDuration = CombatActionTimingRuntime.DamageRecoverySeconds;
+            float returnDuration = CombatActionTimingRuntime.ReturnSeconds;
             if (Mathf.IsZeroApprox(returnDuration))
             {
                 state.CreatureNode.Position = state.BasePosition;

@@ -20,6 +20,6 @@ internal static class FinisherActionTrajectory
         float direction = float.IsFinite(delta) && MathF.Abs(delta) > 0.001f
             ? MathF.Sign(delta)
             : fallbackDirection < 0f ? -1f : 1f;
-        return impactX - direction * SlowTravelPixels;
+        return impactX - direction * 90f;
     }
 }

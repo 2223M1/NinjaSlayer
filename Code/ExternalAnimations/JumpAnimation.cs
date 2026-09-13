@@ -52,10 +52,10 @@ public static class JumpAnimation
         NinjaSlayerRapidAnimationCoordinator.PrepareAction(creature, node);
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(creature);
         pose?.BeginAction(NinjaSlayerAttackExecution.Target);
+        await Play(creature, alongsideAttack: true);
         Task approach = NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(
             creature, NinjaSlayer.Content.NinjaSlayerCombatVisuals.SlowAttackLungeDistance, seconds, FinisherActionTrajectory.SlowProgress,
-            returnSeconds: CombatActionTimingRuntime.DamageRecoverySeconds);
-        await Play(creature, alongsideAttack: true);
+            returnSeconds: CombatActionTimingRuntime.ReturnSeconds);
         await approach;
     }
 
@@ -94,7 +94,7 @@ public static class JumpAnimation
 
         Vector2 originalPos = target.Position;
         float actionSeconds = CombatActionTimingRuntime.Resolve(ActionDuration, ActionDuration * 0.5f);
-        float animationSeconds = CombatActionTimingRuntime.Resolve(AnimationDuration, AnimationDuration * 0.5f);
+        float animationSeconds = CombatActionTimingRuntime.VisualSeconds(AnimationDuration * 0.5f);
         if (animationSeconds <= 0f) return;
         var tween = creatureNode.CreateTween();
         var state = new JumpState(tween, target, originalPos);
@@ -154,7 +154,7 @@ public static class JumpAnimation
         state.StopWithoutRestore();
         return new(
             [RapidMotionChannel.For(state.Target, state.OriginalPosition)],
-            RapidAttackTrajectory.RemainingReturnSeconds(AnimationDuration, state.Progress));
+            RapidAttackTrajectory.RemainingReturnSeconds(AnimationDuration * 0.5f, state.Progress));
     }
 
     private sealed class JumpState

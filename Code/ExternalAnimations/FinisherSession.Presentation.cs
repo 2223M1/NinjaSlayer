@@ -590,7 +590,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
         float actorReturnSeconds = Scenario == FinisherScenarioKind.YamotoKokiIaiSlash
-            ? CombatActionTimingRuntime.DamageRecoverySeconds
+            ? SlowAttackAnimation.ReferencePeakSeconds
             : ReturnSeconds;
         float totalReturnSeconds = Math.Max(ReturnSeconds, actorReturnSeconds);
         float elapsed = 0f;

@@ -269,7 +269,7 @@ public partial class OrbContractRunner
                 MegaCrit.Sts2.Core.Saves.SaveManager.Instance.PrefsSave.FastMode = mode;
                 Call("BeginTornado", combat.Enemy, false, empowered);
                 Tick(.01f);
-                float expected = empowered ? 120f : mode == MegaCrit.Sts2.Core.Settings.FastModeType.Fast ? 48f : 24f;
+                float expected = empowered ? 120f : 48f;
                 Require(Math.Abs((float)AccessTools.Field(type, "_spinDegrees").GetValue(pose)! - expected) < .01f,
                     "Tornado started at the wrong tier's rotation speed.");
                 Call("PauseTornadoSpin", .035f);

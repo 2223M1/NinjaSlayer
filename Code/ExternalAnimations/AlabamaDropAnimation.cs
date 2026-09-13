@@ -148,7 +148,7 @@ public static class AlabamaDropAnimation
             {
                 await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(owner,
                     NinjaSlayerCombatVisuals.AttackLungeDistance, LungeDuration,
-                    FinisherActionTrajectory.FastProgress, useConsecutiveGate: false);
+                    FinisherActionTrajectory.FastProgress, standardPresentation: false);
                 aimPose.BeginAction(target, exclusive: true);
                 aimPose.PlaceAtImpact(target, ownerLandingPos.X, moveRoot: false);
             }

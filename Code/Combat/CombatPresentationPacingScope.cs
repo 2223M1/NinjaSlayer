@@ -29,9 +29,12 @@ internal static class CombatPresentationPacingScope
         bool ignoreCombatEnd,
         CancellationToken cancellationToken)
     {
-        if (Current.Value?.Policy.SkipDamageRecovery == true && !NinjaSlayerAttackExecution.NeedsDamageRecovery)
+        if (Current.Value?.Policy.SkipDamageRecovery == true
+            && (Current.Value.Policy == CombatPresentationPacingPolicy.ComboDamage
+                || !NinjaSlayerAttackExecution.NeedsDamageRecovery))
         {
-            NinjaSlayerAttackExecution.DeferFinalRecovery();
+            if (Current.Value.Policy != CombatPresentationPacingPolicy.ComboDamage)
+                NinjaSlayerAttackExecution.DeferFinalRecovery();
             return Task.CompletedTask;
         }
         if (NinjaSlayerAttackExecution.CurrentCommand?.Attacker is { } attacker)

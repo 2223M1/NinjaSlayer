@@ -28,6 +28,22 @@ public partial class OrbContractRunner
         Task Recover() => (Task)AccessTools.Method(pacing, "WaitForDamageRecovery").Invoke(null,
             [0.1f, 0.2f, false, CancellationToken.None])!;
 
+        FastModeType originalSpeed = SaveManager.Instance.PrefsSave.FastMode;
+        SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
+        var existingTweens = GetTree().GetProcessedTweens().Select(t => t.GetInstanceId()).ToHashSet();
+        Task customGate = NinjaSlayer.Code.ExternalAnimations.FastAttackAnimation.Play(combat.Player.Creature, .4f);
+        Tween customTween = GetTree().GetProcessedTweens().Single(t => !existingTweens.Contains(t.GetInstanceId()));
+        customTween.Pause();
+        customTween.CustomStep(.15f);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        Require(!customGate.IsCompleted, "Attack replaced the caller's 0.4s gate with the default 0.15s.");
+        customTween.CustomStep(.249f);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        Require(!customGate.IsCompleted, "Attack released gameplay before the caller's 0.4s gate.");
+        customTween.CustomStep(.002f);
+        await customGate;
+        await ToSignal(GetTree().CreateTimer(.11), SceneTreeTimer.SignalName.Timeout);
+        Run("CancelAndRestore", combat.Player.Creature);
         var card = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
         var play = new CardPlay { Card = card,
 #if !NINJASLAYER_CHANNEL_STABLE
@@ -47,7 +63,6 @@ public partial class OrbContractRunner
             .Targeting(combat.Enemy);
         object commandLease = AccessTools.Method(execution, "Enter").Invoke(null, [command, combat.Enemy])!;
         object sequence = AccessTools.Method(execution, "EnterSequence").Invoke(null, [2])!;
-        FastModeType originalSpeed = SaveManager.Instance.PrefsSave.FastMode;
         try
         {
             foreach (var (speed, scale) in new[] { (FastModeType.Normal, 1f), (FastModeType.Fast, 0.5f), (FastModeType.Instant, 0f) })
@@ -55,7 +70,7 @@ public partial class OrbContractRunner
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
                 Run("CancelAndRestore", combat.Player.Creature);
-                float gate = (distance == 90f ? 0.15f : 0.2f) * scale;
+                float gate = 0.25f * scale;
                 for (int hit = 0; hit < 2; hit++)
                 {
                     AccessTools.Method(sequence.GetType(), "SetHit").Invoke(sequence, [hit]);
@@ -65,10 +80,11 @@ public partial class OrbContractRunner
                     {
                         var outbound = (Tween)AccessTools.Field(motion.GetType(), "Tween").GetValue(motion)!;
                         outbound.Pause();
-                        outbound.CustomStep(gate / 2f);
-                        Require(Math.Abs(Travel().Length() - distance / 2f) < .1f,
-                            "A same-card hit inherited the previous lunge or used a shortened cross-card gate.");
-                        outbound.CustomStep(gate / 2f + .001f);
+                        outbound.CustomStep(.0125f);
+                        if (hit == 0) Require(Travel().Length() < .1f, "Kick moved before its preparation turn finished.");
+                        outbound.CustomStep(gate - .0135f);
+                        Require(!attack.IsCompleted, "Kick released gameplay before its full gate.");
+                        outbound.CustomStep(.002f);
                     }
                     await attack;
                     Require(Math.Abs(Travel().Length() - distance) < .1f, "Combo peak accumulated displacement.");
@@ -80,9 +96,9 @@ public partial class OrbContractRunner
                             "Standard damage recovery held the first kick at its peak until the second kick.");
                         var returning = (Tween)AccessTools.Field(motion.GetType(), "Tween").GetValue(motion)!;
                         returning.Pause();
-                        returning.CustomStep(.1f * scale);
+                        returning.CustomStep(.05f);
                         Require(Math.Abs(Travel().Length() - distance / 2f) < .1f, "Combo recovery does not use the standard recovery duration.");
-                        returning.CustomStep(.1f * scale + .001f);
+                        returning.CustomStep(.051f);
                     }
                     await recovery;
                     Require(Travel().Length() < .1f, "Next combo hit would start before the preceding lunge recovered.");

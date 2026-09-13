@@ -139,7 +139,7 @@ public partial class NinjaSlayerAimPose : Node2D
         else if (_tornado)
         {
             float speed = _tornadoEmpowered ? 12000f
-                : CombatActionTimingRuntime.CurrentSpeed == CombatActionSpeed.Fast ? 4800f : 2400f;
+                : 4800f;
             double stopped = Math.Min(delta, _spinPauseRemaining);
             _spinPauseRemaining = (float)Math.Max(0d, _spinPauseRemaining - stopped);
             double from = _spinDegrees;
@@ -256,6 +256,10 @@ public partial class NinjaSlayerAimPose : Node2D
         SyncNow();
     }
 
+    internal float KickPreparationSeconds(CardPlay? play) =>
+        play != null && IsKick(play.Card) && !ReferenceEquals(_preparedKick, play)
+            ? CombatActionTimingRuntime.VisualSeconds(0.025f) : 0f;
+
     internal async Task PrepareKick(CardPlay? play)
     {
         if (play == null || !IsKick(play.Card))
@@ -269,9 +273,9 @@ public partial class NinjaSlayerAimPose : Node2D
             _kick = 1f;
             return;
         }
+        float seconds = KickPreparationSeconds(play);
         _preparedKick = play;
         float from = _kick;
-        float seconds = CombatActionTimingRuntime.Resolve(0.05f, 0.025f);
         if (seconds <= 0f) _actionBlend = 1f;
         await TweenPose(seconds, p =>
         {

@@ -71,7 +71,7 @@ public static class HopAnimation
         }
 
         var hopHeight = 60f;
-        var animationDuration = 0.28f;
+        var animationDuration = CombatActionTimingRuntime.VisualSeconds(0.14f);
         float actionDuration = CombatActionTimingRuntime.CastSeconds;
 
         if (Mathf.IsZeroApprox(actionDuration))
@@ -155,7 +155,7 @@ public static class HopAnimation
         state.StopWithoutRestore();
         return new(
             [RapidMotionChannel.For(state.Anchor, state.BasePosition)],
-            RapidAttackTrajectory.RemainingReturnSeconds(0.28f, state.Progress));
+            RapidAttackTrajectory.RemainingReturnSeconds(0.14f, state.Progress));
     }
 
     private sealed class HopState(

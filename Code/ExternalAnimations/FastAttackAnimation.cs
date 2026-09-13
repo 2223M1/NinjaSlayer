@@ -53,7 +53,8 @@ public static class FastAttackAnimation
 
     public static async Task Play(Creature creature, float waitTime, bool reverseDirection = false)
     {
-        float peakSeconds = CombatActionTimingRuntime.AttackSeconds;
+        float peakSeconds = CombatActionTimingRuntime.TriggerSeconds(
+            NinjaSlayerAimPose.IsKick(NinjaSlayerAttackExecution.CurrentPlay?.Card) ? 0.25f : waitTime);
         NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Attack, peakSeconds, CombatActionTimingRuntime.DamageRecoverySeconds);
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, peakSeconds, out Task action))
         {
@@ -70,7 +71,7 @@ public static class FastAttackAnimation
                 peakSeconds,
                 FinisherActionTrajectory.FastProgress,
                 reverseDirection,
-                CombatActionTimingRuntime.DamageRecoverySeconds);
+                CombatActionTimingRuntime.ReturnSeconds);
             return;
         }
 
@@ -88,12 +89,13 @@ public static class FastAttackAnimation
                 originalPos,
                 peakPosition,
                 peakSeconds,
-                FinisherActionTrajectory.FastProgress))
+                p => FinisherActionTrajectory.FastProgress(peakSeconds <= 0f ? 1f
+                    : Mathf.Clamp(p * peakSeconds / Math.Min(peakSeconds, 0.075f), 0f, 1f))))
         {
             return;
         }
 
-        StartReturn(creatureNode, peakPosition, originalPos, CombatActionTimingRuntime.DamageRecoverySeconds);
+        StartReturn(creatureNode, peakPosition, originalPos, CombatActionTimingRuntime.ReturnSeconds);
     }
 
     private static async Task<bool> TweenPosition(

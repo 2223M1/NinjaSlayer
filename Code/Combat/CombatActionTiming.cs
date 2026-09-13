@@ -20,6 +20,12 @@ internal static class CombatActionTiming
     public const float ConsecutiveAttackNormalSeconds = 0.15f;
     public const float ConsecutiveAttackFastSeconds = 0.075f;
 
+    public static float Trigger(CombatActionSpeed speed, float waitTime) =>
+        Resolve(speed, waitTime, Math.Min(waitTime * 0.5f, 0.25f));
+
+    public static float Presentation(CombatActionSpeed speed, float seconds) =>
+        speed == CombatActionSpeed.Instant ? 0f : seconds;
+
     public static float Resolve(
         CombatActionSpeed speed,
         float normalSeconds,
