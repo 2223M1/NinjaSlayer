@@ -33,12 +33,6 @@ Set-StrictMode -Version Latest
 
 $script:PhaseTimings = [Collections.Generic.List[object]]::new()
 $script:TotalTimer = [Diagnostics.Stopwatch]::StartNew()
-$script:PackageFiles = @(
-    'NinjaSlayer.dll',
-    'NinjaSlayer.json',
-    'NinjaSlayer.pck',
-    'SHA256SUMS'
-)
 
 function Invoke-Native {
     param(
@@ -292,47 +286,6 @@ function Get-RemoteTagCommit([string]$Tag) {
 function Test-GitHubRelease([string]$Tag, [string]$Repository) {
     $null = & gh release view $Tag --repo $Repository --json tagName 2>$null
     return $LASTEXITCODE -eq 0
-}
-
-function New-ExactPackageArchive([string]$PackageDirectory, [string]$ArchivePath) {
-    foreach ($name in $script:PackageFiles) {
-        if (-not (Test-Path -LiteralPath (Join-Path $PackageDirectory $name) -PathType Leaf)) {
-            throw "Package artifact is missing: $PackageDirectory\$name"
-        }
-    }
-    $extraFiles = @(Get-ChildItem -LiteralPath $PackageDirectory -File | Where-Object {
-        $_.Name -cnotin $script:PackageFiles
-    })
-    if ($extraFiles.Count -gt 0) {
-        throw "Package contains unexpected files: $($extraFiles.Name -join ', ')"
-    }
-
-    if (Test-Path -LiteralPath $ArchivePath) {
-        Remove-Item -LiteralPath $ArchivePath -Force
-    }
-    $zip = [IO.Compression.ZipFile]::Open($ArchivePath, [IO.Compression.ZipArchiveMode]::Create)
-    try {
-        foreach ($name in $script:PackageFiles) {
-            $entry = $zip.CreateEntry($name, [IO.Compression.CompressionLevel]::NoCompression)
-            $entry.LastWriteTime = [DateTimeOffset]::new(1980, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
-            $source = [IO.File]::OpenRead((Join-Path $PackageDirectory $name))
-            try {
-                $destination = $entry.Open()
-                try {
-                    $source.CopyTo($destination)
-                }
-                finally {
-                    $destination.Dispose()
-                }
-            }
-            finally {
-                $source.Dispose()
-            }
-        }
-    }
-    finally {
-        $zip.Dispose()
-    }
 }
 
 function Test-ResumeArtifacts(
@@ -692,7 +645,10 @@ try {
 
             Invoke-TimedStep "Archive $channel" {
                 $packageDirectory = Join-Path $buildRoot "$channel\package\NinjaSlayer"
-                New-ExactPackageArchive $packageDirectory $archivePaths[$channel]
+                New-NinjaSlayerExactZip `
+                    -SourceDirectory $packageDirectory `
+                    -ArchivePath $archivePaths[$channel] `
+                    -ExpectedFileNames $script:NinjaSlayerPackageFiles
                 $null = Read-NinjaSlayerPackageArchive -Path $archivePaths[$channel]
             }
         }
