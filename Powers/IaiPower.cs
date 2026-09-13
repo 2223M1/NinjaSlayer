@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Powers;
@@ -49,6 +50,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
 
     private async Task TryCounter(PlayerChoiceContext choiceContext, Creature target)
     {
+        await StaggerAnimation.WaitForCompletion(Owner);
         ICombatState? combatState = Owner.CombatState;
         if (!Owner.IsAlive
             || combatState == null
@@ -89,10 +91,12 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
             await CreatureCmd.TriggerAnim(
                 Owner,
                 "SlowAttack",
-                CombatActionTiming.SlowAttackNormalSeconds);
+                SlowAttackAnimation.ReferencePeakSeconds);
+            if (!Owner.IsAlive || !target.IsAlive || !target.IsHittable
+                || !combatState.IsLiveCombat()) return;
             if (willConnect)
             {
-                NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(target);
+                NinjaSlayerCombatVfx.PlaySlashHitFx(target);
             }
 
             List<DamageResult> results = (await CreatureCmd.Damage(

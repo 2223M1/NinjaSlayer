@@ -71,13 +71,13 @@ public static class NinjaSlayerCombatAnimations
                     if (currentCard is not ZazenDrink)
                     {
                         NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Cast,
-                            CombatActionTimingRuntime.CastSeconds);
-                        result = Cmd.Wait(CombatActionTimingRuntime.CastSeconds);
+                            CombatActionTimingRuntime.VisualSeconds(0.125f));
+                        result = Cmd.Wait(CombatActionTimingRuntime.TriggerSeconds(waitTime));
                         return true;
                     }
 
                     NinjaSlayerCombatAudioSet.Play(audio.Cast);
-                    result = PlayCastAnimation(creature);
+                    result = PlayCastAnimation(creature, waitTime);
                     return true;
                 }
             case "Hit":
@@ -114,12 +114,12 @@ public static class NinjaSlayerCombatAnimations
         }
     }
 
-    private static async Task PlayCastAnimation(Creature creature)
+    private static async Task PlayCastAnimation(Creature creature, float waitTime)
     {
         NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Cast,
-            CombatActionTimingRuntime.CastSeconds);
+            CombatActionTimingRuntime.VisualSeconds(0.125f));
         NinjaSlayerAimPose.Get(creature)?.BeginAirMotion(true);
-        await Cmd.Wait(CombatActionTimingRuntime.CastSeconds);
+        await Cmd.Wait(CombatActionTimingRuntime.TriggerSeconds(waitTime));
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }
 
@@ -154,7 +154,7 @@ public static class NinjaSlayerCombatAnimations
     private static async Task PlayBlockedHitAnimation(Creature creature, float duration)
     {
         var motion = NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Brace,
-            CombatActionTimingRuntime.Resolve(duration, duration * 0.5f));
+            CombatActionTimingRuntime.VisualSeconds(duration * 0.5f));
         if (motion != null) await motion.Completion;
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }

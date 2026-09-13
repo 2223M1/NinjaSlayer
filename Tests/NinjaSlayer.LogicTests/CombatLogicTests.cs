@@ -474,8 +474,8 @@ public sealed class CombatLogicTests
     }
 
     [Theory]
-    [InlineData(0f, 450f, 1f, 330f)]
-    [InlineData(500f, 50f, -1f, 170f)]
+    [InlineData(0f, 450f, 1f, 360f)]
+    [InlineData(500f, 50f, -1f, 140f)]
     public void YamotoKokiFinisherKeepsItsContinuousPreparationLunge(
         float actorX,
         float impactX,
@@ -488,7 +488,7 @@ public sealed class CombatLogicTests
             fallbackDirection);
 
         Assert.Equal(expectedStartX, startX);
-        Assert.Equal(FinisherActionTrajectory.SlowTravelPixels, MathF.Abs(impactX - startX));
+        Assert.Equal(90f, MathF.Abs(impactX - startX));
     }
 
     [Fact]

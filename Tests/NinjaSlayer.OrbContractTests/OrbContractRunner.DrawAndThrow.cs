@@ -147,7 +147,7 @@ public partial class OrbContractRunner
                 Vector2 coreBaseline = center.GlobalPosition;
                 float ground = contour.Max(p => (baseline * new Vector2(p.X, p.Y)).Y);
                 Call("BeginBackflip");
-                float duration = mode == FastModeType.Normal ? 0.5f : mode == FastModeType.Fast ? 0.25f : 0f;
+                float duration = mode == FastModeType.Instant ? 0f : 0.25f;
                 if (duration == 0f)
                 {
                     Require(!Flipping() && body.GetGlobalTransformWithCanvas().IsEqualApprox(baseline), "Instant draw created a flip.");
@@ -166,6 +166,9 @@ public partial class OrbContractRunner
                     Require((body.GetGlobalTransformWithCanvas() * corePoint).DistanceTo(center.GlobalPosition) < 0.1f,
                         "Backflip detached the creature hit center.");
                     Require(Math.Abs(center.GlobalPosition.X - coreBaseline.X) < 0.1f, "Backflip drifted horizontally.");
+                    Require(Math.Abs(body.GetGlobalTransformWithCanvas().X.Length() - baseline.X.Length()) < .0001f
+                        && Math.Abs(body.GetGlobalTransformWithCanvas().Y.Length() - baseline.Y.Length()) < .0001f,
+                        "Backflip reintroduced elastic body scaling.");
                     Require(contour.Max(p => (body.GetGlobalTransformWithCanvas() * new Vector2(p.X, p.Y)).Y) <= ground + 0.1f,
                         "Backflip body penetrated its ground baseline.");
                     previous = current;
@@ -182,21 +185,21 @@ public partial class OrbContractRunner
             Call("SyncNow");
             Transform2D idle = body.GetGlobalTransformWithCanvas();
             Call("BeginBackflip");
-            pose._Process(0.30);
+            pose._Process(0.15);
             float flipElapsed = Field("_flipElapsed");
             Call("BeginShurikenThrow", combat.Enemy);
             Require(Flipping() && Field("_flipElapsed") == flipElapsed, "Throw restarted or interrupted the backflip.");
-            pose._Process(0.165);
-            Require(!ThrowReleased(pose), "Throw released before 0.166 seconds.");
+            pose._Process(0.082);
+            Require(!ThrowReleased(pose), "Throw released before 0.083 seconds.");
             pose._Process(0.00101);
             Require(ThrowReleased(pose) && Flipping(),
-                "Throw did not release at 0.166 seconds during the flip.");
+                "Throw did not release at 0.083 seconds during the flip.");
             object?[] handArgs = [AimActors[combat.Player.Creature], null];
             Type orbVisual = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Nodes.ShurikenOrbVisual", true)!;
             Require((bool)AccessTools.Method(orbVisual, "TryGetHandCanvasPosition").Invoke(null, handArgs)!, "Missing throw hand anchor.");
             Require(((Vector2)handArgs[1]!).DistanceTo(body.GetGlobalTransformWithCanvas() * handPoint) < 0.1f,
                 "Throw origin does not follow the flipping hand.");
-            pose._Process(0.11);
+            pose._Process(0.025);
             Require(!Flipping() && Field("_throwDuration") > 0f, "Finishing the flip also cleared the throw recovery.");
             target.Position = new(-700f, 0f);
             Transform2D beforeTargetChange = body.GetGlobalTransformWithCanvas();
@@ -217,7 +220,7 @@ public partial class OrbContractRunner
             Call("ApplyReturn", 1f);
             Require(Flipping() && Math.Abs(Field("_flipElapsed") - 0.17f) < 0.0001f,
                 "Returning from an attack cleared or restarted the ongoing flip.");
-            pose._Process(0.5f - 0.17f + 0.00001f);
+            pose._Process(0.25f - 0.17f + 0.00001f);
             Require(body.GetGlobalTransformWithCanvas().IsEqualApprox(idle), "Flip did not finish independently after attack return.");
             Call("BeginShurikenThrow", combat.Enemy);
             pose._Process(0.04);
@@ -253,8 +256,8 @@ public partial class OrbContractRunner
             {
                 SaveManager.Instance.PrefsSave.FastMode = mode;
                 Call("BeginShurikenThrow", combat.Enemy);
-                float expectedGate = mode == FastModeType.Normal ? 0.166f : mode == FastModeType.Fast ? 0.083f : 0f;
-                float expectedTotal = mode == FastModeType.Normal ? 0.334f : mode == FastModeType.Fast ? 0.167f : 0f;
+                float expectedGate = mode == FastModeType.Instant ? 0f : 0.083f;
+                float expectedTotal = mode == FastModeType.Instant ? 0f : 0.167f;
                 Require(Math.Abs(Field("_throwDuration") - expectedGate) < 0.00001f, "Throw timing did not follow game speed.");
                 if (expectedGate > 0f)
                 {
@@ -339,23 +342,23 @@ public partial class OrbContractRunner
                     float p = Math.Min(1f, (time - peak) / 0.2f);
                     Call("ApplyReturn", p);
                 }
-                float flipTime = 0.06f + time;
-                float throwTime = 0.02f + time;
+                float flipTime = (0.06f + time) * speed;
+                float throwTime = (0.02f + time) * speed;
                 bool flipping = (bool)AccessTools.Property(type, "IsBackflipping").GetValue(pose)!;
-                Require(flipping == (flipTime < 0.5f - 0.00001f), "Attack changed the flip duration.");
-                Require((Field("_throwDuration") > 0f) == (throwTime < 0.334f - 0.00001f),
+                Require(flipping == (flipTime < 0.25f - 0.00001f), "Attack changed the flip duration.");
+                Require((Field("_throwDuration") > 0f) == (throwTime < 0.167f - 0.00001f),
                     "Attack changed the throw duration.");
-                if (flipping) Require(Math.Abs(Field("_flipElapsed") - flipTime * speed) < 0.00001f,
+                if (flipping) Require(Math.Abs(Field("_flipElapsed") - flipTime) < 0.00001f,
                     "Attack paused or restarted the flip clock.");
-                float flipAngle = flipping ? -facing * Mathf.Tau * (1f - Mathf.Pow(1f - Math.Min(1f, flipTime / (0.88f * 0.5f)), 1.3f)) : 0f;
+                float flipAngle = flipping ? -facing * Mathf.Tau * (1f - Mathf.Pow(1f - Math.Min(1f, flipTime / (0.88f * 0.25f)), 1.3f)) : 0f;
                 float throwAngle = 0f;
-                if (throwTime < 0.166f * 0.25f)
-                    throwAngle = -Mathf.DegToRad(6f) * facing * Mathf.SmoothStep(0f, 1f, throwTime / (0.166f * 0.25f));
-                else if (throwTime < 0.166f)
+                if (throwTime < 0.083f * 0.25f)
+                    throwAngle = -Mathf.DegToRad(6f) * facing * Mathf.SmoothStep(0f, 1f, throwTime / (0.083f * 0.25f));
+                else if (throwTime < 0.083f)
                     throwAngle = Mathf.DegToRad(Mathf.Lerp(-6f, 8f,
-                        Mathf.SmoothStep(0f, 1f, Mathf.Clamp((throwTime / 0.166f - 0.25f) / 0.45f, 0f, 1f)))) * facing;
-                else if (throwTime < 0.334f)
-                    throwAngle = Mathf.DegToRad(8f) * facing * (1f - Mathf.SmoothStep(0f, 1f, (throwTime - 0.166f) / 0.168f));
+                        Mathf.SmoothStep(0f, 1f, Mathf.Clamp((throwTime / 0.083f - 0.25f) / 0.45f, 0f, 1f)))) * facing;
+                else if (throwTime < 0.167f)
+                    throwAngle = Mathf.DegToRad(8f) * facing * (1f - Mathf.SmoothStep(0f, 1f, (throwTime - 0.083f) / 0.084f));
                 float expected = unposedAngle + Field("_baseDisplayAngle") + flipAngle + throwAngle;
                 Require(Math.Abs(Mathf.Wrap(body.GetGlobalTransformWithCanvas().X.Angle() - expected, -Mathf.Pi, Mathf.Pi)) < 0.002f,
                     "Attack, flip and throw rotations did not compose on the actual sprite.");

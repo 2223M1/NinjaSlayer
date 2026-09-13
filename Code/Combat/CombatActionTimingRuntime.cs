@@ -47,4 +47,10 @@ internal static class CombatActionTimingRuntime
 
     public static float Resolve(float normalSeconds, float fastSeconds) =>
         CombatActionTiming.Resolve(CurrentSpeed, normalSeconds, fastSeconds);
+
+    public static float TriggerSeconds(float waitTime) => CombatActionTiming.Trigger(CurrentSpeed, waitTime);
+
+    public static float VisualSeconds(float seconds) => CombatActionTiming.Presentation(CurrentSpeed, seconds);
+
+    public static float ReturnSeconds => VisualSeconds(0.1f);
 }

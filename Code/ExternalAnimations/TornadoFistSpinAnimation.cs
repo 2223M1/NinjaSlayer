@@ -19,7 +19,7 @@ public static class TornadoFistSpinAnimation
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(attacker);
         if (pose is not { IsEmpoweredTornado: true, UseTornadoHitStop: true }) return;
         float normal = NinjaSlayerAttackExecution.IsFinalSequenceHit ? .05f : .035f;
-        float seconds = CombatActionTimingRuntime.Resolve(normal, normal * .5f);
+        float seconds = CombatActionTimingRuntime.VisualSeconds(normal * .5f);
         if (seconds <= 0f) return;
         pose.PauseTornadoSpin(seconds);
         TornadoHurtPause.Start(target, seconds);

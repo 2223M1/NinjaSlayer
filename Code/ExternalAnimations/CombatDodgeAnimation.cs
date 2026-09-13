@@ -151,7 +151,7 @@ internal static class CombatDodgeAnimation
             return false;
         }
 
-        duration = CombatActionTimingRuntime.Resolve(duration, duration * 0.5f);
+        duration = CombatActionTimingRuntime.VisualSeconds(duration * 0.5f);
         void Apply(Vector2 position)
         {
             if (state.Pose != null)

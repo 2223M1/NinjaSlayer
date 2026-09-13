@@ -77,7 +77,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _completionStarted;
     private bool _actionStarted;
     private bool _actionPeakReached;
-    private float _actionPeakSeconds = FinisherActionTrajectory.SlowTravelSeconds;
+    private float _actionPeakSeconds = SlowAttackAnimation.ReferencePeakSeconds;
     private Vector2 _actionStartPosition;
     private Vector2 _impactPosition;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;

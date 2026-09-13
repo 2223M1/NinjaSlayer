@@ -143,23 +143,13 @@ public sealed class SawatariMonster : ModMonsterTemplate
             Hook.ModifyAttackHitCount(combatState, command, SawatariEventRules.AttackHits)));
         var choiceContext = new BlockingPlayerChoiceContext();
         var results = new List<DamageResult>();
-        bool isCompanion = attacker.PetOwner != null;
 
         await Hook.BeforeAttack(combatState, command);
         try
         {
-            await SlowAttackAnimation.PlayCombo(
+            await SawatariBambooAnimation.Play(
                 attacker,
                 hitCount,
-                isCompanion
-                    ? CombatActionTimingRuntime.CompanionSlowAttackSeconds
-                    : CombatActionTimingRuntime.SlowAttackSeconds,
-                isCompanion
-                    ? CombatActionTimingRuntime.CompanionConsecutiveAttackSeconds
-                    : CombatActionTimingRuntime.ConsecutiveAttackSeconds,
-                isCompanion
-                    ? CombatActionTimingRuntime.CompanionDamageRecoverySeconds
-                    : CombatActionTimingRuntime.DamageRecoverySeconds,
                 async () =>
                 {
                     if (!CanHit(attacker, target, combatState))
@@ -169,10 +159,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
                     bool connects = target.GetPower<EvasionPower>() is not { } evasion
                         || !evasion.CanEvade(target, command.DamageProps, attacker);
-                    if (connects)
-                    {
-                        NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(target);
-                    }
+                    NinjaSlayerCombatVfx.PlaySawatariBambooHit(attacker, target, connects);
 
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                     {

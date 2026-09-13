@@ -18,7 +18,7 @@ public partial class OrbContractRunner
         Call("BeginBackflip");
         object second = LatestPresentation(pose, "Backflip")!;
         Require(!ReferenceEquals(first, second) && pose.Transform.IsEqualApprox(before), "Repeated draw lost a flip or snapped its first frame.");
-        pose._Process(.39);
+        pose._Process(.14);
         Require(!(bool)AccessTools.Field(first.GetType(), "Active").GetValue(first)!
             && (bool)AccessTools.Field(second.GetType(), "Active").GetValue(second)!, "Finishing an old flip removed the next flip.");
         pose._Process(.12);
@@ -44,14 +44,14 @@ public partial class OrbContractRunner
         }
         Call("Reset"); Call("SyncNow");
         Type kind=pose.GetType().GetNestedType("MotionKind",System.Reflection.BindingFlags.NonPublic)!;
-        object hurt=AccessTools.Method(pose.GetType(),"BeginVisualMotion").Invoke(pose,[Enum.Parse(kind,"Hurt"),.3f])!;
+        object hurt=AccessTools.Method(pose.GetType(),"BeginVisualMotion").Invoke(pose,[Enum.Parse(kind,"Hurt"),.15f])!;
         Call("SyncNow");
         Require(center.GlobalPosition.X<baseline.X-20f && actor.Position.IsEqualApprox(root), "Hurt lacks recoil or moves the UI root.");
         Action resume=(Action)AccessTools.Method(pose.GetType(),"PauseHurt").Invoke(pose,null)!;
         pose._Process(.1);
         Require((float)AccessTools.Field(hurt.GetType(),"Elapsed").GetValue(hurt)! == 0f, "Paused hurt advanced.");
-        Call("BeginBackflip"); pose._Process(.1);
-        resume(); pose._Process(.31);
+        Call("BeginBackflip"); pose._Process(.05);
+        resume(); pose._Process(.151);
         Require(LatestPresentation(pose,"Hurt")==null && LatestPresentation(pose,"Backflip")!=null, "Hurt recovery swallowed the overlapping flip.");
         Call("Reset"); pose._Process(1);
         Require(actor.Position.IsEqualApprox(root) && center.GlobalPosition.DistanceTo(baseline)<.1f, "Motion cleanup left a displaced actor.");

@@ -26,8 +26,7 @@ internal static class TweenPlayback
                 if (!GodotObject.IsInstanceValid(owner)
                     || !owner.IsInsideTree()
                     || !GodotObject.IsInstanceValid(tween)
-                    || !tween.IsValid()
-                    || !tween.IsRunning())
+                    || !tween.IsValid())
                 {
                     return false;
                 }
