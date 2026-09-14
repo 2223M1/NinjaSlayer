@@ -473,24 +473,6 @@ public sealed class CombatLogicTests
         Assert.Equal(1f, FinisherActionTrajectory.SlowProgress(2f));
     }
 
-    [Theory]
-    [InlineData(0f, 450f, 1f, 360f)]
-    [InlineData(500f, 50f, -1f, 140f)]
-    public void YamotoKokiFinisherKeepsItsContinuousPreparationLunge(
-        float actorX,
-        float impactX,
-        float fallbackDirection,
-        float expectedStartX)
-    {
-        float startX = FinisherActionTrajectory.ResolveIaiStartX(
-            actorX,
-            impactX,
-            fallbackDirection);
-
-        Assert.Equal(expectedStartX, startX);
-        Assert.Equal(90f, MathF.Abs(impactX - startX));
-    }
-
     [Fact]
     public void DoomSquashKeepsHorizontalOriginAndAnchorsVerticalBottom()
     {

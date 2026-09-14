@@ -9,6 +9,7 @@ public static class ShakeAnimation
 {
     private sealed class ActiveShake
     {
+        public required Creature Creature { get; init; }
         public required Tween Tween { get; init; }
         public required Vector2 OriginalPosition { get; init; }
         public required Action OnTreeExiting { get; init; }
@@ -46,7 +47,7 @@ public static class ShakeAnimation
 
         CancelActiveShake(visuals);
 
-        var originalPos = visuals.Position;
+        var originalPos = FinisherApproach.AnimationPosition(creature, visuals);
         var elapsed = 0f;
         var shakeToggle = true;
         var animX = 0f;
@@ -56,6 +57,7 @@ public static class ShakeAnimation
         Action onTreeExiting = () => Finish(visuals, activeShake, restorePosition: false);
         activeShake = new ActiveShake
         {
+            Creature = creature,
             Tween = tween,
             OriginalPosition = originalPos,
             OnTreeExiting = onTreeExiting
@@ -86,7 +88,7 @@ public static class ShakeAnimation
                     }
                 }
 
-                visuals.Position = new Vector2(originalPos.X + animX, originalPos.Y);
+                FinisherApproach.SetAnimationPosition(creature, visuals, new Vector2(originalPos.X + animX, originalPos.Y));
             }),
             0f,
             1f,
@@ -106,7 +108,7 @@ public static class ShakeAnimation
 
         activeShake.Tween.Kill();
         visuals.TreeExiting -= activeShake.OnTreeExiting;
-        visuals.Position = activeShake.OriginalPosition;
+        FinisherApproach.SetAnimationPosition(activeShake.Creature, visuals, activeShake.OriginalPosition);
     }
 
     private static void Finish(Node2D visuals, ActiveShake? activeShake, bool restorePosition)
@@ -123,7 +125,7 @@ public static class ShakeAnimation
         visuals.TreeExiting -= activeShake.OnTreeExiting;
         if (restorePosition && GodotObject.IsInstanceValid(visuals))
         {
-            visuals.Position = activeShake.OriginalPosition;
+            FinisherApproach.SetAnimationPosition(activeShake.Creature, visuals, activeShake.OriginalPosition);
         }
     }
 }

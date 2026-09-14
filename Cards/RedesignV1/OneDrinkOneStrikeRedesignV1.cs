@@ -38,7 +38,7 @@ public sealed class OneDrinkOneStrikeRedesignV1 : RedesignV1CommonCard
 #else
             .FromCard(this, cardPlay)
 #endif
-            .WithHeavyBluntHitFx()
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);

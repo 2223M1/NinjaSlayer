@@ -42,6 +42,9 @@ internal sealed class NinjaSlayerAttackHitCountPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(Hook), nameof(Hook.ModifyAttackHitCount), [typeof(ICombatState), typeof(AttackCommand), typeof(int)])];
 
-    public static void Postfix(AttackCommand __1, decimal __result) =>
+    public static void Postfix(AttackCommand __1, decimal __result)
+    {
         NinjaSlayerAttackExecution.SetActualHitCount(__1, __result);
+        NinjaSlayer.Code.ExternalAnimations.FinisherAttackVfxBaselineContext.ObserveHitCount(__1, __result);
+    }
 }

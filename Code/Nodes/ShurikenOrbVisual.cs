@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Orbs;
 using NinjaSlayer.Content;
 using NinjaSlayer.Orbs;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -14,8 +15,6 @@ public partial class ShurikenOrbVisual : Node2D
     internal const string GlowColorHex = "#FFB300";
 
     private static readonly Color GlowColor = new(GlowColorHex);
-    private static readonly Vector2 NormalHandAnchor = new(851.5152f, -75.75758f);
-    private static readonly Vector2 FullyReleasedHandAnchor = new(432f, 390f);
     private static readonly NodePath OverlayPath = new("AirborneAnchor/AimPose/NarakuVisualOverlay");
 
     private Node2D _deformedVisuals = null!;
@@ -118,7 +117,8 @@ public partial class ShurikenOrbVisual : Node2D
                 ? overlay
                 : source;
 
-        Transform2D bodyCanvas = body.GetGlobalTransformWithCanvas();
+        Transform2D bodyCanvas = NinjaSlayerHellTornadoVisual.Get(_creatureNode.Entity) is { Active: true } tornado
+            ? tornado.BodyCanvasTransform : body.GetGlobalTransformWithCanvas();
         Transform2D parentCanvas = orbParent.GetGlobalTransformWithCanvas();
         Transform2D visualsCanvas = visuals.GetGlobalTransformWithCanvas();
         if (Mathf.IsZeroApprox(parentCanvas.Determinant())
@@ -137,7 +137,7 @@ public partial class ShurikenOrbVisual : Node2D
 
         _orbNode.Position = orbPosition;
 
-        float authoredScale = ResolveAuthoredScale(presentation.Kind);
+        float authoredScale = NinjaSlayerFormCalibration.For(presentation.Kind).Scale;
         if (authoredScale <= 0f)
         {
             return;
@@ -196,7 +196,9 @@ public partial class ShurikenOrbVisual : Node2D
         Sprite2D? body = overlay != null && (form.UsesOverlay || overlay.Visible)
             ? overlay : NinjaSlayerVisualRig.GetBodySprite(creature.Visuals);
         if (body == null || !GodotObject.IsInstanceValid(body)) return false;
-        position = body.GetGlobalTransformWithCanvas() * ResolveHandPoint(body, form.Kind);
+        Transform2D bodyCanvas = NinjaSlayerHellTornadoVisual.Get(creature.Entity) is { Active: true } tornado
+            ? tornado.BodyCanvasTransform : body.GetGlobalTransformWithCanvas();
+        position = bodyCanvas * ResolveHandPoint(body, form.Kind);
         return true;
     }
 
@@ -204,12 +206,8 @@ public partial class ShurikenOrbVisual : Node2D
         Sprite2D body,
         NinjaSlayerFormKind formKind)
     {
-        Vector2 point = formKind switch
-        {
-            NinjaSlayerFormKind.Normal or NinjaSlayerFormKind.Naraku => NormalHandAnchor,
-            NinjaSlayerFormKind.FullyReleasedNaraku => FullyReleasedHandAnchor,
-            _ => throw new ArgumentOutOfRangeException(nameof(formKind), formKind, null)
-        };
+        var hand = NinjaSlayerFormCalibration.For(formKind).Hand;
+        Vector2 point = new(hand.X, hand.Y);
 
         if (body.FlipH)
         {
@@ -225,18 +223,6 @@ public partial class ShurikenOrbVisual : Node2D
         }
 
         return point + body.Offset;
-    }
-
-    private static float ResolveAuthoredScale(
-        NinjaSlayerFormKind formKind)
-    {
-        return formKind switch
-        {
-            NinjaSlayerFormKind.Normal or NinjaSlayerFormKind.Naraku =>
-                NinjaSlayerCombatVisuals.BodySpriteBaseScale,
-            NinjaSlayerFormKind.FullyReleasedNaraku => 0.5f,
-            _ => throw new ArgumentOutOfRangeException(nameof(formKind), formKind, null)
-        };
     }
 
 #if !NINJASLAYER_CHANNEL_STABLE

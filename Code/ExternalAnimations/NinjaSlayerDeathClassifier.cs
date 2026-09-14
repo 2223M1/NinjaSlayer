@@ -86,6 +86,8 @@ internal static class NinjaSlayerDeathClassifier
             return null;
         }
 
+        FinisherAttackVfxBaselineContext.ReachImpact(dealer);
+
         var previousCaptures = new Dictionary<Creature, IncomingDamageCapture?>();
         IReadOnlySet<ulong> baseline = FinisherAttackVfxBaselineContext.GetBaseline(dealer)
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(room);

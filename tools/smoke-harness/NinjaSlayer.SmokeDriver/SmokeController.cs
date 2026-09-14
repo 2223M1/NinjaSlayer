@@ -488,7 +488,7 @@ internal sealed partial class SmokeController
             cancellationToken);
         Require(
             FinisherSmokeObserver.PresentationFailureWasInjected,
-            "The trusted presentation failure injection did not reach FinisherImpactPresentation.Create.");
+            "The trusted presentation failure injection did not reach FinisherImpactPresentation.CreateBackdropOnly.");
         _checkpoints.Write(
             "finisher.multi-hit.completed",
             data: new JsonObject

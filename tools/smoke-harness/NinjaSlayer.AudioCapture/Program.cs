@@ -7,8 +7,11 @@ string directory = Path.GetFullPath(args[0]);
 Directory.CreateDirectory(directory);
 using var devices = new MMDeviceEnumerator();
 using var device = devices.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-using var client = device.AudioClient;
-WaveFormat format = client.MixFormat;
+bool processLoopback = args.Length > 1 && args[1] == "process";
+// The launcher waits for readiness before creating the isolated game process.
+File.WriteAllText(Path.Combine(directory, "audio-ready"), "ready");
+using var client = processLoopback ? await ProcessAudioClient.Activate(directory) : device.AudioClient;
+WaveFormat format = processLoopback ? WaveFormat.CreateIeeeFloatWaveFormat(48000, 2) : client.MixFormat;
 client.Initialize(AudioClientShareMode.Shared, AudioClientStreamFlags.Loopback,
     1_000_000, 0, format, Guid.Empty);
 using var capture = client.AudioCaptureClient;
@@ -19,7 +22,6 @@ long writtenFrames = 0, silenceFrames = 0;
 int discontinuities = 0;
 byte[] zeros = new byte[format.AverageBytesPerSecond];
 client.Start();
-File.WriteAllText(Path.Combine(directory, "audio-ready"), "ready");
 DateTime? finish = null;
 try
 {
@@ -68,5 +70,5 @@ if (firstQpc is null) throw new IOException("No audio packets were captured.");
 File.WriteAllText(Path.Combine(directory, "audio-start.json"), JsonSerializer.Serialize(new
 {
     seconds = firstQpc.Value / 10_000_000d, sampleRate = format.SampleRate,
-    writtenFrames, silenceFrames, discontinuities, timestampSource = "WASAPI packet QPC"
+    writtenFrames, silenceFrames, discontinuities, timestampSource = "WASAPI packet QPC", processLoopback
 }));

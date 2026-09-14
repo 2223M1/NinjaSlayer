@@ -200,7 +200,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
             _camera = camera;
             try
             {
-                _presentation = FinisherImpactPresentation.Create(_room, camera, 1);
+                _presentation = FinisherImpactPresentation.CreateBackdropOnly(_room, camera);
             }
             catch (Exception exception)
             {
@@ -248,7 +248,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _architectNode.Body.Position = _architectBodyPosition;
         _architectNode.Body.Scale = _architectBodyScale * new Vector2(0.55f, 1.2f);
         _architectNode.Body.Rotation = _architectBodyRotation + Mathf.DegToRad(3f);
-        _presentation?.SetImpactState([_architectNode], 1f, 1f);
         if (_camera != null)
         {
             _camera.PlayScreenShake(
@@ -261,8 +260,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
             NGame.Instance?.ScreenShake(ShakeStrength.TooMuch, ShakeDuration.Short);
         }
 
-        // Hoisted for the same reason as the enemy finisher impact loop.
-        NCreature[] impactTargets = [_architectNode];
         float elapsed = 0f;
         while (elapsed < ImpactSeconds)
         {
@@ -272,18 +269,8 @@ public sealed partial class ArchitectExecutionCinematic : Node
             FrameBothSubjectsAtScale(scaleMultiplier);
             _camera?.Advance(delta);
 
-            float rays = elapsed < ImpactRecoveryStartSeconds
-                ? 1f
-                : 1f - Mathf.Clamp(
-                    (elapsed - ImpactRecoveryStartSeconds)
-                    / (ImpactSeconds - ImpactRecoveryStartSeconds),
-                    0f,
-                    1f);
-            float flash = 1f - Mathf.Clamp(elapsed / ImpactPunchSeconds, 0f, 1f);
-            _presentation?.SetImpactState(impactTargets, rays, flash);
         }
 
-        _presentation?.SetImpactState(impactTargets, 0f, 0f);
         _architectNode.Body.Position = _architectBodyPosition;
         _architectNode.Body.Scale = _architectBodyScale;
         _architectNode.Body.Rotation = _architectBodyRotation;

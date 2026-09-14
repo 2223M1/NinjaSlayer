@@ -169,7 +169,7 @@ internal static class FinisherAttackVfxBaselineContext
 
         var frame = new Frame(
             Current.Value,
-            attacker,
+            command,
             FinisherImpactVfxFreezeLease.CaptureBaseline(room));
         Current.Value = frame;
         return frame;
@@ -186,6 +186,33 @@ internal static class FinisherAttackVfxBaselineContext
         }
 
         return null;
+    }
+
+    internal static void ObserveHitCount(AttackCommand command, decimal count)
+    {
+        if (Current.Value is { } frame && ReferenceEquals(frame.Command, command))
+            frame.Hits = (int)Math.Ceiling(Math.Max(0m, count));
+    }
+
+    internal static void BeginApproach(Creature actor, string trigger, float waitTime)
+    {
+        if (trigger is "Hit" or "BlockedHit" or "Dodge" or "Dead"
+            || Current.Value is not { IsActive: true, Started: false } frame || frame.Attacker != actor) return;
+        frame.Started = true;
+        Creature? victim = FinisherAttackCommandAdapter.PredictReverseVictim(frame.Command, frame.Hits);
+        if (victim?.GetCreatureNode() is not { } focus || actor.GetCreatureNode() is not { } node) return;
+        frame.Approach = FinisherApproach.Create(node, focus, Godot.Vector2.One);
+        bool isIai = trigger == "SlowAttack" && actor.Monster is NinjaSlayer.Monsters.DarkNinjaMonster;
+        float gate = isIai
+            ? SlowAttackAnimation.IaiPeakSeconds : NinjaSlayer.Code.Combat.CombatActionTimingRuntime.TriggerSeconds(waitTime);
+        if (isIai) frame.Approach.ReturnDuration = SlowAttackAnimation.IaiReturnSeconds;
+        frame.Approach.Start(gate + FinisherAttackCommandAdapter.AdditionalHitWait(frame.Command));
+    }
+
+    internal static void ReachImpact(Creature dealer)
+    {
+        if (Current.Value is { IsActive: true } frame && frame.Attacker == dealer)
+            frame.Approach?.ApplyProgress(1f);
     }
 
     public static void RestoreCaller(Frame frame)
@@ -205,16 +232,21 @@ internal static class FinisherAttackVfxBaselineContext
         finally
         {
             frame.IsActive = false;
+            frame.Approach?.ReleasePrediction();
         }
     }
 
     internal sealed class Frame(
         Frame? previous,
-        Creature attacker,
+        AttackCommand command,
         IReadOnlySet<ulong> baselineChildIds)
     {
         public Frame? Previous { get; } = previous;
-        public Creature Attacker { get; } = attacker;
+        public AttackCommand Command { get; } = command;
+        public Creature Attacker => Command.Attacker!;
+        public int Hits { get; set; } = 1;
+        public bool Started { get; set; }
+        public FinisherApproach? Approach { get; set; }
         public IReadOnlySet<ulong> BaselineChildIds { get; } = baselineChildIds;
         public bool IsActive { get; set; } = true;
     }

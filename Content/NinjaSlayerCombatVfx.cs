@@ -20,7 +20,8 @@ public static class NinjaSlayerCombatVfx
         command.WithHitFx(VfxCmd.bluntPath, null, TmpSfx.bluntAttack);
 
     public static AttackCommand WithHeavyBluntHitFx(this AttackCommand command) =>
-        command.WithHitFx(VfxCmd.heavyBluntPath, null, TmpSfx.heavyAttack);
+        command.WithHitFx(VfxCmd.heavyBluntPath, null, TmpSfx.heavyAttack)
+            .WithHitVfxSpawnedAtBase();
 
     public static void PlayDefectStrikeHitFx(Creature target)
     {
@@ -37,39 +38,7 @@ public static class NinjaSlayerCombatVfx
     internal static void PlaySawatariBambooHit(Creature attacker, Creature target, bool connects)
     {
         NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow, .8f);
-        if (!connects || NCombatRoom.Instance is not { } room
-            || target.GetCreatureNode() is not { } targetNode) return;
-        var impact = new Node2D { Name = "SawatariBambooImpact", Scale = Vector2.One * .35f };
-        var template = ResourceLoader.Load<PackedScene>("res://scenes/vfx/vfx_dramatic_stab.tscn").Instantiate<Node2D>();
-        foreach (string name in new[] { "Flash", "Sparks" })
-        {
-            var particles = template.GetNode<GpuParticles2D>(name);
-            particles.Owner = null;
-            template.RemoveChild(particles);
-            impact.AddChild(particles);
-            particles.ProcessMaterial = (ParticleProcessMaterial)particles.ProcessMaterial.Duplicate(true);
-            var material = (ParticleProcessMaterial)particles.ProcessMaterial;
-            material.ColorRamp = new GradientTexture1D
-            {
-                Gradient = new Gradient
-                {
-                    Offsets = [0f, .35f, 1f],
-                    Colors = [Colors.White, new Color(1f, .8f, .3f), new Color(1f, .65f, .2f, 0f)]
-                }
-            };
-            material.HueVariationMin = material.HueVariationMax = 0f;
-            particles.SpeedScale = name == "Flash" ? 8f : 4f;
-            particles.Amount = name == "Flash" ? 4 : 12;
-            particles.Emitting = true;
-        }
-        template.Free();
-        room.CombatVfxContainer.AddChildSafely(impact);
-        impact.GlobalPosition = targetNode.VfxSpawnPosition;
-        if (attacker.GetCreatureNode() is { } attackerNode)
-            impact.GlobalRotation = (targetNode.VfxSpawnPosition - attackerNode.VfxSpawnPosition).Angle();
-        Tween cleanup = impact.CreateTween();
-        cleanup.TweenInterval(.15f);
-        cleanup.TweenCallback(Callable.From(impact.QueueFree));
+        if (connects) VfxCmd.PlayOnCreatureCenter(target, VfxCmd.dramaticStabPath);
     }
 
     public static void PlayYamotoKokiIaiPetals(Creature attacker)

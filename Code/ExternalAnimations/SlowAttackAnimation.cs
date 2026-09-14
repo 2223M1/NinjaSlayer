@@ -12,8 +12,11 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class SlowAttackAnimation
 {
-    internal static float ReferencePeakSeconds => CombatActionTimingRuntime.VisualSeconds(0.5f);
+    internal static float StandardOutboundSeconds => CombatActionTimingRuntime.VisualSeconds(0.1f);
     internal static float CompanionPeakSeconds => CombatActionTimingRuntime.CompanionSlowAttackSeconds;
+    internal const float IaiNormalSeconds = 0.5f;
+    internal static float IaiPeakSeconds => CombatActionTimingRuntime.TriggerSeconds(IaiNormalSeconds);
+    internal static float IaiReturnSeconds => CombatActionTimingRuntime.VisualSeconds(0.25f);
 
     public static async Task Play(Creature creature)
     {
@@ -24,6 +27,13 @@ public static class SlowAttackAnimation
             await owned;
             return;
         }
+        if (NinjaSlayerAimPose.IsSomersaultHeavy(NinjaSlayerAttackExecution.CurrentPlay?.Card)
+            && creature.Player?.Character is INinjaSlayerCharacter)
+        {
+            await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature, 120f, gate,
+                p => p * p, somersault: true);
+            return;
+        }
         if (RapidCardPresentationContext.IsActive && creature.Player?.Character is INinjaSlayerCharacter)
         {
             await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature,
@@ -32,13 +42,14 @@ public static class SlowAttackAnimation
             return;
         }
         await PlayLunge(creature, NinjaSlayerCombatVisuals.SlowAttackLungeDistance,
-            gate, CombatActionTimingRuntime.VisualSeconds(0.1f), CombatActionTimingRuntime.ReturnSeconds);
+            gate, StandardOutboundSeconds, CombatActionTimingRuntime.ReturnSeconds);
     }
 
-    // ActsFromThePast/Animations/SlowAttackAnimation.cs: 90px, pow10 outbound,
-    // 0.5s gameplay gate, and a concurrent 0.5s SmoothStep return.
-    internal static Task PlayReference(Creature creature) =>
-        PlayLunge(creature, 90f, ReferencePeakSeconds, ReferencePeakSeconds, ReferencePeakSeconds);
+    // Companion and counter triggers must not inherit the enclosing player's card pose.
+    internal static Task PlayIai(Creature creature) =>
+        FinisherApproach.TryPlayToPeak(creature, IaiPeakSeconds, out Task approach) ? approach
+            : PlayLunge(creature, NinjaSlayerCombatVisuals.SlowAttackLungeDistance,
+                IaiPeakSeconds, IaiPeakSeconds, IaiReturnSeconds);
 
     private static async Task PlayLunge(Creature creature, float distance, float gate, float outbound, float recovery)
     {
@@ -57,12 +68,12 @@ public static class SlowAttackAnimation
             if (!active) return;
             active = false;
             if (tween.IsValid()) tween.Kill();
-            if (GodotObject.IsInstanceValid(visuals)) visuals.Position = baseline;
+            if (GodotObject.IsInstanceValid(visuals)) FinisherApproach.SetAnimationPosition(creature, visuals, baseline);
             NinjaSlayerShadowController.Get(creature)?.ResetAction();
             peak.TrySetResult();
         }
         long generation = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Restore);
-        baseline = visuals.Position;
+        baseline = FinisherApproach.AnimationPosition(creature, visuals);
         float direction = creature.Monster is Monsters.YamotoKokiMonster
             ? node.Body.Transform.Determinant() < 0f ? -1f : 1f
             : creature.Side == CombatSide.Player ? 1f : -1f;
@@ -70,10 +81,10 @@ public static class SlowAttackAnimation
         void Apply(float offset)
         {
             if (!active) return;
-            visuals.Position = baseline + Vector2.Right * (direction * distance * offset);
+            FinisherApproach.SetAnimationPosition(creature, visuals, baseline + Vector2.Right * (direction * distance * offset));
         }
         tween.TweenMethod(Callable.From<float>(elapsed =>
-            Apply(Mathf.Pow(Mathf.Clamp(elapsed / outbound, 0f, 1f), 10f))), 0f, gate, gate);
+            Apply(FinisherActionTrajectory.SlowProgress(Mathf.Clamp(elapsed / outbound, 0f, 1f)))), 0f, gate, gate);
         tween.TweenCallback(Callable.From(() =>
         {
             NinjaSlayerShadowController.Get(creature)?.BeginReturn(recovery);

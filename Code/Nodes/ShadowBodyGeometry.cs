@@ -8,6 +8,7 @@ internal static class ShadowBodyGeometry
     private static readonly Vector2[] Normal = CombatBodyContours.NinjaSlayer.Select(p => new Vector2(p.X, p.Y)).ToArray();
     private static readonly Vector2[] Naraku = CombatBodyContours.FullyReleasedNaraku.Select(p => new Vector2(p.X, p.Y)).ToArray();
     private static readonly Vector2[] Koki = CombatBodyContours.YamotoKoki.Select(p => new Vector2(p.X, p.Y)).ToArray();
+    private static readonly Vector2[] OneSoul = CombatBodyContours.OneBodyOneSoul.Select(p => new Vector2(p.X, p.Y)).ToArray();
 
     // Clockwise normalized solid-body contours; exclude long airborne weapons and
     // cloth, but retain Sawatari's lower cloak and Yukano's single grounded leg.
@@ -16,9 +17,9 @@ internal static class ShadowBodyGeometry
     private static readonly Vector2[] Sawatari = [new(.34f,.99f), new(.31f,.82f), new(.34f,.30f), new(.25f,.21f), new(.36f,.02f), new(.52f,.05f), new(.59f,.25f), new(.61f,.64f), new(.76f,.71f), new(.71f,.82f), new(.77f,.85f), new(.66f,.92f), new(.61f,.83f), new(.57f,.99f), new(.50f,1f), new(.48f,.85f), new(.43f,.84f), new(.43f,.98f)];
     private static readonly Vector2[] Yukano = [new(.02f,.97f), new(.09f,.70f), new(.16f,.54f), new(.32f,.40f), new(.29f,.25f), new(.36f,.08f), new(.48f,.08f), new(.55f,.17f), new(.71f,.22f), new(.63f,.28f), new(.52f,.45f), new(.67f,.56f), new(.60f,.64f), new(.41f,.69f), new(.37f,.57f), new(.24f,.73f), new(.08f,1f)];
 
-    internal static Vector2[] Resolve(string rigName, bool fullNaraku, bool standing) => rigName switch
+    internal static Vector2[] Resolve(string rigName, bool fullNaraku, bool standing, bool oneSoul = false) => rigName switch
     {
-        "NinjaSlayer" => fullNaraku ? Naraku : Normal,
+        "NinjaSlayer" => oneSoul ? OneSoul : fullNaraku ? Naraku : Normal,
         "YamotoKoki" => Koki,
         "DarkNinja" => standing ? DarkStanding : DarkCombat,
         "Sawatari" => Sawatari,

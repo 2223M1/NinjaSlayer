@@ -36,7 +36,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         bool reverseDirection = false,
         float returnSeconds = RapidAttackTrajectory.ReturnSeconds,
         bool standardPresentation = true,
-        bool heldTornado = false)
+        bool heldTornado = false,
+        bool somersault = false)
     {
         NCreature? creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
@@ -64,7 +65,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                 || !ReferenceEquals(current, state) || pose.IsExclusive)
                 return;
         }
-        returnSeconds = standardPresentation ? CombatActionTimingRuntime.ReturnSeconds : returnSeconds;
+        returnSeconds = somersault ? CombatActionTimingRuntime.VisualSeconds(.2f)
+            : standardPresentation ? CombatActionTimingRuntime.ReturnSeconds : returnSeconds;
         state.ReturnSeconds = Math.Max(state.ReturnSeconds, returnSeconds);
         bool isContinuation = state.HasPlayedAction;
         if (!isContinuation) state.BaseOffset = pose?.Travel ?? Vector2.Zero;
@@ -74,14 +76,15 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         CardPlay? play = NinjaSlayerAttackExecution.CurrentPlay;
         state.LastPlay = play;
         float duration = firstPeakSeconds;
-        float outboundSeconds = standardPresentation
-            ? CombatActionTimingRuntime.VisualSeconds(heldTornado || distance < NinjaSlayerCombatVisuals.SlowAttackLungeDistance ? 0.075f : 0.1f)
+        float outboundSeconds = somersault ? duration : standardPresentation
+            ? heldTornado || distance < NinjaSlayerCombatVisuals.SlowAttackLungeDistance
+                ? CombatActionTimingRuntime.VisualSeconds(0.075f) : SlowAttackAnimation.StandardOutboundSeconds
             : duration;
         outboundSeconds = Math.Min(outboundSeconds, Math.Max(0f, duration - preparationSeconds));
         NinjaSlayerShadowController.Get(creature)?.BeginAction(
             distance >= NinjaSlayerCombatVisuals.SlowAttackLungeDistance ? ShadowActionKind.SlowAttack : ShadowActionKind.Attack,
             duration, returnSeconds, hold: true);
-        var motion = new AttackMotion { HoldUntilCardSettled = heldTornado };
+        var motion = new AttackMotion { HoldUntilCardSettled = heldTornado, Somersault = somersault };
         state.Motions.Add(motion);
         float forwardSign = heldTornado ? direction : state.ForwardSign;
         Vector2 initialDirection = pose?.DirectionLocal() ?? Vector2.Right * direction;
@@ -98,8 +101,10 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                 Vector2 localDelta = creatureNode.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse().BasisXform(delta);
                 if (localDelta.LengthSquared() > 0.0001f) attackDirection = localDelta.Normalized();
             }
-            Vector2 peakOffset = attackDirection * distance * (reverseDirection ? -1f : 1f);
+            Vector2 peakOffset = (somersault ? Vector2.Right * forwardSign : attackDirection)
+                * distance * (reverseDirection ? -1f : 1f);
             motion.Offset = (peakOffset - (heldTornado ? state.BaseOffset : Vector2.Zero)) * outboundCurve(travelProgress);
+            if (somersault) pose?.ApplySomersault(progress);
             ApplyMotions(creature, state, outboundCurve(travelProgress));
         }
         if (Mathf.IsZeroApprox(duration))
@@ -175,7 +180,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         float fastSeconds = CombatActionTiming.DamageRecoveryFastSeconds,
         float standardSeconds = CombatActionTiming.DamageRecoveryNormalSeconds)
     {
-        if (!States.TryGetValue(creature, out ActionState? state)
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature)
+            || !States.TryGetValue(creature, out ActionState? state)
             || !GodotObject.IsInstanceValid(state.CreatureNode)) return;
 
         float seconds = CombatActionTimingRuntime.VisualSeconds(fastSeconds);
@@ -238,6 +244,11 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     private static void StartMotionReturn(Creature creature, ActionState state, AttackMotion motion, float seconds)
     {
+        if (motion.Somersault)
+        {
+            seconds = CombatActionTimingRuntime.VisualSeconds(.2f);
+            NinjaSlayerAimPose.Get(creature)?.ReturnFromSomersault();
+        }
         motion.Returning = true;
         Vector2 from = motion.Offset;
         if (seconds <= 0f)
@@ -354,6 +365,13 @@ internal static class NinjaSlayerRapidAnimationCoordinator
 
     public static void CancelAndRestore(Creature creature)
     {
+        NinjaSlayerHellTornadoVisual.Get(creature)?.Reset();
+        CancelOrdinaryActions(creature);
+        Participants.Remove(creature);
+    }
+
+    internal static void CancelOrdinaryActions(Creature creature)
+    {
         StaggerAnimation.Reset(creature);
         JumpAnimation.StopForAirChannel(creature);
         HopAnimation.StopForAirChannel(creature);
@@ -363,7 +381,6 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             state.StopAndRestore();
         }
 
-        Participants.Remove(creature);
         NinjaSlayerAimPose.Get(creature)?.Reset();
         NinjaSlayerShadowController.Get(creature)?.ResetAction();
     }
@@ -592,6 +609,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         internal bool Completed;
         internal bool Returning;
         internal bool HoldUntilCardSettled;
+        internal bool Somersault;
     }
 
     private sealed record VisualTailState(

@@ -111,21 +111,27 @@ public partial class OrbContractRunner
                         var sparks = original.GetNode<GpuParticles2D>("Sparks");
                         Material sourceMaterial = sparks.ProcessMaterial;
                         int sourceAmount = sparks.Amount;
+                        bool testMode = MegaCrit.Sts2.Core.TestSupport.TestMode.IsOn;
+                        PreloadManager.Cache.SetAsset(stabPath, scene);
                         try
                         {
+                            MegaCrit.Sts2.Core.TestSupport.TestMode.IsOn = false;
                             var hitFx = AccessTools.Method(feedback, "PlaySawatariBambooHit");
                             hitFx.Invoke(null, [creature, combat.Player.Creature, false]);
                             Require(effects.GetChildCount() == 0, "An evaded bamboo stab generated contact sparks.");
                             hitFx.Invoke(null, [creature, combat.Player.Creature, true]);
-                            var impact = effects.GetNode<Node2D>("SawatariBambooImpact");
-                            Require(impact.GetChildCount() == 2 && impact.Scale.IsEqualApprox(Vector2.One * .35f),
-                                "Bamboo retained the dramatic stab's long slash or incorrect scale.");
-                            Require(impact.GetNode<GpuParticles2D>("Sparks").ProcessMaterial != sourceMaterial
-                                && sparks.Amount == sourceAmount, "Bamboo changed shared native particle resources.");
-                            await ToSignal(GetTree().CreateTimer(.2), SceneTreeTimer.SignalName.Timeout);
+                            var impact = effects.GetChildren().OfType<Node2D>().Single();
+                            Require(impact.GetChildCount() == original.GetChildCount() && impact.Scale.IsEqualApprox(original.Scale)
+                                && impact.Rotation == original.Rotation,
+                                "Bamboo changed the native stab hierarchy, size or orientation.");
+                            Require(impact.GetNode<GpuParticles2D>("Sparks").Amount == sourceAmount
+                                && sparks.ProcessMaterial == sourceMaterial, "Bamboo changed native particle parameters.");
+                            Require(impact.GlobalPosition.DistanceTo(combat.Player.Creature.GetCreatureNode()!.VfxSpawnPosition) < .1f,
+                                "Bamboo impact did not use the target's native VFX core.");
+                            await ToSignal(GetTree().CreateTimer(2.5), SceneTreeTimer.SignalName.Timeout);
                             Require(effects.GetChildCount() == 0, "Bamboo contact particles did not clean up.");
                         }
-                        finally { original.Free(); }
+                        finally { MegaCrit.Sts2.Core.TestSupport.TestMode.IsOn = testMode; original.Free(); }
                     }
                 }
                 finally
@@ -161,9 +167,12 @@ public partial class OrbContractRunner
                 ulong start = Time.GetTicksUsec();
                 NinjaSlayerAnimationPatch.Prefix(dark, "SlowAttack", .5f, ref hit);
                 await hit;
-                Require(Time.GetTicksUsec() - start >= 490000 && Math.Abs(darkRig.Position.X + 90f) < 1f,
-                    "Dark Ninja counter did not use the reference Slow gate and lunge.");
-                await ToSignal(GetTree().CreateTimer(.52), SceneTreeTimer.SignalName.Timeout);
+                double frameSeconds = Math.Max(1d / 60d, GetProcessDeltaTime());
+                double gate = SaveManager.Instance.PrefsSave.FastMode == FastModeType.Normal ? .5d : .25d;
+                Require((Time.GetTicksUsec() - start) / 1000000d + frameSeconds >= gate
+                    && Math.Abs(darkRig.Position.X + 120f) < 1f,
+                    "Dark Ninja counter did not use the slash gate and 120px lunge.");
+                await ToSignal(GetTree().CreateTimer(.27), SceneTreeTimer.SignalName.Timeout);
                 Require(darkRig.Position.IsZeroApprox() && darkActor.Position.IsZeroApprox(),
                     "Dark Ninja counter did not restore its body without moving the UI root.");
             }
@@ -174,7 +183,7 @@ public partial class OrbContractRunner
                 AimActors.Remove(dark);
                 darkActor.Free();
             }
-            GD.Print("PASS Dark Ninja actual Hit -> completed return -> reference Slow; native bamboo contact resources and cleanup.");
+            GD.Print("PASS Dark Ninja actual Hit -> completed return -> Iai; native bamboo contact resources and cleanup.");
             GD.Print("PASS Sawatari actual hurt: enemy shared stagger, repeated-hit cleanup, blocked shake and unchanged allied dodge.");
         }
         finally
@@ -193,6 +202,8 @@ public partial class OrbContractRunner
         Vector2 baseline = rig.Position;
         Vector2 core = rig.VfxSpawnPosition.Position;
         Transform2D transform = anchor.Transform;
+        Sprite2D bambooBody = rig.GetNode<Sprite2D>("%Visuals");
+        Transform2D bodyTransform = bambooBody.Transform;
         float direction = creature.Side == CombatSide.Player ? 1f : -1f;
         var product = typeof(StaggerAnimation).Assembly;
         Type bamboo = product.GetType("NinjaSlayer.Code.ExternalAnimations.SawatariBambooAnimation", true)!;
@@ -202,17 +213,21 @@ public partial class OrbContractRunner
             {
                 SaveManager.Instance.PrefsSave.FastMode = mode;
                 ulong start = Time.GetTicksUsec();
-                await (Task)AccessTools.Method(typeof(SlowAttackAnimation), "PlayReference").Invoke(null, [creature])!;
+                await (Task)AccessTools.Method(typeof(SlowAttackAnimation), "PlayIai").Invoke(null, [creature])!;
                 if (mode != FastModeType.Instant)
                 {
                     double elapsed = (Time.GetTicksUsec() - start) / 1000000d;
-                    Require(elapsed >= .49 && elapsed < .55, $"Reference Slow gate was {elapsed:F4}s in {mode}.");
-                    Require(Math.Abs((rig.Position.X - baseline.X) * direction - 90f) < 1f,
-                        $"Reference Slow released damage away from the 90px peak: {rig.Position - baseline}.");
-                    await ToSignal(GetTree().CreateTimer(.52), SceneTreeTimer.SignalName.Timeout);
+                    // A new Tween consumes the current frame's delta, even when created mid-frame.
+                    double frameSeconds = Math.Max(1d / 60d, GetProcessDeltaTime());
+                    double gate = mode == FastModeType.Normal ? .5d : .25d;
+                    Require(elapsed + frameSeconds >= gate && elapsed < gate + 2d * frameSeconds,
+                        $"Iai gate was {elapsed:F4}s in {mode} (frame {frameSeconds:F4}s).");
+                    Require(Math.Abs((rig.Position.X - baseline.X) * direction - 120f) < 1f,
+                        $"Iai released damage away from the 120px peak: {rig.Position - baseline}.");
+                    await ToSignal(GetTree().CreateTimer(.27), SceneTreeTimer.SignalName.Timeout);
                 }
                 Require(actor.Position.IsEqualApprox(root) && rig.Position.IsEqualApprox(baseline),
-                    "Reference Slow moved the UI root or did not restore its visual baseline.");
+                    "Iai moved the UI root or did not restore its visual baseline.");
                 var impacts = new List<double>();
                 start = Time.GetTicksUsec();
                 Task Impact()
@@ -224,6 +239,9 @@ public partial class OrbContractRunner
                         Require(Math.Abs((rig.VfxSpawnPosition.Position.X - core.X) * direction - 126f) < .5f
                             && Math.Abs(anchor.RotationDegrees * direction - 19.49f) < .1f,
                             "Bamboo damage did not occur at the source-reference peak.");
+                        Require(bambooBody.Transform.IsEqualApprox(bodyTransform) && bambooBody.VisibilityLayer != 0
+                            && !anchor.HasNode("BambooPose"),
+                            "Bamboo must retain one complete source image with no relative body/weapon motion.");
                     }
                     return Task.CompletedTask;
                 }
@@ -239,7 +257,33 @@ public partial class OrbContractRunner
                     "Bamboo did not restore its body/core transforms.");
                 GD.Print($"PASS {creature.Side} bamboo {mode} hit timestamps: {string.Join(", ", impacts.Select(t => t.ToString("F4")))}.");
             }
-            GD.Print($"PASS actual {creature.Side} reference Slow and bamboo: Normal/Fast/Instant, 90px peak, six-frame cadence, UI stability and recovery.");
+            foreach (FastModeType mode in new[] { FastModeType.Normal, FastModeType.Fast })
+            {
+                SaveManager.Instance.PrefsSave.FastMode = mode;
+                ulong hurtStart = Time.GetTicksUsec();
+                Task hurt = StaggerAnimation.Play(creature);
+                await ToSignal(GetTree().CreateTimer(.18), SceneTreeTimer.SignalName.Timeout);
+                Require(!hurt.IsCompleted, $"{creature.Side} hurt ended before the reference 0.3s in {mode}.");
+                await hurt;
+                Require((Time.GetTicksUsec() - hurtStart) / 1000000d
+                    + Math.Max(1d / 60d, GetProcessDeltaTime()) >= .3d, "Hurt was shortened by game speed.");
+                foreach (bool hurtFirst in new[] { false, true })
+                foreach (int hits in new[] { 1, 2 })
+                {
+                    Task first = hurtFirst ? StaggerAnimation.Play(creature)
+                        : (Task)AccessTools.Method(bamboo, "Play").Invoke(null, [creature, hits, (Func<Task>)(() => Task.CompletedTask)])!;
+                    await ToSignal(GetTree().CreateTimer(.035), SceneTreeTimer.SignalName.Timeout);
+                    Task second = hurtFirst
+                        ? (Task)AccessTools.Method(bamboo, "Play").Invoke(null, [creature, hits, (Func<Task>)(() => Task.CompletedTask)])!
+                        : StaggerAnimation.Play(creature);
+                    await Task.WhenAll(first, second);
+                    Require(actor.Position.IsEqualApprox(root) && rig.Position.IsEqualApprox(baseline)
+                        && anchor.Transform.IsEqualApprox(transform) && rig.VfxSpawnPosition.Position.IsEqualApprox(core),
+                        $"Overlapping bamboo/hurt captured a tilted baseline: {creature.Side}, {mode}, hurtFirst={hurtFirst}, hits={hits}.");
+                }
+            }
+            GD.Print($"PASS {creature.Side} bamboo/hurt overlap: both start orders, both completion orders, Normal/Fast and exact baseline recovery.");
+            GD.Print($"PASS actual {creature.Side} standard Slow and bamboo: Normal/Fast/Instant, 120px peak, six-frame cadence, UI stability and recovery.");
         }
         finally
         {

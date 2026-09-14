@@ -154,7 +154,7 @@ public static class NinjaSlayerCombatAnimations
     private static async Task PlayBlockedHitAnimation(Creature creature, float duration)
     {
         var motion = NinjaSlayerAimPose.Get(creature)?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Brace,
-            CombatActionTimingRuntime.VisualSeconds(duration * 0.5f));
+            CombatActionTimingRuntime.VisualSeconds(duration));
         if (motion != null) await motion.Completion;
         SoarSpinAnimation.EnsureAirborneSpin(creature);
     }

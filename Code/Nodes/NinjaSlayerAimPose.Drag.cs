@@ -88,6 +88,8 @@ public partial class NinjaSlayerAimPose
         }
     }
 
+    internal bool IsFacingTurn(VerticalAxisSpinProjection projection) => ReferenceEquals(projection, _turnProjection);
+
     internal (float Degrees, float Basis, Func<double, double>? Before) ComposeFacingSpin(
         VerticalAxisSpinProjection projection, float degrees, Func<double, double>? before)
     {

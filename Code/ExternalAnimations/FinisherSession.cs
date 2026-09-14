@@ -42,7 +42,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly Vector2 _actorStartPosition;
     private readonly HashSet<ulong> _vfxBaselineChildIds;
     private readonly bool _usesJumpDeathSquash;
-    private readonly bool _usesNinjaSlayerSignatureImpact;
     private readonly TaskCompletionSource _completion =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private FinisherCameraFrame _cameraFrame = new([], false);
@@ -77,14 +76,14 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private bool _completionStarted;
     private bool _actionStarted;
     private bool _actionPeakReached;
-    private float _actionPeakSeconds = SlowAttackAnimation.ReferencePeakSeconds;
-    private Vector2 _actionStartPosition;
+    private float _actionPeakSeconds = CombatActionTimingRuntime.SlowAttackSeconds;
     private Vector2 _impactPosition;
     private NinjaSlayerHoverTipSuppression? _hoverTipSuppression;
     private FinisherCardVisualSuppression? _cardVisualSuppression;
     private FinisherActorLayerLease? _actorLayerLease;
     private NinjaSlayerAimPose? _actorAimPose;
     private FinisherImpactPresentation? _presentation;
+    private FinisherApproach? _approach;
 
     public FinisherSession(
         long sessionId,
@@ -112,14 +111,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             : request.ActorNode.Position;
         _freeControlLease = NinjaSlayerFreeControl.Get(request.Actor)?.SuspendForCinematic(_actorStartPosition);
         if (_freeControlLease != null) _actorStartPosition = _freeControlLease.Baseline;
-        _actionStartPosition = request.ActorNode.Position;
         _impactPosition = request.ActorNode.Position;
         _actionPeakReached = request.Scenario != FinisherScenarioKind.YamotoKokiIaiSlash;
         _vfxBaselineChildIds = request.VfxBaselineChildIds?.ToHashSet()
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(_room).ToHashSet();
         _room.TreeExiting += OnRoomTreeExiting;
         _lastFrameMsec = Time.GetTicksMsec();
-        _usesNinjaSlayerSignatureImpact = request.UsesNinjaSlayerSignatureImpact;
         CardPlay = request.CardPlay;
         RequiresAfterCardPlayed = request.RequiresAfterCardPlayed;
         ResolvedHits = Math.Max(1, request.ResolvedHits);
@@ -166,9 +163,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         try
         {
-            _presentation = _usesNinjaSlayerSignatureImpact
-                ? FinisherImpactPresentation.Create(_room, _camera, _ledger.Victims.Count)
-                : FinisherImpactPresentation.CreateBackdropOnly(_room, _camera);
+            _presentation = FinisherImpactPresentation.CreateBackdropOnly(_room, _camera);
         }
         catch (Exception ex)
         {
@@ -218,16 +213,10 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             _actorNode.Position.Y);
         if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash)
         {
-            float fallbackDirection = Actor.Side == CombatSide.Player ? 1f : -1f;
-            _actionStartPosition = new Vector2(
-                FinisherActionTrajectory.ResolveIaiStartX(
-                    _actorStartPosition.X,
-                    _impactPosition.X,
-                    fallbackDirection),
-                _impactPosition.Y);
-            _actorNode.Position = _actionStartPosition;
+            _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier());
+            _approach.ReturnDuration = SlowAttackAnimation.IaiReturnSeconds;
         }
-        else
+        else if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
         {
             if (_actorAimPose != null)
                 _actorAimPose.PlaceAtImpact(_focusNode.Entity, _impactPosition.X);
@@ -236,6 +225,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             _actionStarted = true;
             _actionPeakReached = true;
             _actionPeakTask = Task.CompletedTask;
+        }
+        else
+        {
+            // A missed prediction never adds a hit-frame teleport.
+            _approach = FinisherApproach.Claim(Actor);
+            _actionStarted = _actionPeakReached = true;
         }
         float maximumScale = _camera.BaselineScale.X
             * FinalHitZoomMultiplier
@@ -287,6 +282,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private async Task PlayAimedAction(float seconds)
     {
+        if (NinjaSlayerAimPose.IsSomersaultHeavy(CardPlay?.Card) && _actorAimPose != null)
+        {
+            await _actorAimPose.PlaySomersaultInPlace(seconds);
+            return;
+        }
         await Task.WhenAll(
             _actorAimPose?.PrepareKick(CardPlay) ?? Task.CompletedTask,
             Cmd.Wait(Math.Max(0f, seconds)));
@@ -817,6 +817,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _cardVisualSuppression = null;
         Capture(() => _actorLayerLease?.Dispose());
         _actorLayerLease = null;
+        Capture(() => _approach?.Dispose());
+        _approach = null;
         Capture(RestoreActorLeapPose);
         Capture(() => _freeControlLease?.Dispose());
         Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
@@ -1143,18 +1145,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 float linearProgress = Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f);
                 float progress = EaseOut(linearProgress);
                 ApplyEnhancedVictimFeedback(impactVisuals.Values, reverseVictims, progress, flash: true);
-                SetSignatureImpactState(
-                    presentation,
-                    targetNodes,
-                    progress,
-                    Mathf.Sin(linearProgress * Mathf.Pi));
                 _camera.SetTransform(
                     cameraStartPosition.Lerp(punchPosition, progress),
                     Mathf.Lerp(cameraStartScale, punchScale, progress));
             }
 
             RestoreEnemyFlash(impactVisuals.Values);
-            SetSignatureImpactState(presentation, targetNodes, 1f, 0f);
             float holdSeconds = DoomPoseSeconds
                 - ImpactLeadSeconds
                 - ImpactRecoverySeconds;
@@ -1174,7 +1170,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                     1f - progress,
                     flash: false,
                     reverseRotationAmount: 1f);
-                SetSignatureImpactState(presentation, targetNodes, 1f - progress, 0f);
                 _camera.SetTransform(
                     punchPosition.Lerp(recoveryPosition, progress),
                     Mathf.Lerp(punchScale, recoveryScale, progress));
@@ -1184,7 +1179,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         finally
         {
-            SetSignatureImpactState(presentation, [], 0f, 0f);
             if (ownerSnapshot is { } snapshot && GodotObject.IsInstanceValid(snapshot.Node))
             {
                 snapshot.Node.ProcessMode = snapshot.Mode;
@@ -1235,12 +1229,10 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             {
                 elapsed += await NextFrame();
                 _actionCancellation.Token.ThrowIfCancellationRequested();
-                float progress = FinisherActionTrajectory.SlowProgress(
-                    elapsed / duration);
-                _actorNode.Position = _actionStartPosition.Lerp(_impactPosition, progress);
+                _approach?.ApplyProgress(elapsed / duration);
             }
 
-            _actorNode.Position = _impactPosition;
+            _approach?.ApplyProgress(1f);
             _actionPeakReached = true;
             TryScheduleEnhancedImpact();
         }

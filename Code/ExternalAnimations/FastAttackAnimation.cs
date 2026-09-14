@@ -55,6 +55,11 @@ public static class FastAttackAnimation
     {
         float peakSeconds = CombatActionTimingRuntime.TriggerSeconds(
             NinjaSlayerAimPose.IsKick(NinjaSlayerAttackExecution.CurrentPlay?.Card) ? 0.25f : waitTime);
+        if (FinisherApproach.TryPlayToPeak(creature, peakSeconds, out Task approach))
+        {
+            await approach;
+            return;
+        }
         NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Attack, peakSeconds, CombatActionTimingRuntime.DamageRecoverySeconds);
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, peakSeconds, out Task action))
         {

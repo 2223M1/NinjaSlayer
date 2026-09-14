@@ -8,8 +8,6 @@ namespace NinjaSlayer.Code.Nodes;
 [GlobalClass]
 public partial class NinjaSlayerSpinMotionBlur : Node
 {
-    // All three authored bodies span 816 texture pixels, excluding scarf and smoke.
-    private const float BodyHeight = 816f;
     private readonly SpinExposureHistory _history = new();
     private readonly float[] _angles = new float[SpinExposureHistory.SampleCount];
     private Sprite2D _body = null!;
@@ -88,6 +86,11 @@ public partial class NinjaSlayerSpinMotionBlur : Node
 
     internal void SyncNow()
     {
+        if (_creature != null && NinjaSlayerHellTornadoVisual.Get(_creature)?.Active == true)
+        {
+            _renderer?.Reset();
+            return;
+        }
         if (!_hasExposure || !IsInsideTree() || !CanProcess() || !_body.CanProcess() || Engine.TimeScale <= 0d) return;
         if (_creature?.IsDead == true) { Reset(); return; }
         if (!_history.SampleAngles(_time, _angles)) { _renderer?.Reset(); return; }
@@ -95,7 +98,7 @@ public partial class NinjaSlayerSpinMotionBlur : Node
         _overlay?.SyncForPose();
         Sprite2D sprite = _overlay?.Visible == true ? _overlay : _body;
         _renderer ??= new SpinExposureRenderer(this);
-        _renderer.Apply(sprite, _projection!.AxisInSprite(sprite).X, _ratio, _angles, BodyHeight);
+        _renderer.Apply(sprite, _projection!.AxisInSprite(sprite).X, _ratio, _angles, SpinExposureRenderer.BodyHeight(sprite.Texture));
     }
 
     public void Reset()

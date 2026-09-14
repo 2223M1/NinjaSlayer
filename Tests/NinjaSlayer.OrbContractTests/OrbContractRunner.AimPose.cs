@@ -37,7 +37,8 @@ public partial class OrbContractRunner
             "res://NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn",
             "res://NinjaSlayer/images/characters/ninja_slayer/kill_idle/NinjaSlayer_kill_idle_0001.png",
             "res://NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_0001.png",
-            "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png"
+            "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png",
+            "res://NinjaSlayer/images/characters/ninja_slayer/one_body_one_soul.png"
         }) PreloadManager.Cache.SetAsset(path, GD.Load(path));
         NCreatureVisuals rig = STS2RitsuLib.Scaffolding.Godot.RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(
             "res://NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn")!;
@@ -75,6 +76,7 @@ public partial class OrbContractRunner
         var contour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.CombatBodyContours"), "NinjaSlayer").GetValue(null)!;
         try
         {
+            VerifyFinisherApproach(actor, target);
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");
             var facingDrag = new Node();
             stage.AddChild(facingDrag);
@@ -214,6 +216,8 @@ public partial class OrbContractRunner
             await VerifyNativeDrawBatches(combat, pose);
             await VerifyNonblockingThrow(combat, pose);
             await VerifyConcurrentMotion(combat, pose, anchor, center, target);
+            VerifySomersault(combat, actor, target, targetCenter);
+            VerifyHellTornado(actor, new(620f, -203f));
             var dragOwner = new Node();
             stage.AddChild(dragOwner);
             var tornadoCard = combat.State.CreateCard<TornadoFistRedesignV1>(combat.Player);
@@ -246,6 +250,11 @@ public partial class OrbContractRunner
                     var relic = ModelDb.Relic<NarakuWithinRelic>().ToMutable();
                     combat.Player.AddRelicInternal(relic);
                 }
+                if (formIndex is 1 or 2)
+                {
+                    Invoke("SyncNow");
+                    VerifyHellTornado(actor, formIndex == 1 ? new(605f, -209f) : new(315.28622f, -256.23338f));
+                }
                 foreach (float facing in new[] { -1f, 1f })
                 foreach (float stretch in new[] { 0.5f, 1.5f })
                 {
@@ -255,7 +264,7 @@ public partial class OrbContractRunner
                     Invoke("BeginAction", combat.Enemy, false, false);
                     Sprite2D overlay = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
                     Sprite2D active = overlay.Visible ? overlay : sprite;
-                    Vector2 corePoint = formIndex == 2 ? new(50.8f, 120f) : new(580f, 30.30303f);
+                    Vector2 corePoint = formIndex == 2 ? new(64.99405f, 112.94429f) : new(580f, 30.30303f);
                     Require((active.GetGlobalTransformWithCanvas() * corePoint).DistanceTo(center.GetGlobalTransformWithCanvas().Origin) < 0.1f,
                         "Form core lost affine transform tracking.");
                     var kick = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
@@ -267,7 +276,7 @@ public partial class OrbContractRunner
                         Resources = new ResourceInfo { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
                         IsAutoPlay = false, PlayIndex = 0, PlayCount = 1 };
                     await (Task)AccessTools.Method(poseType, "PrepareKick").Invoke(pose, [play])!;
-                    Vector2 footPoint = formIndex == 2 ? new(422f, 497f) : new(295f, 535f);
+                    Vector2 footPoint = formIndex == 2 ? new(-228.06919f, 458.08017f) : new(295f, 535f);
                     Vector2 feet = (active.GetGlobalTransformWithCanvas() * footPoint - center.GetGlobalTransformWithCanvas().Origin).Normalized();
                     Vector2 aim = (targetCenter.GetGlobalTransformWithCanvas().Origin - center.GetGlobalTransformWithCanvas().Origin).Normalized();
                     Require(feet.Dot(aim) > 0.999f, "Kick feet do not face the target core.");
@@ -280,6 +289,20 @@ public partial class OrbContractRunner
                 await VerifyDragControls(combat, actor, target, targetCenter, rig, formIndex);
                 await VerifySpinExposure(rig, formIndex);
             }
+            Invoke("Reset");
+            anchor.Transform = Transform2D.Identity;
+            await PowerCmd.Apply<OneBodyOneSoulPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            Invoke("SyncNow");
+            Sprite2D oneSoul = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
+            Require(oneSoul.Texture.GetSize() == new Vector2(1743f, 2712f), "One Soul did not use the final delivered canvas.");
+            Require(Math.Abs((oneSoul.GlobalTransform * new Vector2(-633.5f, 1339f)).Y + 6.45f) < .1f,
+                "One Soul replacement changed its authored ground baseline.");
+            VerifyHellTornado(actor, new(-365.5f, -1049f));
+            VerifyDrawAndThrowPose(combat, pose, anchor, oneSoul, center, target, 3);
+            await PowerCmd.Remove<OneBodyOneSoulPower>(combat.Player.Creature);
+            Invoke("SyncNow");
+            Require(oneSoul.Texture.ResourcePath.EndsWith("/naraku.png", StringComparison.Ordinal),
+                "Removing One Soul did not restore the underlying full Naraku form.");
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             Invoke("Reset");
             actor.Position = Vector2.Zero;

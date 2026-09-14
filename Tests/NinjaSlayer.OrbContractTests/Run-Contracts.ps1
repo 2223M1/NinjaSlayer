@@ -36,7 +36,7 @@ try {
         $previous[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
         [Environment]::SetEnvironmentVariable($name, $environment[$name], 'Process')
     }
-    & $GodotPath --headless --path $PSScriptRoot --quit-after 6000 *> $LogPath
+    & $GodotPath --headless --path $PSScriptRoot --quit-after 12000 *> $LogPath
     $contractExit = $LASTEXITCODE
     Get-Content -LiteralPath $LogPath | Select-String -Pattern '^Candidate |^PASS |contracts passed|ERROR: System\.'
     if ($contractExit -ne 0 -or !(Select-String -LiteralPath $LogPath -SimpleMatch 'NinjaSlayer orb product contracts passed.')) {

@@ -9,6 +9,8 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Lifecycle;
+using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Orbs;
 using STS2RitsuLib.Scaffolding.Content;
@@ -41,7 +43,8 @@ public sealed class HellTornadoRedesignPower : NinjaSlayerPowerTemplate
         NinjaSlayerRapidAnimationCoordinator.CancelVisualTailForAction(Owner);
         Task presentation = Task.WhenAll(
             ByrdRiseAnimation.Play(Owner, RiseDistance),
-            SoarSpinAnimation.Accelerate(Owner, RiseDuration));
+            NinjaSlayerHellTornadoVisual.Get(Owner)?.Accelerate(CombatActionTimingRuntime.VisualSeconds(RiseDuration))
+                ?? Task.CompletedTask);
         if (RapidCardPresentationContext.IsActive)
         {
             _ = TaskHelper.RunSafely(presentation);
@@ -67,7 +70,8 @@ public sealed class HellTornadoRedesignPower : NinjaSlayerPowerTemplate
             await stock.FireConsumedVolley(choiceContext, 1, null);
         }
 
-        await SoarSpinAnimation.Decelerate(Owner, RiseDuration);
+        if (NinjaSlayerHellTornadoVisual.Get(Owner) is { } tornado)
+            await tornado.Decelerate(CombatActionTimingRuntime.VisualSeconds(RiseDuration));
         await ByrdFallAnimation.Play(Owner, RiseDistance);
         NinjaSlayerCombatAnimations.StopSoarSpinAndReturnToIdle(Owner);
         await PowerCmd.Remove<SoarPower>(Owner);
@@ -76,6 +80,7 @@ public sealed class HellTornadoRedesignPower : NinjaSlayerPowerTemplate
 
     public override Task AfterRemoved(Creature oldOwner)
     {
+        NinjaSlayerHellTornadoVisual.Get(oldOwner)?.Reset();
         if (SoarVisualState.IsAirborne(oldOwner))
         {
             SoarVisualState.ResetVisualsToGround(oldOwner);

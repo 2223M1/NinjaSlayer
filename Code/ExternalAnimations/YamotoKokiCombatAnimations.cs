@@ -57,7 +57,7 @@ internal static class YamotoKokiCombatAnimations
                 result = CombatDodgeAnimation.PlayImmediate(creature);
                 return true;
             case "SlowAttack" when isYamotoKoki:
-                result = SlowAttackAnimation.PlayReference(creature);
+                result = SlowAttackAnimation.PlayIai(creature);
                 return true;
             default:
                 return false;
@@ -116,19 +116,19 @@ internal static class YamotoKokiCombatAnimations
         if (isFinisherApproach)
         {
             NinjaSlayerShadowController.Get(creature)?.BeginAction(
-                ShadowActionKind.SlowAttack, SlowAttackAnimation.ReferencePeakSeconds,
-                SlowAttackAnimation.ReferencePeakSeconds);
+                ShadowActionKind.SlowAttack, SlowAttackAnimation.IaiPeakSeconds,
+                SlowAttackAnimation.IaiReturnSeconds);
             await approachStarted();
             if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(
                     creature,
-                    SlowAttackAnimation.ReferencePeakSeconds,
+                    SlowAttackAnimation.IaiPeakSeconds,
                     out Task action))
             {
                 await action;
             }
             else
             {
-                await Cmd.Wait(SlowAttackAnimation.ReferencePeakSeconds);
+                await Cmd.Wait(SlowAttackAnimation.IaiPeakSeconds);
             }
 
             await impactAtPeak();
@@ -136,7 +136,7 @@ internal static class YamotoKokiCombatAnimations
         }
 
         await approachStarted();
-        await SlowAttackAnimation.PlayReference(creature);
+        await SlowAttackAnimation.PlayIai(creature);
         await impactAtPeak();
     }
 

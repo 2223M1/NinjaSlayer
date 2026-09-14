@@ -10,6 +10,9 @@ uniform vec2 draw_bounds;
 uniform vec2 draw_y_bounds;
 uniform float blur_radius;
 uniform float radiance_power;
+uniform bool planar_motion = false;
+uniform vec2 planar_pivot;
+uniform vec3 planar_sweep;
 varying vec2 local_position;
 varying vec4 tint;
 
@@ -28,7 +31,16 @@ void fragment() {
     for (int i = 0; i < 65; i++) {
         float offset = float(i - 32) / 32.0;
         float weight = exp(-0.5 * pow(offset * 2.8, 2.0));
-        vec2 uv = (local_position + vec2(offset * blur_radius, 0.0) - capture_rect.xy) / capture_rect.zw;
+        vec2 sample_position = local_position + vec2(offset * blur_radius, 0.0);
+        if (planar_motion) {
+            vec2 radial = local_position - planar_pivot;
+            vec2 flow = vec2(-radial.y, radial.x) * planar_sweep.z + planar_sweep.xy;
+            float step = offset * blur_radius / max(length(flow), 1.0);
+            float angle = step * planar_sweep.z;
+            sample_position = planar_pivot + mat2(vec2(cos(angle), sin(angle)), vec2(-sin(angle), cos(angle))) * radial
+                + step * planar_sweep.xy;
+        }
+        vec2 uv = (sample_position - capture_rect.xy) / capture_rect.zw;
         if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) { continue; }
         vec4 pixel = texture(exposure_texture, uv);
         vec3 light = pow(pixel.rgb, vec3(1.0 / radiance_power));

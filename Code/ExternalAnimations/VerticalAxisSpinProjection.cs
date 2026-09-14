@@ -116,6 +116,12 @@ internal sealed class VerticalAxisSpinProjection
             return;
         }
 
+        if (_aim?.HellTornado is { Active: true } tornado && !_aim.IsFacingTurn(this))
+        {
+            tornado.SetActionTurn(this, degrees);
+            return;
+        }
+
         float basis = 0f;
         if (_aim != null)
             (degrees, basis, angleAtSecondsBefore) = _aim.ComposeFacingSpin(this, degrees, angleAtSecondsBefore);
@@ -137,6 +143,7 @@ internal sealed class VerticalAxisSpinProjection
 
     internal void Restore()
     {
+        _aim?.HellTornado?.RemoveActionTurn(this);
         _blur?.Stop(this);
         if (GodotObject.IsInstanceValid(_shadow)) _shadow!.ClearSpin(this);
         if (!IsValid())

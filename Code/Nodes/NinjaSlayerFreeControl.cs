@@ -129,7 +129,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Active = true; Generation++;
         ConnectPointerSurfaces();
         SetPhysicsProcess(true);
-        _blur = new FreeControlMotionBlur { Name = "FreeRotationExposure", Visible = false };
+        _blur = new FreeControlMotionBlur { Name = "FreeRotationExposure", Visible = false, ShowBehindParent = true };
         Actor.Visuals.AddChild(_blur);
     }
 
@@ -138,8 +138,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(Actor.Visuals)!;
         var overlay = Pose.GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
         _body = overlay.Visible ? overlay : source;
-        bool full = NinjaSlayerFormState.GetPresentation(Actor.Entity).Kind == NinjaSlayerFormKind.FullyReleasedNaraku;
-        var contour = full ? CombatBodyContours.FullyReleasedNaraku : CombatBodyContours.NinjaSlayer;
+        var contour = CombatBodyContours.ForForm(NinjaSlayerFormState.GetPresentation(Actor.Entity).Kind);
         Transform2D bodyWorld = _spaceToCanvas.AffineInverse() * _body.GetGlobalTransformWithCanvas();
         Transform2D inverse = Active ? PhysicsTransform.AffineInverse() : new Transform2D(0f, -_baseCore);
         _worldHull = new Vector2[contour.Length];
@@ -255,7 +254,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Pose.SyncNow();
         Vector2 translation = PhysicsTransform.Origin - _baseCore;
         _exclusiveDepth++;
-        if (_blur != null) _blur.Visible = false;
+        _blur?.ClearHistory();
         ClearInput();
         ClearAttacks();
         _physicsRemainder = 0d;

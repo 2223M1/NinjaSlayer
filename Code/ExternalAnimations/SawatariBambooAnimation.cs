@@ -37,13 +37,12 @@ internal static class SawatariBambooAnimation
             if (!active) return;
             active = false;
             if (tween?.IsValid() == true) tween.Kill();
-            if (GodotObject.IsInstanceValid(anchor)) anchor.Transform = baseline;
-            if (GodotObject.IsInstanceValid(center)) center.Position = core;
+            if (GodotObject.IsInstanceValid(anchor) && GodotObject.IsInstanceValid(center))
+                StaggerAnimation.ApplyAttackPose(creature, anchor, center, baseline, core);
             NinjaSlayerShadowController.Get(creature)?.ResetAction();
         }
         long generation = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Restore);
-        baseline = anchor.Transform;
-        core = center.Position;
+        (baseline, core) = StaggerAnimation.CaptureAttackPose(creature, anchor, center);
         float direction = creature.Side == CombatSide.Player ? 1f : -1f;
         double frameRemainder = 0d;
         void Apply(float phase)
@@ -57,8 +56,7 @@ internal static class SawatariBambooAnimation
             float angle = Mathf.DegToRad(Mathf.Lerp(Tilt[index], Tilt[index + 1], p) * direction);
             var transform = new Transform2D(angle, Vector2.Zero);
             transform.Origin = core + new Vector2(x, y) - transform.BasisXform(core);
-            anchor.Transform = transform * baseline;
-            center.Position = transform * core;
+            StaggerAnimation.ApplyAttackPose(creature, anchor, center, transform * baseline, transform * core);
         }
         async Task<bool> Move(float from, float to)
         {

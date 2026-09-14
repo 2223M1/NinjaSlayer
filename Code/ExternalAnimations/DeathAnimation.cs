@@ -387,7 +387,6 @@ public static class DeathAnimation
 
         // Hoisted: the target list is invariant for the loop, and the collection expression
         // materialised a fresh single-element array on every frame.
-        NCreature[] impactTargets = [creatureNode];
         float elapsed = 0f;
         while (elapsed < EnemyFinisherImpactSeconds)
         {
@@ -398,13 +397,8 @@ public static class DeathAnimation
                 ? 0f
                 : CombatCinematicCameraLease.EaseOutCubic(
                     (elapsed - (EnemyFinisherImpactSeconds - ImpactRecoverySeconds)) / ImpactRecoverySeconds);
-            float rayIntensity = recovery > 0f ? 1f - recovery : lead;
-            float flash = elapsed < ImpactLeadSeconds
-                ? Mathf.Sin(Mathf.Clamp(elapsed / ImpactLeadSeconds, 0f, 1f) * Mathf.Pi)
-                : 0f;
             presentation?.SetBackdropIntensity(
                 CombatCinematicCameraLease.EaseOutCubic(elapsed / BackdropFadeInSeconds));
-            presentation?.SetImpactState(impactTargets, rayIntensity, flash);
 
             if (camera != null)
             {
@@ -418,7 +412,6 @@ public static class DeathAnimation
         }
 
         presentation?.SetBackdropIntensity(1f);
-        presentation?.SetImpactState(System.Array.Empty<NCreature>(), 0f, 0f);
         if (camera != null)
         {
             camera.SetTransform(recoveryPosition, recoveryScale);

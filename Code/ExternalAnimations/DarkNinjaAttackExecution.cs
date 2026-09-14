@@ -31,6 +31,7 @@ internal static class DarkNinjaAttackExecution
             monster,
             targets,
             damage,
+            DarkNinjaCombatMath.DeathSlashTotalSeconds,
             async (execution, targets) =>
             {
                 await DarkNinjaSpecialAttackPresentation.PlayDeathSlash(
@@ -67,6 +68,7 @@ internal static class DarkNinjaAttackExecution
             monster,
             targets,
             damage,
+            DarkNinjaCombatMath.GetDarkStrikeSegment(0).MotionSeconds,
             async (execution, targets) =>
             {
                 await DarkNinjaSpecialAttackPresentation.PlayDarkStrike(
@@ -82,6 +84,7 @@ internal static class DarkNinjaAttackExecution
         DarkNinjaMonster monster,
         IReadOnlyList<Creature> targets,
         int damage,
+        float hitSeconds,
         Func<Execution, IReadOnlyList<Creature>, Task> playPresentation)
     {
         Creature attacker = monster.Creature;
@@ -102,6 +105,13 @@ internal static class DarkNinjaAttackExecution
         Creature[] pendingTargets = targets.ToArray();
 
         await Hook.BeforeAttack(combatState, command);
+        FinisherApproach? approach = null;
+        if (FinisherAttackCommandAdapter.PredictReverseVictim(command, pendingTargets, damage, 1)
+            ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
+        {
+            approach = FinisherApproach.Create(actorNode, focus, Godot.Vector2.One);
+            approach.Start(hitSeconds);
+        }
         try
         {
             if (pendingTargets.Length > 0 && execution.CanContinue())
@@ -111,6 +121,7 @@ internal static class DarkNinjaAttackExecution
         }
         finally
         {
+            approach?.ReleasePrediction();
             if (execution.Results.Count > 0)
             {
                 command.AddResultsInternal(execution.Results);
@@ -201,6 +212,7 @@ internal static class DarkNinjaAttackExecution
                 return [];
             }
 
+            FinisherApproach.ReachImpact(attacker);
             List<DamageResult> results = (await CreatureCmd.Damage(
                     choiceContext,
                     targets,

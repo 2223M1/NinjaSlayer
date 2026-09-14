@@ -168,7 +168,7 @@ public partial class OrbContractRunner
                 "Releasing the mouse erased physical angular momentum.");
             Set("_time", .1f); Sync();
             Node2D exposure = Get<Node2D>("_blur");
-            Require(exposure.Visible && exposure.GetChildCount() == 1,
+            Require(exposure.Visible && rig.GetNode<Sprite2D>("%Visuals").Material is ShaderMaterial,
                 "Actual thrown angular velocity did not produce the planar exposure renderer.");
             using ((IDisposable)Invoke("SuspendForCinematic", original)!)
             {

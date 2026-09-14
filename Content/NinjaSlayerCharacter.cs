@@ -43,6 +43,7 @@ public abstract class NinjaSlayerCharacterTemplate<TCardPool>
             .Concat(BossDeathWhiteoutLease.AssetPaths)
             .Append(ShurikenCombat.ProjectileTexturePath)
             .Append(ShurikenOrb.VisualsScenePath)
+            .Append(NinjaSlayerFormPresentationCatalog.OneBodyOneSoulTexturePath)
             .Append(NinjaSlayerAssetPaths.Image("energy_ninja_slayer.png"))
             .Concat(Enumerable.Range(1, NinjaSlayerFormPresentationCatalog.NormalIdleFrameCount)
                 .SelectMany(frame => new[]

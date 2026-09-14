@@ -43,7 +43,7 @@ public sealed class StormFistRedesignV1 : RedesignV1RareCard
 #else
                         .FromCard(this, cardPlay)
 #endif
-                        .WithHeavyBluntHitFx()
+                        .WithDefectStrikeHitFx()
                         .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
                         .Targeting(cardPlay.Target!).Execute(choiceContext);
                     return !cardPlay.Target!.IsAlive;
