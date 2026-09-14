@@ -58,6 +58,22 @@ z_index = 1
 material = SubResource("CanvasItemMaterial_additive")
 texture = SubResource("GradientTexture2D_soft_glow")
 
+[node name="RearFar" type="Sprite2D" parent="DeformedVisuals/Art"]
+visible = false
+z_index = 2
+modulate = Color(0.58, 0.58, 0.58, 1)
+rotation = 0.418879
+scale = Vector2(0.175, 0.175)
+texture = ExtResource("2_shuriken")
+
+[node name="RearNear" type="Sprite2D" parent="DeformedVisuals/Art"]
+visible = false
+z_index = 2
+modulate = Color(0.76, 0.76, 0.76, 1)
+rotation = 0.20944
+scale = Vector2(0.175, 0.175)
+texture = ExtResource("2_shuriken")
+
 [node name="Body" type="Sprite2D" parent="DeformedVisuals/Art"]
 z_index = 2
 scale = Vector2(0.175, 0.175)

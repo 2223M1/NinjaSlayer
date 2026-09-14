@@ -50,10 +50,20 @@ internal static class ShurikenCombat
     {
         BeginThrowPose(owner, targets.Count > 0 ? targets[0] : null);
         beforeThrow();
-        foreach (Creature target in targets)
+        AtRelease(owner, () =>
         {
-            QueueThrowVfx(owner, target, originOrb);
-        }
+            bool released = false;
+            foreach (Creature target in targets)
+            {
+                if (target.GetVfxContainer() is not { } container
+                    || CreateThrowVfx(owner, target, originOrb, out ShurikenOrbVisual? held) is not { } projectile)
+                    continue;
+                container.AddChildSafely(projectile);
+                if (!released)
+                    held?.OnShurikenReleased(projectile.GetGlobalTransformWithCanvas().Determinant() < 0f ? -1f : 1f);
+                released = true;
+            }
+        });
 
         await Cmd.CustomScaledWait(FlightSeconds, FlightSeconds);
     }
@@ -123,8 +133,8 @@ internal static class ShurikenCombat
         AtRelease(owner, () => NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow));
     }
 
-    private static void QueueThrowVfx(Creature owner, Creature target, ShurikenOrb? originOrb = null) =>
-        AtRelease(owner, () => target.GetVfxContainer()?.AddChildSafely(CreateThrowVfx(owner, target, originOrb)));
+    private static void QueueThrowVfx(Creature owner, Creature target) =>
+        AtRelease(owner, () => target.GetVfxContainer()?.AddChildSafely(CreateThrowVfx(owner, target, null, out _)));
 
     private static void AtRelease(Creature owner, Action play)
     {
@@ -150,8 +160,10 @@ internal static class ShurikenCombat
     private static NShivThrowVfx? CreateThrowVfx(
         Creature owner,
         Creature target,
-        ShurikenOrb? originOrb = null)
+        ShurikenOrb? originOrb,
+        out ShurikenOrbVisual? held)
     {
+        held = null;
         NCombatRoom? room = NCombatRoom.Instance;
         NCreature? ownerNode = room?.GetCreatureNode(owner);
         NCreature? targetNode = room?.GetCreatureNode(target);
@@ -160,7 +172,7 @@ internal static class ShurikenCombat
             return null;
         }
 
-        Vector2 origin = TryGetOrbThrowOrigin(owner, originOrb, out Vector2 orbOrigin)
+        Vector2 origin = TryGetOrbThrowOrigin(owner, originOrb, out Vector2 orbOrigin, out held)
             ? orbOrigin
             : ShurikenOrbVisual.TryGetHandCanvasPosition(ownerNode, out Vector2 handOrigin)
                 ? ownerNode.GetCanvasTransform().AffineInverse() * handOrigin
@@ -202,8 +214,10 @@ internal static class ShurikenCombat
     private static bool TryGetOrbThrowOrigin(
         Creature owner,
         ShurikenOrb? orb,
-        out Vector2 origin)
+        out Vector2 origin,
+        out ShurikenOrbVisual? held)
     {
+        held = null;
         Node? container = NCombatRoom.Instance?
             .GetCreatureNode(owner)?
             .OrbManager?
@@ -215,7 +229,8 @@ internal static class ShurikenCombat
                 if (child is NOrb { Model: ShurikenOrb model } node
                     && ReferenceEquals(model, orb))
                 {
-                    FindShurikenVisual(node)?.SyncNow();
+                    held = FindShurikenVisual(node);
+                    held?.SyncNow();
                     origin = node.GlobalPosition;
                     return true;
                 }

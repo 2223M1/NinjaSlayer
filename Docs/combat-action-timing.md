@@ -143,6 +143,19 @@ draw backflips and shuriken throws may overlap that held stance.
 
 ## Native effects and form changes
 
+Held Shuriken stock draws one, two or at most three equal-size opaque blades at
+the existing hand center. Rear blades are darker and offset by 12/24 degrees.
+Each actual projectile release adds one angular impulse to the held blades and
+contour glow, including an all-target wave only once. Gain/activation feedback
+alone does not add inertia. A single impulse turns about 60 degrees and decays
+over .25s in both Normal/Fast; faster releases add to the current velocity with
+an 1800 degrees/s cap. Instant settles immediately without a Tween. Rotation is
+local to the blade artwork, retaining the hand's full deformation and the native
+upright labels. Stock layers and numbers still follow the actual model count;
+zero stock hides the visual and clears its spin without delaying model removal.
+Existing damage, projectile timing, texture, trajectory, sound and target rules
+are unchanged.
+
 Only Collapse Fist, Slaughter and Straight Ki use native heavyBlunt at the base;
 the other seven mod heavy-feedback calls use bluntPath/bluntAttack at the core,
 like ordinary attacks. Acquired native cards retain their own feedback.
