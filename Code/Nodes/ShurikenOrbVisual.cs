@@ -20,6 +20,9 @@ public partial class ShurikenOrbVisual : Node2D
     private Node2D _deformedVisuals = null!;
     private Node2D _art = null!;
     private Sprite2D _edgeGlow = null!;
+    private Sprite2D _body = null!;
+    private Sprite2D _rearNear = null!;
+    private Sprite2D _rearFar = null!;
     private Sprite2D _pulseTemplate = null!;
     private GpuParticles2D _sparks = null!;
     private NOrb _orbNode = null!;
@@ -27,6 +30,8 @@ public partial class ShurikenOrbVisual : Node2D
     private NCreature? _creatureNode;
     private ShurikenOrb? _orb;
     private double _breathTime;
+    private float _spinDegrees;
+    private float _angularSpeed;
     private bool _subscribedToFramePreDraw;
 
     public override void _Ready()
@@ -34,6 +39,9 @@ public partial class ShurikenOrbVisual : Node2D
         _deformedVisuals = GetNode<Node2D>("DeformedVisuals");
         _art = _deformedVisuals.GetNode<Node2D>("Art");
         _edgeGlow = _art.GetNode<Sprite2D>("EdgeGlow");
+        _body = _art.GetNode<Sprite2D>("Body");
+        _rearNear = _art.GetNode<Sprite2D>("RearNear");
+        _rearFar = _art.GetNode<Sprite2D>("RearFar");
         _pulseTemplate = _art.GetNode<Sprite2D>("PulseTemplate");
         _sparks = _art.GetNode<GpuParticles2D>("Sparks");
         _orbNode = FindOrbNode();
@@ -54,6 +62,17 @@ public partial class ShurikenOrbVisual : Node2D
 
     public override void _Process(double delta)
     {
+        if (CombatActionTimingRuntime.CurrentSpeed == CombatActionSpeed.Instant
+            || _orb is not { StackCount: > 0 } || _creatureNode?.Entity.IsDead == true)
+            _angularSpeed = 0f;
+        if (_angularSpeed != 0f)
+        {
+            // Integrate exponential drag exactly so the impulse is independent of frame rate.
+            float decay = Mathf.Exp(-20f * (float)delta);
+            _spinDegrees = Mathf.PosMod(_spinDegrees + _angularSpeed * (1f - decay) / 20f, 360f);
+            _angularSpeed *= decay;
+            if (Mathf.Abs(_angularSpeed) < 10f) _angularSpeed = 0f;
+        }
         SyncNow();
         _breathTime += delta;
         float wave = (Mathf.Sin((float)_breathTime * 2.4f) + 1f) * 0.5f;
@@ -62,6 +81,7 @@ public partial class ShurikenOrbVisual : Node2D
 
     public override void _ExitTree()
     {
+        _angularSpeed = 0f;
         if (_subscribedToFramePreDraw)
         {
             RenderingServer.FramePreDraw -= SyncNow;
@@ -90,8 +110,15 @@ public partial class ShurikenOrbVisual : Node2D
         _labelContainer.Visible = hasStock;
         if (!hasStock)
         {
+            _angularSpeed = 0f;
             return;
         }
+
+        _rearNear.Visible = _orb!.StackCount >= 2;
+        _rearFar.Visible = _orb.StackCount >= 3;
+        _body.RotationDegrees = _edgeGlow.RotationDegrees = _spinDegrees;
+        _rearNear.RotationDegrees = _spinDegrees + 12f;
+        _rearFar.RotationDegrees = _spinDegrees + 24f;
 
         if (_creatureNode?.Entity.Player?.Character is not INinjaSlayerCharacter
             || !GodotObject.IsInstanceValid(_creatureNode)
@@ -158,6 +185,22 @@ public partial class ShurikenOrbVisual : Node2D
         {
             _deformedVisuals.Transform = new Transform2D(x, y, Vector2.Zero);
         }
+    }
+
+    internal void OnShurikenReleased(float projectileCanvasHandedness)
+    {
+        SyncNow();
+        if (!Visible || _creatureNode?.Entity.IsDead == true) return;
+        float handedness = _body.GetGlobalTransformWithCanvas().Determinant() < 0f ? -1f : 1f;
+        float direction = handedness * projectileCanvasHandedness;
+        if (CombatActionTimingRuntime.CurrentSpeed == CombatActionSpeed.Instant)
+        {
+            _angularSpeed = 0f;
+            _spinDegrees = Mathf.PosMod(_spinDegrees + direction * 60f, 360f);
+            SyncNow();
+            return;
+        }
+        _angularSpeed = Mathf.Clamp(_angularSpeed + direction * 1200f, -1800f, 1800f);
     }
 
     private NOrb FindOrbNode()

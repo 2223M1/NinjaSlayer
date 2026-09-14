@@ -123,7 +123,8 @@ internal sealed partial class SmokeController
             Node2D pose = actor.Visuals.GetNode<Node2D>("%AimPose");
             AccessTools.Property(pose.GetType(), "UseTornadoHitStop").SetValue(pose, true);
             await PowerCmd.Apply<KaratePower>(choice, player.Creature, 2, player.Creature, null);
-            await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 6])!;
+            await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null,
+                [choice, player, _configuration.PreviewFormFinisher == "ShurikenInertia" ? 3 : 6])!;
             for (int i = 0; i < 40; i++)
                 await CardPileCmd.Add(combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player), PileType.Draw, skipVisuals: true);
             NRunMusicController.Instance?.PlayCustomMusic(NinjaSlayerAudio.ForestSawatariBattleMusicEvent);
@@ -226,6 +227,7 @@ internal sealed partial class SmokeController
                     NCreature? kokiNode = koki.GetCreatureNode();
                     Sprite2D overlay = actor.Visuals.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
                     Sprite2D body = overlay.Visible ? overlay : actor.Visuals.GetNode<Sprite2D>("%Visuals");
+                    ShurikenOrbVisual? held = FindDescendant<ShurikenOrbVisual>(actor);
                     int shards = room.CombatVfxContainer.GetChildren().OfType<Node2D>()
                         .Where(node => node.Name.ToString().StartsWith("FormShatter", StringComparison.Ordinal))
                         .Sum(node => node.GetChildCount());
@@ -237,6 +239,10 @@ internal sealed partial class SmokeController
                         ["bodyY"] = body.GlobalPosition.Y, ["bodyScale"] = body.Scale.X,
                         ["form"] = body.Texture.ResourcePath, ["shards"] = shards,
                         ["enemyHp"] = target.CurrentHp, ["playerHp"] = player.Creature.CurrentHp,
+                        ["shurikenStock"] = player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().FirstOrDefault()?.StackCount ?? 0,
+                        ["shurikenVisible"] = held?.IsVisibleInTree() ?? false,
+                        ["shurikenAngle"] = held?.GetNode<Sprite2D>("DeformedVisuals/Art/Body").RotationDegrees,
+                        ["shurikenSpeed"] = held == null ? 0f : (float)AccessTools.Field(typeof(ShurikenOrbVisual), "_angularSpeed").GetValue(held)!,
                         ["enemyRootX"] = enemyNode?.Position.X, ["enemyVisualX"] = enemyNode?.Visuals.Position.X,
                         ["kokiRootX"] = kokiNode?.Position.X, ["kokiVisualX"] = kokiNode?.Visuals.Position.X,
                         ["kokiScreenX"] = kokiNode?.VfxSpawnPosition.X,
@@ -350,6 +356,45 @@ internal sealed partial class SmokeController
                     await CardPileCmd.Add(PileType.Draw.GetPile(player).Cards.ToArray(), PileType.Discard, skipVisuals: true);
                     await CardPileCmd.Draw(choice, 1, player);
                     await WaitFrames(45);
+                }
+                else if (showcase == "ShurikenInertia")
+                {
+                    async Task DiscardOne()
+                    {
+                        CardModel card = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+                        await CardPileCmd.Add(card, PileType.Hand, skipVisuals: true);
+                        await CardCmd.Discard(choice, new[] { card });
+                    }
+                    Section("held-three-blades");
+                    await WaitFrames(60);
+                    foreach (int remaining in new[] { 2, 1, 0 })
+                    {
+                        Section($"single-throw-to-{remaining}-stock");
+                        await DiscardOne();
+                        await WaitFrames(60);
+                    }
+                    Section("gain-six-stock-without-spin");
+                    await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 6])!;
+                    await WaitFrames(60);
+                    Section("continuous-discards-and-hand-follow");
+                    for (int shot = 0; shot < 6; shot++) await DiscardOne();
+                    await WaitFrames(45);
+                    Section("sweep-one-release-two-targets");
+                    Creature second = combat.CreateCreature(ModelDb.Monster<MegaCrit.Sts2.Core.Models.Monsters.TwigSlimeS>().ToMutable(), CombatSide.Enemy, null);
+                    await CreatureCmd.Add(second);
+                    second.SetMaxHpInternal(1000);
+                    await CreatureCmd.SetCurrentHp(second, 1000);
+                    await PowerCmd.Apply<BladeSweepPower>(choice, player.Creature, 1, player.Creature, null);
+                    await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
+                    await WaitFrames(60);
+                    await DiscardOne();
+                    await WaitFrames(60);
+                    Section("roll-and-consecutive-release");
+                    await CardPileCmd.Draw(choice, 2, player);
+                    await DiscardOne();
+                    await DiscardOne();
+                    await WaitFrames(60);
+                    Require(!player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(), "Shuriken preview did not deplete stock.");
                 }
                 else if (showcase == "IaiTiming")
                 {

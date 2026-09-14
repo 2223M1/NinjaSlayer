@@ -643,9 +643,10 @@ if (!/\[node name="EdgeGlow"[\s\S]*?material\s*=\s*SubResource\("CanvasItemMater
     || !/blend_mode\s*=\s*1/.test(shurikenOrbSceneSource)
     || !/\[node name="DeformedVisuals" type="Node2D" parent="\."\]/.test(shurikenOrbSceneSource)
     || !/\[node name="Body"[\s\S]*?scale\s*=\s*Vector2\(0\.175,\s*0\.175\)/.test(shurikenOrbSceneSource)
-    || !/\[node name="Sparks"[\s\S]*?one_shot\s*=\s*true/.test(shurikenOrbSceneSource)
-    || /\nrotation\s*=/.test(shurikenOrbSceneSource)) {
-  errors.push('The Shuriken Orb scene must keep a 60px still body with additive edge glow and burst particles');
+    || !/\[node name="RearNear"[\s\S]*?scale\s*=\s*Vector2\(0\.175,\s*0\.175\)/.test(shurikenOrbSceneSource)
+    || !/\[node name="RearFar"[\s\S]*?scale\s*=\s*Vector2\(0\.175,\s*0\.175\)/.test(shurikenOrbSceneSource)
+    || !/\[node name="Sparks"[\s\S]*?one_shot\s*=\s*true/.test(shurikenOrbSceneSource)) {
+  errors.push('The Shuriken Orb scene must keep equal authored-size blades with additive edge glow and burst particles');
 }
 const shurikenCombatSource = readFileSync(join(root, 'Cards', 'Base', 'ShurikenCombat.cs'), 'utf8');
 if (!/NShivThrowVfx\.Create\(origin,\s*targetPosition,\s*TrailTint\)/.test(shurikenCombatSource)
@@ -655,7 +656,7 @@ if (!/NShivThrowVfx\.Create\(origin,\s*targetPosition,\s*TrailTint\)/.test(shuri
     || !/HeadAngularVelocity\s*=\s*360f\s*\/\s*FlightSeconds/.test(shurikenCombatSource)
     || !/AngularVelocityMin\s*=\s*HeadAngularVelocity[\s\S]*?AngularVelocityMax\s*=\s*HeadAngularVelocity/.test(shurikenCombatSource)
     || !/CreatureCmd\.Damage\([\s\S]*?originOrb\.EvokeVal/.test(shurikenCombatSource)
-    || !/NOrb\s*\{\s*Model:\s*ShurikenOrb\s+model\s*\}[\s\S]*?FindShurikenVisual\(node\)\?\.SyncNow\(\)[\s\S]*?node\.GlobalPosition/.test(shurikenCombatSource)
+    || !/NOrb\s*\{\s*Model:\s*ShurikenOrb\s+model\s*\}[\s\S]*?held\s*=\s*FindShurikenVisual\(node\)[\s\S]*?held\?\.SyncNow\(\)[\s\S]*?node\.GlobalPosition/.test(shurikenCombatSource)
     || !/beforeThrow\(\)[\s\S]*?daggerThrow[\s\S]*?CreateThrowVfx/.test(shurikenCombatSource)
     || /trail\.Texture\s*=/.test(shurikenCombatSource)
     || /NShivThrowVfx\.Create\([^;]*Colors\.Green/.test(shurikenCombatSource)) {
