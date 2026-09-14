@@ -145,6 +145,13 @@ public sealed class SawatariMonster : ModMonsterTemplate
         var results = new List<DamageResult>();
 
         await Hook.BeforeAttack(combatState, command);
+        FinisherApproach? approach = null;
+        if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], SawatariEventRules.AttackDamage, hitCount)
+            ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
+        {
+            approach = FinisherApproach.Create(actorNode, focus, Godot.Vector2.One);
+            approach.Start(CombatActionTimingRuntime.VisualSeconds(SawatariBambooAnimation.CycleSeconds * SawatariBambooAnimation.PeakPhase));
+        }
         try
         {
             await SawatariBambooAnimation.Play(
@@ -159,6 +166,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
                     bool connects = target.GetPower<EvasionPower>() is not { } evasion
                         || !evasion.CanEvade(target, command.DamageProps, attacker);
+                    approach?.ApplyProgress(1f);
                     NinjaSlayerCombatVfx.PlaySawatariBambooHit(attacker, target, connects);
 
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
@@ -179,6 +187,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
         }
         finally
         {
+            approach?.ReleasePrediction();
             if (results.Count > 0)
             {
                 command.AddResultsInternal(results);

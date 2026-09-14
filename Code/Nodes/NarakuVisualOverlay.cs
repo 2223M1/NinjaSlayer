@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Combat;
 
 namespace NinjaSlayer.Code.Nodes;
 
@@ -15,7 +16,6 @@ public partial class NarakuVisualOverlay : Sprite2D
 
     private Creature? creature;
     private Sprite2D? source;
-    private NinjaSlayerSpinMotionBlur? spinBlur;
     private string? activeTexturePath;
 
     // UpdateVisual runs every frame. The texture path only changes when the presentation or the
@@ -29,6 +29,7 @@ public partial class NarakuVisualOverlay : Sprite2D
     private bool mirroredFlipH;
     private bool mirroredFlipV;
     private bool hasMirroredState;
+    private NinjaSlayerFormKind? shownForm;
 
     public static void Sync(Creature creature)
         => SyncCore(creature);
@@ -92,6 +93,9 @@ public partial class NarakuVisualOverlay : Sprite2D
         }
 
         NinjaSlayerFormPresentation presentation = NinjaSlayerFormState.GetPresentation(creature);
+        if (shownForm is { } oldForm && oldForm != presentation.Kind)
+            NinjaSlayerFormShatter.Schedule(creature, oldForm, Visible ? this : source);
+        shownForm = presentation.Kind;
         Texture2D? sourceTexture = source.Texture;
         string? facingTexturePath = presentation == NinjaSlayerFormPresentationCatalog.Normal
             ? NinjaSlayerFormPresentationCatalog.ResolveFacingIdleTexturePath(
@@ -157,7 +161,6 @@ public partial class NarakuVisualOverlay : Sprite2D
             if (source == null && node is NCreatureVisuals visuals)
             {
                 source = NinjaSlayerVisualRig.GetBodySprite(visuals);
-                spinBlur = visuals.GetNodeOrNull<NinjaSlayerSpinMotionBlur>("SpinMotionBlur");
             }
 
             if (creature == null && node is NCreature creatureNode)
@@ -225,35 +228,14 @@ public partial class NarakuVisualOverlay : Sprite2D
     private void ApplyLegacyFormTransform(NinjaSlayerFormPresentation presentation)
     {
         Centered = true;
-        Position = new Vector2(0f, NinjaSlayerCombatVisuals.BodySpriteBasePosition.Y + presentation.BodyYOffset);
+        var calibration = NinjaSlayerFormCalibration.For(presentation.Kind);
+        Vector2 position = new(calibration.Position.X, calibration.Position.Y);
         Offset = Vector2.Zero;
-        float scale = GetLegacyFormScale(presentation);
-        float sourceScaleRatio = Mathf.Abs(source!.Scale.Y) > 0.001f
-            ? Mathf.Abs(source.Scale.X / source.Scale.Y)
-            : 1f;
-        Scale = new Vector2(
-            Mathf.Sign(source.Scale.X == 0f ? 1f : source.Scale.X) * scale * sourceScaleRatio,
-            scale);
-        Rotation = 0f;
-        Skew = 0f;
-        spinBlur?.ProjectVariant(this);
+        float scale = calibration.Scale;
+        Transform2D authored = new(0f, Vector2.One * NinjaSlayerCombatVisuals.BodySpriteBaseScale,
+            0f, NinjaSlayerCombatVisuals.BodySpriteBasePosition);
+        Transform = source!.Transform * authored.AffineInverse()
+            * new Transform2D(0f, Vector2.One * scale, 0f, position);
     }
 
-    private float GetLegacyFormScale(NinjaSlayerFormPresentation presentation)
-    {
-        if (presentation.FixedBodyScale.HasValue)
-        {
-            return presentation.FixedBodyScale.Value;
-        }
-
-        float height = Texture?.GetHeight() ?? 0f;
-        if (height <= 0f)
-        {
-            return NinjaSlayerCombatVisuals.BodySpriteBaseScale;
-        }
-
-        return NinjaSlayerFormPresentationCatalog.ReferenceBodyTextureHeight
-            * NinjaSlayerCombatVisuals.BodySpriteBaseScale
-            / height;
-    }
 }

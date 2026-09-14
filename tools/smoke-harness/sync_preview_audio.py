@@ -10,6 +10,7 @@ import csv
 import json
 from pathlib import Path
 import subprocess
+import xml.etree.ElementTree as ET
 
 import numpy as np
 from scipy.signal import correlate
@@ -43,7 +44,27 @@ def locate_waveform(samples, template, lower, upper):
     return (lower + best) / SAMPLE_RATE, float(scores[best])
 
 
-def synchronize(directory, output):
+def source_templates(project):
+    paths = {name: {REPOSITORY / "NinjaSlayer/audio/sources" / source}
+             for name, source in SOURCES.items()}
+    # FMOD multi-sounds choose among distinct recordings of the same event.
+    # Read their source assets instead of assuming the legacy waveform is chosen.
+    for event_path in (project / "Metadata/Event").glob("*.xml"):
+        event = ET.parse(event_path).getroot()
+        name = event.findtext("object[@class='Event']/property[@name='name']/value")
+        if name not in paths:
+            continue
+        for reference in event.findall(".//relationship[@name='audioFile']/destination"):
+            metadata = ET.parse(project / "Metadata/AudioFile" / f"{reference.text}.xml")
+            asset = metadata.findtext("object/property[@name='assetPath']/value")
+            if not asset:
+                raise RuntimeError(f"Missing FMOD asset path: {reference.text}")
+            paths[name].add(project / "Assets" / asset)
+    return {name: {str(path): read_audio(path) for path in sorted(variants)}
+            for name, variants in paths.items()}
+
+
+def synchronize(directory, output, fmod_project):
     video = json.loads((directory / "recording-start.json").read_text())
     audio = json.loads((directory / "audio-start.json").read_text())
     start = video["timestamp"] / video["frequency"]
@@ -52,8 +73,7 @@ def synchronize(directory, output):
         frames = [(int(row["qpc"]), int(row["frame"])) for row in csv.DictReader(handle)]
     frame_times = [row[0] for row in frames]
     samples = read_audio(directory / "audio.wav")
-    templates = {name: read_audio(REPOSITORY / "NinjaSlayer/audio/sources" / source)
-                 for name, source in SOURCES.items()}
+    templates = source_templates(fmod_project)
     matches = []
     for line in (directory / "audio-events.jsonl").read_text().splitlines():
         event = json.loads(line)
@@ -64,16 +84,22 @@ def synchronize(directory, output):
         if frame_index == len(frames):
             continue
         cue = event["qpc"] / video["frequency"] - audio["seconds"]
-        template = templates[name]
         lower = max(0, round((cue - 0.08) * SAMPLE_RATE))
-        upper = min(len(samples), round((cue + 0.5) * SAMPLE_RATE) + len(template))
-        located = locate_waveform(samples, template, lower, upper)
-        if located is None or located[1] < 0.3:
+        candidates = []
+        for source, template in templates[name].items():
+            upper = min(len(samples), round((cue + 0.5) * SAMPLE_RATE) + len(template))
+            located = locate_waveform(samples, template, lower, upper)
+            if located is not None:
+                candidates.append((located[1], located[0], source))
+        if not candidates:
             continue
-        sound_time = located[0] - offset
+        score, located_time, source = max(candidates)
+        if score < 0.3:
+            continue
+        sound_time = located_time - offset
         frame = frames[frame_index][1]
         matches.append({"event": name, "videoFrame": frame, "videoSeconds": frame / 60,
-                        "audioSeconds": sound_time, "correlation": located[1],
+                        "audioSeconds": sound_time, "correlation": score, "source": source,
                         "delaySeconds": sound_time - frame / 60})
     if len(matches) < 2:
         raise RuntimeError("Insufficient waveform matches; audio sync has not been verified.")
@@ -116,7 +142,7 @@ def synchronize(directory, output):
         ], check=True)
         encoded = read_audio(output)
         for match in accepted:
-            template = templates[match["event"]]
+            template = templates[match["event"]][match["source"]]
             cue = match["videoSeconds"]
             located = locate_waveform(encoded, template, max(0, round((cue - 0.08) * SAMPLE_RATE)),
                                       min(len(encoded), round((cue + 0.08) * SAMPLE_RATE) + len(template)))
@@ -133,5 +159,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--fmod-project", type=Path,
+                        default=REPOSITORY.parent / "STS2_FModProject_Minimal-main")
     arguments = parser.parse_args()
-    synchronize(arguments.directory.resolve(), arguments.output)
+    synchronize(arguments.directory.resolve(), arguments.output, arguments.fmod_project)

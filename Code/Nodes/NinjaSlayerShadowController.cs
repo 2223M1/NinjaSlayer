@@ -166,9 +166,13 @@ public partial class NinjaSlayerShadowController : Node
             Sprite2D body = _rig.FindChild("NarakuVisualOverlay", true, false) is Sprite2D { Visible: true } overlay ? overlay : _body;
             string rigName = _rigName;
             bool full = body.Texture.ResourcePath == NinjaSlayerFormPresentationCatalog.FullyReleasedNarakuTexturePath;
+            bool oneSoul = body.Texture.ResourcePath == NinjaSlayerFormPresentationCatalog.OneBodyOneSoulTexturePath;
             bool standing = body.Texture.ResourcePath.Contains("dark_ninja_standing", StringComparison.Ordinal);
-            Vector2[] contour = ShadowBodyGeometry.Resolve(rigName, full, standing);
-            Transform2D baseline = full ? new Transform2D(0f, new Vector2(0.5f, 0.5f), 0f, new Vector2(0f, -233f)) : _bodyBaseline;
+            Vector2[] contour = ShadowBodyGeometry.Resolve(rigName, full, standing, oneSoul);
+            var calibration = NinjaSlayerFormCalibration.For(oneSoul ? NinjaSlayerFormKind.OneBodyOneSoul
+                : full ? NinjaSlayerFormKind.FullyReleasedNaraku : NinjaSlayerFormKind.Normal);
+            Transform2D baseline = oneSoul || full ? new Transform2D(0f, Vector2.One * calibration.Scale,
+                0f, new(calibration.Position.X, calibration.Position.Y)) : _bodyBaseline;
             Transform2D current = _rig.GlobalTransform.AffineInverse() * body.GlobalTransform;
             bool normalized = ShadowBodyGeometry.UsesNormalizedPixels(rigName);
             Vector2 size = body.Texture.GetSize();
@@ -198,6 +202,8 @@ public partial class NinjaSlayerShadowController : Node
             float mirrorAxis = rigName == "YamotoKoki" ? _groundPosition.X : 0f;
             float originalCenter = _mirrored ? 2f * mirrorAxis - reference.Center : reference.Center;
             float groundX = _mirrored ? 2f * mirrorAxis - _groundPosition.X : _groundPosition.X;
+            if (rigName == "NinjaSlayer" && (full || oneSoul))
+                groundX = originalCenter;
             float centerShift = support.Center - originalCenter;
             float width = Mathf.Clamp(support.Width / reference.Width, 0.6f, 2.5f);
             float tilt = MathF.Atan2(current.X.Y, current.X.X);

@@ -1,12 +1,16 @@
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Settings;
+using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Orbs;
 
 namespace NinjaSlayer.OrbContractTests;
 
 public partial class OrbContractRunner
 {
-    private void VerifyIndependentPresentation(OrbCombat combat, Node2D pose, Marker2D center)
+    private async Task VerifyIndependentPresentation(OrbCombat combat, Node2D pose, Marker2D center)
     {
         void Call(string name, params object?[] args) => AccessTools.Method(pose.GetType(), name).Invoke(pose, args);
         var actor = AimActors[combat.Player.Creature];
@@ -43,18 +47,55 @@ public partial class OrbContractRunner
             Require(actor.Position.IsEqualApprox(root), "Debuff shake moved combat UI.");
         }
         Call("Reset"); Call("SyncNow");
-        Type kind=pose.GetType().GetNestedType("MotionKind",System.Reflection.BindingFlags.NonPublic)!;
-        object hurt=AccessTools.Method(pose.GetType(),"BeginVisualMotion").Invoke(pose,[Enum.Parse(kind,"Hurt"),.15f])!;
-        Call("SyncNow");
-        Require(center.GlobalPosition.X<baseline.X-20f && actor.Position.IsEqualApprox(root), "Hurt lacks recoil or moves the UI root.");
-        Action resume=(Action)AccessTools.Method(pose.GetType(),"PauseHurt").Invoke(pose,null)!;
-        pose._Process(.1);
-        Require((float)AccessTools.Field(hurt.GetType(),"Elapsed").GetValue(hurt)! == 0f, "Paused hurt advanced.");
-        Call("BeginBackflip"); pose._Process(.05);
-        resume(); pose._Process(.151);
-        Require(LatestPresentation(pose,"Hurt")==null && LatestPresentation(pose,"Backflip")!=null, "Hurt recovery swallowed the overlapping flip.");
-        Call("Reset"); pose._Process(1);
-        Require(actor.Position.IsEqualApprox(root) && center.GlobalPosition.DistanceTo(baseline)<.1f, "Motion cleanup left a displaced actor.");
+        FastModeType originalSpeed = SaveManager.Instance.PrefsSave.FastMode;
+        foreach (FastModeType mode in new[] { FastModeType.Normal, FastModeType.Fast })
+        {
+            SaveManager.Instance.PrefsSave.FastMode = mode;
+            Task hurtTask = StaggerAnimation.Play(combat.Player.Creature);
+            object hurt = LatestPresentation(pose, "Hurt")!;
+            Call("SyncNow");
+            Require(center.GlobalPosition.X < baseline.X - 20f && actor.Position.IsEqualApprox(root), "Hurt lacks recoil or moves the UI root.");
+            Action resume = (Action)AccessTools.Method(pose.GetType(), "PauseHurt").Invoke(pose, null)!;
+            pose._Process(.1);
+            Require((float)AccessTools.Field(hurt.GetType(), "Elapsed").GetValue(hurt)! == 0f, "Paused hurt advanced.");
+            resume(); pose._Process(.15);
+            Require(!hurtTask.IsCompleted, "Hurt finished at 0.15s instead of the reference 0.3s.");
+            Call("BeginBackflip");
+            pose._Process(.151);
+            Require(LatestPresentation(pose, "Hurt") == null && LatestPresentation(pose, "Backflip") != null, "Hurt recovery swallowed the overlapping flip.");
+            Call("Reset"); pose._Process(1);
+            Require(actor.Position.IsEqualApprox(root) && center.GlobalPosition.DistanceTo(baseline) < .1f, "Motion cleanup left a displaced actor.");
+            Task blocked = Task.CompletedTask;
+            NinjaSlayerAnimationPatch.Prefix(combat.Player.Creature, "BlockedHit", 0f, ref blocked);
+            pose._Process(.11);
+            Require(LatestPresentation(pose, "Brace") != null, "Full block finished at 0.1s instead of the original 0.2s.");
+            pose._Process(.091);
+            Require(LatestPresentation(pose, "Brace") == null && pose.Transform.IsEqualApprox(Transform2D.Identity),
+                "Full block did not finish and restore at 0.2s.");
+
+            Type dodgeType = typeof(StaggerAnimation).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.CombatDodgeAnimation", true)!;
+            Task dodge = (Task)AccessTools.Method(dodgeType, "PlayImmediate").Invoke(null, [combat.Player.Creature])!;
+            var states = (System.Collections.IDictionary)AccessTools.Field(dodgeType, "ActiveDodges").GetValue(null)!;
+            object state = states[combat.Player.Creature]!;
+            Tween ActiveTween() => (Tween)AccessTools.Property(state.GetType(), "ActiveTween").GetValue(state)!;
+            Vector2 Offset() => (Vector2)AccessTools.Field(LatestPresentation(pose, "Offset")!.GetType(), "Offset")
+                .GetValue(LatestPresentation(pose, "Offset"))!;
+            Tween outbound = ActiveTween();
+            outbound.Pause(); outbound.CustomStep(.04);
+            Require(Offset().Length() < 119.9f, "Dodge reached its 120px peak in half of the original 0.08s.");
+            outbound.CustomStep(.041);
+            for (int frame = 0; ReferenceEquals(outbound, ActiveTween()) && frame < 90; frame++)
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            Tween returning = ActiveTween();
+            Require(!ReferenceEquals(returning, outbound), "Dodge did not begin its return.");
+            returning.Pause(); returning.CustomStep(.07);
+            Require(Offset().Length() > 1f, "Dodge returned in 0.07s instead of the original 0.14s.");
+            returning.CustomStep(.071);
+            await dodge;
+            Require(actor.Position.IsEqualApprox(root) && center.GlobalPosition.DistanceTo(baseline) < .1f,
+                "Dodge failed to restore the visual pose without moving the UI.");
+        }
+        SaveManager.Instance.PrefsSave.FastMode = originalSpeed;
         GD.Print("PASS independent draws/throws, native debuff curve, hurt recoil/pause, UI stability and lease cleanup.");
     }
 

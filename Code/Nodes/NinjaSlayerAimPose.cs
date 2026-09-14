@@ -16,6 +16,7 @@ namespace NinjaSlayer.Code.Nodes;
 public partial class NinjaSlayerAimPose : Node2D
 {
     internal NinjaSlayerFreeControl? FreeControl { get; private set; }
+    internal NinjaSlayerHellTornadoVisual? HellTornado { get; private set; }
     internal bool HasCardDrag => _dragOwner != null;
     private NCreature? _actor;
     private Node2D _airborne = null!;
@@ -104,6 +105,7 @@ public partial class NinjaSlayerAimPose : Node2D
         {
             FreeControl = new NinjaSlayerFreeControl { Name = "FreeControl", Actor = _actor, Pose = this };
             AddChild(FreeControl);
+            HellTornado = NinjaSlayerHellTornadoVisual.Create(_actor, this);
         }
     }
 
@@ -123,6 +125,7 @@ public partial class NinjaSlayerAimPose : Node2D
 
     public override void _Process(double delta)
     {
+        if (Engine.TimeScale > 0d) _somersaultClock += delta / Engine.TimeScale;
         if (_busy && !_exclusive) _actionBlend = Math.Min(1f, _actionBlend + (float)delta / 0.05f);
         if (_actor?.Entity.IsDead == true)
         {
@@ -393,6 +396,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _busy = false;
         AttackForwardSign = null;
         _exclusive = false;
+        ReturnFromSomersault();
         _returning = true;
         _charging = false;
         _chargePending = false;
@@ -457,6 +461,9 @@ public partial class NinjaSlayerAimPose : Node2D
         _contactOffset = null;
         _angle = _kick = _chargeBack = 0f;
         _displayAngle = 0f;
+        _somersault = null;
+        _somersaultLift = Vector2.Zero;
+        _somersaultBlur?.ClearHistory();
         Transform = Transform2D.Identity;
         if (GodotObject.IsInstanceValid(_center)) _center.Transform = _centerBaseline;
     }
@@ -475,7 +482,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _poseTween = null;
     }
 
-    private async Task TweenPose(float seconds, Action<float> apply)
+    private async Task TweenPose(float seconds, Action<float> apply, bool smooth = true)
     {
         StopPoseTween();
         long generation = _generation;
@@ -484,7 +491,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _poseTween = tween;
         tween.TweenMethod(Callable.From<float>(p =>
         {
-            if (generation == _generation) apply(Mathf.SmoothStep(0f, 1f, p));
+            if (generation == _generation) apply(smooth ? Mathf.SmoothStep(0f, 1f, p) : p);
         }), 0f, 1f, seconds);
         if (await TweenPlayback.AwaitCompletion(tween, this) && generation == _generation)
         {
@@ -537,10 +544,11 @@ public partial class NinjaSlayerAimPose : Node2D
         NarakuVisualOverlay overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
         overlay.SyncForPose();
         Sprite2D body = overlay.Visible ? overlay : source;
-        bool full = NinjaSlayerFormState.GetPresentation(_actor.Entity).Kind == NinjaSlayerFormKind.FullyReleasedNaraku;
-        V2[] contour = full ? CombatBodyContours.FullyReleasedNaraku : CombatBodyContours.NinjaSlayer;
-        Vector2 corePoint = SpritePoint(body, full ? new(50.8f, 120f) : new(580f, 30.30303f));
-        Vector2 footPoint = SpritePoint(body, full ? new(422f, 497f) : new(295f, 535f));
+        NinjaSlayerFormKind form = NinjaSlayerFormState.GetPresentation(_actor.Entity).Kind;
+        var calibration = NinjaSlayerFormCalibration.For(form);
+        V2[] contour = CombatBodyContours.ForForm(form);
+        Vector2 corePoint = SpritePoint(body, new(calibration.Core.X, calibration.Core.Y));
+        Vector2 footPoint = SpritePoint(body, new(calibration.Foot.X, calibration.Foot.Y));
         Transform2D parentCanvas = _airborne.GetGlobalTransformWithCanvas();
         if (Mathf.IsZeroApprox(parentCanvas.Determinant())) return;
         Transform2D unposedBody = parentCanvas * body.Transform;
@@ -569,7 +577,7 @@ public partial class NinjaSlayerAimPose : Node2D
             SetCore(presentedCore);
             return;
         }
-        float standingY = full ? 15.5f : -6.45f;
+        float standingY = NinjaSlayerFormCalibration.GroundY;
         float altitude = Math.Max(0f, -_airborne.Position.Y) + (FreeControl?.Altitude ?? 0f);
         float travelY = GroundedPoseMath.ClampDescent(_travel.Y, altitude);
         Vector2 travelCanvas = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(new(_travel.X + _chargeBack, travelY));
@@ -616,6 +624,9 @@ public partial class NinjaSlayerAimPose : Node2D
                 .AffineInverse().BasisXform(finalCore - new Vector2(finalCore.X, originalLine - lowest)).Y;
         }
         ComposePresentation(offsets, ref rotation, ref finalCore);
+        float groundCanvas = originalLine + _actor.GetParent<CanvasItem>()
+            .GetGlobalTransformWithCanvas().BasisXform(new Vector2(0f, altitude)).Y;
+        ComposeSomersault(offsets, groundCanvas, ref rotation, ref finalCore);
         Transform2D worldRotation = new(rotation, _chargeScale * _presentationScale, 0f, Vector2.Zero);
         _displayAngle = rotation;
         worldRotation.Origin = finalCore - worldRotation.BasisXform(core - travelCanvas);
@@ -627,6 +638,8 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         FreeControl?.Compose(ref canvas);
         _center.Position = _center.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse() * canvas;
+        HellTornado?.SyncNow();
+        RecordSomersaultBlur();
     }
 
     private static Vector2 SpritePoint(Sprite2D sprite, Vector2 centeredPoint)

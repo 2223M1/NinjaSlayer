@@ -1,0 +1,32 @@
+{
+  "normal": {
+    "head": "normal_head.png",
+    "body": "normal_body.png",
+    "pivot": [1520, 337],
+    "to_source": [1, 0, 0, 0, 1, 0]
+  },
+  "normal_left": {
+    "head": "normal_left_head.png",
+    "body": "normal_left_body.png",
+    "pivot": [1520, 337],
+    "to_source": [1, 0, 0, 0, 1, 0]
+  },
+  "one_soul": {
+    "head": "one_soul_head.png",
+    "body": "one_soul_body.png",
+    "pivot": [506, 307],
+    "to_source": [1, 0, 0, 0, 1, 0]
+  },
+  "full_naraku": {
+    "head": "full_naraku_head.png",
+    "body": "full_naraku_body.png",
+    "pivot": [1728.2862218540538, 1156.7666191379344],
+    "to_source": [0.5, 0, -79.5, 0, 0.5, -79.5]
+  },
+  "semi_naraku": {
+    "head": "semi_naraku_head.png",
+    "body": "semi_naraku_body.png",
+    "pivot": [1655, 331],
+    "to_source": [1, 0, 0, 0, 1, 0]
+  }
+}

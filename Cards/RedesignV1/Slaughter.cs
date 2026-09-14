@@ -24,7 +24,7 @@ public sealed class Slaughter : RedesignV1UncommonCard
             .FromCard(this, cardPlay)
 #endif
             .WithHeavyBluntHitFx()
-            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!);
         await attack.ExecuteWithFinisher(choiceContext, this, cardPlay);
         if (attack.Results.SelectMany(hit => hit).Any(result => result.WasTargetKilled))

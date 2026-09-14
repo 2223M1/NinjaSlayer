@@ -37,7 +37,7 @@ public sealed class KarateStraightRedesignV1 : NinjaSlayerRedesignCardTemplate
 #else
             .FromCard(this, cardPlay)
 #endif
-            .WithHeavyBluntHitFx()
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);

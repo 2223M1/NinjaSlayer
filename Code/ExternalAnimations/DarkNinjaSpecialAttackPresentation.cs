@@ -35,6 +35,14 @@ internal static class DarkNinjaSpecialAttackPresentation
         Creature attacker,
         Func<Task> onDamage)
     {
+        if (FinisherApproach.TryPlayToPeak(attacker, DarkNinjaCombatMath.DeathSlashTotalSeconds, out Task approach))
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaSlowAttackEvent);
+            await approach;
+            FinisherApproach.ReachImpact(attacker);
+            await onDamage();
+            return;
+        }
         using DarkNinjaBodyMotionLease? motion = DarkNinjaBodyMotionLease.TryAcquire(attacker);
         if (motion == null)
         {
@@ -98,6 +106,12 @@ internal static class DarkNinjaSpecialAttackPresentation
         Creature[] orderedTargets = OrderTargets(targets);
         if (orderedTargets.Length == 0)
         {
+            return;
+        }
+
+        if (FinisherApproach.IsActive(attacker))
+        {
+            await PlayDarkStrikeFallback(attacker, orderedTargets, canImpact, onImpact);
             return;
         }
 

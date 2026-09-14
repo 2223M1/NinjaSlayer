@@ -37,7 +37,9 @@ internal sealed record SmokeConfiguration(
     bool TornadoHitStop = false,
     string? ActionPreviewDirectory = null,
     bool PreviewCleanupBaseline = false,
-    bool PreviewMenuReturnCheck = false)
+    bool PreviewMenuReturnCheck = false,
+    bool PreviewSpecialHeavy = false,
+    string? PreviewFormFinisher = null)
 {
     public static SmokeConfiguration Load(string path)
     {

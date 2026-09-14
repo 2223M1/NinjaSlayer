@@ -218,7 +218,7 @@ public partial class OrbContractRunner
                     Tick(1f / 60f);
                     Sprite2D active = overlay.Visible ? overlay : source;
                     float bottom = contour.Max(p => (active.GetGlobalTransformWithCanvas() * new Vector2(p.X, p.Y)).Y);
-                    float ground = altitude + (form == 2 ? 15.5f : -6.45f);
+                    float ground = altitude - 6.45f;
                     Require(Math.Abs(bottom - ground) < .5f, $"{name} charge lifted or buried the feet in form {form}.");
                     Require((anchor.Scale.X < 0) == left && Math.Abs(Angle()) < .001f,
                         "Tornado charge followed pointer direction or tilt.");
@@ -230,7 +230,7 @@ public partial class OrbContractRunner
                         object?[] handArgs = [actor, null];
                         Require((bool)AccessTools.Method(hand, "TryGetHandCanvasPosition").Invoke(null, handArgs)!,
                             "Charging lost the held shuriken anchor.");
-                        Vector2 point = form == 2 ? new(432f, 390f) : new(851.5152f, -75.75758f);
+                        Vector2 point = form == 2 ? new(553f, 163f) : new(854f, -110f);
                         Require(((Vector2)handArgs[1]!).DistanceTo(active.GetGlobalTransformWithCanvas() * point) < .1f,
                             "The shuriken did not inherit charge squash and trembling.");
                     }

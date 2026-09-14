@@ -356,6 +356,7 @@ public sealed class NinjaSlayerEnemyAttackVfxBaselinePatch : IPatchMethod
         {
             FinisherAttackVfxBaselineContext.RestoreCaller(frame);
             frame.IsActive = false;
+            frame.Approach?.ReleasePrediction();
         }
 
         return __exception;

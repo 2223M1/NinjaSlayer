@@ -12,18 +12,6 @@ using static NinjaSlayer.Code.ExternalAnimations.FinisherTimeline;
 namespace NinjaSlayer.Code.ExternalAnimations;
 internal sealed partial class FinisherSession : IAsyncDisposable
 {
-    private void SetSignatureImpactState(
-        FinisherImpactPresentation presentation,
-        IReadOnlyList<NCreature> targets,
-        float intensity,
-        float flash)
-    {
-        if (_usesNinjaSlayerSignatureImpact)
-        {
-            presentation.SetImpactState(targets, intensity, flash);
-        }
-    }
-
     private async Task WaitEnhancedSeconds(float seconds, CancellationToken cancellationToken)
     {
         float elapsed = 0f;
@@ -110,6 +98,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private void StartCameraTransition(float scaleMultiplier, float duration)
     {
+        if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash && !_actionPeakReached)
+            duration = Math.Max(duration, SlowAttackAnimation.IaiPeakSeconds);
         int generation = ++_cameraTransitionGeneration;
         _cameraTransitionTask = RunCameraTransition(generation, scaleMultiplier, duration);
     }
@@ -132,6 +122,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 }
 
                 float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / duration);
+                if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash)
+                    targetPosition = GetFramedCameraPosition(targetScale);
                 _camera.SetTransform(
                     startPosition.Lerp(targetPosition, progress),
                     Mathf.Lerp(startScale, targetScale, progress));
@@ -193,12 +185,6 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private Vector2 GetCameraFocusPoint()
     {
         Vector2 focusPoint = _camera.GetLocalCenter(GetCameraFocus());
-        if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash
-            && GodotObject.IsInstanceValid(_actorNode))
-        {
-            focusPoint += _impactPosition - _actorNode.Position;
-        }
-
         return focusPoint;
     }
 
@@ -586,12 +572,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         Vector2 ownerFrom = _actorNode.Position;
         _actorAimPose?.BeginReturn();
+        _approach?.BeginReturn();
         Vector2 cameraFrom = _camera.CurrentPosition;
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
-        float actorReturnSeconds = Scenario == FinisherScenarioKind.YamotoKokiIaiSlash
-            ? SlowAttackAnimation.ReferencePeakSeconds
-            : ReturnSeconds;
+        float actorReturnSeconds = _approach?.ReturnDuration ?? ReturnSeconds;
         float totalReturnSeconds = Math.Max(ReturnSeconds, actorReturnSeconds);
         float elapsed = 0f;
         while (elapsed < totalReturnSeconds)
@@ -605,6 +590,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             ApplyDeathKickRecovery(cameraLinearProgress);
             _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
             _actorAimPose?.ApplyReturn(actorProgress);
+            _approach?.ApplyReturn(actorProgress);
             _camera.SetTransform(
                 cameraFrom.Lerp(_camera.BaselinePosition, cameraProgress),
                 Mathf.Lerp(scaleFrom, _camera.BaselineScale.X, cameraProgress));
@@ -613,6 +599,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         ApplyDeathKickRecovery(1f);
         _actorNode.Position = _actorStartPosition;
+        _approach?.ApplyReturn(1f);
         RestoreActorLeapPose();
         _returnTimelineCompleted = true;
         SetBackdropIntensity(0f);

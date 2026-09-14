@@ -28,8 +28,4 @@ internal sealed record FinisherSessionRequest(
     CardPlay? CardPlay,
     bool RequiresAfterCardPlayed,
     int ResolvedHits,
-    IReadOnlySet<ulong>? VfxBaselineChildIds = null)
-{
-    public bool UsesNinjaSlayerSignatureImpact =>
-        Scenario == FinisherScenarioKind.NinjaSlayerAttack;
-}
+    IReadOnlySet<ulong>? VfxBaselineChildIds = null);

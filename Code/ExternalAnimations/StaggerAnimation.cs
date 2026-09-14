@@ -32,7 +32,7 @@ public static class StaggerAnimation
 
     public static async Task Play(Creature creature, float rotationDegrees = DefaultRotationDegrees)
     {
-        float duration = CombatActionTimingRuntime.VisualSeconds(0.15f);
+        float duration = CombatActionTimingRuntime.VisualSeconds(0.3f);
         if (NinjaSlayerAimPose.Get(creature) is { } pose)
         {
             var motion = pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Hurt, duration);
@@ -45,25 +45,14 @@ public static class StaggerAnimation
         Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(node.Visuals);
         if (anchor == null) return;
         NinjaSlayerRapidAnimationCoordinator.EnsureLifecycle(creature);
-        var state = new StaggerState(node.CreateTween(), anchor, node.Visuals.VfxSpawnPosition);
+        var state = new StaggerState(node.CreateTween(), anchor, node.Visuals.VfxSpawnPosition,
+            creature.Side == CombatSide.Player ? -1f : 1f, rotationDegrees);
         ActiveStates.Add(creature, state);
-        float direction = creature.Side == CombatSide.Player ? -1f : 1f;
-        void Apply(float progress)
-        {
-            if (!state.Active) return;
-            float envelope = 1f - progress * progress;
-            var transform = new Transform2D(Mathf.DegToRad(rotationDegrees * envelope),
-                new Vector2(1f + .04f * envelope, 1f - .045f * envelope), 0f, Vector2.Zero);
-            transform.Origin = state.CenterPosition + Vector2.Right * (28f * direction * envelope)
-                - transform.BasisXform(state.CenterPosition);
-            anchor.Transform = transform * state.AnchorTransform;
-            state.Center.Position = transform * state.CenterPosition;
-        }
-        Apply(0f);
+        state.Apply(0f);
         NinjaSlayerShadowController.Get(creature)?.BeginAction(ShadowActionKind.Hurt, 0f, duration);
         try
         {
-            state.Tween.TweenMethod(Callable.From<float>(Apply), 0f, 1f, duration);
+            state.Tween.TweenMethod(Callable.From<float>(state.Apply), 0f, 1f, duration);
             await TweenPlayback.AwaitCompletion(state.Tween, node);
         }
         finally
@@ -85,14 +74,51 @@ public static class StaggerAnimation
         if (ActiveStates.Remove(creature, out var state)) state.Restore();
     }
 
-    private sealed class StaggerState(Tween tween, Node2D anchor, Node2D center)
+    internal static (Transform2D Anchor, Vector2 Center) CaptureAttackPose(
+        Creature creature, Node2D anchor, Node2D center) =>
+        ActiveStates.TryGetValue(creature, out StaggerState? state)
+            ? (state.AnchorTransform, state.CenterPosition)
+            : (anchor.Transform, center.Position);
+
+    internal static void ApplyAttackPose(
+        Creature creature, Node2D anchor, Node2D center, Transform2D transform, Vector2 core)
+    {
+        if (ActiveStates.TryGetValue(creature, out StaggerState? state))
+        {
+            // Hurt recovers onto the current attack frame, never its starting snapshot.
+            state.AnchorTransform = transform;
+            state.CenterPosition = core;
+            state.Apply(state.Progress);
+        }
+        else
+        {
+            anchor.Transform = transform;
+            center.Position = core;
+        }
+    }
+
+    private sealed class StaggerState(Tween tween, Node2D anchor, Node2D center, float direction, float rotationDegrees)
     {
         internal readonly Tween Tween = tween;
         internal readonly Node2D Center = center;
-        internal readonly Transform2D AnchorTransform = anchor.Transform;
-        internal readonly Vector2 CenterPosition = center.Position;
+        internal Transform2D AnchorTransform = anchor.Transform;
+        internal Vector2 CenterPosition = center.Position;
+        internal float Progress;
         internal readonly TaskCompletionSource Completion = new();
         internal bool Active = true;
+
+        internal void Apply(float progress)
+        {
+            if (!Active) return;
+            Progress = progress;
+            float envelope = 1f - progress * progress;
+            var transform = new Transform2D(Mathf.DegToRad(rotationDegrees * envelope),
+                new Vector2(1f + .04f * envelope, 1f - .045f * envelope), 0f, Vector2.Zero);
+            transform.Origin = CenterPosition + Vector2.Right * (28f * direction * envelope)
+                - transform.BasisXform(CenterPosition);
+            anchor.Transform = transform * AnchorTransform;
+            Center.Position = transform * CenterPosition;
+        }
 
         internal void Restore()
         {

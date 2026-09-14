@@ -54,7 +54,7 @@ internal static class FinisherSmokeObserver
 
     internal static MethodInfo PresentationCreateMethod => PresentationType
         .GetMethods(StaticMembers)
-        .Single(method => method.Name == "Create" && method.GetParameters().Length == 3);
+        .Single(method => method.Name == "CreateBackdropOnly" && method.GetParameters().Length == 2);
 
     internal static bool PresentationFailureWasInjected { get; private set; }
 

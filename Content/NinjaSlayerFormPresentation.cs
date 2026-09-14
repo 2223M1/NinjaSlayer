@@ -1,10 +1,13 @@
+using NinjaSlayer.Code.Combat;
+
 namespace NinjaSlayer.Content;
 
 public enum NinjaSlayerFormKind
 {
     Normal,
     Naraku,
-    FullyReleasedNaraku
+    FullyReleasedNaraku,
+    OneBodyOneSoul
 }
 
 public enum NinjaSlayerBodyTextureMode
@@ -48,6 +51,8 @@ public static class NinjaSlayerFormPresentationCatalog
         "res://NinjaSlayer/images/characters/ninja_slayer/naraku_idle/NinjaSlayer_naraku_idle_";
     public const string FullyReleasedNarakuTexturePath =
         "res://NinjaSlayer/images/characters/ninja_slayer/naraku.png";
+    public const string OneBodyOneSoulTexturePath =
+        "res://NinjaSlayer/images/characters/ninja_slayer/one_body_one_soul.png";
     public const int NormalIdleFrameCount = 22;
     public const int NarakuIdleFrameCount = 22;
     public const float ReferenceBodyTextureHeight = 1080f;
@@ -87,17 +92,34 @@ public static class NinjaSlayerFormPresentationCatalog
         StaticTexturePath: FullyReleasedNarakuTexturePath,
         IdleTexturePrefix: null,
         IdleFrameCount: 0,
-        FixedBodyScale: 0.5f,
-        BodyYOffset: -50f,
-        ShadowScaleMultiplier: 2f,
+        FixedBodyScale: NinjaSlayerFormCalibration.FullScale,
+        BodyYOffset: 5.55486f,
+        ShadowScaleMultiplier: 1.493146f,
         UsesNarakuAudio: true,
         UseNormalSpinPivot: false,
         ForcePerHitComboAudio: true);
 
+    public static NinjaSlayerFormPresentation OneBodyOneSoul { get; } = new(
+        NinjaSlayerFormKind.OneBodyOneSoul,
+        NinjaSlayerBodyTextureMode.Static,
+        NinjaSlayerBodyTransformMode.LegacyCentered,
+        StaticTexturePath: OneBodyOneSoulTexturePath,
+        IdleTexturePrefix: null,
+        IdleFrameCount: 0,
+        FixedBodyScale: NinjaSlayerFormCalibration.OneSoulScale,
+        BodyYOffset: NinjaSlayerFormCalibration.For(NinjaSlayerFormKind.OneBodyOneSoul).Position.Y
+            - NinjaSlayerFormCalibration.For(NinjaSlayerFormKind.Normal).Position.Y,
+        ShadowScaleMultiplier: 1.1188779f,
+        UsesNarakuAudio: false,
+        UseNormalSpinPivot: false,
+        ForcePerHitComboAudio: false);
+
     public static NinjaSlayerFormPresentation Resolve(
         bool hasNarakuPower,
-        bool hasNarakuWithinRelic)
+        bool hasNarakuWithinRelic,
+        bool hasOneBodyOneSoulPower = false)
     {
+        if (hasOneBodyOneSoulPower) return OneBodyOneSoul;
         if (hasNarakuPower)
         {
             return hasNarakuWithinRelic ? FullyReleasedNaraku : Naraku;

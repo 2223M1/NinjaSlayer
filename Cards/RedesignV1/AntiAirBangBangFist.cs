@@ -42,7 +42,7 @@ public sealed class AntiAirBangBangFist : RedesignV1RareCard
             .FromCard(this, cardPlay)
 #endif
             .WithHitCount(hits)
-            .WithHeavyBluntHitFx()
+            .WithDefectStrikeHitFx()
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);

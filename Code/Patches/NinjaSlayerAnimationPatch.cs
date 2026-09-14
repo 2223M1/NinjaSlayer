@@ -21,6 +21,7 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
 
     public static bool Prefix(Creature creature, string triggerName, float waitTime, ref Task __result)
     {
+        FinisherAttackVfxBaselineContext.BeginApproach(creature, triggerName, waitTime);
         Nodes.TornadoHurtPause.Cancel(creature);
         if (creature.Monster is SawatariMonster && creature.Side == CombatSide.Enemy && creature.IsAlive)
         {

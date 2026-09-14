@@ -86,12 +86,20 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
             || !evasion.CanEvade(target, ValueProp.Move, Owner);
         AttackCommand command = DamageCmd.Attack(0m).FromMonster(Owner.Monster!);
         await Hook.BeforeAttack(combatState, command);
+        FinisherApproach? approach = null;
         try
         {
+            if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], 0m, 1)
+                ?.GetCreatureNode() is { } focus && Owner.GetCreatureNode() is { } actor)
+            {
+                approach = FinisherApproach.Create(actor, focus, Godot.Vector2.One);
+                approach.ReturnDuration = SlowAttackAnimation.IaiReturnSeconds;
+                approach.Start(SlowAttackAnimation.IaiPeakSeconds);
+            }
             await CreatureCmd.TriggerAnim(
                 Owner,
                 "SlowAttack",
-                SlowAttackAnimation.ReferencePeakSeconds);
+                SlowAttackAnimation.IaiNormalSeconds);
             if (!Owner.IsAlive || !target.IsAlive || !target.IsHittable
                 || !combatState.IsLiveCombat()) return;
             if (willConnect)
@@ -99,6 +107,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
                 NinjaSlayerCombatVfx.PlaySlashHitFx(target);
             }
 
+            FinisherApproach.ReachImpact(Owner);
             List<DamageResult> results = (await CreatureCmd.Damage(
                 choiceContext,
                 [target],
@@ -115,6 +124,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
         }
         finally
         {
+            approach?.ReleasePrediction();
             await Hook.AfterAttack(combatState, choiceContext, command);
         }
     }

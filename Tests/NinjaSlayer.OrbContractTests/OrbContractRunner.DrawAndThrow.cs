@@ -123,11 +123,12 @@ public partial class OrbContractRunner
         void Call(string name, params object?[] args) => AccessTools.Method(type, name).Invoke(pose, args);
         bool Flipping() => (bool)AccessTools.Property(type, "IsBackflipping").GetValue(pose)!;
         float Field(string name) => PresentationNumber(pose, name);
-        Vector2 corePoint = formIndex == 2 ? new(50.8f, 120f) : new(580f, 30.30303f);
-        Vector2 handPoint = formIndex == 2 ? new(432f, 390f) : new(851.5152f, -75.75758f);
+        Vector2 corePoint = formIndex == 3 ? new(-352.45948f, -449.28479f) : formIndex == 2 ? new(64.99405f, 112.94429f) : new(580f, 30.30303f);
+        Vector2 handPoint = formIndex == 3 ? new(-794.5f, -1063f) : formIndex == 2 ? new(553f, 163f)
+            : new(854f, -110f);
         var contour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly
             .GetType("NinjaSlayer.Code.Combat.CombatBodyContours"),
-            formIndex == 2 ? "FullyReleasedNaraku" : "NinjaSlayer").GetValue(null)!;
+            formIndex == 3 ? "OneBodyOneSoul" : formIndex == 2 ? "FullyReleasedNaraku" : "NinjaSlayer").GetValue(null)!;
         FastModeType speed = SaveManager.Instance.PrefsSave.FastMode;
         Transform2D anchorBaseline = anchor.Transform;
         pose.SetProcess(false);

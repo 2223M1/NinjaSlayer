@@ -16,7 +16,7 @@ public partial class OrbContractRunner
         void Pose(string name, params object?[] args) => AccessTools.Method(pose.GetType(), name).Invoke(pose, args);
         object? Run(string name, params object?[] args) => AccessTools.Method(coordinator, name).Invoke(null, args);
         Task Attack(float distance, float seconds) => (Task)Run("PlayAttackToPeak", combat.Player.Creature,
-            distance, seconds, (Func<float, float>)(p => p), false, 0.2f, false, false)!;
+            distance, seconds, (Func<float, float>)(p => p), false, 0.2f, false, false, false)!;
         object State() => ((IDictionary)AccessTools.Field(coordinator, "States").GetValue(null)!)[combat.Player.Creature]!;
         Tween MotionTween(object state, int index)
         {
@@ -112,7 +112,7 @@ public partial class OrbContractRunner
             target.Position = new(700f, 0f);
             Pose("SyncNow");
             Vector2 coreBaseline = center.GlobalPosition;
-            VerifyIndependentPresentation(combat, pose, center);
+            await VerifyIndependentPresentation(combat, pose, center);
             Pose("BeginBackflip");
             Pose("BeginShurikenThrow", combat.Enemy);
             Pose("BeginAirMotion", false);
