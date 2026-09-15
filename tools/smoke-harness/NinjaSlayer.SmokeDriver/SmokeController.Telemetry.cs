@@ -70,6 +70,7 @@ internal sealed partial class SmokeController
         var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!;
         await WaitUntilAsync(() => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "telemetry loss did not reach player turn", cancellationToken);
+        await VerifyFeedbackUploadAsync();
         var card = player.PlayerCombatState!.Hand.Cards.First(card => card.Type == CardType.Attack
             && card.EnergyCost.GetWithModifiers(CostModifiers.All) == 1);
         decimal energyBefore = player.PlayerCombatState.Energy;
