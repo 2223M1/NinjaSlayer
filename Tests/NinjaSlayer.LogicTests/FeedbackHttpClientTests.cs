@@ -6,7 +6,34 @@ namespace NinjaSlayer.LogicTests;
 
 public sealed class FeedbackHttpClientTests
 {
+    private const string SubmissionId = "b2f0fc32-e9c4-4e06-a030-79b1c6f62f6b";
+    private const string Receipt = "{\"ok\":true,\"id\":\"" + SubmissionId + "\"}";
     private static readonly Uri Endpoint = new("https://feedback.invalid/upload");
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("<html>Proxy login</html>")]
+    [InlineData("{\"ok\":true}")]
+    [InlineData("{\"ok\":false,\"id\":\"b2f0fc32-e9c4-4e06-a030-79b1c6f62f6b\"}")]
+    [InlineData("{\"ok\":true,\"id\":\"another-submission\"}")]
+    [InlineData("{\"ok\":true,\"id\":12}")]
+    [InlineData("[]")]
+    public async Task ASuccessfulHttpStatusRequiresTheMatchingServiceReceipt(string body)
+    {
+        var handler = new QueueHandler(Immediate(HttpStatusCode.OK, body));
+        FeedbackSendResult result = await CreateClient(handler).SendAsync(SubmissionId, CreateRequest);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(FeedbackAttemptFailure.InvalidReceipt, Assert.Single(result.Attempts).Failure);
+        Assert.Equal(1, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task AcceptsAnIdempotentReceiptForThisSubmission()
+    {
+        var handler = new QueueHandler(Immediate(HttpStatusCode.OK,
+            Receipt[..^1] + ",\"idempotent\":true}"));
+        Assert.True((await CreateClient(handler).SendAsync(SubmissionId, CreateRequest)).IsSuccess);
+    }
 
     [Fact]
     public void DefaultsMatchTheFeedbackBudgetContract()
@@ -17,7 +44,7 @@ public sealed class FeedbackHttpClientTests
         Assert.Equal(TimeSpan.FromSeconds(10), options.AttemptTimeout);
         Assert.Equal(TimeSpan.FromSeconds(35), options.TotalBudget);
         Assert.Equal(TimeSpan.FromSeconds(5), options.MaxRetryDelay);
-        Assert.Equal(4 * 1024, options.MaxErrorResponseBytes);
+        Assert.Equal(4 * 1024, options.MaxResponseBytes);
     }
 
     [Theory]
@@ -33,7 +60,7 @@ public sealed class FeedbackHttpClientTests
         var delays = new RecordingDelayStrategy();
         FeedbackHttpClient client = CreateClient(handler, delays: delays);
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.Equal(FeedbackSendOutcome.Succeeded, result.Outcome);
         Assert.Equal(2, handler.CallCount);
@@ -47,7 +74,7 @@ public sealed class FeedbackHttpClientTests
         var delays = new RecordingDelayStrategy();
         FeedbackHttpClient client = CreateClient(handler, delays: delays);
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.Equal(FeedbackSendOutcome.Rejected, result.Outcome);
         Assert.Equal(1, handler.CallCount);
@@ -63,7 +90,7 @@ public sealed class FeedbackHttpClientTests
             Immediate(HttpStatusCode.OK));
         FeedbackHttpClient client = CreateClient(handler, delays: new RecordingDelayStrategy());
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(FeedbackAttemptFailure.Network, result.Attempts[0].Failure);
@@ -79,7 +106,7 @@ public sealed class FeedbackHttpClientTests
         cancellation.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => client.SendAsync(CreateRequest, cancellation.Token));
+            () => client.SendAsync(SubmissionId, CreateRequest, cancellation.Token));
 
         Assert.Equal(0, handler.CallCount);
     }
@@ -104,7 +131,7 @@ public sealed class FeedbackHttpClientTests
             TimeProvider.System,
             new RecordingDelayStrategy());
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(FeedbackAttemptFailure.Timeout, result.Attempts[0].Failure);
@@ -120,7 +147,7 @@ public sealed class FeedbackHttpClientTests
         var delays = new RecordingDelayStrategy();
         FeedbackHttpClient client = CreateClient(handler, delays: delays);
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(TimeSpan.FromSeconds(5), Assert.Single(delays.Delays));
@@ -136,7 +163,7 @@ public sealed class FeedbackHttpClientTests
         var delays = new RecordingDelayStrategy();
         FeedbackHttpClient client = CreateClient(handler, timeProvider: clock, delays: delays);
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(TimeSpan.FromSeconds(3), Assert.Single(delays.Delays));
@@ -156,7 +183,7 @@ public sealed class FeedbackHttpClientTests
         var delays = new RecordingDelayStrategy();
         FeedbackHttpClient client = CreateClient(handler, options, clock, delays);
 
-        FeedbackSendResult result = await client.SendAsync(CreateRequest);
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, CreateRequest);
 
         Assert.Equal(FeedbackSendOutcome.BudgetExhausted, result.Outcome);
         Assert.Equal(1, handler.CallCount);
@@ -170,7 +197,7 @@ public sealed class FeedbackHttpClientTests
         var handler = new QueueHandler(Immediate(HttpStatusCode.OK));
         FeedbackHttpClient client = CreateClient(handler, delays: new RecordingDelayStrategy());
 
-        FeedbackSendResult result = await client.SendAsync(uri => new HttpRequestMessage(HttpMethod.Put, uri)
+        FeedbackSendResult result = await client.SendAsync(SubmissionId, uri => new HttpRequestMessage(HttpMethod.Put, uri)
         {
             Content = new StreamContent(new FeedbackNonDisposingStream(stream)),
         });
@@ -223,7 +250,7 @@ public sealed class FeedbackHttpClientTests
         new(HttpMethod.Put, uri) { Content = new StringContent("payload") };
 
     private static HttpResponseMessage Response(HttpStatusCode statusCode, string? body = null) =>
-        new(statusCode) { Content = new StringContent(body ?? string.Empty) };
+        new(statusCode) { Content = new StringContent(body ?? (statusCode == HttpStatusCode.OK ? Receipt : string.Empty)) };
 
     private static Func<CancellationToken, Task<HttpResponseMessage>> Immediate(
         HttpStatusCode statusCode,

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 namespace NinjaSlayer.Code.Feedback;
 
@@ -12,7 +13,7 @@ public sealed class FeedbackHttpClientOptions
         TimeSpan? attemptTimeout = null,
         TimeSpan? totalBudget = null,
         TimeSpan? maxRetryDelay = null,
-        int maxErrorResponseBytes = 4 * 1024,
+        int maxResponseBytes = 4 * 1024,
         IReadOnlyList<TimeSpan>? fallbackRetryDelays = null)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
@@ -26,7 +27,7 @@ public sealed class FeedbackHttpClientOptions
         AttemptTimeout = attemptTimeout ?? TimeSpan.FromSeconds(10);
         TotalBudget = totalBudget ?? TimeSpan.FromSeconds(35);
         MaxRetryDelay = maxRetryDelay ?? TimeSpan.FromSeconds(5);
-        MaxErrorResponseBytes = maxErrorResponseBytes;
+        MaxResponseBytes = maxResponseBytes;
         TimeSpan[] retryDelays = fallbackRetryDelays is null
             ? [TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1)]
             : [.. fallbackRetryDelays];
@@ -42,9 +43,9 @@ public sealed class FeedbackHttpClientOptions
             throw new ArgumentOutOfRangeException(nameof(attemptTimeout), "Feedback time limits must be positive.");
         }
 
-        if (MaxErrorResponseBytes <= 0)
+        if (MaxResponseBytes <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(maxErrorResponseBytes));
+            throw new ArgumentOutOfRangeException(nameof(maxResponseBytes));
         }
 
         if (FallbackRetryDelays.Count == 0 || FallbackRetryDelays.Any(delay => delay < TimeSpan.Zero))
@@ -63,7 +64,7 @@ public sealed class FeedbackHttpClientOptions
 
     public TimeSpan MaxRetryDelay { get; }
 
-    public int MaxErrorResponseBytes { get; }
+    public int MaxResponseBytes { get; }
 
     public IReadOnlyList<TimeSpan> FallbackRetryDelays { get; }
 
@@ -106,6 +107,7 @@ public enum FeedbackAttemptFailure
 {
     None,
     HttpStatus,
+    InvalidReceipt,
     Network,
     Timeout,
 }
@@ -143,9 +145,11 @@ public sealed class FeedbackHttpClient
     }
 
     public async Task<FeedbackSendResult> SendAsync(
+        string submissionId,
         Func<Uri, HttpRequestMessage> requestFactory,
         CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(submissionId);
         ArgumentNullException.ThrowIfNull(requestFactory);
 
         long startedAt = _timeProvider.GetTimestamp();
@@ -175,12 +179,15 @@ public sealed class FeedbackHttpClient
                     attemptSource.Token);
                 if (response.IsSuccessStatusCode)
                 {
+                    string receipt = await ReadBoundedResponseAsync(
+                        response.Content, _options.MaxResponseBytes, attemptSource.Token);
+                    bool acknowledged = IsReceiptFor(receipt, submissionId);
                     diagnostics.Add(new FeedbackAttemptDiagnostic(
                         attempt,
                         response.StatusCode,
-                        FeedbackAttemptFailure.None,
-                        null));
-                    return Complete(FeedbackSendOutcome.Succeeded, diagnostics);
+                        acknowledged ? FeedbackAttemptFailure.None : FeedbackAttemptFailure.InvalidReceipt,
+                        acknowledged ? null : "The feedback service did not return a matching submission receipt."));
+                    return Complete(acknowledged ? FeedbackSendOutcome.Succeeded : FeedbackSendOutcome.Rejected, diagnostics);
                 }
 
                 string responseBody;
@@ -188,7 +195,7 @@ public sealed class FeedbackHttpClient
                 {
                     responseBody = await ReadBoundedResponseAsync(
                         response.Content,
-                        _options.MaxErrorResponseBytes,
+                        _options.MaxResponseBytes,
                         attemptSource.Token);
                 }
                 catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -224,7 +231,7 @@ public sealed class FeedbackHttpClient
                     FeedbackAttemptFailure.Timeout,
                     $"Timed out after {attemptTimeout.TotalSeconds:0.###} seconds."));
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex) when (ex is HttpRequestException or IOException)
             {
                 diagnostics.Add(new FeedbackAttemptDiagnostic(
                     attempt,
@@ -246,6 +253,23 @@ public sealed class FeedbackHttpClient
         }
 
         return Complete(FeedbackSendOutcome.RetryExhausted, diagnostics);
+    }
+
+    private static bool IsReceiptFor(string body, string submissionId)
+    {
+        try
+        {
+            using JsonDocument receipt = JsonDocument.Parse(body);
+            JsonElement root = receipt.RootElement;
+            return root.ValueKind == JsonValueKind.Object
+                && root.TryGetProperty("ok", out JsonElement ok) && ok.ValueKind == JsonValueKind.True
+                && root.TryGetProperty("id", out JsonElement id) && id.ValueKind == JsonValueKind.String
+                && id.GetString() == submissionId;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     private async ValueTask<bool> DelayWithinBudgetAsync(

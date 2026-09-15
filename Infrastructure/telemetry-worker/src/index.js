@@ -133,7 +133,7 @@ export async function handleRequest(request, env, ctx = { waitUntil() {} }) {
   }
   if (path.startsWith('/observatory/')) return handleObservatory(request, env);
   if (path === '/feedback') return handleFeedback(request, env);
-  if (path === '/') return handleTelemetry(request, env, ctx);
+  if (path === '/' || path === '/batch') return handleTelemetry(request, env, ctx);
   return jsonResponse(404, { error: 'not_found' });
 }
 

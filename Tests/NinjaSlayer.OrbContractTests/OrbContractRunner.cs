@@ -85,6 +85,13 @@ public partial class OrbContractRunner : Node
             Require(typeof(Player).Assembly.ManifestModule.ModuleVersionId.ToString() ==
                 System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_MVID"), "Loaded host MVID differs from the requested host.");
             GD.Print($"Candidate {expected}: {productPath}; SHA256 {Convert.ToHexString(SHA256.HashData(productBytes))}; host MVID {typeof(Player).Assembly.ManifestModule.ModuleVersionId}");
+            await VerifyUploadTransport();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_UPLOADS") == "1")
+            {
+                GD.Print("NinjaSlayer upload product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             TestMode.IsOn = true;
             AccessTools.Property(typeof(ModManager), nameof(ModManager.State)).SetValue(null, ModManagerState.Initialized);
             var productMod = new Mod
