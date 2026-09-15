@@ -65,8 +65,7 @@ internal sealed partial class SmokeController
         Type[] expectedAncientTypes =
         [
             typeof(CollapseFistRedesignV1),
-            typeof(OneBodyOneSoul),
-            typeof(ZazenDrink)
+            typeof(OneBodyOneSoul)
         ];
         HashSet<Type> expectedAncients = [.. expectedAncientTypes];
         HashSet<Type> actualAncients = [.. poolCards.Where(card => card.Rarity == CardRarity.Ancient).Select(card => card.GetType())];
@@ -91,9 +90,9 @@ internal sealed partial class SmokeController
         {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
             ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<BusyLine>()
+            ModelDb.Card<BusyLine>(), ModelDb.Card<SawatariMachete>(), ModelDb.Card<ZazenDrink>()
         }).Distinct().ToArray();
-        Require(visibleCards.Length == 92, $"Current card catalog contains {visibleCards.Length} models instead of 92.");
+        Require(visibleCards.Length == 93, $"Current card catalog contains {visibleCards.Length} models instead of 93.");
         foreach (CardModel canonical in visibleCards)
         {
             Require(canonical.IsCanonical, $"Redesign card pool returned mutable card {canonical.Id}.");
@@ -106,7 +105,7 @@ internal sealed partial class SmokeController
             Require(!string.IsNullOrWhiteSpace(canonical.TitleLocString.GetRawText()), $"Redesign card {canonical.Id} has an empty title.");
             string description = mutable.GetDescriptionForPile(PileType.None);
             Require(canonical is BusyLine || !string.IsNullOrWhiteSpace(description), $"Card {canonical.Id} could not format its description.");
-            mutable.UpgradeInternal();
+            if (mutable.IsUpgradable) mutable.UpgradeInternal();
             Require(canonical is BusyLine || !string.IsNullOrWhiteSpace(mutable.GetDescriptionForPile(PileType.None)), $"Upgraded card {canonical.Id} could not format its description.");
         }
 

@@ -185,5 +185,7 @@
   "NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST.description": "造成{Damage:diff()}点伤害。\n你身上每有一种正面效果，就额外造成一次伤害。{InCombat:\n（命中{CalculatedHits:diff()}次）|}",
   "NINJA_SLAYER_CARD_SLAUGHTER.description": "造成{Damage:diff()}点伤害。\n如果此牌击杀了敌人，获得{Karate:diff()}层[gold]空手道[/gold]。",
   "NINJA_SLAYER_CARD_SLAUGHTER.title": "杀伐",
-  "NINJA_SLAYER_CARD_TONY_RETENTION.selectionScreenPrompt": "选择要添加[gold]保留[/gold]的卡牌。"
+  "NINJA_SLAYER_CARD_TONY_RETENTION.selectionScreenPrompt": "选择要添加[gold]保留[/gold]的卡牌。",
+  "NINJA_SLAYER_CARD_SAWATARI_MACHETE.title": "大刀",
+  "NINJA_SLAYER_CARD_SAWATARI_MACHETE.description": "造成{Damage:diff()}点伤害。\n若目标为泽渡，将这把大刀归还给他。"
 }

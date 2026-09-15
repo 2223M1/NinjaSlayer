@@ -25,14 +25,39 @@ public partial class OrbContractRunner
     private static async Task VerifyCurrentCardInteractions()
     {
         Require(typeof(ShurikenOrb).Assembly.GetTypes().Count(type =>
-            !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)) == 92,
-            "The product assembly must contain only the 92 current card models.");
+            !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)) == 93,
+            "The product assembly must contain only the 93 current card models.");
         await VerifyNewCardInteractions();
+        await VerifyAncientCardSources();
         await VerifyChadoGeneration();
         await VerifyOpeningChadoRetention();
         await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
+    }
+
+    private static async Task VerifyAncientCardSources()
+    {
+        var player = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
+        _ = RunState.CreateForTest([player]);
+        var tome = (MegaCrit.Sts2.Core.Models.Relics.DustyTome)ModelDb.Relic<MegaCrit.Sts2.Core.Models.Relics.DustyTome>().ToMutable();
+        for (int i = 0; i < 32; i++)
+        {
+            tome.SetupForPlayer(player);
+            Require(tome.AncientCard == ModelDb.Card<OneBodyOneSoul>().Id,
+                "Darv's Dusty Tome must select One Body One Soul, never Nancy's Zazen Drink.");
+        }
+        player.AddRelicInternal(tome);
+        await tome.AfterObtained();
+        Require(player.Deck.Cards.OfType<OneBodyOneSoul>().Single().IsUpgraded,
+            "Dusty Tome must grant the native upgraded ancient card.");
+        var drink = ModelDb.Relic<NancyZazenDrinkRelic>().ToMutable();
+        player.AddRelicInternal(drink);
+        await drink.AfterObtained();
+        Require(player.Deck.Cards.OfType<ZazenDrink>().Count() == 1
+            && player.Deck.Cards.OfType<MegaCrit.Sts2.Core.Models.Cards.PoorSleep>().Count() == 2,
+            "Nancy must still grant one Zazen Drink and two Poor Sleep.");
+        GD.Print("PASS Darv's One Body One Soul and Nancy's Zazen Drink use their native acquisition flows");
     }
 
     private static async Task VerifyChadoGeneration()

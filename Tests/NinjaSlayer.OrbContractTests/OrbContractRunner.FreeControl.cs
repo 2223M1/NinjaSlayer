@@ -222,6 +222,33 @@ public partial class OrbContractRunner
                 "A card's downward lunge was incorrectly clamped as grounded during a physical jump.");
             AccessTools.Method(pose.GetType(), "Reset").Invoke(pose, null);
             Place(Position() + new Vector2(0f, 200f)); Sync();
+            foreach (int hits in new[] { 1, 3, 4 })
+            foreach (float airborne in new[] { 0f, 120f })
+            {
+                Place(new Vector2(Position().X, start.Y - airborne));
+                AccessTools.Property(physics.GetType(), "Velocity").SetValue(physics, System.Numerics.Vector2.Zero);
+                target.Position = new(1100f, 500f);
+                AccessTools.Method(pose.GetType(), "BeginTornado").Invoke(pose, [combat.Enemy, false, hits >= 4]);
+                AccessTools.Method(pose.GetType(), "SetTravel").Invoke(pose, [new Vector2(120f, 0f), 1f]);
+                for (int i = 0; i < hits * 21; i++)
+                {
+                    pose._Process(1d / 60d);
+                    Invoke("StepPhysics");
+                }
+                AccessTools.Method(pose.GetType(), "BeginReturn").Invoke(pose, null);
+                for (int i = 0; i <= 6; i++)
+                {
+                    AccessTools.Method(pose.GetType(), "ApplyReturn").Invoke(pose, [i / 6f]);
+                    Invoke("StepPhysics");
+                    Require(Position().Y <= start.Y + 1f,
+                        $"Tornado X={hits} return sank below its ground baseline from altitude {airborne}: floor core={start.Y}, actual={Position()}.");
+                }
+                for (int i = 0; i < 30; i++) Invoke("StepPhysics");
+                Require(Physics<bool>("Grounded") && Math.Abs(Position().Y - start.Y) < 1f,
+                    "Tornado return did not settle back on the original physical floor.");
+                Require(actor.Position == original, "Tornado return moved the combat UI root.");
+            }
+            GD.Print("PASS Tornado X=1/3/4: physical floor survives card lift, airborne starts and every return frame; combat UI stays fixed.");
             target.Position = new(1300f, 100f);
             Invoke("BeginThrow");
             Require(Get<System.Collections.ICollection>("_projectiles").Count == 1, "Free throw failed without stock.");

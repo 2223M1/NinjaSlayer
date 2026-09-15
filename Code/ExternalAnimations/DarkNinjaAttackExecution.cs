@@ -1,9 +1,11 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -15,7 +17,8 @@ internal readonly record struct DarkStrikeImpactOutcome(
     bool Connected,
     bool FullyBlocked,
     int Healing,
-    bool ShouldContinue);
+    bool ShouldContinue,
+    bool HpLost = false);
 
 internal static class DarkNinjaAttackExecution
 {
@@ -59,12 +62,12 @@ internal static class DarkNinjaAttackExecution
         return execution.Command;
     }
 
-    internal static async Task<IReadOnlyList<Creature>> PlayDarkStrike(
+    internal static async Task PlayDarkStrike(
         DarkNinjaMonster monster,
         IReadOnlyList<Creature> targets,
         int damage)
     {
-        Execution execution = await Execute(
+        await Execute(
             monster,
             targets,
             damage,
@@ -75,9 +78,21 @@ internal static class DarkNinjaAttackExecution
                     monster.Creature,
                     targets,
                     execution.CanHit,
-                    execution.Deal);
+                    async target =>
+                    {
+                        // Native player death removes combat piles during the damage command.
+                        var player = target.Player ?? target.PetOwner;
+                        CardModel[] candidates = player == null ? []
+                            : CardPile.GetCards(player, PileType.Draw, PileType.Discard)
+                                .Where(card => card.DeckVersion != null).ToArray();
+                        NarakuLifePower? life = target.GetPower<NarakuLifePower>();
+                        long absorbedBefore = life?.TotalAbsorbed ?? 0;
+                        DarkStrikeImpactOutcome outcome = await execution.Deal(target);
+                        if (outcome.HpLost || (life?.TotalAbsorbed ?? 0) > absorbedBefore)
+                            await monster.StealFrom(candidates);
+                        return outcome;
+                    });
             });
-        return execution.ConnectedTargets;
     }
 
     private static async Task<Execution> Execute(
@@ -152,7 +167,6 @@ internal static class DarkNinjaAttackExecution
     {
         internal AttackCommand Command => command;
         internal List<DamageResult> Results { get; } = [];
-        internal List<Creature> ConnectedTargets { get; } = [];
 
         internal bool CanContinue() =>
             combatState is not null
@@ -187,10 +201,6 @@ internal static class DarkNinjaAttackExecution
                 .Where(result => ReferenceEquals(result.Receiver, target))
                 .ToArray();
             bool connected = targetResults.Length > 0;
-            if (connected)
-            {
-                ConnectedTargets.Add(target);
-            }
 
             return new DarkStrikeImpactOutcome(
                 connected,
@@ -202,7 +212,8 @@ internal static class DarkNinjaAttackExecution
                         result.OverkillDamage))
                     .DefaultIfEmpty(0)
                     .Max(),
-                CanContinue());
+                CanContinue(),
+                targetResults.Any(result => result.UnblockedDamage > 0));
         }
 
         internal async Task<IReadOnlyList<DamageResult>> Deal(IEnumerable<Creature> targets)

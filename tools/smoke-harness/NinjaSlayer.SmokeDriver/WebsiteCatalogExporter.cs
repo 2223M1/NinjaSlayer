@@ -28,7 +28,8 @@ internal static class WebsiteCatalogExporter
             ?? throw new InvalidOperationException("Catalog export requires the candidate package version.");
         var cards = ModelDb.AllCards.Concat(new CardModel[] {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
-            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(), ModelDb.Card<BusyLine>()
+            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(), ModelDb.Card<BusyLine>(),
+            ModelDb.Card<SawatariMachete>()
         }).DistinctBy(card => card.Id).ToArray();
         var models = cards.Cast<AbstractModel>().Concat(ModelDb.AllRelics).Concat(ModelDb.AllPotions)
             .Concat(ModelDb.Monsters).Concat(ModelDb.AllEvents).Concat(ModelDb.AllAncients).Concat(ModelDb.AllEncounters).Concat(ModelDb.AllPowers)

@@ -635,7 +635,7 @@ internal sealed partial class SmokeController
         return snapshot;
     }
 
-    private async Task VerifySawatariEventCombat(CancellationToken cancellationToken)
+    private async Task VerifySawatariEventCombat(CancellationToken cancellationToken, bool verifyFinisher = true)
     {
         await WaitUntilAsync(
             () => CombatManager.Instance.IsInProgress,
@@ -646,6 +646,9 @@ internal sealed partial class SmokeController
             ?? throw new InvalidOperationException("Sawatari combat state was unavailable.");
         NCombatRoom room = NEventRoom.Instance?.EmbeddedCombatRoom
             ?? throw new InvalidOperationException("Sawatari combat room was unavailable.");
+        Creature companion = state.Creatures.Single(c => c.Side == CombatSide.Player && c.Monster is SawatariMonster);
+        Require(room.GetCreatureNode(companion)!.Visuals.HasNode("SawatariWeapons"),
+            "The real event did not initialize allied Sawatari's weapon rig.");
         Player player = LocalContext.GetMe(state.RunState)
             ?? throw new InvalidOperationException("Sawatari local player was unavailable.");
         PlayerCombatState playerState = player.PlayerCombatState
@@ -699,23 +702,40 @@ internal sealed partial class SmokeController
                 strike,
                 finisherTarget);
             CardModel[] cards = playerState.AllCards.ToArray();
-            FinisherSessionSnapshot normalFinisher = await RequireCompletedFinisherAsync(
-                "NinjaSlayerAttack",
-                resolvedHits: 1,
-                finisherTarget,
-                cancellationToken);
-            _checkpoints.Write(
-                "finisher.normal.completed",
-                data: new JsonObject
-                {
-                    ["sessionId"] = normalFinisher.SessionId,
-                    ["resolvedHits"] = normalFinisher.ResolvedHits,
-                    ["successfulKills"] = normalFinisher.SuccessfulKills.GetValueOrDefault(finisherTarget)
-                });
+            _checkpoints.Write("sawatari.first-wave-strike", data: new JsonObject
+            {
+                ["target"] = finisherTarget.Monster?.Id.ToString(),
+                ["hp"] = finisherTarget.CurrentHp,
+                ["sessions"] = string.Join(", ", FinisherSmokeObserver.Snapshots().Select(snapshot =>
+                    $"{snapshot.Scenario}:complete={snapshot.CompletionObserved},hits={snapshot.ResolvedHits}"))
+            });
+            if (verifyFinisher)
+            {
+                FinisherSessionSnapshot normalFinisher = await RequireCompletedFinisherAsync(
+                    "NinjaSlayerAttack",
+                    resolvedHits: 1,
+                    finisherTarget,
+                    cancellationToken);
+                _checkpoints.Write(
+                    "finisher.normal.completed",
+                    data: new JsonObject
+                    {
+                        ["sessionId"] = normalFinisher.SessionId,
+                        ["resolvedHits"] = normalFinisher.ResolvedHits,
+                        ["successfulKills"] = normalFinisher.SuccessfulKills.GetValueOrDefault(finisherTarget)
+                    });
+            }
             await WaitUntilAsync(
                 () => manager.IsPaused && GetSawatariOptions().Count == 2,
                 "Sawatari intermission did not pause combat and show both choices",
                 cancellationToken);
+            Sprite2D companionBody = room.GetCreatureNode(companion)!.Visuals.GetNode<Sprite2D>("%Visuals");
+            Node2D weapons = companionBody.GetNode<Node2D>("WeaponRig");
+            Require(!companionBody.FlipH && weapons.Scale.X == 1f,
+                "Intermission must mirror Sawatari's held weapons with the body toward the player.");
+            if (_configuration.ActionPreviewDirectory is { } previewDirectory)
+                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(previewDirectory, "sawatari-intermission-grips.png"));
+            _checkpoints.Write("sawatari.intermission-weapon-facing");
 
             int round = state.RoundNumber;
             int turn = playerState.TurnNumber;
@@ -1077,7 +1097,7 @@ internal sealed partial class SmokeController
         int normalHealing = normalResult.BlockedDamage + normalResult.UnblockedDamage + normalResult.OverkillDamage;
         Require(attacker.CurrentHp == Math.Min(attacker.MaxHp, normalAttackerHp + normalHealing),
             "Dark Strike healing did not come from its real damage result.");
-        Require(target.GetPower<WeakPower>()?.Amount == 2, "Dark Strike normal impact did not apply Weak.");
+        Require(!target.HasPower<WeakPower>(), "Dark Strike normal impact still applied Weak.");
         await RequireDarkStrikeVisualReleased(room, sourceBody, shouldRestoreBody: true);
 
         await PowerCmd.Remove<WeakPower>(target);
@@ -1098,7 +1118,7 @@ internal sealed partial class SmokeController
             "Dark Strike fully blocked impact did not preserve the host result.");
         Require(target.CurrentHp == blockedTargetHp, "A fully blocked Dark Strike reduced HP.");
         Require(attacker.CurrentHp == blockedAttackerHp, "A fully blocked Dark Strike incorrectly healed.");
-        Require(target.GetPower<WeakPower>()?.Amount == 2, "A fully blocked Dark Strike did not apply Weak.");
+        Require(!target.HasPower<WeakPower>(), "A fully blocked Dark Strike still applied Weak.");
         await RequireDarkStrikeVisualReleased(room, sourceBody, shouldRestoreBody: true);
 
         await PowerCmd.Remove<WeakPower>(target);
@@ -1212,10 +1232,10 @@ internal sealed partial class SmokeController
                 "The mixed Dark Strike fully blocked target lost HP.");
             Require(evadedTarget.CurrentHp == mixedEvadedHp,
                 "The mixed Dark Strike evading target lost HP.");
-            Require(target.GetPower<WeakPower>()?.Amount == 2
-                    && blockedTarget.GetPower<WeakPower>()?.Amount == 2
+            Require(!target.HasPower<WeakPower>()
+                    && !blockedTarget.HasPower<WeakPower>()
                     && !evadedTarget.HasPower<WeakPower>(),
-                "Dark Strike did not bind Weak to exactly the connected mixed targets.");
+                "Dark Strike still applied Weak to a mixed target.");
             Require(evadedTarget.GetPower<EvasionPower>()?.Amount is null or 0,
                 "The mixed Dark Strike did not consume the evading target's layer.");
             int mixedHealing = mixedEntries
@@ -1266,8 +1286,8 @@ internal sealed partial class SmokeController
                 && ReferenceEquals(invalidVisualEntries[0].Receiver, target)
                 && target.CurrentHp == invalidVisualTargetHp - invalidVisualEntries[0].Result.UnblockedDamage,
                 "Dark Strike did not finish its real impact after the detached visual was freed.");
-            Require(target.GetPower<WeakPower>()?.Amount == 2,
-                "Dark Strike lost its bound Weak after the detached visual was freed.");
+            Require(!target.HasPower<WeakPower>(),
+                "Dark Strike applied Weak after its detached visual was freed.");
             await RequireDarkStrikeVisualReleased(room, sourceBody, shouldRestoreBody: true);
             await PowerCmd.Remove<WeakPower>(target);
 
@@ -1431,8 +1451,8 @@ internal sealed partial class SmokeController
                 "Lethal Thorns retaliation interrupted the current Dark Strike impact.");
             Require(attacker.IsDead && attacker.CurrentHp == 0,
                 "Lethal Thorns retaliation did not kill the Dark Ninja.");
-            Require(target.GetPower<WeakPower>()?.Amount == 2,
-                "The completed Thorns impact did not apply its bound Weak.");
+            Require(!target.HasPower<WeakPower>(),
+                "The completed Thorns impact still applied Weak.");
             Require(evadedTarget.CurrentHp == untouchedTargetHp && !evadedTarget.HasPower<WeakPower>(),
                 "Lethal Thorns retaliation allowed Dark Strike to affect a later target.");
             await RequireDarkStrikeVisualReleased(room, sourceBody, shouldRestoreBody: false);

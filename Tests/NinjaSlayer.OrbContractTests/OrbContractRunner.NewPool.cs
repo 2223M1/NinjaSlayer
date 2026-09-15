@@ -54,6 +54,7 @@ public partial class OrbContractRunner
                 card.Owner = combat.Player;
                 _ = card.GetDescriptionForPile(PileType.None);
                 if (_hasPresentationResources) VerifyHoverTipText(card);
+                if (!card.IsUpgradable) continue;
                 card.UpgradeInternal();
                 _ = card.GetDescriptionForPile(PileType.None);
                 if (_hasPresentationResources) VerifyHoverTipText(card);

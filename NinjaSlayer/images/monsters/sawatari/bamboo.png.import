@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7vtawiuq7jig"
-path="res://.godot/imported/sawatari_bamboo.png-b7ac9b523bc5c589e8e6a1807d2bb38b.ctex"
+uid="uid://dwyvt8w0kr8av"
+path="res://.godot/imported/bamboo.png-22c281e58b842d858c4251a33629c710.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://NinjaSlayer/images/monsters/sawatari_bamboo.png"
-dest_files=["res://.godot/imported/sawatari_bamboo.png-b7ac9b523bc5c589e8e6a1807d2bb38b.ctex"]
+source_file="res://NinjaSlayer/images/monsters/sawatari/bamboo.png"
+dest_files=["res://.godot/imported/bamboo.png-22c281e58b842d858c4251a33629c710.ctex"]
 
 [params]
 

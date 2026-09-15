@@ -128,6 +128,7 @@ public partial class OrbContractRunner : Node
             RitsuLibFramework.Initialize();
             using (RitsuLibFramework.BeginModDataRegistration("NinjaSlayer.OrbContracts"))
             {
+                NinjaSlayerRunData.Register("NinjaSlayer.OrbContracts");
                 AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
                 AccessTools.Method(product.GetType("NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl"), "RegisterSavedData")
                     .Invoke(null, ["NinjaSlayer.OrbContracts"]);
@@ -140,8 +141,9 @@ public partial class OrbContractRunner : Node
             RitsuLibFramework.CreateContentPack("NinjaSlayer")
                 .Character(configureDeck)
                 .Card<NinjaSlayerCardPool, NinjaSlayer.Cards.OneBodyOneSoul>()
-                .Card<NinjaSlayerCardPool, NinjaSlayer.Cards.ZazenDrink>()
+                .Card<MegaCrit.Sts2.Core.Models.CardPools.EventCardPool, NinjaSlayer.Cards.ZazenDrink>()
                 .Apply();
+            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, NinjaSlayer.Cards.CollapseFistRedesignV1>();
             // Run the framework's post-mod-load discovery without loading menu/localization assets.
             AccessTools.Method(typeof(RitsuLibFramework).Assembly.GetType("STS2RitsuLib.Interop.Patches.ModTypeDiscoveryPatch", true), "Prefix")
                 .Invoke(null, null);
@@ -153,9 +155,10 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
             patcher.RegisterPatch<ShurikenOrbEvokePatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
+            patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
-            foreach (string name in new[] { "CardPlayResolutionBeforePatch", "CardPlayResolutionAfterPatch", "CardResolutionCleanupPatch" })
+            foreach (string name in new[] { "CardPlayResolutionBeforePatch", "CardPlayResolutionAfterPatch", "CardResolutionCleanupPatch", "AttackEvasionDamagePatch" })
                 typeof(ModPatcherExtensions).GetMethod("RegisterPatch")!
                     .MakeGenericMethod(product.GetType("NinjaSlayer.Code.Patches." + name, true)!).Invoke(null, [patcher]);
             Require(patcher.PatchAll(), "Orb patches failed to install.");
@@ -173,6 +176,20 @@ public partial class OrbContractRunner : Node
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_V024") == "1")
             {
                 await VerifyV024();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            await VerifySawatariWeapons();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SAWATARI") == "1")
+            {
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            await VerifyDarkStrikeTheft();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_DARK_STRIKE") == "1")
+            {
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;
@@ -223,10 +240,11 @@ public partial class OrbContractRunner : Node
         {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
             ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
+            ModelDb.Card<NinjaSlayer.Cards.BusyLine>(), ModelDb.Card<NinjaSlayer.Cards.SawatariMachete>(),
+            ModelDb.Card<NinjaSlayer.Cards.ZazenDrink>()
         }).Distinct().ToArray();
-        Require(catalog.Length == 92 && ModelDb.AllCharacters.Count(character => character is INinjaSlayerCharacter) == 1,
-            "Current content must have 92 cards and one Ninja Slayer character.");
+        Require(catalog.Length == 93 && ModelDb.AllCharacters.Count(character => character is INinjaSlayerCharacter) == 1,
+            "Current content must have 93 cards and one Ninja Slayer character.");
         CardModel[] rewards = ModelDb.CardPool<NinjaSlayerCardPool>()
             .GetUnlockedCards(UnlockState.all, CardMultiplayerConstraint.SingleplayerOnly).ToArray();
         foreach (var (rarity, expected) in new[]
@@ -409,9 +427,10 @@ public partial class OrbContractRunner : Node
         {
             ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
             ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<NinjaSlayer.Cards.BusyLine>()
+            ModelDb.Card<NinjaSlayer.Cards.BusyLine>(), ModelDb.Card<NinjaSlayer.Cards.SawatariMachete>(),
+            ModelDb.Card<NinjaSlayer.Cards.ZazenDrink>()
         }).Distinct().OrderBy(card => card.Id.ToString(), StringComparer.Ordinal).ToArray();
-        var states = catalog.SelectMany(canonical => new[] { false, true }.Select(upgraded =>
+        var states = catalog.SelectMany(canonical => (canonical.MaxUpgradeLevel == 0 ? new[] { false } : new[] { false, true }).Select(upgraded =>
         {
             CardModel card = canonical.ToMutable();
             if (upgraded) card.UpgradeInternal();
@@ -443,7 +462,7 @@ public partial class OrbContractRunner : Node
             Require(System.Text.Json.Nodes.JsonNode.DeepEquals(
                 JsonSerializer.SerializeToNode(orderedExpected), System.Text.Json.Nodes.JsonNode.Parse(actual)),
                 "Current card metadata differs from the approved baseline.");
-            GD.Print("PASS 92 cards: IDs, costs, types, rarity, targets, generation, keywords, tags, art and base/upgraded values");
+            GD.Print("PASS 93 cards: IDs, costs, types, rarity, targets, generation, keywords, tags, art and base/upgraded values");
         }
     }
 

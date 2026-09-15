@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Nodes.Events;
@@ -26,6 +27,7 @@ namespace NinjaSlayer.Events;
 
 [RegisterActEvent(typeof(Overgrowth))]
 [RegisterActEvent(typeof(Underdocks))]
+[RegisterActEvent(typeof(Glory))]
 public sealed class SawatariEvent : ModEventTemplate
 {
 #if NINJASLAYER_CHANNEL_STABLE
@@ -47,6 +49,8 @@ public sealed class SawatariEvent : ModEventTemplate
 
     public override bool IsShared => true;
     public override EventLayoutType LayoutType => EventLayoutType.Combat;
+    private bool ActThree => Owner?.RunState.CurrentActIndex == 2;
+    public override LocString InitialDescription => ActThree ? PageDescription("INITIAL_ACT3") : base.InitialDescription;
 
     public override EncounterModel CanonicalEncounter
     {
@@ -59,7 +63,7 @@ public sealed class SawatariEvent : ModEventTemplate
     }
 
     public override bool IsAllowed(IRunState runState) =>
-        runState.CurrentActIndex == 0
+        runState.CurrentActIndex is 0 or 2
         && NinjaSlayerContentAccess.HasNinjaSlayer(runState);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
@@ -123,7 +127,7 @@ public sealed class SawatariEvent : ModEventTemplate
     internal void ShowDuelResultPage()
     {
         SetEventState(
-            PageDescription("DUEL_RESULT"),
+            PageDescription(ActThree ? "DUEL_RESULT_ACT3" : "DUEL_RESULT"),
             [
                 new EventOption(
                     this,
@@ -220,7 +224,7 @@ public sealed class SawatariEvent : ModEventTemplate
 
     private Task TakeDuelRewards()
     {
-        SetEventFinished(PageDescription("DUEL_RESULT"));
+        SetEventFinished(PageDescription(ActThree ? "DUEL_RESULT_ACT3" : "DUEL_RESULT"));
         return RunLocalSession(session => session.TakeDuelRewards());
     }
 

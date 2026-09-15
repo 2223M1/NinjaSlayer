@@ -56,6 +56,7 @@ internal sealed class SawatariEventSession
         _events = events;
         _ninjaSlayer = ninjaSlayer;
         var model = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+        model.ActThree = state.RunState.CurrentActIndex == 2;
         _companion = state.CreateCreature(model, CombatSide.Player, null);
         _companion.PetOwner = ninjaSlayer;
     }
@@ -65,6 +66,8 @@ internal sealed class SawatariEventSession
         _state.AddCreature(_companion);
         _room.AddCreature(_companion);
         SetFacing(_companion, faceRight: true);
+        // The host calls Monster.AfterAddedToRoom only for enemies.
+        SawatariWeaponVisuals.Create((SawatariMonster)_companion.Monster!);
         YamotoKokiAllyLayoutPatch.Reflow(_room);
         SawatariMusicSession.Begin(eventRoom);
     }
@@ -174,7 +177,8 @@ internal sealed class SawatariEventSession
         }
 
         await Cmd.CustomScaledWait(0.1f, 0.2f);
-        await monster.PlayAttack(target);
+        if (monster.ActThree) await monster.PlayDualAttack(target);
+        else await monster.PlayAttack(target);
         await Cmd.CustomScaledWait(0.1f, 0.4f);
     }
 
@@ -250,6 +254,7 @@ internal sealed class SawatariEventSession
             RemoveCreature(_companion);
 
             var model = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            model.ActThree = _state.RunState.CurrentActIndex == 2;
             Creature duelCreature = _state.CreateCreature(model, CombatSide.Enemy, null);
             _duelCreature = duelCreature;
             Task addTask = CreatureCmd.Add(duelCreature);
@@ -513,6 +518,7 @@ internal sealed class SawatariEventSession
         if (body != null)
         {
             body.FlipH = faceRight;
+            SawatariWeaponVisuals.Get(creature)?.Refresh();
         }
 
         visuals?.GetNode<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName).SetMirrored(faceRight);

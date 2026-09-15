@@ -89,6 +89,17 @@ internal sealed partial class SmokeController
                 return;
             }
             var room = NCombatRoom.Instance!;
+            if (IsBladeFeedbackPreview || _configuration.PreviewFormFinisher is "SawatariWeapons" or "SawatariRig" or "SawatariBow" or "SawatariEvent" or "SawatariMotion")
+            {
+                await recorder.Start();
+                recording = true;
+                await VerifySawatariWeaponPresentation(directory, cancellationToken);
+                await recorder.Stop();
+                recording = false;
+                _firstCombatCompleted.TrySetResult();
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+                return;
+            }
             async Task<Creature> ReplaceEnemy<T>() where T : MonsterModel
             {
                 Creature[] previous = combat.HittableEnemies.ToArray();
@@ -246,7 +257,10 @@ internal sealed partial class SmokeController
                         ["enemyRootX"] = enemyNode?.Position.X, ["enemyVisualX"] = enemyNode?.Visuals.Position.X,
                         ["kokiRootX"] = kokiNode?.Position.X, ["kokiVisualX"] = kokiNode?.Visuals.Position.X,
                         ["kokiScreenX"] = kokiNode?.VfxSpawnPosition.X,
-                        ["enemyScreenX"] = enemyNode?.VfxSpawnPosition.X
+                        ["enemyScreenX"] = enemyNode?.VfxSpawnPosition.X,
+                        ["darkReturnScaleX"] = room.SceneContainer.GetNodeOrNull<Node2D>("DarkNinjaDarkStrike/FullBody")?.Scale.X,
+                        ["darkReturnBlur"] = room.SceneContainer.GetNodeOrNull<Node2D>("DarkNinjaDarkStrike/EntangledSpinBlur")?.IsVisibleInTree() ?? false,
+                        ["stolenCards"] = target.Powers.OfType<SwipePower>().Count()
                     });
                 };
                 RenderingServer.FramePreDraw += sampleMotion;
@@ -435,6 +449,78 @@ internal sealed partial class SmokeController
                     await CreatureCmd.SetCurrentHp(target, 1);
                     await Move(koki, YamotoKokiMonster.IaiSlashMoveId, target);
                     await WaitFrames(60);
+                }
+                else if (showcase == "DarkStrike")
+                {
+                    target = await ReplaceEnemy<DarkNinjaMonster>();
+                    NRunMusicController.Instance?.PlayCustomMusic(NinjaSlayerAudio.DarkNinjaBattleMusicEvent);
+                    await Move(target, DarkNinjaMonster.CounterStanceMoveId, player.Creature);
+                    await PowerCmd.Remove<IaiPower>(target);
+                    await PowerCmd.Remove<EvasionPower>(target);
+                    await PowerCmd.Remove<EvasionPower>(player.Creature);
+                    if (player.Creature.Block > 0) await RemoveSmokeBlock(player.Creature);
+                    foreach (CardModel old in CardPile.GetCards(player, PileType.Draw, PileType.Discard).ToArray())
+                        await CardPileCmd.RemoveFromCombat(old);
+                    var receipts = new List<CardModel>();
+                    foreach (CardModel model in new CardModel[] { ModelDb.Card<PlaceholderBlueDefense01>(),
+                        ModelDb.Card<BattlefieldInsightRedesignV1>(), ModelDb.Card<PalmThrustRedesignV1>() })
+                    {
+                        CardModel deck = player.RunState.CreateCard(model, player);
+                        CardCmd.Upgrade(deck);
+                        await CardPileCmd.Add(deck, PileType.Deck);
+                        CardModel copy = combat.CloneCard(deck);
+                        copy.DeckVersion = deck;
+                        await CardPileCmd.Add(copy, PileType.Draw);
+                        receipts.Add(copy);
+                    }
+                    NCreature darkActor = target.GetCreatureNode()!;
+                    Vector2 darkRoot = darkActor.Position;
+                    Vector2 intentPosition = darkActor.IntentContainer.GlobalPosition;
+                    for (int theft = 0; theft < 3; theft++)
+                    {
+                        SaveManager.Instance.PrefsSave.FastMode = theft == 1 ? FastModeType.Fast : FastModeType.Normal;
+                        Section($"dark-strike-theft-{theft + 1}");
+                        if (theft == 1) await PowerCmd.Apply<NarakuLifePower>(choice, player.Creature, 100, player.Creature, null);
+                        await Move(target, DarkNinjaMonster.DarkStrikeMoveId, player.Creature);
+                        Require(target.Powers.OfType<SwipePower>().Count() == theft + 1, "Live Dark Strike did not steal exactly one card.");
+                        Require(darkActor.Position.IsEqualApprox(darkRoot)
+                            && darkActor.IntentContainer.GlobalPosition.IsEqualApprox(intentPosition), "Dark Strike moved its UI root.");
+                        Require(!player.Creature.HasPower<WeakPower>(), "Live Dark Strike applied Weak.");
+                        await WaitFrames(45);
+                        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"stolen-{theft + 1}.png"));
+                    }
+                    Section("dark-strike-empty-candidates");
+                    await Move(target, DarkNinjaMonster.DarkStrikeMoveId, player.Creature);
+                    Require(target.Powers.OfType<SwipePower>().Count() == 3, "Empty piles produced another stolen card.");
+                    Section("dark-strike-interrupted-display");
+                    Task interruptedStrike = Move(target, DarkNinjaMonster.DarkStrikeMoveId, player.Creature);
+                    await WaitUntilAsync(() => room.SceneContainer.GetNodeOrNull<Node2D>("DarkNinjaDarkStrike") != null,
+                        "Dark Strike did not create its detached display", cancellationToken);
+                    room.SceneContainer.GetNode<Node2D>("DarkNinjaDarkStrike").Free();
+                    await interruptedStrike;
+                    await WaitFrames(5);
+                    Require(darkActor.FindChildren("StolenCardPos", "Node2D", true, false).Single().GetChildCount() == 3,
+                        "Interrupted Dark Strike destroyed the held stolen cards.");
+                    Section("dark-strike-native-return-rewards");
+                    // Keep combat alive to inspect individual native rewards before the terminal UI opens.
+                    Creature survivor = await CreatureCmd.Add<MegaCrit.Sts2.Core.Models.Monsters.DampCultist>(combat);
+                    await CreatureCmd.Kill(target, force: true);
+                    var rewards = ((CombatRoom)player.RunState.CurrentRoom!).ExtraRewards[player]
+                        .OfType<MegaCrit.Sts2.Core.Rewards.SpecialCardReward>().ToArray();
+                    Require(rewards.Length == 3 && receipts.All(c => !player.Deck.Cards.Contains(c.DeckVersion!)),
+                        "Live death must offer three optional cards, not auto-collect them.");
+                    await rewards[0].SelectUnsynchronized();
+                    rewards[1].OnSkipped();
+                    Require(player.Deck.Cards.Contains(receipts.Single(c => c.Id == rewards[0].ToSerializable().SpecialCard!.Id).DeckVersion!),
+                        "The selected native stolen-card reward did not return.");
+                    target = survivor;
+                    await WaitFrames(90);
+                    Section("dark-strike-existing-impact-regression");
+                    await PowerCmd.Remove<NarakuLifePower>(player.Creature);
+                    await VerifyDarkStrike(combat, player);
+                    RenderingServer.FramePreDraw -= sampleMotion;
+                    sampleMotion = null;
+                    await VerifyDarkStrikeEventRewards(directory, Section, cancellationToken);
                 }
                 else if (showcase == "Reverse")
                 {

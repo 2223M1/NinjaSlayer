@@ -26,15 +26,15 @@ using STS2RitsuLib.Scaffolding.Godot;
 namespace NinjaSlayer.Monsters;
 
 [RegisterMonster]
-public sealed class SawatariMonster : ModMonsterTemplate
+public sealed partial class SawatariMonster : ModMonsterTemplate
 {
     public const string EnhanceMoveId = "BAMBOO_ENHANCEMENT";
     public const string AttackMoveId = "EMPTY_HAND_COMBO";
-    public const string TexturePath = "res://NinjaSlayer/images/monsters/sawatari_bamboo.png";
+    public const string TexturePath = "res://NinjaSlayer/images/monsters/sawatari/body.png";
     public override int MinInitialHp => AscensionHelper.GetValueIfAscension(
         AscensionLevel.ToughEnemies,
-        SawatariEventRules.ToughHp,
-        SawatariEventRules.BaseHp);
+        ActThree ? 278 : SawatariEventRules.ToughHp,
+        ActThree ? 252 : SawatariEventRules.BaseHp);
 
     public override int MaxInitialHp => MinInitialHp;
     public override bool IsHealthBarVisible => false;
@@ -46,11 +46,13 @@ public sealed class SawatariMonster : ModMonsterTemplate
     protected override NCreatureVisuals? TryCreateCreatureVisuals() =>
         RitsuGodotNodeFactories.CreateFromScenePath<NCreatureVisuals>(VisualsPath);
 
-    public override IEnumerable<string> AssetPaths => base.AssetPaths.Append(TexturePath);
+    public override IEnumerable<string> AssetPaths => base.AssetPaths.Append(TexturePath)
+        .Concat(SawatariWeaponVisuals.AssetPaths);
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
-        MoveState enhance = new(EnhanceMoveId, EnhanceMove, new BuffIntent());
+        if (ActThree) return GenerateMacheteMoves();
+        MoveState enhance = new(EnhanceMoveId, ArrowMove, new SingleAttackIntent(ArrowDamage), new BuffIntent());
         MoveState attack = new(
             AttackMoveId,
             AttackMove,
@@ -64,6 +66,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
     {
         await base.AfterAddedToRoom();
         SetFacingPlayerSide(Creature.Side == CombatSide.Player);
+        SawatariWeaponVisuals.Create(this);
         if (Creature.Side == CombatSide.Player
             && SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session))
         {
@@ -87,6 +90,8 @@ public sealed class SawatariMonster : ModMonsterTemplate
         bool wasRemovalPrevented,
         float deathAnimLength)
     {
+        if (!wasRemovalPrevented && ReferenceEquals(creature, Creature))
+            SawatariWeaponVisuals.Get(Creature)?.Refresh();
         if (!wasRemovalPrevented
             && SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session))
         {
@@ -115,10 +120,13 @@ public sealed class SawatariMonster : ModMonsterTemplate
     public override Task AfterSideTurnStart(
         CombatSide side,
         IReadOnlyList<Creature> participants,
-        ICombatState combatState) =>
-        SawatariEventSession.TryGet(combatState, out SawatariEventSession? session)
+        ICombatState combatState)
+    {
+        SawatariWeaponVisuals.Get(Creature)?.Refresh();
+        return SawatariEventSession.TryGet(combatState, out SawatariEventSession? session)
             ? session.PlaySupportTurn(this, side)
             : Task.CompletedTask;
+    }
 
     public override bool ShouldCreatureBeRemovedFromCombatAfterDeath(Creature creature) =>
         !ReferenceEquals(creature, Creature)
@@ -132,6 +140,8 @@ public sealed class SawatariMonster : ModMonsterTemplate
         {
             return;
         }
+
+        SawatariWeaponVisuals.Get(attacker)?.ShowBamboo();
 
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariAttackEvent);
         AttackCommand command = MegaCrit.Sts2.Core.Commands.DamageCmd
@@ -167,7 +177,7 @@ public sealed class SawatariMonster : ModMonsterTemplate
                     bool connects = target.GetPower<EvasionPower>() is not { } evasion
                         || !evasion.CanEvade(target, command.DamageProps, attacker);
                     approach?.ApplyProgress(1f);
-                    NinjaSlayerCombatVfx.PlaySawatariBambooHit(attacker, target, connects);
+                    NinjaSlayerCombatVfx.PlaySawatariBambooHit(target, connects);
 
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                     {
@@ -206,11 +216,6 @@ public sealed class SawatariMonster : ModMonsterTemplate
 
     private async Task AttackMove(IReadOnlyList<Creature> targets)
     {
-        if (!SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session))
-        {
-            return;
-        }
-
         Creature[] candidates = targets
             .Where(target => target.IsAlive && target.IsHittable)
             .ToArray();
@@ -220,28 +225,13 @@ public sealed class SawatariMonster : ModMonsterTemplate
             if (target != null)
             {
                 await PlayAttack(target);
-                if (session.ConsumeBambooVoiceAfterAttack(Creature))
+                if (SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session)
+                    && session.ConsumeBambooVoiceAfterAttack(Creature))
                 {
                     NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBambooEvent);
                 }
             }
         }
-    }
-
-    private async Task EnhanceMove(IReadOnlyList<Creature> _)
-    {
-        if (!SawatariEventSession.IsActiveDuelCreature(Creature))
-        {
-            return;
-        }
-
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEnhancedEvent);
-        await PowerCmd.Apply<StrengthPower>(
-            new ThrowingPlayerChoiceContext(),
-            Creature,
-            SawatariEventRules.DuelStrength,
-            Creature,
-            null);
     }
 
     private static bool CanHit(Creature attacker, Creature target, ICombatState combatState) =>

@@ -87,9 +87,14 @@ draw backflips and shuriken throws may overlap that held stance.
   and recovers onto that pose, without restoring a mid-attack snapshot. Render-frame
   overshoot carries between phases; actual damage/Hook waits are never removed.
 - Counter uses native slash VFX and slash sound. Iai retains its petals and flash
-  with one slash sound per sweep. Bamboo uses native dagger-throw sound and
+  with one slash sound per sweep. Bamboo uses native blunt-attack sound and
   the complete native dramatic-stab scene at the target core, with default size,
   direction, particles and playback. Evasion omits contact; full block keeps it.
+- Sawatari arrows play the native crossbow attack event on release, with native
+  slash VFX at the target core on arrival. Dual thrusts play one slash sound per
+  hit window, including misses; only connected hits show contact VFX. Machetes
+  play dagger-throw on release and slash sound/VFX on contact. All use original
+  pitch/volume and native scene dimensions; audio and particles add no waits.
 
 ## Special heavy and separated Hell Tornado candidate
 
@@ -183,7 +188,41 @@ shadow is copied; death/room cleanup releases all fragments.
 The episode's visual frames were examined. The source audio was not audibly
 reviewed; the selected native effects are not claimed to reproduce its waveform.
 
+Dark Ninja's Dark Strike steals one permanent-deck card per target impact that
+actually loses HP or Naraku Life. Full block, Buffer, evasion and zero damage do
+not steal. Candidate cards are captured from draw/discard before damage, because
+native player death clears combat piles; the native combat-card RNG is only used
+after a successful damage receipt. Priority follows Thieving Hopper. Each stolen
+card owns an independent native SwipePower and optional SpecialCardReward. Earlier
+thefts all return when Dark Ninja dies. If lethal Thorns already removed the
+attacker before the current hit completed, that final card uses the same native
+reward path directly. Event combat offers these cards before its two relics.
+
+The local player's stolen cards form a compact fan at Dark Ninja's empty hand.
+The same fan follows the detached attack body and full return body, restoring its
+parent on interruption. The return still takes .6s; only its final .15s turns
+through 180 degrees using the player character's smooth turn and exposure blur.
+Health/status/intent nodes stay fixed. Death and room exit release the display.
+
+## Sawatari weapon motion
+
+Normal/Fast share bow draw/flight (.20/.133s), knife body throw/release
+(.167/.083s), knife flight (.25s), receiving-hand turn (.12s), and weapon
+retraction/emergence (.08/.16s). These are mod presentation choices. The native
+TriggerAnim rule does not globally double Spine playback, and native projectile
+waits can be equal in both modes. No native crossbow reload is used here.
+
+Dual machetes use the user-selected seven-frame episode cycle (.291958s in both
+modes), with one true damage event per thrust and only repeated Damage visual
+recovery skipped. Other attacks retain native .20/.10s recovery. Knife contact
+releases gameplay before the receiving-hand turn ends; bow release and projectile
+arrival use their actual animation callbacks. Instant applies the final state
+without zero-duration Tweens. See [sawatari-weapons-validation.md](sawatari-weapons-validation.md)
+for source registration and actual timing/capture evidence.
+
 ## Verification
+
+Validation evidence is in [dark-strike-theft-validation.md](dark-strike-theft-validation.md).
 
 Logic tests cover caller gates and the native Fast cap. Actual Godot Orb contracts
 cover kick preparation and each hit, visual return, all forms, backflip scale,
