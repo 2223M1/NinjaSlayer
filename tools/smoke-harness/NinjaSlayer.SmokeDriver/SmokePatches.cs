@@ -1,6 +1,7 @@
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
+using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.AutoSlay;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Rooms;
 using MegaCrit.Sts2.Core.AutoSlay.Handlers.Screens;
@@ -325,46 +326,24 @@ internal static class NinjaSlayerSmokeUnknownRoomTypeHookPatch
     public static void Postfix() => NinjaSlayerSmokeUnknownRoomRollPatch.ObserveRoomTypeHookCompleted();
 }
 
-[HarmonyPatch(typeof(Hook), nameof(Hook.ModifyDamage))]
+[HarmonyPatch(typeof(Hook), nameof(Hook.BeforeDamageReceived))]
 internal static class NinjaSlayerSmokeDamageHookPatch
 {
-    public static void Prefix(
-        Creature? target,
-        Creature? dealer,
-        ModifyDamageHookType modifyDamageHookType,
-        CardPreviewMode previewMode)
+    public static void Prefix(Creature? target, Creature? dealer)
     {
-        if (!NinjaSlayerSmokeAttackIntentPatch.IsEvaluating
-            && modifyDamageHookType == ModifyDamageHookType.All
-            && previewMode == CardPreviewMode.None)
-        {
-            SmokeController.Current?.ObserveDarkStrikeDamageHook(target, dealer);
-        }
-    }
-}
-
-[HarmonyPatch(typeof(AttackIntent), nameof(AttackIntent.GetSingleDamage))]
-internal static class NinjaSlayerSmokeAttackIntentPatch
-{
-    [ThreadStatic]
-    private static int _depth;
-
-    public static bool IsEvaluating => _depth > 0;
-
-    public static void Prefix() => _depth++;
-
-    public static Exception? Finalizer(Exception? __exception)
-    {
-        _depth--;
-        return __exception;
+        SmokeController.Current?.ObserveDarkStrikeDamageHook(target, dealer);
+        SmokeController.Current?.SawatariDamageObserver?.Invoke(target, dealer);
     }
 }
 
 [HarmonyPatch(typeof(Hook), nameof(Hook.BeforeAttack))]
 internal static class NinjaSlayerSmokeBeforeAttackHookPatch
 {
-    public static void Prefix(AttackCommand command) =>
+    public static void Prefix(AttackCommand command)
+    {
         SmokeController.Current?.ObserveDarkStrikeAttackHook(command, after: false);
+        SmokeController.Current?.ObserveBladeCommand(command);
+    }
 }
 
 [HarmonyPatch(typeof(Hook), nameof(Hook.AfterAttack))]
@@ -384,8 +363,20 @@ internal static class NinjaSlayerSmokeDarkStrikeAudioPatch
 [HarmonyPatch(typeof(VfxCmd), nameof(VfxCmd.PlayVfx))]
 internal static class NinjaSlayerSmokeDarkStrikeVfxPatch
 {
-    public static void Prefix(Vector2 position, string? path) =>
+    public static void Prefix(Vector2 position, string? path)
+    {
         SmokeController.Current?.ObserveDarkStrikeVfx(position, path);
+        SmokeController.Current?.SawatariVfxObserver?.Invoke(position, path);
+    }
+}
+
+[HarmonyPatch(typeof(NDebugAudioManager), nameof(NDebugAudioManager.Play))]
+internal static class NinjaSlayerSmokeWeaponSamplePatch
+{
+    public static void Prefix(string streamName) => TornadoViewportRecording.ObserveAudio(streamName);
+
+    public static void Postfix(string streamName, float volume) =>
+        SmokeController.Current?.SawatariSoundObserver?.Invoke(streamName, volume);
 }
 
 [HarmonyPatch(typeof(AutoSlayer), "QuitGame")]

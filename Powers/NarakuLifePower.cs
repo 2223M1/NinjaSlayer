@@ -10,6 +10,8 @@ namespace NinjaSlayer.Powers;
 
 public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisualGraftSource
 {
+    // Per-instance damage receipt; retained references also observe the final absorption at zero stock.
+    internal long TotalAbsorbed { get; private set; }
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
     protected override bool IsVisibleInternal => false;
@@ -53,6 +55,7 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
         int absorbed = Math.Min(Amount, Math.Max(0, (int)amount));
         if (absorbed == 0) return amount;
 
+        TotalAbsorbed += absorbed;
         Owner.GetPower<KillingIntentRedesignPower>()?.RecordDamage();
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("naraku_absorbed", Owner, absorbed);
 

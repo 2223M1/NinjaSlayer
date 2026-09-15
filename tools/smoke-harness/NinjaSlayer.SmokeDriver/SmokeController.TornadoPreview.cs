@@ -35,6 +35,7 @@ internal sealed partial class SmokeController
     private Creature? _timedTarget;
     private int _tornadoPauses;
     internal bool IsNativeTimingReference => _timedTornado is Whirlwind;
+    internal bool IsTornadoReturnProbe => _configuration.PreviewFormFinisher == "tornado-return";
 
     internal void ObserveTornadoStart()
     {
@@ -136,7 +137,8 @@ internal sealed partial class SmokeController
                         ["hits"] = new JsonArray(_tornadoHits.Select(t => JsonValue.Create(t)).ToArray())
                     });
                     _timedTornado = null;
-                    Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Tornado left a posed AimPose after return.");
+                    if (!IsTornadoReturnProbe)
+                        Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Tornado left a posed AimPose after return.");
                 }
             }
             finally
@@ -177,6 +179,11 @@ internal sealed partial class SmokeController
                 });
             }
             _timedTornado = null;
+            if (IsTornadoReturnProbe)
+            {
+                _firstCombatCompleted.TrySetResult();
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
             Type pauseType = typeof(NinjaSlayerAimPose).Assembly.GetType("NinjaSlayer.Code.Nodes.TornadoHurtPause", true)!;
             void PausePng(float seconds) => AccessTools.Method(pauseType, "Start").Invoke(null, [player.Creature, seconds]);
             Vector2 baseline = actor.Position;
@@ -220,6 +227,10 @@ internal sealed partial class SmokeController
         Vector2[] roots = actors.Select(actor => actor.Position).ToArray();
         Vector2[] ui = actors.Select(UiPosition).ToArray();
         float maxRootShift = 0f, maxUiShift = 0f;
+        Vector2 CorePosition() => actor.GetGlobalTransformWithCanvas().AffineInverse()
+            * actor.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
+        float coreBefore = CorePosition().Y;
+        var tornadoFrames = new JsonArray();
         void Sample()
         {
             for (int i = 0; i < actors.Length; i++)
@@ -227,12 +238,33 @@ internal sealed partial class SmokeController
                 maxRootShift = Math.Max(maxRootShift, actors[i].Position.DistanceTo(roots[i]));
                 maxUiShift = Math.Max(maxUiShift, UiPosition(actors[i]).DistanceTo(ui[i]));
             }
+            if (card is TornadoFistRedesignV1)
+            {
+                Node2D aim = actor.Visuals.GetNode<Node2D>("%AimPose");
+                Node2D air = actor.Visuals.GetNode<Node2D>("AirborneAnchor");
+                Sprite2D body = actor.Visuals.GetNode<Sprite2D>("%Visuals");
+                Vector2 Point(CanvasItem item) => actor.GetGlobalTransformWithCanvas().AffineInverse()
+                    * item.GetGlobalTransformWithCanvas().Origin;
+                tornadoFrames.Add(new JsonObject
+                {
+                    ["frame"] = Engine.GetProcessFrames(),
+                    ["bodyY"] = Point(body).Y, ["bodyX"] = Point(body).X,
+                    ["aimY"] = aim.Position.Y, ["airY"] = air.Position.Y,
+                    ["bodyLocalY"] = body.Position.Y, ["bodyScaleY"] = body.Scale.Y,
+                    ["rotation"] = body.Rotation, ["coreY"] = Point(actor.Visuals.VfxSpawnPosition).Y,
+                    ["returning"] = (bool)AccessTools.Field(aim.GetType(), "_returning").GetValue(aim)!,
+                    ["launch"] = (float)AccessTools.Field(aim.GetType(), "_launch").GetValue(aim)!
+                });
+            }
         }
         RenderingServer.FramePreDraw += Sample;
         try
         {
             await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
             await WaitFrames(60);
+            if (IsTornadoReturnProbe && card is TornadoFistRedesignV1)
+                Require(CorePosition().Y <= coreBefore + 1f,
+                    $"Tornado return sank the actual body: before={coreBefore}, after={CorePosition().Y}.");
             Require(maxRootShift < .1f && maxUiShift < .1f,
                 $"{card.Id} moved combat UI: root={maxRootShift:F3}px, UI={maxUiShift:F3}px.");
             _checkpoints.Write("attack.stationary-ui", data: new JsonObject
@@ -240,7 +272,38 @@ internal sealed partial class SmokeController
                 ["card"] = card.Id.ToString(), ["rootShift"] = maxRootShift, ["uiShift"] = maxUiShift
             });
         }
-        finally { RenderingServer.FramePreDraw -= Sample; }
+        finally
+        {
+            RenderingServer.FramePreDraw -= Sample;
+            if (tornadoFrames.Count > 0 && _configuration.TornadoPreviewDirectory is { } directory)
+                File.WriteAllText(Path.Combine(directory, $"tornado-return-{Engine.GetProcessFrames()}.json"), tornadoFrames.ToJsonString());
+        }
+    }
+}
+
+[HarmonyPatch]
+internal static class TornadoReturnFreeSetting
+{
+    private static System.Reflection.MethodBase TargetMethod() => AccessTools.PropertyGetter(
+        typeof(NinjaSlayer.Content.NinjaSlayerSettings), "FreeControlEnabled");
+    private static bool Prefix(ref bool __result)
+    {
+        if (SmokeController.Current?.IsTornadoReturnProbe != true) return true;
+        __result = true;
+        return false;
+    }
+}
+
+[HarmonyPatch]
+internal static class TornadoReturnBackgroundPhysics
+{
+    private static System.Reflection.MethodBase TargetMethod() => AccessTools.Method(
+        typeof(NinjaSlayerAimPose).Assembly.GetType("NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl", true)!, "IsBlocked");
+    private static bool Prefix(ref bool __result)
+    {
+        if (SmokeController.Current?.IsTornadoReturnProbe != true) return true;
+        __result = false;
+        return false;
     }
 }
 
@@ -369,8 +432,24 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
     }
 }
 
-[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.Play), [typeof(string), typeof(float)])]
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Audio.NAudioManager), "PlayOneShot",
+    [typeof(string), typeof(Dictionary<string, float>), typeof(float)])]
 internal static class PreviewAudioTimestampObserver
 {
-    private static void Prefix(string sfx) => TornadoViewportRecording.ObserveAudio(sfx);
+    private static void Prefix(ref string path, float volume)
+    {
+        TornadoViewportRecording.ObserveAudio(path);
+        SmokeController.Current?.SawatariSoundObserver?.Invoke(path, volume);
+    }
+}
+
+[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.Play), [typeof(string), typeof(float)])]
+internal static class PreviewModAudioTimestampObserver
+{
+    private static void Prefix(string sfx)
+    {
+        // RitsuLib plays private-bank events without going through the host audio node.
+        if (sfx.StartsWith("event:/NinjaSlayerAudio/", StringComparison.Ordinal))
+            TornadoViewportRecording.ObserveAudio(sfx);
+    }
 }

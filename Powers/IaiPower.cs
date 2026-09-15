@@ -104,7 +104,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
                 || !combatState.IsLiveCombat()) return;
             if (willConnect)
             {
-                NinjaSlayerCombatVfx.PlaySlashHitFx(target);
+                NinjaSlayerCombatVfx.PlayDarkCounterHitFx(target);
             }
 
             FinisherApproach.ReachImpact(Owner);

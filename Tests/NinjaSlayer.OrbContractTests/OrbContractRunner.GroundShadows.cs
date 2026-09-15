@@ -131,7 +131,13 @@ public partial class OrbContractRunner
                 }
                 else
                 {
-                    if (name == "sawatari") body.FlipH = !body.FlipH;
+                    if (name == "sawatari")
+                    {
+                        // The independent body crop has an offset foot pivot. Mirror the
+                        // sprite origin too, as the live weapon rig does when it plants the foot.
+                        body.FlipH = !body.FlipH;
+                        body.Position = new(-body.Position.X, body.Position.Y);
+                    }
                     else moving.Scale = new(-baseline.Scale.X, baseline.Scale.Y);
                     Invoke("SetMirrored", true);
                     Require(shadow.FlipH, $"{name}: facing did not mirror the painted contact pattern.");

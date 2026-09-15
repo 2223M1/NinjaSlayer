@@ -17,6 +17,7 @@ public partial class NinjaSlayerAimPose : Node2D
 {
     internal NinjaSlayerFreeControl? FreeControl { get; private set; }
     internal NinjaSlayerHellTornadoVisual? HellTornado { get; private set; }
+    internal PlayerMacheteVisuals? Machetes { get; set; }
     internal bool HasCardDrag => _dragOwner != null;
     private NCreature? _actor;
     private Node2D _airborne = null!;
@@ -639,6 +640,7 @@ public partial class NinjaSlayerAimPose : Node2D
         FreeControl?.Compose(ref canvas);
         _center.Position = _center.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse() * canvas;
         HellTornado?.SyncNow();
+        Machetes?.SyncForPose();
         RecordSomersaultBlur();
     }
 

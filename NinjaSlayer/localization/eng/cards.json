@@ -185,5 +185,7 @@
   "NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST.description": "Deal {Damage:diff()} damage.\nHits an additional time for each distinct buff you have.{InCombat:\n(Hits {CalculatedHits:diff()} {CalculatedHits:plural:time|times})|}",
   "NINJA_SLAYER_CARD_SLAUGHTER.description": "Deal {Damage:diff()} damage.\nIf this card kills an enemy, gain {Karate:diff()} [gold]Karate[/gold].",
   "NINJA_SLAYER_CARD_SLAUGHTER.title": "Slaughter",
-  "NINJA_SLAYER_CARD_TONY_RETENTION.selectionScreenPrompt": "Choose a card to gain [gold]Retain[/gold]."
+  "NINJA_SLAYER_CARD_TONY_RETENTION.selectionScreenPrompt": "Choose a card to gain [gold]Retain[/gold].",
+  "NINJA_SLAYER_CARD_SAWATARI_MACHETE.title": "Machete",
+  "NINJA_SLAYER_CARD_SAWATARI_MACHETE.description": "Deal {Damage:diff()} damage.\nIf the target is Sawatari, return a machete to him."
 }

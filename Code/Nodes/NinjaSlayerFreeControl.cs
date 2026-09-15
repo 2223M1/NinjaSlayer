@@ -141,6 +141,9 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         var contour = CombatBodyContours.ForForm(NinjaSlayerFormState.GetPresentation(Actor.Entity).Kind);
         Transform2D bodyWorld = _spaceToCanvas.AffineInverse() * _body.GetGlobalTransformWithCanvas();
         Transform2D inverse = Active ? PhysicsTransform.AffineInverse() : new Transform2D(0f, -_baseCore);
+        // Card lift belongs to the presentation. Moving the floor collider with it
+        // makes gravity pull the physics body down until the visual lift is cancelled.
+        Vector2 visualLift = Active ? new Vector2(0f, Pose.VerticalTravel) : Vector2.Zero;
         _worldHull = new Vector2[contour.Length];
         _localHull = new Vector2[contour.Length];
         for (int i = 0; i < contour.Length; i++)
@@ -148,7 +151,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
             Vector2 pixel = new(contour[i].X * (_body.FlipH ? -1f : 1f), contour[i].Y * (_body.FlipV ? -1f : 1f));
             if (!_body.Centered) pixel += _body.Texture.GetSize() * .5f;
             _worldHull[i] = bodyWorld * (pixel + _body.Offset);
-            _localHull[i] = inverse * _worldHull[i];
+            _localHull[i] = inverse * _worldHull[i] - visualLift;
         }
     }
 

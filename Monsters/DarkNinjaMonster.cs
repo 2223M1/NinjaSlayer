@@ -2,15 +2,21 @@ using Godot;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Ascension;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Enchantments;
+using MegaCrit.Sts2.Core.Models.Encounters;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Audio;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Rewards;
+using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
@@ -154,6 +160,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     {
         await base.AfterAddedToRoom();
         ApplyPoseTexture(HasEnteredCombatStance ? CombatTexturePath : StandingTexturePath);
+        DarkNinjaStolenCards.Create(Creature);
         await PowerCmd.Apply<EvasionPower>(
             new ThrowingPlayerChoiceContext(),
             Creature,
@@ -191,6 +198,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
             NinjaSlayerAudio.DarkNinjaProgressParameter,
             NinjaSlayerAudio.DarkNinjaEndProgress);
         DarkNinjaMusicSession.EndBattle();
+        DarkNinjaStolenCards.Get(Creature)?.Hide();
         return Task.CompletedTask;
     }
 
@@ -208,7 +216,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
             DarkStrikeMove,
             new SingleAttackIntent(() => DarkStrikeDamage),
             new HealIntent(),
-            new DebuffIntent());
+            new CardDebuffIntent());
         MoveState intent = new(KillingIntentMoveId, KillingIntentMove, new BuffIntent());
 
         stance.FollowUpState = slash;
@@ -280,21 +288,46 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
             null);
     }
 
-    private async Task DarkStrikeMove(IReadOnlyList<Creature> targets)
-    {
-        IReadOnlyList<Creature> connectedTargets =
-            await DarkNinjaAttackExecution.PlayDarkStrike(this, targets, DarkStrikeDamage);
+    private Task DarkStrikeMove(IReadOnlyList<Creature> targets) =>
+        DarkNinjaAttackExecution.PlayDarkStrike(this, targets, DarkStrikeDamage);
 
-        if (connectedTargets.Count > 0)
+    internal async Task StealFrom(CardModel[] candidates)
+    {
+        if (candidates.Length == 0) return;
+        // Same priority tiers and RNG as ThievingHopper.ThieveryMove.
+        int priority = candidates.Min(StealPriority);
+        CardModel card = RunRng.CombatCardGeneration.NextItem(candidates.Where(c => StealPriority(c) == priority))!;
+        var player = card.Owner;
+        // A lethal hit may already have removed this card with the owner's combat piles.
+        if (card.Pile != null) await CardPileCmd.RemoveFromCombat(card);
+        var swipe = (SwipePower)ModelDb.Power<SwipePower>().ToMutable();
+        await swipe.Steal(card);
+        if (Creature.IsDead)
         {
-            await PowerCmd.Apply<WeakPower>(
-                new ThrowingPlayerChoiceContext(),
-                connectedTargets,
-                2,
-                Creature,
-                null);
+            // Thorns already detached the attacker before this stab lost HP.
+            // Use SwipePower.BeforeDeath's native reward path without reattaching a dead creature.
+            CardModel deck = card.DeckVersion!;
+            player.RunState.AddCard(deck, player);
+            var reward = new SpecialCardReward(deck, player);
+            reward.SetCustomDescriptionEncounterSource(ModelDb.Encounter<ThievingHopperWeak>().Id);
+            ((CombatRoom)player.RunState.CurrentRoom!).AddExtraReward(player, reward);
+            player.RunState.CurrentMapPointHistoryEntry?.GetEntry(player.NetId).MarkLootReturned();
+        }
+        else
+        {
+            await PowerCmd.Apply(new ThrowingPlayerChoiceContext(), swipe, Creature, 1, Creature, null);
+            DarkNinjaStolenCards.Get(Creature)?.Refresh();
         }
     }
+
+    private static int StealPriority(CardModel card) => card.Enchantment is Imbued ? 3 : card.Rarity switch
+    {
+        CardRarity.Uncommon => 0,
+        CardRarity.Common or CardRarity.Rare or CardRarity.Event => 1,
+        CardRarity.Basic or CardRarity.Quest => 2,
+        CardRarity.Ancient => 3,
+        _ => 4
+    };
 
     private async Task KillingIntentMove(IReadOnlyList<Creature> _)
     {

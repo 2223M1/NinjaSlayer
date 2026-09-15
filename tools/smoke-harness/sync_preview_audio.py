@@ -44,7 +44,7 @@ def locate_waveform(samples, template, lower, upper):
     return (lower + best) / SAMPLE_RATE, float(scores[best])
 
 
-def source_templates(project):
+def source_templates(project, debug_audio=None, native_templates=None):
     paths = {name: {REPOSITORY / "NinjaSlayer/audio/sources" / source}
              for name, source in SOURCES.items()}
     # FMOD multi-sounds choose among distinct recordings of the same event.
@@ -60,11 +60,17 @@ def source_templates(project):
             if not asset:
                 raise RuntimeError(f"Missing FMOD asset path: {reference.text}")
             paths[name].add(project / "Assets" / asset)
+    if debug_audio is not None:
+        for name in ("blunt_attack.mp3", "heavy_attack.mp3", "slash_attack.mp3", "dagger_throw.mp3"):
+            paths[name] = {debug_audio / name}
+    if native_templates is not None:
+        for name, variants in json.loads(native_templates.read_text()).items():
+            paths[name] = {Path(variant["path"]) for variant in variants}
     return {name: {str(path): read_audio(path) for path in sorted(variants)}
             for name, variants in paths.items()}
 
 
-def synchronize(directory, output, fmod_project):
+def synchronize(directory, output, fmod_project, debug_audio=None, native_templates=None):
     video = json.loads((directory / "recording-start.json").read_text())
     audio = json.loads((directory / "audio-start.json").read_text())
     start = video["timestamp"] / video["frequency"]
@@ -73,10 +79,11 @@ def synchronize(directory, output, fmod_project):
         frames = [(int(row["qpc"]), int(row["frame"])) for row in csv.DictReader(handle)]
     frame_times = [row[0] for row in frames]
     samples = read_audio(directory / "audio.wav")
-    templates = source_templates(fmod_project)
+    templates = source_templates(fmod_project, debug_audio, native_templates)
+    events = [json.loads(line) for line in (directory / "audio-events.jsonl").read_text().splitlines()]
+    observed = {event["event"].rsplit("/", 1)[-1] for event in events}
     matches = []
-    for line in (directory / "audio-events.jsonl").read_text().splitlines():
-        event = json.loads(line)
+    for event in events:
         name = event["event"].rsplit("/", 1)[-1]
         if name not in templates:
             continue
@@ -116,6 +123,14 @@ def synchronize(directory, output, fmod_project):
     accepted = [match for match in matches if abs(match["delaySeconds"] - median) <= tolerance]
     if len(accepted) < 2:
         raise RuntimeError("Audio latency is inconsistent across the recording.")
+    required = set()
+    if debug_audio is not None:
+        required.update(name for name in templates if name.endswith(".mp3") and name in observed)
+    if native_templates is not None:
+        required.update(set(json.loads(native_templates.read_text())) & observed)
+    for name in required:
+        if not any(match["event"] == name for match in accepted):
+            raise RuntimeError(f"Native weapon audio was not verified: {name}")
     compensation = float(np.median([match["delaySeconds"] for match in accepted]))
     for match in matches:
         match["residualSeconds"] = match["delaySeconds"] - compensation
@@ -146,10 +161,14 @@ def synchronize(directory, output, fmod_project):
             cue = match["videoSeconds"]
             located = locate_waveform(encoded, template, max(0, round((cue - 0.08) * SAMPLE_RATE)),
                                       min(len(encoded), round((cue + 0.08) * SAMPLE_RATE) + len(template)))
-            if located is None or located[1] < 0.3 or abs(located[0] - cue) > 0.04:
-                raise RuntimeError("The encoded output failed audio/frame synchronization verification.")
+            # AAC can slightly reduce the score of a quiet sound under other effects.
+            minimum_score = min(0.3, 0.9 * match["correlation"])
+            if located is None or located[1] < minimum_score or abs(located[0] - cue) > 0.04:
+                raise RuntimeError(f"Encoded audio sync failed for {match['event']} at {cue:.4f}s: {located}.")
             match["encodedResidualSeconds"] = located[0] - cue
         report["maximumEncodedResidualSeconds"] = max(abs(match["encodedResidualSeconds"]) for match in accepted)
+    report["acceptedByEvent"] = {name: sum(match["event"] == name for match in accepted)
+                                 for name in templates}
     (directory / "audio-sync.json").write_text(json.dumps(report, indent=2) + "\n")
     print(f"Audio sync: {len(accepted)} source matches, latency {compensation * 1000:.1f} ms, "
           f"maximum residual {residual * 1000:.1f} ms.")
@@ -161,5 +180,9 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path)
     parser.add_argument("--fmod-project", type=Path,
                         default=REPOSITORY.parent / "STS2_FModProject_Minimal-main")
+    parser.add_argument("--debug-audio", type=Path,
+                        help="Verify observed native weapon MP3s from an extracted host debug_audio directory.")
+    parser.add_argument("--native-templates", type=Path,
+                        help="Manifest of silently rendered native FMOD waveform templates.")
     arguments = parser.parse_args()
-    synchronize(arguments.directory.resolve(), arguments.output, arguments.fmod_project)
+    synchronize(arguments.directory.resolve(), arguments.output, arguments.fmod_project, arguments.debug_audio, arguments.native_templates)

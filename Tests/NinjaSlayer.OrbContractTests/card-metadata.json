@@ -2468,6 +2468,26 @@
     }
   },
   {
+    "Id": "CARD.NINJA_SLAYER_CARD_SAWATARI_MACHETE",
+    "Upgraded": false,
+    "Cost": 2,
+    "X": false,
+    "Type": "Attack",
+    "Rarity": "Token",
+    "Target": "AnyEnemy",
+    "CanBeGeneratedInCombat": false,
+    "CanBeGeneratedByModifiers": false,
+    "Keywords": [
+      "Exhaust",
+      "Retain"
+    ],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/SawatariMachete.png",
+    "Vars": {
+      "Damage": 12
+    }
+  },
+  {
     "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_CREATION",
     "Upgraded": false,
     "Cost": 2,

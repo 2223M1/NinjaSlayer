@@ -117,19 +117,23 @@ public partial class OrbContractRunner
                         {
                             MegaCrit.Sts2.Core.TestSupport.TestMode.IsOn = false;
                             var hitFx = AccessTools.Method(feedback, "PlaySawatariBambooHit");
-                            hitFx.Invoke(null, [creature, combat.Player.Creature, false]);
+                            hitFx.Invoke(null, [combat.Player.Creature, false]);
                             Require(effects.GetChildCount() == 0, "An evaded bamboo stab generated contact sparks.");
-                            hitFx.Invoke(null, [creature, combat.Player.Creature, true]);
+                            hitFx.Invoke(null, [combat.Player.Creature, true]);
                             var impact = effects.GetChildren().OfType<Node2D>().Single();
-                            Require(impact.GetChildCount() == original.GetChildCount() && impact.Scale.IsEqualApprox(original.Scale)
+                            Require(!impact.HasNode("slash") && impact.HasNode("Flash") && original.HasNode("slash")
+                                && impact.GetChildCount() == original.GetChildCount() - 1 && impact.Scale.IsEqualApprox(original.Scale)
                                 && impact.Rotation == original.Rotation,
-                                "Bamboo changed the native stab hierarchy, size or orientation.");
+                                "Bamboo must remove only its own line, preserving native size and cached scene.");
                             Require(impact.GetNode<GpuParticles2D>("Sparks").Amount == sourceAmount
-                                && sparks.ProcessMaterial == sourceMaterial, "Bamboo changed native particle parameters.");
+                                && impact.GetNode<GpuParticles2D>("Sparks").ProcessMaterial == sourceMaterial
+                                && impact.GetNode<GpuParticles2D>("Flash").ProcessMaterial == original.GetNode<GpuParticles2D>("Flash").ProcessMaterial,
+                                "Bamboo changed native particle parameters.");
                             Require(impact.GlobalPosition.DistanceTo(combat.Player.Creature.GetCreatureNode()!.VfxSpawnPosition) < .1f,
                                 "Bamboo impact did not use the target's native VFX core.");
                             await ToSignal(GetTree().CreateTimer(2.5), SceneTreeTimer.SignalName.Timeout);
                             Require(effects.GetChildCount() == 0, "Bamboo contact particles did not clean up.");
+                            await VerifySawatariFlyingSlash(creature, combat.Player.Creature, actor, effects);
                         }
                         finally { MegaCrit.Sts2.Core.TestSupport.TestMode.IsOn = testMode; original.Free(); }
                     }
@@ -193,6 +197,75 @@ public partial class OrbContractRunner
             _hurtRoom.Free();
             _hurtRoom = null;
         }
+    }
+
+    private async Task VerifySawatariFlyingSlash(Creature source, Creature target, NCreature actor, Control effects)
+    {
+        GDExtensionManager.LoadExtension(System.IO.Path.GetFullPath(ProjectSettings.GlobalizePath(
+            "res://../../addons/spine/spine_godot_extension.gdextension")));
+        const string path = "res://scenes/vfx/vfx_flying_slash.tscn";
+        RegisterMountedUids(path, []);
+        var scene = GD.Load<PackedScene>(path);
+        PreloadManager.Cache.SetAsset(path, scene);
+        var play = AccessTools.Method(typeof(NinjaSlayer.Content.NinjaSlayerCombatVfx), "PlaySawatariFlyingSlash");
+        Vector2 baseline = actor.Position;
+        Transform2D parentBaseline = effects.GetTransform();
+        try
+        {
+            effects.Position = new(31, -17);
+            effects.Scale = new(.8f, 1.2f);
+            foreach (Vector2 offset in new Vector2[] { new(450, 90), new(-350, -120), new(100, 0) })
+            {
+                actor.Position = baseline + offset;
+                Vector2 start = actor.VfxSpawnPosition;
+                Vector2 end = target.GetCreatureNode()!.VfxSpawnPosition;
+                play.Invoke(null, [source, target]);
+                var effect = effects.GetChildren().OfType<Node2D>().Single();
+                effect.ProcessMode = ProcessModeEnum.Disabled;
+                var reference = scene.Instantiate<Node2D>();
+                AddChild(reference);
+                reference.ProcessMode = ProcessModeEnum.Disabled;
+                Node sprite = effect.GetNode("SpineSprite");
+                Node native = reference.GetNode("SpineSprite");
+                native.Call("update_skeleton", 0f);
+                string[] names = ["Small", "mid", "large"];
+                GodotObject Bone(Node node, string name) => node.Call("get_skeleton").AsGodotObject().Call("find_bone", name).AsGodotObject();
+                float[] starts = names.Select(name => Bone(native, name).Call("get_x").AsSingle()).ToArray();
+                Vector2 direction = (end - start).Normalized();
+                float last = -1;
+                for (int frame = 0; frame <= 9; frame++)
+                {
+                    for (int i = 0; i < names.Length; i++)
+                    {
+                        GodotObject bone = Bone(sprite, names[i]);
+                        GodotObject original = Bone(native, names[i]);
+                        Vector2 point = ((Node2D)sprite).ToGlobal(new(bone.Call("get_world_x").AsSingle(), -bone.Call("get_world_y").AsSingle()));
+                        float progress = 1f - original.Call("get_x").AsSingle() / starts[i];
+                        Require(point.DistanceTo(start.Lerp(end, progress)) < .5f,
+                            $"Flying slash {names[i]} missed the attacker-to-target route at frame {frame}: {point}.");
+                        Require(Mathf.IsEqualApprox(bone.Call("get_scale_x").AsSingle(), original.Call("get_scale_x").AsSingle())
+                            && Mathf.IsEqualApprox(bone.Call("get_scale_y").AsSingle(), original.Call("get_scale_y").AsSingle())
+                            && Mathf.IsEqualApprox(effect.GlobalTransform.X.Length(), 1f)
+                            && Mathf.IsEqualApprox(effect.GlobalTransform.Y.Length(), 1f),
+                            "Flying slash changed native artwork dimensions.");
+                        if (i == 2)
+                        {
+                            float along = (point - start).Dot(direction);
+                            Require(along + .5f >= last, "Flying slash moved away from its target.");
+                            last = along;
+                        }
+                    }
+                    sprite.Call("update_skeleton", 1f / 30f);
+                    native.Call("update_skeleton", 1f / 30f);
+                }
+                reference.Free();
+                effect.ProcessMode = ProcessModeEnum.Inherit;
+                await ToSignal(GetTree().CreateTimer(.5), SceneTreeTimer.SignalName.Timeout);
+                Require(effects.GetChildCount() == 0, "Flying slash lost native animation completion cleanup.");
+            }
+            GD.Print("PASS Sawatari Iron Wave actual Spine route: both directions, high/low targets, native size and cleanup.");
+        }
+        finally { actor.Position = baseline; effects.Position = parentBaseline.Origin; effects.Scale = parentBaseline.Scale; }
     }
 
     private async Task VerifyReferenceAndBamboo(Creature creature, NCreature actor, NCreatureVisuals rig, Node2D anchor)

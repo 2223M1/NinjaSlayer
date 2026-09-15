@@ -24,7 +24,6 @@
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPT.options.SILENCE_NARAKU.description": "离开。",
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.ACCEPTED.description": "忍者杀手放开压制。赤黑之火漫过四肢，第二道呼吸从他口中吐出。他踏出一步。奈落正在使用他的双脚。",
   "NINJA_SLAYER_EVENT_NARAKU_EVENT.pages.SILENCED.description": "“奈落，闭嘴。”茶道呼吸沉入丹田。自行迈出的脚收回原处，赤黑视野逐渐褪去。塔顶仍有金光。",
-
   "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.title": "京都之影",
   "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.description": "石墙裂开细缝，0与1像黑雪般漏入室内。裂缝另一端是京都城。黑暗忍者的轮廓正从杂讯中凝成实体，别嫔最先显露寒光。连接尚未闭合。忍者杀手抬起手，摸出一枚手里剑。",
   "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.INITIAL.options.ESCAPE.title": "斩断线路",
@@ -36,7 +35,6 @@
   "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.FIGHT.options.FIGHT.description": "与黑暗忍者战斗。",
   "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.ESCAPED.description": "手里剑贯穿裂缝边缘的媒介。0与1剧烈崩散。黑暗忍者护住别嫔，身形随即退回裂缝。京都城的入口闭合。",
   "NINJA_SLAYER_EVENT_DARK_NINJA_EVENT.pages.VICTORY.description": "致命伤口裂成0与1。黑暗忍者的临时肉体随之崩散，别嫔最后失去轮廓。石墙合拢，室内再无京都城的杂讯。",
-
   "NINJA_SLAYER_EVENT_SAWATARI_EVENT.title": "移动的丛林",
   "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.INITIAL.description": "竹枪刺穿补给箱，擦过忍者杀手的面甲！绊索同时绷紧。毒藤后，泽渡举枪。“DOMO，忍者杀手=SAN。泽渡·弗利斯特DESU。”“DOMO，泽渡·弗利斯特=SAN。忍者杀手DESU。”门外传来爪足声。“先杀它们。决斗押后。”",
   "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.INITIAL.options.WAIT.title": "……",
@@ -49,7 +47,6 @@
   "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.DUEL_RESULT.description": "竹枪与赤黑手刀连续碰撞。泽渡借最后一击翻入烟幕，沿预设退路消失。忍者杀手没有追赶。方才两次相撞，已让他的攻击去掉多余动作。",
   "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.DUEL_RESULT.options.TAKE_LOOT.title": "领取战利品",
   "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.DUEL_RESULT.options.TAKE_LOOT.description": "获得两件遗物。",
-
   "NINJA_SLAYER_EVENT_YUKANO_EVENT.title": "歪斜的鸟居",
   "NINJA_SLAYER_EVENT_YUKANO_EVENT.pages.INITIAL.description": "歪斜的鸟居横在通道中央，门内传来流水声。忍者杀手伸手时，由佳乃以木杖截住他的手腕。“等一下。里面的气息在换。”银之匙蹲到锁前，握紧银钥匙。“这扇门会开。我只是不敢保证它通向哪里。”",
   "NINJA_SLAYER_EVENT_YUKANO_EVENT.pages.INITIAL.options.SILVER_KEY.title": "让银之匙开路",
@@ -58,7 +55,6 @@
   "NINJA_SLAYER_EVENT_YUKANO_EVENT.pages.INITIAL.options.TRAVEL_WITH_YUKANO.description": "由佳乃同行3场战斗。",
   "NINJA_SLAYER_EVENT_YUKANO_EVENT.pages.SILVER_KEY.description": "银钥匙转动。鸟居后露出一条窄路，路上并排站着数个赤黑残影。银之匙撑住门扉。“别看它们。快走！这扇门撑不了多久。”",
   "NINJA_SLAYER_EVENT_YUKANO_EVENT.pages.YUKANO.description": "由佳乃把木杖横在鸟居之间。结界压住晃动的门框。“银之匙=SAN，去找出口。忍者杀手=SAN，我跟你走一段。”",
-
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.title": "纸的路线",
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.INITIAL.description": "纸鹤从宝箱后直射面门！忍者杀手两指夹住。纸翼一挣，飞回小季肩头。“反应没变，忍者杀手=SAN。”“小季=SAN。汝也被卷进来了么。”“嗯。咱要往上走。同行吗？”",
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.INITIAL.options.HUG_YAMOTO_KOKI.title": "并肩前进",
@@ -66,5 +62,7 @@
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.INITIAL.options.ROB_YAMOTO_KOKI.title": "分头行动",
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.INITIAL.options.ROB_YAMOTO_KOKI.description": "获得[gold]{Gold}[/gold]枚金币。",
   "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.HUGGED.description": "小季把纸鹤折成飞弹，站到忍者杀手身侧。“咱会跟上。”前方铁门升起。二人一同走入门后的黑暗。",
-  "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.ROBBED.description": "小季递来一叠万札。“另一条路也要有人看。忍者杀手=SAN，之后再会。”纸鹤绕过她的肩膀，飞向岔路。"
+  "NINJA_SLAYER_EVENT_YAMOTO_KOKI_CUTE_EVENT.pages.ROBBED.description": "小季递来一叠万札。“另一条路也要有人看。忍者杀手=SAN，之后再会。”纸鹤绕过她的肩膀，飞向岔路。",
+  "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.INITIAL_ACT3.description": "大刀刺穿补给箱，擦过忍者杀手的面甲！绊索同时绷紧。毒藤后，泽渡举起双刀。“DOMO，忍者杀手=SAN。泽渡·弗利斯特DESU。”“DOMO，泽渡·弗利斯特=SAN。忍者杀手DESU。”门外传来爪足声。“先杀它们。决斗押后。”",
+  "NINJA_SLAYER_EVENT_SAWATARI_EVENT.pages.DUEL_RESULT_ACT3.description": "大刀与赤黑手刀连续碰撞。泽渡借最后一击翻入烟幕，沿预设退路消失。忍者杀手没有追赶。方才两次相撞，已让他的攻击去掉多余动作。"
 }

@@ -535,6 +535,9 @@ internal static class DarkNinjaSpecialAttackPresentation
         private readonly Sprite2D _rearSword;
         private readonly Sprite2D _frontSword;
         private readonly Sprite2D _fullBody;
+        private readonly DarkNinjaStolenCards? _stolenCards;
+        private EntangledSpinMotionBlur? _returnBlur;
+        private VerticalAxisSpinProjection? _returnProjection;
         private readonly Vector2 _baselinePosition;
         private readonly float _scaleX;
         private readonly float _scaleY;
@@ -574,12 +577,14 @@ internal static class DarkNinjaSpecialAttackPresentation
             _rearSword = rearSword;
             _frontSword = frontSword;
             _fullBody = fullBody;
+            _stolenCards = DarkNinjaStolenCards.Get(attacker);
             _baselinePosition = baselinePosition;
             _scaleX = scaleX;
             _scaleY = scaleY;
             try
             {
                 sourceBody.Visible = false;
+                _stolenCards?.ShowOn(character);
                 if (shadow != null)
                 {
                     shadow.Visible = false;
@@ -589,6 +594,7 @@ internal static class DarkNinjaSpecialAttackPresentation
             {
                 if (GodotObject.IsInstanceValid(sourceBody))
                 {
+                    _stolenCards?.ShowOn(sourceBody);
                     sourceBody.Visible = _sourceBodyVisible;
                 }
 
@@ -845,6 +851,7 @@ internal static class DarkNinjaSpecialAttackPresentation
                 _rearSword.Visible = false;
                 _frontSword.Visible = false;
                 _fullBody.Visible = true;
+                _stolenCards?.ShowOn(_fullBody);
             }
             finally
             {
@@ -941,6 +948,9 @@ internal static class DarkNinjaSpecialAttackPresentation
                 _baselinePosition.Y);
             var end = new DarkNinjaPoint(_baselinePosition.X, _baselinePosition.Y);
             _root.Position = new Vector2(start.X, start.Y);
+            Vector2 axis = _fullBody.GetGlobalTransformWithCanvas().Origin;
+            _returnProjection = VerticalAxisSpinProjection.CaptureCurrent(_fullBody, axis.X, axis);
+            _returnBlur = EntangledSpinMotionBlur.Create(_fullBody, _fullBody.GetRect());
 
             await PlayTween(
                 Owner,
@@ -955,6 +965,13 @@ internal static class DarkNinjaSpecialAttackPresentation
                     if (GodotObject.IsInstanceValid(_root))
                     {
                         _root.Position = new Vector2(point.X, point.Y);
+                        float elapsed = progress * DarkNinjaCombatMath.DarkStrikeReturnSeconds;
+                        float turnElapsed = elapsed - (DarkNinjaCombatMath.DarkStrikeReturnSeconds - DragPoseMath.TurnSeconds);
+                        float degrees = DragPoseMath.TurnAngle(0f, 180f, turnElapsed, DragPoseMath.TurnSeconds);
+                        double Before(double age) => DragPoseMath.TurnAngle(0f, 180f,
+                            turnElapsed - (float)age, DragPoseMath.TurnSeconds);
+                        _returnProjection.ApplyDegrees(degrees, Before);
+                        _returnBlur.Record(_returnProjection, degrees, Before);
                     }
                 });
             if (GodotObject.IsInstanceValid(_root))
@@ -975,6 +992,10 @@ internal static class DarkNinjaSpecialAttackPresentation
                 _root.Visible = false;
             }
 
+            _returnBlur?.Stop();
+            _returnProjection?.Restore();
+            if (GodotObject.IsInstanceValid(_sourceBody) && GodotObject.IsInstanceValid(_stolenCards))
+                _stolenCards!.ShowOn(_sourceBody);
             RestoreTargetLayer();
             _targetPoseFreeze?.Dispose();
             _targetPoseFreeze = null;

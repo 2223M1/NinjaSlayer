@@ -266,7 +266,7 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
         }
 
         EventModel sawatari = ModelDb.Event<SawatariEvent>();
-        bool eligible = runState.CurrentActIndex == 0
+        bool eligible = runState.CurrentActIndex is 0 or 2
             && NinjaSlayerContentAccess.HasNinjaSlayer(runState)
             && !roll.Encounter.IsWeak
             && allowed.Contains(RoomType.Monster)

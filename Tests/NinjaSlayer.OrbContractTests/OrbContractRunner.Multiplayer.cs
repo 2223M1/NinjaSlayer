@@ -19,7 +19,9 @@ using MegaCrit.Sts2.Core.Platform;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
+using NinjaSlayer.Monsters;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 
@@ -36,6 +38,7 @@ public partial class OrbContractRunner
         MessageTypes.Initialize();
         ActionTypes.Initialize();
         MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitSettingsDataForTest();
+        MegaCrit.Sts2.Core.Saves.SaveManager.Instance.InitPrefsDataForTest();
         MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
         string directory = System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_DIRECTORY")!;
         ushort port = ushort.Parse(System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_PORT")!);
@@ -210,8 +213,49 @@ public partial class OrbContractRunner
             Require(tokens.Length == stock && tokens.All(card => card.SnapshotDamage == 8),
                 "Each original shot must create one synchronized eight-damage snapshot token.");
         }
+        var sawatari = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+        sawatari.ActThree = true;
+        Creature weaponEnemy = combat.State.CreateCreature(sawatari, CombatSide.Enemy, null);
+        await CreatureCmd.Add(weaponEnemy);
+        foreach (Player player in run.Players)
+        {
+            player.Creature.SetMaxHpInternal(500);
+            await CreatureCmd.SetCurrentHp(player.Creature, 500);
+            foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
+                await CardPileCmd.Add(card, PileType.Discard);
+        }
+        sawatari.RollMove(combat.State.PlayerCreatures);
+        for (int move = 0; move < 3; move++)
+        {
+            await sawatari.PerformMove();
+            sawatari.RollMove(combat.State.PlayerCreatures);
+        }
+        SawatariMachete[] machetes = run.Players.SelectMany(player => player.PlayerCombatState!.AllCards)
+            .OfType<SawatariMachete>().ToArray();
+        Require(machetes.Length == 2 && sawatari.MacheteCount == 0,
+            "Two networked throws must transfer exactly two knives across all players.");
+        for (int index = 0; index < machetes.Length; index++)
+        {
+            SawatariMachete card = machetes[index];
+            await CardPileCmd.Add(card, PileType.Hand);
+            await PlayerCmd.SetEnergy(10, card.Owner);
+            int before = completed;
+            string fixture = $"machete-{index}";
+            System.IO.File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+            await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                && System.IO.File.Exists(Path.Combine(directory, $"client.{fixture}")), "both machete fixtures");
+            if (card.Owner.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, weaponEnemy));
+            await WaitNetwork(() => completed > before, "native machete return action");
+            Require(card.Pile?.Type == PileType.Exhaust && sawatari.MacheteCount == index + 1,
+                "A synchronized Machete play must exhaust and return one knife.");
+        }
+        Require(sawatari.NextMove.Id == SawatariMonster.DualMoveId,
+            "Returning both networked knives must immediately show the dual-attack intent.");
         var snapshot = new
         {
+            Sawatari = new { weaponEnemy.CurrentHp, sawatari.HeldMachetes, sawatari.MustThrow,
+                sawatari.NextThrowHand, Intent = sawatari.NextMove.Id },
             EnemyHp = new[] { combat.Enemy.CurrentHp, otherEnemy.CurrentHp },
             Players = run.Players.Select(player => new
             {
@@ -228,6 +272,7 @@ public partial class OrbContractRunner
             == System.IO.File.ReadAllText(Path.Combine(directory, "client.json")), "Host/client product states diverged.");
         GD.Print("PASS two-process native ENet/action-queue stock, multi-evoke, Naraku ownership and RNG agreement");
         GD.Print("PASS synchronized Starless conversion, per-shot token count and Focus damage snapshots");
+        GD.Print("PASS synchronized Sawatari knife transfers, native status plays, exhaust and immediate intents");
     }
 
     private static async Task WaitNetwork(Func<bool> predicate, string operation)

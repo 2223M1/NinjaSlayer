@@ -52,9 +52,10 @@ internal static class FinisherSmokeObserver
         SessionType,
         "StartCompletion");
 
-    internal static MethodInfo PresentationCreateMethod => PresentationType
-        .GetMethods(StaticMembers)
-        .Single(method => method.Name == "CreateBackdropOnly" && method.GetParameters().Length == 2);
+    // The one-line factory may already be inlined before the smoke patches load.
+    internal static ConstructorInfo PresentationConstructor => PresentationType
+        .GetConstructors(InstanceMembers)
+        .Single(constructor => constructor.GetParameters().Length == 2);
 
     internal static bool PresentationFailureWasInjected { get; private set; }
 
@@ -306,7 +307,7 @@ internal static class FinisherCreatureKillObservationPatch
 [HarmonyPatch]
 internal static class FinisherPresentationFailurePatch
 {
-    public static MethodBase TargetMethod() => FinisherSmokeObserver.PresentationCreateMethod;
+    public static MethodBase TargetMethod() => FinisherSmokeObserver.PresentationConstructor;
 
     public static void Prefix()
     {

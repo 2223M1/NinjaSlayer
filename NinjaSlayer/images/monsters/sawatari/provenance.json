@@ -1,0 +1,60 @@
+{
+  "revision": "grip-revision-02",
+  "accepted": "2026-09-15",
+  "body": {
+    "file": "body.png",
+    "sha256": "d87bcbd36da16d1682080ad433a2f312cbf057f904a0e5f1eab5b29581a02c11"
+  },
+  "innerFist": {
+    "file": "inner-fist.png",
+    "sha256": "e63a5180d725b260ea42eb8d22c6ab35de9f665d3668fb8849fd36b8d6748af6"
+  },
+  "machete": {
+    "file": "machete.png",
+    "sha256": "1dc66c7821838ce321a2a2c4d6e1880bc68b65426a9cd68b1d5b7b1b957a0c82"
+  },
+  "layerOrder": [
+    "body",
+    "front blade",
+    "rear blade",
+    "inner fist"
+  ],
+  "sourcePivot": [
+    236,
+    17
+  ],
+  "acceptedSource": "build/source-reconstruction/sawatari-weapons/grip-revision-02/delivery-manifest.json",
+  "pending": [
+    "player weapon attachment"
+  ],
+  "arrow": {
+    "acceptedSource": "build/source-reconstruction/sawatari-weapons/accessory-review/bow-arrow-interface.json",
+    "sha256": "645789b5f22628c7b4b5ae978fec4197f29f9e2080f0a4b028e91928d134b9f3",
+    "file": "arrow.png"
+  },
+  "card": {
+    "acceptedSource": "build/source-reconstruction/sawatari-weapons/accessory-review/card-interface.json",
+    "sha256": "44cfd50c722edf5ab52f1c63923732286df10bc7f24777f87f47a7277e5deaa1",
+    "file": "../../cards/SawatariMachete.png"
+  },
+  "bow": {
+    "nocked": {
+      "file": "bow-nocked.png",
+      "sha256": "da7c7325111b299886a8da88f436e874916629cae1aa2cbc70fb174b5e4665b2"
+    },
+    "revision": "hat-bow-revision-02",
+    "released": {
+      "file": "bow-released.png",
+      "sha256": "f7812b33b215945ec8a902a29eeeb71973f3b5c7033055ca489431563d67c0fe"
+    },
+    "footAnchor": [
+      710,
+      744
+    ],
+    "acceptedSource": "build/source-reconstruction/sawatari-weapons/hat-bow-revision-02/delivery-manifest.json",
+    "canvas": [
+      1024,
+      768
+    ]
+  }
+}

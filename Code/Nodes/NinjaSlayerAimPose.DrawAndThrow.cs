@@ -155,33 +155,13 @@ public partial class NinjaSlayerAimPose
                     shift.Y -= 4f * motion.Height * turn * (1f - turn);
                     break;
                 case MotionKind.Throw:
-                    float windup = motion.Duration * (0.166f / 0.334f);
-                    float send = motion.Elapsed / windup;
-                    float degrees, distance;
-                    if (send < 0.25f)
-                    {
-                        envelope = Mathf.SmoothStep(0f, 1f, send / 0.25f);
-                        degrees = -6f * envelope;
-                        distance = -4f * envelope;
-                    }
-                    else if (send < 1f)
-                    {
-                        envelope = Mathf.SmoothStep(0f, 1f, Mathf.Clamp((send - 0.25f) / 0.45f, 0f, 1f));
-                        degrees = Mathf.Lerp(-6f, 8f, envelope);
-                        distance = Mathf.Lerp(-4f, 12f, envelope);
-                    }
-                    else
-                    {
-                        envelope = 1f - Mathf.SmoothStep(0f, 1f, (motion.Elapsed - windup) / (motion.Duration - windup));
-                        degrees = 8f * envelope;
-                        distance = 12f * envelope;
-                    }
+                    var throwing = ShurikenThrowMotion.Sample(p);
                     Vector2 direction = Vector2.Right * motion.Facing;
                     if (motion.Target?.IsAlive == true && motion.Target.GetCreatureNode() is { } targetNode)
                         direction = parentCanvas.AffineInverse().BasisXform(
                             targetNode.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin - core).Normalized();
-                    angle += Mathf.DegToRad(degrees) * motion.Facing;
-                    shift += parentCanvas.BasisXform(direction * distance);
+                    angle += Mathf.DegToRad(throwing.Degrees) * motion.Facing;
+                    shift += parentCanvas.BasisXform(direction * throwing.Distance);
                     break;
                 case MotionKind.Hurt:
                     envelope = 1f - p * p;
