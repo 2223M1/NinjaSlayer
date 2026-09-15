@@ -42,6 +42,7 @@ public static class NinjaSlayerFeedbackClient
 
         object modContext = BuildModContext(submissionId, submittedAtUtc);
         FeedbackSendResult result = await Transport.SendAsync(
+            submissionId,
             endpoint =>
             {
                 screenshotStream.Position = 0;
@@ -97,7 +98,7 @@ public static class NinjaSlayerFeedbackClient
 
         if (result.IsSuccess)
         {
-            Entry.Logger.Info($"NinjaSlayer feedback {submissionId} uploaded successfully.");
+            Entry.Logger.Info($"NinjaSlayer feedback {submissionId} acknowledged by the feedback service (HTTP {(int)result.Attempts[^1].StatusCode!.Value}).");
             return;
         }
 
@@ -122,6 +123,7 @@ public static class NinjaSlayerFeedbackClient
             data.lang
         };
 
+        // Workerd requires quoted disposition names and filenames to recognize the fields and files.
         MultipartFormDataContent form = [];
         AddJson(form, "payload_json", payload);
         AddJson(form, "mod_context", modContext);
@@ -159,7 +161,7 @@ public static class NinjaSlayerFeedbackClient
     private static void AddJson(MultipartFormDataContent form, string name, object value)
     {
         StringContent content = new(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
-        form.Add(content, name);
+        form.Add(content, $"\"{name}\"");
     }
 
     private static void AddStream(
@@ -171,6 +173,6 @@ public static class NinjaSlayerFeedbackClient
     {
         StreamContent content = new(new FeedbackNonDisposingStream(stream));
         content.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
-        form.Add(content, name, fileName);
+        form.Add(content, $"\"{name}\"", $"\"{fileName}\"");
     }
 }

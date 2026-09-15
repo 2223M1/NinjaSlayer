@@ -191,6 +191,18 @@ test('production endpoints fail closed when secrets or Durable Object bindings a
   assert.equal((await handleRequest(feedbackRequest(), { FEEDBACK_KV: new MockKv() })).status, 503);
 });
 
+test('native PostHog batch paths use the same telemetry receiver', async () => {
+  await withSuccessfulPostHog(async () => {
+    for (const path of ['/', '/batch', '/batch/']) {
+      const request = new Request(`https://worker.test${path}`, telemetryRequest());
+      const response = await handleRequest(request, workerEnv());
+      assert.equal(response.status, 200, path);
+      assert.equal((await response.json()).accepted, 1);
+      assert.equal((await handleRequest(new Request(`https://worker.test${path}`), workerEnv())).status, 405);
+    }
+  });
+});
+
 test('minute rate limiting uses a stable HMAC and never stores the IP', async () => {
   const limiter = new MockRateLimiter(1);
   const env = workerEnv({ TELEMETRY_RATE_LIMITER: limiter });

@@ -61,3 +61,18 @@ The Pages export job reads `GET /observatory/feedback` with an
 returned cursor. It reads completed metadata only and does not serve attachments.
 Only new feedback carrying the explicit `publishDescription: true` notice flag
 is projected into the public artifact; historical feedback remains private.
+
+## Native upload regression
+
+The RitsuLib PostHog adapter sends `POST /batch/`; `/batch` and the existing `/`
+entry use the same receiver. Game feedback uses `PUT /feedback` and .NET multipart
+with quoted disposition names and filenames. A successful feedback response must
+contain `ok: true` and the matching submission `id`.
+
+`test/uploads.test.js` runs the production Worker under Miniflare with local KV and
+Durable Objects. Its fixture is captured from the actual product DLL and RitsuLib
+HTTP adapter by `VerifyUploadTransport` in the product contracts. Set
+`NINJASLAYER_CONTRACT_ONLY_UPLOADS=1` and `NINJASLAYER_UPLOAD_FIXTURE_DIR` to export
+fresh requests for either host; run the Node test with `NINJASLAYER_UPLOAD_FIXTURE`
+pointing to that directory's `requests.json`. External PostHog delivery is mocked;
+feedback, attachments and retry receipts are verified against local storage.
