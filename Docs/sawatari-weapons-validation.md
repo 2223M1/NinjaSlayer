@@ -409,3 +409,27 @@ global compatibility facade, fingerprint platform, speculative save migration or
 global GC control was added. This rewrite adds no production reflection, dynamic
 patch, synchronization primitive or supported-host branch; existing gameplay
 host branches and model serialization stay with their original owners.
+
+## Immutable candidate package and smoke follow-up
+
+Product candidate `ed3ee666e2a90f3171d42e2150f8ca89a60d0039`, version 0.2.12:
+`build/release-v0.2.12/candidate/channels/{stable,preview}/package/NinjaSlayer/`.
+Universal bundle validation passed. Stable real-game FirstCombatRestart passed
+59 checkpoints across fresh, resume and reverse-finisher processes; the fixed
+SawatariSameCombat scenario passed 12 checkpoints including its strict ordinary
+Finisher assertion and intermission weapon alignment. Attestations are in
+`candidate/smoke-constructor-FirstCombatRestart/` and
+`candidate/smoke-constructor-SawatariSameCombat/` under the evidence root above.
+Both runs loaded RitsuLib 0.6.2, which Steam installed during this session; the
+preceding action-preview mirror still used 0.6.1.
+
+The first packaged smoke run failed because its injected presentation failure
+never reached the one-line factory. The real Finisher session completed its
+three hits and single death. Moving the test-only Harmony injection to the
+actual presentation constructor made the same product package pass the failure,
+cleanup and restart checks. No production Finisher behavior changed. The updated
+SmokeDriver is therefore newer than the product candidate SHA above.
+
+The hidden Direct3D smoke windows emit swap-chain resize errors and shutdown
+resource warnings. These runs verify gameplay/lifecycle; the earlier Vulkan
+motion recording and visible intermission screenshot provide visual evidence.
