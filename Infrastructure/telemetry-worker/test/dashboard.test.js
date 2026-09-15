@@ -134,7 +134,7 @@ test('local dashboard serves real catalog and imports; refuses cross-origin read
   t.after(() => { server.closeAllConnections(); server.close(); });
   const url = `http://127.0.0.1:${server.address().port}`;
   const read = async () => (await fetch(`${url}/api/view`)).json();
-  assert.equal((await read()).cards.length, 92);
+  assert.equal((await read()).cards.length, 93);
   assert.equal((await read()).sources.telemetry.state, 'unconnected');
   assert.equal((await fetch(`${url}/api/view`, { headers: { Origin: 'https://evil.invalid' } })).status, 403);
   const rebindingStatus = await new Promise(resolve => get(`${url}/api/view`, { headers: { Host: 'evil.invalid' } }, response => {
@@ -210,7 +210,7 @@ test('Pages artifact is standalone under the project subpath and excludes privat
   assert.doesNotMatch(html, /connection-dialog|screenshot-link|logs-link|feedback-screenshot|\{\{view\}\}/);
   for (const [, local] of html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) await readFile(join(output, local));
   const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
-  assert.equal(snapshot.catalog.length, 92);
+  assert.equal(snapshot.catalog.length, 93);
   assert.equal(summarizePublic(snapshot).runs, 0);
   assert.equal(snapshot.sources.telemetry.state, 'unconnected');
   assert.deepEqual(snapshot.feedback, []);
