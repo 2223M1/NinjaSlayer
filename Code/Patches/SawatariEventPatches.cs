@@ -397,6 +397,41 @@ public sealed class SawatariCombatEndGatePatch : IPatchMethod
     }
 }
 
+public sealed class SawatariVictoryCheckPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_sawatari_victory_check";
+    public static string Description => "Start Sawatari choices after native death and summon resolution.";
+    public static bool IsCritical => true;
+#if !NINJASLAYER_CHANNEL_STABLE
+    private static readonly Type TurnState = typeof(CombatManager).Assembly.GetType(
+        "MegaCrit.Sts2.Core.Combat.CombatTurnState", throwOnError: true)!;
+    private static readonly PropertyInfo State = TurnState.GetProperty("State")!;
+#endif
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(CombatManager), nameof(CombatManager.CheckWinCondition),
+#if NINJASLAYER_CHANNEL_STABLE
+            [])
+#else
+            [TurnState])
+#endif
+    ];
+
+#if NINJASLAYER_CHANNEL_STABLE
+    public static void Prefix(CombatManager __instance, out CombatState? __state) =>
+        __state = __instance.DebugOnlyGetState();
+#else
+    public static void Prefix(object __0, out CombatState? __state) =>
+        __state = (CombatState)State.GetValue(__0)!;
+#endif
+    public static async Task<bool> Postfix(Task<bool> __result, CombatState? __state)
+    {
+        bool ended = await __result;
+        if (!ended && SawatariEventSession.TryGet(__state, out var session)) session.CheckFirstCombatComplete();
+        return ended;
+    }
+}
+
 public sealed class SawatariDuelDeathAnimationPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_sawatari_duel_retreat";
@@ -423,7 +458,7 @@ public sealed class SawatariDuelDeathAnimationPatch : IPatchMethod
 public sealed class SawatariDuelRewardsPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_sawatari_duel_rewards";
-    public static string Description => "Replace the strong-monster rewards with two relics after the duel.";
+    public static string Description => "Offer the duel's fixed event relic instead of ordinary loot.";
     public static bool IsCritical => true;
 
     public static ModPatchTarget[] GetTargets() =>
@@ -431,16 +466,19 @@ public sealed class SawatariDuelRewardsPatch : IPatchMethod
         new(typeof(RewardsSet), nameof(RewardsSet.WithRewardsFromRoom), [typeof(AbstractRoom)])
     ];
 
-    public static void Postfix(RewardsSet __instance, AbstractRoom room)
+    public static bool Prefix(RewardsSet __instance, AbstractRoom room, ref RewardsSet __result)
     {
         if (room is not CombatRoom combatRoom
-            || !SawatariEventSession.ShouldReplaceRewards(combatRoom))
+            || combatRoom.ParentEventId != ModelDb.Event<SawatariEvent>().Id
+            || !combatRoom.ExtraRewards.TryGetValue(__instance.Player, out var extraRewards)
+            || !extraRewards.OfType<RelicReward>().Any(reward => reward.Relic is NinjaSlayer.Relics.BioBambooRelic))
         {
-            return;
+            return true;
         }
 
-        __instance.Rewards.Clear();
-        __instance.Rewards.Add(new RelicReward(__instance.Player));
-        __instance.Rewards.Add(new RelicReward(__instance.Player));
+        // Native fixed extra rewards retain their model and owner across victory reloads.
+        __result = __instance.EmptyForRoom(room);
+        __instance.Rewards.AddRange(extraRewards);
+        return false;
     }
 }

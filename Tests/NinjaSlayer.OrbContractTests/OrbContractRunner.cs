@@ -155,6 +155,8 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
             patcher.RegisterPatch<ShurikenOrbEvokePatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
+            patcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
+            patcher.RegisterPatch<SawatariDuelRewardsPatch>();
             patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
@@ -180,6 +182,7 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            await VerifyIaiLifeBoundary();
             await VerifySawatariWeapons();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SAWATARI") == "1")
             {
@@ -214,6 +217,7 @@ public partial class OrbContractRunner : Node
             VerifyCardMetadata();
             await VerifyCurrentCardInteractions();
             await VerifyV020();
+            await VerifyEventRelics();
             await VerifyV17();
             await VerifyV023();
             await VerifyV024();

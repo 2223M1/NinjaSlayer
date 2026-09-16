@@ -60,8 +60,10 @@ internal sealed partial class SmokeController
                         point += body.Offset;
                         Require(body.ToGlobal(point).DistanceTo(knife.GlobalPosition) < .2f,
                             $"{form}/{mirrored}/{hand}: handle missed the approved grip.");
-                        Require(knife.GetParent<Node2D>().ZIndex == approved["z_index"]!.GetValue<int>(),
-                            "Player blade is not in the approved layer above the body.");
+                        Require(DrawsBefore(body, knife)
+                            && DrawsBefore(visual.GetNode<Node2D>("Secondary"), visual.GetNode<Node2D>("Primary"))
+                            && DrawsBefore(knife, NCombatRoom.Instance!.GetNode<CanvasItem>("CombatUi")),
+                            "Held blades must preserve body/hand order below combat UI.");
                         Transform2D local = body.GlobalTransform.AffineInverse() * knife.GlobalTransform;
                         Vector2 expectedX = Vector2.FromAngle(Mathf.DegToRad(approved["node_rotation_degrees"]!.GetValue<float>()));
                         expectedX *= approved["scale_body_local"]!.GetValue<float>();

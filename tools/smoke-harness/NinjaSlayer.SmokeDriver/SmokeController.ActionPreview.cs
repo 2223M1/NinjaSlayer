@@ -89,7 +89,21 @@ internal sealed partial class SmokeController
                 return;
             }
             var room = NCombatRoom.Instance!;
-            if (IsBladeFeedbackPreview || _configuration.PreviewFormFinisher is "SawatariWeapons" or "SawatariRig" or "SawatariBow" or "SawatariEvent" or "SawatariMotion")
+            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics")
+            {
+                await recorder.Start();
+                recording = true;
+                if (_configuration.PreviewFormFinisher == "EventRelics")
+                    await VerifyEventRelicsLive(directory, cancellationToken);
+                else
+                    await VerifyBattleCompletion(directory, cancellationToken);
+                await recorder.Stop();
+                recording = false;
+                _firstCombatCompleted.TrySetResult();
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+                return;
+            }
+            if (IsBladeFeedbackPreview || _configuration.PreviewFormFinisher is "SawatariCleanup" or "SawatariWeapons" or "SawatariRig" or "SawatariBow" or "SawatariEvent" or "SawatariMotion")
             {
                 await recorder.Start();
                 recording = true;

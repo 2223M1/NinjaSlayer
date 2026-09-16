@@ -19,7 +19,7 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
     private Sprite2D _source = null!;
     private Sprite2D? _overlay;
     private NinjaSlayerAimPose? _pose;
-    private readonly Node2D[] _hands = [new() { Name = "Primary", ZIndex = 110 }, new() { Name = "Secondary", ZIndex = 100 }];
+    private readonly Node2D[] _hands = [new() { Name = "Primary" }, new() { Name = "Secondary" }];
     // Runtime ownership only. Native card/pile state reconstructs these nodes after a load.
     private readonly Dictionary<CardModel, Sprite2D> _knives = [];
 
@@ -36,17 +36,17 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
         visual._pose = NinjaSlayerAimPose.Get(player.Creature);
         if (visual._pose != null) visual._pose.Machetes = visual;
         visual._source.GetParent().AddChild(visual);
-        foreach (Node2D hand in visual._hands) visual.AddChild(hand);
+        visual.AddChild(visual._hands[1]);
+        visual.AddChild(visual._hands[0]);
         visual.SyncForPose();
         return visual;
     }
 
-    internal static Node2D? CatchHand(Player player)
+    internal static Node2D? CatchHand(Player player, int hand)
     {
         if (Ensure(player) is not { } visual) return null;
         visual.SyncForPose();
-        int count = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().Count();
-        return visual._hands[Math.Min(count, 1)];
+        return visual._hands[hand];
     }
 
     internal static void Bind(SawatariMachete card, Sprite2D knife)
@@ -57,7 +57,7 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
 
     internal static void Refresh(Player player)
     {
-        CardModel[] cards = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().ToArray();
+        SawatariMachete[] cards = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().ToArray();
         PlayerMacheteVisuals? visual = Get(player.Creature) ?? (cards.Length > 0 ? Ensure(player) : null);
         if (visual == null) return;
         foreach (var (card, knife) in visual._knives.ToArray())
@@ -69,20 +69,22 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
         }
         for (int i = 0; i < cards.Length; i++)
         {
+            int handIndex = cards[i].HeldHand;
+            if (handIndex < 0) continue;
             if (!visual._knives.TryGetValue(cards[i], out Sprite2D? knife))
             {
                 knife = SawatariWeaponVisuals.CreateMachete();
-                knife.Scale = Vector2.One * SawatariWeaponVisuals.BladeScale(Math.Min(i, 1));
-                visual._hands[Math.Min(i, 1)].AddChild(knife);
+                knife.Scale = Vector2.One * SawatariWeaponVisuals.BladeScale(handIndex);
+                visual._hands[handIndex].AddChild(knife);
                 visual._knives.Add(cards[i], knife);
             }
-            Node2D hand = visual._hands[Math.Min(i, 1)];
+            Node2D hand = visual._hands[handIndex];
             if (knife.GetParent() != hand)
             {
                 knife.Reparent(hand, keepGlobalTransform: true);
                 knife.Transform = new Transform2D(0f, knife.Scale.Abs(), 0f, Vector2.Zero);
             }
-            knife.Visible = i < 2;
+            knife.Show();
         }
         visual.SyncForPose();
     }
@@ -114,24 +116,28 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
         }
     }
 
-    internal static async Task Throw(SawatariMachete card, Creature target)
+    internal static async Task Throw(SawatariMachete card, SawatariMachete thrown, int hand,
+        Creature target, int returnHand)
     {
         if (Ensure(card.Owner) is not { } visual || target.GetCreatureNode() is not { } victim) return;
-        if (!visual._knives.Remove(card, out Sprite2D? knife))
+        bool held = visual._knives.Remove(thrown, out Sprite2D? knife);
+        if (thrown != card && visual._knives.Remove(card, out Sprite2D? remaining))
+            visual._knives.Add(thrown, remaining);
+        if (!held)
         {
             // Copies, replays and autoplay outside the hand have no held instance yet.
             knife = SawatariWeaponVisuals.CreateMachete();
-            knife.Scale = Vector2.One * SawatariWeaponVisuals.BladeScale(0);
-            visual._hands[0].AddChild(knife);
+            knife.Scale = Vector2.One * SawatariWeaponVisuals.BladeScale(hand);
+            visual._hands[hand].AddChild(knife);
         }
-        knife.Show();
+        knife!.Show();
         NinjaSlayerAimPose.Get(card.Owner.Creature)?.BeginShurikenThrow(target);
         await Cmd.Wait(NinjaSlayerAimPose.ShurikenWindupSeconds);
         if (!GodotObject.IsInstanceValid(knife) || !knife.IsInsideTree()) return;
         visual.SyncForPose();
-        SawatariWeaponVisuals? receiver = target.Monster is SawatariMonster { ActThree: true, MacheteCount: < 2 }
+        SawatariWeaponVisuals? receiver = returnHand >= 0 && target.Monster is SawatariMonster { ActThree: true, MacheteCount: < 2 }
             ? SawatariWeaponVisuals.Get(target) : null;
-        Node2D destination = receiver?.ReturnHand() ?? victim.Visuals.VfxSpawnPosition;
+        Node2D destination = receiver?.ReturnHand(returnHand) ?? victim.Visuals.VfxSpawnPosition;
         if (await SawatariWeaponVisuals.FlyWeapon(knife, destination, catchWeapon: receiver != null))
             receiver!.Receive(knife);
         Refresh(card.Owner);

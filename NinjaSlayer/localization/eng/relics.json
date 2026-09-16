@@ -43,5 +43,11 @@
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.flavor": "I'll keep up.",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.title": "Torii Pact",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.description": "For the next [blue]{Combats}[/blue] combats, Yukano will fight beside you.",
-  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "‘Ninja Slayer-san, I will travel with you for a while.’"
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "‘Ninja Slayer-san, I will travel with you for a while.’",
+  "NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC.title": "Bio-Bamboo",
+  "NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC.description": "Every {Cards} [gold]Attacks[/gold] you play, gain {Plating} [gold]Plating[/gold].",
+  "NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC.flavor": "A length of bamboo left behind by Sawatari.",
+  "NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC.title": "Beppin Fragment",
+  "NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC.description": "The first time you lose HP each combat, gain {Karate} [gold]Karate[/gold].",
+  "NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC.flavor": "A fragment of the demonic blade Beppin."
 }

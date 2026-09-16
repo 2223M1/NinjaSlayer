@@ -196,13 +196,20 @@ after a successful damage receipt. Priority follows Thieving Hopper. Each stolen
 card owns an independent native SwipePower and optional SpecialCardReward. Earlier
 thefts all return when Dark Ninja dies. If lethal Thorns already removed the
 attacker before the current hit completed, that final card uses the same native
-reward path directly. Event combat offers these cards before its two relics.
+reward path directly. Event combat offers these cards alongside one fixed
+Beppin Fragment reward; each card and the relic can be claimed or skipped.
 
 The local player's stolen cards form a compact fan at Dark Ninja's empty hand.
 The same fan follows the detached attack body and full return body, restoring its
 parent on interruption. The return still takes .6s; only its final .15s turns
 through 180 degrees using the player character's smooth turn and exposure blur.
 Health/status/intent nodes stay fixed. Death and room exit release the display.
+
+Dark Ninja Iai requires a living actor still in this combat at entry, after hurt
+recovery, before animation and before damage. A confirmed lethal hit in the
+Finisher death ledger also disqualifies it even while the cinematic retains one
+HP. Predictions do not disqualify a living actor. An actor already disqualified
+before animation does not flash.
 
 ## Sawatari weapon motion
 
@@ -219,6 +226,79 @@ releases gameplay before the receiving-hand turn ends; bow release and projectil
 arrival use their actual animation callbacks. Instant applies the final state
 without zero-duration Tweens. See [sawatari-weapons-validation.md](sawatari-weapons-validation.md)
 for source registration and actual timing/capture evidence.
+
+Weapon and inner-hand layering now uses local sibling order; flying knives use
+the normal combat VFX layer. Both actors randomly select among occupied hands
+when throwing and empty hands when catching. A single eligible hand is used
+directly. Already-held knives keep their hand through pile changes, draws and
+the other knife's transfer. Selection runs in the models using native Niche RNG,
+not in rendering callbacks. The card's native saved HeldHand property preserves
+the receiving hand; copies entering a hand claim an unoccupied slot. Playing a
+card can throw either physical knife, retaining the same sprite throughout its
+flight, catch and return. Damage, card exhaustion and weapon counts are unchanged.
+
+## Sawatari encounter rules (2026-09-16)
+
+Native A8 raises HP and A9 raises damage. Act one has 76/80 HP and cycles arrow,
+bamboo, bamboo using three native move states. Arrow deals 14/16 and then grants
+4 Plating; bamboo deals 2x4 and then grants 1 Strength. Act three has 280/300 HP:
+dual machetes deal 8/10x2, throws deal 12/14 then grant 6 Vigor, and unarmed
+bamboo deals 3/4x4 then grants 4 Strength. Native Vigor lasts for the entire next
+attack and is consumed by its normal AfterAttack hook. Buffs require survival
+after the attack but do not require damage to connect. Allied support uses the
+same HP/damage and does not receive these enemy-only buffs.
+
+First-combat death notifications only record presentation duration. Sawatari's
+choice starts after the native CheckWinCondition completes, with no living
+enemies, a surviving player and no native model requiring combat to continue.
+The stable public check and preview private turn-state check are patched at
+their respective native safe points. Living mercenary split spawns remain in
+combat. Fogmog's summons retire through native death handling; any dead revival
+models remaining in the enemy collection are removed without repeating death
+hooks or rewards before Sawatari moves and the choice appears.
+
+## Event relics (2026-09-16)
+
+Sawatari's completed duel adds one fixed Bio-Bamboo RelicReward for each player
+to the combat room's native ExtraRewards. The result-page button opens native
+rewards; it does not obtain the relic. The Sawatari reward patch replaces ordinary
+loot only when that room contains the fixed Bamboo reward. Native serialization
+preserves the model, owner and parent event across a victory reload. The ordinary
+loot branch does not add Bamboo. Dark Ninja adds one fixed Beppin Fragment reward
+on entering its event combat, beside the native stolen-card returns. Both relics
+can be taken or skipped; event Resume does not grant them again.
+
+Bio-Bamboo counts the owner's native AfterCardPlayed attack callbacks. Every
+second attack applies one native Plating; its saved remainder survives turns
+and combats. Multi-hit attacks count once. Beppin Fragment grants seven Karate
+on the first real or Naraku HP loss per combat, including self-damage. Prevention
+and previews do not trigger it. Both are event-only relics with native counters,
+flashes and hover tips.
+
+The existing final-HP-loss Naraku patch associates actual absorbed amounts with
+their DamageResult through weak references. Fragment reads that receipt. Only
+Centennial Puzzle receives a local copy representing absorbed HP when the real
+loss was zero; all other callbacks retain the original result. The native Puzzle
+owns its draw, used flag and reset, so an overflowing hit cannot trigger twice.
+
+Validation: [event-relics-validation-2026-09-16.md](event-relics-validation-2026-09-16.md).
+
+## Waterfall Giant self-destruct (2026-09-16)
+
+A completed native death command can revive a creature into a new phase. Finisher
+commits each confirmed death command once and respects its result; a living
+Waterfall Giant after SteamEruptionPower.AfterDeath is not a failed kill to retry.
+Once submitted, that target no longer has a pending Finisher death for Iai gating.
+
+The native knockout and preparation turn remain unchanged. Only the giant's
+Erupt animation wait is replaced, in a NinjaSlayer party, by the existing boss
+burst cue. The native AttackCommand then deals self-destruct damage while the
+burst video and fragments are visible. Native damage modifiers, block, Naraku
+absorption, attack/death hooks and the giant's final Kill remain native. Its final
+death reuses that presentation for node removal instead of playing a second burst.
+No new damage manager or save format is introduced. The integration belongs to
+the existing optional boss presentation transaction; a disabled presentation
+retains the original explosion and damage.
 
 ## Verification
 

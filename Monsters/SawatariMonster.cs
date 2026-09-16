@@ -30,11 +30,16 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 {
     public const string EnhanceMoveId = "BAMBOO_ENHANCEMENT";
     public const string AttackMoveId = "EMPTY_HAND_COMBO";
+    public const string SecondAttackMoveId = "SECOND_BAMBOO_COMBO";
     public const string TexturePath = "res://NinjaSlayer/images/monsters/sawatari/body.png";
     public override int MinInitialHp => AscensionHelper.GetValueIfAscension(
         AscensionLevel.ToughEnemies,
-        ActThree ? 278 : SawatariEventRules.ToughHp,
-        ActThree ? 252 : SawatariEventRules.BaseHp);
+        ActThree ? 300 : SawatariEventRules.ToughHp,
+        ActThree ? 280 : SawatariEventRules.BaseHp);
+
+    private int BambooDamage => ActThree
+        ? AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 4, 3)
+        : SawatariEventRules.AttackDamage;
 
     public override int MaxInitialHp => MinInitialHp;
     public override bool IsHealthBarVisible => false;
@@ -56,10 +61,13 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         MoveState attack = new(
             AttackMoveId,
             AttackMove,
-            new MultiAttackIntent(SawatariEventRules.AttackDamage, SawatariEventRules.AttackHits));
+            new MultiAttackIntent(BambooDamage, SawatariEventRules.AttackHits), new BuffIntent());
+        MoveState secondAttack = new(SecondAttackMoveId, AttackMove,
+            new MultiAttackIntent(BambooDamage, SawatariEventRules.AttackHits), new BuffIntent());
         enhance.FollowUpState = attack;
-        attack.FollowUpState = attack;
-        return new MonsterMoveStateMachine([enhance, attack], enhance);
+        attack.FollowUpState = secondAttack;
+        secondAttack.FollowUpState = enhance;
+        return new MonsterMoveStateMachine([enhance, attack, secondAttack], enhance);
     }
 
     public override async Task AfterAddedToRoom()
@@ -145,7 +153,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariAttackEvent);
         AttackCommand command = MegaCrit.Sts2.Core.Commands.DamageCmd
-            .Attack(SawatariEventRules.AttackDamage)
+            .Attack(BambooDamage)
             .WithHitCount(SawatariEventRules.AttackHits)
             .FromMonster(this);
         int hitCount = (int)Math.Ceiling(Math.Max(
@@ -156,7 +164,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 
         await Hook.BeforeAttack(combatState, command);
         FinisherApproach? approach = null;
-        if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], SawatariEventRules.AttackDamage, hitCount)
+        if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], BambooDamage, hitCount)
             ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
         {
             approach = FinisherApproach.Create(actorNode, focus, Godot.Vector2.One);
@@ -184,7 +192,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
                         results.AddRange(await CreatureCmd.Damage(
                             choiceContext,
                             [target],
-                            SawatariEventRules.AttackDamage,
+                            BambooDamage,
                             command.DamageProps,
                             attacker,
                             null
@@ -225,6 +233,9 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
             if (target != null)
             {
                 await PlayAttack(target);
+                if (Creature.IsAlive)
+                    await PowerCmd.Apply<StrengthPower>(new BlockingPlayerChoiceContext(), Creature,
+                        ActThree ? 4 : 1, Creature, null);
                 if (SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session)
                     && session.ConsumeBambooVoiceAfterAttack(Creature))
                 {

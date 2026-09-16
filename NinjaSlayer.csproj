@@ -90,6 +90,7 @@
     <Compile Remove="tools\artifact-contract\**\*.cs" />
     <Compile Remove="tools\loader\**\*.cs" />
     <Compile Remove="tools\smoke-harness\**\*.cs" />
+    <Compile Remove="tools\save-probe\**\*.cs" />
     <Reference Include="sts2" Condition="Exists('$(Sts2DataDir)/sts2.dll')">
       <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
       <!-- Keep direct game references available to local build and test load contexts. -->

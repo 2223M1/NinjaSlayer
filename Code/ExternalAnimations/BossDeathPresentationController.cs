@@ -29,6 +29,7 @@ public sealed partial class BossDeathPresentationController : Node
     private CombatCinematicCameraLease? _camera;
     private readonly CinematicSessionLifetime _lifetime = new();
     private int _started;
+    private Task _burstCue = Task.CompletedTask;
 
     internal static BossDeathPresentationController Attach(
         NCreature boss,
@@ -67,7 +68,7 @@ public sealed partial class BossDeathPresentationController : Node
 
     internal float StartDeathAnimation(bool shouldRemove)
     {
-        if (_dismembermentSnapshot == null)
+        if (_started == 0 && _dismembermentSnapshot == null)
         {
             throw new InvalidOperationException(
                 "Boss death presentation started before its visual snapshot was prepared.");
@@ -147,8 +148,15 @@ public sealed partial class BossDeathPresentationController : Node
             new BossBurstParticipant(
                 _boss.Entity.Monster?.Id.Entry ?? _boss.Name.ToString(),
                 SpawnFragments));
+        _burstCue = registration.Cue;
         Task presentationTask = RunPresentation(registration, _lifetime.Token);
         TaskHelper.RunSafely(presentationTask);
+    }
+
+    internal Task StartExplosion()
+    {
+        Begin();
+        return _burstCue;
     }
 
     public override void _ExitTree()

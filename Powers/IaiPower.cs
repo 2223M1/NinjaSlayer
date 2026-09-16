@@ -27,7 +27,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
         Creature? dealer,
         CardModel? cardSource)
     {
-        if (target != Owner || dealer == null || !props.IsPoweredAttack())
+        if (target != Owner || dealer == null || !props.IsPoweredAttack() || !CanCounter)
         {
             return;
         }
@@ -39,20 +39,23 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
             advance.RemainingHits - Amount,
             Owner,
             cardSource);
-        if (!advance.ShouldCounter)
+        if (!advance.ShouldCounter || !CanCounter)
         {
             return;
         }
 
-        Flash();
         await TryCounter(choiceContext, dealer);
     }
+
+    private bool CanCounter => Owner.IsAlive
+        && Owner.CombatState is { } combat && combat.IsLiveCombat() && combat.ContainsCreature(Owner)
+        && FinisherSessionRegistry.GetActiveSession()?.HasConfirmedDeath(Owner) != true;
 
     private async Task TryCounter(PlayerChoiceContext choiceContext, Creature target)
     {
         await StaggerAnimation.WaitForCompletion(Owner);
         ICombatState? combatState = Owner.CombatState;
-        if (!Owner.IsAlive
+        if (!CanCounter
             || combatState == null
             || !combatState.IsLiveCombat()
             || !target.IsAlive
@@ -89,6 +92,8 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
         FinisherApproach? approach = null;
         try
         {
+            if (!CanCounter) return;
+            Flash();
             if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], 0m, 1)
                 ?.GetCreatureNode() is { } focus && Owner.GetCreatureNode() is { } actor)
             {
@@ -100,7 +105,7 @@ public sealed class IaiPower : NinjaSlayerPowerTemplate
                 Owner,
                 "SlowAttack",
                 SlowAttackAnimation.IaiNormalSeconds);
-            if (!Owner.IsAlive || !target.IsAlive || !target.IsHittable
+            if (!CanCounter || !target.IsAlive || !target.IsHittable
                 || !combatState.IsLiveCombat()) return;
             if (willConnect)
             {

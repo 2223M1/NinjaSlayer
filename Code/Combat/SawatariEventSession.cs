@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Audio;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
@@ -21,6 +22,7 @@ using NinjaSlayer.Content;
 using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
+using NinjaSlayer.Relics;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Models;
 
@@ -44,6 +46,7 @@ internal sealed class SawatariEventSession
     private bool _entrancePlayed;
     private bool _bambooVoicePending;
     private bool _ownsCombatPause;
+    private float _deathAnimLength;
 
     private SawatariEventSession(
         CombatState state,
@@ -73,7 +76,6 @@ internal sealed class SawatariEventSession
     }
 
     public SawatariEventPhase Phase => _phases.Current;
-    public bool UseDuelRewards { get; private set; }
 
     public static SawatariEventSession Create(
         CombatState state,
@@ -128,10 +130,6 @@ internal sealed class SawatariEventSession
         TryGet(creature.CombatState, out SawatariEventSession? session)
         && session.Phase == SawatariEventPhase.Duel
         && ReferenceEquals(session._duelCreature, creature);
-
-    public static bool ShouldReplaceRewards(CombatRoom room) =>
-        TryGet(room.CombatState, out SawatariEventSession? session)
-        && session.UseDuelRewards;
 
     public async Task PlayNinjaSlayerEntrance()
     {
@@ -198,18 +196,10 @@ internal sealed class SawatariEventSession
 
     public void ObserveDeath(Creature creature, float deathAnimLength)
     {
-        if (Phase == SawatariEventPhase.FirstCombat
-            && SawatariEventRules.ShouldBeginIntermission(
-                creature.Side == CombatSide.Enemy,
-                _state.Enemies.Any(enemy =>
-                    !ReferenceEquals(enemy, creature)
-                    && enemy.IsAlive))
-            && _phases.TryMove(
-                SawatariEventPhase.FirstCombat,
-                SawatariEventPhase.Intermission))
+        if (Phase == SawatariEventPhase.FirstCombat && creature.Side == CombatSide.Enemy)
         {
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEndEvent);
-            BeginDecisionPhase(() => BeginIntermission(deathAnimLength));
+            // Death listeners may still spawn replacements or retire summons after this callback.
+            _deathAnimLength = Math.Max(_deathAnimLength, deathAnimLength);
         }
         else if (Phase == SawatariEventPhase.Duel
             && ReferenceEquals(creature, _duelCreature)
@@ -221,6 +211,24 @@ internal sealed class SawatariEventSession
         }
     }
 
+    internal void CheckFirstCombatComplete()
+    {
+        if (Phase != SawatariEventPhase.FirstCombat
+            || !ReferenceEquals(CombatManager.Instance.DebugOnlyGetState(), _state)
+            || !_state.IsLiveCombat() || !_state.Players.Any(player => player.Creature.IsAlive)
+            || _state.Enemies.Any(enemy => enemy.IsAlive)
+            || _state.IterateHookListeners().Any(model => model.ShouldStopCombatFromEnding())) return;
+        if (!_phases.TryMove(SawatariEventPhase.FirstCombat, SawatariEventPhase.Intermission)) return;
+
+        // Illusion keeps a dead model for revival; this event continues the same combat.
+        // Finish its native death presentation before retiring it from the next wave.
+        foreach (Creature enemy in _state.Enemies)
+            if (_room.GetCreatureNode(enemy) is { } node)
+                _deathAnimLength = Math.Max(_deathAnimLength, node.StartDeathAnim(shouldRemove: true));
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEndEvent);
+        BeginDecisionPhase(() => BeginIntermission(_deathAnimLength));
+    }
+
     public async Task TakeRegularLoot()
     {
         if (Phase != SawatariEventPhase.Intermission)
@@ -228,7 +236,6 @@ internal sealed class SawatariEventSession
             return;
         }
 
-        UseDuelRewards = false;
         RemoveCreature(_companion);
         _phases.FinalizeEvent();
         SawatariEventUi.Hide();
@@ -315,7 +322,6 @@ internal sealed class SawatariEventSession
             return;
         }
 
-        UseDuelRewards = true;
         _phases.FinalizeEvent();
         SawatariEventUi.Hide();
         ExitDecisionState();
@@ -331,9 +337,12 @@ internal sealed class SawatariEventSession
         await RunManager.Instance.ActionExecutor.FinishedExecutingActions();
         await NextFrame();
 
-        SawatariMusicSession.PlayDecision();
         try
         {
+            if (_state.Enemies.Any(enemy => enemy.IsAlive))
+                throw new InvalidOperationException("A living enemy appeared after Sawatari's victory check.");
+            foreach (Creature enemy in _state.Enemies.ToArray()) RemoveCreature(enemy);
+            SawatariMusicSession.PlayDecision();
             NCreature companionNode = _room.GetCreatureNode(_companion)
                 ?? throw new InvalidOperationException("Sawatari companion node is unavailable.");
             Vector2 destination = ResolveIntermissionPosition(companionNode);
@@ -368,6 +377,11 @@ internal sealed class SawatariEventSession
                 RemoveCreature(_duelCreature);
             }
 
+            var combatRoom = (CombatRoom)_state.RunState.CurrentRoom;
+            foreach (Player player in _state.Players)
+                combatRoom.AddExtraReward(player,
+                    new RelicReward(ModelDb.Relic<BioBambooRelic>().ToMutable(), player));
+
             foreach (SawatariEvent eventModel in _events)
             {
                 eventModel.ShowDuelResultPage();
@@ -384,7 +398,6 @@ internal sealed class SawatariEventSession
     {
         Entry.Logger.Error($"Sawatari event phase failed; using regular combat rewards: {exception}");
         SawatariEventPhase failedPhase = Phase;
-        UseDuelRewards = false;
         RemoveCreatureIfPresent(_duelCreature);
         RemoveCreatureIfPresent(_companion);
         foreach (SawatariEvent eventModel in _events)

@@ -12,7 +12,7 @@ internal sealed partial class SawatariWeaponVisuals
         // Keep the same sprite, texture, handle pivot and world transform on release.
         weapon.Reparent(NCombatRoom.Instance!.CombatVfxContainer, keepGlobalTransform: true);
         weapon.Material = null;
-        weapon.ZIndex = 110;
+        weapon.ZIndex = 0;
         Transform2D start = weapon.GlobalTransform;
         float sign = start.Scale.Y < 0 ? -1f : 1f;
         float angle = (destination.GlobalPosition - start.Origin).Angle() - Mathf.DegToRad(sourceAngle) * sign;

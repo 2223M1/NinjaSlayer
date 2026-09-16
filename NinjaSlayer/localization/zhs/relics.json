@@ -43,5 +43,11 @@
   "NINJA_SLAYER_RELIC_YAMOTO_KOKI_CUTE_RELIC.flavor": "“咱会跟上。”",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.title": "鸟居之约",
   "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.description": "接下来的[blue]{Combats}[/blue]场战斗中，由佳乃会与你并肩作战。",
-  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "“忍者杀手=SAN，我跟你走一段。”"
+  "NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC.flavor": "“忍者杀手=SAN，我跟你走一段。”",
+  "NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC.title": "生化竹子",
+  "NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC.description": "每当你打出{Cards}张攻击牌时，获得{Plating}点[gold]覆甲[/gold]。",
+  "NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC.flavor": "泽渡留下的一截竹子。",
+  "NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC.title": "别嫔碎片",
+  "NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC.description": "你在每场战斗中第一次损失生命值时，获得{Karate}点[gold]空手道[/gold]。",
+  "NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC.flavor": "妖刀别嫔的一块碎片。"
 }

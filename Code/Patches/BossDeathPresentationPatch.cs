@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
@@ -26,6 +27,14 @@ internal sealed class BossDeathPresentationPatch : IPatchMethod
     {
         MonsterModel? monster = __instance.Entity.Monster;
         NCombatRoom? room = NCombatRoom.Instance;
+        if (shouldRemove && monster is WaterfallGiant
+            && __instance.GetNodeOrNull<BossDeathPresentationController>("NinjaSlayerBossDeathPresentation") is { } explosion)
+        {
+            // The native self-destruct attack already started the burst. Finish its
+            // normal death/removal after damage without starting a second presentation.
+            __result = explosion.StartDeathAnimation(shouldRemove);
+            return false;
+        }
         if (!shouldRemove
             || monster == null
             || room == null
