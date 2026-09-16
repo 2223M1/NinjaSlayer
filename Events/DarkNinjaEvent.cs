@@ -1,12 +1,12 @@
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Events;
-using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Nodes.Audio;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -15,6 +15,7 @@ using MegaCrit.Sts2.Core.TestSupport;
 using NinjaSlayer.Content;
 using NinjaSlayer.Encounters;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -76,24 +77,12 @@ public sealed class DarkNinjaEvent : ModEventTemplate
             .Distinct();
     }
 
-    public override async Task Resume(AbstractRoom exitedRoom)
+    public override Task Resume(AbstractRoom exitedRoom)
     {
         ShowResultLayout = true;
         SetEventFinished(PageDescription("VICTORY"));
 
-        var owner = Owner ?? throw new InvalidOperationException(
-            "Dark Ninja event resumed without an owner.");
-        List<Reward> rewards =
-        [
-            new RelicReward(
-                RelicFactory.PullNextRelicFromFront(owner).ToMutable(),
-                owner),
-            new RelicReward(
-                RelicFactory.PullNextRelicFromFront(owner).ToMutable(),
-                owner)
-        ];
-
-        await RewardsCmd.OfferCustom(owner, rewards);
+        return Task.CompletedTask;
     }
 
     private async Task Escape()
@@ -106,7 +95,8 @@ public sealed class DarkNinjaEvent : ModEventTemplate
     {
         SetEventState(
             PageDescription("FIGHT"),
-            [new EventOption(this, Fight, ModOptionKey("FIGHT", "FIGHT"))]);
+            [new EventOption(this, Fight, ModOptionKey("FIGHT", "FIGHT"),
+                HoverTipFactory.FromRelic<BeppinFragmentRelic>())]);
         return Task.CompletedTask;
     }
 
@@ -124,7 +114,7 @@ public sealed class DarkNinjaEvent : ModEventTemplate
 #endif
         EnterCombatWithoutExitingEvent(
             encounter,
-            [],
+            [new RelicReward(ModelDb.Relic<BeppinFragmentRelic>().ToMutable(), Owner!)],
             shouldResumeAfterCombat: true);
         return Task.CompletedTask;
     }

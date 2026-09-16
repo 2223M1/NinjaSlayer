@@ -37,6 +37,12 @@ internal sealed partial class SmokeController
         await CreatureCmd.SetCurrentHp(player.Creature, 1000);
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
 
+        if (_configuration.PreviewFormFinisher == "SawatariCleanup")
+        {
+            await VerifySawatariCleanup(directory, ct);
+            return;
+        }
+
         if (_configuration.PreviewFormFinisher == "SawatariEvent")
         {
             foreach (Creature enemy in combat.HittableEnemies.ToArray())
@@ -103,9 +109,9 @@ internal sealed partial class SmokeController
             var refresh = AccessTools.Method(visual.GetType(), "Refresh");
             var body = actor.Visuals.GetNode<Sprite2D>("%Visuals");
             var weapons = body.GetNode<Node2D>("WeaponRig");
-            var hands = weapons.GetChildren().OfType<Node2D>().Take(2).ToArray();
+            Node2D[] hands = [weapons.GetNode<Node2D>("OuterHand"), weapons.GetNode<Node2D>("InnerHand")];
             var fist = weapons.GetNode<Sprite2D>("InnerFist");
-            Require(hands[0].ZIndex == 10 && hands[1].ZIndex == 20 && fist.ZIndex == 30,
+            Require(DrawsBefore(hands[0], hands[1]) && DrawsBefore(hands[1], fist),
                 "Accepted weapon/fist layer order was not preserved.");
             Vector2 bodyPosition = body.Position;
             Vector2 foot = body.ToGlobal(new Vector2(-20.5f, 259.5f));
@@ -121,7 +127,7 @@ internal sealed partial class SmokeController
                     {
                         await WaitFrames(1);
                         Require(body.Position.IsEqualApprox(bodyPosition)
-                            && hands[0].ZIndex == 10 && hands[1].ZIndex == 20 && fist.ZIndex == 30,
+                            && DrawsBefore(hands[0], hands[1]) && DrawsBefore(hands[1], fist),
                             "Weapon rotation changed the body position or fixed layer order.");
                     }
                     Require(hands[0].Visible == ((mask & 1) != 0)
@@ -151,7 +157,7 @@ internal sealed partial class SmokeController
             bool bodyMoved = false;
             bool capturedRelease = false;
             Task throwing = (Task)AccessTools.Method(visual.GetType(), "PlayThrow")
-                .Invoke(null, [model, player.Creature, 0])!;
+                .Invoke(null, [model, player.Creature, 0, 0])!;
             while (!throwing.IsCompleted)
             {
                 await WaitFrames(1);
@@ -178,6 +184,20 @@ internal sealed partial class SmokeController
             return;
         }
 
+        AccessTools.Property(typeof(RunManager), "AscensionManager").SetValue(RunManager.Instance,
+            new MegaCrit.Sts2.Core.Entities.Ascension.AscensionManager(10));
+        await (Task)AccessTools.Method(typeof(NinjaSlayer.Orbs.ShurikenOrb), "AddStock")
+            .Invoke(null, [choice, player, 12])!;
+        await WaitFrames(10);
+        var orb = (Node2D)room.GetCreatureNode(player.Creature)!.FindChild("ShurikenOrbVisual", true, false)!;
+        var orbBody = orb.GetNode<CanvasItem>("DeformedVisuals/Art/Body");
+        var orbLabel = orb.GetParent().GetNode<CanvasItem>("%LabelContainer");
+        void CheckWeaponLayer(CanvasItem knife)
+        {
+            Require(DrawsBefore(knife, orbBody) && DrawsBefore(knife, orbLabel)
+                && DrawsBefore(knife, room.GetNode<CanvasItem>("CombatUi")),
+                "Weapon draws above shuriken body, stock count or combat UI.");
+        }
         var arrow = await Replace(false);
         var archer = room.GetCreatureNode(arrow.Creature)!;
         var bowVisual = archer.Visuals.GetNode("SawatariWeapons");
@@ -218,15 +238,23 @@ internal sealed partial class SmokeController
             }
         }
         await arrowMove;
-        Require(arrow.Creature.GetPowerAmount<StrengthPower>() == 2,
-            "Act-one arrow did not finish with two Strength.");
+        Require(arrow.Creature.GetPowerAmount<PlatingPower>() == 4 && !arrow.Creature.HasPower<StrengthPower>(),
+            "Act-one arrow must grant four Plating instead of Strength.");
         Require(capturedArrow && bowBody.Texture.ResourcePath == SawatariMonster.TexturePath,
             "The real opening move did not release the arrow and restore bamboo.");
         Require(bowBody.ToGlobal(new Vector2(-20.5f, 259.5f))
             .DistanceTo(archer.Visuals.GetNode<Node2D>("GroundContact").GlobalPosition) < .1f,
             "Switching from the hatted bow to bamboo moved the shared foot anchor.");
         await Capture("act1-after-arrow");
-        await Move(arrow);
+        string[] followups = [SawatariMonster.SecondAttackMoveId, SawatariMonster.EnhanceMoveId,
+            SawatariMonster.AttackMoveId, SawatariMonster.SecondAttackMoveId, SawatariMonster.EnhanceMoveId];
+        foreach (string next in followups)
+        {
+            await Move(arrow);
+            Require(arrow.NextMove.Id == next, "Live act-one cycle differs.");
+        }
+        Require(arrow.Creature.GetPowerAmount<StrengthPower>() == 4, "Two cycles must grant four Strength.");
+        await Capture("act1-two-cycles");
         if (_configuration.PreviewFormFinisher == "SawatariBow")
         {
             _checkpoints.Write("sawatari.accepted-bow-completed");
@@ -243,26 +271,59 @@ internal sealed partial class SmokeController
         await Capture("act3-throw-ready");
         foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
             await CardPileCmd.Add(card, PileType.Discard);
-        var originalKnives = enemyNode.Visuals.GetNode<Sprite2D>("%Visuals").GetNode("WeaponRig")
-            .GetChildren().OfType<Node2D>().Take(2).Select(hand => hand.GetChild<Sprite2D>(0)).ToArray();
-        await Move(dual);
+        var weaponRig = enemyNode.Visuals.GetNode<Sprite2D>("%Visuals").GetNode("WeaponRig");
+        Sprite2D[] originalKnives = [weaponRig.GetNode<Node2D>("OuterHand").GetChild<Sprite2D>(0),
+            weaponRig.GetNode<Node2D>("InnerHand").GetChild<Sprite2D>(0)];
+        Task firstThrow = Move(dual);
+        Sprite2D? firstKnife = null;
+        Vector2 releasePosition = default;
+        float captureDistance = 0;
+        bool capturedKnife = false;
+        while (!firstThrow.IsCompleted)
+        {
+            await WaitFrames(1);
+            if (firstKnife == null && originalKnives.FirstOrDefault(knife => knife.GetParent() == room.CombatVfxContainer) is { } flying)
+            {
+                firstKnife = flying;
+                releasePosition = flying.GlobalPosition;
+                captureDistance = releasePosition.DistanceTo(player.Creature.GetCreatureNode()!.Visuals.VfxSpawnPosition.GlobalPosition) * .4f;
+            }
+            if (!capturedKnife && firstKnife != null && firstKnife.GetParent() == room.CombatVfxContainer
+                && firstKnife.GlobalPosition.DistanceTo(releasePosition) > captureDistance)
+            {
+                CheckWeaponLayer(firstKnife);
+                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "act3-knife-flight.png"));
+                capturedKnife = true;
+            }
+        }
+        await firstThrow;
+        Require(capturedKnife, "Knife flight was not captured.");
+        Sprite2D secondKnife = originalKnives.Single(knife => knife != firstKnife);
         Require(dual.MacheteCount == 1, "First visual throw did not remove one weapon.");
-        Require(originalKnives[0].GetParent().Name == "Primary", "First throw replaced the held knife instead of transferring it.");
+        var firstCard = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().Single();
+        string firstHand = firstCard.HeldHand == 0 ? "Primary" : "Secondary";
+        Require(firstKnife!.GetParent().Name == firstHand, "First throw missed the selected receiving hand.");
+        CheckWeaponLayer(firstKnife);
         await Capture("act3-one-each");
         await Move(dual);
         var cards = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().ToArray();
         Require(cards.Length == 2 && dual.MacheteCount == 0, "Second visual throw did not transfer the other weapon.");
-        Require(originalKnives[1].GetParent().Name == "Secondary", "Second throw replaced the other held knife.");
+        Require(secondKnife.GetParent() != firstKnife.GetParent() && firstKnife.GetParent().Name == firstHand,
+            "Second catch moved the already-held knife or failed to use the empty hand.");
         Require(player.Creature.GetCreatureNode()!.Visuals.FindChild("PlayerMachetes", true, false) is Node2D { Visible: true },
             "Player hand cards did not create held-weapon visuals.");
+        foreach (var knife in originalKnives) CheckWeaponLayer(knife);
         await Capture("act3-player-dual-bamboo-ready");
         await Move(dual);
         await CardCmd.AutoPlay(choice, cards[0], dual.Creature);
-        Require(originalKnives[0].GetParent().GetParent().Name == "WeaponRig", "Playing Machete did not return the same sprite.");
+        Require(originalKnives.Count(knife => knife.GetParent().GetParent().Name == "WeaponRig") == 1,
+            "Playing Machete did not return one original sprite.");
         await Capture("act3-return-one");
         Require(dual.NextMove.Id == SawatariMonster.ThrowMoveId, "One returned weapon did not select throwing.");
         await CardCmd.AutoPlay(choice, cards[1], dual.Creature);
-        Require(originalKnives[1].GetParent().GetParent().Name == "WeaponRig", "Second Machete did not return its sprite.");
+        Require(originalKnives.All(knife => knife.GetParent().GetParent().Name == "WeaponRig"),
+            "Second Machete did not return the remaining original sprite.");
+        foreach (var knife in originalKnives) CheckWeaponLayer(knife);
         await Capture("act3-return-two");
         Require(dual.NextMove.Id == SawatariMonster.DualMoveId && dual.MacheteCount == 2,
             "Two returned weapons did not select the dual attack.");
@@ -277,6 +338,14 @@ internal sealed partial class SmokeController
 
         await VerifySawatariThirdActEvent(ct);
         _checkpoints.Write("sawatari.weapons-and-act3-event-completed");
+    }
+
+    private static bool DrawsBefore(CanvasItem back, CanvasItem front)
+    {
+        static int EffectiveZ(CanvasItem item) => item.ZIndex
+            + (item.ZAsRelative && item.GetParent() is CanvasItem parent ? EffectiveZ(parent) : 0);
+        int backZ = EffectiveZ(back), frontZ = EffectiveZ(front);
+        return backZ < frontZ || backZ == frontZ && front.IsGreaterThan(back);
     }
 
     private async Task VerifySawatariThirdActEvent(CancellationToken ct)

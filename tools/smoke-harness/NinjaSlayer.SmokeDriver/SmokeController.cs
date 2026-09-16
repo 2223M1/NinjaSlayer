@@ -725,6 +725,7 @@ internal sealed partial class SmokeController
                         ["successfulKills"] = normalFinisher.SuccessfulKills.GetValueOrDefault(finisherTarget)
                     });
             }
+            await manager.CheckWinCondition();
             await WaitUntilAsync(
                 () => manager.IsPaused && GetSawatariOptions().Count == 2,
                 "Sawatari intermission did not pause combat and show both choices",

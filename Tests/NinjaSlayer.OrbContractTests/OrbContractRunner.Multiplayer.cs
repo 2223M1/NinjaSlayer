@@ -24,6 +24,9 @@ using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
+using NinjaSlayer.Relics;
+using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.ValueProps;
 
 namespace NinjaSlayer.OrbContractTests;
 
@@ -234,6 +237,8 @@ public partial class OrbContractRunner
             .OfType<SawatariMachete>().ToArray();
         Require(machetes.Length == 2 && sawatari.MacheteCount == 0,
             "Two networked throws must transfer exactly two knives across all players.");
+        var caughtHands = machetes.Select(card => new { card.Owner.NetId, card.HeldHand }).ToArray();
+        var returnedHands = new List<int>();
         for (int index = 0; index < machetes.Length; index++)
         {
             SawatariMachete card = machetes[index];
@@ -249,20 +254,60 @@ public partial class OrbContractRunner
             await WaitNetwork(() => completed > before, "native machete return action");
             Require(card.Pile?.Type == PileType.Exhaust && sawatari.MacheteCount == index + 1,
                 "A synchronized Machete play must exhaust and return one knife.");
+            returnedHands.Add(sawatari.HeldMachetes);
         }
         Require(sawatari.NextMove.Id == SawatariMonster.DualMoveId,
             "Returning both networked knives must immediately show the dual-attack intent.");
+        foreach (Player player in run.Players)
+        {
+            await RelicCmd.Obtain<BioBambooRelic>(player);
+            await RelicCmd.Obtain<BeppinFragmentRelic>(player);
+        }
+        foreach (Player player in run.Players)
+        {
+            var bamboo = player.Relics.OfType<BioBambooRelic>().Single();
+            for (int index = 0; index < 2; index++)
+            {
+                var card = combat.State.CreateCard<StrikeIronclad>(player);
+                await CardPileCmd.Add(card, PileType.Hand);
+                await PlayerCmd.SetEnergy(10, player);
+                int before = completed;
+                string fixture = $"bamboo-{player.NetId}-{index}";
+                System.IO.File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+                await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                    && System.IO.File.Exists(Path.Combine(directory, $"client.{fixture}")), "both relic fixtures");
+                if (player.NetId == _network.NetId)
+                    RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, combat.Enemy));
+                await WaitNetwork(() => completed > before, "native Bamboo attack");
+                Require(bamboo.DisplayAmount == (index == 0 ? 1 : 0), "Networked Bamboo counter differs.");
+            }
+            Require(player.Creature.GetPowerAmount<PlatingPower>() == 1, "Networked Bamboo did not grant Plating to its owner.");
+            Player other = run.Players.Single(candidate => candidate != player);
+            decimal otherKarate = other.Creature.GetPowerAmount<KaratePower>();
+            decimal karate = player.Creature.GetPowerAmount<KaratePower>();
+            await PowerCmd.Apply<NarakuLifePower>(Choice, player.Creature, 20, player.Creature, null);
+            await CreatureCmd.Damage(Choice, player.Creature, 1, ValueProp.Unpowered | ValueProp.Unblockable, player.Creature);
+            await CreatureCmd.Damage(Choice, player.Creature, 1, ValueProp.Unpowered | ValueProp.Unblockable, player.Creature);
+            Require(player.Creature.GetPowerAmount<KaratePower>() == karate + 7
+                && other.Creature.GetPowerAmount<KaratePower>() == otherKarate,
+                "Networked Fragment repeated or crossed player ownership.");
+        }
         var snapshot = new
         {
+            CaughtHands = caughtHands, ReturnedHands = returnedHands,
             Sawatari = new { weaponEnemy.CurrentHp, sawatari.HeldMachetes, sawatari.MustThrow,
                 sawatari.NextThrowHand, Intent = sawatari.NextMove.Id },
             EnemyHp = new[] { combat.Enemy.CurrentHp, otherEnemy.CurrentHp },
             Players = run.Players.Select(player => new
             {
                 player.NetId, player.PlayerCombatState!.Energy,
+                Relics = player.Relics.Select(relic => new { Id = relic.Id.ToString(), relic.DisplayAmount }),
+                Karate = player.Creature.GetPowerAmount<KaratePower>(),
+                Plating = player.Creature.GetPowerAmount<PlatingPower>(),
                 Orbs = player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Select(orb => new { orb.StackCount, orb.OwnsTransientSlot }),
                 Cards = player.PlayerCombatState.AllCards.Select(card => new { Id = card.Id.ToString(), Pile = card.Pile?.Type.ToString(),
-                    Snapshot = (card as StrongShurikenTokenRedesignV1)?.SnapshotDamage })
+                    Snapshot = (card as StrongShurikenTokenRedesignV1)?.SnapshotDamage,
+                    MacheteHand = (card as SawatariMachete)?.HeldHand })
             })
         };
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".json"), JsonSerializer.Serialize(snapshot));
@@ -273,6 +318,7 @@ public partial class OrbContractRunner
         GD.Print("PASS two-process native ENet/action-queue stock, multi-evoke, Naraku ownership and RNG agreement");
         GD.Print("PASS synchronized Starless conversion, per-shot token count and Focus damage snapshots");
         GD.Print("PASS synchronized Sawatari knife transfers, native status plays, exhaust and immediate intents");
+        GD.Print("PASS synchronized event relic obtain, native attack counters and Naraku loss ownership");
     }
 
     private static async Task WaitNetwork(Func<bool> predicate, string operation)

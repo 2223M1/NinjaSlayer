@@ -22,6 +22,7 @@ using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
+using NinjaSlayer.Relics;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -33,6 +34,8 @@ internal sealed partial class SmokeController
         SaveManager.Instance.MarkFtueAsComplete("obtain_relic_ftue");
         foreach (bool thorns in new[] { false, true })
         {
+            var existing = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!.Relics.OfType<BeppinFragmentRelic>().ToArray();
+            foreach (var relic in existing) await RelicCmd.Remove(relic);
             string scenario = thorns ? "thorns-all-four" : "normal-take-one-skip-three";
             section($"dark-event-{scenario}");
             var eventRoom = (EventRoom)await RunManager.Instance.EnterRoomDebug(
@@ -86,8 +89,12 @@ internal sealed partial class SmokeController
             var cardScreen = (NRewardsScreen)NOverlayStack.Instance!.Peek()!;
             var returns = UiHelper.FindAll<NRewardButton>(cardScreen)
                 .Where(button => button.Reward is SpecialCardReward).ToArray();
-            Require(returns.Length == 4 && originals.All(card => !player.Deck.Cards.Contains(card)),
-                "Event reward UI must offer all four stolen cards before any are reclaimed.");
+              Require(returns.Length == 4 && originals.All(card => !player.Deck.Cards.Contains(card)),
+                  "Event reward UI must offer all four stolen cards before any are reclaimed.");
+              var relicReward = UiHelper.FindAll<NRewardButton>(cardScreen)
+                  .Single(button => button.Reward is RelicReward { Relic: BeppinFragmentRelic });
+              Require(!player.Relics.OfType<BeppinFragmentRelic>().Any(),
+                  "Dark Ninja automatically granted the Fragment before collection.");
             Require(player.RunState.CurrentRoom is CombatRoom && !eventRoom.LocalMutableEvent.IsFinished,
                 "Event victory ran before the stolen-card rewards.");
             await WaitFrames(45);
@@ -99,18 +106,15 @@ internal sealed partial class SmokeController
             }
             Require(originals.Count(card => player.Deck.Cards.Contains(card)) == (thorns ? 4 : 1),
                 "Native reward buttons did not restore the selected permanent cards.");
+            if (!thorns) await UiHelper.Click(relicReward);
             await UiHelper.Click(UiHelper.FindFirst<NProceedButton>(cardScreen)!);
-            await WaitUntilAsync(() => NOverlayStack.Instance?.Peek() is NRewardsScreen next
-                && next != cardScreen && UiHelper.FindAll<NRewardButton>(next).Count(button => button.Reward is RelicReward) == 2,
-                "Event victory did not follow stolen cards with the two existing relic rewards", ct);
-            var relicScreen = (NRewardsScreen)NOverlayStack.Instance!.Peek()!;
-            Require(UiHelper.FindAll<NRewardButton>(relicScreen).All(button => button.Reward is not SpecialCardReward),
-                "Stolen-card rewards were offered a second time by event victory.");
-            await WaitFrames(30);
+            await WaitUntilAsync(() => eventRoom.LocalMutableEvent.IsFinished
+                && NOverlayStack.Instance?.Peek() is not NRewardsScreen,
+                "Event victory did not resume after manual rewards", ct);
+            Require(player.Relics.OfType<BeppinFragmentRelic>().Count() == (thorns ? 0 : 1),
+                "Fragment reward did not respect collection or skipping.");
+            await WaitFrames(90);
             _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"event-{scenario}-relics.png"));
-            await UiHelper.Click(UiHelper.FindFirst<NProceedButton>(relicScreen)!);
-            await WaitUntilAsync(() => NOverlayStack.Instance?.Peek() is not NRewardsScreen,
-                "Event relic rewards did not close", ct);
             Require(originals.Count(card => player.Deck.Cards.Contains(card)) == (thorns ? 4 : 1),
                 "Skipping the remaining rewards changed which stolen cards returned.");
             _checkpoints.Write($"dark-strike.event-{scenario}-passed");

@@ -73,6 +73,7 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerAbandonGameOverDeathFeedbackPatch>();
             requiredPatcher.RegisterPatch<NarakuLifeHealthBarLayoutPatch>();
             requiredPatcher.RegisterPatch<NarakuLifeDamagePatch>();
+            requiredPatcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             requiredPatcher.RegisterPatch<CardTransformShineCleanupPatch>();
             requiredPatcher.RegisterPatch<ArchitectDeathResourcePatch>();
             requiredPatcher.RegisterPatch<ArchitectDialogueSuppressionPatch>();
@@ -101,6 +102,7 @@ public class Entry
             requiredPatcher.RegisterPatch<SawatariPullEventPatch>();
             requiredPatcher.RegisterPatch<SawatariRoomVisitPatch>();
             requiredPatcher.RegisterPatch<SawatariCombatEndGatePatch>();
+            requiredPatcher.RegisterPatch<SawatariVictoryCheckPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();

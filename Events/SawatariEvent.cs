@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
@@ -19,6 +20,7 @@ using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
+using NinjaSlayer.Relics;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -120,7 +122,8 @@ public sealed class SawatariEvent : ModEventTemplate
                 new EventOption(
                     this,
                     StartDuel,
-                    ModOptionKey("INTERMISSION", "DUEL"))
+                    ModOptionKey("INTERMISSION", "DUEL"),
+                    HoverTipFactory.FromRelic<BioBambooRelic>())
             ]);
     }
 
@@ -132,7 +135,8 @@ public sealed class SawatariEvent : ModEventTemplate
                 new EventOption(
                     this,
                     TakeDuelRewards,
-                    ModOptionKey("DUEL_RESULT", "TAKE_LOOT"))
+                    ModOptionKey("DUEL_RESULT", "TAKE_LOOT"),
+                    HoverTipFactory.FromRelic<BioBambooRelic>())
             ]);
     }
 

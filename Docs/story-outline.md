@@ -364,7 +364,7 @@ The Architect has four visit-indexed summit exchanges. Each contains one Archite
 
 Ordinary-event copy stays identical across loops and never reads `VisitIndex`. Give each page one immediate disturbance and enough reaction to make the choice clear. Put combat counts, HP loss, Gold, card removal, and other outcomes in option text. Narration does not explain memory systems or reward provenance.
 
-The Dark Ninja event stops before Aisatsu. It shows the Kyoto Castle connection and a temporary body becoming stable. The battle entrance owns the greeting. Event copy contains no move names, intent names, or attack choreography. Victory shows zeroes and ones, with no Beppin reward or permanent death.
+The Dark Ninja event stops before Aisatsu. It shows the Kyoto Castle connection and a temporary body becoming stable. The battle entrance owns the greeting. Event copy contains no move names, intent names, or attack choreography. Victory shows zeroes and ones, without permanent death. The user-approved gameplay reward is a Beppin Fragment relic, claimed manually; this is a mod design choice, not a claim that the original scene awards the sword.
 
 ### Character voices
 

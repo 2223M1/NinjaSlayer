@@ -12,11 +12,10 @@ internal enum SawatariEventPhase
 
 internal static class SawatariEventRules
 {
-    public const int BaseHp = 60;
-    public const int ToughHp = 66;
+    public const int BaseHp = 76;
+    public const int ToughHp = 80;
     public const int AttackDamage = 2;
     public const int AttackHits = 4;
-    public const int DuelStrength = 2;
     public const float SingleEnemyY = 200f;
 
     public static float ResolveSingleEnemyX(float boundsWidth, float encounterScaling) =>
@@ -35,11 +34,6 @@ internal static class SawatariEventRules
 
         return Math.Clamp(eventOdds / validEventCount / monsterOdds, 0f, 1f);
     }
-
-    public static bool ShouldBeginIntermission(
-        bool defeatedCreatureIsEnemy,
-        bool hasOtherLivingEnemy) =>
-        defeatedCreatureIsEnemy && !hasOtherLivingEnemy;
 }
 
 internal sealed class SawatariEventPhaseGate

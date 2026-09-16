@@ -26,7 +26,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
     private Sprite2D _bamboo = null!;
     private Sprite2D _fist = null!;
     private Sprite2D? _arrow;
-    private readonly Node2D[] _hands = [new(), new()];
+    private readonly Node2D[] _hands = [new() { Name = "OuterHand" }, new() { Name = "InnerHand" }];
     private readonly Sprite2D?[] _knives = new Sprite2D?[2];
     // Accepted grip-revision-02, in centered 461x537 body pixels.
     private static readonly Vector2[] Grips = [new(-198.9127f, -13.76517f), new(-64.79138f, -10.36161f)];
@@ -66,14 +66,12 @@ internal sealed partial class SawatariWeaponVisuals : Node
         {
             visual._hands[hand].Position = Grips[hand];
             visual._hands[hand].Scale = Vector2.One * KnifeScales[hand];
-            visual._hands[hand].ZIndex = (hand + 1) * 10;
             visual._weapons.AddChild(visual._hands[hand]);
         }
         visual._fist = new Sprite2D
         {
             Name = "InnerFist", Position = new Vector2(-31f, -8.5f),
-            Texture = PreloadManager.Cache.GetTexture2D(RootPath + "inner-fist.png"),
-            ZIndex = 30
+            Texture = PreloadManager.Cache.GetTexture2D(RootPath + "inner-fist.png")
         };
         visual._weapons.AddChild(visual._fist);
         visual._weapons.AddChild(visual._ranged);
@@ -81,17 +79,17 @@ internal sealed partial class SawatariWeaponVisuals : Node
         visual._ranged.AddChild(new Sprite2D
         {
             Name = "Bow", Texture = PreloadManager.Cache.GetTexture2D(RootPath + "bow.png"),
-            Offset = new Vector2(78f, -28f), ZIndex = 10
+            Offset = new Vector2(78f, -28f)
         });
         visual._ranged.AddChild(new Sprite2D
         {
             Name = "String", Texture = PreloadManager.Cache.GetTexture2D(RootPath + "bow-string.png"),
-            Offset = new Vector2(120.5f, -29.5f), ZIndex = 11
+            Offset = new Vector2(120.5f, -29.5f)
         });
         visual._bamboo = new Sprite2D
         {
             Name = "Bamboo", Texture = PreloadManager.Cache.GetTexture2D(RootPath + "bamboo.png"),
-            Position = new Vector2(-73.5f, -5.5f), Offset = new Vector2(-165f, 13f), ZIndex = 10
+            Position = new Vector2(-73.5f, -5.5f), Offset = new Vector2(-165f, 13f)
         };
         visual._weapons.AddChild(visual._bamboo);
         visual.Refresh();
@@ -108,9 +106,8 @@ internal sealed partial class SawatariWeaponVisuals : Node
         return knife;
     }
 
-    internal Node2D ReturnHand()
+    internal Node2D ReturnHand(int hand)
     {
-        int hand = (_monster.HeldMachetes & 1) == 0 ? 0 : 1;
         _incomingMachetes |= 1 << hand;
         Refresh(dual: false);
         _hands[hand].Show();
@@ -139,7 +136,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
             return;
         }
         bool raised = dual ?? _monster.PlannedMacheteMove == SawatariMonster.DualMoveId;
-        _fist.ZIndex = 30;
+        _weapons.MoveChild(_fist, _weapons.GetChildCount() - 1);
         SyncBody();
         for (int hand = 0; hand < 2; hand++)
         {
@@ -169,7 +166,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
     internal void ShowBamboo()
     {
         _poseTween?.Kill();
-        _fist.ZIndex = 1;
+        _weapons.MoveChild(_fist, 0);
         SyncBody();
         SwitchWeapon(WeaponPose.Bamboo);
         _dual = null;
@@ -178,7 +175,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
     internal void ShowBow(bool nocked)
     {
         _poseTween?.Kill();
-        _fist.ZIndex = 1;
+        _weapons.MoveChild(_fist, 0);
         SyncBody();
         SwitchWeapon(WeaponPose.Bow);
         if (_arrow == null && nocked)
@@ -187,7 +184,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
             {
                 Name = "Arrow", Texture = PreloadManager.Cache.GetTexture2D(RootPath + "arrow.png"),
                 Position = new Vector2(30.959879f, 4.226345f),
-                Offset = new Vector2(.5401217f, .2736547f), ZIndex = 20
+                Offset = new Vector2(.5401217f, .2736547f)
             };
             _ranged.AddChild(_arrow);
             ApplyBowDraw(0);
@@ -206,13 +203,14 @@ internal sealed partial class SawatariWeaponVisuals : Node
         _weapons.Visible = _monster.Creature.IsAlive;
     }
 
-    internal static async Task<Sprite2D?> PlayThrow(SawatariMonster monster, Creature target, int hand)
+    internal static async Task<Sprite2D?> PlayThrow(SawatariMonster monster, Creature target, int hand, int receivingHand)
     {
         if (Get(monster.Creature) is not { } visual || target.GetCreatureNode() is not { } victim) return null;
         visual.Refresh(dual: false);
         visual._hands[hand].Show();
         Sprite2D knife = visual._knives[hand]!;
-        Node2D? catchHand = target.Player is { } player ? PlayerMacheteVisuals.CatchHand(player) : null;
+        Node2D? catchHand = target.Player is { } player && receivingHand >= 0
+            ? PlayerMacheteVisuals.CatchHand(player, receivingHand) : null;
         var actor = monster.Creature.GetCreatureNode()!;
         Node2D anchor = NinjaSlayerVisualRig.GetAirborneAnchor(actor.Visuals)!;
         Node2D center = actor.Visuals.VfxSpawnPosition;

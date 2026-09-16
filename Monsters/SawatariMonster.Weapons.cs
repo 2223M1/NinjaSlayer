@@ -43,17 +43,19 @@ public sealed partial class SawatariMonster
     public int NextThrowHand { get => _nextThrowHand; private set { AssertMutable(); _nextThrowHand = value; } }
 
     public int MacheteCount => (HeldMachetes & 1) + ((HeldMachetes >> 1) & 1);
-    public static int MacheteDamage => AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 14, 12);
+    private static int DualDamage => AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 10, 8);
+    private static int ThrowDamage => AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 14, 12);
     private static int ArrowDamage => AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 16, 14);
     public string PlannedMacheteMove => MacheteCount == 0 ? AttackMoveId
         : MustThrow || MacheteCount == 1 ? ThrowMoveId : DualMoveId;
 
     private MonsterMoveStateMachine GenerateMacheteMoves()
     {
-        MoveState dual = new(DualMoveId, DualMove, new MultiAttackIntent(MacheteDamage, 2));
+        MoveState dual = new(DualMoveId, DualMove, new MultiAttackIntent(DualDamage, 2));
         MoveState throwing = new(ThrowMoveId, ThrowMove,
-            new SingleAttackIntent(MacheteDamage), new BuffIntent(), new StatusIntent(1));
-        MoveState bamboo = new(AttackMoveId, AttackMove, new MultiAttackIntent(2, 4));
+            new SingleAttackIntent(ThrowDamage), new BuffIntent(), new StatusIntent(1));
+        MoveState bamboo = new(AttackMoveId, AttackMove,
+            new MultiAttackIntent(BambooDamage, SawatariEventRules.AttackHits), new BuffIntent());
         ConditionalBranchState select = new("SELECT_WEAPON");
         select.AddState(dual, () => PlannedMacheteMove == DualMoveId);
         select.AddState(throwing, () => PlannedMacheteMove == ThrowMoveId);
@@ -62,11 +64,16 @@ public sealed partial class SawatariMonster
         return new MonsterMoveStateMachine([dual, throwing, bamboo, select], dual);
     }
 
-    public void ReturnMachete()
+    internal int ChooseReturnHand() => HeldMachetes switch
+    {
+        0 => RunRng.Niche.NextInt(2), 1 => 1, 2 => 0, _ => -1
+    };
+
+    public void ReturnMachete(int? hand = null)
     {
         AssertMutable();
         if (!ActThree || Creature.IsDead || MacheteCount == 2) return;
-        HeldMachetes |= (HeldMachetes & 1) == 0 ? 1 : 2;
+        HeldMachetes |= 1 << (hand ?? ChooseReturnHand());
         SetMoveImmediate((MoveState)MoveStateMachine!.States[PlannedMacheteMove], forceTransition: true);
         SawatariWeaponVisuals.Get(Creature)?.Refresh();
     }
@@ -84,13 +91,13 @@ public sealed partial class SawatariMonster
             victim => VfxCmd.PlayOnCreatureCenter(victim, VfxCmd.slashPath),
             _ => SawatariWeaponVisuals.PlayArrow(Creature, target));
         if (Creature.IsAlive)
-            await PowerCmd.Apply<StrengthPower>(new BlockingPlayerChoiceContext(), Creature, 2, Creature, null);
+            await PowerCmd.Apply<PlatingPower>(new BlockingPlayerChoiceContext(), Creature, 4, Creature, null);
     }
 
     internal Task PlayDualAttack(Creature target)
     {
         SawatariWeaponVisuals.Get(Creature)?.Refresh(dual: true);
-        return AttackWithWeapons(target, MacheteDamage, 2,
+        return AttackWithWeapons(target, DualDamage, 2,
             victim => NinjaSlayerCombatVfx.PlaySawatariFlyingSlash(Creature, victim), null);
     }
 
@@ -105,24 +112,27 @@ public sealed partial class SawatariMonster
     private async Task ThrowMove(IReadOnlyList<Creature> targets)
     {
         if (ChooseTarget(targets) is not { Player: { } player } target) return;
-        int hand = (HeldMachetes & (1 << NextThrowHand)) != 0 ? NextThrowHand : 1 - NextThrowHand;
+        var combatState = CombatState;
+        NextThrowHand = MacheteCount == 2 ? RunRng.Niche.NextInt(2) : HeldMachetes == 1 ? 0 : 1;
+        int hand = NextThrowHand;
+        int catchHand = SawatariMachete.ChooseFreeHand(player);
         Sprite2D? knife = null;
         try
         {
-            await AttackWithWeapons(target, MacheteDamage, 1, NinjaSlayerCombatVfx.PlayMacheteHitFx, async hit =>
+            await AttackWithWeapons(target, ThrowDamage, 1, NinjaSlayerCombatVfx.PlayMacheteHitFx, async hit =>
             {
                 if (hit != 0) return;
                 HeldMachetes &= ~(1 << hand);
-                NextThrowHand = 1 - hand;
                 MustThrow = false;
-                knife = await SawatariWeaponVisuals.PlayThrow(this, target, hand);
+                knife = await SawatariWeaponVisuals.PlayThrow(this, target, hand, catchHand);
             });
             // The native damage command owns defenses and death; throwing is not conditional on HP loss.
             if (Creature.IsAlive)
-                await PowerCmd.Apply<StrengthPower>(new BlockingPlayerChoiceContext(), Creature, 3, Creature, null);
+                await PowerCmd.Apply<VigorPower>(new BlockingPlayerChoiceContext(), Creature, 6, Creature, null);
             if (player.Creature.IsAlive)
             {
-                var card = CombatState.CreateCard<SawatariMachete>(player);
+                var card = combatState.CreateCard<SawatariMachete>(player);
+                card.HeldHand = catchHand;
                 if (GodotObject.IsInstanceValid(knife)) PlayerMacheteVisuals.Bind(card, knife!);
                 await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, null);
                 knife = null;
@@ -140,14 +150,15 @@ public sealed partial class SawatariMonster
     private async Task AttackWithWeapons(Creature target, int damage, int hits,
         Action<Creature> hitFx, Func<int, Task>? beforeHit)
     {
+        var combatState = CombatState;
         AttackCommand attack = DamageCmd.Attack(damage).WithHitCount(hits).FromMonster(this);
         var choice = new BlockingPlayerChoiceContext();
-        await Hook.BeforeAttack(CombatState, attack);
-        decimal hitCount = Hook.ModifyAttackHitCount(CombatState, attack, hits);
+        await Hook.BeforeAttack(combatState, attack);
+        decimal hitCount = Hook.ModifyAttackHitCount(combatState, attack, hits);
         var results = new List<DamageResult>();
         async Task<bool> Impact()
         {
-            if (!Creature.IsAlive || !target.IsAlive || !CombatState.ContainsCreature(target)
+            if (!Creature.IsAlive || !target.IsAlive || !combatState.ContainsCreature(target)
                 || CombatManager.Instance.IsOverOrEnding || !target.IsHittable) return false;
             // The dual thrust's blade sound is also audible on a miss.
             if (beforeHit == null) NDebugAudioManager.Instance?.Play(TmpSfx.heavyAttack);
@@ -180,8 +191,8 @@ public sealed partial class SawatariMonster
         finally
         {
             attack.AddResultsInternal(results);
-            CombatManager.Instance.History.CreatureAttacked(CombatState, Creature, results);
-            await Hook.AfterAttack(CombatState, choice, attack);
+            CombatManager.Instance.History.CreatureAttacked(combatState, Creature, results);
+            await Hook.AfterAttack(combatState, choice, attack);
         }
     }
 }

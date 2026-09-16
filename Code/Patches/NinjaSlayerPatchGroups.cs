@@ -8,6 +8,7 @@ internal sealed class BossBurstPresentationPatchGroup : IModPatches
     public static void AddTo(ModPatcher patcher)
     {
         patcher.RegisterPatch<BossDeathPresentationPatch>();
+        patcher.RegisterPatch<WaterfallGiantExplosionPatch>();
         patcher.RegisterPatch<BossBurstCombatEndMusicPatch>();
         patcher.RegisterPatch<BossBurstSingleDeathFadePatch>();
         patcher.RegisterPatch<BossBurstGroupedDeathFadePatch>();

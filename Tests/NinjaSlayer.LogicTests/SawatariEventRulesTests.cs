@@ -7,9 +7,10 @@ public sealed class SawatariEventRulesTests
     [Fact]
     public void CombatValuesMatchTheCoopAndDuelSequence()
     {
+        Assert.Equal(76, SawatariEventRules.BaseHp);
+        Assert.Equal(80, SawatariEventRules.ToughHp);
         Assert.Equal(2, SawatariEventRules.AttackDamage);
         Assert.Equal(4, SawatariEventRules.AttackHits);
-        Assert.Equal(2, SawatariEventRules.DuelStrength);
     }
 
     [Theory]
@@ -41,20 +42,6 @@ public sealed class SawatariEventRulesTests
                 validEventCount,
                 monsterOdds),
             precision: 5);
-
-    [Theory]
-    [InlineData(true, false, true)]
-    [InlineData(true, true, false)]
-    [InlineData(false, false, false)]
-    public void IntermissionWaitsForEveryEnemyToDie(
-        bool defeatedCreatureIsEnemy,
-        bool hasOtherLivingEnemy,
-        bool expected) =>
-        Assert.Equal(
-            expected,
-            SawatariEventRules.ShouldBeginIntermission(
-                defeatedCreatureIsEnemy,
-                hasOtherLivingEnemy));
 
     [Fact]
     public void PhaseTransitionsAreIdempotent()

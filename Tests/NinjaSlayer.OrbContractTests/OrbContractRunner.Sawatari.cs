@@ -34,7 +34,7 @@ public partial class OrbContractRunner
         private readonly object? _previousRun = AccessTools.Property(typeof(RunManager), "State").GetValue(RunManager.Instance);
         private readonly object? _previousAscension = RunManager.Instance.AscensionManager;
         internal Creature Target => Combat.Player.Creature;
-        internal SawatariFixture(bool third = true, int ascension = 0, bool multiplayer = false)
+        internal SawatariFixture(bool third = true, int ascension = 0, bool multiplayer = false, string seed = "sawatari-weapons")
         {
             if (multiplayer)
             {
@@ -45,7 +45,7 @@ public partial class OrbContractRunner
                 Other.Creature.SetCurrentHpInternal(500);
             }
             Run = RunState.CreateForTest(Other == null ? [Combat.Player] : [Combat.Player, Other],
-                ascensionLevel: ascension, seed: "sawatari-weapons");
+                ascensionLevel: ascension, seed: seed);
             AccessTools.Property(typeof(RunManager), "State").SetValue(RunManager.Instance, Run);
             AccessTools.Property(typeof(RunManager), "AscensionManager").SetValue(RunManager.Instance, new AscensionManager(ascension));
             AccessTools.Field(Combat.State.GetType(), "<RunState>k__BackingField").SetValue(Combat.State, Run);
@@ -78,6 +78,36 @@ public partial class OrbContractRunner
         }
     }
 
+    private static async Task VerifyIaiLifeBoundary()
+    {
+        foreach (string state in new[] { "alive", "zero", "removed", "lethal", "target-dead" })
+        {
+            using var f = new DarkStrikeFixture();
+            var dark = f.Monster.Creature;
+            await PowerCmd.Apply<StrengthPower>(Choice, dark, 4, dark, null);
+            var iai = await PowerCmd.Apply<IaiPower>(Choice, dark, 1, dark, null);
+            int flashes = 0;
+            iai!.Flashed += _ => flashes++;
+            int hp = f.Target.CurrentHp;
+            if (state == "zero") dark.SetCurrentHpInternal(0);
+            if (state == "removed") f.Combat.State.RemoveCreature(dark);
+            if (state == "target-dead") f.Target.SetCurrentHpInternal(0);
+            if (state == "lethal")
+                await CreatureCmd.Damage(Choice, dark, 999, ValueProp.Move, f.Target, null
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                    , null
+#endif
+                );
+            else
+                await iai.AfterDamageReceived(Choice, dark, new DamageResult(dark, ValueProp.Move),
+                    ValueProp.Move, f.Target, null);
+            Require(flashes == (state == "alive" ? 1 : 0), $"{state}: unexpected Iai flash.");
+            if (state != "target-dead") Require(f.Target.CurrentHp == hp - (state == "alive" ? 4 : 0),
+                $"{state}: unexpected Iai damage.");
+        }
+        GD.Print("PASS Iai alive/zero/removed/lethal/dead-target boundaries and flash counts.");
+    }
+
     private static async Task VerifySawatariWeapons()
     {
         MegaCrit.Sts2.Core.Context.LocalContext.NetId = 1;
@@ -108,42 +138,69 @@ public partial class OrbContractRunner
             }
         }
         GD.Print("PASS strong-unknown route in acts one/three and exclusion after a previous visit.");
-        foreach (int ascension in new[] { 0, 10 })
+        foreach (var spec in new[] {
+            (Asc: 0, Hp1: 76, Hp3: 280, Arrow: 14, Dual: 8, Throw: 12, Bamboo: 3),
+            (Asc: 7, Hp1: 76, Hp3: 280, Arrow: 14, Dual: 8, Throw: 12, Bamboo: 3),
+            (Asc: 8, Hp1: 80, Hp3: 300, Arrow: 14, Dual: 8, Throw: 12, Bamboo: 3),
+            (Asc: 9, Hp1: 80, Hp3: 300, Arrow: 16, Dual: 10, Throw: 14, Bamboo: 4),
+            (Asc: 10, Hp1: 80, Hp3: 300, Arrow: 16, Dual: 10, Throw: 14, Bamboo: 4) })
         {
-            using (var f = new SawatariFixture(third: false, ascension: ascension))
+            using (var f = new SawatariFixture(third: false, ascension: spec.Asc))
             {
-                Require(f.Monster.Creature.CurrentHp == (ascension == 0 ? 60 : 66), "Act-one HP changed.");
-                await f.Move();
-                Require(f.Target.CurrentHp == 500 - (ascension == 0 ? 14 : 16)
-                    && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 2,
-                    "Act-one arrow must hit before gaining two Strength.");
-                await f.Move();
-                Require(f.Target.CurrentHp == 500 - (ascension == 0 ? 14 : 16) - 16,
-                    "Act-one bamboo must retain its 2x4 base plus opening Strength.");
+                Require(f.Monster.Creature.CurrentHp == spec.Hp1, $"Act-one A{spec.Asc} HP differs.");
+                string[] moves = [SawatariMonster.EnhanceMoveId, SawatariMonster.AttackMoveId,
+                    SawatariMonster.SecondAttackMoveId];
+                int strength = 0;
+                for (int turn = 0; turn < 6; turn++)
+                {
+                    int index = turn % 3;
+                    int damage = index == 0 ? spec.Arrow + strength : (2 + strength) * 4;
+                    Require(f.Monster.NextMove.Id == moves[index], "Act-one cycle lost its native move position.");
+                    var intent = f.Monster.NextMove.Intents.OfType<MegaCrit.Sts2.Core.MonsterMoves.Intents.AttackIntent>().Single();
+                    Require(intent.GetTotalDamage([f.Target], f.Monster.Creature) == damage, "Act-one intent differs from damage.");
+                    int hp = f.Target.CurrentHp;
+                    await f.Move();
+                    if (index != 0) strength++;
+                    Require(f.Target.CurrentHp == hp - damage
+                        && f.Monster.Creature.GetPowerAmount<StrengthPower>() == strength
+                        && f.Monster.Creature.GetPowerAmount<PlatingPower>() == 4 * (turn / 3 + 1)
+                        && f.Monster.NextMove.Id == moves[(index + 1) % 3],
+                        $"Act-one A{spec.Asc} turn {turn + 1}: damage, buffs or follow-up differ.");
+                }
             }
-            using (var f = new SawatariFixture(ascension: ascension))
+            using (var f = new SawatariFixture(ascension: spec.Asc))
             {
-                int hit = ascension == 0 ? 12 : 14;
-                Require(f.Monster.Creature.CurrentHp == (ascension == 0 ? 252 : 278), "Act-three HP is incorrect.");
+                Require(f.Monster.Creature.CurrentHp == spec.Hp3, "Act-three HP is incorrect.");
                 await f.Move();
-                Require(f.Target.CurrentHp == 500 - 2 * hit && !f.Monster.Creature.HasPower<StrengthPower>()
+                Require(f.Target.CurrentHp == 500 - 2 * spec.Dual && !f.Monster.Creature.HasPower<StrengthPower>()
                     && f.Monster.NextMove.Id == SawatariMonster.ThrowMoveId, "Opening dual attack or forced throw is incorrect.");
                 await f.Move();
-                Require(f.Monster.MacheteCount == 1 && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 3,
-                    "First throw must transfer one knife and grant three Strength.");
-                int remainingHand = f.Monster.HeldMachetes;
+                Require(f.Target.CurrentHp == 500 - 2 * spec.Dual - spec.Throw
+                    && f.Monster.MacheteCount == 1 && f.Monster.Creature.GetPowerAmount<VigorPower>() == 6
+                    && !f.Monster.Creature.HasPower<StrengthPower>(), "First throw damage or Vigor differs.");
+                int hp = f.Target.CurrentHp;
                 await f.Move();
-                Require(f.Monster.MacheteCount == 0 && remainingHand != 0
-                    && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 6
+                Require(f.Target.CurrentHp == hp - spec.Throw - 6 && f.Monster.MacheteCount == 0
+                    && f.Monster.Creature.GetPowerAmount<VigorPower>() == 6
                     && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Count() == 2,
-                    "Second throw did not transfer the remaining knife.");
-                int before = f.Target.CurrentHp;
+                    "Second throw must consume old Vigor and grant six new Vigor.");
+                hp = f.Target.CurrentHp;
+                var intent = f.Monster.NextMove.Intents.OfType<MegaCrit.Sts2.Core.MonsterMoves.Intents.AttackIntent>().Single();
+                Require(intent.GetTotalDamage([f.Target], f.Monster.Creature) == (spec.Bamboo + 6) * 4,
+                    "Unarmed intent must include Vigor on every hit.");
                 await f.Move();
-                Require(f.Target.CurrentHp == before - 32 && f.Monster.NextMove.Id == SawatariMonster.AttackMoveId,
-                    "Unarmed bamboo must use 2x4 plus the six accumulated Strength.");
+                Require(f.Target.CurrentHp == hp - (spec.Bamboo + 6) * 4
+                    && !f.Monster.Creature.HasPower<VigorPower>()
+                    && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 4,
+                    "Bamboo must consume Vigor after all four hits, then grant four Strength.");
+                hp = f.Target.CurrentHp;
+                await f.Move();
+                Require(f.Target.CurrentHp == hp - (spec.Bamboo + 4) * 4
+                    && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 8,
+                    "Later bamboo damage or Strength accumulation differs.");
             }
         }
-        GD.Print("PASS Sawatari both ascensions: arrow/Strength, dual/throw/unarmed sequence and hit totals.");
+        GD.Print("PASS Sawatari A0/A7/A8/A9/A10: two arrow/bamboo cycles, separate damage and native Vigor consumption.");
 
         foreach (string defense in new[] { "block", "buffer", "evasion", "naraku" })
         {
@@ -156,16 +213,47 @@ public partial class OrbContractRunner
             int before = f.Target.CurrentHp;
             await f.Move();
             Require(f.Target.CurrentHp == before && f.Monster.MacheteCount == 1
-                && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Count() == 1,
+                && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Count() == 1
+                && f.Monster.Creature.GetPowerAmount<VigorPower>() == 6,
                 $"{defense} incorrectly prevented the thrown knife transfer.");
         }
+
+        foreach (bool third in new[] { false, true })
+        {
+            using var f = new SawatariFixture(third: third, ascension: 10);
+            // The event calls these shared presentation/attack entry points for support.
+            int hp = f.Target.CurrentHp;
+            await (Task)AccessTools.Method(typeof(SawatariMonster), third ? "PlayDualAttack" : "PlayAttack")
+                .Invoke(f.Monster, [f.Target])!;
+            Require(f.Target.CurrentHp == hp - (third ? 20 : 8)
+                && !f.Monster.Creature.HasPower<StrengthPower>()
+                && !f.Monster.Creature.HasPower<VigorPower>()
+                && !f.Monster.Creature.HasPower<PlatingPower>(), "Support entry point granted enemy-only buffs.");
+        }
+        foreach (string move in new[] { "ArrowMove", "AttackMove", "ThrowMove" })
+        {
+            using var f = new SawatariFixture(third: move != "ArrowMove");
+            f.Monster.Creature.SetCurrentHpInternal(1);
+            await PowerCmd.Apply<ThornsPower>(Choice, f.Target, 100, f.Target, null);
+            await (Task)AccessTools.Method(typeof(SawatariMonster), move).Invoke(f.Monster, [new Creature[] { f.Target }])!;
+            Require(f.Monster.Creature.IsDead && !f.Monster.Creature.HasPower<StrengthPower>()
+                && !f.Monster.Creature.HasPower<VigorPower>() && !f.Monster.Creature.HasPower<PlatingPower>(),
+                $"{move} granted a buff after lethal thorns.");
+        }
+        using (var f = new SawatariFixture(third: false, multiplayer: true))
+        {
+            await f.Move();
+            Require(f.Monster.Creature.GetPowerAmount<PlatingPower>() == 12,
+                "Two-player Plating must use native scaling once.");
+        }
+        GD.Print("PASS support without enemy buffs, lethal thorns and native two-player Plating scaling.");
 
         using (var f = new SawatariFixture())
         {
             await f.Move(); await f.Move();
             SawatariMachete card = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Single();
             CardModel copy = f.Combat.State.CloneCard(card);
-            PileType.Hand.GetPile(f.Combat.Player).AddInternal(copy, -1, silent: true);
+            await CardPileCmd.Add(copy, PileType.Hand);
             Require(card.EnergyCost.GetWithModifiers(CostModifiers.Local) == 2 && !card.IsUpgradable
                 && card.Type == CardType.Attack && card.Rarity == CardRarity.Token
                 && !card.CanBeGeneratedInCombat && !card.CanBeGeneratedByModifiers
@@ -180,7 +268,7 @@ public partial class OrbContractRunner
                 "Returned Machete must use normal Strength/Vulnerable damage and immediately change intent.");
             await f.Move();
             Require(f.Monster.NextMove.Id == SawatariMonster.ThrowMoveId
-                && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 3, "Later dual attack gained Strength or skipped forced throw.");
+                && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 0 && !f.Monster.Creature.HasPower<VigorPower>(), "Later dual attack gained Strength or skipped forced throw.");
             await f.Move();
             await CardCmd.AutoPlay(Choice, copy, f.Monster.Creature);
             Require(f.Monster.MacheteCount == 2, "A copied Machete must be able to replace a missing knife.");
@@ -224,6 +312,44 @@ public partial class OrbContractRunner
             firstSequence = sequence;
         }
         GD.Print("PASS native discard/exhaust/overflow, other enemy targeting and seeded two-player transfer.");
+        var enemyThrows = new HashSet<int>();
+        var playerCatches = new HashSet<int>();
+        var playerThrows = new HashSet<int>();
+        var enemyCatches = new HashSet<int>();
+        for (int seed = 0; seed < 16; seed++)
+        {
+            string? firstHands = null;
+            for (int repeat = 0; repeat < 2; repeat++)
+            {
+                using var f = new SawatariFixture(seed: $"sawatari-hands-{seed}");
+                await f.Move(); await f.Move();
+                var first = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Single();
+                int caught = first.HeldHand;
+                Require(caught is 0 or 1, "First knife has no receiving hand.");
+                playerCatches.Add(caught);
+                enemyThrows.Add(f.Monster.NextThrowHand);
+                Require(((SawatariMachete)CardModel.FromSerializable(first.ToSerializable())).HeldHand == caught,
+                    "Native card serialization lost the receiving hand.");
+                await f.Move();
+                var second = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Single(c => c != first);
+                Require(first.HeldHand == caught && second.HeldHand == 1 - caught,
+                    "Second catch moved the first knife or reused its occupied hand.");
+                await CardCmd.AutoPlay(Choice, first, f.Monster.Creature);
+                Require(second.HeldHand is 0 or 1 && first.HeldHand == -1,
+                    "Random throwing must release one hand and keep the remaining knife assigned.");
+                playerThrows.Add(1 - second.HeldHand);
+                enemyCatches.Add(f.Monster.HeldMachetes);
+                string hands = $"{caught}/{second.HeldHand}/{f.Monster.HeldMachetes}";
+                if (firstHands != null) Require(firstHands == hands, "Fixed-seed hand choices diverged.");
+                firstHands = hands;
+                await CardCmd.AutoPlay(Choice, second, f.Monster.Creature);
+                Require(f.Monster.HeldMachetes == 3, "Second return did not fill the remaining enemy hand.");
+            }
+        }
+        Require(enemyThrows.SetEquals([0, 1]) && playerCatches.SetEquals([0, 1])
+            && playerThrows.SetEquals([0, 1]) && enemyCatches.SetEquals([1, 2]),
+            "A throw or catch still always selects the same hand.");
+        GD.Print("PASS both actors randomly throw/catch either hand, preserve occupied hands, serialize and repeat fixed seeds.");
         using (var f = new SawatariFixture())
         {
             await f.Move(); await f.Move(); await f.Move();

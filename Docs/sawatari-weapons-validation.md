@@ -1,3 +1,10 @@
+# Current local follow-up, 2026-09-16
+
+Current balance, native victory cleanup, lethal Iai cancellation, weapon layers
+and randomized throw/catch hands are documented in
+[the 2026-09-16 validation record](sawatari-balance-cleanup-validation-2026-09-16.md).
+The records below are earlier evidence and retain their original versions.
+
 # 0.2.12 release candidate follow-up, 2026-09-15
 
 Base `46d6d2c8fca6b4bb0f1e35f1ca7913d6a632d5d0` plus the combined local changes.

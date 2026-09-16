@@ -378,6 +378,10 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         return true;
     }
 
+    internal bool HasConfirmedDeath(Creature creature) =>
+        !_disposed && IsCurrentCombatContext() && _ledger.DeferredDeaths.Contains(creature)
+        && !_committedDeaths.Contains(creature);
+
     public void NotifyProtectedDamageConfirmed()
     {
         if (!_disposed
@@ -738,17 +742,14 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
             Telemetry.NinjaSlayerCombatTelemetry.BeforeFinisherDeath(target);
             await CreatureCmd.Kill(target);
-            if (target.IsAlive)
-            {
-                throw new InvalidOperationException(
-                    $"CreatureCmd.Kill completed without killing a confirmed finisher target in session {SessionId}.");
-            }
-
+            // Native death hooks may revive the target (for example, Waterfall Giant's
+            // self-destruct phase). A completed death command must not be retried.
             _committedDeaths.Add(target);
             committedAny = true;
         }
 
-        List<Creature> remaining = _ledger.LivingDeferredDeaths();
+        List<Creature> remaining = _ledger.LivingDeferredDeaths()
+            .Where(creature => !_committedDeaths.Contains(creature)).ToList();
         if (remaining.Count > 0)
         {
             throw new InvalidOperationException(
