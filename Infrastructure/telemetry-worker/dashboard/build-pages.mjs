@@ -45,7 +45,7 @@ snapshot.currentVersion = (await readCurrentRelease()).version;
 try {
   const reports = []; let cursor;
   do {
-    const url = new URL('https://ninja-slayer-telemetry.theonetrue2223.workers.dev/observatory/replays');
+    const url = new URL('https://telemetry.feixingwawa.cn/observatory/replays');
     if (cursor) url.searchParams.set('cursor', cursor);
     const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
     if (!response.ok) throw new Error(`Replay index: ${response.status}`);

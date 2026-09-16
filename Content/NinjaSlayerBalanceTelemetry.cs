@@ -36,7 +36,7 @@ public static class NinjaSlayerBalanceTelemetry
                 DisplayName = NinjaSlayerIds.ModId,
                 DisplayNameText = ModSettingsText.Literal("Ninja Slayer"),
                 Adapter = new PostHogTelemetryAdapter(
-                    host: "https://ninja-slayer-telemetry.theonetrue2223.workers.dev",
+                    host: "https://telemetry.feixingwawa.cn",
                     projectApiKey: "proxy"
                 ),
                 Requests =

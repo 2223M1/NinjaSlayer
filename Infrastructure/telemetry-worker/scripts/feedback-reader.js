@@ -57,7 +57,7 @@ export async function loadRemoteFeedback(token) {
   const feedback = [], warnings = [];
   let cursor;
   do {
-    const response = await fetch(`https://ninja-slayer-telemetry.theonetrue2223.workers.dev/observatory/feedback${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, {
+    const response = await fetch(`https://telemetry.feixingwawa.cn/observatory/feedback${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, {
       headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(90_000),
     });
     if (!response.ok) throw new Error(`反馈读取失败（HTTP ${response.status}）。`);

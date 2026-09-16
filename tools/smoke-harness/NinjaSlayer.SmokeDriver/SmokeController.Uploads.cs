@@ -70,7 +70,7 @@ internal sealed partial class SmokeController
 
     private static void RouteFeedbackToLoopback(HttpRequestMessage request)
     {
-        if (request.RequestUri?.Host == "ninja-slayer-telemetry.theonetrue2223.workers.dev"
+        if (request.RequestUri?.Host == "telemetry.feixingwawa.cn"
             && request.RequestUri.AbsolutePath == "/feedback") request.RequestUri = _feedbackLoopback!;
     }
 }

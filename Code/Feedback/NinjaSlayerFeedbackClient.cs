@@ -14,7 +14,7 @@ namespace NinjaSlayer.Code.Feedback;
 
 public static class NinjaSlayerFeedbackClient
 {
-    private const string FeedbackUrl = "https://ninja-slayer-telemetry.theonetrue2223.workers.dev/feedback";
+    private const string FeedbackUrl = "https://telemetry.feixingwawa.cn/feedback";
     private const long MaxScreenshotBytes = 5L * 1024 * 1024;
     private const long MaxLogsBytes = 16L * 1024 * 1024;
     private static readonly HttpClient HttpClient = new() { Timeout = Timeout.InfiniteTimeSpan };

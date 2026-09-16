@@ -67,7 +67,7 @@ export async function createDashboardServer() {
     const url = new URL(request.url, `http://${expectedHost}`);
     const send = (status, data, type = 'application/json; charset=utf-8', extra = {}) => {
       response.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
-        'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://ninja-slayer-telemetry.theonetrue2223.workers.dev; object-src 'none'; frame-ancestors 'none'; base-uri 'none'", ...extra });
+        'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://telemetry.feixingwawa.cn; object-src 'none'; frame-ancestors 'none'; base-uri 'none'", ...extra });
       response.end(type.startsWith('application/json') ? JSON.stringify(data) : data);
     };
     try {
