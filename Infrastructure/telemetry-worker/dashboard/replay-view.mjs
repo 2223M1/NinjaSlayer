@@ -1,5 +1,5 @@
 import { loadCatalog } from "./catalog-view.mjs";
-const ENDPOINT = "https://ninja-slayer-telemetry.theonetrue2223.workers.dev";
+const ENDPOINT = "https://telemetry.feixingwawa.cn";
 const $ = (selector) => document.querySelector(selector);
 const node = (tag, text, className) => {
   const item = document.createElement(tag);

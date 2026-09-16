@@ -24,6 +24,16 @@ retained tombstone before removing data so a late retry cannot recreate it.
 
 ## Deployment
 
+The game and observatory use `https://telemetry.feixingwawa.cn`. This custom
+domain points to the existing Worker; the `workers.dev` address stays enabled
+for older clients. `api.feixingwawa.cn` belongs to a separate service and must
+not be changed. Keep the custom domain in `wrangler.jsonc` so deployments retain it.
+
+`GET /batch/` returns HTTP 405 with `Only POST is accepted`; this checks routing
+without submitting data. Check reachability on the affected network without a
+proxy before releasing an endpoint change. The native upload contracts below
+verify request handling separately from that network check.
+
 ```powershell
 npm install
 npm test
