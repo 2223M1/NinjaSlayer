@@ -1,5 +1,5 @@
 {
-  "NINJA_SLAYER_KEYWORD_SCRY.description": "查看你[gold]抽牌堆[/gold]顶部指定数量的牌，丢弃其中任意数量的牌。",
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "查看你[gold]抽牌堆[/gold]顶部指定数量的牌，丢弃其中任意数量的牌。以此法丢弃的牌可以触发[gold]奇巧[/gold]。",
   "NINJA_SLAYER_KEYWORD_SCRY.title": "预见",
   "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "敌人满足指定的生命条件时，无视[gold]格挡[/gold]将其击杀。",
   "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "审判"

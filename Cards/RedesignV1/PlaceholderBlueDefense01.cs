@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class PlaceholderBlueDefense01 : RedesignV1UncommonCard
 {
-    public PlaceholderBlueDefense01() : base(nameof(PlaceholderBlueDefense01), "BlockCard", 1, CardType.Skill, TargetType.Self) { }
+    public PlaceholderBlueDefense01() : base(nameof(PlaceholderBlueDefense01), nameof(PlaceholderBlueDefense01), 1, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(7, ValueProp.Move), new PowerVar<ThornsPower>(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ThornsPower>()];

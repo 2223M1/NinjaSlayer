@@ -12,7 +12,7 @@ public sealed class Endurance : RedesignV1UncommonCard
     protected override bool ShouldGlowGoldInternal =>
         CombatState != null && EndurancePower.HasNotAttackedThisTurn(Owner);
 
-    public Endurance() : base(nameof(Endurance), "RestGuard", 1, CardType.Skill, TargetType.Self) { }
+    public Endurance() : base(nameof(Endurance), nameof(Endurance), 1, CardType.Skill, TargetType.Self) { }
     protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(1), new DynamicVar("LaterKarate", 3)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

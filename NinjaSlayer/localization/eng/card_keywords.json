@@ -1,5 +1,5 @@
 {
-  "NINJA_SLAYER_KEYWORD_SCRY.description": "Look at the specified number of cards on top of your [gold]Draw Pile[/gold]. Discard any of them.",
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "Look at the specified number of cards on top of your [gold]Draw Pile[/gold]. Discard any of them. Cards discarded this way can trigger [gold]Sly[/gold].",
   "NINJA_SLAYER_KEYWORD_SCRY.title": "Scry",
   "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "Kill an enemy that meets the specified HP condition, ignoring [gold]Block[/gold].",
   "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "Judgment"

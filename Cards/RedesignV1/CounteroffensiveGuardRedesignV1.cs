@@ -18,7 +18,7 @@ public sealed class CounteroffensiveGuardRedesignV1 : RedesignV1UncommonCard
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(12, ValueProp.Move)];
 
     public CounteroffensiveGuardRedesignV1()
-        : base(nameof(CounteroffensiveGuardRedesignV1), nameof(ZazenDrink), 2, CardType.Skill, TargetType.Self) { }
+        : base(nameof(CounteroffensiveGuardRedesignV1), nameof(CounteroffensiveGuardRedesignV1), 2, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

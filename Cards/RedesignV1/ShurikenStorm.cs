@@ -13,7 +13,7 @@ public sealed class ShurikenStorm : RedesignV1RareCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
 
-    public ShurikenStorm() : base(nameof(ShurikenStorm), "ShurikenBarrage", 1, CardType.Skill, TargetType.Self) { }
+    public ShurikenStorm() : base(nameof(ShurikenStorm), nameof(ShurikenStorm), 1, CardType.Skill, TargetType.Self) { }
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 1)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

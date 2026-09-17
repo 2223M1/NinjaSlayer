@@ -18,7 +18,7 @@ public sealed class IronBodyRedesignV1 : RedesignV1CommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
     public IronBodyRedesignV1()
-        : base(nameof(IronBodyRedesignV1), "RestGuard", 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(IronBodyRedesignV1), nameof(IronBodyRedesignV1), 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

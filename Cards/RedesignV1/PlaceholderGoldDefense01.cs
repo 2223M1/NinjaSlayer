@@ -13,7 +13,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class PlaceholderGoldDefense01 : RedesignV1RareCard
 {
-    public PlaceholderGoldDefense01() : base(nameof(PlaceholderGoldDefense01), "BlockCard", 1, CardType.Skill, TargetType.Self) { }
+    public PlaceholderGoldDefense01() : base(nameof(PlaceholderGoldDefense01), nameof(PlaceholderGoldDefense01), 1, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
     private bool ExhaustedTeaThisTurn => CombatState != null && CombatManager.Instance.History.Entries
         .OfType<CardExhaustedEntry>().Any(e => e.HappenedThisTurn(CombatState)

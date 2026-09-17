@@ -28,6 +28,7 @@ public partial class OrbContractRunner
         AccessTools.Property(typeof(MegaCrit.Sts2.Core.Runs.RunManager), "NetService").SetValue(
             MegaCrit.Sts2.Core.Runs.RunManager.Instance, new MegaCrit.Sts2.Core.Multiplayer.NetSingleplayerGameService());
         await VerifyScryAndSly();
+        await VerifyMotherUnixBeforeDraw();
         await VerifyStatusCards();
         await VerifyTeaAndChop();
         await VerifyTemporaryStats();
@@ -171,6 +172,64 @@ public partial class OrbContractRunner
                 "Exhausting a Scry selection must not activate Sly or discard effects.");
         }
         GD.Print("PASS native hand discard, Scry/Sly batching, nested selection, local discard count and exhaust exclusion");
+    }
+
+    private static async Task VerifyMotherUnixBeforeDraw()
+    {
+        foreach (int turn in new[] { 1, 2 })
+        foreach (string scenario in new[] { "keep", "discard", "nested", "short", "empty" })
+        {
+            using var combat = new OrbCombat();
+            combat.Player.AddRelicInternal(ModelDb.Relic<NinjaSlayer.Relics.MotherUnixRelic>().ToMutable());
+            if (turn == 2) combat.Player.PlayerCombatState!.IncrementTurnNumber();
+            int count = scenario == "empty" ? 0 : scenario == "short" ? 2 : 10;
+            var cards = new List<CardModel>();
+            for (int i = 0; i < count; i++)
+                cards.Add(scenario == "nested" && i == 0
+                    ? AddCard<ShurikenCreation>(combat, PileType.Draw)
+                    : AddCard<DefendIronclad>(combat, PileType.Draw));
+
+            int selections = 0;
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
+            {
+                selections++;
+                Require(PileType.Hand.GetPile(combat.Player).IsEmpty,
+                    "Mother UNIX and nested Sly must finish selecting before the normal hand is drawn.");
+                if (selections == 1)
+                {
+                    Require(options.SequenceEqual(cards.Take(3)), "Mother UNIX must inspect the undrawn top three cards.");
+                    return scenario is "discard" or "nested" ? cards.Take(2) : [];
+                }
+                Require(scenario == "nested" && selections == 2 && cards[1].Pile?.Type == PileType.Discard,
+                    "Nested Sly must run once, after the entire outer discard batch.");
+                Require(options.SequenceEqual(cards.Skip(2).Take(1)), "Nested Scry must see the remaining draw pile.");
+                return [cards[2]];
+            }));
+
+            var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(
+                MegaCrit.Sts2.Core.Unlocks.UnlockState.all, 2);
+            other.InitializeSeed("mother-unix-other");
+            combat.State.AddPlayer(other);
+            other.ResetCombatState();
+            await Hook.BeforeHandDraw(combat.State, other, Choice);
+            Require(selections == 0, "Mother UNIX must not request a choice on another player's turn.");
+
+            var context = new HookPlayerChoiceContext(combat.Player, 1,
+                MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.CombatPlayPhaseOnly);
+#if NINJASLAYER_CHANNEL_STABLE
+            object[] args = [combat.Player, context];
+#else
+            object[] args = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
+#endif
+            await (Task)AccessTools.Method(typeof(CombatManager), "SetupPlayerTurn").Invoke(CombatManager.Instance, args)!;
+            int removed = scenario == "nested" ? 3 : scenario == "discard" ? 2 : 0;
+            Require(PileType.Hand.GetPile(combat.Player).Cards.SequenceEqual(cards.Skip(removed).Take(5)),
+                $"Turn {turn}, {scenario}: native hand draw must use the post-Scry pile.");
+            Require(selections == (scenario == "empty" ? 0 : scenario == "nested" ? 2 : 1),
+                "Mother UNIX must not Scry again after the hand draw.");
+            Require(combat.Stock == (scenario == "nested" ? 2 : 0), "Nested Sly must finish its effect exactly once.");
+        }
+        GD.Print("PASS Mother UNIX native turn setup: pre-draw Scry, first/later turn, owner-only, keep/discard/nested Sly, short/empty pile");
     }
 
     private static async Task VerifyStatusCards()

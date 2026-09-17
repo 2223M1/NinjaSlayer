@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class Slaughter : RedesignV1UncommonCard
 {
-    public Slaughter() : base(nameof(Slaughter), "Chop", 3, CardType.Attack, TargetType.AnyEnemy) { }
+    public Slaughter() : base(nameof(Slaughter), nameof(Slaughter), 3, CardType.Attack, TargetType.AnyEnemy) { }
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(30, ValueProp.Move), new KarateVar(5)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

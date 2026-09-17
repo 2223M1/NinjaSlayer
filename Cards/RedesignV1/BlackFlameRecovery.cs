@@ -15,7 +15,7 @@ public sealed class BlackFlameRecovery : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         HoverTipFactory.FromCardWithCardHoverTips<BlackFlameRedesignV1>();
 
-    public BlackFlameRecovery() : base(nameof(BlackFlameRecovery), "BurningCard", 1, CardType.Skill, TargetType.Self) { }
+    public BlackFlameRecovery() : base(nameof(BlackFlameRecovery), nameof(BlackFlameRecovery), 1, CardType.Skill, TargetType.Self) { }
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(2)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

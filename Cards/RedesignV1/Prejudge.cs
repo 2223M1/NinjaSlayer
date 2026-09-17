@@ -14,7 +14,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class Prejudge : NinjaSlayerRedesignCardTemplate
 {
     public Prejudge() : base(new NinjaSlayerCardSpec(nameof(Prejudge), 1, CardType.Skill,
-        CardRarity.Basic, TargetType.Self, true), "ReadyBlade") { }
+        CardRarity.Basic, TargetType.Self, true), nameof(Prejudge)) { }
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Scry", 2), new BlockVar(4, ValueProp.Move)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];

@@ -14,7 +14,7 @@ public sealed class BladeCycleRedesignV1 : RedesignV1RareCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
 
     public BladeCycleRedesignV1()
-        : base(nameof(BladeCycleRedesignV1), "ShurikenBarrage", 2, CardType.Power, TargetType.Self) { }
+        : base(nameof(BladeCycleRedesignV1), nameof(BladeCycleRedesignV1), 2, CardType.Power, TargetType.Self) { }
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("StockLoss", 3)];
 

@@ -13,7 +13,7 @@ public sealed class SipTea : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [NinjaSlayerHoverTips.ChadoBreathing, .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 
-    public SipTea() : base(nameof(SipTea), "DrinkTea", 1, CardType.Skill, TargetType.Self) { }
+    public SipTea() : base(nameof(SipTea), nameof(SipTea), 1, CardType.Skill, TargetType.Self) { }
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (IsUpgraded) await ChadoBreathCmd.Apply(choiceContext, Owner, 1);

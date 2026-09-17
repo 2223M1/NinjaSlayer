@@ -17,7 +17,7 @@ public sealed class HiddenEdgeRedesignV1 : RedesignV1UncommonCard
         [HoverTipFactory.FromPower<DexterityPower>(), HoverTipFactory.FromPower<FocusPower>()];
 
     public HiddenEdgeRedesignV1()
-        : base(nameof(HiddenEdgeRedesignV1), "ShurikenStock", 1, CardType.Power, TargetType.Self) { }
+        : base(nameof(HiddenEdgeRedesignV1), nameof(HiddenEdgeRedesignV1), 1, CardType.Power, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

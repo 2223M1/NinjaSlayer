@@ -17,7 +17,7 @@ public sealed class MetabolicAccelerationRedesignV1 : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>()];
 
     public MetabolicAccelerationRedesignV1()
-        : base(nameof(MetabolicAccelerationRedesignV1), "DrinkTea", 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(MetabolicAccelerationRedesignV1), nameof(MetabolicAccelerationRedesignV1), 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

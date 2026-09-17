@@ -9,7 +9,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class OyeahThrowSword : RedesignV1UncommonCard
 {
-    public OyeahThrowSword() : base(nameof(OyeahThrowSword), "ShurikenBarrage", 2, CardType.Skill, TargetType.Self) { }
+    public OyeahThrowSword() : base(nameof(OyeahThrowSword), nameof(OyeahThrowSword), 2, CardType.Skill, TargetType.Self) { }
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Sly];
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("Stock", 1)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromOrb<ShurikenOrb>()];
