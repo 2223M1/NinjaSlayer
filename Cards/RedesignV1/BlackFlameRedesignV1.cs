@@ -31,7 +31,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         CardRarity.Status,
         TargetType.Self,
         false,
-        "BurningCard");
+        nameof(BlackFlameRedesignV1));
 
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;

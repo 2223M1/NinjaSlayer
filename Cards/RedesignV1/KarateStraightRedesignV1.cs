@@ -27,7 +27,7 @@ public sealed class KarateStraightRedesignV1 : NinjaSlayerRedesignCardTemplate
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(8, ValueProp.Move), new KarateVar(4)];
 
-    public KarateStraightRedesignV1() : base(Spec, "KarateStraight") { }
+    public KarateStraightRedesignV1() : base(Spec, nameof(KarateStraightRedesignV1)) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -15,7 +15,7 @@ public sealed class OnlyKarateRedesignV1 : RedesignV1RareCard
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal, CardKeyword.Exhaust];
 
     public OnlyKarateRedesignV1()
-        : base(nameof(OnlyKarateRedesignV1), nameof(OneBodyOneSoul), 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(OnlyKarateRedesignV1), nameof(OnlyKarateRedesignV1), 1, CardType.Skill, TargetType.Self) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

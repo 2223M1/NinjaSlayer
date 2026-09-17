@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class TonyRetention : RedesignV1UncommonCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(CardKeyword.Retain)];
-    public TonyRetention() : base(nameof(TonyRetention), "ReadyBlade", 2, CardType.Skill, TargetType.Self) { }
+    public TonyRetention() : base(nameof(TonyRetention), nameof(TonyRetention), 2, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(11, ValueProp.Move)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

@@ -24,7 +24,7 @@ public sealed class TurtleShellRedesignV1 : NinjaSlayerRedesignCardTemplate
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<KaratePower>(), HoverTipFactory.FromPower<PlatingPower>()];
 
-    public TurtleShellRedesignV1() : base(Spec, "BlockCard") { }
+    public TurtleShellRedesignV1() : base(Spec, nameof(TurtleShellRedesignV1)) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

@@ -29,7 +29,7 @@ public sealed class ChopRedesignV1 : RedesignV1RareCard
         [new DamageVar(5, ValueProp.Move), new KarateVar(1), new CardsVar(3)];
 
     public ChopRedesignV1()
-        : base(nameof(ChopRedesignV1), "Chop", 0, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(ChopRedesignV1), nameof(ChopRedesignV1), 0, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

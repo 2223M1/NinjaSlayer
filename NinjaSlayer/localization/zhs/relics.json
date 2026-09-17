@@ -18,7 +18,7 @@
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.description": "在你的回合开始时，获得1点能量，并将1张死线加入你的手牌。",
   "NINJA_SLAYER_RELIC_IRC_TERMINAL_RELIC.flavor": "语音会暴露位置。每一次输入都像在走钢丝。",
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_RELIC.title": "Mother UNIX密钥",
-  "NINJA_SLAYER_RELIC_MOTHER_UNIX_RELIC.description": "在你的回合开始时，[gold]预见[/gold]{Cards:diff()}。",
+  "NINJA_SLAYER_RELIC_MOTHER_UNIX_RELIC.description": "在你的回合开始抽牌前，[gold]预见[/gold]{Cards:diff()}。",
   "NINJA_SLAYER_RELIC_MOTHER_UNIX_RELIC.flavor": "她当然没有昏厥。全Type速度的输入解除了自爆指令。",
   "NINJA_SLAYER_RELIC_REPORTER_PASS_RELIC.title": "NSTV记者证",
   "NINJA_SLAYER_RELIC_REPORTER_PASS_RELIC.description": "在事件中可以选择“取材”：随机升级3张牌，然后结束该事件。",

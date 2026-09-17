@@ -15,7 +15,7 @@ public sealed class TechniqueSearchRedesignV1 : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
 
     public TechniqueSearchRedesignV1()
-        : base(nameof(TechniqueSearchRedesignV1), "ReadyBlade", 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(TechniqueSearchRedesignV1), nameof(TechniqueSearchRedesignV1), 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

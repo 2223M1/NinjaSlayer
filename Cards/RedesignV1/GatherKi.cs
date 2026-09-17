@@ -15,7 +15,7 @@ public sealed class GatherKi : RedesignV1UncommonCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromPower<NinjaSlayer.Powers.KaratePower>(), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 
-    public GatherKi() : base(nameof(GatherKi), "KarateStraight", 1, CardType.Skill, TargetType.Self) { }
+    public GatherKi() : base(nameof(GatherKi), nameof(GatherKi), 1, CardType.Skill, TargetType.Self) { }
     protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

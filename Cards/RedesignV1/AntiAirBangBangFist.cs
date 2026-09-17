@@ -16,7 +16,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class AntiAirBangBangFist : RedesignV1RareCard
 {
     public AntiAirBangBangFist()
-        : base(nameof(AntiAirBangBangFist), "Chop", 2, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(AntiAirBangBangFist), nameof(AntiAirBangBangFist), 2, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [

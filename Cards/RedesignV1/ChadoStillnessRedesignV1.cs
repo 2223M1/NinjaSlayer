@@ -16,7 +16,7 @@ public sealed class ChadoStillnessRedesignV1 : RedesignV1CommonCard
         [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), .. HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>()];
 
     public ChadoStillnessRedesignV1()
-        : base(nameof(ChadoStillnessRedesignV1), "Meditation", 1, CardType.Skill, TargetType.Self) { }
+        : base(nameof(ChadoStillnessRedesignV1), nameof(ChadoStillnessRedesignV1), 1, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
