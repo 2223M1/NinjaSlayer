@@ -116,8 +116,8 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             await CardCmd.AutoPlay(Choice, AddCard<PlaceholderBlueDefense01>(combat, upgraded: upgraded), null);
-            Require(combat.Player.Creature.Block == (upgraded ? 10 : 7)
-                && combat.Player.Creature.GetPowerAmount<ThornsPower>() == (upgraded ? 3 : 2),
+            Require(combat.Player.Creature.Block == (upgraded ? 8 : 5)
+                && combat.Player.Creature.GetPowerAmount<ThornsPower>() == (upgraded ? 4 : 3),
                 "Caltrops must grant its block and native Thorns.");
             AddCard<ChadoEnergyRedesignV1>(combat);
             AddCard<ChadoEnergyRedesignV1>(combat);

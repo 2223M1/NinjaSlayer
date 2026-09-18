@@ -110,21 +110,11 @@ internal static class ShurikenCombat
 #else
             .FromCard(card, cardPlay)
 #endif
-            .WithNoAttackerAnim()
-            .AfterAttackerAnim(() =>
-            {
-                BeginThrowPose(card.Owner!.Creature, cardPlay.Target);
-                return Task.CompletedTask;
-            })
-            .WithHitFx(null, null, null);
+            .WithAttackerAnim("Shiv", 0.2f);
 
         return command
             .Targeting(cardPlay.Target!)
-            .WithHitVfxNode(t =>
-            {
-                QueueThrowVfx(card.Owner!.Creature, t);
-                return null;
-            });
+            .WithHitVfxNode(t => CreateThrowVfx(card.Owner.Creature, t, null, out _));
     }
 
     private static void BeginThrowPose(Creature owner, Creature? target)
@@ -132,9 +122,6 @@ internal static class ShurikenCombat
         NinjaSlayerAimPose.Get(owner)?.BeginShurikenThrow(target);
         AtRelease(owner, () => NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow));
     }
-
-    private static void QueueThrowVfx(Creature owner, Creature target) =>
-        AtRelease(owner, () => target.GetVfxContainer()?.AddChildSafely(CreateThrowVfx(owner, target, null, out _)));
 
     private static void AtRelease(Creature owner, Action play)
     {

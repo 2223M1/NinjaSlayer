@@ -16,7 +16,7 @@ public sealed class HellTornadoRedesignV1 : RedesignV1RareCard
         [HoverTipFactory.FromPower<SoarPower>(), HoverTipFactory.FromOrb<ShurikenOrb>()];
 
     public HellTornadoRedesignV1()
-        : base(nameof(HellTornadoRedesignV1), "HellTornado", 3, CardType.Skill, TargetType.Self) { }
+        : base(nameof(HellTornadoRedesignV1), "HellTornado", 2, CardType.Skill, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
