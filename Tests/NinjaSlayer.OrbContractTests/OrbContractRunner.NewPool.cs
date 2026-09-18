@@ -29,6 +29,7 @@ public partial class OrbContractRunner
             MegaCrit.Sts2.Core.Runs.RunManager.Instance, new MegaCrit.Sts2.Core.Multiplayer.NetSingleplayerGameService());
         await VerifyScryAndSly();
         await VerifyMotherUnixBeforeDraw();
+        await VerifyBalanceV0216();
         await VerifyStatusCards();
         await VerifyTeaAndChop();
         await VerifyTemporaryStats();

@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class TechniqueSearchRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new CardsVar(1), new DynamicVar("Scry", 4)];
+        [new CardsVar(1), new DynamicVar("Scry", 5)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
 
     public TechniqueSearchRedesignV1()
@@ -26,6 +26,5 @@ public sealed class TechniqueSearchRedesignV1 : RedesignV1UncommonCard
     protected override void OnUpgrade()
     {
         DynamicVars.Cards.UpgradeValueBy(1);
-        DynamicVars["Scry"].UpgradeValueBy(2);
     }
 }

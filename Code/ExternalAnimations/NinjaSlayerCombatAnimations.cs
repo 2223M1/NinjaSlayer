@@ -29,6 +29,10 @@ public static class NinjaSlayerCombatAnimations
 
         switch (triggerName)
         {
+            case "Shiv":
+                NinjaSlayerAimPose.Get(creature)?.BeginShurikenThrow(NinjaSlayerAttackExecution.Target);
+                result = Cmd.CustomScaledWait(Mathf.Min(waitTime * 0.5f, 0.25f), waitTime);
+                return true;
             case "Attack":
                 NinjaSlayerCombatAudioSet.Play(audio.FastAttack);
                 result = PlayAttackAnimation(creature, waitTime);

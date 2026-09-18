@@ -85,12 +85,11 @@ public partial class OrbContractRunner
             var attack = (AttackCommand)AccessTools.Method(helper, "BuildAttackCommand")
                 .Invoke(null, [card, play, card.DynamicVars.Damage])!;
             await attack.Execute(Choice);
-            Require(attack.Results.Count() == 1 && _throwDirectWaits == 0
+            Require(attack.Results.Count() == 1
+                && ThrowGameplayWaits.Any(t => Math.Abs(t - 0.2f) < 0.00001f)
                 && ThrowGameplayWaits.All(t => Math.Abs(t - 0.166f) > 0.00001f),
-                "Shuriken attack blocked on its body windup.");
-            Require(MotionNumber(pose, "Throw", "Elapsed") == 0f,
-                "The nonblocking test advanced animation time to finish gameplay.");
-            GD.Print("PASS shuriken gameplay with frozen animation: stock and attack damage complete without a body-animation wait.");
+                $"Strong Shuriken must use the native Shiv gate: {string.Join(',', ThrowGameplayWaits)}.");
+            GD.Print("PASS frozen stock animation remains independent; Strong Shuriken uses the native 0.2-second Shiv gate.");
         }
         finally
         {

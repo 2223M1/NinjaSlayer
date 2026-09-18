@@ -89,11 +89,13 @@ internal sealed partial class SmokeController
                 return;
             }
             var room = NCombatRoom.Instance!;
-            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics" or "MotherUnix")
+            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics" or "MotherUnix" or "BalanceV0216")
             {
                 await recorder.Start();
                 recording = true;
-                if (_configuration.PreviewFormFinisher == "MotherUnix")
+                if (_configuration.PreviewFormFinisher == "BalanceV0216")
+                    await VerifyBalanceV0216Live(directory, cancellationToken);
+                else if (_configuration.PreviewFormFinisher == "MotherUnix")
                     await VerifyMotherUnixLive(directory, cancellationToken);
                 else if (_configuration.PreviewFormFinisher == "EventRelics")
                     await VerifyEventRelicsLive(directory, cancellationToken);

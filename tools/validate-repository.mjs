@@ -767,6 +767,8 @@ const powerClasses = filesUnder(join(root, 'Powers'))
     }));
   });
 for (const powerClass of powerClasses) {
+  // Native power icons live in the host pack; product contracts verify those resources.
+  if (/IconPath: ModelDb\.Power<ThornsPower>\(\)\.IconPath/.test(powerClass.source)) continue;
   const reusedIconMatch = powerClass.source.match(
     /NinjaSlayerPowerAssets\.Named\((?:nameof\((\w+Power)\)|"(\w+Power)")\)/,
   );

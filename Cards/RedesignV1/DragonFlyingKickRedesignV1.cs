@@ -33,7 +33,7 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
         [new DamageVar(15, ValueProp.Move), new DynamicVar("Breath", 2)];
 
     public DragonFlyingKickRedesignV1()
-        : base(nameof(DragonFlyingKickRedesignV1), "NinjaSlayerFootwork", 4, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(DragonFlyingKickRedesignV1), "NinjaSlayerFootwork", 3, CardType.Attack, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

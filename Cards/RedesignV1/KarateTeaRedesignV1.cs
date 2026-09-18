@@ -15,7 +15,7 @@ public sealed class KarateTeaRedesignV1 : RedesignV1RareCard
         [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>(), HoverTipFactory.FromPower<KaratePower>()];
 
     public KarateTeaRedesignV1()
-        : base(nameof(KarateTeaRedesignV1), "TeaOffering", 2, CardType.Power, TargetType.Self) { }
+        : base(nameof(KarateTeaRedesignV1), "TeaOffering", 1, CardType.Power, TargetType.Self) { }
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<KarateTeaPower>(
