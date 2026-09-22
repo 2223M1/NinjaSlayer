@@ -119,8 +119,6 @@ public static class RedesignV1Rules
         "BusyLine"
     ];
 
-    internal static bool ShouldOwnTransientShurikenSlot(int baseOrbSlotCount, int capacity) =>
-        baseOrbSlotCount == 0 && capacity == 0;
 
     public static int ResolveChadoBreathIncrease(int amount, bool hasChadoInHand) =>
         Math.Max(0, amount - (hasChadoInHand ? 0 : 1));

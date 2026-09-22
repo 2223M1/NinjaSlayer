@@ -359,13 +359,13 @@ public partial class OrbContractRunner
         await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         await AddStock(combat.Player, 3);
         await CardCmd.AutoPlay(Choice, AddCard<Dualcast>(combat), null);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
-            "Two AOE shots against two targets must grant four stat increments.");
+            "Three stock evoked twice against two targets must grant twelve stat increments.");
         await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
         AddCard<BlackFlameRedesignV1>(combat);
         await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
             "An attack with Karate and Black Flame must not grant orb-only Strength.");
         GD.Print("PASS multi-target multi-evoke stat counts and actual Karate/Black Flame source exclusion");

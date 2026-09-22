@@ -24,7 +24,7 @@ internal sealed record TheaterScript
         }) ?? throw new InvalidDataException("Theater script is empty.");
         if (script.Act != 3 || script.Cues.Length == 0 || script.Duration <= 0)
             throw new InvalidDataException("Theater requires Act 3, positive duration and at least one cue.");
-        if (script.Purpose is not ("promo" or "tomoe" or "hook")) throw new InvalidDataException("Unknown theater purpose.");
+        if (script.Purpose is not ("promo" or "tomoe" or "hook" or "aim")) throw new InvalidDataException("Unknown theater purpose.");
         if (script.Relics.Contains("BigMushroom") || script.Relics.Distinct().Count() != script.Relics.Length)
             throw new InvalidDataException("Theater relics must be unique and exclude BigMushroom.");
         var names = new HashSet<string>(StringComparer.Ordinal);
@@ -52,7 +52,7 @@ internal sealed record TheaterScript
         if (step.Action is not ("card" or "move" or "wait" or "roll_volley" or "knife_exchange"
             or "entrance" or "missiles" or "apology" or "takeover" or "form" or "clear_air"
             or "camera" or "power" or "remove_power" or "clear_block" or "block" or "aim"
-            or "give_card" or "swap_sides" or "replace_enemy" or "speed"))
+            or "give_card" or "swap_sides" or "replace_enemy" or "speed" or "aim_motion"))
             throw new InvalidDataException($"Unknown theater action: {step.Action}");
         if (step.Action == "speed" && step.Mode is not ("Normal" or "Fast" or "Instant"))
             throw new InvalidDataException("Unknown playback speed.");

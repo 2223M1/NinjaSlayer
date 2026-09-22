@@ -83,7 +83,11 @@ public class Entry
             requiredPatcher.RegisterPatch<BlackFlameDamagePatch>();
             requiredPatcher.RegisterPatch<KarateDamageWavePatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbChannelPatch>();
-            requiredPatcher.RegisterPatch<ShurikenOrbEvokePatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbAddVisualPatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbRemoveSlotPatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbRemoveVisualPatch>();
+            requiredPatcher.RegisterPatch<ShurikenOrbPreviewPatch>();
+            requiredPatcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
             requiredPatcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbVisualPatch>();
@@ -103,7 +107,7 @@ public class Entry
             requiredPatcher.RegisterPatch<SawatariPullEventPatch>();
             requiredPatcher.RegisterPatch<SawatariRoomVisitPatch>();
             requiredPatcher.RegisterPatch<SawatariCombatEndGatePatch>();
-            requiredPatcher.RegisterPatch<SawatariVictoryCheckPatch>();
+            requiredPatcher.RegisterPatch<SawatariTurnEndPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardDeselectedPatch>();

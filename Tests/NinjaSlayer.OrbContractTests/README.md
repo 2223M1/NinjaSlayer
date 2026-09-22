@@ -18,6 +18,12 @@ MVID, and logs the input DLL path and SHA-256. A timeout without the completion
 marker is a failure. Final acceptance uses a clean committed candidate build;
 metadata supplied to a dirty development build is not immutable SHA evidence.
 
+Set `NINJASLAYER_CONTRACT_ONLY_ORB_SLOTS=1` to run the dedicated-slot/native-queue
+matrix and card interaction regressions without unrelated animation contracts.
+This mode installs the production orb layout/slot/preview patches on both hosts
+and initializes its own native localization and player-choice context. Rendered
+validation remains the separate `OrbSlots` SmokeDriver scenario.
+
 For the Black Flame autoplay regression, set `NINJASLAYER_CONTRACT_ONLY_V024=1`
 before invoking the same command. It covers Naval Warhammer and vanilla BeatDown,
 base/upgraded repeat counts, one to three held flames, multi-hit attacks and one
@@ -34,7 +40,10 @@ patches and yields during play-count generation to cover asynchronous completion
 Unset both variables to run the full suite. This models the relevant loading-order
 interaction; it does not claim a full run with the player's other mods installed.
 
-Coverage includes temporary slot ownership, depletion beside another orb,
+Coverage includes dedicated Shuriken capacity isolation, native slot lifetime for
+all five vanilla characters, normal-orb priority at both ends, ten normal slots
+plus dedicated stock, native capacity-based potions, real Dualcast/Quadcast/
+Multi-Cast/Shatter plays with full-stock evokes, depletion beside another orb,
 actual discard dispatch and recycling at 0/1/multiple stock, native double and
 quadruple evoke command sequences, independent Starless Night chains, AOE
 shuffle, full-slot replacement, saved orb properties, Hell Tornado's consumed
@@ -64,6 +73,11 @@ Local release acceptance supplies both packs through Run-Contracts.ps1;
 gameplay and bilingual card formatting contracts run in both modes.
 The separate multiplayer runner uses two real ENet processes and native card
 actions, including local-only selectors whose choices cross the network.
+It also sends each player's native End Turn action separately and observes the
+production Sawatari turn-end hook: it must not run while the other player can
+still act, and must run once after both players end. This checks the host's
+network barrier on both supported versions; rendered event choices and music
+are covered separately by the `MusicV0217` and `SawatariCleanup` smoke scenarios.
 
 Run saves store player inventory and base orb slots, not the mid-combat orb queue.
 The separate SavedProperties roundtrip therefore tests model data, while the

@@ -26,3 +26,25 @@ scaled fade curves. Event IDs, source clips, markers and the original
 `bus:/master/music` routing remain intact. Build the Desktop banks and export GUIDs,
 then copy only NinjaSlayer's bank to the runtime folder as above. The 0.2.17 bank
 was built with FMOD Studio and checked in the actual stable host with RitsuLib 0.6.2.
+
+## 0.3.0 Sawatari outro
+
+Apply `tools/fmod/sawatari-outro.patch` after `music-v0217.patch`. It replaces the
+106 short Sawatari battle transition regions with four contiguous phase regions.
+Each region stops 2 ms before its destination marker, so the Duel Outro cannot
+re-enter its own transition. The co-op, decision and duel loops are conditional
+on their own phase. Source clips, event IDs, music routing and 0.12-second fades
+are unchanged; obsolete transition objects are removed.
+
+Build with FMOD Studio 2.03.06:
+
+```powershell
+& 'C:/Program Files/FMOD SoundSystem/FMOD Studio 2.03.06/fmodstudiocl.exe' `
+  -build -banks NinjaSlayer -platforms Desktop -export-guids `
+  ../STS2_FModProject_Minimal-main/STS2.fspro
+```
+
+Copy the resulting Desktop bank to this runtime folder. Local stable regression
+reproduced the old bank repeatedly jumping between 350.65 and 350.80 seconds;
+the new bank plays the complete outro and reaches FMOD STOPPED. See
+`Docs/sawatari-completion-validation-2026-09-22.md` for evidence and scope.

@@ -124,20 +124,6 @@ public sealed class RedesignV1RulesTests
     }
 
     [Theory]
-    [InlineData(0, 0, true)]
-    [InlineData(0, 1, false)]
-    [InlineData(3, 0, false)]
-    public void OnlyAZeroSlotCharacterOwnsTheAutomaticallyCreatedShurikenSlot(
-        int baseOrbSlots,
-        int currentCapacity,
-        bool expected)
-    {
-        Assert.Equal(
-            expected,
-            RedesignV1Rules.ShouldOwnTransientShurikenSlot(baseOrbSlots, currentCapacity));
-    }
-
-    [Theory]
     [InlineData(4, true, 1, 1, 3)]
     [InlineData(4, false, 1, 0, 4)]
     [InlineData(4, true, 0, 0, 4)]

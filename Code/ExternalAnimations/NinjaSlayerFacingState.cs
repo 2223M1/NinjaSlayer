@@ -85,10 +85,16 @@ internal static class NinjaSlayerFacingState
 
     internal static bool ResolveFacingLeft(NCreature creatureNode)
     {
-        Creature creature = creatureNode.Entity;
         Node2D? posedAnchor = NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals);
-        if (posedAnchor?.GetNodeOrNull<NinjaSlayerAimPose>("AimPose")?.IsAiming == true)
+        if (posedAnchor?.GetNodeOrNull<NinjaSlayerAimPose>("AimPose") is { } pose
+            && (pose.IsAiming || pose.HasFacingPreview))
             return posedAnchor.Scale.X < 0f;
+        return ResolveCommittedFacingLeft(creatureNode);
+    }
+
+    internal static bool ResolveCommittedFacingLeft(NCreature creatureNode)
+    {
+        Creature creature = creatureNode.Entity;
         if (creature.Player?.Character is not INinjaSlayerCharacter)
         {
             return FacingScaleMath.IsFacingLeft(creatureNode.Body.Scale.X);
@@ -96,7 +102,9 @@ internal static class NinjaSlayerFacingState
 
         if (creature.GetPower<SurroundedPower>() is { } surrounded)
         {
-            return surrounded.Facing == SurroundedPower.Direction.Left;
+            bool powerLeft = surrounded.Facing == SurroundedPower.Direction.Left;
+            CommitFacing(creatureNode, powerLeft);
+            return powerLeft;
         }
 
         if (PersistentFacing.TryGetValue(creature, out FacingSnapshot? snapshot))
@@ -105,7 +113,15 @@ internal static class NinjaSlayerFacingState
         }
 
         Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals);
-        return anchor != null && FacingScaleMath.IsFacingLeft(anchor.Scale.X);
+        bool left = anchor != null && FacingScaleMath.IsFacingLeft(anchor.Scale.X);
+        PersistentFacing.GetValue(creature, static _ => new FacingSnapshot()).FaceLeft = left;
+        return left;
+    }
+
+    internal static void SetPreviewFacing(NCreature creatureNode, bool faceLeft)
+    {
+        _ = ResolveCommittedFacingLeft(creatureNode);
+        ApplyVisual(creatureNode, faceLeft);
     }
 
     public static (Creature? Creature, float BodyScaleX, bool RestoreBodyScale) CaptureSurroundedBody(
@@ -130,7 +146,17 @@ internal static class NinjaSlayerFacingState
         }
     }
 
+    internal static void CommitFacing(NCreature creatureNode, bool faceLeft) =>
+        PersistentFacing.GetValue(creatureNode.Entity, static _ => new FacingSnapshot()).FaceLeft = faceLeft;
+
     private static void Apply(NCreature creatureNode, bool faceLeft)
+    {
+        CommitFacing(creatureNode, faceLeft);
+        if (NinjaSlayerAimPose.Get(creatureNode.Entity)?.HasFacingPreview != true)
+            ApplyVisual(creatureNode, faceLeft);
+    }
+
+    private static void ApplyVisual(NCreature creatureNode, bool faceLeft)
     {
         Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(creatureNode.Visuals);
         if (anchor == null)
@@ -138,7 +164,6 @@ internal static class NinjaSlayerFacingState
             return;
         }
 
-        PersistentFacing.GetValue(creatureNode.Entity, static _ => new FacingSnapshot()).FaceLeft = faceLeft;
         anchor.Scale = new Vector2(
             FacingScaleMath.WithFacing(anchor.Scale.X, faceLeft),
             anchor.Scale.Y);

@@ -728,6 +728,7 @@ internal sealed partial class SmokeController
                     });
             }
             await manager.CheckWinCondition();
+            await EndSawatariPlayerTurn(cancellationToken);
             await WaitUntilAsync(
                 () => manager.IsPaused && GetSawatariOptions().Count == 2,
                 "Sawatari intermission did not pause combat and show both choices",

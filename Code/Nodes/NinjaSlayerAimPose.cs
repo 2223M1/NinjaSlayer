@@ -35,7 +35,6 @@ public partial class NinjaSlayerAimPose : Node2D
     private bool _returning;
     private bool _enabled;
     private bool _subscribed;
-    private bool? _dragFacingBaseline;
     private float _angle;
     private float _displayAngle;
     private float _actionStartAngle;
@@ -115,6 +114,8 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_subscribed)
             RenderingServer.FramePreDraw -= SyncNow;
         _subscribed = false;
+        ClearAimFollow();
+        HasFacingPreview = false;
         // Child visuals have already exited; release the projection without applying a facing pose.
         _turnProjection?.Restore();
         _turnProjection = null;
@@ -130,10 +131,11 @@ public partial class NinjaSlayerAimPose : Node2D
         if (_busy && !_exclusive) _actionBlend = Math.Min(1f, _actionBlend + (float)delta / 0.05f);
         if (_actor?.Entity.IsDead == true)
         {
-            if (_enabled || _spin != null || HasPresentation) Reset();
+            if (_enabled || _spin != null || HasPresentation || HasFacingPreview) Reset();
             return;
         }
         AdvancePresentation((float)delta);
+        UpdateDragFacing();
         AdvanceTurn((float)delta);
         if (_dragOwner != null && !GodotObject.IsInstanceValid(_dragOwner))
             EndDrag(_dragOwner, false);
@@ -151,7 +153,7 @@ public partial class NinjaSlayerAimPose : Node2D
             _spinExposure = age => from + speed * Math.Clamp(delta - age - stopped, 0d, delta - stopped);
         }
         else _spinExposure = null;
-        SyncNow();
+        SyncPose((float)delta);
     }
 
     private float FacingSign => _airborne.Scale.X < 0f ? -1f : 1f;
@@ -160,7 +162,8 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         if (_dragOwner == null)
         {
-            _dragFacingBaseline = FacingSign < 0f;
+            if (_actor != null) _ = NinjaSlayerFacingState.ResolveCommittedFacingLeft(_actor);
+            ClearAimFollow();
             if (_returning && !IsBusy) { StopPoseTween(); _returning = false; }
         }
         _dragOwner = owner;
@@ -173,18 +176,7 @@ public partial class NinjaSlayerAimPose : Node2D
         {
             UpdateTornadoCharge();
         }
-        else if (_actor != null)
-        {
-            Vector2 dragTarget = hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin
-                ?? pointerCanvas;
-            if (FreeControl is { Active: true } free) dragTarget = free.UntransformTarget(dragTarget);
-            float targetX = dragTarget.X;
-            // Mirroring moves the off-center hit marker across the root. Using that
-            // marker here makes a stationary overhead pointer flip the body every frame.
-            float side = targetX - _airborne.GetGlobalTransformWithCanvas().Origin.X;
-            bool left = Mathf.IsZeroApprox(side) ? FacingSign < 0f : side < 0f;
-            RequestTurn(left);
-        }
+        else UpdateDragFacing();
         SyncNow();
     }
 
@@ -194,10 +186,9 @@ public partial class NinjaSlayerAimPose : Node2D
         _dragOwner = null;
         _dragCard = null;
         _hovered = null;
-        if (!played && !IsBusy && _actor != null && _dragFacingBaseline is { } left)
-            RequestTurn(left);
-        _dragFacingBaseline = null;
+        ClearAimFollow();
         if (IsBusy) return;
+        UpdateDragFacing();
         if (played && _charging)
         {
             // Preserve the charged frame until the queued card claims it. There is no
@@ -226,6 +217,8 @@ public partial class NinjaSlayerAimPose : Node2D
     internal void BeginAction(Creature? target, bool exclusive = false, bool preserveTornado = false)
     {
         SyncNow();
+        ClearAimFollow();
+        HasFacingPreview = false;
         if (exclusive)
         {
             AttackForwardSign = null;
@@ -452,7 +445,6 @@ public partial class NinjaSlayerAimPose : Node2D
         _dragOwner = null;
         _target = null;
         _finisherTargetLocal = null;
-        _dragFacingBaseline = null;
         _hovered = null;
         _preparedKick = null;
         AttackForwardSign = null;
@@ -536,7 +528,9 @@ public partial class NinjaSlayerAimPose : Node2D
         return target;
     }
 
-    internal void SyncNow()
+    internal void SyncNow() => SyncPose(0f);
+
+    private void SyncPose(float dragDelta)
     {
         if (_actor == null || !GodotObject.IsInstanceValid(_actor) || _actor.Entity == null || _actor.Visuals == null || _actor.Entity.IsDead
             || !GodotObject.IsInstanceValid(_center)) return;
@@ -599,7 +593,7 @@ public partial class NinjaSlayerAimPose : Node2D
         reference += GroundedPoseMath.WrapAngle(feetAngle - reference) * _kick;
         if (!_returning || _dragOwner != null && !_exclusive)
             _angle = ChargePreview ? 0f
-                : !IsBusy && _dragOwner != null ? PreviewAngle(offsets, core, target, line, reference)
+                : !IsBusy && _dragOwner != null ? PreviewAngle(offsets, core, target, line, reference, dragDelta)
                 : GroundedPoseMath.AimAngle(offsets, new(core.X, core.Y), new(target.X, target.Y), line, reference, _angle);
         float rotation = _angle * (_tornado ? 1f - _launch : 1f);
         if (_busy && !_exclusive && !_tornado)

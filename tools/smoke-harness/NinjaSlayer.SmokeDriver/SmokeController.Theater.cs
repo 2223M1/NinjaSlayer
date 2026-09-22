@@ -289,6 +289,7 @@ internal sealed partial class SmokeController
                     case "power": await Power(step.Actor, step.Power!, step.Amount); break;
                     case "remove_power": await RemovePower(Actor(step.Actor), step.Power!); break;
                     case "aim": await Aim(); break;
+                    case "aim_motion": await AimMotion(step.Mode!); break;
                     default: throw new InvalidDataException($"Unsupported theater action {step.Action}.");
                 }
                 foreach (string cover in step.Covers) Cover(cover);
@@ -452,6 +453,126 @@ internal sealed partial class SmokeController
             CardModel card = _combat.CreateCard<StrikeNinjaSlayerRedesignV1>(_player);
             Call(Pose, "Drag", drag, card, Node("enemy").VfxSpawnPosition + new Vector2(0, -150), Actor("enemy"));
             await Wait(.18); Call(Pose, "EndDrag", drag, false); drag.QueueFree();
+        }
+
+        private async Task AimMotion(string mode)
+        {
+            NCreature ninja = Node("ninja"), enemy = Node("enemy");
+            Vector2 root = ninja.Position, enemyRoot = enemy.Position, enemyVisual = enemy.Visuals.Position;
+            Type facing = ProductType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState");
+            bool Committed() => (bool)InvokeMethod(facing, null, "ResolveCommittedFacingLeft", ninja)!;
+            bool Shown() => ninja.Visuals.GetNode<Node2D>("AirborneAnchor").Scale.X < 0;
+            bool baseline = Committed();
+            var drag = new Node(); ninja.AddChild(drag);
+            CardModel card = _combat.CreateCard<StrikeNinjaSlayerRedesignV1>(_player);
+            SurroundedPower? surrounded = null;
+            Vector2 Core(NCreature node) => node.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
+            void Point(Vector2 point, Creature? hovered = null) => Call(Pose, "Drag", drag, card, point, hovered);
+            async Task Sweep(Vector2 from, Vector2 to, double seconds, Creature? hovered = null)
+            {
+                long started = Stopwatch.GetTimestamp();
+                double elapsed;
+                do
+                {
+                    elapsed = Stopwatch.GetElapsedTime(started).TotalSeconds;
+                    Point(from.Lerp(to, (float)Math.Min(1, elapsed / seconds)), hovered);
+                    await _driver.WaitFrames(1);
+                } while (elapsed < seconds);
+            }
+            try
+            {
+                if (mode == "tracking")
+                {
+                    enemy.Visuals.Position += Vector2.Up * 160f;
+                    Vector2 target = Core(enemy), neutral = new(target.X, Core(ninja).Y);
+                    Vector2 outside = target + Vector2.Up * 260f;
+                    await Sweep(neutral, target, .35);
+                    await Sweep(target, outside, .12);
+                    await Sweep(outside, outside, .35);
+                    await Sweep(outside, neutral, .12);
+                    await Sweep(neutral, target, .18, enemy.Entity);
+                    await Sweep(target, target, .25, enemy.Entity);
+                    float settled = (float)AccessTools.Field(Pose.GetType(), "_angle").GetValue(Pose)!;
+                    for (int sync = 0; sync < 10; sync++) Call(Pose, "SyncNow");
+                    Require(settled == (float)AccessTools.Field(Pose.GetType(), "_angle").GetValue(Pose)!,
+                        "Repeated pose sync accelerated aiming.");
+                }
+                else if (mode == "cancel")
+                {
+                    Vector2 front = Core(enemy);
+                    float axis = ninja.Visuals.GetNode<Node2D>("AirborneAnchor").GetGlobalTransformWithCanvas().Origin.X;
+                    Vector2 back = new(2f * axis - front.X, front.Y);
+                    await Sweep(front, back, .2);
+                    await Sweep(back, back, .25);
+                    Require(Shown() != baseline && Committed() == baseline, "Preview facing was committed.");
+                    Call(Pose, "EndDrag", drag, false);
+                    await Wait(.045);
+                    await Sweep(back, back, .055);
+                    Call(Pose, "EndDrag", drag, false);
+                    await Wait(.3);
+                    Require(Shown() == baseline && Committed() == baseline, "Cancellation lost its facing baseline.");
+                    await Sweep(back, back, .05);
+                    Call(Pose, "EndDrag", drag, false);
+                    await Wait(.3);
+                    Require(Shown() == baseline, "Mid-turn cancellation did not return.");
+                }
+                else if (mode == "takeover")
+                {
+                    Vector2 target = Core(enemy);
+                    await Sweep(target + Vector2.Up * 200, target, .1);
+                    Call(Pose, "EndDrag", drag, true);
+                    await PlayCard(new() { Card = nameof(KarateStraightRedesignV1) });
+                }
+                else if (mode == "surrounded")
+                {
+                    await PowerCmd.Apply<SurroundedPower>(_choice, ninja.Entity, 1, ninja.Entity, null);
+                    await PowerCmd.Apply<BackAttackLeftPower>(_choice, enemy.Entity, 1, enemy.Entity, null);
+                    surrounded = ninja.Entity.GetPower<SurroundedPower>()!;
+                    enemy.Position = new(ninja.Position.X - 320f, enemy.Position.Y);
+                    Vector2 left = Core(enemy), right = Core(ninja) + Vector2.Right * 500f;
+                    var originalDirection = surrounded.Facing;
+                    decimal damageBefore = surrounded.ModifyDamageMultiplicative(ninja.Entity, 10, ValueProp.Move, enemy.Entity, null
+#if !NINJASLAYER_CHANNEL_STABLE
+                        , null
+#endif
+                    );
+                    await Sweep(left, left, .3);
+                    Require(Shown() && surrounded.Facing == originalDirection, "Preview changed Surrounded direction.");
+                    Require(damageBefore == surrounded.ModifyDamageMultiplicative(ninja.Entity, 10, ValueProp.Move, enemy.Entity, null
+#if !NINJASLAYER_CHANNEL_STABLE
+                        , null
+#endif
+                    ),
+                        "Preview changed back-attack damage.");
+                    Call(Pose, "EndDrag", drag, false);
+                    await Wait(.25);
+                    Require(!Shown(), "Cancelled Surrounded preview did not return right.");
+                    await PlayCard(new() { Card = nameof(KarateStraightRedesignV1) });
+                    Require(surrounded.Facing == SurroundedPower.Direction.Left, "Actual card did not turn Surrounded facing.");
+                    await Sweep(right, right, .3);
+                    Require(!Shown() && Committed(), "Preview did not preserve the new committed left facing.");
+                    Call(Pose, "EndDrag", drag, false);
+                    await Wait(.3);
+                    Require(Shown() && Committed(), "Cancellation undid the actual card's left-facing state.");
+                }
+                else throw new InvalidDataException("Unknown aim motion: " + mode);
+            }
+            finally
+            {
+                Call(Pose, "EndDrag", drag, false);
+                drag.QueueFree();
+                await Wait(.3);
+                enemy.Position = enemyRoot;
+                enemy.Visuals.Position = enemyVisual;
+                if (surrounded != null)
+                {
+                    await RemovePower<SurroundedPower>(ninja.Entity);
+                    await RemovePower<BackAttackLeftPower>(enemy.Entity);
+                    InvokeMethod(facing, null, "SetFacing", ninja, baseline);
+                }
+            }
+            Require(ninja.Position.IsEqualApprox(root), "Aiming moved the player layout root.");
+            Cover("aim-" + mode);
         }
 
         private async Task Form(string form)
@@ -621,6 +742,12 @@ internal sealed partial class SmokeController
         {
             if (_start == 0) return;
             var row = new JsonObject { ["seconds"] = Seconds, ["cue"] = _cue };
+            if (_script.Purpose == "aim")
+            {
+                row["aimAngle"] = (float)AccessTools.Field(Pose.GetType(), "_angle").GetValue(Pose)!;
+                row["displayFacingLeft"] = Node("ninja").Visuals.GetNode<Node2D>("AirborneAnchor").Scale.X < 0f;
+                row["surroundedFacing"] = Actor("ninja").GetPower<SurroundedPower>()?.Facing.ToString();
+            }
             foreach (var (name, actor) in _actors)
             {
                 if (actor.GetCreatureNode() is not { } node || !GodotObject.IsInstanceValid(node)) continue;
