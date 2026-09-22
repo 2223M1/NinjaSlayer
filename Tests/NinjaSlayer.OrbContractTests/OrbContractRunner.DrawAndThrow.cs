@@ -302,6 +302,9 @@ public partial class OrbContractRunner
         void Call(string name, params object?[] args) => AccessTools.Method(type, name).Invoke(pose, args);
         float Field(string name) => PresentationNumber(pose, name);
         var actor = AimActors[combat.Player.Creature];
+        Type facingType = typeof(ShurikenOrb).Assembly.GetType(
+            "NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState", true)!;
+        bool facingBefore = (bool)AccessTools.Method(facingType, "ResolveCommittedFacingLeft").Invoke(null, [actor])!;
         Transform2D anchorBaseline = anchor.Transform;
         Vector2 actorBaseline = actor.Position;
         Vector2 targetBaseline = target.Position;
@@ -375,6 +378,7 @@ public partial class OrbContractRunner
                 $"Triple motion baseline: speed={speed}, facing={facing}, peak={peak}, expected={idle}, actual={body.GetGlobalTransformWithCanvas()}, pose={pose.Transform}.");
         }
         Call("Reset");
+        AccessTools.Method(facingType, "SetFacing").Invoke(null, [actor, facingBefore]);
         anchor.Transform = anchorBaseline;
         actor.Position = actorBaseline;
         target.Position = targetBaseline;

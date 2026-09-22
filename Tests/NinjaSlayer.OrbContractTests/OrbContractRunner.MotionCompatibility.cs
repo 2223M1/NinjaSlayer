@@ -14,6 +14,11 @@ public partial class OrbContractRunner
     {
         void Call(string name, params object?[] args) => AccessTools.Method(pose.GetType(), name).Invoke(pose, args);
         var actor = AimActors[combat.Player.Creature];
+        // Earlier scenarios attack in both directions. Reset the committed facing,
+        // not just the visual transform, before asserting leftward recoil.
+        AccessTools.Method(typeof(ShurikenOrb).Assembly.GetType(
+            "NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState"), "SetFacing")
+            .Invoke(null, [actor, false]);
         Call("Reset"); Call("SyncNow");
         Vector2 root = actor.Position, baseline = center.GlobalPosition;
         Call("BeginBackflip"); pose._Process(.12);

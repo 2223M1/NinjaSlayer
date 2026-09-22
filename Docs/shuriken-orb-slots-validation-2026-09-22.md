@@ -46,7 +46,7 @@ stable宿主MVID为 `97f10687-c306-4798-ab75-8b9f23f34dfb`；preview为 `73b63ee
 
 工作区同时有其他任务的瞄准／转向改动；候选编译之后 `NinjaSlayerFacingState.cs` 仍有后续变更，已原样保留。本报告的构建、契约和实机结论仅对应上述候选及其指纹，不是对持续变化的全部工作树作验收。演出SmokeDriver新增断言的双宿主参数差异已做局部条件编译修正。
 
-开发过程的stable完整产品套件通过。preview完整套件在既有 `VerifyIndependentPresentation` 的“Hurt lacks recoil or moves the UI root”断言处停止；未将其记作通过，也未为绕过断言修改生产演出。最终候选使用独立初始化的手里剑专项入口，两宿主均通过。未执行preview可视实机及完整AutoSlay。
+开发过程的stable完整产品套件通过。最初preview完整套件在 `VerifyIndependentPresentation` 的“Hurt lacks recoil or moves the UI root”断言处停止；当时未记作通过。0.3.0 收尾已定位为测试之间遗留实际朝向，使用现有朝向接口修正测试初始化／恢复后，两宿主完整产品套件均通过，生产演出未为该断言改动。详见事件收尾验证中的干净候选记录。未执行本机preview可视实机及完整AutoSlay。
 
 ## 维护边界
 

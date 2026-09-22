@@ -44,3 +44,34 @@ stable 0.107.1 MVID 为 `97f10687-c306-4798-ab75-8b9f23f34dfb`；preview 0.111.0
 这些文件来自含其他演出修改的开发工作区，不是不可变提交产物。干净发布候选须另行验证。
 双进程契约不冒充完整双客户端可视事件投票；本机尚未执行 preview 可视实机或完整 AutoSlay。
 Godot 退出仍有既有节点／资源清理警告，不将断言通过写成零警告游戏日志。
+
+## 0.3.0 干净候选
+
+从独立干净工作树的 `ec4b1303fc5b0794984c6d2a222060f7b5331772` 构建，显式指定版本 `0.3.0`。
+候选包含拖牌平滑跟随、至多 3 度的边界回弹、预览与实际朝向分离，以及取消／攻击接管处理。
+证据根目录 `build/v030/`，文件清单见 `candidate-evidence.json`。
+
+| 文件（`../release-v0.3.0/build/candidate-channels/` 下） | SHA-256 |
+| --- | --- |
+| `stable/package/NinjaSlayer/NinjaSlayer.dll` | `dbb360f1ffc5a897ff863178a00158e24811655b4f89cb880ed7b24bd173d860` |
+| `preview/package/NinjaSlayer/NinjaSlayer.dll` | `2e678d9c6d3ea05465780a24370f52b35d26827fe63a33ff76f6ffda69b441d4` |
+| `stable/package/NinjaSlayer/NinjaSlayer.pck` | `4901f8b1532644300aeaba170a617918731744fec5521211b442327bbddbc049` |
+
+- 两宿主产品打包、资源契约及 SmokeDriver 均通过；`*-package-02.log`、`*-smoke.log`。
+- 两宿主完整产品契约通过；`*-full-contract-final-02.log`。此前受击断言失败是测试用例只复原
+  Sprite 变换、未复原实际朝向所致；测试改用现有朝向接口初始化并在子用例结束后恢复，
+  保留受击方向、位移、时长及 UI 稳定的原断言。仅测试接线改动，候选产品 DLL 未改。
+- 两宿主双进程 ENet 通过；`enet-stable/`、`enet-preview/`。验证混合槽位、库存归属和
+  所有人结束回合后只触发一次泽渡回调。
+- stable 真实游戏 `live/run-A-event-candidate-02/` 22 个检查点通过，包含尾奏播放完成、
+  击杀后继续拖牌、手动结束回合、读档音乐及奖励。
+- stable 拖牌演出 `live/run-A-aim-candidate-02/` 14 个检查点通过，覆盖普通／各奈落形态、
+  取消重拖、包围状态与攻击接管。`aim-contact.png`、`preview.mp4`、`motion.json` 保留可视证据。
+- stable 手里剑 `live/run-A-orb-candidate/` 23 个检查点通过，覆盖混合槽位、10＋1槽、
+  实际激发、预览、退出及原生 Continue 重载。已查看对应布局截图。
+- 358 项逻辑测试、仓库一致性、兼容配置和构建边界通过。
+
+此后提交仅补充测试状态恢复和验证文档；最终发布包按合并后的完整 SHA 重新构建。
+GitHub CI、最终包文件哈希、远端重新下载及更新说明核验记录写入本地
+`build/releases/workshop-v0.3.0-evidence.json`。保留不公开列出与 RitsuLib 依赖，不创建 GitHub Release。
+未执行本机 preview 可视实机、完整 AutoSlay 或双客户端可视事件投票；不再在 ninja5080 测试。
