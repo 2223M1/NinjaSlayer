@@ -13,6 +13,14 @@ public partial class NinjaSlayerAimPose
 {
     private CardModel? _dragCard;
     private readonly List<V2> _aimTargets = [];
+    private DragAimFollow _aimFollow;
+    private bool _aimFollowing;
+    private bool _pointerSampled;
+    private Vector2 _previousAimPointer;
+    private Creature? _previousAimHovered;
+    private float _previousAimFacing;
+    private NinjaSlayerFormKind _previousAimForm;
+    internal bool HasFacingPreview { get; private set; }
     private float _turnAngle;
     private float _turnFrom;
     private float _turnTo;
@@ -36,6 +44,29 @@ public partial class NinjaSlayerAimPose
     private bool Turning => _turnDuration > 0f;
     private bool HasCharge => _charging || _chargePending || _chargeScale != Vector2.One || _chargeBack != 0f;
     private bool ChargePreview => !IsBusy && (_charging || _chargePending || _dragCard is TornadoFistRedesignV1);
+
+    private void UpdateDragFacing()
+    {
+        if (_actor == null || IsBusy) return;
+        if (_dragOwner != null && _dragCard is not TornadoFistRedesignV1)
+        {
+            HasFacingPreview = true;
+            Vector2 target = _hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin
+                ?? _pointer;
+            if (FreeControl is { Active: true } free) target = free.UntransformTarget(target);
+            float side = target.X - _airborne.GetGlobalTransformWithCanvas().Origin.X;
+            bool left = ReferenceEquals(_hovered, _actor.Entity)
+                ? NinjaSlayerFacingState.ResolveCommittedFacingLeft(_actor)
+                : Mathf.IsZeroApprox(side) ? FacingSign < 0f : side < 0f;
+            RequestTurn(left);
+        }
+        else if (HasFacingPreview)
+        {
+            bool left = NinjaSlayerFacingState.ResolveCommittedFacingLeft(_actor);
+            RequestTurn(left);
+            if (!Turning && left == (FacingSign < 0f)) HasFacingPreview = false;
+        }
+    }
 
     private void RequestTurn(bool left)
     {
@@ -71,7 +102,7 @@ public partial class NinjaSlayerAimPose
         _turnAngle = DragPoseMath.TurnAngle(from, to, elapsed, duration);
         _turnExposure = age => DragPoseMath.TurnAngle(from, to, Math.Max(0f, elapsed - (float)age), duration);
         bool left = _turnAngle > 90f || Mathf.IsEqualApprox(_turnAngle, 90f) && _turnTo > _turnFrom;
-        if (left != (FacingSign < 0f)) NinjaSlayerFacingState.SetFacing(_actor, left);
+        if (left != (FacingSign < 0f)) NinjaSlayerFacingState.SetPreviewFacing(_actor, left);
         ApplyTurnProjection();
         if (_turnElapsed >= _turnDuration) FinishTurn(left);
     }
@@ -121,7 +152,7 @@ public partial class NinjaSlayerAimPose
 
     private void FinishTurn(bool left)
     {
-        if (_actor != null) NinjaSlayerFacingState.SetFacing(_actor, left);
+        if (_actor != null) NinjaSlayerFacingState.SetPreviewFacing(_actor, left);
         _turnDuration = 0f;
         _turnAngle = left ? 180f : 0f;
         _turnExposure = null;
@@ -135,14 +166,19 @@ public partial class NinjaSlayerAimPose
     private void FaceForAction(bool left, bool immediate)
     {
         if (_actor == null) return;
+        NinjaSlayerFacingState.CommitFacing(_actor, left);
         if (Turning && !immediate) RequestTurn(left);
         else FinishTurn(left);
     }
 
-    private float PreviewAngle(ReadOnlySpan<V2> offsets, Vector2 core, Vector2 target, float line, float reference)
+    private float PreviewAngle(ReadOnlySpan<V2> offsets, Vector2 core, Vector2 target, float line, float reference, float delta)
     {
         if (_dragCard == null || _actor?.Entity.CombatState == null) return 0f;
-        if (ReferenceEquals(_hovered, _actor.Entity)) return 0f;
+        if (!_aimFollowing)
+        {
+            _aimFollow.Reset(_angle);
+            _aimFollowing = true;
+        }
         float axis = _airborne.GetGlobalTransformWithCanvas().Origin.X;
         _aimTargets.Clear();
         foreach (Creature candidate in _actor.Entity.CombatState.Creatures)
@@ -156,9 +192,37 @@ public partial class NinjaSlayerAimPose
         }
         // While turning, a pointer on the destination side must not pitch the
         // still-facing-old-side body through the back of its allowed sector.
-        if ((target.X - axis) * FacingSign < 0f) return 0f;
-        return DragPoseMath.LimitedAngle(offsets, new(core.X, core.Y), new(target.X, target.Y),
+        bool upright = ReferenceEquals(_hovered, _actor.Entity) || (target.X - axis) * FacingSign < 0f;
+        DragAimSample aim = upright ? default : DragPoseMath.AimSample(offsets, new(core.X, core.Y), new(target.X, target.Y),
             System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_aimTargets), line, reference, _angle);
+        if (delta <= 0f) return _aimFollow.Angle;
+        NinjaSlayerFormKind form = NinjaSlayerFormState.GetPresentation(_actor.Entity).Kind;
+        bool canPush = !upright && !Turning && _hovered == null && _previousAimHovered == null
+            && _pointerSampled && _previousAimFacing == FacingSign && _previousAimForm == form;
+        float pointerVelocity = 0f;
+        if (canPush && !_pointer.IsEqualApprox(_previousAimPointer))
+        {
+            Vector2 previous = _previousAimPointer;
+            if (FreeControl is { Active: true } free) previous = free.UntransformTarget(previous);
+            // Re-evaluate both pointer samples in today's geometry. Body/core or
+            // camera movement alone must never inject a boundary impulse.
+            float previousAngle = GroundedPoseMath.AimAngle(offsets, new(core.X, core.Y),
+                new(previous.X, previous.Y), line, reference, _angle);
+            pointerVelocity = GroundedPoseMath.WrapAngle(aim.Raw - previousAngle) / delta;
+        }
+        _previousAimPointer = _pointer;
+        _previousAimHovered = _hovered;
+        _previousAimFacing = FacingSign;
+        _previousAimForm = form;
+        _pointerSampled = true;
+        return _aimFollow.Advance(aim, pointerVelocity, canPush, delta);
+    }
+
+    private void ClearAimFollow()
+    {
+        _aimFollow = default;
+        _aimFollowing = _pointerSampled = false;
+        _previousAimHovered = null;
     }
 
     private void UpdateTornadoCharge()
@@ -203,7 +267,9 @@ public partial class NinjaSlayerAimPose
 
     private void ClearDragPresentation()
     {
-        FinishTurn(FacingSign < 0f);
+        ClearAimFollow();
+        FinishTurn(_actor != null ? NinjaSlayerFacingState.ResolveCommittedFacingLeft(_actor) : FacingSign < 0f);
+        HasFacingPreview = false;
         _dragCard = null;
         _chargeCard = null;
         _chargePending = false;

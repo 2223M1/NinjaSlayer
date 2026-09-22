@@ -153,11 +153,17 @@ public partial class OrbContractRunner : Node
 
             var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.OrbContracts", "Product");
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
-            patcher.RegisterPatch<ShurikenOrbEvokePatch>();
+            patcher.RegisterPatch<ShurikenOrbAddVisualPatch>();
+            patcher.RegisterPatch<ShurikenOrbRemoveSlotPatch>();
+            patcher.RegisterPatch<ShurikenOrbRemoveVisualPatch>();
+            patcher.RegisterPatch<ShurikenOrbPreviewPatch>();
+            patcher.RegisterPatch<ShurikenOrbLayoutPatch>();
+            patcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
             patcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
             patcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             patcher.RegisterPatch<SawatariDuelRewardsPatch>();
+            patcher.RegisterPatch<SawatariTurnEndPatch>();
             patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
@@ -173,6 +179,23 @@ public partial class OrbContractRunner : Node
             {
                 await VerifyMultiplayer(networkRole);
                 GD.Print("NinjaSlayer multiplayer product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_ORB_SLOTS") == "1")
+            {
+                SaveManager.Instance.InitSettingsDataForTest();
+                SaveManager.Instance.InitPrefsDataForTest();
+                MegaCrit.Sts2.Core.Localization.LocManager.Initialize();
+                await VerifyLifecycle();
+                await VerifyOrbSlotSemantics();
+                await VerifyDiscards();
+                await VerifyMultipleEvoke();
+                await VerifyShuffleAndReplacement();
+                await VerifyVolleyAndSave();
+                await VerifyRunSaves();
+                await VerifyCurrentCardInteractions();
+                GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;
             }
@@ -218,6 +241,7 @@ public partial class OrbContractRunner : Node
                 return;
             }
             await VerifyLifecycle();
+            await VerifyOrbSlotSemantics();
             await VerifyDiscards();
             await VerifyMultipleEvoke();
             await VerifyShuffleAndReplacement();
@@ -322,15 +346,18 @@ public partial class OrbContractRunner : Node
 
     private static async Task VerifyLifecycle()
     {
-        using var combat = new OrbCombat();
+        using var combat = new OrbCombat(ninjaSlayer: true);
         await AddStock(combat.Player, 1);
-        Require(combat.Stock == 1 && combat.Capacity == 1 && combat.Orb!.OwnsTransientSlot, "First stock must own one temporary slot.");
+        Require(combat.Stock == 1 && combat.Capacity == 0, "Dedicated Shuriken must not allocate a normal slot.");
         await OrbCmd.AddSlots(combat.Player, 1);
         await OrbCmd.Channel<LightningOrb>(Choice, combat.Player);
         await OrbCmd.EvokeNext(Choice, combat.Player);
-        Require(combat.Stock == 0 && combat.Capacity == 1 && combat.Queue.Orbs.Single() is LightningOrb,
-            "Depletion must release only the temporary slot and preserve another orb.");
-        GD.Print("PASS first stock, depletion, other orb preservation");
+        Require(combat.Stock == 1 && combat.Capacity == 1 && combat.Queue.Orbs.Single() is ShurikenOrb,
+            "Native front evocation must prioritize a normal orb.");
+        await OrbCmd.EvokeNext(Choice, combat.Player);
+        Require(combat.Stock == 0 && combat.Capacity == 1 && combat.Queue.Orbs.Count == 0,
+            "Dedicated depletion must leave normal capacity unchanged.");
+        GD.Print("PASS dedicated stock, normal-orb priority and capacity preservation");
     }
 
     private static async Task VerifyDiscards()
@@ -360,18 +387,18 @@ public partial class OrbContractRunner : Node
         foreach (int shots in new[] { 2, 4 })
         {
             using var combat = new OrbCombat();
-            await AddStock(combat.Player, 3);
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             for (int chain = 0; chain < 2; chain++)
             {
+                await AddStock(combat.Player, 3);
                 int hp = combat.Enemy.CurrentHp;
                 int before = _evoked;
                 for (int i = 0; i < shots; i++)
                     await OrbCmd.EvokeNext(Choice, combat.Player, dequeue: i == shots - 1);
-                Require(hp - combat.Enemy.CurrentHp == shots * 6, "Starless shots must retain their direct damage.");
-                Require(_evoked == before + shots, "Native evokes must emit exactly one host event per shot.");
-                Require(combat.Stock == 2 - chain, "Multi-evoke must spend one stock for the whole effect.");
-                Require(combat.Tokens == (chain + 1) * shots, "Starless Night must convert every shot, including later independent chains.");
+                Require(hp - combat.Enemy.CurrentHp == shots * 3 * 6, "Every native evoke must fire the entire stock.");
+                Require(_evoked == before + shots, "Native evokes must emit one host event per invocation, not per projectile.");
+                Require(combat.Stock == 0, "Multi-evoke must remove the orb after its last repetition.");
+                Require(combat.Tokens == (chain + 1) * shots * 3, "Starless Night must convert every projectile in independent chains.");
             }
         }
         GD.Print("PASS double and quadruple evokes and independent token chains");
@@ -397,12 +424,11 @@ public partial class OrbContractRunner : Node
         using (var combat = new OrbCombat())
         {
             await AddStock(combat.Player, 3);
-            ShurikenOrb old = combat.Orb!;
             int hp = combat.Enemy.CurrentHp;
             await OrbCmd.Channel<LightningOrb>(Choice, combat.Player);
             Require(hp - combat.Enemy.CurrentHp == 18, "Replacement must fire the pre-replacement stock.");
-            Require(combat.Capacity == 1 && combat.Queue.Orbs.Single() is LightningOrb && !old.OwnsTransientSlot,
-                "Replacement must transfer the temporary slot to the incoming orb.");
+            Require(combat.Capacity == 1 && combat.Queue.Orbs.Single() is LightningOrb,
+                "Other characters must preserve their normal slot when replacing Shuriken.");
         }
         GD.Print("PASS shuffle and full-slot replacement");
     }
@@ -417,13 +443,13 @@ public partial class OrbContractRunner : Node
         string json = JsonSerializer.Serialize(saved, jsonOptions);
         var restored = (ShurikenOrb)ModelDb.Orb<ShurikenOrb>().ToMutable();
         JsonSerializer.Deserialize<SavedProperties>(json, jsonOptions)!.Fill(restored);
-        Require(restored.StackCount == 3 && restored.OwnsTransientSlot, "Orb model data must round-trip stock and temporary-slot ownership.");
+        Require(restored.StackCount == 3, "Orb model data must round-trip stock without a second slot-capacity owner.");
 
         await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         int hp = combat.Enemy.CurrentHp;
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "FireConsumedVolley").Invoke(orb, [Choice, 1, null])!;
-        Require(hp - combat.Enemy.CurrentHp == 18 && combat.Stock == 0 && combat.Capacity == 0 && combat.Tokens == 3,
-            "Converted Hell Tornado must consume all stock, release its slot and generate three tokens.");
+        Require(hp - combat.Enemy.CurrentHp == 18 && combat.Stock == 0 && combat.Capacity == 1 && combat.Tokens == 3,
+            "Hell Tornado must consume all stock, preserve ordinary slots and generate three tokens.");
         await AddStock(combat.Player, 3);
         await PowerCmd.Remove<StarlessNightRedesignPower>(combat.Player.Creature);
         combat.Enemy.SetCurrentHpInternal(1);
@@ -550,12 +576,11 @@ public partial class OrbContractRunner : Node
         public int Capacity => Queue.Capacity;
         public int Tokens => Player.Piles.SelectMany(pile => pile.Cards).Count(card => card is StrongShurikenTokenRedesignV1);
 
-        public OrbCombat(bool ninjaSlayer = false)
+        public OrbCombat(bool ninjaSlayer = false, CharacterModel? character = null)
         {
             CombatManager.Instance.History.Clear();
-            Player = ninjaSlayer
-                ? Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1)
-                : Player.CreateForNewRun<Ironclad>(UnlockState.all, 1);
+            Player = Player.CreateForNewRun(character ?? (ninjaSlayer
+                ? ModelDb.Character<NinjaSlayerCharacter>() : ModelDb.Character<Ironclad>()), UnlockState.all, 1);
             Player.InitializeSeed("orb-contract");
             State.AddPlayer(Player);
             Player.ResetCombatState();

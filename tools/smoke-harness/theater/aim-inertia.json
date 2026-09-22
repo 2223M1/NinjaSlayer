@@ -1,0 +1,34 @@
+{
+  "seed": "NINJASLAYER_AIM_INERTIA_01",
+  "purpose": "aim",
+  "act": 3,
+  "duration": 17,
+  "karate": 2,
+  "relics": [],
+  "cues": [
+    { "id": "opening", "steps": [
+      { "action": "wait", "seconds": 0.4 },
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "wait", "seconds": 0.3 }
+    ] },
+    { "id": "normal_soft_limits", "steps": [ { "action": "aim_motion", "mode": "tracking" } ] },
+    { "id": "cancel_and_redrag", "steps": [ { "action": "aim_motion", "mode": "cancel" } ] },
+    { "id": "semi_tracking", "steps": [
+      { "action": "form", "form": "semi" },
+      { "action": "aim_motion", "mode": "tracking" }
+    ] },
+    { "id": "full_tracking", "steps": [
+      { "action": "form", "form": "full" },
+      { "action": "aim_motion", "mode": "tracking" }
+    ] },
+    { "id": "soul_tracking", "steps": [
+      { "action": "form", "form": "soul" },
+      { "action": "aim_motion", "mode": "tracking" }
+    ] },
+    { "id": "surrounded_semantics", "steps": [
+      { "action": "form", "form": "normal" },
+      { "action": "aim_motion", "mode": "surrounded" }
+    ] },
+    { "id": "attack_takeover", "steps": [ { "action": "aim_motion", "mode": "takeover" } ] }
+  ]
+}

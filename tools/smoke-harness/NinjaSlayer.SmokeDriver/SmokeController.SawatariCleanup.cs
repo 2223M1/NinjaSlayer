@@ -180,6 +180,8 @@ internal sealed partial class SmokeController
             }
             await manager.CheckWinCondition();
             await manager.CheckWinCondition();
+            await WaitFrames(60);
+            await EndSawatariPlayerTurn(ct);
             await WaitUntilAsync(() => manager.IsPaused && GetSawatariOptions().Count == 2
                 && GetSawatariOptions().All(option => option.IsVisibleInTree() && option.IsEnabled),
                 "No intermission after complete death/summon resolution", ct);

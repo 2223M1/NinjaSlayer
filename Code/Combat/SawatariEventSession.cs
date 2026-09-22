@@ -47,6 +47,7 @@ internal sealed class SawatariEventSession
     private bool _bambooVoicePending;
     private bool _ownsCombatPause;
     private float _deathAnimLength;
+    private TaskCompletionSource? _intermissionChoice;
 
     private SawatariEventSession(
         CombatState state,
@@ -207,11 +208,14 @@ internal sealed class SawatariEventSession
                 SawatariEventPhase.Duel,
                 SawatariEventPhase.DuelResult))
         {
-            BeginDecisionPhase(() => BeginDuelResult(deathAnimLength));
+            SawatariMusicSession.PlayDuelEnd();
+            _ = TaskHelper.RunSafely(BeginDuelResult(deathAnimLength));
         }
     }
 
-    internal void CheckFirstCombatComplete()
+    // The host reaches this point only after every participating player has ended
+    // their turn and the queued plays and turn-end hooks have completed.
+    internal async Task AfterPlayerTurnEnded(CancellationToken combatCt)
     {
         if (Phase != SawatariEventPhase.FirstCombat
             || !ReferenceEquals(CombatManager.Instance.DebugOnlyGetState(), _state)
@@ -220,13 +224,18 @@ internal sealed class SawatariEventSession
             || _state.IterateHookListeners().Any(model => model.ShouldStopCombatFromEnding())) return;
         if (!_phases.TryMove(SawatariEventPhase.FirstCombat, SawatariEventPhase.Intermission)) return;
 
+        _intermissionChoice = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         // Illusion keeps a dead model for revival; this event continues the same combat.
         // Finish its native death presentation before retiring it from the next wave.
         foreach (Creature enemy in _state.Enemies)
             if (_room.GetCreatureNode(enemy) is { } node)
                 _deathAnimLength = Math.Max(_deathAnimLength, node.StartDeathAnim(shouldRemove: true));
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEndEvent);
-        BeginDecisionPhase(() => BeginIntermission(_deathAnimLength));
+        EnterDecisionState();
+        await BeginIntermission(_deathAnimLength);
+        // Wait outside the action executor. Event choices use the native event
+        // synchronizer, while the host retains ownership of the pending turn end.
+        await _intermissionChoice.Task.WaitAsync(combatCt);
     }
 
     public async Task TakeRegularLoot()
@@ -242,6 +251,7 @@ internal sealed class SawatariEventSession
         SawatariMusicSession.PlayLeave();
         ExitDecisionState();
         await CombatManager.Instance.CheckWinCondition();
+        _intermissionChoice!.TrySetResult();
     }
 
     public async Task StartDuel()
@@ -294,7 +304,8 @@ internal sealed class SawatariEventSession
 
             _room.AddChildSafely(NCombatStartBanner.Create());
             ExitDecisionState();
-            await BeginDuelPlayerRound();
+            await PrepareDuelPlayerRound();
+            _intermissionChoice!.TrySetResult();
         }
         catch (Exception exception)
         {
@@ -335,7 +346,6 @@ internal sealed class SawatariEventSession
         {
             await Cmd.Wait(deathAnimLength);
         }
-        await RunManager.Instance.ActionExecutor.FinishedExecutingActions();
         await NextFrame();
 
         try
@@ -369,9 +379,11 @@ internal sealed class SawatariEventSession
         }
         await RunManager.Instance.ActionExecutor.FinishedExecutingActions();
         await NextFrame();
-        SawatariMusicSession.PlayDuelEnd();
         try
         {
+            if (!ReferenceEquals(CombatManager.Instance.DebugOnlyGetState(), _state)
+                || !_state.IsLiveCombat()) return;
+            EnterDecisionState();
             if (_duelCreature != null)
             {
                 RemoveCreature(_duelCreature);
@@ -412,19 +424,7 @@ internal sealed class SawatariEventSession
         SawatariMusicSession.FinishFallback(failedPhase);
         ExitDecisionState();
         await CombatManager.Instance.CheckWinCondition();
-    }
-
-    private void BeginDecisionPhase(Func<Task> present)
-    {
-        try
-        {
-            EnterDecisionState();
-            _ = TaskHelper.RunSafely(present());
-        }
-        catch (Exception exception)
-        {
-            _ = TaskHelper.RunSafely(FallBackToRegularRewards(exception));
-        }
+        _intermissionChoice?.TrySetResult();
     }
 
     private void EnterDecisionState()
@@ -456,7 +456,7 @@ internal sealed class SawatariEventSession
         }
     }
 
-    private async Task BeginDuelPlayerRound()
+    private async Task PrepareDuelPlayerRound()
     {
         if (_state.CurrentSide != CombatSide.Player)
         {
@@ -477,9 +477,8 @@ internal sealed class SawatariEventSession
         }
 
         _state.RoundNumber++;
-        Player localPlayer = LocalContext.GetMe(_state)
-            ?? throw new InvalidOperationException("Sawatari duel requires a local combat player.");
-        PlayerCmd.EndTurn(localPlayer, canBackOut: false);
+        // The already requested native turn end continues after the choice. Do
+        // not enqueue another EndTurn or replay the turn-end hooks.
     }
 
     private Vector2 ResolveIntermissionPosition(NCreature companionNode)

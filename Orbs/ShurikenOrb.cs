@@ -38,9 +38,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         && turn.Round == combat.RoundNumber && turn.Side == combat.CurrentSide;
 
     public int StackCount { get; private set; }
-    public bool OwnsTransientSlot { get; private set; }
-    private bool _fireAllStockOnNextEvoke;
-    private bool _consumeOneStockOnNextEvoke;
+    internal bool UsesDedicatedSlot => Owner.Character is INinjaSlayerCharacter;
 
     public override decimal PassiveVal => StackCount;
     public override decimal EvokeVal => IsMutable
@@ -62,8 +60,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
                 SavedDataSlot,
                 orb => new ShurikenOrbState
                 {
-                    StackCount = orb.StackCount,
-                    OwnsTransientSlot = orb.OwnsTransientSlot
+                    StackCount = orb.StackCount
                 },
                 (orb, state) =>
                 {
@@ -77,7 +74,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
                     }
 
                     orb.StackCount = state.StackCount;
-                    orb.OwnsTransientSlot = state.OwnsTransientSlot;
                 },
                 () => new ShurikenOrbState());
     }
@@ -107,12 +103,8 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return;
         }
 
-        bool ownsTransientSlot = RedesignV1Rules.ShouldOwnTransientShurikenSlot(
-            player.Character.BaseOrbSlotCount,
-            combatState.OrbQueue.Capacity);
         ShurikenOrb orb = (ShurikenOrb)ModelDb.Orb<ShurikenOrb>().ToMutable();
         orb.StackCount = amount;
-        orb.OwnsTransientSlot = ownsTransientSlot;
         await OrbCmd.Channel(choiceContext, orb, player);
         if (player.PlayerCombatState.OrbQueue.Orbs.Contains(orb))
         {
@@ -147,12 +139,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
     public override async Task<IEnumerable<Creature>> Evoke(PlayerChoiceContext playerChoiceContext)
     {
-        bool fireAllStock = _fireAllStockOnNextEvoke;
-        int shots = fireAllStock ? StackCount : 1;
-        bool consumeOneStock = _consumeOneStockOnNextEvoke;
-        _fireAllStockOnNextEvoke = false;
-        _consumeOneStockOnNextEvoke = false;
-        bool fired = false;
+        int shots = StackCount;
         HashSet<Creature> targets = [];
         for (int index = 0; index < shots; index++)
         {
@@ -163,25 +150,16 @@ public sealed class ShurikenOrb : ModOrbTemplate
                 break;
             }
 
-            fired = true;
             targets.UnionWith(shotTargets);
         }
 
-        if (consumeOneStock && fired)
+        // OrbCmd owns removal: repeated evokes retain the same stock until its
+        // final dequeue, including the native Shatter loop.
+        if (!Owner.PlayerCombatState!.OrbQueue.Orbs.Contains(this))
         {
-            StackCount--;
-            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", Owner.Creature, -1);
-            if (StackCount == 0)
-            {
-                RemoveDepletedOrb();
-            }
-            else
-            {
-                RefreshVisuals();
-            }
+            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", Owner.Creature, -StackCount);
+            StackCount = 0;
         }
-
-        ReleaseTransientSlotIfRemoved();
         return targets;
     }
 
@@ -209,25 +187,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
         }
 
         RemoveDepletedOrb();
-    }
-
-    internal void TransferTransientSlot() => OwnsTransientSlot = false;
-
-    internal bool IsPreparedForReplacementEvoke => _fireAllStockOnNextEvoke;
-
-    internal void PrepareForReplacementEvoke()
-    {
-        _fireAllStockOnNextEvoke = true;
-    }
-
-    internal void PrepareForSingleStockEvoke()
-    {
-        if (StackCount <= 0)
-        {
-            throw new InvalidOperationException("A Shuriken orb cannot evoke without stock.");
-        }
-
-        _consumeOneStockOnNextEvoke = true;
     }
 
     internal void RefreshVisuals()
@@ -284,6 +243,10 @@ public sealed class ShurikenOrb : ModOrbTemplate
         CardModel? source,
         bool notifyEvokeHooks = true)
     {
+        if (CombatManager.Instance.IsOverOrEnding)
+        {
+            return [];
+        }
         IReadOnlyList<Creature> candidates = CombatState.HittableEnemies;
         if (candidates.Count == 0)
         {
@@ -343,20 +306,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
         NCombatRoom.Instance?.GetCreatureNode(Owner.Creature)?.OrbManager?.EvokeOrbAnim(this);
         RemoveInternal();
-        ReleaseTransientSlotIfRemoved();
-    }
-
-    private void ReleaseTransientSlotIfRemoved()
-    {
-        var combatState = Owner.PlayerCombatState
-            ?? throw new InvalidOperationException("A mutable Shuriken orb must have combat state.");
-        if (!OwnsTransientSlot || combatState.OrbQueue.Orbs.Contains(this))
-        {
-            return;
-        }
-
-        OwnsTransientSlot = false;
-        OrbCmd.RemoveSlots(Owner, 1);
     }
 
     private void ActivatePassiveFeedback()
@@ -381,5 +330,4 @@ public sealed class ShurikenOrb : ModOrbTemplate
 internal sealed class ShurikenOrbState
 {
     public int StackCount { get; set; }
-    public bool OwnsTransientSlot { get; set; }
 }

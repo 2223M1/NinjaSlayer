@@ -43,6 +43,10 @@ public partial class OrbContractRunner
             pose._Process(seconds);
             Call("SyncNow");
         }
+        void Settle()
+        {
+            for (int frame = 0; frame < 36; frame++) Tick(1f / 60f);
+        }
         var drag = new Node();
         actor.GetParent().AddChild(drag);
         var card = combat.State.CreateCard<SatsubatsuRedesignV1>(combat.Player);
@@ -91,24 +95,36 @@ public partial class OrbContractRunner
             targetCenter.Position = new(0f, -500f);
             void Drag(Vector2 pointer, Creature? hovered = null) => Call("Drag", drag, card, pointer, hovered);
             Drag(targetCenter.GlobalPosition, combat.Enemy);
+            Require(Math.Abs(Angle()) < .001f, "A drag snapped before its first process frame.");
+            Tick(1f / 60f);
+            float firstFrame = Angle();
+            for (int sync = 0; sync < 10; sync++) Call("SyncNow");
+            Require(Angle() == firstFrame, "Repeated core sync advanced drag inertia.");
+            Settle();
             float upper = Angle();
             Drag(secondCenter.GlobalPosition, second);
+            Settle();
             float lower = Angle();
             Require(upper < -.01f && lower > .01f,
                 $"The aiming fixture must span upright: upper={upper}, lower={lower}, legal={card.CanPlayTargeting(combat.Enemy)}.");
             Drag(new(700f, -3000f));
+            Settle();
             Require(Math.Abs(Angle() - upper) < .001f, "Aim escaped the highest legal target core.");
             Drag(new(700f, 3000f));
+            Settle();
             Require(Math.Abs(Angle() - lower) < .001f, "Aim escaped the lowest legal target core.");
             second.SetCurrentHpInternal(0);
             Call("SyncNow");
+            Settle();
             Require(Math.Abs(Angle()) < .001f, "A dead lower target retained its aiming range.");
             Drag(new(-700f, -3000f));
             Tick(.15f);
+            Settle();
             Require(anchor.Scale.X < 0 && Math.Abs(Angle()) < .001f, "An empty side must face left without tilting.");
             second.SetCurrentHpInternal(1000);
             secondNode.Position = new(-700f, 0f);
             Drag(secondCenter.GlobalPosition, second);
+            Settle();
             Vector2 forward = pose.GetGlobalTransformWithCanvas().BasisXform(Vector2.Right).Normalized();
             Vector2 toTarget = (secondCenter.GlobalPosition - rig.VfxSpawnPosition.GlobalPosition).Normalized();
             Require(forward.Dot(toTarget) > .999f, "Left-side locked aiming missed its actual core.");
@@ -145,13 +161,41 @@ public partial class OrbContractRunner
             Require(allyCard.CanPlayTargeting(ally.Creature) && !allyCard.CanPlayTargeting(combat.Enemy),
                 "The friendly targeting fixture is not using native target legality.");
             Call("Drag", drag, allyCard, allyCenter.GlobalPosition, ally.Creature);
+            Settle();
             float allyAngle = Angle();
             Call("Drag", drag, allyCard, new Vector2(700f, -3000f), null);
+            Settle();
             Require(Math.Abs(Angle() - allyAngle) < .001f, "Friendly aiming used enemy cores to expand its range.");
             Require(allyCard.CanPlayTargeting(combat.Player.Creature), "The self-target fixture must allow the owner.");
             Call("Drag", drag, allyCard, rig.VfxSpawnPosition.GlobalPosition, combat.Player.Creature);
+            Settle();
             Require(Math.Abs(Angle()) < .001f, "A self-targeted card tilted its owner.");
             Call("Reset");
+
+            Face(false);
+            Drag(new(-700f, -300f));
+            Tick(.15f);
+            Type facingType = assembly.GetType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState")!;
+            bool Committed() => (bool)AccessTools.Method(facingType, "ResolveCommittedFacingLeft").Invoke(null, [actor])!;
+            Require(anchor.Scale.X < 0 && !Committed(), "Drag rotation changed committed facing.");
+            Call("EndDrag", drag, false);
+            Tick(.04f);
+            Drag(new(-700f, -300f));
+            Tick(.03f);
+            Call("EndDrag", drag, false);
+            Tick(.15f);
+            Call("ApplyReturn", 1f);
+            Require(anchor.Scale.X > 0 && !Committed(), "Repeated cancellation retained the temporary facing.");
+            Drag(new(-700f, -300f));
+            Tick(.15f);
+            Call("BeginAction", second, false, false);
+            Call("EndDrag", drag, false);
+            Call("BeginReturn");
+            Tick(.2f);
+            Call("ApplyReturn", 1f);
+            Require(anchor.Scale.X < 0 && Committed(), "An old drag cancelled the action's committed facing.");
+            Call("Reset");
+            Face(false);
 
             var contour = (System.Numerics.Vector2[])AccessTools.Field(assembly.GetType("NinjaSlayer.Code.Combat.CombatBodyContours"),
                 form == 2 ? "FullyReleasedNaraku" : "NinjaSlayer").GetValue(null)!;

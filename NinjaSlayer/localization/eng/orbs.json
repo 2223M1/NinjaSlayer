@@ -1,5 +1,5 @@
 {
   "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "Shuriken",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Whenever you discard a card, Shuriken attacks a random enemy and you lose 1 Shuriken.",
-  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:stack|stacks}\nWhenever you discard a card, deal {Evoke} damage to a random enemy and lose 1 Shuriken."
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "Whenever you discard a card, Shuriken attacks a random enemy and you lose 1 Shuriken.\nWhen evoked, each stack attacks once.",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue] {Passive:plural:stack|stacks}\nWhenever you discard a card, deal {Evoke} damage to a random enemy and lose 1 Shuriken.\nWhen evoked, each stack deals {Evoke} damage to a random enemy."
 }

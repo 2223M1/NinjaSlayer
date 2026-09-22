@@ -48,15 +48,22 @@ internal sealed partial class SmokeController
             "Sawatari ally must survive event reconstruction.");
         while (state.HittableEnemies.Any()) await CreatureCmd.Kill(state.HittableEnemies.ToArray(), force: true);
         await CombatManager.Instance.CheckWinCondition();
+        await WaitFrames(60);
+        await VerifyPostVictoryCardInput(ct);
+        await EndSawatariPlayerTurn(ct);
         await WaitUntilAsync(() => GetSawatariOptions().Count == 2 && GetSawatariOptions().All(o => o.IsEnabled), "Sawatari decision missing.", ct);
         await CheckMusic("sawatari-decision", NinjaSlayerAudio.SawatariCoopMusicEvent, NinjaSlayerAudio.SawatariCoopPhaseParameter);
         await UiHelper.Click(GetSawatariOptions()[1]);
         await WaitFrames(12);
         await CheckMusic("sawatari-duel-immediate", NinjaSlayerAudio.SawatariCoopMusicEvent, NinjaSlayerAudio.SawatariCoopPhaseParameter);
         await WaitUntilAsync(() => !CombatManager.Instance.IsPaused && state.HittableEnemies.Any(c => c.Monster is SawatariMonster), "Duel not started.", ct);
+        await WaitUntilAsync(() => LocalContext.GetMe(state)?.PlayerCombatState?.Phase == PlayerTurnPhase.Play
+            && !CombatManager.Instance.PlayerActionsDisabled, "Duel did not start a fresh player turn.", ct);
+        await WaitFrames(450);
         await CreatureCmd.Kill(state.HittableEnemies.ToArray(), force: true);
         await WaitUntilAsync(() => GetSawatariOptions().Count == 1 && GetSawatariOptions()[0].IsEnabled, "Duel result missing.", ct);
         await CheckMusic("sawatari-result", NinjaSlayerAudio.SawatariCoopMusicEvent, NinjaSlayerAudio.SawatariCoopPhaseParameter);
+        await ObserveSawatariOutro(GetSawatariMusic(), directory, "event-duel", ct);
         await UiHelper.Click(GetSawatariOptions()[0]);
         await CloseRewards();
         _checkpoints.Write("v0217.live-sawatari-music-reload-and-phases");

@@ -89,11 +89,15 @@ internal sealed partial class SmokeController
                 return;
             }
             var room = NCombatRoom.Instance!;
-            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics" or "MotherUnix" or "BalanceV0216" or "BalanceV0217" or "MusicV0217")
+            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics" or "MotherUnix" or "BalanceV0216" or "BalanceV0217" or "MusicV0217" or "OrbSlots" or "SawatariOutro")
             {
                 await recorder.Start();
                 recording = true;
-                if (_configuration.PreviewFormFinisher == "BalanceV0217")
+                if (_configuration.PreviewFormFinisher == "SawatariOutro")
+                    await VerifySawatariOutroBank(directory, cancellationToken);
+                else if (_configuration.PreviewFormFinisher == "OrbSlots")
+                    await VerifyOrbSlotsLive(directory, cancellationToken);
+                else if (_configuration.PreviewFormFinisher == "BalanceV0217")
                     await VerifyBalanceV0217Live(directory, cancellationToken);
                 else if (_configuration.PreviewFormFinisher == "MusicV0217")
                     await VerifyMusicV0217Live(directory, cancellationToken);

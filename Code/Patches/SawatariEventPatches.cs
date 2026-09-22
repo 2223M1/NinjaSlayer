@@ -397,19 +397,22 @@ public sealed class SawatariCombatEndGatePatch : IPatchMethod
     }
 }
 
-public sealed class SawatariVictoryCheckPatch : IPatchMethod
+public sealed class SawatariTurnEndPatch : IPatchMethod
 {
-    public static string PatchId => "ninjaslayer_sawatari_victory_check";
-    public static string Description => "Start Sawatari choices after native death and summon resolution.";
+    public static string PatchId => "ninjaslayer_sawatari_turn_end";
+    public static string Description => "Wait for all players to end their turn before Sawatari's choice.";
     public static bool IsCritical => true;
-#if !NINJASLAYER_CHANNEL_STABLE
+#if NINJASLAYER_CHANNEL_STABLE
+    private static readonly PropertyInfo CombatToken = AccessTools.Property(typeof(CombatManager), "CombatCt");
+#else
     private static readonly Type TurnState = typeof(CombatManager).Assembly.GetType(
         "MegaCrit.Sts2.Core.Combat.CombatTurnState", throwOnError: true)!;
     private static readonly PropertyInfo State = TurnState.GetProperty("State")!;
+    private static readonly PropertyInfo CombatToken = TurnState.GetProperty("Ct")!;
 #endif
     public static ModPatchTarget[] GetTargets() =>
     [
-        new(typeof(CombatManager), nameof(CombatManager.CheckWinCondition),
+        new(typeof(CombatManager), "EndPlayerTurnPhaseOneInternal",
 #if NINJASLAYER_CHANNEL_STABLE
             [])
 #else
@@ -418,17 +421,16 @@ public sealed class SawatariVictoryCheckPatch : IPatchMethod
     ];
 
 #if NINJASLAYER_CHANNEL_STABLE
-    public static void Prefix(CombatManager __instance, out CombatState? __state) =>
-        __state = __instance.DebugOnlyGetState();
+    public static void Prefix(CombatManager __instance, out (CombatState? State, CancellationToken Ct) __state) =>
+        __state = (__instance.DebugOnlyGetState(), (CancellationToken)CombatToken.GetValue(__instance)!);
 #else
-    public static void Prefix(object __0, out CombatState? __state) =>
-        __state = (CombatState)State.GetValue(__0)!;
+    public static void Prefix(object __0, out (CombatState? State, CancellationToken Ct) __state) =>
+        __state = ((CombatState)State.GetValue(__0)!, (CancellationToken)CombatToken.GetValue(__0)!);
 #endif
-    public static async Task<bool> Postfix(Task<bool> __result, CombatState? __state)
+    public static async Task Postfix(Task __result, (CombatState? State, CancellationToken Ct) __state)
     {
-        bool ended = await __result;
-        if (!ended && SawatariEventSession.TryGet(__state, out var session)) session.CheckFirstCombatComplete();
-        return ended;
+        await __result;
+        if (SawatariEventSession.TryGet(__state.State, out var session)) await session.AfterPlayerTurnEnded(__state.Ct);
     }
 }
 

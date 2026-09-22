@@ -110,6 +110,7 @@ public partial class OrbContractRunner
         {
             (combat.State.CreateCard<PreparedShurikenRedesignV1>(first), null),
             (combat.State.CreateCard<PreparedShurikenRedesignV1>(second), null),
+            (combat.State.CreateCard<Zap>(first), null),
             (combat.State.CreateCard<Dualcast>(first), null),
             (combat.State.CreateCard<Dualcast>(second), null),
             (combat.State.CreateCard<ChopStrikeRedesignV1>(second), combat.Enemy),
@@ -119,9 +120,9 @@ public partial class OrbContractRunner
             (combat.State.CreateCard<StrikeNinjaSlayerRedesignV1>(first), combat.Enemy)
         };
         plays[0].Card.UpgradeInternal();
-        plays[5].Card.AddKeyword(CardKeyword.Exhaust);
+        plays[6].Card.AddKeyword(CardKeyword.Exhaust);
         PileType?[] destinations = [PileType.Discard, PileType.Discard, PileType.Discard,
-            PileType.Discard, PileType.Hand, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
+            PileType.Discard, PileType.Discard, PileType.Hand, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
         foreach (var (card, _) in plays) await CardPileCmd.Add(card, PileType.Hand);
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".ready"), "ready");
         await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "host.ready"))
@@ -138,11 +139,12 @@ public partial class OrbContractRunner
             Require(card.Pile?.Type == destinations[step],
                 $"Action {expected} resolved to the wrong pile.");
         }
-        Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 1
+        Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2
+            && first.PlayerCombatState.OrbQueue.Capacity == 1 && second.PlayerCombatState!.OrbQueue.Capacity == 0
             && !second.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
-            "One player's evoke consumed another player's stock.");
+            "Mixed normal/dedicated priority or multiplayer stock ownership changed.");
         Require(first.Creature.HasPower<NarakuFormRedesignPower>() && !second.Creature.HasPower<NarakuFormRedesignPower>()
-            && plays[7].Card.Pile?.Type == PileType.Discard && plays[8].Card.Pile?.Type == PileType.Discard,
+            && plays[8].Card.Pile?.Type == PileType.Discard && plays[9].Card.Pile?.Type == PileType.Discard,
             "Naraku Form crossed player ownership or changed the attack destination.");
         Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlameRedesignV1>().Count() == 0
             && !PileType.Draw.GetPile(second).Cards.OfType<BlackFlameRedesignV1>().Any(),
@@ -331,7 +333,8 @@ public partial class OrbContractRunner
                 Relics = player.Relics.Select(relic => new { Id = relic.Id.ToString(), relic.DisplayAmount }),
                 Karate = player.Creature.GetPowerAmount<KaratePower>(),
                 Plating = player.Creature.GetPowerAmount<PlatingPower>(),
-                Orbs = player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Select(orb => new { orb.StackCount, orb.OwnsTransientSlot }),
+                OrbCapacity = player.PlayerCombatState.OrbQueue.Capacity,
+                Orbs = player.PlayerCombatState.OrbQueue.Orbs.Select(orb => new { orb.Id, Stock = (orb as ShurikenOrb)?.StackCount }),
                 Cards = player.PlayerCombatState.AllCards.Select(card => new { Id = card.Id.ToString(), Pile = card.Pile?.Type.ToString(),
                     Snapshot = (card as StrongShurikenTokenRedesignV1)?.SnapshotDamage,
                     MacheteHand = (card as SawatariMachete)?.HeldHand })
@@ -346,6 +349,7 @@ public partial class OrbContractRunner
         GD.Print("PASS synchronized Starless conversion, per-shot token count and Focus damage snapshots");
         GD.Print("PASS synchronized Sawatari knife transfers, native status plays, exhaust and immediate intents");
         GD.Print("PASS synchronized event relic obtain, native attack counters and Naraku loss ownership");
+        await VerifySawatariNetworkTurnBarrier(combat, role, directory);
     }
 
     private static async Task WaitNetwork(Func<bool> predicate, string operation)

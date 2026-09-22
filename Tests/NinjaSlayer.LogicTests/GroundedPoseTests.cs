@@ -8,7 +8,8 @@ public sealed class GroundedPoseTests
     [Fact]
     public void BodyAlwaysTouchesSupportLineAcrossRotationAndMirroring()
     {
-        foreach (Vector2[] contour in new[] { CombatBodyContours.NinjaSlayer, CombatBodyContours.YamotoKoki, CombatBodyContours.FullyReleasedNaraku })
+        foreach (Vector2[] contour in new[] { CombatBodyContours.NinjaSlayer, CombatBodyContours.YamotoKoki,
+            CombatBodyContours.FullyReleasedNaraku, CombatBodyContours.OneBodyOneSoul })
         foreach (float mirror in new[] { -1f, 1f })
         foreach (float stretch in new[] { 0.5f, 1f, 1.5f })
         {
