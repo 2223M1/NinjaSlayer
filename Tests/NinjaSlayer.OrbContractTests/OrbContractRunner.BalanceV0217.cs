@@ -32,19 +32,22 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 4, owner, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
-            Require(owner.Block == 5 && owner.GetPowerAmount<KaratePower>() == 3,
+            Require(owner.Block == 3 && owner.GetPowerAmount<KaratePower>() == 3,
                 "Guard Stance grants unpowered block once for an AOE Karate wave.");
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrustRedesignV1>(combat, upgraded: true), null);
-            Require(owner.Block == 20 && !owner.HasPower<KaratePower>(), "Each multihit Karate wave grants block separately.");
+            Require(owner.Block == 12 && !owner.HasPower<KaratePower>(), "Each multihit Karate wave grants block separately.");
         }
         using (var combat = new OrbCombat())
         {
             var owner = combat.Player.Creature;
-            await CardCmd.AutoPlay(Choice, AddCard<FlyingBladeDanceRedesignV1>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<FlyingBladeDanceRedesignV1>(combat), null);
             await PowerCmd.Apply<DexterityPower>(Choice, owner, 100, owner, null);
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
             Require(owner.Block == 4, "Composure must ignore Dexterity and Frail like Feel No Pain.");
+            await CardCmd.AutoPlay(Choice, AddCard<FlyingBladeDanceRedesignV1>(combat, upgraded: true), null);
+            await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
+            Require(owner.Block == 12, "Base and upgraded Composure stack the same two unpowered block per discard.");
         }
         using (var combat = new OrbCombat())
         {

@@ -10,6 +10,14 @@ internal readonly record struct NinjaSlayerFormCalibration(
     internal const float FullScale = .3732865f;
     internal const float OneSoulScale = .11261151355f;
 
+    internal static Vector2 Mouth(NinjaSlayerFormKind form) => form switch
+    {
+        NinjaSlayerFormKind.Normal or NinjaSlayerFormKind.Naraku => new(644f, -177f),
+        NinjaSlayerFormKind.FullyReleasedNaraku => new(203f, -94f),
+        NinjaSlayerFormKind.OneBodyOneSoul => new(-368.5f, -1000f),
+        _ => throw new ArgumentOutOfRangeException(nameof(form))
+    };
+
     // Centered runtime texture pixels; alternate forms center the solid body at the slot.
     internal static NinjaSlayerFormCalibration For(NinjaSlayerFormKind form) => form switch
     {

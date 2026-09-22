@@ -72,6 +72,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
     internal const string ArchitectDeathAnimation = "ninjaslayer_soft_death";
     private MegaSprite? _architectSprite;
     private int _architectUpdateMode;
+    private float _architectLeadSeconds;
     private readonly Dictionary<string, Transform2D> _architectBoneBaselines = [];
     private Node2D? _architectBody;
     private NCombatRoom _room = null!;
@@ -123,7 +124,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
             FollowArchitectCamera();
 
-            float seconds = Math.Min((float)delta, 0.1f);
+            float seconds = Math.Min((float)delta,
+                _mode == PresentationMode.ArchitectLead && !_burstTriggered ? 0.05f : 0.1f);
             if (seconds <= 0f)
             {
                 return;
@@ -131,7 +133,8 @@ public sealed partial class BossDismembermentPresentation : Node2D
 
             _elapsed += seconds;
             if (_mode == PresentationMode.ArchitectLead && !_burstTriggered && _architectBody != null)
-                _architectBody.Call("update_skeleton", seconds);
+                _architectBody.Call("update_skeleton", Math.Max(0f,
+                    Math.Min(seconds, _architectLeadSeconds - (_elapsed - seconds))));
             _physicsAccumulator += seconds;
             int catchUpSteps = 0;
             while (_physicsAccumulator >= PhysicsStep && catchUpSteps < MaximumCatchUpSteps)
@@ -152,7 +155,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
                 RemoveOffscreenFragments();
             }
             ApplyRenderFrame();
-            if (_elapsed >= MaximumFlightSeconds)
+            if (_elapsed >= MaximumFlightSeconds && (_mode != PresentationMode.ArchitectLead || _burstTriggered))
             {
                 ClearFragments();
             }
@@ -483,6 +486,7 @@ public sealed partial class BossDismembermentPresentation : Node2D
         using GodotObject? trackLease = track?.BoundObject;
         track!.SetMixDuration(0.05f);
         track.SetTimeScale(1f);
+        _architectLeadSeconds = Math.Min(track.GetAnimationEnd(), BossBurstTimeline.LeadSeconds);
         foreach (string path in new[] { "TrailSlot/TrailInner", "TrailSlot/TrailOuter" })
             if (_architectBody.GetNodeOrNull<CanvasItem>(path) is { } trail) trail.Visible = false;
         _architectBody.Call("update_skeleton", 0f);

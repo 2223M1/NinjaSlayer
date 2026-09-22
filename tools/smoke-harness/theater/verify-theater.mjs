@@ -23,12 +23,18 @@ assert.equal(video.height, 1080);
 assert.equal(video.r_frame_rate, '60/1');
 assert(media.streams.some(stream => stream.codec_type === 'audio'), 'Missing synchronized audio.');
 assert.equal(runtime.act, 3);
-assert.equal(runtime.mode, 'Fast');
+if ((script.purpose ?? 'promo') === 'promo') assert.equal(runtime.mode, 'Fast');
 assert(sync.maximumResidualSeconds <= .04, 'Audio alignment exceeds 40ms.');
 assert(sync.matches.filter(match => match.accepted).length >= 2, 'Too few measured audio cues.');
 
 const full = runtime.fromCue === script.cues[0].id && runtime.toCue === script.cues.at(-1).id;
 const count = name => coverage[name]?.filter(time => time >= runtime.captureStartSeconds).length ?? 0;
+if (full && script.purpose === 'blood') {
+  assert.equal(runtime.mode, 'Normal');
+  for (const name of ['threshold-block-self-dot-dodge-single-instance', 'moving', 'semi',
+    'hell', 'full', 'soul', 'mirror', 'pause-fast-instant-death-cleanup'])
+    assert(count('blood-' + name) > 0, `Missing completed blood check: ${name}`);
+}
 if (full && (script.purpose ?? 'promo') === 'promo') {
   assert(count('backflip') >= 4);
   assert(count('shuriken-volley') >= 4);

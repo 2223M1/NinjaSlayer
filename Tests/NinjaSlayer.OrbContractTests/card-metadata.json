@@ -1063,7 +1063,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BladeDance.png",
     "Vars": {
-      "Block": 1
+      "Block": 2
     }
   },
   {
@@ -1076,7 +1076,9 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Innate"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BladeDance.png",
     "Vars": {
@@ -1222,7 +1224,24 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 2,
+    "X": false,
+    "Type": "Power",
+    "Rarity": "Uncommon",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
+    "Vars": {
+      "Block": 1
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
+    "Upgraded": true,
+    "Cost": 2,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -1234,23 +1253,6 @@
     "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
     "Vars": {
       "Block": 2
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
-    "Upgraded": true,
-    "Cost": 1,
-    "X": false,
-    "Type": "Power",
-    "Rarity": "Uncommon",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
-    "Vars": {
-      "Block": 3
     }
   },
   {
