@@ -55,6 +55,7 @@ public readonly struct NinjaSlayerCombatAudioSet
 
         if (eventPath.StartsWith(NinjaSlayerAudio.PangbaiRoot + "/", StringComparison.Ordinal))
         {
+            if (!NinjaSlayerSettings.NarrationEnabled) return;
             _ = TaskHelper.RunSafely(PlayDelayed(eventPath, volume));
             return;
         }
@@ -65,7 +66,7 @@ public readonly struct NinjaSlayerCombatAudioSet
     private static async Task PlayDelayed(string eventPath, float volume)
     {
         await Cmd.Wait(PangbaiDelaySeconds);
-        PlayNow(eventPath, volume);
+        if (NinjaSlayerSettings.NarrationEnabled) PlayNow(eventPath, volume);
     }
 
     private static void PlayNow(string eventPath, float volume)

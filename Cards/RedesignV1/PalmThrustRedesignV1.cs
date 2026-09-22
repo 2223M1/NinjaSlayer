@@ -28,39 +28,19 @@ public sealed class PalmThrustRedesignV1 : RedesignV1CommonCard
     public PalmThrustRedesignV1()
         : base(nameof(PalmThrustRedesignV1), "PalmThrust", 1, CardType.Attack, TargetType.RandomEnemy) { }
 
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int hits = DynamicVars.Repeat.IntValue;
-        return this.ExecuteSequenceWithFinisher(
-            choiceContext,
-            cardPlay,
-            hits,
-            () => NinjaSlayerXAttackSequence.Run(
-                Owner.Creature,
-                hits,
-                Owner.Character.AttackAnimDelay,
-                Owner.Character.AttackAnimDelay,
-                async _ =>
-                {
-                    IReadOnlyList<Creature> enemies = CombatState!.HittableEnemies;
-                    Creature? target = Owner.RunState.Rng.CombatTargets.NextItem(enemies);
-                    if (target == null)
-                    {
-                        return true;
-                    }
-
-                    AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                        .FromCard(this)
+            .FromCard(this)
 #else
-                        .FromCard(this, cardPlay)
+            .FromCard(this, cardPlay)
 #endif
-                        .WithDefectStrikeHitFx()
-                        .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-                        .Targeting(target);
-                    await command.Execute(choiceContext);
-                    return CombatState.HittableEnemies.Count == 0;
-                }));
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
+            .TargetingRandomOpponents(CombatState!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
     protected override void OnUpgrade() => DynamicVars.Repeat.UpgradeValueBy(1);

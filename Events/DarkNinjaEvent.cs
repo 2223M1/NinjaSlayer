@@ -28,6 +28,7 @@ public sealed class DarkNinjaEvent : ModEventTemplate
         "res://scenes/events/default_event_layout.tscn";
 
     private const string PortraitPath = DarkNinjaMonster.StandingTexturePath;
+    private const string VictoryPortraitPath = "res://NinjaSlayer/images/events/dark_ninja_victory.png";
 
     private bool _showResultLayout;
 
@@ -51,7 +52,7 @@ public sealed class DarkNinjaEvent : ModEventTemplate
         ModelDb.Encounter<DarkNinjaEncounter>();
 
     public override EventAssetProfile AssetProfile => new(
-        InitialPortraitPath: PortraitPath);
+        InitialPortraitPath: ShowResultLayout && IsFinished ? VictoryPortraitPath : PortraitPath);
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new GoldVar(100)];
@@ -73,7 +74,7 @@ public sealed class DarkNinjaEvent : ModEventTemplate
         }
 
         return base.GetAssetPaths(runState)
-            .Concat([DefaultLayoutScenePath, PortraitPath])
+            .Concat([DefaultLayoutScenePath, PortraitPath, VictoryPortraitPath])
             .Distinct();
     }
 
@@ -114,7 +115,7 @@ public sealed class DarkNinjaEvent : ModEventTemplate
 #endif
         EnterCombatWithoutExitingEvent(
             encounter,
-            [new RelicReward(ModelDb.Relic<BeppinFragmentRelic>().ToMutable(), Owner!)],
+            [new RelicReward(ModelDb.Relic<BeppinFragmentRelic>().ToMutable(), Owner!), new RelicReward(Owner!)],
             shouldResumeAfterCombat: true);
         return Task.CompletedTask;
     }
@@ -122,266 +123,88 @@ public sealed class DarkNinjaEvent : ModEventTemplate
 
 internal static class DarkNinjaMusicSession
 {
-    private const int FmodStoppedPlaybackState = 2;
-
-    private static EventRoom? _eventRoom;
-    private static CombatRoom? _combatRoom;
-    private static ulong _previousMusicInstanceId;
-    private static ulong _musicInstanceId;
-    private static int _generation;
+    private static AbstractRoom? _eventRoom;
     private static bool _ending;
-    private static bool _subscribed;
+    private static int _generation;
 
-    public static void Begin(EventRoom eventRoom)
+    public static void Begin(AbstractRoom room)
     {
         Clear();
-        _eventRoom = eventRoom;
-        if (TryGetCurrentMusicEvent(out _, out ulong instanceId))
-        {
-            _previousMusicInstanceId = instanceId;
-        }
+        _eventRoom = room;
+        RunManager.Instance.RoomEntered += OnRoomChanged;
+        RunManager.Instance.RoomExited += OnRoomChanged;
+    }
 
-        RunManager.Instance.RoomEntered += OnRoomEntered;
-        RunManager.Instance.RoomExited += OnRoomExited;
-        _subscribed = true;
+    public static void ResumeCombat(CombatRoom room)
+    {
+        if (_eventRoom == null) Begin(room);
     }
 
     public static void EndBattle()
     {
-        if (_eventRoom == null || _ending)
-        {
-            return;
-        }
-
+        if (_eventRoom == null || _ending || NonInteractiveMode.IsActive) return;
         _ending = true;
-        TryCaptureMusicEvent();
-        int generation = _generation;
-        _ = TaskHelper.RunSafely(WaitForOutro(generation));
+        // The native controller and RitsuLib both play this bank event. Observe its
+        // FMOD description, not the legacy Godot proxy that RitsuLib bypasses.
+        var description = STS2RitsuLib.Audio.FmodStudioServer.TryGetEventDescriptionFromGuid(
+            NinjaSlayerAudio.DarkNinjaBattleMusicGuid);
+        if (description == null)
+        {
+            NinjaSlayer.Scripts.Entry.Logger.Warn("Dark Ninja music bank is unavailable; restoring act music.");
+            RestoreMusic();
+            return;
+        }
+        var instances = description.Call("get_instance_list").AsGodotArray();
+        GodotObject? music = instances.Select(value => value.AsGodotObject())
+            .SingleOrDefault(instance => instance.Call("get_playback_state").AsInt32() != 2);
+        if (music == null) RestoreMusic();
+        else _ = TaskHelper.RunSafely(WaitForOutro(music, _generation));
     }
 
-    private static void OnRoomEntered()
+    private static async Task WaitForOutro(GodotObject music, int generation)
     {
-        AbstractRoom? currentRoom = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom;
-        if (currentRoom is CombatRoom combatRoom
-            && combatRoom.Encounter is DarkNinjaEncounter)
+        var tree = (SceneTree)Engine.GetMainLoop();
+        while (_eventRoom != null && generation == _generation)
         {
-            _combatRoom = combatRoom;
-            int generation = _generation;
-            _ = TaskHelper.RunSafely(CaptureMusicEvent(generation));
-            return;
-        }
-
-        if (ReferenceEquals(currentRoom, _eventRoom)
-            || ReferenceEquals(currentRoom, _combatRoom))
-        {
-            return;
-        }
-
-        RestoreIfOwnedOrClear(_generation);
-    }
-
-    private static void OnRoomExited()
-    {
-        AbstractRoom? currentRoom = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom;
-        if (ReferenceEquals(currentRoom, _eventRoom)
-            || ReferenceEquals(currentRoom, _combatRoom))
-        {
-            return;
-        }
-
-        RestoreIfOwnedOrClear(_generation);
-    }
-
-    private static async Task CaptureMusicEvent(int generation)
-    {
-        if (Engine.GetMainLoop() is not SceneTree tree)
-        {
-            return;
-        }
-
-        while (IsCurrent(generation)
-            && _musicInstanceId == 0
-            && ReferenceEquals(
-                RunManager.Instance.DebugOnlyGetState()?.CurrentRoom,
-                _combatRoom))
-        {
-            if (TryCaptureMusicEvent())
+            if (!GodotObject.IsInstanceValid(music) || music.Call("get_playback_state").AsInt32() == 2)
             {
+                RestoreMusic();
                 return;
             }
-
             await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
         }
     }
 
-    private static async Task WaitForOutro(int generation)
+    private static void OnRoomChanged()
     {
-        if (Engine.GetMainLoop() is not SceneTree tree)
-        {
-            ClearIfCurrent(generation);
-            return;
-        }
-
-        while (IsCurrent(generation) && _ending)
-        {
-            if (_musicInstanceId == 0)
-            {
-                TryCaptureMusicEvent();
-            }
-            else if (!TryGetCurrentMusicEvent(out GodotObject? musicEvent, out ulong instanceId))
-            {
-                RestoreCurrentRoomMusic(generation);
-                return;
-            }
-            else if (instanceId != _musicInstanceId)
-            {
-                ClearIfCurrent(generation);
-                return;
-            }
-            else if (musicEvent != null
-                && TryGetPlaybackState(musicEvent, out int playbackState)
-                && playbackState == FmodStoppedPlaybackState)
-            {
-                RestoreCurrentRoomMusic(generation);
-                return;
-            }
-
-            await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
-        }
+        AbstractRoom? current = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom;
+        if (ReferenceEquals(current, _eventRoom)
+            || current is CombatRoom { Encounter: DarkNinjaEncounter }
+            || current is EventRoom { CanonicalEvent: DarkNinjaEvent }) return;
+        RestoreMusic();
     }
 
-    private static bool TryCaptureMusicEvent()
+    private static void RestoreMusic()
     {
-        if (!TryGetCurrentMusicEvent(out _, out ulong instanceId)
-            || instanceId == _previousMusicInstanceId)
+        Clear();
+        NRunMusicController? controller = NRunMusicController.Instance;
+        controller?.StopCustomMusic();
+        if (RunManager.Instance.DebugOnlyGetState()?.CurrentRoom != null)
         {
-            return false;
-        }
-
-        _musicInstanceId = instanceId;
-        return true;
-    }
-
-    private static bool TryGetCurrentMusicEvent(
-        out GodotObject? musicEvent,
-        out ulong instanceId)
-    {
-        musicEvent = null;
-        instanceId = 0;
-        try
-        {
-            Node? proxy = NRunMusicController.Instance?.GetNodeOrNull<Node>("Proxy");
-            if (proxy == null)
-            {
-                return false;
-            }
-
-            Variant value = proxy.Get("_musicEv");
-            musicEvent = value.VariantType == Variant.Type.Object
-                ? value.AsGodotObject()
-                : null;
-            if (musicEvent == null || !GodotObject.IsInstanceValid(musicEvent))
-            {
-                musicEvent = null;
-                return false;
-            }
-
-            instanceId = musicEvent.GetInstanceId();
-            return true;
-        }
-        catch
-        {
-            musicEvent = null;
-            instanceId = 0;
-            return false;
-        }
-    }
-
-    private static bool TryGetPlaybackState(GodotObject musicEvent, out int playbackState)
-    {
-        playbackState = default;
-        if (!musicEvent.HasMethod("get_playback_state"))
-        {
-            return false;
-        }
-
-        try
-        {
-            playbackState = musicEvent.Call("get_playback_state").AsInt32();
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private static void RestoreIfOwnedOrClear(int generation)
-    {
-        if (_musicInstanceId == 0)
-        {
-            ClearIfCurrent(generation);
-            return;
-        }
-
-        if (TryGetCurrentMusicEvent(out _, out ulong instanceId)
-            && instanceId != _musicInstanceId)
-        {
-            // A stale outro must not stop music already started by a later room.
-            ClearIfCurrent(generation);
-            return;
-        }
-
-        RestoreCurrentRoomMusic(generation);
-    }
-
-    private static void RestoreCurrentRoomMusic(int generation)
-    {
-        if (!IsCurrent(generation))
-        {
-            return;
-        }
-
-        try
-        {
-            NRunMusicController? controller = NRunMusicController.Instance;
-            controller?.StopCustomMusic();
-            if (RunManager.Instance.DebugOnlyGetState()?.CurrentRoom != null)
-            {
-                controller?.UpdateTrack();
-            }
-        }
-        finally
-        {
-            ClearIfCurrent(generation);
-        }
-    }
-
-    private static bool IsCurrent(int generation) =>
-        _eventRoom != null && generation == _generation;
-
-    private static void ClearIfCurrent(int generation)
-    {
-        if (generation == _generation)
-        {
-            Clear();
+            controller?.UpdateMusic();
+            controller?.UpdateTrack();
         }
     }
 
     private static void Clear()
     {
-        if (_subscribed)
+        if (_eventRoom != null)
         {
-            RunManager.Instance.RoomEntered -= OnRoomEntered;
-            RunManager.Instance.RoomExited -= OnRoomExited;
+            RunManager.Instance.RoomEntered -= OnRoomChanged;
+            RunManager.Instance.RoomExited -= OnRoomChanged;
         }
-
         _eventRoom = null;
-        _combatRoom = null;
-        _previousMusicInstanceId = 0;
-        _musicInstanceId = 0;
         _ending = false;
-        _subscribed = false;
         _generation++;
     }
 }

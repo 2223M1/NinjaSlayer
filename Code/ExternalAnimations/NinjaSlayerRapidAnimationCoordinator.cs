@@ -65,7 +65,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
                 || !ReferenceEquals(current, state) || pose.IsExclusive)
                 return;
         }
-        returnSeconds = somersault ? CombatActionTimingRuntime.VisualSeconds(.2f)
+        returnSeconds = somersault ? SlowAttackAnimation.SomersaultHalfSeconds
             : standardPresentation ? CombatActionTimingRuntime.ReturnSeconds : returnSeconds;
         state.ReturnSeconds = Math.Max(state.ReturnSeconds, returnSeconds);
         bool isContinuation = state.HasPlayedAction;
@@ -246,7 +246,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
     {
         if (motion.Somersault)
         {
-            seconds = CombatActionTimingRuntime.VisualSeconds(.2f);
+            seconds = SlowAttackAnimation.SomersaultHalfSeconds;
             NinjaSlayerAimPose.Get(creature)?.ReturnFromSomersault();
         }
         motion.Returning = true;

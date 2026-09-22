@@ -32,20 +32,25 @@ public sealed class AntiAirBangBangFist : RedesignV1RareCard
             or ArtifactPower or BufferPower or IntangiblePower or ThornsPower or PlatingPower
             or RegenPower or EvasionPower;
 
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         int hits = (int)((CalculatedVar)DynamicVars["CalculatedHits"]).Calculate(cardPlay.Target);
-        return DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+        Action? releaseJump = Code.Nodes.NinjaSlayerAimPose.Get(Owner.Creature)?.BeginComboJump();
+        try
+        {
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             .FromCard(this)
 #else
             .FromCard(this, cardPlay)
 #endif
             .WithHitCount(hits)
-            .WithDefectStrikeHitFx()
+            .WithHitFx(VfxCmd.flyingSlashPath)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
+        }
+        finally { releaseJump?.Invoke(); }
     }
 
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3);

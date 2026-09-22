@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class BurnBurnBurnRedesignV1 : RedesignV1UncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("EnemyHpLoss", 8)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("EnemyHpLoss", 6)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<BlackFlameRedesignV1>()];
 
@@ -19,7 +19,6 @@ public sealed class BurnBurnBurnRedesignV1 : RedesignV1UncommonCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(Owner, PileType.Hand);
         await PowerCmd.Apply<BurnBurnBurnPower>(
             choiceContext,
             Owner.Creature,
@@ -28,5 +27,5 @@ public sealed class BurnBurnBurnRedesignV1 : RedesignV1UncommonCard
             this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["EnemyHpLoss"].UpgradeValueBy(4);
+    protected override void OnUpgrade() => DynamicVars["EnemyHpLoss"].UpgradeValueBy(2);
 }

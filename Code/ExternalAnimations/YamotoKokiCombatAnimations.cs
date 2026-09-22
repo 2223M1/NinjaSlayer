@@ -214,6 +214,7 @@ internal static class YamotoKokiCombatAnimations
                 Tween.EaseType.In,
                 Tween.TransitionType.Quad);
             creatureNode.Hide();
+            YamotoKokiIntentLifecycle.Retire(creature);
         }
         finally
         {

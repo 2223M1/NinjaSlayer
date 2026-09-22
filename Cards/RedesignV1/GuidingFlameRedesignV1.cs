@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class GuidingFlameRedesignV1 : RedesignV1CommonCard
 {
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(13, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(12, ValueProp.Move)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<BlackFlameRedesignV1>()];
 

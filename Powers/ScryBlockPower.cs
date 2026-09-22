@@ -14,6 +14,6 @@ public sealed class ScryBlockPower : RedesignV1CounterPower
     {
         if (card.Owner != Owner.Player) return;
         Flash();
-        await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Move, null);
+        await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null);
     }
 }

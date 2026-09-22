@@ -14,16 +14,6 @@ namespace NinjaSlayer.Powers;
 public sealed class WasssssshoiPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DamageFocusPower");
-    public override Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer,
-        DamageResult result, ValueProp props, Creature target, CardModel? cardSource) =>
-        dealer == Owner && target.Side != Owner.Side && result.TotalDamage > 0
-        && cardSource?.Type == CardType.Attack
-        && props.IsPoweredAttack()
-            ? GainTemporaryStats(choiceContext, cardSource) : Task.CompletedTask;
-
-    internal async Task GainTemporaryStats(PlayerChoiceContext choiceContext, CardModel? source)
-    {
-        await PowerCmd.Apply<WasssssshoiStrengthPower>(choiceContext, Owner, Amount, Owner, source);
-        await PowerCmd.Apply<WasssssshoiFocusPower>(choiceContext, Owner, Amount, Owner, source);
-    }
+    internal Task GainTemporaryStats(PlayerChoiceContext choiceContext, CardModel? source) =>
+        PowerCmd.Apply<WasssssshoiStrengthPower>(choiceContext, Owner, Amount, Owner, source);
 }

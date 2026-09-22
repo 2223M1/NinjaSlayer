@@ -26,17 +26,24 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ChopStrikeRedesignV1 : RedesignV1UncommonCard
 {
+    private bool CanReturnToHand => CombatState != null
+        && CombatManager.Instance.History.CardPlaysStarted.Count(entry =>
+            entry.CardPlay.Card == this && entry.CardPlay.IsFirstInSeries
+            && entry.HappenedThisTurn(CombatState)) < 3;
+
+    protected override bool ShouldGlowGoldInternal => CanReturnToHand;
+
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
     protected override PileType GetResultPileTypeForCardPlay()
     {
         PileType pile = base.GetResultPileTypeForCardPlay();
-        return pile == PileType.Discard ? PileType.Hand : pile;
+        return pile == PileType.Discard && CanReturnToHand ? PileType.Hand : pile;
     }
 #else
     protected override CardLocation GetResultLocationForCardPlay()
     {
         CardLocation result = base.GetResultLocationForCardPlay();
-        if (result.pileType == PileType.Discard) result.pileType = PileType.Hand;
+        if (result.pileType == PileType.Discard && CanReturnToHand) result.pileType = PileType.Hand;
         return result;
     }
 #endif

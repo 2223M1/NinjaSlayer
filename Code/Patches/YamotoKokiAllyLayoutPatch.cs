@@ -71,6 +71,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
             slots.Add(playerSlot);
             foreach (NCreature companion in creatureNodes.Where(node =>
                          IsFullSizeCompanion(node.Entity.Monster)
+                         && !YamotoKokiIntentLifecycle.HasRetired(node.Entity)
                          && node.Entity.PetOwner == playerSlot.Anchor.Entity.Player))
             {
                 // A full-size companion follows the vanilla two-player footprint.

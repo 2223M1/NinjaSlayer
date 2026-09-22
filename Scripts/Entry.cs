@@ -84,6 +84,7 @@ public class Entry
             requiredPatcher.RegisterPatch<KarateDamageWavePatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbChannelPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbEvokePatch>();
+            requiredPatcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbVisualPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbChannelSoundPatch>();
@@ -260,12 +261,6 @@ public class Entry
                 patcher.RegisterPatch<KarateCardPreviewAllEnemiesPatch>();
                 patcher.RegisterPatch<KarateCardPreviewClearPatch>();
                 patcher.RegisterPatch<KarateHealthBarTextPreviewPatch>();
-            });
-        TryInstallOptionalPatches(
-            "TypographyPatchGroup",
-            patcher =>
-            {
-                patcher.RegisterPatch<NinjaSlayerInspectRelicTypographyPatch>();
             });
         TryInstallOptionalPatches(
             "CinematicInfrastructurePatchGroup",

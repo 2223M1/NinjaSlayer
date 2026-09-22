@@ -154,6 +154,7 @@ public partial class OrbContractRunner : Node
             var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.OrbContracts", "Product");
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
             patcher.RegisterPatch<ShurikenOrbEvokePatch>();
+            patcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
             patcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             patcher.RegisterPatch<SawatariDuelRewardsPatch>();
@@ -177,6 +178,18 @@ public partial class OrbContractRunner : Node
             }
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_V024") == "1")
             {
+                await VerifyV024();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_GAMEPLAY") == "1")
+            {
+                VerifyCardMetadata();
+                await VerifyCurrentCardInteractions();
+                await VerifyV020();
+                await VerifyV17();
+                await VerifyV023();
                 await VerifyV024();
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
@@ -355,7 +368,7 @@ public partial class OrbContractRunner : Node
                 int before = _evoked;
                 for (int i = 0; i < shots; i++)
                     await OrbCmd.EvokeNext(Choice, combat.Player, dequeue: i == shots - 1);
-                Require(hp == combat.Enemy.CurrentHp, "Converted shots must not deal direct damage.");
+                Require(hp - combat.Enemy.CurrentHp == shots * 6, "Starless shots must retain their direct damage.");
                 Require(_evoked == before + shots, "Native evokes must emit exactly one host event per shot.");
                 Require(combat.Stock == 2 - chain, "Multi-evoke must spend one stock for the whole effect.");
                 Require(combat.Tokens == (chain + 1) * shots, "Starless Night must convert every shot, including later independent chains.");
@@ -376,9 +389,9 @@ public partial class OrbContractRunner : Node
             int hp = combat.Enemy.CurrentHp;
             int before = _evoked;
             await Hook.AfterShuffle(combat.State, Choice, combat.Player);
-            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 0 && combat.Stock == 2 && combat.Tokens == 3,
+            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 36 && combat.Stock == 2 && combat.Tokens == 3,
                 "Upgraded shuffle must convert all stock, consume one and produce three tokens.");
-            Require(second.CurrentHp == hp && combat.Enemy.CurrentHp == hp, "Converted AOE must not damage either target.");
+            Require(second.CurrentHp == hp - 18 && combat.Enemy.CurrentHp == hp - 18, "Starless AOE must damage both targets.");
             Require(_evoked == before + 3, "Shuffle shots must dispatch the host evoke hook.");
         }
         using (var combat = new OrbCombat())
@@ -409,7 +422,7 @@ public partial class OrbContractRunner : Node
         await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         int hp = combat.Enemy.CurrentHp;
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "FireConsumedVolley").Invoke(orb, [Choice, 1, null])!;
-        Require(hp == combat.Enemy.CurrentHp && combat.Stock == 0 && combat.Capacity == 0 && combat.Tokens == 3,
+        Require(hp - combat.Enemy.CurrentHp == 18 && combat.Stock == 0 && combat.Capacity == 0 && combat.Tokens == 3,
             "Converted Hell Tornado must consume all stock, release its slot and generate three tokens.");
         await AddStock(combat.Player, 3);
         await PowerCmd.Remove<StarlessNightRedesignPower>(combat.Player.Creature);
@@ -486,6 +499,14 @@ public partial class OrbContractRunner : Node
 
     public sealed class EvokeObserver : PowerModel
     {
+        public int Discarded { get; private set; }
+        public bool DrawOnDiscard { get; set; }
+        public override async Task AfterCardDiscarded(PlayerChoiceContext choiceContext, CardModel card)
+        {
+            if (card.Owner != Owner.Player) return;
+            Discarded++;
+            if (DrawOnDiscard) await CardPileCmd.Draw(choiceContext, 1, card.Owner);
+        }
         public CardModel? NestedFlameAttack { get; set; }
         public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result,
             MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)

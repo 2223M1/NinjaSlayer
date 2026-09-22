@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class FlyingBladeDanceRedesignV1 : RedesignV1UncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(2, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(1, ValueProp.Unpowered)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<ScryBlockPower>()];
 
     public FlyingBladeDanceRedesignV1()

@@ -163,13 +163,18 @@ public sealed class NinjaSlayerTransitionRunMusicPresentationPatch : IPatchMetho
     [
         new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateMusic), Type.EmptyTypes),
         new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateTrack), Type.EmptyTypes),
-        new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateAmbience), Type.EmptyTypes)
+        new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateAmbience), Type.EmptyTypes),
+        new(typeof(NRunMusicController), nameof(NRunMusicController.PlayCustomMusic), [typeof(string)]),
+        new(typeof(NRunMusicController), nameof(NRunMusicController.StopCustomMusic), Type.EmptyTypes),
+        new(typeof(NRunMusicController), nameof(NRunMusicController.UpdateMusicParameter), [typeof(string), typeof(float)])
     ];
 
-    public static bool Prefix(NRunMusicController __instance, MethodBase __originalMethod) =>
+    // RitsuLib also intercepts these calls; defer before it can start a mapped event.
+    [HarmonyPriority(Priority.First)]
+    public static bool Prefix(NRunMusicController __instance, MethodBase __originalMethod, object[] __args) =>
         !NinjaSlayerTransitionGate.HasActiveSession
         || !NinjaSlayerTransitionGate.TryDeferPresentation(
-            () => __originalMethod.Invoke(__instance, null));
+            () => __originalMethod.Invoke(__instance, __args));
 }
 
 public sealed class NinjaSlayerTransitionParameterizedSfxPresentationPatch : IPatchMethod

@@ -63,7 +63,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, upgraded: upgraded), null);
-            Require(combat.Stock == (upgraded ? 2 : 1) && combat.Tokens == 3 && combat.Enemy.CurrentHp == 1000,
+            Require(combat.Stock == (upgraded ? 2 : 1) && combat.Tokens == 3 && combat.Enemy.CurrentHp == 976,
                 "Oyeah Throw Sword must convert/consume the old stock before replenishing it.");
             var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
             Require(token.SnapshotDamage == 8, "Conversion must snapshot the six base damage and two Focus.");
@@ -78,12 +78,12 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 8, combat.Player.Creature, null);
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, token, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 985, "Snapshot token must gain Strength but not count Focus twice.");
+            Require(combat.Enemy.CurrentHp == 961, "Snapshot token must gain Strength but not count Focus twice.");
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
             var nextToken = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
             await CardCmd.AutoPlay(Choice, nextToken, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 973, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
+            Require(combat.Enemy.CurrentHp == 949, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
         }
         using (var combat = new OrbCombat())
         {
@@ -107,7 +107,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 2);
             await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, PileType.Discard), null);
-            Require(combat.Tokens == 2 && combat.Stock == 1 && combat.Enemy.CurrentHp == 1000,
+            Require(combat.Tokens == 2 && combat.Stock == 1 && combat.Enemy.CurrentHp == 988,
                 "A full hand must not lose converted shots or prevent stock replacement.");
             Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 2,
                 "Native generation must send overflow tokens to discard.");
@@ -119,12 +119,6 @@ public partial class OrbContractRunner
             Require(combat.Player.Creature.Block == (upgraded ? 8 : 5)
                 && combat.Player.Creature.GetPowerAmount<ThornsPower>() == (upgraded ? 4 : 3),
                 "Caltrops must grant its block and native Thorns.");
-            AddCard<ChadoEnergyRedesignV1>(combat);
-            AddCard<ChadoEnergyRedesignV1>(combat);
-            int block = combat.Player.Creature.Block;
-            await CardCmd.AutoPlay(Choice, AddCard<PlaceholderGoldDefense01>(combat, upgraded: upgraded), null);
-            Require(combat.Player.Creature.Block - block == (upgraded ? 7 : 5),
-                "Tea Guard grants only its base block when no tea has been exhausted.");
         }
         foreach (bool upgraded in new[] { false, true })
         {

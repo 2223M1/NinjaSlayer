@@ -38,7 +38,7 @@ public sealed class StraightKiRedesignV1 : NinjaSlayerStandaloneCardTemplate
     public override bool CanBeGeneratedInCombat => false;
     public override bool CanBeGeneratedByModifiers => false;
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Ethereal];
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(37, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(45, ValueProp.Move)];
 
     public StraightKiRedesignV1()
         : base(Spec) { }
@@ -55,5 +55,5 @@ public sealed class StraightKiRedesignV1 : NinjaSlayerStandaloneCardTemplate
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
 
-    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(13);
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(11);
 }

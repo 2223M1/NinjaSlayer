@@ -1,0 +1,237 @@
+{
+  "seed": "NINJASLAYER_HOOK_01",
+  "purpose": "hook",
+  "act": 3,
+  "duration": 14,
+  "karate": 2,
+  "relics": [],
+  "cues": [
+    {
+      "id": "tomoe_feedback",
+      "steps": [
+        {
+          "action": "wait",
+          "seconds": 0.5
+        },
+        {
+          "action": "give_card",
+          "card": "ChadoEnergyRedesignV1"
+        },
+        {
+          "action": "card",
+          "card": "ObserveBattlefield",
+          "selection": [
+            0
+          ],
+          "covers": [
+            "tomoe-landing"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.5
+        },
+        {
+          "action": "card",
+          "card": "KarateStraightRedesignV1"
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "hook_normal",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Normal"
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-normal"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.6
+        }
+      ]
+    },
+    {
+      "id": "hook_fast",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Fast"
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-fast"
+          ]
+        },
+        {
+          "action": "card",
+          "card": "KarateStraightRedesignV1",
+          "covers": [
+            "hook-handoff"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.6
+        }
+      ]
+    },
+    {
+      "id": "hook_mirrored",
+      "steps": [
+        {
+          "action": "swap_sides"
+        },
+        {
+          "action": "wait",
+          "seconds": 0.3
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-mirrored"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.5
+        }
+      ]
+    },
+    {
+      "id": "hook_spine",
+      "steps": [
+        {
+          "action": "swap_sides"
+        },
+        {
+          "action": "replace_enemy",
+          "monster": "ThievingHopper"
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-spine"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.6
+        }
+      ]
+    },
+    {
+      "id": "hook_semi_airborne",
+      "steps": [
+        {
+          "action": "form",
+          "form": "semi"
+        },
+        {
+          "action": "card",
+          "card": "HellTornadoRedesignV1"
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-separated-body"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.5
+        },
+        {
+          "action": "clear_air"
+        }
+      ]
+    },
+    {
+      "id": "hook_full",
+      "steps": [
+        {
+          "action": "form",
+          "form": "full"
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-full"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.5
+        }
+      ]
+    },
+    {
+      "id": "hook_soul",
+      "steps": [
+        {
+          "action": "form",
+          "form": "soul"
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-soul"
+          ]
+        },
+        {
+          "action": "wait",
+          "seconds": 0.5
+        },
+        {
+          "action": "form",
+          "form": "normal"
+        }
+      ]
+    },
+    {
+      "id": "hook_instant",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Instant"
+        },
+        {
+          "action": "card",
+          "card": "HookRopeRedesignV1",
+          "covers": [
+            "hook-instant"
+          ]
+        },
+        {
+          "action": "speed",
+          "mode": "Fast"
+        },
+        {
+          "action": "wait",
+          "seconds": 0.5
+        }
+      ]
+    }
+  ]
+}

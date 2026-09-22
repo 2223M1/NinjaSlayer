@@ -121,6 +121,8 @@ public sealed class KarateDamageWavePatch : IPatchMethod
 
         int amountBeforeConsumption = karate.Amount;
         await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
+        if (dealer.GetPower<GuardStancePower>() is { } guard)
+            await guard.AfterKarate(choiceContext);
         if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
         {
             // PowerCmd rejects amount changes after the bonus ends combat, but the triggering wave still resolves its stack change.

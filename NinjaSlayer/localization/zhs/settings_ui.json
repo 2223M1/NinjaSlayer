@@ -32,5 +32,8 @@
   "NINJA_SLAYER_TELEMETRY_REPLAY_TRUNCATED": "战报达到本地记录上限，已有内容保留并标记不完整。",
   "NINJA_SLAYER_TELEMETRY_REPLAY_STORAGE_ERROR": "本地战报读写失败；已有文件保留，此记录可能缺段。",
   "NINJA_SLAYER_TELEMETRY_REPLAY_OVERSIZED": "战报超出免费上传大小上限，仍保存在本机，尚未上传。",
-  "NINJA_SLAYER_TELEMETRY_REPLAY_SUBMITTED": "已交给 RitsuLib 提交；断网时按其队列重试，远端收录以网站为准。"
+  "NINJA_SLAYER_TELEMETRY_REPLAY_SUBMITTED": "已交给 RitsuLib 提交；断网时按其队列重试，远端收录以网站为准。",
+  "NINJA_SLAYER_SETTINGS_AUDIO_TITLE": "音频",
+  "NINJA_SLAYER_SETTINGS_NARRATION_TITLE": "旁白音效",
+  "NINJA_SLAYER_SETTINGS_NARRATION_DESCRIPTION": "播放旁白语音，不影响角色语音和背景音乐。"
 }

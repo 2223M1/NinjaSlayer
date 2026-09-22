@@ -12,9 +12,11 @@ public static class NinjaSlayerSettings
 
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool> _forceAllEventsOnce = null!;
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool>? _freeControl;
+    private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool>? _narration;
 
     public static bool ForceAllEventsOnce => _forceAllEventsOnce.Read();
     internal static bool FreeControlEnabled => _freeControl?.Read() == true;
+    internal static bool NarrationEnabled => _narration?.Read() ?? true;
 
     public static void Register(string modId)
     {
@@ -37,6 +39,11 @@ public static class NinjaSlayerSettings
             modId, DataKey, SaveScope.Global,
             static settings => settings.FreeControlEnabled,
             static (settings, value) => settings.FreeControlEnabled = value);
+
+        _narration = new ModSettingsValueBinding<NinjaSlayerSettingsData, bool>(
+            modId, DataKey, SaveScope.Global,
+            static settings => settings.NarrationEnabled,
+            static (settings, value) => settings.NarrationEnabled = value);
 
         RitsuLibFramework.RegisterModSettings(modId, page => page
             .WithTitle(Text(
@@ -65,6 +72,12 @@ public static class NinjaSlayerSettings
                 .AddButton("observatory", NinjaSlayerTelemetryConsent.Text("WEBSITE"),
                     NinjaSlayerTelemetryConsent.Text("OPEN_WEBSITE"),
                     () => Godot.OS.ShellOpen(NinjaSlayerTelemetryConsent.ObservatoryUrl)))
+            .AddSection("audio", section => section
+                .WithTitle(Text("NINJA_SLAYER_SETTINGS_AUDIO_TITLE", "Audio"))
+                .AddToggle("narration",
+                    Text("NINJA_SLAYER_SETTINGS_NARRATION_TITLE", "Narration"),
+                    _narration,
+                    Text("NINJA_SLAYER_SETTINGS_NARRATION_DESCRIPTION", "Play narrator voice lines.")))
             .AddSection("validation", section => section
                 .WithReadOnlyOnHostSurfaces(ModSettingsHostSurface.RunPause | ModSettingsHostSurface.CombatPause)
                 .WithTitle(Text(

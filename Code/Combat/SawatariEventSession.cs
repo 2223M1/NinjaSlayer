@@ -330,6 +330,7 @@ internal sealed class SawatariEventSession
 
     private async Task BeginIntermission(float deathAnimLength)
     {
+        SawatariMusicSession.PlayDecision();
         if (deathAnimLength > 0f)
         {
             await Cmd.Wait(deathAnimLength);
@@ -342,7 +343,6 @@ internal sealed class SawatariEventSession
             if (_state.Enemies.Any(enemy => enemy.IsAlive))
                 throw new InvalidOperationException("A living enemy appeared after Sawatari's victory check.");
             foreach (Creature enemy in _state.Enemies.ToArray()) RemoveCreature(enemy);
-            SawatariMusicSession.PlayDecision();
             NCreature companionNode = _room.GetCreatureNode(_companion)
                 ?? throw new InvalidOperationException("Sawatari companion node is unavailable.");
             Vector2 destination = ResolveIntermissionPosition(companionNode);
@@ -377,10 +377,13 @@ internal sealed class SawatariEventSession
                 RemoveCreature(_duelCreature);
             }
 
-            var combatRoom = (CombatRoom)_state.RunState.CurrentRoom;
+            var combatRoom = (CombatRoom)_state.RunState.CurrentRoom!;
             foreach (Player player in _state.Players)
+            {
                 combatRoom.AddExtraReward(player,
                     new RelicReward(ModelDb.Relic<BioBambooRelic>().ToMutable(), player));
+                combatRoom.AddExtraReward(player, new RelicReward(player));
+            }
 
             foreach (SawatariEvent eventModel in _events)
             {
@@ -648,9 +651,6 @@ internal static class SawatariMusicSession
     {
         if (IsCurrentRoom())
         {
-            NRunMusicController.Instance?.PlayCustomMusic(
-                NinjaSlayerAudio.SawatariCoopMusicEvent);
-            SetPhase(_phase);
             return;
         }
 

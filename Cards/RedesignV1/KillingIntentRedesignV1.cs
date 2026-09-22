@@ -16,7 +16,7 @@ public sealed class KillingIntentRedesignV1 : RedesignV1RareCard
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(9, ValueProp.Move)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        HoverTipFactory.FromCardWithCardHoverTips<StraightKiRedesignV1>(IsUpgraded);
+        HoverTipFactory.FromCardWithCardHoverTips<StraightKiRedesignV1>();
 
     public KillingIntentRedesignV1()
         : base(nameof(KillingIntentRedesignV1), "KillingIntent", 2, CardType.Skill, TargetType.Self) { }
@@ -24,16 +24,12 @@ public sealed class KillingIntentRedesignV1 : RedesignV1RareCard
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-        KillingIntentRedesignPower? power = await PowerCmd.Apply<KillingIntentRedesignPower>(
+        await PowerCmd.Apply<KillingIntentRedesignPower>(
             choiceContext,
             Owner.Creature,
             1,
             Owner.Creature,
             this);
-        if (power != null && IsUpgraded)
-        {
-            power.GenerateUpgradedCard = true;
-        }
     }
 
     protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(3);

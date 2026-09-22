@@ -199,7 +199,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BackBridge.png",
     "Vars": {
-      "Block": 15,
+      "Block": 14,
       "Karate": 5
     }
   },
@@ -217,68 +217,13 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BackBridge.png",
     "Vars": {
-      "Block": 19,
+      "Block": 17,
       "Karate": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BATTLEFIELD_INSIGHT_REDESIGN_V1",
-    "Upgraded": false,
-    "Cost": 1,
-    "X": false,
-    "Type": "Power",
-    "Rarity": "Uncommon",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
-    "Vars": {
-      "DiscardThreshold": 3
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_BATTLEFIELD_INSIGHT_REDESIGN_V1",
-    "Upgraded": true,
-    "Cost": 1,
-    "X": false,
-    "Type": "Power",
-    "Rarity": "Uncommon",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Retain"
-    ],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
-    "Vars": {
-      "DiscardThreshold": 2
-    }
-  },
-  {
     "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_RECOVERY",
     "Upgraded": false,
-    "Cost": 1,
-    "X": false,
-    "Type": "Skill",
-    "Rarity": "Uncommon",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Exhaust"
-    ],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRecovery.png",
-    "Vars": {
-      "NarakuLife": 2
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_RECOVERY",
-    "Upgraded": true,
     "Cost": 1,
     "X": false,
     "Type": "Skill",
@@ -293,6 +238,25 @@
     "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRecovery.png",
     "Vars": {
       "NarakuLife": 3
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_RECOVERY",
+    "Upgraded": true,
+    "Cost": 1,
+    "X": false,
+    "Type": "Skill",
+    "Rarity": "Uncommon",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [
+      "Exhaust"
+    ],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRecovery.png",
+    "Vars": {
+      "NarakuLife": 4
     }
   },
   {
@@ -453,7 +417,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BloodTears.png",
     "Vars": {
-      "EnemyHpLoss": 8
+      "EnemyHpLoss": 6
     }
   },
   {
@@ -470,7 +434,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BloodTears.png",
     "Vars": {
-      "EnemyHpLoss": 12
+      "EnemyHpLoss": 8
     }
   },
   {
@@ -788,7 +752,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_COMBAT_ADJUSTMENT_REDESIGN_V1",
     "Upgraded": true,
-    "Cost": 0,
+    "Cost": 1,
     "X": false,
     "Type": "Attack",
     "Rarity": "Uncommon",
@@ -800,7 +764,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/TeaHitsPeople.png",
     "Vars": {
       "Breath": 1,
-      "Damage": 7
+      "Damage": 11
     }
   },
   {
@@ -817,7 +781,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PerfectChop.png",
     "Vars": {
-      "Damage": 5,
+      "Damage": 3,
       "Karate": 1
     }
   },
@@ -835,7 +799,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PerfectChop.png",
     "Vars": {
-      "Damage": 6,
+      "Damage": 4,
       "Karate": 2
     }
   },
@@ -1056,6 +1020,36 @@
     }
   },
   {
+    "Id": "CARD.NINJA_SLAYER_CARD_EXCAVATE",
+    "Upgraded": false,
+    "Cost": 1,
+    "X": false,
+    "Type": "Skill",
+    "Rarity": "Rare",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
+    "Vars": {}
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_EXCAVATE",
+    "Upgraded": true,
+    "Cost": 0,
+    "X": false,
+    "Type": "Skill",
+    "Rarity": "Rare",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
+    "Vars": {}
+  },
+  {
     "Id": "CARD.NINJA_SLAYER_CARD_FLYING_BLADE_DANCE_REDESIGN_V1",
     "Upgraded": false,
     "Cost": 1,
@@ -1069,7 +1063,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BladeDance.png",
     "Vars": {
-      "Block": 2
+      "Block": 1
     }
   },
   {
@@ -1086,7 +1080,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BladeDance.png",
     "Vars": {
-      "Block": 3
+      "Block": 2
     }
   },
   {
@@ -1162,7 +1156,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -1177,7 +1171,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Power",
     "Rarity": "Uncommon",
@@ -1185,7 +1179,7 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
-      "Retain"
+      "Innate"
     ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StarlessNight.png",
@@ -1224,6 +1218,40 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OmnidirectionalThrow.png",
     "Vars": {}
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
+    "Upgraded": false,
+    "Cost": 1,
+    "X": false,
+    "Type": "Power",
+    "Rarity": "Uncommon",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
+    "Vars": {
+      "Block": 2
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_GUARD_STANCE",
+    "Upgraded": true,
+    "Cost": 1,
+    "X": false,
+    "Type": "Power",
+    "Rarity": "Uncommon",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/Contraption.png",
+    "Vars": {
+      "Block": 3
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_GUIDING_FLAME_REDESIGN_V1",
@@ -1239,7 +1267,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BurningStrike.png",
     "Vars": {
-      "Block": 13
+      "Block": 12
     }
   },
   {
@@ -1256,7 +1284,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BurningStrike.png",
     "Vars": {
-      "Block": 16
+      "Block": 15
     }
   },
   {
@@ -1441,36 +1469,6 @@
       "Block": 17,
       "Karate": 4
     }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_SCRY",
-    "Upgraded": false,
-    "Cost": 2,
-    "X": false,
-    "Type": "Power",
-    "Rarity": "Rare",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateScry.png",
-    "Vars": {}
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_SCRY",
-    "Upgraded": true,
-    "Cost": 1,
-    "X": false,
-    "Type": "Power",
-    "Rarity": "Rare",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateScry.png",
-    "Vars": {}
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_KARATE_STRAIGHT_REDESIGN_V1",
@@ -1899,7 +1897,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_ONLY_KARATE_REDESIGN_V1",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Skill",
     "Rarity": "Rare",
@@ -1907,7 +1905,6 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
-      "Ethereal",
       "Exhaust"
     ],
     "Tags": [],
@@ -2039,42 +2036,6 @@
     "Vars": {
       "Block": 8,
       "ThornsPower": 4
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_PLACEHOLDER_GOLD_DEFENSE01",
-    "Upgraded": false,
-    "Cost": 1,
-    "X": false,
-    "Type": "Skill",
-    "Rarity": "Rare",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
-    "Vars": {
-      "Block": 5,
-      "Karate": 3
-    }
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_PLACEHOLDER_GOLD_DEFENSE01",
-    "Upgraded": true,
-    "Cost": 1,
-    "X": false,
-    "Type": "Skill",
-    "Rarity": "Rare",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
-    "Vars": {
-      "Block": 7,
-      "Karate": 4
     }
   },
   {
@@ -2305,7 +2266,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/AssassinationFist.png",
     "Vars": {
-      "NarakuLife": 3
+      "StrengthPower": 2
     }
   },
   {
@@ -2322,7 +2283,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/AssassinationFist.png",
     "Vars": {
-      "NarakuLife": 5
+      "StrengthPower": 3
     }
   },
   {
@@ -2632,7 +2593,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SLAUGHTER",
     "Upgraded": false,
-    "Cost": 3,
+    "Cost": 1,
     "X": false,
     "Type": "Attack",
     "Rarity": "Uncommon",
@@ -2643,14 +2604,14 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Slaughter.png",
     "Vars": {
-      "Damage": 30,
-      "Karate": 5
+      "Damage": 10,
+      "Cards": 4
     }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SLAUGHTER",
     "Upgraded": true,
-    "Cost": 3,
+    "Cost": 1,
     "X": false,
     "Type": "Attack",
     "Rarity": "Uncommon",
@@ -2661,8 +2622,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Slaughter.png",
     "Vars": {
-      "Damage": 38,
-      "Karate": 6
+      "Damage": 12,
+      "Cards": 5
     }
   },
   {
@@ -2714,7 +2675,9 @@
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StatusDraw.png",
-    "Vars": {}
+    "Vars": {
+      "Cards": 1
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_STATUS_DRAW",
@@ -2731,7 +2694,9 @@
     ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StatusDraw.png",
-    "Vars": {}
+    "Vars": {
+      "Cards": 2
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_STORM_FIST_REDESIGN_V1",
@@ -2789,7 +2754,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StraightKi.png",
     "Vars": {
-      "Damage": 37
+      "Damage": 45
     }
   },
   {
@@ -2808,7 +2773,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/StraightKi.png",
     "Vars": {
-      "Damage": 50
+      "Damage": 56
     }
   },
   {
@@ -3030,7 +2995,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/TechniqueSearchRedesignV1.png",
     "Vars": {
       "Cards": 2,
-      "Scry": 5
+      "Scry": 7
     }
   },
   {
@@ -3214,7 +3179,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_WASSSSSSHOI",
     "Upgraded": false,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Power",
     "Rarity": "Rare",
@@ -3224,7 +3189,9 @@
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Wasssssshoi.png",
-    "Vars": {}
+    "Vars": {
+      "StrengthPower": 1
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_WASSSSSSHOI",
@@ -3239,7 +3206,9 @@
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Wasssssshoi.png",
-    "Vars": {}
+    "Vars": {
+      "StrengthPower": 2
+    }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_WHISK_TEA_FLASH_REDESIGN_V1",
@@ -3275,6 +3244,40 @@
     "Vars": {
       "Cards": 3,
       "Damage": 11
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_ZANSHIN",
+    "Upgraded": false,
+    "Cost": 1,
+    "X": false,
+    "Type": "Power",
+    "Rarity": "Rare",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/KarateScry.png",
+    "Vars": {
+      "Cards": 1
+    }
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_ZANSHIN",
+    "Upgraded": true,
+    "Cost": 1,
+    "X": false,
+    "Type": "Power",
+    "Rarity": "Rare",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/KarateScry.png",
+    "Vars": {
+      "Cards": 2
     }
   },
   {

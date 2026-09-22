@@ -1,0 +1,159 @@
+{
+  "seed": "NINJASLAYER_THEATER_01",
+  "act": 3,
+  "duration": 38.5,
+  "relics": [
+    "BlackBlood", "BloodVial", "BookOfFiveRings", "BookRepairKnife", "BurningBlood",
+    "ChosenCheese", "DarkstonePeriapt", "DemonTongue", "DragonFruit", "EternalFeather",
+    "FakeBloodVial", "FakeMango", "FakeLeesWaffle", "LeafyPoultice", "LeesWaffle", "LizardTail",
+    "LoomingFruit", "Mango", "MealTicket", "MeatOnTheBone", "NutritiousOyster", "Pantograph",
+    "Pear", "Planisphere", "RegalPillow", "StoneHumidifier", "Strawberry", "TeaOfDiscourtesy",
+    "AmethystAubergine", "BoneTea", "Bread", "ElectricShrymp", "EmberTea", "FragrantMushroom",
+    "FrozenEgg", "IceCream", "LastingCandy", "LuckyFysh", "LunarPastry", "MeatCleaver", "MoltenEgg",
+    "NutritiousSoup", "OrangeDough", "ToxicEgg", "VenerableTeaSet", "FakeVenerableTeaSet",
+    "VeryHotCocoa", "YummyCookie", "MaguroSushiRelic"
+  ],
+  "karate": 2,
+  "cues": [
+    { "id": "opening", "steps": [
+      { "action": "block", "actor": "sawatari", "amount": 70 },
+      { "action": "aim", "covers": ["aim"] },
+      { "action": "card", "card": "CollapseFistRedesignV1", "covers": ["somersault-heavy"] },
+      { "action": "wait", "seconds": 0.125 },
+      { "parallel": [
+        { "sequence": [
+          { "action": "card", "card": "StrikeNinjaSlayerRedesignV1", "covers": ["fast-attack"] },
+          { "action": "card", "card": "KarateStraightRedesignV1", "covers": ["slow-attack"] },
+          { "action": "card", "card": "DefendNinjaSlayerRedesignV1", "covers": ["cast", "block"] }
+        ]},
+        { "sequence": [
+          { "action": "move", "actor": "sawatari", "target": "ninja", "move": "bamboo", "covers": ["bamboo", "hurt"] },
+          { "action": "move", "actor": "sawatari", "target": "ninja", "move": "bow", "covers": ["bow", "weapon-swap"] }
+        ]}
+      ]},
+      { "action": "power", "power": "EvasionPower" },
+      { "action": "move", "actor": "sawatari", "target": "ninja", "move": "bow", "covers": ["dodge"] },
+      { "action": "clear_block" }
+    ]},
+    { "id": "tomoe_throw", "steps": [
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-throw"] },
+      { "action": "wait", "seconds": 0.15 }
+    ]},
+    { "id": "knife_exchange_1", "steps": [
+      { "action": "block", "amount": 100 },
+      { "parallel": [
+        { "action": "move", "actor": "sawatari", "target": "ninja", "move": "dual", "covers": ["dual-thrust"] },
+        { "action": "roll_volley", "count": 2 }
+      ]},
+      { "action": "knife_exchange", "count": 2 }
+    ]},
+    { "id": "knife_exchange_2", "steps": [
+      { "action": "knife_exchange" },
+      { "action": "card", "card": "OneDrinkOneStrikeRedesignV1", "covers": ["kick-overhead"] }
+    ]},
+    { "id": "knife_exchange_3", "steps": [
+      { "action": "knife_exchange" },
+      { "action": "card", "card": "TornadoFistRedesignV1", "energy": 3, "covers": ["tornado-normal"] }
+    ]},
+    { "id": "koki_arrival", "steps": [
+      { "parallel": [
+        { "action": "entrance", "actor": "koki", "covers": ["koki-entrance"] },
+        { "action": "roll_volley", "count": 2 }
+      ]},
+      { "parallel": [
+        { "action": "missiles", "covers": ["origami-missiles"] },
+        { "sequence": [
+          { "action": "card", "card": "RoundhouseKickRedesignV1", "covers": ["kick-roundhouse"] },
+          { "action": "card", "card": "SweepKickRedesignV1", "covers": ["kick-sweep"] },
+          { "action": "move", "actor": "sawatari", "target": "ninja", "move": "bamboo" }
+        ]}
+      ]}
+    ]},
+    { "id": "koki_iai_second_volley", "steps": [
+      { "parallel": [
+        { "sequence": [
+          { "action": "move", "actor": "koki", "move": "IAI_SLASH", "covers": ["koki-iai"] },
+          { "action": "missiles" }
+        ]},
+        { "sequence": [
+          { "action": "card", "card": "SatsubatsuRedesignV1", "covers": ["kick-bs1260"] },
+          { "action": "card", "card": "DragonFlyingKickRedesignV1", "covers": ["kick-flying", "jump"] }
+        ]}
+      ]},
+      { "action": "entrance", "actor": "yukano", "covers": ["yukano-entrance"] },
+      { "action": "move", "actor": "yukano", "move": "BARRIER", "covers": ["yukano-barrier"] }
+    ]},
+    { "id": "friendly_fire", "steps": [
+      { "action": "clear_block" },
+      { "parallel": [
+        { "action": "missiles", "friendlyFire": true },
+        { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" }
+      ]},
+      { "parallel": [
+        { "action": "apology", "covers": ["turn"] },
+        { "sequence": [
+          { "action": "wait", "seconds": 0.36 },
+          { "action": "card", "card": "KarateStraightRedesignV1" },
+          { "action": "move", "actor": "sawatari", "target": "ninja", "move": "dual" }
+        ]}
+      ]},
+      { "action": "move", "actor": "yukano", "move": "ARROW", "covers": ["yukano-arrow"] }
+    ]},
+    { "id": "dark_strike_closeup", "steps": [
+      { "action": "camera", "actor": "ninja", "zoom": 5, "height": -80, "seconds": 0.18 },
+      { "action": "wait", "seconds": 0.32 },
+      { "action": "camera", "actor": "sawatari", "zoom": 5, "height": -90, "seconds": 0.1 },
+      { "action": "wait", "seconds": 0.3 },
+      { "action": "takeover" }
+    ]},
+    { "id": "dark_first_counter", "steps": [
+      { "action": "block", "actor": "dark", "amount": 250 },
+      { "action": "block", "amount": 35 },
+      { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_COUNTER_STANCE", "covers": ["dark-stance"] },
+      { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" },
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "card", "card": "CollapseFistRedesignV1" },
+      { "action": "move", "actor": "dark", "target": "ninja", "move": "DEATH_SLASH", "covers": ["death-slash", "debuff"] },
+      { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_ROBE", "covers": ["dark-robe"] },
+      { "action": "form", "form": "semi" },
+      { "action": "roll_volley", "count": 2 }
+    ]},
+    { "id": "alabama_counter", "steps": [
+      { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_STRIKE", "covers": ["dark-strike-combat"] },
+      { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_KILLING_INTENT", "covers": ["dark-intent"] },
+      { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" },
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "card", "card": "AlabamaDropRedesignV1", "covers": ["alabama-drop"] },
+      { "action": "remove_power", "actor": "dark", "power": "IaiPower" }
+    ]},
+    { "id": "hell_tornado", "steps": [
+      { "parallel": [
+        { "sequence": [
+          { "action": "card", "card": "HellTornadoRedesignV1", "covers": ["hell-tornado"] },
+          { "action": "card", "card": "RoundhouseKickRedesignV1" }
+        ]},
+        { "action": "move", "actor": "yukano", "move": "HEAL", "covers": ["yukano-heal"] }
+      ]},
+      { "action": "roll_volley", "count": 2 },
+      { "action": "clear_air" }
+    ]},
+    { "id": "full_naraku", "steps": [
+      { "action": "form", "form": "full" },
+      { "action": "card", "card": "AntiAirBangBangFist", "covers": ["anti-air-combo"] }
+    ]},
+    { "id": "one_body_one_soul", "steps": [
+      { "action": "form", "form": "soul" },
+      { "parallel": [
+        { "action": "card", "card": "StraightKiRedesignV1" },
+        { "action": "move", "actor": "yukano", "move": "SHURIKEN", "covers": ["yukano-shuriken"] }
+      ]},
+      { "action": "form", "form": "normal" }
+    ]},
+    { "id": "final_tornado", "steps": [
+      { "action": "card", "card": "TornadoFistRedesignV1", "energy": 6, "charge": true, "seconds": 0.25,
+        "covers": ["tornado-empowered-b", "finisher"] },
+      { "action": "wait", "seconds": 0.65 }
+    ]}
+  ]
+}

@@ -17,10 +17,13 @@ internal static class YamotoKokiIntentLifecycle
     public static YamotoKokiIntentGeneration BeginCombat(Creature creature)
     {
         GenerationState state = States.GetOrCreateValue(creature);
+        bool wasRetired = state.HasRetired;
         long generation = ++state.Generation;
         state.IsActive = true;
+        state.HasRetired = false;
 
         ShowContainer(creature);
+        if (wasRetired && NCombatRoom.Instance is { } room) Patches.YamotoKokiAllyLayoutPatch.Reflow(room);
         return new YamotoKokiIntentGeneration(creature, generation);
     }
 
@@ -48,6 +51,16 @@ internal static class YamotoKokiIntentLifecycle
         }
 
         return state.IsActive;
+    }
+
+    internal static bool HasRetired(Creature creature) =>
+        States.TryGetValue(creature, out var state) && state.HasRetired;
+
+    internal static void Retire(Creature creature)
+    {
+        Invalidate(creature);
+        States.GetOrCreateValue(creature).HasRetired = true;
+        if (NCombatRoom.Instance is { } room) Patches.YamotoKokiAllyLayoutPatch.Reflow(room);
     }
 
     public static void Invalidate(Creature creature)
@@ -143,5 +156,6 @@ internal static class YamotoKokiIntentLifecycle
     {
         public long Generation;
         public bool IsActive;
+        public bool HasRetired;
     }
 }

@@ -463,6 +463,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _angle = _kick = _chargeBack = 0f;
         _displayAngle = 0f;
         _somersault = null;
+        _tomoe = null;
         _somersaultLift = Vector2.Zero;
         _somersaultBlur?.ClearHistory();
         Transform = Transform2D.Identity;
@@ -565,6 +566,7 @@ public partial class NinjaSlayerAimPose : Node2D
         }
         _bodyHeight = bottom - top;
         ReadOnlySpan<V2> offsets = _offsets.AsSpan(0, contour.Length);
+        if (ComposeTomoe(offsets, core, unposedBody * footPoint, parentCanvas)) return;
         if (!_enabled)
         {
             _effectiveTravelY = 0f;

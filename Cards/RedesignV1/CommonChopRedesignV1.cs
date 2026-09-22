@@ -23,7 +23,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class CommonChopRedesignV1 : RedesignV1CommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(5, ValueProp.Move), new KarateVar(1)];
+        [new DamageVar(3, ValueProp.Move), new KarateVar(1)];
 
     public CommonChopRedesignV1()
         : base(nameof(CommonChopRedesignV1), "PerfectChop", 0, CardType.Attack, TargetType.AnyEnemy) { }

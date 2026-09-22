@@ -12,18 +12,18 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class ReturnReturnReturnRedesignV1 : RedesignV1UncommonCard
 {
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        HoverTipFactory.FromCardWithCardHoverTips<BlackFlameRedesignV1>();
+        [.. HoverTipFactory.FromCardWithCardHoverTips<BlackFlameRedesignV1>(),
+            HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>()];
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(3)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(2)];
     public ReturnReturnReturnRedesignV1()
         : base(nameof(ReturnReturnReturnRedesignV1), "AssassinationFist", 1, CardType.Power, TargetType.Self) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(Owner, PileType.Hand);
         await PowerCmd.Apply<ReturnReturnReturnPower>(choiceContext, Owner.Creature,
-            DynamicVars["NarakuLife"].BaseValue, Owner.Creature, this);
+            DynamicVars["StrengthPower"].BaseValue, Owner.Creature, this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["NarakuLife"].UpgradeValueBy(2);
+    protected override void OnUpgrade() => DynamicVars["StrengthPower"].UpgradeValueBy(1);
 }

@@ -31,6 +31,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
         ref float __result,
         out bool __state)
     {
+        GrappledTargetPose.Release(__instance.Entity);
         if (__instance.Entity.Player?.Character is INinjaSlayerCharacter)
         {
             NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl.Get(__instance.Entity)?.Stop();
@@ -58,6 +59,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
                 return false;
             }
 
+            Nodes.DarkNinjaStolenCards.Get(__instance.Entity)?.Drop();
             Task deathTask = PlayMonsterDeathFlight(__instance, shouldRemove);
             __instance.DeathAnimationTask = deathTask;
             TaskHelper.RunSafely(deathTask);

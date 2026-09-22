@@ -16,7 +16,7 @@ public sealed class BackBridgeRedesignV1 : RedesignV1UncommonCard
 
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new BlockVar(15, ValueProp.Move), new KarateVar(5)];
+        [new BlockVar(14, ValueProp.Move), new KarateVar(5)];
 
     public BackBridgeRedesignV1()
         : base(nameof(BackBridgeRedesignV1), "BackBridge", 3, CardType.Skill, TargetType.Self) { }
@@ -33,7 +33,7 @@ public sealed class BackBridgeRedesignV1 : RedesignV1UncommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(4);
+        DynamicVars.Block.UpgradeValueBy(3);
         DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

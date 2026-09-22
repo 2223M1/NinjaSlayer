@@ -17,7 +17,7 @@ public sealed class BlackFlameRecovery : RedesignV1UncommonCard
 
     public BlackFlameRecovery() : base(nameof(BlackFlameRecovery), nameof(BlackFlameRecovery), 1, CardType.Skill, TargetType.Self) { }
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(2)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new NarakuLifeVar(3)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         var selected = await CardSelectCmd.FromHand(choiceContext, Owner,

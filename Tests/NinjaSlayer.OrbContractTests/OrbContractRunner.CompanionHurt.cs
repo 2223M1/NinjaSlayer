@@ -56,7 +56,7 @@ public partial class OrbContractRunner
                 try
                 {
                     Task hit = Task.CompletedTask;
-                    Require(!NinjaSlayerAnimationPatch.Prefix(creature, "Hit", 0f, ref hit),
+                    Require(!NinjaSlayerAnimationPatch.Prefix(creature, "Hit", 0f, ref hit, out _),
                         "Sawatari Hit was not handled by the mod animation route.");
                     if (side == CombatSide.Enemy)
                     {
@@ -78,13 +78,13 @@ public partial class OrbContractRunner
                             "Enemy Sawatari did not restore after hurt.");
                         for (int hitIndex = 0; hitIndex < 2; hitIndex++)
                         {
-                            NinjaSlayerAnimationPatch.Prefix(creature, "Hit", 0f, ref hit);
+                            NinjaSlayerAnimationPatch.Prefix(creature, "Hit", 0f, ref hit, out _);
                             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                         }
                         StaggerAnimation.Reset(creature);
                         Require(actor.Position.IsEqualApprox(rootBaseline) && anchor.Transform.IsEqualApprox(baseline),
                             "Repeated/interrupted hurt left Sawatari displaced.");
-                        NinjaSlayerAnimationPatch.Prefix(creature, "BlockedHit", .05f, ref hit);
+                        NinjaSlayerAnimationPatch.Prefix(creature, "BlockedHit", .05f, ref hit, out _);
                         Require(!StaggerAnimation.IsActive(creature) && hit.IsCompletedSuccessfully,
                             "Fully blocked damage should shake, not stagger Sawatari.");
                         await ToSignal(GetTree().CreateTimer(.1), SceneTreeTimer.SignalName.Timeout);
@@ -162,14 +162,14 @@ public partial class OrbContractRunner
             try
             {
                 Task hit = Task.CompletedTask;
-                NinjaSlayerAnimationPatch.Prefix(dark, "Hit", 0f, ref hit);
+                NinjaSlayerAnimationPatch.Prefix(dark, "Hit", 0f, ref hit, out _);
                 Task wait = (Task)AccessTools.Method(typeof(StaggerAnimation), "WaitForCompletion").Invoke(null, [dark])!;
                 Require(!wait.IsCompleted, "Dark Ninja counter did not wait for its active hurt.");
                 await wait;
                 Require(darkRig.GetNode<Node2D>("AirborneAnchor").Transform.IsEqualApprox(Transform2D.Identity),
                     "Dark Ninja hurt did not fully return before counter preparation.");
                 ulong start = Time.GetTicksUsec();
-                NinjaSlayerAnimationPatch.Prefix(dark, "SlowAttack", .5f, ref hit);
+                NinjaSlayerAnimationPatch.Prefix(dark, "SlowAttack", .5f, ref hit, out _);
                 await hit;
                 double frameSeconds = Math.Max(1d / 60d, GetProcessDeltaTime());
                 double gate = SaveManager.Instance.PrefsSave.FastMode == FastModeType.Normal ? .5d : .25d;

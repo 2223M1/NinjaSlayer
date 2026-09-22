@@ -58,7 +58,7 @@ internal sealed class SpinExposureRenderer(Node owner) : IDisposable
     }
 
     internal void ApplyPlanar(Sprite2D sprite, Vector4[] samplesX, Vector4[] samplesY,
-        Rect2 bounds, Vector2 pivot, float radians, Vector3 sweep, float bodyHeight)
+        Rect2 bounds, Vector2 pivot, float radians, Vector3 sweep, float bodyHeight, bool premultiplied = false)
     {
         if (!Prepare(sprite, planar: true)) return;
         float motion = radians + new Vector2(sweep.X, sweep.Y).Length() / bodyHeight;
@@ -67,6 +67,7 @@ internal sealed class SpinExposureRenderer(Node owner) : IDisposable
         _planarCapture = _planarCapture?.Merge(padded) ?? padded;
         Rect2 capture = _planarCapture.Value;
         _exposureMaterial!.SetShaderParameter("samples_x", samplesX);
+        _exposureMaterial.SetShaderParameter("body_premultiplied", premultiplied);
         _exposureMaterial.SetShaderParameter("samples_y", samplesY);
         _exposureMaterial.SetShaderParameter("draw_rect", new Vector4(capture.Position.X, capture.Position.Y, capture.Size.X, capture.Size.Y));
         foreach (ShaderMaterial material in new[] { _material!, _filterMaterial!, _diffusionMaterial! })

@@ -27,6 +27,18 @@ public partial class OrbContractRunner
         Require(typeof(ShurikenOrb).Assembly.GetTypes().Count(type =>
             !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)) == 93,
             "The product assembly must contain only the 93 current card models.");
+        foreach (var type in typeof(ShurikenOrb).Assembly.GetTypes().Where(type =>
+            !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)))
+        {
+            var original = ModelDb.GetById<CardModel>(ModelDb.GetId(type)).ToMutable();
+            var upgraded = (CardModel)original.MutableClone();
+            if (upgraded.MaxUpgradeLevel == 0) continue;
+            upgraded.UpgradeInternal();
+            if (upgraded.EnergyCost.GetWithModifiers(CostModifiers.Local) < original.EnergyCost.GetWithModifiers(CostModifiers.Local))
+                Require(!upgraded.Keywords.Except(original.Keywords).Any(keyword => keyword is CardKeyword.Innate or CardKeyword.Retain),
+                    $"{original.Id}: a cost-reducing upgrade must not add Retain or Innate.");
+        }
+        GD.Print("PASS all current upgrades: no simultaneous cost reduction and added Retain/Innate");
         await VerifyNewCardInteractions();
         await VerifyAncientCardSources();
         await VerifyChadoGeneration();
@@ -90,7 +102,7 @@ public partial class OrbContractRunner
             await relic.BeforeHandDraw(combat.Player, Choice, combat.State);
             var opening = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray();
             Require(opening.Length == (upgraded ? 2 : 1)
-                && opening.All(card => card.Keywords.Contains(CardKeyword.Retain) == upgraded
+                && opening.All(card => !card.Keywords.Contains(CardKeyword.Retain)
                     && card.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2)),
                 "Starter breathes two with first-turn tea retention; ancient generates two retained tea then breathes two.");
             foreach (var tea in opening)
@@ -99,8 +111,10 @@ public partial class OrbContractRunner
             var later = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
             Require(!later.Keywords.Contains(CardKeyword.Retain), "Later tea must not inherit the opening relic's Retain.");
             await CardPileCmd.Add(opening[0], PileType.Hand);
-            Require(opening[0].Keywords.Contains(CardKeyword.Retain) == upgraded, "Pile changes must preserve opening tea's keywords.");
-            Require(opening[0].MutableClone() is CardModel copy && copy.Keywords.Contains(CardKeyword.Retain) == upgraded,
+            await combat.Player.Creature.GetPower<ChadoRetainPower>()!.BeforeFlush(Choice, combat.Player);
+            Require(later.ShouldRetainThisTurn, "Tea generated later in the first turn must also be retained.");
+            Require(!opening[0].Keywords.Contains(CardKeyword.Retain) && opening[0].ShouldRetainThisTurn, "Pile changes must preserve opening tea's keywords.");
+            Require(opening[0].MutableClone() is CardModel copy && !copy.Keywords.Contains(CardKeyword.Retain),
                 "Native copies must preserve opening tea's keywords.");
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
             int count = PileType.Hand.GetPile(combat.Player).Cards.Count;
@@ -125,8 +139,7 @@ public partial class OrbContractRunner
                 .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
 #endif
         }
-        // The second flame spends four of the first flame's six Naraku Life before granting six more.
-        Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 8
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
             && PileType.Exhaust.GetPile(combat.Player).Cards.Count == 2,
             "Native end-turn must exhaust each Black Flame once and trigger Return Return Return once per card.");
         GD.Print("PASS native Black Flame end-turn and stacked Return Return Return without duplicate exhaust");

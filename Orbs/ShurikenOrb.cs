@@ -309,20 +309,19 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets = [target];
         }
 
-        if (Owner.Creature.GetPower<StarlessNightRedesignPower>() is { } starless)
+        int damage = (int)EvokeVal;
+        StarlessNightRedesignPower? starless = Owner.Creature.GetPower<StarlessNightRedesignPower>();
+        await ShurikenCombat.TriggerStockWave(
+            choiceContext,
+            Owner.Creature,
+            targets,
+            source,
+            this,
+            () => ActivateEvokeFeedback(targets));
+        if (starless != null && Code.Patches.StarlessNightDiscardBatchPatch.CanGenerate(starless))
         {
             Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_converted", Owner.Creature, 1);
-            await starless.GenerateStrongShuriken((int)EvokeVal);
-        }
-        else
-        {
-            await ShurikenCombat.TriggerStockWave(
-                choiceContext,
-                Owner.Creature,
-                targets,
-                source,
-                this,
-                () => ActivateEvokeFeedback(targets));
+            await starless.GenerateStrongShuriken(damage);
         }
         // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_evoked", Owner.Creature, 1);

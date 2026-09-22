@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Animation;
 using MegaCrit.Sts2.Core.Audio;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
@@ -163,6 +164,12 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
                     ?.EnsureBurst();
                 using (YamotoKokiOrigamiMissileHitSparkScope.Enter(target))
                 {
+                    if (MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance is { } room && target.GetCreatureNode() != null
+                        && MegaCrit.Sts2.Core.Nodes.Vfx.NFireSmokePuffVfx.Create(target) is { } puff)
+                    {
+                        puff.Scale = Godot.Vector2.One * 0.35f;
+                        room.CombatVfxContainer.AddChildSafely(puff);
+                    }
                     await CreatureCmd.Damage(
                         new ThrowingPlayerChoiceContext(),
                         target,

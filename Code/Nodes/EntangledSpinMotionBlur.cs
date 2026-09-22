@@ -17,6 +17,9 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
     private float _ratio = 1f;
     private float _bodyHeight;
     private bool _active;
+    private FreeControlMotionBlur? _planar;
+    private float _planarAngle;
+    private Vector2 _planarPivot;
 
     internal static EntangledSpinMotionBlur Create(Node2D body, Rect2 fallbackBodyBounds)
     {
@@ -91,6 +94,23 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
         _history.Record(_time, degrees, age => before(age * timeScale));
     }
 
+    internal void RecordPlanar(float radians, Vector2 canvasPivot)
+    {
+        if (!_active) return;
+        if (_planar == null)
+        {
+            _planar = new FreeControlMotionBlur
+            {
+                Name = "PlanarExposure", ShowBehindParent = true,
+                SourcePremultiplied = true, SourceBodyHeight = _bodyHeight
+            };
+            AddChild(_planar);
+        }
+        _planarAngle = radians;
+        _planarPivot = canvasPivot;
+        SyncNow();
+    }
+
     internal void SyncNow()
     {
         if (!_active || !IsInsideTree()) return;
@@ -105,7 +125,14 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
         RenderingServer.CanvasItemSetTransform(_body.GetCanvasItem(), Transform2D.Identity);
         if (!CanProcess() || Engine.TimeScale <= 0d) return;
         _capture.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
-        if (_projection != null && _history.SampleAngles(_time, _angles))
+        if (_planar != null)
+        {
+            Transform2D space = new(0f, _planarPivot);
+            Transform2D authored = new Transform2D(-_planarAngle, Vector2.Zero)
+                * space.AffineInverse() * _display.GetGlobalTransformWithCanvas();
+            _planar.RecordHistory(_display, _time, space, Vector2.Zero, authored, _planarAngle);
+        }
+        else if (_projection != null && _history.SampleAngles(_time, _angles))
             _renderer.Apply(_display, _projection.AxisInSprite(_display).X, _ratio, _angles,
                 _bodyHeight, premultiplied: true);
         else
@@ -140,6 +167,7 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
         Visible = false;
         _capture.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
         _renderer.Reset();
+        _planar?.ClearHistory();
         _history.Clear();
     }
 

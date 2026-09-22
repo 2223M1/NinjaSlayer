@@ -89,11 +89,15 @@ internal sealed partial class SmokeController
                 return;
             }
             var room = NCombatRoom.Instance!;
-            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics" or "MotherUnix" or "BalanceV0216")
+            if (_configuration.PreviewFormFinisher is "BattleCompletion" or "EventRelics" or "MotherUnix" or "BalanceV0216" or "BalanceV0217" or "MusicV0217")
             {
                 await recorder.Start();
                 recording = true;
-                if (_configuration.PreviewFormFinisher == "BalanceV0216")
+                if (_configuration.PreviewFormFinisher == "BalanceV0217")
+                    await VerifyBalanceV0217Live(directory, cancellationToken);
+                else if (_configuration.PreviewFormFinisher == "MusicV0217")
+                    await VerifyMusicV0217Live(directory, cancellationToken);
+                else if (_configuration.PreviewFormFinisher == "BalanceV0216")
                     await VerifyBalanceV0216Live(directory, cancellationToken);
                 else if (_configuration.PreviewFormFinisher == "MotherUnix")
                     await VerifyMotherUnixLive(directory, cancellationToken);
@@ -481,7 +485,7 @@ internal sealed partial class SmokeController
                         await CardPileCmd.RemoveFromCombat(old);
                     var receipts = new List<CardModel>();
                     foreach (CardModel model in new CardModel[] { ModelDb.Card<PlaceholderBlueDefense01>(),
-                        ModelDb.Card<BattlefieldInsightRedesignV1>(), ModelDb.Card<PalmThrustRedesignV1>() })
+                        ModelDb.Card<GuardStance>(), ModelDb.Card<PalmThrustRedesignV1>() })
                     {
                         CardModel deck = player.RunState.CreateCard(model, player);
                         CardCmd.Upgrade(deck);
