@@ -12,6 +12,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 
 public static class SlowAttackAnimation
 {
+    internal static float SomersaultHalfSeconds => CombatActionTimingRuntime.VisualSeconds(0.125f);
     internal static float StandardOutboundSeconds => CombatActionTimingRuntime.VisualSeconds(0.1f);
     internal static float CompanionPeakSeconds => CombatActionTimingRuntime.CompanionSlowAttackSeconds;
     internal const float IaiNormalSeconds = 0.5f;
@@ -20,15 +21,16 @@ public static class SlowAttackAnimation
 
     public static async Task Play(Creature creature)
     {
-        float gate = CombatActionTimingRuntime.TriggerSeconds(
+        bool somersault = NinjaSlayerAimPose.IsSomersaultHeavy(NinjaSlayerAttackExecution.CurrentPlay?.Card)
+            && creature.Player?.Character is INinjaSlayerCharacter;
+        float gate = somersault ? SomersaultHalfSeconds : CombatActionTimingRuntime.TriggerSeconds(
             NinjaSlayerAimPose.IsKick(NinjaSlayerAttackExecution.CurrentPlay?.Card) ? 0.25f : 0.2f);
         if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, gate, out Task owned))
         {
             await owned;
             return;
         }
-        if (NinjaSlayerAimPose.IsSomersaultHeavy(NinjaSlayerAttackExecution.CurrentPlay?.Card)
-            && creature.Player?.Character is INinjaSlayerCharacter)
+        if (somersault)
         {
             await NinjaSlayerRapidAnimationCoordinator.PlayAttackToPeak(creature, 120f, gate,
                 p => p * p, somersault: true);

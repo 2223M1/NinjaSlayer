@@ -19,8 +19,17 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim), [typeof(Creature), typeof(string), typeof(float)])];
 
-    public static bool Prefix(Creature creature, string triggerName, float waitTime, ref Task __result)
+    public static bool Prefix(Creature creature, string triggerName, float waitTime, ref Task __result, out bool __state)
     {
+        __state = false;
+        GrappledTargetPose.Release(creature);
+        if (triggerName == "Hit" && DarkStrikeHurtPoseFreezeContext.TryDeferHit(creature))
+        {
+            __state = true;
+            __result = Task.CompletedTask;
+            return false;
+        }
+        DarkNinjaSpecialAttackPresentation.CancelDeferredHurt(creature);
         FinisherAttackVfxBaselineContext.BeginApproach(creature, triggerName, waitTime);
         Nodes.TornadoHurtPause.Cancel(creature);
         if (creature.Monster is SawatariMonster && creature.Side == CombatSide.Enemy && creature.IsAlive)
@@ -53,9 +62,8 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
         return !NinjaSlayerCombatAnimations.TryPlayTriggerAnim(creature, triggerName, waitTime, ref __result);
     }
 
-    public static void Postfix(Creature creature, string triggerName)
+    public static void Postfix(Creature creature, string triggerName, bool __state)
     {
-        DarkStrikeHurtPoseFreezeContext.NotifyHitTriggered(creature, triggerName);
-        TornadoFistSpinAnimation.NotifyHitTriggered(creature, triggerName);
+        if (!__state) TornadoFistSpinAnimation.NotifyHitTriggered(creature, triggerName);
     }
 }

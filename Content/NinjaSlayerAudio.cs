@@ -71,6 +71,7 @@ public static class NinjaSlayerAudio
         "event:/sfx/characters/defect/defect_dark_channel";
 
     public const string DarkNinjaBattleMusicEvent = MusicRoot + "/dark_ninja_battle";
+    public const string DarkNinjaBattleMusicGuid = "{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}";
     public const string DarkNinjaBeginEvent = DarkNinjaRoot + "/dark_ninja_begin";
     public const string DarkNinjaBeppinAwakensEvent = DarkNinjaRoot + "/dark_ninja_beppin_awakens";
     public const string DarkNinjaDarkRobeEvent = DarkNinjaRoot + "/dark_ninja_dark_robe";

@@ -101,7 +101,8 @@ internal static class DarkNinjaSpecialAttackPresentation
         Creature attacker,
         IReadOnlyList<Creature> targets,
         Func<Creature, bool> canImpact,
-        Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact)
+        Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact,
+        Func<Node2D, Task>? contactContinuation = null)
     {
         Creature[] orderedTargets = OrderTargets(targets);
         if (orderedTargets.Length == 0)
@@ -243,7 +244,10 @@ internal static class DarkNinjaSpecialAttackPresentation
         }
 
         visual.ShowFullBody();
-        await visual.PlayRightSideReturn();
+        if (contactContinuation != null)
+            await contactContinuation(visual.Root);
+        else
+            await visual.PlayRightSideReturn();
     }
 
     private static async Task PlayDarkStrikeFallback(
@@ -279,7 +283,9 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
 
             (NCombatRoom Room, Vector2 Position)? impactVfx = CaptureImpactVfx(target);
-            DarkStrikeImpactOutcome outcome = await onImpact(target);
+            using var hurtHold = DarkStrikeHurtPoseFreezeLease.TryAcquire(target);
+            DarkStrikeImpactOutcome outcome = await DarkStrikeHurtPoseFreezeContext.Run(
+                target, _ => hurtHold?.Capture() == true, () => onImpact(target));
             attemptedImpact = true;
             highestHealing = Math.Max(highestHealing, outcome.Healing);
             PlayImpactFeedback(
@@ -370,7 +376,13 @@ internal static class DarkNinjaSpecialAttackPresentation
             && GodotObject.IsInstanceValid(vfx.Room)
             && GodotObject.IsInstanceValid(vfx.Room.CombatVfxContainer))
         {
-            VfxCmd.PlayVfx(vfx.Position, VfxCmd.dramaticStabPath, vfx.Room.CombatVfxContainer);
+            var effect = PreloadManager.Cache.GetScene(SceneHelper.GetScenePath(VfxCmd.dramaticStabPath))
+                .Instantiate<Node2D>();
+            Node slash = effect.GetNode("slash");
+            effect.RemoveChild(slash);
+            slash.Free();
+            effect.Position = vfx.Room.CombatVfxContainer.GetGlobalTransform().AffineInverse() * vfx.Position;
+            vfx.Room.CombatVfxContainer.AddChildSafely(effect);
         }
 
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaStabEvent);
@@ -541,9 +553,8 @@ internal static class DarkNinjaSpecialAttackPresentation
         private readonly Vector2 _baselinePosition;
         private readonly float _scaleX;
         private readonly float _scaleY;
-        private CanvasItem? _raisedTargetBody;
-        private int _raisedTargetOriginalZIndex;
-        private bool _raisedTargetOriginalZAsRelative;
+        private readonly List<(CanvasItem Item, int Z, bool Relative)> _raisedTargetLayers = [];
+        private float _strikeDirection;
         private DarkStrikeHurtPoseFreezeLease? _targetPoseFreeze;
         private bool _penetratesTarget;
         private int _disposed;
@@ -609,6 +620,7 @@ internal static class DarkNinjaSpecialAttackPresentation
 
         internal NCombatRoom Room { get; }
         internal NCreature Owner { get; }
+        internal Node2D Root => _root;
 
         internal static DarkNinjaDetachedVisualLease? TryAcquire(Creature creature)
         {
@@ -763,17 +775,14 @@ internal static class DarkNinjaSpecialAttackPresentation
                 NCreature? targetNode = Room.GetCreatureNode(target);
                 if (targetNode != null && GodotObject.IsInstanceValid(targetNode))
                 {
-                    Node2D targetBody = targetNode.Visuals.GetCurrentBody();
+                    Node2D targetBody = NinjaSlayerVisualRig.GetAirborneAnchor(targetNode.Visuals)
+                        ?? targetNode.Visuals.GetCurrentBody();
                     if (GodotObject.IsInstanceValid(targetBody))
                     {
-                        int targetZIndex = ResolveEffectiveZ(targetBody);
-                        int attackerZIndex = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(
-                            targetZIndex);
-                        _root.ZIndex = attackerZIndex;
-                        RaiseTargetLayer(
-                            targetBody,
-                            DarkNinjaCombatMath.ResolveDarkStrikeTargetZIndex(attackerZIndex));
+                        RaiseTargetLayers(targetBody);
                     }
+                    _strikeDirection = target.Side == CombatSide.Enemy
+                        || NinjaSlayerFacingState.ResolveFacingLeft(targetNode) ? -1f : 1f;
                 }
 
                 _penetratesTarget = penetratesTarget;
@@ -807,7 +816,7 @@ internal static class DarkNinjaSpecialAttackPresentation
 
             _targetPoseFreeze?.Dispose();
             _targetPoseFreeze = DarkStrikeHurtPoseFreezeLease.TryAcquire(target);
-            return _targetPoseFreeze != null;
+            return _targetPoseFreeze?.Capture() == true;
         }
 
         internal void ApplyReferencePose(Creature target, float referenceSeconds)
@@ -826,12 +835,14 @@ internal static class DarkNinjaSpecialAttackPresentation
             Vector2 contactLocal = new(
                 DarkNinjaCombatMath.DarkStrikeContactTextureX - TextureWidth * 0.5f,
                 DarkNinjaCombatMath.DarkStrikeContactTextureY - TextureHeight * 0.5f);
+            float direction = _strikeDirection;
+            _root.Scale = new Vector2(-_scaleX * direction, _scaleY);
             Vector2 finalPosition = targetScenePosition - new Vector2(
-                contactLocal.X * -_scaleX,
+                contactLocal.X * -_scaleX * direction,
                 contactLocal.Y * _scaleY);
             DarkNinjaPoint offset = DarkNinjaCombatMath.SampleDarkStrikeOffset(referenceSeconds);
             _root.Position = finalPosition + new Vector2(
-                offset.X * _scaleX,
+                offset.X * _scaleX * direction,
                 offset.Y * _scaleY);
             ApplySwordDepth(referenceSeconds);
         }
@@ -860,34 +871,41 @@ internal static class DarkNinjaSpecialAttackPresentation
             }
         }
 
-        private void RaiseTargetLayer(CanvasItem targetBody, int zIndex)
+        private void RaiseTargetLayers(CanvasItem targetBody)
         {
-            _raisedTargetBody = targetBody;
-            _raisedTargetOriginalZIndex = targetBody.ZIndex;
-            _raisedTargetOriginalZAsRelative = targetBody.ZAsRelative;
-            try
+            var items = new List<CanvasItem>();
+            void Visit(Node node)
             {
-                targetBody.ZAsRelative = false;
-                targetBody.ZIndex = zIndex;
+                if (node is CanvasItem item) items.Add(item);
+                foreach (Node child in node.GetChildren()) Visit(child);
             }
-            catch
+            Visit(targetBody);
+            int minimum = items.Min(ResolveEffectiveZ);
+            int maximum = items.Max(ResolveEffectiveZ);
+            int attackerZ = DarkNinjaCombatMath.ResolveDarkStrikeAttackerZIndex(maximum);
+            int delta = attackerZ + 1 - minimum;
+            var roots = items.Where(item => item == targetBody || !item.ZAsRelative)
+                .Select(item => (Item: item, Z: ResolveEffectiveZ(item))).ToArray();
+            foreach (var (item, z) in roots)
             {
-                RestoreTargetLayer();
-                throw;
+                _raisedTargetLayers.Add((item, item.ZIndex, item.ZAsRelative));
+                item.ZAsRelative = false;
+                item.ZIndex = Math.Min(MaximumCanvasZIndex - 1, z + delta);
             }
+            _root.ZIndex = attackerZ;
+            _frontSword.ZAsRelative = false;
+            _frontSword.ZIndex = Math.Min(MaximumCanvasZIndex, maximum + delta + 1);
         }
 
         private void RestoreTargetLayer()
         {
-            CanvasItem? targetBody = _raisedTargetBody;
-            _raisedTargetBody = null;
-            if (targetBody == null || !GodotObject.IsInstanceValid(targetBody))
+            foreach (var (item, z, relative) in _raisedTargetLayers)
             {
-                return;
+                if (!GodotObject.IsInstanceValid(item)) continue;
+                item.ZIndex = z;
+                item.ZAsRelative = relative;
             }
-
-            targetBody.ZIndex = _raisedTargetOriginalZIndex;
-            targetBody.ZAsRelative = _raisedTargetOriginalZAsRelative;
+            _raisedTargetLayers.Clear();
         }
 
         private void ApplySwordDepth(float referenceSeconds)
@@ -1042,20 +1060,16 @@ internal static class DarkNinjaSpecialAttackPresentation
     {
         private readonly Creature _target;
         private readonly NCreature _targetNode;
-        private readonly bool _deferredNinjaSlayerHit;
-        private readonly bool _pausedSpineHurt;
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Creature, DarkStrikeHurtPoseFreezeLease> Pending = new();
+        private bool _captured;
         private int _disposed;
 
         private DarkStrikeHurtPoseFreezeLease(
             Creature target,
-            NCreature targetNode,
-            bool deferredNinjaSlayerHit,
-            bool pausedSpineHurt)
+            NCreature targetNode)
         {
             _target = target;
             _targetNode = targetNode;
-            _deferredNinjaSlayerHit = deferredNinjaSlayerHit;
-            _pausedSpineHurt = pausedSpineHurt;
         }
 
         internal static DarkStrikeHurtPoseFreezeLease? TryAcquire(Creature target)
@@ -1066,22 +1080,21 @@ internal static class DarkNinjaSpecialAttackPresentation
                 return null;
             }
 
-            if (target.Player?.Character is INinjaSlayerCharacter)
-            {
-                return new DarkStrikeHurtPoseFreezeLease(
-                    target,
-                    targetNode,
-                    deferredNinjaSlayerHit: true,
-                    pausedSpineHurt: false);
-            }
+            return new DarkStrikeHurtPoseFreezeLease(target, targetNode);
+        }
 
-            return DoomHurtPoseController.TryPauseCurrentHurtAnimation(targetNode)
-                ? new DarkStrikeHurtPoseFreezeLease(
-                    target,
-                    targetNode,
-                    deferredNinjaSlayerHit: false,
-                    pausedSpineHurt: true)
-                : null;
+        internal bool Capture()
+        {
+            Cancel(_target);
+            _captured = true;
+            Pending.Add(_target, this);
+            return true;
+        }
+
+        internal static void Cancel(Creature target)
+        {
+            if (Pending.TryGetValue(target, out var hold)) hold._captured = false;
+            Pending.Remove(target);
         }
 
         public void Dispose()
@@ -1091,12 +1104,10 @@ internal static class DarkNinjaSpecialAttackPresentation
                 return;
             }
 
-            if (_pausedSpineHurt)
-            {
-                DoomHurtPoseController.Resume(_targetNode);
-            }
-
-            if (_deferredNinjaSlayerHit
+            bool replay = _captured;
+            if (Pending.TryGetValue(_target, out var pending) && ReferenceEquals(pending, this))
+                Pending.Remove(_target);
+            if (replay
                 && _target.IsAlive
                 && _target.CombatState is { } combatState
                 && combatState.ContainsCreature(_target)
@@ -1104,10 +1115,12 @@ internal static class DarkNinjaSpecialAttackPresentation
                 && GodotObject.IsInstanceValid(_targetNode)
                 && _targetNode.IsInsideTree())
             {
-                NinjaSlayerCombatAnimations.PlayDeferredHitAnimation(_target);
+                _ = CreatureCmd.TriggerAnim(_target, "Hit", 0f);
             }
         }
     }
+
+    internal static void CancelDeferredHurt(Creature target) => DarkStrikeHurtPoseFreezeLease.Cancel(target);
 
     private static int ResolveEffectiveZ(CanvasItem item)
     {
@@ -1159,7 +1172,7 @@ internal static class DarkStrikeHurtPoseFreezeContext
         return Complete(task, frame);
     }
 
-    internal static bool TryDeferNinjaSlayerHit(Creature creature)
+    internal static bool TryDeferHit(Creature creature)
     {
         for (Frame? frame = Current.Value; frame != null; frame = frame.Previous)
         {
@@ -1170,25 +1183,6 @@ internal static class DarkStrikeHurtPoseFreezeContext
         }
 
         return false;
-    }
-
-    internal static void NotifyHitTriggered(Creature creature, string triggerName)
-    {
-        if (triggerName != "Hit")
-        {
-            return;
-        }
-
-        for (Frame? frame = Current.Value; frame != null; frame = frame.Previous)
-        {
-            if (!frame.IsActive || !ReferenceEquals(frame.Target, creature))
-            {
-                continue;
-            }
-
-            TryCaptureHurtResponse(frame, creature);
-            return;
-        }
     }
 
     private static bool TryCaptureHurtResponse(Frame frame, Creature creature)

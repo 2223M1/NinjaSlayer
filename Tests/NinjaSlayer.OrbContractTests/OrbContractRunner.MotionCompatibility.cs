@@ -66,7 +66,7 @@ public partial class OrbContractRunner
             Call("Reset"); pose._Process(1);
             Require(actor.Position.IsEqualApprox(root) && center.GlobalPosition.DistanceTo(baseline) < .1f, "Motion cleanup left a displaced actor.");
             Task blocked = Task.CompletedTask;
-            NinjaSlayerAnimationPatch.Prefix(combat.Player.Creature, "BlockedHit", 0f, ref blocked);
+            NinjaSlayerAnimationPatch.Prefix(combat.Player.Creature, "BlockedHit", 0f, ref blocked, out _);
             pose._Process(.11);
             Require(LatestPresentation(pose, "Brace") != null, "Full block finished at 0.1s instead of the original 0.2s.");
             pose._Process(.091);

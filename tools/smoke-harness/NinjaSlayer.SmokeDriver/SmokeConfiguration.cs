@@ -39,7 +39,11 @@ internal sealed record SmokeConfiguration(
     bool PreviewCleanupBaseline = false,
     bool PreviewMenuReturnCheck = false,
     bool PreviewSpecialHeavy = false,
-    string? PreviewFormFinisher = null)
+    string? PreviewFormFinisher = null,
+    string? TheaterScriptPath = null,
+    string? TheaterFromCue = null,
+    string? TheaterToCue = null,
+    bool TheaterRehearsal = false)
 {
     public static SmokeConfiguration Load(string path)
     {

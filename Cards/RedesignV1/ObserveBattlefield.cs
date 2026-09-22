@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.ExternalAnimations;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
@@ -27,8 +28,11 @@ public sealed class ObserveBattlefield : RedesignV1UncommonCard
         if (selected is null) return;
         await CardCmd.Exhaust(choiceContext, selected);
         if (selected.Pile?.Type != PileType.Exhaust) return;
-        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-        await PowerCmd.Apply<WeakPower>(choiceContext, cardPlay.Target!, DynamicVars[nameof(WeakPower)].BaseValue, Owner.Creature, this);
+        await TomoeThrowAnimation.Play(Owner.Creature, cardPlay.Target!, async () =>
+        {
+            await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+            await PowerCmd.Apply<WeakPower>(choiceContext, cardPlay.Target!, DynamicVars[nameof(WeakPower)].BaseValue, Owner.Creature, this);
+        });
     }
     protected override void OnUpgrade()
     {

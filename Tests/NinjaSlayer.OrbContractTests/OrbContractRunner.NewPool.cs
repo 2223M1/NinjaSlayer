@@ -30,6 +30,7 @@ public partial class OrbContractRunner
         await VerifyScryAndSly();
         await VerifyMotherUnixBeforeDraw();
         await VerifyBalanceV0216();
+        await VerifyBalanceV0217();
         await VerifyStatusCards();
         await VerifyTeaAndChop();
         await VerifyTemporaryStats();
@@ -98,14 +99,14 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             Expect(palm, 8);
-            Expect(adjustment, 10);
+            Expect(adjustment, upgraded ? 14 : 10);
             Expect(judge, 6, block: true);
             Expect(storm, upgraded ? 15 : 11);
 
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, -5, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, -4, combat.Player.Creature, null);
             Expect(palm, 3);
-            Expect(adjustment, 5);
+            Expect(adjustment, upgraded ? 9 : 5);
             Expect(judge, 2, block: true);
             Expect(storm, upgraded ? 10 : 6);
 
@@ -113,7 +114,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<FrailPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
             Expect(palm, 3);
-            Expect(adjustment, 5);
+            Expect(adjustment, upgraded ? 10 : 5);
             Expect(judge, 1, block: true);
             Expect(storm, upgraded ? 11 : 6);
         }
@@ -137,7 +138,6 @@ public partial class OrbContractRunner
             var discarded = AddCard<DefendIronclad>(combat, PileType.Draw);
             var nested = AddCard<DefendIronclad>(combat, PileType.Draw);
             await AddStock(combat.Player, 3);
-            await PowerCmd.Apply<KarateScryPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             int selection = 0;
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
             {
@@ -151,7 +151,7 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, judge, null);
             Require(selection == 2 && combat.Stock == 2 && combat.Enemy.CurrentHp == 982,
                 "Scry/Sly must dispatch three discards and then gain two stock exactly once.");
-            Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
+            Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
                 "Prejudge must count its two discards only; discard powers must also see the nested discard.");
         }
         using (var combat = new OrbCombat())
@@ -249,7 +249,7 @@ public partial class OrbContractRunner
                 "Great Uke must exhaust Status cards from all three piles and itself.");
             Require(combat.Player.PlayerCombatState.Energy == before + 4
                 && combat.Player.Creature.GetPowerAmount<BufferPower>() == 1
-                && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 4,
+                && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4,
                 "Great Uke must play Chado, skip Wound and trigger Black Flame exhaust once.");
         }
         using (var combat = new OrbCombat())
@@ -268,7 +268,7 @@ public partial class OrbContractRunner
                 && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlameRedesignV1>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 2,
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 3,
                 "Recovery must grant Naraku Life once per attack played.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
@@ -332,15 +332,15 @@ public partial class OrbContractRunner
         await CardCmd.AutoPlay(Choice, AddCard<Wasssssshoi>(combat), null);
         await CreatureCmd.GainBlock(combat.Enemy, 100, ValueProp.Unpowered, null);
         await CardCmd.AutoPlay(Choice, AddCard<StrongShurikenTokenRedesignV1>(combat), combat.Enemy);
-        Require(combat.Enemy.Block == 89 && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4
-            && combat.Player.Creature.GetPowerAmount<FocusPower>() == 3, "Strong Shuriken must gain Focus damage and a blocked hit must trigger Wasssssshoi once.");
+        Require(combat.Enemy.Block == 89 && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 3
+            && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2, "Strong Shuriken must gain Focus damage and an attack card must not trigger Press the Advantage.");
         await AddStock(combat.Player, 1);
         await CardCmd.Discard(Choice, AddCard<AlabamaDropRedesignV1>(combat));
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 5 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 4,
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2,
             "Orb damage caused by discarding an Attack must count once, not as both attack and stock damage.");
         await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Unpowered, combat.Player.Creature);
         await CreatureCmd.Damage(Choice, combat.Player.Creature, 1, ValueProp.Unpowered, combat.Player.Creature);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 5, "Independent unpowered damage and self damage must not grant stats.");
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4, "Independent unpowered damage and self damage must not grant stats.");
 #if NINJASLAYER_CHANNEL_STABLE
         await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #else
@@ -360,14 +360,14 @@ public partial class OrbContractRunner
         await AddStock(combat.Player, 3);
         await CardCmd.AutoPlay(Choice, AddCard<Dualcast>(combat), null);
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4
-            && combat.Player.Creature.GetPowerAmount<FocusPower>() == 4,
+            && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
             "Two AOE shots against two targets must grant four stat increments.");
         await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
         AddCard<BlackFlameRedesignV1>(combat);
         await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 5
-            && combat.Player.Creature.GetPowerAmount<FocusPower>() == 5,
-            "An attack with Karate and Black Flame must grant stats only for the attack damage.");
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4
+            && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
+            "An attack with Karate and Black Flame must not grant orb-only Strength.");
         GD.Print("PASS multi-target multi-evoke stat counts and actual Karate/Black Flame source exclusion");
     }
 

@@ -72,6 +72,8 @@ public static class AlabamaDropAnimation
 
             impactPlayed = true;
             targetSpinBlur?.Stop();
+            MegaCrit.Sts2.Core.Audio.Debug.NDebugAudioManager.Instance?.Play(
+                MegaCrit.Sts2.Core.Audio.Debug.TmpSfx.heavyAttack);
             SfxCmd.PlayDamage(target.Monster, 0);
             NCreature? targetNode = NCombatRoom.Instance?.GetCreatureNode(target);
             if (targetNode != null)

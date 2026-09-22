@@ -214,11 +214,12 @@ internal sealed partial class SmokeController
                     "Duel did not show native manual relic rewards", ct);
                 var rewardScreen = (NRewardsScreen)NOverlayStack.Instance!.Peek()!;
                 var rewards = UiHelper.FindAll<NRewardButton>(rewardScreen).ToArray();
-                Require(rewards.Length == 1 && rewards[0].Reward is RelicReward { Relic: BioBambooRelic },
-                    "Duel must offer exactly the fixed Bamboo relic.");
+                Require(rewards.Length == 2 && rewards.All(button => button.Reward is RelicReward)
+                    && rewards.Count(button => button.Reward is RelicReward { Relic: BioBambooRelic }) == 1,
+                    "Duel must offer Bamboo and one random relic.");
                 await WaitFrames(60);
                 _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + "-reward.png"));
-                if (scenario.Act == 1) await UiHelper.Click(rewards[0]);
+                if (scenario.Act == 1) await UiHelper.Click(rewards.Single(button => button.Reward is RelicReward { Relic: BioBambooRelic }));
                 await UiHelper.Click(UiHelper.FindFirst<MegaCrit.Sts2.Core.Nodes.CommonUi.NProceedButton>(rewardScreen)!);
             }
             Require(player.Relics.OfType<BioBambooRelic>().Count() == (scenario.Duel && scenario.Act == 1 ? 1 : 0),

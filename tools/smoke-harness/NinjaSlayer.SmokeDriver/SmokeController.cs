@@ -122,7 +122,9 @@ internal sealed partial class SmokeController
 
     public Task ExecuteClaimedCombatAsync(Rng random, CancellationToken cancellationToken) =>
         _configuration.Phase == SmokePhase.ActionPreview
-            ? ExecuteActionPreviewAsync(cancellationToken)
+            ? _configuration.TheaterScriptPath != null
+                ? ExecuteTheaterAsync(cancellationToken)
+                : ExecuteActionPreviewAsync(cancellationToken)
             : _configuration.Phase == SmokePhase.TelemetryLoss
             ? ExecuteTelemetryLossAsync(cancellationToken)
             : _configuration.Phase == SmokePhase.TornadoPreview
@@ -1639,6 +1641,10 @@ internal sealed partial class SmokeController
             if (_configuration.Phase is SmokePhase.BossFresh or SmokePhase.BossResume or SmokePhase.BossVerify)
             {
                 await RunBossReloadPhaseAsync();
+            }
+            else if (_configuration.TheaterScriptPath != null)
+            {
+                await RunTheaterPhaseAsync();
             }
             else if (_configuration.Phase is SmokePhase.TornadoPreview or SmokePhase.ActionPreview)
             {

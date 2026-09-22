@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Patches;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
@@ -17,18 +18,17 @@ public sealed class KillingIntentRedesignPower : NinjaSlayerPowerTemplate
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("KillingIntentPower");
-    public bool GenerateUpgradedCard { get; set; }
 
     private bool _receivedDamage;
     private bool _attackIntentAtTurnEnd;
-
-    internal void RecordDamage() => _receivedDamage = true;
 
     public override Task AfterDamageReceived(
         PlayerChoiceContext choiceContext, Creature target, DamageResult result,
         ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target == Owner && result.UnblockedDamage > 0) RecordDamage();
+        if (target == Owner && dealer != null && dealer.Side != Owner.Side && props.IsPoweredAttack()
+            && (result.UnblockedDamage > 0 || NarakuLifeDamagePatch.AbsorbedBy(result) > 0))
+            _receivedDamage = true;
         return Task.CompletedTask;
     }
 
@@ -47,7 +47,6 @@ public sealed class KillingIntentRedesignPower : NinjaSlayerPowerTemplate
         if (_attackIntentAtTurnEnd && !_receivedDamage)
         {
             StraightKiRedesignV1 card = CombatState.CreateCard<StraightKiRedesignV1>(player);
-            if (GenerateUpgradedCard) CardCmd.Upgrade(card);
             Flash();
             await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, player);
         }

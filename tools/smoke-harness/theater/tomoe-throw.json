@@ -1,0 +1,55 @@
+{
+  "seed": "NINJASLAYER_TOMOE_01",
+  "purpose": "tomoe",
+  "act": 3,
+  "duration": 12,
+  "karate": 0,
+  "relics": [],
+  "cues": [
+    { "id": "tomoe_right", "steps": [
+      { "action": "wait", "seconds": 0.4 },
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-right"] },
+      { "action": "card", "card": "KarateStraightRedesignV1", "covers": ["tomoe-attack-handoff"] },
+      { "action": "wait", "seconds": 0.5 }
+    ]},
+    { "id": "tomoe_left", "steps": [
+      { "action": "swap_sides" },
+      { "action": "wait", "seconds": 0.3 },
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-left"] },
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "wait", "seconds": 0.5 }
+    ]},
+    { "id": "tomoe_spine", "steps": [
+      { "action": "swap_sides" },
+      { "action": "replace_enemy", "monster": "ThievingHopper" },
+      { "action": "wait", "seconds": 0.3 },
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-live-spine"] },
+      { "action": "wait", "seconds": 0.5 }
+    ]},
+    { "id": "tomoe_semi_airborne", "steps": [
+      { "action": "form", "form": "semi" },
+      { "action": "card", "card": "HellTornadoRedesignV1" },
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-separated-body"] },
+      { "action": "wait", "seconds": 0.35 },
+      { "action": "clear_air" }
+    ]},
+    { "id": "tomoe_full_naraku", "steps": [
+      { "action": "form", "form": "full" },
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-full-naraku"] },
+      { "action": "wait", "seconds": 0.5 }
+    ]},
+    { "id": "tomoe_one_soul", "steps": [
+      { "action": "form", "form": "soul" },
+      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
+      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-one-soul"] },
+      { "action": "wait", "seconds": 0.5 },
+      { "action": "form", "form": "normal" },
+      { "action": "wait", "seconds": 0.5 }
+    ]}
+  ]
+}

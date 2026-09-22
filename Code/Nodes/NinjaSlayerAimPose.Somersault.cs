@@ -34,7 +34,7 @@ public partial class NinjaSlayerAimPose
         if (_somersault == null) return;
         _somersault = null;
         _somersaultBlur?.ClearHistory();
-        float seconds = CombatActionTimingRuntime.VisualSeconds(.2f);
+        float seconds = ExternalAnimations.SlowAttackAnimation.SomersaultHalfSeconds;
         if (seconds > 0f && _actor is { Entity.IsDead: false })
         {
             // A finisher still owns movement during its return. This contribution
@@ -69,7 +69,7 @@ public partial class NinjaSlayerAimPose
             _somersaultBlur?.ClearHistory();
             return;
         }
-        if (_somersault == null || _actor == null)
+        if ((_somersault == null && _tomoe == null) || _actor == null)
         {
             _somersaultBlur?.ClearHistory();
             return;
@@ -83,6 +83,13 @@ public partial class NinjaSlayerAimPose
         Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
         var overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
         Sprite2D body = overlay.Visible ? overlay : source;
-        _somersaultBlur.RecordHistory(body, _somersaultClock, CoreCanvas);
+        if (_tomoe is { } tomoe)
+        {
+            Transform2D space = new(0f, CoreCanvas);
+            Transform2D authored = new Transform2D(-tomoe.Angle, Vector2.Zero)
+                * space.AffineInverse() * body.GetGlobalTransformWithCanvas();
+            _somersaultBlur.RecordHistory(body, _somersaultClock, space, Vector2.Zero, authored, tomoe.Angle);
+        }
+        else _somersaultBlur.RecordHistory(body, _somersaultClock, CoreCanvas);
     }
 }

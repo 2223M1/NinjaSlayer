@@ -65,6 +65,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
 
     protected override async Task OnTurnEndInHand(PlayerChoiceContext choiceContext)
     {
+        if (!CombatManager.Instance.IsInProgress || CombatManager.Instance.IsEnding) return;
         ICombatState combatState = CombatState
             ?? throw new InvalidOperationException("Black Flame requires combat.");
         List<Creature> enemies = combatState.Creatures

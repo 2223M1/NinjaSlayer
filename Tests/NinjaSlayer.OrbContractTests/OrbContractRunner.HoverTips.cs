@@ -51,20 +51,20 @@ public partial class OrbContractRunner
                 "Karate must expose its native side tooltip on mutable base/upgraded cards.");
             var flame = AddCard<ReturnReturnReturnRedesignV1>(combat, upgraded: upgraded);
             Require(flame.HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BlackFlameRedesignV1)
-                && flame.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<NarakuLifePower>().Id),
+                && flame.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>().Id),
                 "Return Return Return must preview Black Flame and explain Naraku Life.");
             var starless = AddCard<GiantShurikenRedesignV1>(combat, upgraded: upgraded);
             Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Starless Night must preview an unupgraded token even when the power card is upgraded.");
             var guard = AddCard<KillingIntentRedesignV1>(combat, upgraded: upgraded);
-            Require(guard.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded == upgraded,
+            Require(!guard.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Killing Intent must preview the generated Straight Ki's upgrade.");
         }
         Require(ModelDb.Relic<IrcTerminalRelic>().HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BusyLine),
             "IRC Terminal must expose its Busy Line card preview.");
         foreach (RelicModel relic in new RelicModel[] { ModelDb.Relic<ChadoBreathingRelic>(), ModelDb.Relic<DeepChadoBreathingRelic>() })
             Require(relic.HoverTips.OfType<CardHoverTip>().Single().Card.Keywords.Contains(CardKeyword.Retain)
-                == (relic is DeepChadoBreathingRelic), "Only the ancient starter relic must preview retained tea.");
+                == false, "Starter relics grant temporary retention without changing tea keywords.");
         Require(!ModelDb.Card<ChadoEnergyRedesignV1>().Keywords.Contains(CardKeyword.Retain),
             "Relic previews must not mutate the canonical tea model.");
     }

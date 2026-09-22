@@ -150,7 +150,8 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
                 StandingTexturePath,
                 CombatTexturePath,
                 StandingShadowTexturePath,
-                CombatShadowTexturePath
+                CombatShadowTexturePath,
+                NativeStolenCardMotion.ScenePath
             ])
             .Concat(DarkNinjaBladeChargePresentation.AssetPaths)
             .Concat(DarkNinjaSpecialAttackPresentation.AssetPaths)
@@ -159,6 +160,9 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     public override async Task AfterAddedToRoom()
     {
         await base.AfterAddedToRoom();
+        if (MegaCrit.Sts2.Core.Runs.RunManager.Instance.DebugOnlyGetState()?.CurrentRoom
+            is MegaCrit.Sts2.Core.Rooms.CombatRoom { Encounter: DarkNinjaEncounter } combatRoom)
+            DarkNinjaMusicSession.ResumeCombat(combatRoom);
         ApplyPoseTexture(HasEnteredCombatStance ? CombatTexturePath : StandingTexturePath);
         DarkNinjaStolenCards.Create(Creature);
         await PowerCmd.Apply<EvasionPower>(

@@ -3,3 +3,5 @@
 
 # Runtime catalog fingerprints cover the exported bytes, including line endings.
 Website/content/versions/*/catalog.json -text
+# Unified diff context prefixes precede FMOD's native tab indentation.
+tools/fmod/*.patch whitespace=-space-before-tab

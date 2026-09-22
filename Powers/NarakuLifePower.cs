@@ -56,7 +56,6 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
         if (absorbed == 0) return amount;
 
         TotalAbsorbed += absorbed;
-        Owner.GetPower<KillingIntentRedesignPower>()?.RecordDamage();
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("naraku_absorbed", Owner, absorbed);
 
         // HP loss is synchronous. Commit the shield before the host evaluates death,

@@ -12,6 +12,8 @@ internal sealed partial class FreeControlMotionBlur : Node2D
     private readonly List<(double Time, ExposurePose Pose)> _history = [];
     private Sprite2D? _historyBody;
     private Vector2 _historySize;
+    internal bool SourcePremultiplied { get; init; }
+    internal float? SourceBodyHeight { get; init; }
 
     internal void RecordHistory(Sprite2D body, double time, Vector2 canvasPivot) =>
         RecordHistory(body, time, Transform2D.Identity, canvasPivot, body.GetGlobalTransformWithCanvas(), 0d);
@@ -94,7 +96,8 @@ internal sealed partial class FreeControlMotionBlur : Node2D
     private void ApplyExposure(Sprite2D body, Rect2 bounds, Vector2 pivot, float radians, Vector3 sweep)
     {
         _renderer ??= new SpinExposureRenderer(this);
-        _renderer.ApplyPlanar(body, _rowsX, _rowsY, bounds, pivot, radians, sweep, SpinExposureRenderer.BodyHeight(body.Texture));
+        _renderer.ApplyPlanar(body, _rowsX, _rowsY, bounds, pivot, radians, sweep,
+            SourceBodyHeight ?? SpinExposureRenderer.BodyHeight(body.Texture), SourcePremultiplied);
     }
 
     internal void Record(Sprite2D body, Vector2 center, Transform2D space, float time,

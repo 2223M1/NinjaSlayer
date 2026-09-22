@@ -32,5 +32,8 @@
   "NINJA_SLAYER_TELEMETRY_REPLAY_TRUNCATED": "Local recording limit reached. Existing data are retained and marked incomplete.",
   "NINJA_SLAYER_TELEMETRY_REPLAY_STORAGE_ERROR": "Local report storage failed. Existing files are retained; this report may have gaps.",
   "NINJA_SLAYER_TELEMETRY_REPLAY_OVERSIZED": "Report exceeds the free upload size limit. Kept locally, not uploaded.",
-  "NINJA_SLAYER_TELEMETRY_REPLAY_SUBMITTED": "Handed to RitsuLib for submission and offline retries. Check the observatory for remote acceptance."
+  "NINJA_SLAYER_TELEMETRY_REPLAY_SUBMITTED": "Handed to RitsuLib for submission and offline retries. Check the observatory for remote acceptance.",
+  "NINJA_SLAYER_SETTINGS_AUDIO_TITLE": "Audio",
+  "NINJA_SLAYER_SETTINGS_NARRATION_TITLE": "Narration",
+  "NINJA_SLAYER_SETTINGS_NARRATION_DESCRIPTION": "Play narrator voice lines. Character voices and background music are unaffected."
 }

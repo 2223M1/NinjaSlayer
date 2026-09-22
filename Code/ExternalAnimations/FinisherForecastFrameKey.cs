@@ -135,6 +135,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
         private readonly int _hp;
         private readonly int _block;
         private readonly int _vulnerable;
+        private readonly int _artifact;
         private readonly bool _isPrimaryEnemy;
         private readonly decimal _damage;
 
@@ -150,6 +151,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             _hp = hp;
             _block = block;
             _vulnerable = vulnerable;
+            _artifact = enemy.GetPowerAmount<ArtifactPower>();
             _isPrimaryEnemy = isPrimaryEnemy;
             _damage = damage;
         }
@@ -159,6 +161,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             && _hp == other._hp
             && _block == other._block
             && _vulnerable == other._vulnerable
+            && _artifact == other._artifact
             && _isPrimaryEnemy == other._isPrimaryEnemy
             && _damage == other._damage;
 
@@ -169,6 +172,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             _hp,
             _block,
             _vulnerable,
+            _artifact,
             _isPrimaryEnemy,
             _damage);
 
@@ -178,6 +182,7 @@ internal sealed class FinisherForecastFrameKey : IEquatable<FinisherForecastFram
             hash.Add(_hp);
             hash.Add(_block);
             hash.Add(_vulnerable);
+            hash.Add(_artifact);
             hash.Add(_isPrimaryEnemy);
             hash.Add(_damage);
         }

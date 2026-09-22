@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
@@ -52,6 +53,17 @@ internal static class ShurikenCombat
         beforeThrow();
         AtRelease(owner, () =>
         {
+            if (owner.HasPower<SoarPower>() && targets.Count > 0
+                && NCombatRoom.Instance is { } room && owner.GetCreatureNode() is { } actor
+                && Code.Combat.CombatActionTimingRuntime.VisualSeconds(1f) > 0f)
+            {
+                Vector2 origin = TryGetOrbThrowOrigin(owner, originOrb, out var hand, out _)
+                    ? hand : actor.VfxSpawnPosition;
+                var scatter = new NShurikenScatterVfx();
+                scatter.Transform = room.CombatVfxContainer.GetGlobalTransform().AffineInverse()
+                    * Transform2D.Identity.Translated(origin);
+                room.CombatVfxContainer.AddChildSafely(scatter);
+            }
             bool released = false;
             foreach (Creature target in targets)
             {

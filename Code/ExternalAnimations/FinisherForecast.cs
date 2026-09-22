@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -95,7 +96,7 @@ internal static class FinisherForecast
             enemy.CurrentHp,
             enemy.Block,
             owner.GetPowerAmount<KaratePower>(),
-            enemy.IsPrimaryEnemy)).ToArray();
+            enemy.IsPrimaryEnemy, enemy.GetPowerAmount<ArtifactPower>())).ToArray();
         Creature? singleTarget = descriptor.SingleTarget ?? spec.CardPlay.Target;
         int? singleTargetIndex = singleTarget != null && enemyIndices.TryGetValue(singleTarget, out int singleIndex)
             ? singleIndex
@@ -158,12 +159,12 @@ internal static class FinisherForecast
                     return true;
                 }))
             .ToList();
-        var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
+        var simulation = new FinisherForecastSimulation<ForecastState, ForecastState>(
             states,
             hits,
             targeting,
             state => state.Hp > 0,
-            state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
+            state => state,
             (current, targets, _) =>
             {
                 ApplyHit(owner, enemies, current, spec, damageByTarget, targets);
@@ -229,12 +230,12 @@ internal static class FinisherForecast
             owner.GetPowerAmount<KaratePower>(),
             enemy.IsPrimaryEnemy)).ToArray();
         decimal[] damageByTarget = enemies.Select(descriptor.Damage).ToArray();
-        var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
+        var simulation = new FinisherForecastSimulation<ForecastState, ForecastState>(
             states,
             descriptor.HitCount,
             targeting,
             state => state.Hp > 0,
-            state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
+            state => state,
             (current, targets, _) =>
             {
                 ApplyActionDamage(
@@ -307,12 +308,12 @@ internal static class FinisherForecast
                     return true;
                 })
         ];
-        var simulation = new FinisherForecastSimulation<ForecastState, ForecastStateKey>(
+        var simulation = new FinisherForecastSimulation<ForecastState, ForecastState>(
             states,
             missileDealers.Length,
             FinisherForecastTargeting.Random,
             state => state.Hp > 0,
-            state => new ForecastStateKey(state.Hp, state.Block, state.Karate, state.IsPrimaryEnemy),
+            state => state,
             (current, targets, hitIndex) =>
             {
                 if (hitIndex < 0 || hitIndex >= missileDealers.Length)
@@ -428,6 +429,25 @@ internal static class FinisherForecast
             spec.Card,
             triggersKarate: true);
 
+        if (spec.Card is Cards.RedesignV1.TornadoFistRedesignV1 tornado
+            && tornado.IsEmpowered(spec.Forecast.HitCount))
+        {
+            foreach (int index in targets.Where(index => states[index].Hp > 0))
+            {
+                ForecastState state = states[index];
+                if (state.Artifact > 0)
+                {
+                    states[index] = state with { Artifact = state.Artifact - 1 };
+                    continue;
+                }
+                decimal amount = tornado.DynamicVars.Vulnerable.BaseValue;
+                foreach (AbstractModel listener in ResolveRunState(owner)!.IterateHookListeners(owner.CombatState))
+                    if (listener is not ArtifactPower && listener.TryModifyPowerAmountReceived(
+                        ModelDb.Power<VulnerablePower>(), enemies[index], amount, owner, out decimal modified))
+                        amount = modified;
+                if (amount > 0m) states[index] = state with { GainedVulnerable = true };
+            }
+        }
     }
 
     private static void ApplyKarateWave(
@@ -502,6 +522,7 @@ internal static class FinisherForecast
             return false;
         }
 
+        bool futureVulnerable = state.GainedVulnerable && !target.HasPower<VulnerablePower>() && props.IsPoweredAttack();
         decimal modified = Hook.ModifyDamage(
             runState,
             owner.CombatState,
@@ -513,9 +534,25 @@ internal static class FinisherForecast
 #if !NINJASLAYER_LEGACY_DAMAGE_API
             cardPlay,
 #endif
-            ModifyDamageHookType.All,
+            futureVulnerable ? ModifyDamageHookType.Additive | ModifyDamageHookType.Multiplicative : ModifyDamageHookType.All,
             CardPreviewMode.None,
             out _);
+        if (futureVulnerable)
+        {
+            decimal multiplier = ModelDb.Power<VulnerablePower>().DynamicVars["DamageIncrease"].BaseValue;
+            if (dealer?.Player?.GetRelic<PaperPhrog>() is { } phrog)
+                multiplier = phrog.ModifyVulnerableMultiplier(target, multiplier, props, dealer, cardSource);
+            if (dealer?.GetPower<CrueltyPower>() is { } cruelty)
+                multiplier = cruelty.ModifyVulnerableMultiplier(target, multiplier, props, dealer, cardSource);
+            if (target.GetPower<DebilitatePower>() is { } debilitate)
+                multiplier = debilitate.ModifyVulnerableMultiplier(target, multiplier, props, dealer, cardSource);
+            modified = Hook.ModifyDamage(runState, owner.CombatState, target, dealer, modified * multiplier,
+                props, cardSource,
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                cardPlay,
+#endif
+                ModifyDamageHookType.Cap, CardPreviewMode.None, out _);
+        }
         modified *= postHookMultiplier;
         int blocked = props.HasFlag(ValueProp.Unblockable)
             ? 0
@@ -544,8 +581,8 @@ internal static class FinisherForecast
     // A value type: the search mutates state through `with` expressions on up to
     // FinisherForecastEngine.DefaultMaximumSearchStates nodes, and as a record class every one of
     // those was a heap allocation during targeting.
-    private readonly record struct ForecastState(int Hp, int Block, int Karate, bool IsPrimaryEnemy);
-    private readonly record struct ForecastStateKey(int Hp, int Block, int Karate, bool IsPrimaryEnemy);
+    private readonly record struct ForecastState(int Hp, int Block, int Karate, bool IsPrimaryEnemy,
+        int Artifact = 0, bool GainedVulnerable = false);
     private readonly record struct CachedForecast(
         FinisherForecastOutcome Outcome,
         FinisherForecastResult Result);

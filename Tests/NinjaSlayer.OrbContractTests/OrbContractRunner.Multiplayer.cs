@@ -216,6 +216,33 @@ public partial class OrbContractRunner
             Require(tokens.Length == stock && tokens.All(card => card.SnapshotDamage == 8),
                 "Each original shot must create one synchronized eight-damage snapshot token.");
         }
+        foreach (Player player in run.Players)
+        {
+            foreach (var card in CardPile.GetCards(player, PileType.Hand, PileType.Draw).ToArray())
+                await CardPileCmd.Add(card, PileType.Discard);
+            await AddStock(player, 3);
+            int stock = player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount;
+            int tokens = player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count();
+            await CardPileCmd.Add(combat.State.CreateCard<Wound>(player), PileType.Draw);
+            await CardPileCmd.Add(combat.State.CreateCard<Wound>(player), PileType.Draw);
+            await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Draw);
+            await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Draw);
+            var burning = combat.State.CreateCard<Slaughter>(player);
+            await CardPileCmd.Add(burning, PileType.Hand);
+            await PlayerCmd.SetEnergy(10, player);
+            int before = completed;
+            string fixture = $"burning-batch-{player.NetId}";
+            System.IO.File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+            await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                && System.IO.File.Exists(Path.Combine(directory, $"client.{fixture}")), "both batch fixtures");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(burning, combat.Enemy));
+            await WaitNetwork(() => completed > before, "native Burning Blood batch");
+            Require(player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count() == tokens + 1
+                && player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == stock - 2,
+                "Each owner gets one snapshot token for their two-card batch while both shots consume stock.");
+        }
+        GD.Print("PASS synchronized Burning Blood batch cap and independent player allowances");
         var sawatari = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
         sawatari.ActThree = true;
         Creature weaponEnemy = combat.State.CreateCreature(sawatari, CombatSide.Enemy, null);

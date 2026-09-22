@@ -28,7 +28,6 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         get
         {
             var tea = ModelDb.Card<ChadoEnergyRedesignV1>().ToMutable();
-            if (ChadoCount > 0) tea.AddKeyword(CardKeyword.Retain);
             return [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), HoverTipFactory.FromCard(tea), .. tea.HoverTips];
         }
     }
@@ -46,13 +45,11 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
         for (int i = 0; i < ChadoCount; i++)
         {
             ChadoEnergyRedesignV1 chado = combatState.CreateCard<ChadoEnergyRedesignV1>(Owner);
-            chado.AddKeyword(CardKeyword.Retain);
             await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
         }
 
         await ChadoBreathCmd.Apply(choiceContext, Owner, BreathAmount);
-        if (ChadoCount == 0)
-            await PowerCmd.Apply<ChadoRetainPower>(choiceContext, Owner.Creature, 1, Owner.Creature, null);
+        await PowerCmd.Apply<ChadoRetainPower>(choiceContext, Owner.Creature, 1, Owner.Creature, null);
         Flash();
     }
 }

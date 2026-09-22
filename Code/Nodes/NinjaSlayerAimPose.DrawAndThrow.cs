@@ -38,6 +38,7 @@ public partial class NinjaSlayerAimPose
         internal float Rotation;
         internal Vector2 Stretch = Vector2.One;
         internal bool Paused;
+        internal bool HoldAtPeak;
         internal bool Active = true;
         private readonly TaskCompletionSource _completion = new();
         internal Task Completion => _completion.Task;
@@ -79,6 +80,15 @@ public partial class NinjaSlayerAimPose
             motion.Dispose();
     }
 
+    internal Action? BeginComboJump()
+    {
+        var motion = BeginVisualMotion(MotionKind.Jump, CombatActionTimingRuntime.VisualSeconds(0.35f));
+        if (motion == null) return null;
+        motion.Height = 150f;
+        motion.HoldAtPeak = true;
+        return () => motion.HoldAtPeak = false;
+    }
+
     internal void BeginBackflip()
     {
         if (!CanPresent) return;
@@ -118,7 +128,12 @@ public partial class NinjaSlayerAimPose
     {
         // A completion can synchronously begin another action.
         foreach (VisualMotion motion in _presentations.ToArray())
-            if (!motion.Paused && (motion.Elapsed += motion.Unscaled && Engine.TimeScale > 0d ? delta / (float)Engine.TimeScale : delta) >= motion.Duration) motion.Dispose();
+        {
+            if (motion.Paused) continue;
+            motion.Elapsed += motion.Unscaled && Engine.TimeScale > 0d ? delta / (float)Engine.TimeScale : delta;
+            if (motion.HoldAtPeak) motion.Elapsed = Math.Min(motion.Elapsed, motion.Duration * 0.5f);
+            if (motion.Elapsed >= motion.Duration) motion.Dispose();
+        }
     }
 
     private void ClearPresentation()

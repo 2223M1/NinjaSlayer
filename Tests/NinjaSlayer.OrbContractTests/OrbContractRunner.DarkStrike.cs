@@ -116,7 +116,7 @@ public partial class OrbContractRunner
             CardModel basic = Stealable(f, ModelDb.Card<StrikeIronclad>());
             CardModel common = Stealable(f, ModelDb.Card<PalmThrustRedesignV1>(), PileType.Discard);
             CardModel blue = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>());
-            CardModel otherBlue = Stealable(f, ModelDb.Card<BattlefieldInsightRedesignV1>());
+            CardModel otherBlue = Stealable(f, ModelDb.Card<FlyingBladeDanceRedesignV1>());
             var seen = new List<CardModel>();
             for (int index = 0; index < 5; index++)
             {

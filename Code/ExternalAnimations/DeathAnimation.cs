@@ -156,6 +156,8 @@ public static class DeathAnimation
             return;
         }
 
+        Vector2? impactOrigin = NinjaSlayerVisualRig.GetCinematicFocus(creatureNode.Visuals)
+            ?.GetGlobalTransformWithCanvas().Origin;
         RestoreVisual(creature, markCurrentFatalDamageConsumed: false);
         StaggerAnimation.Reset(creature);
         SoarSpinAnimation.ResetSpinVisual(creature);
@@ -179,7 +181,7 @@ public static class DeathAnimation
         VisualStates.Add(creature, state);
         try
         {
-            await PlayEnemyKillFlight(creatureNode, anchor, body, state, flyRight: flyRight);
+            await PlayEnemyKillFlight(creatureNode, anchor, body, state, flyRight: flyRight, impactOrigin: impactOrigin);
         }
         catch (OperationCanceledException) when (state.Cancellation.IsCancellationRequested
             || !GodotObject.IsInstanceValid(room))
@@ -461,7 +463,8 @@ public static class DeathAnimation
         FinisherImpactPresentation? presentation = null,
         NCombatRoom? room = null,
         CinematicFrameClock? clock = null,
-        bool flyRight = false)
+        bool flyRight = false,
+        Vector2? impactOrigin = null)
     {
         Node2D? focus = NinjaSlayerVisualRig.GetCinematicFocus((creatureNode as MegaCrit.Sts2.Core.Nodes.Combat.NCreature)?.Visuals);
         CanvasItem? anchorParent = anchor.GetParent() as CanvasItem;
@@ -480,9 +483,10 @@ public static class DeathAnimation
             return;
         }
 
+        Vector2 start = impactOrigin ?? focus.GetGlobalTransformWithCanvas().Origin;
         anchor.RotationDegrees = state.AnchorRotationDegrees
             + (flyRight ? -HitRotationDegrees : HitRotationDegrees);
-        Vector2 start = focus.GetGlobalTransformWithCanvas().Origin;
+        SetFocusCanvasPosition(anchor, focus, anchorParent, start);
         Vector2 viewportSize = creatureNode.GetViewport().GetVisibleRect().Size;
         float horizontalExtent = flyRight
             ? GetLeftVisualExtent(anchor, start, body)

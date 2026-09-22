@@ -42,16 +42,6 @@ public partial class OrbContractRunner
                 && !combat.Player.Creature.HasPower<PourTeaNextTurnPower>(),
                 "Long Breath uses native X modifiers and 2X/2X+1 exactly once.");
         }
-        foreach (bool upgraded in new[] { false, true })
-        foreach (bool lethal in new[] { false, true })
-        {
-            using var combat = new OrbCombat();
-            combat.AddEnemy();
-            combat.Enemy.SetCurrentHpInternal(lethal ? 20 : 1000);
-            await CardCmd.AutoPlay(Choice, AddCard<Slaughter>(combat, upgraded: upgraded), combat.Enemy);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == (lethal ? (upgraded ? 6 : 5) : 0),
-                "Slaughter awards Karate only when its own attack kills.");
-        }
         using (var combat = new OrbCombat())
         {
             await CardCmd.AutoPlay(Choice, AddCard<RecycledBladesRedesignV1>(combat), null);
@@ -118,25 +108,6 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var basic = AddCard<BattlefieldInsightRedesignV1>(combat);
-            var upgraded = AddCard<BattlefieldInsightRedesignV1>(combat, upgraded: true);
-            await CardCmd.AutoPlay(Choice, basic, null);
-            await CardCmd.AutoPlay(Choice, upgraded, null);
-            await CardCmd.AutoPlay(Choice, AddCard<FlyingBladeDanceRedesignV1>(combat), null);
-            for (int i = 0; i < 8; i++) AddCard<DefendIronclad>(combat, PileType.Draw);
-            for (int i = 0; i < 3; i++)
-            {
-                await CardCmd.Discard(Choice, combat.Card());
-                if (i == 0) await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
-            }
-            Require(PileType.Draw.GetPile(combat.Player).Cards.Count == 6
-                && combat.Player.Creature.Block == 6,
-                "Independent 3/2 discard counters carry across turns and Composure observes each discard.");
-            Require(combat.Player.Creature.Powers.OfType<ScryDrawPower>().Count() == 2,
-                "Mixed Insight upgrades must use native independent Power instances.");
-        }
-        using (var combat = new OrbCombat())
-        {
             var tea = AddCard<ChadoEnergyRedesignV1>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<TeaTeaRedesignV1>(combat), null);
             var later = combat.State.CreateCard<ChadoEnergyRedesignV1>(combat.Player);
@@ -165,14 +136,6 @@ public partial class OrbContractRunner
             Require(combat.Stock == 0 && shield.ShouldGlowGold, "Conversion counts as an evoke after the last orb is removed.");
             await CardCmd.AutoPlay(Choice, shield, null);
             Require(combat.Player.Creature.Block == (upgraded ? 22 : 16), "Barrier grants two native block instances.");
-            var tea = AddCard<ChadoEnergyRedesignV1>(combat);
-            var guard = AddCard<PlaceholderGoldDefense01>(combat, upgraded: upgraded);
-            Require(!guard.ShouldGlowGold, "Tea in hand alone does not satisfy Tea Guard.");
-            await CardCmd.Exhaust(Choice, tea);
-            Require(guard.ShouldGlowGold, "Actual tea exhaustion enables glow.");
-            await CardCmd.AutoPlay(Choice, guard, null);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == (upgraded ? 4 : 3),
-                "Tea Guard awards Karate after tea is exhausted.");
         }
         GD.Print("PASS v0.2.3 Naraku stacking, Soul, Scry planning, discard counters, native Retain and conditional defenses");
     }

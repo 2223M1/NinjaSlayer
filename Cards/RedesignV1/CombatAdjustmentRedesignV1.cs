@@ -55,5 +55,5 @@ public sealed class CombatAdjustmentRedesignV1 : RedesignV1UncommonCard
             this);
     }
 
-    protected override void OnUpgrade() => EnergyCost.UpgradeBy(-1);
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(4);
 }

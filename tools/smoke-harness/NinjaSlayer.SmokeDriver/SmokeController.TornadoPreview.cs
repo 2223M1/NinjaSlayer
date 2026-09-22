@@ -331,7 +331,7 @@ internal static class TornadoPreviewDamageObserver
         SmokeController.Current?.ObserveTornadoDamage(target, cardSource);
 }
 
-internal sealed class TornadoViewportRecording(Viewport viewport, string directory)
+internal sealed class TornadoViewportRecording(Viewport viewport, string directory, string encodingPreset = "veryfast", bool asyncReadback = false)
 {
     private static TornadoViewportRecording? _active;
     private readonly Channel<(byte[] Pixels, int Repeats)> _frames = Channel.CreateUnbounded<(byte[], int)>(
@@ -345,6 +345,8 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
     private readonly List<(long Timestamp, string Event)> _audioEvents = [];
     private bool _recording;
     private Exception? _failure;
+    private int _pendingReadbacks;
+    private int _completedFrameCount;
     internal long StartTimestamp => _start;
 
     internal async Task Start()
@@ -359,7 +361,7 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
         };
         foreach (string arg in new[] { "-y", "-hide_banner", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",
                      "-video_size", $"{image.GetWidth()}x{image.GetHeight()}", "-framerate", "60", "-i", "pipe:0",
-                     "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p",
+                     "-an", "-c:v", "libx264", "-preset", encodingPreset, "-crf", "18", "-pix_fmt", "yuv420p",
                      Path.Combine(directory, "video.mp4") }) start.ArgumentList.Add(arg);
         _encoder = Process.Start(start)!;
         _writer = Task.Run(async () =>
@@ -372,6 +374,7 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
         _previousFrame = image.GetData();
         _frames.Writer.TryWrite((_previousFrame, 1));
         _frameCount = 1;
+        _completedFrameCount = 1;
         _capturedFrames.Add((_start, 0));
         File.WriteAllText(Path.Combine(directory, "recording-start.json"), new JsonObject
         { ["timestamp"] = _start, ["frequency"] = Stopwatch.Frequency }.ToJsonString());
@@ -387,24 +390,62 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
 
     private void Capture()
     {
-        if (!_recording) return;
+        if (!_recording || _failure != null) return;
         try
         {
             long timestamp = Stopwatch.GetTimestamp();
             int expected = (int)Math.Floor((timestamp - _start) * 60d / Stopwatch.Frequency) + 1;
             if (expected <= _frameCount) return;
+            if (asyncReadback)
+            {
+                _frameCount = expected;
+                Interlocked.Increment(ref _pendingReadbacks);
+                Rid texture = viewport.GetTexture().GetRid();
+                RenderingServer.CallOnRenderThread(Callable.From(() =>
+                {
+                    try
+                    {
+                        RenderingDevice device = RenderingServer.GetRenderingDevice()
+                            ?? throw new InvalidOperationException("Asynchronous theater capture requires Vulkan.");
+                        Rid source = RenderingServer.TextureGetRdTexture(texture);
+                        using RDTextureFormat format = device.TextureGetFormat(source);
+                        if (format.Format is not (RenderingDevice.DataFormat.R8G8B8A8Unorm or RenderingDevice.DataFormat.R8G8B8A8Srgb))
+                            throw new InvalidOperationException($"Unsupported capture format: {format.Format}");
+                        Error error = device.TextureGetDataAsync(source, 0, Callable.From<byte[]>(pixels =>
+                        {
+                            try { AcceptFrame(pixels, expected, timestamp); }
+                            catch (Exception exception) { _failure = exception; }
+                            finally { Interlocked.Decrement(ref _pendingReadbacks); }
+                        }));
+                        if (error != Error.Ok) throw new IOException($"Asynchronous capture failed: {error}");
+                    }
+                    catch (Exception exception)
+                    {
+                        _failure = exception;
+                        Interlocked.Decrement(ref _pendingReadbacks);
+                    }
+                }));
+                return;
+            }
             using Image image = viewport.GetTexture().GetImage();
             image.Convert(Image.Format.Rgba8);
-            if (expected - _frameCount > 1 && !_frames.Writer.TryWrite((_previousFrame!, expected - _frameCount - 1)))
-                throw new IOException("Preview encoder stopped accepting frames.");
-            byte[] pixels = image.GetData();
-            if (!_frames.Writer.TryWrite((pixels, 1)))
-                throw new IOException("Preview encoder stopped accepting frames.");
-            _previousFrame = pixels;
             _frameCount = expected;
-            _capturedFrames.Add((timestamp, expected - 1));
+            AcceptFrame(image.GetData(), expected, timestamp);
         }
         catch (Exception exception) { _failure = exception; _recording = false; }
+    }
+
+    private void AcceptFrame(byte[] pixels, int expected, long timestamp)
+    {
+        if (expected <= _completedFrameCount || pixels.Length != _previousFrame!.Length)
+            throw new IOException("Capture returned an out-of-order frame or unexpected pixel size.");
+        if (expected - _completedFrameCount > 1 && !_frames.Writer.TryWrite((_previousFrame, expected - _completedFrameCount - 1)))
+            throw new IOException("Preview encoder stopped accepting frames.");
+        if (!_frames.Writer.TryWrite((pixels, 1)))
+            throw new IOException("Preview encoder stopped accepting frames.");
+        _previousFrame = pixels;
+        _completedFrameCount = expected;
+        _capturedFrames.Add((timestamp, expected - 1));
     }
 
     internal async Task Stop()
@@ -413,6 +454,13 @@ internal sealed class TornadoViewportRecording(Viewport viewport, string directo
         _recording = false;
         _active = null;
         RenderingServer.FramePostDraw -= Capture;
+        long drainStarted = Stopwatch.GetTimestamp();
+        while (Volatile.Read(ref _pendingReadbacks) > 0)
+        {
+            if (Stopwatch.GetElapsedTime(drainStarted).TotalSeconds > 5)
+                throw new TimeoutException("Theater GPU readback did not finish.");
+            await viewport.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        }
         _frames.Writer.TryComplete();
         if (_writer != null) await _writer;
         if (_encoder != null)

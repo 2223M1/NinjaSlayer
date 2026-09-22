@@ -93,6 +93,8 @@ internal sealed partial class SmokeController
                   "Event reward UI must offer all four stolen cards before any are reclaimed.");
               var relicReward = UiHelper.FindAll<NRewardButton>(cardScreen)
                   .Single(button => button.Reward is RelicReward { Relic: BeppinFragmentRelic });
+              Require(UiHelper.FindAll<NRewardButton>(cardScreen).Count(button => button.Reward is RelicReward) == 2,
+                  "Dark Ninja must offer the Fragment and one random relic alongside stolen cards.");
               Require(!player.Relics.OfType<BeppinFragmentRelic>().Any(),
                   "Dark Ninja automatically granted the Fragment before collection.");
             Require(player.RunState.CurrentRoom is CombatRoom && !eventRoom.LocalMutableEvent.IsFinished,

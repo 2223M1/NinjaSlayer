@@ -47,6 +47,7 @@ public static class ScryCmd
         )).ToList();
 
         int exhaustedCards = 0;
+        int discardedAmount = 0;
         if (player.Creature.GetPower<ScryPlanningPower>() is { } planning)
         {
             planning.ApplyToUnselectedCards(cardsToScry.Except(cardsToDiscard));
@@ -63,14 +64,15 @@ public static class ScryCmd
         }
         else
         {
+            // Discard callbacks may draw or shuffle before the rest of the batch is processed.
+            await CardPileCmd.Add(cardsToDiscard, PileType.Play, skipVisuals: true);
             int historyStart = CombatManager.Instance.History.Entries.Count();
             await CardCmd.Discard(choiceContext, cardsToDiscard);
-            int actual = CombatManager.Instance.History.Entries.Skip(historyStart).OfType<CardDiscardedEntry>()
+            discardedAmount = CombatManager.Instance.History.Entries.Skip(historyStart).OfType<CardDiscardedEntry>()
                 .Select(entry => entry.Card).Intersect(cardsToDiscard).Count();
-            Telemetry.NinjaSlayerCombatTelemetry.Mechanic("scry_discard", player.Creature, actual);
+            Telemetry.NinjaSlayerCombatTelemetry.Mechanic("scry_discard", player.Creature, discardedAmount);
         }
 
-        int discardedAmount = cardsToDiscard.Count;
         int viewedAmount = cardsToScry.Count;
         foreach (IRedesignScryListener listener in player.Creature.Powers.OfType<IRedesignScryListener>().ToList())
         {
