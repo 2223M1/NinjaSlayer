@@ -70,6 +70,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     private bool _hasPlayedDarkRobe;
     private bool _hasPlayedEvasionInsult;
     private bool _hasEnteredCombatStance;
+    internal Func<Creature, DamageResult, Task>? DarkStrikeDamageConfirmed { get; set; }
 
     [SavedProperty]
     public bool HasEnteredCombatStance
@@ -295,6 +296,12 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     private Task DarkStrikeMove(IReadOnlyList<Creature> targets) =>
         DarkNinjaAttackExecution.PlayDarkStrike(this, targets, DarkStrikeDamage);
 
+    public override Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer,
+        DamageResult result, ValueProp props, Creature target, CardModel? cardSource) =>
+        dealer == Creature && DarkStrikeDamageConfirmed is { } confirm
+            ? confirm(target, result)
+            : Task.CompletedTask;
+
     internal async Task StealFrom(CardModel[] candidates)
     {
         if (candidates.Length == 0) return;
@@ -302,25 +309,34 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
         int priority = candidates.Min(StealPriority);
         CardModel card = RunRng.CombatCardGeneration.NextItem(candidates.Where(c => StealPriority(c) == priority))!;
         var player = card.Owner;
-        // A lethal hit may already have removed this card with the owner's combat piles.
-        if (card.Pile != null) await CardPileCmd.RemoveFromCombat(card);
-        var swipe = (SwipePower)ModelDb.Power<SwipePower>().ToMutable();
-        await swipe.Steal(card);
-        if (Creature.IsDead)
+        DarkNinjaStolenCards? visuals = Creature.IsAlive ? DarkNinjaStolenCards.Get(Creature) : null;
+        // Start at the confirmed hit, before the native power-feedback wait.
+        visuals?.Refresh(card);
+        try
         {
-            // Thorns already detached the attacker before this stab lost HP.
-            // Use SwipePower.BeforeDeath's native reward path without reattaching a dead creature.
-            CardModel deck = card.DeckVersion!;
-            player.RunState.AddCard(deck, player);
-            var reward = new SpecialCardReward(deck, player);
-            reward.SetCustomDescriptionEncounterSource(ModelDb.Encounter<ThievingHopperWeak>().Id);
-            ((CombatRoom)player.RunState.CurrentRoom!).AddExtraReward(player, reward);
-            player.RunState.CurrentMapPointHistoryEntry?.GetEntry(player.NetId).MarkLootReturned();
+            // A lethal hit may already have removed this card with the owner's combat piles.
+            if (card.Pile != null) await CardPileCmd.RemoveFromCombat(card);
+            var swipe = (SwipePower)ModelDb.Power<SwipePower>().ToMutable();
+            await swipe.Steal(card);
+            if (Creature.IsDead)
+            {
+                // Thorns already detached the attacker before this stab lost HP.
+                // Use SwipePower.BeforeDeath's native reward path without reattaching a dead creature.
+                CardModel deck = card.DeckVersion!;
+                player.RunState.AddCard(deck, player);
+                var reward = new SpecialCardReward(deck, player);
+                reward.SetCustomDescriptionEncounterSource(ModelDb.Encounter<ThievingHopperWeak>().Id);
+                ((CombatRoom)player.RunState.CurrentRoom!).AddExtraReward(player, reward);
+                player.RunState.CurrentMapPointHistoryEntry?.GetEntry(player.NetId).MarkLootReturned();
+            }
+            else
+            {
+                await PowerCmd.Apply(new ThrowingPlayerChoiceContext(), swipe, Creature, 1, Creature, null);
+            }
         }
-        else
+        finally
         {
-            await PowerCmd.Apply(new ThrowingPlayerChoiceContext(), swipe, Creature, 1, Creature, null);
-            DarkNinjaStolenCards.Get(Creature)?.Refresh();
+            if (GodotObject.IsInstanceValid(visuals) && Creature.IsAlive) visuals!.Refresh();
         }
     }
 

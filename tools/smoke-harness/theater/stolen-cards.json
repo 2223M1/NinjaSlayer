@@ -1,0 +1,12 @@
+{
+  "seed": "NINJASLAYER_STOLEN_CARDS_01",
+  "purpose": "theft",
+  "act": 3,
+  "duration": 24,
+  "karate": 0,
+  "relics": [],
+  "cues": [
+    { "id": "normal_native_and_dark", "steps": [ { "action": "theft_round", "mode": "Normal" } ] },
+    { "id": "fast_mirrored_and_interrupted", "steps": [ { "action": "theft_round", "mode": "Fast" } ] }
+  ]
+}

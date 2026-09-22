@@ -10,8 +10,8 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class GuardStance : RedesignV1UncommonCard
 {
-    public GuardStance() : base(nameof(GuardStance), "Contraption", 1, CardType.Power, TargetType.Self) { }
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(2, ValueProp.Unpowered)];
+    public GuardStance() : base(nameof(GuardStance), "Contraption", 2, CardType.Power, TargetType.Self) { }
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(1, ValueProp.Unpowered)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromPower<KaratePower>()];
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>

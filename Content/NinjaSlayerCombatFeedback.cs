@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.ExternalAnimations;
+using NinjaSlayer.Code.Nodes;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Models;
 
@@ -90,6 +91,13 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
 
         TryPlayLowHealthVoice(target, result, dealer);
 
+        if (props.IsPoweredAttack() && dealer != null && dealer != target
+            && result.UnblockedDamage > 0 && !result.WasTargetKilled
+            && target.CurrentHp > 0 && !target.IsDead && NLowHealthBloodVfx.IsLowHealth(target))
+        {
+            NLowHealthBloodVfx.Emit(target);
+        }
+
         if (!props.IsPoweredAttack())
         {
             return Task.CompletedTask;
@@ -116,12 +124,12 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
         }
 
         if (ShouldSuppressLowHealthVoiceForWaterfallGiantExplode(dealer)
-            && target.CurrentHp * 3 < target.MaxHp)
+            && NLowHealthBloodVfx.IsLowHealth(target))
         {
             return;
         }
 
-        if (target.CurrentHp * 3 >= target.MaxHp)
+        if (!NLowHealthBloodVfx.IsLowHealth(target))
         {
             return;
         }

@@ -1,0 +1,18 @@
+{
+  "seed": "NINJASLAYER_ARCHITECT_CORAL_01",
+  "purpose": "architect",
+  "act": 3,
+  "duration": 17,
+  "karate": 2,
+  "relics": [],
+  "cues": [
+    { "id": "sync_attacks", "steps": [
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "wait", "seconds": 0.5 },
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "wait", "seconds": 0.7 }
+    ] },
+    { "id": "coral_comparison", "steps": [{ "action": "architect_compare" }] },
+    { "id": "complete_execution", "steps": [{ "action": "architect_execution" }] }
+  ]
+}

@@ -140,7 +140,11 @@ public partial class OrbContractRunner
             death.AsGodotObject().Call("set_mix_duration",.05f);
             for(int f=0;f<54;f++) candidate.Call("update_skeleton",1f/60f);
             Require(Math.Abs(death.AsGodotObject().Call("get_track_time").AsSingle()-.9f)<.001f,"Native Architect death timing drifted.");
-            Require(candidate.Call("get_global_bone_transform","head").AsTransform2D().Origin.Y>head.Y+80f,"Architect native death did not sag toward the floor.");
+            Require(Math.Abs(death.AsGodotObject().Call("get_animation_end").AsSingle() - 3.6666667f) < .001f,
+                "Architect must retain the native colony death duration rather than compress it to the burst cue.");
+            Require(candidate.Call("get_global_bone_transform","head").AsTransform2D().Origin.Y < head.Y - 80f,
+                "Architect detached head must follow the native upward arc before the 0.9-second burst.");
+            for(int f=54;f<220;f++) candidate.Call("update_skeleton",1f/60f);
             foreach (string bone in new[] { "head", "body_lower", "foot_f1", "foot1_b" })
             {
                 Vector2 settled = candidate.Call("get_global_bone_transform", bone).AsTransform2D().Origin;
@@ -148,8 +152,8 @@ public partial class OrbContractRunner
                     $"Architect {bone} stayed suspended instead of folding near the floor: {settled}.");
             }
             Transform2D finalShadow=candidate.Call("get_global_bone_transform","shadow").AsTransform2D();
-            Require(Math.Abs(finalShadow.Origin.Y-shadow.Origin.Y)<.1f,$"Architect death moved its ground baseline: {shadow.Origin} -> {finalShadow.Origin}.");
-            GD.Print("PASS native Architect Spine: eight original tracks unchanged, private death track 0.9s, continuous sag and fixed ground shadow.");
+            Require(Math.Abs(finalShadow.Origin.Y-shadow.Origin.Y)<10f,$"Architect native shadow left the ground plane: {shadow.Origin} -> {finalShadow.Origin}.");
+            GD.Print("PASS native Architect Spine: original tracks unchanged, native 3.667s death with head arc at the 0.9s burst cue, settled limbs and grounded shadow.");
         }
         finally {native.Free();candidate.Free();augmented.Dispose();}
     }

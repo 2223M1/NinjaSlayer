@@ -1,0 +1,21 @@
+{
+  "seed": "NINJASLAYER_ARCHITECT_EXECUTION_02",
+  "purpose": "architect",
+  "act": 3,
+  "duration": 14,
+  "karate": 2,
+  "relics": [],
+  "cues": [
+    { "id": "fresh_architect", "steps": [
+      { "action": "replace_enemy", "monster": "Architect" },
+      { "action": "wait", "seconds": 0.8 }
+    ] },
+    { "id": "sync_attacks", "steps": [
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "wait", "seconds": 0.5 },
+      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "wait", "seconds": 0.7 }
+    ] },
+    { "id": "complete_execution", "steps": [{ "action": "architect_execution" }] }
+  ]
+}

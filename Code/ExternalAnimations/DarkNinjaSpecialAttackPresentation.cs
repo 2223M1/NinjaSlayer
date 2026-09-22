@@ -102,7 +102,9 @@ internal static class DarkNinjaSpecialAttackPresentation
         IReadOnlyList<Creature> targets,
         Func<Creature, bool> canImpact,
         Func<Creature, Task<DarkStrikeImpactOutcome>> onImpact,
-        Func<Node2D, Task>? contactContinuation = null)
+        Func<Node2D, Task>? contactContinuation = null,
+        int returnSide = 1,
+        Func<Creature, bool>? canPenetrate = null)
     {
         Creature[] orderedTargets = OrderTargets(targets);
         if (orderedTargets.Length == 0)
@@ -152,8 +154,8 @@ internal static class DarkNinjaSpecialAttackPresentation
                 DarkNinjaCombatMath.SampleDarkStrikeVisualReference(
                     segment,
                     0f),
-                penetratesTarget: false);
-            (NCombatRoom Room, Vector2 Position)? impactVfx = null;
+                penetratesTarget: canPenetrate?.Invoke(target) == true);
+            (NCombatRoom Room, Vector2 Position, int FrontZ)? impactVfx = null;
             Task<DarkStrikeImpactOutcome>? impactTask = null;
             void TriggerImpactOnFinalMotionFrame()
             {
@@ -247,7 +249,7 @@ internal static class DarkNinjaSpecialAttackPresentation
         if (contactContinuation != null)
             await contactContinuation(visual.Root);
         else
-            await visual.PlayRightSideReturn();
+            await visual.PlayReturn(returnSide);
     }
 
     private static async Task PlayDarkStrikeFallback(
@@ -282,7 +284,7 @@ internal static class DarkNinjaSpecialAttackPresentation
                 continue;
             }
 
-            (NCombatRoom Room, Vector2 Position)? impactVfx = CaptureImpactVfx(target);
+            (NCombatRoom Room, Vector2 Position, int FrontZ)? impactVfx = CaptureImpactVfx(target);
             using var hurtHold = DarkStrikeHurtPoseFreezeLease.TryAcquire(target);
             DarkStrikeImpactOutcome outcome = await DarkStrikeHurtPoseFreezeContext.Run(
                 target, _ => hurtHold?.Capture() == true, () => onImpact(target));
@@ -334,7 +336,7 @@ internal static class DarkNinjaSpecialAttackPresentation
         && combatState.IsLiveCombat()
         && !CombatManager.Instance.IsOverOrEnding;
 
-    private static (NCombatRoom Room, Vector2 Position)? CaptureImpactVfx(Creature target)
+    private static (NCombatRoom Room, Vector2 Position, int FrontZ)? CaptureImpactVfx(Creature target)
     {
         NCombatRoom? room = NCombatRoom.Instance;
         if (room == null || !GodotObject.IsInstanceValid(room))
@@ -343,15 +345,23 @@ internal static class DarkNinjaSpecialAttackPresentation
         }
 
         NCreature? targetNode = room.GetCreatureNode(target);
-        return targetNode != null
-            && GodotObject.IsInstanceValid(targetNode)
-            ? (room, targetNode.VfxSpawnPosition)
-            : null;
+        if (targetNode == null || !GodotObject.IsInstanceValid(targetNode)) return null;
+        Node2D body = NinjaSlayerVisualRig.GetAirborneAnchor(targetNode.Visuals)
+            ?? targetNode.Visuals.GetCurrentBody();
+        int frontZ = ResolveEffectiveZ(body);
+        void Visit(Node node)
+        {
+            if (node is CanvasItem item && item.IsVisibleInTree())
+                frontZ = Math.Max(frontZ, ResolveEffectiveZ(item));
+            foreach (Node child in node.GetChildren()) Visit(child);
+        }
+        Visit(body);
+        return (room, targetNode.VfxSpawnPosition, Math.Min(MaximumCanvasZIndex, frontZ + 1));
     }
 
     private static void PlayImpactFeedback(
         DarkStrikeImpactOutcome outcome,
-        (NCombatRoom Room, Vector2 Position)? impactVfx,
+        (NCombatRoom Room, Vector2 Position, int FrontZ)? impactVfx,
         ref bool playedSuccessfulVoice,
         ref bool playedBlockedVoice)
     {
@@ -378,6 +388,9 @@ internal static class DarkNinjaSpecialAttackPresentation
         {
             var effect = PreloadManager.Cache.GetScene(SceneHelper.GetScenePath(VfxCmd.dramaticStabPath))
                 .Instantiate<Node2D>();
+            effect.Name = "DarkNinjaStabImpact";
+            effect.ZAsRelative = false;
+            effect.ZIndex = vfx.FrontZ;
             Node slash = effect.GetNode("slash");
             effect.RemoveChild(slash);
             slash.Free();
@@ -941,7 +954,7 @@ internal static class DarkNinjaSpecialAttackPresentation
             _frontSword.Visible = cutX > 0f;
         }
 
-        internal async Task PlayRightSideReturn()
+        internal async Task PlayReturn(int returnSide)
         {
             if (Volatile.Read(ref _disposed) != 0
                 || !GodotObject.IsInstanceValid(_root)
@@ -959,10 +972,10 @@ internal static class DarkNinjaSpecialAttackPresentation
             float arcHeight = ReturnArcCanvasHeight / Math.Max(canvasScaleY, 0.001f);
             float rightExtent = TextureWidth * _scaleX * 0.5f;
             var start = new DarkNinjaPoint(
-                DarkNinjaCombatMath.ResolveDarkStrikeRightReturnStartX(
+                returnSide > 0 ? DarkNinjaCombatMath.ResolveDarkStrikeRightReturnStartX(
                     leftCanvas.X,
                     rightCanvas.X,
-                    rightExtent),
+                    rightExtent) : leftCanvas.X - rightExtent,
                 _baselinePosition.Y);
             var end = new DarkNinjaPoint(_baselinePosition.X, _baselinePosition.Y);
             _root.Position = new Vector2(start.X, start.Y);
