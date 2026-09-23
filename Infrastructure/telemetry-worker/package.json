@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "miniflare": "5.20260730.0-alpha",
-    "wrangler": "4.118.0"
+    "wrangler": "4.135.0"
   },
   "dependencies": {
     "chart.js": "4.5.1"
