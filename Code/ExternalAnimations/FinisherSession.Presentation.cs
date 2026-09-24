@@ -35,7 +35,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private async Task PrepareReverseImpactLead()
     {
-        if (Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
+        if (IsRanged || Scenario != FinisherScenarioKind.EnemyExecutesNinjaSlayer)
         {
             return;
         }
@@ -165,7 +165,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
     }
 
-    private CanvasItem GetCameraFocus() =>
+    private CanvasItem GetCameraFocus() => IsRanged ? _focusNode.Visuals.Bounds :
         Scenario == FinisherScenarioKind.NinjaSlayerAttack
         && NinjaSlayerVisualRig.GetCinematicFocus(_actorNode.Visuals) is { } cinematicFocus
             ? cinematicFocus
@@ -588,7 +588,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 ? 1f
                 : Mathf.SmoothStep(0f, 1f, Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f));
             ApplyDeathKickRecovery(cameraLinearProgress);
-            _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
+            if (!IsRanged) _actorNode.Position = ownerFrom.Lerp(_actorStartPosition, actorProgress);
             _actorAimPose?.ApplyReturn(actorProgress);
             _approach?.ApplyReturn(actorProgress);
             _camera.SetTransform(
@@ -598,7 +598,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
 
         ApplyDeathKickRecovery(1f);
-        _actorNode.Position = _actorStartPosition;
+        if (!IsRanged) _actorNode.Position = _actorStartPosition;
         _approach?.ApplyReturn(1f);
         RestoreActorLeapPose();
         _returnTimelineCompleted = true;

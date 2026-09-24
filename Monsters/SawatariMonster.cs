@@ -189,7 +189,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         var results = new List<DamageResult>();
 
         await Hook.BeforeAttack(combatState, command);
-        await using FinisherSession? finisher = FinisherEligibilityService.CreateCompanionSession(attacker,
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateActionSession(attacker,
             new FinisherActionForecastDescriptor(_ => BambooDamage, command.DamageProps, hitCount,
                 FinisherTargeting.Single, SingleTarget: target));
         finisher?.Begin();

@@ -84,6 +84,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private NinjaSlayerAimPose? _actorAimPose;
     private FinisherImpactPresentation? _presentation;
     private FinisherApproach? _approach;
+    private readonly FinisherRangedAction? _ranged;
+    internal bool IsRanged => _ranged != null;
+    internal Task Completion => _completion.Task;
 
     public FinisherSession(
         long sessionId,
@@ -95,6 +98,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _combatState = combatState;
         _room = room;
         Scenario = request.Scenario;
+        _ranged = request.RangedAction;
         CompletionCondition = request.CompletionCondition;
         Actor = request.Actor;
         _actorNode = request.ActorNode;
@@ -104,25 +108,26 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             request.Victims,
             combatState,
             IsCurrentCombatContext);
-        _usesJumpDeathSquash = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
+        _usesJumpDeathSquash = !IsRanged && request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
             && JumpAnimation.IsActive(request.Actor);
-        _actorStartPosition = request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
+        _actorStartPosition = !IsRanged && request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
             ? NinjaSlayerRapidAnimationCoordinator.ClaimExclusiveBaseline(request.Actor, request.ActorNode)
             : request.ActorNode.Position;
         _freeControlLease = NinjaSlayerFreeControl.Get(request.Actor)?.SuspendForCinematic(_actorStartPosition);
         if (_freeControlLease != null) _actorStartPosition = _freeControlLease.Baseline;
         _impactPosition = request.ActorNode.Position;
         _actionPeakReached = !IsCompanionIai;
-        _vfxBaselineChildIds = request.VfxBaselineChildIds?.ToHashSet()
+        _vfxBaselineChildIds = (request.VfxBaselineChildIds ?? _ranged?.Baseline)?.ToHashSet()
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(_room).ToHashSet();
         _room.TreeExiting += OnRoomTreeExiting;
         _lastFrameMsec = Time.GetTicksMsec();
         CardPlay = request.CardPlay;
         RequiresAfterCardPlayed = request.RequiresAfterCardPlayed;
         ResolvedHits = Math.Max(1, request.ResolvedHits);
+        _ranged?.Attach(this);
     }
 
-    private bool IsCompanionIai => Scenario == FinisherScenarioKind.CompanionAttack
+    private bool IsCompanionIai => !IsRanged && Scenario == FinisherScenarioKind.CompanionAttack
         && Actor.Monster is NinjaSlayer.Monsters.YamotoKokiMonster;
 
     public long SessionId { get; }
@@ -174,7 +179,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             Entry.Logger.Warn($"Could not create finisher presentation; fallback presentation will be used: {ex}");
         }
 
-        if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
+        if (!IsRanged && Scenario == FinisherScenarioKind.NinjaSlayerAttack)
         {
             try
             {
@@ -214,7 +219,11 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 GetDeathSquashMultiplier(),
                 NinjaSlayerCombatVisuals.CloseRangeApproachGap),
             _actorNode.Position.Y);
-        if (IsCompanionIai)
+        if (IsRanged)
+        {
+            _actionStarted = _actionPeakReached = true;
+        }
+        else if (IsCompanionIai)
         {
             _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier());
             _approach.ReturnDuration = SlowAttackAnimation.IaiReturnSeconds;
@@ -258,7 +267,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             framingCandidates,
             maximumScale);
         _cameraShakePumpTask = RunCameraShakePump();
-        bool deferReversePresentation = Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer;
+        bool deferReversePresentation = IsRanged || Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer;
         _finalZoomStarted = !deferReversePresentation && ResolvedHits <= 1;
         if (!deferReversePresentation)
         {
@@ -275,7 +284,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     public Task PlayActionToPeak(Creature creature, float repeatWaitSeconds)
     {
-        if (!_disposed && creature == Actor && Scenario == FinisherScenarioKind.NinjaSlayerAttack)
+        if (!IsRanged && !_disposed && creature == Actor && Scenario == FinisherScenarioKind.NinjaSlayerAttack)
             return PlayAimedAction(repeatWaitSeconds);
         if (_disposed
             || creature != Actor
@@ -316,6 +325,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     {
         if (_disposed
             || _committing
+            || IsRanged
             || ResolvedHits <= 1
             || creature != Actor
             || !IsPrimaryAttackTrigger(triggerName))
@@ -330,14 +340,19 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
     }
 
-    public void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
+    public void NotifyPrimaryDamage(Creature? dealer, CardModel? cardSource, CardPlay? cardPlay,
+        bool rangedImpact = false)
     {
         if (_disposed
             || _committing
-            || dealer != Actor
-            || CardPlay is not { } sessionCardPlay
-            || cardSource != sessionCardPlay.Card
-            || cardPlay != sessionCardPlay)
+            || dealer != Actor || IsRanged && !rangedImpact)
+        {
+            return;
+        }
+        bool primary = CardPlay is { } sessionCardPlay
+            ? cardSource == sessionCardPlay.Card && cardPlay == sessionCardPlay
+            : _ranged != null && ReferenceEquals(FinisherRangedAction.For(dealer), _ranged);
+        if (!primary)
         {
             return;
         }
@@ -348,7 +363,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             isFinalHit ? ShakeStrength.TooMuch : ShakeStrength.Medium,
             ShakeDuration.Short,
             rejectWeakerReplacement: true);
-        if (ResolvedHits > 1 && isFinalHit)
+        if (!IsRanged && ResolvedHits > 1 && isFinalHit)
         {
             StartFinalZoom();
         }
@@ -824,7 +839,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
         await CaptureAsync(() => _cameraShakePumpTask);
 
-        if (mayRestoreCurrentCombat && GodotObject.IsInstanceValid(_actorNode))
+        if (!IsRanged && mayRestoreCurrentCombat && GodotObject.IsInstanceValid(_actorNode))
         {
             Capture(() => _actorNode.Position = _actorStartPosition);
         }
@@ -852,6 +867,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         Capture(_actionCancellation.Dispose);
         Capture(_watchdogCancellation.Dispose);
         Capture(_camera.Dispose);
+        Capture(() => _ranged?.ReleaseVisuals());
         if (failures.Count > 0)
         {
             throw new AggregateException(
@@ -963,6 +979,13 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             return;
         }
 
+        if (IsRanged)
+        {
+            // The impact itself performs the zoom; starting another camera task here
+            // would compete with it on the next frame.
+            _finalZoomStarted = true;
+            StartBackdropDarkening();
+        }
         _enhancedImpactScheduled = true;
         _enhancedImpactTask = RunEnhancedImpact();
     }
@@ -1038,7 +1061,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 _room,
                 targetNodes,
                 _vfxBaselineChildIds,
-                ImpactVfxTargetMargin);
+                ImpactVfxTargetMargin,
+                _ranged?.Visuals);
             foreach (NCreature targetNode in targetNodes)
             {
                 if (DoomHurtPoseController.TryFreeze(targetNode))
@@ -1136,7 +1160,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 _room,
                 targetNodes,
                 _vfxBaselineChildIds,
-                ImpactVfxTargetMargin);
+                ImpactVfxTargetMargin,
+                _ranged?.Visuals);
             foreach (NCreature targetNode in targetNodes)
             {
                 if (DoomHurtPoseController.TryFreeze(targetNode))

@@ -28,4 +28,5 @@ internal sealed record FinisherSessionRequest(
     CardPlay? CardPlay,
     bool RequiresAfterCardPlayed,
     int ResolvedHits,
-    IReadOnlySet<ulong>? VfxBaselineChildIds = null);
+    IReadOnlySet<ulong>? VfxBaselineChildIds = null,
+    FinisherRangedAction? RangedAction = null);

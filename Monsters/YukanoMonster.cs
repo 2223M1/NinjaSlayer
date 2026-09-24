@@ -161,7 +161,8 @@ public sealed class YukanoMonster : ModMonsterTemplate
         var results = new List<DamageResult>();
 
         await Hook.BeforeAttack(combatState, command);
-        await using FinisherSession? finisher = FinisherEligibilityService.CreateCompanionSession(Creature,
+        using var ranged = FinisherRangedAction.Begin(Creature);
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateActionSession(Creature,
             new FinisherActionForecastDescriptor(_ => damage, command.DamageProps, hitCount,
                 FinisherTargeting.Single, SingleTarget: target));
         finisher?.Begin();

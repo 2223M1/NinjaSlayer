@@ -145,6 +145,13 @@ public class Entry
             requiredPatcher.RegisterPatch<ReporterPassEventOptionPatch>();
             requiredPatcher.RegisterPatch<NancyLeeCandidatePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
+            requiredPatcher.RegisterPatch<FinisherOrbPassivePatch>();
+            requiredPatcher.RegisterPatch<FinisherOrbEvokePatch>();
+            requiredPatcher.RegisterPatch<FinisherShivVisualPatch>();
+            requiredPatcher.RegisterPatch<FinisherShivTimingPatch>();
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            requiredPatcher.RegisterPatch<FinisherNativeProjectilePatch>();
+#endif
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();

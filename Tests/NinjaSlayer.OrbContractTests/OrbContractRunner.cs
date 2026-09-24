@@ -217,6 +217,7 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            await VerifyRangedSources();
             await VerifyIaiLifeBoundary();
             await VerifySawatariWeapons();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SAWATARI") == "1")

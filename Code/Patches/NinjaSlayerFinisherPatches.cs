@@ -260,6 +260,12 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         CardPlay? cardPlay,
         ref Task<IEnumerable<DamageResult>> resultTask)
     {
+        if (NinjaSlayerFinisherCinematic.TryInterceptRangedDamage(
+                choiceContext, targets, amount, props, dealer, cardSource, cardPlay, out var rangedResult))
+        {
+            resultTask = rangedResult!;
+            return false;
+        }
         FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
         if (!NinjaSlayerFinisherCinematic.TryInterceptDirectDamage(
                 choiceContext,
@@ -357,6 +363,7 @@ public sealed class NinjaSlayerEnemyAttackVfxBaselinePatch : IPatchMethod
             FinisherAttackVfxBaselineContext.RestoreCaller(frame);
             frame.IsActive = false;
             frame.Approach?.ReleasePrediction();
+            frame.Ranged?.Dispose();
         }
 
         return __exception;

@@ -37,7 +37,8 @@ internal sealed class FinisherImpactVfxFreezeLease : IDisposable
         NCombatRoom room,
         IReadOnlyList<NCreature> targets,
         IReadOnlySet<ulong> baselineChildIds,
-        float targetMargin)
+        float targetMargin,
+        IReadOnlyList<Node>? ownedVisuals = null)
     {
         List<Rect2> targetRegions = targets
             .Where(IsNodeActive)
@@ -72,11 +73,19 @@ internal sealed class FinisherImpactVfxFreezeLease : IDisposable
             }
         }
 
+        if (ownedVisuals != null)
+            foreach (Node visual in ownedVisuals)
+                CaptureProcessModes(visual, snapshots, capturedNodes);
         foreach (ProcessModeSnapshot snapshot in snapshots)
         {
             if (IsNodeActive(snapshot.Node))
             {
                 snapshot.Node.ProcessMode = Node.ProcessModeEnum.Disabled;
+                if (ownedVisuals != null)
+                {
+                    if (snapshot.Node is GpuParticles2D gpu) gpu.SpeedScale = 0;
+                    if (snapshot.Node is CpuParticles2D cpu) cpu.SpeedScale = 0;
+                }
             }
         }
 
@@ -96,6 +105,8 @@ internal sealed class FinisherImpactVfxFreezeLease : IDisposable
             if (IsNodeActive(snapshot.Node))
             {
                 snapshot.Node.ProcessMode = snapshot.Mode;
+                if (snapshot.Node is GpuParticles2D gpu) gpu.SpeedScale = snapshot.ParticleSpeed;
+                if (snapshot.Node is CpuParticles2D cpu) cpu.SpeedScale = (float)snapshot.ParticleSpeed;
             }
         }
 
@@ -137,7 +148,7 @@ internal sealed class FinisherImpactVfxFreezeLease : IDisposable
             return;
         }
 
-        snapshots.Add(new ProcessModeSnapshot(node, node.ProcessMode));
+        snapshots.Add(new ProcessModeSnapshot(node, node.ProcessMode, node switch { GpuParticles2D gpu => gpu.SpeedScale, CpuParticles2D cpu => cpu.SpeedScale, _ => 1f }));
         foreach (Node child in node.GetChildren())
         {
             CaptureProcessModes(child, snapshots, capturedNodes);
@@ -149,7 +160,7 @@ internal sealed class FinisherImpactVfxFreezeLease : IDisposable
         && node.IsInsideTree()
         && !node.IsQueuedForDeletion();
 
-    private readonly record struct ProcessModeSnapshot(Node Node, Node.ProcessModeEnum Mode);
+    private readonly record struct ProcessModeSnapshot(Node Node, Node.ProcessModeEnum Mode, double ParticleSpeed);
 }
 
 internal static class FinisherAttackVfxBaselineContext
@@ -199,6 +210,7 @@ internal static class FinisherAttackVfxBaselineContext
         if (trigger is "Hit" or "BlockedHit" or "Dodge" or "Dead"
             || Current.Value is not { IsActive: true, Started: false } frame || frame.Attacker != actor) return;
         frame.Started = true;
+        if (frame.Ranged != null) return;
         Creature? victim = FinisherAttackCommandAdapter.PredictReverseVictim(frame.Command, frame.Hits);
         if (victim?.GetCreatureNode() is not { } focus || actor.GetCreatureNode() is not { } node) return;
         frame.Approach = FinisherApproach.Create(node, focus, Godot.Vector2.One);
@@ -217,6 +229,7 @@ internal static class FinisherAttackVfxBaselineContext
 
     public static void RestoreCaller(Frame frame)
     {
+        frame.Ranged?.RestoreCaller();
         if (ReferenceEquals(Current.Value, frame))
         {
             Current.Value = frame.Previous;
@@ -233,6 +246,7 @@ internal static class FinisherAttackVfxBaselineContext
         {
             frame.IsActive = false;
             frame.Approach?.ReleasePrediction();
+            frame.Ranged?.Dispose();
         }
     }
 
@@ -244,6 +258,10 @@ internal static class FinisherAttackVfxBaselineContext
         public Frame? Previous { get; } = previous;
         public AttackCommand Command { get; } = command;
         public Creature Attacker => Command.Attacker!;
+        internal FinisherRangedAction? Ranged { get; } =
+            command.Attacker?.Monster is { } monster && FinisherRangedAction.IsRangedMove(monster)
+                && FinisherRangedAction.For(command.Attacker) == null
+                ? FinisherRangedAction.Begin(command.Attacker!) : null;
         public int Hits { get; set; } = 1;
         public bool Started { get; set; }
         public FinisherApproach? Approach { get; set; }

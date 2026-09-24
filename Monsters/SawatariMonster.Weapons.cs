@@ -126,6 +126,10 @@ public sealed partial class SawatariMonster
                 MustThrow = false;
                 knife = await SawatariWeaponVisuals.PlayThrow(this, target, hand, catchHand);
             });
+            // A lethal impact can finish the battle and release the weapon rig
+            // while the awaited reverse finisher commits the last player's death.
+            if (CombatManager.Instance.IsOverOrEnding || !combatState.IsLiveCombat()
+                || !ReferenceEquals(Creature.CombatState, combatState)) return;
             // The native damage command owns defenses and death; throwing is not conditional on HP loss.
             if (Creature.IsAlive)
                 await PowerCmd.Apply<VigorPower>(new BlockingPlayerChoiceContext(), Creature, 6, Creature, null);
@@ -137,7 +141,7 @@ public sealed partial class SawatariMonster
                 await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, null);
                 knife = null;
             }
-            SawatariWeaponVisuals.Get(Creature)?.Refresh();
+            if (Creature.IsAlive) SawatariWeaponVisuals.Get(Creature)?.Refresh();
         }
         finally
         {
@@ -150,13 +154,14 @@ public sealed partial class SawatariMonster
     private async Task AttackWithWeapons(Creature target, int damage, int hits,
         Action<Creature> hitFx, Func<int, Task>? beforeHit)
     {
+        using FinisherRangedAction? ranged = beforeHit != null ? FinisherRangedAction.Begin(Creature) : null;
         var combatState = CombatState;
         AttackCommand attack = DamageCmd.Attack(damage).WithHitCount(hits).FromMonster(this);
         var choice = new BlockingPlayerChoiceContext();
         await Hook.BeforeAttack(combatState, attack);
         decimal hitCount = Hook.ModifyAttackHitCount(combatState, attack, hits);
         await using FinisherSession? finisher = beforeHit == null
-            ? FinisherEligibilityService.CreateCompanionSession(Creature,
+            ? FinisherEligibilityService.CreateActionSession(Creature,
                 new FinisherActionForecastDescriptor(_ => damage, attack.DamageProps, checked((int)Math.Ceiling(hitCount)),
                     FinisherTargeting.Single, SingleTarget: target))
             : null;

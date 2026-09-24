@@ -49,6 +49,7 @@ internal static class ShurikenCombat
         ShurikenOrb originOrb,
         Action beforeThrow)
     {
+        FinisherRangedAction? ranged = FinisherRangedAction.For(owner);
         BeginThrowPose(owner, targets.Count > 0 ? targets[0] : null);
         beforeThrow();
         AtRelease(owner, () =>
@@ -70,6 +71,7 @@ internal static class ShurikenCombat
                 if (target.GetVfxContainer() is not { } container
                     || CreateThrowVfx(owner, target, originOrb, out ShurikenOrbVisual? held) is not { } projectile)
                     continue;
+                if (ranged != null) Code.Patches.FinisherShivVisualPatch.Track(projectile, ranged);
                 container.AddChildSafely(projectile);
                 if (!released)
                     held?.OnShurikenReleased(projectile.GetGlobalTransformWithCanvas().Determinant() < 0f ? -1f : 1f);
@@ -88,6 +90,12 @@ internal static class ShurikenCombat
         ShurikenOrb originOrb,
         Action beforeThrow)
     {
+        using var ranged = FinisherRangedAction.Begin(owner, source);
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateActionSession(owner,
+            new FinisherActionForecastDescriptor(_ => originOrb.EvokeVal,
+                MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered | MegaCrit.Sts2.Core.ValueProps.ValueProp.Move,
+                1, FinisherTargeting.Fixed, CardSource: source, TriggersKarate: false, FixedTargets: targets));
+        finisher?.Begin();
         await PlayStockThrowAnimation(owner, targets, originOrb, beforeThrow);
         IReadOnlyList<DamageResult> results = (await CreatureCmd.Damage(
             choiceContext,
@@ -108,6 +116,7 @@ internal static class ShurikenCombat
                 await wasshoi.GainTemporaryStats(choiceContext, source);
         }
 
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
         return results;
     }
 
@@ -139,14 +148,24 @@ internal static class ShurikenCombat
     {
         NCombatRoom? room = NCombatRoom.Instance;
         if (room == null || !room.IsInsideTree()) return;
+        var released = new TaskCompletionSource();
+        FinisherRangedAction.For(owner)?.TrackArrival(released.Task);
+        void Cancel() => released.TrySetResult();
+        room.TreeExiting += Cancel;
         void Release()
         {
-            if (GodotObject.IsInstanceValid(room) && room.IsInsideTree()
-                && ReferenceEquals(NCombatRoom.Instance, room) && !owner.IsDead)
+            try
             {
-                NinjaSlayerAimPose.Get(owner)?.SyncNow();
-                play();
+                if (GodotObject.IsInstanceValid(room) && room.IsInsideTree()
+                    && ReferenceEquals(NCombatRoom.Instance, room) && !owner.IsDead)
+                {
+                    NinjaSlayerAimPose.Get(owner)?.SyncNow();
+                    play();
+                }
+                released.TrySetResult();
             }
+            catch (Exception ex) { released.TrySetException(ex); throw; }
+            finally { if (GodotObject.IsInstanceValid(room)) room.TreeExiting -= Cancel; }
         }
         float seconds = NinjaSlayerAimPose.ShurikenWindupSeconds;
         if (seconds <= 0f) { Release(); return; }

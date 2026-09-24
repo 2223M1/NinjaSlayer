@@ -137,7 +137,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             return;
         }
 
-        await using FinisherSession? finisher = FinisherEligibilityService.CreateCompanionSession(Creature,
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateActionSession(Creature,
             new FinisherActionForecastDescriptor(_ => GetIaiSlashDamage(), ValueProp.Move, 1, FinisherTargeting.All));
         await YamotoKokiCombatAnimations.PlayIaiSlash(
             Creature,

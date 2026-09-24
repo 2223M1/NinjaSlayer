@@ -77,6 +77,7 @@ public partial class OrbContractRunner
         try
         {
             VerifyFinisherApproach(actor, target);
+            await VerifyRangedVisualFreeze(target);
             await VerifyHeldShurikenInertia(combat, actor, anchor);
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");
             var facingDrag = new Node();

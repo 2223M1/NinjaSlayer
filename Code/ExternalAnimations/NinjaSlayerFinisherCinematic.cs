@@ -85,7 +85,47 @@ internal static class NinjaSlayerFinisherCinematic
     private static readonly AsyncLocal<CommandBypassFrame?> CommandBypass = new();
     private static readonly AsyncLocal<int> DirectDamageBypassDepth = new();
 
-    public static bool IsMovementOwned(Creature creature) => FinisherSessionRegistry.GetActiveSession()?.Actor == creature;
+    internal static bool TryInterceptRangedDamage(
+        PlayerChoiceContext choiceContext, IEnumerable<Creature>? targets, decimal amount,
+        ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay,
+        out Task<IEnumerable<DamageResult>>? result)
+    {
+        result = null;
+        if (DirectDamageBypassDepth.Value > 0 || FinisherRangedAction.For(dealer) is not { } ranged
+            || ranged.Source != cardSource)
+            return false;
+        Creature[] actualTargets = targets?.ToArray() ?? [];
+        FinisherSession? ownedSession = null;
+        if (ranged.Session == null)
+        {
+            ownedSession = FinisherEligibilityService.CreateActionSession(dealer!,
+                new FinisherActionForecastDescriptor(_ => amount, props, 1, FinisherTargeting.Fixed,
+                    CardSource: cardSource, CardPlay: cardPlay, TriggersKarate: false,
+                    FixedTargets: actualTargets));
+            ownedSession?.Begin();
+        }
+        if (ranged.Session == null) return false;
+        result = Execute();
+        return true;
+
+        async Task<IEnumerable<DamageResult>> Execute()
+        {
+            await using FinisherSession? session = ownedSession;
+            await ranged.WaitForImpact();
+            if (!ReferenceEquals(dealer!.CombatState, ranged.Session!.CombatState)
+                || !ReferenceEquals(MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance, ranged.Session.Room)
+                || ranged.Session.Completion.IsCompleted)
+                throw new OperationCanceledException("The ranged impact's combat ended before projectile arrival.");
+            ranged.Session!.NotifyPrimaryDamage(dealer, cardSource, cardPlay, rangedImpact: true);
+            IEnumerable<DamageResult> results = await ExecuteOriginalDirectDamage(
+                choiceContext, actualTargets, amount, props, dealer, cardSource, cardPlay);
+            if (session != null) await session.CompleteAsync(playPose: true);
+            return results;
+        }
+    }
+
+    public static bool IsMovementOwned(Creature creature) =>
+        FinisherSessionRegistry.GetActiveSession() is { IsRanged: false } session && session.Actor == creature;
 
     internal static bool TryPlayOwnedAction(
         Creature creature,
@@ -93,7 +133,7 @@ internal static class NinjaSlayerFinisherCinematic
         out Task action)
     {
         FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
-        if (session?.Actor != creature)
+        if (session?.Actor != creature || session.IsRanged)
         {
             action = Task.CompletedTask;
             return false;
@@ -116,8 +156,7 @@ internal static class NinjaSlayerFinisherCinematic
     {
         result = null;
         if (IsCommandBypassed(command)
-            || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec)
-            || FinisherEligibilityService.IsExcludedAttackCard(spec.Card))
+            || !FinisherAttackCommandAdapter.TryCreateSpec(command, out FinisherAttackSpec? spec))
         {
             return false;
         }
@@ -145,8 +184,7 @@ internal static class NinjaSlayerFinisherCinematic
             || dealer?.Player?.Character is not INinjaSlayerCharacter
             || cardSource?.Type != CardType.Attack
             || cardPlay == null
-            || cardSource.Owner?.Creature != dealer
-            || FinisherEligibilityService.IsExcludedAttackCard(cardSource))
+            || cardSource.Owner?.Creature != dealer)
         {
             return false;
         }
@@ -202,6 +240,8 @@ internal static class NinjaSlayerFinisherCinematic
         FinisherAttackSpec spec,
         string entryPoint)
     {
+        using FinisherRangedAction? ranged = FinisherRangedAction.IsRangedCard(spec.Card)
+            ? FinisherRangedAction.Begin(spec.Card.Owner.Creature, spec.Card) : null;
         if (!FinisherEligibilityService.TryCreateSession(
                 spec,
                 command,

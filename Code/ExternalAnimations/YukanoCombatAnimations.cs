@@ -120,12 +120,13 @@ internal static class YukanoCombatAnimations
             Rotation = spin ? 0f : direction.Angle() - ArrowSourceAngle
         };
         room.CombatVfxContainer.AddChild(projectile);
+        FinisherRangedAction.For(source)?.Track(projectile);
         projectile.GlobalPosition = start;
 
         if (Mathf.IsZeroApprox(duration))
         {
             projectile.GlobalPosition = end;
-            projectile.QueueFree();
+            if (FinisherRangedAction.For(source)?.Retain(projectile) != true) projectile.QueueFree();
             return;
         }
 
@@ -154,7 +155,7 @@ internal static class YukanoCombatAnimations
         {
             if (GodotObject.IsInstanceValid(projectile))
             {
-                projectile.QueueFree();
+                if (FinisherRangedAction.For(source)?.Retain(projectile) != true) projectile.QueueFree();
             }
         }
     }

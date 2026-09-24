@@ -1,4 +1,5 @@
 using Godot;
+using NinjaSlayer.Code.ExternalAnimations;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 
@@ -11,6 +12,7 @@ internal sealed partial class SawatariWeaponVisuals
     {
         // Keep the same sprite, texture, handle pivot and world transform on release.
         weapon.Reparent(NCombatRoom.Instance!.CombatVfxContainer, keepGlobalTransform: true);
+        FinisherRangedAction.Active?.Track(weapon);
         weapon.Material = null;
         weapon.ZIndex = 0;
         Transform2D start = weapon.GlobalTransform;
@@ -72,7 +74,8 @@ internal sealed partial class SawatariWeaponVisuals
         }
         finally
         {
-            if (!landed && GodotObject.IsInstanceValid(weapon)) weapon.QueueFree();
+            if (!landed && GodotObject.IsInstanceValid(weapon)
+                && FinisherRangedAction.Active?.Retain(weapon) != true) weapon.QueueFree();
         }
     }
 }

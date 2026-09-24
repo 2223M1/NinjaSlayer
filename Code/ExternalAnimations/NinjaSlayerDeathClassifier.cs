@@ -89,7 +89,8 @@ internal static class NinjaSlayerDeathClassifier
         FinisherAttackVfxBaselineContext.ReachImpact(dealer);
 
         var previousCaptures = new Dictionary<Creature, IncomingDamageCapture?>();
-        IReadOnlySet<ulong> baseline = FinisherAttackVfxBaselineContext.GetBaseline(dealer)
+        IReadOnlySet<ulong> baseline = FinisherRangedAction.For(dealer)?.Baseline
+            ?? FinisherAttackVfxBaselineContext.GetBaseline(dealer)
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(room);
         var capture = new IncomingDamageCapture(
             dealer,
@@ -158,7 +159,8 @@ internal static class NinjaSlayerDeathClassifier
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
                     ResolvedHits: 1,
-                    VfxBaselineChildIds: capture.VfxBaselineChildIds),
+                    VfxBaselineChildIds: capture.VfxBaselineChildIds,
+                    RangedAction: FinisherRangedAction.For(capture.Dealer)),
                 combatState,
                 room,
                 out FinisherSession? session))

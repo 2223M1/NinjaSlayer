@@ -20,10 +20,6 @@ internal static class FinisherEligibilityService
 {
     private static bool CompatibilityWarningLogged;
 
-    internal static bool IsExcludedAttackCard(CardModel card) =>
-        card.Tags.Contains(CardTag.Shiv)
-        || card.Tags.Contains(NinjaSlayerCardTags.Shuriken);
-
     internal static bool TryCreateSession(
         FinisherAttackSpec spec,
         AttackCommand? command,
@@ -31,8 +27,7 @@ internal static class FinisherEligibilityService
         [NotNullWhen(true)] out FinisherSession? session)
     {
         session = null;
-        if (IsExcludedAttackCard(spec.Card)
-            || spec.Card.Owner?.Creature is not { } owner
+        if (spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room)
@@ -100,7 +95,9 @@ internal static class FinisherEligibilityService
                     camera,
                     spec.CardPlay,
                     forecast.RequiresAfterCardPlayed,
-                    forecast.ResolvedHits),
+                    forecast.ResolvedHits,
+                    RangedAction: FinisherRangedAction.For(owner) is { } ranged && ranged.Source == spec.Card
+                        ? ranged : null),
                 combatState,
                 room,
                 out session))
@@ -114,11 +111,13 @@ internal static class FinisherEligibilityService
         return true;
     }
 
-    internal static FinisherSession? CreateCompanionSession(
+    internal static FinisherSession? CreateActionSession(
         Creature owner,
         FinisherActionForecastDescriptor descriptor)
     {
-        if (!FriendlyCompanionTargeting.IsFriendlyCompanion(owner)
+        if (!(FriendlyCompanionTargeting.IsFriendlyCompanion(owner)
+                || owner.Player?.Character is INinjaSlayerCharacter
+                || owner is { Side: CombatSide.Player, PetOwner: not null, Monster: YamotoKokiOrigamiMissile })
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
             || owner.GetCreatureNode() is not { } ownerNode
@@ -148,7 +147,7 @@ internal static class FinisherEligibilityService
             != FinisherForecastOutcome.Guaranteed
             || !CombatCinematicCameraLease.TryAcquire(
                 room,
-                "Companion finisher",
+                "Action finisher",
                 out CombatCinematicCameraLease? camera))
         {
             return null;
@@ -156,7 +155,7 @@ internal static class FinisherEligibilityService
 
         if (!FinisherSessionRegistry.TryRegisterSession(
                 new FinisherSessionRequest(
-                    FinisherScenarioKind.CompanionAttack,
+                    owner.Player != null ? FinisherScenarioKind.NinjaSlayerAttack : FinisherScenarioKind.CompanionAttack,
                     FinisherCompletionCondition.AllCandidatesLethal,
                     owner,
                     ownerNode,
@@ -165,7 +164,8 @@ internal static class FinisherEligibilityService
                     camera,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
-                    ResolvedHits: forecast.ResolvedHits),
+                    ResolvedHits: forecast.ResolvedHits,
+                    RangedAction: FinisherRangedAction.For(owner)),
                 combatState,
                 room,
                 out FinisherSession? session))
@@ -175,7 +175,7 @@ internal static class FinisherEligibilityService
         }
 
         Entry.Logger.Info(
-            $"Companion {owner.Monster!.Id} finisher session {session.SessionId} started: victims={primaryEnemies.Length}.");
+            $"Action by {owner} finisher session {session.SessionId} started: victims={primaryEnemies.Length}.");
         return session;
     }
 

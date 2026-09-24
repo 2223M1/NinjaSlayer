@@ -31,6 +31,7 @@ internal static class DarkNinjaAttackExecution
         IReadOnlyList<Creature> targets,
         int damage)
     {
+        using var ranged = FinisherRangedAction.Begin(monster.Creature);
         Execution execution = await Execute(
             monster,
             targets,
@@ -141,7 +142,8 @@ internal static class DarkNinjaAttackExecution
 
         await Hook.BeforeAttack(combatState, command);
         FinisherApproach? approach = null;
-        if (FinisherAttackCommandAdapter.PredictReverseVictim(command, pendingTargets, damage, 1)
+        if (FinisherRangedAction.For(attacker) == null
+            && FinisherAttackCommandAdapter.PredictReverseVictim(command, pendingTargets, damage, 1)
             ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
         {
             approach = FinisherApproach.Create(actorNode, focus, Godot.Vector2.One);

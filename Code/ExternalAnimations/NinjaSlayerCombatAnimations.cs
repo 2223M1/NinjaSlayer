@@ -25,6 +25,9 @@ public static class NinjaSlayerCombatAnimations
             return false;
         }
 
+        if (triggerName == "Attack" && FinisherRangedAction.For(creature) != null
+            && NinjaSlayerAttackExecution.CurrentCommand?.ModelSource is MegaCrit.Sts2.Core.Models.Cards.Shiv)
+            triggerName = "Shiv";
         var audio = NinjaSlayerCombatAudioSet.For(creature);
 
         switch (triggerName)

@@ -154,6 +154,8 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
 
     internal async Task CompleteExplosion(Creature? target)
     {
+        using var ranged = FinisherRangedAction.Begin(Creature);
+        if (Creature.GetCreatureNode() is { } missileNode) ranged.Track(missileNode.Visuals);
         try
         {
             if (target is { IsAlive: true, IsHittable: true } && !Creature.IsDead
