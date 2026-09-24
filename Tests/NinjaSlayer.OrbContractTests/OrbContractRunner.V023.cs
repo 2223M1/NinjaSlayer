@@ -75,10 +75,10 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<OneBodyOneSoul>(combat), null);
             await CardCmd.AutoPlay(Choice, AddCard<OneBodyOneSoul>(combat, upgraded: true), null);
             await ChadoBreathCmd.Apply(Choice, combat.Player, 4);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 7,
-                "One breathing effect must award seven Karate, regardless of breathing amount.");
+            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0,
+                "One Body must no longer award Karate on breathing.");
             await ChadoBreathCmd.Apply(Choice, combat.Player, 1);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 14, "Independent breathing must trigger again.");
+            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0, "Further breathing must not grant Karate.");
             int hp = combat.Player.Creature.CurrentHp;
             var flame = AddCard<BlackFlameRedesignV1>(combat);
 #if NINJASLAYER_CHANNEL_STABLE
@@ -87,8 +87,8 @@ public partial class OrbContractRunner
             await (Task)AccessTools.Method(typeof(CombatManager), "ResolveTurnEndCardEffects")
                 .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
 #endif
-            Require(combat.Player.Creature.CurrentHp == hp && combat.Enemy.CurrentHp == 996
-                && flame.Pile?.Type == PileType.Exhaust, "Soul prevents only Black Flame self-damage, retaining enemy damage and exhaust.");
+            Require(combat.Player.Creature.CurrentHp == hp - 4 && combat.Enemy.CurrentHp == 996
+                && flame.Pile?.Type == PileType.Exhaust, "Soul no longer prevents Black Flame self-damage.");
         }
         foreach (bool exhaust in new[] { false, true })
         {
@@ -114,16 +114,10 @@ public partial class OrbContractRunner
             await CardPileCmd.AddGeneratedCardToCombat(later, PileType.Hand, combat.Player);
             Require(tea.Keywords.Contains(CardKeyword.Retain) && later.Keywords.Contains(CardKeyword.Retain),
                 "Meditation grants native Retain to existing and future tea.");
-            var target = AddCard<DefendIronclad>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
-            {
-                Require(!options.Contains(later), "Macaco must exclude already-retained cards like native Snap.");
-                return [target];
-            }));
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, AddCard<TonyRetention>(combat), null);
-            target.EndOfTurnCleanup();
-            Require(target.Keywords.Contains(CardKeyword.Retain) && ((CardModel)target.MutableClone()).Keywords.Contains(CardKeyword.Retain)
-                && combat.Player.Creature.Block == 11, "Macaco Retain survives cleanup and native copying.");
+            Require(combat.Player.Creature.Block == 4 && tea.Pile?.Type == PileType.Draw,
+                "Macaco now grants four Block and scries without changing Tea Retain.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
@@ -133,7 +127,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 1);
             await CardCmd.Discard(Choice, combat.Card());
-            Require(combat.Stock == 0 && shield.ShouldGlowGold, "Conversion counts as an evoke after the last orb is removed.");
+            Require(combat.Stock == 0 && shield.ShouldGlowGold, "Gain qualification persists after the last orb is removed.");
             await CardCmd.AutoPlay(Choice, shield, null);
             Require(combat.Player.Creature.Block == (upgraded ? 22 : 16), "Barrier grants two native block instances.");
         }

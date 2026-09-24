@@ -54,7 +54,6 @@ public sealed class CommonChopRedesignV1 : RedesignV1CommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(1);
-        DynamicVars.Karate().UpgradeValueBy(1);
+        DynamicVars.Damage.UpgradeValueBy(3);
     }
 }

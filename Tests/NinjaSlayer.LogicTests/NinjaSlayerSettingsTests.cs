@@ -6,14 +6,14 @@ namespace NinjaSlayer.LogicTests;
 public sealed class NinjaSlayerSettingsTests
 {
     [Fact]
-    public void ValidationDefaultsOnButRequiresARunSnapshot()
+    public void SettingsDefaultsPreserveExistingFeatures()
     {
-        Assert.True(new NinjaSlayerSettingsData().ForceAllEventsOnce);
+        Assert.False(new NinjaSlayerSettingsData().RadioEnabled);
         Assert.False(new NinjaSlayerSettingsData().FreeControlEnabled);
         Assert.True(new NinjaSlayerSettingsData().NarrationEnabled);
         Assert.False(new NinjaSlayerSettingsData().TelemetryNoticeShown);
         Assert.False(new NinjaSlayerSettingsData().PublicReplayEnabled);
-        Assert.False(new NinjaSlayerRunState().EventValidationEnabled);
+        Assert.False(new NinjaSlayerSettingsData().MangaSelectPortraitEnabled);
     }
 
     [Fact]
@@ -21,26 +21,31 @@ public sealed class NinjaSlayerSettingsTests
     {
         var settings = new NinjaSlayerSettingsData
         {
-            ForceAllEventsOnce = false,
+            RadioEnabled = true,
             NarrationEnabled = false,
             TelemetryNoticeShown = true,
-            PublicReplayEnabled = true
+            PublicReplayEnabled = true,
+            MangaSelectPortraitEnabled = true
         };
 
         string json = JsonSerializer.Serialize(settings);
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         Assert.Equal(
-            ["ForceAllEventsOnce", "FreeControlEnabled", "NarrationEnabled", "TelemetryNoticeShown", "PublicReplayEnabled"],
+            ["RadioEnabled", "FreeControlEnabled", "NarrationEnabled", "TelemetryNoticeShown", "PublicReplayEnabled", "MangaSelectPortraitEnabled"],
             root.EnumerateObject().Select(property => property.Name).ToArray());
-        Assert.False(root.GetProperty("ForceAllEventsOnce").GetBoolean());
+        Assert.True(root.GetProperty("RadioEnabled").GetBoolean());
 
         NinjaSlayerSettingsData restored = JsonSerializer.Deserialize<NinjaSlayerSettingsData>(json)!;
-        Assert.False(restored.ForceAllEventsOnce);
+        Assert.True(restored.RadioEnabled);
         Assert.False(restored.NarrationEnabled);
+        Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"ForceAllEventsOnce\":true}")!.RadioEnabled);
+        Assert.True(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"FreeControlEnabled\":true}")!.FreeControlEnabled);
         Assert.True(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{}")!.NarrationEnabled);
         Assert.True(restored.TelemetryNoticeShown);
         Assert.True(restored.PublicReplayEnabled);
+        Assert.True(restored.MangaSelectPortraitEnabled);
+        Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"NarrationEnabled\":false}")!.MangaSelectPortraitEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"TelemetryNoticeShown\":true}")!.PublicReplayEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"ForceAllEventsOnce\":false}")!.TelemetryNoticeShown);
     }
@@ -50,7 +55,6 @@ public sealed class NinjaSlayerSettingsTests
     {
         var runState = new NinjaSlayerRunState
         {
-            EventValidationEnabled = true,
             PendingAncientEntranceAnimation = true,
             CompletedBossGreetingRoomKeys = ["act1:boss", "act2:boss"]
         };
@@ -60,12 +64,10 @@ public sealed class NinjaSlayerSettingsTests
         JsonElement root = document.RootElement;
         Assert.Equal(
             [
-                "EventValidationEnabled",
                 "PendingAncientEntranceAnimation",
                 "CompletedBossGreetingRoomKeys"
             ],
             root.EnumerateObject().Select(property => property.Name).ToArray());
-        Assert.True(root.GetProperty("EventValidationEnabled").GetBoolean());
         Assert.True(root.GetProperty("PendingAncientEntranceAnimation").GetBoolean());
         Assert.Equal(
             ["act1:boss", "act2:boss"],
@@ -75,7 +77,6 @@ public sealed class NinjaSlayerSettingsTests
                 .ToArray());
 
         NinjaSlayerRunState restored = JsonSerializer.Deserialize<NinjaSlayerRunState>(json)!;
-        Assert.True(restored.EventValidationEnabled);
         Assert.True(restored.PendingAncientEntranceAnimation);
         Assert.Equal(["act1:boss", "act2:boss"], restored.CompletedBossGreetingRoomKeys);
     }

@@ -76,7 +76,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
             .ToList();
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies.Prepend(Owner.Creature));
         await DamageEnemies(choiceContext, enemies);
-        if (Owner.Creature.IsAlive && !Owner.Creature.HasPower<OneBodyOneSoulPower>())
+        if (Owner.Creature.IsAlive)
         {
             await CreatureCmd.Damage(
                 choiceContext,

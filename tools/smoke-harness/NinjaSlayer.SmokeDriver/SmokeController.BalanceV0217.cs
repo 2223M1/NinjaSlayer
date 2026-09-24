@@ -59,25 +59,29 @@ internal sealed partial class SmokeController
         var handCard = await Add<DefendIronclad>();
         var insight = await Add<TechniqueSearchRedesignV1>();
         int before = combat.HittableEnemies.Sum(enemy => enemy.CurrentHp);
-        Task playing = CardCmd.AutoPlay(choice, insight, null);
-        await ChooseGrid(top.Take(3).ToArray(), "insight-scry");
-        var hand = NCombatRoom.Instance!.Ui.Hand;
-        await WaitUntilAsync(() => hand.IsInCardSelection, "Insight did not ask for a hand discard after Scry.", ct);
-        Require(PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1,
-            "Scry batch must create exactly one Strong Shuriken before the separate hand selection.");
-        var holder = hand.GetCardHolder(handCard)!;
-        holder.EmitSignal(NCardHolder.SignalName.Pressed, holder);
-        await UiHelper.Click(hand.GetNode<NConfirmButton>("%SelectModeConfirmButton"));
-        await playing;
-        Require(PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 2
-            && before - combat.HittableEnemies.Sum(enemy => enemy.CurrentHp) == 32,
-            "Scry and the following hand discard must independently generate while all four shots damage.");
-        await Snapshot("insight-after");
-        _checkpoints.Write("v0217.live-scry-and-hand-batches");
-        foreach (var token in PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().ToArray())
-            await CardCmd.AutoPlay(choice, token, victim);
-        Require(PileType.Exhaust.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 2,
-            "Both Strong Shuriken must finish their native throw in Exhaust.");
+        await CardCmd.AutoPlay(choice, insight, null);
+        Require(top.Take(2).All(card => card.Pile?.Type == PileType.Hand && card.Keywords.Contains(CardKeyword.Sly))
+            && !handCard.Keywords.Contains(CardKeyword.Sly), "Insight grants Sly only to directly drawn cards.");
+        await Snapshot("insight-sly-draw");
+        await CardCmd.Discard(choice, top.Take(2).ToArray());
+        Require(PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1
+            && before - combat.HittableEnemies.Sum(enemy => enemy.CurrentHp) == 16 && player.Creature.Block == 10,
+            "Granted Sly must play both discards without additional Starless tokens.");
+        await Snapshot("insight-after-discard");
+        _checkpoints.Write("v115.live-insight-sly-stock-gain");
+        var token = PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Single();
+        await CardCmd.AutoPlay(choice, token, victim);
+        Require(token.Pile?.Type == PileType.Exhaust, "Snapshot Shuriken finishes its native throw in Exhaust.");
+        await ClearCards();
+        for (int i = 0; i < 5; i++) await Add<Wound>(PileType.Draw);
+        await CardCmd.AutoPlay(choice, await Add<ShurikenDraw>(), null);
+        await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
+        Require(PileType.Hand.GetPile(player).Cards.OfType<Wound>().Count() == 1
+            && PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1,
+            "Three additional layers trigger one draw and one snapshot token.");
+        await Snapshot("stock-gain-powers");
+        _checkpoints.Write("v115.live-stock-gain-replenishment");
+        Task playing;
 
         await ClearCards();
         var exhausted = await Add<Wound>();
@@ -116,7 +120,7 @@ internal sealed partial class SmokeController
 
         await ClearCards();
         foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
-        foreach (var type in new[] { typeof(Slaughter), typeof(Zanshin), typeof(GuardStance), typeof(Excavate),
+        foreach (var type in new[] { typeof(Slaughter), typeof(Zanshin), typeof(ShurikenDraw), typeof(Excavate),
             typeof(ChopStrikeRedesignV1), typeof(KillingIntentRedesignV1), typeof(GiantShurikenRedesignV1) })
             await CardPileCmd.Add(combat.CreateCard(ModelDb.GetById<CardModel>(ModelDb.GetId(type)), player), PileType.Hand);
         await Snapshot("new-cards");

@@ -16,7 +16,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 public sealed class AntiAirBangBangFist : RedesignV1RareCard
 {
     public AntiAirBangBangFist()
-        : base(nameof(AntiAirBangBangFist), nameof(AntiAirBangBangFist), 2, CardType.Attack, TargetType.AnyEnemy) { }
+        : base(nameof(AntiAirBangBangFist), nameof(AntiAirBangBangFist), 2, CardType.Attack, TargetType.RandomEnemy) { }
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
@@ -47,7 +47,7 @@ public sealed class AntiAirBangBangFist : RedesignV1RareCard
             .WithHitCount(hits)
             .WithHitFx(VfxCmd.flyingSlashPath)
             .WithAttackerAnim("Attack", Owner.Character.AttackAnimDelay)
-            .Targeting(cardPlay.Target!)
+            .TargetingRandomOpponents(CombatState!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         }
         finally { releaseJump?.Invoke(); }

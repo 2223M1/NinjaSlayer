@@ -17,7 +17,7 @@ public sealed class BlanketRelic : NinjaSlayerRelicTemplate
         [HoverTipFactory.FromPower<NarakuLifePower>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars => [
-        new NarakuLifeVar(3)
+        new NarakuLifeVar(2)
     ];
 
     public override async Task AfterPlayerTurnStart(

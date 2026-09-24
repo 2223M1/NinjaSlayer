@@ -28,5 +28,5 @@ public sealed class DecidedOutcomeRedesignV1 : RedesignV1UncommonCard
         await ChadoBreathCmd.Apply(choiceContext, Owner, result.ExhaustedCards);
     }
 
-    protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(2);
+    protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1);
 }

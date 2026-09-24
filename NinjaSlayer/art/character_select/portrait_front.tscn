@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="SpineSkeletonDataResource" path="res://NinjaSlayer/art/character_select/front.tres" id="front"]
+[ext_resource type="Script" path="res://NinjaSlayer/art/character_select/play_spine.gd" id="play"]
+[node name="OfficialFrontPortrait" type="Node2D"]
+[node name="Character" type="SpineSprite" parent="."]
+position = Vector2(1052.18409092, 36.76727273)
+scale = Vector2(0.956175, 0.956175)
+skeleton_data_res = ExtResource("front")
+script = ExtResource("play")

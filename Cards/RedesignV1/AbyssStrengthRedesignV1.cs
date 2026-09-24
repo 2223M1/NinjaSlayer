@@ -11,7 +11,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class AbyssStrengthRedesignV1 : RedesignV1UncommonCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(6)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(5)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromCard<BlackFlameRedesignV1>()];
 
     public AbyssStrengthRedesignV1()

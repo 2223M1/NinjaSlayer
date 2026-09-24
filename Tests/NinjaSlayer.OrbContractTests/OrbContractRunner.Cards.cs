@@ -169,9 +169,9 @@ public partial class OrbContractRunner
         var relic = ModelDb.Relic<NarakuWithinRelic>().ToMutable();
         combat.Player.AddRelicInternal(relic);
         await relic.BeforeCombatStart();
-        Require(combat.Player.Creature.GetPower<NarakuFormRedesignPower>() is not null
+        Require(combat.Player.Creature.GetPower<NarakuFormRedesignPower>() is null
             && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku,
-            "The event relic must grant Naraku Form at combat start with the fully released presentation.");
+            "The event relic must grant full presentation without the ordinary card damage power.");
         GD.Print("PASS ZBR, half Naraku, form removal and fully released event relic");
     }
 

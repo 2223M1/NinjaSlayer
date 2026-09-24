@@ -96,10 +96,10 @@ public partial class OrbContractRunner
             BurnSounds.Clear();
             for (int i = 0; i < 2; i++) await ResolveBurnTurnEnd(AddCard<BlackFlameRedesignV1>(combat));
             Require(BurnSounds.Count == 2 && combat.Enemy.CurrentHp == 986
-                && owner.CurrentHp == hp - (immune ? 0 : 8 - naraku)
-                && owner.Block == 99 && owner.GetPowerAmount<NarakuLifePower>() == (immune ? naraku : 0)
+                && owner.CurrentHp == hp - (8 - naraku)
+                && owner.Block == 99 && owner.GetPowerAmount<NarakuLifePower>() == 0
                 && PileType.Exhaust.GetPile(combat.Player).Cards.Count == 2,
-                "Native turn-end must burn/exhaust each flame once, sound once each, bypass Block and preserve Naraku/One Body protection.");
+                "Native turn-end must burn/exhaust each flame once, sound once each, bypass Block and preserve Naraku protection without One Body immunity.");
         }
         await VerifyBlackFlameTurnEnd();
         GD.Print("PASS Black Flame timing: generated-card exclusion, subsequent/repeated attacks, native Burn audio and turn-end lifecycle/protection.");

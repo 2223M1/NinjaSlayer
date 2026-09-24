@@ -1,26 +1,28 @@
-using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
+using NinjaSlayer.Code.Commands;
+using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class TonyRetention : RedesignV1UncommonCard
 {
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(CardKeyword.Retain)];
-    public TonyRetention() : base(nameof(TonyRetention), nameof(TonyRetention), 2, CardType.Skill, TargetType.Self) { }
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => [HoverTipFactory.FromKeyword(NinjaSlayerKeywords.Scry)];
+    public TonyRetention() : base(nameof(TonyRetention), nameof(TonyRetention), 1, CardType.Skill, TargetType.Self) { }
     public override bool GainsBlock => true;
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(11, ValueProp.Move)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new BlockVar(4, ValueProp.Move), new DynamicVar("Scry", 4)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
-        var card = (await CardSelectCmd.FromHand(choiceContext, Owner,
-            new CardSelectorPrefs(SelectionScreenPrompt, 1),
-            c => !c.Keywords.Contains(CardKeyword.Retain), this)).FirstOrDefault();
-        if (card != null) CardCmd.ApplyKeyword(card, CardKeyword.Retain);
+        await ScryCmd.Execute(choiceContext, Owner, DynamicVars["Scry"].IntValue);
     }
-    protected override void OnUpgrade() => DynamicVars.Block.UpgradeValueBy(4);
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Block.UpgradeValueBy(2);
+        DynamicVars["Scry"].UpgradeValueBy(2);
+    }
 }

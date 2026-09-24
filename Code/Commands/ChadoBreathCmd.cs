@@ -50,10 +50,6 @@ public static class ChadoBreathCmd
 
         PlayForgeFeedback(cards);
         Telemetry.NinjaSlayerCombatTelemetry.Mechanic("chado_breath", player.Creature, amount);
-        if (player.Creature.GetPower<OneBodyOneSoulPower>() is { } soul)
-        {
-            await soul.AfterBreathing(choiceContext);
-        }
     }
 
     private static void PlayForgeFeedback(List<ChadoEnergyRedesignV1> cards)

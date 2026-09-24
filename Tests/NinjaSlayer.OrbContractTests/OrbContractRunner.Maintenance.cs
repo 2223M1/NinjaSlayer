@@ -34,7 +34,7 @@ public partial class OrbContractRunner
             }));
             await AddStock(combat.Player, 3);
             await CardCmd.AutoPlay(Choice, source, throwing ? combat.Enemy : null);
-            Require(combat.Stock == (handSize == 0 ? 3 : 4),
+            Require(combat.Stock == (handSize == 0 ? 3 : 5),
                 "Actual hand-discard cards must fire once, then play Sly once; empty hands must finish normally.");
             Require(sly == null || sly.Pile?.Type == PileType.Discard,
                 "The selected Sly card did not complete its native autoplay.");

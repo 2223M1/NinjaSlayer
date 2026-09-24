@@ -130,7 +130,7 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<Shatter>(combat), null);
             Require(hp - combat.Enemy.CurrentHp == 7 + 20 + 48 && combat.Player.Creature.Block == 14
                 && combat.Stock == 0 && combat.Queue.Orbs.Count == 0 && combat.Capacity == 3
-                && _evoked - events == 6 && combat.Tokens == 6,
+                && _evoked - events == 6 && combat.Tokens == 0,
                 "Native Shatter must evoke every orb twice, including every stock with Focus and Starless, and preserve slots.");
         }
         GD.Print("PASS real Shatter mixed-orb order, full-stock double evoke, Focus, tokens, native hooks and cleanup");

@@ -59,12 +59,13 @@ public partial class OrbContractRunner
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            await AddStock(combat.Player, 3);
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await AddStock(combat.Player, 1);
+            await AddStock(combat.Player, 2);
             await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, upgraded: upgraded), null);
-            Require(combat.Stock == (upgraded ? 2 : 1) && combat.Tokens == 3 && combat.Enemy.CurrentHp == 976,
-                "Oyeah Throw Sword must convert/consume the old stock before replenishing it.");
+            Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == (upgraded ? 8 : 5) && combat.Enemy.CurrentHp == 976,
+                "Oyeah Throw Sword must grant block and consume the old stock without replenishing it.");
             var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
             Require(token.SnapshotDamage == 8, "Conversion must snapshot the six base damage and two Focus.");
             CardCmd.Upgrade(token);
@@ -107,9 +108,9 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 2);
             await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, PileType.Discard), null);
-            Require(combat.Tokens == 2 && combat.Stock == 1 && combat.Enemy.CurrentHp == 988,
+            Require(combat.Tokens == 1 && combat.Stock == 0 && combat.Enemy.CurrentHp == 988,
                 "A full hand must not lose converted shots or prevent stock replacement.");
-            Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 2,
+            Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1,
                 "Native generation must send overflow tokens to discard.");
         }
         foreach (bool upgraded in new[] { false, true })
@@ -137,8 +138,8 @@ public partial class OrbContractRunner
             var relic = ModelDb.Relic<NinjaSlayer.Relics.BlanketRelic>().ToMutable();
             combat.Player.AddRelicInternal(relic);
             for (int turn = 0; turn < 3; turn++) await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
-            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 9,
-                "Mental Blanket must grant three life on every owner turn without requiring a form.");
+            Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,
+                "Mental Blanket must grant two life on every owner turn without requiring a form.");
         }
         using (var combat = new OrbCombat())
         {

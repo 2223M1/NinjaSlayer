@@ -88,7 +88,6 @@ public class Entry
             requiredPatcher.RegisterPatch<ShurikenOrbRemoveVisualPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbPreviewPatch>();
             requiredPatcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
-            requiredPatcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbVisualPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbChannelSoundPatch>();
@@ -100,7 +99,6 @@ public class Entry
             requiredPatcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
-            requiredPatcher.RegisterPatch<EventValidationRunGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariActRoomGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
@@ -483,6 +481,16 @@ public class Entry
         FmodStudioDeferredBankRegistration.RegisterBank(NinjaSlayerAudio.BankPath);
         FmodStudioDeferredBankRegistration.RegisterStudioGuidMappings(NinjaSlayerAudio.GuidMappingsPath);
         Logger.Info($"FMOD bank registered: {NinjaSlayerAudio.BankPath}");
+        if (Godot.FileAccess.FileExists(NinjaSlayerAudio.EventMusicBankPath)
+            && Godot.FileAccess.FileExists(NinjaSlayerAudio.EventMusicGuidMappingsPath))
+        {
+            FmodStudioDeferredBankRegistration.RegisterBank(NinjaSlayerAudio.EventMusicBankPath);
+            FmodStudioDeferredBankRegistration.RegisterStudioGuidMappings(NinjaSlayerAudio.EventMusicGuidMappingsPath);
+        }
+        else
+        {
+            Log.Warn("Fixed event music bank is missing; event rooms will retain act music.");
+        }
     }
 
 }

@@ -31,6 +31,7 @@ public partial class OrbContractRunner
         await VerifyMotherUnixBeforeDraw();
         await VerifyBalanceV0216();
         await VerifyBalanceV0217();
+        await VerifyBoardV115();
         await VerifyStatusCards();
         await VerifyTeaAndChop();
         await VerifyTemporaryStats();
@@ -101,14 +102,14 @@ public partial class OrbContractRunner
             Expect(palm, 8);
             Expect(adjustment, upgraded ? 14 : 10);
             Expect(judge, 6, block: true);
-            Expect(storm, upgraded ? 15 : 11);
+            Expect(storm, upgraded ? 13 : 10);
 
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, -5, combat.Player.Creature, null);
             await PowerCmd.Apply<DexterityPower>(Choice, combat.Player.Creature, -4, combat.Player.Creature, null);
             Expect(palm, 3);
             Expect(adjustment, upgraded ? 9 : 5);
             Expect(judge, 2, block: true);
-            Expect(storm, upgraded ? 10 : 6);
+            Expect(storm, upgraded ? 8 : 5);
 
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<FrailPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
@@ -116,7 +117,7 @@ public partial class OrbContractRunner
             Expect(palm, 3);
             Expect(adjustment, upgraded ? 10 : 5);
             Expect(judge, 1, block: true);
-            Expect(storm, upgraded ? 11 : 6);
+            Expect(storm, upgraded ? 9 : 5);
         }
         GD.Print("PASS native card-number previews: positive/negative Strength and Dexterity, Weak, Vulnerable, Frail, exhaust scaling and upgrades");
     }
@@ -149,8 +150,8 @@ public partial class OrbContractRunner
                 return [nested];
             }));
             await CardCmd.AutoPlay(Choice, judge, null);
-            Require(selection == 2 && combat.Stock == 2 && combat.Enemy.CurrentHp == 982,
-                "Scry/Sly must dispatch three discards and then gain two stock exactly once.");
+            Require(selection == 2 && combat.Stock == 3 && combat.Enemy.CurrentHp == 982,
+                "Scry/Sly must dispatch three discards and then gain three stock exactly once.");
             Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
                 "Prejudge must count its two discards only; discard powers must also see the nested discard.");
         }
@@ -161,7 +162,7 @@ public partial class OrbContractRunner
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [sly, second]));
             await PowerCmd.Apply<RecycledBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await ScryCmd.Execute(Choice, combat.Player, 2);
-            Require(combat.Stock == 3 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
+            Require(combat.Stock == 4 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
                 "Scry must dispatch both discards before Sly generates new stock.");
         }
         using (var combat = new OrbCombat())
@@ -228,7 +229,7 @@ public partial class OrbContractRunner
                 $"Turn {turn}, {scenario}: native hand draw must use the post-Scry pile.");
             Require(selections == (scenario == "empty" ? 0 : scenario == "nested" ? 2 : 1),
                 "Mother UNIX must not Scry again after the hand draw.");
-            Require(combat.Stock == (scenario == "nested" ? 2 : 0), "Nested Sly must finish its effect exactly once.");
+            Require(combat.Stock == (scenario == "nested" ? 3 : 0), "Nested Sly must finish its effect exactly once.");
         }
         GD.Print("PASS Mother UNIX native turn setup: pre-draw Scry, first/later turn, owner-only, keep/discard/nested Sly, short/empty pile");
     }
@@ -318,8 +319,8 @@ public partial class OrbContractRunner
             foreach (var pile in new[] { PileType.Draw, PileType.Hand, PileType.Discard, PileType.Exhaust }) AddCard<ChadoEnergyRedesignV1>(combat, pile);
             Require(storm.CanPlay(), "Three Chado across active piles must enable Storm Fist.");
             await CardCmd.AutoPlay(Choice, storm, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 920 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 4,
-                "Storm Fist must exhaust before calculating four hits of 4 + 4*4.");
+            Require(combat.Enemy.CurrentHp == 972 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 1,
+                "Storm Fist leaves active tea untouched and deals four hits of 4 + 3.");
         }
         GD.Print("PASS accumulated Chado, Sip Tea duration, Storm Fist playability/damage");
     }
@@ -430,11 +431,11 @@ public partial class OrbContractRunner
         {
             var retained = AddCard<DefendIronclad>(combat);
             var card = AddCard<TonyRetention>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [retained]));
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, card, null);
-            Require(retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 11, "Macaco must give the selected card Retain.");
+            Require(!retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 4, "Macaco grants block without Retain.");
             retained.EndOfTurnCleanup();
-            Require(retained.ShouldRetainThisTurn, "Macaco must grant permanent combat Retain.");
+            Require(!retained.ShouldRetainThisTurn, "Macaco must not add Retain after cleanup.");
         }
         using (var combat = new OrbCombat())
         {

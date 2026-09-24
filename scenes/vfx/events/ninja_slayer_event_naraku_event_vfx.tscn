@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Code/Nodes/NarakuEventPortrait.cs" id="2_script"]
+[ext_resource type="VideoStream" path="res://NinjaSlayer/videos/naraku_event.ogv" id="3_video"]
+
+[node name="NarakuEventPortrait" type="Node2D"]
+script = ExtResource("2_script")
+
+[node name="NarakuFilm" type="VideoStreamPlayer" parent="."]
+layout_mode = 0
+offset_left = -185.404922
+offset_top = 138.495749
+offset_right = 1091.395078
+offset_bottom = 852.589709
+mouse_filter = 2
+expand = true
+stream = ExtResource("3_video")
+volume = 0.0
+loop = true

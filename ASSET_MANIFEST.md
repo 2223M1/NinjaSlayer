@@ -13,6 +13,26 @@ Source WAV files and FMOD Studio project files are development inputs and are no
 
 ## Character Images
 
+### Character Selection Poster
+
+`NinjaSlayer/art/character_select/` contains the approved original-composition
+official front portrait, shared vermilion Spine background, and preserved manga
+portrait/hand animation. The official portrait is the default; the persistent
+`MangaSelectPortraitEnabled` appearance option defaults to false.
+Scarf rotation amplitude is increased (2.5x); progressive extension is shortened
+from 420 to 140 source pixels, preserving the original canvas-space width envelope
+and fixed collar contact. Texture, UVs, topology, weights and body animation are
+preserved. The front portrait is uniformly enlarged 10% about
+the 1920x1080 screen's right-center anchor, moved 50 screen pixels left, then
+reduced 5% about bottom-center (960,1080) and moved right 42 screen pixels.
+Final scene scale is 0.956175, position (1052.18409092,36.76727273).
+The final reduction retains the same scarf mesh/length and animation.
+Vanilla Ironclad `ash2` and
+`ash3` particles render in front of the portrait, with their original parameters.
+`SOURCE.json` records source/output hashes; `tools/character-select/` contains the
+deterministic importer and verification workflow. This is source integration,
+not a local installation or publication.
+
 ### Architect Death Track
 
 `NinjaSlayer/animations/architect/architect.spskel` preserves the native Spine
