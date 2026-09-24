@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Animation;
 using MegaCrit.Sts2.Core.Audio;
@@ -134,35 +135,39 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
 
     private async Task ExplodeMove(IReadOnlyList<Creature> targets)
     {
+        if (HasExploded || Creature.IsDead) return;
+        Creature? target = BeginExplosion();
+        if (target != null) await LaunchAtTarget(target);
+        await CompleteExplosion(target);
+    }
+
+    internal Creature? BeginExplosion()
+    {
         if (HasExploded || Creature.IsDead)
-        {
-            return;
-        }
-
+            throw new InvalidOperationException("An inactive origami missile cannot launch twice.");
         HasExploded = true;
-        IReadOnlyList<Creature> enemies = targets.Count > 0
-            ? targets.Where(c => c.IsAlive && c.IsHittable).ToList()
-            : CombatState.HittableEnemies;
-        if (enemies.Count > 0)
-        {
-            Creature? target = Creature.PetOwner?.RunState.Rng.CombatTargets.NextItem(enemies);
-            if (target == null)
-            {
-                await CreatureCmd.Kill(Creature);
-                return;
-            }
+        Creature[] enemies = CombatState.HittableEnemies.Where(c => c.IsAlive && c.IsHittable).ToArray();
+        Creature? target = enemies.Length == 0 ? null : Creature.PetOwner!.RunState.Rng.CombatTargets.NextItem(enemies);
+        IsLaunching = target != null;
+        return target;
+    }
 
-            IsLaunching = true;
-            try
+    internal async Task CompleteExplosion(Creature? target)
+    {
+        try
+        {
+            if (target is { IsAlive: true, IsHittable: true } && !Creature.IsDead
+                && ReferenceEquals(target.CombatState, Creature.CombatState)
+                && !CombatManager.Instance.IsOverOrEnding)
             {
-                await LaunchAtTarget(target);
                 SfxCmd.Play("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_explode");
+                // Preserve the established explosion lead-in before the damage frame.
                 await CreatureCmd.TriggerAnim(Creature, "ExplodeTrigger", 0.1f);
                 Creature.GetCreatureNode()?.Visuals
                     .GetNodeOrNull<NYamotoKokiOrigamiMissileVfx>(
-                        $"Visuals/{nameof(NYamotoKokiOrigamiMissileVfx)}")
-                    ?.EnsureBurst();
+                        $"Visuals/{nameof(NYamotoKokiOrigamiMissileVfx)}")?.EnsureBurst();
                 using (YamotoKokiOrigamiMissileHitSparkScope.Enter(target))
+                using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
                 {
                     if (MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance is { } room && target.GetCreatureNode() != null
                         && MegaCrit.Sts2.Core.Nodes.Vfx.NFireSmokePuffVfx.Create(target) is { } puff)
@@ -170,33 +175,16 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
                         puff.Scale = Godot.Vector2.One * 0.35f;
                         room.CombatVfxContainer.AddChildSafely(puff);
                     }
-                    await CreatureCmd.Damage(
-                        new ThrowingPlayerChoiceContext(),
-                        target,
-                        GetExplodeDamage(),
-                        ValueProp.Move | ValueProp.Unpowered,
-                        Creature);
-                }
-                if (!Creature.IsDead)
-                {
-                    await CreatureCmd.Kill(Creature);
+                    await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), target,
+                        GetExplodeDamage(), ValueProp.Move | ValueProp.Unpowered, Creature);
                 }
             }
-            finally
-            {
-                IsLaunching = false;
-            }
-
-            return;
+            if (!Creature.IsDead) await CreatureCmd.Kill(Creature);
         }
-
-        if (!Creature.IsDead)
-        {
-            await CreatureCmd.Kill(Creature);
-        }
+        finally { IsLaunching = false; }
     }
 
-    private async Task LaunchAtTarget(Creature target)
+    internal async Task LaunchAtTarget(Creature target)
     {
         NCreature? missileNode = Creature.GetCreatureNode();
         if (missileNode == null)
@@ -230,8 +218,8 @@ public sealed class YamotoKokiOrigamiMissile : ModMonsterTemplate
                 LaunchSeconds)
             .SetEase(Tween.EaseType.In)
             .SetTrans(Tween.TransitionType.Cubic);
-        await missileNode.ToSignal(tween, Tween.SignalName.Finished);
-        if (GodotObject.IsInstanceValid(missileNode))
+        bool completed = await TweenPlayback.AwaitCompletion(tween, missileNode);
+        if (completed && GodotObject.IsInstanceValid(missileNode))
         {
             missileNode.GlobalPosition = destination;
         }

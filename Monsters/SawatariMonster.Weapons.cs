@@ -155,6 +155,12 @@ public sealed partial class SawatariMonster
         var choice = new BlockingPlayerChoiceContext();
         await Hook.BeforeAttack(combatState, attack);
         decimal hitCount = Hook.ModifyAttackHitCount(combatState, attack, hits);
+        await using FinisherSession? finisher = beforeHit == null
+            ? FinisherEligibilityService.CreateCompanionSession(Creature,
+                new FinisherActionForecastDescriptor(_ => damage, attack.DamageProps, checked((int)Math.Ceiling(hitCount)),
+                    FinisherTargeting.Single, SingleTarget: target))
+            : null;
+        finisher?.Begin();
         var results = new List<DamageResult>();
         async Task<bool> Impact()
         {
@@ -164,6 +170,7 @@ public sealed partial class SawatariMonster
             if (beforeHit == null) NDebugAudioManager.Instance?.Play(TmpSfx.heavyAttack);
             bool connects = target.GetPower<EvasionPower>() is not { } evasion
                 || !evasion.CanEvade(target, attack.DamageProps, Creature);
+            FinisherApproach.ReachImpact(Creature);
             if (connects) hitFx(target);
             results.AddRange(await CreatureCmd.Damage(choice, [target], damage, attack.DamageProps, Creature, null
 #if !NINJASLAYER_LEGACY_DAMAGE_API
@@ -194,5 +201,6 @@ public sealed partial class SawatariMonster
             CombatManager.Instance.History.CreatureAttacked(combatState, Creature, results);
             await Hook.AfterAttack(combatState, choice, attack);
         }
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
     }
 }

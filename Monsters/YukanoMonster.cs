@@ -71,6 +71,14 @@ public sealed class YukanoMonster : ModMonsterTemplate
         return new MonsterMoveStateMachine([barrier, arrow, heal, shuriken], barrier);
     }
 
+    public override Task AfterSideTurnStart(CombatSide side,
+        IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (side == CombatSide.Enemy)
+            NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(Creature);
+        return Task.CompletedTask;
+    }
+
     public override async Task AfterAddedToRoom()
     {
         await base.AfterAddedToRoom();
@@ -153,6 +161,10 @@ public sealed class YukanoMonster : ModMonsterTemplate
         var results = new List<DamageResult>();
 
         await Hook.BeforeAttack(combatState, command);
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateCompanionSession(Creature,
+            new FinisherActionForecastDescriptor(_ => damage, command.DamageProps, hitCount,
+                FinisherTargeting.Single, SingleTarget: target));
+        finisher?.Begin();
         try
         {
             for (int i = 0; i < hitCount; i++)
@@ -203,6 +215,7 @@ public sealed class YukanoMonster : ModMonsterTemplate
                 await Hook.AfterAttack(combatState, choiceContext, command);
             }
         }
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
     }
 
     private static bool CanHit(

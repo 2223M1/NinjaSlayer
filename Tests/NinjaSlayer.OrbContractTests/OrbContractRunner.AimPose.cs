@@ -338,7 +338,7 @@ public partial class OrbContractRunner
                 Transform2D authoredBody = kokiBody.Transform;
                 async Task TiltWithFacing(float from, float to, float seconds)
                 {
-                    Task animation = (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, authoredBody, from, to, seconds])!;
+                    Task animation = (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, authoredBody, from, to, seconds, null])!;
                     while (!animation.IsCompleted)
                     {
                         await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);

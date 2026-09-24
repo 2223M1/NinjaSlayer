@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
@@ -82,6 +83,14 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
         return true;
     }
 
+    public override Task AfterSideTurnStart(CombatSide side,
+        IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (side == CombatSide.Enemy)
+            NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(Creature);
+        return Task.CompletedTask;
+    }
+
     public override async Task AfterAddedToRoom()
     {
         await base.AfterAddedToRoom();
@@ -111,7 +120,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
                     {
                         await missile.PrepareExplosionIntent(missileCreature);
                     }
-                });
+                }, waitForReturn: i < SummonMissileCount - 1);
             }
         }
         finally
@@ -128,87 +137,21 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             return;
         }
 
-        NCreature? ownerNode = Creature.GetCreatureNode();
-        NCreature? focusNode = ownerNode == null
-            ? null
-            : enemies
-                .Select((enemy, index) => (Enemy: enemy, Index: index, Node: enemy.GetCreatureNode()))
-                .Where(candidate => candidate.Node != null)
-                .OrderBy(candidate => Math.Abs(
-                    candidate.Node!.Visuals.Bounds.GetGlobalRect().GetCenter().X
-                    - ownerNode.Visuals.Bounds.GetGlobalRect().GetCenter().X))
-                .ThenBy(candidate => candidate.Index)
-                .Select(candidate => candidate.Node)
-                .FirstOrDefault();
-        FinisherSession? finisher = null;
-        if (ownerNode != null && focusNode != null)
-        {
-            FinisherEligibilityService.TryCreateYamotoKokiSession(
-                Creature,
-                ownerNode,
-                focusNode,
-                enemies,
-                _ => GetIaiSlashDamage(),
-                out finisher);
-        }
-
-        try
-        {
-            if (focusNode == null)
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateCompanionSession(Creature,
+            new FinisherActionForecastDescriptor(_ => GetIaiSlashDamage(), ValueProp.Move, 1, FinisherTargeting.All));
+        await YamotoKokiCombatAnimations.PlayIaiSlash(
+            Creature,
+            () =>
             {
                 NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
-                if (finisher != null)
-                {
-                    finisher.Begin();
-                }
-
-                await PlayIaiImpact();
-            }
-            else
-            {
-                await YamotoKokiCombatAnimations.PlayIaiSlash(
-                    Creature,
-                    () =>
-                    {
-                        NinjaSlayerCombatVfx.PlayYamotoKokiIaiPetals(Creature);
-                        if (finisher != null)
-                        {
-                            finisher.Begin();
-                        }
-
-                        return Task.CompletedTask;
-                    },
-                    PlayIaiImpact,
-                    finisher == null
-                        ? YamotoKokiIaiApproachMode.StandardLunge
-                        : YamotoKokiIaiApproachMode.FinisherCloseRange);
-            }
-
-        }
-        catch (Exception originalFailure)
-        {
-            if (finisher != null)
-            {
-                try
-                {
-                    await finisher.CompleteAsync(playPose: false);
-                }
-                catch (Exception completionFailure)
-                {
-                    throw new AggregateException(
-                        "Yamoto Koki Iai execution and finisher cleanup both failed.",
-                        originalFailure,
-                        completionFailure);
-                }
-            }
-
-            throw;
-        }
-
-        if (finisher != null)
-        {
-            await finisher.CompleteAsync(playPose: true);
-        }
+                finisher?.Begin();
+                return Task.CompletedTask;
+            },
+            PlayIaiImpact,
+            finisher == null
+                ? YamotoKokiIaiApproachMode.StandardLunge
+                : YamotoKokiIaiApproachMode.FinisherCloseRange);
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
     }
 
     private async Task PlayIaiImpact()
@@ -229,6 +172,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             NinjaSlayerCombatVfx.PlayYamotoKokiIaiImpact(connectedTargets);
         }
 
+        using var pacing = CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage);
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),
             enemies,

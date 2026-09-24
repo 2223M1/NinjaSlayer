@@ -75,6 +75,7 @@ internal static class SawatariBambooAnimation
             if (completed) frameRemainder = Math.Max(0d, tween.GetTotalElapsedTime() - duration);
             return completed && active;
         }
+        bool detachedReturn = false;
         try
         {
             for (int i = 0; i < hits && active && creature.IsAlive; i++)
@@ -84,13 +85,34 @@ internal static class SawatariBambooAnimation
                 if (!await Move(0f, PeakPhase)) break;
                 await impact();
                 NinjaSlayerShadowController.Get(creature)?.BeginReturn(cycle * (1f - PeakPhase));
+                if ((i == hits - 1) && creature.Side == CombatSide.Player
+                    && creature.PetOwner != null
+                    && FinisherSessionRegistry.GetActiveSession()?.Actor != creature)
+                {
+                    detachedReturn = true;
+                    _ = TaskHelper.RunSafely(FinishReturn());
+                    break;
+                }
                 if (!await Move(PeakPhase, 1f)) break;
             }
         }
         finally
         {
-            Restore();
-            NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, generation);
+            if (!detachedReturn)
+            {
+                Restore();
+                NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, generation);
+            }
+        }
+
+        async Task FinishReturn()
+        {
+            try { await Move(PeakPhase, 1f); }
+            finally
+            {
+                Restore();
+                NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, generation);
+            }
         }
     }
 }

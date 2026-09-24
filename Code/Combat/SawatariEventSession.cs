@@ -68,6 +68,7 @@ internal sealed class SawatariEventSession
     private void Initialize(EventRoom eventRoom)
     {
         _state.AddCreature(_companion);
+        CompanionIntentLifecycle.BeginCombat(_companion);
         _room.AddCreature(_companion);
         SetFacing(_companion, faceRight: true);
         // The host calls Monster.AfterAddedToRoom only for enemies.
@@ -154,31 +155,21 @@ internal sealed class SawatariEventSession
         }
 
         _supportRound = _state.RoundNumber;
-        Creature[] targets = _state.HittableEnemies
-            .Where(target => target.IsAlive && target.IsHittable)
-            .ToArray();
-        Creature? target = targets.Length == 0
-            ? null
-            : _state.RunState.Rng.CombatTargets.NextItem(targets);
-        if (target == null)
-        {
-            return;
-        }
-
+        if (!_state.HittableEnemies.Any(target => target.IsAlive && target.IsHittable)) return;
         NCreature? node = _room.GetCreatureNode(_companion);
         if (node != null)
         {
-            await node.PerformIntent();
+            _ = TaskHelper.RunSafely(node.PerformIntent());
         }
-        else
+        var move = monster.NextMove;
+        await move.PerformMove(_state.HittableEnemies);
+        monster.MoveStateMachine!.OnMovePerformed(move);
+        if (!CombatManager.Instance.IsOverOrEnding && node != null && Phase == SawatariEventPhase.FirstCombat
+            && CompanionIntentLifecycle.IsActive(_companion))
         {
-            await Cmd.CustomScaledWait(0.25f, 0.4f);
+            await node.RefreshIntents();
+            await node.UpdateIntent(_state.HittableEnemies);
         }
-
-        await Cmd.CustomScaledWait(0.1f, 0.2f);
-        if (monster.ActThree) await monster.PlayDualAttack(target);
-        else await monster.PlayAttack(target);
-        await Cmd.CustomScaledWait(0.1f, 0.4f);
     }
 
     public void CaptureDyingCreature(Creature creature)
@@ -299,6 +290,16 @@ internal sealed class SawatariEventSession
                 throw new InvalidOperationException("Sawatari duel phase changed during setup.");
             }
 
+            // The same combat continues with a new enemy after victory hid allied intents.
+            foreach (Creature ally in _state.Creatures.Where(FriendlyCompanionTargeting.IsFriendlyCompanion))
+            {
+                if (CompanionIntentLifecycle.HasRetired(ally)) continue;
+                CompanionIntentLifecycle.BeginCombat(ally);
+                if (ally.GetCreatureNode() is not { } allyNode) continue;
+                await allyNode.RefreshIntents();
+                await allyNode.UpdateIntent(_state.HittableEnemies);
+            }
+
             _bambooVoicePending = true;
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariDuelEvent);
 
@@ -355,6 +356,8 @@ internal sealed class SawatariEventSession
             foreach (Creature enemy in _state.Enemies.ToArray()) RemoveCreature(enemy);
             NCreature companionNode = _room.GetCreatureNode(_companion)
                 ?? throw new InvalidOperationException("Sawatari companion node is unavailable.");
+            NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(_companion);
+            CompanionIntentLifecycle.Retire(_companion);
             Vector2 destination = ResolveIntermissionPosition(companionNode);
             await TweenGlobalPosition(companionNode, destination, IntermissionMoveSeconds);
             SetFacing(_companion, faceRight: false);
@@ -508,6 +511,7 @@ internal sealed class SawatariEventSession
 
     private void RemoveCreature(Creature creature)
     {
+        NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(creature);
         NCreature? node = _room.GetCreatureNode(creature);
         if (node != null)
         {

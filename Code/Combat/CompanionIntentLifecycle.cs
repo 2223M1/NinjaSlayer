@@ -8,13 +8,15 @@ using NinjaSlayer.Monsters;
 
 namespace NinjaSlayer.Code.Combat;
 
-internal readonly record struct YamotoKokiIntentGeneration(Creature Creature, long Value);
+internal readonly record struct CompanionIntentGeneration(Creature Creature, long Value);
 
-internal static class YamotoKokiIntentLifecycle
+internal static class CompanionIntentLifecycle
 {
+    private static readonly System.Reflection.FieldInfo IntentFadeTween =
+        HarmonyLib.AccessTools.Field(typeof(NCreature), "_intentFadeTween");
     private static readonly ConditionalWeakTable<Creature, GenerationState> States = new();
 
-    public static YamotoKokiIntentGeneration BeginCombat(Creature creature)
+    public static CompanionIntentGeneration BeginCombat(Creature creature)
     {
         GenerationState state = States.GetOrCreateValue(creature);
         bool wasRetired = state.HasRetired;
@@ -24,16 +26,16 @@ internal static class YamotoKokiIntentLifecycle
 
         ShowContainer(creature);
         if (wasRetired && NCombatRoom.Instance is { } room) Patches.YamotoKokiAllyLayoutPatch.Reflow(room);
-        return new YamotoKokiIntentGeneration(creature, generation);
+        return new CompanionIntentGeneration(creature, generation);
     }
 
-    public static YamotoKokiIntentGeneration Capture(Creature creature)
+    public static CompanionIntentGeneration Capture(Creature creature)
     {
         GenerationState state = States.GetOrCreateValue(creature);
-        return new YamotoKokiIntentGeneration(creature, state.Generation);
+        return new CompanionIntentGeneration(creature, state.Generation);
     }
 
-    public static bool IsCurrent(YamotoKokiIntentGeneration generation)
+    public static bool IsCurrent(CompanionIntentGeneration generation)
     {
         if (!States.TryGetValue(generation.Creature, out GenerationState? state))
         {
@@ -83,7 +85,8 @@ internal static class YamotoKokiIntentLifecycle
         foreach (NCreature node in room.CreatureNodes)
         {
             Creature creature = node.Entity;
-            if (creature.Monster is YamotoKokiMonster or YukanoMonster
+            if (creature.Side == CombatSide.Player
+                && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster
                 && ReferenceEquals(creature.CombatState, combatState))
             {
                 Invalidate(creature);
@@ -91,7 +94,7 @@ internal static class YamotoKokiIntentLifecycle
         }
     }
 
-    public static bool PrepareContainerForWrite(YamotoKokiIntentGeneration generation)
+    public static bool PrepareContainerForWrite(CompanionIntentGeneration generation)
     {
         if (!IsCurrent(generation))
         {
@@ -104,11 +107,12 @@ internal static class YamotoKokiIntentLifecycle
             return false;
         }
 
+        (IntentFadeTween.GetValue(node) as Tween)?.Kill();
         container.Visible = true;
         return true;
     }
 
-    public static void RehideIfInactive(YamotoKokiIntentGeneration generation)
+    public static void RehideIfInactive(CompanionIntentGeneration generation)
     {
         if (!States.TryGetValue(generation.Creature, out GenerationState? state))
         {
@@ -131,6 +135,7 @@ internal static class YamotoKokiIntentLifecycle
             return;
         }
 
+        (IntentFadeTween.GetValue(node) as Tween)?.Kill();
         container.Visible = true;
         container.Modulate = Colors.White;
     }
@@ -143,6 +148,7 @@ internal static class YamotoKokiIntentLifecycle
             return;
         }
 
+        (IntentFadeTween.GetValue(node) as Tween)?.Kill();
         container.Visible = false;
         container.Modulate = Colors.Transparent;
         foreach (Node child in container.GetChildren())

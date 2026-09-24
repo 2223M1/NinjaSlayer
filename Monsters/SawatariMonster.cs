@@ -56,6 +56,14 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
+        // Canonical models enumerate intents while preloading, before any creature exists.
+        if (IsMutable && Creature.Side == CombatSide.Player)
+        {
+            MoveState support = new(ActThree ? DualMoveId : AttackMoveId, SupportMove,
+                new MultiAttackIntent(ActThree ? DualDamage : BambooDamage, ActThree ? 2 : SawatariEventRules.AttackHits));
+            support.FollowUpState = support;
+            return new MonsterMoveStateMachine([support], support);
+        }
         if (ActThree) return GenerateMacheteMoves();
         MoveState enhance = new(EnhanceMoveId, ArrowMove, new SingleAttackIntent(ArrowDamage), new BuffIntent());
         MoveState attack = new(
@@ -68,6 +76,13 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         attack.FollowUpState = secondAttack;
         secondAttack.FollowUpState = enhance;
         return new MonsterMoveStateMachine([enhance, attack, secondAttack], enhance);
+    }
+
+    public override Task BeforeCombatStart()
+    {
+        if (Creature.Side == CombatSide.Player)
+            SetMoveImmediate((MoveState)MoveStateMachine!.States[ActThree ? DualMoveId : AttackMoveId], true);
+        return Task.CompletedTask;
     }
 
     public override async Task AfterAddedToRoom()
@@ -130,6 +145,8 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         IReadOnlyList<Creature> participants,
         ICombatState combatState)
     {
+        if (side == CombatSide.Enemy && Creature.Side == CombatSide.Player)
+            NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(Creature);
         SawatariWeaponVisuals.Get(Creature)?.Refresh();
         return SawatariEventSession.TryGet(combatState, out SawatariEventSession? session)
             ? session.PlaySupportTurn(this, side)
@@ -139,6 +156,15 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
     public override bool ShouldCreatureBeRemovedFromCombatAfterDeath(Creature creature) =>
         !ReferenceEquals(creature, Creature)
         || !SawatariEventSession.IsActiveDuelCreature(creature);
+
+    private async Task SupportMove(IReadOnlyList<Creature> targets)
+    {
+        Creature[] candidates = targets.Where(target => CanHit(Creature, target, CombatState)).ToArray();
+        if (candidates.Length == 0) return;
+        Creature target = CombatState.RunState.Rng.CombatTargets.NextItem(candidates)!;
+        if (ActThree) await PlayDualAttack(target);
+        else await PlayAttack(target);
+    }
 
     internal async Task PlayAttack(Creature target)
     {
@@ -163,6 +189,10 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         var results = new List<DamageResult>();
 
         await Hook.BeforeAttack(combatState, command);
+        await using FinisherSession? finisher = FinisherEligibilityService.CreateCompanionSession(attacker,
+            new FinisherActionForecastDescriptor(_ => BambooDamage, command.DamageProps, hitCount,
+                FinisherTargeting.Single, SingleTarget: target));
+        finisher?.Begin();
         FinisherApproach? approach = null;
         if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], BambooDamage, hitCount)
             ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
@@ -184,7 +214,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 
                     bool connects = target.GetPower<EvasionPower>() is not { } evasion
                         || !evasion.CanEvade(target, command.DamageProps, attacker);
-                    approach?.ApplyProgress(1f);
+                    FinisherApproach.ReachImpact(attacker);
                     NinjaSlayerCombatVfx.PlaySawatariBambooHit(target, connects);
 
                     using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.ComboDamage))
@@ -220,6 +250,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
                 await Hook.AfterAttack(combatState, choiceContext, command);
             }
         }
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
     }
 
     private async Task AttackMove(IReadOnlyList<Creature> targets)

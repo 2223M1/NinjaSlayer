@@ -98,7 +98,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     private void StartCameraTransition(float scaleMultiplier, float duration)
     {
-        if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash && !_actionPeakReached)
+        if (IsCompanionIai && !_actionPeakReached)
             duration = Math.Max(duration, SlowAttackAnimation.IaiPeakSeconds);
         int generation = ++_cameraTransitionGeneration;
         _cameraTransitionTask = RunCameraTransition(generation, scaleMultiplier, duration);
@@ -122,7 +122,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 }
 
                 float progress = CombatCinematicCameraLease.EaseOutCubic(elapsed / duration);
-                if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash)
+                if (IsCompanionIai)
                     targetPosition = GetFramedCameraPosition(targetScale);
                 _camera.SetTransform(
                     startPosition.Lerp(targetPosition, progress),

@@ -7,7 +7,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 internal enum FinisherScenarioKind
 {
     NinjaSlayerAttack,
-    YamotoKokiIaiSlash,
+    CompanionAttack,
     EnemyExecutesNinjaSlayer
 }
 

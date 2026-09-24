@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Code.Nodes;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
@@ -64,7 +65,7 @@ internal static class YamotoKokiCombatAnimations
         }
     }
 
-    public static async Task PlaySummon(Creature creature, Func<Task> summonAtPeak)
+    public static async Task PlaySummon(Creature creature, Func<Task> summonAtPeak, bool waitForReturn)
     {
         NCreature? creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
@@ -73,36 +74,55 @@ internal static class YamotoKokiCombatAnimations
             return;
         }
 
+        NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(creature);
         Node2D body = creatureNode.Body;
         Marker2D center = creatureNode.Visuals.VfxSpawnPosition;
         Vector2 originalCenter = center.Position;
         Transform2D originalBody = body.Transform;
+        Tween? tween = null;
+        bool active = true, detachedReturn = false;
+        void Restore()
+        {
+            if (!active) return;
+            active = false;
+            tween?.Kill();
+            if (GodotObject.IsInstanceValid(center)) center.Position = originalCenter;
+            if (GodotObject.IsInstanceValid(body))
+                body.Transform = YamotoKokiAllyFacingController.WithFacing(
+                    originalBody, body.Transform.Determinant() < 0f);
+        }
+        long generation = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Restore);
         try
         {
-            await TweenTilt(
-                body,
-                center, originalCenter,
-                originalBody,
-                0f,
-                TiltDegrees,
-                SummonTiltSeconds);
+            await TweenTilt(body, center, originalCenter, originalBody, 0f, TiltDegrees,
+                SummonTiltSeconds, started => tween = started);
+            if (!active) return;
             await summonAtPeak();
-            await TweenTilt(
-                body,
-                center, originalCenter,
-                originalBody,
-                TiltDegrees,
-                0f,
-                SummonReturnSeconds);
+            if (!active) return;
+            if (waitForReturn) await Return();
+            else
+            {
+                detachedReturn = true;
+                _ = TaskHelper.RunSafely(Return());
+            }
         }
         finally
         {
-            if (GodotObject.IsInstanceValid(center)) center.Position = originalCenter;
-            if (GodotObject.IsInstanceValid(body))
+            if (!detachedReturn) Finish();
+        }
+        async Task Return()
+        {
+            try
             {
-                body.Transform = YamotoKokiAllyFacingController.WithFacing(
-                    originalBody, body.Transform.Determinant() < 0f);
+                await TweenTilt(body, center, originalCenter, originalBody, TiltDegrees, 0f,
+                    SummonReturnSeconds, started => tween = started);
             }
+            finally { Finish(); }
+        }
+        void Finish()
+        {
+            Restore();
+            NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, generation);
         }
     }
 
@@ -178,6 +198,7 @@ internal static class YamotoKokiCombatAnimations
 
     public static async Task PlayFarewell(Creature creature)
     {
+        NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(creature);
         NCreature? creatureNode = creature.GetCreatureNode();
         if (creatureNode == null)
         {
@@ -214,7 +235,7 @@ internal static class YamotoKokiCombatAnimations
                 Tween.EaseType.In,
                 Tween.TransitionType.Quad);
             creatureNode.Hide();
-            YamotoKokiIntentLifecycle.Retire(creature);
+            CompanionIntentLifecycle.Retire(creature);
         }
         finally
         {
@@ -239,7 +260,8 @@ internal static class YamotoKokiCombatAnimations
         Transform2D authoredBody,
         float fromDegrees,
         float toDegrees,
-        float duration)
+        float duration,
+        Action<Tween>? started = null)
     {
         if (!GodotObject.IsInstanceValid(node))
         {
@@ -257,6 +279,7 @@ internal static class YamotoKokiCombatAnimations
         }).ToArray();
         var offsets = new System.Numerics.Vector2[bodyPoints.Length];
         Tween tween = node.CreateTween();
+        started?.Invoke(tween);
         tween.TweenMethod(
                 Callable.From<float>(progress =>
                 {

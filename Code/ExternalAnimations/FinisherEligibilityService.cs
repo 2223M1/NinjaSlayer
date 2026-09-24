@@ -114,58 +114,49 @@ internal static class FinisherEligibilityService
         return true;
     }
 
-    internal static bool TryCreateYamotoKokiSession(
+    internal static FinisherSession? CreateCompanionSession(
         Creature owner,
-        NCreature ownerNode,
-        NCreature focusNode,
-        IReadOnlyList<Creature> enemies,
-        Func<Creature, decimal> damage,
-        [NotNullWhen(true)] out FinisherSession? session)
+        FinisherActionForecastDescriptor descriptor)
     {
-        session = null;
-        List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
-        if (owner.Monster is not YamotoKokiMonster
+        if (!FriendlyCompanionTargeting.IsFriendlyCompanion(owner)
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
-            || primaryEnemies.Count == 0
+            || owner.GetCreatureNode() is not { } ownerNode
             || !FinisherProtectionService.CanProtectLethalDamage(out _))
         {
-            return false;
+            return null;
         }
 
-        NCreature? primaryFocusNode = focusNode.Entity.IsPrimaryEnemy
-            ? focusNode
-            : primaryEnemies
-                .Select(enemy => room.GetCreatureNode(enemy))
-                .FirstOrDefault(node => node != null);
+        var enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToArray();
+        var primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToArray();
+        NCreature? primaryFocusNode = descriptor.SingleTarget is { IsPrimaryEnemy: true } target
+            ? target.GetCreatureNode()
+            : primaryEnemies.Select(enemy => enemy.GetCreatureNode()).Where(node => node != null)
+                .OrderBy(node => Math.Abs(node!.Visuals.Bounds.GetGlobalRect().GetCenter().X
+                    - ownerNode.Visuals.Bounds.GetGlobalRect().GetCenter().X)).FirstOrDefault();
         if (primaryFocusNode == null)
         {
-            return false;
+            return null;
         }
 
         if (FinisherSessionRegistry.HasRegisteredSessionForCombat(combatState, room))
         {
-            return false;
+            return null;
         }
 
-        var descriptor = new FinisherActionForecastDescriptor(
-            damage,
-            ValueProp.Move,
-            HitCount: 1,
-            Targeting: FinisherTargeting.All);
         if (FinisherForecast.EvaluateAction(owner, enemies, descriptor, out FinisherForecastResult forecast)
             != FinisherForecastOutcome.Guaranteed
             || !CombatCinematicCameraLease.TryAcquire(
                 room,
-                "Yamoto Koki finisher",
+                "Companion finisher",
                 out CombatCinematicCameraLease? camera))
         {
-            return false;
+            return null;
         }
 
         if (!FinisherSessionRegistry.TryRegisterSession(
                 new FinisherSessionRequest(
-                    FinisherScenarioKind.YamotoKokiIaiSlash,
+                    FinisherScenarioKind.CompanionAttack,
                     FinisherCompletionCondition.AllCandidatesLethal,
                     owner,
                     ownerNode,
@@ -177,15 +168,15 @@ internal static class FinisherEligibilityService
                     ResolvedHits: forecast.ResolvedHits),
                 combatState,
                 room,
-                out session))
+                out FinisherSession? session))
         {
             camera.Dispose();
-            return false;
+            return null;
         }
 
         Entry.Logger.Info(
-            $"Yamoto Koki finisher session {session.SessionId} started: victims={primaryEnemies.Count}.");
-        return true;
+            $"Companion {owner.Monster!.Id} finisher session {session.SessionId} started: victims={primaryEnemies.Length}.");
+        return session;
     }
 
 }

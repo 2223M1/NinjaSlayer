@@ -23,8 +23,6 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
 {
     private const string CombatsKey = "Combats";
     private const float MissileAttackIntervalSeconds = 0.2f;
-    private const float MoveAfterMissilesDelaySeconds = 0.2f;
-    private readonly record struct MissileOperation(NCreature? Node, Task Explosion);
     private int _combatsLeft = 5;
     private bool _hasPlayedEntrance;
     private bool _hasPlayedFarewell;
@@ -93,7 +91,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         Creature yamotoKoki = existingCompanion
             ?? await PlayerCmd.AddPet<YamotoKokiMonster>(Owner);
 
-        YamotoKokiIntentLifecycle.BeginCombat(yamotoKoki);
+        CompanionIntentLifecycle.BeginCombat(yamotoKoki);
         await AssignIntent(yamotoKoki, YamotoKokiMonster.SummonMissileMoveId);
         if (created && !YamotoKokiPartyState.HasPlayedEntrance(Owner.RunState))
         {
@@ -122,7 +120,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             return Task.CompletedTask;
         }
 
-        YamotoKokiIntentLifecycle.Invalidate(yamotoKoki);
+        CompanionIntentLifecycle.Invalidate(yamotoKoki);
         HasPlayedFarewell = true;
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiByeEvent);
         _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayFarewell(yamotoKoki));
@@ -136,15 +134,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             return;
         }
 
-        try
-        {
-            await PerformTurnStartActions();
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Error(
-                $"Yamoto Koki turn-start action failed; releasing the player turn instead of blocking card input: {ex}");
-        }
+        await PerformTurnStartActions();
     }
 
     private async Task PerformTurnStartActions()
@@ -163,123 +153,61 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         YamotoKokiMonster? monster = yamotoKoki?.Monster as YamotoKokiMonster;
         MoveState? scheduledMove = monster?.NextMove;
 
-        IReadOnlyList<MissileOperation> missileOperations =
-            await StartMissileAttacksStaggered(armedMissiles);
-        if (yamotoKoki == null || yamotoKoki.IsDead || monster == null || scheduledMove == null)
+        // Race only visual clocks. This hook alone owns launch RNG, impacts and deaths.
+        // Process a landed missile before launching another, never wait for the whole volley.
+        var flights = new Queue<(YamotoKokiOrigamiMissile Missile, Creature? Target, Task Flight)>();
+        var visualTasks = new List<Task>();
+        Task nextLaunch = Task.CompletedTask;
+        int launched = 0;
+        try
         {
-            await CompleteMissileOperations(missileOperations);
-            return;
-        }
-
-        IReadOnlyList<Creature> enemies = yamotoKoki.CombatState?.HittableEnemies ?? [];
-        if (armedMissiles.Count > 0)
-        {
-            Task postLaunchDelay = Cmd.Wait(MoveAfterMissilesDelaySeconds);
-            Task missileResolution = WaitForMissileResolutions(missileOperations);
-            await Task.WhenAll(postLaunchDelay, missileResolution);
-            if (CombatManager.Instance.IsOverOrEnding || yamotoKoki.IsDead)
+            while (flights.Count > 0 || launched < armedMissiles.Count && !CombatManager.Instance.IsOverOrEnding)
             {
-                await CompleteMissileOperations(missileOperations);
-                return;
+                if (flights.TryPeek(out var landed) && landed.Flight.IsCompleted)
+                {
+                    flights.Dequeue();
+                    await landed.Flight;
+                    await landed.Missile.CompleteExplosion(landed.Target);
+                    continue;
+                }
+                bool canLaunch = launched < armedMissiles.Count && !CombatManager.Instance.IsOverOrEnding;
+                if (canLaunch && nextLaunch.IsCompleted)
+                {
+                    await nextLaunch;
+                    var missile = (YamotoKokiOrigamiMissile)armedMissiles[launched++].Monster!;
+                    Creature? target = missile.BeginExplosion();
+                    Task flight = target == null ? Task.CompletedTask : missile.LaunchAtTarget(target);
+                    flights.Enqueue((missile, target, flight));
+                    visualTasks.Add(flight);
+                    nextLaunch = Cmd.Wait(MissileAttackIntervalSeconds);
+                    continue;
+                }
+                if (canLaunch && flights.TryPeek(out var pending))
+                    await Task.WhenAny(nextLaunch, pending.Flight);
+                else if (canLaunch) await nextLaunch;
+                else if (flights.TryPeek(out var last)) await last.Flight;
             }
-
-            Flash();
-            Task moveTask = PerformScheduledMove(
-                yamotoKoki,
-                scheduledMove,
-                enemies,
-                overlapIntentPresentation: true);
-            await Task.WhenAll(CompleteMissileOperations(missileOperations), moveTask);
         }
-        else
+        finally
         {
-            await CompleteMissileOperations(missileOperations);
-            if (CombatManager.Instance.IsOverOrEnding)
-            {
-                return;
-            }
-
-            Flash();
-            await PerformScheduledMove(
-                yamotoKoki,
-                scheduledMove,
-                enemies,
-                overlapIntentPresentation: false);
+            await Task.WhenAll(visualTasks);
         }
+
+        if (yamotoKoki == null || yamotoKoki.IsDead || monster == null || scheduledMove == null
+            || CombatManager.Instance.IsOverOrEnding) return;
+        Flash();
+        if (yamotoKoki.GetCreatureNode() is { } node)
+            _ = TaskHelper.RunSafely(node.PerformIntent());
+        await scheduledMove.PerformMove(yamotoKoki.CombatState!.HittableEnemies);
 
         monster.MoveStateMachine?.OnMovePerformed(scheduledMove);
         if (CombatManager.Instance.IsOverOrEnding)
         {
-            YamotoKokiIntentLifecycle.Invalidate(yamotoKoki);
+            CompanionIntentLifecycle.Invalidate(yamotoKoki);
             return;
         }
 
         await AssignRandomIntent(yamotoKoki);
-    }
-
-    private static async Task<IReadOnlyList<MissileOperation>> StartMissileAttacksStaggered(
-        List<Creature> armedMissiles)
-    {
-        List<MissileOperation> operations = [];
-        for (int i = 0; i < armedMissiles.Count; i++)
-        {
-            if (i > 0)
-            {
-                await Cmd.Wait(MissileAttackIntervalSeconds);
-            }
-
-            if (CombatManager.Instance.IsOverOrEnding)
-            {
-                break;
-            }
-
-            Creature armedMissile = armedMissiles[i];
-            NCreature? missileNode = armedMissile.GetCreatureNode();
-            if (armedMissile.Monster is YamotoKokiOrigamiMissile missile)
-            {
-                operations.Add(new MissileOperation(
-                    missileNode,
-                    missile.ExecuteExplosion(armedMissile)));
-            }
-        }
-
-        return operations;
-    }
-
-    private static Task WaitForMissileResolutions(IReadOnlyList<MissileOperation> operations) =>
-        Task.WhenAll(operations.Select(operation => operation.Explosion));
-
-    private static async Task CompleteMissileOperations(
-        IReadOnlyList<MissileOperation> operations)
-    {
-        await WaitForMissileResolutions(operations);
-        Task[] deathAnimations = operations
-            .Select(operation => operation.Node?.DeathAnimationTask)
-            .OfType<Task>()
-            .ToArray();
-        if (deathAnimations.Length > 0)
-        {
-            await Task.WhenAll(deathAnimations);
-        }
-    }
-
-    private static async Task PerformScheduledMove(
-        Creature yamotoKoki,
-        MoveState scheduledMove,
-        IReadOnlyList<Creature> enemies,
-        bool overlapIntentPresentation)
-    {
-        NCreature? node = yamotoKoki.GetCreatureNode();
-        Task intentTask = node?.PerformIntent() ?? Task.CompletedTask;
-        if (!overlapIntentPresentation)
-        {
-            await intentTask;
-            await scheduledMove.PerformMove(enemies);
-            return;
-        }
-
-        Task moveTask = scheduledMove.PerformMove(enemies);
-        await Task.WhenAll(intentTask, moveTask);
     }
 
     private static async Task AssignRandomIntent(Creature yamotoKoki)
@@ -294,7 +222,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             monster.SetUpForCombat();
         }
 
-        YamotoKokiIntentGeneration generation = YamotoKokiIntentLifecycle.Capture(yamotoKoki);
+        CompanionIntentGeneration generation = CompanionIntentLifecycle.Capture(yamotoKoki);
         if (!CanChooseNextIntent(generation))
         {
             return;
@@ -335,13 +263,13 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
         }
 
         MoveState next = (MoveState)monster.MoveStateMachine!.States[moveId];
-        await AssignIntent(yamotoKoki, next, YamotoKokiIntentLifecycle.Capture(yamotoKoki));
+        await AssignIntent(yamotoKoki, next, CompanionIntentLifecycle.Capture(yamotoKoki));
     }
 
     private static async Task AssignIntent(
         Creature yamotoKoki,
         MoveState next,
-        YamotoKokiIntentGeneration generation)
+        CompanionIntentGeneration generation)
     {
         if (yamotoKoki.Monster is not YamotoKokiMonster monster)
         {
@@ -361,26 +289,26 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             && combatState != null
             && combatState.IsLiveCombat()
             && combatState.HittableEnemies.Any(enemy => enemy.IsAlive && enemy.IsHittable)
-            && YamotoKokiIntentLifecycle.PrepareContainerForWrite(generation))
+            && CompanionIntentLifecycle.PrepareContainerForWrite(generation))
         {
             await node.UpdateIntent(combatState.HittableEnemies);
-            if (!YamotoKokiIntentLifecycle.IsCurrent(generation))
+            if (!CompanionIntentLifecycle.IsCurrent(generation))
             {
-                YamotoKokiIntentLifecycle.RehideIfInactive(generation);
+                CompanionIntentLifecycle.RehideIfInactive(generation);
             }
         }
     }
 
-    private static bool CanSetMove(YamotoKokiIntentGeneration generation)
+    private static bool CanSetMove(CompanionIntentGeneration generation)
     {
         Creature yamotoKoki = generation.Creature;
-        return YamotoKokiIntentLifecycle.IsCurrent(generation)
+        return CompanionIntentLifecycle.IsCurrent(generation)
             && !yamotoKoki.IsDead
             && yamotoKoki.CombatState != null
             && !CombatManager.Instance.IsOverOrEnding;
     }
 
-    private static bool CanChooseNextIntent(YamotoKokiIntentGeneration generation) =>
+    private static bool CanChooseNextIntent(CompanionIntentGeneration generation) =>
         CanSetMove(generation)
         && generation.Creature.CombatState is { } combatState
         && combatState.IsLiveCombat()

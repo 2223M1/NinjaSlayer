@@ -112,7 +112,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _freeControlLease = NinjaSlayerFreeControl.Get(request.Actor)?.SuspendForCinematic(_actorStartPosition);
         if (_freeControlLease != null) _actorStartPosition = _freeControlLease.Baseline;
         _impactPosition = request.ActorNode.Position;
-        _actionPeakReached = request.Scenario != FinisherScenarioKind.YamotoKokiIaiSlash;
+        _actionPeakReached = !IsCompanionIai;
         _vfxBaselineChildIds = request.VfxBaselineChildIds?.ToHashSet()
             ?? FinisherImpactVfxFreezeLease.CaptureBaseline(_room).ToHashSet();
         _room.TreeExiting += OnRoomTreeExiting;
@@ -121,6 +121,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         RequiresAfterCardPlayed = request.RequiresAfterCardPlayed;
         ResolvedHits = Math.Max(1, request.ResolvedHits);
     }
+
+    private bool IsCompanionIai => Scenario == FinisherScenarioKind.CompanionAttack
+        && Actor.Monster is NinjaSlayer.Monsters.YamotoKokiMonster;
 
     public long SessionId { get; }
     public FinisherScenarioKind Scenario { get; }
@@ -211,10 +214,24 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 GetDeathSquashMultiplier(),
                 NinjaSlayerCombatVisuals.CloseRangeApproachGap),
             _actorNode.Position.Y);
-        if (Scenario == FinisherScenarioKind.YamotoKokiIaiSlash)
+        if (IsCompanionIai)
         {
             _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier());
             _approach.ReturnDuration = SlowAttackAnimation.IaiReturnSeconds;
+        }
+        else if (Scenario == FinisherScenarioKind.CompanionAttack && Actor.Monster is NinjaSlayer.Monsters.SawatariMonster)
+        {
+            _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier());
+            float peak = Actor.Monster is NinjaSlayer.Monsters.SawatariMonster { ActThree: true }
+                ? SawatariWeaponVisuals.DualCycleSeconds * 2f / 7f
+                : SawatariBambooAnimation.CycleSeconds * SawatariBambooAnimation.PeakPhase;
+            _approach.Start(CombatActionTimingRuntime.VisualSeconds(peak));
+            _actionStarted = _actionPeakReached = true;
+        }
+        else if (Scenario == FinisherScenarioKind.CompanionAttack)
+        {
+            // Ranged companions keep their position; their projectile owns the impact gate.
+            _actionStarted = _actionPeakReached = true;
         }
         else if (Scenario == FinisherScenarioKind.NinjaSlayerAttack)
         {
@@ -262,7 +279,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             return PlayAimedAction(repeatWaitSeconds);
         if (_disposed
             || creature != Actor
-            || Scenario != FinisherScenarioKind.YamotoKokiIaiSlash)
+            || !IsCompanionIai)
         {
             return Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
         }
@@ -391,7 +408,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             if (CompletionCondition == FinisherCompletionCondition.AllCandidatesLethal
                 && IsCompletionConditionSatisfied())
             {
-                YamotoKokiIntentLifecycle.InvalidateCombat(_combatState);
+                CompanionIntentLifecycle.InvalidateCombat(_combatState);
             }
 
             TryScheduleEnhancedImpact();
@@ -544,7 +561,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         if (CompletionCondition == FinisherCompletionCondition.AllCandidatesLethal)
         {
-            YamotoKokiIntentLifecycle.InvalidateCombat(_combatState);
+            CompanionIntentLifecycle.InvalidateCombat(_combatState);
         }
 
         List<NCreature> targetNodes;
@@ -1201,7 +1218,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
     public async Task EnsureActionPeak()
     {
-        if (Scenario != FinisherScenarioKind.YamotoKokiIaiSlash || _actionPeakReached)
+        if (!IsCompanionIai || _actionPeakReached)
         {
             return;
         }

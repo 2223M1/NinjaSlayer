@@ -59,6 +59,30 @@ draw backflips and shuriken throws may overlap that held stance.
 
 ## Special attacks
 
+- Full companions use native pets and move intents. Koki, Sawatari and Yukano
+  share yellow native attack icons/particles and `CompanionIntentLifecycle`;
+  summon, defend and heal retain native visuals. Hostile Sawatari is unchanged.
+  `PositionPlayersAndPets` receives local player, live companions in combat
+  insertion order, then other humans. Only its two layout grouping checks treat
+  companions as independent anchors. The native roster, pet ownership, Osty
+  placement and paper-crane orbit are unchanged.
+- Companion logic awaits every impact, attack hook and required death operation.
+  The last bamboo/dual-thrust return, Koki's final summon recovery and native
+  intent fades may continue visually after input reopens. Registered visual tails
+  are cancelled/restored by the next action, enemy turn, retirement or exit.
+  Paper cranes retain their 0.16s flight and native-scaled 0.1s explosion lead-in;
+  their owner hook serializes actual impacts/deaths, without awaiting lingering
+  explosion particles. Target selection never runs in detached visual tasks.
+- All three companions enter finishers through
+  `FinisherEligibilityService.CreateCompanionSession` and the existing
+  `FinisherSession` damage ledger, death commit and cleanup. This includes
+  Sawatari's friendly bamboo/dual attacks and Yukano's arrow/shuriken attacks.
+  Koki keeps its Iai approach, Sawatari reaches close range on its original
+  bamboo/dual impact frame, and Yukano stays at its ranged position. Projectiles
+  must arrive before damage. A guaranteed forecast only selects the presentation;
+  actual confirmed lethal results still control death. Finishers that mutate
+  combat state remain awaited through completion.
+
 - Tornado keeps one approach/lift and the Whirlwind hit cadence: Normal
   0.15/0.50/0.85s; Fast 0.075/0.250/0.425s. Ordinary spin is 4800 degrees/s
   in both modes; empowered spin is 12000. B hitstop is 0.0175s per hit and
