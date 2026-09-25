@@ -1,4 +1,12 @@
 using Godot;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Audio.Debug;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Localization;
+using NinjaSlayer.Cards;
+using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Code.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models.Events;
@@ -20,19 +28,10 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public sealed partial class ArchitectExecutionCinematic : Node
 {
     private const string ControllerName = "NinjaSlayerArchitectExecution";
-    private const float InitialPauseSeconds = 0.5f;
-    private const float FacingPauseSeconds = 0.5f;
-    private const float FacingTurnSeconds = 0.15f;
-    private const float ChargeSeconds = 0.2f;
-    private const float ImpactSeconds = 0.3f;
-    private const float ImpactPunchSeconds = 0.04f;
-    private const float ImpactRecoveryStartSeconds = 0.2f;
-    private const float CameraScaleMultiplier = 2f;
-    private const float ImpactScaleMultiplier = 2.12f;
-    private const float CameraReturnSeconds = 0.2f;
     private const float ExitSpeedPixelsPerSecond = 840f;
     private const float ExitMargin = 160f;
 
+    private TheArchitect _eventModel = null!;
     private Creature _owner = null!;
     private NCreature _ownerNode = null!;
     private NCreature _architectNode = null!;
@@ -41,8 +40,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private CinematicSessionLifetime? _exitLifetime;
     private Task? _exitTask;
     private Task? _victoryCompletionTask;
-    private CombatCinematicCameraLease? _camera;
-    private FinisherImpactPresentation? _presentation;
     private BossDismembermentSnapshot? _dismembermentSnapshot;
     private BossDismembermentPresentation? _deathPresentation;
     private Vector2 _ownerStartPosition;
@@ -50,7 +47,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private Vector2 _architectBodyScale;
     private float _architectBodyRotation;
     private Color _architectBodyModulate;
-    private bool _doomFrozen;
     private bool _initialized;
     private bool _completed;
     private bool _architectDeathCommitted;
@@ -75,6 +71,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         var controller = new ArchitectExecutionCinematic
         {
             Name = ControllerName,
+            _eventModel = eventModel,
             _owner = owner,
             _ownerNode = ownerNode,
             _architectNode = architectNode,
@@ -111,10 +108,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         {
             RestoreTemporaryState(restoreOwnerPosition: _exitTask == null);
         }
-        _presentation?.Dispose();
-        _presentation = null;
-        _camera?.Dispose();
-        _camera = null;
     }
 
     private void Begin()
@@ -135,17 +128,10 @@ public sealed partial class ArchitectExecutionCinematic : Node
     {
         try
         {
-            await WaitSeconds(InitialPauseSeconds, cancelToken);
-            await TurnTo(faceLeft: true);
-            await WaitSeconds(FacingPauseSeconds, cancelToken);
-            await TurnTo(faceLeft: false);
-            await WaitSeconds(FacingPauseSeconds, cancelToken);
-
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerKorosuBeshiEvent);
-            PreparePresentation();
-            await ChargeArchitect(cancelToken);
-            await PlayImpact(cancelToken);
-            await PlayArchitectDeath(cancelToken);
+            await AncientEntranceAnimation.Play(_owner.Player!);
+            cancelToken.ThrowIfCancellationRequested();
+            await PlayBriefGreeting(cancelToken);
+            await PlayOwnedMeleeExecution(cancelToken);
 
             _completed = true;
             await CompleteEvent();
@@ -172,109 +158,153 @@ public sealed partial class ArchitectExecutionCinematic : Node
             DisposeDismembermentSnapshot();
             HideArchitectVisual();
             RestoreTemporaryState(restoreOwnerPosition: _exitTask == null);
-            _presentation?.Dispose();
-            _presentation = null;
-            _camera?.Dispose();
-            _camera = null;
             _runLifetime.Dispose();
         }
     }
 
-    private async Task TurnTo(bool faceLeft)
+    private async Task PlayBriefGreeting(CancellationToken cancelToken)
     {
-        await SoarSpinAnimation.PlayFiniteAirborneSpin(
-            _owner,
-            FacingTurnSeconds,
-            progress => 180f * progress);
-        NinjaSlayerFacingState.SetFacing(_ownerNode, faceLeft);
-        SoarSpinAnimation.ResetSpinVisual(_owner);
-    }
-
-    private void PreparePresentation()
-    {
-        if (CombatCinematicCameraLease.TryAcquire(
-                _room,
-                "NinjaSlayer Architect execution",
-                out CombatCinematicCameraLease? camera))
+        NinjaSlayerFacingState.SyncForTarget(_owner, _architectNode.Entity);
+        NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(_owner);
+        using var bow = pose?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, 1f);
+        if (bow != null) bow.Paused = true;
+        string name = LocManager.Instance.Language == "zhs" ? "\u5fcd\u8005\u6740\u624b" : "NINJA SLAYER";
+        string title = _architectNode.Entity.CombatState?.Encounter?.Title.GetFormattedText() ?? "ARCHITECT";
+        var bubbles = new List<NSpeechBubbleVfx>();
+        void Speak(Creature speaker, string text, float duration)
         {
-            _camera = camera;
-            try
+            var bubble = NSpeechBubbleVfx.Create(text.ToUpperInvariant(), speaker, duration);
+            if (bubble == null) return;
+            _room.SceneContainer.AddChildSafely(bubble);
+            bubbles.Add(bubble);
+        }
+        var state = _architectNode.SpineAnimation.GetAnimationState()
+            ?? throw new InvalidOperationException("Architect greeting requires its native Spine state.");
+        try
+        {
+            Speak(_owner, $"DOMO, {title}=SAN, {name} DESU.", 1.8f);
+            state.SetAnimation("_tracks/head_stop_reading", false, 1);
+            float elapsed = 0f;
+            bool replied = false;
+            while (elapsed < 2f)
             {
-                _presentation = FinisherImpactPresentation.CreateBackdropOnly(_room, camera);
+                float weight = elapsed < .2f ? Mathf.SmoothStep(0f, 1f, elapsed / .2f)
+                    : elapsed < .7f ? 1f : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - .7f) / .3f);
+                if (bow != null)
+                {
+                    bow.Radians = Mathf.DegToRad(18f) * bow.Facing * weight;
+                    pose!.SyncNow();
+                }
+                if (!replied && elapsed >= .5f)
+                {
+                    replied = true;
+                    state.SetAnimation("_tracks/head_normal", true, 1);
+                    Speak(_architectNode.Entity, $"DOMO, {name}=SAN, {title} DESU.", 2f);
+                }
+                elapsed += await NextFrame(cancelToken);
             }
-            catch (Exception exception)
-            {
-                Entry.Logger.Warn($"Architect execution backdrop unavailable: {exception}");
-            }
+        }
+        finally
+        {
+            bow?.Dispose();
+            if (pose != null && GodotObject.IsInstanceValid(pose)) pose.SyncNow();
+            foreach (var bubble in bubbles)
+                if (GodotObject.IsInstanceValid(bubble)) bubble.QueueFreeSafely();
         }
     }
 
-    private async Task ChargeArchitect(CancellationToken cancelToken)
+    internal static string? MeleeTrigger(CardModel card) => card switch
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(_owner).SlowAttack);
-        Vector2 startPosition = _ownerNode.Position;
-        Vector2 destination = ResolveApproachPosition(_ownerNode, _architectNode);
-        Vector2 cameraStart = _camera?.CurrentPosition ?? Vector2.Zero;
-        float elapsed = 0f;
-        while (elapsed < ChargeSeconds)
-        {
-            elapsed += await NextFrame(cancelToken);
-            float progress = Mathf.Clamp(elapsed / ChargeSeconds, 0f, 1f);
-            float movementProgress = progress * progress;
-            _ownerNode.Position = startPosition.Lerp(destination, movementProgress);
-            _presentation?.SetBackdropIntensity(CombatCinematicCameraLease.EaseOutCubic(progress));
-            FrameBothSubjects(cameraStart, progress);
-        }
+        CollapseFistRedesignV1 or Slaughter or StraightKiRedesignV1
+            or KarateStraightRedesignV1 or LeftHeavyPunchRedesignV1 or RightHeavyPunchRedesignV1
+            or RightHeavyPunchAfterSkillRedesignV1 or OneDrinkOneStrikeRedesignV1
+            or SatsubatsuRedesignV1 or RoundhouseKickRedesignV1 or SweepKickRedesignV1
+            or StormFistRedesignV1 => "SlowAttack",
+        StrikeNinjaSlayerRedesignV1 or ChopRedesignV1 or CommonChopRedesignV1
+            or ChopStrikeRedesignV1 or CombatAdjustmentRedesignV1 or PalmThrustRedesignV1
+            or WhiskTeaFlashRedesignV1 or SpiralRoundhouseJumpRedesignV1 => "Attack",
+        DragonFlyingKickRedesignV1 => "FlyingKick",
+        TornadoFistRedesignV1 => TornadoFistSpinAnimation.TriggerName,
+        AlabamaDropRedesignV1 => "AlabamaDrop",
+        _ => null
+    };
 
-        _ownerNode.Position = destination;
-        _presentation?.SetBackdropIntensity(1f);
-        FrameBothSubjects(cameraStart, 1f);
-    }
-
-    private async Task PlayImpact(CancellationToken cancelToken)
+    private async Task PlayOwnedMeleeExecution(CancellationToken cancelToken)
     {
-        Control vfxContainer = _room.CombatVfxContainer;
-        int displayedDamage = Math.Max(1, ScoreUtility.CalculateScore(_owner.Player!.RunState, won: true));
-        vfxContainer.AddChildSafely(NDamageNumVfx.Create(
-            _architectNode.Entity,
-            displayedDamage,
-            requireInteractable: false));
-        vfxContainer.AddChildSafely(NHitSparkVfx.Create(
-            _architectNode.Entity,
-            requireInteractable: false));
-        NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(_architectNode.Entity);
-
-        _doomFrozen = DoomHurtPoseController.TryFreeze(_architectNode);
-        _architectNode.Body.Position = _architectBodyPosition;
-        _architectNode.Body.Scale = _architectBodyScale * new Vector2(0.55f, 1.2f);
-        _architectNode.Body.Rotation = _architectBodyRotation + Mathf.DegToRad(3f);
-        if (_camera != null)
-        {
-            _camera.PlayScreenShake(
-                ShakeStrength.TooMuch,
-                ShakeDuration.Short,
-                rejectWeakerReplacement: true);
-        }
+        var cards = _owner.Player!.Deck.Cards.Where(card => MeleeTrigger(card) != null).ToList();
+        CardModel card;
+        if (cards.Count > 0) card = cards[_eventModel.Rng.NextInt(cards.Count)];
         else
         {
-            NGame.Instance?.ScreenShake(ShakeStrength.TooMuch, ShakeDuration.Short);
+            card = ModelDb.Card<StrikeNinjaSlayerRedesignV1>().ToMutable();
+            card.Owner = _owner.Player;
         }
-
-        float elapsed = 0f;
-        while (elapsed < ImpactSeconds)
+        string trigger = MeleeTrigger(card)!;
+        Entry.Logger.Info($"Architect execution selected owned melee: {card.Id.Entry}, trigger={trigger}, fallback={cards.Count == 0}.");
+        var play = new CardPlay
         {
-            float delta = await NextFrame(cancelToken);
-            elapsed += delta;
-            float scaleMultiplier = ResolveImpactScale(elapsed);
-            FrameBothSubjectsAtScale(scaleMultiplier);
-            _camera?.Advance(delta);
-
+            Card = card,
+#if !NINJASLAYER_CHANNEL_STABLE
+            Player = _owner.Player,
+#endif
+            Target = _architectNode.Entity,
+            ResultPile = PileType.None, Resources = new ResourceInfo
+            { EnergySpent = 0, EnergyValue = 0, StarsSpent = 0, StarValue = 0 },
+            IsAutoPlay = true, PlayIndex = 0, PlayCount = 1
+        };
+        if (!CombatCinematicCameraLease.TryAcquire(_room, "NinjaSlayer Architect execution", out var camera))
+            throw new InvalidOperationException("Architect execution could not acquire its camera.");
+        var request = new FinisherSessionRequest(FinisherScenarioKind.NinjaSlayerAttack,
+            FinisherCompletionCondition.AllCandidatesLethal, _owner, _ownerNode, _architectNode,
+            [_architectNode.Entity], camera, play, false, 1, ContinuousPlayerApproach: true);
+        if (!FinisherSessionRegistry.TryRegisterSession(request, _owner.CombatState!, _room, out var session))
+        {
+            camera.Dispose();
+            throw new InvalidOperationException("Architect execution could not acquire its finisher.");
         }
+        await using (session)
+        {
+            session.Begin();
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerKorosuBeshiEvent);
+            if (trigger == "AlabamaDrop")
+                await AlabamaDropAnimation.Play(_owner, _architectNode.Entity, Impact);
+            else
+            {
+                if (trigger == "FlyingKick") await JumpAnimation.PlayFlyingKick(_owner);
+                else if (trigger == TornadoFistSpinAnimation.TriggerName)
+                    await Task.WhenAll(CreatureCmd.TriggerAnim(_owner, trigger, TornadoFistSpinAnimation.TurnSeconds),
+                        session.PlayActionToPeak(_owner, CombatActionTimingRuntime.TriggerSeconds(TornadoFistSpinAnimation.TurnSeconds)));
+                else await CreatureCmd.TriggerAnim(_owner, trigger, _owner.Player.Character.AttackAnimDelay);
+                await Impact();
+            }
+            Task death = PlayArchitectDeath(cancelToken);
+            if (trigger != "AlabamaDrop")
+                session.PrepareArchitectExit(trigger == "Attack"
+                    ? NinjaSlayerCombatVisuals.AttackLungeDistance : NinjaSlayerCombatVisuals.SlowAttackLungeDistance);
+            await session.CompleteAsync(playPose: false);
+            StartExitScene();
+            await Task.WhenAll(death, _exitTask!);
 
-        _architectNode.Body.Position = _architectBodyPosition;
-        _architectNode.Body.Scale = _architectBodyScale;
-        _architectNode.Body.Rotation = _architectBodyRotation;
-        _architectNode.Body.SelfModulate = _architectBodyModulate;
+            async Task Impact()
+            {
+                cancelToken.ThrowIfCancellationRequested();
+                Creature target = _architectNode.Entity;
+                int score = Math.Max(1, ScoreUtility.CalculateScore(_owner.Player.RunState, won: true));
+                _room.CombatVfxContainer.AddChildSafely(NDamageNumVfx.Create(target, score, requireInteractable: false));
+                _room.CombatVfxContainer.AddChildSafely(NHitSparkVfx.Create(target, requireInteractable: false));
+                if (trigger != "AlabamaDrop")
+                {
+                    if (NinjaSlayerAimPose.IsSomersaultHeavy(card))
+                    {
+                        VfxCmd.PlayOnCreature(target, VfxCmd.heavyBluntPath);
+                        NDebugAudioManager.Instance?.Play(TmpSfx.heavyAttack);
+                    }
+                    else NinjaSlayerCombatVfx.PlayDefectStrikeHitFx(target);
+                    await CreatureCmd.TriggerAnim(target, "Hit", 0f);
+                }
+                await session.PlayArchitectImpact(cancelToken);
+            }
+        }
     }
 
     private async Task PlayArchitectDeath(CancellationToken cancelToken)
@@ -299,8 +329,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
             snapshot?.Dispose();
         }
 
-        StartExitScene();
-        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
         string monsterId = _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT";
         bool fragmentReplacementReady = _deathPresentation != null;
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
@@ -312,7 +340,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
             monsterId, registration.Cue, cancelToken);
         await registration.Cue.WaitAsync(cancelToken);
         await Task.WhenAll(
-            cameraRestore,
             whiteout,
             registration.CombatRelease.WaitAsync(cancelToken));
         if (!fragmentReplacementReady)
@@ -368,34 +395,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
     }
 
-    private async Task RestoreCameraAndBackdrop(CancellationToken cancelToken)
-    {
-        if (_camera == null)
-        {
-            _presentation?.SetBackdropIntensity(0f);
-            return;
-        }
-
-        Vector2 startPosition = _camera.CurrentPosition;
-        float startScale = _camera.CurrentScale;
-        float elapsed = 0f;
-        while (elapsed < CameraReturnSeconds)
-        {
-            float delta = await NextFrame(cancelToken);
-            elapsed += delta;
-            float progress = CombatCinematicCameraLease.EaseOutCubic(
-                elapsed / CameraReturnSeconds);
-            _camera.SetTransform(
-                startPosition.Lerp(_camera.BaselinePosition, progress),
-                Mathf.Lerp(startScale, _camera.BaselineScale.X, progress));
-            _camera.Advance(delta);
-            _presentation?.SetBackdropIntensity(1f - progress);
-        }
-
-        _camera.ResetToBaseline();
-        _presentation?.SetBackdropIntensity(0f);
-    }
-
     private async Task ExitScene(CancellationToken cancelToken)
     {
         NinjaSlayerFacingState.SetFacing(_ownerNode, faceLeft: false);
@@ -415,76 +414,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _ownerNode.Position = destination;
     }
 
-    private void FrameBothSubjects(Vector2 cameraStart, float progress)
-    {
-        if (_camera is not { } camera)
-        {
-            return;
-        }
-
-        float scale = Mathf.Lerp(
-            camera.BaselineScale.X,
-            GetCameraScale(CameraScaleMultiplier),
-            CombatCinematicCameraLease.EaseOutCubic(progress));
-        Vector2 targetPosition = ResolveDualSubjectCameraPosition(camera, scale);
-        camera.SetTransform(
-            cameraStart.Lerp(targetPosition, CombatCinematicCameraLease.EaseOutCubic(progress)),
-            scale);
-    }
-
-    private void FrameBothSubjectsAtScale(float multiplier)
-    {
-        if (_camera is not { } camera)
-        {
-            return;
-        }
-
-        float scale = GetCameraScale(multiplier);
-        camera.SetTransform(ResolveDualSubjectCameraPosition(camera, scale), scale);
-    }
-
-    private Vector2 ResolveDualSubjectCameraPosition(
-        CombatCinematicCameraLease camera,
-        float scale)
-    {
-        Node2D? cinematicFocus = NinjaSlayerVisualRig.GetCinematicFocus(_ownerNode.Visuals);
-        CanvasItem focus = cinematicFocus is not null ? cinematicFocus : _ownerNode;
-        FinisherCameraFrame frame = FinisherCameraFraming.SelectTargets(
-            camera,
-            focus,
-            [_architectNode],
-            GetCameraScale(ImpactScaleMultiplier));
-        Vector2 center = FinisherCameraFraming.ResolveCenter(
-            camera,
-            focus,
-            frame,
-            scale);
-        return camera.GetCameraPosition(center, scale, camera.ViewportSize * 0.5f);
-    }
-
-    private static float ResolveImpactScale(float elapsed)
-    {
-        if (elapsed <= ImpactPunchSeconds)
-        {
-            float progress = CombatCinematicCameraLease.EaseOutCubic(
-                elapsed / ImpactPunchSeconds);
-            return Mathf.Lerp(CameraScaleMultiplier, ImpactScaleMultiplier, progress);
-        }
-
-        if (elapsed < ImpactRecoveryStartSeconds)
-        {
-            return ImpactScaleMultiplier;
-        }
-
-        float recovery = CombatCinematicCameraLease.EaseOutCubic(
-            (elapsed - ImpactRecoveryStartSeconds)
-            / (ImpactSeconds - ImpactRecoveryStartSeconds));
-        return Mathf.Lerp(ImpactScaleMultiplier, CameraScaleMultiplier, recovery);
-    }
-
-    private float GetCameraScale(float multiplier) =>
-        (_camera?.BaselineScale.X ?? 1f) * multiplier;
-
     private void RestoreTemporaryState(bool restoreOwnerPosition)
     {
         SoarSpinAnimation.ResetSpinVisual(_owner);
@@ -495,12 +424,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
         if (!_architectDeathCommitted && GodotObject.IsInstanceValid(_architectNode))
         {
-            if (_doomFrozen)
-            {
-                DoomHurtPoseController.Resume(_architectNode);
-                _doomFrozen = false;
-            }
-
+            DoomHurtPoseController.Resume(_architectNode);
             _architectNode.Body.Position = _architectBodyPosition;
             _architectNode.Body.Scale = _architectBodyScale;
             _architectNode.Body.Rotation = _architectBodyRotation;
@@ -549,15 +473,6 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
     }
 
-    private async Task WaitSeconds(float seconds, CancellationToken cancelToken)
-    {
-        float elapsed = 0f;
-        while (elapsed < seconds)
-        {
-            elapsed += await NextFrame(cancelToken);
-        }
-    }
-
     private async Task<float> NextFrame(CancellationToken cancelToken)
     {
         cancelToken.ThrowIfCancellationRequested();
@@ -580,20 +495,4 @@ public sealed partial class ArchitectExecutionCinematic : Node
         && _room.IsInsideTree()
         && ReferenceEquals(NCombatRoom.Instance, _room);
 
-    private static Vector2 ResolveApproachPosition(NCreature owner, NCreature target)
-    {
-        float direction = Mathf.Sign(target.Position.X - owner.Position.X);
-        if (Mathf.IsZeroApprox(direction))
-        {
-            direction = 1f;
-        }
-
-        float targetHalfWidth = target.Visuals.Bounds.Size.X
-            * Mathf.Abs(target.Visuals.Scale.X)
-            * 0.5f;
-        return new Vector2(
-            target.Position.X
-            - direction * (targetHalfWidth + NinjaSlayerCombatVisuals.CloseRangeApproachGap),
-            owner.Position.Y);
-    }
 }

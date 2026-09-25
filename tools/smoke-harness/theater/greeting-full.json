@@ -1,0 +1,8 @@
+{
+  "seed": "NINJASLAYER_GREETING_01",
+  "purpose": "greeting",
+  "greetingMode": "full",
+  "act": 3,
+  "duration": 24,
+  "cues": [{ "id": "first_full_greeting", "steps": [{ "action": "wait" }] }]
+}

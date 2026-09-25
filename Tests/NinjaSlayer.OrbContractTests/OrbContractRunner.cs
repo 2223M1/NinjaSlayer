@@ -85,7 +85,8 @@ public partial class OrbContractRunner : Node
             Require(typeof(Player).Assembly.ManifestModule.ModuleVersionId.ToString() ==
                 System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_MVID"), "Loaded host MVID differs from the requested host.");
             GD.Print($"Candidate {expected}: {productPath}; SHA256 {Convert.ToHexString(SHA256.HashData(productBytes))}; host MVID {typeof(Player).Assembly.ManifestModule.ModuleVersionId}");
-            await VerifyUploadTransport();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") != "1")
+                await VerifyUploadTransport();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_UPLOADS") == "1")
             {
                 GD.Print("NinjaSlayer upload product contracts passed.");
@@ -218,6 +219,14 @@ public partial class OrbContractRunner : Node
                 return;
             }
             await VerifyRangedSources();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1")
+            {
+                await VerifyAttackCadence();
+                await VerifyAimPose();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             await VerifyIaiLifeBoundary();
             await VerifySawatariWeapons();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SAWATARI") == "1")
@@ -534,9 +543,15 @@ public partial class OrbContractRunner : Node
             if (DrawOnDiscard) await CardPileCmd.Draw(choiceContext, 1, card.Owner);
         }
         public CardModel? NestedFlameAttack { get; set; }
+        public Func<Task>? AfterFlameDamage { get; set; }
         public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result,
             MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)
         {
+            if (cardSource is BlackFlameRedesignV1 && AfterFlameDamage is { } callback)
+            {
+                AfterFlameDamage = null;
+                return callback();
+            }
             if (cardSource is BlackFlameRedesignV1 && NestedFlameAttack is { } attack)
             {
                 NestedFlameAttack = null;

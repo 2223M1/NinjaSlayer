@@ -53,6 +53,11 @@ internal sealed partial class SmokeController
             RitsuLibFramework.SetTelemetryApplicantConsent(applicant.ApplicantId, TelemetryConsentState.Denied);
         SaveManager.Instance.SetFtuesEnabled(false);
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Fast;
+        if (script.Purpose == "greeting")
+        {
+            await RunGreetingPreview(script);
+            return;
+        }
         var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], script.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(script.Act - 1);
@@ -198,6 +203,7 @@ internal sealed partial class SmokeController
             FindDescendant<NPlayerTurnBanner>(_driver._tree.Root)?.QueueFree();
             await _driver.WaitFrames(60);
             RitsuToastService.CloseAll(true);
+            if (_script.Purpose == "finisher-audit") await PrepareFinisherAudit();
             RenderingServer.FramePreDraw += Sample;
         }
 
@@ -291,9 +297,14 @@ internal sealed partial class SmokeController
                     case "aim": await Aim(); break;
                     case "aim_motion": await AimMotion(step.Mode!); break;
                     case "architect_compare": await ArchitectComparison(); break;
-                    case "architect_execution": await ArchitectExecution(); break;
+                    case "architect_execution": await ArchitectExecution(step); break;
+                    case "sawatari_event_entrance": await SawatariEventEntrance(step); break;
                     case "theft_round": await TheftRound(step.Mode!); break;
                     case "blood_check": await BloodCheck(step.Mode!); break;
+                    case "overhead_check": await OverheadCheck(); break;
+                    case "audit_calibration": SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerSlowAttackEvent); await Wait(1.5); SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerHurtEvent); await Wait(1.5); break;
+                    case "audit_orb": await OrbCmd.EvokeNext(_choice, _player); break;
+                    case "companion_facing": await CompanionFacingPreview(); break;
                     default: throw new InvalidDataException($"Unsupported theater action {step.Action}.");
                 }
                 foreach (string cover in step.Covers) Cover(cover);
@@ -322,7 +333,7 @@ internal sealed partial class SmokeController
 
         private CardModel CreateCard(string name)
         {
-            Type type = typeof(StrikeNinjaSlayerRedesignV1).Assembly.GetTypes()
+            Type type = typeof(StrikeNinjaSlayerRedesignV1).Assembly.GetTypes().Concat(typeof(MegaCrit.Sts2.Core.Models.Cards.Shiv).Assembly.GetTypes())
                 .Single(type => type.Name == name && typeof(CardModel).IsAssignableFrom(type));
             var canonical = (CardModel)AccessTools.Method(typeof(ModelDb), "Card", [], [type]).Invoke(null, null)!;
             return _combat.CreateCard(canonical, _player);
@@ -421,7 +432,7 @@ internal sealed partial class SmokeController
                 _ => throw new InvalidDataException("Unknown companion.")
             };
             AddActor(name, pet);
-            InvokeMethod(ProductType("NinjaSlayer.Code.Combat.YamotoKokiIntentLifecycle"), null, "BeginCombat", pet);
+            InvokeMethod(ProductType("NinjaSlayer.Code.Combat.CompanionIntentLifecycle"), null, "BeginCombat", pet);
             await Animation("YamotoKokiCombatAnimations", "PlayEntrance", pet, name == "koki");
         }
 
@@ -430,6 +441,12 @@ internal sealed partial class SmokeController
             await Move(new() { Actor = "koki", Move = YamotoKokiMonster.SummonMissileMoveId });
             Creature[] missiles = _player.PlayerCombatState!.Pets.Where(p => p.Monster is YamotoKokiOrigamiMissile && p.IsAlive).ToArray();
             Require(missiles.Length == 2, "A theater missile round must contain exactly two live missiles.");
+            if (_script.Purpose == "finisher-audit")
+            {
+                await ((YamotoKokiOrigamiMissile)missiles[0].Monster!).ExecuteExplosion(missiles[0]);
+                _missileRounds++;
+                return;
+            }
             var launches = new List<Task>();
             for (int i = 0; i < missiles.Length; i++)
             {
@@ -748,6 +765,7 @@ internal sealed partial class SmokeController
             if (_start == 0) return;
             var row = new JsonObject { ["seconds"] = Seconds, ["cue"] = _cue };
             if (IsArchitectPreview) SampleArchitect(row);
+            if (_script.Purpose == "finisher-audit") SampleFinisherAudit(row);
             if (_script.Purpose == "aim")
             {
                 row["aimAngle"] = (float)AccessTools.Field(Pose.GetType(), "_angle").GetValue(Pose)!;
@@ -758,6 +776,7 @@ internal sealed partial class SmokeController
             {
                 if (actor.GetCreatureNode() is not { } node || !GodotObject.IsInstanceValid(node)) continue;
                 Vector2 core = node.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
+                if (_script.Purpose == "finisher-audit") core = _auditRender * core;
                 row[name] = new JsonObject { ["x"] = node.Position.X, ["y"] = node.Position.Y,
                     ["coreX"] = core.X, ["coreY"] = core.Y, ["hp"] = actor.CurrentHp,
                     ["iai"] = actor.GetPowerAmount<IaiPower>() };
@@ -807,6 +826,7 @@ internal sealed partial class SmokeController
             File.WriteAllText(Path.Combine(_directory, "timeline.json"), _timeline.ToJsonString());
             File.WriteAllText(Path.Combine(_directory, "damage.json"), _damage.ToJsonString());
             File.WriteAllText(Path.Combine(_directory, "motion.json"), _motion.ToJsonString());
+            if (_script.Purpose == "finisher-audit") WriteFinisherAudit();
             var coverage = new JsonObject();
             foreach (var (name, times) in _coverage) coverage[name] = new JsonArray(times.Select(t => JsonValue.Create(t)).ToArray());
             File.WriteAllText(Path.Combine(_directory, "coverage.json"), coverage.ToJsonString());
@@ -826,6 +846,7 @@ internal sealed partial class SmokeController
         public void Dispose()
         {
             RenderingServer.FramePreDraw -= Sample;
+            FinisherAuditObservationPatch.Record = null;
             foreach (var (actor, handler) in _hpSubscriptions) actor.CurrentHpChanged -= handler;
             _camera?.Dispose();
         }

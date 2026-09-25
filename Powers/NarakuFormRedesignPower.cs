@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
@@ -24,15 +25,20 @@ public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
         NarakuVisualOverlay.Sync(oldOwner);
         return Task.CompletedTask;
     }
-    public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         if (cardPlay.Card.Owner.Creature != Owner || cardPlay.Card.Type != CardType.Attack)
-            return Task.CompletedTask;
-        var targets = Owner.CombatState!.HittableEnemies;
-        if (targets.Count == 0) return Task.CompletedTask;
-        Flash();
-        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
-        return BlackFlameRedesignV1.DamageEnemies(choiceContext, Owner.Player!,
-            RedesignV1Rules.BlackFlameDamage * Amount, null, targets);
+            return;
+        int flames = Amount;
+        for (int index = 0; index < flames; index++)
+        {
+            if (CombatManager.Instance.IsOverOrEnding || !Owner.IsAlive) break;
+            var targets = Owner.CombatState!.HittableEnemies;
+            if (targets.Count == 0) break;
+            Flash();
+            NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
+            await BlackFlameRedesignV1.DamageEnemies(choiceContext, Owner.Player!,
+                RedesignV1Rules.BlackFlameDamage, null, targets);
+        }
     }
 }

@@ -166,6 +166,19 @@ public sealed partial class SawatariMonster
                     FinisherTargeting.Single, SingleTarget: target))
             : null;
         finisher?.Begin();
+        await using FinisherAttackVfxBaselineContext.Frame? attackFrame = FinisherAttackVfxBaselineContext.Enter(attack);
+        if (attackFrame != null) attackFrame.Hits = checked((int)Math.Ceiling(hitCount));
+        if (attackFrame is { Hits: > 1 }
+            && FinisherAttackCommandAdapter.PredictReverseVictim(attack, [target], damage, attackFrame.Hits) is { } victim
+            && victim.GetCreatureNode() is { } focus && Creature.GetCreatureNode() is { } actorNode)
+        {
+            if (beforeHit == null)
+            {
+                attackFrame.Approach = FinisherApproach.Create(actorNode, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
+                attackFrame.Approach.Start(CombatActionTimingRuntime.VisualSeconds(SawatariWeaponVisuals.DualCycleSeconds * 2f / 7f));
+            }
+            NinjaSlayerDeathClassifier.TryStartPredictedReverseFinisher(attackFrame, victim, [target]);
+        }
         var results = new List<DamageResult>();
         async Task<bool> Impact()
         {
@@ -207,5 +220,6 @@ public sealed partial class SawatariMonster
             await Hook.AfterAttack(combatState, choice, attack);
         }
         if (finisher != null) await finisher.CompleteAsync(playPose: true);
+        if (attackFrame != null) await attackFrame.Complete(playPose: true);
     }
 }

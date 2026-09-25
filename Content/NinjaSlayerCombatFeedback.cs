@@ -30,21 +30,6 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
             return;
         }
 
-        bool greetingPlayed;
-        try
-        {
-            greetingPlayed = await BossGreetingCinematic.TryPlay(combatState);
-        }
-        finally
-        {
-            BossGreetingCinematic.PlayDeferredBossBgm();
-        }
-
-        if (greetingPlayed)
-        {
-            return;
-        }
-
         foreach (Player player in combatState.Players)
         {
             if (!IsNinjaSlayer(player))
@@ -52,7 +37,8 @@ public sealed class NinjaSlayerCombatFeedback : NinjaSlayerCombatSingletonTempla
                 continue;
             }
 
-            if (NinjaSlayerRunData.ConsumePendingAncientEntranceAnimation(player))
+            if (NinjaSlayerRunData.ConsumePendingAncientEntranceAnimation(player)
+                && !BossGreetingCinematic.ReplacesAncientEntrance(player))
             {
                 await AncientEntranceAnimation.Play(player);
             }

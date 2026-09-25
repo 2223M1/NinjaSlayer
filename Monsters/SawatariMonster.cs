@@ -90,6 +90,8 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         await base.AfterAddedToRoom();
         SetFacingPlayerSide(Creature.Side == CombatSide.Player);
         SawatariWeaponVisuals.Create(this);
+        if (Creature.GetCreatureNode() is { } actor)
+            CombatFacingTurn.Ensure(actor).SetFacing(Creature.Side != CombatSide.Player, immediate: true);
         if (Creature.Side == CombatSide.Player
             && SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session))
         {
@@ -193,12 +195,16 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
             new FinisherActionForecastDescriptor(_ => BambooDamage, command.DamageProps, hitCount,
                 FinisherTargeting.Single, SingleTarget: target));
         finisher?.Begin();
+        await using FinisherAttackVfxBaselineContext.Frame? attackFrame = FinisherAttackVfxBaselineContext.Enter(command);
+        if (attackFrame != null) attackFrame.Hits = hitCount;
         FinisherApproach? approach = null;
         if (FinisherAttackCommandAdapter.PredictReverseVictim(command, [target], BambooDamage, hitCount)
             ?.GetCreatureNode() is { } focus && attacker.GetCreatureNode() is { } actorNode)
         {
-            approach = FinisherApproach.Create(actorNode, focus, Godot.Vector2.One);
+            approach = FinisherApproach.Create(actorNode, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
             approach.Start(CombatActionTimingRuntime.VisualSeconds(SawatariBambooAnimation.CycleSeconds * SawatariBambooAnimation.PeakPhase));
+            if (attackFrame != null)
+                NinjaSlayerDeathClassifier.TryStartPredictedReverseFinisher(attackFrame, target, [target]);
         }
         try
         {
@@ -251,6 +257,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
             }
         }
         if (finisher != null) await finisher.CompleteAsync(playPose: true);
+        if (attackFrame != null) await attackFrame.Complete(playPose: true);
     }
 
     private async Task AttackMove(IReadOnlyList<Creature> targets)

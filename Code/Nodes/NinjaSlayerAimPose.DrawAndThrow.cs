@@ -14,6 +14,8 @@ public partial class NinjaSlayerAimPose
     private float _baseEffectiveTravelY;
     private Vector2 _presentationScale = Vector2.One;
     private readonly List<VisualMotion> _presentations = [];
+    private VisualMotion? _alabamaRecovery;
+    internal Task? AlabamaRecoveryCompletion => _alabamaRecovery?.Completion;
 
     internal bool IsBackflipping => _presentations.Any(m => m.Kind == MotionKind.Backflip);
     internal bool IsJumping => _presentations.Any(m => m.Kind == MotionKind.Jump);
@@ -38,6 +40,7 @@ public partial class NinjaSlayerAimPose
         internal float Rotation;
         internal Vector2 Stretch = Vector2.One;
         internal bool Paused;
+        internal bool PlanarBlur;
         internal bool HoldAtPeak;
         internal bool Active = true;
         private readonly TaskCompletionSource _completion = new();
@@ -61,6 +64,36 @@ public partial class NinjaSlayerAimPose
         NinjaSlayerRapidAnimationCoordinator.EnsureLifecycle(_actor!.Entity);
         var motion = new VisualMotion(this, kind, duration, FacingSign);
         _presentations.Add(motion);
+        return motion;
+    }
+
+    internal VisualMotion RecoverAlabama(Transform2D impactBody, Transform2D restoredBody,
+        float seconds, float height)
+    {
+        // This is the exclusive action's own return, not a new ordinary action.
+        // The finisher may remain registered until the card scope has closed.
+        Transform2D delta = impactBody * restoredBody.AffineInverse();
+        float rotation = delta.Rotation;
+        Vector2 stretch = delta.Scale;
+        if (stretch.Y < 0f)
+        {
+            // Keep the half-turn explicit; Godot decomposes a reflected upside-down
+            // pose as an upright transform with negative Y, which would flatten it.
+            rotation = Mathf.Wrap(rotation + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
+            stretch = -stretch;
+        }
+        Vector2 core = CoreCanvas;
+        var motion = new VisualMotion(this, MotionKind.Recovery, seconds, FacingSign)
+        {
+            Offset = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                .AffineInverse().BasisXform(delta * core - core),
+            Rotation = rotation,
+            Stretch = stretch,
+            Height = height
+        };
+        _presentations.Add(motion);
+        _alabamaRecovery = motion;
+        SyncNow();
         return motion;
     }
 

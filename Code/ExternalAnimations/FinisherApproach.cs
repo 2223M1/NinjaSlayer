@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -10,7 +11,9 @@ internal sealed class FinisherApproach : IDisposable
 {
     private static readonly Dictionary<Creature, FinisherApproach> Active = [];
     private readonly NCreature _actor;
-    private readonly Vector2 _destination;
+    private readonly NCreature _focus;
+    private readonly Vector2 _squash;
+    private Vector2 _destination;
     private Vector2 _animationPosition;
     private Vector2 _offset;
     private Vector2 _returnFrom;
@@ -19,27 +22,44 @@ internal sealed class FinisherApproach : IDisposable
     private bool _claimed;
     private bool _disposed;
     private bool _returning;
+    private bool _contactReached;
 
     internal float? ReturnDuration { get; set; }
+    internal Vector2 OffsetInActorParent => _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+        .AffineInverse().BasisXform(_actor.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(_offset));
 
     internal static bool IsActive(Creature actor) =>
         Active.TryGetValue(actor, out var lease) && !lease._returning;
 
     internal static void ReachImpact(Creature actor)
     {
-        if (Active.TryGetValue(actor, out var lease) && !lease._returning) lease.ApplyProgress(1f);
+        if (Active.TryGetValue(actor, out var lease) && !lease._returning)
+        {
+            lease._tween?.Kill();
+            lease.ApplyProgress(1f);
+            lease._contactReached = true;
+        }
     }
 
     private FinisherApproach(NCreature actor, NCreature focus, Vector2 squash)
     {
         _actor = actor;
+        _focus = focus;
+        _squash = squash;
         _animationPosition = actor.Visuals.Position;
-        float impactX = FinisherImpactPositionResolver.ResolveImpactX(actor, focus, squash,
-            NinjaSlayerCombatVisuals.CloseRangeApproachGap);
-        Vector2 canvasTravel = actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
-            .BasisXform(new Vector2(impactX - actor.Position.X, 0f));
-        _destination = actor.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse().BasisXform(canvasTravel);
+        RefreshDestination();
         actor.TreeExiting += Dispose;
+    }
+
+    private void RefreshDestination()
+    {
+        float impactX = FinisherImpactPositionResolver.ResolveImpactX(_actor, _focus, _squash,
+            NinjaSlayerCombatVisuals.CloseRangeApproachGap);
+        Vector2 canvasTravel = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+            .BasisXform(new Vector2(impactX - _actor.Position.X, 0f));
+        Vector2 destination = _actor.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse().BasisXform(canvasTravel);
+        // The sampled weapon already contains our previous approach offset.
+        _destination = destination + (SawatariWeaponVisuals.Get(_actor.Entity) != null ? _offset : Vector2.Zero);
     }
 
     internal static FinisherApproach Create(NCreature actor, NCreature focus, Vector2 squash)
@@ -89,8 +109,13 @@ internal sealed class FinisherApproach : IDisposable
         _tween.TweenMethod(Callable.From<float>(ApplyProgress), 0f, 1f, seconds);
     }
 
-    internal void ApplyProgress(float progress) =>
+    internal void ApplyProgress(float progress)
+    {
+        // Follow the live grip, weapon swap and first strike pose until contact.
+        // Later hits retain that endpoint and their normal retreat/lunge cycle.
+        if (!_contactReached && SawatariWeaponVisuals.Get(_actor.Entity) != null) RefreshDestination();
         Apply(_from.Lerp(_destination, CombatCinematicCameraLease.EaseOutCubic(Mathf.Clamp(progress, 0f, 1f))));
+    }
 
     private void Apply(Vector2 offset)
     {
@@ -103,7 +128,7 @@ internal sealed class FinisherApproach : IDisposable
     {
         if (!Active.TryGetValue(actor, out var lease) || lease._disposed || lease._returning) return null;
         lease._claimed = true;
-        lease._tween?.Kill();
+        // An early predicted finisher takes ownership without stopping the approach.
         return lease;
     }
 

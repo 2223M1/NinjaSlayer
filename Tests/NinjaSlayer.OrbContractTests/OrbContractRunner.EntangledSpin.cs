@@ -98,7 +98,7 @@ public partial class OrbContractRunner
                     float degrees = (float)Angle(now);
                     Func<double, double> before = age => Angle(now - age);
                     AccessTools.Method(projectionType, "ApplyDegrees").Invoke(projection, [degrees, before]);
-                    AccessTools.Method(blurType, "Record").Invoke(blur, [projection, degrees, before]);
+                    AccessTools.Method(blurType, "Record").Invoke(blur, [projection, degrees, before, 0f]);
                     Sync();
                     await Frame();
                     Require(body.GetParent() == parent && body.GetChildCount(true) == children

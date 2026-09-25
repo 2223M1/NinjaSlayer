@@ -130,7 +130,8 @@ internal static class NinjaSlayerFinisherCinematic
     internal static bool TryPlayOwnedAction(
         Creature creature,
         float repeatWaitSeconds,
-        out Task action)
+        out Task action,
+        float attackDistance = 0f)
     {
         FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
         if (session?.Actor != creature || session.IsRanged)
@@ -139,7 +140,7 @@ internal static class NinjaSlayerFinisherCinematic
             return false;
         }
 
-        action = session.PlayActionToPeak(creature, repeatWaitSeconds);
+        action = session.PlayActionToPeak(creature, repeatWaitSeconds, attackDistance);
         return true;
     }
 

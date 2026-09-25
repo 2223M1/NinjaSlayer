@@ -1,5 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -7,16 +8,40 @@ internal sealed class FinisherActorLayerLease : IDisposable
 {
     private const int MaximumCanvasZIndex = 4095;
 
-    private readonly CanvasItem _body;
-    private readonly int _originalZIndex;
-    private readonly bool _originalZAsRelative;
+    private readonly List<(CanvasItem Item, int Z, bool Relative)> _layers = [];
     private bool _disposed;
 
     private FinisherActorLayerLease(CanvasItem body)
     {
-        _body = body;
-        _originalZIndex = body.ZIndex;
-        _originalZAsRelative = body.ZAsRelative;
+        _layers.Add((body, body.ZIndex, body.ZAsRelative));
+    }
+
+    internal static FinisherActorLayerLease AcquireBehind(NCreature actor, NCreature victim)
+    {
+        // Raise the victim, rather than lowering the grappler below the backdrop.
+        // Include overlay/head layers and any absolute-Z descendants.
+        var actorItems = new List<CanvasItem>();
+        var victimItems = new List<CanvasItem>();
+        void Visit(Node node, List<CanvasItem> items)
+        {
+            if (node is CanvasItem item) items.Add(item);
+            foreach (Node child in node.GetChildren()) Visit(child, items);
+        }
+        Visit(actor.Visuals, actorItems);
+        CanvasItem root = NinjaSlayerVisualRig.GetAirborneAnchor(victim.Visuals)
+            ?? victim.Visuals.GetCurrentBody();
+        Visit(root, victimItems);
+        int delta = Math.Max(0, actorItems.Max(ResolveEffectiveZ) + 1 - victimItems.Min(ResolveEffectiveZ));
+        var roots = victimItems.Where(item => item == root || !item.ZAsRelative)
+            .Select(item => (Item: item, Z: ResolveEffectiveZ(item))).ToArray();
+        var lease = new FinisherActorLayerLease(root);
+        foreach (var (item, z) in roots)
+        {
+            if (item != root) lease._layers.Add((item, item.ZIndex, item.ZAsRelative));
+            item.ZAsRelative = false;
+            item.ZIndex = Math.Clamp(z + delta, -MaximumCanvasZIndex, MaximumCanvasZIndex);
+        }
+        return lease;
     }
 
     public static FinisherActorLayerLease? TryAcquire(
@@ -63,13 +88,13 @@ internal sealed class FinisherActorLayerLease : IDisposable
         }
 
         _disposed = true;
-        if (!GodotObject.IsInstanceValid(_body))
+        foreach (var (item, z, relative) in _layers)
         {
-            return;
+            if (!GodotObject.IsInstanceValid(item)) continue;
+            item.ZIndex = z;
+            item.ZAsRelative = relative;
         }
-
-        _body.ZIndex = _originalZIndex;
-        _body.ZAsRelative = _originalZAsRelative;
+        _layers.Clear();
     }
 
     private static int ResolveEffectiveZ(CanvasItem item)

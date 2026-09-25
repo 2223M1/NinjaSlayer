@@ -32,7 +32,7 @@ public sealed class NinjaSlayerSettingsTests
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         Assert.Equal(
-            ["RadioEnabled", "FreeControlEnabled", "NarrationEnabled", "TelemetryNoticeShown", "PublicReplayEnabled", "MangaSelectPortraitEnabled"],
+            ["RadioEnabled", "FreeControlEnabled", "NarrationEnabled", "TelemetryNoticeShown", "PublicReplayEnabled", "MangaSelectPortraitEnabled", "BriefBossGreetingEnabled"],
             root.EnumerateObject().Select(property => property.Name).ToArray());
         Assert.True(root.GetProperty("RadioEnabled").GetBoolean());
 
@@ -48,6 +48,30 @@ public sealed class NinjaSlayerSettingsTests
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"NarrationEnabled\":false}")!.MangaSelectPortraitEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"TelemetryNoticeShown\":true}")!.PublicReplayEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"ForceAllEventsOnce\":false}")!.TelemetryNoticeShown);
+    }
+
+    [Fact]
+    public void FirstCompletedGreetingEnablesBriefModeForOldAndNewSettings()
+    {
+        foreach (var settings in new[] { new NinjaSlayerSettingsData(), JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{}")! })
+        {
+            Assert.Null(settings.BriefBossGreetingEnabled);
+            settings.CompleteFirstBossGreeting();
+            Assert.True(settings.BriefBossGreetingEnabled);
+            Assert.True(JsonSerializer.Deserialize<NinjaSlayerSettingsData>(JsonSerializer.Serialize(settings))!.BriefBossGreetingEnabled);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CompletingOrShorteningGreetingNeverOverwritesManualChoice(bool choice)
+    {
+        var settings = new NinjaSlayerSettingsData { BriefBossGreetingEnabled = choice };
+        settings.CompleteFirstBossGreeting();
+        settings.CompleteFirstBossGreeting();
+        Assert.Equal(choice, settings.BriefBossGreetingEnabled);
+        Assert.Equal(choice, JsonSerializer.Deserialize<NinjaSlayerSettingsData>(JsonSerializer.Serialize(settings))!.BriefBossGreetingEnabled);
     }
 
     [Fact]

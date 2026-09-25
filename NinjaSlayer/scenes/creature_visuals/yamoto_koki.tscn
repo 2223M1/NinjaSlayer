@@ -44,8 +44,8 @@ position = Vector2(13.5, -121.62)
 
 [node name="IntentPos" type="Marker2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(13.5, -269.08)
+position = Vector2(0, -294)
 
 [node name="TalkPos" type="Marker2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(-15.21, -225.23)
+position = Vector2(0, -314)

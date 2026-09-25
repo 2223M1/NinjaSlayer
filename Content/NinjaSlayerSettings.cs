@@ -2,6 +2,7 @@ using STS2RitsuLib;
 using STS2RitsuLib.Data;
 using STS2RitsuLib.Settings;
 using STS2RitsuLib.Utils.Persistence;
+using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Content;
 
@@ -14,11 +15,22 @@ public static class NinjaSlayerSettings
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool>? _narration;
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool> _radio = null!;
     private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool> _mangaSelectPortrait = null!;
+    private static ModSettingsValueBinding<NinjaSlayerSettingsData, bool>? _briefBossGreeting;
 
     internal static bool FreeControlEnabled => _freeControl?.Read() == true;
     internal static bool NarrationEnabled => _narration?.Read() ?? true;
     internal static bool MangaSelectPortraitEnabled => _mangaSelectPortrait.Read();
+    internal static bool BriefBossGreetingEnabled => _briefBossGreeting?.Read() == true;
     internal static event Action? SelectPortraitChanged;
+
+    internal static void CompleteFirstBossGreeting()
+    {
+        var store = ModDataStore.For(NinjaSlayerIds.ModId);
+        var settings = store.Get<NinjaSlayerSettingsData>(DataKey);
+        if (settings.BriefBossGreetingEnabled.HasValue) return;
+        settings.CompleteFirstBossGreeting();
+        store.Save(DataKey);
+    }
 
     public static void Register(string modId)
     {
@@ -54,6 +66,11 @@ public static class NinjaSlayerSettings
                 SelectPortraitChanged?.Invoke();
             });
 
+        _briefBossGreeting = new ModSettingsValueBinding<NinjaSlayerSettingsData, bool>(
+            modId, DataKey, SaveScope.Global,
+            static settings => settings.BriefBossGreetingEnabled == true,
+            static (settings, value) => settings.BriefBossGreetingEnabled = value);
+
         RitsuLibFramework.RegisterModSettings(modId, page => page
             .WithTitle(Text(
                 "NINJA_SLAYER_SETTINGS_PAGE_TITLE",
@@ -88,6 +105,13 @@ public static class NinjaSlayerSettings
                     _mangaSelectPortrait,
                     Text("NINJA_SLAYER_SETTINGS_MANGA_SELECT_DESCRIPTION",
                         "Off: animated official front portrait. On: manga portrait with the original hand animation. Only affects character selection.")))
+            .AddSection("combat_presentation", section => section
+                .WithTitle(Text("NINJA_SLAYER_SETTINGS_COMBAT_PRESENTATION_TITLE", "Combat presentation"))
+                .AddToggle("brief_boss_greeting",
+                    Text("NINJA_SLAYER_SETTINGS_BRIEF_BOSS_GREETING_TITLE", "Brief boss greetings by default"),
+                    _briefBossGreeting,
+                    Text("NINJA_SLAYER_SETTINGS_BRIEF_BOSS_GREETING_DESCRIPTION",
+                        "After the first full greeting, use brief greetings by default. Manual choices are retained. In multiplayer the host decides; only the host can press Space to shorten the current greeting.")))
             .AddSection("audio", section => section
                 .WithTitle(Text("NINJA_SLAYER_SETTINGS_AUDIO_TITLE", "Audio"))
                 .AddToggle("narration",

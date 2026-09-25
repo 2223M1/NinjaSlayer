@@ -94,6 +94,7 @@ public class Entry
             requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
             requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
+            requiredPatcher.RegisterPatch<BossGreetingStartPatch>();
             requiredPatcher.RegisterPatch<CardTransformShineSfxPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
@@ -149,6 +150,7 @@ public class Entry
             requiredPatcher.RegisterPatch<FinisherOrbEvokePatch>();
             requiredPatcher.RegisterPatch<FinisherShivVisualPatch>();
             requiredPatcher.RegisterPatch<FinisherShivTimingPatch>();
+            requiredPatcher.RegisterPatch<FinisherHeavyBluntSequencePatch>();
 #if !NINJASLAYER_LEGACY_DAMAGE_API
             requiredPatcher.RegisterPatch<FinisherNativeProjectilePatch>();
 #endif

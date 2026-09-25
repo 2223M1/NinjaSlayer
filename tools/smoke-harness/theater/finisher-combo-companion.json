@@ -1,0 +1,14 @@
+{
+  "seed": "FINISHER_AUDIT_20260924",
+  "purpose": "finisher-audit",
+  "act": 3,
+  "duration": 10,
+  "karate": 0,
+  "audit": { "monster": "ThievingHopper", "targetHp": 1, "companion": "sawatari", "expectedHits": 4, "mode": "Fast" },
+  "cues": [
+    { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
+    { "id": "idle", "steps": [{ "action": "wait", "seconds": 1 }] },
+    { "id": "ally_sawatari_bamboo", "steps": [{ "action": "move", "actor": "ally_sawatari", "move": "bamboo" }] },
+    { "id": "recovery", "steps": [{ "action": "wait", "seconds": 2 }] }
+  ]
+}

@@ -35,7 +35,53 @@ public sealed class CombatCinematicCameraLease : IDisposable
     private ScreenPunchInstance? _screenPunch;
     private float _screenPunchStrength;
     private bool _screenPunchRejectsWeaker;
+    private float _screenPunchAngle;
+    private bool _heldScreenShake;
     private int _responsiveLayoutAdjustmentCount;
+    private CanvasLayer? _combatCanvas;
+    private readonly List<CanvasItem> _renderRoots = [];
+
+    internal void IncludeCombatEffects()
+    {
+        if (_combatCanvas != null) return;
+        _combatCanvas = new CanvasLayer { Name = "FinisherCombatCanvas", Layer = -1 };
+        _room.AddChild(_combatCanvas);
+        _renderRoots.Add(_sceneContainer);
+        if (!_sceneContainer.IsAncestorOf(_room.CombatVfxContainer))
+            _renderRoots.Add(_room.CombatVfxContainer);
+        RenderingServer.FramePreDraw += SyncCombatCanvas;
+        ApplyTransform();
+    }
+
+    private void SyncCombatCanvas()
+    {
+        if (_combatCanvas == null || _disposed) return;
+        // Render-only parenting preserves native paths, global particle simulation,
+        // projectile trajectories and async sequences in the original scene tree.
+        foreach (CanvasItem root in _renderRoots.Where(GodotObject.IsInstanceValid))
+        {
+            RenderingServer.CanvasItemSetParent(root.GetCanvasItem(), _combatCanvas.GetCanvas());
+            RenderingServer.CanvasItemSetTransform(root.GetCanvasItem(), root.GetGlobalTransform());
+        }
+    }
+
+    private void RestoreCombatCanvas()
+    {
+        if (_combatCanvas == null) return;
+        RenderingServer.FramePreDraw -= SyncCombatCanvas;
+        foreach (CanvasItem root in _renderRoots.Where(GodotObject.IsInstanceValid))
+        {
+            if (!root.IsInsideTree()) continue;
+            CanvasItem? parent = root.GetParent() as CanvasItem;
+            RenderingServer.CanvasItemSetParent(root.GetCanvasItem(),
+                !root.TopLevel && parent != null ? parent.GetCanvasItem() : root.GetCanvas());
+            RenderingServer.CanvasItemSetTransform(root.GetCanvasItem(),
+                root.TopLevel ? root.GetGlobalTransform() : root.GetTransform());
+        }
+        _renderRoots.Clear();
+        _combatCanvas.QueueFree();
+        _combatCanvas = null;
+    }
 
     private CombatCinematicCameraLease(NCombatRoom room, string ownerName)
     {
@@ -151,7 +197,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
 
     public void Advance(float delta)
     {
-        if (_screenPunch == null || delta <= 0f)
+        if (_heldScreenShake || _screenPunch == null || delta <= 0f)
         {
             return;
         }
@@ -174,6 +220,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
         float degrees = -1f,
         bool rejectWeakerReplacement = false)
     {
+        if (_heldScreenShake) return;
         float multiplier = NScreenshakePaginator.GetShakeMultiplier(
             SaveManager.Instance.PrefsSave.ScreenShakeOptionIndex);
         float scaledStrength = GetShakeStrength(strength) * multiplier;
@@ -199,10 +246,23 @@ public sealed class CombatCinematicCameraLease : IDisposable
         float angle = degrees < 0f
             ? MegaCrit.Sts2.Core.Random.Rng.Chaotic.NextFloat(360f)
             : degrees;
+        _screenPunchAngle = Mathf.DegToRad(angle);
         _screenPunch = new ScreenPunchInstance(scaledStrength, GetShakeDuration(duration), angle);
         _screenPunchStrength = scaledStrength;
         _screenPunchRejectsWeaker = rejectWeakerReplacement;
         _shakeOffset = Vector2.Zero;
+        ApplyTransform();
+    }
+
+    internal void ApplyHeldScreenShake(float elapsed, float releaseSeconds, float endSeconds)
+    {
+        _heldScreenShake = elapsed < endSeconds;
+        float envelope = elapsed <= releaseSeconds ? 1f
+            : EaseOutCubic((endSeconds - elapsed) / (endSeconds - releaseSeconds));
+        // ScreenPunchInstance uses 60 radians/second; only its amplitude envelope changes.
+        float wave = Mathf.Cos((0.3f - elapsed) * 60f);
+        _shakeOffset = Vector2.Right.Rotated(_screenPunchAngle)
+            * (_screenPunchStrength * wave * envelope);
         ApplyTransform();
     }
 
@@ -308,6 +368,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
 
     public void ResetToBaseline()
     {
+        _heldScreenShake = false;
         _screenPunch = null;
         _screenPunchStrength = 0f;
         _screenPunchRejectsWeaker = false;
@@ -331,6 +392,7 @@ public sealed class CombatCinematicCameraLease : IDisposable
         }
 
         ResetToBaseline();
+        RestoreCombatCanvas();
         if (ReferenceEquals(_active, this))
         {
             _active = null;
@@ -474,11 +536,28 @@ public sealed class CombatCinematicCameraLease : IDisposable
             return;
         }
 
-        _sceneContainer.Scale = Vector2.One * _cameraScale;
         Vector2 position = _cameraPosition + _shakeOffset;
-        _sceneContainer.Position = containToScene
+        position = containToScene
             ? ClampPosition(position, _cameraScale)
             : position;
+        if (_combatCanvas != null)
+        {
+            float ratio = _cameraScale / BaselineScale.X;
+            Vector2 pivot = _sceneContainer.PivotOffset;
+            Vector2 origin = position + pivot - pivot * _cameraScale;
+            Vector2 baselineOrigin = BaselinePosition + pivot - pivot * BaselineScale;
+            Transform2D parent = (_sceneContainer.GetParent() as CanvasItem)?.GetGlobalTransform()
+                ?? Transform2D.Identity;
+            Transform2D delta = new(Vector2.Right * ratio, Vector2.Down * ratio,
+                origin - baselineOrigin * ratio);
+            _combatCanvas.Transform = parent * delta * parent.AffineInverse();
+            SyncCombatCanvas();
+        }
+        else
+        {
+            _sceneContainer.Scale = Vector2.One * _cameraScale;
+            _sceneContainer.Position = position;
+        }
     }
 
     private void AddFollowSample(float elapsed, Vector2 position)

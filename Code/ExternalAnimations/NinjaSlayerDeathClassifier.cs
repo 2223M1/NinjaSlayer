@@ -96,7 +96,8 @@ internal static class NinjaSlayerDeathClassifier
             dealer,
             baseline,
             ninjaSlayerTargets,
-            previousCaptures);
+            previousCaptures,
+            FinisherAttackVfxBaselineContext.For(dealer));
         foreach (Creature target in ninjaSlayerTargets)
         {
             previousCaptures[target] = IncomingCaptures.GetValueOrDefault(target);
@@ -109,13 +110,37 @@ internal static class NinjaSlayerDeathClassifier
     public static bool TryStartReverseFinisher(Creature target, decimal amount)
     {
         if (target.Player?.Character is not INinjaSlayerCharacter
-            || target.CombatState is not { } combatState
             || target.CurrentHp <= 0
             || amount < target.CurrentHp
             || !IncomingCaptures.TryGetValue(target, out IncomingDamageCapture? capture)
             || capture.IsCompleted
-            || capture.Session != null
-            || !IsValidEnemyDealer(target, capture.Dealer)
+            || capture.Session != null)
+        {
+            return false;
+        }
+
+        if (!TryCreateReverseFinisher(target, capture.Dealer, capture.Targets,
+                capture.VfxBaselineChildIds, capture.AttackFrame, out FinisherSession? session)) return false;
+        capture.Session = session;
+        return true;
+    }
+
+    internal static void TryStartPredictedReverseFinisher(
+        FinisherAttackVfxBaselineContext.Frame frame, Creature target, IReadOnlyList<Creature> targets)
+    {
+        if (frame.Hits <= 1 || frame.ReverseSession != null
+            || FinisherTimeline.PreviewProfile == FinisherPreviewProfile.A) return;
+        TryCreateReverseFinisher(target, frame.Attacker, targets, frame.BaselineChildIds, frame, out _);
+    }
+
+    private static bool TryCreateReverseFinisher(
+        Creature target, Creature dealer, IReadOnlyList<Creature> targets, IReadOnlySet<ulong> baseline,
+        FinisherAttackVfxBaselineContext.Frame? frame, out FinisherSession? session)
+    {
+        session = null;
+        if (target.Player?.Character is not INinjaSlayerCharacter
+            || target.CombatState is not { } combatState
+            || !IsValidEnemyDealer(target, dealer)
             || !FinisherProtectionService.CanProtectLethalDamage(out _)
             || !Hook.ShouldDie(target.Player.RunState, combatState, target, out _)
             || NCombatRoom.Instance is not { } room)
@@ -128,10 +153,10 @@ internal static class NinjaSlayerDeathClassifier
             return false;
         }
 
-        NCreature? dealerNode = room.GetCreatureNode(capture.Dealer);
+        NCreature? dealerNode = room.GetCreatureNode(dealer);
         NCreature? focusNode = room.GetCreatureNode(target);
-        List<Creature> victims = capture.Targets
-            .Where(candidate => candidate.IsAlive
+        List<Creature> victims = targets
+            .Where(candidate => candidate.IsAlive && candidate.Player?.Character is INinjaSlayerCharacter
                 && ReferenceEquals(candidate.CombatState, combatState)
                 && room.GetCreatureNode(candidate) != null)
             .Distinct()
@@ -151,19 +176,20 @@ internal static class NinjaSlayerDeathClassifier
                 new FinisherSessionRequest(
                     FinisherScenarioKind.EnemyExecutesNinjaSlayer,
                     FinisherCompletionCondition.AnyCandidateLethal,
-                    capture.Dealer,
+                    dealer,
                     dealerNode,
                     focusNode,
                     victims,
                     camera,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
-                    ResolvedHits: 1,
-                    VfxBaselineChildIds: capture.VfxBaselineChildIds,
-                    RangedAction: FinisherRangedAction.For(capture.Dealer)),
+                    ResolvedHits: frame?.Hits ?? 1,
+                    VfxBaselineChildIds: baseline,
+                    RangedAction: FinisherRangedAction.For(dealer),
+                    ObservedPrimaryHits: frame?.DamageWaves ?? 1),
                 combatState,
                 room,
-                out FinisherSession? session))
+                out session))
         {
             camera.Dispose();
             return false;
@@ -172,9 +198,9 @@ internal static class NinjaSlayerDeathClassifier
         try
         {
             session.Begin();
-            capture.Session = session;
+            if (frame != null) frame.ReverseSession = session;
             Entry.Logger.Info(
-                $"Reverse finisher session {session.SessionId} started: dealer={capture.Dealer}, victims={victims.Count}.");
+                $"Reverse finisher session {session.SessionId} started: dealer={dealer}, victims={victims.Count}.");
             return true;
         }
         catch (Exception ex)
@@ -203,7 +229,7 @@ internal static class NinjaSlayerDeathClassifier
             }
             catch (Exception originalFailure)
             {
-                if (capture.Session is { } failedSession)
+                if (capture.AttackFrame == null && capture.Session is { } failedSession)
                 {
                     try
                     {
@@ -221,7 +247,7 @@ internal static class NinjaSlayerDeathClassifier
                 throw;
             }
 
-            if (capture.Session is { } session)
+            if (capture.AttackFrame == null && capture.Session is { } session)
             {
                 await session.CompleteAsync(playPose: true);
             }
@@ -278,13 +304,15 @@ internal static class NinjaSlayerDeathClassifier
         Creature dealer,
         IReadOnlySet<ulong> vfxBaselineChildIds,
         IReadOnlyList<Creature> targets,
-        IReadOnlyDictionary<Creature, IncomingDamageCapture?> previousCaptures)
+        IReadOnlyDictionary<Creature, IncomingDamageCapture?> previousCaptures,
+        FinisherAttackVfxBaselineContext.Frame? attackFrame)
     {
         public Creature Dealer { get; } = dealer;
         public IReadOnlySet<ulong> VfxBaselineChildIds { get; } = vfxBaselineChildIds;
         public IReadOnlyList<Creature> Targets { get; } = targets;
         public IReadOnlyDictionary<Creature, IncomingDamageCapture?> PreviousCaptures { get; } = previousCaptures;
         public FinisherSession? Session { get; set; }
+        public FinisherAttackVfxBaselineContext.Frame? AttackFrame { get; } = attackFrame;
         public bool IsCompleted { get; set; }
     }
 

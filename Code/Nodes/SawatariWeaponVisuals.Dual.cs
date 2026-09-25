@@ -80,9 +80,9 @@ internal sealed partial class SawatariWeaponVisuals
                 if (!await Move(0, 2)) break;
                 bool continueAttack = await impact();
                 NinjaSlayerShadowController.Get(source)?.BeginReturn(cycle * 5f / 7f);
-                if ((hit == hits - 1 || !continueAttack) && source.Side == CombatSide.Player
-                    && source.PetOwner != null
-                    && FinisherSessionRegistry.GetActiveSession()?.Actor != source)
+                if ((hit == hits - 1 || !continueAttack)
+                    && (source.Side == CombatSide.Player && source.PetOwner != null
+                        || FinisherSessionRegistry.GetActiveSession()?.Actor == source))
                 {
                     detachedReturn = true;
                     _ = TaskHelper.RunSafely(FinishReturn());

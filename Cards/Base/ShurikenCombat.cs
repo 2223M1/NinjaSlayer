@@ -207,6 +207,13 @@ internal static class ShurikenCombat
             return null;
         }
 
+        // The native factory also serves Shiv. Shuriken always keeps its ordinary particle head.
+        if (vfx.GetNodeOrNull<Code.Nodes.FinisherProjectileHead>("ContactHead") is { } contactHead)
+        {
+            vfx.RemoveChild(contactHead);
+            contactHead.Free();
+        }
+
         Node2D throwContainer = vfx.GetNode<Node2D>(ThrowContainerPath);
         GpuParticles2D trail = vfx.GetNode<GpuParticles2D>(ThrowParticlePath);
         throwContainer.Position = new Vector2(

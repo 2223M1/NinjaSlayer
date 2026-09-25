@@ -50,6 +50,9 @@ public partial class OrbContractRunner
                 actor.AddChild(rig);
                 AimActors.Add(creature, actor);
                 stage.AddChild(actor);
+                // This fixture bypasses AfterAddedToRoom; initialize its normal body facing too.
+                AccessTools.Method(typeof(SawatariMonster), "SetFacingPlayerSide")
+                    .Invoke(creature.Monster, [side == CombatSide.Player]);
                 Node2D anchor = rig.GetNode<Node2D>("AirborneAnchor");
                 Transform2D baseline = anchor.Transform;
                 Vector2 rootBaseline = actor.Position;

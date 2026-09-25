@@ -85,10 +85,28 @@ internal sealed class FinisherShivVisualPatch : IPatchMethod
     public static ModPatchTarget[] GetTargets() =>
         [new(typeof(NShivThrowVfx), nameof(NShivThrowVfx.Create), [typeof(Vector2), typeof(Vector2), typeof(Color)])];
 
-    public static void Postfix(NShivThrowVfx? __result)
+    public static void Postfix(NShivThrowVfx? __result, Vector2 throwerCenterPosition, Vector2 targetCenterPosition)
     {
         if (__result == null || FinisherRangedAction.Active is not { } action) return;
         Track(__result, action);
+        AttachHead(__result, throwerCenterPosition, targetCenterPosition);
+    }
+
+    internal static NinjaSlayer.Code.Nodes.FinisherProjectileHead? AttachHead(
+        NShivThrowVfx visual, Vector2 origin, Vector2 destination)
+    {
+        if (visual.GetNodeOrNull<NinjaSlayer.Code.Nodes.FinisherProjectileHead>("ContactHead") is { } existing)
+            return existing;
+        if (FinisherSessionRegistry.GetActiveSession() is not { IsRanged: true } session
+            || session.FindImpactTarget(destination) is not { } target) return null;
+        var trail = visual.GetNode<GpuParticles2D>("throw_container/vfx_dagger_spray_dagger");
+        var head = new NinjaSlayer.Code.Nodes.FinisherProjectileHead
+        {
+            Name = "ContactHead", Texture = trail.Texture, Material = trail.Material,
+            Scale = Vector2.One * 0.35f, Origin = origin, Target = target, ZIndex = 1
+        };
+        visual.AddChild(head);
+        return head;
     }
 
     internal static void Track(NShivThrowVfx visual, FinisherRangedAction action)
@@ -105,7 +123,11 @@ internal sealed class FinisherShivVisualPatch : IPatchMethod
     {
         await Cmd.Wait(seconds, cancellation, ignoreCombatEnd);
         if (!Flights.TryGetValue(visual, out Flight? flight)) return;
-        if (!flight.Arrival.Task.IsCompleted) flight.Arrival.TrySetResult();
+        if (!flight.Arrival.Task.IsCompleted)
+        {
+            visual.GetNodeOrNull<NinjaSlayer.Code.Nodes.FinisherProjectileHead>("ContactHead")?.Arrive();
+            flight.Arrival.TrySetResult();
+        }
         else if (flight.Action.Session is { } session) await session.Completion;
     }
 

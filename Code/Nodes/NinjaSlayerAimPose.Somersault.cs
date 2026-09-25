@@ -69,7 +69,8 @@ public partial class NinjaSlayerAimPose
             _somersaultBlur?.ClearHistory();
             return;
         }
-        if ((_somersault == null && _tomoe == null) || _actor == null)
+        VisualMotion? planar = _presentations.LastOrDefault(motion => motion.PlanarBlur);
+        if ((_somersault == null && _tomoe == null && planar == null) || _actor == null)
         {
             _somersaultBlur?.ClearHistory();
             return;
@@ -83,12 +84,13 @@ public partial class NinjaSlayerAimPose
         Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor.Visuals)!;
         var overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
         Sprite2D body = overlay.Visible ? overlay : source;
-        if (_tomoe is { } tomoe)
+        if (_tomoe != null || planar != null)
         {
+            float angle = _tomoe?.Angle ?? planar!.Radians;
             Transform2D space = new(0f, CoreCanvas);
-            Transform2D authored = new Transform2D(-tomoe.Angle, Vector2.Zero)
+            Transform2D authored = new Transform2D(-angle, Vector2.Zero)
                 * space.AffineInverse() * body.GetGlobalTransformWithCanvas();
-            _somersaultBlur.RecordHistory(body, _somersaultClock, space, Vector2.Zero, authored, tomoe.Angle);
+            _somersaultBlur.RecordHistory(body, _somersaultClock, space, Vector2.Zero, authored, angle);
         }
         else _somersaultBlur.RecordHistory(body, _somersaultClock, CoreCanvas);
     }

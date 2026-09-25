@@ -29,6 +29,43 @@ assert(sync.matches.filter(match => match.accepted).length >= 2, 'Too few measur
 
 const full = runtime.fromCue === script.cues[0].id && runtime.toCue === script.cues.at(-1).id;
 const count = name => coverage[name]?.filter(time => time >= runtime.captureStartSeconds).length ?? 0;
+if (script.purpose === 'overhead') {
+  assert.equal(count('overhead-clearance'), 1);
+  const gaps = read('overhead-gaps.json');
+  for (const name of ['koki', 'yukano', 'sawatari', 'sawatari-ally'])
+    assert(gaps[name] >= 4, `${name} intent has insufficient head clearance.`);
+}
+if (script.purpose === 'greeting') {
+  const at = name => timeline.find(row => row.id === name)?.start;
+  const complete = at('greeting-complete');
+  assert.equal(timeline.filter(row => row.id === 'boss-response').length, 1, 'Boss response replayed.');
+  assert.equal(timeline.filter(row => row.id === 'relic-start').length, 1, 'Opening relic repeated.');
+  assert(at('relic-start') >= complete && at('draw-start') > at('relic-start'));
+  assert(motion.filter(row => row.seconds < complete).every(row => row.hand === 0),
+    'Visible deal preceded greeting completion.');
+  if (script.greetingMode === 'full') {
+    assert.equal(at('space-switch'), undefined);
+    assert(at('boss-response') > at('greeting-start') && at('boss-response') < complete);
+  } else {
+    const briefStart = script.greetingMode === 'brief' ? at('greeting-start') : at('space-switch');
+    const pause = (at('pause-end') ?? 0) - (at('pause-start') ?? 0);
+    if (script.greetingMode !== 'switch-response')
+      assert(Math.abs(at('boss-response') - briefStart - pause - .5) < (script.greetingPause ? .1 : .05));
+    else assert(at('boss-response') < briefStart, 'Did not switch during an existing response.');
+    const expectedDuration = script.greetingEncounter === 'KaiserCrabBoss' ? 2.25 : 2;
+    assert(Math.abs(complete - briefStart - pause - expectedDuration) < (script.greetingPause ? .15 : .08));
+    const briefFrames = motion.filter(row => row.seconds > briefStart + .12 && row.seconds < complete);
+    assert(briefFrames.length > 30);
+    assert(briefFrames.every(row => Math.abs(row.sceneX - briefFrames[0].sceneX) < .0001), 'Brief greeting moved the camera.');
+    assert(briefFrames.every(row => row.rootX === briefFrames[0].rootX && row.rootY === briefFrames[0].rootY), 'Bow moved the layout root.');
+    if (briefFrames[0].scaleX !== undefined) {
+      assert(briefFrames.every(row => Math.abs(row.scaleX - briefFrames[0].scaleX) < .0001
+        && Math.abs(row.scaleY - briefFrames[0].scaleY) < .0001), 'Bow deformed the sprite.');
+      assert(briefFrames.some(row => Math.abs(Math.abs(row.angle) - Math.PI / 10) < .002), 'Missing 18-degree bow.');
+      assert(briefFrames.filter(row => row.seconds > briefStart + pause + 1.08).every(row => Math.abs(row.angle) < .001), 'Bow did not recover.');
+    }
+  }
+}
 if (full && script.purpose === 'blood') {
   assert.equal(runtime.mode, 'Normal');
   for (const name of ['threshold-block-self-dot-dodge-single-instance', 'moving', 'semi',

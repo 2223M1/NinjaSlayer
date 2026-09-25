@@ -40,7 +40,8 @@ internal static class NinjaSlayerAttackExecution
             if (Commands.Value?.Play is { } play)
                 return play;
             CardModel? card = RapidCardPresentationContext.CurrentCard;
-            return card != null && CardPlayResolutionScope.TryResolveCurrentPlay(card, out play) ? play : null;
+            return card != null && CardPlayResolutionScope.TryResolveCurrentPlay(card, out play) ? play
+                : ExternalAnimations.FinisherSessionRegistry.GetActiveSession()?.EventVisualPlay;
         }
     }
 

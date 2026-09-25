@@ -8,4 +8,7 @@ public sealed class NinjaSlayerSettingsData
     public bool TelemetryNoticeShown { get; set; }
     public bool PublicReplayEnabled { get; set; }
     public bool MangaSelectPortraitEnabled { get; set; }
+    public bool? BriefBossGreetingEnabled { get; set; }
+
+    internal void CompleteFirstBossGreeting() => BriefBossGreetingEnabled ??= true;
 }

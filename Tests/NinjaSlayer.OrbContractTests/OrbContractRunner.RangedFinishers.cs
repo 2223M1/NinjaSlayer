@@ -31,6 +31,7 @@ public partial class OrbContractRunner
 
     private async Task VerifyRangedVisualFreeze(NCreature target)
     {
+        VerifyFinisherImpactGeometry();
         var room = new NCombatRoom();
         var container = new Control();
         AddChild(container);
@@ -71,6 +72,66 @@ public partial class OrbContractRunner
             hitbox.QueueFree(); container.QueueFree(); room.Free();
         }
         GD.Print("PASS owned ranged projectile particle freeze, bound catch Tween pause and exact restore.");
+    }
+
+    private void VerifyFinisherImpactGeometry()
+    {
+        Type session = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherSession", true)!;
+        Type snapshot = session.GetNestedType("ImpactVisualSnapshot", System.Reflection.BindingFlags.NonPublic)!;
+        var parent = new Node2D { Rotation = 0.21f };
+        var body = new Node2D { Transform = new Transform2D(0.17f, new(-1.2f, 0.8f), 0.13f, new(20, 30)) };
+        var bounds = new Control { Position = new(-50, -100), Size = new(100, 100) };
+        AddChild(parent); parent.AddChild(body); parent.AddChild(bounds);
+        Transform2D original = body.Transform;
+        try
+        {
+            foreach (float angle in new[] { 0f, Mathf.Pi / 4f, Mathf.Pi / 2f, Mathf.Pi, -Mathf.Pi / 3f })
+            {
+                body.Transform = original;
+                Vector2 axis = Vector2.FromAngle(angle);
+                Vector2 normal = axis.Orthogonal();
+                Transform2D before = body.GlobalTransform;
+                object sample = Activator.CreateInstance(snapshot,
+                    [body, body.Position, body.Scale, body.Rotation, Colors.White, bounds, 1f, axis, new Vector2(.55f, 1.2f), null])!;
+                object state = AccessTools.Method(session, "CaptureDeathSquashState").Invoke(null,
+                    [sample, new Vector2(.55f, 1.2f)])!;
+                AccessTools.Method(session, "ApplyDeathSquashTransform").Invoke(null,
+                    [state, new Vector2(.55f, 1.2f), body.Rotation]);
+                Transform2D change = body.GlobalTransform * before.AffineInverse();
+                Require(change.BasisXform(axis).DistanceTo(axis * .55f) < .001f,
+                    "Squash axis was affected by a mirrored or rotated parent.");
+                Require(change.BasisXform(normal).DistanceTo(normal * 1.2f) < .001f,
+                    "Squash lost its perpendicular expansion.");
+            }
+            Type timeline = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherTimeline", true)!;
+            float previous = 1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                float zoom = (float)AccessTools.Method(timeline, "ImpactZoom").Invoke(null, [1f, 2.12f, i / 8f])!;
+                Require(zoom >= previous && zoom <= 2.1201f, "Impact camera curve overshot or reversed.");
+                previous = zoom;
+            }
+            Require(Math.Abs(previous - 2.12f) < .0001f, "Impact camera failed to reach its authored endpoint.");
+            Type profiles = timeline.Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherPreviewProfile", true)!;
+            Require(AccessTools.Property(timeline, "PreviewProfile").GetValue(null)!.ToString() == "B",
+                "The normal game must default to the B impact camera timeline.");
+            float lastBoundary = 0f;
+            foreach (var (name, referenceFrame) in new[] {
+                ("ImpactZoomSeconds", 4), ("ImpactReturnStart", 26),
+                ("ImpactReleaseSeconds", 27), ("ImpactEndSeconds", 31) })
+            {
+                var method = AccessTools.Method(timeline, name);
+                float full = (float)method.Invoke(null, [Enum.Parse(profiles, "C")])!;
+                float half = (float)method.Invoke(null, [Enum.Parse(profiles, "B")])!;
+                Require(Math.Abs(full - referenceFrame * 1001f / 30000f) < .00001f
+                    && Math.Abs(half * 2f - full) < .00001f,
+                    "B/C phases no longer share the measured reference clock: " + name);
+                Require(full > lastBoundary, "Camera return must start before release and finish afterwards.");
+                lastBoundary = full;
+            }
+        }
+        finally { parent.QueueFree(); }
+        GD.Print("PASS directional affine squash with mirrored/skewed parents and monotonic measured impact zoom.");
     }
 
     private static async Task VerifyRangedSources()

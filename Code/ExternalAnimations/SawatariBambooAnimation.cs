@@ -43,7 +43,7 @@ internal static class SawatariBambooAnimation
         }
         long generation = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Restore);
         (baseline, core) = StaggerAnimation.CaptureAttackPose(creature, anchor, center);
-        float direction = creature.Side == CombatSide.Player ? 1f : -1f;
+        float direction = NinjaSlayerVisualRig.GetBodySprite(node.Visuals)!.FlipH ? 1f : -1f;
         double frameRemainder = 0d;
         void Apply(float phase)
         {
@@ -85,9 +85,8 @@ internal static class SawatariBambooAnimation
                 if (!await Move(0f, PeakPhase)) break;
                 await impact();
                 NinjaSlayerShadowController.Get(creature)?.BeginReturn(cycle * (1f - PeakPhase));
-                if ((i == hits - 1) && creature.Side == CombatSide.Player
-                    && creature.PetOwner != null
-                    && FinisherSessionRegistry.GetActiveSession()?.Actor != creature)
+                if (i == hits - 1 && (creature.Side == CombatSide.Player && creature.PetOwner != null
+                    || FinisherSessionRegistry.GetActiveSession()?.Actor == creature))
                 {
                     detachedReturn = true;
                     _ = TaskHelper.RunSafely(FinishReturn());

@@ -1,8 +1,12 @@
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Content;
+using NinjaSlayer.Monsters;
 using NinjaSlayer.Orbs;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -11,6 +15,16 @@ public partial class OrbContractRunner
 {
     private void VerifyFinisherApproach(NCreature actor, NCreature focus)
     {
+        Type timeline = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.FinisherTimeline", true)!;
+        bool CanSquash(Creature victim) => (bool)AccessTools.Method(timeline, "AllowsDeathSquash").Invoke(null, [victim])!;
+        Require(!CanSquash(actor.Entity) && CanSquash(focus.Entity),
+            "Finisher squash must exclude Ninja Slayer without disabling native monster squash.");
+        foreach (MonsterModel model in new MonsterModel[] { ModelDb.Monster<SawatariMonster>(),
+            ModelDb.Monster<DarkNinjaMonster>(), ModelDb.Monster<YamotoKokiMonster>(),
+            ModelDb.Monster<YukanoMonster>(), ModelDb.Monster<YamotoKokiOrigamiMissile>() })
+            foreach (CombatSide side in new[] { CombatSide.Enemy, CombatSide.Player })
+                Require(!CanSquash(new Creature(model.ToMutable(), side, null)),
+                    "Mod character received finisher deformation: " + model.GetType().Name);
         var command = DamageCmd.Attack(1).WithHeavyBluntHitFx();
         Require(command.HitVfx == VfxCmd.heavyBluntPath
             && !(bool)AccessTools.Field(command.GetType(), "_spawnVfxOnCreatureCenter").GetValue(command)!,
@@ -62,6 +76,23 @@ public partial class OrbContractRunner
                 }
                 finally { lease.Dispose(); }
             }
+            using (var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!)
+            {
+                AccessTools.Method(type, "Start").Invoke(lease, [.2f]);
+                var outbound = (Tween)AccessTools.Field(type, "_tween").GetValue(lease)!;
+                outbound.Pause();
+                outbound.CustomStep(.05f);
+                Vector2 beforeClaim = actor.Visuals.Position;
+                Require(ReferenceEquals(lease, AccessTools.Method(type, "Claim").Invoke(null, [actor.Entity]))
+                    && outbound.IsValid(), "Early combo ownership stopped the continuous approach.");
+                outbound.CustomStep(.05f);
+                Require(actor.Visuals.Position.DistanceTo(beforeClaim) > .01f,
+                    "The approach stopped moving after its finisher claimed it.");
+                AccessTools.Method(type, "ReachImpact").Invoke(null, [actor.Entity]);
+                Vector2 endpoint = (Vector2)AccessTools.Field(type, "_destination").GetValue(lease)!;
+                Require(actor.Visuals.Position.DistanceTo(baseline + endpoint) < .01f && !outbound.IsValid(),
+                    "The real hit did not finish and release the approach Tween.");
+            }
             foreach (float seconds in new[] { .25f, 0f })
             {
                 using var lease = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!;
@@ -84,6 +115,7 @@ public partial class OrbContractRunner
                 Require(actor.Visuals.Position.IsEqualApprox(baseline) && actor.Position.IsEqualApprox(actorRoot),
                     "Iai prediction return failed to restore the visual baseline with a stable UI root.");
             }
+            VerifyWeaponContact(actor, focus, type, bounds);
         }
         finally
         {
@@ -92,5 +124,59 @@ public partial class OrbContractRunner
             actor.Visuals.Position = baseline;
         }
         GD.Print("PASS native heavy base effect and finisher approach: both directions, continuous start/impact/return, stable UI, no rig reparenting.");
+    }
+
+    private void VerifyWeaponContact(NCreature actor, NCreature focus, Type approachType, Control targetBounds)
+    {
+        Type weaponsType = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Nodes.SawatariWeaponVisuals", true)!;
+        var weapons = (Node)Activator.CreateInstance(weaponsType)!;
+        weapons.Name = "SawatariWeapons";
+        using var pixels = Image.CreateEmpty(32, 32, false, Image.Format.Rgba8);
+        pixels.FillRect(new Rect2I(4, 8, 20, 16), Colors.White);
+        using var texture = ImageTexture.CreateFromImage(pixels);
+        var body = new Sprite2D { Texture = texture, Position = new(15, -100) };
+        var hand = new Sprite2D { Texture = texture, Position = new(150, 0) };
+        var knife = new Sprite2D { Texture = texture, Position = new(300, 0) };
+        var hidden = new Sprite2D { Texture = texture, Position = new(900, 0), Visible = false };
+        actor.Visuals.AddChild(body); body.AddChild(hand); body.AddChild(knife); body.AddChild(hidden);
+        AccessTools.Field(weaponsType, "_body").SetValue(weapons, body);
+        actor.Visuals.AddChild(weapons);
+        Rect2 Bounds() => (Rect2)AccessTools.Method(weaponsType, "GetCombatBounds").Invoke(weapons,
+            [actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()])!;
+        try
+        {
+            foreach (float direction in new[] { 1f, -1f })
+            {
+                focus.Position = actor.Position + Vector2.Right * direction * 600f;
+                body.Scale = new(direction, 1f);
+                knife.Position = new(300, 0);
+                using var approach = (IDisposable)AccessTools.Method(approachType, "Create").Invoke(null,
+                    [actor, focus, Vector2.One])!;
+                Vector2 origin = actor.Visuals.Position;
+                AccessTools.Method(approachType, "ApplyProgress").Invoke(approach, [0f]);
+                Require(actor.Visuals.Position.IsEqualApprox(origin), "Weapon reach adjustment teleported at startup.");
+                AccessTools.Method(approachType, "ApplyProgress").Invoke(approach, [.5f]);
+                knife.Position += Vector2.Right * 40f;
+                AccessTools.Method(approachType, "ReachImpact").Invoke(null, [actor.Entity]);
+                Rect2 actual = Bounds();
+                Rect2 target = actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+                    * targetBounds.GetGlobalTransformWithCanvas() * new Rect2(Vector2.Zero, targetBounds.Size);
+                float front = direction > 0 ? actual.End.X : actual.Position.X;
+                float contact = direction > 0 ? target.Position.X : target.End.X;
+                Require(Math.Abs(front - contact) < .01f,
+                    $"Finisher contact omitted the held weapon or double-counted the approach offset: front={front}, contact={contact}, direction={direction}.");
+                Require(actual.Size.X < 400f, "Hidden weapons affected finisher reach.");
+                Vector2 endpoint = actor.Visuals.Position;
+                body.Position -= Vector2.Right * direction * 30f;
+                AccessTools.Method(approachType, "ReachImpact").Invoke(null, [actor.Entity]);
+                Require(actor.Visuals.Position.IsEqualApprox(endpoint), "Later hits cancelled the normal combo retreat.");
+                body.Position += Vector2.Right * direction * 30f;
+                knife.Reparent(actor.GetParent());
+                Require(Bounds().Size.X < 200f, "A released weapon remained part of Sawatari's body bounds.");
+                knife.Reparent(body, keepGlobalTransform: false);
+            }
+        }
+        finally { actor.Visuals.RemoveChild(weapons); weapons.QueueFree(); body.QueueFree(); }
+        GD.Print("PASS mod victims remain rigid; complete held-weapon bounds, mirrored contact and combo retreat.");
     }
 }

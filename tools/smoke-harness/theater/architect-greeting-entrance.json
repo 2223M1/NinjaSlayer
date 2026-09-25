@@ -1,0 +1,14 @@
+{
+  "seed": "NINJASLAYER_ARCHITECT_BRIEF_20260925",
+  "purpose": "architect",
+  "act": 3,
+  "duration": 18,
+  "karate": 2,
+  "relics": [],
+  "cues": [
+    { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
+    { "id": "wall_entry_greeting_execution", "steps": [
+      { "action": "architect_execution", "actor": "native", "card": "CollapseFistRedesignV1", "mode": "WallSlideFromLeft" }
+    ] }
+  ]
+}

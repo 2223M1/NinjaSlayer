@@ -59,22 +59,22 @@ public static class ByrdFallAnimation
 
         if (playImpact)
         {
-            if (cinematicContext == null)
-            {
-                NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
-            }
-            else
-            {
-                cinematicContext.PlayScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
-            }
-
-            SfxCmd.Play("event:/sfx/enemy/enemy_impact_enemy_size/enemy_impact_fur");
+            PlayLandingImpact(cinematicContext);
         }
 
         if (onImpact != null)
         {
             await onImpact();
         }
+    }
+
+    internal static void PlayLandingImpact(ICinematicAnimationContext? cinematicContext)
+    {
+        if (cinematicContext == null)
+            NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
+        else
+            cinematicContext.PlayScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
+        SfxCmd.Play("event:/sfx/enemy/enemy_impact_enemy_size/enemy_impact_fur");
     }
 
     private static Node2D? GetVerticalTarget(NCreatureVisuals visuals, out bool usesAirborneAnchor)

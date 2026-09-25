@@ -80,8 +80,8 @@ public partial class OrbContractRunner
                 {
                     var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
                         .Where(e => e.Receiver == enemy && e.CardSource is BlackFlameRedesignV1).ToArray();
-                    Require(burns.Length == expectedPlays && burns.All(e => e.Result.TotalDamage == flameCount * 4 + 3),
-                        $"Nested autoplay must complete with one merged, once-amplified burn per actual play: BeatDown={beatDown}, upgraded={upgraded}, flames={flameCount}.");
+                    Require(burns.Length == expectedPlays * flameCount && burns.All(e => e.Result.TotalDamage == 7),
+                        $"Nested autoplay must complete with one independently amplified burn per held flame and actual play: BeatDown={beatDown}, upgraded={upgraded}, flames={flameCount}.");
                 }
             }
         }
@@ -90,6 +90,6 @@ public partial class OrbContractRunner
             patcher.UnpatchAll();
             asyncAutoplay.UnpatchAll(asyncAutoplay.Id);
         }
-        GD.Print("PASS Black Flame nested autoplay: Naval Warhammer/BeatDown, upgrades, multi-hit, merged flames and amplification.");
+        GD.Print("PASS Black Flame nested autoplay: Naval Warhammer/BeatDown, upgrades, multi-hit, individual flames and amplification.");
     }
 }

@@ -35,8 +35,7 @@ public partial class YamotoKokiAllyFacingController : Node
     internal static void SyncCurrentRoom()
     {
         if (NCombatRoom.Instance is not { } room
-            || !room.CreatureNodes.Any(node =>
-                node.Entity.Monster is YamotoKokiMonster or YukanoMonster))
+            || !room.CreatureNodes.Any(IsTrackedCompanion))
         {
             return;
         }
@@ -61,6 +60,7 @@ public partial class YamotoKokiAllyFacingController : Node
         foreach (NCreature companion in _room.CreatureNodes.Where(IsTrackedCompanion))
         {
             if (!companion.IsNodeReady()
+                || !companion.CanProcess()
                 || companion.Entity.PetOwner?.Creature is not { } owner
                 || _room.GetCreatureNode(owner) is not { } ownerNode
                 || !ownerNode.IsNodeReady())
@@ -68,16 +68,13 @@ public partial class YamotoKokiAllyFacingController : Node
                 continue;
             }
 
-            Node2D body = companion.Body;
             if (!facingByOwner.TryGetValue(owner, out bool faceLeft))
             {
                 faceLeft = ResolveCompanionFacing(ownerNode);
                 facingByOwner.Add(owner, faceLeft);
             }
 
-            body.Transform = WithFacing(body.Transform, faceLeft);
-
-            NinjaSlayerShadowController.Get(companion.Entity)?.SetMirrored(faceLeft);
+            CombatFacingTurn.Ensure(companion).SetFacing(faceLeft);
         }
     }
 
@@ -114,5 +111,7 @@ public partial class YamotoKokiAllyFacingController : Node
 
     private static bool IsTrackedCompanion(NCreature node) =>
         node.Entity.IsAlive
-        && node.Entity.Monster is YamotoKokiMonster or YamotoKokiOrigamiMissile or YukanoMonster;
+        && !CompanionIntentLifecycle.HasRetired(node.Entity)
+        && node.Entity.PetOwner != null
+        && node.Entity.Monster is YamotoKokiMonster or YamotoKokiOrigamiMissile or YukanoMonster or SawatariMonster;
 }

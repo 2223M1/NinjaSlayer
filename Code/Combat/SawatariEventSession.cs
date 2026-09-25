@@ -532,15 +532,8 @@ internal sealed class SawatariEventSession
 
     private void SetFacing(Creature creature, bool faceRight)
     {
-        var visuals = _room.GetCreatureNode(creature)?.Visuals;
-        Sprite2D? body = NinjaSlayerVisualRig.GetBodySprite(visuals);
-        if (body != null)
-        {
-            body.FlipH = faceRight;
-            SawatariWeaponVisuals.Get(creature)?.Refresh();
-        }
-
-        visuals?.GetNode<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName).SetMirrored(faceRight);
+        if (_room.GetCreatureNode(creature) is { } actor)
+            CombatFacingTurn.Ensure(actor).SetFacing(!faceRight);
     }
 
     internal void AbortBeforeCombat()
