@@ -4,6 +4,15 @@ public static class NinjaSlayerAudio
 {
     public const string BankPath = NinjaSlayerAssetPaths.FmodRoot + "/NinjaSlayer.bank";
     public const string GuidMappingsPath = NinjaSlayerAssetPaths.FmodRoot + "/GUIDs.txt";
+    public const string EventMusicBankPath = NinjaSlayerAssetPaths.FmodRoot + "/NinjaSlayerEventMusic.bank";
+    public const string EventMusicGuidMappingsPath = NinjaSlayerAssetPaths.FmodRoot + "/EventMusicGUIDs.txt";
+    public const string EventMusicEndParameter = "event_end";
+    public const string YukanoEventMusic = "event:/NinjaSlayerEventMusic/music/yukano_teahouse";
+    public const string YamotoKokiEventMusic = "event:/NinjaSlayerEventMusic/music/yamoto_koki_remix";
+    public const string NarakuEventMusic = "event:/NinjaSlayerEventMusic/music/naraku_crystal_variation";
+    public const string YukanoEventMusicGuid = "{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}";
+    public const string YamotoKokiEventMusicGuid = "{5a225627-5e7e-47e9-b304-d297ccbd36cc}";
+    public const string NarakuEventMusicGuid = "{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}";
 
     private const string Root = "event:/NinjaSlayerAudio/sfx";
     private const string MusicRoot = "event:/NinjaSlayerAudio/music";

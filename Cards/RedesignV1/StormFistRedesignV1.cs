@@ -16,11 +16,9 @@ public sealed class StormFistRedesignV1 : RedesignV1RareCard
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         HoverTipFactory.FromCardWithCardHoverTips<ChadoEnergyRedesignV1>();
 
-    private IEnumerable<CardModel> AvailableChado => new[] { PileType.Draw, PileType.Hand, PileType.Discard }
-        .SelectMany(pile => pile.GetPile(Owner).Cards).OfType<ChadoEnergyRedesignV1>();
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new CalculationBaseVar(4), new ExtraDamageVar(4),
+        new CalculationBaseVar(4), new ExtraDamageVar(3),
         new CalculatedDamageVar(ValueProp.Move)
             .WithMultiplier((card, _) => PileType.Exhaust.GetPile(card.Owner).Cards.OfType<ChadoEnergyRedesignV1>().Count()),
         new RepeatVar(4)
@@ -30,8 +28,6 @@ public sealed class StormFistRedesignV1 : RedesignV1RareCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        foreach (CardModel card in AvailableChado.ToArray())
-            await CardCmd.Exhaust(choiceContext, card);
         int hits = DynamicVars.Repeat.IntValue;
         await this.ExecuteSequenceWithFinisher(choiceContext, cardPlay, hits,
             () => NinjaSlayerXAttackSequence.Run(Owner.Creature, hits,
@@ -52,7 +48,7 @@ public sealed class StormFistRedesignV1 : RedesignV1RareCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.ExtraDamage.UpgradeValueBy(2);
+        DynamicVars.ExtraDamage.UpgradeValueBy(1);
         DynamicVars.CalculationBase.UpgradeValueBy(2);
     }
 }

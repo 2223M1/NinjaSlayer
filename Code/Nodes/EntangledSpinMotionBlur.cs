@@ -15,6 +15,7 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
     private VerticalAxisSpinProjection? _projection;
     private double _time;
     private float _ratio = 1f;
+    private float _angleBasis;
     private float _bodyHeight;
     private bool _active;
     private FreeControlMotionBlur? _planar;
@@ -85,13 +86,14 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
         if (_active && Engine.TimeScale > 0d) _time += delta / Engine.TimeScale;
     }
 
-    internal void Record(VerticalAxisSpinProjection projection, float degrees, Func<double, double> before)
+    internal void Record(VerticalAxisSpinProjection projection, float degrees, Func<double, double> before, float angleBasis = 0f)
     {
         if (!_active || !CanProcess() || Engine.TimeScale <= 0d) return;
         _projection = projection;
+        _angleBasis = angleBasis;
         _ratio = VerticalSpinMath.GetScaleRatio(degrees);
         double timeScale = Engine.TimeScale;
-        _history.Record(_time, degrees, age => before(age * timeScale));
+        _history.Record(_time, degrees + angleBasis, age => before(age * timeScale));
     }
 
     internal void RecordPlanar(float radians, Vector2 canvasPivot)
@@ -133,8 +135,11 @@ internal sealed partial class EntangledSpinMotionBlur : Node2D
             _planar.RecordHistory(_display, _time, space, Vector2.Zero, authored, _planarAngle);
         }
         else if (_projection != null && _history.SampleAngles(_time, _angles))
+        {
+            for (int i = 0; i < _angles.Length; i++) _angles[i] -= _angleBasis;
             _renderer.Apply(_display, _projection.AxisInSprite(_display).X, _ratio, _angles,
                 _bodyHeight, premultiplied: true);
+        }
         else
             _renderer.Reset();
     }

@@ -86,6 +86,11 @@ public partial class OrbContractRunner
             await WaitNetwork(() => client.IsConnected, "host handshake");
         }
 
+        if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") == "1")
+        {
+            await VerifyGreetingBarrier(role, directory);
+            return;
+        }
         using var combat = new OrbCombat(ninjaSlayer: true);
         Player first = combat.Player;
         Player second = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 2);
@@ -139,7 +144,7 @@ public partial class OrbContractRunner
             Require(card.Pile?.Type == destinations[step],
                 $"Action {expected} resolved to the wrong pile.");
         }
-        Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2
+        Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 3
             && first.PlayerCombatState.OrbQueue.Capacity == 1 && second.PlayerCombatState!.OrbQueue.Capacity == 0
             && !second.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
             "Mixed normal/dedicated priority or multiplayer stock ownership changed.");
@@ -187,7 +192,7 @@ public partial class OrbContractRunner
             Require(sly.Pile?.Type == PileType.Discard && nested.Pile?.Type == PileType.Discard
                 && last.Pile?.Type == PileType.Discard && discard.Pile?.Type == PileType.Exhaust,
                 "Native synchronized choices must resolve both Sly cards and the nested discard.");
-            Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 4,
+            Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 6,
                 "Nested discard chains must finish before each Sly card replenishes its stock.");
         }
         Require(localSelections == 3, "Only the local player may make the three synchronized choices.");
@@ -213,10 +218,11 @@ public partial class OrbContractRunner
                 if (player.NetId == _network.NetId)
                     RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, null));
                 await WaitNetwork(() => completed > before, "native converted volley action");
+                if (card is GiantShurikenRedesignV1) await AddStock(player, 1);
             }
             var tokens = player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().ToArray();
-            Require(tokens.Length == stock && tokens.All(card => card.SnapshotDamage == 8),
-                "Each original shot must create one synchronized eight-damage snapshot token.");
+            Require(tokens.Length == 1 && tokens.All(card => card.SnapshotDamage == 8),
+                "One stock grant creates one synchronized eight-damage snapshot token.");
         }
         foreach (Player player in run.Players)
         {
@@ -240,9 +246,9 @@ public partial class OrbContractRunner
             if (player.NetId == _network.NetId)
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(burning, combat.Enemy));
             await WaitNetwork(() => completed > before, "native Burning Blood batch");
-            Require(player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count() == tokens + 1
+            Require(player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count() == tokens
                 && player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == stock - 2,
-                "Each owner gets one snapshot token for their two-card batch while both shots consume stock.");
+                "Discard batches consume stock without generating tokens.");
         }
         GD.Print("PASS synchronized Burning Blood batch cap and independent player allowances");
         var sawatari = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();

@@ -20,6 +20,9 @@ public static class AncientEntranceAnimation
     private const float SideArcHeight = 260f;
     private const float LeftLandingOffset = -110f;
     private const float TumbleAngleCoefficient = 1800f;
+    private const float WallSlideSeconds = 0.36f;
+    private const float WallPushSeconds = 0.025f;
+    private const float WallLeapSeconds = 0.38f;
 
     public enum EntranceVariant
     {
@@ -27,20 +30,22 @@ public static class AncientEntranceAnimation
         FallFromTop,
         InvertedFallFromTopLeft,
         SpinningFallFromLeft,
-        SpinningFallFromRight
+        SpinningFallFromRight,
+        WallSlideFromLeft
     }
 
     public static float GetDuration(EntranceVariant variant) => variant switch
     {
         EntranceVariant.SlideFromLeft => SlideDuration,
         EntranceVariant.InvertedFallFromTopLeft => FallDuration + RiseDuration,
+        EntranceVariant.WallSlideFromLeft => WallSlideSeconds + WallPushSeconds + WallLeapSeconds,
         _ => FallDuration
     };
 
     public static float GetCinematicAudioDuration(EntranceVariant variant) => variant switch
     {
         EntranceVariant.SlideFromLeft => NinjaSlayerAudio.ShortWashoiSeconds,
-        _ => Math.Max(NinjaSlayerAudio.LongWashoiSeconds, FallDuration + LandingImpactTailSeconds)
+        _ => Math.Max(NinjaSlayerAudio.LongWashoiSeconds, GetDuration(variant) + LandingImpactTailSeconds)
     };
 
     public static EntranceVariant FromRoll(float roll)
@@ -50,13 +55,14 @@ public static class AncientEntranceAnimation
             return EntranceVariant.SlideFromLeft;
         }
 
-        int longIndex = Mathf.Min(3, Mathf.FloorToInt((roll - 0.5f) / 0.125f));
+        int longIndex = Mathf.Min(4, Mathf.FloorToInt((roll - 0.5f) / 0.1f));
         return longIndex switch
         {
             0 => EntranceVariant.FallFromTop,
             1 => EntranceVariant.InvertedFallFromTopLeft,
             2 => EntranceVariant.SpinningFallFromLeft,
-            _ => EntranceVariant.SpinningFallFromRight
+            3 => EntranceVariant.SpinningFallFromRight,
+            _ => EntranceVariant.WallSlideFromLeft
         };
     }
 
@@ -89,6 +95,9 @@ public static class AncientEntranceAnimation
                 case EntranceVariant.SpinningFallFromRight:
                     await SpinningFallFromSide(creature, fromLeft: false, cinematicContext, startSignal);
                     break;
+                case EntranceVariant.WallSlideFromLeft:
+                    await WallSlideFromLeft(creature, cinematicContext, startSignal);
+                    break;
             }
         }
         finally
@@ -119,6 +128,59 @@ public static class AncientEntranceAnimation
         finally
         {
             creatureNode.Position = basePos;
+        }
+    }
+
+    private static async Task WallSlideFromLeft(Creature creature,
+        ICinematicAnimationContext? context, Task? startSignal)
+    {
+        if (creature.GetCreatureNode() is not { } node || NinjaSlayerAimPose.Get(creature) is not { } pose) return;
+        using var motion = pose.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, GetDuration(EntranceVariant.WallSlideFromLeft));
+        if (motion == null) return;
+        motion.Paused = true;
+        pose.SyncNow();
+        Vector2 baseline = pose.CoreCanvas;
+        Vector2 feet = NinjaSlayerVisualRig.GetGroundContact(node.Visuals)!.GetGlobalTransformWithCanvas().Origin;
+        Vector2 rotatedFoot = (feet - baseline).Rotated(Mathf.Pi * .5f);
+        Transform2D inverse = node.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse();
+        float edge = node.GetViewportRect().Position.X + 8f;
+        Vector2 launch = new(edge - rotatedFoot.X, feet.Y - 100f - rotatedFoot.Y);
+        void Apply(Vector2 core, float radians)
+        {
+            motion.Offset = inverse.BasisXform(core - baseline);
+            motion.Radians = radians;
+            pose.SyncNow();
+        }
+        Tween? tween = null;
+        try
+        {
+            Apply(new(launch.X, -240f), Mathf.Pi * .5f);
+            SetVisualsVisible(creature);
+            await WaitForStart(startSignal, context);
+            PlaySfx(context, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
+            tween = node.CreateTween();
+            tween.TweenMethod(Callable.From<float>(p =>
+                Apply(new(launch.X, Mathf.Lerp(-240f, launch.Y, p * p * p)), Mathf.Pi * .5f)),
+                0f, 1f, WallSlideSeconds);
+            tween.TweenInterval(WallPushSeconds);
+            tween.TweenMethod(Callable.From<float>(p =>
+            {
+                motion.PlanarBlur = p < 1f;
+                Vector2 core = launch.Lerp(baseline, 1f - (1f - p) * (1f - p));
+                core.Y = Mathf.Lerp(launch.Y, baseline.Y, p) - 4f * 185f * p * (1f - p);
+                float takeoff = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp(p / .08f, 0f, 1f));
+                float turns = Mathf.Clamp((p - .08f) / .84f, 0f, 1f);
+                Apply(core, Mathf.Pi * .5f * takeoff + 2f * Mathf.Tau * turns);
+            }), 0f, 1f, WallLeapSeconds);
+            await AwaitTween(node, tween, context);
+            if (motion.Active && GodotObject.IsInstanceValid(node) && node.IsInsideTree())
+                ByrdFallAnimation.PlayLandingImpact(context);
+        }
+        finally
+        {
+            if (tween?.IsValid() == true) tween.Kill();
+            motion.Dispose();
+            if (GodotObject.IsInstanceValid(pose)) pose.SyncNow();
         }
     }
 

@@ -1,0 +1,10 @@
+{
+  "seed": "NINJASLAYER_SAWATARI_ENTRY_20260925",
+  "purpose": "entrance", "act": 3, "duration": 12, "relics": [],
+  "cues": [
+    { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
+    { "id": "sawatari_already_present", "steps": [
+      { "action": "sawatari_event_entrance", "mode": "WallSlideFromLeft" }
+    ] }
+  ]
+}

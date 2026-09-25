@@ -9,76 +9,48 @@ using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-internal static class YamotoKokiIntentVisuals
-{
-    private const string CustomIconNodeName = "YamotoKokiIntentIcon";
-
-    public static void Update(
-        NIntent intentNode,
-        AbstractIntent intent,
-        IEnumerable<Creature> targets,
-        Creature owner)
-    {
-        Sprite2D vanillaIcon = intentNode.GetNode<Sprite2D>("%Intent");
-        Node holder = vanillaIcon.GetParent()
-            ?? throw new InvalidOperationException("The vanilla intent icon has no parent node.");
-
-        Sprite2D? customIcon = holder.GetNodeOrNull<Sprite2D>(CustomIconNodeName);
-        bool isYamotoKokiIntent = owner.Monster is YamotoKokiMonster
-            && intent is YamotoKokiSummonIntent or YamotoKokiIaiSlashIntent;
-        if (!isYamotoKokiIntent)
-        {
-            vanillaIcon.Show();
-            customIcon?.Hide();
-            return;
-        }
-
-        customIcon ??= CreateCustomIcon(holder, vanillaIcon);
-        customIcon.Position = vanillaIcon.Position;
-        customIcon.Texture = intent.GetTexture(targets, owner);
-        customIcon.Show();
-        vanillaIcon.Hide();
-    }
-
-    private static Sprite2D CreateCustomIcon(Node holder, Sprite2D vanillaIcon)
-    {
-        Sprite2D customIcon = new()
-        {
-            Name = CustomIconNodeName,
-            Position = vanillaIcon.Position
-        };
-        holder.AddChild(customIcon);
-        holder.MoveChild(customIcon, vanillaIcon.GetIndex() + 1);
-        return customIcon;
-    }
-}
-
 public sealed class YamotoKokiIntentUpdatePatch : IPatchMethod
 {
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<NIntent, OriginalMaterials> Originals = new();
+    private static ShaderMaterial? _yellow;
     public static string PatchId => "ninjaslayer_yamoto_koki_intent_update";
-    public static string Description => "Render Yamoto Koki's friendly intent icons on the vanilla intent layer.";
-    public static bool IsCritical => false;
-
+    public static string Description => "Recolor native friendly attack intents and particles yellow.";
+    public static bool IsCritical => true;
     public static ModPatchTarget[] GetTargets() =>
     [
-        new(
-            typeof(NIntent),
-            nameof(NIntent.UpdateIntent),
-            [typeof(AbstractIntent), typeof(IEnumerable<Creature>), typeof(Creature)])
+        new(typeof(NIntent), "UpdateVisuals", Type.EmptyTypes)
     ];
 
-    public static void Postfix(
-        NIntent __instance,
-        AbstractIntent intent,
-        IEnumerable<Creature> targets,
-        Creature owner) =>
-        YamotoKokiIntentVisuals.Update(__instance, intent, targets, owner);
+    public static void Postfix(NIntent __instance, AbstractIntent ____intent, Creature ____owner)
+    {
+        Sprite2D icon = __instance.GetNode<Sprite2D>("%Intent");
+        CpuParticles2D particles = __instance.GetNode<CpuParticles2D>("%IntentParticle");
+        if (____intent is AttackIntent && FriendlyCompanionTargeting.IsFriendlyCompanion(____owner))
+        {
+            if (!Originals.TryGetValue(__instance, out _))
+                Originals.Add(__instance, new OriginalMaterials(icon.Material, particles.Material));
+            _yellow ??= new ShaderMaterial
+            {
+                Shader = ResourceLoader.Load<Shader>("res://NinjaSlayer/shaders/friendly_attack_intent.gdshader")
+            };
+            icon.Material = _yellow;
+            particles.Material = _yellow;
+        }
+        else if (Originals.TryGetValue(__instance, out OriginalMaterials? original))
+        {
+            icon.Material = original.Icon;
+            particles.Material = original.Particles;
+            Originals.Remove(__instance);
+        }
+    }
+
+    private sealed record OriginalMaterials(Material? Icon, Material? Particles);
 }
 
 public sealed class YamotoKokiIntentGenerationPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_yamoto_koki_intent_generation";
-    public static string Description => "Block stale Yamoto Koki intent writes after combat resolution.";
+    public static string Description => "Block stale companion intent writes after combat resolution.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
@@ -88,13 +60,14 @@ public sealed class YamotoKokiIntentGenerationPatch : IPatchMethod
 
     public static bool Prefix(NCreature __instance, ref Task __result)
     {
-        if (__instance.Entity.Monster is not YamotoKokiMonster and not YukanoMonster
-            || YamotoKokiIntentLifecycle.IsActive(__instance.Entity))
+        if (__instance.Entity.Side != CombatSide.Player
+            || __instance.Entity.Monster is not (YamotoKokiMonster or SawatariMonster or YukanoMonster)
+            || CompanionIntentLifecycle.IsActive(__instance.Entity))
         {
             return true;
         }
 
-        YamotoKokiIntentLifecycle.Invalidate(__instance.Entity);
+        CompanionIntentLifecycle.Invalidate(__instance.Entity);
         __result = Task.CompletedTask;
         return false;
     }
@@ -103,7 +76,7 @@ public sealed class YamotoKokiIntentGenerationPatch : IPatchMethod
 public sealed class YamotoKokiLastEnemyDeathIntentPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_yamoto_koki_last_enemy_intent_cleanup";
-    public static string Description => "Hide Yamoto Koki's intent when the final enemy starts dying.";
+    public static string Description => "Hide companion intents when the final enemy starts dying.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
@@ -123,6 +96,6 @@ public sealed class YamotoKokiLastEnemyDeathIntentPatch : IPatchMethod
             return;
         }
 
-        YamotoKokiIntentLifecycle.InvalidateCombat(combatState);
+        CompanionIntentLifecycle.InvalidateCombat(combatState);
     }
 }

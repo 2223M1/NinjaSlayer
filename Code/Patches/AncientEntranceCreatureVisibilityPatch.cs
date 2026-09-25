@@ -1,5 +1,8 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Models.Events;
+using NinjaSlayer.Events;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
@@ -21,8 +24,10 @@ public sealed class AncientEntranceCreatureVisibilityPatch : IPatchMethod
     {
         if (creature.Player is not { } player
             || !IsNinjaSlayer(player)
-            || (!NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player)
-                && !BossGreetingCinematic.ShouldStage(player)))
+            || (!(BossGreetingCinematic.ReplacesAncientEntrance(player)
+                    ? BossGreetingCinematic.ShouldStage(player)
+                    : NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player))
+                && player.RunState.CurrentRoom is not EventRoom { CanonicalEvent: SawatariEvent or TheArchitect }))
         {
             return;
         }

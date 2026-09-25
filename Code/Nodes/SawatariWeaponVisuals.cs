@@ -28,6 +28,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
     private Sprite2D? _arrow;
     private readonly Node2D[] _hands = [new() { Name = "OuterHand" }, new() { Name = "InnerHand" }];
     private readonly Sprite2D?[] _knives = new Sprite2D?[2];
+    private readonly Dictionary<Texture2D, Rect2> _opaqueBounds = [];
     // Accepted grip-revision-02, in centered 461x537 body pixels.
     private static readonly Vector2[] Grips = [new(-198.9127f, -13.76517f), new(-64.79138f, -10.36161f)];
     private static readonly float[] KnifeScales = [1.5756349f, 1.5616022f];
@@ -46,6 +47,45 @@ internal sealed partial class SawatariWeaponVisuals : Node
     internal static SawatariWeaponVisuals? Get(Creature creature) =>
         creature.GetCreatureNode()?.Visuals.GetNodeOrNull<SawatariWeaponVisuals>("SawatariWeapons");
 
+    internal Rect2 GetCombatBounds(Transform2D canvasToSpace)
+    {
+        Rect2? bounds = null;
+        Visit(_body);
+        return bounds ?? throw new InvalidOperationException("Sawatari has no visible body geometry.");
+
+        void Visit(Node node)
+        {
+            if (node is CanvasItem item && !item.IsVisibleInTree()) return;
+            if (node is Sprite2D { Texture: { } texture } sprite)
+            {
+                if (!_opaqueBounds.TryGetValue(texture, out Rect2 used))
+                {
+                    using Image image = texture.GetImage();
+                    if (image.IsCompressed()) image.Decompress();
+                    _opaqueBounds.Add(texture, used = image.GetUsedRect());
+                }
+                Vector2 size = texture.GetSize();
+                if (sprite.FlipH) used.Position = new(size.X - used.End.X, used.Position.Y);
+                if (sprite.FlipV) used.Position = new(used.Position.X, size.Y - used.End.Y);
+                used.Position += sprite.Offset - (sprite.Centered ? size * .5f : Vector2.Zero);
+                Add(canvasToSpace * sprite.GetGlobalTransformWithCanvas(),
+                    [used.Position, new(used.End.X, used.Position.Y), used.End, new(used.Position.X, used.End.Y)]);
+            }
+            else if (node is Polygon2D mesh && mesh.Polygon.Length > 0)
+                Add(canvasToSpace * mesh.GetGlobalTransformWithCanvas(), mesh.Polygon);
+            foreach (Node child in node.GetChildren()) Visit(child);
+        }
+
+        void Add(Transform2D transform, Vector2[] points)
+        {
+            foreach (Vector2 point in points)
+            {
+                Vector2 p = transform * point;
+                bounds = bounds is { } previous ? previous.Expand(p) : new Rect2(p, Vector2.Zero);
+            }
+        }
+    }
+
     internal static void Create(SawatariMonster monster)
     {
         if (monster.Creature.GetCreatureNode() is not { } actor) return;
@@ -53,11 +93,11 @@ internal sealed partial class SawatariWeaponVisuals : Node
         visual._body = NinjaSlayerVisualRig.GetBodySprite(actor.Visuals)!;
         visual._bodyScale = visual._body.Scale;
         visual._groundContact = actor.Visuals.GetNode<Node2D>("GroundContact").Position;
-        if (monster.Creature.Side == CombatSide.Enemy)
+        if (monster.ActThree)
         {
+            // The upright dual blades extend above the hat; bamboo does not.
             float offset = -390f - actor.Visuals.IntentPosition.Position.Y;
             actor.Visuals.IntentPosition.Position += new Vector2(0, offset);
-            // NCreature lays out this public container before OnAddedToCombat.
             actor.IntentContainer.Position += new Vector2(0, offset * actor.Visuals.Scale.X);
         }
         actor.Visuals.AddChild(visual);
@@ -193,7 +233,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
         _dual = null;
     }
 
-    private void SyncBody()
+    internal void SyncBody()
     {
         Vector2 foot = new(-20.5f, 259.5f);
         _body.Scale = _bodyScale;

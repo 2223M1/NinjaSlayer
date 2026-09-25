@@ -22,6 +22,7 @@ public partial class NinjaSlayerAimPose : Node2D
     private NCreature? _actor;
     private Node2D _airborne = null!;
     private Marker2D _center = null!;
+    private Marker2D _talk = null!;
     private Transform2D _centerBaseline;
     private readonly V2[] _offsets = new V2[64];
     private Creature? _target;
@@ -47,6 +48,7 @@ public partial class NinjaSlayerAimPose : Node2D
     private Vector2 _travel;
     private float _effectiveTravelY;
     private Vector2? _contactOffset;
+    private Vector2 _contactTravel;
     private float _chargeSeconds;
     private float _chargeBack;
     private float _returnBack;
@@ -94,6 +96,7 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         _airborne = GetParent<Node2D>();
         _center = GetNode<Marker2D>("%CenterPos");
+        _talk = GetNode<Marker2D>("%TalkPos");
         _centerBaseline = _center.Transform;
         for (Node? node = GetParent(); node != null; node = node.GetParent())
             if (node is NCreature actor) { _actor = actor; break; }
@@ -305,6 +308,7 @@ public partial class NinjaSlayerAimPose : Node2D
         if (incoming.LengthSquared() < 0.001f) incoming = Vector2.Right * FacingSign;
         // Discard the preceding visual lunge before placing the actor at impact.
         _travel.X = 0f;
+        _contactTravel = Vector2.Zero;
         _chargeBack = 0f;
         SyncNow();
         CanvasItem parent = _actor.GetParent<CanvasItem>();
@@ -384,6 +388,13 @@ public partial class NinjaSlayerAimPose : Node2D
         SyncNow();
     }
 
+    internal void SetFinisherContactTravel(Vector2 offset)
+    {
+        if (!_exclusive) return;
+        _contactTravel = offset;
+        SyncNow();
+    }
+
     internal void BeginReturn()
     {
         StopPoseTween();
@@ -402,6 +413,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _returnTravel = _travel;
         _returnTravel.Y = _baseEffectiveTravelY;
         _contactOffset = null;
+        _contactTravel = Vector2.Zero;
         _returnBack = _chargeBack;
         _exclusiveReturnStarts = _exclusiveChannels.Select(channel => channel.GetPosition()).ToArray();
     }
@@ -452,6 +464,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _travel = Vector2.Zero;
         _effectiveTravelY = 0f;
         _contactOffset = null;
+        _contactTravel = Vector2.Zero;
         _angle = _kick = _chargeBack = 0f;
         _displayAngle = 0f;
         _somersault = null;
@@ -532,6 +545,8 @@ public partial class NinjaSlayerAimPose : Node2D
 
     private void SyncPose(float dragDelta)
     {
+        // FramePreDraw also runs while the rig is frozen by an impact or pause.
+        if (IsInsideTree() && !CanProcess()) return;
         if (_actor == null || !GodotObject.IsInstanceValid(_actor) || _actor.Entity == null || _actor.Visuals == null || _actor.Entity.IsDead
             || !GodotObject.IsInstanceValid(_center)) return;
         _spin?.ApplyDegrees(_spinDegrees, _spinExposure);
@@ -604,7 +619,7 @@ public partial class NinjaSlayerAimPose : Node2D
         Vector2 finalCore = new(core.X, line - support);
         if (_exclusive && _contactOffset is { } localContact && !_tornado)
         {
-            Vector2 contact = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(localContact);
+            Vector2 contact = _actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(localContact + _contactTravel);
             finalCore = target + contact;
             for (int i = 0; i < 64; i++)
             {
@@ -638,6 +653,19 @@ public partial class NinjaSlayerAimPose : Node2D
         HellTornado?.SyncNow();
         Machetes?.SyncForPose();
         RecordSomersaultBlur();
+        Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor!.Visuals)!;
+        var overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
+        Sprite2D body = overlay.Visible ? overlay : source;
+        NinjaSlayerFormKind form = NinjaSlayerFormState.GetPresentation(_actor.Entity).Kind;
+        Transform2D toVisuals = _actor.Visuals.GlobalTransform.AffineInverse() * body.GlobalTransform;
+        float top = float.PositiveInfinity;
+        foreach (V2 point in CombatBodyContours.ForForm(form))
+            top = Math.Min(top, (toVisuals * SpritePoint(body, new(point.X, point.Y))).Y);
+        V2 mouth = NinjaSlayerFormCalibration.Mouth(form);
+        Vector2 head = toVisuals * SpritePoint(body, new(mouth.X, mouth.Y));
+        // The native bubble's tail/shadow extend 64px below TalkPos at full scale.
+        // Use the solid body, not the texture rectangle containing the long scarf.
+        _talk.Position = new(head.X, top - 76f);
     }
 
     private static Vector2 SpritePoint(Sprite2D sprite, Vector2 centeredPoint)

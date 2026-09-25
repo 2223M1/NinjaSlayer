@@ -39,14 +39,15 @@ internal static class FinisherAttackCommandAdapter
         return Math.Max(0f, NinjaSlayer.Code.Combat.CombatActionTimingRuntime.Resolve(waits[1], waits[0]));
     }
 
-    internal static Creature? PredictReverseVictim(AttackCommand command, int hits)
+    internal static Creature? PredictReverseVictim(AttackCommand command, int hits, out IReadOnlyList<Creature> targets)
     {
+        targets = [];
         if (command.IsRandomlyTargeted || CalculatedDamage.GetValue(command) != null
             || AfterAnimation.GetValue(command) != null || BeforeDamage.GetValue(command) != null
             || command.Attacker is not { IsMonster: true } actor || actor.CombatState == null) return null;
         Creature? single = (Creature?)SingleTarget.GetValue(command);
-        IEnumerable<Creature> targets = single != null ? [single]
-            : command.IsMultiTargeted ? actor.CombatState.PlayerCreatures : [];
+        targets = single != null ? [single]
+            : command.IsMultiTargeted ? actor.CombatState.PlayerCreatures.ToArray() : [];
         return PredictReverseVictim(command, targets, (decimal)DamagePerHit.GetValue(command)!, hits);
     }
 

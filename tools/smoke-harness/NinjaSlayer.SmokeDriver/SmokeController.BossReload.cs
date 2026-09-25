@@ -117,6 +117,9 @@ internal sealed partial class SmokeController
 [HarmonyPatch(typeof(BossGreetingCinematic), nameof(BossGreetingCinematic.TryPlay))]
 internal static class BossGreetingSmokeObserver
 {
+    public static bool Prefix(ICombatState combatState, ref Task<bool> __result) =>
+        SmokeController.Current?.TryRecordGreeting(combatState, ref __result) != true;
+
     public static void Postfix(ref Task<bool> __result)
     {
         if (SmokeController.Current is { } controller)

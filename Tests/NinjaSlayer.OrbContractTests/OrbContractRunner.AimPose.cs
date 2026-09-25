@@ -77,6 +77,36 @@ public partial class OrbContractRunner
         try
         {
             VerifyFinisherApproach(actor, target);
+            await VerifyRangedVisualFreeze(target);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                actor.Position = Vector2.Zero;
+                target.Position = new(side * 700f, 0f);
+                Invoke("BeginAction", combat.Enemy, true, false);
+                Invoke("PlaceAtImpact", combat.Enemy, side * 600f, true);
+                Vector2 peak = center.GlobalPosition;
+                Vector2 root = actor.Position;
+                for (int hit = 0; hit < 3; hit++)
+                {
+                    Invoke("SetFinisherContactTravel", new Vector2(-side * 100f, 0f));
+                    Require(Math.Abs(center.GlobalPosition.X - peak.X + side * 100f) < .1f,
+                        "Finisher combo recovery did not retreat from its contact endpoint.");
+                    Require(actor.Position.IsEqualApprox(root), "Finisher combo moved the combat layout root.");
+                    Invoke("SetFinisherContactTravel", Vector2.Zero);
+                    Require(center.GlobalPosition.DistanceTo(peak) < .1f,
+                        "Finisher combo lunge accumulated drift at the contact endpoint.");
+                }
+                Invoke("BeginReturn");
+                Invoke("ApplyReturn", 1f);
+                Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Finisher combo left a recovery offset.");
+                Invoke("SetFinisherContactTravel", new Vector2(100f, 0f));
+                Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Expired finisher travel overwrote the next pose.");
+                Invoke("Reset");
+            }
+            actor.Position = Vector2.Zero;
+            target.Position = new(700f, 0f);
+            GD.Print("PASS finisher combo: opening peak, mirrored visual-only retreat, repeat endpoint and cleanup.");
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1") return;
             await VerifyHeldShurikenInertia(combat, actor, anchor);
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");
             var facingDrag = new Node();
@@ -338,7 +368,7 @@ public partial class OrbContractRunner
                 Transform2D authoredBody = kokiBody.Transform;
                 async Task TiltWithFacing(float from, float to, float seconds)
                 {
-                    Task animation = (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, authoredBody, from, to, seconds])!;
+                    Task animation = (Task)tilt.Invoke(null, [kokiBody, kokiCenter, centerBaseline, authoredBody, from, to, seconds, null])!;
                     while (!animation.IsCompleted)
                     {
                         await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);

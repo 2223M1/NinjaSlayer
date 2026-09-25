@@ -1,0 +1,8 @@
+{
+  "seed": "NINJASLAYER_GREETING_01",
+  "purpose": "greeting",
+  "greetingMode": "switch-response",
+  "act": 3,
+  "duration": 22,
+  "cues": [{ "id": "continue_boss_response", "steps": [{ "action": "wait" }] }]
+}

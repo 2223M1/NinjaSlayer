@@ -33,6 +33,7 @@ internal sealed partial class NinjaSlayerHellTornadoVisual : Node2D
     private uint _overlayVisibilityLayer;
 
     internal bool Active => _active;
+    internal void ClearExposure() => _blur.ClearHistory();
     internal Transform2D BodyCanvasTransform => _bodyCanvas;
     internal static NinjaSlayerHellTornadoVisual? Get(Creature creature) =>
         NinjaSlayerAimPose.Get(creature)?.HellTornado;

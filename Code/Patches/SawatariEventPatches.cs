@@ -24,47 +24,6 @@ using STS2RitsuLib.Patching.Models;
 
 namespace NinjaSlayer.Code.Patches;
 
-public sealed class EventValidationRunGenerationPatch : IPatchMethod
-{
-    public static string PatchId => "ninjaslayer_event_validation_run_generation";
-    public static string Description => "Snapshot event validation and select Nancy Lee before act preloading.";
-    public static bool IsCritical => true;
-
-    public static ModPatchTarget[] GetTargets() =>
-    [
-        new(typeof(RunManager), nameof(RunManager.GenerateRooms), Type.EmptyTypes)
-    ];
-
-    public static void Prefix(RunManager __instance)
-    {
-        RunState? runState = __instance.DebugOnlyGetState();
-        if (runState == null)
-        {
-            return;
-        }
-
-        bool enabled = NinjaSlayerSettings.ForceAllEventsOnce
-            && runState.Players.Count == 1
-            && NinjaSlayerContentAccess.HasNinjaSlayer(runState);
-        NinjaSlayerRunData.SnapshotEventValidation(runState, enabled);
-    }
-
-    public static void Postfix(RunManager __instance)
-    {
-        RunState? runState = __instance.DebugOnlyGetState();
-        if (runState == null
-            || !NinjaSlayerRunData.IsEventValidationEnabled(runState)
-            || runState.Acts.ElementAtOrDefault(2) is not Glory)
-        {
-            return;
-        }
-
-        SawatariEventRoute.SetAncient(
-            runState.Acts[2],
-            ModelDb.AncientEvent<NancyLee>());
-    }
-}
-
 internal static class SawatariEventRoute
 {
     private static readonly FieldInfo ActRooms =
@@ -224,11 +183,6 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
         }
         finally
         {
-            if (__state.ForcedMonsterOdds)
-            {
-                __instance.MonsterOdds = __state.OriginalMonsterOdds;
-            }
-
             RestoreRoll(__state);
         }
     }
@@ -238,11 +192,6 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
         UnknownMapPointOdds __instance,
         RollFrame __state)
     {
-        if (__exception != null && __state.ForcedMonsterOdds)
-        {
-            __instance.MonsterOdds = __state.OriginalMonsterOdds;
-        }
-
         RestoreRoll(__state);
         return __exception;
     }
@@ -281,13 +230,7 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
                     && !concreteRunState.VisitedEventIds.Contains(eventModel.Id)),
                 roll.OriginalMonsterOdds)
             : 0f;
-        roll.ForcedMonsterOdds = NinjaSlayerRunData.IsEventValidationEnabled(concreteRunState)
-            && naturalChance > 0f;
-        roll.Chance = roll.ForcedMonsterOdds ? 1f : naturalChance;
-        if (roll.ForcedMonsterOdds)
-        {
-            roll.Odds.MonsterOdds = 1f;
-        }
+        roll.Chance = naturalChance;
     }
 
     private static void RestoreRoll(RollFrame roll)
@@ -316,7 +259,6 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
         public float OriginalMonsterOdds { get; } = originalMonsterOdds;
         public bool CapturedAllowedRooms { get; set; }
         public float Chance { get; set; }
-        public bool ForcedMonsterOdds { get; set; }
     }
 }
 

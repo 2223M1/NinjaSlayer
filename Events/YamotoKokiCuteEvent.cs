@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -51,6 +52,7 @@ public sealed class YamotoKokiCuteEvent : ModEventTemplate
 
     public override Task AfterEventStarted()
     {
+        FixedEventMusic.Start(this, NinjaSlayerAudio.YamotoKokiEventMusic, NinjaSlayerAudio.YamotoKokiEventMusicGuid);
         if (Owner != null && LocalContext.IsMe(Owner))
         {
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiEvent);

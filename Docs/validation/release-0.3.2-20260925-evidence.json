@@ -1,0 +1,2391 @@
+{
+  "releaseBase": "72302e205f4b5412e40a5dbe183acde3791def89",
+  "candidateBase": "5cdf75faaa3b7064b1ad8215f68569600c47605f",
+  "sourceCounts": {
+    "before": {
+      "files": 497,
+      "types": 854,
+      "lines": 61081
+    },
+    "after": {
+      "files": 504,
+      "types": 866,
+      "lines": 62670
+    }
+  },
+  "paths": [
+    {
+      "path": "ASSET_MANIFEST.md",
+      "sha256": "355e18da2bbbc53392bfb5b6793f0f2b8cd0e57e8197ea7fef8a9f925da32339"
+    },
+    {
+      "path": "Cards/Ancients/OneBodyOneSoul.cs",
+      "sha256": "be4c1de61eb60fbe6a09cc0d9605af6b5e6058ae019555857bd8163d2c8ce0c0"
+    },
+    {
+      "path": "Cards/Base/ShurikenCombat.cs",
+      "sha256": "03dcc9d771c9956215bfa9326949284b23aaea2f37a15e8cee0f9a3232da494e"
+    },
+    {
+      "path": "Cards/RedesignV1/AbyssStrengthRedesignV1.cs",
+      "sha256": "03578e490800567bf9f540159dabac52e8b35600b0dd3ed7bc1d24c0a694420f"
+    },
+    {
+      "path": "Cards/RedesignV1/AntiAirBangBangFist.cs",
+      "sha256": "1de45186e82f8b6603afbb1bfc981ee8df0c64f1bfefef5fcd1f38477156040c"
+    },
+    {
+      "path": "Cards/RedesignV1/BlackFlameRedesignV1.cs",
+      "sha256": "4f83b535b0f72004472fa05d3ee5c3b9f8fddfea8593c8f544c79dcd174e9433"
+    },
+    {
+      "path": "Cards/RedesignV1/CommonChopRedesignV1.cs",
+      "sha256": "b04383e825bcd90ce72a855a311a7aa16f3dc00aca8076195fba928bf6290134"
+    },
+    {
+      "path": "Cards/RedesignV1/DecidedOutcomeRedesignV1.cs",
+      "sha256": "db14862fe2283d67a67c378fa1315c193f340c932f66bdeb570d4130f0a523dc"
+    },
+    {
+      "path": "Cards/RedesignV1/KarateStraightRedesignV1.cs",
+      "sha256": "8e7b92784fe3a10270a29e96d22f301a9aa2a9979eda39155c9a1fba34fa682d"
+    },
+    {
+      "path": "Cards/RedesignV1/KarateTeaRedesignV1.cs",
+      "sha256": "3773b1bfabad45b242dd5c9f6c37277181aaea2b709f0727dfc62b7fe801e159"
+    },
+    {
+      "path": "Cards/RedesignV1/OyeahThrowSword.cs",
+      "sha256": "d4871f4ff712d2db9e1bcdf9216aed8b93320909b8ad3f3cbec9a4c7631f6b8d"
+    },
+    {
+      "path": "Cards/RedesignV1/PreparedShurikenRedesignV1.cs",
+      "sha256": "ef3b4f51d24b551e422cf3aa5c870016c75d563ce3f975f63161ecbde6d25356"
+    },
+    {
+      "path": "Cards/RedesignV1/RecycledBladesRedesignV1.cs",
+      "sha256": "6c46bef9013d4e1e9414eae3ac2d1a579e8287fb170a78b33355d75fa48df338"
+    },
+    {
+      "path": "Cards/RedesignV1/ShurikenCreation.cs",
+      "sha256": "a668ba10f30380a4dfdd69b62d67ac3d81654b7c3e4f8e07bea7fcbbddd673d7"
+    },
+    {
+      "path": "Cards/RedesignV1/ShurikenDraw.cs",
+      "sha256": "e76561c21b98b1a094c962e169a2efc2b2a64db963d0d62ec286d6e18877a8cb"
+    },
+    {
+      "path": "Cards/RedesignV1/ShurikenGenerationRedesignV1.cs",
+      "sha256": "8926ff469e97911c071408d6e10d87e8c60763349c7638b3272e697f96a41a2c"
+    },
+    {
+      "path": "Cards/RedesignV1/StormFistRedesignV1.cs",
+      "sha256": "8651ae7a277af977bd408294e850944bcdac95c882343cec7b7ae49a8b9e13e6"
+    },
+    {
+      "path": "Cards/RedesignV1/TechniqueSearchRedesignV1.cs",
+      "sha256": "88e08c6d53c351e42aae7ac4c0e33d5339d145d009202b394a154e7041f0816a"
+    },
+    {
+      "path": "Cards/RedesignV1/TonyRetention.cs",
+      "sha256": "faa524ec6a50f1a62c61fb5a90716d7f43bf2266fb7b2ca78f76239ca59be12d"
+    },
+    {
+      "path": "Cards/RedesignV1/WasshoiRedesignV1.cs",
+      "sha256": "1d1e3e1b506ee68580530c85f7d773d83f640a1d176b1286a66be1f8f4180e8b"
+    },
+    {
+      "path": "Code/Combat/CompanionIntentLifecycle.cs",
+      "sha256": "cd5ed58c3e52b908f02dc24fef6a78e76e68db805a82dea0e365581ed7901638"
+    },
+    {
+      "path": "Code/Combat/NinjaSlayerAttackExecution.cs",
+      "sha256": "e8977c683a19599a1836682a10c51e74ab7dcefaaf4849e2d3ae5efbc70c82fb"
+    },
+    {
+      "path": "Code/Combat/SawatariEventSession.cs",
+      "sha256": "79d138ff4ddd3fdb9ccadcb6f52727d10de1256e53b607449d5d9906c16bf1e8"
+    },
+    {
+      "path": "Code/Combat/YamotoKokiGridLayoutMath.cs",
+      "sha256": null
+    },
+    {
+      "path": "Code/Commands/ChadoBreathCmd.cs",
+      "sha256": "00b2f7fb44ce3bbe9ca19680f46ba0ec9eb6907029f4418db956bd3e49f7f483"
+    },
+    {
+      "path": "Code/ExternalAnimations/AlabamaDropAnimation.cs",
+      "sha256": "06a28436959c6408dfe37a363c713e87d6a892ecc031232855ddfa0ed9832ec2"
+    },
+    {
+      "path": "Code/ExternalAnimations/AncientEntranceAnimation.cs",
+      "sha256": "07f94a62898af0cb551605343adb0f991212cf1b5a90afff27256e43ca5da3f4"
+    },
+    {
+      "path": "Code/ExternalAnimations/ArchitectExecutionCinematic.cs",
+      "sha256": "96a18b69bc89806bc07cb04ff0fcf272b21fd20bd07638eac0ba58c64b0eba77"
+    },
+    {
+      "path": "Code/ExternalAnimations/BossGreetingCinematic.cs",
+      "sha256": "9fd707c47cd07ebf261ca3e08eb421a73c005128416a47a8106dbde8441057d2"
+    },
+    {
+      "path": "Code/ExternalAnimations/BossGreetingSync.cs",
+      "sha256": "7f3e3f8d8f552ad7d7a90f8b7f540e3c633ad5f0be4fe67c20f753306f964cd8"
+    },
+    {
+      "path": "Code/ExternalAnimations/ByrdFallAnimation.cs",
+      "sha256": "2c82a506f0372bc5b97c137773bb55a0ca442da4f813a76c545b6128502b5478"
+    },
+    {
+      "path": "Code/ExternalAnimations/CombatCinematicCameraLease.cs",
+      "sha256": "2f3b89205c794329e8dfe87d7356098d4c1d08daee59c95462adfe5b3a527c03"
+    },
+    {
+      "path": "Code/ExternalAnimations/DarkNinjaAttackExecution.cs",
+      "sha256": "56668ebaac891ee4b5f16640fcf7e4b7d85652e505da9ea41fe45a7f2b0f5b5e"
+    },
+    {
+      "path": "Code/ExternalAnimations/FastAttackAnimation.cs",
+      "sha256": "f9eac14b310730109d011c602de4463e6f3608c2426f1133c076c9079733be58"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherActorLayerLease.cs",
+      "sha256": "aa4fa32276ff8a73c059010ab874adb5922e42692944bbd91b884a51e50690ce"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherApproach.cs",
+      "sha256": "53ae329a337b900625f0bb17f4bc7da897317e2513ccaec0c122d4c6a6cea65a"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherAttackCommandAdapter.cs",
+      "sha256": "8ef9be61ef23abe2150a23a43cf208db114b4744180ea15651f6a1398cf24cdd"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherEligibilityService.cs",
+      "sha256": "8d2baeb07d1b545c6a8c3fe773ccaa2bcc336b4b3fbf6a6eb3352d039aca6d5d"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherImpactPositionResolver.cs",
+      "sha256": "39b2057ae411cd1b60f477d8f8394c4cd17a3d81106022b7b2fd88f754a31b75"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherImpactVfxFreezeLease.cs",
+      "sha256": "bd9ef5a63d6feee8841ae444d8e675c52cc3cf65e9aead76d1933069817333f3"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherRangedAction.cs",
+      "sha256": "89e6085c01444e9481012f891d3a2b8b12433c47d5135a3c96724591ff042eea"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherSession.Presentation.cs",
+      "sha256": "af88efe9f5bd678e8376ba04126d0d15f54f470c46fd0823cb2a3e99f177802c"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherSession.cs",
+      "sha256": "fbf3e2ac7896b6966309131b9090d961118dd7ec40ca8e4980920b52c3a401f2"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherSessionRequest.cs",
+      "sha256": "5566943ee47d790279e8333cb9acd0c79d42ec7ed784dfe57cd99fa4a8656277"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherTimeline.cs",
+      "sha256": "7c200106240ef6418ffd15e7804a916d46575b1e8de00164d75921319340c587"
+    },
+    {
+      "path": "Code/ExternalAnimations/NinjaSlayerCombatAnimations.cs",
+      "sha256": "4d06323b9fb574c818deb00d5019512d68c1bfcbee73753ccaf9514e1786ac90"
+    },
+    {
+      "path": "Code/ExternalAnimations/NinjaSlayerDeathClassifier.cs",
+      "sha256": "c99c14858df2ff2a84acd92f85bea1e1af45ec9b6e31d7137320010a42f0f132"
+    },
+    {
+      "path": "Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs",
+      "sha256": "f21d6313577d60efa67dd60b140347ffa1fea6650ba82117aa9c60e74b4b83d4"
+    },
+    {
+      "path": "Code/ExternalAnimations/NinjaSlayerRapidAnimationCoordinator.cs",
+      "sha256": "2502edb59a0544c7e303cd5b540658ac0eea26b511353faf8c9f69f92c8d0fcd"
+    },
+    {
+      "path": "Code/ExternalAnimations/SawatariBambooAnimation.cs",
+      "sha256": "521af71cc85aa5b1810b7ba138a79bc6094599a713872f89c9e1da409c42e959"
+    },
+    {
+      "path": "Code/ExternalAnimations/SlowAttackAnimation.cs",
+      "sha256": "e714b8837d3b7e128e33baca076a5a05b274992dc9a79ecd9a7ad46b981ac89b"
+    },
+    {
+      "path": "Code/ExternalAnimations/SpinExposureHistory.cs",
+      "sha256": "fdb08da137832a6cb03f0c7d97d654b37853d7b38f549083ed6a662494e3f35b"
+    },
+    {
+      "path": "Code/ExternalAnimations/YamotoKokiCombatAnimations.cs",
+      "sha256": "f61388f034c78da1290c2e39eee604473bb8043d641edba4e4a80019a1b387a0"
+    },
+    {
+      "path": "Code/ExternalAnimations/YukanoCombatAnimations.cs",
+      "sha256": "8e039db2a4c7ba7965aff325ed51289b97e9a6048c066ac5b0f68f8e603193c0"
+    },
+    {
+      "path": "Code/Nodes/CombatFacingTurn.cs",
+      "sha256": "a4435d3fc4da8bcb0063f1f20408737f96efd5ed5b6fc9d694092c27d4cf4520"
+    },
+    {
+      "path": "Code/Nodes/EntangledSpinMotionBlur.cs",
+      "sha256": "8db77c1f42b7e9db57613a92b045f32e0622c9a44765bdeb95e59af95ea21636"
+    },
+    {
+      "path": "Code/Nodes/FinisherProjectileHead.cs",
+      "sha256": "8979c01e33b70bceb30a3cb4ac58b1c15cb9b7fa05d0bf39091a5beacf593aae"
+    },
+    {
+      "path": "Code/Nodes/FixedEventMusic.cs",
+      "sha256": "f7c0de4838541cc06746889bcf6d895329b91365bca9747a45e740ca78ebf4b3"
+    },
+    {
+      "path": "Code/Nodes/NarakuEventPortrait.cs",
+      "sha256": "10a49fdd7a0f1efd06faa30ec3477aa4303bfb41289fc3499226f2379ca27387"
+    },
+    {
+      "path": "Code/Nodes/NinjaSlayerAimPose.DrawAndThrow.cs",
+      "sha256": "6cb5cc39ab2818ff8ea7cdb2797c24e4bf8190b1f3d8f90edce1e4c914b6ec39"
+    },
+    {
+      "path": "Code/Nodes/NinjaSlayerAimPose.Somersault.cs",
+      "sha256": "eff947b7a3d9b771cf9be73587664758d0f6d44862544ed77529dee3125eea2d"
+    },
+    {
+      "path": "Code/Nodes/NinjaSlayerAimPose.cs",
+      "sha256": "6be2692de6ece65ac239d1c6c27283f6a2ec858507be1263df41e6d9ace9847c"
+    },
+    {
+      "path": "Code/Nodes/NinjaSlayerHellTornadoVisual.cs",
+      "sha256": "0dd8851e9e153b5535d588b8102ad97ef26c0554196986637ac0bf5867fea877"
+    },
+    {
+      "path": "Code/Nodes/NinjaSlayerSelectBackground.cs",
+      "sha256": "cbc45c8b55eb7c129a9bdfb117a32137d233d14668ce0dabf0d7d2dfc94b6b38"
+    },
+    {
+      "path": "Code/Nodes/SawatariWeaponVisuals.Dual.cs",
+      "sha256": "e15e5b2631cd441a11105c98aa77c243430979bf1d96c82d0c183695baf411d9"
+    },
+    {
+      "path": "Code/Nodes/SawatariWeaponVisuals.Flight.cs",
+      "sha256": "2b50ea4b0827d446179e17ead734f1a26916077a4c19787574a651acaecc6644"
+    },
+    {
+      "path": "Code/Nodes/SawatariWeaponVisuals.cs",
+      "sha256": "de30b7f68bb4564e7720a74f58c137301a811175200af3073257a0e2c6972aa1"
+    },
+    {
+      "path": "Code/Nodes/YamotoKokiAllyFacingController.cs",
+      "sha256": "3623c05569a2a0c621c6171113871a029042006a925523d25d4017c502c07f22"
+    },
+    {
+      "path": "Code/Patches/AncientEntranceCreatureVisibilityPatch.cs",
+      "sha256": "97cab0ebfdfc92c52850462d925eaa0eb5d9c74cfd76b5d0b1b0e82b194dd543"
+    },
+    {
+      "path": "Code/Patches/BossGreetingStartPatch.cs",
+      "sha256": "558fc637b53bf5eea4697a3da0c20d3a9cccbd49c24782a9c5b1d00a0a886067"
+    },
+    {
+      "path": "Code/Patches/FinisherHeavyBluntSequencePatch.cs",
+      "sha256": "b9b40783aa5a5a7d3d789cb423d98a7dd8407dd6b123d94fff5fd7b2165d199a"
+    },
+    {
+      "path": "Code/Patches/FinisherRangedPatches.cs",
+      "sha256": "0350f52cf00faf755a4da49ee988779c59ceb7327c2f7aec0a5b76b3c9da1ef5"
+    },
+    {
+      "path": "Code/Patches/KarateDamageWavePatch.cs",
+      "sha256": "94762de2a44ef96f150eb07035fe808de7adab86bbee672324f5b1f30b4da6ac"
+    },
+    {
+      "path": "Code/Patches/NinjaSlayerFinisherPatches.cs",
+      "sha256": "638161750e94efeb5cb0c5683b2d7b37d9f6d26f99631721497b2a27e63a2e8b"
+    },
+    {
+      "path": "Code/Patches/SawatariEventPatches.cs",
+      "sha256": "5d74d31c83168d8f5c06d21c7e974b711ee6780fb6181e39aac630ba19cbe32f"
+    },
+    {
+      "path": "Code/Patches/StarlessNightDiscardBatchPatch.cs",
+      "sha256": null
+    },
+    {
+      "path": "Code/Patches/YamotoKokiAllyLayoutPatch.cs",
+      "sha256": "76f6cd83ecf4d68a876bf92da8530438396edea5e2b33f7a54614e7ab9413e40"
+    },
+    {
+      "path": "Code/Patches/YamotoKokiIntentAnimationPatch.cs",
+      "sha256": "558f866d35db895314cd7ad9ab603b1593917da7278ab605e0b29ce4162cfe92"
+    },
+    {
+      "path": "Content/NinjaSlayerAnimationCatalog.cs",
+      "sha256": "bc7b2ab2f330d2106b5daaafde7ab6729fa72e6421f4ff2d30ce62a18fabad71"
+    },
+    {
+      "path": "Content/NinjaSlayerAudio.cs",
+      "sha256": "3683fbd600d85a461acddd15e1f05dddbfbb27ac597a4e666c29178023377555"
+    },
+    {
+      "path": "Content/NinjaSlayerCombatFeedback.cs",
+      "sha256": "d546a25ac9ef557ef80652a588cad4dab49dd02f7c6cfa7aba6deef1722a6cc5"
+    },
+    {
+      "path": "Content/NinjaSlayerEventValidationRules.cs",
+      "sha256": null
+    },
+    {
+      "path": "Content/NinjaSlayerFormState.cs",
+      "sha256": "dc65cda60c431955c2e3f07f23ad5d3f227fed37104a6fc3ad36cdb28af14b90"
+    },
+    {
+      "path": "Content/NinjaSlayerRunData.cs",
+      "sha256": "eb7d51c52c3d671ef236d7be7ca64c573eb92bd43edd306df4ed08bc13aaa0c9"
+    },
+    {
+      "path": "Content/NinjaSlayerRunState.cs",
+      "sha256": "3c9db0c521923e90fc28ba048e44b20acc63c795bb41d6fd7d34e62cbb5082af"
+    },
+    {
+      "path": "Content/NinjaSlayerSettings.cs",
+      "sha256": "a8f6f73da02c81581237ba985be4d83b9e2a019aaaee1a0f148982c74f4ede86"
+    },
+    {
+      "path": "Content/NinjaSlayerSettingsData.cs",
+      "sha256": "f409a17f89a50ae7ae7f27b4e76841049d13399cf8b750f0bb7dff626bece255"
+    },
+    {
+      "path": "Content/RedesignV1Rules.cs",
+      "sha256": "9397933472777762d6b2611aaeaba9ac9d3fb4e7d3a300653e2356bf5c458cb1"
+    },
+    {
+      "path": "Docs/boss-greetings.md",
+      "sha256": "fe8456175125499f46297f8c46c7c202252507d4ada887c34597c10569561467"
+    },
+    {
+      "path": "Docs/card-art-redraw-requirements.md",
+      "sha256": "c62cb24cf9f6f491468a5b09e76bbed6faf4a203753b578cac883982c2823ed8"
+    },
+    {
+      "path": "Docs/card-catalog.md",
+      "sha256": "ea3c4b0558a184d3661cd90e250b279bd313dc0347071141c8a6266bcceaa43e"
+    },
+    {
+      "path": "Docs/combat-action-timing.md",
+      "sha256": "37b259d1ad69536098dc7fe0b7186d3b750997262260ebab14959c34f72479b2"
+    },
+    {
+      "path": "Docs/fixed-event-music.md",
+      "sha256": "83bdb9dacb64289c2e9a41292e1c282ff9aea6ae264c5e1eafa399810c6f6b94"
+    },
+    {
+      "path": "Docs/validation/card-board-v115-20260924.md",
+      "sha256": "6265a3cd1970bfb26aa1e7b0e49ab8ff92a7898b2961bb8b1b0e5ddf91dded3a"
+    },
+    {
+      "path": "Docs/validation/companions-20260924-evidence.json",
+      "sha256": "8681f4cf7f19f211f4e3ee27aa32eb10b88667ce938306aeb7bc28eb7cba3812"
+    },
+    {
+      "path": "Docs/validation/companions-20260924.md",
+      "sha256": "2e8dfece8bff532c0e30334aad56791a838ab148e6132c3e0fff217dca862dbf"
+    },
+    {
+      "path": "Docs/validation/ranged-finishers-20260924-evidence.json",
+      "sha256": "713686f7b1b11998f25aa6040656aeb2d57d5956d989bedd76a075569ea73b5f"
+    },
+    {
+      "path": "Docs/validation/ranged-finishers-20260924.md",
+      "sha256": "07af5f50512d2269487f0b7d3a0fd7274850159c6f57b17ff58b3ffd975823d0"
+    },
+    {
+      "path": "Events/NarakuEvent.cs",
+      "sha256": "7e44a29c54cf13b9d10e3529eb78a386ed82efa774197b51cab25dad78244803"
+    },
+    {
+      "path": "Events/SawatariEvent.cs",
+      "sha256": "4f700c3036b42d2ddd3b0c26a8600a80e1ab17cba092e7764929a92597d77b3b"
+    },
+    {
+      "path": "Events/YamotoKokiCuteEvent.cs",
+      "sha256": "442ba4b0b22e8b85ed85ea45fd3b7ae38ea0499f3ebd61c06b0ba536cc063d11"
+    },
+    {
+      "path": "Events/YukanoEvent.cs",
+      "sha256": "a8c59b6b244417a883cf5fd7ec8f7e6d684b7cda0981e99563731aacfe663cb5"
+    },
+    {
+      "path": "Monsters/SawatariMonster.Weapons.cs",
+      "sha256": "66f41e6c983ca8469ecaf2ce8de5da355ec1bb45ddf8d57bdbed9f56ab7943fb"
+    },
+    {
+      "path": "Monsters/SawatariMonster.cs",
+      "sha256": "72b30dc014169ae28bd0a7129f9fb6f02d45e38581add9d87bd1c1de32829d8a"
+    },
+    {
+      "path": "Monsters/YamotoKokiIntents.cs",
+      "sha256": "9dfd2e92a73854be717034eadf4db92138fda4661826ee62fe2ddbaeac3f653c"
+    },
+    {
+      "path": "Monsters/YamotoKokiMonster.cs",
+      "sha256": "9117a5bcc040fe5c5b970c7cf999ffb3ef333b84a7021084501565e073484929"
+    },
+    {
+      "path": "Monsters/YamotoKokiOrigamiMissile.cs",
+      "sha256": "78d6da81e267962fd2052802cf3e046eefdeb425adf91665d636810bf6b2c88f"
+    },
+    {
+      "path": "Monsters/YukanoMonster.cs",
+      "sha256": "fbad750e7f882ff53691d1f59c05856eaddb888d90ec976409fdc417403d2842"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/SOURCE.json",
+      "sha256": "6cfb166b4a00c7a134db223aaae95090ca066eea011f0abe6038e89f56d5f203"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background-base.png",
+      "sha256": "a32ee6e0cd1a76865f3e793124a4233a069b7efa7a28a0d44c1ecdb3a465bef5"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background-base.png.import",
+      "sha256": "305d34cde0dd1a198aa4607812bf8b68f6f861717e0dda8674fb6fc42f9c9622"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background-copper.png",
+      "sha256": "23ca280cbfc9e5175fa16ed15e51e48ac80953386d84637edf4d6bbd1f2d76f6"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background-copper.png.import",
+      "sha256": "2c19ab2d26ec725c93a3c629d1ec7323f9fd9acb13dca1b207d8ccbcafc924af"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background-smoke.png",
+      "sha256": "a2b44b62593e1462259bff846f99691d4fdd24cf10c0e1906441a2572a4ac8b3"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background-smoke.png.import",
+      "sha256": "0c0d3147c39530d5b1ff0c16952d3df89f7b975ba91d051fcdef39195800123a"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background.atlas",
+      "sha256": "6e96201eabffc0ccef227bdc0316c5655fce407291f36ae46c211a7d028f87cb"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background.spatlas",
+      "sha256": "9dc31b131e8c303acd4447c1279c602569962eea69c07cdc8e31984cacaa7f4b"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background.spatlas.uid",
+      "sha256": "33075f0cd303402fe6cf06f9d1b1ebdc4734299d095ce0a2ad098afab9aa6ee2"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background.spjson",
+      "sha256": "23340c2c58123e06c856b246ee00e57987b5e8696c2aa4548a9dc22d95f823a7"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background.spjson.uid",
+      "sha256": "a5803a5d3925dbc3aa0ef317c0514b6f474d137e9c1ab6246b2f90952a26e539"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/background.tres",
+      "sha256": "7003b4495d16c9aaca62aa4a537c9b84f59d21b430d6a45f1861d113d06d60b8"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/ember.png",
+      "sha256": "6e33075f572673f113dd3abb2c8d823c08c3333f444969be98013ca2946a0ae1"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/ember.png.import",
+      "sha256": "8c5f93754cc0708d32c0ab132fdff9443fa45827ea512597e7bb3df78884b1be"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front-body.png",
+      "sha256": "7a2e9a65190299ba5cc54de7bf4c0f81e0c189ddd8bf64fec543bb8b45fade27"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front-body.png.import",
+      "sha256": "fa8aabfaf1f795922deb3ebae93d56242cc7ee6a58526bc68d03251e98a27ca3"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front-scarf.png",
+      "sha256": "97141cbf8b3f72adb3442d1a92e740fe394c2d2688b974bc744afdd22d67edd5"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front-scarf.png.import",
+      "sha256": "276e10576159264f126812d1f838a2d5231bf707c46fb984aef636b0b9017ef3"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front.atlas",
+      "sha256": "057a91d78c7077de58313bafeae8004cf9711a31f87b37c7145951f22ec3f6cd"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front.spatlas",
+      "sha256": "44fb3153ce02f3471a8e79e5293516c3bf3eef138c10d5e803b74983d0f6471d"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front.spatlas.uid",
+      "sha256": "bf088ae16e71c2214261098bef47f172e9f8d7b39e94b460fad660674696e80b"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front.spjson",
+      "sha256": "395efb2ade20545dba296e03c70eca62fb15803dc86eafdd583d34545711c923"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front.spjson.uid",
+      "sha256": "3d81846858616857327a144d13e3591def2cc2ed20b2f7f1d5c41595bb54f6aa"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/front.tres",
+      "sha256": "eb825be397e147c88f45762ca3bc1530efee1a0646472f5470aa78eb1135de58"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/play_spine.gd",
+      "sha256": "673ed67aae266b06db74890024163361a71a01fd80143e4ba89345975d822020"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/play_spine.gd.uid",
+      "sha256": "869c2478b9aae64a87fe8c5ee2c843d95e41aee8092848add968990cb014b2b4"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/portrait_front.tscn",
+      "sha256": "c08e8ea2c3aa8799c094c9d59d1ea5d3f88db79241d4c5ed7a5851876a927e1a"
+    },
+    {
+      "path": "NinjaSlayer/art/character_select/portrait_manga.tscn",
+      "sha256": "b27c9fd32185fd345de3953329d46d3b58b4a7b528e7549c07355815b600f278"
+    },
+    {
+      "path": "NinjaSlayer/audio/fmod/EventMusicGUIDs.txt",
+      "sha256": "0db0a176320563b657a0dca77b1563bb2002491f44ad055045934e930d57f1bb"
+    },
+    {
+      "path": "NinjaSlayer/audio/fmod/NinjaSlayerEventMusic.bank",
+      "sha256": "d0b9ac9685cc18b026c121477fa387b40bca665715e25c2173c24dee47bc7ff6"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ChadoCard.png",
+      "sha256": "ed66bd509a0b953635252ac9fc8e29031a8911b465b9cd405b8d4c76f5ecbf1d"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Contraption.png",
+      "sha256": null
+    },
+    {
+      "path": "NinjaSlayer/images/cards/CounteroffensiveGuardRedesignV1.png",
+      "sha256": "21688be6a2c0f263e7ce91b9970243f749b434ae5d635e5d5f885e5377e95075"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/GatherKi.png",
+      "sha256": "fb1b30e8ec5b112b892f8d173c6884748d338bb659557b9cc8178490026fcdb3"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/KarateWall.png",
+      "sha256": "d4833520be3b4a99288aae1979814f6baf1c009e7dcf312a59259b26d1aa79f0"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/LuckyStrike.png",
+      "sha256": "1d2d4dd940d0c2aa34762724e7cb9cf19b9cdfca40e473c589a23de2143fcf5e"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png",
+      "sha256": "5e4189bfd20b80eaab7a00b6373c2b51616f4381a31f3bf5e637b1d7eb227699"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/MetabolicAccelerationRedesignV1.png",
+      "sha256": "c41543b1c039500a9c8b9318b1137a24204966c6547fd8cea7b15749343a850a"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NinjaGreeting.png",
+      "sha256": "1e0168dda0a16dc7358e02590a22a3eba408176fd57a99e5bc3e7edfe86c9c40"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/NinjaSlayerFootwork.png",
+      "sha256": "7c5cf0c46e5d7290c5253e963012de85658051c9345084c33e6368fe34d3f240"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/ObserveBattlefield.png",
+      "sha256": "6d6f97e01f3e9f631c3ddaf43df403c13eebf81d0f9e14f18f22dcb51a51527e"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/OyeahThrowSword.png",
+      "sha256": "1a4840500fa3662edb3521208c79bb5a31d306950950847e509e0ae3f08b6b7f"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/PlaceholderBlueDefense01.png",
+      "sha256": "2d7fde89f5dba976084e917518c58e747150efd3ac62d31112ac71d50a22d6f3"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
+      "sha256": "3f98195000a546971467a4212a087a9acf9ebe8790a04254eab9321cb2bf51fa"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/SenchaStorm.png",
+      "sha256": "6b2bb2d00c2b9337ba9aa98649fa8d04364f36253910ba18512071ee28357ec5"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/Slaughter.png",
+      "sha256": "08172935d89359f385e510f9f7e4010e6d6649c1d3ac70efcb0428a03ba5d303"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TeaSamadhi.png",
+      "sha256": "5907f8d83a01537c04d7176b3cfd048207a49590ccde6138cee9ce2fabada5bb"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TonyRetention.png",
+      "sha256": "1494b3028a07d533f043ab0fd77edc1b4b1fd3a45f75fafef8de1b4ada18dd18"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/TornadoFistRedesignV1.png",
+      "sha256": "b2a86397a6919406af4280fe101b7f2a31f50b84840e2c44c9e6d8ba0f24665c"
+    },
+    {
+      "path": "NinjaSlayer/images/cards/WhiskSlash.png",
+      "sha256": "fd939eea813ce8ef7b347cae3d91f558a3dadb7e6302e984d3b29e87db05a707"
+    },
+    {
+      "path": "NinjaSlayer/images/events/naraku_event.png",
+      "sha256": "69ac79bf6fecbb9b4e55f138c2819724e0895244839b3f008869cdf2ca28cbd2"
+    },
+    {
+      "path": "NinjaSlayer/images/events/naraku_event.png.import",
+      "sha256": "dbb952ea7b613b09459296dd81d8e1e5a6edeaf508e975023fc9a167fa540c13"
+    },
+    {
+      "path": "NinjaSlayer/images/intents/yamoto_koki_iai_slash.png",
+      "sha256": null
+    },
+    {
+      "path": "NinjaSlayer/images/intents/yamoto_koki_summon.png",
+      "sha256": null
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/cards.json",
+      "sha256": "ff76f208c7306c2e9c25fb2af93fd2fc7967e62e999c6ac7d5551a32eca17cd2"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/events.json",
+      "sha256": "6baf383874df188f2058744976b595730e6c9952eb515eb06517d619c58ae517"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/powers.json",
+      "sha256": "996db011ab36896772f1cc3a5dd6416660ec2ae290119951b1ae27783acbd11c"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/relics.json",
+      "sha256": "975bc195e9822d193c9acec205c403bead823b82bdd7d87482e5c3c0b24c2dcf"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/settings_ui.json",
+      "sha256": "acdc255b6a0f0451b933e19c372216a27a3e5876d231f52b683d4f2fffdb66b1"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/cards.json",
+      "sha256": "fa405a5c0b67696c31f71c08333790ebc79a8d9c3686eb15e4595fd69a31186a"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/events.json",
+      "sha256": "df8cdca40751eccfa9a794c8c795e13ccb6f4b185e51b1acf12fa3e9b75ef3ba"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/powers.json",
+      "sha256": "6b149d6e62b368a42e3b161b8c305fce482043a4e2c1446e1b567c15bb04bc07"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/relics.json",
+      "sha256": "0a99ee98733b41f6f45eda6604b2802e9ab680473a7a254b968565832cc09e92"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/settings_ui.json",
+      "sha256": "4388c29bf3887880d88cbe806a2fc160a78916dd13371ad3261468e2f477f849"
+    },
+    {
+      "path": "NinjaSlayer/scenes/char_select/char_select_bg_ninja_slayer.tscn",
+      "sha256": "aa665908a46feb5cdf37222a5a315c5e38bfcd52b0f1f7d67f26297c06bbb436"
+    },
+    {
+      "path": "NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn",
+      "sha256": "e4610c81d4d6f424ddf1cc8c708c7a8c01327b428f9e818c5b8e48e442184c5b"
+    },
+    {
+      "path": "NinjaSlayer/scenes/creature_visuals/sawatari.tscn",
+      "sha256": "3a336a296d43f8cf21e225bed905f19030b5b7d0a5f15d8366388dbdb10c51ea"
+    },
+    {
+      "path": "NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn",
+      "sha256": "99f1adec4cd9be16568f14fb67b8e0db7aeee3abf91f40f03f95ee42d9a17dc8"
+    },
+    {
+      "path": "NinjaSlayer/scenes/creature_visuals/yukano.tscn",
+      "sha256": "8e15eff667802c16f9f084f0183a507515361a208c2e7940b644c44c2a7d149e"
+    },
+    {
+      "path": "NinjaSlayer/shaders/friendly_attack_intent.gdshader",
+      "sha256": "c91497c3ee294ea09fec769d65c9fcde855bde8fe4b93da5f01f8650d86415a1"
+    },
+    {
+      "path": "NinjaSlayer/shaders/friendly_attack_intent.gdshader.uid",
+      "sha256": "38859bcf0e85f94770879b3e674d593c3763ecd7611b31c942b922d44aa7e2dd"
+    },
+    {
+      "path": "NinjaSlayer/videos/naraku_event.ogv",
+      "sha256": "aa0c1ec0f2a121d9fa789c4eed3f13e6528b0a6c39e49f96351ca07bd35765b8"
+    },
+    {
+      "path": "NinjaSlayer/videos/naraku_event.ogv.uid",
+      "sha256": "3d8f8ad70aa0fed665f6a397acfb4a5aa3a6273826abdc2765172e0ec38a19a2"
+    },
+    {
+      "path": "NinjaSlayer/videos/naraku_event.source.json",
+      "sha256": "6ad672925f0a601e00ae995c8b77f9b4904b2cd4ca9d5e868c1686d5a51da949"
+    },
+    {
+      "path": "Orbs/ShurikenOrb.cs",
+      "sha256": "917707366a1174b42607b9369baf0e24eb291e48ab48cb9de83429a8bce7908e"
+    },
+    {
+      "path": "Powers/GuardStancePower.cs",
+      "sha256": null
+    },
+    {
+      "path": "Powers/NarakuFormRedesignPower.cs",
+      "sha256": "7cfa0bb9179200c4b2f49f0ae28876cda50eb8d9166388af89e5da44ce5a1130"
+    },
+    {
+      "path": "Powers/OneBodyOneSoulPower.cs",
+      "sha256": "bc6917a90aab41044957e16a63ce18550f2295afa5bcab879b7764051731a5e2"
+    },
+    {
+      "path": "Powers/ShurikenDrawPower.cs",
+      "sha256": "904835c6644c9c38288e26db730153362bca09a02652766b89710d0e6d437ee2"
+    },
+    {
+      "path": "Relics/BlanketRelic.cs",
+      "sha256": "b9aada910fc233dbba3939fcc7d9d61b96d97011ee75eeff86e02414594e8072"
+    },
+    {
+      "path": "Relics/NarakuWithinRelic.cs",
+      "sha256": "873171e513736ebc98bedcaa25bd54eef0575552286d103a3cf753fcf4c0e51a"
+    },
+    {
+      "path": "Relics/PortableIrcTerminalRelic.cs",
+      "sha256": "3142cfa96e3e69bb1e2eb5d43c04f6b3db781db48828abde3ce72fd80776d1a0"
+    },
+    {
+      "path": "Relics/YamotoKokiCuteRelic.cs",
+      "sha256": "4dd2030f9a11e17890fc1ef9b5f869b526409e2dc9b42f785099470e0c5c0106"
+    },
+    {
+      "path": "Relics/YukanoCompanionRelic.cs",
+      "sha256": "0ca53fd384d5f39db2a84185529ad3cc17653b4aac6d7ff3e3f58175dc6f56cd"
+    },
+    {
+      "path": "Scripts/Entry.cs",
+      "sha256": "c8de9b6b9507a6e9d44aed20980ce7304ccdad57e7cd89b179770e24acca1b10"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj",
+      "sha256": "33b7a348bdc5cace23be33f394da7aa58b0000446eafed5fba13959e6737e80a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/NinjaSlayerSettingsTests.cs",
+      "sha256": "11f96fe678a097495e00b214a76f85b246552d849f51781d1329fdaf0d2b4461"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/SpinExposureTests.cs",
+      "sha256": "ecc093bd62415ee5be097fefd7da7a77da17ca4925fbcb5c17e6f81bdefdaac3"
+    },
+    {
+      "path": "Tests/NinjaSlayer.LogicTests/YamotoKokiGridLayoutMathTests.cs",
+      "sha256": null
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.AimPose.cs",
+      "sha256": "103efdbab74a475401f67ae21a2aea88e408020b8bfeec2aa4d1415e54eff8ed"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BalanceV0216.cs",
+      "sha256": "0c02e478b27ebd00a611d64913beeb0e5ec217434de71c48876d003902503f82"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BalanceV0217.cs",
+      "sha256": "9d19350f9ba838e0c169160fd5c2a5f08b106c696b776d13a9154f2f5aaee67a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BlackFlameAutoPlay.cs",
+      "sha256": "4ed1133009599945b921565d8f2d884d05d0863975ae34997e7f381bda55d8ca"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BlackFlameTiming.cs",
+      "sha256": "6d9a363c1f3cf353ec234d601b9b4e4cbae87ace7699ea0f4e102c0e2b2f4058"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.BoardV115.cs",
+      "sha256": "06ff5f618144c89597172f828d57ff397171d55846942290eeaf3d5fa505ff53"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Cards.cs",
+      "sha256": "f2bc8c1f87405661b9adb91ecd8d36e30f8ec975f09f2e15bf48eb721e2b4f6f"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.CompanionHurt.cs",
+      "sha256": "48155d965605c2cbb6308f753a1d107deac1ab369781c477f032a74c475851ae"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Companions.cs",
+      "sha256": "baeaded95af4b02a98f8625ac5e950fadcc5b73187fe2cfb057b4c079edcf8f8"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.EntangledSpin.cs",
+      "sha256": "716a668d64009d9b9776fbef92de91de8b84b7b2a9176a8146a41147af9510cc"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FinisherApproach.cs",
+      "sha256": "57f576d3a6e69c24c243606b110cee0081610f0361c33e5280d2d8071f64d29d"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Greeting.cs",
+      "sha256": "92df4d7a751b32856f1b1d9814352f50cb0eceb67902d1247d4fbb9d1e766e99"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Maintenance.cs",
+      "sha256": "565db44f0341f96797623ec91a51e8817838d82399ba3a48092070ff651032cb"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Multiplayer.cs",
+      "sha256": "f1454a6850ddc75bd67fa74fef2644edb1ee69761a526fdff0a08053af56960f"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.NewPool.cs",
+      "sha256": "37febeac5b5aef05f58268f35c73e49576525eaeb769d55b421ae0b8e20551d3"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.OrbSlots.cs",
+      "sha256": "152f5b8d3054fb4d0807276c59b08e52ac9d0746dc16b11fca104adefd251ce2"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.RangedFinishers.cs",
+      "sha256": "0b6a6cec8e46d28efe48e17e357a04bdc6546a8f33949565fd8ef1d4bedc4c65"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.V020.cs",
+      "sha256": "131100b7ca3f4aad0c528fbd70e6b7554b49a5c361c59e0ef7333bb9af83d5ea"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.V023.cs",
+      "sha256": "c4a3dea420161aa4fffa700597254d42b116e31533441a9f4ca44c6ae0e9e84c"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.V024.cs",
+      "sha256": "13ef38e6249b6379480d265c1fdff7eb07223c4ad530785d7636766d4c893eea"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs",
+      "sha256": "20f44ea2f35f15161461e87be215f63efbca05085034cbb9b5d8b9ed7821e6d7"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/Run-MultiplayerContracts.ps1",
+      "sha256": "f075f2511c29a35d16e0f441faa44cde017a81fca4b3b2ee7cb2ff38ac670a74"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/card-metadata.json",
+      "sha256": "18b507841a6847d0ae00a2ad6c385861a81ef94fddd609b238fa30bd382b004a"
+    },
+    {
+      "path": "Tests/NinjaSlayer.RitsuLibContractTests/ContractRunner.cs",
+      "sha256": "9bb57897963a4d89be21f8628897aab06422ee7fd8b0e39fd89dde0c47eb4b5e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.RitsuLibContractTests/ContractSupport.cs",
+      "sha256": "a9cdaef6717de8e342cc3263ecb7c8316986e3c57b284e1daf7b82753ca7d0d7"
+    },
+    {
+      "path": "Workshop/change-note.md",
+      "sha256": "f4bd0c23215b2fea0df1f3b38c6505d486e50683357f05a87d6bcd02b3dd9f32"
+    },
+    {
+      "path": "Workshop/workshop.json",
+      "sha256": "ef2006526df58b12a181c2cc5c61c7c9bd84fe087e8f19d6123d206997d1f98d"
+    },
+    {
+      "path": "export_presets.cfg",
+      "sha256": "5206686beecb896de3fd0c26cbc4c0e4f0d9ee7cd85f697ee6e22ea8c5d08e45"
+    },
+    {
+      "path": "scenes/vfx/events/ninja_slayer_event_naraku_event_vfx.tscn",
+      "sha256": "ecfaabdaa071f62e8f59e6bf092bb4cb2f16459df5b277443a102c702f599711"
+    },
+    {
+      "path": "tools/character-select/README.md",
+      "sha256": "00b6b3566cee522e1fc51b28ceeeeab24572857498041d19e40e90afe79b6fce"
+    },
+    {
+      "path": "tools/character-select/check_scarf_bounds.py",
+      "sha256": "be06a893e5223b32df0205786b51a992c44b643650a65a596fe71d90077a818b"
+    },
+    {
+      "path": "tools/character-select/import_poster.py",
+      "sha256": "ac13a011fc53bc72b7d4d61b19a557f997171de131178584152223bbd872968d"
+    },
+    {
+      "path": "tools/character-select/preview.ps1",
+      "sha256": "957aeed752884611262b551a7978ed5dc7a6a84b29d9b353bdc31d81ea700ed4"
+    },
+    {
+      "path": "tools/character-select/scarf_geometry.py",
+      "sha256": "392747f65736f7295f3ac464558d9da1f375882a740bf9c02f7796d176f10469"
+    },
+    {
+      "path": "tools/character-select/verify_poster.py",
+      "sha256": "6ea922ab55543b33fecd03a85e78f3343c0e47acffeef335b27666dcbb80bb0b"
+    },
+    {
+      "path": "tools/naraku-event/README.md",
+      "sha256": "640fe5f98dadb361918f499bcf29c25acee58ea53be08d54d024a74e48e05eb4"
+    },
+    {
+      "path": "tools/naraku-event/build_portrait.py",
+      "sha256": "2bf740747b8d7ce9fd025b447b91176c1f3ae2a672dffe809309f80f0737d260"
+    },
+    {
+      "path": "tools/naraku-event/preview.ps1",
+      "sha256": "251734c8b56041b93317bb167318f568825ccc28897db023a79f10b005ee3222"
+    },
+    {
+      "path": "tools/naraku-event/verify_portrait.py",
+      "sha256": "eb755b981efb454a8a3136f63295c2d59c5f8ff9a9328fc88b3353de105606d5"
+    },
+    {
+      "path": "tools/smoke-harness/Invoke-TheaterPreview.ps1",
+      "sha256": "884ba9e52065481f67d08cfc303bf7a53253fc49d59eab3afc3d5436459d4af5"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.FixedEventMusicProbe/Entry.cs",
+      "sha256": "0a40d1df0cbb7163c9ad3bb51db88bfd654d18a8fd2b0cd56ad19589ea891ba3"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.FixedEventMusicProbe/FixedEventMusicProbe.csproj",
+      "sha256": "9bf377b27ce867c1d65b102ae6cfa1564552ce06675d26707597e159f464dba0"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.FixedEventMusicProbe/preview.ps1",
+      "sha256": "a5f8eff03f3679b6c01080336a921e84d53987b48fe15cdad191df950ceb869e"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.NarakuEventProbe/Entry.cs",
+      "sha256": "904ae5033bc13913fd66f1b6a7c6256735188ed2b175b3c37c5ebbbcaeaf8d33"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.NarakuEventProbe/NarakuEventProbe.csproj",
+      "sha256": "29563e12953e06baf86a2046aeba447ef719407034c4f1888e7de0d2134b51c9"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SelectPosterProbe/Entry.cs",
+      "sha256": "734eb899c0b2a06b73c30b5b697fc58bf271da8a0a983530f521d50478b6b260"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SelectPosterProbe/SelectPosterProbe.csproj",
+      "sha256": "0d13659d5481fd4da41f10479559f756ceed9c986538194d876fca340563aa90"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.ActionPreview.cs",
+      "sha256": "820ff8ed50ae7cfc9429ea31d27db9e555a10e6096333bcc5ee18e6fec478151"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Architect.cs",
+      "sha256": "0544f2fa73e8b5e8e8f1c2444c565eb5ec49f27af26ce5caf56f12475316e552"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BalanceV0217.cs",
+      "sha256": "98ba8f3d522ecd19193b935bbb8bac9ca48bddef4b949bed5f8d295060e78cfe"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BossReload.cs",
+      "sha256": "d1f88249475fe56fbb8810912daf35958bf5ddbc8a0968cd6afdb0e45449bb18"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Entrance.cs",
+      "sha256": "c97efdbfa60cfb4608d2b6cfff05295da53e9111b14ed81658a7e60d1707d963"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.FinisherAudit.cs",
+      "sha256": "03f6c13676511f1d74e714acc394552ecab6c67e806d786cc73b33adc3bf5636"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Greeting.cs",
+      "sha256": "fa28195f58dfa22561a28720d947e2dff93e1b5ed4076276b9c195b5116c41df"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Overhead.cs",
+      "sha256": "e31e7dad66f8aac17b0e0b56e27f899d2da6705ccb5f9eb1ee9cd0b31fbc5bb9"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Theater.cs",
+      "sha256": "d81b5d33db75f5c395f25e2cccc7f7b7d1d35255febf5b705e8af63fdd4e8ba8"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/TheaterScript.cs",
+      "sha256": "2c7854ce3443e2cb57959f90c37a878a7975ad763ae579cac6e7b730f62e6640"
+    },
+    {
+      "path": "tools/smoke-harness/sync_preview_audio.py",
+      "sha256": "862c7ea0828b418d745ffe6465f08be45b3ea27037aa885bd389cd7b8c9529f9"
+    },
+    {
+      "path": "tools/smoke-harness/theater/architect-greeting-entrance.json",
+      "sha256": "921b7a18101f8acc007f66b895dde8a9c4ccb2434c1289608c76bd0dc5e62637"
+    },
+    {
+      "path": "tools/smoke-harness/theater/companion-facing.json",
+      "sha256": "8c9ae89d1f23c59a4bb013d8b5d704f9534435e4cdd1e9acea0a2fe37066c692"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-companion-ranged.json",
+      "sha256": "1a1c207dd14eed78d7dbe324db90135a2b0e2c492e6bcab0f4b30fa240f511db"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-companion.json",
+      "sha256": "920b420ad1b7a219202799710d5aeebc9d5fd45a3a7387ee16f37ee6f6ee26fe"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-enemy.json",
+      "sha256": "371e66f3394ad0811857c8dbea54fdf9bdcb75361ae5ae4b8fb387ebaa0ecdf9"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-native-late.json",
+      "sha256": "8a1cda3924f8036e834542cd06cf8b0e471175f00b2d38f1f155c469a6231554"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-native.json",
+      "sha256": "2a631664795837cd39f86c5e67e253a428f5c1f0b807147a865937b461cf8ccf"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-player.json",
+      "sha256": "764199dfdb26770ea41891dfb1366a5705adb0a4665cf27430e7efc0493f1e53"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-combo-ranged.json",
+      "sha256": "9702eedaa94d541b25b7f0daa07cc2da16acbd4b25ec83b38e619f18f01de82e"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-enemy-dual.json",
+      "sha256": "14ce74b1337309a9bd2264f2aa09e2a57b8da9d71a24db326a57ec86c85183c0"
+    },
+    {
+      "path": "tools/smoke-harness/theater/finisher-mod-victim.json",
+      "sha256": "580b30af935e4ef8e20d37ca78c1f0ccee3708d6f37084be9c2449494fccf5d0"
+    },
+    {
+      "path": "tools/smoke-harness/theater/greeting-brief.json",
+      "sha256": "8caceb8ce94255ad5e03ee48d25badcc075c02342f59469bf2b9ad67751e7488"
+    },
+    {
+      "path": "tools/smoke-harness/theater/greeting-crab.json",
+      "sha256": "719106276e26374f72d6880b84a95d94aafcdee3c197cb56f42cf1009067b576"
+    },
+    {
+      "path": "tools/smoke-harness/theater/greeting-full.json",
+      "sha256": "a2aa8f1f42f72fa8a1e12190cad0a9df8b75d571db702ae8be9d452dd1891fb4"
+    },
+    {
+      "path": "tools/smoke-harness/theater/greeting-response-switch.json",
+      "sha256": "0f7ce756f33432b4130236c59d0784b62c407c3aaa547b7c7c54721a6fc16916"
+    },
+    {
+      "path": "tools/smoke-harness/theater/greeting-sleep-pause.json",
+      "sha256": "c1cd660562bb58784f9caac95bba9d3ba865696954c221b7de9a03d9b1c8b22d"
+    },
+    {
+      "path": "tools/smoke-harness/theater/greeting-switch.json",
+      "sha256": "723fefbfe997e2ef3df6d72891f088d9b598fb1de4c3be4e1c637485ad062a57"
+    },
+    {
+      "path": "tools/smoke-harness/theater/overhead.json",
+      "sha256": "ae60895be10e07350a75c134fd53e98f0f78ea85eac3aea74f87166df9e3a55c"
+    },
+    {
+      "path": "tools/smoke-harness/theater/sawatari-event-entrance.json",
+      "sha256": "ed6bf031aa97b621473ad1be6868e0cb298fee5ded170b994f967dc01864f018"
+    },
+    {
+      "path": "tools/smoke-harness/theater/verify-theater.mjs",
+      "sha256": "a1c2bcc1eb050bc64ff20940c77a3acc61dd580ae0ea526f0a1a02911091985e"
+    }
+  ],
+  "sourceSnapshots": {
+    "integration": {
+      "root": "C:\\Users\\theon\\Documents\\NinjaSlayer\\card-board-v115-integration",
+      "base": "5cdf75faaa3b7064b1ad8215f68569600c47605f",
+      "files": {
+        "Cards/Base/ShurikenCombat.cs": {
+          "sha256": "03dcc9d771c9956215bfa9326949284b23aaea2f37a15e8cee0f9a3232da494e",
+          "bytes": 12079,
+          "integration": "copied"
+        },
+        "Code/Combat/NinjaSlayerAttackExecution.cs": {
+          "sha256": "e8977c683a19599a1836682a10c51e74ab7dcefaaf4849e2d3ae5efbc70c82fb",
+          "bytes": 4337,
+          "integration": "copied"
+        },
+        "Code/Combat/SawatariEventSession.cs": {
+          "sha256": "79d138ff4ddd3fdb9ccadcb6f52727d10de1256e53b607449d5d9906c16bf1e8",
+          "bytes": 23361,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/AlabamaDropAnimation.cs": {
+          "sha256": "06a28436959c6408dfe37a363c713e87d6a892ecc031232855ddfa0ed9832ec2",
+          "bytes": 35614,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/AncientEntranceAnimation.cs": {
+          "sha256": "07f94a62898af0cb551605343adb0f991212cf1b5a90afff27256e43ca5da3f4",
+          "bytes": 22702,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/ArchitectExecutionCinematic.cs": {
+          "sha256": "96a18b69bc89806bc07cb04ff0fcf272b21fd20bd07638eac0ba58c64b0eba77",
+          "bytes": 19487,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/ByrdFallAnimation.cs": {
+          "sha256": "2c82a506f0372bc5b97c137773bb55a0ca442da4f813a76c545b6128502b5478",
+          "bytes": 2641,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/CombatCinematicCameraLease.cs": {
+          "sha256": "2f3b89205c794329e8dfe87d7356098d4c1d08daee59c95462adfe5b3a527c03",
+          "bytes": 21760,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/DarkNinjaAttackExecution.cs": {
+          "sha256": "5fbfb81a807485f74c48991c2f24d87800116669751d84c962843410ec289aa7",
+          "bytes": 10977,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FastAttackAnimation.cs": {
+          "sha256": "f9eac14b310730109d011c602de4463e6f3608c2426f1133c076c9079733be58",
+          "bytes": 6270,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherActorLayerLease.cs": {
+          "sha256": "aa4fa32276ff8a73c059010ab874adb5922e42692944bbd91b884a51e50690ce",
+          "bytes": 3940,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherApproach.cs": {
+          "sha256": "53ae329a337b900625f0bb17f4bc7da897317e2513ccaec0c122d4c6a6cea65a",
+          "bytes": 6317,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherAttackCommandAdapter.cs": {
+          "sha256": "8ef9be61ef23abe2150a23a43cf208db114b4744180ea15651f6a1398cf24cdd",
+          "bytes": 5965,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherImpactPositionResolver.cs": {
+          "sha256": "39b2057ae411cd1b60f477d8f8394c4cd17a3d81106022b7b2fd88f754a31b75",
+          "bytes": 5446,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherImpactVfxFreezeLease.cs": {
+          "sha256": "bd9ef5a63d6feee8841ae444d8e675c52cc3cf65e9aead76d1933069817333f3",
+          "bytes": 13024,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherSession.Presentation.cs": {
+          "sha256": "af88efe9f5bd678e8376ba04126d0d15f54f470c46fd0823cb2a3e99f177802c",
+          "bytes": 25168,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherSession.cs": {
+          "sha256": "fbf3e2ac7896b6966309131b9090d961118dd7ec40ca8e4980920b52c3a401f2",
+          "bytes": 57515,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherSessionRequest.cs": {
+          "sha256": "5566943ee47d790279e8333cb9acd0c79d42ec7ed784dfe57cd99fa4a8656277",
+          "bytes": 920,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/FinisherTimeline.cs": {
+          "sha256": "7c200106240ef6418ffd15e7804a916d46575b1e8de00164d75921319340c587",
+          "bytes": 2701,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/NinjaSlayerDeathClassifier.cs": {
+          "sha256": "c99c14858df2ff2a84acd92f85bea1e1af45ec9b6e31d7137320010a42f0f132",
+          "bytes": 12183,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/NinjaSlayerFinisherCinematic.cs": {
+          "sha256": "f21d6313577d60efa67dd60b140347ffa1fea6650ba82117aa9c60e74b4b83d4",
+          "bytes": 15290,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/NinjaSlayerRapidAnimationCoordinator.cs": {
+          "sha256": "2502edb59a0544c7e303cd5b540658ac0eea26b511353faf8c9f69f92c8d0fcd",
+          "bytes": 25360,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/SawatariBambooAnimation.cs": {
+          "sha256": "521af71cc85aa5b1810b7ba138a79bc6094599a713872f89c9e1da409c42e959",
+          "bytes": 5135,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/SlowAttackAnimation.cs": {
+          "sha256": "e714b8837d3b7e128e33baca076a5a05b274992dc9a79ecd9a7ad46b981ac89b",
+          "bytes": 5165,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/SpinExposureHistory.cs": {
+          "sha256": "fdb08da137832a6cb03f0c7d97d654b37853d7b38f549083ed6a662494e3f35b",
+          "bytes": 2397,
+          "integration": "copied"
+        },
+        "Code/Nodes/CombatFacingTurn.cs": {
+          "sha256": "a4435d3fc4da8bcb0063f1f20408737f96efd5ed5b6fc9d694092c27d4cf4520",
+          "bytes": 5641,
+          "integration": "copied"
+        },
+        "Code/Nodes/EntangledSpinMotionBlur.cs": {
+          "sha256": "8db77c1f42b7e9db57613a92b045f32e0622c9a44765bdeb95e59af95ea21636",
+          "bytes": 6990,
+          "integration": "copied"
+        },
+        "Code/Nodes/FinisherProjectileHead.cs": {
+          "sha256": "8979c01e33b70bceb30a3cb4ac58b1c15cb9b7fa05d0bf39091a5beacf593aae",
+          "bytes": 1488,
+          "integration": "copied"
+        },
+        "Code/Nodes/NinjaSlayerAimPose.DrawAndThrow.cs": {
+          "sha256": "6cb5cc39ab2818ff8ea7cdb2797c24e4bf8190b1f3d8f90edce1e4c914b6ec39",
+          "bytes": 11447,
+          "integration": "copied"
+        },
+        "Code/Nodes/NinjaSlayerAimPose.Somersault.cs": {
+          "sha256": "eff947b7a3d9b771cf9be73587664758d0f6d44862544ed77529dee3125eea2d",
+          "bytes": 3877,
+          "integration": "copied"
+        },
+        "Code/Nodes/NinjaSlayerAimPose.cs": {
+          "sha256": "e92dba7a6c97d751436d43f3f089d7e1898187b2cf971b3b92272096d8768c83",
+          "bytes": 27301,
+          "integration": "copied"
+        },
+        "Code/Nodes/NinjaSlayerHellTornadoVisual.cs": {
+          "sha256": "0dd8851e9e153b5535d588b8102ad97ef26c0554196986637ac0bf5867fea877",
+          "bytes": 9218,
+          "integration": "copied"
+        },
+        "Code/Nodes/SawatariWeaponVisuals.Dual.cs": {
+          "sha256": "e15e5b2631cd441a11105c98aa77c243430979bf1d96c82d0c183695baf411d9",
+          "bytes": 5218,
+          "integration": "copied"
+        },
+        "Code/Nodes/SawatariWeaponVisuals.cs": {
+          "sha256": "1ab037c4d94adcde32a8955a750545aa4bd13b7afd7c2e18198611d696be445f",
+          "bytes": 14495,
+          "integration": "copied"
+        },
+        "Code/Nodes/YamotoKokiAllyFacingController.cs": {
+          "sha256": "3623c05569a2a0c621c6171113871a029042006a925523d25d4017c502c07f22",
+          "bytes": 3678,
+          "integration": "copied"
+        },
+        "Code/Patches/AncientEntranceCreatureVisibilityPatch.cs": {
+          "sha256": "8cdc366ad85628cf5e22a746c2e3f69d46c8b3d5b117a18a2c3feba01bc9913c",
+          "bytes": 1468,
+          "integration": "copied"
+        },
+        "Code/Patches/FinisherHeavyBluntSequencePatch.cs": {
+          "sha256": "b9b40783aa5a5a7d3d789cb423d98a7dd8407dd6b123d94fff5fd7b2165d199a",
+          "bytes": 3694,
+          "integration": "copied"
+        },
+        "Code/Patches/FinisherRangedPatches.cs": {
+          "sha256": "0350f52cf00faf755a4da49ee988779c59ceb7327c2f7aec0a5b76b3c9da1ef5",
+          "bytes": 9629,
+          "integration": "copied"
+        },
+        "Code/Patches/NinjaSlayerFinisherPatches.cs": {
+          "sha256": "638161750e94efeb5cb0c5683b2d7b37d9f6d26f99631721497b2a27e63a2e8b",
+          "bytes": 15469,
+          "integration": "copied"
+        },
+        "Content/NinjaSlayerAnimationCatalog.cs": {
+          "sha256": "bc7b2ab2f330d2106b5daaafde7ab6729fa72e6421f4ff2d30ce62a18fabad71",
+          "bytes": 1658,
+          "integration": "copied"
+        },
+        "Docs/card-art-redraw-requirements.md": {
+          "sha256": "c62cb24cf9f6f491468a5b09e76bbed6faf4a203753b578cac883982c2823ed8",
+          "bytes": 58654,
+          "integration": "copied"
+        },
+        "Docs/card-catalog.md": {
+          "sha256": "e8c58744cc9bc29511379c4814fd7ac002b085def2b6f81ca288a21236a192fc",
+          "bytes": 24113,
+          "integration": "copied"
+        },
+        "Events/SawatariEvent.cs": {
+          "sha256": "4f700c3036b42d2ddd3b0c26a8600a80e1ab17cba092e7764929a92597d77b3b",
+          "bytes": 9037,
+          "integration": "copied"
+        },
+        "Monsters/SawatariMonster.Weapons.cs": {
+          "sha256": "66f41e6c983ca8469ecaf2ce8de5da355ec1bb45ddf8d57bdbed9f56ab7943fb",
+          "bytes": 11185,
+          "integration": "copied"
+        },
+        "Monsters/SawatariMonster.cs": {
+          "sha256": "72b30dc014169ae28bd0a7129f9fb6f02d45e38581add9d87bd1c1de32829d8a",
+          "bytes": 13084,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/ChadoCard.png": {
+          "sha256": "ed66bd509a0b953635252ac9fc8e29031a8911b465b9cd405b8d4c76f5ecbf1d",
+          "bytes": 574291,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/CounteroffensiveGuardRedesignV1.png": {
+          "sha256": "21688be6a2c0f263e7ce91b9970243f749b434ae5d635e5d5f885e5377e95075",
+          "bytes": 545676,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/GatherKi.png": {
+          "sha256": "fb1b30e8ec5b112b892f8d173c6884748d338bb659557b9cc8178490026fcdb3",
+          "bytes": 644482,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/KarateWall.png": {
+          "sha256": "d4833520be3b4a99288aae1979814f6baf1c009e7dcf312a59259b26d1aa79f0",
+          "bytes": 538974,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/LuckyStrike.png": {
+          "sha256": "1d2d4dd940d0c2aa34762724e7cb9cf19b9cdfca40e473c589a23de2143fcf5e",
+          "bytes": 658244,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png": {
+          "sha256": "5e4189bfd20b80eaab7a00b6373c2b51616f4381a31f3bf5e637b1d7eb227699",
+          "bytes": 509397,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/MetabolicAccelerationRedesignV1.png": {
+          "sha256": "c41543b1c039500a9c8b9318b1137a24204966c6547fd8cea7b15749343a850a",
+          "bytes": 622791,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/NinjaGreeting.png": {
+          "sha256": "1e0168dda0a16dc7358e02590a22a3eba408176fd57a99e5bc3e7edfe86c9c40",
+          "bytes": 687683,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/NinjaSlayerFootwork.png": {
+          "sha256": "7c5cf0c46e5d7290c5253e963012de85658051c9345084c33e6368fe34d3f240",
+          "bytes": 650908,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/ObserveBattlefield.png": {
+          "sha256": "6d6f97e01f3e9f631c3ddaf43df403c13eebf81d0f9e14f18f22dcb51a51527e",
+          "bytes": 637959,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/OyeahThrowSword.png": {
+          "sha256": "1a4840500fa3662edb3521208c79bb5a31d306950950847e509e0ae3f08b6b7f",
+          "bytes": 665859,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/PlaceholderBlueDefense01.png": {
+          "sha256": "2d7fde89f5dba976084e917518c58e747150efd3ac62d31112ac71d50a22d6f3",
+          "bytes": 612518,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/PlaceholderGoldDefense01.png": {
+          "sha256": "3f98195000a546971467a4212a087a9acf9ebe8790a04254eab9321cb2bf51fa",
+          "bytes": 594678,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/SenchaStorm.png": {
+          "sha256": "6b2bb2d00c2b9337ba9aa98649fa8d04364f36253910ba18512071ee28357ec5",
+          "bytes": 567301,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/Slaughter.png": {
+          "sha256": "08172935d89359f385e510f9f7e4010e6d6649c1d3ac70efcb0428a03ba5d303",
+          "bytes": 699164,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/TeaSamadhi.png": {
+          "sha256": "5907f8d83a01537c04d7176b3cfd048207a49590ccde6138cee9ce2fabada5bb",
+          "bytes": 635292,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/TonyRetention.png": {
+          "sha256": "1494b3028a07d533f043ab0fd77edc1b4b1fd3a45f75fafef8de1b4ada18dd18",
+          "bytes": 591826,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/TornadoFistRedesignV1.png": {
+          "sha256": "b2a86397a6919406af4280fe101b7f2a31f50b84840e2c44c9e6d8ba0f24665c",
+          "bytes": 727593,
+          "integration": "copied"
+        },
+        "NinjaSlayer/images/cards/WhiskSlash.png": {
+          "sha256": "fd939eea813ce8ef7b347cae3d91f558a3dadb7e6302e984d3b29e87db05a707",
+          "bytes": 500810,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/eng/cards.json": {
+          "sha256": "ff76f208c7306c2e9c25fb2af93fd2fc7967e62e999c6ac7d5551a32eca17cd2",
+          "bytes": 22452,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/eng/events.json": {
+          "sha256": "6baf383874df188f2058744976b595730e6c9952eb515eb06517d619c58ae517",
+          "bytes": 9785,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/eng/powers.json": {
+          "sha256": "f0290cbe39c3df9d6fad0ead44a3d09755858390e703e2b122d35c6f69ab94d1",
+          "bytes": 10691,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/eng/relics.json": {
+          "sha256": "975bc195e9822d193c9acec205c403bead823b82bdd7d87482e5c3c0b24c2dcf",
+          "bytes": 5918,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/zhs/cards.json": {
+          "sha256": "fa405a5c0b67696c31f71c08333790ebc79a8d9c3686eb15e4595fd69a31186a",
+          "bytes": 22507,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/zhs/events.json": {
+          "sha256": "df8cdca40751eccfa9a794c8c795e13ccb6f4b185e51b1acf12fa3e9b75ef3ba",
+          "bytes": 10228,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/zhs/powers.json": {
+          "sha256": "55dd000403806f590bc801c7b58db93f19338ff9b80b363d980a91d73438c8cb",
+          "bytes": 10341,
+          "integration": "copied"
+        },
+        "NinjaSlayer/localization/zhs/relics.json": {
+          "sha256": "0a99ee98733b41f6f45eda6604b2802e9ab680473a7a254b968565832cc09e92",
+          "bytes": 5779,
+          "integration": "copied"
+        },
+        "Scripts/Entry.cs": {
+          "sha256": "eee12f384e592a6ebadf02367ad5c8a2f851b66b2f7b8ec693ff2f00143c3c88",
+          "bytes": 24565,
+          "integration": "copied"
+        },
+        "Tests/NinjaSlayer.LogicTests/SpinExposureTests.cs": {
+          "sha256": "ecc093bd62415ee5be097fefd7da7a77da17ca4925fbcb5c17e6f81bdefdaac3",
+          "bytes": 3177,
+          "integration": "copied"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.AimPose.cs": {
+          "sha256": "103efdbab74a475401f67ae21a2aea88e408020b8bfeec2aa4d1415e54eff8ed",
+          "bytes": 27831,
+          "integration": "copied"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.FinisherApproach.cs": {
+          "sha256": "57f576d3a6e69c24c243606b110cee0081610f0361c33e5280d2d8071f64d29d",
+          "bytes": 12261,
+          "integration": "copied"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.RangedFinishers.cs": {
+          "sha256": "2d76da174653a4f558f3b9d448eedcc1e430b4bde0e945ac97bf6a941210067c",
+          "bytes": 15654,
+          "integration": "copied"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs": {
+          "sha256": "94a108a2d683ed64bcb97c99c87e0e70d36e42f0f91f4a86be8907ed63635c1d",
+          "bytes": 35096,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/Invoke-TheaterPreview.ps1": {
+          "sha256": "0a36bbb17eb06186583f363b55fff16a738cf729082e5115205def53b40fc29f",
+          "bytes": 12872,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Architect.cs": {
+          "sha256": "548a38ffbeb6799c7e8dd455780cab5a78111a5b5d0a446abfe07d6ba8886af3",
+          "bytes": 11677,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Entrance.cs": {
+          "sha256": "c97efdbfa60cfb4608d2b6cfff05295da53e9111b14ed81658a7e60d1707d963",
+          "bytes": 3822,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.FinisherAudit.cs": {
+          "sha256": "03f6c13676511f1d74e714acc394552ecab6c67e806d786cc73b33adc3bf5636",
+          "bytes": 23288,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Theater.cs": {
+          "sha256": "f827cc111ef314ad1dcb2c3154af93d207a65bb932697faebb6febacd333173e",
+          "bytes": 46924,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/TheaterScript.cs": {
+          "sha256": "af6c58ca4c7896588c50c6629791698dc482aa4e763029547c267f9b74970ad3",
+          "bytes": 5509,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/architect-greeting-entrance.json": {
+          "sha256": "921b7a18101f8acc007f66b895dde8a9c4ccb2434c1289608c76bd0dc5e62637",
+          "bytes": 426,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/companion-facing.json": {
+          "sha256": "8c9ae89d1f23c59a4bb013d8b5d704f9534435e4cdd1e9acea0a2fe37066c692",
+          "bytes": 477,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-companion-ranged.json": {
+          "sha256": "1a1c207dd14eed78d7dbe324db90135a2b0e2c492e6bcab0f4b30fa240f511db",
+          "bytes": 577,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-companion.json": {
+          "sha256": "920b420ad1b7a219202799710d5aeebc9d5fd45a3a7387ee16f37ee6f6ee26fe",
+          "bytes": 589,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-enemy.json": {
+          "sha256": "371e66f3394ad0811857c8dbea54fdf9bdcb75361ae5ae4b8fb387ebaa0ecdf9",
+          "bytes": 586,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-native-late.json": {
+          "sha256": "8a1cda3924f8036e834542cd06cf8b0e471175f00b2d38f1f155c469a6231554",
+          "bytes": 610,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-native.json": {
+          "sha256": "2a631664795837cd39f86c5e67e253a428f5c1f0b807147a865937b461cf8ccf",
+          "bytes": 609,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-player.json": {
+          "sha256": "764199dfdb26770ea41891dfb1366a5705adb0a4665cf27430e7efc0493f1e53",
+          "bytes": 565,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-combo-ranged.json": {
+          "sha256": "9702eedaa94d541b25b7f0daa07cc2da16acbd4b25ec83b38e619f18f01de82e",
+          "bytes": 616,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-enemy-dual.json": {
+          "sha256": "14ce74b1337309a9bd2264f2aa09e2a57b8da9d71a24db326a57ec86c85183c0",
+          "bytes": 582,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/finisher-mod-victim.json": {
+          "sha256": "580b30af935e4ef8e20d37ca78c1f0ccee3708d6f37084be9c2449494fccf5d0",
+          "bytes": 554,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/sawatari-event-entrance.json": {
+          "sha256": "ed6bf031aa97b621473ad1be6868e0cb298fee5ded170b994f967dc01864f018",
+          "bytes": 349,
+          "integration": "copied"
+        }
+      }
+    },
+    "original": {
+      "root": "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer",
+      "base": "321ec36daf615d91396268c1a1fac5bbeb88bdea",
+      "files": {
+        "ASSET_MANIFEST.md": {
+          "sha256": "355e18da2bbbc53392bfb5b6793f0f2b8cd0e57e8197ea7fef8a9f925da32339",
+          "bytes": 16554,
+          "integration": "identical"
+        },
+        "Code/Combat/CombatBodyContours.cs": {
+          "sha256": "b3703743190a8d7a8c0b11f54ccc55dfa4ff29698d5f85dc92234392d0967c8b",
+          "bytes": 5192,
+          "integration": "identical"
+        },
+        "Code/ExternalAnimations/ArchitectExecutionCinematic.cs": {
+          "sha256": "76588b586dc7c3871d1081cb0ca9e71864d85f6c931a866801bdc951a57368f0",
+          "bytes": 21023,
+          "integration": "merged"
+        },
+        "Code/ExternalAnimations/BossDismembermentPresentation.cs": {
+          "sha256": "c8411a981c17a71f4232d3efecfbbde4a85e08d0054af22983122595fd619189",
+          "bytes": 34863,
+          "integration": "identical"
+        },
+        "Code/ExternalAnimations/BossGreetingCinematic.cs": {
+          "sha256": "9fd707c47cd07ebf261ca3e08eb421a73c005128416a47a8106dbde8441057d2",
+          "bytes": 49538,
+          "integration": "merged"
+        },
+        "Code/ExternalAnimations/BossGreetingSync.cs": {
+          "sha256": "7f3e3f8d8f552ad7d7a90f8b7f540e3c633ad5f0be4fe67c20f753306f964cd8",
+          "bytes": 6124,
+          "integration": "copied"
+        },
+        "Code/ExternalAnimations/BossVisualCapture.cs": {
+          "sha256": "f324b0b29c6d896308a4a32a22b2f86928a0aa368dd54f4bf6856cd128ecf3ff",
+          "bytes": 32931,
+          "integration": "identical"
+        },
+        "Code/ExternalAnimations/DarkNinjaAttackExecution.cs": {
+          "sha256": "128170d2f74ee4d4349162dd4276913cb471f9a0002f572c6835d0bf3559756c",
+          "bytes": 9989,
+          "integration": "conflict"
+        },
+        "Code/ExternalAnimations/DarkNinjaSpecialAttackPresentation.cs": {
+          "sha256": "4109056b800d124840eaa5345c50572d22f6999a81afc0cb4b94665e29e1e40f",
+          "bytes": 44052,
+          "integration": "identical"
+        },
+        "Code/Nodes/DarkNinjaStolenCards.cs": {
+          "sha256": "6f27bee003e5d8f702006d7107b37db9060417bde31cc4d9b63c6e610b1c897a",
+          "bytes": 5589,
+          "integration": "identical"
+        },
+        "Code/Nodes/FixedEventMusic.cs": {
+          "sha256": "f7c0de4838541cc06746889bcf6d895329b91365bca9747a45e740ca78ebf4b3",
+          "bytes": 3458,
+          "integration": "identical"
+        },
+        "Code/Nodes/NLowHealthBloodVfx.cs": {
+          "sha256": "6be563b634b4c257d8dd089cb692456294e50a2238f447203639e865895b37da",
+          "bytes": 6947,
+          "integration": "identical"
+        },
+        "Code/Nodes/NarakuEventPortrait.cs": {
+          "sha256": "10a49fdd7a0f1efd06faa30ec3477aa4303bfb41289fc3499226f2379ca27387",
+          "bytes": 444,
+          "integration": "identical"
+        },
+        "Code/Nodes/NativeStolenCardMotion.cs": {
+          "sha256": "51cd8454ea284a7004998d1eec3e0baa6c3219522eae3a7099a45657d02ef9d2",
+          "bytes": 7317,
+          "integration": "conflict"
+        },
+        "Code/Nodes/NinjaSlayerAimPose.cs": {
+          "sha256": "10356227beae7cf52048e61dbebac1a33c920b4ba3fed926891093f2b3df3a21",
+          "bytes": 27885,
+          "integration": "merged"
+        },
+        "Code/Nodes/NinjaSlayerSelectBackground.cs": {
+          "sha256": "cbc45c8b55eb7c129a9bdfb117a32137d233d14668ce0dabf0d7d2dfc94b6b38",
+          "bytes": 1139,
+          "integration": "identical"
+        },
+        "Code/Nodes/SawatariWeaponVisuals.cs": {
+          "sha256": "4a25bb1d588d78bd08a4fa7f667f2eeed59189f1fec2834253a43b56aff1c0e9",
+          "bytes": 12583,
+          "integration": "merged"
+        },
+        "Code/Patches/AncientEntranceCreatureVisibilityPatch.cs": {
+          "sha256": "69eaa11d9ae5785604ba1776d7e85a63e7d7b6419ab85b62d4b29704904b3fcc",
+          "bytes": 1326,
+          "integration": "conflict"
+        },
+        "Code/Patches/BossGreetingStartPatch.cs": {
+          "sha256": "558fc637b53bf5eea4697a3da0c20d3a9cccbd49c24782a9c5b1d00a0a886067",
+          "bytes": 2347,
+          "integration": "copied"
+        },
+        "Content/NinjaSlayerAudio.cs": {
+          "sha256": "3683fbd600d85a461acddd15e1f05dddbfbb27ac597a4e666c29178023377555",
+          "bytes": 8906,
+          "integration": "identical"
+        },
+        "Content/NinjaSlayerCombatFeedback.cs": {
+          "sha256": "d546a25ac9ef557ef80652a588cad4dab49dd02f7c6cfa7aba6deef1722a6cc5",
+          "bytes": 3970,
+          "integration": "merged"
+        },
+        "Content/NinjaSlayerSettings.cs": {
+          "sha256": "fd70525aeb50ca5ceae89d0851578e4066c146dcec7e94d34a7d34221050e06e",
+          "bytes": 8510,
+          "integration": "conflict"
+        },
+        "Content/NinjaSlayerSettingsData.cs": {
+          "sha256": "dd433241861bf82cb3f00989c59fbb9ebed2cc009748c3b5a98262830ab21ae5",
+          "bytes": 540,
+          "integration": "conflict"
+        },
+        "Docs/analysis/sawatari-act3-calculations-2026-09-16.json": {
+          "sha256": "b5e1539a9417bfd62f910115b46f9bdd3721e60f476f0ad73ab970766c32c462",
+          "bytes": 136930,
+          "integration": "same-content"
+        },
+        "Docs/analysis/sawatari-act3-calculations-2026-09-16.py": {
+          "sha256": "9acd6bb417d86fc8cf204a29bfc040ce8eabb5a8c0c1be9e9cd3460d6737a81f",
+          "bytes": 5775,
+          "integration": "same-content"
+        },
+        "Docs/analysis/sawatari-act3-review-2026-09-16.md": {
+          "sha256": "fff3a01c04aae420ad8ab711c7ef923d064b868cab3043a167ff168959152dfb",
+          "bytes": 16652,
+          "integration": "same-content"
+        },
+        "Docs/analysis/sawatari-act3-web-prompt-2026-09-16.md": {
+          "sha256": "ccbff589ac03bb708d4e49e948cb64ed9b878939fa87d80ae77ea4e3a3921be4",
+          "bytes": 15783,
+          "integration": "same-content"
+        },
+        "Docs/boss-greetings.md": {
+          "sha256": "fe8456175125499f46297f8c46c7c202252507d4ada887c34597c10569561467",
+          "bytes": 5469,
+          "integration": "copied"
+        },
+        "Docs/fixed-event-music.md": {
+          "sha256": "09219dab25075463f6d3b8e484b887882c3f8e3c9d91040d46e785f1bfd1a478",
+          "bytes": 3223,
+          "integration": "conflict"
+        },
+        "Events/NarakuEvent.cs": {
+          "sha256": "7e44a29c54cf13b9d10e3529eb78a386ed82efa774197b51cab25dad78244803",
+          "bytes": 4030,
+          "integration": "identical"
+        },
+        "Events/YamotoKokiCuteEvent.cs": {
+          "sha256": "442ba4b0b22e8b85ed85ea45fd3b7ae38ea0499f3ebd61c06b0ba536cc063d11",
+          "bytes": 2540,
+          "integration": "identical"
+        },
+        "Events/YukanoEvent.cs": {
+          "sha256": "a8c59b6b244417a883cf5fd7ec8f7e6d684b7cda0981e99563731aacfe663cb5",
+          "bytes": 2424,
+          "integration": "identical"
+        },
+        "Monsters/DarkNinjaMonster.cs": {
+          "sha256": "2b6920c0971994a4a5ff71f2dba3e591ffa197dfc0547cbec8b3fb632cbfc196",
+          "bytes": 15209,
+          "integration": "identical"
+        },
+        "NinjaSlayer/animations/architect/SOURCE.json": {
+          "sha256": "8a4085633e391bad7d8db1358992e78e821339d0e220d296d5e3251675229944",
+          "bytes": 11758,
+          "integration": "identical"
+        },
+        "NinjaSlayer/animations/architect/architect.spskel": {
+          "sha256": "43f3ad29a9e68d12bf289916e42a419a49a01eb78020b9389c61feafe87b03b6",
+          "bytes": 17713874,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/SOURCE.json": {
+          "sha256": "6cfb166b4a00c7a134db223aaae95090ca066eea011f0abe6038e89f56d5f203",
+          "bytes": 8149,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background-base.png": {
+          "sha256": "a32ee6e0cd1a76865f3e793124a4233a069b7efa7a28a0d44c1ecdb3a465bef5",
+          "bytes": 2253166,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background-base.png.import": {
+          "sha256": "305d34cde0dd1a198aa4607812bf8b68f6f861717e0dda8674fb6fc42f9c9622",
+          "bytes": 982,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background-copper.png": {
+          "sha256": "23ca280cbfc9e5175fa16ed15e51e48ac80953386d84637edf4d6bbd1f2d76f6",
+          "bytes": 66777,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background-copper.png.import": {
+          "sha256": "2c19ab2d26ec725c93a3c629d1ec7323f9fd9acb13dca1b207d8ccbcafc924af",
+          "bytes": 988,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background-smoke.png": {
+          "sha256": "a2b44b62593e1462259bff846f99691d4fdd24cf10c0e1906441a2572a4ac8b3",
+          "bytes": 382223,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background-smoke.png.import": {
+          "sha256": "0c0d3147c39530d5b1ff0c16952d3df89f7b975ba91d051fcdef39195800123a",
+          "bytes": 985,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background.atlas": {
+          "sha256": "6e96201eabffc0ccef227bdc0316c5655fce407291f36ae46c211a7d028f87cb",
+          "bytes": 394,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background.spatlas": {
+          "sha256": "9dc31b131e8c303acd4447c1279c602569962eea69c07cdc8e31984cacaa7f4b",
+          "bytes": 570,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background.spatlas.uid": {
+          "sha256": "33075f0cd303402fe6cf06f9d1b1ebdc4734299d095ce0a2ad098afab9aa6ee2",
+          "bytes": 20,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background.spjson": {
+          "sha256": "23340c2c58123e06c856b246ee00e57987b5e8696c2aa4548a9dc22d95f823a7",
+          "bytes": 84176,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background.spjson.uid": {
+          "sha256": "a5803a5d3925dbc3aa0ef317c0514b6f474d137e9c1ab6246b2f90952a26e539",
+          "bytes": 20,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/background.tres": {
+          "sha256": "7003b4495d16c9aaca62aa4a537c9b84f59d21b430d6a45f1861d113d06d60b8",
+          "bytes": 396,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/ember.png": {
+          "sha256": "6e33075f572673f113dd3abb2c8d823c08c3333f444969be98013ca2946a0ae1",
+          "bytes": 543,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/ember.png.import": {
+          "sha256": "8c5f93754cc0708d32c0ab132fdff9443fa45827ea512597e7bb3df78884b1be",
+          "bytes": 952,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front-body.png": {
+          "sha256": "7a2e9a65190299ba5cc54de7bf4c0f81e0c189ddd8bf64fec543bb8b45fade27",
+          "bytes": 467421,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front-body.png.import": {
+          "sha256": "fa8aabfaf1f795922deb3ebae93d56242cc7ee6a58526bc68d03251e98a27ca3",
+          "bytes": 966,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front-scarf.png": {
+          "sha256": "97141cbf8b3f72adb3442d1a92e740fe394c2d2688b974bc744afdd22d67edd5",
+          "bytes": 27869,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front-scarf.png.import": {
+          "sha256": "276e10576159264f126812d1f838a2d5231bf707c46fb984aef636b0b9017ef3",
+          "bytes": 970,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front.atlas": {
+          "sha256": "057a91d78c7077de58313bafeae8004cf9711a31f87b37c7145951f22ec3f6cd",
+          "bytes": 186,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front.spatlas": {
+          "sha256": "44fb3153ce02f3471a8e79e5293516c3bf3eef138c10d5e803b74983d0f6471d",
+          "bytes": 343,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front.spatlas.uid": {
+          "sha256": "bf088ae16e71c2214261098bef47f172e9f8d7b39e94b460fad660674696e80b",
+          "bytes": 19,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front.spjson": {
+          "sha256": "395efb2ade20545dba296e03c70eca62fb15803dc86eafdd583d34545711c923",
+          "bytes": 1016464,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front.spjson.uid": {
+          "sha256": "3d81846858616857327a144d13e3591def2cc2ed20b2f7f1d5c41595bb54f6aa",
+          "bytes": 20,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/front.tres": {
+          "sha256": "eb825be397e147c88f45762ca3bc1530efee1a0646472f5470aa78eb1135de58",
+          "bytes": 386,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/play_spine.gd": {
+          "sha256": "673ed67aae266b06db74890024163361a71a01fd80143e4ba89345975d822020",
+          "bytes": 329,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/play_spine.gd.uid": {
+          "sha256": "869c2478b9aae64a87fe8c5ee2c843d95e41aee8092848add968990cb014b2b4",
+          "bytes": 20,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/portrait_front.tscn": {
+          "sha256": "c08e8ea2c3aa8799c094c9d59d1ea5d3f88db79241d4c5ed7a5851876a927e1a",
+          "bytes": 505,
+          "integration": "identical"
+        },
+        "NinjaSlayer/art/character_select/portrait_manga.tscn": {
+          "sha256": "b27c9fd32185fd345de3953329d46d3b58b4a7b528e7549c07355815b600f278",
+          "bytes": 2673,
+          "integration": "identical"
+        },
+        "NinjaSlayer/audio/fmod/EventMusicGUIDs.txt": {
+          "sha256": "2665e37fcde332ed032c0983916b6ae89b828933575f218bd304dad83e74c3ae",
+          "bytes": 284,
+          "integration": "same-content"
+        },
+        "NinjaSlayer/audio/fmod/NinjaSlayerEventMusic.bank": {
+          "sha256": "d0b9ac9685cc18b026c121477fa387b40bca665715e25c2173c24dee47bc7ff6",
+          "bytes": 28104928,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/ChadoCard.png": {
+          "sha256": "ed66bd509a0b953635252ac9fc8e29031a8911b465b9cd405b8d4c76f5ecbf1d",
+          "bytes": 574291,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/CounteroffensiveGuardRedesignV1.png": {
+          "sha256": "21688be6a2c0f263e7ce91b9970243f749b434ae5d635e5d5f885e5377e95075",
+          "bytes": 545676,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/GatherKi.png": {
+          "sha256": "fb1b30e8ec5b112b892f8d173c6884748d338bb659557b9cc8178490026fcdb3",
+          "bytes": 644482,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/KarateWall.png": {
+          "sha256": "d4833520be3b4a99288aae1979814f6baf1c009e7dcf312a59259b26d1aa79f0",
+          "bytes": 538974,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/LuckyStrike.png": {
+          "sha256": "1d2d4dd940d0c2aa34762724e7cb9cf19b9cdfca40e473c589a23de2143fcf5e",
+          "bytes": 658244,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png": {
+          "sha256": "5e4189bfd20b80eaab7a00b6373c2b51616f4381a31f3bf5e637b1d7eb227699",
+          "bytes": 509397,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/MetabolicAccelerationRedesignV1.png": {
+          "sha256": "c41543b1c039500a9c8b9318b1137a24204966c6547fd8cea7b15749343a850a",
+          "bytes": 622791,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/NinjaGreeting.png": {
+          "sha256": "1e0168dda0a16dc7358e02590a22a3eba408176fd57a99e5bc3e7edfe86c9c40",
+          "bytes": 687683,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/NinjaSlayerFootwork.png": {
+          "sha256": "7c5cf0c46e5d7290c5253e963012de85658051c9345084c33e6368fe34d3f240",
+          "bytes": 650908,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/ObserveBattlefield.png": {
+          "sha256": "6d6f97e01f3e9f631c3ddaf43df403c13eebf81d0f9e14f18f22dcb51a51527e",
+          "bytes": 637959,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/OyeahThrowSword.png": {
+          "sha256": "1a4840500fa3662edb3521208c79bb5a31d306950950847e509e0ae3f08b6b7f",
+          "bytes": 665859,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/PlaceholderBlueDefense01.png": {
+          "sha256": "2d7fde89f5dba976084e917518c58e747150efd3ac62d31112ac71d50a22d6f3",
+          "bytes": 612518,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/PlaceholderGoldDefense01.png": {
+          "sha256": "3f98195000a546971467a4212a087a9acf9ebe8790a04254eab9321cb2bf51fa",
+          "bytes": 594678,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/SenchaStorm.png": {
+          "sha256": "6b2bb2d00c2b9337ba9aa98649fa8d04364f36253910ba18512071ee28357ec5",
+          "bytes": 567301,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/Slaughter.png": {
+          "sha256": "08172935d89359f385e510f9f7e4010e6d6649c1d3ac70efcb0428a03ba5d303",
+          "bytes": 699164,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/TeaSamadhi.png": {
+          "sha256": "5907f8d83a01537c04d7176b3cfd048207a49590ccde6138cee9ce2fabada5bb",
+          "bytes": 635292,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/TonyRetention.png": {
+          "sha256": "1494b3028a07d533f043ab0fd77edc1b4b1fd3a45f75fafef8de1b4ada18dd18",
+          "bytes": 591826,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/TornadoFistRedesignV1.png": {
+          "sha256": "b2a86397a6919406af4280fe101b7f2a31f50b84840e2c44c9e6d8ba0f24665c",
+          "bytes": 727593,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/cards/WhiskSlash.png": {
+          "sha256": "fd939eea813ce8ef7b347cae3d91f558a3dadb7e6302e984d3b29e87db05a707",
+          "bytes": 500810,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/events/naraku_event.png": {
+          "sha256": "69ac79bf6fecbb9b4e55f138c2819724e0895244839b3f008869cdf2ca28cbd2",
+          "bytes": 466623,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/events/naraku_event.png.import": {
+          "sha256": "dbb952ea7b613b09459296dd81d8e1e5a6edeaf508e975023fc9a167fa540c13",
+          "bytes": 965,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/vfx/low_health_blood/SOURCE.json": {
+          "sha256": "e4a439c2b8946abccb50cc57c138d49c12c6dd4f016f03ddedabb1f992dc3972",
+          "bytes": 30617,
+          "integration": "same-content"
+        },
+        "NinjaSlayer/images/vfx/low_health_blood/jet.png": {
+          "sha256": "69ba1514401bd4284b2ff3bd9800e905544acca5bb09619e4485cdf591a30d5b",
+          "bytes": 1966449,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/vfx/low_health_blood/jet.png.import": {
+          "sha256": "523253e639839ad72d72765b7177779bd2695927ac6759a9c3840c7416ca7f39",
+          "bytes": 953,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/vfx/low_health_blood/spray.png": {
+          "sha256": "3a8b797a1588be1668bed4aadc37733d44012d0ff691e8d5517caf95cda7d39e",
+          "bytes": 8515,
+          "integration": "identical"
+        },
+        "NinjaSlayer/images/vfx/low_health_blood/spray.png.import": {
+          "sha256": "5c5ff8edf025dff2eb21420f9800d26ff30117f754e5a4e48c1226b4850f5355",
+          "bytes": 959,
+          "integration": "identical"
+        },
+        "NinjaSlayer/localization/eng/settings_ui.json": {
+          "sha256": "5d1ccecc011f83b6228a7c6c3a39de6719a56990951373672aa170a0dd4289c8",
+          "bytes": 5324,
+          "integration": "merged"
+        },
+        "NinjaSlayer/localization/zhs/settings_ui.json": {
+          "sha256": "f6c4e569d8ac9175b68b2a99c0398e0896d4d7017c0116601d7b53d306deb186",
+          "bytes": 4961,
+          "integration": "merged"
+        },
+        "NinjaSlayer/scenes/char_select/char_select_bg_ninja_slayer.tscn": {
+          "sha256": "aa665908a46feb5cdf37222a5a315c5e38bfcd52b0f1f7d67f26297c06bbb436",
+          "bytes": 2396,
+          "integration": "identical"
+        },
+        "NinjaSlayer/scenes/creature_visuals/ninja_slayer.tscn": {
+          "sha256": "e4610c81d4d6f424ddf1cc8c708c7a8c01327b428f9e818c5b8e48e442184c5b",
+          "bytes": 2845,
+          "integration": "merged"
+        },
+        "NinjaSlayer/scenes/creature_visuals/sawatari.tscn": {
+          "sha256": "3a336a296d43f8cf21e225bed905f19030b5b7d0a5f15d8366388dbdb10c51ea",
+          "bytes": 1692,
+          "integration": "merged"
+        },
+        "NinjaSlayer/scenes/creature_visuals/yamoto_koki.tscn": {
+          "sha256": "99f1adec4cd9be16568f14fb67b8e0db7aeee3abf91f40f03f95ee42d9a17dc8",
+          "bytes": 1604,
+          "integration": "merged"
+        },
+        "NinjaSlayer/scenes/creature_visuals/yukano.tscn": {
+          "sha256": "8e15eff667802c16f9f084f0183a507515361a208c2e7940b644c44c2a7d149e",
+          "bytes": 1687,
+          "integration": "merged"
+        },
+        "NinjaSlayer/videos/naraku_event.ogv": {
+          "sha256": "aa0c1ec0f2a121d9fa789c4eed3f13e6528b0a6c39e49f96351ca07bd35765b8",
+          "bytes": 821971,
+          "integration": "identical"
+        },
+        "NinjaSlayer/videos/naraku_event.ogv.uid": {
+          "sha256": "3d8f8ad70aa0fed665f6a397acfb4a5aa3a6273826abdc2765172e0ec38a19a2",
+          "bytes": 19,
+          "integration": "identical"
+        },
+        "NinjaSlayer/videos/naraku_event.source.json": {
+          "sha256": "313da7105eb68fd6729071385d5112e3fd3b00b7935c0415c587c636342db51d",
+          "bytes": 5890,
+          "integration": "same-content"
+        },
+        "Scripts/Entry.cs": {
+          "sha256": "f4eca3eb90435715800fcdbb1c5e1fad210f7121218efbc80094ea47939791f2",
+          "bytes": 23815,
+          "integration": "merged"
+        },
+        "Tests/NinjaSlayer.LogicTests/NinjaSlayerSettingsTests.cs": {
+          "sha256": "a322a1dd275f6c0a102786d717f4c35adf52adf16e4aabf83380e14337222c6c",
+          "bytes": 5067,
+          "integration": "conflict"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Greeting.cs": {
+          "sha256": "92df4d7a751b32856f1b1d9814352f50cb0eceb67902d1247d4fbb9d1e766e99",
+          "bytes": 5180,
+          "integration": "copied"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Multiplayer.cs": {
+          "sha256": "79b46ef174f3017dbcf1b098114a1560114365a0f5d2da3d4111157fd0e01c9c",
+          "bytes": 22658,
+          "integration": "merged"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs": {
+          "sha256": "585899b26b3d8da1fc05f18d6bb022e4482de59d74474f67c41bcd538803d8f6",
+          "bytes": 34283,
+          "integration": "merged"
+        },
+        "Tests/NinjaSlayer.OrbContractTests/Run-MultiplayerContracts.ps1": {
+          "sha256": "f075f2511c29a35d16e0f441faa44cde017a81fca4b3b2ee7cb2ff38ac670a74",
+          "bytes": 4277,
+          "integration": "merged"
+        },
+        "export_presets.cfg": {
+          "sha256": "5206686beecb896de3fd0c26cbc4c0e4f0d9ee7cd85f697ee6e22ea8c5d08e45",
+          "bytes": 3247,
+          "integration": "identical"
+        },
+        "scenes/vfx/events/ninja_slayer_event_naraku_event_vfx.tscn": {
+          "sha256": "95daef3e9fd38cf52b3cead1c53caad577c51086c8c78a47baae6a4bf2c96286",
+          "bytes": 591,
+          "integration": "same-content"
+        },
+        "tools/architect-spine/README.md": {
+          "sha256": "68c0b4dacf4b6112a8feeb39775c9eae7c84a4d48f0a6c69ef424753676a715f",
+          "bytes": 3811,
+          "integration": "identical"
+        },
+        "tools/architect-spine/author.mjs": {
+          "sha256": "7f3ff922b29b4f27eb1e3f9c128a5ebd7331cd1bedd122ad146dda8358e3b956",
+          "bytes": 7135,
+          "integration": "identical"
+        },
+        "tools/architect-spine/native.mjs": {
+          "sha256": "3e5814ed8e50ec1520c1c84c7e2342e59e1c80a665b90e30cd59c82f1537c701",
+          "bytes": 6776,
+          "integration": "identical"
+        },
+        "tools/architect-spine/retarget.mjs": {
+          "sha256": "55be2c6c4dff06b0a56bcc36782c9a943dfdd5a5dd5aee856f8e4ac6cd9fec24",
+          "bytes": 15346,
+          "integration": "identical"
+        },
+        "tools/character-select/README.md": {
+          "sha256": "bcaff0f24925772ff15aa1eeb276631169eba4e218133c0fc0a99faafdf5d511",
+          "bytes": 2581,
+          "integration": "conflict"
+        },
+        "tools/character-select/check_scarf_bounds.py": {
+          "sha256": "be06a893e5223b32df0205786b51a992c44b643650a65a596fe71d90077a818b",
+          "bytes": 3651,
+          "integration": "identical"
+        },
+        "tools/character-select/import_poster.py": {
+          "sha256": "ac13a011fc53bc72b7d4d61b19a557f997171de131178584152223bbd872968d",
+          "bytes": 7649,
+          "integration": "identical"
+        },
+        "tools/character-select/preview.ps1": {
+          "sha256": "e9e24b8b7b9440de92e6a267e3324b5150c0a9bb1e7ad69ffc425733085412d0",
+          "bytes": 5052,
+          "integration": "conflict"
+        },
+        "tools/character-select/scarf_geometry.py": {
+          "sha256": "392747f65736f7295f3ac464558d9da1f375882a740bf9c02f7796d176f10469",
+          "bytes": 1782,
+          "integration": "identical"
+        },
+        "tools/character-select/verify_poster.py": {
+          "sha256": "1cbd29e11f13841745e7d3d17d906d592792372c039a997664fb57b7f8dd83ce",
+          "bytes": 6305,
+          "integration": "conflict"
+        },
+        "tools/naraku-event/README.md": {
+          "sha256": "1dd409a83600f07d31f9330224a28005dcf576d3d005b3aa3767b7b812ff6779",
+          "bytes": 2896,
+          "integration": "conflict"
+        },
+        "tools/naraku-event/build_portrait.py": {
+          "sha256": "2bf740747b8d7ce9fd025b447b91176c1f3ae2a672dffe809309f80f0737d260",
+          "bytes": 15936,
+          "integration": "identical"
+        },
+        "tools/naraku-event/preview.ps1": {
+          "sha256": "6fc70aa755dc666243435cf55bb2c9f288ac0f5e2da23b2ec7e4e06c9b7dc818",
+          "bytes": 5207,
+          "integration": "conflict"
+        },
+        "tools/naraku-event/verify_portrait.py": {
+          "sha256": "eb755b981efb454a8a3136f63295c2d59c5f8ff9a9328fc88b3353de105606d5",
+          "bytes": 8740,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/Invoke-TheaterPreview.ps1": {
+          "sha256": "cfa680575b61eb5da79c79a98f41f87b4084cc745a3780df6ce07f96e5e8dcd1",
+          "bytes": 13040,
+          "integration": "merged"
+        },
+        "tools/smoke-harness/NinjaSlayer.FixedEventMusicProbe/Entry.cs": {
+          "sha256": "0a40d1df0cbb7163c9ad3bb51db88bfd654d18a8fd2b0cd56ad19589ea891ba3",
+          "bytes": 8036,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.FixedEventMusicProbe/FixedEventMusicProbe.csproj": {
+          "sha256": "9bf377b27ce867c1d65b102ae6cfa1564552ce06675d26707597e159f464dba0",
+          "bytes": 729,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.FixedEventMusicProbe/preview.ps1": {
+          "sha256": "332152fa8fae598350a3c401318d71acbaf4f61d37c7d10e5efe537086c708b0",
+          "bytes": 5323,
+          "integration": "conflict"
+        },
+        "tools/smoke-harness/NinjaSlayer.NarakuEventProbe/Entry.cs": {
+          "sha256": "904ae5033bc13913fd66f1b6a7c6256735188ed2b175b3c37c5ebbbcaeaf8d33",
+          "bytes": 9152,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.NarakuEventProbe/NarakuEventProbe.csproj": {
+          "sha256": "29563e12953e06baf86a2046aeba447ef719407034c4f1888e7de0d2134b51c9",
+          "bytes": 704,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.SelectPosterProbe/Entry.cs": {
+          "sha256": "734eb899c0b2a06b73c30b5b697fc58bf271da8a0a983530f521d50478b6b260",
+          "bytes": 10323,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.SelectPosterProbe/SelectPosterProbe.csproj": {
+          "sha256": "0d13659d5481fd4da41f10479559f756ceed9c986538194d876fca340563aa90",
+          "bytes": 705,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Architect.cs": {
+          "sha256": "0cb89d33a77f38b0d8eb22cda282bb9d772c7a259cb07ddc75ecd15baa364750",
+          "bytes": 8402,
+          "integration": "conflict"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Blood.cs": {
+          "sha256": "2ef308e58f177225c9cd50fdd882cd20ebfed73c5b81421cbe96386d951c4a33",
+          "bytes": 3238,
+          "integration": "conflict"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BossReload.cs": {
+          "sha256": "d1f88249475fe56fbb8810912daf35958bf5ddbc8a0968cd6afdb0e45449bb18",
+          "bytes": 6417,
+          "integration": "merged"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Greeting.cs": {
+          "sha256": "fa28195f58dfa22561a28720d947e2dff93e1b5ed4076276b9c195b5116c41df",
+          "bytes": 12631,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Overhead.cs": {
+          "sha256": "e31e7dad66f8aac17b0e0b56e27f899d2da6705ccb5f9eb1ee9cd0b31fbc5bb9",
+          "bytes": 5787,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Theater.cs": {
+          "sha256": "39feed2c84741609a5932459eb013867dcb4db7ac0bbf94d0c567590a95988c7",
+          "bytes": 45967,
+          "integration": "conflict"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Theft.cs": {
+          "sha256": "98ed19131bfa4ffbaa8f672b9d137610b323ca2a35818b8b710e1b19ed80c46a",
+          "bytes": 20761,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/NinjaSlayer.SmokeDriver/TheaterScript.cs": {
+          "sha256": "308b11d0a0252dda7f56bb0fc554d833065badeadc030fffae827e479d4924ba",
+          "bytes": 5193,
+          "integration": "conflict"
+        },
+        "tools/smoke-harness/sync_preview_audio.py": {
+          "sha256": "862c7ea0828b418d745ffe6465f08be45b3ea27037aa885bd389cd7b8c9529f9",
+          "bytes": 10203,
+          "integration": "merged"
+        },
+        "tools/smoke-harness/theater/architect-death.json": {
+          "sha256": "26db80074f7857f33e0c9db9f2d21d191b750be338a63d819bec9a04fc5e0cae",
+          "bytes": 577,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/theater/architect-execution.json": {
+          "sha256": "60d9f3ebc2641e239c4875f8c72825adf2f5ff19f1d64265b7d192d8ae985e7f",
+          "bytes": 656,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/theater/greeting-brief.json": {
+          "sha256": "8caceb8ce94255ad5e03ee48d25badcc075c02342f59469bf2b9ad67751e7488",
+          "bytes": 194,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/greeting-crab.json": {
+          "sha256": "719106276e26374f72d6880b84a95d94aafcdee3c197cb56f42cf1009067b576",
+          "bytes": 269,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/greeting-full.json": {
+          "sha256": "a2aa8f1f42f72fa8a1e12190cad0a9df8b75d571db702ae8be9d452dd1891fb4",
+          "bytes": 199,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/greeting-response-switch.json": {
+          "sha256": "0f7ce756f33432b4130236c59d0784b62c407c3aaa547b7c7c54721a6fc16916",
+          "bytes": 213,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/greeting-sleep-pause.json": {
+          "sha256": "c1cd660562bb58784f9caac95bba9d3ba865696954c221b7de9a03d9b1c8b22d",
+          "bytes": 305,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/greeting-switch.json": {
+          "sha256": "723fefbfe997e2ef3df6d72891f088d9b598fb1de4c3be4e1c637485ad062a57",
+          "bytes": 197,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/low-health-blood.json": {
+          "sha256": "0551a67d9a8e65e290280aa954f535eb627283bac8172f699036dd102cd8118b",
+          "bytes": 1102,
+          "integration": "conflict"
+        },
+        "tools/smoke-harness/theater/overhead.json": {
+          "sha256": "ae60895be10e07350a75c134fd53e98f0f78ea85eac3aea74f87166df9e3a55c",
+          "bytes": 374,
+          "integration": "copied"
+        },
+        "tools/smoke-harness/theater/stolen-cards.json": {
+          "sha256": "53a3a7ba64108efef1acb5d27c38194b0cb49cb1f3aa8e2597dc9446a6eeee90",
+          "bytes": 348,
+          "integration": "identical"
+        },
+        "tools/smoke-harness/theater/verify-theater.mjs": {
+          "sha256": "ff129c9c0c1d1a467d7bd59701cbe4652c3bb53202325827fbf3e89550748567",
+          "bytes": 9877,
+          "integration": "conflict"
+        },
+        "tools/source-effects/prepare.py": {
+          "sha256": "ca61f7d5dabfdc6e1dd8f35b96d423a7e4e172ac62b0efb411a495e0daf7c929",
+          "bytes": 9462,
+          "integration": "identical"
+        }
+      }
+    }
+  },
+  "candidateArtifacts": {
+    "build\\release-v032\\stable\\bin\\Release\\NinjaSlayer.dll": "53f4d2e66d4d8f6fde4cd21dc84ae0a58ef4fb2fa7fc3e409e4201ec14e3adc5",
+    "build\\release-v032\\preview\\bin\\Release\\NinjaSlayer.dll": "ca17d96e29cccd4309e0e406bfc40d8db8dd0571f6fd0bf19833ee50d0df78b6",
+    "build\\release-v032\\package-build\\stable\\package\\NinjaSlayer\\NinjaSlayer.pck": "38a16b9467359a0f62c6d35fce409a53b242ab945277538c79082753f7f65039"
+  }
+}

@@ -1,0 +1,1546 @@
+{
+  "baseline": "acb3fc5e1770beeea1973ec94d0271897b0ede42",
+  "host": "stable 0.107.1",
+  "ritsuLib": "0.6.2",
+  "driver": "native graphical host with local automated actions; no screenshots",
+  "runs": [
+    {
+      "players": 1,
+      "directory": "build/four-player-live/qa-20260924-171459",
+      "stateMatchesAcrossPeers": true,
+      "peers": [
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Singleplayer",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -320,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -665,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -455.06,
+              "y": 80
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -750.62,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19972
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "IAI_SLASH",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19942
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200616,
+                    0.434067,
+                    0.700272,
+                    0.933909
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.200414,
+                    0.433683,
+                    0.700358,
+                    0.933707
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.102861,
+                    0.400879
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100507,
+                    0.400636
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.522031
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.234572
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.266774
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.266675
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.233443,
+                    0.466959
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233517,
+                    0.46687
+                  ]
+                }
+              ]
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "candidateDllSha256": "89690d2bdad1165c76ebbfe7ad704e1ec9e62a2466d32caa5f4c52a10a8b1a01"
+    },
+    {
+      "players": 2,
+      "directory": "build/four-player-live/qa-20260924-171806",
+      "stateMatchesAcrossPeers": true,
+      "peers": [
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 2,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Host",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -225,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -526.44,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -781.44,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -446.8496,
+              "y": 80
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -745.2896,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19966
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 2,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19938
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 2,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200553,
+                    0.433563,
+                    0.700272,
+                    0.933607
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.200391,
+                    0.433707,
+                    0.700427,
+                    0.933684
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.102575,
+                    0.400499
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100276,
+                    0.400297
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.525679
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.234875
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.266805
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.266814
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.233485,
+                    0.46682
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233486,
+                    0.466876
+                  ]
+                }
+              ]
+            }
+          ],
+          "passed": true
+        },
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 2,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Client",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -225,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -526.44,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -781.44,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -446.8496,
+              "y": 80
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -745.2896,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19966
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 2,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19938
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 2,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200642,
+                    0.433624,
+                    0.70031,
+                    0.933661
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.20037,
+                    0.433739,
+                    0.700387,
+                    0.93373
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.102695,
+                    0.400517
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100601,
+                    0.400532
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.521785
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.234931
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.26714
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.26681
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.233466,
+                    0.466802
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233479,
+                    0.466809
+                  ]
+                }
+              ]
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "candidateDllSha256": "89690d2bdad1165c76ebbfe7ad704e1ec9e62a2466d32caa5f4c52a10a8b1a01"
+    },
+    {
+      "players": 4,
+      "directory": "build/four-player-live/qa-20260924-172859",
+      "candidateDllSha256": "9f2c53837e42bc1df9b3447ce95827ed2b88545e8d22ab566423a137ee6e66bf",
+      "stateMatchesAcrossPeers": true,
+      "duelTransition": true,
+      "peers": [
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 4,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 2,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 3,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Host",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -225,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -401.5152,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -531.5904,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -321.9248,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -495.44,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -696.9552,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -474.8496,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19960
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "IAI_SLASH",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 4,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 2,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 3,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19910
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 4,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 2,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 3,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200773,
+                    0.433691,
+                    0.700286,
+                    0.933647
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.200417,
+                    0.433721,
+                    0.700432,
+                    0.933748
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.102743,
+                    0.400513
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100714,
+                    0.400682
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.523723
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.234687
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.266834
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.266878
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.241024,
+                    0.466825
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233498,
+                    0.466878
+                  ]
+                }
+              ]
+            }
+          ],
+          "duelTransition": true,
+          "passed": true
+        },
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 4,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 2,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 3,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Client",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -225,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -401.5152,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -531.5904,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -321.9248,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -495.44,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -696.9552,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -474.8496,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19960
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "IAI_SLASH",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 4,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 2,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 3,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19910
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 4,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 2,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 3,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200708,
+                    0.433689,
+                    0.700314,
+                    0.9337
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.200427,
+                    0.433759,
+                    0.700388,
+                    0.933788
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.102778,
+                    0.400817
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100639,
+                    0.400591
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.524218
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.234791
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.266827
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.266844
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.233494,
+                    0.466833
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233519,
+                    0.466852
+                  ]
+                }
+              ]
+            }
+          ],
+          "duelTransition": true,
+          "passed": true
+        },
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 4,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 2,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 3,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Client",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -225,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -401.5152,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -531.5904,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -321.9248,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -495.44,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -696.9552,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -474.8496,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19960
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "IAI_SLASH",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 4,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 2,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 3,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19910
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 4,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 2,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 3,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200595,
+                    0.433668,
+                    0.700221,
+                    0.933599
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.200501,
+                    0.433711,
+                    0.700432,
+                    0.933733
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.10274,
+                    0.400512
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100633,
+                    0.400625
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.523875
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.239055
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.266714
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.266757
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.23352,
+                    0.466836
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233515,
+                    0.46688
+                  ]
+                }
+              ]
+            }
+          ],
+          "duelTransition": true,
+          "passed": true
+        },
+        {
+          "players": [
+            {
+              "id": 1,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 4,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 2,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            },
+            {
+              "id": 3,
+              "character": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+            }
+          ],
+          "network": "Client",
+          "slots": [
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -225,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_SAWATARI_MONSTER",
+              "x": -401.5152,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YAMOTO_KOKI_MONSTER",
+              "x": -531.5904,
+              "y": 200
+            },
+            {
+              "model": "MONSTER.NINJA_SLAYER_MONSTER_YUKANO_MONSTER",
+              "x": -321.9248,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -495.44,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -696.9552,
+              "y": 140
+            },
+            {
+              "model": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER",
+              "x": -474.8496,
+              "y": 80
+            }
+          ],
+          "checkpoints": [
+            {
+              "round": 0,
+              "hp": [
+                19960
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "IAI_SLASH",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 4,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 2,
+                  "hp": 5000,
+                  "turn": 2
+                },
+                {
+                  "id": 3,
+                  "hp": 5000,
+                  "turn": 2
+                }
+              ]
+            },
+            {
+              "round": 1,
+              "hp": [
+                19910
+              ],
+              "moves": [
+                "EMPTY_HAND_COMBO",
+                "SUMMON_ORIGAMI_MISSILE",
+                "SHURIKEN"
+              ],
+              "players": [
+                {
+                  "id": 1,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 4,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 2,
+                  "hp": 4988,
+                  "turn": 3
+                },
+                {
+                  "id": 3,
+                  "hp": 4988,
+                  "turn": 3
+                }
+              ]
+            }
+          ],
+          "finisherChecks": [
+            {
+              "attackKind": "bamboo",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.200665,
+                    0.433568,
+                    0.700228,
+                    0.933581
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.200394,
+                    0.43378,
+                    0.700468,
+                    0.933757
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "dual",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.102672,
+                    0.400538
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.100664,
+                    0.400624
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "iai",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.523936
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.234676
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "arrow",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.266435
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.275027
+                  ]
+                }
+              ]
+            },
+            {
+              "attackKind": "shuriken",
+              "dead": true,
+              "impactChecks": [
+                {
+                  "speed": "Normal",
+                  "times": [
+                    0.233494,
+                    0.466817
+                  ]
+                },
+                {
+                  "speed": "Fast",
+                  "times": [
+                    0.233518,
+                    0.466847
+                  ]
+                }
+              ]
+            }
+          ],
+          "duelTransition": true,
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "changedFiles": [
+    "M\tCode/Combat/SawatariEventSession.cs",
+    "D\tCode/Combat/YamotoKokiGridLayoutMath.cs",
+    "D\tCode/Combat/YamotoKokiIntentLifecycle.cs",
+    "M\tCode/ExternalAnimations/FinisherEligibilityService.cs",
+    "M\tCode/ExternalAnimations/FinisherSession.Presentation.cs",
+    "M\tCode/ExternalAnimations/FinisherSession.cs",
+    "M\tCode/ExternalAnimations/FinisherSessionRequest.cs",
+    "M\tCode/ExternalAnimations/SawatariBambooAnimation.cs",
+    "M\tCode/ExternalAnimations/YamotoKokiCombatAnimations.cs",
+    "M\tCode/Nodes/SawatariWeaponVisuals.Dual.cs",
+    "M\tCode/Patches/YamotoKokiAllyLayoutPatch.cs",
+    "M\tCode/Patches/YamotoKokiIntentAnimationPatch.cs",
+    "M\tDocs/combat-action-timing.md",
+    "M\tMonsters/SawatariMonster.Weapons.cs",
+    "M\tMonsters/SawatariMonster.cs",
+    "M\tMonsters/YamotoKokiIntents.cs",
+    "M\tMonsters/YamotoKokiMonster.cs",
+    "M\tMonsters/YamotoKokiOrigamiMissile.cs",
+    "M\tMonsters/YukanoMonster.cs",
+    "D\tNinjaSlayer/images/intents/yamoto_koki_iai_slash.png",
+    "D\tNinjaSlayer/images/intents/yamoto_koki_iai_slash.png.import",
+    "D\tNinjaSlayer/images/intents/yamoto_koki_summon.png",
+    "D\tNinjaSlayer/images/intents/yamoto_koki_summon.png.import",
+    "M\tRelics/YamotoKokiCuteRelic.cs",
+    "M\tRelics/YukanoCompanionRelic.cs",
+    "M\tTests/NinjaSlayer.LogicTests/NinjaSlayer.LogicTests.csproj",
+    "D\tTests/NinjaSlayer.LogicTests/YamotoKokiGridLayoutMathTests.cs",
+    "M\tTests/NinjaSlayer.OrbContractTests/OrbContractRunner.AimPose.cs",
+    "M\tTests/NinjaSlayer.OrbContractTests/OrbContractRunner.CompanionHurt.cs",
+    "M\tTests/NinjaSlayer.OrbContractTests/OrbContractRunner.Maintenance.cs",
+    "M\tTests/NinjaSlayer.RitsuLibContractTests/ContractRunner.cs",
+    "A\tCode/Combat/CompanionIntentLifecycle.cs",
+    "A\tDocs/validation/companions-20260924-evidence.json",
+    "A\tDocs/validation/companions-20260924.md",
+    "A\tNinjaSlayer/shaders/friendly_attack_intent.gdshader",
+    "A\tNinjaSlayer/shaders/friendly_attack_intent.gdshader.uid",
+    "A\tTests/NinjaSlayer.OrbContractTests/OrbContractRunner.Companions.cs"
+  ]
+}

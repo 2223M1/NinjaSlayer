@@ -20,10 +20,6 @@ internal static class FinisherEligibilityService
 {
     private static bool CompatibilityWarningLogged;
 
-    internal static bool IsExcludedAttackCard(CardModel card) =>
-        card.Tags.Contains(CardTag.Shiv)
-        || card.Tags.Contains(NinjaSlayerCardTags.Shuriken);
-
     internal static bool TryCreateSession(
         FinisherAttackSpec spec,
         AttackCommand? command,
@@ -31,8 +27,7 @@ internal static class FinisherEligibilityService
         [NotNullWhen(true)] out FinisherSession? session)
     {
         session = null;
-        if (IsExcludedAttackCard(spec.Card)
-            || spec.Card.Owner?.Creature is not { } owner
+        if (spec.Card.Owner?.Creature is not { } owner
             || owner.Player?.Character is not INinjaSlayerCharacter
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room)
@@ -100,7 +95,9 @@ internal static class FinisherEligibilityService
                     camera,
                     spec.CardPlay,
                     forecast.RequiresAfterCardPlayed,
-                    forecast.ResolvedHits),
+                    forecast.ResolvedHits,
+                    RangedAction: FinisherRangedAction.For(owner) is { } ranged && ranged.Source == spec.Card
+                        ? ranged : null),
                 combatState,
                 room,
                 out session))
@@ -114,58 +111,51 @@ internal static class FinisherEligibilityService
         return true;
     }
 
-    internal static bool TryCreateYamotoKokiSession(
+    internal static FinisherSession? CreateActionSession(
         Creature owner,
-        NCreature ownerNode,
-        NCreature focusNode,
-        IReadOnlyList<Creature> enemies,
-        Func<Creature, decimal> damage,
-        [NotNullWhen(true)] out FinisherSession? session)
+        FinisherActionForecastDescriptor descriptor)
     {
-        session = null;
-        List<Creature> primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToList();
-        if (owner.Monster is not YamotoKokiMonster
+        if (!(FriendlyCompanionTargeting.IsFriendlyCompanion(owner)
+                || owner.Player?.Character is INinjaSlayerCharacter
+                || owner is { Side: CombatSide.Player, PetOwner: not null, Monster: YamotoKokiOrigamiMissile })
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
-            || primaryEnemies.Count == 0
+            || owner.GetCreatureNode() is not { } ownerNode
             || !FinisherProtectionService.CanProtectLethalDamage(out _))
         {
-            return false;
+            return null;
         }
 
-        NCreature? primaryFocusNode = focusNode.Entity.IsPrimaryEnemy
-            ? focusNode
-            : primaryEnemies
-                .Select(enemy => room.GetCreatureNode(enemy))
-                .FirstOrDefault(node => node != null);
+        var enemies = combatState.HittableEnemies.Where(enemy => enemy.IsAlive).ToArray();
+        var primaryEnemies = enemies.Where(enemy => enemy.IsPrimaryEnemy).ToArray();
+        NCreature? primaryFocusNode = descriptor.SingleTarget is { IsPrimaryEnemy: true } target
+            ? target.GetCreatureNode()
+            : primaryEnemies.Select(enemy => enemy.GetCreatureNode()).Where(node => node != null)
+                .OrderBy(node => Math.Abs(node!.Visuals.Bounds.GetGlobalRect().GetCenter().X
+                    - ownerNode.Visuals.Bounds.GetGlobalRect().GetCenter().X)).FirstOrDefault();
         if (primaryFocusNode == null)
         {
-            return false;
+            return null;
         }
 
         if (FinisherSessionRegistry.HasRegisteredSessionForCombat(combatState, room))
         {
-            return false;
+            return null;
         }
 
-        var descriptor = new FinisherActionForecastDescriptor(
-            damage,
-            ValueProp.Move,
-            HitCount: 1,
-            Targeting: FinisherTargeting.All);
         if (FinisherForecast.EvaluateAction(owner, enemies, descriptor, out FinisherForecastResult forecast)
             != FinisherForecastOutcome.Guaranteed
             || !CombatCinematicCameraLease.TryAcquire(
                 room,
-                "Yamoto Koki finisher",
+                "Action finisher",
                 out CombatCinematicCameraLease? camera))
         {
-            return false;
+            return null;
         }
 
         if (!FinisherSessionRegistry.TryRegisterSession(
                 new FinisherSessionRequest(
-                    FinisherScenarioKind.YamotoKokiIaiSlash,
+                    owner.Player != null ? FinisherScenarioKind.NinjaSlayerAttack : FinisherScenarioKind.CompanionAttack,
                     FinisherCompletionCondition.AllCandidatesLethal,
                     owner,
                     ownerNode,
@@ -174,18 +164,19 @@ internal static class FinisherEligibilityService
                     camera,
                     CardPlay: null,
                     RequiresAfterCardPlayed: false,
-                    ResolvedHits: forecast.ResolvedHits),
+                    ResolvedHits: forecast.ResolvedHits,
+                    RangedAction: FinisherRangedAction.For(owner)),
                 combatState,
                 room,
-                out session))
+                out FinisherSession? session))
         {
             camera.Dispose();
-            return false;
+            return null;
         }
 
         Entry.Logger.Info(
-            $"Yamoto Koki finisher session {session.SessionId} started: victims={primaryEnemies.Count}.");
-        return true;
+            $"Action by {owner} finisher session {session.SessionId} started: victims={primaryEnemies.Length}.");
+        return session;
     }
 
 }

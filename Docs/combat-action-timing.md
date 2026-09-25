@@ -59,6 +59,32 @@ draw backflips and shuriken throws may overlap that held stance.
 
 ## Special attacks
 
+- Full companions use native pets and move intents. Koki, Sawatari and Yukano
+  share yellow native attack icons/particles and `CompanionIntentLifecycle`;
+  summon, defend and heal retain native visuals. Hostile Sawatari is unchanged.
+  `PositionPlayersAndPets` receives local player, live companions in combat
+  insertion order, then other humans. Only its two layout grouping checks treat
+  companions as independent anchors. The native roster, pet ownership, Osty
+  placement and paper-crane orbit are unchanged.
+- Companion logic awaits every impact, attack hook and required death operation.
+  The last bamboo/dual-thrust return, Koki's final summon recovery and native
+  intent fades may continue visually after input reopens. Registered visual tails
+  are cancelled/restored by the next action, enemy turn, retirement or exit.
+  Paper cranes retain their 0.16s flight and native-scaled 0.1s explosion lead-in;
+  their owner hook serializes actual impacts/deaths, without awaiting lingering
+  explosion particles. Target selection never runs in detached visual tasks.
+- All three companions enter finishers through
+  `FinisherEligibilityService.CreateActionSession` and the existing
+  `FinisherSession` damage ledger, death commit and cleanup. This includes
+  Sawatari's friendly bamboo/dual attacks and Yukano's arrow/shuriken attacks.
+  Koki keeps its Iai approach, Sawatari reaches close range on its original
+  bamboo/dual impact frame, and Yukano stays at its ranged position. Projectiles
+  must arrive before damage. A guaranteed forecast only selects the presentation;
+  actual confirmed lethal results still control death. Finishers that mutate
+  combat state remain awaited through completion.
+
+
+
 - Tornado keeps one approach/lift and the Whirlwind hit cadence: Normal
   0.15/0.50/0.85s; Fast 0.075/0.250/0.425s. Ordinary spin is 4800 degrees/s
   in both modes; empowered spin is 12000. B hitstop is 0.0175s per hit and
@@ -310,3 +336,40 @@ hurt pause/resume, full hurt-to-counter ordering, reference lunge peaks, bamboo
 timestamps on both combat sides, and particle ownership/cleanup. RitsuLib contracts
 cover host integration for both supported versions. Repository and build-boundary
 checks cover the project's architecture rules.
+
+### Ranged finishers
+
+- The same session, confirmed-damage ledger and death commit also handle native
+  Shiv, Strong Shuriken, shuriken stock, returning Machetes, Koki's origami
+  missiles, Yukano's projectiles and hostile Sawatari's arrow/machete. Ranged
+  actions retain their firing pose and flight path; they acquire no melee
+  approach or forced actor-root restoration. The camera emphasizes the victim
+  at impact. Melee approach, pose, Doom envelope and return constants are unchanged.
+- Ninja Slayer's native Lightning passive/evoke, Dark evoke and Glass
+  passive/evoke enter separately at each actual damage command, after native
+  target selection. A later evoke is never predicted and targeting RNG is not
+  advanced by presentation. Other human characters retain their normal behavior.
+- Enemy ranged routing is an exact monster/move allowlist in
+  `FinisherRangedAction.IsRangedMove`: Crossbow Ruby Raider's Fire; Turret
+  Operator's two Unloads; Fake Merchant's coins/relic; Toadpole's spikes;
+  Sludge Spinner's oil; Mecha Knight's flamethrower; Magi Knight's bomb; Kin
+  Priest's beam; Aeonglass/The Lost's eye lasers; Torch Head Amalgam's beam.
+  Dark Ninja's `DEATH_SLASH` retains its cross-screen/return sequence and damage
+  frame. Its Dark Strike and Iai remain melee. Attack icons, generic animation
+  names and hit-effect names do not determine routing.
+- A disposable action context owns projectile references and arrival tasks,
+  including delayed hand releases; the native combat model still owns all
+  damage, targeting and history. Card source identity prevents a nested card's
+  unrelated damage from inheriting a ranged impact. The existing freeze lease
+  freezes owned visuals and new native impact effects, including particle speed
+  and bound-node Tweens, then restores original values. UI roots stay outside
+  this visual lease. Caught Machetes remain with the receiving hand.
+- The native Shiv sequence keeps its two waits and particles. A local
+  transpiler observes arrival and prevents its normal deletion from cutting off
+  an active Doom pose. The preview host's projectile-handler arrival callback
+  is chained locally; stable has no such handler. Native wait scaling and the
+  mod's rapid-play path remain in effect. Room exit cancels a pending ranged
+  impact before it can apply damage to an obsolete combat.
+
+See [the local validation record](validation/ranged-finishers-20260924.md) for
+the executed host and multiplayer scope.

@@ -26,16 +26,16 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var owner = combat.Player.Creature;
-            await CardCmd.AutoPlay(Choice, AddCard<GuardStance>(combat), null);
-            await CardCmd.AutoPlay(Choice, AddCard<GuardStance>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaSlayer.Cards.OneBodyOneSoul>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaSlayer.Cards.OneBodyOneSoul>(combat, upgraded: true), null);
             await PowerCmd.Apply<DexterityPower>(Choice, owner, 100, owner, null);
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 4, owner, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
-            Require(owner.Block == 3 && owner.GetPowerAmount<KaratePower>() == 3,
-                "Guard Stance grants unpowered block once for an AOE Karate wave.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 7 && owner.GetPowerAmount<KaratePower>() == 3,
+                "One Body grants seven Naraku Life once for an AOE Karate wave.");
             await CardCmd.AutoPlay(Choice, AddCard<PalmThrustRedesignV1>(combat, upgraded: true), null);
-            Require(owner.Block == 12 && !owner.HasPower<KaratePower>(), "Each multihit Karate wave grants block separately.");
+            Require(owner.GetPowerAmount<NarakuLifePower>() == 28 && !owner.HasPower<KaratePower>(), "Each multihit Karate wave grants Naraku Life separately.");
         }
         using (var combat = new OrbCombat())
         {
@@ -56,9 +56,9 @@ public partial class OrbContractRunner
             await AddStock(combat.Player, 5);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card(), combat.Card() });
             Require(combat.Tokens == 1 && combat.Enemy.CurrentHp == 976 && combat.Stock == 2,
-                "A native three-card discard damages three times but creates only one snapshot token.");
+                "A stock gain creates one token; three discards damage three times without generating more.");
             await CardCmd.Discard(Choice, combat.Card());
-            Require(combat.Tokens == 2 && combat.Enemy.CurrentHp == 968, "A separate discard receives a fresh allowance.");
+            Require(combat.Tokens == 1 && combat.Enemy.CurrentHp == 968, "Neither batched nor separate discards generate additional tokens.");
         }
         using (var combat = new OrbCombat())
         {
@@ -71,7 +71,7 @@ public partial class OrbContractRunner
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => ++selections == 1 ? [sly, outer] : [inner]));
             await ScryCmd.Execute(Choice, combat.Player, 2);
             Require(selections == 2 && combat.Tokens == 2 && combat.Enemy.CurrentHp == 982,
-                "Nested Sly Scry must have its own one-token discard allowance.");
+                "Nested Sly Scry generates another token only when its card gains stock.");
         }
         using (var combat = new OrbCombat())
         {
@@ -144,6 +144,6 @@ public partial class OrbContractRunner
             Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 5,
                 "Zanshin must not reward an earlier turn twice.");
         }
-        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, native discard batch cap/nesting, Scry draw isolation, Burning Blood, Excavate, Strike returns and Zanshin");
+        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Excavate, Strike returns and Zanshin");
     }
 }

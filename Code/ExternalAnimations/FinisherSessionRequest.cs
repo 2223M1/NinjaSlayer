@@ -7,7 +7,7 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 internal enum FinisherScenarioKind
 {
     NinjaSlayerAttack,
-    YamotoKokiIaiSlash,
+    CompanionAttack,
     EnemyExecutesNinjaSlayer
 }
 
@@ -28,4 +28,7 @@ internal sealed record FinisherSessionRequest(
     CardPlay? CardPlay,
     bool RequiresAfterCardPlayed,
     int ResolvedHits,
-    IReadOnlySet<ulong>? VfxBaselineChildIds = null);
+    IReadOnlySet<ulong>? VfxBaselineChildIds = null,
+    FinisherRangedAction? RangedAction = null,
+    int ObservedPrimaryHits = 0,
+    bool ContinuousPlayerApproach = false);

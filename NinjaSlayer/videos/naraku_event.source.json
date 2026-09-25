@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "status": "candidate-user-approval-pending",
+  "provenance_contract": "declared-multisource-raster-derivative",
+  "video": "res://NinjaSlayer/videos/naraku_event.ogv",
+  "video_sha256": "aa0c1ec0f2a121d9fa789c4eed3f13e6528b0a6c39e49f96351ca07bd35765b8",
+  "poster": "res://NinjaSlayer/images/events/naraku_event.png",
+  "poster_sha256": "69ac79bf6fecbb9b4e55f138c2819724e0895244839b3f008869cdf2ca28cbd2",
+  "scene": "res://scenes/vfx/events/ninja_slayer_event_naraku_event_vfx.tscn",
+  "fps": "24000/1001",
+  "frames": 49,
+  "duration_seconds": 2.043708333333333,
+  "audio": false,
+  "sources": {
+    "ep02": {
+      "video_name": "[Ninja Slayer][02][BDRIP][1920x1080][H264_THDx2].mkv",
+      "video_sha256": "e009af8350a919026b88879be2604abde51a6573e23af05649ec911c05180989",
+      "first_frame": 13639,
+      "last_frame": 13687,
+      "first_pts": 568.86,
+      "last_pts": 570.862,
+      "contribution": "same-phase complete outer fire"
+    },
+    "ep06": {
+      "video_name": "[Ninja Slayer][06][BDRIP][1920x1080][H264_THD].mkv",
+      "video_sha256": "1fa6abf7938bf5f5bf1fdc9a7ef27cfe24eeeec78516936c01c431c5cfdf2bc6",
+      "first_frame": 12440,
+      "last_frame": 12488,
+      "first_pts": 518.852,
+      "last_pts": 520.854,
+      "contribution": "HD face and inner fire"
+    }
+  },
+  "composition": {
+    "provenance_mode": "declared-multisource-derivative",
+    "ep02_source_rect": [
+      0,
+      0,
+      1920,
+      470
+    ],
+    "ep06_to_master": [
+      [
+        1.0,
+        0.0,
+        730.0
+      ],
+      [
+        0.0,
+        1.0,
+        328.0
+      ]
+    ],
+    "ep02_to_master": [
+      [
+        3.102056702975934,
+        -0.00019911176638582841,
+        -1350.3104322660934
+      ],
+      [
+        0.00019911176638582841,
+        3.102056702975934,
+        107.70622798397778
+      ]
+    ],
+    "master_size": [
+      2682,
+      1500
+    ],
+    "ep06_selection": "ep06-selection.png",
+    "seam_width_source_pixels": 24,
+    "reason": "soft smoke crossing a source-frame boundary; face core unaffected",
+    "blend": "ep06*w + aligned_ep02*(1-w)",
+    "interpolation": "Lanczos4, each source sampled directly for each deliverable",
+    "temporal_offset": 0,
+    "ep02_visible_union_gt8": [
+      470,
+      0,
+      1205,
+      414
+    ],
+    "frame_rate": "24000/1001",
+    "color_adjustment": null,
+    "ai_generated": false,
+    "alpha_contract": "opaque black-background video, no inferred smoke alpha",
+    "runtime_size": [
+      1280,
+      716
+    ],
+    "runtime_scale": 0.4772557792692021,
+    "loop": {
+      "first": 81,
+      "last": 129,
+      "frames": 49,
+      "jump_mae": 6.228421688079834,
+      "velocity_mae": 8.70382022857666,
+      "score": 8.404376745223999,
+      "native_step_mae_median": 9.332592010498047,
+      "native_step_mae_p95": 21.95689582824707
+    },
+    "rejected_source_edge_frames": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      17,
+      18,
+      54,
+      55,
+      65,
+      66,
+      67,
+      68,
+      79,
+      134,
+      148,
+      149,
+      150,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196
+    ],
+    "master_folder": "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer\\build\\naraku-event\\master-081-129",
+    "runtime_folder": "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer\\build\\naraku-event\\runtime-081-129",
+    "portrait_placement": {
+      "revision": "larger-raised-168-left30-20260924",
+      "face_center_source_ep06": [
+        945,
+        570
+      ],
+      "face_center_portrait": [
+        880.0,
+        615.0
+      ],
+      "video_position": [
+        82.59507829977633,
+        187.49574944071594
+      ],
+      "video_size": [
+        1276.8,
+        714.0939597315436
+      ],
+      "display_scale_from_master": 0.47606263982102903,
+      "scale_vs_initial": 1.68,
+      "scale_vs_previous": 1.4,
+      "screen_face_center_delta_vs_initial": [
+        52.0,
+        -46.8
+      ],
+      "horizontal_compensation_reason": "user-requested slight left shift: 30 portrait pixels; size and height unchanged",
+      "viewport_overflow_authorization": {
+        "edge": "left",
+        "content": "outer flame/smoke only",
+        "user_confirmed": true,
+        "date": "2026-09-24"
+      }
+    }
+  },
+  "audit": {
+    "source_hash_errors": 0,
+    "master_reconstruction_mismatch": 0,
+    "runtime_reconstruction_mismatch": 0,
+    "ep06_unmixed_core_rgb_mismatch": 0,
+    "source_fire_boundary_pixels_gt8": 0,
+    "output_border_pixels_gt8": 0,
+    "runtime_red_character_pixels": 0,
+    "file_hash_errors": 0,
+    "layout_fire_clipped_pixels_gt8": 87503,
+    "layout_fire_in_text_region_pixels_gt8": 0,
+    "layout_unapproved_clipped_pixels_gt8": 0,
+    "layout_face_clipped_pixels_gt8": 0,
+    "layout_authorized_left_overflow_pixels": 87503,
+    "frames": 49,
+    "fps": "24000/1001",
+    "duration": 2.043708333333333,
+    "audio_streams": 0,
+    "encode_rgb_mae": 0.6591793683255425,
+    "encode_channel_error_p95": 3.0,
+    "encode_psnr": 45.214264542025546,
+    "loop_seam_mae": 6.228421688079834,
+    "ordinary_frame_step_mae_median": 9.332592010498047,
+    "screen_fire_union": [
+      -232.3937185682326,
+      175.11777206204,
+      890.0730814317676,
+      802.6427992451229
+    ],
+    "passed": true,
+    "video_sha256": "aa0c1ec0f2a121d9fa789c4eed3f13e6528b0a6c39e49f96351ca07bd35765b8"
+  },
+  "rebuild": "tools/naraku-event/build_portrait.py: prepare, analyze, compose; then verify_portrait.py",
+  "opencv_version": "5.0.0",
+  "numpy_version": "2.4.4",
+  "separate_source_ledger": "build/naraku-event/source-ledger.json",
+  "separate_output_ledger": "build/naraku-event/frame-ledger.json"
+}

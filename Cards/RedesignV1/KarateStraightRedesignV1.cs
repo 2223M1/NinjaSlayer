@@ -51,7 +51,7 @@ public sealed class KarateStraightRedesignV1 : NinjaSlayerRedesignCardTemplate
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(2);
-        DynamicVars.Karate().UpgradeValueBy(2);
+        DynamicVars.Damage.UpgradeValueBy(3);
+        DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

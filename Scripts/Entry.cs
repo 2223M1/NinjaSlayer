@@ -88,19 +88,18 @@ public class Entry
             requiredPatcher.RegisterPatch<ShurikenOrbRemoveVisualPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbPreviewPatch>();
             requiredPatcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
-            requiredPatcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbVisualPatch>();
             requiredPatcher.RegisterPatch<ShurikenOrbChannelSoundPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
             requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
+            requiredPatcher.RegisterPatch<BossGreetingStartPatch>();
             requiredPatcher.RegisterPatch<CardTransformShineSfxPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiDynamicAllyLayoutPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiFinishedCombatRestorePatch>();
-            requiredPatcher.RegisterPatch<EventValidationRunGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariActRoomGenerationPatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomTypeCapturePatch>();
             requiredPatcher.RegisterPatch<SawatariUnknownRoomRollPatch>();
@@ -147,6 +146,14 @@ public class Entry
             requiredPatcher.RegisterPatch<ReporterPassEventOptionPatch>();
             requiredPatcher.RegisterPatch<NancyLeeCandidatePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherAttackCommandPatch>();
+            requiredPatcher.RegisterPatch<FinisherOrbPassivePatch>();
+            requiredPatcher.RegisterPatch<FinisherOrbEvokePatch>();
+            requiredPatcher.RegisterPatch<FinisherShivVisualPatch>();
+            requiredPatcher.RegisterPatch<FinisherShivTimingPatch>();
+            requiredPatcher.RegisterPatch<FinisherHeavyBluntSequencePatch>();
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+            requiredPatcher.RegisterPatch<FinisherNativeProjectilePatch>();
+#endif
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherLethalDamagePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherPrimaryDamagePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFinisherAfterCardPlayedPatch>();
@@ -483,6 +490,16 @@ public class Entry
         FmodStudioDeferredBankRegistration.RegisterBank(NinjaSlayerAudio.BankPath);
         FmodStudioDeferredBankRegistration.RegisterStudioGuidMappings(NinjaSlayerAudio.GuidMappingsPath);
         Logger.Info($"FMOD bank registered: {NinjaSlayerAudio.BankPath}");
+        if (Godot.FileAccess.FileExists(NinjaSlayerAudio.EventMusicBankPath)
+            && Godot.FileAccess.FileExists(NinjaSlayerAudio.EventMusicGuidMappingsPath))
+        {
+            FmodStudioDeferredBankRegistration.RegisterBank(NinjaSlayerAudio.EventMusicBankPath);
+            FmodStudioDeferredBankRegistration.RegisterStudioGuidMappings(NinjaSlayerAudio.EventMusicGuidMappingsPath);
+        }
+        else
+        {
+            Log.Warn("Fixed event music bank is missing; event rooms will retain act music.");
+        }
     }
 
 }

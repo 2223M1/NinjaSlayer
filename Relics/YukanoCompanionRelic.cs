@@ -62,7 +62,7 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
             livingOnly: true);
         bool created = existing == null;
         Creature yukano = existing ?? await PlayerCmd.AddPet<YukanoMonster>(Owner);
-        YamotoKokiIntentGeneration generation = YamotoKokiIntentLifecycle.BeginCombat(yukano);
+        CompanionIntentGeneration generation = CompanionIntentLifecycle.BeginCombat(yukano);
         if (yukano.Monster is YukanoMonster monster)
         {
             bool anyEnemyIntendsToAttack = yukano.CombatState?.HittableEnemies.Any(enemy =>
@@ -98,7 +98,7 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
             return Task.CompletedTask;
         }
 
-        YamotoKokiIntentLifecycle.Invalidate(yukano);
+        CompanionIntentLifecycle.Invalidate(yukano);
         _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayFarewell(yukano));
         return Task.CompletedTask;
     }
@@ -113,15 +113,7 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
             return;
         }
 
-        try
-        {
-            await PerformTurnAction();
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Error(
-                $"Yukano turn-start action failed; releasing the player turn instead of blocking card input: {ex}");
-        }
+        await PerformTurnAction();
     }
 
     private async Task PerformTurnAction()
@@ -143,14 +135,14 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
             .ToList();
         if (enemies.Count == 0)
         {
-            YamotoKokiIntentLifecycle.Invalidate(yukano);
+            CompanionIntentLifecycle.Invalidate(yukano);
             return;
         }
 
         Flash();
         if (yukano.GetCreatureNode() is { } node)
         {
-            await node.PerformIntent();
+            _ = TaskHelper.RunSafely(node.PerformIntent());
         }
 
         await scheduledMove.PerformMove(enemies);
@@ -159,7 +151,7 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
             || !combatState.IsLiveCombat()
             || !yukano.IsAlive)
         {
-            YamotoKokiIntentLifecycle.Invalidate(yukano);
+            CompanionIntentLifecycle.Invalidate(yukano);
             return;
         }
 
@@ -168,16 +160,16 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
             .ToList();
         if (remainingEnemies.Count == 0)
         {
-            YamotoKokiIntentLifecycle.Invalidate(yukano);
+            CompanionIntentLifecycle.Invalidate(yukano);
             return;
         }
 
         monster.RollMove(remainingEnemies);
-        await UpdateIntent(YamotoKokiIntentLifecycle.Capture(yukano), reveal: true);
+        await UpdateIntent(CompanionIntentLifecycle.Capture(yukano), reveal: true);
     }
 
     private static async Task UpdateIntent(
-        YamotoKokiIntentGeneration generation,
+        CompanionIntentGeneration generation,
         bool reveal = false)
     {
         Creature yukano = generation.Creature;
@@ -186,17 +178,16 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
         if (combatState == null
             || node == null
             || !combatState.IsLiveCombat()
-            || !YamotoKokiIntentLifecycle.PrepareContainerForWrite(generation))
+            || !CompanionIntentLifecycle.PrepareContainerForWrite(generation))
         {
             return;
         }
 
-        await (reveal
-            ? node.RefreshIntents()
-            : node.UpdateIntent(combatState.HittableEnemies));
-        if (!YamotoKokiIntentLifecycle.IsCurrent(generation))
+        if (reveal) await node.RefreshIntents();
+        await node.UpdateIntent(combatState.HittableEnemies);
+        if (!CompanionIntentLifecycle.IsCurrent(generation))
         {
-            YamotoKokiIntentLifecycle.RehideIfInactive(generation);
+            CompanionIntentLifecycle.RehideIfInactive(generation);
         }
     }
 

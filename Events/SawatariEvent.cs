@@ -148,7 +148,7 @@ public sealed class SawatariEvent : ModEventTemplate
         }
     }
 
-    private Task BeginLocalEvent(Player owner)
+    private async Task BeginLocalEvent(Player owner)
     {
         SawatariEvent[] events = RunManager.Instance.EventSynchronizer.Events
             .OfType<SawatariEvent>()
@@ -175,16 +175,16 @@ public sealed class SawatariEvent : ModEventTemplate
                 eventModel.FinishForFallback();
                 eventModel.BeginEmbeddedCombat();
             }
-            return Task.CompletedTask;
+            return;
         }
 
         SawatariEventUi.Hide();
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBeginEvent);
+        await session.PlayNinjaSlayerEntrance();
         foreach (SawatariEvent eventModel in events)
         {
             eventModel.BeginEmbeddedCombat();
         }
-        return Task.CompletedTask;
     }
 
     private CombatState? GetEmbeddedCombatState()

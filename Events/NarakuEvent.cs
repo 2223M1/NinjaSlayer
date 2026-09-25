@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Cards.RedesignV1;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
@@ -20,12 +21,19 @@ namespace NinjaSlayer.Events;
 [RegisterActEvent(typeof(Glory))]
 public sealed class NarakuEvent : ModEventTemplate
 {
+    public override Task AfterEventStarted()
+    {
+        FixedEventMusic.Start(this, NinjaSlayerAudio.NarakuEventMusic, NinjaSlayerAudio.NarakuEventMusicGuid);
+        return Task.CompletedTask;
+    }
+
     private static readonly int[] NarakuDamage = [5, 6, 7];
 
     private int _numberOfCalls;
 
     public override EventAssetProfile AssetProfile => new(
-        InitialPortraitPath: "res://NinjaSlayer/images/cards/NarakuFormRedesignV1.png");
+        InitialPortraitPath: "res://NinjaSlayer/images/events/naraku_event.png",
+        VfxScenePath: "res://scenes/vfx/events/ninja_slayer_event_naraku_event_vfx.tscn");
 
     [SavedProperty]
     private int NumberOfCalls

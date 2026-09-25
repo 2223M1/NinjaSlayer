@@ -2,6 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Nodes;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
@@ -13,6 +14,24 @@ internal static class FinisherImpactPositionResolver
         Vector2 squashMultiplier,
         float approachGap)
     {
+        if (!FinisherTimeline.AllowsDeathSquash(target.Entity)) squashMultiplier = Vector2.One;
+        // Only Sawatari has a separately assembled, changing weapon silhouette.
+        Transform2D canvasToParent = actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse();
+        float ContactX(float nearEdge, float direction)
+        {
+            float reach = 0f;
+            if (SawatariWeaponVisuals.Get(actor.Entity) is { } actorWeapons)
+            {
+                Rect2 actorBounds = actorWeapons.GetCombatBounds(canvasToParent);
+                float front = direction > 0f ? actorBounds.End.X : actorBounds.Position.X;
+                reach = (front - actor.Position.X) * direction;
+            }
+            return nearEdge - direction * (Math.Max(0f, approachGap) + reach);
+        }
+
+        float Fallback() => ContactX(ResolveFallback(actor, target, squashMultiplier, 0f),
+            ResolveDirection(actor.Position.X, target.Position.X, actor.Entity.Side == CombatSide.Player ? 1f : -1f));
+
         try
         {
             Node2D body = target.Visuals.GetCurrentBody();
@@ -25,7 +44,7 @@ internal static class FinisherImpactPositionResolver
                 || bounds.Size.X <= 0f
                 || bounds.Size.Y <= 0f)
             {
-                return ResolveFallback(actor, target, squashMultiplier, approachGap);
+                return Fallback();
             }
 
             Transform2D bodyCanvas = body.GetGlobalTransformWithCanvas();
@@ -72,18 +91,18 @@ internal static class FinisherImpactPositionResolver
 
             if (!float.IsFinite(minimumX) || !float.IsFinite(maximumX))
             {
-                return ResolveFallback(actor, target, squashMultiplier, approachGap);
+                return Fallback();
             }
 
             float centerX = (minimumX + maximumX) * 0.5f;
             float fallbackDirection = actor.Entity.Side == CombatSide.Player ? 1f : -1f;
             float direction = ResolveDirection(actor.Position.X, centerX, fallbackDirection);
             float nearEdge = direction > 0f ? minimumX : maximumX;
-            return nearEdge - direction * Math.Max(0f, approachGap);
+            return ContactX(nearEdge, direction);
         }
         catch
         {
-            return ResolveFallback(actor, target, squashMultiplier, approachGap);
+            return Fallback();
         }
     }
 

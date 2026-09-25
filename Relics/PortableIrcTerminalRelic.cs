@@ -16,7 +16,7 @@ public sealed class PortableIrcTerminalRelic : NinjaSlayerRelicTemplate
 
     public override async Task BeforeHandDraw(MegaCrit.Sts2.Core.Entities.Players.Player player, PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Combat.ICombatState combatState)
     {
-        if (player == Owner && Owner.PlayerCombatState?.TurnNumber == 1)
+        if (player == Owner)
         {
             Flash();
             await ShurikenOrb.AddStock(choiceContext, Owner, 1);

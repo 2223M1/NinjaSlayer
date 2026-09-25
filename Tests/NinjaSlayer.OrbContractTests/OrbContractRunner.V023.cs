@@ -1,6 +1,7 @@
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -53,19 +54,27 @@ public partial class OrbContractRunner
             Require(combat.Stock == 1, "Nonempty Scry awards stock even when no card is selected.");
         }
         foreach (int layers in new[] { 0, 1, 2 })
-        foreach (int flameCount in new[] { 0, 2 })
+        foreach (int flameCount in new[] { 0, 1, 2 })
+        foreach (int amplification in new[] { 0, 6, 8 })
         {
             using var combat = new OrbCombat();
-            await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+            if (amplification > 0) await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, amplification, combat.Player.Creature, null);
             if (layers > 0)
                 for (int i = 0; i < layers; i++)
                     await CardCmd.AutoPlay(Choice, AddCard<NarakuFormRedesignV1>(combat), null);
             for (int i = 0; i < flameCount; i++) AddCard<BlackFlameRedesignV1>(combat);
             var attack = AddCard<StrikeIronclad>(combat);
+            int ownerHp = combat.Player.Creature.CurrentHp;
             await CardCmd.AutoPlay(Choice, attack, combat.Enemy);
-            int extra = (layers > 0 ? layers * 4 + 3 : 0) + (flameCount > 0 ? flameCount * 4 + 3 : 0);
+            int extra = (layers + flameCount) * (4 + amplification);
             Require(combat.Enemy.CurrentHp == 1000 - 6 - extra,
-                $"Naraku {layers}, hand flames {flameCount}: separate Naraku and merged hand damage, each amplified once.");
+                $"Naraku {layers}, hand flames {flameCount}: each Naraku layer and hand flame is independently amplified.");
+            var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
+                .Where(entry => entry.Receiver == combat.Enemy && entry.CardSource != attack).ToArray();
+            Require(burns.Length == layers + flameCount
+                && burns.All(entry => entry.Result.TotalDamage == 4 + amplification)
+                && combat.Player.Creature.CurrentHp == ownerHp,
+                "Each virtual and physical flame must be a separate damage callback without attack-trigger self-damage.");
             Require(attack.Pile?.Type == PileType.Discard
                 && combat.Player.Piles.SelectMany(p => p.Cards).OfType<BlackFlameRedesignV1>().Count() == flameCount,
                 "Naraku must not exhaust attacks or generate flames.");
@@ -75,10 +84,10 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, AddCard<OneBodyOneSoul>(combat), null);
             await CardCmd.AutoPlay(Choice, AddCard<OneBodyOneSoul>(combat, upgraded: true), null);
             await ChadoBreathCmd.Apply(Choice, combat.Player, 4);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 7,
-                "One breathing effect must award seven Karate, regardless of breathing amount.");
+            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0,
+                "One Body must no longer award Karate on breathing.");
             await ChadoBreathCmd.Apply(Choice, combat.Player, 1);
-            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 14, "Independent breathing must trigger again.");
+            Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0, "Further breathing must not grant Karate.");
             int hp = combat.Player.Creature.CurrentHp;
             var flame = AddCard<BlackFlameRedesignV1>(combat);
 #if NINJASLAYER_CHANNEL_STABLE
@@ -87,8 +96,8 @@ public partial class OrbContractRunner
             await (Task)AccessTools.Method(typeof(CombatManager), "ResolveTurnEndCardEffects")
                 .Invoke(CombatManager.Instance, [flame, Choice, Task.CompletedTask])!;
 #endif
-            Require(combat.Player.Creature.CurrentHp == hp && combat.Enemy.CurrentHp == 996
-                && flame.Pile?.Type == PileType.Exhaust, "Soul prevents only Black Flame self-damage, retaining enemy damage and exhaust.");
+            Require(combat.Player.Creature.CurrentHp == hp - 4 && combat.Enemy.CurrentHp == 996
+                && flame.Pile?.Type == PileType.Exhaust, "Soul no longer prevents Black Flame self-damage.");
         }
         foreach (bool exhaust in new[] { false, true })
         {
@@ -114,16 +123,10 @@ public partial class OrbContractRunner
             await CardPileCmd.AddGeneratedCardToCombat(later, PileType.Hand, combat.Player);
             Require(tea.Keywords.Contains(CardKeyword.Retain) && later.Keywords.Contains(CardKeyword.Retain),
                 "Meditation grants native Retain to existing and future tea.");
-            var target = AddCard<DefendIronclad>(combat);
-            using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
-            {
-                Require(!options.Contains(later), "Macaco must exclude already-retained cards like native Snap.");
-                return [target];
-            }));
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, AddCard<TonyRetention>(combat), null);
-            target.EndOfTurnCleanup();
-            Require(target.Keywords.Contains(CardKeyword.Retain) && ((CardModel)target.MutableClone()).Keywords.Contains(CardKeyword.Retain)
-                && combat.Player.Creature.Block == 11, "Macaco Retain survives cleanup and native copying.");
+            Require(combat.Player.Creature.Block == 4 && tea.Pile?.Type == PileType.Draw,
+                "Macaco now grants four Block and scries without changing Tea Retain.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
@@ -133,7 +136,7 @@ public partial class OrbContractRunner
             await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 1);
             await CardCmd.Discard(Choice, combat.Card());
-            Require(combat.Stock == 0 && shield.ShouldGlowGold, "Conversion counts as an evoke after the last orb is removed.");
+            Require(combat.Stock == 0 && shield.ShouldGlowGold, "Gain qualification persists after the last orb is removed.");
             await CardCmd.AutoPlay(Choice, shield, null);
             Require(combat.Player.Creature.Block == (upgraded ? 22 : 16), "Barrier grants two native block instances.");
         }

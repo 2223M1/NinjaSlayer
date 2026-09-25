@@ -34,7 +34,7 @@ public partial class OrbContractRunner
             }));
             await AddStock(combat.Player, 3);
             await CardCmd.AutoPlay(Choice, source, throwing ? combat.Enemy : null);
-            Require(combat.Stock == (handSize == 0 ? 3 : 4),
+            Require(combat.Stock == (handSize == 0 ? 3 : 5),
                 "Actual hand-discard cards must fire once, then play Sly once; empty hands must finish normally.");
             Require(sly == null || sly.Pile?.Type == PileType.Discard,
                 "The selected Sly card did not complete its native autoplay.");
@@ -66,6 +66,8 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS native hand-discard cards, Sly, empty hands and hand-only tea healing");
 
+        VerifyNativeCompanionLayout();
+        VerifyFriendlyIntentMaterials();
         VerifyCompanionModelIdentity();
         VerifyHoverTipLeaseRestoration();
         VerifyCompanionIntentGenerations();
@@ -128,29 +130,33 @@ public partial class OrbContractRunner
     private static void VerifyCompanionIntentGenerations()
     {
         using var combat = new OrbCombat();
-        var creature = new Creature(ModelDb.Monster<YamotoKokiMonster>().ToMutable(), CombatSide.Player, null)
-        { CombatState = combat.State };
-        var node = new NCreature();
-        try
+        foreach (MonsterModel model in new MonsterModel[] { ModelDb.Monster<YamotoKokiMonster>(),
+                     ModelDb.Monster<SawatariMonster>(), ModelDb.Monster<YukanoMonster>() })
         {
-        AccessTools.Property(typeof(NCreature), "Entity").SetValue(node, creature);
-        Type type = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.YamotoKokiIntentLifecycle", true)!;
-        object Call(string method, params object[] args) => AccessTools.Method(type, method).Invoke(null, args)!;
-        Task pending = Task.CompletedTask;
-        object first = Call("BeginCombat", creature);
-        Require(YamotoKokiIntentGenerationPatch.Prefix(node, ref pending), "Active companion intents were blocked.");
-        Call("Invalidate", creature);
-        Require(!(bool)Call("IsCurrent", first) && !YamotoKokiIntentGenerationPatch.Prefix(node, ref pending),
-            "A completed combat still allowed a late companion intent update.");
-        object second = Call("BeginCombat", creature);
-        Require(!(bool)Call("IsCurrent", first) && (bool)Call("IsCurrent", second)
-            && YamotoKokiIntentGenerationPatch.Prefix(node, ref pending),
-            "A new combat revived an old intent callback or failed to enable its own intents.");
-        Call("RehideIfInactive", first);
-        Require((bool)Call("IsCurrent", second), "Late old-combat cleanup invalidated the new combat.");
-        Call("Invalidate", creature);
-        GD.Print("PASS companion intent retirement, delayed callbacks and combat restart");
+            var creature = new Creature(model.ToMutable(), CombatSide.Player, null)
+            { CombatState = combat.State };
+            var node = new NCreature();
+            try
+            {
+                AccessTools.Property(typeof(NCreature), "Entity").SetValue(node, creature);
+                Type type = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.CompanionIntentLifecycle", true)!;
+                object Call(string method, params object[] args) => AccessTools.Method(type, method).Invoke(null, args)!;
+                Task pending = Task.CompletedTask;
+                object first = Call("BeginCombat", creature);
+                Require(YamotoKokiIntentGenerationPatch.Prefix(node, ref pending), "Active companion intents were blocked.");
+                Call("Invalidate", creature);
+                Require(!(bool)Call("IsCurrent", first) && !YamotoKokiIntentGenerationPatch.Prefix(node, ref pending),
+                    "A completed combat still allowed a late companion intent update.");
+                object second = Call("BeginCombat", creature);
+                Require(!(bool)Call("IsCurrent", first) && (bool)Call("IsCurrent", second)
+                    && YamotoKokiIntentGenerationPatch.Prefix(node, ref pending),
+                    "A new combat revived an old intent callback or failed to enable its own intents.");
+                Call("RehideIfInactive", first);
+                Require((bool)Call("IsCurrent", second), "Late old-combat cleanup invalidated the new combat.");
+                Call("Invalidate", creature);
+                GD.Print("PASS companion intent retirement, delayed callbacks and combat restart");
+            }
+            finally { node.Free(); }
         }
-        finally { node.Free(); }
     }
 }

@@ -1,0 +1,14 @@
+
+front-body.png
+size:770,1110
+filter:Linear,Linear
+pma:false
+front-body
+bounds:0,0,770,1110
+
+front-scarf.png
+size:770,1110
+filter:Linear,Linear
+pma:false
+front-scarf
+bounds:0,0,770,1110

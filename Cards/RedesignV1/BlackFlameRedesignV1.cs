@@ -76,7 +76,7 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
             .ToList();
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback(enemies.Prepend(Owner.Creature));
         await DamageEnemies(choiceContext, enemies);
-        if (Owner.Creature.IsAlive && !Owner.Creature.HasPower<OneBodyOneSoulPower>())
+        if (Owner.Creature.IsAlive)
         {
             await CreatureCmd.Damage(
                 choiceContext,
@@ -98,21 +98,24 @@ public sealed class BlackFlameRedesignV1 : NinjaSlayerStandaloneCardTemplate
         public bool Resolved;
     }
 
-    private Task TriggerFromAttack(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    private async Task TriggerFromAttack(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (CombatState!.HittableEnemies.Count == 0) return Task.CompletedTask;
         // Cards generated during this attack did not observe its BeforeCardPlayed hook.
         if (!AttackBurns.TryGetValue(cardPlay, out AttackBurn? burn) || burn.Resolved)
-            return Task.CompletedTask;
+            return;
         burn.Resolved = true;
-        var flames = burn.Flames.Where(flame => flame.Pile?.Type == PileType.Hand && flame.Owner == Owner).ToArray();
-        if (flames.Length == 0) return Task.CompletedTask;
-        foreach (var flame in flames)
+        foreach (var flame in burn.Flames)
+        {
+            if (CombatManager.Instance.IsOverOrEnding || !Owner.Creature.IsAlive) break;
+            if (flame.Pile?.Type != PileType.Hand || flame.Owner != Owner) continue;
+            var targets = CombatState!.HittableEnemies;
+            if (targets.Count == 0) break;
             if (LocalContext.IsMine(flame)
                 && MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance?.Ui.Hand.GetCardHolder(flame) is NHandCardHolder holder)
                 holder.Flash();
-        NinjaSlayerCombatVfx.PlayBurnStatusFeedback(CombatState.HittableEnemies);
-        return DamageEnemies(choiceContext, Owner, flames.Sum(flame => (int)flame.DynamicVars.Damage.BaseValue), this);
+            NinjaSlayerCombatVfx.PlayBurnStatusFeedback(targets);
+            await DamageEnemies(choiceContext, Owner, (int)flame.DynamicVars.Damage.BaseValue, flame, targets);
+        }
     }
 
     private Task DamageEnemies(PlayerChoiceContext choiceContext, List<Creature> enemies) =>

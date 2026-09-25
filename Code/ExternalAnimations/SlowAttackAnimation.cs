@@ -25,7 +25,8 @@ public static class SlowAttackAnimation
             && creature.Player?.Character is INinjaSlayerCharacter;
         float gate = somersault ? SomersaultHalfSeconds : CombatActionTimingRuntime.TriggerSeconds(
             NinjaSlayerAimPose.IsKick(NinjaSlayerAttackExecution.CurrentPlay?.Card) ? 0.25f : 0.2f);
-        if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, gate, out Task owned))
+        if (NinjaSlayerFinisherCinematic.TryPlayOwnedAction(creature, gate, out Task owned,
+                NinjaSlayerCombatVisuals.SlowAttackLungeDistance))
         {
             await owned;
             return;

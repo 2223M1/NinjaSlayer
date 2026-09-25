@@ -26,18 +26,6 @@ public static class NinjaSlayerRunData
         PlayerState.Modify(player, state => state.PendingAncientEntranceAnimation = true);
     }
 
-    public static void SnapshotEventValidation(RunState runState, bool enabled)
-    {
-        foreach (Player player in runState.Players)
-        {
-            PlayerState.Modify(player, state => state.EventValidationEnabled = enabled);
-        }
-    }
-
-    public static bool IsEventValidationEnabled(IRunState runState) =>
-        runState.Players.Count == 1
-        && PlayerState.Get(runState.Players[0]).EventValidationEnabled;
-
     public static bool HasPendingAncientEntranceAnimation(Player player) =>
         PlayerState.Get(player).PendingAncientEntranceAnimation;
 

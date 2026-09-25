@@ -82,8 +82,8 @@ public partial class OrbContractRunner
                 {
                     var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
                         .Where(e => e.Receiver == enemy && e.CardSource is BlackFlameRedesignV1).ToArray();
-                    Require(burns.Length == 1 && burns[0].Result.TotalDamage == flameCount * 4 + 3,
-                        "Each independent multi-hit attack must merge all held flames into one amplified hit per enemy.");
+                    Require(burns.Length == flameCount && burns.All(hit => hit.Result.TotalDamage == 7),
+                        "Each independent multi-hit attack triggers each held flame once, independently amplified per enemy.");
                 }
             }
         }
@@ -97,8 +97,8 @@ public partial class OrbContractRunner
             var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
                 .Where(e => e.CardSource is BlackFlameRedesignV1).ToArray();
             Require(observer.NestedFlameAttack == null && combat.Enemy.CurrentHp == 972
-                && burns.Length == 2 && burns.All(e => e.Result.TotalDamage == 8),
-                "An attack nested inside Black Flame damage gets its own merged wave without re-triggering the outer play.");
+                && burns.Length == 4 && burns.All(e => e.Result.TotalDamage == 4),
+                "An attack nested inside Black Flame damage gets its own per-card burns without re-triggering the outer play.");
         }
         foreach (bool upgraded in new[] { false, true })
         foreach (int selectedCount in new[] { 0, 2 })
@@ -114,6 +114,6 @@ public partial class OrbContractRunner
                 .Sum(card => card.DynamicVars.Energy.IntValue);
             Require(energy == selectedCount, "Discern's own exhaust must not add to its breathing count.");
         }
-        GD.Print("PASS v0.2.4: Alabama powered damage/upgrades/lethals, group Karate consumption, merged multi-hit hand flames, repeated plays and Discern native exhaust.");
+        GD.Print("PASS v0.2.4: Alabama powered damage/upgrades/lethals, group Karate consumption, individual multi-hit hand flames, repeated plays and Discern native exhaust.");
     }
 }

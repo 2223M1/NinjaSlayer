@@ -260,7 +260,12 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
         CardPlay? cardPlay,
         ref Task<IEnumerable<DamageResult>> resultTask)
     {
-        FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
+        if (NinjaSlayerFinisherCinematic.TryInterceptRangedDamage(
+                choiceContext, targets, amount, props, dealer, cardSource, cardPlay, out var rangedResult))
+        {
+            resultTask = rangedResult!;
+            return false;
+        }
         if (!NinjaSlayerFinisherCinematic.TryInterceptDirectDamage(
                 choiceContext,
                 targets,
@@ -271,11 +276,19 @@ public sealed partial class NinjaSlayerFinisherPrimaryDamagePatch : IPatchMethod
                 cardPlay,
                 out Task<IEnumerable<DamageResult>>? result))
         {
+            FinisherAttackVfxBaselineContext.ObserveDamage(dealer, cardSource, props);
+            FinisherSessionRegistry.GetActiveSession()?.NotifyPrimaryDamage(dealer, cardSource, cardPlay);
             return true;
         }
 
         resultTask = result!;
         return false;
+    }
+
+    public static void Postfix(Creature? dealer, ref Task<IEnumerable<DamageResult>> __result)
+    {
+        if (FinisherSessionRegistry.GetActiveSession() is { } session)
+            __result = session.ObserveDamageCompletion(__result, dealer);
     }
 
 }
@@ -357,6 +370,7 @@ public sealed class NinjaSlayerEnemyAttackVfxBaselinePatch : IPatchMethod
             FinisherAttackVfxBaselineContext.RestoreCaller(frame);
             frame.IsActive = false;
             frame.Approach?.ReleasePrediction();
+            frame.Ranged?.Dispose();
         }
 
         return __exception;

@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using NinjaSlayer.Code.Combat;
@@ -67,6 +68,7 @@ internal sealed partial class SawatariWeaponVisuals
             if (completed) frameRemainder = Math.Max(0, tween.GetTotalElapsedTime() - duration);
             return completed && active;
         }
+        bool detachedReturn = false;
         try
         {
             visual._poseTween?.Kill();
@@ -78,13 +80,34 @@ internal sealed partial class SawatariWeaponVisuals
                 if (!await Move(0, 2)) break;
                 bool continueAttack = await impact();
                 NinjaSlayerShadowController.Get(source)?.BeginReturn(cycle * 5f / 7f);
+                if ((hit == hits - 1 || !continueAttack)
+                    && (source.Side == CombatSide.Player && source.PetOwner != null
+                        || FinisherSessionRegistry.GetActiveSession()?.Actor == source))
+                {
+                    detachedReturn = true;
+                    _ = TaskHelper.RunSafely(FinishReturn());
+                    break;
+                }
                 if (!await Move(2, 7) || !continueAttack) break;
             }
         }
         finally
         {
-            Restore();
-            NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(source, generation);
+            if (!detachedReturn)
+            {
+                Restore();
+                NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(source, generation);
+            }
+        }
+
+        async Task FinishReturn()
+        {
+            try { await Move(2, 7); }
+            finally
+            {
+                Restore();
+                NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(source, generation);
+            }
         }
     }
 }

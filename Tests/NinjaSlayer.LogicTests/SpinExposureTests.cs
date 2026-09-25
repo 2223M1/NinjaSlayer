@@ -6,6 +6,17 @@ namespace NinjaSlayer.LogicTests;
 public sealed class SpinExposureTests
 {
     [Fact]
+    public void FirstVisibleTurnFrameIncludesItsAuthoredExposure()
+    {
+        var history = new SpinExposureHistory();
+        history.Record(0, 90, age => 90 - Math.Min(age, .075) * 1200);
+        var samples = new float[25];
+        Assert.True(history.SampleAngles(0, samples));
+        Assert.Equal(90, samples[0]);
+        Assert.InRange(Math.Abs(samples[^1] - (90 - SpinExposureHistory.ExposureSeconds * 1200)), 0, .001);
+    }
+
+    [Fact]
     public void RestAgesOutPriorAnglesWithoutInventingAReverseTurn()
     {
         var history = new SpinExposureHistory();

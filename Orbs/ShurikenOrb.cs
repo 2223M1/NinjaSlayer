@@ -26,15 +26,15 @@ public sealed class ShurikenOrb : ModOrbTemplate
     internal const string VisualsScenePath =
         "res://NinjaSlayer/scenes/orbs/shuriken_orb.tscn";
 
-    private sealed class EvokeTurn
+    private sealed class GainTurn
     {
         public int Round;
         public CombatSide Side;
     }
-    private static readonly ConditionalWeakTable<PlayerCombatState, EvokeTurn> LastEvoke = new();
-    internal static bool HasEvokedThisTurn(Player player) =>
+    private static readonly ConditionalWeakTable<PlayerCombatState, GainTurn> LastGain = new();
+    internal static bool HasGainedThisTurn(Player player) =>
         player.PlayerCombatState is { } state && player.Creature.CombatState is { } combat
-        && LastEvoke.TryGetValue(state, out EvokeTurn? turn)
+        && LastGain.TryGetValue(state, out GainTurn? turn)
         && turn.Round == combat.RoundNumber && turn.Side == combat.CurrentSide;
 
     public int StackCount { get; private set; }
@@ -100,6 +100,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
             Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", player.Creature, amount);
             existing.RefreshVisuals();
             existing.ActivatePassiveFeedback();
+            await existing.AfterStockGained(choiceContext);
             return;
         }
 
@@ -111,6 +112,22 @@ public sealed class ShurikenOrb : ModOrbTemplate
             Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_stock", player.Creature, amount);
             orb.RefreshVisuals();
             orb.ActivatePassiveFeedback();
+            await orb.AfterStockGained(choiceContext);
+        }
+    }
+
+    private async Task AfterStockGained(PlayerChoiceContext choiceContext)
+    {
+        GainTurn turn = LastGain.GetOrCreateValue(Owner.PlayerCombatState!);
+        turn.Round = CombatState.RoundNumber;
+        turn.Side = CombatState.CurrentSide;
+        int damage = (int)EvokeVal;
+        foreach (PowerModel power in Owner.Creature.Powers.ToArray())
+        {
+            if (power is StarlessNightRedesignPower starless)
+                await starless.GenerateStrongShuriken(damage);
+            else if (power is ShurikenDrawPower draw)
+                await draw.AfterStockGained(choiceContext);
         }
     }
 
@@ -253,10 +270,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             return [];
         }
 
-        EvokeTurn turn = LastEvoke.GetOrCreateValue(Owner.PlayerCombatState!);
-        turn.Round = CombatState.RoundNumber;
-        turn.Side = CombatState.CurrentSide;
-
         IReadOnlyList<Creature> targets;
         if (Owner.Creature.HasPower<BladeSweepPower>())
         {
@@ -272,8 +285,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets = [target];
         }
 
-        int damage = (int)EvokeVal;
-        StarlessNightRedesignPower? starless = Owner.Creature.GetPower<StarlessNightRedesignPower>();
         await ShurikenCombat.TriggerStockWave(
             choiceContext,
             Owner.Creature,
@@ -281,11 +292,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
             source,
             this,
             () => ActivateEvokeFeedback(targets));
-        if (starless != null && Code.Patches.StarlessNightDiscardBatchPatch.CanGenerate(starless))
-        {
-            Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_converted", Owner.Creature, 1);
-            await starless.GenerateStrongShuriken(damage);
-        }
         // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_evoked", Owner.Creature, 1);
         if (notifyEvokeHooks && Owner.Creature.CombatState is { } combatState)

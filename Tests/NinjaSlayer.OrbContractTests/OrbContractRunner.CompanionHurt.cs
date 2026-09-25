@@ -50,6 +50,9 @@ public partial class OrbContractRunner
                 actor.AddChild(rig);
                 AimActors.Add(creature, actor);
                 stage.AddChild(actor);
+                // This fixture bypasses AfterAddedToRoom; initialize its normal body facing too.
+                AccessTools.Method(typeof(SawatariMonster), "SetFacingPlayerSide")
+                    .Invoke(creature.Monster, [side == CombatSide.Player]);
                 Node2D anchor = rig.GetNode<Node2D>("AirborneAnchor");
                 Transform2D baseline = anchor.Transform;
                 Vector2 rootBaseline = actor.Position;
@@ -326,6 +329,13 @@ public partial class OrbContractRunner
                         Require(Math.Abs(impacts[i] - (4d / 6d + i) * .25025d) < .035,
                             $"Bamboo cadence drifted in {mode}: {string.Join(", ", impacts.Select(t => t.ToString("F4")))}.");
                 }
+                if (creature.Side == CombatSide.Player && creature.PetOwner != null && mode != FastModeType.Instant)
+                {
+                    Require(!anchor.Transform.IsEqualApprox(transform), "Friendly bamboo still waited for its final return.");
+                    Require((Time.GetTicksUsec() - start) / 1000000d - impacts[^1] < .035,
+                        "Friendly bamboo delayed release after its final impact.");
+                    await ToSignal(GetTree().CreateTimer(.15), SceneTreeTimer.SignalName.Timeout);
+                }
                 Require(anchor.Transform.IsEqualApprox(transform) && rig.VfxSpawnPosition.Position.IsEqualApprox(core),
                     "Bamboo did not restore its body/core transforms.");
                 GD.Print($"PASS {creature.Side} bamboo {mode} hit timestamps: {string.Join(", ", impacts.Select(t => t.ToString("F4")))}.");
@@ -350,6 +360,8 @@ public partial class OrbContractRunner
                         ? (Task)AccessTools.Method(bamboo, "Play").Invoke(null, [creature, hits, (Func<Task>)(() => Task.CompletedTask)])!
                         : StaggerAnimation.Play(creature);
                     await Task.WhenAll(first, second);
+                    if (creature.Side == CombatSide.Player && creature.PetOwner != null)
+                        await ToSignal(GetTree().CreateTimer(.15), SceneTreeTimer.SignalName.Timeout);
                     Require(actor.Position.IsEqualApprox(root) && rig.Position.IsEqualApprox(baseline)
                         && anchor.Transform.IsEqualApprox(transform) && rig.VfxSpawnPosition.Position.IsEqualApprox(core),
                         $"Overlapping bamboo/hurt captured a tilted baseline: {creature.Side}, {mode}, hurtFirst={hurtFirst}, hits={hits}.");

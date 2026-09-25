@@ -44,7 +44,7 @@ public partial class OrbContractRunner
             object[] args = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
 #endif
             await (Task)AccessTools.Method(typeof(CombatManager), "SetupPlayerTurn").Invoke(CombatManager.Instance, args)!;
-            Require(choices == 3 && combat.Stock == 1
+            Require(choices == 3 && combat.Stock == 2
                 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 5
                 && PileType.Hand.GetPile(combat.Player).Cards.Count == 3,
                 $"Mixed Training: choices={choices}, stock={combat.Stock}, karate={combat.Player.Creature.GetPowerAmount<KaratePower>()}, hand={PileType.Hand.GetPile(combat.Player).Cards.Count}.");

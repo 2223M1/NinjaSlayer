@@ -85,7 +85,8 @@ public partial class OrbContractRunner : Node
             Require(typeof(Player).Assembly.ManifestModule.ModuleVersionId.ToString() ==
                 System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HOST_MVID"), "Loaded host MVID differs from the requested host.");
             GD.Print($"Candidate {expected}: {productPath}; SHA256 {Convert.ToHexString(SHA256.HashData(productBytes))}; host MVID {typeof(Player).Assembly.ManifestModule.ModuleVersionId}");
-            await VerifyUploadTransport();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") != "1")
+                await VerifyUploadTransport();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_UPLOADS") == "1")
             {
                 GD.Print("NinjaSlayer upload product contracts passed.");
@@ -159,7 +160,6 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<ShurikenOrbPreviewPatch>();
             patcher.RegisterPatch<ShurikenOrbLayoutPatch>();
             patcher.RegisterPatch<ShurikenMultiCastPreviewPatch>();
-            patcher.RegisterPatch<StarlessNightDiscardBatchPatch>();
             patcher.RegisterPatch<NarakuLifeDamagePatch>();
             patcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             patcher.RegisterPatch<SawatariDuelRewardsPatch>();
@@ -214,6 +214,15 @@ public partial class OrbContractRunner : Node
                 await VerifyV17();
                 await VerifyV023();
                 await VerifyV024();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            await VerifyRangedSources();
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1")
+            {
+                await VerifyAttackCadence();
+                await VerifyAimPose();
                 GD.Print("NinjaSlayer orb product contracts passed.");
                 GetTree().Quit(0);
                 return;
@@ -398,7 +407,7 @@ public partial class OrbContractRunner : Node
                 Require(hp - combat.Enemy.CurrentHp == shots * 3 * 6, "Every native evoke must fire the entire stock.");
                 Require(_evoked == before + shots, "Native evokes must emit one host event per invocation, not per projectile.");
                 Require(combat.Stock == 0, "Multi-evoke must remove the orb after its last repetition.");
-                Require(combat.Tokens == (chain + 1) * shots * 3, "Starless Night must convert every projectile in independent chains.");
+                Require(combat.Tokens == chain + 1, "Each stock gain generates one token regardless of subsequent evoke count.");
             }
         }
         GD.Print("PASS double and quadruple evokes and independent token chains");
@@ -416,8 +425,8 @@ public partial class OrbContractRunner : Node
             int hp = combat.Enemy.CurrentHp;
             int before = _evoked;
             await Hook.AfterShuffle(combat.State, Choice, combat.Player);
-            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 36 && combat.Stock == 2 && combat.Tokens == 3,
-                "Upgraded shuffle must convert all stock, consume one and produce three tokens.");
+            Require(2 * hp - combat.Enemy.CurrentHp - second.CurrentHp == 36 && combat.Stock == 2 && combat.Tokens == 0,
+                "Upgraded shuffle fires all stock and consumes one without generating tokens.");
             Require(second.CurrentHp == hp - 18 && combat.Enemy.CurrentHp == hp - 18, "Starless AOE must damage both targets.");
             Require(_evoked == before + 3, "Shuffle shots must dispatch the host evoke hook.");
         }
@@ -448,8 +457,8 @@ public partial class OrbContractRunner : Node
         await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         int hp = combat.Enemy.CurrentHp;
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "FireConsumedVolley").Invoke(orb, [Choice, 1, null])!;
-        Require(hp - combat.Enemy.CurrentHp == 18 && combat.Stock == 0 && combat.Capacity == 1 && combat.Tokens == 3,
-            "Hell Tornado must consume all stock, preserve ordinary slots and generate three tokens.");
+        Require(hp - combat.Enemy.CurrentHp == 18 && combat.Stock == 0 && combat.Capacity == 1 && combat.Tokens == 0,
+            "Hell Tornado consumes stock and preserves ordinary slots without generating tokens.");
         await AddStock(combat.Player, 3);
         await PowerCmd.Remove<StarlessNightRedesignPower>(combat.Player.Creature);
         combat.Enemy.SetCurrentHpInternal(1);
@@ -534,9 +543,15 @@ public partial class OrbContractRunner : Node
             if (DrawOnDiscard) await CardPileCmd.Draw(choiceContext, 1, card.Owner);
         }
         public CardModel? NestedFlameAttack { get; set; }
+        public Func<Task>? AfterFlameDamage { get; set; }
         public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result,
             MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)
         {
+            if (cardSource is BlackFlameRedesignV1 && AfterFlameDamage is { } callback)
+            {
+                AfterFlameDamage = null;
+                return callback();
+            }
             if (cardSource is BlackFlameRedesignV1 && NestedFlameAttack is { } attack)
             {
                 NestedFlameAttack = null;

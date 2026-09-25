@@ -41,7 +41,8 @@ internal sealed class SpinExposureHistory
     {
         if (_history.Count == 0) return 0;
         if (time >= _history[^1].Time) return _history[^1].Degrees;
-        if (time <= _history[0].Time) return _history[0].Degrees;
+        if (time <= _history[0].Time)
+            return _history[0].Before?.Invoke(_history[0].Time - time) ?? _history[0].Degrees;
         for (int i = 1; i < _history.Count; i++)
         {
             Sample next = _history[i];

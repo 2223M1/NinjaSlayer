@@ -1,0 +1,14 @@
+{
+  "seed": "FINISHER_AUDIT_20260924",
+  "purpose": "finisher-audit",
+  "act": 3,
+  "duration": 10,
+  "karate": 0,
+  "audit": { "monster": "SawatariMonster", "targetHp": 70, "playerHp": 1, "expectedHits": 2, "mode": "Fast" },
+  "cues": [
+    { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
+    { "id": "idle", "steps": [{ "action": "wait", "seconds": 1 }] },
+    { "id": "reverse_dual", "steps": [{ "action": "move", "actor": "enemy", "target": "ninja", "move": "dual" }] },
+    { "id": "recovery", "steps": [{ "action": "wait", "seconds": 2 }] }
+  ]
+}

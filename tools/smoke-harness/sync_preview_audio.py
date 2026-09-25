@@ -131,7 +131,10 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
     for name in required:
         if not any(match["event"] == name for match in accepted):
             raise RuntimeError(f"Native weapon audio was not verified: {name}")
-    compensation = float(np.median([match["delaySeconds"] for match in accepted]))
+    # After rejecting outliers, center the accepted delay interval: this is the
+    # constant offset that minimizes the worst audio/frame error, not its mean.
+    compensation = (min(match["delaySeconds"] for match in accepted)
+                    + max(match["delaySeconds"] for match in accepted)) / 2
     for match in matches:
         match["residualSeconds"] = match["delaySeconds"] - compensation
         match["accepted"] = match in accepted

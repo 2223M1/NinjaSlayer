@@ -10,7 +10,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class KarateTeaRedesignV1 : RedesignV1RareCard
 {
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(3)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new KarateVar(2)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromCard<ChadoEnergyRedesignV1>(), HoverTipFactory.FromPower<KaratePower>()];
 

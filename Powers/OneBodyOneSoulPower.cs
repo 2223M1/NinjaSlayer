@@ -24,9 +24,9 @@ public sealed class OneBodyOneSoulPower : RedesignV1CounterPower
         return Task.CompletedTask;
     }
 
-    internal async Task AfterBreathing(PlayerChoiceContext choiceContext)
+    internal async Task AfterKarate(PlayerChoiceContext choiceContext)
     {
         Flash();
-        await PowerCmd.Apply<KaratePower>(choiceContext, Owner, Amount, Owner, null);
+        await PowerCmd.Apply<NarakuLifePower>(choiceContext, Owner, Amount, Owner, null);
     }
 }

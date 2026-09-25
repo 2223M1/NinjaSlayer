@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "choice": "previous left50 composition reduced 5% about screen bottom-center, then moved right 42 screen px to preserve unchanged scarf length; A/B/C/D rejected",
+  "front_position": [
+    1052.18409092,
+    36.76727273
+  ],
+  "front_scale": [
+    0.956175,
+    0.956175
+  ],
+  "composition": {
+    "factor": 1.1,
+    "anchor_screen": [
+      1920,
+      540
+    ],
+    "reference_canvas": [
+      1920,
+      1080
+    ],
+    "base_position": [
+      1135,
+      35
+    ],
+    "base_scale": 0.915,
+    "measured_parent_scale": 1.1,
+    "measured_parent_origin": [
+      -164,
+      -55.3
+    ],
+    "post_scale_screen_translation": [
+      -50,
+      0
+    ],
+    "final_scale_about_screen_bottom": {
+      "factor": 0.95,
+      "anchor": [
+        960,
+        1080
+      ]
+    },
+    "final_screen_translation": [
+      42,
+      0
+    ]
+  },
+  "scarf_animation_amplitude_multiplier": 2.5,
+  "scarf_period_seconds": 8,
+  "default": "front",
+  "manga_setting_default": false,
+  "particle_source": "vanilla Ironclad ash2 and ash3",
+  "particle_layer": "foreground, as vanilla",
+  "sources": [
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\front-body.png",
+      "sha256": "7a2e9a65190299ba5cc54de7bf4c0f81e0c189ddd8bf64fec543bb8b45fade27",
+      "role": "approved source texture"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\front-scarf.png",
+      "sha256": "97141cbf8b3f72adb3442d1a92e740fe394c2d2688b974bc744afdd22d67edd5",
+      "role": "approved source texture"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background-base.png",
+      "sha256": "a32ee6e0cd1a76865f3e793124a4233a069b7efa7a28a0d44c1ecdb3a465bef5",
+      "role": "approved source texture"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background-smoke.png",
+      "sha256": "a2b44b62593e1462259bff846f99691d4fdd24cf10c0e1906441a2572a4ac8b3",
+      "role": "approved source texture"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background-copper.png",
+      "sha256": "23ca280cbfc9e5175fa16ed15e51e48ac80953386d84637edf4d6bbd1f2d76f6",
+      "role": "approved source texture"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\ember.png",
+      "sha256": "6e33075f572673f113dd3abb2c8d823c08c3333f444969be98013ca2946a0ae1",
+      "role": "approved source texture"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\front.spjson",
+      "sha256": "30206025a14735aafaf49cbc77a943d1bb47153e8f8efe97e348789e55339410",
+      "role": "approved original rig"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\rig-manifest.json",
+      "sha256": "232d3ac4d04868d414e94673807649c8c59381ff1daa2caba6cbbd7506eae6b8",
+      "role": "approved original canvas-space scarf width envelope"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\front.atlas",
+      "sha256": "2acd8d6b887675859fd2e5c02f3e4f19c7cd5861d5dd1e8b5437e8b45799a530",
+      "role": "atlas/resource"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\front.spatlas",
+      "sha256": "a0b93f7211aad7f5076b6c9a13cdaf5c4d9911a766c9f1c18a82e4270c5b54fd",
+      "role": "atlas/resource"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\front.tres",
+      "sha256": "fdf764d7356befc64a50bd553dc4691fb97f21bbfc4b26f63df2db0a842b591a",
+      "role": "atlas/resource"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background.spjson",
+      "sha256": "c4cff913a34cafbecef29405c030ce5c871d49aaf56439f0689004921688e9f7",
+      "role": "approved original rig"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background.atlas",
+      "sha256": "89cbdaaa94ae0f721c298fa37bc85dcbe91c009f567f7baedcd60de8e601b12e",
+      "role": "atlas/resource"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background.spatlas",
+      "sha256": "6cbb03a9cb9a3d1e4c93bfcbabc416f2cee62bc36abbe0b6959c1958d29dca3a",
+      "role": "atlas/resource"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\assets\\background.tres",
+      "sha256": "a20ec9b46891cbd944e3ad896ca88fb7ecf61872fa2b0bf647dfca8eb9f1be2c",
+      "role": "atlas/resource"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\scripts\\play_spine.gd",
+      "sha256": "673ed67aae266b06db74890024163361a71a01fd80143e4ba89345975d822020",
+      "role": "native Spine autoplay"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\scenes\\poster_front.tscn",
+      "sha256": "0c58140315d7c6cad2641db919af13a021afeae99bd1e7e572fc94003156e758",
+      "role": "approved ORIGINAL composition"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\art-production\\character-select-dual-poster-v1\\sources\\current-poster.tscn",
+      "sha256": "1bae4e038f9d95d591991cf104549470d46cd79f4780f1ed5125875bf3d85b3e",
+      "role": "unchanged manga pose and hand animation"
+    },
+    {
+      "path": "C:\\Users\\theon\\Documents\\NinjaSlayer\\Slay the Spire 2\\Slay the Spire 2 v0.107.1\\scenes\\screens\\char_select\\char_select_bg_ironclad.tscn",
+      "sha256": "be90291285612f9db34ffd7c2338da5d6c8ffabb145a3395d28f60e94a88099a",
+      "role": "vanilla Ironclad foreground ash2 + ash3; identical parameters and gradients"
+    }
+  ],
+  "outputs": {
+    "background-base.png": "a32ee6e0cd1a76865f3e793124a4233a069b7efa7a28a0d44c1ecdb3a465bef5",
+    "background-copper.png": "23ca280cbfc9e5175fa16ed15e51e48ac80953386d84637edf4d6bbd1f2d76f6",
+    "background-smoke.png": "a2b44b62593e1462259bff846f99691d4fdd24cf10c0e1906441a2572a4ac8b3",
+    "background.atlas": "6e96201eabffc0ccef227bdc0316c5655fce407291f36ae46c211a7d028f87cb",
+    "background.spatlas": "9dc31b131e8c303acd4447c1279c602569962eea69c07cdc8e31984cacaa7f4b",
+    "background.spjson": "23340c2c58123e06c856b246ee00e57987b5e8696c2aa4548a9dc22d95f823a7",
+    "background.tres": "7003b4495d16c9aaca62aa4a537c9b84f59d21b430d6a45f1861d113d06d60b8",
+    "ember.png": "6e33075f572673f113dd3abb2c8d823c08c3333f444969be98013ca2946a0ae1",
+    "front-body.png": "7a2e9a65190299ba5cc54de7bf4c0f81e0c189ddd8bf64fec543bb8b45fade27",
+    "front-scarf.png": "97141cbf8b3f72adb3442d1a92e740fe394c2d2688b974bc744afdd22d67edd5",
+    "front.atlas": "057a91d78c7077de58313bafeae8004cf9711a31f87b37c7145951f22ec3f6cd",
+    "front.spatlas": "44fb3153ce02f3471a8e79e5293516c3bf3eef138c10d5e803b74983d0f6471d",
+    "front.spjson": "395efb2ade20545dba296e03c70eca62fb15803dc86eafdd583d34545711c923",
+    "front.tres": "eb825be397e147c88f45762ca3bc1530efee1a0646472f5470aa78eb1135de58",
+    "play_spine.gd": "673ed67aae266b06db74890024163361a71a01fd80143e4ba89345975d822020",
+    "portrait_front.tscn": "c08e8ea2c3aa8799c094c9d59d1ea5d3f88db79241d4c5ed7a5851876a927e1a",
+    "portrait_manga.tscn": "b27c9fd32185fd345de3953329d46d3b58b4a7b528e7549c07355815b600f278"
+  },
+  "main_scene_sha256": "aa665908a46feb5cdf37222a5a315c5e38bfcd52b0f1f7d67f26297c06bbb436",
+  "scarf_extension_x": 140.0,
+  "scarf_width_contract": "original canvas-space upper/lower envelope; fixed collar through x568; unchanged UVs, weights, topology and animation"
+}

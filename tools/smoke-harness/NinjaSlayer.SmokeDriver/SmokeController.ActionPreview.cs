@@ -489,7 +489,7 @@ internal sealed partial class SmokeController
                         await CardPileCmd.RemoveFromCombat(old);
                     var receipts = new List<CardModel>();
                     foreach (CardModel model in new CardModel[] { ModelDb.Card<PlaceholderBlueDefense01>(),
-                        ModelDb.Card<GuardStance>(), ModelDb.Card<PalmThrustRedesignV1>() })
+                        ModelDb.Card<ShurikenDraw>(), ModelDb.Card<PalmThrustRedesignV1>() })
                     {
                         CardModel deck = player.RunState.CreateCard(model, player);
                         CardCmd.Upgrade(deck);

@@ -126,6 +126,10 @@ public sealed partial class SawatariMonster
                 MustThrow = false;
                 knife = await SawatariWeaponVisuals.PlayThrow(this, target, hand, catchHand);
             });
+            // A lethal impact can finish the battle and release the weapon rig
+            // while the awaited reverse finisher commits the last player's death.
+            if (CombatManager.Instance.IsOverOrEnding || !combatState.IsLiveCombat()
+                || !ReferenceEquals(Creature.CombatState, combatState)) return;
             // The native damage command owns defenses and death; throwing is not conditional on HP loss.
             if (Creature.IsAlive)
                 await PowerCmd.Apply<VigorPower>(new BlockingPlayerChoiceContext(), Creature, 6, Creature, null);
@@ -137,7 +141,7 @@ public sealed partial class SawatariMonster
                 await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, null);
                 knife = null;
             }
-            SawatariWeaponVisuals.Get(Creature)?.Refresh();
+            if (Creature.IsAlive) SawatariWeaponVisuals.Get(Creature)?.Refresh();
         }
         finally
         {
@@ -150,11 +154,31 @@ public sealed partial class SawatariMonster
     private async Task AttackWithWeapons(Creature target, int damage, int hits,
         Action<Creature> hitFx, Func<int, Task>? beforeHit)
     {
+        using FinisherRangedAction? ranged = beforeHit != null ? FinisherRangedAction.Begin(Creature) : null;
         var combatState = CombatState;
         AttackCommand attack = DamageCmd.Attack(damage).WithHitCount(hits).FromMonster(this);
         var choice = new BlockingPlayerChoiceContext();
         await Hook.BeforeAttack(combatState, attack);
         decimal hitCount = Hook.ModifyAttackHitCount(combatState, attack, hits);
+        await using FinisherSession? finisher = beforeHit == null
+            ? FinisherEligibilityService.CreateActionSession(Creature,
+                new FinisherActionForecastDescriptor(_ => damage, attack.DamageProps, checked((int)Math.Ceiling(hitCount)),
+                    FinisherTargeting.Single, SingleTarget: target))
+            : null;
+        finisher?.Begin();
+        await using FinisherAttackVfxBaselineContext.Frame? attackFrame = FinisherAttackVfxBaselineContext.Enter(attack);
+        if (attackFrame != null) attackFrame.Hits = checked((int)Math.Ceiling(hitCount));
+        if (attackFrame is { Hits: > 1 }
+            && FinisherAttackCommandAdapter.PredictReverseVictim(attack, [target], damage, attackFrame.Hits) is { } victim
+            && victim.GetCreatureNode() is { } focus && Creature.GetCreatureNode() is { } actorNode)
+        {
+            if (beforeHit == null)
+            {
+                attackFrame.Approach = FinisherApproach.Create(actorNode, focus, FinisherTimeline.MeleeSquash(FinisherTimeline.PreviewProfile));
+                attackFrame.Approach.Start(CombatActionTimingRuntime.VisualSeconds(SawatariWeaponVisuals.DualCycleSeconds * 2f / 7f));
+            }
+            NinjaSlayerDeathClassifier.TryStartPredictedReverseFinisher(attackFrame, victim, [target]);
+        }
         var results = new List<DamageResult>();
         async Task<bool> Impact()
         {
@@ -164,6 +188,7 @@ public sealed partial class SawatariMonster
             if (beforeHit == null) NDebugAudioManager.Instance?.Play(TmpSfx.heavyAttack);
             bool connects = target.GetPower<EvasionPower>() is not { } evasion
                 || !evasion.CanEvade(target, attack.DamageProps, Creature);
+            FinisherApproach.ReachImpact(Creature);
             if (connects) hitFx(target);
             results.AddRange(await CreatureCmd.Damage(choice, [target], damage, attack.DamageProps, Creature, null
 #if !NINJASLAYER_LEGACY_DAMAGE_API
@@ -194,5 +219,7 @@ public sealed partial class SawatariMonster
             CombatManager.Instance.History.CreatureAttacked(combatState, Creature, results);
             await Hook.AfterAttack(combatState, choice, attack);
         }
+        if (finisher != null) await finisher.CompleteAsync(playPose: true);
+        if (attackFrame != null) await attackFrame.Complete(playPose: true);
     }
 }

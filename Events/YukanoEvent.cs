@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Relics;
 using STS2RitsuLib.Interop.AutoRegistration;
@@ -15,6 +16,12 @@ namespace NinjaSlayer.Events;
 [RegisterSharedEvent]
 public sealed class YukanoEvent : ModEventTemplate
 {
+    public override Task AfterEventStarted()
+    {
+        FixedEventMusic.Start(this, NinjaSlayerAudio.YukanoEventMusic, NinjaSlayerAudio.YukanoEventMusicGuid);
+        return Task.CompletedTask;
+    }
+
     private const string PortraitPath =
         "res://NinjaSlayer/images/events/yukano_event.png";
 

@@ -28,6 +28,13 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         Participants.Add(creature);
     }
 
+    internal static float StandardOutboundSeconds(float distance, float gate, float preparationSeconds)
+    {
+        float outbound = distance < NinjaSlayerCombatVisuals.SlowAttackLungeDistance
+            ? CombatActionTimingRuntime.VisualSeconds(0.075f) : SlowAttackAnimation.StandardOutboundSeconds;
+        return Math.Min(outbound, Math.Max(0f, gate - preparationSeconds));
+    }
+
     public static async Task PlayAttackToPeak(
         Creature creature,
         float distance,
@@ -77,8 +84,7 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         state.LastPlay = play;
         float duration = firstPeakSeconds;
         float outboundSeconds = somersault ? duration : standardPresentation
-            ? heldTornado || distance < NinjaSlayerCombatVisuals.SlowAttackLungeDistance
-                ? CombatActionTimingRuntime.VisualSeconds(0.075f) : SlowAttackAnimation.StandardOutboundSeconds
+            ? StandardOutboundSeconds(heldTornado ? 0f : distance, duration, preparationSeconds)
             : duration;
         outboundSeconds = Math.Min(outboundSeconds, Math.Max(0f, duration - preparationSeconds));
         NinjaSlayerShadowController.Get(creature)?.BeginAction(
@@ -180,8 +186,13 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         float fastSeconds = CombatActionTiming.DamageRecoveryFastSeconds,
         float standardSeconds = CombatActionTiming.DamageRecoveryNormalSeconds)
     {
-        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature)
-            || !States.TryGetValue(creature, out ActionState? state)
+        if (NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
+        {
+            FinisherSessionRegistry.GetActiveSession()!.BeginComboRecovery(
+                CombatActionTimingRuntime.VisualSeconds(fastSeconds));
+            return;
+        }
+        if (!States.TryGetValue(creature, out ActionState? state)
             || !GodotObject.IsInstanceValid(state.CreatureNode)) return;
 
         float seconds = CombatActionTimingRuntime.VisualSeconds(fastSeconds);
@@ -488,7 +499,24 @@ internal static class NinjaSlayerRapidAnimationCoordinator
         _subscribedRoom = null;
     }
 
-    private static void OnCombatFinished(CombatRoom _) => ResetAll();
+    private static void OnCombatFinished(CombatRoom combat)
+    {
+        foreach (Creature creature in Participants.ToArray())
+        {
+            if (NinjaSlayerAimPose.Get(creature)?.AlabamaRecoveryCompletion is { IsCompleted: false } recovery)
+                _ = TaskHelper.RunSafely(FinishAlabamaReturn(creature, recovery, _subscribedRoom));
+            else CancelAndRestore(creature);
+        }
+    }
+
+    private static async Task FinishAlabamaReturn(Creature creature, Task recovery, NCombatRoom? room)
+    {
+        await recovery;
+        // Room exit still cancels immediately. Do not restore over a new room/action.
+        if (ReferenceEquals(room, _subscribedRoom)
+            && ReferenceEquals(recovery, NinjaSlayerAimPose.Get(creature)?.AlabamaRecoveryCompletion))
+            CancelAndRestore(creature);
+    }
 
     private static void UnsubscribeCombatManager()
     {

@@ -1,0 +1,10 @@
+{
+  "seed": "NINJASLAYER_GREETING_01",
+  "purpose": "greeting",
+  "greetingMode": "brief",
+  "greetingEncounter": "KaiserCrabBoss",
+  "greetingSpeed": "Normal",
+  "act": 3,
+  "duration": 10,
+  "cues": [{ "id": "crab_long_response", "steps": [{ "action": "wait" }] }]
+}
