@@ -7,5 +7,5 @@ namespace NinjaSlayer.Powers;
 public sealed class BladeCyclePower : RedesignV1CounterPower
 {
     public override PowerStackType StackType => PowerStackType.Single;
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("HellTornadoPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(BladeCyclePower));
 }

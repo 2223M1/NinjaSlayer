@@ -563,7 +563,6 @@ public static class AncientEntranceAnimation
     private readonly record struct RigSnapshot(
         Vector2 CreaturePosition,
         float CreatureRotationDegrees,
-        Vector2 CreatureScale,
         Vector2 AnchorPosition,
         Vector2 BodyPosition,
         float BodyRotationDegrees,
@@ -573,7 +572,6 @@ public static class AncientEntranceAnimation
             new(
                 creatureNode.Position,
                 creatureNode.RotationDegrees,
-                creatureNode.Scale,
                 anchor.Position,
                 body.Position,
                 body.RotationDegrees,
@@ -586,7 +584,6 @@ public static class AncientEntranceAnimation
             {
                 creatureNode.Position = CreaturePosition;
                 creatureNode.RotationDegrees = CreatureRotationDegrees;
-                creatureNode.Scale = CreatureScale;
             }
 
             var visuals = creatureNode?.Visuals;

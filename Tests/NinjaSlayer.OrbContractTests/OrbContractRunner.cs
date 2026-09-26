@@ -106,6 +106,7 @@ public partial class OrbContractRunner : Node
 #endif
             };
             ((List<Mod>)AccessTools.Field(typeof(ModManager), "_mods").GetValue(null)!).Add(productMod);
+            Assembly? anthonyBridge = LoadAnthonyContractAssemblies(productMod);
 #if !NINJASLAYER_CHANNEL_STABLE
             AssemblyInfo.Init();
             AssemblyInfo.ModMap![product] = productMod;
@@ -136,6 +137,13 @@ public partial class OrbContractRunner : Node
                 AccessTools.Method(typeof(StrongShurikenTokenRedesignV1), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
             }
             ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", product);
+            if (anthonyBridge is not null)
+            {
+                ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", anthonyBridge);
+                var integrationPatcher = RitsuLibFramework.CreatePatcher("NinjaSlayer", "AutoAnthonyContract");
+                anthonyBridge.GetType("NinjaSlayer.AutoAnthony.Bridge", true)!.GetMethod("Register")!.Invoke(null, [integrationPatcher]);
+                Require(integrationPatcher.PatchAll(), "Optional component integration patches failed.");
+            }
             var configureDeck = AccessTools.Method(typeof(Entry), "ConfigureStartingDeck")
                 .MakeGenericMethod(typeof(NinjaSlayerCharacter))
                 .CreateDelegate<Action<CharacterRegistrationEntry<NinjaSlayerCharacter>>>();
@@ -150,7 +158,32 @@ public partial class OrbContractRunner : Node
                 .Invoke(null, null);
             ModelDb.Init();
             ModelDb.Inject(typeof(EvokeObserver));
+            string? hextechPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HEXTECH_DLL");
+            Assembly? hextech = hextechPath is null ? null : System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
+                .LoadFromAssemblyPath(System.IO.Path.GetFullPath(hextechPath));
+            if (hextech is not null)
+            {
+                ModelDb.Inject(hextech.GetType("HextechRunes.NearDeathFeastRune", true)!);
+                ModelDb.Inject(hextech.GetType("HextechRunes.HextechMayhemModifier", true)!);
+            }
             MegaCrit.Sts2.Core.Multiplayer.Serialization.ModelIdSerializationCache.Init();
+
+            if (anthonyBridge is not null)
+            {
+                ModelDb.InitIds();
+                await VerifyAnthonyPool(anthonyBridge);
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+
+            if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SEEDS") == "1")
+            {
+                await VerifySingleplayerSeeds();
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
 
             var patcher = RitsuLibFramework.CreatePatcher("NinjaSlayer.OrbContracts", "Product");
             patcher.RegisterPatch<ShurikenOrbChannelPatch>();
@@ -171,6 +204,23 @@ public partial class OrbContractRunner : Node
                 typeof(ModPatcherExtensions).GetMethod("RegisterPatch")!
                     .MakeGenericMethod(product.GetType("NinjaSlayer.Code.Patches." + name, true)!).Invoke(null, [patcher]);
             Require(patcher.PatchAll(), "Orb patches failed to install.");
+            string? loadoutPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_LOADOUT_DLL");
+            if (loadoutPath is not null)
+            {
+                Assembly loadout = System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
+                    .LoadFromAssemblyPath(System.IO.Path.GetFullPath(loadoutPath));
+                await VerifyLoadoutDamage(loadout);
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
+            if (hextech is not null)
+            {
+                await VerifyHextechDamage(hextech);
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             var presentation = new Harmony("NinjaSlayer.OrbContracts.Presentation");
             presentation.Patch(AccessTools.Method(product.GetType("NinjaSlayer.Cards.ShurikenCombat", true), "PlayStockThrowAnimation"),
                 prefix: new HarmonyMethod(GetType(), nameof(SkipThrowAnimation)));

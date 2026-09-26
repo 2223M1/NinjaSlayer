@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../eng/NinjaSlayer.Dependencies.props" />
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AssemblyName>NinjaSlayer.AutoAnthony</AssemblyName>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Version>$(NinjaSlayerVersion)</Version>
+    <NinjaSlayerRitsuLibPackagePathId>$(NinjaSlayerRitsuLibPackageId.ToLowerInvariant())</NinjaSlayerRitsuLibPackagePathId>
+    <PinnedRitsuLibAssemblyPath>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', '$(NinjaSlayerRitsuLibPackagePathId)', '$(NinjaSlayerRitsuLibVersion)', 'lib/net9.0/STS2-RitsuLib.dll'))</PinnedRitsuLibAssemblyPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="NinjaSlayerHostChannel" Value="preview" />
+    <AssemblyMetadata Include="NinjaSlayerSourceRevision" Value="$(RepositoryCommit)" />
+    <Reference Include="NinjaSlayer" HintPath="$(NinjaSlayerAssemblyPath)" Private="false" />
+    <Reference Include="AutoAnthony" HintPath="$(AutoAnthonyAssemblyPath)" Private="false" />
+    <Reference Include="sts2" HintPath="$(Sts2DataDir)/sts2.dll" Private="false" />
+    <Reference Include="GodotSharp" HintPath="$(Sts2DataDir)/GodotSharp.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(Sts2DataDir)/0Harmony.dll" Private="false" />
+    <PackageDownload Include="$(NinjaSlayerRitsuLibPackageId)" Version="[$(NinjaSlayerRitsuLibVersion)]" />
+    <Reference Include="STS2-RitsuLib" HintPath="$(PinnedRitsuLibAssemblyPath)" Private="false" />
+  </ItemGroup>
+  <Target Name="ValidateOptionalReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(NinjaSlayerHostChannel)' != 'preview'" Text="AutoAnthony 0.3.102 requires the preview 0.111.0 host." />
+    <Error Condition="!Exists('$(AutoAnthonyAssemblyPath)')" Text="Supply the installed AutoAnthony 0.3.102 DLL; it is never bundled." />
+    <Error Condition="!Exists('$(NinjaSlayerAssemblyPath)')" Text="Supply the matching preview NinjaSlayer candidate DLL." />
+  </Target>
+</Project>

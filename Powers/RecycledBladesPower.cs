@@ -7,7 +7,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class RecycledBladesPower : RedesignV1CounterPower, IRedesignScryListener
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("ExhaustForShurikenPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(RecycledBladesPower));
     public async Task AfterScry(PlayerChoiceContext choiceContext, int viewed, int discarded)
     {
         Flash();

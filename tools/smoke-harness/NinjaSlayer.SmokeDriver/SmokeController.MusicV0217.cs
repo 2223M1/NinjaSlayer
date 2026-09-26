@@ -88,7 +88,7 @@ internal sealed partial class SmokeController
         await CombatManager.Instance.CheckWinCondition();
         await CloseRewards();
         await WaitFrames(90);
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "dark-victory-art.png"));
+        SaveScreenshot(Path.Combine(directory, "dark-victory-art.png"));
         Type musicProxy = typeof(STS2RitsuLib.Audio.FmodStudioServer).Assembly.GetType("STS2RitsuLib.Audio.Internal.GuidMappedNaudioStudioProxy", true)!;
         await WaitUntilAsync(() => AccessTools.Field(musicProxy, "_runMusicInstance").GetValue(null) == null,
             "Dark Ninja outro did not finish and restore room music.", ct);
@@ -105,12 +105,12 @@ internal sealed partial class SmokeController
         {
             await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: model);
             await WaitFrames(60);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, model.GetType().Name + "-art.png"));
+            SaveScreenshot(Path.Combine(directory, model.GetType().Name + "-art.png"));
         }
         var settings = STS2RitsuLib.Settings.ModSettingsNavigator.RequestOpenByIds("NinjaSlayer", null, null, null);
         Require(settings.Success, "Native settings navigation failed: " + settings.Message);
         await WaitFrames(90);
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "narration-settings.png"));
+        SaveScreenshot(Path.Combine(directory, "narration-settings.png"));
         _checkpoints.Write("v0217.live-narration-settings-page");
         _checkpoints.Write("music-v0217.completed");
 
@@ -157,7 +157,7 @@ internal sealed partial class SmokeController
                 Require(instance.Call("get_parameter_by_name", parameter).AsSingle() == (label.Contains("decision") ? 1 : label.Contains("duel") ? 3 : label.Contains("result") ? 4 : 0),
                     "Native phase parameter did not update immediately.");
             await WaitFrames(30);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + ".png"));
+            SaveScreenshot(Path.Combine(directory, label + ".png"));
         }
         async Task CloseRewards()
         {

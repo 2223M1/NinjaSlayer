@@ -1,0 +1,20 @@
+{
+  "seed": "YUKANO_POPUP_FINISHER_20260926",
+  "purpose": "yukano-popup",
+  "act": 3,
+  "duration": 9,
+  "narrationEnabled": false,
+  "cues": [
+    {"id": "calibration", "steps": [{"action": "audit_calibration"}]},
+    {"id": "entrance", "steps": [
+      {"action": "entrance", "actor": "yukano"},
+      {"action": "replace_enemy", "monster": "ThievingHopper"},
+      {"action": "popup_check", "mode": "setup-finisher"}
+    ]},
+    {"id": "lethal_arrow", "steps": [
+      {"action": "move", "actor": "yukano", "move": "ARROW"},
+      {"action": "popup_check", "mode": "finished"},
+      {"action": "wait", "seconds": 2.0}
+    ]}
+  ]
+}

@@ -199,6 +199,7 @@ $bundleDirectory = Join-Path $repositoryRoot 'build\workshop-bundle\NinjaSlayer'
     -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
     -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
     -StableSts2DataDir $stableDataDirectory `
+    -PreviewSts2DataDir $previewDataDirectory `
     -OutputDirectory $bundleDirectory `
     -BuildRoot (Join-Path $repositoryRoot 'build\workshop-bundle\build') `
     -Version $Version `

@@ -70,7 +70,7 @@ internal sealed partial class SmokeController
         await RequireCompletedFinisherAsync("NinjaSlayerAttack", 1, dark, ct);
         Require(dark.IsDead && flashes == 0 && player.Creature.CurrentHp == hp,
             "Confirmed lethal Finisher still flashed or dealt Iai damage.");
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "dark-lethal-no-iai.png"));
+        SaveScreenshot(Path.Combine(directory, "dark-lethal-no-iai.png"));
         _checkpoints.Write("dark.iai-live-and-confirmed-lethal");
         await manager.CheckWinCondition();
 
@@ -187,7 +187,7 @@ internal sealed partial class SmokeController
                 "No intermission after complete death/summon resolution", ct);
             Require(!state.Enemies.Any(), "Intermission retained an enemy or dead revival model.");
             await WaitFrames(30);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + "-choice.png"));
+            SaveScreenshot(Path.Combine(directory, label + "-choice.png"));
             await UiHelper.Click(GetSawatariOptions()[scenario.Duel ? 1 : 0]);
             if (scenario.Duel)
             {
@@ -204,7 +204,7 @@ internal sealed partial class SmokeController
                 Require(!player.Relics.OfType<BioBambooRelic>().Any(),
                     "Duel victory granted Bio-Bamboo before manual collection.");
                 await WaitFrames(90);
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + "-relic.png"));
+                SaveScreenshot(Path.Combine(directory, label + "-relic.png"));
                 await UiHelper.Click(GetSawatariOptions()[0]);
             }
             await WaitUntilAsync(() => !manager.IsInProgress && run.CurrentRoom is CombatRoom { IsPreFinished: true },
@@ -220,7 +220,7 @@ internal sealed partial class SmokeController
                     && rewards.Count(button => button.Reward is RelicReward { Relic: BioBambooRelic }) == 1,
                     "Duel must offer Bamboo and one random relic.");
                 await WaitFrames(60);
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + "-reward.png"));
+                SaveScreenshot(Path.Combine(directory, label + "-reward.png"));
                 if (scenario.Act == 1) await UiHelper.Click(rewards.Single(button => button.Reward is RelicReward { Relic: BioBambooRelic }));
                 await UiHelper.Click(UiHelper.FindFirst<MegaCrit.Sts2.Core.Nodes.CommonUi.NProceedButton>(rewardScreen)!);
             }

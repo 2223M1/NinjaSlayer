@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using NinjaSlayer.Monsters;
@@ -21,6 +22,8 @@ internal sealed partial class SmokeController
     {
         private readonly JsonArray _auditEvents = [];
         private readonly JsonArray _auditMotionEvents = [];
+        private readonly JsonArray _auditDeathEvents = [];
+        private readonly Dictionary<Creature, NCreature> _auditNodes = [];
         private Transform2D _auditRender = Transform2D.Identity;
 
         private async Task CompanionFacingPreview()
@@ -159,6 +162,30 @@ internal sealed partial class SmokeController
                     ["primaryCallsBefore"] = (int)AccessTools.Field(session.GetType(), "_primaryDamageCalls").GetValue(session)! });
             };
             await Wait(.5);
+            var initialBodies = _actors.Values.Distinct().Select(c => (Creature: c, Node: c.GetCreatureNode()))
+                .Where(entry => entry.Node != null && GodotObject.IsInstanceValid(entry.Node))
+                .ToDictionary(entry => entry.Creature, entry => entry.Node!.Body.Transform);
+            foreach (Creature creature in initialBodies.Keys)
+                _auditNodes[creature] = creature.GetCreatureNode()!;
+            AlabamaDeathObservationPatch.Record = (name, node) =>
+            {
+                if (_start == 0 || !initialBodies.TryGetValue(node.Entity, out Transform2D initial)) return;
+                Transform2D actual = node.Body.Transform;
+                var recovery = node.Body.GetNodeOrNull<Node>("AlabamaDeathRecovery");
+                Transform2D shown = recovery == null ? actual : (Transform2D)AccessTools.Property(
+                    recovery.GetType(), "RenderTransform").GetValue(recovery)!;
+                _auditDeathEvents.Add(new JsonObject
+                {
+                    ["event"] = name, ["seconds"] = Seconds, ["frame"] = Engine.GetProcessFrames(),
+                    ["creature"] = node.Entity.Monster?.GetType().Name,
+                    ["rotation"] = node.Body.Rotation, ["scaleX"] = node.Body.Scale.X,
+                    ["scaleY"] = node.Body.Scale.Y, ["mode"] = node.Body.ProcessMode.ToString(),
+                    ["visibleRotation"] = shown.Rotation, ["visibleScaleX"] = shown.Scale.X,
+                    ["visibleScaleY"] = shown.Scale.Y,
+                    ["positionError"] = actual.Origin.DistanceTo(initial.Origin),
+                    ["basisError"] = Math.Max(actual.X.DistanceTo(initial.X), actual.Y.DistanceTo(initial.Y))
+                });
+            };
         }
 
         private void SampleFinisherAudit(JsonObject row)
@@ -183,17 +210,24 @@ internal sealed partial class SmokeController
             var bodies = new JsonObject();
             foreach (var (name, actor) in _actors)
             {
-                var node = actor.GetCreatureNode();
-                if (node == null || !GodotObject.IsInstanceValid(node)) continue;
+                var node = actor.GetCreatureNode() ?? _auditNodes.GetValueOrDefault(actor);
+                if (node == null || !GodotObject.IsInstanceValid(node) || !node.IsInsideTree()) continue;
                 Node2D body = node.Visuals.GetCurrentBody();
-                if (!GodotObject.IsInstanceValid(body)) continue;
-                var t = _auditRender * body.GetGlobalTransformWithCanvas();
-                Vector2 core = node.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+                if (!GodotObject.IsInstanceValid(body) || !body.IsInsideTree()) continue;
+                var recovery = body.GetNodeOrNull<Node>("AlabamaDeathRecovery");
+                Transform2D rendered = recovery == null ? body.Transform : (Transform2D)AccessTools.Property(
+                    recovery.GetType(), "RenderTransform").GetValue(recovery)!;
+                var t = _auditRender * body.GetGlobalTransformWithCanvas() * body.Transform.AffineInverse() * rendered;
+                Vector2 core = node.GetTransform() * node.GetGlobalTransformWithCanvas().AffineInverse()
                     * node.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
                 bodies[name] = new JsonObject { ["localX"] = body.Position.X, ["localY"] = body.Position.Y,
                     ["coreX"] = core.X, ["coreY"] = core.Y, ["rootX"] = node.Position.X, ["rootY"] = node.Position.Y,
                     ["x"] = t.Origin.X, ["y"] = t.Origin.Y, ["rotation"] = body.Rotation,
                     ["scaleX"] = body.Scale.X, ["scaleY"] = body.Scale.Y,
+                    ["visibleRotation"] = rendered.Rotation, ["visibleScaleX"] = rendered.Scale.X,
+                    ["visibleScaleY"] = rendered.Scale.Y,
+                    ["deathRecovery"] = recovery == null ? null : JsonValue.Create((float)AccessTools.Property(
+                        recovery.GetType(), "Progress").GetValue(recovery)!),
                     ["basisXx"] = t.X.X, ["basisXy"] = t.X.Y,
                     ["basisYx"] = t.Y.X, ["basisYy"] = t.Y.Y,
                     ["z"] = EffectiveZ(body),
@@ -219,10 +253,13 @@ internal sealed partial class SmokeController
                     ["elapsed"] = (float)AccessTools.Field(type, "Elapsed").GetValue(motion)!,
                     ["duration"] = (float)AccessTools.Field(type, "Duration").GetValue(motion)!,
                     ["rotation"] = (float)AccessTools.Field(type, "Rotation").GetValue(motion)!,
+                    ["planarBlur"] = (bool)AccessTools.Field(type, "PlanarBlur").GetValue(motion)!,
                     ["stretch"] = AccessTools.Field(type, "Stretch").GetValue(motion)!.ToString()
                 });
             }
             row["recoveries"] = recoveries;
+            row["returnBlurVisible"] = AccessTools.Field(aim.GetType(), "_somersaultBlur").GetValue(aim)
+                is CanvasItem returnBlur && returnBlur.IsVisibleInTree();
             Vector2 travel = (Vector2)AccessTools.Property(aim.GetType(), "Travel").GetValue(aim)!;
             row["ordinaryTravel"] = new JsonObject { ["x"] = travel.X, ["y"] = travel.Y };
             var registry = ProductType("NinjaSlayer.Code.ExternalAnimations.FinisherSessionRegistry");
@@ -274,6 +311,13 @@ internal sealed partial class SmokeController
         {
             File.WriteAllText(Path.Combine(_directory, "finisher-events.json"), _auditEvents.ToJsonString());
             File.WriteAllText(Path.Combine(_directory, "animation-events.json"), _auditMotionEvents.ToJsonString());
+            File.WriteAllText(Path.Combine(_directory, "alabama-death-events.json"), _auditDeathEvents.ToJsonString());
+            var releases = _auditDeathEvents.Where(e => e!["event"]!.GetValue<string>() == "pose_release").ToArray();
+            foreach (JsonNode? release in releases)
+                Require(release!["positionError"]!.GetValue<float>() < .02f
+                    && release["basisError"]!.GetValue<float>() < .001f
+                    && release["mode"]!.GetValue<string>() != "Disabled",
+                    "Alabama death handoff did not release its owned logical baseline.");
             var sessions = new JsonArray();
             foreach (var s in FinisherSmokeObserver.Snapshots())
                 sessions.Add(new JsonObject { ["id"] = s.SessionId, ["scenario"] = s.Scenario,
@@ -319,6 +363,28 @@ internal sealed partial class SmokeController
             }
         }
     }
+}
+
+[HarmonyPatch]
+internal static class AlabamaDeathObservationPatch
+{
+    internal static Action<string, NCreature>? Record;
+    static MethodBase TargetMethod() => AccessTools.Method(typeof(DarkNinjaMonster).Assembly.GetType(
+        "NinjaSlayer.Code.ExternalAnimations.AlabamaDropAnimation", true), "ReleaseVictimBeforeDeath");
+    static void Prefix(NCreature creatureNode, out bool __state) =>
+        __state = creatureNode.Body.GetNodeOrNull<Marker2D>("AlabamaGroundContact")
+            ?.HasMeta("alabama_release_before_death") == true;
+    static void Postfix(NCreature creatureNode, bool __state)
+    {
+        if (__state) Record?.Invoke("pose_release", creatureNode);
+    }
+}
+
+[HarmonyPatch(typeof(NCreature), nameof(NCreature.StartDeathAnim))]
+internal static class AlabamaDeathStartObservationPatch
+{
+    [HarmonyPriority(Priority.Last)]
+    static void Prefix(NCreature __instance) => AlabamaDeathObservationPatch.Record?.Invoke("death_start", __instance);
 }
 
 [HarmonyPatch]

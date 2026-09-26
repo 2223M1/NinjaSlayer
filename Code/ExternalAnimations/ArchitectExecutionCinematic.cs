@@ -21,6 +21,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Runs.History;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
+using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Scripts;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -51,8 +52,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private bool _completed;
     private bool _architectDeathCommitted;
     private bool _architectVisualHidden;
+    private Task _executionTask = Task.CompletedTask;
 
-    public static bool TryStart(TheArchitect eventModel)
+    public static Task Play(TheArchitect eventModel)
     {
         Creature? owner = eventModel.Owner?.Creature;
         NCombatRoom? room = NCombatRoom.Instance;
@@ -62,11 +64,12 @@ public sealed partial class ArchitectExecutionCinematic : Node
         if (owner?.Player?.Character is not INinjaSlayerCharacter
             || room == null
             || ownerNode == null
-            || architectNode == null
-            || room.GetNodeOrNull(ControllerName) != null)
+            || architectNode == null)
         {
-            return false;
+            throw new InvalidOperationException("Architect execution requires the active event's two creature nodes.");
         }
+        if (room.GetNodeOrNull<ArchitectExecutionCinematic>(ControllerName) is { } existing)
+            return existing._executionTask;
 
         var controller = new ArchitectExecutionCinematic
         {
@@ -77,24 +80,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
             _architectNode = architectNode,
             _room = room
         };
-        try
-        {
-            room.AddChildSafely(controller);
-            if (!GodotObject.IsInstanceValid(controller) || !controller.IsInsideTree())
-            {
-                controller.QueueFreeSafely();
-                return false;
-            }
-
-            controller.Begin();
-            return true;
-        }
-        catch (Exception exception)
-        {
-            Entry.Logger.Error($"Architect execution setup failed: {exception}");
-            controller.QueueFreeSafely();
-            return false;
-        }
+        room.AddChildSafely(controller);
+        controller.Begin();
+        return controller._executionTask;
     }
 
     public override void _ExitTree()
@@ -121,16 +109,17 @@ public sealed partial class ArchitectExecutionCinematic : Node
         _dismembermentSnapshot = BossDismembermentPresentation.TryCapture(
             _room,
             _architectNode);
-        TaskHelper.RunSafely(Run(_runLifetime.Token));
+        _executionTask = Run(_runLifetime.Token);
     }
 
     private async Task Run(CancellationToken cancelToken)
     {
         try
         {
-            await AncientEntranceAnimation.Play(_owner.Player!);
+            if (ArchitectGreetingBowPatch.Greetings.TryGetValue(_eventModel, out Task? greeting))
+                await greeting.WaitAsync(cancelToken);
+            await ArchitectPotionIntegration.WaitForThrows(_room, cancelToken);
             cancelToken.ThrowIfCancellationRequested();
-            await PlayBriefGreeting(cancelToken);
             await PlayOwnedMeleeExecution(cancelToken);
 
             _completed = true;
@@ -142,10 +131,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         catch (Exception exception)
         {
             Entry.Logger.Error($"Architect execution cinematic failed: {exception}");
-            if (IsRuntimeValid())
-            {
-                await CompleteEvent();
-            }
+            throw;
         }
         finally
         {
@@ -162,54 +148,36 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
     }
 
-    private async Task PlayBriefGreeting(CancellationToken cancelToken)
+    internal static async Task PlayGreetingBow(Creature owner)
     {
-        NinjaSlayerFacingState.SyncForTarget(_owner, _architectNode.Entity);
-        NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(_owner);
+        await AncientEntranceAnimation.Play(owner.Player!);
+        NCombatRoom? room = NCombatRoom.Instance;
+        NCreature? architect = room?.CreatureNodes.FirstOrDefault(node => node.Entity.Monster is Architect);
+        if (room == null || architect == null) return; // The dialogue room may have been exited while entering.
+        NinjaSlayerFacingState.SyncForTarget(owner, architect.Entity);
+        NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(owner);
         using var bow = pose?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, 1f);
-        if (bow != null) bow.Paused = true;
-        string name = LocManager.Instance.Language == "zhs" ? "\u5fcd\u8005\u6740\u624b" : "NINJA SLAYER";
-        string title = _architectNode.Entity.CombatState?.Encounter?.Title.GetFormattedText() ?? "ARCHITECT";
-        var bubbles = new List<NSpeechBubbleVfx>();
-        void Speak(Creature speaker, string text, float duration)
-        {
-            var bubble = NSpeechBubbleVfx.Create(text.ToUpperInvariant(), speaker, duration);
-            if (bubble == null) return;
-            _room.SceneContainer.AddChildSafely(bubble);
-            bubbles.Add(bubble);
-        }
-        var state = _architectNode.SpineAnimation.GetAnimationState()
-            ?? throw new InvalidOperationException("Architect greeting requires its native Spine state.");
+        if (bow == null) return;
+        bow.Paused = true;
+        float elapsed = 0f;
         try
         {
-            Speak(_owner, $"DOMO, {title}=SAN, {name} DESU.", 1.8f);
-            state.SetAnimation("_tracks/head_stop_reading", false, 1);
-            float elapsed = 0f;
-            bool replied = false;
-            while (elapsed < 2f)
+            while (elapsed < 1f && GodotObject.IsInstanceValid(room) && room.IsInsideTree()
+                && ReferenceEquals(NCombatRoom.Instance, room) && GodotObject.IsInstanceValid(pose))
             {
                 float weight = elapsed < .2f ? Mathf.SmoothStep(0f, 1f, elapsed / .2f)
                     : elapsed < .7f ? 1f : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - .7f) / .3f);
-                if (bow != null)
-                {
-                    bow.Radians = Mathf.DegToRad(18f) * bow.Facing * weight;
-                    pose!.SyncNow();
-                }
-                if (!replied && elapsed >= .5f)
-                {
-                    replied = true;
-                    state.SetAnimation("_tracks/head_normal", true, 1);
-                    Speak(_architectNode.Entity, $"DOMO, {name}=SAN, {title} DESU.", 2f);
-                }
-                elapsed += await NextFrame(cancelToken);
+                bow.Radians = Mathf.DegToRad(18f) * bow.Facing * weight;
+                pose!.SyncNow();
+                await room.ToSignal(room.GetTree(), SceneTree.SignalName.ProcessFrame);
+                if (GodotObject.IsInstanceValid(room) && room.ProcessMode != ProcessModeEnum.Disabled)
+                    elapsed += Math.Min((float)room.GetProcessDeltaTime(), .05f);
             }
         }
         finally
         {
-            bow?.Dispose();
+            bow.Dispose();
             if (pose != null && GodotObject.IsInstanceValid(pose)) pose.SyncNow();
-            foreach (var bubble in bubbles)
-                if (GodotObject.IsInstanceValid(bubble)) bubble.QueueFreeSafely();
         }
     }
 
@@ -264,6 +232,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
         await using (session)
         {
+            Task? death = null;
             session.Begin();
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerKorosuBeshiEvent);
             if (trigger == "AlabamaDrop")
@@ -277,13 +246,13 @@ public sealed partial class ArchitectExecutionCinematic : Node
                 else await CreatureCmd.TriggerAnim(_owner, trigger, _owner.Player.Character.AttackAnimDelay);
                 await Impact();
             }
-            Task death = PlayArchitectDeath(cancelToken);
             if (trigger != "AlabamaDrop")
                 session.PrepareArchitectExit(trigger == "Attack"
                     ? NinjaSlayerCombatVisuals.AttackLungeDistance : NinjaSlayerCombatVisuals.SlowAttackLungeDistance);
             await session.CompleteAsync(playPose: false);
             StartExitScene();
-            await Task.WhenAll(death, _exitTask!);
+            await Task.WhenAll(death ?? throw new InvalidOperationException(
+                "Architect execution did not reach its death handoff."), _exitTask!);
 
             async Task Impact()
             {
@@ -303,12 +272,16 @@ public sealed partial class ArchitectExecutionCinematic : Node
                     await CreatureCmd.TriggerAnim(target, "Hit", 0f);
                 }
                 await session.PlayArchitectImpact(cancelToken);
+                // Death begins at Doom release, while the attack recovers.
+                death = PlayArchitectDeath(cancelToken);
+                _ = TaskHelper.RunSafely(death);
             }
         }
     }
 
     private async Task PlayArchitectDeath(CancellationToken cancelToken)
     {
+        AlabamaDropAnimation.ReleaseVictimBeforeDeath(_architectNode);
         CreatureDeathInteractionAdapter.Disable(_architectNode);
         _architectNode.AnimHideIntent();
         _architectNode.AnimDisableUi();

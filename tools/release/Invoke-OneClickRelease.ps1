@@ -659,6 +659,7 @@ try {
                 -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
                 -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
                 -StableSts2DataDir $resolvedStableDataDir `
+                -PreviewSts2DataDir $resolvedPreviewDataDir `
                 -OutputDirectory $bundleDirectory `
                 -BuildRoot (Join-Path $buildRoot 'workshop\build') `
                 -CompatibilityManifestPath (Join-Path $candidate.Root 'eng\compatibility.json') `

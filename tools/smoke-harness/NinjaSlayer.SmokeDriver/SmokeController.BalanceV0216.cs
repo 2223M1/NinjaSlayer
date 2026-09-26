@@ -64,7 +64,7 @@ internal sealed partial class SmokeController
             Require(player.Creature.GetPowerAmount<ThornsPower>() == (turn < 3 ? 5 : 2),
                 "Caltrops must expire after the third enemy turn without removing permanent Thorns.");
             await WaitFrames(30);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"balance-turn-{turn}.png"));
+            SaveScreenshot(Path.Combine(directory, $"balance-turn-{turn}.png"));
             _checkpoints.Write($"balance-v0216.turn-{turn}");
         }
         foreach (var power in player.Creature.Powers.OfType<KarateTrainingPower>().ToArray()) await PowerCmd.Remove(power);
@@ -90,7 +90,7 @@ internal sealed partial class SmokeController
             await CardPileCmd.Add(card, PileType.Hand);
         }
         await WaitFrames(90);
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "balance-card-art.png"));
+        SaveScreenshot(Path.Combine(directory, "balance-card-art.png"));
         _checkpoints.Write("balance-v0216.completed");
     }
 }

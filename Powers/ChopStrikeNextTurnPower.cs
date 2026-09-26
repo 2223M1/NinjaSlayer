@@ -9,7 +9,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ChopStrikeNextTurnPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ChopStrikeNextTurnPower));
 
     public override async Task BeforeSideTurnStart(
         PlayerChoiceContext choiceContext,

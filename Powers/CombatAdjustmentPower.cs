@@ -11,7 +11,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class CombatAdjustmentPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("TeaDrinkingSwordPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(CombatAdjustmentPower));
 
     public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {

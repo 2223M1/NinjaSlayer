@@ -1,0 +1,13 @@
+{
+  "seed": "YUKANO_POPUP_CANCEL_20260926",
+  "purpose": "yukano-popup",
+  "act": 3,
+  "duration": 9,
+  "narrationEnabled": false,
+  "cues": [
+    {"id": "calibration", "steps": [{"action": "audit_calibration"}]},
+    {"id": "entrance", "steps": [{"action": "entrance", "actor": "yukano"}]},
+    {"id": "pause_then_cancel", "steps": [{"action": "popup_check", "mode": "pause-cancel"}, {"action": "wait", "seconds": 0.7}]},
+    {"id": "arrow_after_cancel", "steps": [{"action": "move", "actor": "yukano", "move": "ARROW"}, {"action": "wait", "seconds": 1.0}]}
+  ]
+}

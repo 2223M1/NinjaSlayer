@@ -32,7 +32,8 @@ internal static class FinisherProtectionService
         }
 
         HarmonyLib.Patch? skippingPrefix = patchInfo.Prefixes.FirstOrDefault(patch =>
-            !IsNinjaSlayerPatch(patch) && patch.PatchMethod.ReturnType == typeof(bool));
+            !IsNinjaSlayerPatch(patch) && patch.PatchMethod.ReturnType == typeof(bool)
+            && !IsVerifiedHpPrefix(patch));
         if (skippingPrefix != null)
         {
             reason = $"foreign bool Prefix {DescribePatch(skippingPrefix)} can skip Creature.LoseHpInternal.";
@@ -44,6 +45,7 @@ internal static class FinisherProtectionService
             .Concat(patchInfo.Finalizers)
             .FirstOrDefault(patch =>
                 !IsNinjaSlayerPatch(patch)
+                && !IsVerifiedHpPrefix(patch)
                 && patch.PatchMethod.GetParameters().Any(parameter =>
                     parameter.Name == "__result"
                     && parameter.ParameterType.IsByRef
@@ -121,6 +123,13 @@ internal static class FinisherProtectionService
 
     private static bool IsNinjaSlayerPatch(HarmonyLib.Patch patch) =>
         patch.PatchMethod.DeclaringType?.Assembly == typeof(FinisherProtectionService).Assembly;
+
+    // Both return an independent nonlethal result when intercepting HP loss. The final
+    // protection prefix checks __runOriginal after them before reserving any death.
+    private static bool IsVerifiedHpPrefix(HarmonyLib.Patch patch) =>
+        patch.PatchMethod.Name == "Prefix" && patch.PatchMethod.DeclaringType?.FullName is
+            "HextechRunes.HextechCombatHooks+NearDeathFeastLoseHpPatch"
+            or "Loadout.Patches.TildeKey.TildeKeyGodmodeLoseHpPatch";
 
     private static string DescribePatch(HarmonyLib.Patch patch) =>
         $"owner={patch.owner}, method={patch.PatchMethod.DeclaringType?.FullName}.{patch.PatchMethod.Name}, "

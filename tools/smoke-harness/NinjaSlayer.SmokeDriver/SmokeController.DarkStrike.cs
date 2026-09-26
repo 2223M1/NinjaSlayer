@@ -100,7 +100,7 @@ internal sealed partial class SmokeController
             Require(player.RunState.CurrentRoom is CombatRoom && !eventRoom.LocalMutableEvent.IsFinished,
                 "Event victory ran before the stolen-card rewards.");
             await WaitFrames(45);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"event-{scenario}-cards.png"));
+            SaveScreenshot(Path.Combine(directory, $"event-{scenario}-cards.png"));
             foreach (NRewardButton button in thorns ? returns : returns.Take(1))
             {
                 await UiHelper.Click(button);
@@ -116,7 +116,7 @@ internal sealed partial class SmokeController
             Require(player.Relics.OfType<BeppinFragmentRelic>().Count() == (thorns ? 0 : 1),
                 "Fragment reward did not respect collection or skipping.");
             await WaitFrames(90);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"event-{scenario}-relics.png"));
+            SaveScreenshot(Path.Combine(directory, $"event-{scenario}-relics.png"));
             Require(originals.Count(card => player.Deck.Cards.Contains(card)) == (thorns ? 4 : 1),
                 "Skipping the remaining rewards changed which stolen cards returned.");
             _checkpoints.Write($"dark-strike.event-{scenario}-passed");

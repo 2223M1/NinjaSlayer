@@ -11,7 +11,7 @@ namespace NinjaSlayer.Powers;
 public sealed class SipTeaPower : RedesignV1CounterPower
 {
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("PourTeaPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(SipTeaPower));
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (player != Owner.Player) return;

@@ -25,7 +25,7 @@ public sealed class HellTornadoRedesignPower : NinjaSlayerPowerTemplate
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
     public override PowerAssetProfile AssetProfile =>
-        NinjaSlayerPowerAssets.Named("HellTornadoPower");
+        NinjaSlayerPowerAssets.Named(nameof(HellTornadoRedesignPower));
 
     public override async Task AfterPowerAmountChanged(
         PlayerChoiceContext choiceContext,

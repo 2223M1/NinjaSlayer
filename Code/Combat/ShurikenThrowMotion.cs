@@ -2,9 +2,13 @@ namespace NinjaSlayer.Code.Combat;
 
 internal static class ShurikenThrowMotion
 {
+    internal const float DurationSeconds = .167f;
+    internal const float ReleaseSeconds = .083f;
+    internal const float ReleaseProgress = ReleaseSeconds / DurationSeconds;
+
     internal static (float Degrees, float Distance) Sample(float progress)
     {
-        const float release = .166f / .334f;
+        const float release = ReleaseProgress;
         float send = progress / release;
         if (send < .25f)
         {

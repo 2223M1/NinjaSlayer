@@ -41,7 +41,7 @@ internal sealed partial class SmokeController
                 "Exhaust card list did not open.");
             Require(screen!.Pile.Type == PileType.Exhaust && screen.Pile.Cards.Count == count,
                 "Opened exhaust pile and badge disagree.");
-            _tree.Root.GetViewport().GetTexture().GetImage().SavePng(
+            SaveScreenshot(
                 Path.Combine(Path.GetDirectoryName(_configuration.CheckpointPath)!, $"exhaust-{speed}.png"));
             await UiHelper.Click(screen.GetNode<NButton>("BackButton"));
             await WaitFrames(2);
@@ -62,7 +62,7 @@ internal sealed partial class SmokeController
             await WaitFrames(5);
             if (name != "karate")
                 Require(FindDescendant<NCard>(set!) is not null, $"{name} generated card preview did not render.");
-            _tree.Root.GetViewport().GetTexture().GetImage().SavePng(
+            SaveScreenshot(
                 Path.Combine(Path.GetDirectoryName(_configuration.CheckpointPath)!, $"tooltip-{name}.png"));
             NHoverTipSet.Remove(anchor);
             _checkpoints.Write("tooltip.rendered", data: new JsonObject { ["name"] = name });

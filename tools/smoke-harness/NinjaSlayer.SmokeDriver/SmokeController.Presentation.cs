@@ -53,7 +53,7 @@ internal sealed partial class SmokeController
         var tornado = combat.CreateCard<HellTornadoRedesignV1>(player);
         await CardPileCmd.Add(tornado, PileType.Hand);
         await CardCmd.AutoPlay(choice, tornado, player.Creature);
-        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2,
+        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 4,
             "Hell Tornado did not double stock.");
         await WaitUntilAsync(() => anchor.Position.Y < -200, "Rapid Hell Tornado did not finish rising.", cancellationToken);
         await CapturePresentation("hell-tornado-airborne");
@@ -97,8 +97,8 @@ internal sealed partial class SmokeController
         await relic.BeforeCombatStart();
         await WaitFrames(3);
         Require(overlay.Visible && overlay.Texture.ResourcePath == NinjaSlayerFormPresentationCatalog.FullyReleasedNarakuTexturePath
-            && player.Creature.HasPower<NarakuFormRedesignPower>(),
-            "The event relic did not render full Naraku with the current card's power.");
+            && !player.Creature.HasPower<NarakuFormRedesignPower>(),
+            "The event relic must render full Naraku without adding the card's independent Black Flame power.");
         await CapturePresentation("naraku-full");
         await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
         await RelicCmd.Remove(relic);
@@ -160,9 +160,17 @@ internal sealed partial class SmokeController
     private async Task CapturePresentation(string name)
     {
         await WaitFrames(90);
+        if (_configuration.NoScreenshots) return;
         await _tree.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         string directory = Path.GetDirectoryName(_configuration.FailureScreenshotPath)!;
-        Error result = _tree.Root.GetViewport().GetTexture().GetImage().SavePng(Path.Combine(directory, name + ".png"));
+        Error result = SaveScreenshot(Path.Combine(directory, name + ".png"));
         Require(result == Error.Ok, $"Could not capture {name}: {result}.");
+    }
+
+    private Error SaveScreenshot(string path)
+    {
+        if (_configuration.NoScreenshots) return Error.Ok;
+        using Image image = _tree.Root.GetViewport().GetTexture().GetImage();
+        return image.SavePng(path);
     }
 }

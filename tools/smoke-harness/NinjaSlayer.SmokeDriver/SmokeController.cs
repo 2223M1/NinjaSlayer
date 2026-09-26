@@ -103,7 +103,8 @@ internal sealed partial class SmokeController
         or SmokePhase.ReverseFinisher
         or SmokePhase.TransitionPerf
         or SmokePhase.TornadoPreview
-        or SmokePhase.ActionPreview;
+        or SmokePhase.ActionPreview
+        or SmokePhase.ModCompatibility;
 
     public void Start()
     {
@@ -117,11 +118,13 @@ internal sealed partial class SmokeController
     }
 
     public bool TryClaimFirstCombat() =>
-        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher or SmokePhase.TornadoPreview or SmokePhase.TelemetryLoss or SmokePhase.ActionPreview
+        _configuration.Phase is SmokePhase.Fresh or SmokePhase.ReverseFinisher or SmokePhase.TornadoPreview or SmokePhase.TelemetryLoss or SmokePhase.ActionPreview or SmokePhase.ModCompatibility
         && Interlocked.CompareExchange(ref _firstCombatClaimed, 1, 0) == 0;
 
     public Task ExecuteClaimedCombatAsync(Rng random, CancellationToken cancellationToken) =>
-        _configuration.Phase == SmokePhase.ActionPreview
+        _configuration.Phase == SmokePhase.ModCompatibility
+            ? ExecuteModCompatibilityAsync(cancellationToken)
+            : _configuration.Phase == SmokePhase.ActionPreview
             ? _configuration.TheaterScriptPath != null
                 ? ExecuteTheaterAsync(cancellationToken)
                 : ExecuteActionPreviewAsync(cancellationToken)
@@ -386,8 +389,9 @@ internal sealed partial class SmokeController
         PreparedShurikenRedesignV1 readyBlade = combatState.CreateCard<PreparedShurikenRedesignV1>(player);
         await CardPileCmd.Add(readyBlade, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, player.Creature);
-        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 1,
-            "Prepared Shuriken did not create one stock.");
+        const int preparedStock = 2;
+        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == preparedStock,
+            "Prepared Shuriken did not create two stock.");
         _checkpoints.Write("shuriken.created");
 
         var enemyTurnStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -405,11 +409,17 @@ internal sealed partial class SmokeController
                 && player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
             "next player turn did not start",
             cancellationToken);
-        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 1,
+        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == preparedStock,
             "End-turn hand cleanup incorrectly consumed shuriken stock.");
-        var discarded = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
-        await CardPileCmd.Add(discarded, PileType.Hand);
-        await CardCmd.Discard(new BlockingPlayerChoiceContext(), discarded);
+        for (int stock = preparedStock; stock > 0; stock--)
+        {
+            var discarded = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+            await CardPileCmd.Add(discarded, PileType.Hand);
+            await CardCmd.Discard(new BlockingPlayerChoiceContext(), discarded);
+            Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().SingleOrDefault()?.StackCount == stock - 1
+                || stock == 1 && !player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
+                "A discard did not consume exactly one stock.");
+        }
         Require(!player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
             "An actual discard did not consume and remove the last shuriken stock.");
         _checkpoints.Write("shuriken.lifecycle-cleared");
@@ -738,7 +748,7 @@ internal sealed partial class SmokeController
             Require(!companionBody.FlipH && weapons.Scale.X == 1f,
                 "Intermission must mirror Sawatari's held weapons with the body toward the player.");
             if (_configuration.ActionPreviewDirectory is { } previewDirectory)
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(previewDirectory, "sawatari-intermission-grips.png"));
+                SaveScreenshot(Path.Combine(previewDirectory, "sawatari-intermission-grips.png"));
             _checkpoints.Write("sawatari.intermission-weapon-facing");
 
             int round = state.RoundNumber;
@@ -1523,6 +1533,15 @@ internal sealed partial class SmokeController
         _darkStrikeAfterAttackCount = 0;
         _throwOnDarkStrikeDamageHook = injectDamageHookFailure;
         _onFirstDarkStrikeDamageHook = onFirstDamageHook;
+        var effectContainer = NCombatRoom.Instance!.CombatVfxContainer;
+        void ObserveImpact(Node node)
+        {
+            // Fast play can overlap two instances; Godot renames duplicate siblings.
+            if (node is Node2D effect && (node.Name == "DarkNinjaStabImpact"
+                || node.SceneFilePath.EndsWith("vfx_dramatic_stab.tscn", StringComparison.Ordinal)))
+                _darkStrikeStabVfxPositions.Add(effect.GlobalPosition);
+        }
+        effectContainer.ChildEnteredTree += ObserveImpact;
         try
         {
             if (injectDamageHookFailure)
@@ -1557,6 +1576,7 @@ internal sealed partial class SmokeController
         }
         finally
         {
+            effectContainer.ChildEnteredTree -= ObserveImpact;
             _observedDarkStrikeAttacker = null;
             _observedDarkStrikeTargets = [];
             _throwOnDarkStrikeDamageHook = false;
@@ -1650,6 +1670,10 @@ internal sealed partial class SmokeController
             else if (_configuration.Phase is SmokePhase.TornadoPreview or SmokePhase.ActionPreview)
             {
                 await RunTornadoPreviewAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.ModCompatibility)
+            {
+                await RunModCompatibilityPhaseAsync();
             }
             else if (_configuration.Phase == SmokePhase.Fresh)
             {
@@ -1909,10 +1933,11 @@ internal sealed partial class SmokeController
 
     private void TryCaptureFailureScreenshot()
     {
+        if (_configuration.NoScreenshots) return;
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_configuration.FailureScreenshotPath)!);
-            _tree.Root.GetViewport().GetTexture().GetImage().SavePng(_configuration.FailureScreenshotPath);
+            SaveScreenshot(_configuration.FailureScreenshotPath);
         }
         catch
         {

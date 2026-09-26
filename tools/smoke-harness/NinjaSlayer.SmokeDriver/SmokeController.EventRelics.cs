@@ -33,7 +33,7 @@ internal sealed partial class SmokeController
             var holder = UiHelper.FindAll<NRelicInventoryHolder>(_tree.Root).Single(node => node.Relic.Model == relic);
             holder.EmitSignal(Control.SignalName.MouseEntered);
             await WaitFrames(60);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, relic.GetType().Name + "-tooltip.png"));
+            SaveScreenshot(Path.Combine(directory, relic.GetType().Name + "-tooltip.png"));
             holder.EmitSignal(Control.SignalName.MouseExited);
         }
         foreach (var card in PileType.Hand.GetPile(player).Cards.ToArray()) await CardPileCmd.RemoveFromCombat(card);
@@ -52,7 +52,7 @@ internal sealed partial class SmokeController
             await CardCmd.AutoPlay(choice, strike, enemy);
             Require(bamboo.DisplayAmount == (i == 0 ? 1 : 0), "Rendered Bamboo counter differs from attacks played.");
             await WaitFrames(20);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"bamboo-{i + 1}-attacks.png"));
+            SaveScreenshot(Path.Combine(directory, $"bamboo-{i + 1}-attacks.png"));
         }
         Require(player.Creature.GetPowerAmount<PlatingPower>() == 1, "Bamboo did not grant native Plating.");
         for (int i = 0; i < 5; i++) await CardPileCmd.Add(state.CreateCard<DefendIronclad>(player), PileType.Draw);
@@ -65,7 +65,7 @@ internal sealed partial class SmokeController
             && puzzle.UsedThisCombat && PileType.Hand.GetPile(player).Cards.Count == hand + 3,
             "Rendered Naraku absorption did not trigger Fragment and native Puzzle exactly once.");
         await WaitFrames(30);
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "naraku-relics-triggered.png"));
+        SaveScreenshot(Path.Combine(directory, "naraku-relics-triggered.png"));
         _checkpoints.Write("event-relics.counter-and-naraku");
         await RelicCmd.Remove(bamboo);
         await RelicCmd.Remove(fragment);

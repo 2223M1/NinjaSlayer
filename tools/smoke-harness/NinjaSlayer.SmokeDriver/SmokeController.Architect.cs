@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -21,10 +22,37 @@ namespace NinjaSlayer.SmokeDriver;
 internal sealed partial class SmokeController
 {
     internal bool IsArchitectPreview => _theater?.IsArchitectPreview == true;
+    internal bool UseFullArchitectGreeting { get; private set; }
+    internal Task PlayArchitectFullGreeting(Player player) => _theater!.PlayArchitectFullGreeting(player);
 
     private sealed partial class TheaterRuntime
     {
         internal bool IsArchitectPreview => _script.Purpose == "architect";
+
+        internal async Task PlayArchitectFullGreeting(Player player)
+        {
+            var room = NCombatRoom.Instance!;
+            var ui = NRun.Instance!.GlobalUi;
+            ICombatState state = player.Creature.CombatState!;
+            Require(state.Enemies.Any(c => c.Monster is Architect), "Full greeting must run in the Architect room.");
+            Type greeting = typeof(BossGreetingCinematic);
+            uint seed = (uint)InvokeMethod(greeting, null, "StableHash", _script.Seed)!;
+            Type contextType = AccessTools.Inner(greeting, "BossGreetingSession");
+            var context = (IDisposable)Activator.CreateInstance(contextType, room, ui, seed)!;
+            Cover("architect-full-greeting-start");
+            try
+            {
+                await (Task)InvokeMethod(greeting, null, "PlayInternal", state,
+                    new List<Player> { player }, room, ui, context)!;
+                Cover("architect-full-greeting-complete");
+            }
+            finally
+            {
+                context.Dispose();
+                InvokeMethod(contextType, context, "RestoreCameraAndScreenShakeTarget");
+                player.Creature.GetCreatureNode()?.Visuals.Show();
+            }
+        }
 
         private async Task ArchitectComparison()
         {
@@ -142,12 +170,18 @@ internal sealed partial class SmokeController
             using Variant animation = entry.Call("get_animation");
             GodotObject clip = animation.AsGodotObject();
             Material? material = node.Visuals.SpineBody!.GetNormalMaterial();
+            Node? recovery = node.Body.GetNodeOrNull("AlabamaDeathRecovery");
+            Transform2D renderTransform = recovery == null ? node.Body.Transform
+                : (Transform2D)AccessTools.Property(recovery.GetType(), "RenderTransform").GetValue(recovery)!;
             row["architectTrack"] = new JsonObject
             {
                 ["name"] = clip.Call("get_name").AsString(),
                 ["time"] = entry.Call("get_track_time").AsSingle(),
                 ["duration"] = entry.Call("get_animation_end").AsSingle(),
                 ["visible"] = node.Body.Visible,
+                ["recoveryProgress"] = recovery == null ? null
+                    : (float)AccessTools.Property(recovery.GetType(), "Progress").GetValue(recovery)!,
+                ["renderRotation"] = renderTransform.Rotation,
                 ["white"] = material is ShaderMaterial shader
                     && shader.Shader.ResourcePath.EndsWith("boss_death_whiteout.gdshader", StringComparison.Ordinal)
                     ? shader.GetShaderParameter("white_mix").AsSingle() : 0f
@@ -177,6 +211,7 @@ internal sealed partial class SmokeController
             }
             _driver.PreviewEntranceVariant = step.Mode == null ? null
                 : Enum.Parse<AncientEntranceAnimation.EntranceVariant>(step.Mode);
+            _driver.UseFullArchitectGreeting = step.Greeting == "full";
             int hp = _player.Creature.CurrentHp;
             CardModel[] deck = _player.Deck.Cards.ToArray();
             Vector2 playerSlot = Node("ninja").Position;
@@ -189,16 +224,25 @@ internal sealed partial class SmokeController
             NCombatRoom room;
             if (step.Actor == "native")
             {
+                Cover("architect-room-enter");
                 await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheArchitect>());
                 room = NCombatRoom.Instance!;
                 AddActor(nameof(Architect), room.CreatureNodes.Single(n => n.Entity.Monster is Architect).Entity);
+                var architectEvent = ((MegaCrit.Sts2.Core.Rooms.EventRoom)_player.RunState.CurrentRoom!).LocalMutableEvent;
+                await _driver.WaitUntilAsync(() => architectEvent.CurrentOptions.Count > 0,
+                    "Architect did not offer a dialogue option", _cancel);
+                Require(room.GetNodeOrNull("NinjaSlayerArchitectExecution") == null,
+                    "Architect executed before Continue.");
+                await architectEvent.CurrentOptions.Single().Chosen();
+                await architectEvent.CurrentOptions.Single().Chosen();
             }
             else
             {
                 var model = (TheArchitect)ModelDb.Event<TheArchitect>().ToMutable();
                 AccessTools.Property(typeof(EventModel), nameof(EventModel.Owner)).SetValue(model, _player);
                 AccessTools.Property(typeof(EventModel), nameof(EventModel.Rng)).SetValue(model, new Rng(252509));
-                Require(ArchitectExecutionCinematic.TryStart(model), "Production Architect cinematic did not start.");
+                if (_driver.UseFullArchitectGreeting) await PlayArchitectFullGreeting(_player);
+                await ArchitectExecutionCinematic.Play(model);
                 room = _room;
             }
             var controller = room.GetNode<ArchitectExecutionCinematic>("NinjaSlayerArchitectExecution");
@@ -208,9 +252,21 @@ internal sealed partial class SmokeController
                 "Architect visual execution changed the deck or player HP.");
             Require(Node("ninja").Position.X > playerSlot.X + 800f, "Ninja Slayer did not finish exiting the stage.");
             _driver.PreviewEntranceVariant = null;
+            _driver.UseFullArchitectGreeting = false;
             await Wait(1.2);
             Cover("architect-production-execution");
         }
+    }
+}
+
+[HarmonyPatch(typeof(ArchitectExecutionCinematic), "PlayGreetingBow")]
+internal static class ArchitectFullGreetingPreview
+{
+    private static bool Prefix(Creature owner, ref Task __result)
+    {
+        if (SmokeController.Current is not { UseFullArchitectGreeting: true } driver) return true;
+        __result = driver.PlayArchitectFullGreeting(owner.Player!);
+        return false;
     }
 }
 

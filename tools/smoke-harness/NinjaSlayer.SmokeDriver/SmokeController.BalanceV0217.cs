@@ -150,7 +150,7 @@ internal sealed partial class SmokeController
         async Task Snapshot(string label)
         {
             await WaitFrames(45);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + ".png"));
+            SaveScreenshot(Path.Combine(directory, label + ".png"));
         }
         async Task ChooseGrid(CardModel[] selected, string label)
         {

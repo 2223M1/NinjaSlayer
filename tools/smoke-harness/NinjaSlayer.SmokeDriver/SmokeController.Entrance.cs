@@ -70,6 +70,12 @@ internal static class EventPreviewEntrance
 {
     private static bool Prefix(Player player, ref Task __result)
     {
+        if (SmokeController.Current?.UseFullArchitectGreeting == true)
+        {
+            // The native full greeting stages and plays its own entrance.
+            __result = Task.CompletedTask;
+            return false;
+        }
         if (SmokeController.Current is not { PreviewEntranceVariant: { } variant } driver) return true;
         driver.ObserveEventEntrance(player);
         __result = AncientEntranceAnimation.Play(player, variant);

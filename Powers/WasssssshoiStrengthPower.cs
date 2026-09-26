@@ -10,5 +10,5 @@ namespace NinjaSlayer.Powers;
 [RegisterPower]
 public sealed class WasssssshoiStrengthPower : ModTemporaryAppliedPowerTemplate<Wasssssshoi, StrengthPower>
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(WasssssshoiStrengthPower));
 }

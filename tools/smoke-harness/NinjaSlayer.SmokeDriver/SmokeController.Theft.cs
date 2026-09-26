@@ -227,7 +227,7 @@ internal sealed partial class SmokeController
                         Require(Math.Abs(overlap + 8f) < .5f, "Held card is not aligned at its upper edge.");
                         Require(!hand.ShowBehindParent, "Held cards must stay above the character.");
                     }
-                    _driver._tree.Root.GetTexture().GetImage().SavePng(Path.Combine(_directory, $"grip-{mode}-{theft + 1}.png"));
+                    _driver.SaveScreenshot(Path.Combine(_directory, $"grip-{mode}-{theft + 1}.png"));
                     Cover("dark-theft-" + mode);
                 }
                 if (fast)

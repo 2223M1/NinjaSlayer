@@ -66,11 +66,69 @@ if (script.purpose === 'greeting') {
     }
   }
 }
+if (full && script.purpose === 'yukano-popup') {
+  const release = motion.find(row => row.popup?.releasePosition >= 1.001);
+  if (script.cues.some(cue => cue.id === 'first_arrow')) {
+    assert(release, 'Movie did not release a real arrow.');
+    assert.equal(release.renderFrame, release.popup.releaseFrame, 'Arrow and movie release span different render frames.');
+    const arrow = release.yukanoProjectiles.find(p => p.kind === 'arrow');
+    assert(arrow?.visible, 'Arrow is not visible on the movie release frame.');
+    assert(release.popup.releasePosition < 1.001 + .05, 'Movie release skipped more than a rendering frame.');
+    assert(Math.hypot(arrow.x - release.yukano.coreX, arrow.y - release.yukano.coreY) < .5,
+      'Arrow did not leave the current launch pose.');
+    const hit = damage.find(row => row.cue === 'first_arrow' && row.actor === 'sawatari');
+    const flightFrames = motion.filter(row => row.seconds >= release.seconds - .05
+      && row.seconds <= (hit?.seconds ?? release.seconds) + .05);
+    const tickTolerance = Math.max(1 / 60, ...flightFrames.slice(1)
+      .map((row, i) => row.seconds - flightFrames[i].seconds)) + .002;
+    assert(hit && Math.abs(hit.seconds - release.seconds - .25) <= tickTolerance,
+      'Arrow flight or real damage timing changed.');
+    assert.equal(damage.filter(row => row.cue === 'first_arrow' && row.actor === 'sawatari').length, 1);
+    assert(sync.acceptedByEvent.yukano_embedded_movie === 1, 'Embedded movie audio was not calibrated.');
+  }
+  assert(motion.filter(row => row.cue === 'instant_does_not_consume').every(row => !row.popup),
+    'Instant created a popup.');
+  assert(motion.filter(row => row.cue === 'second_arrow' || row.cue === 'companion_reentry')
+    .every(row => !row.popup || row.popup.releaseFrame === release?.popup.releaseFrame),
+    'A later arrow restarted the movie instead of letting its existing tail finish.');
+  assert(motion.filter(row => row.yukanoPose).every(row => Math.abs(row.yukanoPose.scaleX - 1) < .001
+    && Math.abs(row.yukanoPose.scaleY - 1) < .001), 'Yukano arrow gesture deforms the body.');
+  if (script.cues.some(cue => cue.id === 'pause_then_cancel')) {
+    assert(!release && !damage.some(row => row.cue === 'pause_then_cancel'), 'Cancelled movie fired a stale attack.');
+    assert(motion.filter(row => row.cue === 'arrow_after_cancel').every(row => !row.popup),
+      'Cancellation incorrectly returned the once-per-run opportunity.');
+  }
+  if (script.cues.some(cue => cue.id === 'target_removed_before_release'))
+    assert(!release && !damage.some(row => row.cue === 'target_removed_before_release'),
+      'An expired target caused a release or real damage.');
+  if (script.cues.some(cue => cue.id === 'lethal_arrow')) {
+    assert(release, 'First-arrow finisher skipped the movie release.');
+    assert.equal(damage.filter(row => row.cue === 'lethal_arrow' && row.after === 0).length, 1,
+      'First-arrow finisher must kill once through real damage.');
+  }
+}
 if (full && script.purpose === 'blood') {
   assert.equal(runtime.mode, 'Normal');
   for (const name of ['threshold-block-self-dot-dodge-single-instance', 'moving', 'semi',
     'hell', 'full', 'soul', 'mirror', 'pause-fast-instant-death-cleanup'])
     assert(count('blood-' + name) > 0, `Missing completed blood check: ${name}`);
+}
+if (full && script.purpose === 'architect' && script.cues.some(cue => cue.steps?.some(
+  step => step.action === 'architect_execution' && step.card === 'AlabamaDropRedesignV1'))) {
+  const recovering = motion.filter(row => row.architectTrack?.recoveryProgress > 0
+    && row.architectTrack.recoveryProgress < 1);
+  assert(recovering.length >= 2, 'Missing gradual Architect Alabama recovery.');
+  assert(recovering.every(row => row.architectTrack.name === 'ninjaslayer_soft_death'),
+    'Architect must start dying before its Alabama recovery completes.');
+  assert(recovering.at(-1).architectTrack.time > recovering[0].architectTrack.time,
+    'Architect death track did not advance during recovery.');
+  assert(Math.abs(recovering.at(-1).architectTrack.renderRotation
+    - recovering[0].architectTrack.renderRotation) > .1,
+    'Architect recovery did not rotate alongside its death track.');
+  assert(recovering.every(row => !row.eventActor.frozen)
+    && Math.hypot(recovering.at(-1).eventActor.coreX - recovering[0].eventActor.coreX,
+      recovering.at(-1).eventActor.coreY - recovering[0].eventActor.coreY) > 1,
+    'Player recovery must overlap the Architect death track.');
 }
 if (full && (script.purpose ?? 'promo') === 'promo') {
   assert(count('backflip') >= 4);
@@ -78,6 +136,22 @@ if (full && (script.purpose ?? 'promo') === 'promo') {
   assert.equal(count('knife-round-trip'), 3);
   assert.equal(count('dark-iai-counter'), 2);
   assert.equal(count('friendly-fire'), 1);
+  for (const [kind, expected] of [['arrow', 1], ['shuriken', 2]]) {
+    const visible = motion.flatMap(row => row.yukanoProjectiles ?? [])
+      .filter(p => p.kind === kind && p.visible && p.x >= 0 && p.x <= 1920 && p.y >= 0 && p.y <= 1080);
+    assert.equal(new Set(visible.map(p => p.id)).size, expected, `Missing visible Yukano ${kind} projectiles.`);
+  }
+  const intents = motion.filter(row => row.yukanoIntent?.visible
+    && row.cue.startsWith('yukano_') && row.yukanoProjectiles?.length);
+  assert(intents.length > 0, 'Missing Yukano intent observations during support attacks.');
+  assert(intents.every(row => row.yukanoIntent.bottom < row.yukanoIntent.bodyTop),
+    'Yukano intent still overlaps her standing body.');
+  for (const cue of ['yukano_arrow_support', 'yukano_shuriken_support']) {
+    const poses = motion.filter(row => row.cue === cue && row.yukanoPose).map(row => row.yukanoPose);
+    assert(poses.some(pose => Math.abs(pose.rotation) > .035), `Missing Yukano body motion in ${cue}.`);
+    assert(poses.every(pose => Math.abs(pose.scaleX - 1) < .001 && Math.abs(pose.scaleY - 1) < .001),
+      `Yukano projectile attack deforms her body in ${cue}.`);
+  }
   assert.equal(timeline[0].before.actors.sawatari.maxHp, 280);
   assert.equal(runtime.state.actors.dark.maxHp, 180);
   assert(!script.relics.includes('BigMushroom'));

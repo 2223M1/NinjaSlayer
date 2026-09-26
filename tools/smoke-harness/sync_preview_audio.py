@@ -70,7 +70,7 @@ def source_templates(project, debug_audio=None, native_templates=None):
             for name, variants in paths.items()}
 
 
-def synchronize(directory, output, fmod_project, debug_audio=None, native_templates=None):
+def synchronize(directory, output, fmod_project, debug_audio=None, native_templates=None, popup_movie=None):
     video = json.loads((directory / "recording-start.json").read_text())
     audio = json.loads((directory / "audio-start.json").read_text())
     start = video["timestamp"] / video["frequency"]
@@ -123,6 +123,25 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
     accepted = [match for match in matches if abs(match["delaySeconds"] - median) <= tolerance]
     if len(accepted) < 2:
         raise RuntimeError("Audio latency is inconsistent across the recording.")
+    if popup_movie is not None:
+        motion = json.loads((directory / "motion.json").read_text())
+        released = [row for row in motion if row.get("popup", {}).get("releasePosition", -1) > 0]
+        if released:
+            row = released[0]
+            movie_start = row["seconds"] - row["popup"]["position"]
+            template = read_audio(popup_movie)
+            located = locate_waveform(samples, template,
+                max(0, round((offset + movie_start - .2) * SAMPLE_RATE)),
+                min(len(samples), round((offset + movie_start + .5) * SAMPLE_RATE) + len(template)))
+            if located is None or located[1] < .7:
+                raise RuntimeError(f"Embedded movie audio was not identifiable: {located}")
+            name, source = "yukano_embedded_movie", str(popup_movie)
+            templates[name] = {source: template}
+            match = {"event": name, "videoFrame": round(movie_start * 60), "videoSeconds": movie_start,
+                     "audioSeconds": located[0] - offset, "correlation": located[1], "source": source,
+                     "delaySeconds": located[0] - offset - movie_start}
+            matches.append(match)
+            accepted.append(match)
     required = set()
     if debug_audio is not None:
         required.update(name for name in templates if name.endswith(".mp3") and name in observed)
@@ -187,5 +206,8 @@ if __name__ == "__main__":
                         help="Verify observed native weapon MP3s from an extracted host debug_audio directory.")
     parser.add_argument("--native-templates", type=Path,
                         help="Manifest of silently rendered native FMOD waveform templates.")
+    parser.add_argument("--popup-movie", type=Path,
+                        help="Also calibrate the embedded Yukano movie against its recorded playback position.")
     arguments = parser.parse_args()
-    synchronize(arguments.directory.resolve(), arguments.output, arguments.fmod_project, arguments.debug_audio, arguments.native_templates)
+    synchronize(arguments.directory.resolve(), arguments.output, arguments.fmod_project, arguments.debug_audio,
+                arguments.native_templates, arguments.popup_movie)

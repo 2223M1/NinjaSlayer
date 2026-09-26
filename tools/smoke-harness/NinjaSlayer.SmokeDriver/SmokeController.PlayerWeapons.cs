@@ -74,7 +74,7 @@ internal sealed partial class SmokeController
                         Require(local.X.DistanceTo(expectedX) < .002f && local.Y.DistanceTo(expectedY) < .002f,
                             $"{form}/{mirrored}/{hand}: blade does not preserve the source size and approved grip angle.");
                     }
-                    _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"player-{form}-{mirrored}-{count}.png"));
+                    SaveScreenshot(Path.Combine(directory, $"player-{form}-{mirrored}-{count}.png"));
                     _checkpoints.Write($"sawatari.player-weapons.{form}.{mirrored}.{count}");
                 }
                 await CardCmd.Exhaust(choice, first);

@@ -213,10 +213,13 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         }
     }
 
-    private void RestoreDeathSquashes()
+    private void RestoreDeathSquashes(bool preserveAlabamaContact = false)
     {
         foreach ((Node2D body, DeathSquashVisualState state) in _deathSquashStates)
         {
+            if (preserveAlabamaContact && GodotObject.IsInstanceValid(body)
+                && body.GetNodeOrNull<Marker2D>(AlabamaDropAnimation.GroundContactName) != null)
+                continue;
             if (GodotObject.IsInstanceValid(body))
             {
                 body.Transform = state.OriginalTransform;
@@ -486,7 +489,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         float scaleFrom = _camera.CurrentScale;
         float backdropFrom = _backdropIntensity;
         float actorReturnSeconds = AlabamaOwnsRecovery ? 0f : _continuousPlayerApproach
-            ? IsAlabamaDrop ? .2f : NinjaSlayerAimPose.IsSomersaultHeavy(CardPlay?.Card)
+            ? IsAlabamaDrop ? AlabamaDropAnimation.StandUpDuration : NinjaSlayerAimPose.IsSomersaultHeavy(CardPlay?.Card)
                 ? SlowAttackAnimation.SomersaultHalfSeconds : CombatActionTimingRuntime.ReturnSeconds
             : ReturnSeconds;
         float cameraReturnSeconds = ReturnSeconds;
@@ -506,7 +509,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
                 : cameraLinearProgress);
             if (!IsRanged && !AlabamaOwnsRecovery) _actorNode.Position = ownerFrom.Lerp(_actorReturnPosition, actorProgress);
             if (_continuousPlayerApproach && IsAlabamaDrop)
-                _actorNode.Position -= Vector2.Down * (70f * Mathf.Sin(actorProgress * Mathf.Pi));
+                _actorNode.Position -= Vector2.Down * (AlabamaDropAnimation.ReturnHopHeight * Mathf.Sin(actorProgress * Mathf.Pi));
             if (!AlabamaOwnsRecovery) _actorAimPose?.ApplyReturn(actorProgress);
             _approach?.ApplyReturn(actorProgress);
             if (!measuredCamera)

@@ -8,7 +8,7 @@ namespace NinjaSlayer.Code.Nodes;
 
 public partial class NinjaSlayerAimPose
 {
-    internal static float ShurikenWindupSeconds => CombatActionTimingRuntime.VisualSeconds(0.083f);
+    internal static float ShurikenWindupSeconds => CombatActionTimingRuntime.VisualSeconds(ShurikenThrowMotion.ReleaseSeconds);
     private float _bodyHeight;
     private float _baseDisplayAngle;
     private float _baseEffectiveTravelY;
@@ -74,13 +74,11 @@ public partial class NinjaSlayerAimPose
         // The finisher may remain registered until the card scope has closed.
         Transform2D delta = impactBody * restoredBody.AffineInverse();
         float rotation = delta.Rotation;
-        Vector2 stretch = delta.Scale;
-        if (stretch.Y < 0f)
+        if (delta.Scale.Y < 0f)
         {
-            // Keep the half-turn explicit; Godot decomposes a reflected upside-down
-            // pose as an upright transform with negative Y, which would flatten it.
+            // The impact faces into the grab. Turn out of it on release without
+            // interpolating a reflection through zero-width body scales.
             rotation = Mathf.Wrap(rotation + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
-            stretch = -stretch;
         }
         Vector2 core = CoreCanvas;
         var motion = new VisualMotion(this, MotionKind.Recovery, seconds, FacingSign)
@@ -88,8 +86,8 @@ public partial class NinjaSlayerAimPose
             Offset = _actor!.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
                 .AffineInverse().BasisXform(delta * core - core),
             Rotation = rotation,
-            Stretch = stretch,
-            Height = height
+            Height = height,
+            PlanarBlur = true
         };
         _presentations.Add(motion);
         _alabamaRecovery = motion;
@@ -132,7 +130,7 @@ public partial class NinjaSlayerAimPose
 
     internal void BeginShurikenThrow(Creature? target)
     {
-        if (BeginVisualMotion(MotionKind.Throw, CombatActionTimingRuntime.VisualSeconds(0.167f)) is { } motion)
+        if (BeginVisualMotion(MotionKind.Throw, CombatActionTimingRuntime.VisualSeconds(ShurikenThrowMotion.DurationSeconds)) is { } motion)
             motion.Target = target;
     }
 
@@ -238,6 +236,7 @@ public partial class NinjaSlayerAimPose
                     shift += parentCanvas.BasisXform(motion.Offset * envelope);
                     shift.Y -= motion.Height * Mathf.Sin(p * Mathf.Pi);
                     angle += motion.Rotation * envelope;
+                    if (motion.PlanarBlur) motion.Radians = motion.Rotation * envelope;
                     _presentationScale *= Vector2.One.Lerp(motion.Stretch, envelope);
                     break;
             }

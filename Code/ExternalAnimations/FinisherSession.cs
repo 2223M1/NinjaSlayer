@@ -614,7 +614,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _impactStartedAt = _activeSeconds;
         _enhancedImpactTask = PlayEnhancedDoomPoseImpact([_focusNode], cancellationToken);
         await _enhancedImpactTask;
-        RestoreDeathSquashes();
+        RestoreDeathSquashes(preserveAlabamaContact: true);
     }
 
     public ValueTask DisposeAsync() => new(
@@ -898,7 +898,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         try
         {
-            RestoreDeathSquashes();
+            RestoreDeathSquashes(preserveAlabamaContact: true);
         }
         catch (Exception ex)
         {
@@ -908,6 +908,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         try
         {
+            foreach (Creature target in toKill)
+                if (_room.GetCreatureNode(target) is { } node)
+                    AlabamaDropAnimation.ReleaseVictimBeforeDeath(node);
             if (useDeathKick && Scenario == FinisherScenarioKind.EnemyExecutesNinjaSlayer)
             {
                 FinisherDeathContinuationRegistry.Arm(toKill, SessionId);
@@ -1028,7 +1031,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         Capture(() => _freeControlLease?.Dispose());
         Capture(() => _ledger.Clear(mayRestoreCurrentCombat));
         Capture(() => FinisherDeathContinuationRegistry.Clear(SessionId));
-        Capture(RestoreDeathSquashes);
+        Capture(() => RestoreDeathSquashes());
         Capture(RestoreDeathKicks);
         Capture(DisposeEnhancedPresentation);
         if (GodotObject.IsInstanceValid(_room))

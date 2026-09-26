@@ -1,0 +1,32 @@
+{
+  "seed": "YUKANO_POPUP_20260926",
+  "purpose": "yukano-popup",
+  "act": 3,
+  "duration": 13,
+  "narrationEnabled": false,
+  "cues": [
+    {"id": "calibration", "steps": [{"action": "audit_calibration"}]},
+    {"id": "entrance", "steps": [{"action": "entrance", "actor": "yukano"}, {"action": "popup_check", "mode": "unused"}]},
+    {"id": "instant_does_not_consume", "steps": [
+      {"action": "speed", "mode": "Instant"},
+      {"action": "move", "actor": "yukano", "move": "ARROW"},
+      {"action": "popup_check", "mode": "unused"},
+      {"action": "speed", "mode": "Fast"},
+      {"action": "wait", "seconds": 0.6}
+    ]},
+    {"id": "first_arrow", "steps": [
+      {"action": "move", "actor": "yukano", "move": "ARROW"},
+      {"action": "wait", "seconds": 1.0}
+    ]},
+    {"id": "second_arrow", "steps": [
+      {"action": "move", "actor": "yukano", "move": "ARROW"},
+      {"action": "wait", "seconds": 0.7}
+    ]},
+    {"id": "shuriken_unchanged", "steps": [
+      {"action": "move", "actor": "yukano", "move": "SHURIKEN"},
+      {"action": "wait", "seconds": 1.0}
+    ]},
+    {"id": "save_reload", "steps": [{"action": "popup_check", "mode": "save"}]},
+    {"id": "companion_reentry", "steps": [{"action": "popup_check", "mode": "reentry"}, {"action": "wait", "seconds": 1.0}]}
+  ]
+}

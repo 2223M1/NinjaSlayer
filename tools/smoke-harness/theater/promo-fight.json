@@ -2,6 +2,7 @@
   "seed": "NINJASLAYER_THEATER_01",
   "act": 3,
   "duration": 38.5,
+  "narrationEnabled": false,
   "relics": [
     "BlackBlood", "BloodVial", "BookOfFiveRings", "BookRepairKnife", "BurningBlood",
     "ChosenCheese", "DarkstonePeriapt", "DemonTongue", "DragonFruit", "EternalFeather",
@@ -16,7 +17,7 @@
   "karate": 2,
   "cues": [
     { "id": "opening", "steps": [
-      { "action": "block", "actor": "sawatari", "amount": 70 },
+      { "action": "block", "actor": "sawatari", "amount": 74 },
       { "action": "aim", "covers": ["aim"] },
       { "action": "card", "card": "CollapseFistRedesignV1", "covers": ["somersault-heavy"] },
       { "action": "wait", "seconds": 0.125 },
@@ -97,8 +98,11 @@
           { "action": "card", "card": "KarateStraightRedesignV1" },
           { "action": "move", "actor": "sawatari", "target": "ninja", "move": "dual" }
         ]}
-      ]},
-      { "action": "move", "actor": "yukano", "move": "ARROW", "covers": ["yukano-arrow"] }
+      ]}
+    ]},
+    { "id": "yukano_arrow_support", "steps": [
+      { "action": "move", "actor": "yukano", "move": "ARROW", "covers": ["yukano-arrow"] },
+      { "action": "wait", "seconds": 0.1 }
     ]},
     { "id": "dark_strike_closeup", "steps": [
       { "action": "camera", "actor": "ninja", "zoom": 5, "height": -80, "seconds": 0.18 },
@@ -107,8 +111,11 @@
       { "action": "wait", "seconds": 0.3 },
       { "action": "takeover" }
     ]},
-    { "id": "dark_first_counter", "steps": [
+    { "id": "yukano_shuriken_support", "steps": [
       { "action": "block", "actor": "dark", "amount": 250 },
+      { "action": "move", "actor": "yukano", "move": "SHURIKEN", "covers": ["yukano-shuriken"] }
+    ]},
+    { "id": "dark_first_counter", "steps": [
       { "action": "block", "amount": 35 },
       { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_COUNTER_STANCE", "covers": ["dark-stance"] },
       { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" },
@@ -144,10 +151,8 @@
     ]},
     { "id": "one_body_one_soul", "steps": [
       { "action": "form", "form": "soul" },
-      { "parallel": [
-        { "action": "card", "card": "StraightKiRedesignV1" },
-        { "action": "move", "actor": "yukano", "move": "SHURIKEN", "covers": ["yukano-shuriken"] }
-      ]},
+      { "action": "card", "card": "StraightKiRedesignV1" },
+      { "action": "wait", "seconds": 0.125 },
       { "action": "form", "form": "normal" }
     ]},
     { "id": "final_tornado", "steps": [

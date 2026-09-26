@@ -177,6 +177,29 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
             ["NinjaSlayerSourceRevision"] = sourceRevision
         };
         ValidateImplementationAssembly(selected.AssemblyPath, metadata, forbiddenPathRoot);
+        string optionalAnthony = Path.Combine(Path.GetDirectoryName(selected.AssemblyPath)!, "NinjaSlayer.AutoAnthony.dll");
+        if (channelName == "preview")
+        {
+            if (!File.Exists(optionalAnthony))
+                throw new InvalidDataException("Workshop bundle is missing the optional AutoAnthony integration assembly.");
+            expectedPaths.Add($"lib/{gameApiVersion}/NinjaSlayer.AutoAnthony.dll");
+            ValidateImplementationAssembly(optionalAnthony, new Dictionary<string, string>
+            {
+                ["NinjaSlayerHostChannel"] = channelName,
+                ["NinjaSlayerSourceRevision"] = sourceRevision
+            }, forbiddenPathRoot);
+            using var optionalStream = File.OpenRead(optionalAnthony);
+            using var optionalReader = new PEReader(optionalStream);
+            ValidateReleaseDebugDirectory(optionalReader);
+            ValidateForbiddenPath(optionalReader, forbiddenPathRoot);
+            var optionalMetadata = optionalReader.GetMetadataReader();
+            if (optionalMetadata.GetString(optionalMetadata.GetAssemblyDefinition().Name) != "NinjaSlayer.AutoAnthony")
+                throw new InvalidDataException("Optional Anthony bridge has the wrong assembly identity.");
+            var references = optionalMetadata.AssemblyReferences.Select(handle =>
+                optionalMetadata.GetString(optionalMetadata.GetAssemblyReference(handle).Name)).ToHashSet(StringComparer.Ordinal);
+            if (!references.Contains("NinjaSlayer") || !references.Contains("AutoAnthony"))
+                throw new InvalidDataException("Optional Anthony bridge is missing its product or external API reference.");
+        }
     }
 
     string[] actualPaths = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)

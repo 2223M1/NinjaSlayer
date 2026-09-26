@@ -7,6 +7,9 @@ using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Monsters;
+using MegaCrit.Sts2.Core.Entities.Ancients;
+using HarmonyLib;
+using System.Runtime.CompilerServices;
 
 namespace NinjaSlayer.Code.Patches;
 
@@ -29,26 +32,21 @@ internal sealed class ArchitectDeathResourcePatch : IPatchMethod
     }
 }
 
-internal sealed class ArchitectDialogueSuppressionPatch : IPatchMethod
+internal sealed class ArchitectDialoguePatch : IPatchMethod
 {
-    public static string PatchId => "ninjaslayer_architect_dialogue_suppression";
-    public static string Description => "Replace NinjaSlayer's Architect dialogue with the execution cinematic.";
+    public static string PatchId => "ninjaslayer_architect_dialogue";
+    public static string Description => "Use native Architect dialogue and Continue options for NinjaSlayer's greeting.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
     [
-        new(typeof(TheArchitect), "PlayCurrentLine")
+        new(typeof(TheArchitect), "DefineDialogues")
     ];
 
-    public static bool Prefix(TheArchitect __instance, ref Task __result)
+    public static void Postfix(AncientDialogueSet __result)
     {
-        if (!ShouldReplace(__instance))
-        {
-            return true;
-        }
-
-        __result = Task.CompletedTask;
-        return false;
+        __result.CharacterDialogues.Add(ModelDb.Character<NinjaSlayerCharacter>().Id.Entry,
+            [new AncientDialogue("", "") { IsRepeating = true }]);
     }
 
     internal static bool ShouldReplace(TheArchitect eventModel) =>
@@ -59,19 +57,43 @@ internal sealed class ArchitectDialogueSuppressionPatch : IPatchMethod
 internal sealed class ArchitectExecutionStartPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_architect_execution_start";
-    public static string Description => "Start NinjaSlayer's Architect execution after room initialization.";
+    public static string Description => "Await NinjaSlayer's Architect execution only when Continue is chosen.";
     public static bool IsCritical => false;
 
     public static ModPatchTarget[] GetTargets() =>
     [
-        new(typeof(TheArchitect), nameof(TheArchitect.OnRoomEnter))
+        new(typeof(TheArchitect), "WinRun")
     ];
 
-    public static void Postfix(TheArchitect __instance)
+    public static bool Prefix(TheArchitect __instance, ref Task __result)
     {
-        if (ArchitectDialogueSuppressionPatch.ShouldReplace(__instance))
+        if (!ArchitectDialoguePatch.ShouldReplace(__instance)) return true;
+        AccessTools.Method(typeof(EventModel), "ClearCurrentOptions").Invoke(__instance, null);
+        __result = ArchitectExecutionCinematic.Play(__instance);
+        return false;
+    }
+}
+
+internal sealed class ArchitectGreetingBowPatch : IPatchMethod
+{
+    internal static readonly ConditionalWeakTable<TheArchitect, Task> Greetings = new();
+    public static string PatchId => "ninjaslayer_architect_greeting_bow";
+    public static string Description => "Retain the greeting bow alongside the native dialogue.";
+    public static bool IsCritical => false;
+    public static ModPatchTarget[] GetTargets() => [new(typeof(TheArchitect), "PlayCurrentLine")];
+
+    public static void Postfix(TheArchitect __instance, int ____currentLineIndex, ref Task __result)
+    {
+        if (____currentLineIndex == 0 && ArchitectDialoguePatch.ShouldReplace(__instance))
         {
-            ArchitectExecutionCinematic.TryStart(__instance);
+            Task line = __result;
+            __result = Greetings.GetValue(__instance, model => BowAfterLine(line, model));
         }
+    }
+
+    private static async Task BowAfterLine(Task line, TheArchitect model)
+    {
+        await line;
+        await ArchitectExecutionCinematic.PlayGreetingBow(model.Owner!.Creature);
     }
 }

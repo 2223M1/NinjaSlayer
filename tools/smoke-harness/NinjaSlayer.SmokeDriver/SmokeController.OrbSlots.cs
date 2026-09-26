@@ -163,7 +163,7 @@ internal sealed partial class SmokeController
                 && nodes.Count(node => node.Model != null) == queue.Orbs.Count
                 && queue.Orbs.All(orb => nodes.Count(node => ReferenceEquals(node.Model, orb)) == 1)
                 && nodes.All(node => node.Position.IsFinite()), "Orb model/visual slots diverged at " + name);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "orb-" + name + ".png"));
+            SaveScreenshot(Path.Combine(directory, "orb-" + name + ".png"));
             _checkpoints.Write("orb-slots." + name);
         }
     }

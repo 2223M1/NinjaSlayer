@@ -10,7 +10,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class OneBodyOneSoulPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("NarakuPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(OneBodyOneSoulPower));
 
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
