@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createDashboardServer } from '../dashboard/server.mjs';
 import { publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
-import { summarizePublic } from '../dashboard/public-data.mjs';
+import { summarizePublic, useCurrentCatalog } from '../dashboard/public-data.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
 
 const cardA = 'CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER_REDESIGN_V1';
@@ -61,6 +61,56 @@ test('native SerializableRun fields, event victory and UInt64 IDs determine the 
   assert.equal(summary.measuredCombats, 1);
   assert.equal(summary.totalCombats, 1);
   assert.equal(summary.cards[0].energy_spent, 1);
+});
+
+test('current catalog excludes vanilla, archived and unknown cards across every public statistic', () => {
+  const row = event();
+  const payload = row.properties.payload.applicant_payload;
+  const foreign = ['CARD.ANOINTED', 'CARD.NINJA_SLAYER_CARD_GUARD_STANCE', 'CARD.UNKNOWN'];
+  const history = payload.run_history;
+  for (const id of foreign) {
+    history.players[0].deck.push({ id });
+    const stats = history.map_point_history[0][0].player_stats[0];
+    stats.card_choices.push({ card: { id }, was_picked: true });
+    stats.cards_removed.push({ id });
+    stats.upgraded_cards.push(id);
+    payload.mod_payload.combats['1/0'].players[0].cards[id] = { drawn: 2, started: 1, finished: 1, manual_plays: 1, auto_plays: 0, energy_spent: 1, stars_spent: 0 };
+  }
+  const latest = [{ ...catalog[0], name: '新版打击', thumbnail: 'images/new.webp' }, catalog[1]];
+  const telemetry = normalizeEvents([row]);
+  const snapshot = publishSnapshot(telemetry, latest);
+  const totals = summarizePublic(snapshot, {}, now);
+  assert.deepEqual(snapshot.catalog, latest);
+  assert.deepEqual(totals.cards.map(c => c.id), [cardA, cardB]);
+  assert.equal(totals.cards[0].name, '新版打击');
+  assert.equal(totals.cards[0].picked, 1);
+  assert.equal(totals.cards[0].energy_spent, 1);
+  assert.equal(totals.runs, 1);
+  assert.equal(totals.wins, 1);
+  assert.equal(totals.playerSamples, 1);
+  assert.equal(totals.totalCombats, 1);
+  for (const id of foreign) assert.ok(!JSON.stringify(snapshot).includes(id));
+});
+
+test('last successful snapshot is pruned against a new catalog without losing run denominators', () => {
+  const snapshot = publishSnapshot(normalizeEvents([event()]), catalog);
+  const group = snapshot.groups[0];
+  const removed = cardB;
+  group.charts.push({ chart: 'entity-over-time', series: removed, x: '2026-09-12', n: 1, wins: 1, sum: 1 });
+  group.mechanisms.push({ group: 'card', id: removed + '/1', n: 1, version: '0.2.4' },
+    { group: 'damage_source', id: removed, n: 1, sum: 8, version: '0.2.4' },
+    { group: 'mechanic', id: 'shuriken', n: 1, sum: 6, version: '0.2.4' });
+  group.combats[0].cards.push({ ...group.combats[0].cards[0], id: removed });
+  const latest = [{ ...catalog[0], name: '最新名称' }];
+  const pruned = useCurrentCatalog(snapshot, latest);
+  assert.equal(pruned.catalog[0].name, '最新名称');
+  assert.ok(!JSON.stringify(pruned).includes(removed));
+  assert.ok(JSON.stringify(pruned).includes('shuriken'));
+  const summary = summarizePublic(pruned, { version: '0.2.4' }, now);
+  assert.equal(summary.runs, 1);
+  assert.equal(summary.playerSamples, 1);
+  assert.equal(summary.measuredCombats, 1);
+  assert.equal(summary.cards[0].picked, 1);
 });
 
 test('one multiplayer run is deduplicated; close UInt64 IDs keep separate choices', () => {
@@ -153,7 +203,7 @@ test('local dashboard serves real catalog and imports; refuses cross-origin read
   assert.equal((await read()).runs, 1, 'a failed import must preserve the last usable view');
   const page = await fetch(url);
   assert.ok(page.headers.get('content-security-policy').includes("frame-ancestors 'none'"));
-  assert.match(await page.text(), /卡池观察/);
+  assert.match(await page.text(), /卡牌统计/);
 });
 
 test('dashboard accepts an exact native product fixture when supplied by host contracts', async t => {

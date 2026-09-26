@@ -1,6 +1,6 @@
-# 忍者杀手观测室
+# 忍者杀手社区统计
 
-公开观测室：https://2223m1.github.io/NinjaSlayer/ 。使用 GitHub Pages、原生 HTML/CSS/JavaScript；本机关机不影响访问。本机仍提供私有反馈管理页。
+公开网站：https://2223m1.github.io/NinjaSlayer/ 。使用 GitHub Pages、原生 HTML/CSS/JavaScript；本机关机不影响访问。本机仍提供私有反馈管理页。Spire Codex 的具体复用、署名与其他参考见 [UPSTREAM.md](UPSTREAM.md)。
 
 ## 公开网站
 
@@ -82,3 +82,7 @@ Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。
 反馈正文静态进入 Pages；反馈元数据留在 KV，截图和日志存入私有 R2，均不进入 PostHog。容量与请求次数由共享预算限制，超额响应可重试。R2 预留达到 7 GB 后按原始上传时间从旧到新清理，8 GB 为硬上限；每日最多 2,000 次写入和 20,000 次未缓存公开读取。确认删除后才释放容量；180／90 天为最长保留期限，容量清理可能提前结束旧原始数据的保留。汇总统计不受影响。详情见 Worker README 与 `Docs/privacy.md`。
 
 网站卡牌名称、双语原生格式化文案、升级、关键词与卡图均来自实际 DLL 的 `WebsiteCatalogExporter`。运行 Smoke 的 `Catalog` 模式导出后，用 `tools/release/import-website-catalog.mjs` 校验内容和图片 SHA-256；历史版本只写一次。`Website/content/current.json` 只能在 Workshop 远端版本、说明和包校验通过后推进。查看旧战报使用其版本目录，目录缺失显示缺测，不能用测试规格代替生产内容。
+
+卡牌榜单、卡牌趋势、战斗明细与 CSV 均以当前发布目录为范围。目录外的原版卡、其他模组卡、已归档卡和未知 ID 不补入统计。筛选旧版本只改变统计样本，卡名/卡图/说明仍显示当前版本；历史战报的原始操作保持对应版本。更新失败复用旧快照时也先与当前目录求交集，不恢复退役条目；过滤不改变对局数、角色数或战斗数。
+
+每次 Workshop 核验完成后必须同步网站，不能只导出而不导入。已有本次导出可直接运行 importer；缺少导出时，在管理员 PowerShell 使用 `tools/release/Sync-WebsiteCatalog.ps1`，传入 `PublishedEvidence`、`CandidateRoot`、`BundleDirectory`、`GameRootDirectory`、`RitsuLibModDirectory` 及空的 `OutputDirectory`。该命令使用已发布包完成运行时导出，再核对发布证据中的版本、源码 SHA 和 DLL 校验值并推进目录。提交生成的 `Website/content` 后由 Pages 工作流部署；不会再次上传 Workshop。

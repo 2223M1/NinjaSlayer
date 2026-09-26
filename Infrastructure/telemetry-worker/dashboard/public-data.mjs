@@ -3,6 +3,20 @@ export const choiceCounters = ['offered', 'picked', 'held', 'wins', 'removed', '
 export const combatCounters = ['combatSamples', 'drawn', 'started', 'finished', 'manual_plays', 'auto_plays', 'energy_spent', 'stars_spent'];
 const counters = [...choiceCounters, ...combatCounters];
 
+// A telemetry row is evidence of a play, not a catalog entry. Apply the same
+// current-catalog join to fresh aggregates and to the last successful snapshot.
+export function useCurrentCatalog(snapshot, catalog) {
+  const ids = new Set(catalog.map(card => card.id));
+  const current = id => typeof id !== 'string' || !id.startsWith('CARD.') || ids.has(id.split('/')[0]);
+  return { ...snapshot, catalog, groups: snapshot.groups.map(group => ({
+    ...group,
+    cards: group.cards.filter(card => ids.has(card.id)),
+    combats: group.combats.map(combat => ({ ...combat, cards: combat.cards.filter(card => ids.has(card.id)) })),
+    charts: (group.charts ?? []).filter(point => current(point.x) && current(point.series)),
+    mechanisms: (group.mechanisms ?? []).filter(row => current(row.id)),
+  })) };
+}
+
 export function summarizePublic(snapshot, filters = {}, now = Date.now()) {
   const { catalog, groups, sources, feedback, excluded } = snapshot;
   const selected = selectGroups(snapshot, filters, now);

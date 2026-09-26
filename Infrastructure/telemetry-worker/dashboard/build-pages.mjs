@@ -1,6 +1,7 @@
 import { mkdir, writeFile, readFile, copyFile, cp } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { normalizeEvents } from './data.mjs';
+import { useCurrentCatalog } from './public-data.mjs';
 import { publishSnapshot, publicFeedback, readCatalog, readCurrentRelease } from './publish.mjs';
 import { loadTelemetry } from './posthog.mjs';
 import { loadRemoteFeedback } from '../scripts/feedback-reader.js';
@@ -16,7 +17,7 @@ if (process.env.OBSERVATORY_PREVIOUS_URL) {
     if (snapshot.schemaVersion !== 1) throw new Error('Unsupported published snapshot version.');
   } else if (response.status !== 404) throw new Error(`Cannot preserve the last public snapshot: HTTP ${response.status}`);
 }
-snapshot.catalog = [...new Map([...snapshot.catalog, ...catalog].map(card => [card.id, card])).values()];
+snapshot = useCurrentCatalog(snapshot, catalog);
 const config = { host: process.env.POSTHOG_QUERY_HOST || 'https://us.posthog.com',
   projectId: process.env.POSTHOG_PROJECT_ID, key: process.env.POSTHOG_PERSONAL_API_KEY };
 if (config.key && config.projectId) {
@@ -26,7 +27,7 @@ if (config.key && config.projectId) {
     snapshot.sources.telemetry = { state: 'ready', label: 'PostHog', at: new Date().toISOString(), truncated: result.truncated };
   } catch (error) {
     if (!snapshot.sources.telemetry.at) throw error;
-    snapshot.sources.telemetry = { ...snapshot.sources.telemetry, state: 'error', message: '本次统计同步失败，保留最近成功数据。' };
+    snapshot.sources.telemetry = { ...snapshot.sources.telemetry, state: 'error', message: '统计暂时无法更新，显示上次更新的数据。' };
   }
 }
 if (process.env.OBSERVATORY_READ_TOKEN) {
@@ -37,7 +38,7 @@ if (process.env.OBSERVATORY_READ_TOKEN) {
     snapshot.sources.feedback = { state: 'ready', label: '玩家提交', at: new Date().toISOString() };
   } catch (error) {
     if (!snapshot.sources.feedback.at) throw error;
-    snapshot.sources.feedback = { ...snapshot.sources.feedback, state: 'error', message: '本次反馈同步失败，保留最近成功数据。' };
+    snapshot.sources.feedback = { ...snapshot.sources.feedback, state: 'error', message: '反馈暂时无法更新，显示上次更新的内容。' };
   }
 }
 snapshot.generatedAt = new Date().toISOString();
@@ -54,7 +55,7 @@ try {
   snapshot.reports = reports;
   snapshot.sources.replays = { state: 'ready', at: snapshot.generatedAt };
 } catch {
-  snapshot.sources.replays = { ...snapshot.sources.replays, state: 'error', message: '战报索引本次未同步，保留尚未过期的上次记录。' };
+  snapshot.sources.replays = { ...snapshot.sources.replays, state: 'error', message: '对局记录暂时无法更新，显示上次更新的内容。' };
 }
 snapshot.reports = (snapshot.reports ?? []).filter(report => Date.parse(report.expires) > Date.now());
 snapshot.feedback = snapshot.feedback.filter(item => Date.parse(item.at) >= Date.now() - 180 * 86_400_000);
@@ -66,6 +67,7 @@ for (const file of ['app.js', 'styles.css', 'public-data.mjs', 'charts.mjs', 'ch
 await mkdir(join(output, 'vendor'), { recursive: true });
 await copyFile(new URL('../node_modules/chart.js/dist/chart.umd.js', import.meta.url), join(output, 'vendor/chart.umd.js'));
 await copyFile(new URL('../node_modules/chart.js/LICENSE.md', import.meta.url), join(output, 'vendor/LICENSE.Chart.js.md'));
+await copyFile(new URL('vendor/LICENSE.Spire-Codex.md', import.meta.url), join(output, 'vendor/LICENSE.Spire-Codex.md'));
 await cp(new URL('../../../Website/content/', import.meta.url), join(output, 'content'), { recursive: true });
 await cp(new URL('assets/', import.meta.url), join(output, 'assets'), { recursive: true });
 await writeFile(join(output, '.nojekyll'), '');

@@ -119,10 +119,6 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
     pickFloorTotal: 0, chosenRuns: 0, chosenWins: 0, skippedRuns: 0, skippedWins: 0,
     combatSamples: 0, drawn: 0, started: 0, finished: 0, manual_plays: 0, auto_plays: 0, energy_spent: 0, stars_spent: 0 });
   const stats = new Map(catalog.map(card => [card.id, empty(card)]));
-  const getCard = id => {
-    if (!stats.has(id)) stats.set(id, empty({ id, name: id.split('.').at(-1), rarity: '历史 / 其他', type: '' }));
-    return stats.get(id);
-  };
   const trend = new Map();
   let playerSamples = 0, measuredCombats = 0, totalCombats = 0;
   for (const run of selected) {
@@ -134,22 +130,24 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
       playerSamples++;
       const offered = new Set(), chosen = new Set();
       for (const id of new Set((player.deck ?? []).map(card => card.id))) {
-        const card = getCard(id);
+        const card = stats.get(id);
+        if (!card) continue;
         card.held++; card.wins += Number(run.win);
       }
       for (const [floor, room] of run.rooms.entries()) {
         totalCombats += room.rooms.filter(entry => COMBAT_ROOMS.has(entry.room_type)).length;
         const entry = room.player_stats.find(stat => String(stat.player_id) === String(player.net_id));
         for (const choice of entry?.card_choices ?? []) {
-          const card = getCard(choice.card.id);
+          const card = stats.get(choice.card.id);
+          if (!card) continue;
           card.offered++; offered.add(card.id);
           if (choice.was_picked) { card.picked++; card.pickFloorTotal += floor + 1; chosen.add(card.id); }
         }
-        for (const card of entry?.cards_removed ?? []) getCard(card.id).removed++;
-        for (const id of entry?.upgraded_cards ?? []) getCard(id).upgraded++;
+        for (const { id } of entry?.cards_removed ?? []) if (stats.has(id)) stats.get(id).removed++;
+        for (const id of entry?.upgraded_cards ?? []) if (stats.has(id)) stats.get(id).upgraded++;
       }
       for (const id of offered) {
-        const card = getCard(id);
+        const card = stats.get(id);
         if (chosen.has(id)) { card.chosenRuns++; card.chosenWins += Number(run.win); }
         else { card.skippedRuns++; card.skippedWins += Number(run.win); }
       }
@@ -159,7 +157,8 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
         if (!measured) continue;
         measuredCombats++;
         for (const [id, counts] of Object.entries(measured.cards)) {
-          const card = getCard(id);
+          const card = stats.get(id);
+          if (!card) continue;
           card.combatSamples++;
           for (const field of USE_FIELDS) card[field] += counts[field];
         }

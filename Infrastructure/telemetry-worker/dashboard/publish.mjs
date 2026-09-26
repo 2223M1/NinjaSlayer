@@ -1,5 +1,5 @@
 import { summarize } from './data.mjs';
-import { choiceCounters, combatCounters } from './public-data.mjs';
+import { choiceCounters, combatCounters, useCurrentCatalog } from './public-data.mjs';
 import { readFile } from 'node:fs/promises';
 import { a10Cohorts, chartBins, mechanismBins } from './chart-data.mjs';
 
@@ -36,12 +36,10 @@ export function publishSnapshot(telemetry, catalog) {
     if (!grouped.has(key)) grouped.set(key, { dimensions, runs: [] });
     grouped.get(key).runs.push(run);
   }
-  const allCards = new Map(catalog.map(card => [card.id, card]));
   const groups = [...grouped.values()].map(({ dimensions, runs }) => {
-    const summary = summarize(runs, []);
-    for (const { id, name, rarity, type } of summary.cards) if (!allCards.has(id)) allCards.set(id, { id, name, rarity, type });
+    const summary = summarize(runs, catalog);
     const combats = [...new Set(runs.flatMap(run => run.combats.map(combat => combat.version)))].map(version => {
-      const measured = summarize(runs.map(run => ({ ...run, combats: run.combats.filter(combat => combat.version === version) })), []);
+      const measured = summarize(runs.map(run => ({ ...run, combats: run.combats.filter(combat => combat.version === version) })), catalog);
       return { version, measuredCombats: measured.measuredCombats,
         cards: measured.cards.filter(card => card.combatSamples).map(card => ({ id: card.id, ...Object.fromEntries(combatCounters.map(key => [key, card[key]])) })) };
     });
@@ -49,8 +47,8 @@ export function publishSnapshot(telemetry, catalog) {
       charts: chartBins(runs), mechanisms: mechanismBins(runs),
       totalCombats: summary.totalCombats, combats,
       floorTotal: runs.reduce((sum, run) => sum + run.floor, 0),
-      cards: summary.cards.map(card => ({ id: card.id, ...Object.fromEntries(choiceCounters.map(key => [key, card[key]])) })) };
+      cards: summary.cards.filter(card => choiceCounters.some(key => card[key])).map(card => ({ id: card.id, ...Object.fromEntries(choiceCounters.map(key => [key, card[key]])) })) };
   });
-  return { catalog: [...allCards.values()], groups,
-    excluded: { rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts, invalidCombats: telemetry.invalidCombats } };
+  return useCurrentCatalog({ groups,
+    excluded: { rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts, invalidCombats: telemetry.invalidCombats } }, catalog);
 }
