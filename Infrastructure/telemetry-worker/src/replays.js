@@ -468,7 +468,7 @@ export async function readPublicReplay(request, env) {
       { error: "report_expired_or_missing" },
       PUBLIC_HEADERS,
     );
-  // The browser decompresses the stored gzip using the standard Content-Encoding header.
+  // R2 stores gzip; stream JSON to the HTTP cache and let the edge negotiate transfer encoding.
   const ttl = Math.max(
     0,
     Math.min(
@@ -476,13 +476,11 @@ export async function readPublicReplay(request, env) {
       Math.floor((Date.parse(object.customMetadata.expires) - Date.now()) / 1000),
     ),
   );
-  return new Response(object.body, {
-    encodeBody: "manual",
+  return new Response(object.body.pipeThrough(new DecompressionStream("gzip")), {
     headers: {
       ...PUBLIC_HEADERS,
       "Cache-Control": `public, max-age=${ttl}`,
       "Content-Type": "application/json",
-      "Content-Encoding": "gzip",
       ETag: object.customMetadata.hash,
     },
   });
