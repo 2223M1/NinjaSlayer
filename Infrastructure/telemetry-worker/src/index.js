@@ -126,9 +126,14 @@ export async function handleRequest(request, env, ctx = { waitUntil() {} }) {
   if (path === '/observatory/replays' || path.startsWith('/observatory/replays/')) {
     if (request.method !== 'GET') return readPublicReplay(request, env);
     const cached = await caches.default.match(request);
-    if (cached) return cached;
+    if (cached) return new Response(cached.body, {
+      status: cached.status, headers: cached.headers, encodeBody: 'manual',
+    });
     const response = await readPublicReplay(request, env);
-    if (response.ok) ctx.waitUntil(caches.default.put(request, response.clone()));
+    // Cloning a Response does not retain encodeBody; cache the gzip bytes verbatim.
+    if (response.ok) ctx.waitUntil(caches.default.put(request, new Response(response.clone().body, {
+      status: response.status, headers: response.headers, encodeBody: 'manual',
+    })));
     return response;
   }
   if (path.startsWith('/observatory/')) return handleObservatory(request, env);
