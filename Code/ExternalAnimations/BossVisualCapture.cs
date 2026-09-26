@@ -151,8 +151,8 @@ public sealed partial class BossVisualCapture : Node, IDisposable
             FreezeSpineAnimation(template);
             if (architectDeath)
             {
-                // Prepare burst pieces from the same native end pose, including
-                // weighted cloth folds, while the live character plays the lead.
+                // Sample the native pose at the shared burst cue, including
+                // cloth deforms; the full death clip continues beyond that cue.
                 using Variant state = template.Call("get_animation_state");
                 using GodotObject stateObject = state.AsGodotObject();
                 stateObject.Call("clear_tracks");
@@ -160,8 +160,12 @@ public sealed partial class BossVisualCapture : Node, IDisposable
                     BossDismembermentPresentation.ArchitectDeathAnimation, false, 0);
                 using GodotObject trackObject = track.AsGodotObject();
                 trackObject.Call("set_mix_duration", 0f);
-                trackObject.Call("set_track_time", 0.9f);
+                trackObject.Call("set_track_time", Math.Min(
+                    trackObject.Call("get_animation_end").AsSingle(), BossBurstTimeline.LeadSeconds));
                 template.Call("update_skeleton", 0f);
+                using Variant skeleton = template.Call("get_skeleton");
+                using GodotObject skeletonObject = skeleton.AsGodotObject();
+                bodyLocalBounds = skeletonObject.Call("get_bounds").AsRect2();
             }
 
             capture.BodyLocalBounds = bodyLocalBounds;

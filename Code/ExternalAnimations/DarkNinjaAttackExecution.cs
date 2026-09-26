@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -65,7 +66,8 @@ internal static class DarkNinjaAttackExecution
     internal static async Task PlayDarkStrike(
         DarkNinjaMonster monster,
         IReadOnlyList<Creature> targets,
-        int damage)
+        int damage,
+        int returnSide = 1)
     {
         await Execute(
             monster,
@@ -87,11 +89,19 @@ internal static class DarkNinjaAttackExecution
                                 .Where(card => card.DeckVersion != null).ToArray();
                         NarakuLifePower? life = target.GetPower<NarakuLifePower>();
                         long absorbedBefore = life?.TotalAbsorbed ?? 0;
-                        DarkStrikeImpactOutcome outcome = await execution.Deal(target);
-                        if (outcome.HpLost || (life?.TotalAbsorbed ?? 0) > absorbedBefore)
+                        var previous = monster.DarkStrikeDamageConfirmed;
+                        bool stolen = false;
+                        monster.DarkStrikeDamageConfirmed = async (receiver, result) =>
+                        {
+                            if (stolen || receiver != target || result.Receiver != target
+                                || (result.UnblockedDamage <= 0 && (life?.TotalAbsorbed ?? 0) <= absorbedBefore))
+                                return;
+                            stolen = true;
                             await monster.StealFrom(candidates);
-                        return outcome;
-                    });
+                        };
+                        try { return await execution.Deal(target); }
+                        finally { monster.DarkStrikeDamageConfirmed = previous; }
+                    }, returnSide: returnSide, canPenetrate: execution.WillPenetrate);
             });
     }
 
@@ -188,6 +198,20 @@ internal static class DarkNinjaAttackExecution
             CanHit(target)
             && (target.GetPower<EvasionPower>() is not { } evasion
             || !evasion.CanEvade(target, command.DamageProps, attacker));
+
+        internal bool WillPenetrate(Creature target)
+        {
+            if (!WillConnect(target)) return false;
+            decimal preview = Hook.ModifyDamage(combatState!.RunState, combatState, target, attacker,
+                damage, command.DamageProps, null,
+#if !NINJASLAYER_LEGACY_DAMAGE_API
+                null,
+#endif
+                ModifyDamageHookType.All, CardPreviewMode.None, out _);
+            decimal block = command.DamageProps.HasFlag(ValueProp.Unblockable)
+                ? 0 : (target.PetOwner?.Creature ?? target).Block;
+            return decimal.Floor(preview) > block;
+        }
 
         internal async Task<DarkStrikeImpactOutcome> Deal(Creature target)
         {

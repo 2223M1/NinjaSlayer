@@ -1,0 +1,11 @@
+{
+  "seed": "NINJASLAYER_GREETING_01",
+  "purpose": "greeting",
+  "greetingMode": "brief",
+  "greetingEncounter": "LagavulinMatriarchBoss",
+  "greetingSpeed": "Instant",
+  "greetingPause": true,
+  "act": 3,
+  "duration": 10,
+  "cues": [{ "id": "sleep_pause_response", "steps": [{ "action": "wait" }] }]
+}

@@ -21,8 +21,9 @@ public sealed class AncientEntranceCreatureVisibilityPatch : IPatchMethod
     {
         if (creature.Player is not { } player
             || !IsNinjaSlayer(player)
-            || (!NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player)
-                && !BossGreetingCinematic.ShouldStage(player)))
+            || !(BossGreetingCinematic.ReplacesAncientEntrance(player)
+                ? BossGreetingCinematic.ShouldStage(player)
+                : NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player)))
         {
             return;
         }

@@ -1,0 +1,16 @@
+{
+  "seed": "NINJASLAYER_BLOOD_01",
+  "purpose": "blood",
+  "act": 3,
+  "duration": 19,
+  "karate": 1,
+  "cues": [
+    {"id":"threshold_and_exclusions","steps":[{"action":"blood_check","mode":"boundary"}]},
+    {"id":"normal_motion","steps":[{"action":"blood_check","mode":"moving"}]},
+    {"id":"half_naraku","steps":[{"action":"form","form":"semi"},{"action":"wait","seconds":0.3},{"action":"blood_check","mode":"semi"}]},
+    {"id":"fixed_head","steps":[{"action":"card","card":"HellTornadoRedesignV1"},{"action":"blood_check","mode":"hell"},{"action":"clear_air"}]},
+    {"id":"full_naraku","steps":[{"action":"form","form":"full"},{"action":"wait","seconds":0.3},{"action":"blood_check","mode":"full"}]},
+    {"id":"one_body_one_soul","steps":[{"action":"form","form":"soul"},{"action":"wait","seconds":0.3},{"action":"blood_check","mode":"soul"}]},
+    {"id":"mirror_normal_speed","steps":[{"action":"form","form":"normal"},{"action":"swap_sides"},{"action":"speed","mode":"Normal"},{"action":"wait","seconds":0.3},{"action":"blood_check","mode":"mirror"},{"action":"wait","seconds":0.5}]}
+  ]
+}

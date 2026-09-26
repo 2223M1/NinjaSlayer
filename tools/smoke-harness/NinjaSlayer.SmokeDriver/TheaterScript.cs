@@ -11,6 +11,10 @@ internal sealed record TheaterScript
     public double Duration { get; init; } = 38.5;
     public string[] Relics { get; init; } = [];
     public int Karate { get; init; } = 2;
+    public string GreetingMode { get; init; } = "brief";
+    public string? GreetingEncounter { get; init; }
+    public string GreetingSpeed { get; init; } = "Fast";
+    public bool GreetingPause { get; init; }
     public TheaterCue[] Cues { get; init; } = [];
 
     internal static TheaterScript Load(string path)
@@ -24,7 +28,8 @@ internal sealed record TheaterScript
         }) ?? throw new InvalidDataException("Theater script is empty.");
         if (script.Act != 3 || script.Cues.Length == 0 || script.Duration <= 0)
             throw new InvalidDataException("Theater requires Act 3, positive duration and at least one cue.");
-        if (script.Purpose is not ("promo" or "tomoe" or "hook" or "aim")) throw new InvalidDataException("Unknown theater purpose.");
+        if (script.Purpose is not ("promo" or "tomoe" or "hook" or "aim" or "architect" or "theft" or "blood" or "greeting" or "overhead")) throw new InvalidDataException("Unknown theater purpose.");
+        if (script.GreetingMode is not ("brief" or "switch" or "full" or "switch-response")) throw new InvalidDataException("Unknown greeting mode.");
         if (script.Relics.Contains("BigMushroom") || script.Relics.Distinct().Count() != script.Relics.Length)
             throw new InvalidDataException("Theater relics must be unique and exclude BigMushroom.");
         var names = new HashSet<string>(StringComparer.Ordinal);
@@ -52,7 +57,8 @@ internal sealed record TheaterScript
         if (step.Action is not ("card" or "move" or "wait" or "roll_volley" or "knife_exchange"
             or "entrance" or "missiles" or "apology" or "takeover" or "form" or "clear_air"
             or "camera" or "power" or "remove_power" or "clear_block" or "block" or "aim"
-            or "give_card" or "swap_sides" or "replace_enemy" or "speed" or "aim_motion"))
+            or "give_card" or "swap_sides" or "replace_enemy" or "speed" or "aim_motion"
+            or "architect_compare" or "architect_execution" or "theft_round" or "blood_check" or "overhead_check"))
             throw new InvalidDataException($"Unknown theater action: {step.Action}");
         if (step.Action == "speed" && step.Mode is not ("Normal" or "Fast" or "Instant"))
             throw new InvalidDataException("Unknown playback speed.");

@@ -86,6 +86,11 @@ public partial class OrbContractRunner
             await WaitNetwork(() => client.IsConnected, "host handshake");
         }
 
+        if (System.Environment.GetEnvironmentVariable("NINJASLAYER_MULTIPLAYER_GREETING_ONLY") == "1")
+        {
+            await VerifyGreetingBarrier(role, directory);
+            return;
+        }
         using var combat = new OrbCombat(ninjaSlayer: true);
         Player first = combat.Player;
         Player second = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 2);

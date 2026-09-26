@@ -12,11 +12,13 @@ namespace NinjaSlayer.Code.Nodes;
 internal sealed partial class DarkNinjaStolenCards : Node
 {
     private Creature _creature = null!;
-    private readonly Node2D _hand = new() { Name = "StolenCardPos", Position = new(254f, -12f) };
+    private readonly Node2D _hand = new() { Name = "StolenCardPos", Position = new(254f, 0f) };
     private readonly Dictionary<CardModel, Node2D> _cards = [];
     private readonly Dictionary<CardModel, NativeStolenCardMotion> _motions = [];
     private Sprite2D? _home;
     private Sprite2D? _body;
+    private Vector2 _bodyBaseScale;
+    private Vector2 _heldScale;
 
     internal static DarkNinjaStolenCards? Get(Creature creature) =>
         creature.GetCreatureNode()?.Visuals.GetNodeOrNull<DarkNinjaStolenCards>("StolenCards");
@@ -32,12 +34,16 @@ internal sealed partial class DarkNinjaStolenCards : Node
 
     internal void ShowOn(Sprite2D body)
     {
-        _home ??= body;
+        if (_home == null)
+        {
+            _home = body;
+            _bodyBaseScale = body.GlobalScale.Abs();
+        }
         if (GodotObject.IsInstanceValid(_body)) _body!.TreeExiting -= RestoreHand;
         _body = body;
         _body.TreeExiting += RestoreHand;
         if (_hand.GetParent() == null) body.AddChild(_hand);
-        else _hand.Reparent(body, keepGlobalTransform: false);
+        else if (_hand.GetParent() != body) _hand.Reparent(body, keepGlobalTransform: false);
     }
 
     private void RestoreHand()
@@ -46,13 +52,16 @@ internal sealed partial class DarkNinjaStolenCards : Node
             ShowOn(_home);
     }
 
-    internal void Refresh()
+    internal void Refresh(CardModel? incoming = null)
     {
         CardModel[] stolen = _creature.Powers.OfType<SwipePower>()
             .Select(power => power.StolenCard).OfType<CardModel>().Where(LocalContext.IsMine).ToArray();
+        if (incoming != null && LocalContext.IsMine(incoming) && !stolen.Contains(incoming))
+            stolen = [.. stolen, incoming];
         foreach (CardModel removed in _cards.Keys.Except(stolen).ToArray())
         {
             if (_motions.Remove(removed, out var motion)) motion.Stop();
+            _hand.RemoveChild(_cards[removed]);
             _cards[removed].QueueFreeSafely();
             _cards.Remove(removed);
         }
@@ -64,29 +73,40 @@ internal sealed partial class DarkNinjaStolenCards : Node
             NCard node = NCard.Create(card)!;
             grip.AddChildSafely(node);
             node.UpdateVisuals(PileType.Deck, CardPreviewMode.Normal);
-            node.Scale = Vector2.One * .32f;
-            node.Position = -node.Size * new Vector2(.5f, .92f) * .32f;
+            node.Scale = Vector2.One;
             node.MouseFilter = Control.MouseFilterEnum.Ignore;
             _cards.Add(card, grip);
-            if (Combat.CombatActionTimingRuntime.VisualSeconds(1f) <= 0f) continue;
-            _motions[card] = NativeStolenCardMotion.Create(grip, death: false, () =>
+            Node2D target = card.Owner.Creature.GetCreatureNode()!.Visuals.VfxSpawnPosition;
+            NativeStolenCardMotion motion = NativeStolenCardMotion.Create(grip, death: false, () =>
             {
                 _motions.Remove(card);
                 if (GodotObject.IsInstanceValid(grip)) grip.Transform = GripPose(card);
             }, () => _hand.GlobalTransform * GripPose(card),
-                targetOffsetX: card.Owner.Creature.GetCreatureNode()!.GlobalPosition.X
-                    - _creature.GetCreatureNode()!.GlobalPosition.X);
+                target: target, mirrored: _home!.GlobalPosition.X < target.GlobalPosition.X);
+            _heldScale = motion.HeldScale;
+            node.Position = new Vector2(0f, NCard.defaultSize.Y * .5f - 8f / _heldScale.Y);
+            grip.Transform = GripPose(card);
+            if (Combat.CombatActionTimingRuntime.VisualSeconds(1f) <= 0f)
+            {
+                grip.Visible = true;
+                motion.Stop();
+            }
+            else _motions[card] = motion;
         }
         foreach (CardModel card in stolen)
+        {
+            // New cards are appended last, so native sibling order keeps them
+            // above older cards without raising the stack above the victim.
             if (!_motions.ContainsKey(card)) _cards[card].Transform = GripPose(card);
+        }
     }
 
     private Transform2D GripPose(CardModel card)
     {
-        int index = Array.IndexOf(_cards.Keys.ToArray(), card);
+        int index = _cards[card].GetIndex();
         float spread = Math.Min(40f, Math.Max(0, _cards.Count - 1) * 8f);
         float degrees = _cards.Count <= 1 ? 0f : -spread * .5f + spread * index / (_cards.Count - 1);
-        return new Transform2D(Mathf.DegToRad(degrees), Vector2.Zero);
+        return new Transform2D(Mathf.DegToRad(degrees), _heldScale / _bodyBaseScale, 0f, Vector2.Zero);
     }
 
     internal void Hide() => _hand.Visible = false;

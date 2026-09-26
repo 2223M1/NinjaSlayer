@@ -1,0 +1,14 @@
+{
+  "seed": "NINJASLAYER_OVERHEAD_01",
+  "purpose": "overhead",
+  "act": 3,
+  "duration": 18,
+  "karate": 0,
+  "cues": [
+    { "id": "overhead_clearance", "steps": [{ "action": "overhead_check" }] },
+    { "id": "audio_reference", "steps": [
+      { "action": "card", "card": "KarateStraightRedesignV1", "repeat": 3 },
+      { "action": "wait", "seconds": 1 }
+    ] }
+  ]
+}

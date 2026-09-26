@@ -1,0 +1,3 @@
+{ae18763d-ad15-4e6f-be82-0f2eccb17eb7} event:/NinjaSlayerEventMusic/music/yukano_teahouse
+{5a225627-5e7e-47e9-b304-d297ccbd36cc} event:/NinjaSlayerEventMusic/music/yamoto_koki_remix
+{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43} event:/NinjaSlayerEventMusic/music/naraku_crystal_variation

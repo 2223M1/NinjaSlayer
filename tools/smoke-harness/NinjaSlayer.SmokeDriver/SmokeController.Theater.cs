@@ -53,6 +53,11 @@ internal sealed partial class SmokeController
             RitsuLibFramework.SetTelemetryApplicantConsent(applicant.ApplicantId, TelemetryConsentState.Denied);
         SaveManager.Instance.SetFtuesEnabled(false);
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Fast;
+        if (script.Purpose == "greeting")
+        {
+            await RunGreetingPreview(script);
+            return;
+        }
         var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
             true, ActModel.GetDefaultList(), [], script.Seed, GameMode.Standard, 0);
         await RunManager.Instance.EnterAct(script.Act - 1);
@@ -96,7 +101,7 @@ internal sealed partial class SmokeController
         finally { _theater = null; NonInteractiveMode.AutoSlayerCheck = autoSlayerCheck; }
     }
 
-    private sealed class TheaterRuntime : IDisposable
+    private sealed partial class TheaterRuntime : IDisposable
     {
         private readonly SmokeController _driver;
         private readonly TheaterScript _script;
@@ -290,6 +295,11 @@ internal sealed partial class SmokeController
                     case "remove_power": await RemovePower(Actor(step.Actor), step.Power!); break;
                     case "aim": await Aim(); break;
                     case "aim_motion": await AimMotion(step.Mode!); break;
+                    case "architect_compare": await ArchitectComparison(); break;
+                    case "architect_execution": await ArchitectExecution(); break;
+                    case "theft_round": await TheftRound(step.Mode!); break;
+                    case "blood_check": await BloodCheck(step.Mode!); break;
+                    case "overhead_check": await OverheadCheck(); break;
                     default: throw new InvalidDataException($"Unsupported theater action {step.Action}.");
                 }
                 foreach (string cover in step.Covers) Cover(cover);
@@ -690,7 +700,8 @@ internal sealed partial class SmokeController
                 await Tween(.2, p => { root.Position = (kickStart + new Vector2(65, 0)).Lerp(slot, p); root.Rotation = -Mathf.Pi * .5f * (1 - p); });
             };
             await Animation("DarkNinjaSpecialAttackPresentation", "PlayDarkStrike", dark,
-                new Creature[] { Actor("sawatari") }, (Func<Creature, bool>)(c => c.IsAlive), callback, finish);
+                new Creature[] { Actor("sawatari") }, (Func<Creature, bool>)(c => c.IsAlive), callback, finish, 1,
+                (Func<Creature, bool>)(c => c.Block < 14 && c.GetPower<EvasionPower>() == null));
             _enemy = "dark";
             darkNode.Show();
             darkNode.IntentContainer.Show();
@@ -742,6 +753,7 @@ internal sealed partial class SmokeController
         {
             if (_start == 0) return;
             var row = new JsonObject { ["seconds"] = Seconds, ["cue"] = _cue };
+            if (IsArchitectPreview) SampleArchitect(row);
             if (_script.Purpose == "aim")
             {
                 row["aimAngle"] = (float)AccessTools.Field(Pose.GetType(), "_angle").GetValue(Pose)!;

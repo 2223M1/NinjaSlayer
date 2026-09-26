@@ -95,6 +95,7 @@ public class Entry
             requiredPatcher.RegisterPatch<AncientEntranceEventOptionPatch>();
             requiredPatcher.RegisterPatch<AncientEntranceCreatureVisibilityPatch>();
             requiredPatcher.RegisterPatch<BossGreetingMusicPatch>();
+            requiredPatcher.RegisterPatch<BossGreetingStartPatch>();
             requiredPatcher.RegisterPatch<CardTransformShineSfxPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             requiredPatcher.RegisterPatch<YamotoKokiAllyLayoutPatch>();
@@ -483,6 +484,16 @@ public class Entry
         FmodStudioDeferredBankRegistration.RegisterBank(NinjaSlayerAudio.BankPath);
         FmodStudioDeferredBankRegistration.RegisterStudioGuidMappings(NinjaSlayerAudio.GuidMappingsPath);
         Logger.Info($"FMOD bank registered: {NinjaSlayerAudio.BankPath}");
+        if (Godot.FileAccess.FileExists(NinjaSlayerAudio.EventMusicBankPath)
+            && Godot.FileAccess.FileExists(NinjaSlayerAudio.EventMusicGuidMappingsPath))
+        {
+            FmodStudioDeferredBankRegistration.RegisterBank(NinjaSlayerAudio.EventMusicBankPath);
+            FmodStudioDeferredBankRegistration.RegisterStudioGuidMappings(NinjaSlayerAudio.EventMusicGuidMappingsPath);
+        }
+        else
+        {
+            Log.Warn("Fixed event music bank is missing; event rooms will retain act music.");
+        }
     }
 
 }

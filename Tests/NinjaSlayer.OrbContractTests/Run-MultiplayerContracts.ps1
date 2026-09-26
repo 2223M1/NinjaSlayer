@@ -9,7 +9,8 @@ param(
     [Parameter(Mandatory)][string]$GodotPath,
     [Parameter(Mandatory)][string]$DotnetRoot,
     [Parameter(Mandatory)][string]$OutputDirectory,
-    [ValidateRange(1024, 65535)][int]$Port = 19481
+    [ValidateRange(1024, 65535)][int]$Port = 19481,
+    [switch]$GreetingOnly
 )
 $ErrorActionPreference = 'Stop'
 $repository = (Resolve-Path "$PSScriptRoot/../..").Path
@@ -38,6 +39,7 @@ $environment = @{
     NINJASLAYER_CONTRACT_PRODUCT_PACK = $productPackPath
     NINJASLAYER_MULTIPLAYER_DIRECTORY = $output
     NINJASLAYER_MULTIPLAYER_PORT = [string]$Port
+    NINJASLAYER_MULTIPLAYER_GREETING_ONLY = $(if ($GreetingOnly) { '1' } else { '0' })
 }
 $processes = @()
 try {

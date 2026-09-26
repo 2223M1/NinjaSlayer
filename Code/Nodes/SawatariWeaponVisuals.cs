@@ -53,11 +53,11 @@ internal sealed partial class SawatariWeaponVisuals : Node
         visual._body = NinjaSlayerVisualRig.GetBodySprite(actor.Visuals)!;
         visual._bodyScale = visual._body.Scale;
         visual._groundContact = actor.Visuals.GetNode<Node2D>("GroundContact").Position;
-        if (monster.Creature.Side == CombatSide.Enemy)
+        if (monster.ActThree)
         {
+            // The upright dual blades extend above the hat; bamboo does not.
             float offset = -390f - actor.Visuals.IntentPosition.Position.Y;
             actor.Visuals.IntentPosition.Position += new Vector2(0, offset);
-            // NCreature lays out this public container before OnAddedToCombat.
             actor.IntentContainer.Position += new Vector2(0, offset * actor.Visuals.Scale.X);
         }
         actor.Visuals.AddChild(visual);

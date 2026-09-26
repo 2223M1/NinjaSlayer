@@ -37,6 +37,7 @@ public static class BossGreetingCinematic
     private static readonly ConditionalWeakTable<IRunState, ProcessedRoomState> ProcessedRooms = new();
     private static string? _deferredBossBgm;
     private static bool _musicBusMuted;
+    private static BossGreetingSync? _sync;
 
     public static void RegisterLifecycle()
     {
@@ -44,11 +45,18 @@ public static class BossGreetingCinematic
             ProcessedRooms.GetOrCreateValue(evt.RunState).ResumedLocation = evt.RunState.MapLocation);
         RitsuLibFramework.SubscribeLifecycle<RoomExitedEvent>(evt =>
         {
+            _sync?.Dispose();
+            _sync = null;
             if (evt.RunManager.DebugOnlyGetState() is { } runState
                 && ProcessedRooms.TryGetValue(runState, out ProcessedRoomState? state))
             {
                 state.ResumedLocation = null;
             }
+        });
+        RitsuLibFramework.SubscribeLifecycle<RunEndedEvent>(_ =>
+        {
+            _sync?.Dispose();
+            _sync = null;
         });
     }
 
@@ -57,12 +65,29 @@ public static class BossGreetingCinematic
         ICombatState? combatState = CombatManager.Instance.DebugOnlyGetState();
         return combatState != null
             && player.Character is INinjaSlayerCharacter
+            && RunManager.Instance.NetService.Type != NetGameType.Client
+            && !NinjaSlayerSettings.BriefBossGreetingEnabled
             && IsGreetingPending(combatState, out _, out _);
     }
 
+    internal static bool ReplacesAncientEntrance(Player player)
+    {
+        ICombatState? state = CombatManager.Instance.DebugOnlyGetState();
+        return state != null && player.Character is INinjaSlayerCharacter
+            && TryGetRoomKey(state, out _);
+    }
+
+    internal static bool IsPending(ICombatState state) => NCombatRoom.Instance != null
+        && NRun.Instance?.GlobalUi != null
+        && state.Players.Any(player => player.Character is INinjaSlayerCharacter)
+        && TryGetRoomKey(state, out _)
+        && (RunManager.Instance.NetService.Type != NetGameType.Singleplayer
+            || IsGreetingPending(state, out _, out _));
+
     public static async Task<bool> TryPlay(ICombatState combatState)
     {
-        if (!IsGreetingPending(combatState, out string roomKey, out List<Player> ninjaSlayers))
+        bool pending = IsGreetingPending(combatState, out string roomKey, out List<Player> ninjaSlayers);
+        if (!TryGetRoomKey(combatState, out roomKey) || ninjaSlayers.Count == 0)
         {
             return false;
         }
@@ -70,45 +95,158 @@ public static class BossGreetingCinematic
         NCombatRoom? room = NCombatRoom.Instance;
         NRun? run = NRun.Instance;
         if (room == null
-            || run?.GlobalUi == null
-            || !TryMarkProcessed(combatState.RunState, roomKey))
+            || run?.GlobalUi == null)
         {
             return false;
         }
 
-        foreach (Player player in ninjaSlayers)
-        {
-            NinjaSlayerRunData.MarkBossGreetingCompleted(player, roomKey);
-        }
-
-        var context = new BossGreetingSession(room, run.GlobalUi, StableHash(roomKey));
+        _sync?.Dispose();
+        var sync = new BossGreetingSync(RunManager.Instance.NetService, roomKey,
+            combatState.Players.Select(player => player.NetId), NinjaSlayerSettings.BriefBossGreetingEnabled, pending);
+        _sync = sync;
+        room.TreeExiting += sync.Dispose;
+        var context = new BossGreetingSession(room, run.GlobalUi, StableHash(roomKey), sync);
+        bool played = false;
         try
         {
-            await PlayInternal(combatState, ninjaSlayers, room, run.GlobalUi, context);
+            // Ready is retried until Start, covering clients whose room or
+            // message handler has not been created when the host arrives.
+            float retryReady = 0f;
+            while (!sync.Started)
+            {
+                if (retryReady <= 0f) { sync.Ready(); retryReady = 0.25f; }
+                if (!sync.Started) retryReady -= await context.NextFrame();
+            }
+            if (sync.Present && pending && !sync.Released)
+            {
+                TryMarkProcessed(combatState.RunState, roomKey);
+                foreach (Player player in ninjaSlayers)
+                    NinjaSlayerRunData.MarkBossGreetingCompleted(player, roomKey);
+                if (!sync.Brief && !sync.Shortened)
+                {
+                    context.BeginFull();
+                    try { await PlayInternal(combatState, ninjaSlayers, room, run.GlobalUi, context); }
+                    catch (OperationCanceledException) when (sync.Shortened && !sync.Cancelled)
+                    {
+                        await context.FinishEntrances();
+                        context.BeginBrief();
+                        await PlayBrief(combatState, ninjaSlayers, room, context);
+                    }
+                }
+                else
+                {
+                    context.BeginBrief();
+                    await PlayBrief(combatState, ninjaSlayers, room, context);
+                }
+                played = true;
+            }
+            context.FinishPresentation();
+            sync.Complete();
+            while (!sync.Released) await context.NextFrame();
+            if (played && sync.IsAuthority) NinjaSlayerSettings.CompleteFirstBossGreeting();
+            Entry.Logger.Info($"Boss greeting released combat-start hooks: room={roomKey}, played={played}.");
         }
         catch (OperationCanceledException)
         {
-            // Space skips the complete single-player presentation.
+            // Room exit/disconnection is not a request for a brief greeting.
+            throw;
         }
         catch (Exception ex)
         {
             Entry.Logger.Warn($"Boss greeting cinematic failed safely: {ex}");
+            context.FinishPresentation();
+            sync.Complete();
+            while (!sync.Released) await context.NextFrame();
         }
         finally
         {
-            context.Dispose();
-            context.RestoreCameraAndScreenShakeTarget();
-            if (GodotObject.IsInstanceValid(room) && room.IsInsideTree())
+            try { await context.FinishEntrances(); }
+            finally
             {
-                foreach (Player player in ninjaSlayers)
+                context.Dispose();
+                context.RestoreCameraAndScreenShakeTarget();
+                if (GodotObject.IsInstanceValid(room) && room.IsInsideTree())
                 {
-                    NCreature? node = room.GetCreatureNode(player.Creature);
-                    node?.Visuals.Show();
+                    foreach (Player player in ninjaSlayers)
+                    {
+                        NCreature? node = room.GetCreatureNode(player.Creature);
+                        node?.Visuals.Show();
+                    }
                 }
             }
         }
 
-        return true;
+        return played;
+    }
+
+    private static async Task PlayBrief(ICombatState state, List<Player> players, NCombatRoom room, BossGreetingSession context)
+    {
+        Player followed = SelectFollowedPlayer(state, players, context.RoomKeySeed);
+        Creature? boss = SelectBoss(state);
+        NCreature? bossNode = boss == null ? null : room.GetCreatureNode(boss);
+        var bows = new List<(NinjaSlayerAimPose Pose, NinjaSlayerAimPose.VisualMotion Motion)>();
+        foreach (Player player in players)
+        {
+            room.GetCreatureNode(player.Creature)?.Visuals.Show();
+            NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(player.Creature);
+            if (pose?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, 1f) is not { } motion) continue;
+            motion.Paused = true;
+            bows.Add((pose, motion));
+        }
+        string name = LocManager.Instance.Language == "zhs" ? "忍者杀手" : "NINJA SLAYER";
+        string title = state.Encounter?.Title.GetFormattedText() ?? boss?.Monster?.Id.Entry ?? "Boss";
+        var bubble = NSpeechBubbleVfx.Create($"DOMO, {title}=SAN, {name} DESU.".ToUpperInvariant(), followed.Creature, 1.8f);
+        if (bubble != null) { room.SceneContainer.AddChildSafely(bubble); context.TrackNode(bubble); }
+        float elapsed = 0f;
+        bool recovered = false;
+        float duration = Math.Max(2f, context.BossResponseStarted
+            ? context.BossResponseRemaining : 0.5f + (boss == null ? 0f : BossGreetingActionCatalog.Get(boss).MinimumDuration));
+        Entry.Logger.Info($"Brief boss greeting started: duration={duration:0.###}s, continuingBoss={context.BossResponseStarted}.");
+        try
+        {
+            while (elapsed < duration)
+            {
+                float weight = elapsed < 0.2f ? Mathf.SmoothStep(0f, 1f, elapsed / 0.2f)
+                    : elapsed < 0.7f ? 1f : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - 0.7f) / 0.3f);
+                foreach (var (pose, motion) in bows)
+                {
+                    motion.Radians = Mathf.DegToRad(18f) * motion.Facing * weight;
+                    pose.SyncNow();
+                }
+                if (elapsed >= 0.5f && !context.BossResponseStarted && boss != null && bossNode != null)
+                {
+                    ShowBriefBossBubble(state, room, boss, bossNode, context);
+                    context.StartBossResponse(boss, bossNode);
+                    Entry.Logger.Info($"Brief boss response started: elapsed={elapsed:0.###}s.");
+                }
+                if (!recovered && elapsed >= 1f)
+                {
+                    recovered = true;
+                    Entry.Logger.Info($"Brief ninja bow recovered: elapsed={elapsed:0.###}s.");
+                }
+                elapsed += await context.NextFrame();
+            }
+            context.HandoffBossAudio();
+        }
+        finally
+        {
+            foreach (var (pose, motion) in bows) { motion.Dispose(); if (GodotObject.IsInstanceValid(pose)) pose.SyncNow(); }
+        }
+    }
+
+    private static void ShowBriefBossBubble(ICombatState state, NCombatRoom room, Creature boss,
+        NCreature bossNode, BossGreetingSession context)
+    {
+        if (boss.Monster is LagavulinMatriarch) return;
+        string title = state.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
+        var bubble = IsKaiserBoss(boss)
+            ? NSpeechBubbleVfx.Create(BuildBossGreetingDialogue(title), DialogueSide.Right,
+                GetGlobalCenter(GetBossFocus(room, boss, bossNode)!), 2f)
+            : NSpeechBubbleVfx.Create(BuildBossGreetingDialogue(title), boss, 2f);
+        if (bubble == null) return;
+        room.SceneContainer.AddChildSafely(bubble);
+        context.TrackNode(bubble);
+        context.BossBubble = bubble;
     }
 
     public static bool TryDeferBossBgm(string customMusic)
@@ -159,6 +297,12 @@ public static class BossGreetingCinematic
         }
     }
 
+    internal static void CancelDeferredBossBgm()
+    {
+        _deferredBossBgm = null;
+        PlayDeferredBossBgm();
+    }
+
     private static async Task PlayInternal(
         ICombatState combatState,
         List<Player> ninjaSlayers,
@@ -185,6 +329,7 @@ public static class BossGreetingCinematic
             .Select(player => AncientEntranceAnimation.Play(player, variants[player], context, entranceStart.Task))
             .ToArray();
         Task allEntrances = Task.WhenAll(entranceTasks);
+        context.Entrances = allEntrances;
         Entry.Logger.Info("Boss greeting entrances staged outside the scene; starting camera lead.");
 
         float playerZoom = context.BaselineScale.X * PlayerZoomMultiplier;
@@ -308,6 +453,7 @@ public static class BossGreetingCinematic
             bubble.ProcessMode = Node.ProcessModeEnum.Inherit;
             bubble.Visible = true;
         }
+        context.BossBubble = bubble;
 
         AudioEventHandle? bossAudio = await PlayBossAction(boss, bossNode, context);
         await context.TweenCameraToBaseline(CameraReturnSeconds);
@@ -375,29 +521,14 @@ public static class BossGreetingCinematic
         BossGreetingSession context)
     {
         BossGreetingActionSpec action = BossGreetingActionCatalog.Get(boss);
-        AudioEventHandle? audioEvent = action.SfxPath == null
-            ? null
-            : context.PlaySfxWithHandle(action.SfxPath);
-        if (action.AnimationTrigger != null)
-        {
-            bossNode.SetAnimationTrigger(action.AnimationTrigger);
-        }
-
-        float elapsedBeforeCompletionWait = 0f;
-        if (action.VfxPath != null)
-        {
-            await context.WaitSeconds(action.VfxDelay);
-            elapsedBeforeCompletionWait = action.VfxDelay;
-            MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter(boss, action.VfxPath);
-        }
-
+        context.StartBossResponse(boss, bossNode);
         float finishAt = Math.Max(action.MinimumDuration, MinimumBossCameraHoldSeconds);
-        await context.WaitSeconds(Math.Max(0f, finishAt - elapsedBeforeCompletionWait));
+        await context.WaitSeconds(finishAt);
 
         string bossName = boss.Monster?.Id.Entry ?? boss.GetType().Name;
         Entry.Logger.Info(
-            $"Boss greeting action completed its calibrated duration: boss={bossName}, waited={Math.Max(finishAt, elapsedBeforeCompletionWait):0.###}s.");
-        return audioEvent;
+            $"Boss greeting action completed its calibrated duration: boss={bossName}, waited={finishAt:0.###}s.");
+        return context.BossAudio;
     }
 
     private static Creature? SelectBoss(ICombatState state)
@@ -563,6 +694,8 @@ public static class BossGreetingCinematic
         private readonly List<CanvasItem> _ownedVisuals = [];
         private readonly Dictionary<CanvasItem, LayerSnapshot> _layerSnapshots = [];
         private readonly CinematicSessionLifetime _cancellation = new();
+        private readonly CinematicSessionLifetime _fullCancellation = new();
+        private readonly BossGreetingSync _sync;
         private readonly NinjaSlayerHoverTipSuppression _hoverTipSuppression;
         private VideoStreamPlayer? _video;
         private bool _paused;
@@ -572,29 +705,96 @@ public static class BossGreetingCinematic
         private ulong _lastFrameMsec;
         private ulong _lastDeltaFrame = ulong.MaxValue;
         private float _cachedFrameDelta;
-        private readonly CombatCinematicCameraLease _camera;
+        private CombatCinematicCameraLease? _cameraLease;
+        private CombatCinematicCameraLease _camera => _cameraLease
+            ?? throw new InvalidOperationException("Brief greetings do not own the camera.");
+        private bool _full;
+        private Creature? _respondingBoss;
+        private BossGreetingActionSpec? _response;
+        private float _responseElapsed;
+        private bool _responseVfxPlayed;
+        public Task? Entrances { get; set; }
+        public NSpeechBubbleVfx? BossBubble { get; set; }
+        public AudioEventHandle? BossAudio { get; private set; }
+        public bool BossResponseStarted => _response != null;
+        public float BossResponseRemaining => Math.Max(0f, (_response?.MinimumDuration ?? 0f) - _responseElapsed);
 
-        public BossGreetingSession(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed)
+        public BossGreetingSession(NCombatRoom room, NGlobalUi globalUi, uint roomKeySeed, BossGreetingSync sync)
         {
             _room = room;
             _sceneContainer = room.SceneContainer;
             _globalUi = globalUi;
+            _sync = sync;
             _singlePlayer = RunManager.Instance.IsSingleplayerOrFakeMultiplayer;
+            RoomKeySeed = roomKeySeed;
+            _roomProcessMode = room.ProcessMode;
+            _lastFrameMsec = Time.GetTicksMsec();
+            _spaceWasDown = Input.IsKeyPressed(Key.Space);
+            _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
+        }
+
+        public void BeginFull()
+        {
+            _full = true;
+            NCombatRoom room = _room;
             if (!CombatCinematicCameraLease.TryAcquire(room, "boss greeting", out CombatCinematicCameraLease? camera))
             {
                 throw new InvalidOperationException("The combat cinematic camera is already in use.");
             }
 
-            _camera = camera ?? throw new InvalidOperationException("Could not acquire the combat cinematic camera.");
-            RoomKeySeed = roomKeySeed;
-            _roomProcessMode = room.ProcessMode;
-            _lastFrameMsec = Time.GetTicksMsec();
+            _cameraLease = camera ?? throw new InvalidOperationException("Could not acquire the combat cinematic camera.");
             RaiseTopBarLayers();
-            _hoverTipSuppression = NinjaSlayerHoverTipSuppression.Acquire();
-
         }
 
-        public CancellationToken CancellationToken => _cancellation.Token;
+        public async Task FinishEntrances()
+        {
+            _fullCancellation.Cancel();
+            if (Entrances == null) return;
+            try { await Entrances; }
+            catch (OperationCanceledException) { }
+        }
+
+        public void BeginBrief()
+        {
+            FinishPresentation();
+            if (_video != null && GodotObject.IsInstanceValid(_video))
+            {
+                _video.Stop();
+                _video.QueueFreeSafely();
+            }
+            _video = null;
+            foreach (var audio in _audioEvents.Where(audio => audio != BossAudio).ToArray())
+            {
+                audio.TryStop(allowFadeOut: false);
+                audio.TryRelease();
+                _audioEvents.Remove(audio);
+            }
+            foreach (var node in _ownedVisuals.Where(node => node != BossBubble).ToArray())
+            {
+                if (GodotObject.IsInstanceValid(node)) node.QueueFreeSafely();
+                _ownedVisuals.Remove(node);
+            }
+        }
+
+        public void FinishPresentation()
+        {
+            _full = false;
+            RestoreCameraAndScreenShakeTarget();
+            RestoreTopBarLayers();
+        }
+
+        public void StartBossResponse(Creature boss, NCreature node)
+        {
+            if (_response != null) return;
+            _respondingBoss = boss;
+            _response = BossGreetingActionCatalog.Get(boss);
+            if (_response.SfxPath != null) BossAudio = PlaySfxWithHandle(_response.SfxPath);
+            if (_response.AnimationTrigger != null) node.SetAnimationTrigger(_response.AnimationTrigger);
+        }
+
+        public void HandoffBossAudio() => HandoffAudioForNaturalRelease(BossAudio, BossActionTimeoutSeconds);
+
+        public CancellationToken CancellationToken => _full ? _fullCancellation.Token : _cancellation.Token;
         public Vector2 BaselinePosition => _camera.BaselinePosition;
         public Vector2 BaselineScale => _camera.BaselineScale;
         public Vector2 ViewportSize => _camera.ViewportSize;
@@ -671,9 +871,20 @@ public static class BossGreetingCinematic
 
         public async Task<float> NextFrame()
         {
-            await _room.ToSignal(_room.GetTree(), SceneTree.SignalName.ProcessFrame);
-            UpdatePauseAndSkip();
+            SceneTree tree = (SceneTree)Engine.GetMainLoop();
+            await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+            if (!GodotObject.IsInstanceValid(_room) || !_room.IsInsideTree() || _sync.Cancelled)
+            {
+                _fullCancellation.Cancel();
+                _cancellation.Cancel();
+            }
             _cancellation.Token.ThrowIfCancellationRequested();
+            UpdatePauseAndSkip();
+            if (_full && _sync.Shortened)
+            {
+                _fullCancellation.Cancel();
+                _fullCancellation.Token.ThrowIfCancellationRequested();
+            }
 
             ulong processFrame = Engine.GetProcessFrames();
             if (processFrame != _lastDeltaFrame)
@@ -682,7 +893,16 @@ public static class BossGreetingCinematic
                 _cachedFrameDelta = _paused ? 0f : Math.Min((now - _lastFrameMsec) / 1000f, 0.05f);
                 _lastFrameMsec = now;
                 _lastDeltaFrame = processFrame;
-                _camera.Advance(_cachedFrameDelta);
+                _cameraLease?.Advance(_cachedFrameDelta);
+                if (_response != null)
+                {
+                    _responseElapsed += _cachedFrameDelta;
+                    if (!_responseVfxPlayed && _response.VfxPath != null && _responseElapsed >= _response.VfxDelay)
+                    {
+                        _responseVfxPlayed = true;
+                        MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter(_respondingBoss!, _response.VfxPath);
+                    }
+                }
             }
 
             return _cachedFrameDelta;
@@ -849,7 +1069,8 @@ public static class BossGreetingCinematic
 
         public void RestoreCameraAndScreenShakeTarget()
         {
-            _camera.Dispose();
+            _cameraLease?.Dispose();
+            _cameraLease = null;
         }
 
         public void Dispose()
@@ -879,10 +1100,11 @@ public static class BossGreetingCinematic
                 visual.QueueFreeSafely();
             }
             _ownedVisuals.Clear();
-            _room.ProcessMode = _roomProcessMode;
+            if (GodotObject.IsInstanceValid(_room)) _room.ProcessMode = _roomProcessMode;
             RestoreTopBarLayers();
             _hoverTipSuppression.Dispose();
             _cancellation.Dispose();
+            _fullCancellation.Dispose();
         }
 
         private async Task TweenCamera(
@@ -1005,9 +1227,9 @@ public static class BossGreetingCinematic
             }
 
             bool spaceDown = Input.IsKeyPressed(Key.Space);
-            if (_singlePlayer && !_paused && spaceDown && !_spaceWasDown)
+            if (_full && !overlayOpen && spaceDown && !_spaceWasDown)
             {
-                _cancellation.Cancel();
+                _sync.RequestBrief();
             }
 
             _spaceWasDown = spaceDown;

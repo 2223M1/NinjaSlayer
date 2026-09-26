@@ -14,6 +14,7 @@ param(
     [string]$StableDataDirectory,
     [string]$PreviewDataDirectory = 'C:/Users/theon/Documents/NinjaSlayer/NinjaSlayer/build/aim-validation/reference/preview',
     [string]$ResourcePack,
+    [string]$DebugAudioDirectory,
     [ValidateSet('forward_plus', 'gl_compatibility')][string]$Renderer = 'forward_plus',
     [string]$Python = 'C:/Users/theon/AppData/Local/Python/bin/python.exe'
 )
@@ -23,6 +24,7 @@ $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 $scriptPath = (Resolve-Path -LiteralPath $Script).Path
 $story = Get-Content -LiteralPath $scriptPath -Raw | ConvertFrom-Json
+$revision = (git -C $repo rev-parse HEAD).Trim()
 . (Join-Path $repo '.github/scripts/compatibility.ps1')
 $manifest = Read-NinjaSlayerCompatibility -Path (Join-Path $repo 'eng/compatibility.json')
 if (!$StableDataDirectory) {
@@ -48,7 +50,7 @@ if (!$SkipBuild) {
             throw "Wrong $variant references: $references"
         }
         Invoke-Checked dotnet @('build', "$repo/NinjaSlayer.csproj", '-c', 'Debug', '--nologo', '-v:quiet',
-            "-p:NinjaSlayerHostChannel=$variant", "-p:Sts2DataDir=$references", "-p:NinjaSlayerIsolatedOutputRoot=$repo/build/theater/compile/$variant/")
+            "-p:NinjaSlayerHostChannel=$variant", "-p:Sts2DataDir=$references", "-p:RepositoryCommit=$revision", "-p:NinjaSlayerIsolatedOutputRoot=$repo/build/theater/compile/$variant/")
     }
     Invoke-Checked dotnet @('build', "$repo/tools/loader/NinjaSlayer.Loader.csproj", '-c', 'Release', '--nologo', '-v:quiet',
         "-p:Sts2DataDir=$StableDataDirectory", '-o', "$repo/build/theater/loader")
@@ -145,7 +147,9 @@ for ($iteration = 1; $iteration -le $Repeat; $iteration++) {
         if (!$process.HasExited) { throw 'Theater exceeded five minutes.' }
         if ($process.ExitCode -ne 0) { throw "Theater failed: $($process.ExitCode). See $destination/checkpoints.jsonl" }
         if (!$capture.WaitForExit(10000)) { throw 'Audio capture did not stop.' }
-        Invoke-Checked $Python @("$PSScriptRoot/sync_preview_audio.py", $destination, '--output', "$destination/theater.mp4")
+        $audioArguments = @("$PSScriptRoot/sync_preview_audio.py", $destination, '--output', "$destination/theater.mp4")
+        if ($DebugAudioDirectory) { $audioArguments += @('--debug-audio', $DebugAudioDirectory) }
+        Invoke-Checked $Python $audioArguments
         $sync = Get-Content -LiteralPath "$destination/audio-sync.json" -Raw | ConvertFrom-Json
         $start = $sync.clockOffsetSeconds + $sync.playbackLatencySeconds
         $duration = (& ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$destination/theater.mp4").Trim()

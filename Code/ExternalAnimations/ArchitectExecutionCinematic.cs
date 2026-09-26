@@ -299,6 +299,8 @@ public sealed partial class ArchitectExecutionCinematic : Node
             snapshot?.Dispose();
         }
 
+        StartExitScene();
+        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
         string monsterId = _architectNode.Entity.Monster?.Id.Entry ?? "ARCHITECT";
         bool fragmentReplacementReady = _deathPresentation != null;
         BossBurstRegistration registration = BossBurstPresentationCoordinator.Register(
@@ -306,16 +308,8 @@ public sealed partial class ArchitectExecutionCinematic : Node
             new BossBurstParticipant(
                 monsterId,
                 SpawnArchitectBurst));
-        Task whiteout = BossDeathWhiteoutLease.RunUntilCue(
-            this,
-            _room,
-            _architectNode,
-            monsterId,
-            registration.Cue,
-            cancelToken);
-        StartExitScene();
-        Task cameraRestore = RestoreCameraAndBackdrop(cancelToken);
-
+        Task whiteout = BossDeathWhiteoutLease.RunUntilCue(this, _room, _architectNode,
+            monsterId, registration.Cue, cancelToken);
         await registration.Cue.WaitAsync(cancelToken);
         await Task.WhenAll(
             cameraRestore,

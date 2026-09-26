@@ -22,6 +22,7 @@ public partial class NinjaSlayerAimPose : Node2D
     private NCreature? _actor;
     private Node2D _airborne = null!;
     private Marker2D _center = null!;
+    private Marker2D _talk = null!;
     private Transform2D _centerBaseline;
     private readonly V2[] _offsets = new V2[64];
     private Creature? _target;
@@ -94,6 +95,7 @@ public partial class NinjaSlayerAimPose : Node2D
     {
         _airborne = GetParent<Node2D>();
         _center = GetNode<Marker2D>("%CenterPos");
+        _talk = GetNode<Marker2D>("%TalkPos");
         _centerBaseline = _center.Transform;
         for (Node? node = GetParent(); node != null; node = node.GetParent())
             if (node is NCreature actor) { _actor = actor; break; }
@@ -638,6 +640,19 @@ public partial class NinjaSlayerAimPose : Node2D
         HellTornado?.SyncNow();
         Machetes?.SyncForPose();
         RecordSomersaultBlur();
+        Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(_actor!.Visuals)!;
+        var overlay = GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
+        Sprite2D body = overlay.Visible ? overlay : source;
+        NinjaSlayerFormKind form = NinjaSlayerFormState.GetPresentation(_actor.Entity).Kind;
+        Transform2D toVisuals = _actor.Visuals.GlobalTransform.AffineInverse() * body.GlobalTransform;
+        float top = float.PositiveInfinity;
+        foreach (V2 point in CombatBodyContours.ForForm(form))
+            top = Math.Min(top, (toVisuals * SpritePoint(body, new(point.X, point.Y))).Y);
+        V2 mouth = NinjaSlayerFormCalibration.Mouth(form);
+        Vector2 head = toVisuals * SpritePoint(body, new(mouth.X, mouth.Y));
+        // The native bubble's tail/shadow extend 64px below TalkPos at full scale.
+        // Use the solid body, not the texture rectangle containing the long scarf.
+        _talk.Position = new(head.X, top - 76f);
     }
 
     private static Vector2 SpritePoint(Sprite2D sprite, Vector2 centeredPoint)

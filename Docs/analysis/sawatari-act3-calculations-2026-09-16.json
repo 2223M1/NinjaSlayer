@@ -1,0 +1,5227 @@
+{
+  "validation": "passed",
+  "scope": "enemy attack arithmetic only; no player deck, mitigation, kill turn, or empirical HP loss",
+  "assumptions": "enemies and player survive the full horizon; knife costs and damage unmodified; no copied knives; no card cycling needed because generated knives fit in hand",
+  "timelines": {
+    "12": {
+      "never": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 12,
+          "hits": 2,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 12,
+          "hits": 1,
+          "incoming": 12,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 15,
+          "hits": 1,
+          "incoming": 15,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        }
+      ],
+      "immediate_one": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 12,
+          "hits": 2,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 12,
+          "hits": 1,
+          "incoming": 12,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 15,
+          "hits": 2,
+          "incoming": 30,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 15,
+          "hits": 1,
+          "incoming": 15,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 18,
+          "hits": 2,
+          "incoming": 36,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 18,
+          "hits": 1,
+          "incoming": 18,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 21,
+          "hits": 2,
+          "incoming": 42,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 3
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 21,
+          "hits": 1,
+          "incoming": 21,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 3
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 24,
+          "hits": 2,
+          "incoming": 48,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 24,
+          "hits": 1,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 27,
+          "hits": 2,
+          "incoming": 54,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 5
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 27,
+          "hits": 1,
+          "incoming": 27,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 5
+        }
+      ],
+      "empty_one": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 12,
+          "hits": 2,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 12,
+          "hits": 1,
+          "incoming": 12,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 15,
+          "hits": 1,
+          "incoming": 15,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 18,
+          "hits": 1,
+          "incoming": 18,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 21,
+          "hits": 1,
+          "incoming": 21,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 24,
+          "hits": 1,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 3
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 27,
+          "hits": 1,
+          "incoming": 27,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 30,
+          "hits": 1,
+          "incoming": 30,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 5
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 33,
+          "hits": 1,
+          "incoming": 33,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 6
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 36,
+          "hits": 1,
+          "incoming": 36,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 27,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 7
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 27,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 27,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 39,
+          "hits": 1,
+          "incoming": 39,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 30,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 8
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 30,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 30,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 42,
+          "hits": 1,
+          "incoming": 42,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 33,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 9
+        }
+      ],
+      "empty_two": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 12,
+          "hits": 2,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 12,
+          "hits": 1,
+          "incoming": 12,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 15,
+          "hits": 1,
+          "incoming": 15,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 2,
+          "energy": 4,
+          "knife_damage": 24,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 18,
+          "hits": 2,
+          "incoming": 36,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 18,
+          "hits": 1,
+          "incoming": 18,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 21,
+          "hits": 1,
+          "incoming": 21,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 2,
+          "energy": 4,
+          "knife_damage": 24,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 24,
+          "hits": 2,
+          "incoming": 48,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 24,
+          "hits": 1,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 27,
+          "hits": 1,
+          "incoming": 27,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 2,
+          "energy": 4,
+          "knife_damage": 24,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 30,
+          "hits": 2,
+          "incoming": 60,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 6
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 30,
+          "hits": 1,
+          "incoming": 30,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 6
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 33,
+          "hits": 1,
+          "incoming": 33,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 6
+        }
+      ],
+      "once_t4": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 12,
+          "hits": 2,
+          "incoming": 24,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 12,
+          "hits": 1,
+          "incoming": 12,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 15,
+          "hits": 1,
+          "incoming": 15,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 18,
+          "hits": 1,
+          "incoming": 18,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 12,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        }
+      ]
+    },
+    "14": {
+      "never": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 14,
+          "hits": 2,
+          "incoming": 28,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 14,
+          "hits": 1,
+          "incoming": 14,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 17,
+          "hits": 1,
+          "incoming": 17,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 8,
+          "hits": 4,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        }
+      ],
+      "immediate_one": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 14,
+          "hits": 2,
+          "incoming": 28,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 14,
+          "hits": 1,
+          "incoming": 14,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 17,
+          "hits": 2,
+          "incoming": 34,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 3,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 17,
+          "hits": 1,
+          "incoming": 17,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 20,
+          "hits": 2,
+          "incoming": 40,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 20,
+          "hits": 1,
+          "incoming": 20,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 23,
+          "hits": 2,
+          "incoming": 46,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 3
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 9,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 23,
+          "hits": 1,
+          "incoming": 23,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 3
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 26,
+          "hits": 2,
+          "incoming": 52,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 26,
+          "hits": 1,
+          "incoming": 26,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 29,
+          "hits": 2,
+          "incoming": 58,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 5
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 15,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 29,
+          "hits": 1,
+          "incoming": 29,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 5
+        }
+      ],
+      "empty_one": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 14,
+          "hits": 2,
+          "incoming": 28,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 14,
+          "hits": 1,
+          "incoming": 14,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 17,
+          "hits": 1,
+          "incoming": 17,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 20,
+          "hits": 1,
+          "incoming": 20,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 23,
+          "hits": 1,
+          "incoming": 23,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 26,
+          "hits": 1,
+          "incoming": 26,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 3
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 29,
+          "hits": 1,
+          "incoming": 29,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 32,
+          "hits": 1,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 5
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 35,
+          "hits": 1,
+          "incoming": 35,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 6
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 38,
+          "hits": 1,
+          "incoming": 38,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 27,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 7
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 27,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 27,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 41,
+          "hits": 1,
+          "incoming": 41,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 30,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 8
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 30,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 30,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 44,
+          "hits": 1,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 33,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 9
+        }
+      ],
+      "empty_two": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 14,
+          "hits": 2,
+          "incoming": 28,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 14,
+          "hits": 1,
+          "incoming": 14,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 17,
+          "hits": 1,
+          "incoming": 17,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 2,
+          "energy": 4,
+          "knife_damage": 24,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 20,
+          "hits": 2,
+          "incoming": 40,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 6,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 20,
+          "hits": 1,
+          "incoming": 20,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 23,
+          "hits": 1,
+          "incoming": 23,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 2
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 2,
+          "energy": 4,
+          "knife_damage": 24,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 26,
+          "hits": 2,
+          "incoming": 52,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 12,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 26,
+          "hits": 1,
+          "incoming": 26,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 15,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 29,
+          "hits": 1,
+          "incoming": 29,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 4
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 2,
+          "energy": 4,
+          "knife_damage": 24,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 32,
+          "hits": 2,
+          "incoming": 64,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 6
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 18,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 32,
+          "hits": 1,
+          "incoming": 32,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 6
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 21,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 35,
+          "hits": 1,
+          "incoming": 35,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 24,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 6
+        }
+      ],
+      "once_t4": [
+        {
+          "turn": 1,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": false
+          },
+          "move": "dual",
+          "per_hit": 14,
+          "hits": 2,
+          "incoming": 28,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "generated": 0,
+          "knives_after": 0,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 2,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "knives_before": 0,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 2,
+            "strength": 0,
+            "forced_throw": true
+          },
+          "move": "throw",
+          "per_hit": 14,
+          "hits": 1,
+          "incoming": 14,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 1,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 3,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "knives_before": 1,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 3,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 17,
+          "hits": 1,
+          "incoming": 17,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 0
+        },
+        {
+          "turn": 4,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 1,
+          "energy": 2,
+          "knife_damage": 12,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 1,
+            "strength": 6,
+            "forced_throw": false
+          },
+          "move": "throw",
+          "per_hit": 20,
+          "hits": 1,
+          "incoming": 20,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 1,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 5,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 6,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 7,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 8,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 9,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 10,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 11,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        },
+        {
+          "turn": 12,
+          "before": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "knives_before": 2,
+          "played": 0,
+          "energy": 0,
+          "knife_damage": 0,
+          "after_returns": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "move": "bamboo",
+          "per_hit": 11,
+          "hits": 4,
+          "incoming": 44,
+          "after": {
+            "knife_base": 14,
+            "bamboo_base": 2,
+            "strength_gain": 3,
+            "weapons": 0,
+            "strength": 9,
+            "forced_throw": false
+          },
+          "generated": 0,
+          "knives_after": 2,
+          "knives_exhausted": 1
+        }
+      ]
+    }
+  },
+  "horizon_totals": {
+    "12": {
+      "never": {
+        "4": {
+          "turns": 4,
+          "incoming": 83,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 147,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 211,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 275,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 339,
+          "energy": 0,
+          "knife_damage": 0
+        }
+      },
+      "immediate_one": {
+        "4": {
+          "turns": 4,
+          "incoming": 81,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 135,
+          "energy": 4,
+          "knife_damage": 24
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 198,
+          "energy": 6,
+          "knife_damage": 36
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 270,
+          "energy": 8,
+          "knife_damage": 48
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 351,
+          "energy": 10,
+          "knife_damage": 60
+        }
+      },
+      "empty_one": {
+        "4": {
+          "turns": 4,
+          "incoming": 69,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 114,
+          "energy": 6,
+          "knife_damage": 36
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 171,
+          "energy": 10,
+          "knife_damage": 60
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 240,
+          "energy": 14,
+          "knife_damage": 84
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 321,
+          "energy": 18,
+          "knife_damage": 108
+        }
+      },
+      "empty_two": {
+        "4": {
+          "turns": 4,
+          "incoming": 87,
+          "energy": 4,
+          "knife_damage": 24
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 126,
+          "energy": 4,
+          "knife_damage": 24
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 198,
+          "energy": 8,
+          "knife_damage": 48
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 285,
+          "energy": 12,
+          "knife_damage": 72
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 348,
+          "energy": 12,
+          "knife_damage": 72
+        }
+      },
+      "once_t4": {
+        "4": {
+          "turns": 4,
+          "incoming": 69,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 157,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 245,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 333,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 421,
+          "energy": 2,
+          "knife_damage": 12
+        }
+      }
+    },
+    "14": {
+      "never": {
+        "4": {
+          "turns": 4,
+          "incoming": 91,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 155,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 219,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 283,
+          "energy": 0,
+          "knife_damage": 0
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 347,
+          "energy": 0,
+          "knife_damage": 0
+        }
+      },
+      "immediate_one": {
+        "4": {
+          "turns": 4,
+          "incoming": 93,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 153,
+          "energy": 4,
+          "knife_damage": 24
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 222,
+          "energy": 6,
+          "knife_damage": 36
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 300,
+          "energy": 8,
+          "knife_damage": 48
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 387,
+          "energy": 10,
+          "knife_damage": 60
+        }
+      },
+      "empty_one": {
+        "4": {
+          "turns": 4,
+          "incoming": 79,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 128,
+          "energy": 6,
+          "knife_damage": 36
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 189,
+          "energy": 10,
+          "knife_damage": 60
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 262,
+          "energy": 14,
+          "knife_damage": 84
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 347,
+          "energy": 18,
+          "knife_damage": 108
+        }
+      },
+      "empty_two": {
+        "4": {
+          "turns": 4,
+          "incoming": 99,
+          "energy": 4,
+          "knife_damage": 24
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 142,
+          "energy": 4,
+          "knife_damage": 24
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 220,
+          "energy": 8,
+          "knife_damage": 48
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 313,
+          "energy": 12,
+          "knife_damage": 72
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 380,
+          "energy": 12,
+          "knife_damage": 72
+        }
+      },
+      "once_t4": {
+        "4": {
+          "turns": 4,
+          "incoming": 79,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "6": {
+          "turns": 6,
+          "incoming": 167,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "8": {
+          "turns": 8,
+          "incoming": 255,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "10": {
+          "turns": 10,
+          "incoming": 343,
+          "energy": 2,
+          "knife_damage": 12
+        },
+        "12": {
+          "turns": 12,
+          "incoming": 431,
+          "energy": 2,
+          "knife_damage": 12
+        }
+      }
+    }
+  },
+  "mecha": {
+    "A0": [
+      {
+        "turn": 1,
+        "move": "charge",
+        "incoming": 25,
+        "strength_before": 0,
+        "strength_after": 0,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 2,
+        "move": "flame",
+        "incoming": 8,
+        "strength_before": 0,
+        "strength_after": 0,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 3,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 0,
+        "strength_after": 5,
+        "block_gained": 15,
+        "burns_generated": 0
+      },
+      {
+        "turn": 4,
+        "move": "heavy",
+        "incoming": 40,
+        "strength_before": 5,
+        "strength_after": 5,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 5,
+        "move": "flame",
+        "incoming": 13,
+        "strength_before": 5,
+        "strength_after": 5,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 6,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 5,
+        "strength_after": 10,
+        "block_gained": 15,
+        "burns_generated": 0
+      },
+      {
+        "turn": 7,
+        "move": "heavy",
+        "incoming": 45,
+        "strength_before": 10,
+        "strength_after": 10,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 8,
+        "move": "flame",
+        "incoming": 18,
+        "strength_before": 10,
+        "strength_after": 10,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 9,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 10,
+        "strength_after": 15,
+        "block_gained": 15,
+        "burns_generated": 0
+      },
+      {
+        "turn": 10,
+        "move": "heavy",
+        "incoming": 50,
+        "strength_before": 15,
+        "strength_after": 15,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 11,
+        "move": "flame",
+        "incoming": 23,
+        "strength_before": 15,
+        "strength_after": 15,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 12,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 15,
+        "strength_after": 20,
+        "block_gained": 15,
+        "burns_generated": 0
+      }
+    ],
+    "A10": [
+      {
+        "turn": 1,
+        "move": "charge",
+        "incoming": 30,
+        "strength_before": 0,
+        "strength_after": 0,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 2,
+        "move": "flame",
+        "incoming": 12,
+        "strength_before": 0,
+        "strength_after": 0,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 3,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 0,
+        "strength_after": 5,
+        "block_gained": 15,
+        "burns_generated": 0
+      },
+      {
+        "turn": 4,
+        "move": "heavy",
+        "incoming": 45,
+        "strength_before": 5,
+        "strength_after": 5,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 5,
+        "move": "flame",
+        "incoming": 17,
+        "strength_before": 5,
+        "strength_after": 5,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 6,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 5,
+        "strength_after": 10,
+        "block_gained": 15,
+        "burns_generated": 0
+      },
+      {
+        "turn": 7,
+        "move": "heavy",
+        "incoming": 50,
+        "strength_before": 10,
+        "strength_after": 10,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 8,
+        "move": "flame",
+        "incoming": 22,
+        "strength_before": 10,
+        "strength_after": 10,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 9,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 10,
+        "strength_after": 15,
+        "block_gained": 15,
+        "burns_generated": 0
+      },
+      {
+        "turn": 10,
+        "move": "heavy",
+        "incoming": 55,
+        "strength_before": 15,
+        "strength_after": 15,
+        "block_gained": 0,
+        "burns_generated": 0
+      },
+      {
+        "turn": 11,
+        "move": "flame",
+        "incoming": 27,
+        "strength_before": 15,
+        "strength_after": 15,
+        "block_gained": 0,
+        "burns_generated": 4
+      },
+      {
+        "turn": 12,
+        "move": "windup",
+        "incoming": 0,
+        "strength_before": 15,
+        "strength_after": 20,
+        "block_gained": 15,
+        "burns_generated": 0
+      }
+    ]
+  },
+  "strength_sensitivity": {
+    "1": {
+      "never": {
+        "turns": 8,
+        "incoming": 137,
+        "energy": 0,
+        "knife_damage": 0
+      },
+      "empty_one": {
+        "turns": 8,
+        "incoming": 147,
+        "energy": 10,
+        "knife_damage": 60
+      }
+    },
+    "2": {
+      "never": {
+        "turns": 8,
+        "incoming": 178,
+        "energy": 0,
+        "knife_damage": 0
+      },
+      "empty_one": {
+        "turns": 8,
+        "incoming": 168,
+        "energy": 10,
+        "knife_damage": 60
+      }
+    },
+    "3": {
+      "never": {
+        "turns": 8,
+        "incoming": 219,
+        "energy": 0,
+        "knife_damage": 0
+      },
+      "empty_one": {
+        "turns": 8,
+        "incoming": 189,
+        "energy": 10,
+        "knife_damage": 60
+      }
+    }
+  },
+  "bamboo_sensitivity": {
+    "2": {
+      "never": {
+        "turns": 8,
+        "incoming": 219,
+        "energy": 0,
+        "knife_damage": 0
+      },
+      "empty_one": {
+        "turns": 8,
+        "incoming": 189,
+        "energy": 10,
+        "knife_damage": 60
+      }
+    },
+    "3": {
+      "never": {
+        "turns": 8,
+        "incoming": 239,
+        "energy": 0,
+        "knife_damage": 0
+      },
+      "empty_one": {
+        "turns": 8,
+        "incoming": 189,
+        "energy": 10,
+        "knife_damage": 60
+      }
+    },
+    "4": {
+      "never": {
+        "turns": 8,
+        "incoming": 259,
+        "energy": 0,
+        "knife_damage": 0
+      },
+      "empty_one": {
+        "turns": 8,
+        "incoming": 189,
+        "energy": 10,
+        "knife_damage": 60
+      }
+    }
+  }
+}

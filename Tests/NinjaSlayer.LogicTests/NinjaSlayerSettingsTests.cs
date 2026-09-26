@@ -13,6 +13,7 @@ public sealed class NinjaSlayerSettingsTests
         Assert.True(new NinjaSlayerSettingsData().NarrationEnabled);
         Assert.False(new NinjaSlayerSettingsData().TelemetryNoticeShown);
         Assert.False(new NinjaSlayerSettingsData().PublicReplayEnabled);
+        Assert.False(new NinjaSlayerSettingsData().MangaSelectPortraitEnabled);
         Assert.False(new NinjaSlayerRunState().EventValidationEnabled);
     }
 
@@ -24,14 +25,15 @@ public sealed class NinjaSlayerSettingsTests
             ForceAllEventsOnce = false,
             NarrationEnabled = false,
             TelemetryNoticeShown = true,
-            PublicReplayEnabled = true
+            PublicReplayEnabled = true,
+            MangaSelectPortraitEnabled = true
         };
 
         string json = JsonSerializer.Serialize(settings);
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         Assert.Equal(
-            ["ForceAllEventsOnce", "FreeControlEnabled", "NarrationEnabled", "TelemetryNoticeShown", "PublicReplayEnabled"],
+            ["ForceAllEventsOnce", "FreeControlEnabled", "NarrationEnabled", "TelemetryNoticeShown", "PublicReplayEnabled", "MangaSelectPortraitEnabled", "BriefBossGreetingEnabled"],
             root.EnumerateObject().Select(property => property.Name).ToArray());
         Assert.False(root.GetProperty("ForceAllEventsOnce").GetBoolean());
 
@@ -41,8 +43,34 @@ public sealed class NinjaSlayerSettingsTests
         Assert.True(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{}")!.NarrationEnabled);
         Assert.True(restored.TelemetryNoticeShown);
         Assert.True(restored.PublicReplayEnabled);
+        Assert.True(restored.MangaSelectPortraitEnabled);
+        Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"NarrationEnabled\":false}")!.MangaSelectPortraitEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"TelemetryNoticeShown\":true}")!.PublicReplayEnabled);
         Assert.False(JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{\"ForceAllEventsOnce\":false}")!.TelemetryNoticeShown);
+    }
+
+    [Fact]
+    public void FirstCompletedGreetingEnablesBriefModeForOldAndNewSettings()
+    {
+        foreach (var settings in new[] { new NinjaSlayerSettingsData(), JsonSerializer.Deserialize<NinjaSlayerSettingsData>("{}")! })
+        {
+            Assert.Null(settings.BriefBossGreetingEnabled);
+            settings.CompleteFirstBossGreeting();
+            Assert.True(settings.BriefBossGreetingEnabled);
+            Assert.True(JsonSerializer.Deserialize<NinjaSlayerSettingsData>(JsonSerializer.Serialize(settings))!.BriefBossGreetingEnabled);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CompletingOrShorteningGreetingNeverOverwritesManualChoice(bool choice)
+    {
+        var settings = new NinjaSlayerSettingsData { BriefBossGreetingEnabled = choice };
+        settings.CompleteFirstBossGreeting();
+        settings.CompleteFirstBossGreeting();
+        Assert.Equal(choice, settings.BriefBossGreetingEnabled);
+        Assert.Equal(choice, JsonSerializer.Deserialize<NinjaSlayerSettingsData>(JsonSerializer.Serialize(settings))!.BriefBossGreetingEnabled);
     }
 
     [Fact]
