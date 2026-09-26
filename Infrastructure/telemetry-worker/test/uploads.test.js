@@ -74,9 +74,12 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
       customMetadata: { expires: '2099-01-01T00:00:00.000Z', hash: 'b'.repeat(64) },
     });
     // Use the HTTP listener so workerd's Content-Encoding behavior is exercised, too.
-    const replayResponse = await fetch(new URL(`/observatory/replays/${replayId}/0`, await mf.ready));
-    assert.equal(replayResponse.status, 200);
-    assert.equal(await replayResponse.text(), replayText);
+    const replayUrl = new URL(`/observatory/replays/${replayId}/0`, await mf.ready);
+    for (let read = 0; read < 2; read++) {
+      const replayResponse = await fetch(replayUrl);
+      assert.equal(replayResponse.status, 200);
+      assert.equal(await replayResponse.text(), replayText);
+    }
     assert.equal(telemetry.path, '/batch/');
     assert.equal((await send(telemetry)).status, 200);
     assert.equal(upstream.length, 1);
