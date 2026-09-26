@@ -8,6 +8,7 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
 const wrangler = fileURLToPath(new URL('../node_modules/wrangler/bin/wrangler.js', import.meta.url));
 const binding = ['--binding', 'FEEDBACK_KV', '--remote'];
+export const RECORDS_BUCKET = 'ninja-slayer-records';
 
 async function command(args) {
   const { stdout } = await exec(process.execPath, [wrangler, ...args], {
@@ -18,6 +19,10 @@ async function command(args) {
 }
 
 export async function readFeedbackObject(key) {
+  return command(['r2', 'object', 'get', `${RECORDS_BUCKET}/${key}`, '--remote', '--pipe']);
+}
+
+async function readMetadata(key) {
   return command(['kv', 'key', 'get', key, ...binding]);
 }
 
@@ -34,19 +39,19 @@ export function verifyFeedbackMetadata(marker, bytes) {
 }
 
 export async function readCompletedFeedback(id) {
-  const marker = parseFeedbackIndexMarker((await readFeedbackObject(feedbackIndexKey(id))).toString('utf8'), id);
+  const marker = parseFeedbackIndexMarker((await readMetadata(feedbackIndexKey(id))).toString('utf8'), id);
   if (!marker || marker.state !== 'completed') throw new Error('此反馈尚未完成，或已过期。');
-  return verifyFeedbackMetadata(marker, await readFeedbackObject(marker.completion.metadataKey));
+  return verifyFeedbackMetadata(marker, await readMetadata(marker.completion.metadataKey));
 }
 
 export async function loadFeedback() {
   const feedback = [], warnings = [];
   for (const entry of await listFeedbackKeys()) {
     try {
-      const marker = parseFeedbackIndexMarker((await readFeedbackObject(entry.name)).toString('utf8'));
+      const marker = parseFeedbackIndexMarker((await readMetadata(entry.name)).toString('utf8'));
       if (marker?.state === 'writing') continue;
       if (!marker) throw new Error('无效的完成标记');
-      const metadata = verifyFeedbackMetadata(marker, await readFeedbackObject(marker.completion.metadataKey));
+      const metadata = verifyFeedbackMetadata(marker, await readMetadata(marker.completion.metadataKey));
       feedback.push({ id: marker.submissionId, at: metadata.receivedAtUtc, ...metadata.payload, context: metadata.modContext });
     } catch (error) { warnings.push(`${entry.name}: ${error.message}`); }
   }

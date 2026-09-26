@@ -5,7 +5,7 @@ For the GitHub Pages public observatory and loopback-only private dashboard, see
 
 This Worker accepts the RitsuLib `run_history.completed` envelope (`run_history` or `balance_runs` requests) and anonymous
 F2 feedback. Inputs are strictly validated before telemetry is forwarded to
-PostHog or feedback is committed to Workers KV. Separately authorized `battle_report.completed` envelopes are validated, anonymized and compressed into KV for 90 days; they never enter PostHog. The public report index/detail routes expose only the validated projection. Feedback and replays share the free storage/write budget in `src/free-storage.js`.
+PostHog or feedback is committed to private R2 storage. Separately authorized `battle_report.completed` envelopes are validated, anonymized and compressed into R2 for 90 days; they never enter PostHog. Small indexes and feedback metadata remain in Workers KV. The public report index/detail routes expose only the validated projection. Feedback and replays share the storage budget in `src/free-storage.js`.
 
 Raw IP addresses are never stored or forwarded. A server-secret HMAC of the
 transient Cloudflare source IP is used for minute limits and Durable Object
@@ -48,6 +48,48 @@ two rate-limit bindings, `ANONYMOUS_QUOTAS`, `FEEDBACK_SUBMISSIONS`, and
 `FEEDBACK_KV` are also mandatory; production requests fail closed with `503`
 when any security dependency is unavailable.
 
+`RECORDS_BUCKET` binds the private Standard-class bucket `ninja-slayer-records`.
+Do not enable an R2 public domain or `r2.dev` access: public reports must pass
+through the Worker, and feedback attachments remain administrator-only.
+Configure native lifecycle deletion for `feedback/` after 180 days and `replays/`
+after 90 days. Keep the absolute-date migration rules until the old objects expire;
+do not replace the whole lifecycle policy with only the two general rules.
+
+## Free storage limits
+
+R2 Standard's account-wide free allowance is 10 GB-month, 1 million Class A and
+10 million Class B operations per month. This project's hard reservations stop
+before 8,000,000,000 bytes, 2,000 writes/day and 20,000 uncached public reads/day.
+Daily ceilings remain well below monthly operation allowances even in a 31-day month.
+The existing KV limits stay at 800 MiB and 800 writes/day. Cache hits do not read R2.
+Uploads and uncached reads receive a retryable 429 when their budget is exhausted;
+existing data is not replaced and no successful receipt is fabricated.
+
+At 7 GB of reserved capacity, the scheduled cleanup removes the oldest original
+uploads first; 8 GB remains the hard upload ceiling. The 180/90-day periods are
+maximum retention, so capacity pressure may remove older raw records sooner.
+Feedback deletion also removes its metadata/index and writes a tombstone; replay
+deletion removes its public index and closes its receipt to later updates.
+PostHog aggregates remain independent. Each alarm handles at most eight objects,
+then resumes after a minute when more work remains, within free Worker request limits.
+
+The existing shared Durable Object (`kv-free-budget-v1`, retained to preserve
+receipts) reserves bytes before every upload. Failed uploads and replacements are
+conservatively charged. The cleanup alarm confirms object deletion before releasing
+capacity; cleanup failures keep it charged. The alarm also enforces a
+replay's original deadline after replacements. Native R2 lifecycle rules remove
+orphans independently. Administrative reads and deletes use Wrangler; deletion
+is free, while expiry HEAD checks and occasional administrative operations fit
+within the remaining Class B headroom. Direct bucket writes or other applications
+in this Cloudflare account bypass these project limits. Cloudflare budget alerts
+and an empty payment account are not hard spending caps.
+
+The KV migration preserves original object keys, bytes, expiry and metadata hashes.
+Historical metadata still says `workers-kv` because it is part of its hash-bound
+receipt; all attachment reads use R2 after cutover. New logs are one ZIP object,
+while the download tools still join the historical chunk list. Private backups
+and the detailed migration inventory belong under ignored `build/r2-migration/`.
+
 Run `npx wrangler deploy --dry-run` before a live deployment. The Worker accepts
 only snake_case `applicant_id` and `request_id` fields from the RitsuLib 0.4.62
 contract; camelCase and unknown envelope fields are rejected.
@@ -79,7 +121,7 @@ entry use the same receiver. Game feedback uses `PUT /feedback` and .NET multipa
 with quoted disposition names and filenames. A successful feedback response must
 contain `ok: true` and the matching submission `id`.
 
-`test/uploads.test.js` runs the production Worker under Miniflare with local KV and
+`test/uploads.test.js` runs the production Worker under Miniflare with local KV, R2 and
 Durable Objects. Its fixture is captured from the actual product DLL and RitsuLib
 HTTP adapter by `VerifyUploadTransport` in the product contracts. Set
 `NINJASLAYER_CONTRACT_ONLY_UPLOADS=1` and `NINJASLAYER_UPLOAD_FIXTURE_DIR` to export

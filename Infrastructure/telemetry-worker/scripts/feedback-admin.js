@@ -7,7 +7,7 @@ import {
   feedbackTombstoneKey,
   parseFeedbackIndexMarker,
 } from '../src/feedback-storage.js';
-import { verifyFeedbackMetadata } from './feedback-reader.js';
+import { RECORDS_BUCKET, verifyFeedbackMetadata } from './feedback-reader.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const wrangler = join(root, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
@@ -35,7 +35,7 @@ function readText(key) {
 }
 
 function readBinary(key) {
-  return runWrangler(['kv', 'key', 'get', key, ...bindingArgs], null);
+  return runWrangler(['r2', 'object', 'get', `${RECORDS_BUCKET}/${key}`, '--remote', '--pipe'], null);
 }
 
 function indexEntries() {
@@ -96,11 +96,9 @@ function downloadFeedback(submissionId) {
 function deleteFeedback(submissionId) {
   const indexKey = findIndexKey(submissionId);
   const { marker, metadata } = readCompletedFeedback(indexKey, submissionId);
-  const keys = [
+  const attachments = [
     metadata.storage.screenshot.key,
     ...metadata.storage.logs.chunks,
-    marker.completion.metadataKey,
-    indexKey,
   ];
   runWrangler([
     'kv', 'key', 'put', feedbackTombstoneKey(submissionId),
@@ -108,7 +106,8 @@ function deleteFeedback(submissionId) {
     ...bindingArgs,
     '--ttl', String(180 * 24 * 60 * 60),
   ]);
-  for (const key of keys) runWrangler(['kv', 'key', 'delete', key, ...bindingArgs]);
+  for (const key of attachments) runWrangler(['r2', 'object', 'delete', `${RECORDS_BUCKET}/${key}`, '--remote']);
+  for (const key of [marker.completion.metadataKey, indexKey]) runWrangler(['kv', 'key', 'delete', key, ...bindingArgs]);
   console.log(`Deleted ${submissionId}.`);
 }
 
