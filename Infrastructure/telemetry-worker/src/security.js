@@ -100,5 +100,9 @@ export class AnonymousQuotaGuard {
     return jsonResponse(200, { ok: true });
   }
 
-  alarm() { return expireReceipts(this.storage); }
+  alarm() {
+    const operation = this.pending.then(() => expireReceipts(this.storage, this.env));
+    this.pending = operation.then(() => undefined, () => undefined);
+    return operation;
+  }
 }

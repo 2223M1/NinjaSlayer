@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { MockR2 } from './support/r2.js';
+import { expireReceipts, R2_CLEANUP_BYTES } from '../src/free-storage.js';
 import {
   AnonymousQuotaGuard,
   FeedbackSubmissionCoordinator,
@@ -24,11 +26,20 @@ const RITSU_FIXTURE = JSON.parse(readFileSync(
 class MockStorage {
   objects = new Map();
   alarm = null;
-  async get(key) { return this.objects.get(key); }
-  async put(key, value) { this.objects.set(key, structuredClone(value)); }
+  async get(key) { return structuredClone(this.objects.get(key)); }
+  async put(key, value) {
+    if (typeof key === 'object') for (const [name, item] of Object.entries(key)) this.objects.set(name, structuredClone(item));
+    else this.objects.set(key, structuredClone(value));
+  }
   async delete(key) { this.objects.delete(key); }
   async deleteAll() { this.objects.clear(); }
   async setAlarm(value) { this.alarm = value; }
+  async getAlarm() { return this.alarm; }
+  async transaction(callback) { return callback(this); }
+  async list({ prefix, end, startAfter, limit = Infinity }) {
+    return new Map([...this.objects].filter(([key]) => key.startsWith(prefix) && (!end || key < end) && (!startAfter || key > startAfter))
+      .sort(([a], [b]) => a.localeCompare(b)).slice(0, limit));
+  }
 }
 
 class MockKv {
@@ -126,6 +137,7 @@ function workerEnv(overrides = {}) {
     TELEMETRY_RATE_LIMITER: new MockRateLimiter(),
     FEEDBACK_RATE_LIMITER: new MockRateLimiter(),
     FEEDBACK_KV: new MockKv(),
+    RECORDS_BUCKET: new MockR2(),
     TEST_NOW: '2030-08-09T10:11:12.000Z',
     ...overrides,
   };
@@ -330,17 +342,20 @@ test('feedback writes an attempt lease first and a hash-bound completion marker 
   const kv = new MockKv();
   const logsBytes = new Uint8Array(4 * 1024 * 1024 + 1);
   logsBytes.set(ZIP);
-  const response = await handleRequest(feedbackRequest({ logsBytes }), workerEnv({ FEEDBACK_KV: kv }));
+  const r2 = new MockR2();
+  const response = await handleRequest(feedbackRequest({ logsBytes }), workerEnv({ FEEDBACK_KV: kv, RECORDS_BUCKET: r2 }));
   assert.equal(response.status, 200);
   const body = await response.json();
   assert(body.prefix.startsWith(`feedback/2030/08/2030-08-09T10-11-12-000Z-${UUID}`));
   assert.match(body.attemptId, /^[0-9a-f-]{36}$/);
   assert.equal(kv.writes[0], `feedback-index/${UUID}`);
-  assert(kv.writes[1].includes(`/attempts/${body.attemptId}/screenshot.png`));
-  assert(kv.writes[2].includes(`/attempts/${body.attemptId}/logs/part-0000.bin`));
-  assert(kv.writes[3].includes(`/attempts/${body.attemptId}/logs/part-0001.bin`));
-  assert(kv.writes[4].includes(`/attempts/${body.attemptId}/metadata.json`));
-  assert.equal(kv.writes[5], `feedback-index/${UUID}`);
+  assert(kv.writes[1].includes(`/attempts/${body.attemptId}/metadata.json`));
+  assert.equal(kv.writes[2], `feedback-index/${UUID}`);
+  assert.equal(kv.writes.length, 3);
+  assert.equal(r2.writes.length, 2);
+  assert(r2.writes[0].endsWith('/screenshot.png'));
+  assert(r2.writes[1].endsWith('/logs.zip'));
+  assert.deepEqual(new Uint8Array(await (await r2.get(r2.writes[1])).arrayBuffer()), logsBytes);
 
   const writingMarker = parseFeedbackIndexMarker(kv.writeRecords[0].value, UUID);
   const completionMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
@@ -359,7 +374,7 @@ test('feedback writes an attempt lease first and a hash-bound completion marker 
 test('a concurrent retry observes the active lease without consuming a second write attempt', async () => {
   const kv = new MockKv();
   const env = workerEnv({ FEEDBACK_KV: kv });
-  const barrier = kv.blockNextSuffix('/screenshot.png');
+  const barrier = env.RECORDS_BUCKET.blockNextSuffix('/screenshot.png');
   const firstPromise = handleRequest(feedbackRequest(), env);
   await barrier.started;
   const activeMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
@@ -386,7 +401,7 @@ test('a concurrent retry observes the active lease without consuming a second wr
 test('an expired attempt cannot overwrite a takeover that completes first', async () => {
   const kv = new MockKv();
   const env = workerEnv({ FEEDBACK_KV: kv });
-  const barrier = kv.blockNextSuffix('/screenshot.png');
+  const barrier = env.RECORDS_BUCKET.blockNextSuffix('/screenshot.png');
   const stalePromise = handleRequest(feedbackRequest(), env);
   await barrier.started;
   const staleMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
@@ -404,18 +419,36 @@ test('an expired attempt cannot overwrite a takeover that completes first', asyn
   const finalMarker = parseFeedbackIndexMarker(kv.objects.get(`feedback-index/${UUID}`), UUID);
   assert.equal(finalMarker.lease.attemptId, takeoverBody.attemptId);
   assert.equal([...kv.objects.keys()].some((key) => key.includes(staleMarker.lease.attemptId)), false);
+  assert.equal([...env.RECORDS_BUCKET.objects.keys()].some((key) => key.includes(staleMarker.lease.attemptId)), false);
 });
 
 test('a failed upload cleans only its attempt and the next retry succeeds', async () => {
   const kv = new MockKv();
-  kv.failNextSuffix = 'part-0000.bin';
   const env = workerEnv({ FEEDBACK_KV: kv });
+  env.RECORDS_BUCKET.failNextSuffix = '/logs.zip';
   const failed = await handleRequest(feedbackRequest(), env);
   assert.equal(failed.status, 500);
   assert.equal(kv.objects.has(`feedback-index/${UUID}`), false);
+  assert.equal(env.RECORDS_BUCKET.objects.size, 0);
   const succeeded = await handleRequest(feedbackRequest(), env);
   assert.equal(succeeded.status, 200);
   assert.equal([...kv.objects.keys()].filter((key) => key.endsWith('/metadata.json')).length, 1);
+});
+
+test('capacity cleanup protects active feedback writes and tombstones old feedback before deleting attachments', async () => {
+  const env = workerEnv();
+  assert.equal((await handleRequest(feedbackRequest(), env)).status, 200);
+  const storage = env.ANONYMOUS_QUOTAS.get('kv-free-budget-v1').storage;
+  const usage = await storage.get('free-storage');
+  usage.r2Bytes += R2_CLEANUP_BYTES;
+  await storage.put('free-storage', usage);
+  await expireReceipts(storage, env, new Date('2030-08-09T10:12:12.000Z'));
+  assert.equal(env.RECORDS_BUCKET.objects.size, 2);
+  await expireReceipts(storage, env, new Date('2030-08-09T10:14:12.000Z'));
+  assert.equal(env.RECORDS_BUCKET.objects.size, 0);
+  assert.equal(await env.FEEDBACK_KV.get(`feedback-index/${UUID}`), null);
+  assert.ok(await env.FEEDBACK_KV.get(`feedback-tombstone/${UUID}`));
+  assert.equal((await handleRequest(feedbackRequest(), env)).status, 410);
 });
 
 test('a crash after durable completion is repaired by an idempotent retry', async () => {

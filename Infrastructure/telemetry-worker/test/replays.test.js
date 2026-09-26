@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { gzipSync } from "node:zlib";
+import { MockR2 } from './support/r2.js';
 import {
   decodeReplay,
   validateReport,
@@ -12,6 +13,11 @@ import {
   storeReport,
   FREE_KV_BYTES,
   FREE_KV_WRITES_PER_DAY,
+  FREE_R2_BYTES,
+  R2_CLEANUP_BYTES,
+  FREE_R2_READS_PER_DAY,
+  FREE_R2_WRITES_PER_DAY,
+  expireReceipts,
 } from "../src/free-storage.js";
 import { AnonymousQuotaGuard } from "../src/security.js";
 import { handleRequest } from "../src/index.js";
@@ -80,16 +86,24 @@ const payload = (value) => ({
 });
 class Storage {
   data = new Map();
+  alarm = null;
   async get(key) {
     return structuredClone(this.data.get(key));
   }
   async put(key, value) {
-    this.data.set(key, structuredClone(value));
+    if (typeof key === 'object') for (const [name, item] of Object.entries(key)) this.data.set(name, structuredClone(item));
+    else this.data.set(key, structuredClone(value));
   }
   async delete(key) {
     return this.data.delete(key);
   }
-  async setAlarm() {}
+  async setAlarm(value) { this.alarm = value; }
+  async getAlarm() { return this.alarm; }
+  async transaction(callback) { return callback(this); }
+  async list({ prefix, end, startAfter, limit = Infinity }) {
+    return new Map([...this.data].filter(([key]) => key.startsWith(prefix) && (!end || key < end) && (!startAfter || key > startAfter))
+      .sort(([a], [b]) => a.localeCompare(b)).slice(0, limit));
+  }
 }
 class Kv {
   data = new Map();
@@ -98,14 +112,24 @@ class Kv {
     this.writes++;
     this.data.set(key, { value, metadata: options.metadata });
   }
-  async getWithMetadata(key) {
-    return this.data.get(key) ?? { value: null, metadata: null };
+  async delete(key) { this.data.delete(key); }
+  async get(key, type) {
+    const value = this.data.get(key)?.value ?? null;
+    return value && type === 'json' ? JSON.parse(value) : value;
   }
+}
+
+function storageEnv(storage, kv = new Kv()) {
+  const env = { FEEDBACK_KV: kv, RECORDS_BUCKET: new MockR2() };
+  const guard = new AnonymousQuotaGuard({ storage }, env);
+  env.ANONYMOUS_QUOTAS = { idFromName: name => name, get: () => guard };
+  return env;
 }
 
 test("a failed index write retries the report without publishing a false receipt", async () => {
   const storage = new Storage();
   const kv = new Kv();
+  const env = storageEnv(storage, kv);
   const put = kv.put.bind(kv);
   let failIndex = true;
   kv.put = async (key, value, options) => {
@@ -117,25 +141,25 @@ test("a failed index write retries the report without publishing a false receipt
   const key = `${body.id}/0`;
   const now = new Date();
   assert.equal(
-    (await storeReport(storage, { FEEDBACK_KV: kv }, body, now)).status,
+    (await storeReport(storage, env, body, now)).status,
     503,
   );
   assert.equal(await storage.get(`report:${key}`), undefined);
   assert.equal(kv.data.has(`replay-index/${key}`), false);
   failIndex = false;
   assert.equal(
-    (await storeReport(storage, { FEEDBACK_KV: kv }, body, now)).status,
+    (await storeReport(storage, env, body, now)).status,
     200,
   );
   assert.ok(await storage.get(`report:${key}`));
   assert.ok(kv.data.has(`replay-index/${key}`));
   const writes = kv.writes;
   assert.equal(
-    (await storeReport(storage, { FEEDBACK_KV: kv }, body, now)).status,
+    (await storeReport(storage, env, body, now)).status,
     200,
   );
   assert.equal(kv.writes, writes);
-  assert.equal((await storage.get("free-storage")).writes, 4);
+  assert.equal((await storage.get("free-storage")).writes, 2);
 });
 
 test("public replay reads use the edge cache and never cache past expiration", async () => {
@@ -155,11 +179,12 @@ test("public replay reads use the edge cache and never cache past expiration", a
     const storage = new Storage();
     const kv = new Kv();
     const body = { id: "f".repeat(64), host: "0.107.1", report: report() };
-    const env = { FEEDBACK_KV: kv };
+    const env = storageEnv(storage, kv);
     await storeReport(storage, env, body, new Date());
     let reads = 0;
-    const get = kv.getWithMetadata.bind(kv);
-    kv.getWithMetadata = async (...args) => {
+    const r2 = env.RECORDS_BUCKET;
+    const get = r2.get.bind(r2);
+    r2.get = async (...args) => {
       reads++;
       return get(...args);
     };
@@ -177,14 +202,14 @@ test("public replay reads use the edge cache and never cache past expiration", a
     assert.equal((await handleRequest(request, env, ctx)).status, 200);
     assert.equal(reads, 1);
     cached.clear();
-    kv.data.get(`replays/${body.id}/0`).metadata.expires = new Date(
+    r2.objects.get(`replays/${body.id}/0`).customMetadata.expires = new Date(
       Date.now() + 20_000,
     ).toISOString();
     const expiring = await handleRequest(request, env, ctx);
     assert.match(expiring.headers.get("Cache-Control"), /max-age=(19|20)$/);
     await Promise.all(pending);
     cached.clear();
-    kv.data.get(`replays/${body.id}/0`).metadata.expires =
+    r2.objects.get(`replays/${body.id}/0`).customMetadata.expires =
       "2000-01-01T00:00:00Z";
     assert.equal((await handleRequest(request, env, ctx)).status, 410);
     assert.equal(cached.size, 0);
@@ -248,7 +273,7 @@ test("compressed replay has an expanded-size boundary and opaque salted run IDs"
 test("retries are idempotent and full reports stay separate from summary storage", async () => {
   const storage = new Storage(),
     kv = new Kv(),
-    env = { FEEDBACK_KV: kv };
+    env = storageEnv(storage, kv);
   const guard = new AnonymousQuotaGuard({ storage }, env);
   const body = { id: "c".repeat(64), host: "0.107.1", report: report() };
   const request = () =>
@@ -263,11 +288,13 @@ test("retries are idempotent and full reports stay separate from summary storage
     guard.fetch(request()),
   ]);
   assert.ok(replies.every((response) => response.status === 200));
-  assert.equal(kv.writes, 2);
-  const object = kv.data.get(`replays/${body.id}/0`);
+  assert.equal(kv.writes, 1);
+  assert.equal(env.RECORDS_BUCKET.writes.length, 1);
+  assert.equal(kv.data.has(`replays/${body.id}/0`), false);
+  const object = env.RECORDS_BUCKET.objects.get(`replays/${body.id}/0`);
   assert.ok(object.value.byteLength > 0);
   assert.ok(
-    Date.parse(object.metadata.expires) - Date.parse(object.metadata.at) ===
+    Date.parse(object.customMetadata.expires) - Date.parse(kv.data.get(`replay-index/${body.id}/0`).metadata.at) ===
       90 * 86400000,
   );
   const raw = await new Response(
@@ -283,7 +310,7 @@ test("retries are idempotent and full reports stay separate from summary storage
   );
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
-  object.metadata.expires = "2000-01-01T00:00:00Z";
+  object.customMetadata.expires = "2000-01-01T00:00:00Z";
   assert.equal(
     (
       await readPublicReplay(
@@ -354,6 +381,93 @@ test("feedback and replay reservations share a free storage/write budget without
     429,
   );
   assert.deepEqual(await storage.get("free-storage"), previous);
+});
+
+test('R2 capacity and operation limits reject before writes and survive day rollover', async () => {
+  const storage = new Storage(), now = new Date('2030-01-01T00:00:00Z');
+  const charge = { bytes: 0, writes: 0, retentionDays: 90,
+    objects: [{ key: 'replays/capacity', size: FREE_R2_BYTES }] };
+  assert.equal((await consumeStorage(storage, charge, now)).status, 200);
+  const before = await storage.get('free-storage');
+  assert.equal((await consumeStorage(storage, { ...charge,
+    objects: [{ key: 'replays/overflow', size: 1 }] }, new Date('2030-01-02'))).status, 429);
+  assert.deepEqual(await storage.get('free-storage'), before);
+  assert.equal([...storage.data.keys()].some(key => key.endsWith('replays/overflow')), false);
+
+  const operations = new Storage();
+  await consumeStorage(operations, { bytes: 0, writes: 0, retentionDays: 90,
+    reads: FREE_R2_READS_PER_DAY,
+    objects: Array.from({ length: FREE_R2_WRITES_PER_DAY }, (_, i) => ({ key: `replays/${i}`, size: 1 })) }, now);
+  assert.equal((await consumeStorage(operations, { bytes: 0, writes: 0, retentionDays: 0, reads: 1 }, now)).status, 429);
+  assert.equal((await consumeStorage(operations, { ...charge, objects: [{ key: 'replays/extra', size: 1 }] }, now)).status, 429);
+  assert.equal((await consumeStorage(operations, { bytes: 0, writes: 0, retentionDays: 0, reads: 1 }, new Date('2030-01-02'))).status, 200);
+});
+
+test('expired R2 capacity is refunded only after deletion succeeds; uploads do not postpone cleanup', async () => {
+  const storage = new Storage(), env = storageEnv(storage);
+  const now = new Date('2030-01-01T00:00:00Z');
+  const charge = { bytes: 100, writes: 1, retentionDays: 90,
+    objects: [{ key: 'replays/expired', size: FREE_R2_BYTES - 1 }] };
+  await consumeStorage(storage, charge, now);
+  await env.RECORDS_BUCKET.put('replays/expired', 'x', { customMetadata: { expires: '2030-04-01T00:00:00Z' } });
+  const firstAlarm = storage.alarm;
+  await consumeStorage(storage, { ...charge, objects: [{ key: 'replays/next', size: 1 }] }, new Date('2030-01-02'));
+  assert.equal(storage.alarm, firstAlarm);
+  const del = env.RECORDS_BUCKET.delete.bind(env.RECORDS_BUCKET);
+  env.RECORDS_BUCKET.delete = async () => { throw new Error('storage unavailable'); };
+  const later = new Date('2030-05-01T00:00:00Z');
+  await assert.rejects(expireReceipts(storage, env, later), /unavailable/);
+  assert.equal((await consumeStorage(storage, charge, later)).status, 429);
+  assert.equal(env.RECORDS_BUCKET.objects.size, 1);
+  env.RECORDS_BUCKET.delete = del;
+  await expireReceipts(storage, env, later);
+  assert.equal(env.RECORDS_BUCKET.objects.size, 0);
+  assert.equal((await consumeStorage(storage, charge, later)).status, 200);
+});
+
+test('a depleted public read budget does not touch R2 or cache an error', async () => {
+  const storage = new Storage(), env = storageEnv(storage);
+  await consumeStorage(storage, { bytes: 0, writes: 0, retentionDays: 0, reads: FREE_R2_READS_PER_DAY }, new Date());
+  env.RECORDS_BUCKET.get = () => { throw new Error('must not read'); };
+  const response = await readPublicReplay(new Request(`https://public/observatory/replays/${'a'.repeat(64)}/0`), env);
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+});
+
+test('capacity cleanup evicts oldest uploads first, preserves newer records and blocks replay resurrection', async () => {
+  const storage = new Storage(), env = storageEnv(storage);
+  const first = new Date('2030-01-01'), second = new Date('2030-01-02');
+  const oldKey = 'replays/old/0', newKey = 'replays/new/0';
+  const expires = '2030-04-01T00:00:00.000Z';
+  await consumeStorage(storage, { bytes: 0, writes: 0, retentionDays: 90, expires,
+    objects: [{ key: oldKey, size: 1_000_000_000 }] }, first);
+  await consumeStorage(storage, { bytes: 0, writes: 0, retentionDays: 90, expires,
+    objects: [{ key: newKey, size: R2_CLEANUP_BYTES - 1_000_000_000 }] }, second);
+  for (const key of [oldKey, newKey]) {
+    await env.RECORDS_BUCKET.put(key, 'report', { customMetadata: { expires } });
+    await env.FEEDBACK_KV.put(key.replace('replays/', 'replay-index/'), '1', {});
+    await storage.put(`report:${key.slice(8)}`, { expires });
+  }
+  await expireReceipts(storage, env, new Date('2030-01-03'));
+  assert.equal(env.RECORDS_BUCKET.objects.has(oldKey), false);
+  assert.equal(env.RECORDS_BUCKET.objects.has(newKey), true);
+  assert.equal(env.FEEDBACK_KV.data.has('replay-index/old/0'), false);
+  assert.equal(env.FEEDBACK_KV.data.has('replay-index/new/0'), true);
+  assert.equal((await storage.get('free-storage')).r2Bytes, 6_000_000_000);
+  assert.equal((await storage.get('report:old/0')).expires, '2030-01-03T00:00:00.000Z');
+});
+
+test('replay replacement keeps its original deadline and the expiry alarm deletes it', async () => {
+  const storage = new Storage(), env = storageEnv(storage);
+  const body = { id: 'd'.repeat(64), host: '0.107.1', report: report() };
+  const first = await storeReport(storage, env, body, new Date('2030-01-01'));
+  const deadline = (await first.json()).expires;
+  body.report.reloads++;
+  const second = await storeReport(storage, env, body, new Date('2030-02-01'));
+  assert.equal((await second.json()).expires, deadline);
+  await expireReceipts(storage, env, new Date('2030-04-02'));
+  assert.equal(env.RECORDS_BUCKET.objects.size, 0);
+  assert.equal(await storage.get(`report:${body.id}/0`), undefined);
 });
 
 const run = (win = true) => ({

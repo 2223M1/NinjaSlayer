@@ -7,7 +7,6 @@ export const FEEDBACK_DAILY_COUNT = 5;
 export const FEEDBACK_DAILY_BYTES = 96 * 1024 * 1024;
 export const SCREENSHOT_MAX_BYTES = 5 * 1024 * 1024;
 export const LOGS_MAX_BYTES = 16 * 1024 * 1024;
-export const LOG_CHUNK_BYTES = 4 * 1024 * 1024;
 export const JSON_MAX_BYTES = 64 * 1024;
 export const REQUEST_TIMEOUT_MS = 9000;
 export const FEEDBACK_RETENTION_SECONDS = 180 * 24 * 60 * 60;

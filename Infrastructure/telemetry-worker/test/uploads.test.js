@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
 import { Miniflare } from 'miniflare';
 import { parseFeedbackIndexMarker } from '../src/feedback-storage.js';
 import { publicFeedback } from '../dashboard/publish.mjs';
@@ -20,6 +21,7 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
     compatibilityDate: '2026-07-15',
     bindings: { POSTHOG_API_KEY: 'local-test', RATE_LIMIT_SALT: 'local-contract-salt-only' },
     kvNamespaces: ['FEEDBACK_KV'],
+    r2Buckets: ['RECORDS_BUCKET'],
     durableObjects: {
       FEEDBACK_SUBMISSIONS: { className: 'FeedbackSubmissionCoordinator', useSQLite: true },
       ANONYMOUS_QUOTAS: { className: 'AnonymousQuotaGuard', useSQLite: true },
@@ -51,17 +53,30 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
     assert.equal(repeated.status, 200);
     assert.equal((await repeated.json()).idempotent, true);
     const kv = await mf.getKVNamespace('FEEDBACK_KV');
+    const r2 = await mf.getR2Bucket('RECORDS_BUCKET');
     const marker = parseFeedbackIndexMarker(await kv.get(`feedback-index/${first.submissionId}`));
     assert.equal(marker.state, 'completed');
     const text = await kv.get(marker.completion.metadataKey);
     assert.equal(createHash('sha256').update(text).digest('hex'), marker.completion.metadataSha256);
     const metadata = JSON.parse(text);
     assert.equal(metadata.payload.description, '本地反馈契约：中文与附件');
-    assert.deepEqual(Buffer.from(await kv.get(metadata.storage.screenshot.key, 'arrayBuffer')),
+    assert.equal(metadata.storage.provider, 'r2');
+    assert.equal(await kv.get(metadata.storage.screenshot.key), null);
+    assert.deepEqual(Buffer.from(await (await r2.get(metadata.storage.screenshot.key)).arrayBuffer()),
       Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     const zip = Buffer.alloc(22); zip.set([80, 75, 5, 6]);
-    assert.deepEqual(Buffer.from(await kv.get(metadata.storage.logs.chunks[0], 'arrayBuffer')), zip);
+    assert.deepEqual(Buffer.from(await (await r2.get(metadata.storage.logs.chunks[0])).arrayBuffer()), zip);
     assert.deepEqual(publicFeedback([{ ...metadata.payload, context: metadata.modContext }]), []);
+    const replayId = 'a'.repeat(64);
+    const replayText = JSON.stringify({ id: replayId, frames: [], expires: '2099-01-01T00:00:00.000Z' });
+    await r2.put(`replays/${replayId}/0`, gzipSync(replayText), {
+      httpMetadata: { contentType: 'application/json', contentEncoding: 'gzip' },
+      customMetadata: { expires: '2099-01-01T00:00:00.000Z', hash: 'b'.repeat(64) },
+    });
+    // Use the HTTP listener so workerd's Content-Encoding behavior is exercised, too.
+    const replayResponse = await fetch(new URL(`/observatory/replays/${replayId}/0`, await mf.ready));
+    assert.equal(replayResponse.status, 200);
+    assert.equal(await replayResponse.text(), replayText);
     assert.equal(telemetry.path, '/batch/');
     assert.equal((await send(telemetry)).status, 200);
     assert.equal(upstream.length, 1);
