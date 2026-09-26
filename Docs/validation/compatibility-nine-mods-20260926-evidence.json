@@ -1,0 +1,1481 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-26T20:46:25.976526+08:00",
+  "baseSha": "7ef64c976636f6d4963c893f01be80328be97972",
+  "branch": "codex/cfc-singleplayer-seeds",
+  "uncommittedCandidate": true,
+  "published": false,
+  "productVersion": "0.3.2",
+  "workspace": "C:/Users/theon/.codex/worktrees/cfc-singleplayer-seeds/NinjaSlayer",
+  "hosts": [
+    {
+      "channel": "stable",
+      "version": "0.107.1",
+      "mvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+      "assembly": {
+        "path": "C:/Users/theon/Documents/NinjaSlayer/NinjaSlayer/build/aim-validation/reference/stable/sts2.dll",
+        "sizeBytes": 9364480,
+        "sha256": "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52"
+      }
+    },
+    {
+      "channel": "preview",
+      "version": "0.111.0",
+      "mvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "assembly": {
+        "path": "C:/Users/theon/Documents/NinjaSlayer/NinjaSlayer/build/aim-validation/reference/preview/sts2.dll",
+        "sizeBytes": 9757184,
+        "sha256": "0861bfa1df347538d932f22d580e75420f08082792eb914e53b4882764acdbe9"
+      }
+    }
+  ],
+  "installedGame": {
+    "path": "C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2/data_sts2_windows_x86_64/sts2.dll",
+    "sizeBytes": 9757184,
+    "sha256": "0861bfa1df347538d932f22d580e75420f08082792eb914e53b4882764acdbe9"
+  },
+  "ritsuCompileVersion": "0.5.12",
+  "ritsuGameRuntimeVersion": "0.6.2",
+  "mods": [
+    {
+      "id": "Loadout",
+      "version": "0.5.8",
+      "workshopId": "3756859747",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3756859747/Loadout.dll",
+          "sizeBytes": 3869696,
+          "sha256": "653e4a61db77618e2bed7c3c9ecb2937887927d74c0788e2d4311e2707ace23a"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3756859747/Loadout.json",
+          "sizeBytes": 323,
+          "sha256": "f8817e501a6b37c557b14ad56a21c1674716d38c5caf95c339125caca2a49780"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "CookieCursor",
+      "version": "0.7.0",
+      "workshopId": "3749027556",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3749027556/CookieCursor.dll",
+          "sizeBytes": 24064,
+          "sha256": "40f5b989ef873a8837c2f9d0a749d9727ab771c189305bb57bbbfb1f177c25cf"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3749027556/CookieCursor.json",
+          "sizeBytes": 321,
+          "sha256": "f9ad44c7fe66665893b126ea8990beb1ae19dbaa857c4df7a1f2904214ee7bd5"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3749027556/Cursor.cfg",
+          "sizeBytes": 46,
+          "sha256": "a41430fde03600aa14200a858360d02c27698c8bbe322eca5e0e3d1d32d77896"
+        }
+      ]
+    },
+    {
+      "id": "MintySpire2",
+      "version": "1.2.0",
+      "workshopId": "3737336234",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3737336234/MintySpire2/MintySpire2.dll",
+          "sizeBytes": 112640,
+          "sha256": "0dfd2b2b128b94697ad7f68f3686116e05767a3a6bb8f7b17381707bd224db95"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3737336234/MintySpire2/MintySpire2.json",
+          "sizeBytes": 363,
+          "sha256": "3ccc085a9aa57ae5cf80fac34ffd280f39ee652f93452ff67aea97c627c3bdbd"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "QuickSlAndRerollStart",
+      "version": "v0.0.0 (manifest)",
+      "workshopId": "3747626826",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747626826/QuickSlAndRerollStart/lib/0.107.1/compat-target.txt",
+          "sizeBytes": 9,
+          "sha256": "396ee813f930968524a95f15d189c51589d92e8f3902aaecfa747f205a66b060"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747626826/QuickSlAndRerollStart/lib/0.107.1/QuickSlAndRerollStart.Runtime.dll",
+          "sizeBytes": 24064,
+          "sha256": "91b55380d10141b9d1bc48e0fa85c80935059813f6dab683986d4db6cf7c5037"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747626826/QuickSlAndRerollStart/lib/0.111.0/compat-target.txt",
+          "sizeBytes": 9,
+          "sha256": "371a279fc35d2d124bbd9aa0d10773e7e7135906e7d73980d4b03fcd74c24c24"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747626826/QuickSlAndRerollStart/lib/0.111.0/QuickSlAndRerollStart.Runtime.dll",
+          "sizeBytes": 24064,
+          "sha256": "5a70505b0561081f32339f7ff2abd4f9fa92c04fd853b8eb96b337445c6d84a7"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747626826/QuickSlAndRerollStart/QuickSlAndRerollStart.dll",
+          "sizeBytes": 24064,
+          "sha256": "d12ebc5153b9e713b7abccdc718108ee3327fbd5e35514e5fd2bd0899848b30d"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747626826/QuickSlAndRerollStart/QuickSlAndRerollStart.json",
+          "sizeBytes": 347,
+          "sha256": "ad2bb952e847ba369e8f3a75fafea7e2864ec87d45e7006ae8cdb9cc2d226ae1"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "RemovalCostViewer",
+      "version": "0.1.0",
+      "workshopId": "3751491202",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3751491202/mod_manifest.json",
+          "sizeBytes": 329,
+          "sha256": "cd18709612fd35dcf696566398c7bc0e6e014bed2c120b8b390fe915b22ba785"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3751491202/RemovalCostViewer.dll",
+          "sizeBytes": 18944,
+          "sha256": "f2d229d71e3d3b87973f0702580274ec89d0ff6db4751b61f06b073f67a832d2"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "MaxHpSizeMod",
+      "version": "1.2",
+      "workshopId": "3749245878",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3749245878/MaxHpSizeMod.dll",
+          "sizeBytes": 9728,
+          "sha256": "b26258056be4007bba2334493f5f89d5748320fb58c4acbd18395101fe442cc1"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3749245878/MaxHpSizeMod.json",
+          "sizeBytes": 363,
+          "sha256": "824f91ff21afb5d0a9ed29d7943d1fdd113f71373ee4f7bd68c6134baaf53565"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "ThrowPotionsAtArchitect",
+      "version": "1.4.1",
+      "workshopId": "3785664177",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3785664177/ThrowPotionsAtArchitect.dll",
+          "sizeBytes": 19456,
+          "sha256": "2788c8776f430c61aa01b4ae84b6f7c1d5dbba0c004650fa30a59ab80b144ac9"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3785664177/ThrowPotionsAtArchitect.json",
+          "sizeBytes": 535,
+          "sha256": "3afd96a438fd43c6468e372dc8c17a3d9d3cb861ee7b50bf976e9eebc36dd24a"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "HextechRunes",
+      "version": "0.9.6",
+      "workshopId": "3747501308",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/hextech-runes-variants.manifest",
+          "sizeBytes": 641,
+          "sha256": "52bfdf6d2f624679d67f1f29ca65a6c889917238a715866d0ff6442ab1f0243e"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/HextechRunes.dll",
+          "sizeBytes": 27648,
+          "sha256": "f9b0fd23c4c8e2633f505fce1b06b7025f91d29650b6f83f680b1bfafd8d5d11"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/HextechRunes.json",
+          "sizeBytes": 485,
+          "sha256": "2c1b7fb5ce0840c6a9cd6c3eb7acca50992007306fdd092cb23e770967df2ef2"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/lib/0.107.1/compat-target.txt",
+          "sizeBytes": 8,
+          "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/lib/0.107.1/HextechRunes.dll",
+          "sizeBytes": 2304000,
+          "sha256": "4600f2ea08f26e498ecc44fef02d3d5743b2211117bcc2cacb9d9a50529712c3"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/lib/0.111.0/compat-target.txt",
+          "sizeBytes": 8,
+          "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747501308/lib/0.111.0/HextechRunes.dll",
+          "sizeBytes": 2315776,
+          "sha256": "1e0b68a8ae737cb9660334f71e07399ed58ada1bc8706d7a56861b73e6d4eef1"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "AutoAnthony",
+      "version": "0.3.102",
+      "workshopId": "3786611028",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3786611028/AutoAnthony.dll",
+          "sizeBytes": 6351360,
+          "sha256": "e269dfa0fe7879193b5ed1f3b78ceb318fa8c287ca492658de9c7f4bbfaf1c20"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3786611028/AutoAnthony.json",
+          "sizeBytes": 354,
+          "sha256": "96faa5a0883bc441b7e4204d6d3eaf42752ba922708381b18b9bd403ca01517c"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "STS2-RitsuLib",
+      "version": "0.6.2",
+      "workshopId": "3747602295",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/compat/0.107.1/compat-target.txt",
+          "sizeBytes": 12,
+          "sha256": "3c793c89c08311720cb9a32915b7d7f5f8456bd7f8762e5ec28a679589be9634"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/compat/0.107.1/STS2-RitsuLib.dll",
+          "sizeBytes": 66048,
+          "sha256": "1278f675d582234a48d242a38e6721ad9bf04aaa423c62df592b08bb296848c8"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/compat/0.107.1/STS2-RitsuLib.Runtime.dll",
+          "sizeBytes": 6464000,
+          "sha256": "824a2a606dc9a578639e2af77b954b909b9fd50c20b0eb76a6dcbdeaf24410a5"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/compat/0.111.0/compat-target.txt",
+          "sizeBytes": 12,
+          "sha256": "ba03683868cad9bee40209e5a8a3f1b06b2992e32feb7eb7b68a4519a1ab96af"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/compat/0.111.0/STS2-RitsuLib.dll",
+          "sizeBytes": 66048,
+          "sha256": "7427da5493306c8c6a859ed3690257914528a4d2bf29821320b31391bbb36d5d"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/compat/0.111.0/STS2-RitsuLib.Runtime.dll",
+          "sizeBytes": 6456320,
+          "sha256": "f321aa102f18e939ac48dd2dc60610284fa5b4697b84385775494593d9ed4a7c"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/mod_manifest.json",
+          "sizeBytes": 413,
+          "sha256": "e5d2574fcbbb45cf3b8778376e03a8f44fe3f41fa8929b14ee74b921df422f97"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/ritsulib-variants.manifest",
+          "sizeBytes": 1956,
+          "sha256": "2125e7c82fd47647234ba4a008e23ef4722607ae1a8c7b28e508b8acf0056400"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295/STS2-RitsuLib.dll",
+          "sizeBytes": 36864,
+          "sha256": "e3959f1746fcb7aa404cb9cd861443dc540e8488b50f7d156eacbe79925156b6"
+        }
+      ],
+      "configFiles": []
+    },
+    {
+      "id": "BaseLib",
+      "version": "3.4.7",
+      "workshopId": "3737335127",
+      "files": [
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3737335127/BaseLib/BaseLib.dll",
+          "sizeBytes": 1132032,
+          "sha256": "55863ca6adc30a61a7544874e157a519ffe148ccf2b18025947609c4bff813ce"
+        },
+        {
+          "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3737335127/BaseLib/BaseLib.json",
+          "sizeBytes": 271,
+          "sha256": "8b0d470c1c624eed9f7bebf79fa7985ed7f8f4965154713546890a910a61d6f8"
+        }
+      ],
+      "configFiles": []
+    }
+  ],
+  "configuration": {
+    "scope": "Isolated game/save/config copies; Steam disabled; outbound firewall on copied executable",
+    "renderer": "gl_compatibility",
+    "telemetryConsent": "not granted",
+    "initialModConfigs": "Copied from installed mod directories; listed hashes captured at evidence closeout. No user profile copied.",
+    "gameplayChoices": "SmokeController.Compatibility uses actual Hextech buttons and Better Menu operations. Loadout godmode is explicitly tested both on and off in contracts.",
+    "generatedCardGameplay": "AutoAnthony per-setting/component tests are product contracts, not exhaustive rendered UI tests."
+  },
+  "candidateFiles": [
+    {
+      "path": "build/compatibility-nine/stable/Release/NinjaSlayer.dll",
+      "sizeBytes": 2192384,
+      "sha256": "ea7b4731f251a860090c32437adff99a54e34a9bc57c0a784c6cd1b654a953df"
+    },
+    {
+      "path": "build/compatibility-nine/preview/Release/NinjaSlayer.dll",
+      "sizeBytes": 2195968,
+      "sha256": "96568083fa43df156bdaae58061f1fbe8d8a8857ee6a14c661c84beb93b3cf0d"
+    },
+    {
+      "path": "build/compatibility-nine/anthony/NinjaSlayer.AutoAnthony.dll",
+      "sizeBytes": 122368,
+      "sha256": "d3dc44bf495aff253acff160cfe17902a79ed07c20f9ba6a1531a7f74c871f1d"
+    },
+    {
+      "path": "build/compatibility-nine/shared-resources.pck",
+      "sizeBytes": 204896856,
+      "sha256": "2fe4608859df04d3374b2d00f4306b4b8a2ad2859e1cde8d21fa59bcc2d0f345"
+    }
+  ],
+  "bundleFiles": [
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/Box2D.NET.dll",
+      "sizeBytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/lib/0.107.1/compat-target.txt",
+      "sizeBytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/lib/0.107.1/NinjaSlayer.dll",
+      "sizeBytes": 2192384,
+      "sha256": "ea7b4731f251a860090c32437adff99a54e34a9bc57c0a784c6cd1b654a953df"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/lib/0.111.0/compat-target.txt",
+      "sizeBytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sizeBytes": 122368,
+      "sha256": "d3dc44bf495aff253acff160cfe17902a79ed07c20f9ba6a1531a7f74c871f1d"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/lib/0.111.0/NinjaSlayer.dll",
+      "sizeBytes": 2195968,
+      "sha256": "96568083fa43df156bdaae58061f1fbe8d8a8857ee6a14c661c84beb93b3cf0d"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/LICENSE.Box2D.NET.txt",
+      "sizeBytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/ninjaslayer-variants.manifest",
+      "sizeBytes": 644,
+      "sha256": "42fb0d80f7bbe097ee39462486ca3286122c8523f028d5a908fefce364ac7cd5"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/NinjaSlayer.dll",
+      "sizeBytes": 24576,
+      "sha256": "cc52e894eac7768b8c99e381a2c7ac7d5182f7973deb4b8392317f1895b0b583"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/NinjaSlayer.json",
+      "sizeBytes": 362,
+      "sha256": "e46ab6bd3e25d3dad09b6e9e296cbb89762fc1d93835222a3ef37076150304d7"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/NinjaSlayer.pck",
+      "sizeBytes": 204896856,
+      "sha256": "2fe4608859df04d3374b2d00f4306b4b8a2ad2859e1cde8d21fa59bcc2d0f345"
+    },
+    {
+      "path": "build/compatibility-nine/bundle/NinjaSlayer/SHA256SUMS",
+      "sizeBytes": 1008,
+      "sha256": "1cf4a4cb5be435d8c3b174f40b71322a10e841eb132186d53d0632463e8c6ae1"
+    }
+  ],
+  "latestGameAttestation": {
+    "schemaVersion": 6,
+    "candidateSha": "7ef64c976636f6d4963c893f01be80328be97972",
+    "bundleVersion": "0.3.2",
+    "result": "passed",
+    "channel": "preview",
+    "gameApiVersion": "0.111.0",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+    "ritsuLibPackageId": "STS2.RitsuLib",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.2",
+    "additionalMods": [
+      {
+        "id": "BaseLib",
+        "version": "v3.4.7"
+      },
+      {
+        "id": "Loadout",
+        "version": "v0.5.8"
+      },
+      {
+        "id": "CookieCursor",
+        "version": "0.7.0"
+      },
+      {
+        "id": "MintySpire2",
+        "version": "v1.2.0"
+      },
+      {
+        "id": "QuickSlAndRerollStart",
+        "version": "v0.0.0"
+      },
+      {
+        "id": "RemovalCostViewer",
+        "version": "0.1.0"
+      },
+      {
+        "id": "MaxHpSizeMod",
+        "version": "v1.2"
+      },
+      {
+        "id": "ThrowPotionsAtArchitect",
+        "version": "1.4.1"
+      },
+      {
+        "id": "HextechRunes",
+        "version": "0.9.6"
+      },
+      {
+        "id": "AutoAnthony",
+        "version": "0.3.102"
+      }
+    ],
+    "bundleSha256": "1cf4a4cb5be435d8c3b174f40b71322a10e841eb132186d53d0632463e8c6ae1",
+    "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+    "mode": "singleplayer-first-combat-restart",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-09-26T12:42:51.2246020+00:00"
+  },
+  "focusedGameAttestation": {
+    "schemaVersion": 6,
+    "candidateSha": "7ef64c976636f6d4963c893f01be80328be97972",
+    "bundleVersion": "0.3.2",
+    "result": "passed",
+    "channel": "preview",
+    "gameApiVersion": "0.111.0",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+    "ritsuLibPackageId": "STS2.RitsuLib",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.2",
+    "additionalMods": [
+      {
+        "version": "v3.4.7",
+        "id": "BaseLib"
+      },
+      {
+        "version": "v0.5.8",
+        "id": "Loadout"
+      },
+      {
+        "version": "0.7.0",
+        "id": "CookieCursor"
+      },
+      {
+        "version": "v1.2.0",
+        "id": "MintySpire2"
+      },
+      {
+        "version": "v0.0.0",
+        "id": "QuickSlAndRerollStart"
+      },
+      {
+        "version": "0.1.0",
+        "id": "RemovalCostViewer"
+      },
+      {
+        "version": "v1.2",
+        "id": "MaxHpSizeMod"
+      },
+      {
+        "version": "1.4.1",
+        "id": "ThrowPotionsAtArchitect"
+      },
+      {
+        "version": "0.9.6",
+        "id": "HextechRunes"
+      },
+      {
+        "version": "0.3.102",
+        "id": "AutoAnthony"
+      }
+    ],
+    "bundleSha256": "75af9586dc70ee3c14c189da03ebac790fdc0dec08fb711f5a341f9a55c10810",
+    "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+    "mode": "singleplayer-mod-compatibility",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-09-26T12:22:28.7790612+00:00"
+  },
+  "capturePolicy": {
+    "requestedNoScreenshots": true,
+    "earlyHarnessBug": "Flag originally guarded failure captures only; ordinary captures still produced images.",
+    "fixed": "All static capture callsites share SaveScreenshot guard; native F2 capture skipped; recording phases reject NoScreenshots.",
+    "finalRun": "live-preview-all-21",
+    "finalPngCount": 0,
+    "earlierImagesUsedAsEvidence": false
+  },
+  "sourceFiles": [
+    {
+      "path": "Code/ExternalAnimations/AlabamaDropAnimation.cs",
+      "sizeBytes": 35380,
+      "sha256": "ec070803059db1d2d97ae42b9175010011663bc41d9f7d6908aaf3414505021e"
+    },
+    {
+      "path": "Code/ExternalAnimations/AncientEntranceAnimation.cs",
+      "sizeBytes": 22583,
+      "sha256": "8b98781a17372f7851c61e8ac67dc2ff7032c9f3af2eddb7c84aab4d46c3f968"
+    },
+    {
+      "path": "Code/ExternalAnimations/ArchitectExecutionCinematic.cs",
+      "sizeBytes": 19093,
+      "sha256": "ae1137c5bbdf22a8c7cc6cbf5a20ebb644cd803768c4c4023ea6b12ffdb0c469"
+    },
+    {
+      "path": "Code/ExternalAnimations/ArchitectPotionIntegration.cs",
+      "sizeBytes": 3229,
+      "sha256": "80c678520f9d6b17d90ff7f7bb7fe23ca9e631ee4f49fb3e619a1dd9b11132e0"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherProtectionService.cs",
+      "sizeBytes": 5086,
+      "sha256": "e7b655d86d8aca3471a2123f2e2d4bc98008a40aac2e999dbc1218a4555ec007"
+    },
+    {
+      "path": "Code/Patches/ArchitectExecutionPatch.cs",
+      "sizeBytes": 4143,
+      "sha256": "e9eb135507b67555739017a3566a75795161e3bd0712513f0b1035448a49ca6e"
+    },
+    {
+      "path": "Code/Patches/CookieCursorIntegration.cs",
+      "sizeBytes": 1745,
+      "sha256": "7de7a5ce886e6f8fa847b3640c4f2c5fd346f4e3c90b3617dca37c9a6838fbf7"
+    },
+    {
+      "path": "Code/Patches/NarakuLifeDamagePatch.cs",
+      "sizeBytes": 1850,
+      "sha256": "54c7e98bd29aff27577674c77a92faf7588fe90e6f49b2a09cc0383e2d8075cc"
+    },
+    {
+      "path": "Code/Patches/NinjaSlayerFinisherPatches.cs",
+      "sizeBytes": 15210,
+      "sha256": "95c8febf1a61b230ed103a3c2f098f0f6eb92be05baef2d68f008eea43be62e4"
+    },
+    {
+      "path": "Code/Patches/NinjaSlayerModelInitializationPatch.cs",
+      "sizeBytes": 749,
+      "sha256": "5a4eae8c6b1e68255fac063b852e46c6097f2b455f3efe5dfd15b23561e81b8a"
+    },
+    {
+      "path": "Code/Patches/SingleplayerRewardSeedPatches.cs",
+      "sizeBytes": 13472,
+      "sha256": "130568c1c7968f067c0f2ed99d26ab24a6d77540f89dcb38401e005c45877baa"
+    },
+    {
+      "path": "Code/Patches/SingleplayerSeedPatches.cs",
+      "sizeBytes": 6434,
+      "sha256": "8a8a8c698257814d0d8707a0f4ee62fd05d142b5c2691585e31ec1258d8478bb"
+    },
+    {
+      "path": "Content/NinjaSlayerRunData.cs",
+      "sizeBytes": 2004,
+      "sha256": "01d7da7fe8a238f81e30f9f462be8b5afd95c7131c78711be1fbf0a59ff4222e"
+    },
+    {
+      "path": "Content/SingleplayerSeedRules.cs",
+      "sizeBytes": 3510,
+      "sha256": "1950f6e5cd1ec3ecfd957c4140424209f2daa1589945810193d8496923c3bd50"
+    },
+    {
+      "path": "Integrations/AutoAnthony/Bridge.cs",
+      "sizeBytes": 4207,
+      "sha256": "51c12f2c150d334a9838d7242749b9138c66e8ae5659cc5fd873962b87cf9a0c"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaAnthonyRun.cs",
+      "sizeBytes": 14081,
+      "sha256": "3ec9654fcada53fba887a5835a8b9aa60f2e6b14995cecbb87c329418166ec50"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaChaosCard.cs",
+      "sizeBytes": 521,
+      "sha256": "9ab78a703682b614af28b2d3f9f310f809ba7db896b4931116312038e9f3f03d"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaChaosCards.g.cs",
+      "sizeBytes": 8291,
+      "sha256": "f3b68c9d461ed783c2b84cb768c133d20cd2c3e52fa99aa210f1eab4d7746147"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentCardPatches.cs",
+      "sizeBytes": 5076,
+      "sha256": "c6a69131e65246006e65f643da4cb83253e86af3632744238e7b6f4ff4b339cb"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentRuntime.cs",
+      "sizeBytes": 17072,
+      "sha256": "692343a43b1edcf87145356769d6110cf519db4bf218750a2bc67db7ef8321d4"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentSources.cs",
+      "sizeBytes": 29238,
+      "sha256": "4b8c759c1e9d35e9407f1666e3c08bf73717dea596cf4f1aa8644eea64fae195"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaComponentValuation.cs",
+      "sizeBytes": 1350,
+      "sha256": "8a38e4cb3a271cad47e08f4e25ae2e8200499f4360cf4282a1cac7d73853cd3b"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaNativeCardAdapter.cs",
+      "sizeBytes": 4396,
+      "sha256": "e6450af527b7603f9972cb81df59553150974d7cfd19ded4dc735dabf152e388"
+    },
+    {
+      "path": "Integrations/AutoAnthony/NinjaSlayer.AutoAnthony.csproj",
+      "sizeBytes": 2286,
+      "sha256": "97025cbade51d43686bbe7bc142852c11114ae105c588d6db1d172ca882c3a7c"
+    },
+    {
+      "path": "NinjaSlayer.csproj",
+      "sizeBytes": 6670,
+      "sha256": "420c8899d5049d4a1c9f93c292a893003bbfa7e38f023f4acbdca61b7cf32450"
+    },
+    {
+      "path": "NinjaSlayer/localization/eng/ancients.json",
+      "sizeBytes": 252,
+      "sha256": "4c84ebb85f22d8e546e19911bf3edbf26b9a8567e84fde0179f65a20658d632e"
+    },
+    {
+      "path": "NinjaSlayer/localization/zhs/ancients.json",
+      "sizeBytes": 13432,
+      "sha256": "ad46190bd5fd8427cac2e1328a1eeb6d7da72fe7a9cf2cfd92400ddb8d490511"
+    },
+    {
+      "path": "Scripts/Entry.cs",
+      "sizeBytes": 27199,
+      "sha256": "10535dd1fe1482d04a8d1fdedf949b1c52ff6daed62d16796a042fd18ec7f032"
+    },
+    {
+      "path": "Scripts/OptionalAssemblyAccess.cs",
+      "sizeBytes": 98,
+      "sha256": "0d1d8adb82519db988465e34413965be4a97c4ecf08c5ec61d8f55606546979e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.AutoAnthony.cs",
+      "sizeBytes": 14874,
+      "sha256": "87dc383f8985d6035bcc557e356703170de1e40d4092a395037d74cba8d1661e"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Compatibility.cs",
+      "sizeBytes": 9122,
+      "sha256": "b43fd7c85244a5af2fb03d06975a62bb3513f389728a26856171aab91f7cb7ec"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Seeds.cs",
+      "sizeBytes": 18122,
+      "sha256": "9d94fe5e9a6f63d78a20b8a2bf6611c280103d16774c64974accb78cb4b7bd95"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs",
+      "sizeBytes": 37439,
+      "sha256": "4324bd9cf9a122428ee3c2051d609e69063cdba2c1535700c4447656fc80051b"
+    },
+    {
+      "path": "Tests/NinjaSlayer.RitsuLibContractTests/ContractRunner.cs",
+      "sizeBytes": 136622,
+      "sha256": "b999740e3146c4e04f6217ceb45d03946fdbe31e17be989fa1cf2b29bd7f51aa"
+    },
+    {
+      "path": "tools/artifact-contract/Program.cs",
+      "sizeBytes": 31910,
+      "sha256": "d089f6bfdeef9378b4949e49a9c4b6964ef7fff48108ff7c5460c8f685d5b912"
+    },
+    {
+      "path": "tools/release/New-NinjaSlayerWorkshopBundle.ps1",
+      "sizeBytes": 11985,
+      "sha256": "cfbe61ffb9d3cb3c2caaeb7efd7dc9124f809cb664bb586c759a4f5f7bcc0c0d"
+    },
+    {
+      "path": "tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1",
+      "sizeBytes": 28014,
+      "sha256": "3eefeb428aeb10a2a5d6915ae8b035e6ffef976d24a187f8f195d75cd7e962af"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeConfiguration.cs",
+      "sizeBytes": 3576,
+      "sha256": "8f0e760add1bb98b7d517f0f28a2ea7ea5c959dae7652337fc87834f58972101"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.ActionPreview.cs",
+      "sizeBytes": 49300,
+      "sha256": "45e872797f01b3036f2726569301577580effabdb9035be05e1d507b6be77a8d"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Architect.cs",
+      "sizeBytes": 12199,
+      "sha256": "2be72667a2313876d20cdd9f3033a32da16c8d3a709d7f15aff52bec91692207"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BalanceV0216.cs",
+      "sizeBytes": 5450,
+      "sha256": "868e3e96e1c4720e74d6291845632e6b3cd372d3b555a4d2ea16f51e0f3ec660"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BalanceV0217.cs",
+      "sizeBytes": 9953,
+      "sha256": "42c0d4978bc94ed6cc42b276b264220d61c2552fd442e978cb132da31bfd9e2e"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BattleCompletion.cs",
+      "sizeBytes": 9272,
+      "sha256": "58823624e9d52150db732e1a128e948815056c71dfc1453942937c4274618bae"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BossReload.cs",
+      "sizeBytes": 7667,
+      "sha256": "1daec85a2b0c145ee6dea45b8f5c1487be4308982e09eaec0721eee9fa867573"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.CardWhiteout.cs",
+      "sizeBytes": 3611,
+      "sha256": "a3b48b95258a457a160cebb070e2df7f6c489df0ed81676da22b3cebb3c608eb"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Compatibility.cs",
+      "sizeBytes": 11003,
+      "sha256": "6f1ab9794aac5d472c1d89146a5d03422f8ecae0f0dee1c8c87a0801d37d64b2"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.DarkStrike.cs",
+      "sizeBytes": 7675,
+      "sha256": "cc1fd2ca153b0a71760657d4d53b7cc48f66b0b5df053feac43477d6321fb5b4"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.EventRelics.cs",
+      "sizeBytes": 4275,
+      "sha256": "cefb5cc62595da5dc94277d485f24ab20279fa97c65ba98d94482c181c25f359"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.MotherUnix.cs",
+      "sizeBytes": 5024,
+      "sha256": "c91e88c91c4dac10480279bed0037b827eea3748c31b10a001b5858a65bfc7da"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.MusicV0217.cs",
+      "sizeBytes": 12492,
+      "sha256": "da0d265bd48036cc1b10c089610c6b07abe6871c886bff4cabfd670f36b192e1"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.OrbSlots.cs",
+      "sizeBytes": 9703,
+      "sha256": "8af8d868a992c3515215dd859df48965acada44361f29376b731e1d620a9f329"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Overhead.cs",
+      "sizeBytes": 5831,
+      "sha256": "c33e7e3a18f8677e389266a576f750b833c9b63faa89a3502052f706ef4d4177"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.PileUi.cs",
+      "sizeBytes": 3692,
+      "sha256": "76649bc72eef5660fd647a1a1a15ab3ef2c50664b4cdf1737651c7e4bf9f6f9a"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.PlayerWeapons.cs",
+      "sizeBytes": 7086,
+      "sha256": "47b0b5fa81a0305a5af2e558684a32b780982bdb423ffbedcb60abc61a30b491"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Presentation.cs",
+      "sizeBytes": 10054,
+      "sha256": "68d8ea649975e1a905edca675e6db5a42ff4808cc23eeebd26cc84e1ca17443a"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.RedesignV1.cs",
+      "sizeBytes": 13806,
+      "sha256": "95186d256c4ded18342fd29dae8bd74a487f15e7d0f8bf882dc511b2980febb8"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.SawatariCleanup.cs",
+      "sizeBytes": 14059,
+      "sha256": "aeffb5123c48dfbcbea772613e3b58ba83b49bdab110338cb5ffabf5fbaa63f8"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.SawatariMotion.cs",
+      "sizeBytes": 17611,
+      "sha256": "6709830b3190b86ada529aee5ba5a7d0f475712ed3750138792e627f92a5904b"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.SawatariWeapons.cs",
+      "sizeBytes": 19702,
+      "sha256": "777c11b2aa3c3bdfa6379d5bc2f7421c65184d81af97e882e3fb6c1ab3c36a0c"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Theft.cs",
+      "sizeBytes": 21055,
+      "sha256": "7d43fa06b0c1c4185529c87c9cc5ec20466f66e716d3ad37af882ccd3737defe"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.Uploads.cs",
+      "sizeBytes": 4603,
+      "sha256": "83eb3d3932dcc8e1aca7ec50ad7bd570ae41a67163650e67b908bb6f6c1d8133"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.cs",
+      "sizeBytes": 94679,
+      "sha256": "ca790e5bdca78e77c6d37c198a647e90bf3ed1926004810cc5d2e13585796dc2"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeHextechSelection.cs",
+      "sizeBytes": 2005,
+      "sha256": "412b273bad79f46be3ebb3c080979058fad6931d2ee4e3deaf21dfa61d147356"
+    }
+  ],
+  "logs": [
+    {
+      "path": "build/compatibility-nine/build-boundaries-final.log",
+      "sizeBytes": 30,
+      "sha256": "25812d3e118585dbaeb07ec30527a893794bdd31adc8095b4885e50d5cf0c962"
+    },
+    {
+      "path": "build/compatibility-nine/bundle-final.log",
+      "sizeBytes": 3241,
+      "sha256": "90dca27b28689d3ea0ae656574441658af8bd22fa859c8a524d5a14b9e76a390"
+    },
+    {
+      "path": "build/compatibility-nine/driver-stable-final-02.log",
+      "sizeBytes": 339,
+      "sha256": "cccf45ab694b233526883cc876095e1d2445f71c90a1845bba702aa278cbc524"
+    },
+    {
+      "path": "build/compatibility-nine/live-eight-03/game-godot.log",
+      "sizeBytes": 202616,
+      "sha256": "73a59ff9af097c8065f3f3bd15ad22fa1e7a17122e06e4e3448c57b7135dd138"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-13/game-godot.log",
+      "sizeBytes": 363982,
+      "sha256": "0f35627c5791b832875f20d8db47d7073baff1fbf65c36320ed1792c39bbdbf1"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/attestation.json",
+      "sizeBytes": 1505,
+      "sha256": "d2520a8ad5b5b5373b24689f56273fc3987357ff956906367a96aceaaa93a7d1"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/autoslay-fresh.log",
+      "sizeBytes": 4424,
+      "sha256": "ec6851f44cf824c13efb060a798a2c862451cfe2fe0d41e9b16de078260e93ee"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/autoslay-reversefinisher.log",
+      "sizeBytes": 2589,
+      "sha256": "025624c994b664bf1f6e71d1867f7c71a27668a0318676c06a44aa63fa931237"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/checkpoints.jsonl",
+      "sizeBytes": 14214,
+      "sha256": "8ad5176eb8f9d71efbe5220ea1134ddc2f12dc294d678c8581f857fd1799dc00"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/game-godot.log",
+      "sizeBytes": 341453,
+      "sha256": "dce2574ac575d101475fa8ee332599e8955a9c0e59c00d4e7ed2700095158910"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/game-godot2026-09-26T20.41.20.log",
+      "sizeBytes": 361876,
+      "sha256": "43a3a80205fde9cff290f7652cef63b30f90c258f9ce83953fc869958e6fefcc"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/game-godot2026-09-26T20.42.07.log",
+      "sizeBytes": 340371,
+      "sha256": "e8c1da9fff2bc46a4e744d65048ababa10856ef91dc39a5df26d7dc64a377867"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21/run-save.json",
+      "sizeBytes": 462363,
+      "sha256": "aa45a6d8687fea92f9f2da27dbe481ecac0ddff8a3cb9acbb32a99ea126a9d4f"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-all-21-launcher.log",
+      "sizeBytes": 749,
+      "sha256": "d2eed36ecee596cd10b439b8dde7e2e80d9feb41661429174d8266988aa027ff"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-focused-16/checkpoints.jsonl",
+      "sizeBytes": 2737,
+      "sha256": "7e3bdcf6b188d8c653c88c023d87523131482dc1246ae80b587b74fcac1235c7"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-focused-19/attestation.json",
+      "sizeBytes": 1502,
+      "sha256": "638dba259415a4d8bf65e8251f83524ca0efe5baf73be23a1f864ef695888e42"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-focused-19/autoslay-modcompatibility.log",
+      "sizeBytes": 2701,
+      "sha256": "b07310a7a177a0476f910a1e87de7229fa4ce7f9a3a342c34c558fbcfd6574af"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-focused-19/checkpoints.jsonl",
+      "sizeBytes": 3262,
+      "sha256": "82620c4edfbf71ea84698ddf6ed479225c33f0442f72e725cbf2cdc4979ae061"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-focused-19/game-godot.log",
+      "sizeBytes": 351871,
+      "sha256": "773be41ea5f7d1b082bd53ab09eb6c439195e297cc123b0699b5ba646e553af0"
+    },
+    {
+      "path": "build/compatibility-nine/live-preview-focused-19-launcher.log",
+      "sizeBytes": 749,
+      "sha256": "7dc7eb8c8016fee88c590eb0258d9048e32662d1940fc42e91676cbf674aecbe"
+    },
+    {
+      "path": "build/compatibility-nine/logic-final.log",
+      "sizeBytes": 706,
+      "sha256": "70e6ac16bdb8eeb4c1bbcfeca4c0b3f78108ee8abaa624d32a67436a34af151f"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client-errors.log",
+      "sizeBytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.all-ended",
+      "sizeBytes": 6,
+      "sha256": "284d1e8c4918248233df17642bbb940c001e1fa856c18aab86ba6dbe7813eb13"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.bamboo-1-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.bamboo-1-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.bamboo-2-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.bamboo-2-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.burning-batch-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.burning-batch-2",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.choices-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.choices-2",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.conversion-1-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.conversion-1-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.conversion-2-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.conversion-2-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.first-ended",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.json",
+      "sizeBytes": 4841,
+      "sha256": "58e82633a4b8181f14c3a62cc02c96a0d10559a6a0288bb7f0c293a103e38f13"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.log",
+      "sizeBytes": 39783,
+      "sha256": "bc3d0f31b2c0bf5926ae8bb1ba746fe6ea1566500583aec77d6815636745a4b4"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.machete-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.machete-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/client.turn-ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host-errors.log",
+      "sizeBytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.all-ended",
+      "sizeBytes": 6,
+      "sha256": "284d1e8c4918248233df17642bbb940c001e1fa856c18aab86ba6dbe7813eb13"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.bamboo-1-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.bamboo-1-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.bamboo-2-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.bamboo-2-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.burning-batch-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.burning-batch-2",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.choices-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.choices-2",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.conversion-1-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.conversion-1-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.conversion-2-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.conversion-2-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.first-ended",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.json",
+      "sizeBytes": 4841,
+      "sha256": "58e82633a4b8181f14c3a62cc02c96a0d10559a6a0288bb7f0c293a103e38f13"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.log",
+      "sizeBytes": 39699,
+      "sha256": "d0bdf92b640cf7f9553f46835d49ac97908ca972269fd03fd2fefa35e17b8357"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.machete-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.machete-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/host.turn-ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01/listening",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-preview-01-launcher.log",
+      "sizeBytes": 647,
+      "sha256": "c1616748cf37d4f1e746175166ab8bc2de9ada7410b164578efd6391e6e51b09"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client-errors.log",
+      "sizeBytes": 3114,
+      "sha256": "db200dccade7e5df6e79b3a2e57602a22bcda1f777178fe336de98c277b23988"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.all-ended",
+      "sizeBytes": 6,
+      "sha256": "284d1e8c4918248233df17642bbb940c001e1fa856c18aab86ba6dbe7813eb13"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.bamboo-1-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.bamboo-1-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.bamboo-2-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.bamboo-2-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.burning-batch-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.burning-batch-2",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.conversion-1-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.conversion-1-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.conversion-2-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.conversion-2-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.first-ended",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.json",
+      "sizeBytes": 3887,
+      "sha256": "896f15889b3b7ff9e0a18faef95b25fbc30a25f2fd1a35184029cc7fa659de17"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.log",
+      "sizeBytes": 39245,
+      "sha256": "e419707cc906051a7b155d821b981369e3b973630cc5df93e5b64db94b805e71"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.machete-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.machete-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/client.turn-ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host-errors.log",
+      "sizeBytes": 3114,
+      "sha256": "db200dccade7e5df6e79b3a2e57602a22bcda1f777178fe336de98c277b23988"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.all-ended",
+      "sizeBytes": 6,
+      "sha256": "284d1e8c4918248233df17642bbb940c001e1fa856c18aab86ba6dbe7813eb13"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.bamboo-1-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.bamboo-1-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.bamboo-2-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.bamboo-2-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.burning-batch-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.burning-batch-2",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.conversion-1-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.conversion-1-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.conversion-2-NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.conversion-2-NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.first-ended",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.json",
+      "sizeBytes": 3887,
+      "sha256": "896f15889b3b7ff9e0a18faef95b25fbc30a25f2fd1a35184029cc7fa659de17"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.log",
+      "sizeBytes": 39161,
+      "sha256": "641694de0329cf45442110aa536e8f73ce6bdf79925dda1bbf386e5907643ce8"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.machete-0",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.machete-1",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/host.turn-ready",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01/listening",
+      "sizeBytes": 5,
+      "sha256": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6"
+    },
+    {
+      "path": "build/compatibility-nine/network-stable-01-launcher.log",
+      "sizeBytes": 521,
+      "sha256": "4314b370654d606411c16657c8539b290290223b4766f455ccdfe91679319685"
+    },
+    {
+      "path": "build/compatibility-nine/package-preview-07.log",
+      "sizeBytes": 1579,
+      "sha256": "e3df135b0949054c65c1fe11ce495537efdbbe12ef4a852aa14b096325297379"
+    },
+    {
+      "path": "build/compatibility-nine/package-stable-07.log",
+      "sizeBytes": 1571,
+      "sha256": "8eb2f6404a424f008e2a3fcb765139bb5b2ab58ac02f4f5ca28a50225374fe89"
+    },
+    {
+      "path": "build/compatibility-nine/preview-all-08.log",
+      "sizeBytes": 68851,
+      "sha256": "5f588d3ab4d2a003d4ea374087278983e157df40e3d6f7d24c321e2666d7f170"
+    },
+    {
+      "path": "build/compatibility-nine/preview-anthony-33.log",
+      "sizeBytes": 34580,
+      "sha256": "02e71a92f98e4963b71c99494358e9f1ead3a8d05793e40786860a167bb27a0a"
+    },
+    {
+      "path": "build/compatibility-nine/preview-hextech-08.log",
+      "sizeBytes": 45871,
+      "sha256": "5dadca05ff4d257d376e03cc2183957f7fc32b79bd764f6e7cb63f5f6bae0605"
+    },
+    {
+      "path": "build/compatibility-nine/preview-loadout-04.log",
+      "sizeBytes": 31203,
+      "sha256": "690cda900215fea4c145f08bb3a0e690d7d072e0800632a96c70497a78aeb348"
+    },
+    {
+      "path": "build/compatibility-nine/preview-ritsu-08.log",
+      "sizeBytes": 5986555,
+      "sha256": "c66a35f48c67803cad0b75e85cd1e4598fb85358f931464c88386596f1c3fe8b"
+    },
+    {
+      "path": "build/compatibility-nine/repository-final.log",
+      "sizeBytes": 39,
+      "sha256": "63d1be6098b19cb2b489bbb34a0d3ba2b5dc9897fb96c8229ac0e09a647a8550"
+    },
+    {
+      "path": "build/compatibility-nine/stable-all-08.log",
+      "sizeBytes": 84482,
+      "sha256": "217de49d74c33448062e7323ed780843ca8e4a64f173ded5f83431124feb871c"
+    },
+    {
+      "path": "build/compatibility-nine/stable-hextech-08.log",
+      "sizeBytes": 31170,
+      "sha256": "cf4adc806c4589ab2b732777f2d34dd3fce6bddbb1b4ca3eeae1432ea7c6a546"
+    },
+    {
+      "path": "build/compatibility-nine/stable-loadout-04.log",
+      "sizeBytes": 31102,
+      "sha256": "f00286a31f1f70ea2824951a902f2b122ce228dac93e269dd0b24db5e1adc497"
+    },
+    {
+      "path": "build/compatibility-nine/stable-ritsu-08.log",
+      "sizeBytes": 5946415,
+      "sha256": "24acee1c6598c70cf58db4d389447ff9c5cc336829b472ac09f52ced0a119899"
+    },
+    {
+      "path": "build/compatibility-nine/sync-final.log",
+      "sizeBytes": 42,
+      "sha256": "092163b7d7fb78f9abda22c8379170bc47748b5533bcc1acbe9d3e8798092133"
+    }
+  ],
+  "productionSourceMetrics": {
+    "before": {
+      "files": 507,
+      "physicalLines": 62819,
+      "lexicalTypeDeclarations": 872
+    },
+    "after": {
+      "files": 523,
+      "physicalLines": 64612,
+      "lexicalTypeDeclarations": 1005
+    },
+    "scope": "Tracked baseline versus current non-Tests/non-tools C# including prior uncommitted CFC work; lexical type count, not Roslyn symbols"
+  },
+  "notRun": [
+    "Final stable graphical run after user switched Steam to preview",
+    "All nine mods with two/four rendered multiplayer clients",
+    "AutoAnthony multiplayer reconnect and Loadout-modified card synchronization",
+    "All 84 source operations in actual gameplay and all conditional/dynamic previews",
+    "Full per-mod isolation matrix and all Minty/Loadout/CookieCursor/shop discount UI cases"
+  ],
+  "unsupportedStable": [
+    "AutoAnthony 0.3.102",
+    "ThrowPotionsAtArchitect 1.4.1"
+  ],
+  "releasePrerequisite": "Wire optional bridge build and AutoAnthonyBridgePath into automated release entries before publishing."
+}

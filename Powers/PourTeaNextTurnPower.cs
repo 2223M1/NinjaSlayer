@@ -10,7 +10,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class PourTeaNextTurnPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("PourTeaPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(PourTeaNextTurnPower));
 
     public override async Task BeforeSideTurnStart(
         PlayerChoiceContext choiceContext,

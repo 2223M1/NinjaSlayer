@@ -85,7 +85,7 @@ internal sealed partial class SmokeController
         async Task Capture(string stage)
         {
             await WaitFrames(30);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, stage + ".png"));
+            SaveScreenshot(Path.Combine(directory, stage + ".png"));
             _checkpoints.Write("sawatari.weapons." + stage);
         }
 
@@ -167,7 +167,7 @@ internal sealed partial class SmokeController
                     "Throwing moved the fixed intent position.");
                 if (!capturedRelease && !hands[0].Visible)
                 {
-                    _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "rig-throw-release.png"));
+                    SaveScreenshot(Path.Combine(directory, "rig-throw-release.png"));
                     capturedRelease = true;
                 }
             }
@@ -233,7 +233,7 @@ internal sealed partial class SmokeController
             if (!capturedArrow && GodotObject.IsInstanceValid(arrowNode) && arrowNode.GetParent() == room.CombatVfxContainer
                 && ++releaseFrames == 3)
             {
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "act1-arrow-flight.png"));
+                SaveScreenshot(Path.Combine(directory, "act1-arrow-flight.png"));
                 capturedArrow = true;
             }
         }
@@ -292,7 +292,7 @@ internal sealed partial class SmokeController
                 && firstKnife.GlobalPosition.DistanceTo(releasePosition) > captureDistance)
             {
                 CheckWeaponLayer(firstKnife);
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "act3-knife-flight.png"));
+                SaveScreenshot(Path.Combine(directory, "act3-knife-flight.png"));
                 capturedKnife = true;
             }
         }

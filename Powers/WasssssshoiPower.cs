@@ -13,7 +13,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class WasssssshoiPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("DamageFocusPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(WasssssshoiPower));
     internal Task GainTemporaryStats(PlayerChoiceContext choiceContext, CardModel? source) =>
         PowerCmd.Apply<WasssssshoiStrengthPower>(choiceContext, Owner, Amount, Owner, source);
 }

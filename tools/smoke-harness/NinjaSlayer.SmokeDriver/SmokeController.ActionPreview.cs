@@ -513,7 +513,7 @@ internal sealed partial class SmokeController
                             && darkActor.IntentContainer.GlobalPosition.IsEqualApprox(intentPosition), "Dark Strike moved its UI root.");
                         Require(!player.Creature.HasPower<WeakPower>(), "Live Dark Strike applied Weak.");
                         await WaitFrames(45);
-                        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"stolen-{theft + 1}.png"));
+                        SaveScreenshot(Path.Combine(directory, $"stolen-{theft + 1}.png"));
                     }
                     Section("dark-strike-empty-candidates");
                     await Move(target, DarkNinjaMonster.DarkStrikeMoveId, player.Creature);

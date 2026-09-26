@@ -179,11 +179,11 @@ internal sealed partial class SmokeController
         await ChadoBreathCmd.Apply(choiceContext, player, 2);
         ChadoEnergyRedesignV1 tea = PileType.Hand.GetPile(player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
         Require(tea.DynamicVars.Energy.BaseValue == 2
-            && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 3,
+            && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 2,
             "New Chado did not trigger Karate Tea exactly once.");
         await ChadoBreathCmd.Apply(choiceContext, player, 1);
         Require(tea.DynamicVars.Energy.BaseValue == 3
-            && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 3,
+            && player.Creature.GetPowerAmount<KaratePower>() == karateBeforeGeneration + 2,
             "Increasing held Chado incorrectly triggered generation again.");
         await PlayerCmd.SetEnergy(0m, player);
         int karateBeforeEnergyGain = player.Creature.GetPower<KaratePower>()?.Amount ?? 0;

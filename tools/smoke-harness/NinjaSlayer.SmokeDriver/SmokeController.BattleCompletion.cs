@@ -72,7 +72,7 @@ internal sealed partial class SmokeController
         await WaitUntilAsync(() => player.Creature.CurrentHp < hpBefore, "Giant burst dealt no damage", ct);
         Require(_tree.Root.FindChildren("NinjaSlayerBossBurstVideo", "", true, false)
             .OfType<Control>().Any(video => video.IsVisibleInTree()), "Native self-destruct damage missed the burst video.");
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "giant-burst-damage.png"));
+        SaveScreenshot(Path.Combine(directory, "giant-burst-damage.png"));
         await exploding;
         Require(giant.IsDead && player.Creature.CurrentHp == hpBefore - 20,
             "Giant self-destruct changed native damage or failed to die.");
@@ -114,7 +114,7 @@ internal sealed partial class SmokeController
                     Require(victories == 0 && SaveManager.Instance.CurrentRunSaveTask is { IsCompleted: false },
                         "Rewards were not gated by the pending native save.");
                     await WaitFrames(60);
-                    _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "black-flame-save-pending.png"));
+                    SaveScreenshot(Path.Combine(directory, "black-flame-save-pending.png"));
                     _checkpoints.Write("completion.black-flame-save-pending-prefinished");
                     VictorySaveDelay.Release.TrySetResult();
                 }
@@ -128,7 +128,7 @@ internal sealed partial class SmokeController
                 await WaitUntilAsync(() => victories == 1 && NOverlayStack.Instance?.Peek() is NRewardsScreen,
                     "Black Flame victory did not show rewards", ct);
                 Require(!state.Enemies.Any(e => e.IsAlive), "Black Flame left a living enemy.");
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"black-flame-{(delaySave ? "released" : "attack")}-rewards.png"));
+                SaveScreenshot(Path.Combine(directory, $"black-flame-{(delaySave ? "released" : "attack")}-rewards.png"));
                 _checkpoints.Write(delaySave ? "completion.black-flame-save-released-rewards" : "completion.black-flame-attack-rewards");
             }
             finally

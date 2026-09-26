@@ -12,14 +12,16 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog')]
+    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
     [string]$Repository = 'local',
     [string]$RunId = 'local',
     [string[]]$AdditionalModDirectories = @(),
-    [switch]$DevelopmentPackage
+    [ValidateSet('gl_compatibility', 'mobile', 'forward_plus')][string]$RenderingMethod,
+    [switch]$DevelopmentPackage,
+    [switch]$NoScreenshots
 )
 
 $ErrorActionPreference = 'Stop'
@@ -137,7 +139,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -155,10 +157,12 @@ function Invoke-SmokePhase {
             'BossResume' { 7 }
             'BossVerify' { 8 }
             'TelemetryLoss' { 10 }
+            'ModCompatibility' { 12 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
         FailureScreenshotPath = (Join-Path $OutputDirectory "failure-$($Phase.ToLowerInvariant()).png")
+        NoScreenshots = [bool]$NoScreenshots
         AdditionalModIds = @($additionalMods | ForEach-Object { $_.id })
     }
     $configuration | ConvertTo-Json | Set-Content -LiteralPath $configurationPath -Encoding utf8
@@ -176,6 +180,7 @@ function Invoke-SmokePhase {
             '--audio-driver', 'Dummy',
             "--ninjaslayer-smoke-config=$configurationPath"
         )
+        if ($RenderingMethod) { $arguments += @('--rendering-method', $RenderingMethod) }
         $process = Start-Process -FilePath $gameExecutable -ArgumentList $arguments `
             -WorkingDirectory $isolatedGameRoot -WindowStyle Hidden -PassThru
         if (-not $process.WaitForExit($effectivePhaseTimeoutSeconds * 1000)) {
@@ -463,7 +468,7 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('FullAutoSlay', 'TelemetryLoss')) {
+    elseif ($Mode -in @('FullAutoSlay', 'TelemetryLoss', 'ModCompatibility')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -496,6 +501,9 @@ try {
     elseif ($Mode -eq 'TelemetryLoss') {
         @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
     }
+    elseif ($Mode -eq 'ModCompatibility') {
+        @('compatibility.cursor', 'compatibility.external-scale', 'compatibility.minty-pet', 'compatibility.removal-price', 'compatibility.better-menu', 'compatibility.architect', 'compatibility.completed')
+    }
     elseif ($Mode -eq 'SawatariSameCombat') {
         @('sawatari.starting', 'finisher.normal.completed', 'sawatari.same-combat-completed', 'sawatari.completed')
     }
@@ -527,6 +535,7 @@ try {
         mode = if ($DevelopmentPackage) { "development-$Mode" } else { switch ($Mode) {
             'FullAutoSlay' { 'singleplayer-full-autoslay' }
             'TelemetryLoss' { 'singleplayer-telemetry-loss' }
+            'ModCompatibility' { 'singleplayer-mod-compatibility' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }
             'Catalog' { 'runtime-content-export' }

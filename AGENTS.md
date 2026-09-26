@@ -28,3 +28,9 @@
 - Continue through the queued batch without pausing after every card or every four images unless a configured validation gate fails.
 - A single coordinator owns the manifest, filenames, QA decisions, and `run-state.json`. Parallel workers must not write shared batch state.
 - Use one production image engine per batch. Do not silently switch between bundled `imagegen` and the `$gpt-image` CLI pipeline.
+
+## Release storage cleanup
+
+- After publishing and re-downloading a release to verify all files, remove redundant local release packages, superseded build outputs and completed test caches. Do not retain a full local copy for every version.
+- Keep compact release evidence, source and artifact hashes, and validation summaries. Preserve source files, uncommitted work, intentional archives, production assets, normal saves, and the reference runtimes still needed for supported-host validation.
+- Inspect active processes and resolved paths before deleting generated directories. Use the app's archive-worktree tool for eligible managed checkouts; never shell-delete a worktree or a parent containing one.

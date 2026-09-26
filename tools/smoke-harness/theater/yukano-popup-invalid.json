@@ -1,0 +1,13 @@
+{
+  "seed": "YUKANO_POPUP_INVALID_20260926",
+  "purpose": "yukano-popup",
+  "act": 3,
+  "duration": 8,
+  "narrationEnabled": false,
+  "cues": [
+    {"id": "calibration", "steps": [{"action": "audit_calibration"}]},
+    {"id": "entrance", "steps": [{"action": "entrance", "actor": "yukano"}]},
+    {"id": "target_removed_before_release", "steps": [{"action": "popup_check", "mode": "target-invalid"}, {"action": "wait", "seconds": 1.0}]},
+    {"id": "arrow_after_cancel", "steps": [{"action": "move", "actor": "yukano", "move": "ARROW"}, {"action": "wait", "seconds": 1.0}]}
+  ]
+}

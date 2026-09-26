@@ -11,6 +11,7 @@ public static class NinjaSlayerRunData
 
     public static void Register(string modId)
     {
+        SingleplayerSeedRules.Register(modId);
         var store = RitsuLibFramework.GetRunSavedDataStore(modId);
         PlayerState = store.RegisterPerPlayer(
             key: "ninja_slayer_run_state",

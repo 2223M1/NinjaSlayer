@@ -18,7 +18,9 @@ The launcher compiles both supported hosts, stages an isolated game copy,
 disables telemetry/network access for that copy, and starts a new inactive
 Windows desktop. It never switches the user's active desktop. The installed
 game's mods, saves and settings are not changed. Music and ambience are muted;
-gameplay sound and voices remain enabled. Process-specific WASAPI capture avoids
+gameplay sound and character voices remain enabled. The promotional script sets
+`narrationEnabled: false` through the mod's existing setting in the isolated
+profile; other scripts default to narration enabled. Process-specific WASAPI capture avoids
 recording sound from the user's other applications.
 
 The default `forward_plus` renderer uses Godot's asynchronous texture readback,

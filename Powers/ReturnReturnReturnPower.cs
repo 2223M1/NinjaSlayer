@@ -10,7 +10,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ReturnReturnReturnPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(NarakuLifePower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ReturnReturnReturnPower));
     public override Task AfterCardExhausted(PlayerChoiceContext choiceContext, CardModel card, bool causedByEthereal) =>
         card.Owner.Creature == Owner && card is BlackFlameRedesignV1
             ? PowerCmd.Apply<StrengthPower>(choiceContext, Owner, Amount, Owner, card)

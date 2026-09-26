@@ -46,7 +46,11 @@ public sealed class YukanoMonster : ModMonsterTemplate
             ClosedTexturePath,
             OpenTexturePath,
             ShurikenTexturePath,
-            YukanoCombatAnimations.ArrowAtlasPath
+            YukanoCombatAnimations.ArrowAtlasPath,
+            YukanoArrowPopup.Folder + "runtime-atlas.png",
+            YukanoArrowPopup.Folder + "interior-clip.png",
+            YukanoArrowPopup.Folder + "clip.gdshader",
+            YukanoArrowPopup.Folder + "yukano-original.ogv"
         ])
         .Distinct();
 
@@ -136,7 +140,7 @@ public sealed class YukanoMonster : ModMonsterTemplate
         IReadOnlyList<Creature> targets,
         int damage,
         int hits,
-        Func<Creature, Creature, Task> playProjectile)
+        Func<Creature, Creature, Task<bool>> playProjectile)
     {
         ICombatState combatState = CombatState;
         Creature[] candidates = targets
@@ -175,8 +179,8 @@ public sealed class YukanoMonster : ModMonsterTemplate
                     break;
                 }
 
-                await playProjectile(Creature, target);
-                if (!CanHit(Creature, target, combatState))
+                bool arrived = await playProjectile(Creature, target);
+                if (!arrived || !CanHit(Creature, target, combatState))
                 {
                     break;
                 }
@@ -225,14 +229,14 @@ public sealed class YukanoMonster : ModMonsterTemplate
         ICombatState combatState) =>
         attacker.IsAlive
         && target.IsAlive
-        && target.IsHittable
         && target.Side != attacker.Side
         && ReferenceEquals(attacker.CombatState, combatState)
         && ReferenceEquals(target.CombatState, combatState)
         && combatState.ContainsCreature(attacker)
         && combatState.ContainsCreature(target)
         && combatState.IsLiveCombat()
-        && !CombatManager.Instance.IsOverOrEnding;
+        && !CombatManager.Instance.IsOverOrEnding
+        && target.IsHittable;
 
     private int GetArrowDamage() => CompanionDamageMath.ScaleForActiveRelics(
         YukanoCompanionRules.ArrowDamage,

@@ -6,5 +6,5 @@ namespace NinjaSlayer.Powers;
 public sealed class BurnBurnBurnPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile =>
-        NinjaSlayerPowerAssets.Named("NarakuPower");
+        NinjaSlayerPowerAssets.Named(nameof(BurnBurnBurnPower));
 }

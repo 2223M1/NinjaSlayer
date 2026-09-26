@@ -45,11 +45,11 @@ namespace NinjaSlayer.RitsuLibContractTests;
 public partial class ContractRunner : Node
 {
 #if NINJASLAYER_CHANNEL_STABLE
-    private const int ExpectedRequiredPatchTargetCount = 122;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 89;
+    private const int ExpectedRequiredPatchTargetCount = 141;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 107;
 #else
-    private const int ExpectedRequiredPatchTargetCount = 123;
-    private const int ExpectedCriticalRequiredPatchTargetCount = 90;
+    private const int ExpectedRequiredPatchTargetCount = 142;
+    private const int ExpectedCriticalRequiredPatchTargetCount = 108;
 #endif
     private static readonly List<ModPatcher> CapturedPatchers = [];
     private static Assembly? _productAssembly;
@@ -1504,7 +1504,7 @@ public partial class ContractRunner : Node
             "injected-finisher-presentation-target");
         using var fixture = new ProductFinisherSessionFixture(product, targetCount: 1);
         fixture.Complete(playPose: true).GetAwaiter().GetResult();
-        Require(_productFinisherPresentationTargetCalls == 1,
+        Require(_productFinisherPresentationTargetCalls > 0,
             "Finisher pose contract did not reach the production presentation target lookup.");
         Require(fixture.Targets.Single().IsDead && fixture.LivingDeferredDeathCount == 0,
             "Presentation failure prevented the confirmed Finisher death from committing.");

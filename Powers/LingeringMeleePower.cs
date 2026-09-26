@@ -11,7 +11,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class LingeringMeleePower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("TeaDrinkingSwordPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(LingeringMeleePower));
 
     public override async Task BeforeSideTurnEnd(
         PlayerChoiceContext choiceContext,

@@ -16,7 +16,7 @@ public sealed class EndurancePower : RedesignV1CounterPower
             entry.HappenedThisTurn(player.Creature.CombatState!) && entry.CardPlay.Card.Owner == player
             && entry.CardPlay.Card.Type == CardType.Attack);
 
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(EndurancePower));
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side,
         IEnumerable<Creature> participants)
     {

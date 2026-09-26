@@ -22,6 +22,7 @@ public sealed class NarakuLifeDamagePatch : IPatchMethod
         [new(typeof(Creature), nameof(Creature.LoseHpInternal), [typeof(decimal), typeof(ValueProp)])];
 
     [HarmonyPriority(Priority.First)]
+    [HarmonyAfter("Loadout")]
     public static void Prefix(Creature __instance, ref decimal amount, out int __state)
     {
         decimal before = amount;
@@ -30,8 +31,13 @@ public sealed class NarakuLifeDamagePatch : IPatchMethod
         __state = (int)(before - amount);
     }
 
-    public static void Postfix(DamageResult __result, int __state, bool __runOriginal)
+    [HarmonyPriority(Priority.Last)]
+    public static void Postfix(Creature __instance, DamageResult __result, int __state)
     {
-        if (__runOriginal && __state > 0) Absorptions.Add(__result, new Absorption(__state));
+        if (__state <= 0) return;
+        // The absorption already happened even when another mod supplies the HP-loss result.
+        if (__result == null || !ReferenceEquals(__result.Receiver, __instance))
+            throw new InvalidOperationException("Naraku absorption requires the receiver's final damage result.");
+        Absorptions.Add(__result, new Absorption(__state));
     }
 }

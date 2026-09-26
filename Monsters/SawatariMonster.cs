@@ -42,7 +42,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         : SawatariEventRules.AttackDamage;
 
     public override int MaxInitialHp => MinInitialHp;
-    public override bool IsHealthBarVisible => false;
+    public override bool IsHealthBarVisible => !IsMutable || Creature.Side == CombatSide.Enemy;
     public override string DeathSfx => NinjaSlayerAudio.ForestSawatariDeathEvent;
 
     protected override string VisualsPath =>

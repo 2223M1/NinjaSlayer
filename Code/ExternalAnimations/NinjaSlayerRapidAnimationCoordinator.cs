@@ -453,7 +453,8 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             return state;
         }
 
-        CancelVisualTail(creature);
+        if (state != null || VisualTails.TryGetValue(creature, out VisualTailState? tail) && !tail.IndependentAirChannel)
+            CancelVisualTail(creature);
         state?.StopAndRestore();
         var created = new ActionState(creatureNode, creatureNode.Position);
         States[creature] = created;

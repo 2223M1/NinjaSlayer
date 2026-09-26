@@ -11,6 +11,7 @@ internal sealed record TheaterScript
     public double Duration { get; init; } = 38.5;
     public string[] Relics { get; init; } = [];
     public int Karate { get; init; } = 2;
+    public bool NarrationEnabled { get; init; } = true;
     public FinisherAuditSetup? Audit { get; init; }
     public string GreetingMode { get; init; } = "brief";
     public string? GreetingEncounter { get; init; }
@@ -29,7 +30,7 @@ internal sealed record TheaterScript
         }) ?? throw new InvalidDataException("Theater script is empty.");
         if (script.Act != 3 || script.Cues.Length == 0 || script.Duration <= 0)
             throw new InvalidDataException("Theater requires Act 3, positive duration and at least one cue.");
-        if (script.Purpose is not ("promo" or "tomoe" or "hook" or "aim" or "architect" or "entrance" or "theft" or "blood" or "finisher-audit" or "greeting" or "overhead")) throw new InvalidDataException("Unknown theater purpose.");
+        if (script.Purpose is not ("promo" or "tomoe" or "hook" or "aim" or "architect" or "entrance" or "theft" or "blood" or "finisher-audit" or "greeting" or "overhead" or "yukano-popup")) throw new InvalidDataException("Unknown theater purpose.");
         if (script.GreetingMode is not ("brief" or "switch" or "full" or "switch-response")) throw new InvalidDataException("Unknown greeting mode.");
         if (script.Relics.Contains("BigMushroom") || script.Relics.Distinct().Count() != script.Relics.Length)
             throw new InvalidDataException("Theater relics must be unique and exclude BigMushroom.");
@@ -59,10 +60,12 @@ internal sealed record TheaterScript
             or "entrance" or "missiles" or "apology" or "takeover" or "form" or "clear_air"
             or "camera" or "power" or "remove_power" or "clear_block" or "block" or "aim"
             or "give_card" or "swap_sides" or "replace_enemy" or "speed" or "aim_motion"
-            or "architect_compare" or "architect_execution" or "sawatari_event_entrance" or "theft_round" or "blood_check" or "audit_calibration" or "audit_orb" or "companion_facing" or "overhead_check"))
+            or "architect_compare" or "architect_execution" or "sawatari_event_entrance" or "theft_round" or "blood_check" or "audit_calibration" or "audit_orb" or "companion_facing" or "overhead_check" or "popup_check"))
             throw new InvalidDataException($"Unknown theater action: {step.Action}");
         if (step.Action == "speed" && step.Mode is not ("Normal" or "Fast" or "Instant"))
             throw new InvalidDataException("Unknown playback speed.");
+        if (step.Greeting is not (null or "brief" or "full"))
+            throw new InvalidDataException("Unknown Architect greeting.");
     }
 }
 
@@ -98,6 +101,7 @@ internal sealed record TheaterStep
     public string? Monster { get; init; }
     public string? Mode { get; init; }
     public string? Form { get; init; }
+    public string? Greeting { get; init; }
     public string? Power { get; init; }
     public int Amount { get; init; } = 1;
     public int Energy { get; init; } = 6;

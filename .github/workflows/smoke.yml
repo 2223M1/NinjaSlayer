@@ -210,11 +210,13 @@ jobs:
               -SourceRevision '${{ steps.candidate.outputs.sha }}'
           }
           $stableHost = @($smokeHosts | Where-Object channel -eq 'stable')[0]
+          $previewHost = @($smokeHosts | Where-Object channel -eq 'preview')[0]
           $bundleDirectory = Join-Path $buildRoot 'workshop\package\NinjaSlayer'
           & candidate/tools/release/New-NinjaSlayerWorkshopBundle.ps1 `
             -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
             -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
             -StableSts2DataDir (Join-Path ([string]$stableHost.gameRoot) 'data_sts2_windows_x86_64') `
+            -PreviewSts2DataDir (Join-Path ([string]$previewHost.gameRoot) 'data_sts2_windows_x86_64') `
             -OutputDirectory $bundleDirectory `
             -BuildRoot (Join-Path $buildRoot 'workshop\build') `
             -Version '${{ steps.candidate.outputs.bundle_version }}' `

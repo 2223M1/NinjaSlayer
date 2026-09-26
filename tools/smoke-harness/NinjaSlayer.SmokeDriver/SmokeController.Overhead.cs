@@ -60,7 +60,7 @@ internal sealed partial class SmokeController
                 }
                 await _driver.WaitFrames(1);
             }
-            _driver._tree.Root.GetTexture().GetImage().SavePng(Path.Combine(_directory, "companion-intents.png"));
+            _driver.SaveScreenshot(Path.Combine(_directory, "companion-intents.png"));
             var report = new JsonObject();
             foreach (var (name, gap) in gaps) report[name] = gap;
             File.WriteAllText(Path.Combine(_directory, "overhead-gaps.json"), report.ToJsonString());
@@ -88,7 +88,7 @@ internal sealed partial class SmokeController
                     var sprite = bubble.GetNode<Sprite2D>("%Bubble");
                     float bottom = (sprite.GetGlobalTransformWithCanvas() * sprite.GetRect()).End.Y;
                     Require(top - bottom >= 8f, $"{form} speech bubble covers head: gap={top - bottom:0.##}.");
-                    _driver._tree.Root.GetTexture().GetImage().SavePng(Path.Combine(_directory, $"speech-{form}-{mirrored}.png"));
+                    _driver.SaveScreenshot(Path.Combine(_directory, $"speech-{form}-{mirrored}.png"));
                     bubble.QueueFree();
                 }
             }

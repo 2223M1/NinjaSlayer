@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "canvas_size": [
+    1920,
+    1080
+  ],
+  "fps_numerator": 24000,
+  "fps_denominator": 1001,
+  "native_frames": 145,
+  "native_duration_seconds": 6.047708333333333,
+  "enter_frames": 5,
+  "exit_frames": 4,
+  "default_hold_seconds": 5.672333333333333,
+  "hold_mode": "freeze-audited-native-frame",
+  "hold_source_index": 30,
+  "atlas": "runtime-atlas.png",
+  "entries": [
+    {
+      "native_index": 0,
+      "atlas_rect": [
+        0,
+        0,
+        1416,
+        1080
+      ],
+      "source_origin": [
+        504,
+        0
+      ],
+      "phase": "enter"
+    },
+    {
+      "native_index": 1,
+      "atlas_rect": [
+        1424,
+        0,
+        1416,
+        1080
+      ],
+      "source_origin": [
+        504,
+        0
+      ],
+      "phase": "enter"
+    },
+    {
+      "native_index": 2,
+      "atlas_rect": [
+        2848,
+        0,
+        1152,
+        1080
+      ],
+      "source_origin": [
+        0,
+        0
+      ],
+      "phase": "enter"
+    },
+    {
+      "native_index": 3,
+      "atlas_rect": [
+        0,
+        1088,
+        1152,
+        1080
+      ],
+      "source_origin": [
+        0,
+        0
+      ],
+      "phase": "enter"
+    },
+    {
+      "native_index": 4,
+      "atlas_rect": [
+        1160,
+        1088,
+        1152,
+        1080
+      ],
+      "source_origin": [
+        0,
+        0
+      ],
+      "phase": "enter"
+    },
+    {
+      "native_index": 16,
+      "atlas_rect": [
+        2320,
+        1088,
+        908,
+        876
+      ],
+      "source_origin": [
+        0,
+        0
+      ],
+      "phase": "hold"
+    },
+    {
+      "native_index": 141,
+      "atlas_rect": [
+        0,
+        2176,
+        1406,
+        930
+      ],
+      "source_origin": [
+        0,
+        0
+      ],
+      "phase": "exit"
+    },
+    {
+      "native_index": 142,
+      "atlas_rect": [
+        1414,
+        2176,
+        1404,
+        930
+      ],
+      "source_origin": [
+        0,
+        0
+      ],
+      "phase": "exit"
+    },
+    {
+      "native_index": 143,
+      "atlas_rect": [
+        2826,
+        2176,
+        414,
+        656
+      ],
+      "source_origin": [
+        8,
+        0
+      ],
+      "phase": "exit"
+    },
+    {
+      "native_index": 144,
+      "atlas_rect": [
+        3248,
+        2176,
+        410,
+        650
+      ],
+      "source_origin": [
+        12,
+        0
+      ],
+      "phase": "exit"
+    }
+  ],
+  "playback": "enter[0..4] at native fps; hold[5] for requested seconds; exit[6..9] at native fps; hide",
+  "note": "No interpolation or fabricated inbetween frames. Offscreen edges preserve original framing. Next lower-right popup is excluded."
+}

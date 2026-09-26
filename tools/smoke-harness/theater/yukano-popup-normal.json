@@ -1,0 +1,14 @@
+{
+  "seed": "YUKANO_POPUP_NORMAL_20260926",
+  "purpose": "yukano-popup",
+  "act": 3,
+  "duration": 11,
+  "narrationEnabled": false,
+  "cues": [
+    {"id": "calibration", "steps": [{"action": "audit_calibration"}]},
+    {"id": "entrance", "steps": [{"action": "entrance", "actor": "yukano"}, {"action": "speed", "mode": "Normal"}, {"action": "popup_check", "mode": "unused"}]},
+    {"id": "first_arrow", "steps": [{"action": "move", "actor": "yukano", "move": "ARROW"}]},
+    {"id": "second_arrow", "steps": [{"action": "move", "actor": "yukano", "move": "ARROW"}, {"action": "wait", "seconds": 1.0}]},
+    {"id": "save_reload", "steps": [{"action": "popup_check", "mode": "save"}]}
+  ]
+}

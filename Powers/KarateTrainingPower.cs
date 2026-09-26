@@ -11,7 +11,7 @@ namespace NinjaSlayer.Powers;
 public sealed class KarateTrainingPower : RedesignV1CounterPower
 {
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KaratePower));
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(KarateTrainingPower));
 
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {

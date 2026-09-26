@@ -8,7 +8,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ZanshinPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("KillingIntentPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ZanshinPower));
 
     public override decimal ModifyHandDraw(Player player, decimal count) =>
         player == Owner.Player && CombatManager.Instance.History.CardPlaysFinished.Count(entry =>

@@ -17,7 +17,8 @@ internal enum SmokePhase
     BossVerify,
     TornadoPreview,
     TelemetryLoss,
-    ActionPreview
+    ActionPreview,
+    ModCompatibility
 }
 
 internal sealed record SmokeConfiguration(
@@ -43,7 +44,8 @@ internal sealed record SmokeConfiguration(
     string? TheaterScriptPath = null,
     string? TheaterFromCue = null,
     string? TheaterToCue = null,
-    bool TheaterRehearsal = false)
+    bool TheaterRehearsal = false,
+    bool NoScreenshots = false)
 {
     public static SmokeConfiguration Load(string path)
     {
@@ -67,6 +69,9 @@ internal sealed record SmokeConfiguration(
         {
             throw new InvalidDataException("TransitionPerf requires an output path and exact component matrix.");
         }
+
+        if (configuration.NoScreenshots && configuration.Phase is SmokePhase.TornadoPreview or SmokePhase.ActionPreview)
+            throw new InvalidDataException("Visual recording phases cannot run with NoScreenshots.");
 
         return configuration with
         {

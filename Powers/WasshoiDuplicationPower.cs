@@ -12,7 +12,7 @@ public sealed class WasshoiDuplicationPower : RedesignV1CounterPower
     private CardModel? _targetCard;
 
     public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("EveryThirdAttackPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(WasshoiDuplicationPower));
 
     public void Arm(CardModel card)
     {

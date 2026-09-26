@@ -16,6 +16,12 @@ internal sealed partial class SmokeController
 
     private async Task VerifyFeedbackUploadAsync()
     {
+        // Native F2 captures the viewport itself before opening the feedback screen.
+        if (_configuration.NoScreenshots)
+        {
+            _checkpoints.Write("feedback.f2-upload-skipped", data: new JsonObject { ["reason"] = "NoScreenshots" });
+            return;
+        }
         using var reservation = new TcpListener(IPAddress.Loopback, 0);
         reservation.Start();
         int port = ((IPEndPoint)reservation.LocalEndpoint).Port;

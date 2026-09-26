@@ -218,11 +218,13 @@ jobs:
           . .\.github\scripts\release-artifact.ps1
           $compatibility = Read-NinjaSlayerCompatibility -Path '.\eng\compatibility.json'
           $stableHost = @($releaseHosts | Where-Object channel -eq 'stable')[0]
+          $previewHost = @($releaseHosts | Where-Object channel -eq 'preview')[0]
           $bundleDirectory = Join-Path $buildRoot 'workshop\package\NinjaSlayer'
           & .\tools\release\New-NinjaSlayerWorkshopBundle.ps1 `
             -StablePackageDirectory (Join-Path $buildRoot 'stable\package\NinjaSlayer') `
             -PreviewPackageDirectory (Join-Path $buildRoot 'preview\package\NinjaSlayer') `
             -StableSts2DataDir ([string]$stableHost.dataDirectory) `
+            -PreviewSts2DataDir ([string]$previewHost.dataDirectory) `
             -OutputDirectory $bundleDirectory `
             -BuildRoot (Join-Path $buildRoot 'workshop\build') `
             -Version $version `

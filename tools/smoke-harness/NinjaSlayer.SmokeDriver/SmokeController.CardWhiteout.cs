@@ -47,7 +47,7 @@ internal sealed partial class SmokeController
             reused.UpdateVisuals(PileType.Hand, CardPreviewMode.Normal);
             reused.Position = new Vector2(850, 400);
             await WaitFrames(8);
-            _tree.Root.GetViewport().GetTexture().GetImage().SavePng(
+            SaveScreenshot(
                 Path.Combine(Path.GetDirectoryName(_configuration.CheckpointPath)!, $"transform-pool-reuse-{speed}.png"));
             Require(FindDescendant<NCardTransformShineVfx>(reused) is null,
                 "A cancelled transform left its white overlay attached to a reused card.");

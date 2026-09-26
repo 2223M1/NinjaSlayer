@@ -7,7 +7,7 @@ namespace NinjaSlayer.Powers;
 
 public sealed class ShurikenDrawPower : RedesignV1CounterPower
 {
-    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("ExhaustForShurikenPower");
+    public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ShurikenDrawPower));
     internal async Task AfterStockGained(PlayerChoiceContext choiceContext)
     {
         Flash();

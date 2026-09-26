@@ -148,9 +148,12 @@ for ($iteration = 1; $iteration -le $Repeat; $iteration++) {
         if (!$process.HasExited) { throw 'Theater exceeded five minutes.' }
         if ($process.ExitCode -ne 0) { throw "Theater failed: $($process.ExitCode). See $destination/checkpoints.jsonl" }
         if (!$capture.WaitForExit(10000)) { throw 'Audio capture did not stop.' }
-        $audioArguments = @("$PSScriptRoot/sync_preview_audio.py", $destination, '--output', "$destination/theater.mp4")
-        if ($DebugAudioDirectory) { $audioArguments += @('--debug-audio', $DebugAudioDirectory) }
-        Invoke-Checked $Python $audioArguments
+        $syncArguments = @("$PSScriptRoot/sync_preview_audio.py", $destination, '--output', "$destination/theater.mp4")
+        if ($story.PSObject.Properties.Name -contains 'purpose' -and $story.purpose -eq 'yukano-popup') {
+            $syncArguments += @('--popup-movie', "$repo/NinjaSlayer/animations/yukano_arrow_popup/yukano-original.ogv")
+        }
+        if ($DebugAudioDirectory) { $syncArguments += @('--debug-audio', $DebugAudioDirectory) }
+        Invoke-Checked $Python $syncArguments
         $sync = Get-Content -LiteralPath "$destination/audio-sync.json" -Raw | ConvertFrom-Json
         $start = $sync.clockOffsetSeconds + $sync.playbackLatencySeconds
         $duration = (& ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$destination/theater.mp4").Trim()

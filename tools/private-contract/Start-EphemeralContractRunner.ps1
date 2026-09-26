@@ -36,6 +36,8 @@ param(
 
     [string]$RitsuLibModDirectory,
 
+    [string]$AutoAnthonyAssemblyPath = $env:NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH,
+
     [string]$GodotExecutable = 'C:\Program Files\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe',
 
     [string]$SpineExtensionDirectory = (Join-Path $PSScriptRoot '..\..\addons\spine\windows')
@@ -144,6 +146,9 @@ if ($RunnerPurpose -eq 'Smoke') {
 }
 
 if ($RunnerPurpose -in @('Release', 'Smoke')) {
+    if (-not $AutoAnthonyAssemblyPath -or -not (Test-Path -LiteralPath $AutoAnthonyAssemblyPath -PathType Leaf)) {
+        throw 'Release and Smoke runners require the installed AutoAnthony 0.3.102 reference DLL.'
+    }
     $null = Get-NinjaSlayerVerifiedSpineExtension `
         -Compatibility $compatibility `
         -SourceDirectory $SpineExtensionDirectory
@@ -174,6 +179,7 @@ $managedEnvironmentVariables = @(
     'NINJASLAYER_RITSULIB_MOD_DIR',
     'NINJASLAYER_STS2_STABLE_DATA_DIR',
     'NINJASLAYER_STS2_PREVIEW_DATA_DIR',
+    'NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH',
     'NINJASLAYER_SMOKE_STABLE_GAME_ROOT',
     'NINJASLAYER_SMOKE_PREVIEW_GAME_ROOT'
 )
@@ -330,6 +336,15 @@ try {
     $previewHost = $hostInputs | Where-Object Channel -eq 'preview' | Select-Object -First 1
 
     Set-RunnerEnvironment -Name 'GODOT_EXE' -Value $GodotExecutable
+    $anthonyReference = $null
+    if ($RunnerPurpose -in @('Release', 'Smoke')) {
+        $anthonyDirectory = Join-Path $referenceDirectory 'optional'
+        [IO.Directory]::CreateDirectory($anthonyDirectory) | Out-Null
+        $anthonyReference = Join-Path $anthonyDirectory 'AutoAnthony.dll'
+        Copy-Item -LiteralPath $AutoAnthonyAssemblyPath -Destination $anthonyReference
+        (Get-Item -LiteralPath $anthonyReference).IsReadOnly = $true
+    }
+    Set-RunnerEnvironment -Name 'NINJASLAYER_AUTOANTHONY_ASSEMBLY_PATH' -Value $anthonyReference
     Set-RunnerEnvironment -Name 'NINJASLAYER_CONTRACT_DOTNET_ROOT' `
         -Value $(if ($RunnerPurpose -eq 'Contract') { $dotnetRuntimeDirectory } else { $null })
     Set-RunnerEnvironment -Name 'NINJASLAYER_SPINE_DIR' `

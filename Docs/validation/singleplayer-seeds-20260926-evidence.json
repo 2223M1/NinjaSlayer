@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-26T00:10:56.6069776+08:00",
+  "baseSha": "7ef64c976636f6d4963c893f01be80328be97972",
+  "branch": "codex/cfc-singleplayer-seeds",
+  "uncommittedCandidate": true,
+  "published": false,
+  "oracle": {
+    "version": "1.1.2",
+    "workshopId": "3774854959",
+    "sha256": "032894c8d157e9b667ce80befdc50dd0de2e37189b5bd80c5a4f42a0b1d5014f",
+    "host": "preview 0.111.0",
+    "seeds": [
+      "CFC00",
+      "NINJA",
+      "ZZZZZZZZ"
+    ],
+    "result": "passed",
+    "scope": "Only original RNG patches installed; no racing initializer/UI. Original initial run data is prepared by test fixture."
+  },
+  "candidateDlls": [
+    {
+      "sha256": "fcac09fdc8376047e8e80543757bbcf1b434d15a5a2fd3eedf4bd2965da67e4b",
+      "channel": "stable"
+    },
+    {
+      "sha256": "30c0ec151cafb9fd94ec83b1884fa9785393eb6fe8b9b65f645beb6e8f4cc81c",
+      "channel": "preview"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "Code/Patches/SingleplayerRewardSeedPatches.cs",
+      "sha256": "130568c1c7968f067c0f2ed99d26ab24a6d77540f89dcb38401e005c45877baa"
+    },
+    {
+      "path": "Code/Patches/SingleplayerSeedPatches.cs",
+      "sha256": "8a8a8c698257814d0d8707a0f4ee62fd05d142b5c2691585e31ec1258d8478bb"
+    },
+    {
+      "path": "Content/NinjaSlayerRunData.cs",
+      "sha256": "01d7da7fe8a238f81e30f9f462be8b5afd95c7131c78711be1fbf0a59ff4222e"
+    },
+    {
+      "path": "Content/SingleplayerSeedRules.cs",
+      "sha256": "1950f6e5cd1ec3ecfd957c4140424209f2daa1589945810193d8496923c3bd50"
+    },
+    {
+      "path": "Scripts/Entry.cs",
+      "sha256": "e7390e7a0b5c7da8ea49b96a78f2a4fa046c33b369c60b283faa9feec6b3256b"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.cs",
+      "sha256": "c151e60a1250046e06a91f3c4b4e8c054713e7e6b9831517b7c6321f22f3b47d"
+    },
+    {
+      "path": "Tests/NinjaSlayer.OrbContractTests/OrbContractRunner.Seeds.cs",
+      "sha256": "9d94fe5e9a6f63d78a20b8a2bf6611c280103d16774c64974accb78cb4b7bd95"
+    },
+    {
+      "path": "Tests/NinjaSlayer.RitsuLibContractTests/ContractRunner.cs",
+      "sha256": "2531a03f71bf7e3ad8706b537348de3c520e8a340e0f2934e617b0e8f789aa21"
+    },
+    {
+      "path": "tools/smoke-harness/Invoke-NinjaSlayerSmoke.ps1",
+      "sha256": "511fccd9e165fc7fa3280b7b02cf8f6aa18e14dd01c316cfdd2ad5ba6d3f84b2"
+    },
+    {
+      "path": "tools/smoke-harness/NinjaSlayer.SmokeDriver/SmokeController.BossReload.cs",
+      "sha256": "1daec85a2b0c145ee6dea45b8f5c1487be4308982e09eaec0721eee9fa867573"
+    }
+  ],
+  "logs": [
+    {
+      "path": "build/seed-check/stable-seeds-02.log",
+      "sha256": "7b9012ce5396b0dbb7ed5047ac5abc76b98dc9e928197a7e8272f387a8f447cc"
+    },
+    {
+      "path": "build/seed-check/preview-seeds-08.log",
+      "sha256": "c6083bf28c1439c18b77378fa077cd756ef067ee2a4da3b4d551e66ec6f322f4"
+    },
+    {
+      "path": "build/seed-check/stable-product-02.log",
+      "sha256": "ddf679a781a368a0b7b91f2d504b05bc13c1dc1a7c4ea215907d39bc77fb5d3b"
+    },
+    {
+      "path": "build/seed-check/preview-product-01.log",
+      "sha256": "e100980751c692523358379e18c00a39fdbe49a252e9b192ad8406d1f31e28a1"
+    },
+    {
+      "path": "build/seed-check/stable-ritsu-02.log",
+      "sha256": "e1d47c961986edafc19481023d72d2d48e3e8fa19de87396d61b29829df3540b"
+    },
+    {
+      "path": "build/seed-check/preview-ritsu-01.log",
+      "sha256": "8f4b9f0c1d76f82821e14494fd1b727d677b28b0281fce973944bf953e7d1bda"
+    },
+    {
+      "path": "build/seed-check/preview-driver-build.log",
+      "sha256": "6d72a6373fb20845a3df9175bb60cda57f78acaa2b839d17303884fe25740da8"
+    },
+    {
+      "path": "build/seed-check/logic.log",
+      "sha256": "a040d2effbfe7264e52c4b0fee38388dc803b96cb8cb3cb0e0411fd8c4d1a234"
+    },
+    {
+      "path": "build/seed-check/live-boss-06-launcher.log",
+      "sha256": "71fdbe8352a5af96f2c11dc0b9240e5fb6756ba1e3d1affd1ca32b323779f851"
+    },
+    {
+      "path": "build/seed-check/live-boss-06/attestation.json",
+      "sha256": "10bf797856e4e546392282a63c7847f0e8ff5d96f802307028e101758f334c3a"
+    },
+    {
+      "path": "build/seed-check/live-boss-06/checkpoints.jsonl",
+      "sha256": "662d8995437c5feda5c25dd25327877d839019ffbc47c89058713e29d1a29724"
+    }
+  ],
+  "liveAttestation": {
+    "schemaVersion": 6,
+    "candidateSha": "7ef64c976636f6d4963c893f01be80328be97972",
+    "bundleVersion": "0.3.2",
+    "result": "passed",
+    "channel": "stable",
+    "gameApiVersion": "0.107.1",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.2",
+    "additionalMods": [],
+    "bundleSha256": "593faa46ab541417d53870ee9414f2d4d759e85d3b653e931f244b1ed920aea0",
+    "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+    "mode": "singleplayer-double-boss-reload",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-09-26T00:09:07.765048+08:00"
+  },
+  "liveCheckpoints": [
+    {
+      "phase": "bossfresh",
+      "name": "boss.first-snapshot",
+      "status": "passed",
+      "relicRaritiesRemaining": 399,
+      "potionGenerationCalls": 1
+    },
+    {
+      "phase": "bossresume",
+      "name": "boss.reload-identical",
+      "status": "passed",
+      "relicRaritiesRemaining": 399,
+      "potionGenerationCalls": 1
+    },
+    {
+      "phase": "bossverify",
+      "name": "boss.reload-identical",
+      "status": "passed",
+      "relicRaritiesRemaining": 399,
+      "potionGenerationCalls": 1
+    },
+    {
+      "phase": "bossverify",
+      "name": "boss.same-process-identical",
+      "status": "passed"
+    },
+    {
+      "phase": "bossverify",
+      "name": "boss.second-greeting",
+      "status": "passed"
+    }
+  ],
+  "exclusionsTested": [
+    "non-Ninja singleplayer",
+    "one-player Host",
+    "one-player Client",
+    "two players",
+    "CFCRacingMod patch ownership"
+  ],
+  "notRun": [
+    "preview graphical game",
+    "actual multiplayer processes",
+    "full AutoSlay",
+    "full CFC racing mod UI",
+    "old-run migration"
+  ]
+}

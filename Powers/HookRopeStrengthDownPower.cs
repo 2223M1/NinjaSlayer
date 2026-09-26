@@ -11,7 +11,7 @@ namespace NinjaSlayer.Powers;
 [RegisterPower]
 public sealed class HookRopeStrengthDownPower : TemporaryStrengthPower, IModPowerAssetOverrides
 {
-    public PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named("RiffleStrengthDownPower");
+    public PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(HookRopeStrengthDownPower));
     public string? CustomIconPath => AssetProfile.IconPath;
     public string? CustomBigIconPath => AssetProfile.BigIconPath;
 

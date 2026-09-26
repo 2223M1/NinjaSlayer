@@ -61,8 +61,12 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
     public static void Prefix(
         Creature __instance,
         ref decimal amount,
+        bool __runOriginal,
         out FinisherProtectionToken? __state)
     {
+        __state = null;
+        // Hextech's earlier prefix may resolve this hit as a living, dying-state creature.
+        if (!__runOriginal) return;
         FinisherProtectionService.TryProtectLethalDamage(__instance, ref amount, out __state);
     }
 
@@ -172,6 +176,7 @@ public sealed class NinjaSlayerFinisherDeathStartPatch : IPatchMethod
     {
         if (__instance.DeathAnimationTask == null || __instance.DeathAnimationTask.IsCompleted)
         {
+            AlabamaDropAnimation.ReleaseVictimBeforeDeath(__instance);
             FinisherSessionRegistry.GetActiveSession()?.NotifyDeathAnimationStarting(__instance);
         }
     }

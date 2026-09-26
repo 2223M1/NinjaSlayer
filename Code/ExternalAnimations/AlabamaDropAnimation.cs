@@ -19,21 +19,24 @@ namespace NinjaSlayer.Code.ExternalAnimations;
 public static class AlabamaDropAnimation
 {
     internal const string GroundContactName = "AlabamaGroundContact";
+    private const string DeathReleaseMetadata = "alabama_release_before_death";
     internal const float LungeDuration = 0.05f;
-    internal const float GrabHoldDuration = 0.1f;
-    internal const float CompressionDuration = 0.1f;
-    internal const float RiseDuration = 0.25f;
-    private const float FallDuration = 0.6f;
-    private const float StandUpDuration = 0.2f;
+    internal const float GrabHoldDuration = 0.07f;
+    internal const float WindupDuration = 0.08f;
+    internal const float RiseDuration = 0.2f;
+    private const float WindupReleaseDuration = 0.05f;
+    private const float ApexHoldDuration = 0.07f;
+    private const float FallDuration = 0.53f;
+    internal const float StandUpDuration = 0.25f;
     private const float RiseDistance = 900f;
-    private const float ReturnHopHeight = 70f;
+    internal const float ReturnHopHeight = 80f;
     private const float TumbleAngleCoefficient = 1800f;
     private const float LandingSquashScaleX = 1.2f;
     private const float LandingSquashScaleY = 0.55f;
     private const float LandingSquashHoldDuration = 0.1f;
 
-    internal const float InitialTumbleDegreesPerSecond = 3000f;
-    internal const float FinalTumbleDegreesPerSecond = 12000f;
+    internal const float InitialTumbleDegreesPerSecond = TumbleAngleCoefficient / FallDuration;
+    internal const float FinalTumbleDegreesPerSecond = 4f * TumbleAngleCoefficient / FallDuration;
     internal const float TotalTumbleDegrees = 4320f;
 
     public static async Task Play(Creature owner, Creature target, Func<Task> onImpact)
@@ -122,6 +125,25 @@ public static class AlabamaDropAnimation
             ? NinjaSlayerRapidAnimationCoordinator.GetBaseline(owner, ownerRig.CreatureNode)
             : ownerRig.CreatureNode.Position;
         var targetSnapshot = CreatureVisualSnapshot.Capture(targetRig);
+        BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
+        bool targetReleasedForDeath = false;
+        void ReleaseTargetForDeath()
+        {
+            if (targetReleasedForDeath) return;
+            targetReleasedForDeath = true;
+            targetSpinBlur?.Stop();
+            Transform2D impactPose = targetRig.Body.Transform;
+            targetSnapshot.RestoreVisuals();
+            AlabamaDeathRecovery.Attach(targetRig.Body, impactPose, targetPivot.MarkerBodyLocal);
+            RestoreTargetBodyProcessMode();
+            if (doomPoseFrozen) DoomHurtPoseController.Resume(targetRig.CreatureNode);
+            doomPoseFrozen = false;
+        }
+        void RestoreTargetPose()
+        {
+            if (!targetReleasedForDeath)
+                targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
+        }
         FinisherSession? finisher = FinisherSessionRegistry.GetActiveSession();
         bool architectRecovery = finisher?.Actor == owner && finisher.EventVisualPlay != null;
         Marker2D? groundContact = null;
@@ -132,19 +154,13 @@ public static class AlabamaDropAnimation
         SoarSpinAnimation.SuspendForCinematic(owner);
         var ownerSnapshot = CreatureVisualSnapshot.Capture(ownerRig);
         BodyPivotCompensation ownerPivot = BodyPivotCompensation.Capture(ownerRig);
-        BodyPivotCompensation targetPivot = BodyPivotCompensation.Capture(targetRig);
         Vector2 ownerStartPos = ownerAuthoredBaseline;
         Vector2 ownerLandingPos = ResolveOwnerLandingPosition(ownerRig, targetRig);
         NinjaSlayerAimPose? aimPose = NinjaSlayerAimPose.Get(owner);
-        Vector2 ownerChargeScale = new(
-            ownerSnapshot.BodyScale.X * LandingSquashScaleX,
-            ownerSnapshot.BodyScale.Y * LandingSquashScaleY);
-        Vector2 targetChargeScale = new(
+        Vector2 targetChargeScale = FinisherTimeline.AllowsDeathSquash(target) ? new(
             targetSnapshot.BodyScale.X * LandingSquashScaleX,
-            targetSnapshot.BodyScale.Y * LandingSquashScaleY);
-        Vector2 targetLandingScale = new(
-            targetSnapshot.BodyScale.X * LandingSquashScaleX,
-            targetSnapshot.BodyScale.Y * LandingSquashScaleY);
+            targetSnapshot.BodyScale.Y * LandingSquashScaleY) : targetSnapshot.BodyScale;
+        Vector2 targetLandingScale = targetChargeScale;
         float ownerInvertedRotation = ownerSnapshot.BodyRotationDegrees;
         Vector2 ownerInvertedScale = new(ownerSnapshot.BodyScale.X, -ownerSnapshot.BodyScale.Y);
         float targetInvertedRotation = targetSnapshot.BodyRotationDegrees + 180f;
@@ -174,6 +190,7 @@ public static class AlabamaDropAnimation
 
             Vector2 head = MeasureHeadContact(targetRig);
             groundContact = new Marker2D { Name = GroundContactName, Position = head };
+            groundContact.SetMeta(DeathReleaseMetadata, Callable.From(ReleaseTargetForDeath));
             targetRig.Body.AddChild(groundContact);
             CanvasItem targetParent = targetRig.Body.GetParent<CanvasItem>();
             Vector2 floorCanvas = ((CanvasItem?)NinjaSlayerVisualRig.GetGroundContact(targetRig.Visuals)
@@ -183,22 +200,26 @@ public static class AlabamaDropAnimation
                 * new Vector2(headCanvas.X, floorCanvas.Y);
             landingPivot = new(targetRig.Body, targetParent, head, floor);
 
-            await Task.WhenAll(aimPose?.BlendToNeutral(CompressionDuration) ?? Task.CompletedTask, TweenBodyScales(
+            BodyPivotCompensation windupPivot = BodyPivotCompensation.Capture(ownerRig, groundSupport: true);
+            float direction = Math.Sign(targetRig.CreatureNode.GlobalPosition.X - ownerRig.CreatureNode.GlobalPosition.X);
+            float windupRotation = ownerSnapshot.BodyRotationDegrees - 8f * direction
+                * Math.Sign(windupPivot.Parent.GetGlobalTransformWithCanvas().Determinant());
+            await Task.WhenAll(aimPose?.BlendToNeutral(WindupDuration) ?? Task.CompletedTask, TweenWindup(
                 ownerRig.CreatureNode,
-                ownerPivot,
+                windupPivot,
                 ownerSnapshot.BodyRotationDegrees,
+                windupRotation,
                 ownerSnapshot.BodyScale,
-                ownerChargeScale,
                 targetPivot,
                 targetSnapshot.BodyRotationDegrees,
                 targetSnapshot.BodyScale,
-                targetChargeScale,
-                CompressionDuration));
+                targetChargeScale));
 
-            RestoreBodyTransform(ownerRig.Body, ownerSnapshot);
             RestoreBodyTransform(targetRig.Body, targetSnapshot);
 
             await Task.WhenAll(
+                TweenBodyRotation(ownerRig.Body, ownerSnapshot.BodyRotationDegrees,
+                    WindupReleaseDuration, windupPivot, ownerSnapshot.BodyScale),
                 ByrdRiseAnimation.Play(
                     owner,
                     RiseDistance,
@@ -211,6 +232,8 @@ public static class AlabamaDropAnimation
                     RiseDuration,
                     Tween.EaseType.Out,
                     Tween.TransitionType.Expo));
+            RestoreBodyTransform(ownerRig.Body, ownerSnapshot);
+            await WaitTweenInterval(ownerRig.CreatureNode, ApexHoldDuration);
 
             ownerPivot.Apply(ownerInvertedRotation, ownerInvertedScale);
             landingPivot.Value.Apply(targetInvertedRotation, targetSnapshot.BodyScale);
@@ -218,8 +241,8 @@ public static class AlabamaDropAnimation
             targetSpinBlur = EntangledSpinMotionBlur.Create(targetRig.Body, targetBodyBounds);
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
             await Task.WhenAll(
-                ByrdFallAnimation.Play(owner, RiseDistance, FallDuration, playImpact: false),
-                ByrdFallAnimation.Play(target, RiseDistance, FallDuration, playImpact: false),
+                PlayFall(ownerRig),
+                PlayFall(targetRig),
                 PlayEntangledFall(
                     ownerRig,
                     targetRig,
@@ -237,7 +260,10 @@ public static class AlabamaDropAnimation
             finisher = FinisherSessionRegistry.GetActiveSession();
             bool finishing = finisher?.Actor == owner;
             if (!finishing)
-                landingPivot.Value.Apply(targetInvertedRotation, targetLandingScale);
+            {
+                if (!targetReleasedForDeath)
+                    landingPivot.Value.Apply(targetInvertedRotation, targetLandingScale);
+            }
             else if (!architectRecovery)
             {
                 ownerAuthoredBaseline = finisher!.ActorBaseline;
@@ -253,7 +279,7 @@ public static class AlabamaDropAnimation
 
             var visualTail = new AlabamaDropVisualTail(
                 ownerRestoreSnapshot,
-                targetSnapshot,
+                RestoreTargetPose,
                 ownerAuthoredBaseline);
             Task ownerRecovery;
             if (rapid && aimPose != null)
@@ -272,11 +298,10 @@ public static class AlabamaDropAnimation
                 architectRecovery ? finisher!.ReturnArchitectAlabama()
                     : TweenHopNodePosition(ownerRig.CreatureNode, ownerRig.Visuals,
                         ownerRestoreSnapshot.VisualsPosition, StandUpDuration, visualTail.Track, visualTail.SetProgress),
-                TweenBodyRotation(ownerRig.Body, ownerSnapshot.BodyRotationDegrees + 360f,
-                    StandUpDuration, ownerPivot, ownerSnapshot.BodyScale, visualTail.Track));
+                PlayOwnerReturnRotation(ownerRig, ownerSnapshot, ownerPivot, visualTail.Track));
             Task standUpTask = Task.WhenAll(
                 ownerRecovery,
-                target.IsDead ? Task.CompletedTask : TweenBodyRotation(
+                target.IsDead || targetReleasedForDeath ? Task.CompletedTask : TweenBodyRotation(
                     targetRig.Body,
                     targetSnapshot.BodyRotationDegrees + 360f,
                     StandUpDuration,
@@ -320,7 +345,7 @@ public static class AlabamaDropAnimation
 
             if (!visualTailOwnsRestore)
             {
-                targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
+                RestoreTargetPose();
                 ownerRestoreSnapshot.Restore(restoreNinjaSlayerAirborneState: true,
                     restoreCreaturePosition: !architectRecovery);
                 if (!architectRecovery && GodotObject.IsInstanceValid(ownerRig.CreatureNode))
@@ -328,6 +353,33 @@ public static class AlabamaDropAnimation
                     ownerRig.CreatureNode.Position = ownerAuthoredBaseline;
                 }
             }
+        }
+    }
+
+    internal static void ReleaseVictimBeforeDeath(NCreature creatureNode)
+    {
+        // The grab owns this release. Invoke it before death captures its visual
+        // baseline, never from a late snapshot restore over an active death track.
+        Marker2D? contact = creatureNode.Body.GetNodeOrNull<Marker2D>(GroundContactName);
+        if (contact?.HasMeta(DeathReleaseMetadata) != true) return;
+        Callable release = contact.GetMeta(DeathReleaseMetadata).AsCallable();
+        contact.RemoveMeta(DeathReleaseMetadata);
+        release.Call();
+    }
+
+    private static async Task PlayFall(CreatureRig rig)
+    {
+        Node2D motion = rig.AirborneAnchor ?? rig.Visuals;
+        Vector2 start = motion.Position;
+        var tween = rig.CreatureNode.CreateTween();
+        tween.TweenMethod(Callable.From<float>(p =>
+            motion.Position = start + Vector2.Down * (RiseDistance * Mathf.Pow(p, 2.5f))),
+            0f, 1f, FallDuration);
+        if (!await TweenPlayback.AwaitCompletion(tween, rig.CreatureNode)) return;
+        if (rig.AirborneAnchor != null)
+        {
+            SoarVisualState.ResetVisualsToGround(rig.Creature);
+            HopAnimation.SyncBasePosition(rig.Creature, Vector2.Zero);
         }
     }
 
@@ -522,39 +574,38 @@ public static class AlabamaDropAnimation
         return TumbleAngleCoefficient * (p + 1.2f * p * p + 0.2f * p * p * p);
     }
 
-    private static async Task TweenBodyScales(
+    private static async Task TweenWindup(
         NCreature tweenOwner,
         BodyPivotCompensation ownerPivot,
         float ownerRotationDegrees,
-        Vector2 ownerStartScale,
-        Vector2 ownerTargetScale,
+        float ownerTargetRotationDegrees,
+        Vector2 ownerScale,
         BodyPivotCompensation targetPivot,
         float targetRotationDegrees,
         Vector2 targetStartScale,
-        Vector2 targetTargetScale,
-        float duration)
+        Vector2 targetTargetScale)
     {
         var tween = tweenOwner.CreateTween();
         tween.TweenMethod(
             Callable.From<float>(progress =>
             {
                 ownerPivot.Apply(
-                    ownerRotationDegrees,
-                    ownerStartScale.Lerp(ownerTargetScale, progress));
+                    Mathf.Lerp(ownerRotationDegrees, ownerTargetRotationDegrees, progress),
+                    ownerScale);
                 targetPivot.Apply(
                     targetRotationDegrees,
                     targetStartScale.Lerp(targetTargetScale, progress));
             }),
             0f,
             1f,
-            duration)
+            WindupDuration)
             .SetTrans(Tween.TransitionType.Linear);
 
         if (!await TweenPlayback.AwaitCompletion(tween, tweenOwner))
         {
             return;
         }
-        ownerPivot.Apply(ownerRotationDegrees, ownerTargetScale);
+        ownerPivot.Apply(ownerTargetRotationDegrees, ownerScale);
         targetPivot.Apply(targetRotationDegrees, targetTargetScale);
     }
 
@@ -617,7 +668,8 @@ public static class AlabamaDropAnimation
         float duration,
         BodyPivotCompensation? pivotCompensation = null,
         Vector2? targetScale = null,
-        Action<Tween>? onTweenCreated = null)
+        Action<Tween>? onTweenCreated = null,
+        bool rigidRecovery = false)
     {
         float startDegrees = body.RotationDegrees;
         Vector2 startScale = body.Scale;
@@ -626,6 +678,7 @@ public static class AlabamaDropAnimation
             startDegrees += 180f;
             startScale = -startScale;
         }
+        if (rigidRecovery) startScale = targetScale ?? startScale.Abs();
         var tween = body.CreateTween();
         onTweenCreated?.Invoke(tween);
         tween.TweenMethod(
@@ -669,9 +722,43 @@ public static class AlabamaDropAnimation
         }
     }
 
+    private static async Task PlayOwnerReturnRotation(CreatureRig rig, CreatureVisualSnapshot snapshot,
+        BodyPivotCompensation pivot, Action<Tween> track)
+    {
+        var blur = new FreeControlMotionBlur { Name = "AlabamaReturnExposure", ShowBehindParent = true };
+        rig.Visuals.AddChild(blur);
+        void Record()
+        {
+            if (!GodotObject.IsInstanceValid(rig.CreatureNode) || !GodotObject.IsInstanceValid(blur)) return;
+            if (!rig.CreatureNode.CanProcess() || Engine.TimeScale <= 0d
+                || NinjaSlayerHellTornadoVisual.Get(rig.Creature)?.Active == true)
+            {
+                blur.ClearHistory();
+                return;
+            }
+            Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(rig.Visuals)!;
+            var pose = NinjaSlayerAimPose.Get(rig.Creature);
+            var overlay = pose?.GetNode<NarakuVisualOverlay>("NarakuVisualOverlay");
+            blur.RecordHistory(overlay?.Visible == true ? overlay : source,
+                Time.GetTicksUsec() / 1_000_000d, pose?.CoreCanvas ?? rig.CreatureNode.GlobalPosition);
+        }
+        RenderingServer.FramePreDraw += Record;
+        try
+        {
+            await TweenBodyRotation(rig.Body, snapshot.BodyRotationDegrees + 360f,
+                StandUpDuration, pivot, snapshot.BodyScale, track, rigidRecovery: true);
+        }
+        finally
+        {
+            RenderingServer.FramePreDraw -= Record;
+            blur.ClearHistory();
+            blur.QueueFreeSafely();
+        }
+    }
+
     private sealed class AlabamaDropVisualTail(
         CreatureVisualSnapshot ownerSnapshot,
-        CreatureVisualSnapshot targetSnapshot,
+        Action restoreTarget,
         Vector2 ownerAuthoredBaseline)
     {
         private readonly List<Tween> _tweens = [];
@@ -751,7 +838,7 @@ public static class AlabamaDropAnimation
 
         private void RestoreSnapshots(Vector2? ownerPosition = null)
         {
-            targetSnapshot.Restore(restoreNinjaSlayerAirborneState: false);
+            restoreTarget();
             if (_ownerTransferred) return;
             ownerSnapshot.Restore(restoreNinjaSlayerAirborneState: true);
             if (GodotObject.IsInstanceValid(ownerSnapshot.CreatureNode))
@@ -769,10 +856,12 @@ public static class AlabamaDropAnimation
         Vector2 MarkerBodyLocal,
         Vector2 MarkerParentLocal)
     {
-        public static BodyPivotCompensation Capture(CreatureRig rig)
+        public static BodyPivotCompensation Capture(CreatureRig rig, bool groundSupport = false)
         {
             CanvasItem parent = rig.Body.GetParent<CanvasItem>();
-            Vector2 markerCanvas = NinjaSlayerAimPose.Get(rig.Creature)?.CoreCanvas
+            Vector2 markerCanvas = (groundSupport
+                ? NinjaSlayerVisualRig.GetGroundContact(rig.Visuals)?.GetGlobalTransformWithCanvas().Origin
+                : NinjaSlayerAimPose.Get(rig.Creature)?.CoreCanvas)
                 ?? rig.Visuals.Bounds.GetGlobalRect().GetCenter();
             Vector2 markerBodyLocal = rig.Body.GetGlobalTransformWithCanvas().AffineInverse() * markerCanvas;
             Vector2 markerParentLocal = parent.GetGlobalTransformWithCanvas().AffineInverse() * markerCanvas;
@@ -814,10 +903,8 @@ public static class AlabamaDropAnimation
         Node2D? AirborneAnchor,
         Vector2 CreaturePosition,
         float CreatureRotationDegrees,
-        Vector2 CreatureScale,
         Vector2 VisualsPosition,
         float VisualsRotationDegrees,
-        Vector2 VisualsScale,
         Vector2 BodyPosition,
         float BodyRotationDegrees,
         Vector2 BodyScale,
@@ -837,10 +924,8 @@ public static class AlabamaDropAnimation
                 rig.AirborneAnchor,
                 rig.CreatureNode.Position,
                 rig.CreatureNode.RotationDegrees,
-                rig.CreatureNode.Scale,
                 FinisherApproach.AnimationPosition(rig.Creature, rig.Visuals),
                 rig.Visuals.RotationDegrees,
-                rig.Visuals.Scale,
                 rig.Body.Position,
                 rig.Body.RotationDegrees,
                 rig.Body.Scale,
@@ -857,28 +942,9 @@ public static class AlabamaDropAnimation
             {
                 if (restoreCreaturePosition) CreatureNode.Position = CreaturePosition;
                 CreatureNode.RotationDegrees = CreatureRotationDegrees;
-                CreatureNode.Scale = CreatureScale;
             }
 
-            if (GodotObject.IsInstanceValid(Visuals))
-            {
-                FinisherApproach.SetAnimationPosition(Creature, Visuals, VisualsPosition);
-                Visuals.RotationDegrees = VisualsRotationDegrees;
-                Visuals.Scale = VisualsScale;
-            }
-
-            if (AirborneAnchor != null && GodotObject.IsInstanceValid(AirborneAnchor) && AirborneAnchorPosition.HasValue)
-            {
-                AirborneAnchor.Position = AirborneAnchorPosition.Value;
-                HopAnimation.SyncBasePosition(Creature, AirborneAnchorPosition.Value);
-            }
-
-            if (GodotObject.IsInstanceValid(Body))
-            {
-                Body.Position = BodyPosition;
-                Body.RotationDegrees = BodyRotationDegrees;
-                Body.Scale = BodyScale;
-            }
+            RestoreVisuals();
 
             if (!restoreNinjaSlayerAirborneState)
             {
@@ -897,6 +963,28 @@ public static class AlabamaDropAnimation
             {
                 SoarVisualState.ResetVisualsToGround(Creature);
                 SoarSpinAnimation.ResetSpinVisual(Creature);
+            }
+        }
+
+        public void RestoreVisuals()
+        {
+            if (GodotObject.IsInstanceValid(Visuals))
+            {
+                FinisherApproach.SetAnimationPosition(Creature, Visuals, VisualsPosition);
+                Visuals.RotationDegrees = VisualsRotationDegrees;
+            }
+
+            if (AirborneAnchor != null && GodotObject.IsInstanceValid(AirborneAnchor) && AirborneAnchorPosition.HasValue)
+            {
+                AirborneAnchor.Position = AirborneAnchorPosition.Value;
+                HopAnimation.SyncBasePosition(Creature, AirborneAnchorPosition.Value);
+            }
+
+            if (GodotObject.IsInstanceValid(Body))
+            {
+                Body.Position = BodyPosition;
+                Body.RotationDegrees = BodyRotationDegrees;
+                Body.Scale = BodyScale;
             }
         }
     }

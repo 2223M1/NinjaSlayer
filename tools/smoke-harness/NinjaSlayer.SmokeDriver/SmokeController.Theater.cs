@@ -35,6 +35,7 @@ using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
 using STS2RitsuLib;
+using STS2RitsuLib.Settings;
 using STS2RitsuLib.Telemetry;
 using STS2RitsuLib.Ui.Toast;
 
@@ -49,6 +50,12 @@ internal sealed partial class SmokeController
     {
         TheaterScript script = TheaterScript.Load(_configuration.TheaterScriptPath!);
         Require(script.Seed == _configuration.Seed, "Launcher and theater seeds differ.");
+        var narration = (ModSettingsValueBinding<NinjaSlayerSettingsData, bool>)AccessTools.Field(
+            typeof(NinjaSlayerSettings), "_narration").GetValue(null)!;
+        narration.Write(script.NarrationEnabled);
+        narration.Save();
+        Require(narration.Read() == script.NarrationEnabled, "Theater narration setting was not applied.");
+        _checkpoints.Write("theater.narration", data: new JsonObject { ["enabled"] = narration.Read() });
         foreach (var applicant in TelemetryRegistry.GetApplicants())
             RitsuLibFramework.SetTelemetryApplicantConsent(applicant.ApplicantId, TelemetryConsentState.Denied);
         SaveManager.Instance.SetFtuesEnabled(false);
@@ -76,6 +83,8 @@ internal sealed partial class SmokeController
         MapPoint point = run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster);
         await RunManager.Instance.EnterMapCoord(point.coord);
         await ExecuteTheaterAsync(CancellationToken.None);
+        if (script.Purpose == "yukano-popup" && script.Cues.Any(cue => cue.Id == "save_reload"))
+            await VerifyYukanoPopupNextCombat(run, point);
         _checkpoints.Write("theater.native-quit");
         NGame.Instance.Quit();
     }
@@ -197,14 +206,26 @@ internal sealed partial class SmokeController
                 await RelicCmd.Obtain<YamotoKokiCuteRelic>(_player);
                 await RelicCmd.Obtain<YukanoCompanionRelic>(_player);
             }
+            if (_script.Purpose == "yukano-popup") await RelicCmd.Obtain<YukanoCompanionRelic>(_player);
             await RemovePower<EvasionPower>(_player.Creature);
             await PlayerCmd.SetEnergy(6, _player);
             AccessTools.Property(Pose.GetType(), "UseTornadoHitStop").SetValue(Pose, true);
             FindDescendant<NPlayerTurnBanner>(_driver._tree.Root)?.QueueFree();
             await _driver.WaitFrames(60);
             RitsuToastService.CloseAll(true);
+            if (_script.Purpose == "promo")
+            {
+                var healthBar = Node("sawatari").GetNode<NCreatureStateDisplay>("%HealthBar")
+                    .GetNode<NHealthBar>("%HealthBar");
+                Require(healthBar.IsVisibleInTree()
+                    && ReferenceEquals(AccessTools.Field(typeof(NHealthBar), "_creature").GetValue(healthBar), enemy),
+                    "Sawatari must display his native bound health bar.");
+                _driver._checkpoints.Write("theater.sawatari-health-bar", data: new JsonObject
+                    { ["hp"] = enemy.CurrentHp, ["maxHp"] = enemy.MaxHp, ["visible"] = true });
+            }
             if (_script.Purpose == "finisher-audit") await PrepareFinisherAudit();
-            RenderingServer.FramePreDraw += Sample;
+            if (_script.Purpose == "yukano-popup") RenderingServer.FramePostDraw += Sample;
+            else RenderingServer.FramePreDraw += Sample;
         }
 
         private void AddActor(string name, Creature creature)
@@ -246,7 +267,8 @@ internal sealed partial class SmokeController
                     var row = new JsonObject { ["id"] = _cue, ["start"] = Seconds, ["before"] = State() };
                     _timeline.Add(row);
                     foreach (var step in cue.Steps)
-                        await _driver.WaitTaskAsync(Step(step), $"Theater cue stalled: {cue.Id}", TimeSpan.FromSeconds(20));
+                        await _driver.WaitTaskAsync(Step(step), $"Theater cue stalled: {cue.Id}",
+                            TimeSpan.FromSeconds(step.Action == "architect_execution" && step.Greeting == "full" ? 45 : 20));
                     row["end"] = Seconds;
                     row["after"] = State();
                 }
@@ -305,6 +327,7 @@ internal sealed partial class SmokeController
                     case "audit_calibration": SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerSlowAttackEvent); await Wait(1.5); SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerHurtEvent); await Wait(1.5); break;
                     case "audit_orb": await OrbCmd.EvokeNext(_choice, _player); break;
                     case "companion_facing": await CompanionFacingPreview(); break;
+                    case "popup_check": await PopupCheck(step.Mode!); break;
                     default: throw new InvalidDataException($"Unsupported theater action {step.Action}.");
                 }
                 foreach (string cover in step.Covers) Cover(cover);
@@ -394,8 +417,13 @@ internal sealed partial class SmokeController
                 return;
             }
             var move = (MoveState)actor.Monster!.MoveStateMachine!.States[step.Move!];
+            int beforeHp = target.CurrentHp;
+            decimal beforeBlock = target.Block;
             actor.Monster.SetMoveImmediate(move, true);
             await move.PerformMove([target]);
+            if (actor.Monster is YukanoMonster && step.Move is YukanoMonster.ArrowMoveId or YukanoMonster.ShurikenMoveId)
+                Require(target.CurrentHp < beforeHp || target.Block < beforeBlock,
+                    $"Yukano {step.Move} finished without any real damage or block loss.");
         }
 
         private async Task RollVolley(int shots)
@@ -692,7 +720,7 @@ internal sealed partial class SmokeController
                     float elapsed = p * .28f;
                     Func<double, double> history = age => 180f * Math.Clamp((elapsed - age) / .28f, 0d, 1d);
                     Call(projection, "ApplyDegrees", p * 180f, history);
-                    Call(blur, "Record", projection, p * 180f, history);
+                    Call(blur, "Record", projection, p * 180f, history, 0f);
                 });
                 Call(blur, "Stop");
                 Call(projection, "Restore");
@@ -780,12 +808,49 @@ internal sealed partial class SmokeController
                 row[name] = new JsonObject { ["x"] = node.Position.X, ["y"] = node.Position.Y,
                     ["coreX"] = core.X, ["coreY"] = core.Y, ["hp"] = actor.CurrentHp,
                     ["iai"] = actor.GetPowerAmount<IaiPower>() };
+                if (name == "yukano")
+                {
+                    var sprite = (Sprite2D)node.Body;
+                    Rect2 body = sprite.GetGlobalTransformWithCanvas() * sprite.GetRect();
+                    Vector2 intentBottom = node.IntentContainer.GetGlobalTransformWithCanvas()
+                        * new Vector2(node.IntentContainer.Size.X * .5f, node.IntentContainer.Size.Y);
+                    row["yukanoIntent"] = new JsonObject { ["bodyTop"] = body.Position.Y,
+                        ["bottom"] = intentBottom.Y, ["visible"] = node.IntentContainer.IsVisibleInTree() };
+                    Node2D anchor = node.Visuals.GetNode<Node2D>("AirborneAnchor");
+                    row["yukanoPose"] = new JsonObject { ["rotation"] = anchor.Rotation,
+                        ["scaleX"] = anchor.Transform.X.Length(), ["scaleY"] = anchor.Transform.Y.Length() };
+                }
                 if (_cue == "dark_strike_closeup" && name == "sawatari")
                 {
                     Node2D body = node.Visuals.GetCurrentBody();
                     row["stabTarget"] = new JsonObject { ["x"] = body.Position.X,
                         ["y"] = body.Position.Y, ["rotation"] = body.Rotation, ["z"] = EffectiveZ(body) };
                 }
+            }
+            if (_script.Purpose == "yukano-popup" || _cue is "yukano_arrow_support" or "yukano_shuriken_support")
+            {
+                row["renderFrame"] = Engine.GetFramesDrawn();
+                if (_room.GetNodeOrNull<Node>("YukanoArrowPopup") is { } popup)
+                {
+                    row["popup"] = new JsonObject
+                    {
+                        ["position"] = (double)AccessTools.Property(popup.GetType(), "PlaybackPosition").GetValue(popup)!,
+                        ["releasePosition"] = (double)AccessTools.Property(popup.GetType(), "ReleasePosition").GetValue(popup)!,
+                        ["releaseFrame"] = (int)AccessTools.Property(popup.GetType(), "ReleaseRenderFrame").GetValue(popup)!
+                    };
+                }
+                var projectiles = new JsonArray();
+                foreach (Sprite2D projectile in _room.CombatVfxContainer.GetChildren().OfType<Sprite2D>())
+                {
+                    bool arrow = projectile.Texture is AtlasTexture atlas
+                        && atlas.Atlas.ResourcePath.EndsWith("crossbow_ruby_raider.png", StringComparison.Ordinal);
+                    if (!arrow && projectile.Texture?.ResourcePath != YukanoMonster.ShurikenTexturePath) continue;
+                    Vector2 position = projectile.GetGlobalTransformWithCanvas().Origin;
+                    projectiles.Add(new JsonObject { ["id"] = projectile.GetInstanceId(),
+                        ["kind"] = arrow ? "arrow" : "shuriken", ["x"] = position.X, ["y"] = position.Y,
+                        ["visible"] = projectile.IsVisibleInTree() });
+                }
+                row["yukanoProjectiles"] = projectiles;
             }
             if (_cue == "dark_strike_closeup" && _room.SceneContainer.GetNodeOrNull<Node2D>("DarkNinjaDarkStrike") is { } stab)
                 row["stab"] = new JsonObject { ["x"] = stab.Position.X, ["y"] = stab.Position.Y,
@@ -846,6 +911,7 @@ internal sealed partial class SmokeController
         public void Dispose()
         {
             RenderingServer.FramePreDraw -= Sample;
+            RenderingServer.FramePostDraw -= Sample;
             FinisherAuditObservationPatch.Record = null;
             foreach (var (actor, handler) in _hpSubscriptions) actor.CurrentHpChanged -= handler;
             _camera?.Dispose();

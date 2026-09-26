@@ -30,7 +30,7 @@ internal sealed partial class SmokeController
         var holder = UiHelper.FindAll<NRelicInventoryHolder>(_tree.Root).Single(node => node.Relic.Model == relic);
         holder.EmitSignal(Control.SignalName.MouseEntered);
         await WaitFrames(60);
-        _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, "mother-unix-tooltip.png"));
+        SaveScreenshot(Path.Combine(directory, "mother-unix-tooltip.png"));
         holder.EmitSignal(Control.SignalName.MouseExited);
 
         foreach (string scenario in new[] { "keep", "discard", "nested" })
@@ -60,7 +60,7 @@ internal sealed partial class SmokeController
                 Require(player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2,
                     "Nested Sly must complete before native hand draw resumes.");
             await WaitFrames(30);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, scenario + "-after-draw.png"));
+            SaveScreenshot(Path.Combine(directory, scenario + "-after-draw.png"));
             _checkpoints.Write("mother-unix." + scenario + "-before-draw");
         }
         _checkpoints.Write("mother-unix.completed");
@@ -75,7 +75,7 @@ internal sealed partial class SmokeController
             Require(grid.CurrentlyDisplayedCardHolders.Select(item => item.CardModel).ToHashSet().SetEquals(expected),
                 "Native selection did not show the expected undrawn cards.");
             Require(PileType.Hand.GetPile(player).IsEmpty, "Normal hand draw happened before Scry finished.");
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, label + "-selection.png"));
+            SaveScreenshot(Path.Combine(directory, label + "-selection.png"));
             foreach (var card in selected)
             {
                 var cardHolder = grid.CurrentlyDisplayedCardHolders.Single(item => item.CardModel == card);

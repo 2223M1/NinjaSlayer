@@ -1,0 +1,15 @@
+{
+  "seed": "NINJASLAYER_ARCHITECT_FULL_ALABAMA_20260926",
+  "purpose": "architect",
+  "act": 3,
+  "duration": 24,
+  "narrationEnabled": false,
+  "karate": 2,
+  "relics": [],
+  "cues": [
+    { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
+    { "id": "architect_room_full_greeting_alabama", "steps": [
+      { "action": "architect_execution", "actor": "native", "card": "AlabamaDropRedesignV1", "greeting": "full" }
+    ] }
+  ]
+}

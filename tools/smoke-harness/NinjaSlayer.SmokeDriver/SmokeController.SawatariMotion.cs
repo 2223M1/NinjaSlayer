@@ -186,14 +186,14 @@ internal sealed partial class SmokeController
                 }
                 await throwing;
                 Require(damageAtContact, "Thrown knife damage did not coincide with arrival at the hand.");
-                _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"held-source-sized-{hand + 1}.png"));
+                SaveScreenshot(Path.Combine(directory, $"held-source-sized-{hand + 1}.png"));
             }
             finally { player.Creature.CurrentHpChanged -= Damage; }
             await WaitFrames(40);
             Require(Math.Abs(knife.GlobalTransform.X.Length() - sizes[hand]) * 285 < .5f,
                 "The received knife changed size after hurt recovered.");
             VerifyCaughtMacheteOrientation(knife);
-            _tree.Root.GetTexture().GetImage().SavePng(Path.Combine(directory, $"held-mirror-fixed-{hand + 1}.png"));
+            SaveScreenshot(Path.Combine(directory, $"held-mirror-fixed-{hand + 1}.png"));
         }
         async Task ReturnWithImpact(SawatariMachete card)
         {
