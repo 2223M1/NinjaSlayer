@@ -1,6 +1,6 @@
-# 忍者杀手观测室
+# 忍者杀手社区统计
 
-公开观测室：https://2223m1.github.io/NinjaSlayer/ 。使用 GitHub Pages、原生 HTML/CSS/JavaScript；本机关机不影响访问。本机仍提供私有反馈管理页。
+公开网站：https://2223m1.github.io/NinjaSlayer/ 。使用 GitHub Pages、原生 HTML/CSS/JavaScript；本机关机不影响访问。本机仍提供私有反馈管理页。Spire Codex 的具体复用、署名与其他参考见 [UPSTREAM.md](UPSTREAM.md)。
 
 ## 公开网站
 
@@ -26,7 +26,7 @@ pwsh -NoProfile -File tools/Start-NinjaSlayerDashboard.ps1
 
 ## 连接
 
-- F2 反馈复用这个 Worker 的 Wrangler 登录；首次需要在 Worker 目录运行 `npx wrangler login`。仅执行远端 KV list/get，网页不提供删除接口。
+- F2 反馈复用这个 Worker 的 Wrangler 登录；首次需要在 Worker 目录运行 `npx wrangler login`。索引和正文读取 KV，截图和日志读取私有 R2，网页不提供删除接口。
 - 对局数据在“连接设置”填写 PostHog 区域、数字项目 ID 和具有该项目查询权限的个人 API key。游戏使用的 ingestion key 无读取权限。
 - 连接凭据只存在于本次 Node 进程内，不发送给浏览器、不写入项目或 localStorage。重启后重新输入；也可通过 `POSTHOG_QUERY_HOST`、`POSTHOG_PROJECT_ID`、`POSTHOG_PERSONAL_API_KEY` 环境变量提供。
 - 可导入 RitsuLib batch、PostHog 查询响应或事件数组 JSON；导入只替换本机视图，不改远端。PostHog 查询列顺序为 `uuid, timestamp, properties`。
@@ -77,8 +77,12 @@ Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。
 
 26 类图表由 `charts.mjs` 定义，独立统计聚合在 `chart-data.mjs`。日期、版本、进阶、模式、人数、胜负、读档和 A10 分组写入 URL；比例使用 Wilson 95% 区间。图表显示样本单位和测量点数，缺测不补零。机制表的“涉及战斗”按已完整测量的角色战斗计数，只包含出现该项的战斗；版本不同的机制行不合并。每实付能量伤害包含免费效果的伤害，不能解释为卡牌固有效率。
 
-公开战报使用独立默认关闭授权、`ninja_slayer_replay_v1` 白名单和 RitsuLib 队列。KV 保留 90 天，Pages 定期拉取匿名索引，详情按需读取。路线依次展开房间、读档尝试、回合和行动。未授权队友不公开明细，缺段和过期明确显示。撤销授权保存在本地 journal sidecar，不能被旧存档恢复。
+公开战报使用独立默认关闭授权、`ninja_slayer_replay_v1` 白名单和 RitsuLib 队列。私有 R2 保留 90 天，Pages 定期拉取 KV 匿名索引，详情通过 Worker 按需读取。路线依次展开房间、读档尝试、回合和行动。未授权队友不公开明细，缺段和过期明确显示。撤销授权保存在本地 journal sidecar，不能被旧存档恢复。
 
-反馈正文静态进入 Pages；原始反馈、截图、日志仍在 KV，不进入 PostHog。KV 的反馈与战报共同使用免费预算，超额响应可重试，不自动付费。详情见 `Docs/privacy.md`。
+反馈正文静态进入 Pages；反馈元数据留在 KV，截图和日志存入私有 R2，均不进入 PostHog。容量与请求次数由共享预算限制，超额响应可重试。R2 预留达到 7 GB 后按原始上传时间从旧到新清理，8 GB 为硬上限；每日最多 2,000 次写入和 20,000 次未缓存公开读取。确认删除后才释放容量；180／90 天为最长保留期限，容量清理可能提前结束旧原始数据的保留。汇总统计不受影响。详情见 Worker README 与 `Docs/privacy.md`。
 
 网站卡牌名称、双语原生格式化文案、升级、关键词与卡图均来自实际 DLL 的 `WebsiteCatalogExporter`。运行 Smoke 的 `Catalog` 模式导出后，用 `tools/release/import-website-catalog.mjs` 校验内容和图片 SHA-256；历史版本只写一次。`Website/content/current.json` 只能在 Workshop 远端版本、说明和包校验通过后推进。查看旧战报使用其版本目录，目录缺失显示缺测，不能用测试规格代替生产内容。
+
+卡牌榜单、卡牌趋势、战斗明细与 CSV 均以当前发布目录为范围。目录外的原版卡、其他模组卡、已归档卡和未知 ID 不补入统计。筛选旧版本只改变统计样本，卡名/卡图/说明仍显示当前版本；历史战报的原始操作保持对应版本。更新失败复用旧快照时也先与当前目录求交集，不恢复退役条目；过滤不改变对局数、角色数或战斗数。
+
+每次 Workshop 核验完成后必须同步网站，不能只导出而不导入。已有本次导出可直接运行 importer；缺少导出时，在管理员 PowerShell 使用 `tools/release/Sync-WebsiteCatalog.ps1`，传入 `PublishedEvidence`、`CandidateRoot`、`BundleDirectory`、`GameRootDirectory`、`RitsuLibModDirectory` 及空的 `OutputDirectory`。该命令使用已发布包完成运行时导出，再核对发布证据中的版本、源码 SHA 和 DLL 校验值并推进目录。提交生成的 `Website/content` 后由 Pages 工作流部署；不会再次上传 Workshop。

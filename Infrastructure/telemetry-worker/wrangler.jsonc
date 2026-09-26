@@ -19,6 +19,9 @@
 			"id": "b0c2a010e96040ecb2f6c83a935a61b4"
 		}
 	],
+	"r2_buckets": [
+		{ "binding": "RECORDS_BUCKET", "bucket_name": "ninja-slayer-records" }
+	],
 	"durable_objects": {
 		"bindings": [
 			{

@@ -97,7 +97,7 @@ export function renderReports(snapshot, filters, onCard) {
     list.append(
       node(
         "p",
-        "尚无符合筛选的公开战报。只有玩家明确开启“公开完整战报”后采集的新记录会出现在这里。",
+        "暂无符合筛选条件的对局。你可以在设置中开启“公开完整战报”，分享自己的对局。",
         "empty",
       ),
     );
@@ -141,10 +141,10 @@ async function openReport(report, onCard, snapshot) {
       ),
       node(
         "p",
-        `版本 ${data.version} · ${data.party > 1 ? "仅展示本贡献者明细，其他玩家未采集。" : "单人对局。"} 保存至 ${data.expires.slice(0, 10)}。`,
+        `版本 ${data.version} · ${data.party > 1 ? "仅展示分享者的操作。" : "单人对局。"} 最晚保留至 ${data.expires.slice(0, 10)}。`,
       ),
     );
-    const download = node("button", "下载匿名战报 JSON", "button");
+    const download = node("button", "下载战报", "button");
     download.onclick = () => {
       const url = URL.createObjectURL(
         new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
@@ -160,7 +160,7 @@ async function openReport(report, onCard, snapshot) {
       panel.append(
         node(
           "p",
-          "此记录有未采集或未持久保存的部分，不能视为完整战斗重演。",
+          "部分回合未能记录，以下战报不完整。",
           "notice",
         ),
       );

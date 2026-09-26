@@ -1,4 +1,13 @@
 import { charts, wilson, selectGroups, chartRows } from "./charts.mjs";
+// Adapted from Spire Codex ChartsClient.tsx (69b3c898a1b62fa277359a17970b9061abf60354).
+// Required Notice: Copyright © 2025-present Peter Lord and Spire Codex contributors.
+// PolyForm Noncommercial 1.0.0; see vendor/LICENSE.Spire-Codex.md.
+const tooltipStyle = {
+  backgroundColor: "#15151a", borderColor: "#33333a", borderWidth: 1,
+  cornerRadius: 6, padding: 8, titleColor: "#e5e5e5", bodyColor: "#a1a1aa",
+  displayColors: true, boxWidth: 8, boxHeight: 8,
+  titleFont: { size: 12 }, bodyFont: { size: 12 },
+};
 const $ = (selector) => document.querySelector(selector);
 const node = (tag, text) => {
   const item = document.createElement(tag);
@@ -9,14 +18,23 @@ let graph;
 export function renderCharts(snapshot, filters, onCard) {
   const groups = selectGroups(snapshot, filters),
     select = $("#chart-select");
-  if (!select.options.length)
+  if (!select.options.length) {
     for (const group of [...new Set(charts.map((c) => c.group))]) {
       const options = node("optgroup");
       options.label = group;
-      for (const chart of charts.filter((c) => c.group === group))
+      const section = node("section");
+      section.append(node("h3", group));
+      for (const chart of charts.filter((c) => c.group === group)) {
         options.append(new Option(chart.title, chart.id));
+        const button = node("button", chart.title);
+        button.dataset.chart = chart.id;
+        button.onclick = () => { select.value = chart.id; select.onchange(); };
+        section.append(button);
+      }
       select.append(options);
+      $("#chart-nav").append(section);
     }
+  }
   const params = new URLSearchParams(location.search);
   if (!select.dataset.initialized) {
     select.value = params.get("chart") ?? charts[0].id;
@@ -24,6 +42,8 @@ export function renderCharts(snapshot, filters, onCard) {
   }
   const draw = () => {
     const definition = charts.find((c) => c.id === select.value) ?? charts[0];
+    for (const button of document.querySelectorAll('[data-chart]'))
+      button.setAttribute('aria-current', String(button.dataset.chart === definition.id));
     const seriesSelect = $("#chart-series");
     const available = [
       ...new Set(
@@ -63,8 +83,7 @@ export function renderCharts(snapshot, filters, onCard) {
     $("#chart-title").textContent = definition.title;
     const observed = rows.reduce((n, row) => n + row.n, 0),
       runs = groups.reduce((n, group) => n + group.runs, 0);
-    $("#chart-note").textContent =
-      `${definition.note}。当前筛选 ${runs} 场对局；${observed} 个测量点。缺测不补零。比例附 Wilson 95% 置信区间。`;
+    $("#chart-note").textContent = `${definition.note}。${runs} 场对局，${observed} 条记录。`;
     $("#chart-empty").hidden = rows.length > 0;
     $("#chart-canvas").hidden = rows.length === 0;
     graph?.destroy();
@@ -105,6 +124,7 @@ export function renderCharts(snapshot, filters, onCard) {
           plugins: {
             legend: { display: false },
             tooltip: {
+              ...tooltipStyle,
               callbacks: {
                 afterLabel: (context) => {
                   const row = rows[context.dataIndex],
@@ -180,7 +200,7 @@ function renderMechanisms(groups, snapshot, onCard, filters) {
     )
     .reduce((sum, row) => sum + row.n, 0);
   $("#mechanic-coverage").textContent =
-    `新版完整测量覆盖：${measured} / ${total} 个角色战斗${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ""}。`;
+    `有详细记录的战斗：${measured} / ${total}${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ""}。`;
   const values = new Map();
   for (const group of groups)
     for (const row of group.mechanisms ?? []) {
@@ -199,7 +219,7 @@ function renderMechanisms(groups, snapshot, onCard, filters) {
   for (const row of [...values.values()].sort((a, b) => b.n - a.n)) {
     const tr = node("tr"),
       id = row.id.split("/")[0],
-      model = snapshot.measuredContent.get(row.version)?.get(id),
+      model = snapshot.entities.get(id),
       card = model?.kind === "card" ? model : null;
     const name = node(
       "td",
@@ -236,7 +256,7 @@ function renderMechanisms(groups, snapshot, onCard, filters) {
             unattributed: "来源未归属",
           }[row.id] ?? row.id),
     );
-    if (card) name.onclick = () => onCard(id, row.version);
+    if (card) name.onclick = () => onCard(id);
     if (row.group === "power")
       name.textContent = (model?.name ?? row.id) + " · 层数净变化";
     name.append(node("small", ` · v${row.version}`));

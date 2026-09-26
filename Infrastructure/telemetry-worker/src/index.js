@@ -92,7 +92,7 @@ async function handleFeedback(request, env) {
   if (request.method !== 'PUT') {
     return jsonResponse(405, { error: 'method_not_allowed', message: 'Only PUT is accepted for /feedback' }, { Allow: 'PUT' });
   }
-  if (!env.FEEDBACK_KV || !env.FEEDBACK_SUBMISSIONS || !env.ANONYMOUS_QUOTAS) {
+  if (!env.FEEDBACK_KV || !env.RECORDS_BUCKET || !env.FEEDBACK_SUBMISSIONS || !env.ANONYMOUS_QUOTAS) {
     return jsonResponse(503, { error: 'service_not_configured' });
   }
   const rateLimit = await enforceMinuteRateLimit(request, env, 'FEEDBACK_RATE_LIMITER');

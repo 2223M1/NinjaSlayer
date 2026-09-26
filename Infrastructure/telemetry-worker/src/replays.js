@@ -1,4 +1,5 @@
 import { BodyTooLargeError, jsonResponse, readBodyLimited } from "./limits.js";
+import { reserveStorage } from "./free-storage.js";
 
 export const REPLAY_RETENTION_SECONDS = 90 * 86400;
 export const REPLAY_MAX_COMPRESSED = 2 * 1024 * 1024;
@@ -389,6 +390,8 @@ export async function publicRunId(runKey, salt) {
 }
 
 export async function acceptReplay(event, env) {
+  if (!env.FEEDBACK_KV || !env.RECORDS_BUCKET)
+    return jsonResponse(503, { error: "service_not_configured" });
   let decoded;
   try {
     decoded = await decodeReplay(event.properties.payload.applicant_payload);
@@ -426,6 +429,8 @@ const PUBLIC_HEADERS = {
 export async function readPublicReplay(request, env) {
   if (request.method !== "GET")
     return jsonResponse(405, { error: "method_not_allowed" }, PUBLIC_HEADERS);
+  if (!env.FEEDBACK_KV || !env.RECORDS_BUCKET || !env.ANONYMOUS_QUOTAS)
+    return jsonResponse(503, { error: "service_not_configured" }, PUBLIC_HEADERS);
   const url = new URL(request.url);
   if (url.pathname === "/observatory/replays") {
     const cursor = url.searchParams.get("cursor");
@@ -450,31 +455,33 @@ export async function readPublicReplay(request, env) {
     url.pathname,
   );
   if (!match) return jsonResponse(404, { error: "not_found" }, PUBLIC_HEADERS);
-  const object = await env.FEEDBACK_KV.getWithMetadata(
-    `replays/${match[1]}/${match[2]}`,
-    "arrayBuffer",
-  );
-  if (!object.value || Date.parse(object.metadata.expires) <= Date.now())
+  const budget = await reserveStorage(env, { bytes: 0, writes: 0, reads: 1, retentionDays: 0 });
+  if (!budget.ok) {
+    budget.headers.set("Access-Control-Allow-Origin", "*");
+    budget.headers.set("Cache-Control", "no-store");
+    return budget;
+  }
+  const object = await env.RECORDS_BUCKET.get(`replays/${match[1]}/${match[2]}`);
+  if (!object || Date.parse(object.customMetadata.expires) <= Date.now())
     return jsonResponse(
       410,
       { error: "report_expired_or_missing" },
       PUBLIC_HEADERS,
     );
-  // KV stores gzip; the browser decompresses using the standard Content-Encoding header.
+  // R2 stores gzip; stream JSON to the HTTP cache and let the edge negotiate transfer encoding.
   const ttl = Math.max(
     0,
     Math.min(
       300,
-      Math.floor((Date.parse(object.metadata.expires) - Date.now()) / 1000),
+      Math.floor((Date.parse(object.customMetadata.expires) - Date.now()) / 1000),
     ),
   );
-  return new Response(object.value, {
+  return new Response(object.body.pipeThrough(new DecompressionStream("gzip")), {
     headers: {
       ...PUBLIC_HEADERS,
       "Cache-Control": `public, max-age=${ttl}`,
       "Content-Type": "application/json",
-      "Content-Encoding": "gzip",
-      ETag: object.metadata.hash,
+      ETag: object.customMetadata.hash,
     },
   });
 }

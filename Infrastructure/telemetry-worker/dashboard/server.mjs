@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { readFile, readdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { parseData, normalizeEvents, summarize } from './data.mjs';
+import { parseData, normalizeEvents } from './data.mjs';
 import { summarizePublic } from './public-data.mjs';
 import { readCatalog, readCurrentRelease, publishSnapshot, publicFeedback } from './publish.mjs';
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
@@ -12,6 +12,7 @@ import { UUID_PATTERN } from '../src/validation.js';
 const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
 for (const file of ['charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
 publicFiles.set('/vendor/chart.umd.js', ['../node_modules/chart.js/dist/chart.umd.js', 'text/javascript']);
+publicFiles.set('/vendor/LICENSE.Spire-Codex.md', ['vendor/LICENSE.Spire-Codex.md', 'text/plain']);
 
 async function body(request) {
   const chunks = [];

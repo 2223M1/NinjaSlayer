@@ -27,11 +27,11 @@ const plain = (text) =>
       (match) => ({ "[energy]": "◆", "[star]": "★" })[match] ?? match,
     );
 export async function cardPreview(id, version, container, onCard) {
-  container.replaceChildren(node("p", "正在读取该版本卡牌…"));
+  container.replaceChildren(node("p", "加载卡牌…"));
   const catalog = await loadCatalog(version);
   const model = catalog?.languages.zhs.find((model) => model.id === id);
   if (!model) {
-    container.replaceChildren(node("p", "此版本尚无发布目录，卡牌内容缺测。"));
+    container.replaceChildren(node("p", "暂无此版本的卡牌资料。"));
     return;
   }
   const render = (upgraded) => {

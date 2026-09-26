@@ -4,7 +4,6 @@ import {
   FEEDBACK_RETENTION_SECONDS,
   FEEDBACK_WRITE_LEASE_MS,
   FeedbackValidationError,
-  LOG_CHUNK_BYTES,
   jsonResponse,
   readBodyLimited,
 } from './limits.js';
@@ -94,21 +93,20 @@ async function readIndexMarker(kv, submissionId) {
   }
 }
 
-async function deleteKeys(kv, keys) {
-  await Promise.allSettled(keys.map((key) => kv.delete(key)));
+async function deleteAttempt(env, lease) {
+  await Promise.allSettled([
+    env.RECORDS_BUCKET.delete([lease.screenshotKey, ...lease.logChunkKeys]),
+    env.FEEDBACK_KV.delete(lease.metadataKey),
+  ]);
 }
 
 function createLease(data, receivedAt) {
-  const { modContext, screenshot, logs } = data;
+  const { modContext } = data;
   const attemptId = crypto.randomUUID();
   const prefix = feedbackPrefix(modContext.submissionId, receivedAt);
   const attemptPrefix = feedbackAttemptPrefix(prefix, attemptId);
   const screenshotKey = `${attemptPrefix}/screenshot.png`;
-  const logChunkCount = Math.max(1, Math.ceil(logs.size / LOG_CHUNK_BYTES));
-  const logChunkKeys = Array.from(
-    { length: logChunkCount },
-    (_, index) => `${attemptPrefix}/logs/part-${index.toString().padStart(4, '0')}.bin`,
-  );
+  const logChunkKeys = [`${attemptPrefix}/logs.zip`];
   return {
     submissionId: modContext.submissionId,
     attemptId,
@@ -131,12 +129,12 @@ function createMetadata(data, lease, receivedAt) {
     payload,
     modContext,
     storage: {
-      provider: 'workers-kv',
+      provider: 'r2',
       expiresAfterDays: 180,
       attemptId: lease.attemptId,
       metadataKey: lease.metadataKey,
       screenshot: { key: lease.screenshotKey, size: screenshot.size, contentType: screenshot.type },
-      logs: { size: logs.size, contentType: logs.type, chunkSize: LOG_CHUNK_BYTES, chunks: lease.logChunkKeys },
+      logs: { size: logs.size, contentType: logs.type, chunks: lease.logChunkKeys },
     },
   };
 }
@@ -149,14 +147,15 @@ async function persistAttempt(data, lease, request, env, coordinator) {
     Object.assign(lease, renewed);
   };
 
-  await env.FEEDBACK_KV.put(lease.screenshotKey, await data.screenshot.arrayBuffer(), expiration);
+  const expires = new Date(Date.parse(lease.startedAtUtc) + FEEDBACK_RETENTION_SECONDS * 1000).toISOString();
+  await env.RECORDS_BUCKET.put(lease.screenshotKey, await data.screenshot.arrayBuffer(), {
+    httpMetadata: { contentType: data.screenshot.type }, customMetadata: { expires },
+  });
   await ensureOwnership();
-  for (let index = 0; index < lease.logChunkKeys.length; index += 1) {
-    const start = index * LOG_CHUNK_BYTES;
-    const chunk = await data.logs.slice(start, Math.min(start + LOG_CHUNK_BYTES, data.logs.size)).arrayBuffer();
-    await env.FEEDBACK_KV.put(lease.logChunkKeys[index], chunk, expiration);
-    await ensureOwnership();
-  }
+  await env.RECORDS_BUCKET.put(lease.logChunkKeys[0], await data.logs.arrayBuffer(), {
+    httpMetadata: { contentType: data.logs.type }, customMetadata: { expires },
+  });
+  await ensureOwnership();
 
   const metadataText = JSON.stringify(createMetadata(data, lease, new Date(lease.startedAtUtc)), null, 2);
   await env.FEEDBACK_KV.put(lease.metadataKey, metadataText, expiration);
@@ -169,7 +168,7 @@ async function persistAttempt(data, lease, request, env, coordinator) {
 }
 
 export async function processFeedbackRequest(request, env, coordinator) {
-  if (!env.FEEDBACK_KV || !env.ANONYMOUS_QUOTAS || !coordinator) {
+  if (!env.FEEDBACK_KV || !env.RECORDS_BUCKET || !env.ANONYMOUS_QUOTAS || !coordinator) {
     return jsonResponse(503, { error: 'service_not_configured' });
   }
   const contentType = request.headers.get('content-type') || '';
@@ -229,8 +228,14 @@ export async function processFeedbackRequest(request, env, coordinator) {
   }
 
   const lease = acquisition.lease;
-  const reservation = await reserveStorage(env, data.screenshot.size + data.logs.size + 65536,
-    lease.logChunkKeys.length + 5, 180);
+  const metadataBytes = new TextEncoder().encode(JSON.stringify(createMetadata(data, lease, receivedAt), null, 2)).byteLength;
+  const reservation = await reserveStorage(env, {
+    bytes: metadataBytes + 8192, writes: 3, retentionDays: 180,
+    objects: [
+      { key: lease.screenshotKey, size: data.screenshot.size, feedback: { id: lease.submissionId, metadataKey: lease.metadataKey } },
+      { key: lease.logChunkKeys[0], size: data.logs.size, feedback: { id: lease.submissionId, metadataKey: lease.metadataKey } },
+    ],
+  });
   if (!reservation.ok) {
     await coordinator.abortLease(lease);
     return reservation;
@@ -243,7 +248,7 @@ export async function processFeedbackRequest(request, env, coordinator) {
       expiration,
     );
     if (acquisition.supersededLease) {
-      await deleteKeys(env.FEEDBACK_KV, acquisition.supersededLease.ownedKeys || []);
+      await deleteAttempt(env, acquisition.supersededLease);
     }
 
     const quotaResponse = await consumeDailyQuota(
@@ -262,7 +267,7 @@ export async function processFeedbackRequest(request, env, coordinator) {
 
     const marker = await persistAttempt(data, lease, request, env, coordinator);
     if (acquisition.supersededLease) {
-      await deleteKeys(env.FEEDBACK_KV, acquisition.supersededLease.ownedKeys || []);
+      await deleteAttempt(env, acquisition.supersededLease);
     }
     return responseForCompletion(marker, false);
   } catch (error) {
@@ -373,7 +378,7 @@ export class FeedbackSubmissionCoordinator {
         return { completedMarker: state.marker };
       }
 
-      await deleteKeys(this.env.FEEDBACK_KV, lease.ownedKeys || []);
+      await deleteAttempt(this.env, lease);
       if (!state || state.status !== 'writing' || state.lease.attemptId !== lease.attemptId) {
         return { completedMarker: null };
       }
@@ -390,7 +395,7 @@ export class FeedbackSubmissionCoordinator {
     return this.withStateLock(async () => {
       const key = feedbackIndexKey(marker.submissionId), value = JSON.stringify(marker);
       if (await this.env.FEEDBACK_KV.get(key) === value) return jsonResponse(200, { ok: true });
-      const budget = await reserveStorage(this.env, value.length * 3, 1, 180);
+      const budget = await reserveStorage(this.env, { bytes: value.length * 3, writes: 1, retentionDays: 180 });
       if (!budget.ok) return budget;
       await this.env.FEEDBACK_KV.put(key, value, { expirationTtl: FEEDBACK_RETENTION_SECONDS });
       return jsonResponse(200, { ok: true });

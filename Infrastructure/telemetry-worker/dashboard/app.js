@@ -39,25 +39,14 @@ async function loadView() {
   const query = new URLSearchParams(Object.fromEntries(filterIds.map(key => [key, $(`#${key}`).value])));
   snapshot = await api(isPages ? './data.json' : '/api/snapshot', { cache: 'no-cache' });
   view = isPages ? summarizePublic(snapshot, Object.fromEntries(query)) : await api(`/api/view?${query}`);
-  const versionCatalog = await loadCatalog(query.get('version') || snapshot.currentVersion);
+  const versionCatalog = await loadCatalog(snapshot.currentVersion);
   const models = new Map((versionCatalog?.languages.zhs ?? []).map(model => [model.id, model]));
   snapshot.entities = models;
   snapshot.labels = versionCatalog?.labels?.zhs ?? {};
-  const measuredVersions = [...new Set(snapshot.groups.flatMap(group => (group.mechanisms ?? []).map(row => row.version)))];
-  snapshot.measuredContent = new Map(await Promise.all(measuredVersions.map(async version => {
-    const catalog = await loadCatalog(version);
-    return [version, new Map((catalog?.languages.zhs ?? []).map(model => [model.id, model]))];
-  })));
-  const cardLabels = card => {
-    const model = models.get(card.id);
-    return { ...card, name: model?.variants?.[0].name ?? card.id, image: model?.image, thumbnail: model?.thumbnail };
-  };
-  view.cards = view.cards.map(cardLabels);
-  snapshot.catalog = snapshot.catalog.map(cardLabels);
   fillOptions($('#version'), view.versions, '所有版本');
   fillOptions($('#ascension'), view.ascensions, '所有进阶', value => `进阶 ${value}`);
-  fillOptions($('#gameVersion'), view.gameVersions, '所有宿主');
-  fillOptions($('#mode'), view.modes, '所有模式');
+  fillOptions($('#gameVersion'), view.gameVersions, '所有版本');
+  fillOptions($('#mode'), view.modes, '所有模式', value => ({ Standard: '标准模式', Daily: '每日挑战', Custom: '自定义模式' }[value] ?? value));
   fillOptions($('#feedback-category'), [...new Set(view.feedback.map(item => item.category))].sort(), '全部分类', categoryName);
   const connected = view.sources.telemetry.state === 'ready' || Boolean(view.sources.telemetry.at);
   $('#metric-runs').textContent = connected ? view.runs.toLocaleString() : '—';
@@ -65,25 +54,26 @@ async function loadView() {
   $('#metric-floor').textContent = view.averageFloor === null ? '—' : view.averageFloor.toFixed(1);
   $('#metric-feedback').textContent = view.sources.feedback.at ? view.feedback.length.toLocaleString() : '—';
   $('#feedback-nav-count').textContent = view.sources.feedback.at ? view.feedback.length : '—';
-  $('#sample-detail').textContent = connected ? `${view.playerSamples} 个忍者杀手角色样本 · 已去重` : '等待连接对局数据';
+  $('#sample-detail').textContent = connected ? `${view.playerSamples} 次忍者杀手出战` : '暂无对局';
   $('#win-detail').textContent = connected ? `${view.wins} 场通关 / ${view.runs} 场完成对局` : '已完成且未放弃的对局';
   for (const [key, name] of [['telemetry', '对局统计'], ['feedback', '玩家反馈'], ['replays', '公开战报']]) {
     const source = view.sources[key] ?? {state:'unloaded'};
-    $(`#${key}-state`).textContent = `${name} · ${{ ready: source.label ?? '已同步', error: '同步失败', unconnected: '未连接', unloaded: '等待同步' }[source.state]}`;
+    $(`#${key}-state`).textContent = `${name} · ${{ ready: '已更新', error: '更新延迟', unconnected: '暂无数据', unloaded: '暂无数据' }[source.state]}`;
     $(`#${key}-state`).className = `source-pill ${source.state}`;
   }
   const latest = [view.sources.telemetry.at, view.sources.feedback.at].filter(Boolean).sort().at(-1);
-  $('#last-sync').textContent = latest ? `最近读取 ${time(latest)}` : '连接后显示真实数据';
-  $('#footer-time').textContent = new Date().toLocaleDateString('zh-CN');
+  $('#last-sync').textContent = latest ? `更新于 ${time(latest)}` : '暂无数据';
+  $('#footer-time').textContent = `v${snapshot.currentVersion}`;
+  $('#catalog-version').textContent = `卡牌内容：v${snapshot.currentVersion}`;
   const notices = Object.values(view.sources).filter(source => source.message).map(source => source.message);
   if (view.sources.telemetry.truncated) notices.push('当前载入最近 50,000 条事件，未覆盖全部历史；筛选只作用于已载入范围。');
-  if (view.rejected) notices.push(`${view.rejected} 条无效、放弃或非忍者杀手记录未计入统计。`);
-  if (view.conflicts) notices.push(`${view.conflicts} 场重复上传的胜负冲突，已排除。`);
-  if (view.invalidCombats) notices.push(`${view.invalidCombats} 条战斗测量不完整或与对局不匹配，未计入使用次数。`);
+  if (!isPublic && view.rejected) notices.push(`${view.rejected} 条无效、放弃或非忍者杀手记录未计入统计。`);
+  if (!isPublic && view.conflicts) notices.push(`${view.conflicts} 场重复上传的胜负冲突，已排除。`);
+  if (!isPublic && view.invalidCombats) notices.push(`${view.invalidCombats} 条战斗记录不完整，未计入使用次数。`);
   if (view.feedbackWarnings.length) notices.push(`${view.feedbackWarnings.length} 条反馈索引未能完整读取，请稍后重试。`);
   $('#notice').textContent = notices.join(' ');
   $('#notice').hidden = !notices.length;
-  $('#combat-coverage').textContent = `战斗测量覆盖：${view.measuredCombats} / ${view.totalCombats} 个角色战斗。旧版或未采集记录不补零；跨版本读档时，版本筛选也会过滤测量时的版本。`;
+  $('#combat-coverage').textContent = `有出牌记录的战斗：${view.measuredCombats} / ${view.totalCombats}。`;
   renderCards(); renderTrend(); renderFeedback();
   if (page === 'charts') renderCharts(snapshot, Object.fromEntries(query), openCardId);
   if (page === 'reports') renderReports(snapshot, Object.fromEntries(query), openCardId);
@@ -118,7 +108,7 @@ function renderCards() {
     const name = el('td'), link = el('button', 'card-link');
     if (card.thumbnail) { const image = el('img', 'card-thumbnail'); image.src = `./content/${card.thumbnail}`; image.alt = ''; image.loading = 'lazy'; link.append(image); }
     link.append(el('span', 'card-name', card.name), el('span', 'card-type', card.type));
-    link.addEventListener('click', () => openCard(card)); name.append(link); name.title = card.id;
+    link.addEventListener('click', () => openCard(card)); name.append(link);
     const rarityCell = el('td'); rarityCell.append(el('span', `badge ${card.rarity === '蓝卡' ? 'blue' : card.rarity === '金卡' ? 'gold' : ''}`, card.rarity));
     if (use) {
       row.append(name, rarityCell, ...['drawn', 'manual_plays', 'auto_plays', 'finished', 'energy_spent', 'combatSamples']
@@ -155,8 +145,8 @@ function renderCards() {
 function openCardId(id, version) {
   const card = view.cards.find(card => card.id === id);
   if (card) openCard(card, version);
-  else { $('#card-detail').replaceChildren(); $('#card-detail-title').textContent = id;
-    cardPreview(id, version || $('#version').value || snapshot.currentVersion, $('#card-preview'), openCardId).catch(error => toast(error.message));
+  else { $('#card-detail').replaceChildren(); $('#card-detail-title').textContent = '卡牌详情';
+    cardPreview(id, version || snapshot.currentVersion, $('#card-preview'), openCardId).catch(error => toast(error.message));
     if (!$('#card-dialog').open) $('#card-dialog').showModal(); }
 }
 function openCard(card, version) {
@@ -174,12 +164,12 @@ function openCard(card, version) {
     const box = el('div'); box.append(el('small', '', label), el('strong', '', value)); grid.append(box);
   }
   $('#card-detail').replaceChildren(grid);
-  cardPreview(card.id, version || $('#version').value || snapshot.currentVersion, $('#card-preview'), openCardId).catch(error => toast(error.message));
+  cardPreview(card.id, version || snapshot.currentVersion, $('#card-preview'), openCardId).catch(error => toast(error.message));
   if (!$('#card-dialog').open) $('#card-dialog').showModal();
 }
 function renderTrend() {
   const entries = view.trend.slice(-14);
-  if (!entries.length) { $('#trend').replaceChildren(el('span', '', '当前范围暂无对局，连接数据或调整筛选后查看。')); return; }
+  if (!entries.length) { $('#trend').replaceChildren(el('span', '', '暂无符合筛选条件的对局。')); return; }
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 560 115'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', '最近十四个有记录日期的对局与通关数量');
   const max = Math.max(...entries.map(entry => entry.runs));
@@ -248,8 +238,10 @@ for (const button of document.querySelectorAll('[data-page]')) button.addEventLi
   for (const nav of document.querySelectorAll('[data-page]')) nav.classList.toggle('active', nav === button);
   for (const name of ['cards', 'charts', 'reports', 'feedback']) $(`#${name}-page`).hidden = page !== name;
   $('#export').hidden = !['cards','charts'].includes(page);
-  $('#page-title').textContent = { cards: '卡池观察', charts: '平衡图表', reports: '公开战报', feedback: '玩家来信' }[page];
-  $('#page-subtitle').textContent = '真实样本 · 原生记录 · 忍者杀手';
+  $('#page-title').textContent = { cards: '卡牌统计', charts: '统计图表', reports: '对局记录', feedback: '玩家反馈' }[page];
+  $('#page-subtitle').textContent = { cards: '查看卡牌抓取率、胜率与战斗表现。', charts: '查看胜率、路线、战斗和卡组的统计数据。', reports: '查看玩家分享的对局，逐回合回顾战斗。', feedback: '在游戏中按 F2 提交问题或建议。' }[page];
+  $('#statistics-filters').hidden = page === 'feedback';
+  $('.metrics').hidden = page === 'feedback';
   const url = new URL(location.href); url.searchParams.set('page', page); history.replaceState(null, '', url);
   loadView().catch(error => toast(error.message));
 });
@@ -257,6 +249,12 @@ for (const id of filterIds) $(`#${id}`).addEventListener('change', () => {
   const url = new URL(location.href);
   for (const key of filterIds) { if ($(`#${key}`).value) url.searchParams.set(key, $(`#${key}`).value); else url.searchParams.delete(key); }
   history.replaceState(null, '', url); loadView().catch(error => toast(error.message));
+});
+$('#reset-filters').addEventListener('click', () => {
+  const url = new URL(location.href);
+  for (const key of filterIds) { $(`#${key}`).value = key === 'days' ? '30' : ''; url.searchParams.delete(key); }
+  history.replaceState(null, '', url);
+  loadView().catch(error => toast(error.message));
 });
 $('#table-mode').addEventListener('change', () => { sort = $('#table-mode').value === 'use' ? 'finished' : 'pickRate'; direction = -1; renderCards(); });
 for (const id of ['card-search', 'rarity']) $(`#${id}`).addEventListener('input', renderCards);
@@ -297,6 +295,7 @@ $('#export').addEventListener('click', () => {
 await loadView().then(async () => {
   const params = new URLSearchParams(location.search);
   for (const key of filterIds) if (params.has(key)) $(`#${key}`).value = params.get(key);
+  if (['gameVersion', 'mode', 'reloads', 'a10', 'from', 'to'].some(key => params.get(key))) $('#advanced-filters').open = true;
   const requested = params.get('page');
   if (['cards', 'charts', 'reports', 'feedback'].includes(requested)) document.querySelector(`[data-page="${requested}"]`).click();
   else await loadView();

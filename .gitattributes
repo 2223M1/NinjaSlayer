@@ -2,6 +2,6 @@
 * text=auto eol=lf
 
 # Runtime catalog fingerprints cover the exported bytes, including line endings.
-Website/content/versions/*/catalog.json -text
+Website/content/versions/*/catalog.json -text whitespace=cr-at-eol
 # Unified diff context prefixes precede FMOD's native tab indentation.
 tools/fmod/*.patch whitespace=-space-before-tab
