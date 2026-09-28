@@ -128,6 +128,8 @@ public static class BossGreetingCinematic
                 if (SelectBoss(combatState)?.HasPower<ArtifactPower>() == true)
                 {
                     context.BeginBrief();
+                    foreach (Player player in ninjaSlayers)
+                        room.GetCreatureNode(player.Creature)?.Visuals.Show();
                     context.PlaySfx(NinjaSlayerAudio.NinjaSlayerNoDomoEvent);
                     await context.WaitSeconds(2.15f);
                 }

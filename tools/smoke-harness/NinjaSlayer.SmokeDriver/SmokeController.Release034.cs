@@ -39,9 +39,44 @@ internal sealed partial class SmokeController
             "Release fixture did not reach a player turn.");
         string directory = Path.GetDirectoryName(_configuration.CheckpointPath)!;
         await VerifyMusicV0217Live(directory, CancellationToken.None);
+        await VerifyArtifactGreetingLive();
         probe.UnpatchAll(probe.Id);
         _checkpoints.Write("release034.completed");
         _tree.Quit(0);
+    }
+
+    private async Task VerifyArtifactGreetingLive()
+    {
+        await NGame.Instance!.ReturnToMainMenu();
+        await WaitUntilAsync(() => NGame.Instance.MainMenu != null, "Artifact fixture main menu missing.");
+        var run = await NGame.Instance.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+            true, ActModel.GetDefaultList(), [], _configuration.Seed + "_ARTIFACT", GameMode.Standard, 0);
+        await RunManager.Instance.EnterAct(0);
+        var probe = new Harmony("NinjaSlayer.SmokeDriver.ArtifactGreeting");
+        Type greeting = typeof(NinjaSlayer.Code.ExternalAnimations.BossGreetingCinematic);
+        Type session = greeting.GetNestedType("BossGreetingSession", System.Reflection.BindingFlags.NonPublic)!;
+        Type bow = greeting.Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.GreetingBow", true)!;
+        Release034ArtifactProbe.Events.Clear();
+        Release034ArtifactProbe.Bows = 0;
+        Release034ArtifactProbe.VisibleDuringVoice = false;
+        probe.Patch(AccessTools.Method(typeof(DarkNinjaMonster), nameof(DarkNinjaMonster.AfterAddedToRoom)),
+            postfix: new HarmonyMethod(typeof(Release034ArtifactProbe), nameof(Release034ArtifactProbe.AddArtifact)));
+        probe.Patch(AccessTools.Method(session, "PlaySfx"),
+            prefix: new HarmonyMethod(typeof(Release034ArtifactProbe), nameof(Release034ArtifactProbe.Sfx)));
+        probe.Patch(AccessTools.GetDeclaredConstructors(bow).Single(),
+            postfix: new HarmonyMethod(typeof(Release034ArtifactProbe), nameof(Release034ArtifactProbe.Bow)));
+        try
+        {
+            await RunManager.Instance.EnterRoomDebug(MegaCrit.Sts2.Core.Rooms.RoomType.Monster,
+                model: ModelDb.Encounter<NinjaSlayer.Encounters.DarkNinjaEncounter>());
+            await WaitUntilAsync(() => LocalContext.GetMe(run)?.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
+                "Artifact greeting did not release combat.");
+            Require(Release034ArtifactProbe.Events.SequenceEqual(new[] { NinjaSlayerAudio.NinjaSlayerNoDomoEvent })
+                && Release034ArtifactProbe.Bows == 0 && Release034ArtifactProbe.VisibleDuringVoice,
+                "Artifact greeting must show the player, play only no-domo and skip both bows.");
+            _checkpoints.Write("release034.artifact-greeting");
+        }
+        finally { probe.UnpatchAll(probe.Id); }
     }
 
     private async Task VerifyEarlySawatariPosition()
@@ -74,4 +109,26 @@ internal static class Release034StageProbe
         await __result;
         Report?.Invoke(__originalMethod.Name + ".end", Time.GetTicksMsec());
     }
+}
+
+internal static class Release034ArtifactProbe
+{
+    internal static readonly List<string> Events = [];
+    internal static int Bows;
+    internal static bool VisibleDuringVoice;
+    public static async Task AddArtifact(Task __result, DarkNinjaMonster __instance)
+    {
+        await __result;
+        await MegaCrit.Sts2.Core.Commands.PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.ArtifactPower>(
+            new MegaCrit.Sts2.Core.GameActions.Multiplayer.BlockingPlayerChoiceContext(),
+            __instance.Creature, 1, __instance.Creature, null);
+    }
+    public static void Sfx(string eventPath)
+    {
+        Events.Add(eventPath);
+        if (eventPath == NinjaSlayerAudio.NinjaSlayerNoDomoEvent)
+            VisibleDuringVoice = NCombatRoom.Instance!.GetCreatureNode(
+                LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!.Creature)!.Visuals.IsVisibleInTree();
+    }
+    public static void Bow() => Bows++;
 }
