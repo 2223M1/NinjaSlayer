@@ -64,8 +64,8 @@ public partial class OrbContractRunner
             await AddStock(combat.Player, 1);
             await AddStock(combat.Player, 2);
             await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, upgraded: upgraded), null);
-            Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == (upgraded ? 8 : 5) && combat.Enemy.CurrentHp == 976,
-                "Oyeah Throw Sword must grant block and consume the old stock without replenishing it.");
+            Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == 0 && combat.Enemy.CurrentHp == 976,
+                "Oyeah Throw Sword must grant no block and consume the old stock without replenishing it.");
             var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
             Require(token.SnapshotDamage == 8, "Conversion must snapshot the six base damage and two Focus.");
             CardCmd.Upgrade(token);
@@ -89,7 +89,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             await AddStock(combat.Player, 8);
-            foreach (var (upgraded, expectedLoss) in new[] { (false, 3), (false, 3), (true, 1), (false, 1) })
+            foreach (var (upgraded, expectedLoss) in new[] { (false, 2), (false, 2), (true, 1), (false, 1) })
             {
                 await CardCmd.AutoPlay(Choice, AddCard<BladeCycleRedesignV1>(combat, upgraded: upgraded), null);
                 Require(combat.Player.Creature.GetPowerAmount<BladeCyclePower>() == expectedLoss,
@@ -99,7 +99,7 @@ public partial class OrbContractRunner
                 await Hook.AfterShuffle(combat.State, Choice, combat.Player);
                 int loss = combat.Player.Creature.GetPowerAmount<BladeCyclePower>();
                 Require(combat.Stock == Math.Max(0, stock - loss) && combat.Enemy.CurrentHp == hp - stock * 6,
-                    "Shuffle must fire all current stock before losing three (one upgraded).");
+                    "Shuffle must fire all current stock before losing two (one upgraded).");
             }
         }
         using (var combat = new OrbCombat())

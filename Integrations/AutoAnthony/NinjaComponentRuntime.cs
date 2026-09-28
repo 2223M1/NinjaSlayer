@@ -269,10 +269,16 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 context.ReplaceDrawnCards(drawn);
                 foreach (var drawnCard in drawn) CardCmd.ApplyKeyword(drawnCard, CardKeyword.Sly);
                 break;
+            case "generate_strike_strike":
+                var generatedStrike = owner.Creature.CombatState!.CreateCard<ChopStrikeRedesignV1>(owner);
+                if (card.IsUpgraded) CardCmd.Upgrade(generatedStrike);
+                await CardPileCmd.AddGeneratedCardToCombat(generatedStrike, PileType.Hand, owner);
+                break;
+            case "draw_discard_nonattack":
             case "draw_discard_nonstatus":
                 var directDraw = await CardPileCmd.Draw(choice, amount, owner);
                 context.ReplaceDrawnCards(directDraw);
-                await CardCmd.Discard(choice, directDraw.Where(c => c.Type != CardType.Status && c.Pile?.Type == PileType.Hand).ToArray());
+                await CardCmd.Discard(choice, directDraw.Where(c => c.Type != (context.RuntimeSpec.Variant == "draw_discard_nonattack" ? CardType.Attack : CardType.Status) && c.Pile?.Type == PileType.Hand).ToArray());
                 break;
             case "blackflame_hand":
             case "blackflame_draw":

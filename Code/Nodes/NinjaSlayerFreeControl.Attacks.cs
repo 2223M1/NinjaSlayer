@@ -68,7 +68,6 @@ internal sealed partial class NinjaSlayerFreeControl
         if (tier == 2)
         {
             _spinTime = .8f;
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLongjuanquanEvent);
         }
         else NinjaSlayerCombatAudioSet.Play(tier == 0 ? NinjaSlayerAudio.NinjaSlayerFastAttackEvent
             : NinjaSlayerAudio.NinjaSlayerSlowAttackEvent);

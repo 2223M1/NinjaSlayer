@@ -1,6 +1,6 @@
-using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Entities.Players;
 using NinjaSlayer.Content;
+using NinjaSlayer.Orbs;
 using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
@@ -8,9 +8,12 @@ namespace NinjaSlayer.Powers;
 public sealed class ShurikenDrawPower : RedesignV1CounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ShurikenDrawPower));
-    internal async Task AfterStockGained(PlayerChoiceContext choiceContext)
+    public override decimal ModifyHandDraw(Player player, decimal count) =>
+        player == Owner.Player && ShurikenOrb.FiredLastTurn(player) ? count + Amount : count;
+
+    public override Task AfterModifyingHandDraw()
     {
         Flash();
-        await CardPileCmd.Draw(choiceContext, Amount, Owner.Player!);
+        return Task.CompletedTask;
     }
 }

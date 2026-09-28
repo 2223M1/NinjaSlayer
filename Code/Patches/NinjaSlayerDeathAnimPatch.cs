@@ -59,6 +59,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
                 return false;
             }
 
+            if (__instance.Entity.Monster is SawatariMonster sawatari) sawatari.PlayDeathVoice();
             Nodes.DarkNinjaStolenCards.Get(__instance.Entity)?.Drop();
             Task deathTask = PlayMonsterDeathFlight(__instance, shouldRemove);
             __instance.DeathAnimationTask = deathTask;

@@ -37,6 +37,12 @@ public sealed class ShurikenOrb : ModOrbTemplate
         && LastGain.TryGetValue(state, out GainTurn? turn)
         && turn.Round == combat.RoundNumber && turn.Side == combat.CurrentSide;
 
+    // The combat state owns these turn numbers even before Prepared is played.
+    private static readonly ConditionalWeakTable<PlayerCombatState, HashSet<int>> FiredTurns = new();
+    internal static bool FiredLastTurn(Player player) =>
+        player.PlayerCombatState is { } state
+        && FiredTurns.TryGetValue(state, out var turns) && turns.Contains(state.TurnNumber - 1);
+
     public int StackCount { get; private set; }
     internal bool UsesDedicatedSlot => Owner.Character is INinjaSlayerCharacter;
 
@@ -126,8 +132,6 @@ public sealed class ShurikenOrb : ModOrbTemplate
         {
             if (power is StarlessNightRedesignPower starless)
                 await starless.GenerateStrongShuriken(damage);
-            else if (power is ShurikenDrawPower draw)
-                await draw.AfterStockGained(choiceContext);
         }
     }
 
@@ -291,7 +295,12 @@ public sealed class ShurikenOrb : ModOrbTemplate
             targets,
             source,
             this,
-            () => ActivateEvokeFeedback(targets));
+            () =>
+            {
+                var state = Owner.PlayerCombatState!;
+                FiredTurns.GetOrCreateValue(state).Add(state.TurnNumber);
+                ActivateEvokeFeedback(targets);
+            });
         // OrbCmd dispatches this for external evokes; automatic stock shots own that dispatch.
         Code.Telemetry.NinjaSlayerCombatTelemetry.Mechanic("shuriken_evoked", Owner.Creature, 1);
         if (notifyEvokeHooks && Owner.Creature.CombatState is { } combatState)

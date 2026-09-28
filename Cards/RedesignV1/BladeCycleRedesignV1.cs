@@ -16,7 +16,7 @@ public sealed class BladeCycleRedesignV1 : RedesignV1RareCard
     public BladeCycleRedesignV1()
         : base(nameof(BladeCycleRedesignV1), nameof(BladeCycleRedesignV1), 2, CardType.Power, TargetType.Self) { }
 
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("StockLoss", 3)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DynamicVar("StockLoss", 2)];
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -28,5 +28,5 @@ public sealed class BladeCycleRedesignV1 : RedesignV1RareCard
             await PowerCmd.ModifyAmount(choiceContext, existing, stockLoss - existing.Amount, Owner.Creature, this);
     }
 
-    protected override void OnUpgrade() => DynamicVars["StockLoss"].UpgradeValueBy(-2);
+    protected override void OnUpgrade() => DynamicVars["StockLoss"].UpgradeValueBy(-1);
 }

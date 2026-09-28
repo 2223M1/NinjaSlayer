@@ -1,0 +1,679 @@
+{
+  "verification": {
+    "status": "passed",
+    "yamoto_sources": 9,
+    "narrator_sources": 6,
+    "events": 11,
+    "runtime_renders": 27,
+    "max_runtime_loudness_delta_lu": 0.10000000000000142,
+    "max_runtime_duration_delta_ms": 0.0,
+    "source_checks": [
+      {
+        "asset": "voice_yamoto_koki_fast_attack_01_clean.wav",
+        "sha256": "ECDF0DB262D54E71CB85F64EAAEB3D1DC53D88441D17C511C962810825C65649",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "yerat3_WAV.wav",
+        "sha256": "5C08BECCC333AE2FAA28B96A90454FD8C1DD055F00B251F043E5E63C716C5E4A",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "上吧！_WAV.wav",
+        "sha256": "358D7999BB741938375EC577E5ECBF61373FA1297DAD874A761BEA6AB567C069",
+        "loudness_delta_lu": -0.040000000000000924
+      },
+      {
+        "asset": "试试看吧！_WAV.wav",
+        "sha256": "3047C74D786606F23BA237FF8E570BE441FDA051AF7BAC11F4A34348250E9FF8",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "请保重身体_WAV.wav",
+        "sha256": "747042DA4CC44AB6324E733D7E407868737382B4305A2B20AD9C81E087F6A31B",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "voice_yamoto_koki_event_clean.wav",
+        "sha256": "D8944DADDF9A93A5902ABF19789D333B41FE1DF8ABE5350820EFC7F4014837E9",
+        "loudness_delta_lu": -0.00999999999999801
+      },
+      {
+        "asset": "pangbai_lowhealth.wav",
+        "sha256": "CFA8D67D734DEE7DF68E5CE50DC5620AC4C5DCAE66416CC4A73163AB0FCA39BE",
+        "loudness_delta_lu": 0.010000000000001563
+      },
+      {
+        "asset": "pangbai_lowhealth 2.wav",
+        "sha256": "D95DA3DC9CA5018FCD01EA4419A8C0963B713C53E3F886E33924A837380E14F0",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "pangbai_scary.wav",
+        "sha256": "C319E6B3C52041EFA16DACBAD102D32A43175CF66BE6E9870448A1C9966C2DD5",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "pangbai_longjuanquan.wav",
+        "sha256": "F63CE90512988813A1E31398E1BA798950441B275A4F83B470C213ED10CD125A",
+        "loudness_delta_lu": -0.019999999999999574
+      },
+      {
+        "asset": "pangbai_SOMERSAULT KICK!!.wav",
+        "sha256": "EE88C5099555EDE83C1E285219BA870B852F8C2AE6AC2991BBFBFD594C9D5F02",
+        "loudness_delta_lu": 0.010000000000001563
+      },
+      {
+        "asset": "yeeerat1_WAV.wav",
+        "sha256": "B6376087BE9337BFA8BFE2DBC59D76EB7C346BBE82A687E456C6370EBF79B208",
+        "loudness_delta_lu": 0.0
+      },
+      {
+        "asset": "voice_yamoto_koki_slow_attack_02_clean.wav",
+        "sha256": "413D68A76BD79062DB6E3A449645B1EDD41747F3C544BF077B530721B6EBBD15",
+        "loudness_delta_lu": -0.009999999999999787
+      },
+      {
+        "asset": "voice_yamoto_koki_domo_clean.wav",
+        "sha256": "99A63AFC0F956F2C18B9FBBF5170B9DB3C94FAA278455C4CF6FB27D29B6765AA",
+        "loudness_delta_lu": -0.02999999999999936
+      },
+      {
+        "asset": "voice_pangbai_dragon_flying_kick_clean.wav",
+        "sha256": "E4659FAA32682AC5218D4CD9B29F1A856B1D22316199FB09070E663F8FCEB535",
+        "loudness_delta_lu": 0.0
+      }
+    ],
+    "all_fmod_metadata_unchanged": true,
+    "all_other_assets_unchanged": true,
+    "music_and_restored_spin_assets_unchanged": true,
+    "bank_sha256": "F1EB661207D77191EBB09C85A6236AC2642F195639B1222291B46569DD45FF3A",
+    "human_listening_approved": false,
+    "backup": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\NSVC-YAMOTO-NARRATOR-REFRESH-20260928\\before"
+  },
+  "replacements": [
+    {
+      "asset": "voice_yamoto_koki_fast_attack_01_clean.wav",
+      "asset_guid": "{5d2c254b-9605-4bbf-8751-3ceb520dbf77}",
+      "before_sha256": "28377B17E945F6957CCBE5F90EFD8653F216FC8FAC27FDCCCFFA0C907DD8B636",
+      "frames": 16384,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/yerat1_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\yerat1_WAV.wav",
+        "correlation": 0.9999913269897768,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.341375,
+        "score": 0.9999913269897768
+      },
+      "source_record_id": "3A69D7140172E6D0",
+      "variant": "voice",
+      "source_offsets_samples": [
+        1
+      ],
+      "clean_identity_correlation": 0.9836069273564924,
+      "status": "prepared",
+      "delivery_path": "小季\\01_战吼与攻击喊声\\纯人声\\yerat1__3A69D7140172E6D0.wav",
+      "delivery_sha256": "1BA3C61073D96E885C2DB4B80FDA6459A55ABDEB065CE8BC3AAB426BFDBA718A",
+      "after_sha256": "ECDF0DB262D54E71CB85F64EAAEB3D1DC53D88441D17C511C962810825C65649",
+      "loudness_before": {
+        "input_i": -8.25,
+        "input_tp": -0.88,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -8.25,
+        "input_tp": -0.13,
+        "input_lra": 0.0
+      },
+      "gain_db": 9.600000000000001
+    },
+    {
+      "asset": "yerat3_WAV.wav",
+      "asset_guid": "{69be6921-514d-4771-8e09-923f605420b9}",
+      "before_sha256": "0CF1F0D2C0852F451D4508110A9412EE2D9C62C9F3215537D1C4EF4A9232E040",
+      "frames": 20480,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/yerat3_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\yerat3_WAV.wav",
+        "correlation": 0.9999999999999999,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.42675,
+        "score": 0.9999999999999999
+      },
+      "source_record_id": "93258586D9ED32D5",
+      "variant": "voice",
+      "source_offsets_samples": [
+        -3
+      ],
+      "clean_identity_correlation": 0.9920536726022564,
+      "status": "prepared",
+      "delivery_path": "小季\\01_战吼与攻击喊声\\纯人声\\yerat3__93258586D9ED32D5.wav",
+      "delivery_sha256": "380EDD06A32C963F509418086A727812F00D40CCEED1476138741D59F8455BE6",
+      "after_sha256": "5C08BECCC333AE2FAA28B96A90454FD8C1DD055F00B251F043E5E63C716C5E4A",
+      "loudness_before": {
+        "input_i": -8.0,
+        "input_tp": -1.4,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -8.0,
+        "input_tp": -1.24,
+        "input_lra": 0.0
+      },
+      "gain_db": 4.949999999999999
+    },
+    {
+      "asset": "上吧！_WAV.wav",
+      "asset_guid": "{5ce9911d-ce29-4b4e-9634-0ea50b1b49ea}",
+      "before_sha256": "2F43F65771C5344026E3919072937391F119B61486582035D9F32F1523A3F344",
+      "frames": 28672,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/上吧！_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\上吧！_WAV.wav",
+        "correlation": 1.0,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.597375,
+        "score": 1.0
+      },
+      "source_record_id": "4B9718FED7B6DC12",
+      "variant": "voice",
+      "source_offsets_samples": [
+        2
+      ],
+      "clean_identity_correlation": 0.9431768637063856,
+      "status": "prepared",
+      "delivery_path": "小季\\04_语气与反应\\纯人声\\上吧！__4B9718FED7B6DC12.wav",
+      "delivery_sha256": "A767D511A3F6B14E7B24F41A14F66682EC13C14D284E99A73466326F741D7886",
+      "after_sha256": "358D7999BB741938375EC577E5ECBF61373FA1297DAD874A761BEA6AB567C069",
+      "loudness_before": {
+        "input_i": -8.68,
+        "input_tp": -1.65,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -8.72,
+        "input_tp": -1.29,
+        "input_lra": 0.0
+      },
+      "gain_db": 3.6400000000000006
+    },
+    {
+      "asset": "试试看吧！_WAV.wav",
+      "asset_guid": "{f063c2d4-a9a8-4dba-8a54-8200720ade90}",
+      "before_sha256": "6A07E6BED589B2E4625EE880467F657753C6CFE14420C1170C114D2EE411F862",
+      "frames": 33792,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/试试看吧！_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\试试看吧！_WAV.wav",
+        "correlation": 1.0,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.704,
+        "score": 1.0
+      },
+      "source_record_id": "48E39A4A16C3119F",
+      "variant": "voice",
+      "source_offsets_samples": [
+        -1
+      ],
+      "clean_identity_correlation": 0.9997117876182743,
+      "status": "prepared",
+      "delivery_path": "小季\\07_台词\\纯人声\\试试看吧！__48E39A4A16C3119F.wav",
+      "delivery_sha256": "15766486D82FE3A36DCB568D869EA71BCFA2183A09289A3F2161BD0F5F017ABB",
+      "after_sha256": "3047C74D786606F23BA237FF8E570BE441FDA051AF7BAC11F4A34348250E9FF8",
+      "loudness_before": {
+        "input_i": -10.45,
+        "input_tp": -1.12,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -10.45,
+        "input_tp": -1.13,
+        "input_lra": 0.0
+      },
+      "gain_db": 5.0
+    },
+    {
+      "asset": "请保重身体_WAV.wav",
+      "asset_guid": "{38db4316-cf48-4738-bd82-71e3e4b5cda3}",
+      "before_sha256": "2543BF7EFE3D53C574E1328FFDB9AFAD0D54AC9D7D6BDF37D14BA365127BFD8C",
+      "frames": 26624,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/请保重身体_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\请保重身体_WAV.wav",
+        "correlation": 1.0000000000000002,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.55475,
+        "score": 1.0000000000000002
+      },
+      "source_record_id": "58579C8969F3088F",
+      "variant": "voice",
+      "source_offsets_samples": [
+        1917
+      ],
+      "clean_identity_correlation": 0.9974016213120633,
+      "status": "prepared",
+      "delivery_path": "小季\\07_台词\\纯人声\\请保重身体__58579C8969F3088F.wav",
+      "delivery_sha256": "33A358A0CACDDBC581C9A6A1709411305BBA33CF5DB5CD400C7B37ABE3EBE9B2",
+      "after_sha256": "747042DA4CC44AB6324E733D7E407868737382B4305A2B20AD9C81E087F6A31B",
+      "loudness_before": {
+        "input_i": -13.75,
+        "input_tp": -3.6,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.75,
+        "input_tp": -3.63,
+        "input_lra": 0.0
+      },
+      "gain_db": 9.899999999999999
+    },
+    {
+      "asset": "voice_yamoto_koki_event_clean.wav",
+      "asset_guid": "{6dc319e5-3d66-4a50-be96-1960362b94af}",
+      "before_sha256": "1BF104FF4D923FDD9AD2754825CD68CA24B3FFCB8408846C72DD2A1889CD793F",
+      "frames": 102147,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "小姬/19_domo yamoto koki desu_(Vocals).mp3",
+      "reference_identity": {
+        "path": "小姬\\19_domo yamoto koki desu_(Vocals).mp3",
+        "correlation": 0.9993716153760084,
+        "lag_seconds": -0.075,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 2.31625,
+        "score": 0.9993716153760084
+      },
+      "source_record_id": "9FA016819A7884A6",
+      "variant": "voice",
+      "source_offsets_samples": [
+        3309
+      ],
+      "clean_identity_correlation": 0.9940424390926467,
+      "status": "prepared",
+      "delivery_path": "小季\\03_问候与自我介绍\\纯人声\\19_domo yamoto koki desu__9FA016819A7884A6.wav",
+      "delivery_sha256": "CB018A11DCE508E9A13065777F425855A16683BB50871ED87E2982B6DEFE7547",
+      "after_sha256": "D8944DADDF9A93A5902ABF19789D333B41FE1DF8ABE5350820EFC7F4014837E9",
+      "loudness_before": {
+        "input_i": -23.82,
+        "input_tp": -13.01,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -23.83,
+        "input_tp": -12.77,
+        "input_lra": 0.0
+      },
+      "gain_db": -0.120000000000001
+    },
+    {
+      "asset": "pangbai_lowhealth.wav",
+      "asset_guid": "{74c4247a-14d0-46af-a93e-bee86b9a179d}",
+      "before_sha256": "C5CD04E7CF15B8290FFA1B83343CB5FADFBB5360285CA7B4CAD299E98FDF6666",
+      "frames": 241786,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "忍杀/旁白/19_pangbai 啊 已经不行了吗 忍者杀手桑！_(Vocals).wav",
+      "reference_identity": {
+        "path": "忍杀\\旁白\\19_pangbai 啊 已经不行了吗 忍者杀手桑！_(Vocals).wav",
+        "correlation": 1.0000000000000002,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 5.48275,
+        "score": 1.0000000000000002
+      },
+      "source_record_id": "E5F386F986E0FF1F",
+      "variant": "voice",
+      "source_offsets_samples": [
+        2
+      ],
+      "clean_identity_correlation": 0.9493234321586954,
+      "status": "prepared",
+      "delivery_path": "旁白\\06_旁白解说\\纯人声\\19_pangbai 啊 已经不行了吗 忍者杀手桑！__E5F386F986E0FF1F.wav",
+      "delivery_sha256": "09ACCB260ACEC2520BD2236F8D1FA5538356582E86496FE04F4C8F1839401800",
+      "after_sha256": "CFA8D67D734DEE7DF68E5CE50DC5620AC4C5DCAE66416CC4A73163AB0FCA39BE",
+      "loudness_before": {
+        "input_i": -21.28,
+        "input_tp": -9.6,
+        "input_lra": 1.6
+      },
+      "loudness_after": {
+        "input_i": -21.27,
+        "input_tp": -9.41,
+        "input_lra": 1.2
+      },
+      "gain_db": -3.3500000000000014
+    },
+    {
+      "asset": "pangbai_lowhealth 2.wav",
+      "asset_guid": "{df2ee416-8bfa-421d-9a34-0aff0007dd8c}",
+      "before_sha256": "32EFEC7ED32A65A3D1667D2F1DE4BF0F64BDFE44E33093B99EE45EC58CEE896E",
+      "frames": 110428,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "忍杀/旁白/17_pangbai 南无三！到这就结束了吗_(Vocals).wav",
+      "reference_identity": {
+        "path": "忍杀\\旁白\\17_pangbai 南无三！到这就结束了吗_(Vocals).wav",
+        "correlation": 1.0000000000000002,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 2.504125,
+        "score": 1.0000000000000002
+      },
+      "source_record_id": "C3EE774CF2BA36B2",
+      "variant": "voice",
+      "source_offsets_samples": [
+        2
+      ],
+      "clean_identity_correlation": 0.9607300380594396,
+      "status": "prepared",
+      "delivery_path": "旁白\\06_旁白解说\\纯人声\\17_pangbai 南无三！到这就结束了吗__C3EE774CF2BA36B2.wav",
+      "delivery_sha256": "328AE6B3D36FAE47E8B70467AA63CD9CD4FB3F8FC8B3230C9E3F6531AB32DBA4",
+      "after_sha256": "D95DA3DC9CA5018FCD01EA4419A8C0963B713C53E3F886E33924A837380E14F0",
+      "loudness_before": {
+        "input_i": -19.54,
+        "input_tp": -6.72,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -19.54,
+        "input_tp": -7.92,
+        "input_lra": 0.0
+      },
+      "gain_db": -5.199999999999999
+    },
+    {
+      "asset": "pangbai_scary.wav",
+      "asset_guid": "{ac24ae43-3644-4945-8ecc-68727048904e}",
+      "before_sha256": "559545BC6F6538EA23DD5E43FC536AA1CF6DF7887C46C829BC8D4147DB05ADAB",
+      "frames": 26343,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "忍杀/旁白/13_pangbai 好可怕！_(Vocals).wav",
+      "reference_identity": {
+        "path": "忍杀\\旁白\\13_pangbai 好可怕！_(Vocals).wav",
+        "correlation": 1.0,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.597375,
+        "score": 1.0
+      },
+      "source_record_id": "5488535323362DD6",
+      "variant": "voice",
+      "source_offsets_samples": [
+        2
+      ],
+      "clean_identity_correlation": 0.9107043373150452,
+      "status": "prepared",
+      "delivery_path": "旁白\\06_旁白解说\\纯人声\\13_pangbai 好可怕！__5488535323362DD6.wav",
+      "delivery_sha256": "21441F5D93B5E6C832841E2052613B55C0EA65C0ADD28F9E2F4722F4F01C8E8E",
+      "after_sha256": "C319E6B3C52041EFA16DACBAD102D32A43175CF66BE6E9870448A1C9966C2DD5",
+      "loudness_before": {
+        "input_i": -19.9,
+        "input_tp": -9.14,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -19.9,
+        "input_tp": -8.29,
+        "input_lra": 0.0
+      },
+      "gain_db": -5.749999999999998
+    },
+    {
+      "asset": "pangbai_longjuanquan.wav",
+      "asset_guid": "{0e1d118d-e674-4eb2-9d2f-815c71e5a6ec}",
+      "before_sha256": "B0ED2315F4464F72D78275EEF81E2513C269914C7DEC4782E5FBE1612912B5B4",
+      "frames": 90913,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "忍杀/旁白/20_pangbai 暗杀拳！龙卷拳！1_(Vocals).wav",
+      "reference_identity": {
+        "path": "忍杀\\旁白\\20_pangbai 暗杀拳！龙卷拳！1_(Vocals).wav",
+        "correlation": 1.0000000000000002,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 2.0615,
+        "score": 1.0000000000000002
+      },
+      "source_record_id": "4495ABABD662CCCD",
+      "variant": "combat_voice_protected",
+      "source_offsets_samples": [
+        1763,
+        16838
+      ],
+      "original_pause_edit_cut_sample": 44039,
+      "selection_reason": "纯人声版存在较高音节衰减，采用人声保护的保留动作音效版，并复现现有删停顿剪辑。",
+      "clean_identity_correlation": 0.9580694792385271,
+      "status": "prepared",
+      "delivery_path": "旁白\\06_旁白解说\\保留动作音效\\20_pangbai 暗杀拳！龙卷拳！1__4495ABABD662CCCD.wav",
+      "delivery_sha256": "6AFFAA29F7807DBD1AF2592C365C9B46A7F41860FE3EDA1D23608DDB138E976E",
+      "after_sha256": "F63CE90512988813A1E31398E1BA798950441B275A4F83B470C213ED10CD125A",
+      "loudness_before": {
+        "input_i": -15.15,
+        "input_tp": -1.12,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -15.17,
+        "input_tp": -1.54,
+        "input_lra": 0.0
+      },
+      "gain_db": 2.2499999999999982
+    },
+    {
+      "asset": "pangbai_SOMERSAULT KICK!!.wav",
+      "asset_guid": "{01295ac2-ca67-44f7-927f-0292a9c17c52}",
+      "before_sha256": "11EA35E2088398D7EAEFD3BA611D7033499E30A16544585F5B29B9AAE47255F7",
+      "frames": 70560,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "忍杀/旁白/6_pangbai SOMERSAULT KICK!!_(Vocals).wav",
+      "reference_identity": {
+        "path": "忍杀\\旁白\\6_pangbai SOMERSAULT KICK!!_(Vocals).wav",
+        "correlation": 1.0,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 1.6,
+        "score": 1.0
+      },
+      "source_record_id": "E3C45F4BB9764306",
+      "variant": "voice",
+      "source_offsets_samples": [
+        -2
+      ],
+      "clean_identity_correlation": 0.9672869440340494,
+      "status": "prepared",
+      "delivery_path": "旁白\\06_旁白解说\\纯人声\\6_pangbai SOMERSAULT KICK!!__E3C45F4BB9764306.wav",
+      "delivery_sha256": "7492CFCD9C2B4D1E03604E9046170EB19A1EF5341F964D3B5135C9CC73FB5EA3",
+      "after_sha256": "EE88C5099555EDE83C1E285219BA870B852F8C2AE6AC2991BBFBFD594C9D5F02",
+      "loudness_before": {
+        "input_i": -20.96,
+        "input_tp": -9.95,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -20.95,
+        "input_tp": -9.98,
+        "input_lra": 0.0
+      },
+      "gain_db": -5.440000000000001
+    },
+    {
+      "asset": "yeeerat1_WAV.wav",
+      "asset_guid": "{498824d9-9b41-4a86-83a8-7622436e7e2c}",
+      "before_sha256": "04AB263B6C5748ADB1E677ADA84C6163D0237D94469A06037087E563F2576A8A",
+      "frames": 31744,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/yeeerat1_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\yeeerat1_WAV.wav",
+        "correlation": 1.0,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.661375,
+        "score": 1.0
+      },
+      "source_record_id": "759C211CEC5CD371",
+      "variant": "voice",
+      "source_offsets_samples": [
+        -1
+      ],
+      "clean_identity_correlation": 0.9984601229683021,
+      "status": "prepared",
+      "delivery_path": "小季\\01_战吼与攻击喊声\\纯人声\\yeeerat1__759C211CEC5CD371.wav",
+      "delivery_sha256": "4E0D42174FCC019E4E584E15A10DB7B7078C0965AB1F2EB7DC8A94A995C7087E",
+      "after_sha256": "B6376087BE9337BFA8BFE2DBC59D76EB7C346BBE82A687E456C6370EBF79B208",
+      "loudness_before": {
+        "input_i": -7.22,
+        "input_tp": -2.04,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -7.22,
+        "input_tp": -2.37,
+        "input_lra": 0.0
+      },
+      "gain_db": 5.000000000000001
+    },
+    {
+      "asset": "voice_yamoto_koki_slow_attack_02_clean.wav",
+      "asset_guid": "{66fa37f7-50c1-4e23-b7a2-eebe7dfe37c8}",
+      "before_sha256": "0E01F6969804AD1485EBF2754C1BDE7229C18E7EFEC16F3338BC2CC103FE51F8",
+      "frames": 34810,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "小姬/1_咿呀_(Vocals).wav",
+      "reference_identity": {
+        "path": "小姬\\1_咿呀_(Vocals).wav",
+        "correlation": 0.9999573670270773,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 0.789375,
+        "score": 0.9999573670270773
+      },
+      "source_record_id": "84CC6B2E3723E35B",
+      "variant": "voice",
+      "source_offsets_samples": [
+        0
+      ],
+      "clean_identity_correlation": 0.990447067847862,
+      "status": "prepared",
+      "delivery_path": "小季\\01_战吼与攻击喊声\\纯人声\\1_咿呀__84CC6B2E3723E35B.wav",
+      "delivery_sha256": "4E5339FAD38DA0A9D2965736033F24EEF4D05D195AAF089F2736CC3B92C10DF3",
+      "after_sha256": "413D68A76BD79062DB6E3A449645B1EDD41747F3C544BF077B530721B6EBBD15",
+      "loudness_before": {
+        "input_i": -12.51,
+        "input_tp": -7.1,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -12.52,
+        "input_tp": -7.05,
+        "input_lra": 0.0
+      },
+      "gain_db": -0.28999999999999915
+    },
+    {
+      "asset": "voice_yamoto_koki_domo_clean.wav",
+      "asset_guid": "{9d8b5a51-0f14-4d2f-8332-f3e7b05a7fad}",
+      "before_sha256": "A4767FE0F44BDAF3A986E81D83773CFFA8FDD010EC13C6AF257E5FB61CCAC6C1",
+      "frames": 128000,
+      "sample_rate": 48000,
+      "channels": 2,
+      "reference_path": "小姬/domo yamoto koki desu_WAV.wav",
+      "reference_identity": {
+        "path": "小姬\\domo yamoto koki desu_WAV.wav",
+        "correlation": 0.9999751924535937,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 2.66675,
+        "score": 0.9999751924535937
+      },
+      "source_record_id": "FF65E113FE5B42ED",
+      "variant": "voice",
+      "source_offsets_samples": [
+        -1
+      ],
+      "clean_identity_correlation": 0.9918679690561704,
+      "peak_limiter": {
+        "ceiling": 0.97,
+        "attack_ms": 1,
+        "release_ms": 30,
+        "latency_compensated": true,
+        "prelimit_peak": 1.0368940352222225,
+        "output_peak": 0.9699999094009399,
+        "correlation": 0.9999432418589767
+      },
+      "status": "prepared",
+      "delivery_path": "小季\\03_问候与自我介绍\\纯人声\\domo yamoto koki desu__FF65E113FE5B42ED.wav",
+      "delivery_sha256": "37B1FD9FAE0C831773000CBD52231CAC860330496FCC782B7A7A2177E4731988",
+      "after_sha256": "99A63AFC0F956F2C18B9FBBF5170B9DB3C94FAA278455C4CF6FB27D29B6765AA",
+      "loudness_before": {
+        "input_i": -13.58,
+        "input_tp": 0.03,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.61,
+        "input_tp": -0.22,
+        "input_lra": 0.0
+      },
+      "gain_db": 10.069999999999999
+    },
+    {
+      "asset": "voice_pangbai_dragon_flying_kick_clean.wav",
+      "asset_guid": "{c382643e-384c-4f63-9f0c-28f1d20227b2}",
+      "before_sha256": "AAEA9983295D558E000E583FBB1C5F8F12F692B10983AEBF413C71BBFBE3F15C",
+      "frames": 54811,
+      "sample_rate": 44100,
+      "channels": 2,
+      "reference_path": "忍杀/旁白/2_pangbai Dragon flying kick_(Vocals).wav",
+      "reference_identity": {
+        "path": "忍杀\\旁白\\2_pangbai Dragon flying kick_(Vocals).wav",
+        "correlation": 0.9983395551275395,
+        "lag_seconds": 0.0,
+        "current_energy_covered": 1.0,
+        "overlap_seconds": 1.242875,
+        "score": 0.9983395551275395
+      },
+      "source_record_id": "F8A9C734779D37FC",
+      "variant": "voice",
+      "source_offsets_samples": [
+        1
+      ],
+      "clean_identity_correlation": 0.9060184717514979,
+      "status": "prepared",
+      "delivery_path": "旁白\\06_旁白解说\\纯人声\\2_pangbai Dragon flying kick__F8A9C734779D37FC.wav",
+      "delivery_sha256": "55F919836AF9D0B3AD8719C6A23D0664339F5C40DD5B74BC9952AD28844267C9",
+      "after_sha256": "E4659FAA32682AC5218D4CD9B29F1A856B1D22316199FB09070E663F8FCEB535",
+      "loudness_before": {
+        "input_i": -20.09,
+        "input_tp": -10.38,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -20.09,
+        "input_tp": -10.66,
+        "input_lra": 0.0
+      },
+      "gain_db": -6.01
+    }
+  ],
+  "local_evidence_directory": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\NSVC-YAMOTO-NARRATOR-REFRESH-20260928"
+}

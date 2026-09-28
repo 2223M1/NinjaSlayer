@@ -1,0 +1,427 @@
+{
+  "version": "0.3.4",
+  "baseline": "7fc77921035e569b34eaa203f98a6164ed1d9da4",
+  "source": "baseline plus uncommitted changes; candidate DLL hashes distinguish this build",
+  "recordedUtc": "2026-09-28T13:10:17.0339321Z",
+  "dlls": [
+    {
+      "sha256": "e6cb75cf0ea5b3670220ec03192b81b81be309fc457e68312bb776bb71a3f276",
+      "channel": "stable"
+    },
+    {
+      "sha256": "e65359979d99731d40747497d2fa2956f4fbce917d2c1267a42d45b29629c298",
+      "channel": "preview"
+    }
+  ],
+  "checks": {
+    "network": [
+      "stable native ENet pair passed",
+      "preview native ENet pair passed"
+    ],
+    "contracts": [
+      "stable passed",
+      "preview passed",
+      "preview AutoAnthony passed"
+    ],
+    "screenshots": false,
+    "buildBoundaries": "passed",
+    "logic": 360,
+    "recordings": false,
+    "repository": "passed",
+    "products": [
+      "stable 0.107.1",
+      "preview 0.111.0"
+    ]
+  },
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7fc77921035e569b34eaa203f98a6164ed1d9da4",
+        "bundleVersion": "0.3.4",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.2",
+        "additionalMods": [],
+        "bundleSha256": "e57305bb342c36f6d767e4d96860527d16b33594af1518baff95878a28c6ac1b",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "release034",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-09-28T20:56:11.1425118+08:00"
+      },
+      "checkpoints": [
+        {
+          "status": "passed",
+          "name": "driver.started",
+          "elapsedMilliseconds": 1
+        },
+        {
+          "status": "passed",
+          "name": "telemetry.notice-dismissed",
+          "elapsedMilliseconds": 4977
+        },
+        {
+          "status": "passed",
+          "name": "mods.loaded",
+          "elapsedMilliseconds": 4978
+        },
+        {
+          "status": "passed",
+          "name": "redesign.content-validated",
+          "elapsedMilliseconds": 5000
+        },
+        {
+          "status": "passed",
+          "name": "release034.room-revealed",
+          "elapsedMilliseconds": 20031
+        },
+        {
+          "status": "passed",
+          "name": "release034.reload-time",
+          "elapsedMilliseconds": 23424
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlayNinjaSlayerEntrance.start",
+          "elapsedMilliseconds": 23540
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlayNinjaSlayerEntrance.end",
+          "elapsedMilliseconds": 24296
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlaySupportTurn.start",
+          "elapsedMilliseconds": 27680
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlaySupportTurn.end",
+          "elapsedMilliseconds": 28631
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.sawatari-fresh",
+          "elapsedMilliseconds": 29646
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlayNinjaSlayerEntrance.start",
+          "elapsedMilliseconds": 33585
+        },
+        {
+          "status": "passed",
+          "name": "release034.room-revealed",
+          "elapsedMilliseconds": 33590
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlayNinjaSlayerEntrance.end",
+          "elapsedMilliseconds": 34335
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlaySupportTurn.start",
+          "elapsedMilliseconds": 37738
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlaySupportTurn.end",
+          "elapsedMilliseconds": 38686
+        },
+        {
+          "status": "passed",
+          "name": "release034.reload-time",
+          "elapsedMilliseconds": 38702
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.sawatari-reloaded",
+          "elapsedMilliseconds": 38702
+        },
+        {
+          "status": "passed",
+          "name": "release034.early-position",
+          "elapsedMilliseconds": 41286
+        },
+        {
+          "status": "passed",
+          "name": "sawatari.post-victory-card-input",
+          "elapsedMilliseconds": 42253
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.sawatari-decision",
+          "elapsedMilliseconds": 42412
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.sawatari-duel-immediate",
+          "elapsedMilliseconds": 43226
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlaySupportTurn.start",
+          "elapsedMilliseconds": 61164
+        },
+        {
+          "status": "passed",
+          "name": "release034.stage.PlaySupportTurn.end",
+          "elapsedMilliseconds": 61164
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.sawatari-result",
+          "elapsedMilliseconds": 70309
+        },
+        {
+          "status": "passed",
+          "name": "sawatari.outro-completed.event-duel",
+          "elapsedMilliseconds": 81809
+        },
+        {
+          "status": "passed",
+          "name": "v0217.live-sawatari-music-reload-and-phases",
+          "elapsedMilliseconds": 82950
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.dark-fresh",
+          "elapsedMilliseconds": 90677
+        },
+        {
+          "status": "passed",
+          "name": "release034.room-revealed",
+          "elapsedMilliseconds": 94819
+        },
+        {
+          "status": "passed",
+          "name": "release034.reload-time",
+          "elapsedMilliseconds": 94819
+        },
+        {
+          "status": "passed",
+          "name": "v0217.music.dark-reloaded",
+          "elapsedMilliseconds": 99365
+        },
+        {
+          "status": "passed",
+          "name": "v0217.live-dark-outro-completed",
+          "elapsedMilliseconds": 117431
+        },
+        {
+          "status": "passed",
+          "name": "v0217.live-dark-music-reload-and-cleanup",
+          "elapsedMilliseconds": 119397
+        },
+        {
+          "status": "passed",
+          "name": "v0217.live-narration-settings-page",
+          "elapsedMilliseconds": 124725
+        },
+        {
+          "status": "passed",
+          "name": "music-v0217.completed",
+          "elapsedMilliseconds": 124725
+        },
+        {
+          "status": "passed",
+          "name": "release034.completed",
+          "elapsedMilliseconds": 124729
+        }
+      ],
+      "name": "after-load-03",
+      "timings": [
+        {
+          "event": "ordinary-combat",
+          "milliseconds": 2415,
+          "visible": true
+        },
+        {
+          "event": "ordinary-combat",
+          "milliseconds": 5808,
+          "transitionMilliseconds": 2415,
+          "postTransitionMilliseconds": 3393,
+          "includesFixtureWaitFrames": 0
+        },
+        {
+          "event": "EVENT.NINJA_SLAYER_EVENT_SAWATARI_EVENT",
+          "milliseconds": 2523,
+          "visible": true
+        },
+        {
+          "event": "EVENT.NINJA_SLAYER_EVENT_SAWATARI_EVENT",
+          "milliseconds": 7635,
+          "transitionMilliseconds": 2523,
+          "postTransitionMilliseconds": 5112,
+          "includesFixtureWaitFrames": 0
+        },
+        {
+          "event": "EVENT.NINJA_SLAYER_EVENT_DARK_NINJA_EVENT",
+          "milliseconds": 2724,
+          "visible": true
+        },
+        {
+          "event": "EVENT.NINJA_SLAYER_EVENT_DARK_NINJA_EVENT",
+          "milliseconds": 2724,
+          "transitionMilliseconds": 2724,
+          "postTransitionMilliseconds": 0,
+          "includesFixtureWaitFrames": 0
+        }
+      ]
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7fc77921035e569b34eaa203f98a6164ed1d9da4",
+        "bundleVersion": "0.3.4",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.2",
+        "additionalMods": [],
+        "bundleSha256": "e57305bb342c36f6d767e4d96860527d16b33594af1518baff95878a28c6ac1b",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "combat-regression",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-09-28T21:03:43.0236713+08:00"
+      },
+      "checkpoints": [
+        {
+          "status": "passed",
+          "name": "driver.started",
+          "elapsedMilliseconds": 1
+        },
+        {
+          "status": "passed",
+          "name": "telemetry.notice-dismissed",
+          "elapsedMilliseconds": 4786
+        },
+        {
+          "status": "passed",
+          "name": "mods.loaded",
+          "elapsedMilliseconds": 4786
+        },
+        {
+          "status": "passed",
+          "name": "redesign.content-validated",
+          "elapsedMilliseconds": 4809
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 19632
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 21515
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 24565
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 27964
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 29851
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 32900
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 34404
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.arrow",
+          "elapsedMilliseconds": 35907
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 38522
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 40794
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 43009
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 45544
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 47819
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 50034
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 52556
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 54859
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.continuation",
+          "elapsedMilliseconds": 57078
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.naraku-icon",
+          "elapsedMilliseconds": 57541
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.final-finisher",
+          "elapsedMilliseconds": 58565
+        },
+        {
+          "status": "passed",
+          "name": "combat-regression.completed",
+          "elapsedMilliseconds": 58572
+        }
+      ],
+      "name": "regression",
+      "timings": []
+    }
+  ]
+}

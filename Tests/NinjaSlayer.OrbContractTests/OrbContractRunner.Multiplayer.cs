@@ -125,9 +125,8 @@ public partial class OrbContractRunner
             (combat.State.CreateCard<StrikeNinjaSlayerRedesignV1>(first), combat.Enemy)
         };
         plays[0].Card.UpgradeInternal();
-        plays[6].Card.AddKeyword(CardKeyword.Exhaust);
         PileType?[] destinations = [PileType.Discard, PileType.Discard, PileType.Discard,
-            PileType.Discard, PileType.Discard, PileType.Hand, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
+            PileType.Discard, PileType.Discard, PileType.Exhaust, PileType.Exhaust, null, PileType.Discard, PileType.Discard];
         foreach (var (card, _) in plays) await CardPileCmd.Add(card, PileType.Hand);
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".ready"), "ready");
         await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, "host.ready"))
@@ -148,6 +147,9 @@ public partial class OrbContractRunner
             && first.PlayerCombatState.OrbQueue.Capacity == 1 && second.PlayerCombatState!.OrbQueue.Capacity == 0
             && !second.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
             "Mixed normal/dedicated priority or multiplayer stock ownership changed.");
+        Require(PileType.Hand.GetPile(second).Cards.OfType<ChopStrikeRedesignV1>().Count() == 2
+            && !PileType.Hand.GetPile(first).Cards.OfType<ChopStrikeRedesignV1>().Any(),
+            "Strike Strike must generate two fresh cards for the playing owner on both peers.");
         Require(first.Creature.HasPower<NarakuFormRedesignPower>() && !second.Creature.HasPower<NarakuFormRedesignPower>()
             && plays[8].Card.Pile?.Type == PileType.Discard && plays[9].Card.Pile?.Type == PileType.Discard,
             "Naraku Form crossed player ownership or changed the attack destination.");
@@ -247,7 +249,7 @@ public partial class OrbContractRunner
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(burning, combat.Enemy));
             await WaitNetwork(() => completed > before, "native Burning Blood batch");
             Require(player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count() == tokens
-                && player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == stock - 2,
+                && !player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
                 "Discard batches consume stock without generating tokens.");
         }
         GD.Print("PASS synchronized Burning Blood batch cap and independent player allowances");

@@ -1,12 +1,9 @@
 using MegaCrit.Sts2.Core.CardSelection;
-using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.HoverTips;
@@ -26,27 +23,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class ChopStrikeRedesignV1 : RedesignV1UncommonCard
 {
-    private bool CanReturnToHand => CombatState != null
-        && CombatManager.Instance.History.CardPlaysStarted.Count(entry =>
-            entry.CardPlay.Card == this && entry.CardPlay.IsFirstInSeries
-            && entry.HappenedThisTurn(CombatState)) < 3;
-
-    protected override bool ShouldGlowGoldInternal => CanReturnToHand;
-
-#if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-    protected override PileType GetResultPileTypeForCardPlay()
-    {
-        PileType pile = base.GetResultPileTypeForCardPlay();
-        return pile == PileType.Discard && CanReturnToHand ? PileType.Hand : pile;
-    }
-#else
-    protected override CardLocation GetResultLocationForCardPlay()
-    {
-        CardLocation result = base.GetResultLocationForCardPlay();
-        if (result.pileType == PileType.Discard && CanReturnToHand) result.pileType = PileType.Hand;
-        return result;
-    }
-#endif
+    public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DamageVar(8, ValueProp.Move), new CardsVar(2)];
@@ -69,6 +46,9 @@ public sealed class ChopStrikeRedesignV1 : RedesignV1UncommonCard
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
         await ScryCmd.Execute(choiceContext, Owner, DynamicVars.Cards.IntValue);
+        ChopStrikeRedesignV1 generated = CombatState!.CreateCard<ChopStrikeRedesignV1>(Owner);
+        if (IsUpgraded) CardCmd.Upgrade(generated);
+        await CardPileCmd.AddGeneratedCardToCombat(generated, PileType.Hand, Owner);
     }
 
     protected override void OnUpgrade()

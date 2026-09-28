@@ -6,6 +6,7 @@
   "NINJA_SLAYER_POWER_EVASION_POWER.description": "Avoid the next {Amount} {Amount:plural:hit|hits} from enemy attacks without losing HP or [gold]Block[/gold].\nAt the start of your next turn, lose ALL [gold]Evasion[/gold].",
   "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.title": "Naraku Life",
   "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "Absorbs HP damage remaining after Block and damage prevention.",
+  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.smartDescription": "You have [blue]{Amount}[/blue] [gold]Naraku Life[/gold]. Absorbs HP damage remaining after Block and damage prevention.",
   "NINJA_SLAYER_POWER_KARATE_POWER.title": "Karate",
   "NINJA_SLAYER_POWER_KARATE_POWER.description": "Whenever your attack deals damage, deal additional damage equal to your stacks to ALL enemies hit, then lose 1 [gold]Karate[/gold].\nAn attack that hits ALL enemies only consumes 1 stack per hit.",
   "NINJA_SLAYER_POWER_KARATE_POWER.smartDescription": "Whenever your attack deals damage, deal {Amount} additional damage to ALL enemies hit, then lose 1 [gold]Karate[/gold].\nAn attack that hits ALL enemies only consumes 1 stack per hit.",
@@ -87,5 +88,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "If you play at least 3 Attacks in a turn, draw {Amount} additional cards at the start of your next turn.",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "Zanshin",
   "NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER.title": "Battle Ready",
-  "NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER.description": "Whenever you gain [gold]Shuriken[/gold], draw {Amount} {Amount:plural:card|cards}."
+  "NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER.description": "If you fired [gold]Shuriken[/gold] last turn, draw {Amount} additional card{Amount:plural:|s} at the start of your turn."
 }

@@ -18,7 +18,9 @@ internal enum SmokePhase
     TornadoPreview,
     TelemetryLoss,
     ActionPreview,
-    ModCompatibility
+    ModCompatibility,
+    CombatRegression,
+    Release034
 }
 
 internal sealed record SmokeConfiguration(

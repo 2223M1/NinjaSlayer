@@ -12,7 +12,7 @@ namespace NinjaSlayer.Cards.RedesignV1;
 
 public sealed class Slaughter : RedesignV1UncommonCard
 {
-    public Slaughter() : base(nameof(Slaughter), nameof(Slaughter), 1, CardType.Attack, TargetType.AnyEnemy) { }
+    public Slaughter() : base(nameof(Slaughter), nameof(Slaughter), 2, CardType.Attack, TargetType.AnyEnemy) { }
     protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(10, ValueProp.Move), new CardsVar(4)];
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
@@ -27,7 +27,7 @@ public sealed class Slaughter : RedesignV1UncommonCard
             .Targeting(cardPlay.Target!);
         await attack.ExecuteWithFinisher(choiceContext, this, cardPlay);
         var drawn = await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
-        await CardCmd.Discard(choiceContext, drawn.Where(card => card.Type != CardType.Status && card.Pile?.Type == PileType.Hand).ToArray());
+        await CardCmd.Discard(choiceContext, drawn.Where(card => card.Type != CardType.Attack && card.Pile?.Type == PileType.Hand).ToArray());
     }
     protected override void OnUpgrade()
     {

@@ -168,7 +168,7 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             .ToList();
         if (connectedTargets.Count > 0)
         {
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiSlowAttackEvent);
             NinjaSlayerCombatVfx.PlayYamotoKokiIaiImpact(connectedTargets);
         }
 

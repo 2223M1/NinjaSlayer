@@ -146,7 +146,7 @@ public sealed class YamotoKokiCuteRelic : NinjaSlayerRelicTemplate
             .ToList() ?? [];
         if (armedMissiles.Count > 0)
         {
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiFastAttackEvent);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiSlowAttackEvent);
         }
 
         Creature? yamotoKoki = YamotoKokiPartyState.FindLivingCompanion(Owner.RunState);

@@ -339,6 +339,42 @@ public sealed class SawatariCombatEndGatePatch : IPatchMethod
     }
 }
 
+public sealed class SawatariWinCheckPatch : IPatchMethod
+{
+#if !NINJASLAYER_CHANNEL_STABLE
+    private static readonly Type TurnState = typeof(CombatManager).Assembly.GetType(
+        "MegaCrit.Sts2.Core.Combat.CombatTurnState", throwOnError: true)!;
+    private static readonly PropertyInfo State = TurnState.GetProperty("State")!;
+#endif
+    public static string PatchId => "ninjaslayer_sawatari_position_after_victory";
+    public static string Description => "Position friendly Sawatari after native death and summon resolution.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() =>
+    [
+        new(typeof(CombatManager), nameof(CombatManager.CheckWinCondition),
+#if NINJASLAYER_CHANNEL_STABLE
+            [])
+#else
+            [TurnState])
+#endif
+    ];
+
+#if NINJASLAYER_CHANNEL_STABLE
+    public static void Prefix(CombatManager __instance, out CombatState? __state) =>
+        __state = __instance.DebugOnlyGetState();
+#else
+    public static void Prefix(object __0, out CombatState? __state) =>
+        __state = (CombatState)State.GetValue(__0)!;
+#endif
+
+    public static async Task<bool> Postfix(Task<bool> __result, CombatState? __state)
+    {
+        bool ended = await __result;
+        if (!ended && SawatariEventSession.TryGet(__state, out var session)) session.AfterWinCheck();
+        return ended;
+    }
+}
+
 public sealed class SawatariTurnEndPatch : IPatchMethod
 {
     public static string PatchId => "ninjaslayer_sawatari_turn_end";
@@ -394,6 +430,7 @@ public sealed class SawatariDuelDeathAnimationPatch : IPatchMethod
             return true;
         }
 
+        ((SawatariMonster)__instance.Entity.Monster!).PlayDeathVoice();
         __result = 0f;
         return false;
     }

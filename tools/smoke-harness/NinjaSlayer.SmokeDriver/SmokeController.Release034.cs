@@ -1,0 +1,77 @@
+using Godot;
+using HarmonyLib;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Map;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Settings;
+using NinjaSlayer.Content;
+using NinjaSlayer.Monsters;
+using System.Text.Json.Nodes;
+
+namespace NinjaSlayer.SmokeDriver;
+
+internal sealed partial class SmokeController
+{
+    private async Task RunRelease034Async()
+    {
+        var probe = new Harmony("NinjaSlayer.SmokeDriver.Release034Stages");
+        var sessionType = typeof(SawatariMonster).Assembly.GetType("NinjaSlayer.Code.Combat.SawatariEventSession", true)!;
+        Release034StageProbe.Report = (name, ticks) => _checkpoints.Write("release034.stage." + name,
+            data: new JsonObject { ["ticks"] = ticks });
+        foreach (string method in new[] { "PlayNinjaSlayerEntrance", "PlaySupportTurn" })
+            probe.Patch(AccessTools.Method(sessionType, method),
+                prefix: new HarmonyMethod(typeof(Release034StageProbe), nameof(Release034StageProbe.Prefix)),
+                postfix: new HarmonyMethod(typeof(Release034StageProbe), nameof(Release034StageProbe.Postfix)));
+        SaveManager.Instance.SetFtuesEnabled(false);
+        SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
+        var run = await NGame.Instance!.StartNewSingleplayerRun(ModelDb.Character<NinjaSlayerCharacter>(),
+            true, ActModel.GetDefaultList(), [], _configuration.Seed, GameMode.Standard, 0);
+        await RunManager.Instance.EnterAct(0);
+        await RunManager.Instance.EnterMapCoord(run.Map.GetAllMapPoints().First(p => p.PointType == MapPointType.Monster).coord);
+        var player = LocalContext.GetMe(run)!;
+        await WaitUntilAsync(() => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
+            "Release fixture did not reach a player turn.");
+        string directory = Path.GetDirectoryName(_configuration.CheckpointPath)!;
+        await VerifyMusicV0217Live(directory, CancellationToken.None);
+        probe.UnpatchAll(probe.Id);
+        _checkpoints.Write("release034.completed");
+        _tree.Quit(0);
+    }
+
+    private async Task VerifyEarlySawatariPosition()
+    {
+        var state = CombatManager.Instance.DebugOnlyGetState()!;
+        var companion = state.Creatures.Single(c => c.Monster is SawatariMonster
+            && c.Side == CombatSide.Player);
+        var node = NCombatRoom.Instance!.GetCreatureNode(companion)!;
+        var player = NCombatRoom.Instance.GetCreatureNode(LocalContext.GetMe(state)!.Creature)!;
+        await WaitFrames(45);
+        Vector2 arrived = node.GlobalPosition;
+        Require(arrived.X > player.GlobalPosition.X + 300 && !((Sprite2D)node.Body).FlipH
+            && !CombatManager.Instance.IsPaused && GetSawatariOptions().Count == 0,
+            "Sawatari did not move and face the player before End Turn.");
+        var layout = typeof(SawatariMonster).Assembly.GetType("NinjaSlayer.Code.Patches.YamotoKokiAllyLayoutPatch", true)!;
+        AccessTools.Method(layout, "Reflow").Invoke(null, [NCombatRoom.Instance]);
+        await WaitFrames(20);
+        Require(node.GlobalPosition.DistanceTo(arrived) < 1f, "Ally reflow pulled Sawatari back from his waiting position.");
+        _checkpoints.Write("release034.early-position", data: new JsonObject { ["x"] = arrived.X, ["y"] = arrived.Y });
+    }
+}
+
+internal static class Release034StageProbe
+{
+    internal static Action<string, ulong>? Report;
+    public static void Prefix(System.Reflection.MethodBase __originalMethod) =>
+        Report?.Invoke(__originalMethod.Name + ".start", Time.GetTicksMsec());
+    public static async Task Postfix(Task __result, System.Reflection.MethodBase __originalMethod)
+    {
+        await __result;
+        Report?.Invoke(__originalMethod.Name + ".end", Time.GetTicksMsec());
+    }
+}

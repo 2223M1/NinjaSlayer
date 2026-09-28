@@ -43,7 +43,27 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 
     public override int MaxInitialHp => MinInitialHp;
     public override bool IsHealthBarVisible => !IsMutable || Creature.Side == CombatSide.Enemy;
-    public override string DeathSfx => NinjaSlayerAudio.ForestSawatariDeathEvent;
+    // All native and event death presentations share the model-owned one-shot.
+    public override string DeathSfx => string.Empty;
+    private bool _deathVoicePlayed;
+    private bool _enhancedVoicePlayed;
+    [MegaCrit.Sts2.Core.Saves.Runs.SavedProperty]
+    public bool EnhancedVoicePlayed { get => _enhancedVoicePlayed; set { AssertMutable(); _enhancedVoicePlayed = value; } }
+
+    internal void PlayDeathVoice()
+    {
+        if (_deathVoicePlayed) return;
+        _deathVoicePlayed = true;
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariDeathEvent);
+    }
+
+    private void PlayEnhancedVoice()
+    {
+        if (EnhancedVoicePlayed || !Creature.IsAlive || CombatManager.Instance.IsOverOrEnding
+            || !CombatState.IsLiveCombat()) return;
+        EnhancedVoicePlayed = true;
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEnhancedEvent);
+    }
 
     protected override string VisualsPath =>
         "res://NinjaSlayer/scenes/creature_visuals/sawatari.tscn";
@@ -116,7 +136,10 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
         float deathAnimLength)
     {
         if (!wasRemovalPrevented && ReferenceEquals(creature, Creature))
+        {
+            PlayDeathVoice();
             SawatariWeaponVisuals.Get(Creature)?.Refresh();
+        }
         if (!wasRemovalPrevented
             && SawatariEventSession.TryGet(Creature.CombatState, out SawatariEventSession? session))
         {
@@ -179,7 +202,7 @@ public sealed partial class SawatariMonster : ModMonsterTemplate
 
         SawatariWeaponVisuals.Get(attacker)?.ShowBamboo();
 
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariAttackEvent);
+        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBambooAttackEvent);
         AttackCommand command = MegaCrit.Sts2.Core.Commands.DamageCmd
             .Attack(BambooDamage)
             .WithHitCount(SawatariEventRules.AttackHits)

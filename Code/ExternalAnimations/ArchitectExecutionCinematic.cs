@@ -155,29 +155,15 @@ public sealed partial class ArchitectExecutionCinematic : Node
         NCreature? architect = room?.CreatureNodes.FirstOrDefault(node => node.Entity.Monster is Architect);
         if (room == null || architect == null) return; // The dialogue room may have been exited while entering.
         NinjaSlayerFacingState.SyncForTarget(owner, architect.Entity);
-        NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(owner);
-        using var bow = pose?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, 1f);
-        if (bow == null) return;
-        bow.Paused = true;
+        using var bow = new GreetingBow(owner);
         float elapsed = 0f;
-        try
+        while (elapsed < GreetingBow.Duration && GodotObject.IsInstanceValid(room) && room.IsInsideTree()
+            && ReferenceEquals(NCombatRoom.Instance, room))
         {
-            while (elapsed < 1f && GodotObject.IsInstanceValid(room) && room.IsInsideTree()
-                && ReferenceEquals(NCombatRoom.Instance, room) && GodotObject.IsInstanceValid(pose))
-            {
-                float weight = elapsed < .2f ? Mathf.SmoothStep(0f, 1f, elapsed / .2f)
-                    : elapsed < .7f ? 1f : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - .7f) / .3f);
-                bow.Radians = Mathf.DegToRad(18f) * bow.Facing * weight;
-                pose!.SyncNow();
-                await room.ToSignal(room.GetTree(), SceneTree.SignalName.ProcessFrame);
-                if (GodotObject.IsInstanceValid(room) && room.ProcessMode != ProcessModeEnum.Disabled)
-                    elapsed += Math.Min((float)room.GetProcessDeltaTime(), .05f);
-            }
-        }
-        finally
-        {
-            bow.Dispose();
-            if (pose != null && GodotObject.IsInstanceValid(pose)) pose.SyncNow();
+            bow.Apply(elapsed);
+            await room.ToSignal(room.GetTree(), SceneTree.SignalName.ProcessFrame);
+            if (GodotObject.IsInstanceValid(room) && room.ProcessMode != ProcessModeEnum.Disabled)
+                elapsed += Math.Min((float)room.GetProcessDeltaTime(), .05f);
         }
     }
 

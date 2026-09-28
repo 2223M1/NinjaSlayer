@@ -313,7 +313,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BladeCycleRedesignV1.png",
     "Vars": {
-      "StockLoss": 3
+      "StockLoss": 2
     }
   },
   {
@@ -669,7 +669,9 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/IyaIronSlashWave.png",
     "Vars": {
@@ -687,7 +689,9 @@
     "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/IyaIronSlashWave.png",
     "Vars": {
@@ -1899,26 +1903,22 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
     "Upgraded": false,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Sly"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OyeahThrowSword.png",
-    "Vars": {
-      "Block": 5
-    }
+    "Vars": {}
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
     "Upgraded": true,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -1926,13 +1926,11 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
-      "Sly"
+      "Retain"
     ],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/OyeahThrowSword.png",
-    "Vars": {
-      "Block": 8
-    }
+    "Vars": {}
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_PALM_THRUST_REDESIGN_V1",
@@ -2595,7 +2593,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SLAUGHTER",
     "Upgraded": false,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Attack",
     "Rarity": "Uncommon",
@@ -2613,7 +2611,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SLAUGHTER",
     "Upgraded": true,
-    "Cost": 1,
+    "Cost": 2,
     "X": false,
     "Type": "Attack",
     "Rarity": "Uncommon",
@@ -3048,7 +3046,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TonyRetention.png",
     "Vars": {
-      "Block": 4,
+      "Block": 3,
       "Scry": 4
     }
   },
@@ -3066,7 +3064,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/TonyRetention.png",
     "Vars": {
-      "Block": 6,
+      "Block": 5,
       "Scry": 6
     }
   },

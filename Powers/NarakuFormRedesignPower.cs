@@ -16,7 +16,6 @@ public sealed class NarakuFormRedesignPower : RedesignV1CounterPower
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)
     {
         NarakuVisualOverlay.Sync(Owner);
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner]);
         return Task.CompletedTask;
     }

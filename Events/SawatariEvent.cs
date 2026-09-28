@@ -17,6 +17,7 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.TestSupport;
 using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Transition;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -179,11 +180,24 @@ public sealed class SawatariEvent : ModEventTemplate
         }
 
         SawatariEventUi.Hide();
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBeginEvent);
-        await session.PlayNinjaSlayerEntrance();
-        foreach (SawatariEvent eventModel in events)
+        // Build the model and request music in the native room-load order. Only
+        // the entrance needs a processing scene tree; awaiting it during load
+        // would prevent the transition from ever revealing that tree.
+        if (NinjaSlayerTransitionGate.TryDeferPresentation(EnterCombat, out Task deferred))
         {
-            eventModel.BeginEmbeddedCombat();
+            _ = TaskHelper.RunSafely(deferred);
+            return;
+        }
+        await EnterCombat();
+
+        async Task EnterCombat()
+        {
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariBeginEvent);
+            await session.PlayNinjaSlayerEntrance();
+            foreach (SawatariEvent eventModel in events)
+            {
+                eventModel.BeginEmbeddedCombat();
+            }
         }
     }
 

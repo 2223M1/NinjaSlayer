@@ -1,0 +1,586 @@
+{
+  "dlls": [
+    {
+      "sha256": "6350C1A0B9672AD2A9115BBE50D653AD4EA42DF27C443AF6B29E7FE5AB73D77D",
+      "path": "build/combat-fixes/candidate/NinjaSlayer/lib/0.107.1/NinjaSlayer.dll"
+    },
+    {
+      "sha256": "7FA32056220C7A7F019DE69AFCD2EA38AC87082FAA2D39384D9952EA609648FF",
+      "path": "build/combat-fixes/candidate/NinjaSlayer/lib/0.111.0/NinjaSlayer.dll"
+    }
+  ],
+  "runs": {
+    "before-07": [
+      {
+        "data": {
+          "mode": "first-popup",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 21985133,
+              "frame": 673
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 23341576,
+              "frame": 750
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 23341797,
+              "frame": 750
+            },
+            {
+              "event": "damage",
+              "timeUsec": 23629772,
+              "frame": 767
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "ordinary",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 25123874,
+              "frame": 857
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 25222644,
+              "frame": 863
+            },
+            {
+              "event": "damage",
+              "timeUsec": 25506322,
+              "frame": 880
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "popup-fast",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 27006237,
+              "frame": 970
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 28274464,
+              "frame": 1046
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 28274491,
+              "frame": 1046
+            },
+            {
+              "event": "damage",
+              "timeUsec": 28556210,
+              "frame": 1063
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "popup-pause",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 30056525,
+              "frame": 1153
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 31674744,
+              "frame": 1250
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 31674780,
+              "frame": 1250
+            },
+            {
+              "event": "damage",
+              "timeUsec": 31955958,
+              "frame": 1267
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "fallback-before",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 33456335,
+              "frame": 1357
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 33559076,
+              "frame": 1363
+            },
+            {
+              "event": "damage",
+              "timeUsec": 33842806,
+              "frame": 1380
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "fallback-after",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 35342502,
+              "frame": 1470
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 36610974,
+              "frame": 1546
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 36611000,
+              "frame": 1546
+            },
+            {
+              "event": "damage",
+              "timeUsec": 36892817,
+              "frame": 1563
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "monster": "PhrogParasite",
+          "targeting": "random",
+          "targets": [
+            "MONSTER.PHROG_PARASITE",
+            "MONSTER.PHROG_PARASITE",
+            "MONSTER.PHROG_PARASITE"
+          ],
+          "finishers": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      }
+    ],
+    "after-03": [
+      {
+        "data": {
+          "mode": "first-popup",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 21938010,
+              "frame": 675
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 23285861,
+              "frame": 752
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 23286149,
+              "frame": 752
+            },
+            {
+              "event": "damage",
+              "timeUsec": 23574275,
+              "frame": 769
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "ordinary",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 25068376,
+              "frame": 859
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 25183336,
+              "frame": 866
+            },
+            {
+              "event": "damage",
+              "timeUsec": 25451170,
+              "frame": 882
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "popup-fast",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 26950631,
+              "frame": 972
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 28218996,
+              "frame": 1048
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 28219023,
+              "frame": 1048
+            },
+            {
+              "event": "damage",
+              "timeUsec": 28500566,
+              "frame": 1065
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "popup-pause",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 30001013,
+              "frame": 1155
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 31619044,
+              "frame": 1252
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 31619083,
+              "frame": 1252
+            },
+            {
+              "event": "damage",
+              "timeUsec": 31900477,
+              "frame": 1269
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "fallback-before",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 33400771,
+              "frame": 1359
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 33524689,
+              "frame": 1366
+            },
+            {
+              "event": "damage",
+              "timeUsec": 33792021,
+              "frame": 1382
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "fallback-after",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 35291869,
+              "frame": 1472
+            },
+            {
+              "event": "film-release-window",
+              "timeUsec": 36560232,
+              "frame": 1548
+            },
+            {
+              "event": "projectile",
+              "timeUsec": 36560262,
+              "frame": 1548
+            },
+            {
+              "event": "damage",
+              "timeUsec": 36842098,
+              "frame": 1565
+            }
+          ],
+          "damageCount": 1
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "cancel-before",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 38342116,
+              "frame": 1655
+            }
+          ],
+          "damageCount": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "mode": "target-invalid",
+          "events": [
+            {
+              "event": "action",
+              "timeUsec": 39845715,
+              "frame": 1745
+            }
+          ],
+          "damageCount": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.arrow"
+      },
+      {
+        "data": {
+          "monster": "PhrogParasite",
+          "targeting": "random",
+          "targets": [
+            "MONSTER.PHROG_PARASITE",
+            "MONSTER.WRIGGLER",
+            "MONSTER.WRIGGLER"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "PhrogParasite",
+          "targeting": "all",
+          "targets": [
+            "MONSTER.PHROG_PARASITE",
+            "MONSTER.WRIGGLER",
+            "MONSTER.WRIGGLER",
+            "MONSTER.WRIGGLER",
+            "MONSTER.WRIGGLER"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "PhrogParasite",
+          "targeting": "fixed",
+          "targets": [
+            "MONSTER.PHROG_PARASITE"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "Axebot",
+          "targeting": "random",
+          "targets": [
+            "MONSTER.AXEBOT",
+            "MONSTER.AXEBOT",
+            "MONSTER.AXEBOT"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "Axebot",
+          "targeting": "all",
+          "targets": [
+            "MONSTER.AXEBOT",
+            "MONSTER.AXEBOT"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "Axebot",
+          "targeting": "fixed",
+          "targets": [
+            "MONSTER.AXEBOT"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "GremlinMerc",
+          "targeting": "random",
+          "targets": [
+            "MONSTER.GREMLIN_MERC",
+            "MONSTER.FAT_GREMLIN",
+            "MONSTER.SNEAKY_GREMLIN"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "GremlinMerc",
+          "targeting": "all",
+          "targets": [
+            "MONSTER.GREMLIN_MERC",
+            "MONSTER.SNEAKY_GREMLIN",
+            "MONSTER.FAT_GREMLIN"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": {
+          "monster": "GremlinMerc",
+          "targeting": "fixed",
+          "targets": [
+            "MONSTER.GREMLIN_MERC"
+          ],
+          "finishers": 0
+        },
+        "status": "passed",
+        "name": "combat-regression.continuation"
+      },
+      {
+        "data": null,
+        "status": "passed",
+        "name": "combat-regression.naraku-icon"
+      },
+      {
+        "data": null,
+        "status": "passed",
+        "name": "combat-regression.final-finisher"
+      },
+      {
+        "data": null,
+        "status": "passed",
+        "name": "combat-regression.completed"
+      }
+    ]
+  },
+  "sourceBaseline": "7fc77921035e569b34eaa203f98a6164ed1d9da4",
+  "dirtyCandidate": true,
+  "attestation": {
+    "schemaVersion": 6,
+    "candidateSha": "7fc77921035e569b34eaa203f98a6164ed1d9da4",
+    "bundleVersion": "0.3.3",
+    "result": "passed",
+    "channel": "preview",
+    "gameApiVersion": "0.111.0",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+    "ritsuLibPackageId": "STS2.RitsuLib",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.2",
+    "additionalMods": [],
+    "bundleSha256": "bd9227f070c2957807577aca657feae794b8b5556b225ff47d3236743c5c95cb",
+    "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+    "mode": "combat-regression",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-09-28T17:38:47.2092489+08:00"
+  },
+  "sourceFiles": [
+    {
+      "sha256": "5E68A5E94F7D031FA70FD71CD3B3DC8D27F89712D87D0BF4CD498637912C3786",
+      "path": "Code/ExternalAnimations/FinisherForecast.cs"
+    },
+    {
+      "sha256": "A6B40CAB35C2E4970C3595B7CC67197236EEF363FB852B7DEB140CC5616AB44F",
+      "path": "Code/ExternalAnimations/YukanoArrowPopup.cs"
+    },
+    {
+      "sha256": "F704BD674AD49BCAD28E8B3E73E9897BB310DC720649D0AA9A7A2640BEEEF27A",
+      "path": "Code/ExternalAnimations/YukanoCombatAnimations.cs"
+    },
+    {
+      "sha256": "63D2AF53EC1C9EA0922739A80D7379F66835E1B46DFDEF2848A8687EC878F691",
+      "path": "NinjaSlayer/localization/eng/powers.json"
+    },
+    {
+      "sha256": "5B7BD612856B04C050421ED5ADEE19578305B0D26FC4B2E3225A76A99D1C6163",
+      "path": "NinjaSlayer/localization/zhs/powers.json"
+    },
+    {
+      "sha256": "78EB53CE56526DA63EB130EEF82007FD77090A044ACB33815269748018B0CC77",
+      "path": "Powers/NarakuLifePower.cs"
+    }
+  ]
+}

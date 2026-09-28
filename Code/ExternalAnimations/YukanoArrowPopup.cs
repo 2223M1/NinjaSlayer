@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Godot;
+using MegaCrit.Sts2.Core.Commands;
+using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes;
@@ -31,7 +33,6 @@ internal sealed partial class YukanoArrowPopup : Node
     private AtlasTexture[] _frames = [];
     private Vector2[] _origins = [];
     private Action<float> _pose = null!;
-    private Action _release = null!;
     private bool _started, _released, _closing, _stopped, _paused;
     private double _openingTime, _closingTime, _stallTime, _lastPosition;
     private ulong _lastTick;
@@ -47,7 +48,7 @@ internal sealed partial class YukanoArrowPopup : Node
         _runData = RitsuLibFramework.GetRunSavedDataStore(modId).Register<YukanoArrowPopupRunData>(
             "yukano_arrow_popup", options: new RunSavedDataOptions { WritePolicy = RunSavedDataWritePolicy.WhenNonDefault });
 
-    internal static YukanoArrowPopup? TryStart(Creature source, Creature target, Action<float> pose, Action release)
+    internal static YukanoArrowPopup? TryStart(Creature source, Creature target, Action<float> pose)
     {
         if (CombatActionTimingRuntime.VisualSeconds(1f) <= 0f || !source.IsAlive || !target.IsAlive
             || source.PetOwner?.RunState is not RunState run || _runData.Get(run).Shown
@@ -58,7 +59,7 @@ internal sealed partial class YukanoArrowPopup : Node
         var popup = new YukanoArrowPopup
         {
             Name = "YukanoArrowPopup", _source = source, _target = target, _room = room,
-            _run = run, _pose = pose, _release = release, ProcessMode = ProcessModeEnum.Always
+            _run = run, _pose = pose, ProcessMode = ProcessModeEnum.Always
         };
         try
         {
@@ -194,6 +195,8 @@ internal sealed partial class YukanoArrowPopup : Node
             _started = true;
             _lastTick = Time.GetTicksUsec();
             _runData.Modify(_run, data => data.Shown = true);
+            if (NinjaSlayerSettings.NarrationEnabled)
+                SfxCmd.Play(NinjaSlayerAudio.PangbaiBreastEvent);
         }
         if (_released || _closing || !_content.Visible) return;
         double position = _film.StreamPosition;
@@ -203,8 +206,7 @@ internal sealed partial class YukanoArrowPopup : Node
         _released = true;
         ReleasePosition = position;
         ReleaseRenderFrame = Engine.GetFramesDrawn();
-        // Both the final launch pose and real projectile are submitted for this rendered frame.
-        _release();
+        // Resume the owning attack at the movie release frame; only it can launch a projectile.
         _launch.TrySetResult(LaunchResult.Released);
     }
 

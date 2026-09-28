@@ -190,18 +190,13 @@ public partial class OrbContractRunner
         }
         using (var arena = new OrbCombat())
         {
-            CardModel returning = Create(arena, ModelDb.Card<ChopStrikeRedesignV1>());
-            for (int play = 1; play <= 4; play++)
-            {
-                await Play(arena, returning);
-                Require(returning.Pile?.Type == (play <= 3 ? PileType.Hand : PileType.Discard),
-                    $"Generated Strike Strike had the wrong destination on play {play}.");
-            }
-            CardCmd.ApplyKeyword(returning, CardKeyword.Exhaust);
-            await Play(arena, returning);
-            Require(returning.Pile?.Type == PileType.Exhaust, "Generated intrinsic return overrode Exhaust.");
+            CardModel sourceStrike = Create(arena, ModelDb.Card<ChopStrikeRedesignV1>());
+            await Play(arena, sourceStrike);
+            Require(sourceStrike.Pile?.Type == PileType.Exhaust
+                && PileType.Hand.GetPile(arena.Player).Cards.OfType<ChopStrikeRedesignV1>().Count() == 1,
+                "Generated Strike Strike exhausts and generates a native Strike Strike.");
         }
-        GD.Print("PASS native decomposition keeps edited damage/cost/keywords/upgrade; generated return first three/fourth and Exhaust priority.");
+        GD.Print("PASS native decomposition keeps edited damage/cost/keywords/upgrade and Strike generation.");
         var savedRun = SeedRun("NINJA_ANTHONY_SAVE");
         foreach (var act in savedRun.Acts)
             act.GenerateRooms(savedRun.Rng.UpFront, MegaCrit.Sts2.Core.Unlocks.UnlockState.all);

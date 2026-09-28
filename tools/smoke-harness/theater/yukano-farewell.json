@@ -1,0 +1,25 @@
+{
+  "seed": "YUKANO_FAREWELL_20260928",
+  "purpose": "yukano-farewell",
+  "act": 3,
+  "duration": 10,
+  "narrationEnabled": false,
+  "cues": [
+    {"id": "calibration", "steps": [{"action": "audit_calibration"}]},
+    {"id": "entrance", "steps": [{"action": "entrance", "actor": "yukano"}, {"action": "wait", "seconds": 0.5}]},
+    {"id": "shuriken_normal", "steps": [
+      {"action": "speed", "mode": "Normal"},
+      {"action": "move", "actor": "yukano", "move": "SHURIKEN"},
+      {"action": "wait", "seconds": 0.8}
+    ]},
+    {"id": "shuriken_fast", "steps": [
+      {"action": "speed", "mode": "Fast"},
+      {"action": "move", "actor": "yukano", "move": "SHURIKEN"},
+      {"action": "wait", "seconds": 0.8}
+    ]},
+    {"id": "farewell_on_victory", "steps": [
+      {"action": "yukano_farewell"},
+      {"action": "wait", "seconds": 1.0}
+    ]}
+  ]
+}

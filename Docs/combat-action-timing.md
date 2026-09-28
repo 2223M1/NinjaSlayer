@@ -82,6 +82,14 @@ draw backflips and shuriken throws may overlap that held stance.
   must arrive before damage. A guaranteed forecast only selects the presentation;
   actual confirmed lethal results still control death. Finishers that mutate
   combat state remain awaited through completion.
+- Forward finisher forecasts (player, companion/ranged, and Koki preplanning)
+  defer to native `Hook.ShouldStopCombatFromEnding`. While the host requests
+  another phase, no finisher reserves the dying enemy's last HP. Native death
+  and summon callbacks finish before AttackCommand continues its remaining hits:
+  random attacks select live targets, all-target attacks use the native target
+  set, and fixed-target attacks do not acquire a replacement. The final phase
+  regains the existing finisher presentation and confirmed-lethal checks. This
+  uses no monster whitelist and does not change reverse finishers.
 
 
 

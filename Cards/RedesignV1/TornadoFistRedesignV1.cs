@@ -39,7 +39,6 @@ public sealed class TornadoFistRedesignV1 : RedesignV1UncommonCard
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLongjuanquanEvent);
         int hits = ResolveEnergyXValue();
         bool empowered = IsEmpowered(hits);
         return this.ExecuteSequenceWithFinisher(

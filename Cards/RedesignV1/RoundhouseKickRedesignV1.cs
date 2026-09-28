@@ -34,7 +34,6 @@ public sealed class RoundhouseKickRedesignV1 : RedesignV1UncommonCard
 
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiSomersaultKickEvent);
         int hits = DynamicVars.Repeat.IntValue;
         return this.ExecuteSequenceWithFinisher(
             choiceContext,

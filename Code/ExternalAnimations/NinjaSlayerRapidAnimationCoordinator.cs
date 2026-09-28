@@ -241,6 +241,9 @@ internal static class NinjaSlayerRapidAnimationCoordinator
             ? state.Baseline
             : creatureNode.Position;
 
+    internal static bool HasActiveMotion(Creature creature) =>
+        States.ContainsKey(creature) || VisualTails.ContainsKey(creature);
+
     private static void ApplyMotions(Creature creature, ActionState state, float? progress = null)
     {
         Vector2 offset = state.BaseOffset;

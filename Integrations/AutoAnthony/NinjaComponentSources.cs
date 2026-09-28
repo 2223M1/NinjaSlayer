@@ -27,7 +27,7 @@ internal static class NinjaComponentSources
         new(typeof(BladeReserveRedesignV1), "备刃", "Blade Prep", c => [Stock(c), Draw(c)]),
         new(typeof(PreparedShurikenRedesignV1), "备镖", "Ready Shuriken", c => [Block(c), Stock(c)]),
         new(typeof(ChadoStillnessRedesignV1), "守静", "Stillness", c => [Breath(c), Custom("chado_retain", "在接下来的[[amount]]回合内，保留你的茶道。", "Retain your Chado for the next [[amount]] turns.", V(c,"Turns"))]),
-        new(typeof(Slaughter), "强攻", "Press the Attack", c => [Damage(c), Custom("draw_discard_nonstatus", "抽[[amount]]张牌，丢弃其中的所有非状态牌。", "Draw [[amount]] cards. Discard all non-Status cards drawn this way.", V(c,"Cards"))]),
+        new(typeof(Slaughter), "强攻", "Press the Attack", c => [Damage(c), Custom("draw_discard_nonattack", "抽[[amount]]张牌，丢弃其中的所有非攻击牌。", "Draw [[amount]] cards. Discard all non-Attack cards drawn this way.", V(c,"Cards"))]),
         new(typeof(TechniqueSearchRedesignV1), "应变", "Adapt", c => [Custom("draw_sly", "抽[[amount]]张牌。这些牌获得奇巧。", "Draw [[amount]] cards. They gain Sly.", V(c,"Cards"))]),
         new(typeof(SpiralRoundhouseJumpRedesignV1), "螺旋回转跳", "Spiral Jump", c => [AreaDamage(c), Stock(c)]),
         new(typeof(SatsubatsuRedesignV1), "BS1260踢", "BS1260 Kick", c => [Damage(c), BlackFlame(1, false)]),
@@ -56,7 +56,7 @@ internal static class NinjaComponentSources
         new(typeof(TurtleShellRedesignV1), "坚壁", "Bulwark", c => [Custom("karate_to_plating", "失去所有空手道，获得等量覆甲。", "Lose all Karate. Gain that much Plating.", 1, fixedRule: true)]),
         new(typeof(Excavate), "重拾", "Recover", c => [Custom("exhaust_to_top", "选择消耗堆中的[[amount]]张牌，将其放到抽牌堆顶部。", "Choose [[amount]] cards in your Exhaust Pile. Put them on top of your draw pile.", 1)]),
         new(typeof(DecidedOutcomeRedesignV1), "取舍", "Discern", c => [Custom("scry_exhaust_breath", "预见[[amount]]，消耗选中的牌，每消耗1张牌，茶道呼吸1。", "Scry [[amount]], exhausting selected cards. Chado Breathing 1 for each card exhausted this way.", V(c,"Cards"))]),
-        new(typeof(ShurikenDraw), "备战", "Battle Ready", c => [Power<ShurikenDrawPower>(V(c,"Cards"), "每当你获得手里剑时，抽[[amount]]张牌。", "Whenever you gain Shuriken, draw [[amount]] cards.", persistent: true)]),
+        new(typeof(ShurikenDraw), "备战", "Battle Ready", c => [Power<ShurikenDrawPower>(V(c,"Cards"), "上个己方回合发射过手里剑时，本回合额外抽[[amount]]张牌。", "If you fired Shuriken last turn, draw [[amount]] additional cards this turn.", persistent: true)]),
         new(typeof(AdversityCarapaceRedesignV1), "蓄势", "Gather Momentum", c => [Power<VitalityTeaPower>(V(c,"VigorPower"), "每当茶道被消耗时，获得[[amount]]点活力。", "Whenever Chado is Exhausted, gain [[amount]] Vigor.", persistent: true)]),
         new(typeof(KarateTrainingRedesignV1), "修行", "Training", c => [Power<KarateTrainingPower>(V(c,"Karate"), "在你的回合开始时，获得[[amount]]层空手道，丢弃1张牌。", "At the start of your turn, gain [[amount]] Karate and discard 1 card.", persistent: true)]),
         new(typeof(FlyingBladeDanceRedesignV1), "从容", "Composure", c => [Power<ScryBlockPower>(V(c,"Block"), "每当有一张牌被丢弃时，获得[[amount]]点格挡。", "Whenever you discard a card, gain [[amount]] Block.", persistent: true)]),
@@ -75,7 +75,7 @@ internal static class NinjaComponentSources
         new(typeof(Endurance), "忍耐", "Endurance", c => [Karate(c), Power<EndurancePower>(V(c,"LaterKarate"), "若本回合未打出攻击牌，在回合结束时获得[[amount]]层空手道。", "At the end of this turn, if you played no Attacks, gain [[amount]] Karate.")]),
         new(typeof(LuckyStrikeRedesignV1), "察敌", "Read the Enemy", c => [Scry(c,"Cards"), Builtin("N:Draw", "抽[[draw]]张牌。", "Draw [[draw]] cards.", "draw", V(c,"Draw"))]),
         new(typeof(DragonFlyingKickRedesignV1), "龙·飞踢", "Dragon Flying Kick", c => [Damage(c), Custom("fill_hand", "抽牌，直到手牌达到上限。", "Draw until your hand is full.", 1, fixedRule: true), Breath(c)]),
-        new(typeof(OyeahThrowSword), "月面宙反", "Moonsault", c => [Block(c), Custom("fire_stock", "激发并清空全部手里剑。", "Fire and consume all Shuriken.", 1, fixedRule: true)]),
+        new(typeof(OyeahThrowSword), "月面宙反", "Moonsault", c => [ Custom("fire_stock", "激发并清空全部手里剑。", "Fire and consume all Shuriken.", 1, fixedRule: true)]),
         new(typeof(ShurikenStorm), "手里剑风暴", "Shuriken Storm", c => [Stock(c), Custom("discard_stock", "丢弃所有手牌，每丢弃1张牌获得1层手里剑。", "Discard your hand. Gain 1 Shuriken for each card discarded.", 1, fixedRule: true)]),
         new(typeof(PlaceholderBlueDefense01), "撒菱", "Caltrops", c => [Block(c), Custom("timed_thorns", "获得持续3次敌方行动的[[amount]]点荆棘。", "Gain [[amount]] Thorns for the next 3 enemy turns.", V(c,"ThornsPower"))]),
         new(typeof(WhiskTeaFlashRedesignV1), "投石器摔", "Catapult Throw", c => [Damage(c), Custom("draw_if_tea", "如果手中有茶道，抽[[amount]]张牌。", "If you have Chado in hand, draw [[amount]] cards.", V(c,"Cards"))]),
@@ -100,7 +100,7 @@ internal static class NinjaComponentSources
         new(typeof(SweepKickRedesignV1), "半月圆规踢", "Half-Moon Compass Kick", c => [Custom("tea_area_damage", "对所有敌人造成[[amount]]点伤害。可消耗任意茶道，每张追加2次攻击。", "Deal [[amount]] damage to ALL enemies. You may Exhaust any number of Chado; attack 2 more times for each.", V(c,"Damage"))]),
         new(typeof(TornadoFistRedesignV1), "龙卷拳", "Tornado Fist", c => [Custom("area_x", "对所有敌人造成[[amount]]点伤害X次。若X至少为4，每段给予1层易伤。", "Deal [[amount]] damage to ALL enemies X times. If X is at least 4, each hit applies 1 Vulnerable.", V(c,"Damage"), energyX: true)]),
         new(typeof(TeaStormRedesignV1), "长息", "Deep Breath", c => [Custom("breath_next_x", "下回合茶道呼吸X乘[[amount]]加[[extra]]。", "Next turn, Chado Breathing X times [[amount]] plus [[extra]].", V(c,"BreathPerX"), extraValues: [new("extra",V(c,"ExtraX"))], energyX: true)]),
-        new(typeof(ChopStrikeRedesignV1), "打击·打击", "Strike Strike", c => [Damage(c), Scry(c,"Cards"), Custom("return_first", "在本回合前三次打出时，将此牌返回手牌。", "Return this card to your hand the first 3 times you play it each turn.", 3, fixedRule: true)]),
+        new(typeof(ChopStrikeRedesignV1), "打击·打击", "Strike Strike", c => [Damage(c), Scry(c,"Cards"), Custom("generate_strike_strike", "将一张打击·打击加入手牌。", "Add a Strike Strike to your hand.", 1, fixedRule: true)]),
         new(typeof(ChopRedesignV1), "地狱·Chop", "Hell Chop", c => [Damage(c), Karate(c), Custom("return_attacks", "每打出[[amount]]张其他攻击牌，将此牌放入手牌。", "Whenever you play [[amount]] other Attacks in a turn, put this card in your hand.", V(c,"Cards"), fixedRule: true)]),
         new(typeof(RoundhouseKickRedesignV1), "龙回旋踢", "Dragon Roundhouse Kick", c => [Custom("area_multi", "对所有敌人造成[[amount]]点伤害[[hits]]次。", "Deal [[amount]] damage to ALL enemies [[hits]] times.", V(c,"Damage"), extraValues: [new("hits",V(c,"Repeat"))]), Custom("play_on_top", "回合结束时若此牌在抽牌堆顶部，自动打出。", "At the end of your turn, if this card is on top of your draw pile, play it.", 1, fixedRule: true)]),
     ];
@@ -179,7 +179,7 @@ internal static class NinjaComponentSources
                 "return_first" or "return_attacks" or "play_on_top" or "topdeck_self" or "fill_hand" or "draw_if_tea"
                     or "copy_hand_top" or "transform_flame" or "play_statuses" or "play_top_exhaust" or "exhaust_top"
                     or "exhaust_to_top" or "scry" or "scry_block" or "scry_exhaust" or "scry_exhaust_breath"
-                    or "draw_sly" or "draw_discard_nonstatus" => ComponentCategory.CardManipulation,
+                    or "draw_sly" or "draw_discard_nonattack" or "generate_strike_strike" => ComponentCategory.CardManipulation,
                 _ => ComponentCategory.Resource
             }
         };

@@ -122,6 +122,7 @@ public class Entry
             requiredPatcher.RegisterPatch<SawatariPullEventPatch>();
             requiredPatcher.RegisterPatch<SawatariRoomVisitPatch>();
             requiredPatcher.RegisterPatch<SawatariCombatEndGatePatch>();
+            requiredPatcher.RegisterPatch<SawatariWinCheckPatch>();
             requiredPatcher.RegisterPatch<SawatariTurnEndPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionInteractionPatch>();
             requiredPatcher.RegisterPatch<FriendlyCompanionCardSelectedPatch>();

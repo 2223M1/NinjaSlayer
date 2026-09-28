@@ -12,6 +12,7 @@
   "NINJA_SLAYER_POWER_CHADO_RETAIN_POWER.smartDescription": "在接下来的[blue]{Amount}[/blue]个回合内[gold]保留[/gold]你的[gold]茶道[/gold]。",
   "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.title": "奈落生命",
   "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.description": "优先承受格挡和减伤后的生命伤害。",
+  "NINJA_SLAYER_POWER_NARAKU_LIFE_POWER.smartDescription": "当前拥有[blue]{Amount}[/blue]点[gold]奈落生命[/gold]。优先承受格挡和减伤后的生命伤害。",
   "NINJA_SLAYER_POWER_IAI_POWER.title": "拔刀反击",
   "NINJA_SLAYER_POWER_IAI_POWER.description": "再受到{Amount}段攻击后，立即反击攻击者。\n反击基础伤害为0，受力量等攻击效果加成。",
   "NINJA_SLAYER_POWER_COMBAT_ADJUSTMENT_POWER.title": "动静相生",
@@ -87,5 +88,5 @@
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.description": "如果你在一回合内打出了至少3张攻击牌，在下个回合开始时额外抽{Amount}张牌。",
   "NINJA_SLAYER_POWER_ZANSHIN_POWER.title": "残心",
   "NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER.title": "备战",
-  "NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER.description": "每当你获得[gold]手里剑[/gold]时，抽{Amount}张牌。"
+  "NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER.description": "如果你在上个回合发射过[gold]手里剑[/gold]，在你的回合开始时额外抽{Amount}张牌。"
 }

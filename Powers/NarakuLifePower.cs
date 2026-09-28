@@ -14,7 +14,6 @@ public sealed class NarakuLifePower : NinjaSlayerPowerTemplate, IHealthBarVisual
     internal long TotalAbsorbed { get; private set; }
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-    protected override bool IsVisibleInternal => false;
 
     public HealthBarVisualGraftMetrics GetHealthBarVisualGraft(HealthBarVisualGraftContext context)
     {
