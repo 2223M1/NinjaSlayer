@@ -20,7 +20,6 @@ public sealed class HellTornadoRedesignV1 : RedesignV1RareCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLongjuanquanEvent);
         await PowerCmd.Apply<SoarPower>(choiceContext, Owner.Creature, 1, Owner.Creature, this);
         if (ShurikenOrb.Find(Owner) is { } stock)
         {

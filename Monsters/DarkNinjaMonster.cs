@@ -173,12 +173,6 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
             Creature,
             null);
 
-        if (!HasPlayedBegin)
-        {
-            HasPlayedBegin = true;
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaBeginEvent);
-        }
-
         if (Creature.CombatState?.Encounter is DarkNinjaEncounter
             && NCombatRoom.Instance is { } room)
         {
@@ -186,6 +180,17 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
                 room,
                 revealImmediately: HasEnteredCombatStance);
         }
+    }
+
+    public override Task BeforeCombatStart()
+    {
+        if (!HasPlayedBegin)
+        {
+            HasPlayedBegin = true;
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.DarkNinjaBeginEvent);
+        }
+
+        return Task.CompletedTask;
     }
 
     public override Task AfterDeath(

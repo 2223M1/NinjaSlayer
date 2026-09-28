@@ -197,6 +197,7 @@ public partial class OrbContractRunner : Node
             patcher.RegisterPatch<NarakuCentennialPuzzlePatch>();
             patcher.RegisterPatch<SawatariDuelRewardsPatch>();
             patcher.RegisterPatch<SawatariTurnEndPatch>();
+            patcher.RegisterPatch<SawatariWinCheckPatch>();
             patcher.RegisterPatch<NinjaSlayerSwipePowerStealPatch>();
             patcher.RegisterPatch<KarateDamageWavePatch>();
             patcher.RegisterPatch<NinjaSlayerRunSavePatch>();
@@ -268,6 +269,7 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            await VerifyCombatRegression();
             await VerifyRangedSources();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_FINISHERS") == "1")
             {

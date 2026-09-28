@@ -1,0 +1,1187 @@
+{
+  "task": "FMOD loudness calibration, gain only",
+  "project": "C:\\Users\\theon\\Documents\\NinjaSlayer\\STS2_FModProject_Minimal-main\\STS2.fspro",
+  "backup": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\FMOD-LOUDNESS-20260928\\before",
+  "evidence": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\FMOD-LOUDNESS-20260928",
+  "events": 60,
+  "sfx_events": 54,
+  "sfx_variants": 90,
+  "music_events": 6,
+  "music_phases": 9,
+  "source_assets": 217,
+  "no_source_edits": true,
+  "no_dynamic_compression_added": true,
+  "no_limiter_added": true,
+  "no_ducking_added": true,
+  "music_targets_lufs": {
+    "narrative": -28.2,
+    "combat": -20.3
+  },
+  "voice_active_p80_targets_dbfs": {
+    "frequent": -17.53,
+    "dialogue": -22.1,
+    "emphasis": -21.76
+  },
+  "max_music_deviation_lu": 0.09999999999999787,
+  "max_sfx_deviation_db": 0.23476167090820255,
+  "max_variant_spread_db": 0.007816705831224624,
+  "highest_sfx_true_peak_dbtp": -2.2,
+  "highest_mix_true_peak_dbtp": -0.9,
+  "human_listening_passed": false,
+  "live": {
+    "standard": {
+      "launch": {
+        "pack_sha256": "F8C2FFBEF772A672A54A76A025DCAC160DF7BFDAE31A2F5BA1B81F9049855635",
+        "case": "standard",
+        "pid": 13940,
+        "sfx": 1,
+        "master": 1.0,
+        "output": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\FMOD-LOUDNESS-20260928\\live\\standard-190815",
+        "music": 1
+      },
+      "result": {
+        "passed": true,
+        "results": [
+          {
+            "model": "YukanoEvent",
+            "one_instance": true,
+            "no_layered_act_music": true,
+            "natural_outro": true,
+            "act_restored": true,
+            "early_exit_clean": true,
+            "reentry": true
+          },
+          {
+            "model": "YamotoKokiCuteEvent",
+            "one_instance": true,
+            "no_layered_act_music": true,
+            "natural_outro": true,
+            "act_restored": true,
+            "early_exit_clean": true,
+            "reentry": true
+          },
+          {
+            "model": "NarakuEvent",
+            "one_instance": true,
+            "no_layered_act_music": true,
+            "natural_outro": true,
+            "act_restored": true,
+            "early_exit_clean": true,
+            "reentry": true
+          },
+          {
+            "model": "DarkNinjaEvent",
+            "prelude_to_battle": true,
+            "live_attack_hurt_narration_mix": true
+          },
+          {
+            "model": "SawatariEvent",
+            "cooperative_combat": true,
+            "choice_phase": true,
+            "duel_transition": true
+          }
+        ],
+        "menu_cleanup": true
+      }
+    },
+    "user": {
+      "launch": {
+        "pack_sha256": "F8C2FFBEF772A672A54A76A025DCAC160DF7BFDAE31A2F5BA1B81F9049855635",
+        "pid": 40496,
+        "case": "user",
+        "music": 1,
+        "sfx": 1,
+        "master": 0.39999998,
+        "output": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\FMOD-LOUDNESS-20260928\\live\\user-191154"
+      },
+      "result": {
+        "passed": true,
+        "results": [
+          {
+            "model": "YukanoEvent",
+            "one_instance": true,
+            "no_layered_act_music": true,
+            "natural_outro": true,
+            "act_restored": true,
+            "early_exit_clean": true,
+            "reentry": true
+          },
+          {
+            "model": "YamotoKokiCuteEvent",
+            "one_instance": true,
+            "no_layered_act_music": true,
+            "natural_outro": true,
+            "act_restored": true,
+            "early_exit_clean": true,
+            "reentry": true
+          },
+          {
+            "model": "NarakuEvent",
+            "one_instance": true,
+            "no_layered_act_music": true,
+            "natural_outro": true,
+            "act_restored": true,
+            "early_exit_clean": true,
+            "reentry": true
+          },
+          {
+            "model": "DarkNinjaEvent",
+            "prelude_to_battle": true,
+            "live_attack_hurt_narration_mix": true
+          },
+          {
+            "model": "SawatariEvent",
+            "cooperative_combat": true,
+            "choice_phase": true,
+            "duel_transition": true
+          }
+        ],
+        "menu_cleanup": true
+      }
+    }
+  },
+  "events_gain_changes": [
+    {
+      "event": "dark_ninja_begin",
+      "file": "Metadata\\Event\\{85c62279-908d-42cb-9b36-d2a0b0823a73}.xml",
+      "object_id": "{aaf168b3-9124-4c0b-9fd8-b288dcc61d9a}",
+      "before_db": -1.60000002,
+      "after_db": -6.747,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "dark_ninja_beppin_awakens",
+      "file": "Metadata\\Event\\{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml",
+      "object_id": "{e5807cc1-908a-4d6c-9498-07b8b3159f42}",
+      "before_db": -3.0,
+      "after_db": -4.984,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "dark_ninja_beppin_awakens",
+      "file": "Metadata\\Event\\{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml",
+      "object_id": "{9761211d-e7bc-4d7d-b416-35f7bb3f1efd}",
+      "before_db": 0.0,
+      "after_db": 1.183,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_beppin_awakens",
+      "file": "Metadata\\Event\\{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml",
+      "object_id": "{8ceaa029-9fa7-4053-8481-ddf66ab9618b}",
+      "before_db": 0.0,
+      "after_db": -1.184,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_dark_robe",
+      "file": "Metadata\\Event\\{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml",
+      "object_id": "{a46369f7-95dd-4d8a-9c52-5f32ed120373}",
+      "before_db": -1.39999998,
+      "after_db": -2.52,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "dark_ninja_dark_robe",
+      "file": "Metadata\\Event\\{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml",
+      "object_id": "{28b67241-e4c7-45be-9fb3-62562dd86844}",
+      "before_db": 0.0,
+      "after_db": -0.392,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_dark_robe",
+      "file": "Metadata\\Event\\{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml",
+      "object_id": "{a9961963-4835-4626-88a6-08374a512716}",
+      "before_db": 0.0,
+      "after_db": 3.022,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_death",
+      "file": "Metadata\\Event\\{c30e2c16-a858-4486-8015-74f749a5fc59}.xml",
+      "object_id": "{e5507118-c3ef-46f7-83b3-578f35c62bd8}",
+      "before_db": -6.5,
+      "after_db": -8.688,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "dark_ninja_death_kiri",
+      "file": "Metadata\\Event\\{8e57e5da-7a6f-49ac-b634-a4b087ab569b}.xml",
+      "object_id": "{b88a31b7-c56e-4f74-86ca-5a637f6e75d1}",
+      "before_db": 0.0,
+      "after_db": -3.408,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "dark_ninja_domo",
+      "file": "Metadata\\Event\\{11bb4a3f-5f68-4eaf-a971-12cc063edcfa}.xml",
+      "object_id": "{6119f496-b4bc-42f8-af52-fe5c05d08822}",
+      "before_db": 0.0,
+      "after_db": -7.539,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "dark_ninja_failed",
+      "file": "Metadata\\Event\\{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml",
+      "object_id": "{821d7651-ee0c-48f7-8772-74798b97c201}",
+      "before_db": -5.0,
+      "after_db": 0.44,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "dark_ninja_failed",
+      "file": "Metadata\\Event\\{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml",
+      "object_id": "{6a66bdf2-e32d-4b3f-8cc7-ea234c1fa427}",
+      "before_db": 0.0,
+      "after_db": -0.977,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_failed",
+      "file": "Metadata\\Event\\{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml",
+      "object_id": "{eff8ff09-d7a4-44d3-995a-e69843fe406d}",
+      "before_db": 0.0,
+      "after_db": 0.978,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_fast_attack",
+      "file": "Metadata\\Event\\{3bae8a83-e507-444f-a37c-9888668e1a02}.xml",
+      "object_id": "{fd408e03-8cbe-412e-b160-6e416909e384}",
+      "before_db": -5.0,
+      "after_db": -3.356,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "dark_ninja_fast_attack",
+      "file": "Metadata\\Event\\{3bae8a83-e507-444f-a37c-9888668e1a02}.xml",
+      "object_id": "{1456be48-1672-4e18-8473-d6051388e17e}",
+      "before_db": 0.0,
+      "after_db": -1.578,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_fast_attack",
+      "file": "Metadata\\Event\\{3bae8a83-e507-444f-a37c-9888668e1a02}.xml",
+      "object_id": "{f9936415-edbf-4704-ba3b-7fcd396058f1}",
+      "before_db": 0.0,
+      "after_db": -0.126,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_fast_attack",
+      "file": "Metadata\\Event\\{3bae8a83-e507-444f-a37c-9888668e1a02}.xml",
+      "object_id": "{2e65f644-ec50-4114-a1a0-35b2a6126dc7}",
+      "before_db": 0.0,
+      "after_db": 0.958,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_fast_attack",
+      "file": "Metadata\\Event\\{3bae8a83-e507-444f-a37c-9888668e1a02}.xml",
+      "object_id": "{3ffa00f8-e312-4bf5-b627-659f69b4473d}",
+      "before_db": 0.0,
+      "after_db": 1.211,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_hurt",
+      "file": "Metadata\\Event\\{b389c986-2115-49c1-acdb-b17b1d31c665}.xml",
+      "object_id": "{71361f0d-7601-4d5d-98ec-800edaa83f3c}",
+      "before_db": 4.5,
+      "after_db": -2.163,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "dark_ninja_hurt",
+      "file": "Metadata\\Event\\{b389c986-2115-49c1-acdb-b17b1d31c665}.xml",
+      "object_id": "{1abd4b47-e4d7-48d2-af54-5d36ec0755f1}",
+      "before_db": 0.0,
+      "after_db": -0.916,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_hurt",
+      "file": "Metadata\\Event\\{b389c986-2115-49c1-acdb-b17b1d31c665}.xml",
+      "object_id": "{ed676562-a4dd-40c2-94b1-6c9a70696541}",
+      "before_db": 0.0,
+      "after_db": -0.373,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_hurt",
+      "file": "Metadata\\Event\\{b389c986-2115-49c1-acdb-b17b1d31c665}.xml",
+      "object_id": "{b2f700d7-a1d7-475f-ac32-2cb690f5bb7f}",
+      "before_db": 0.0,
+      "after_db": 0.372,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_hurt",
+      "file": "Metadata\\Event\\{b389c986-2115-49c1-acdb-b17b1d31c665}.xml",
+      "object_id": "{4e3246ec-5b5e-4a21-967f-72604d0c439a}",
+      "before_db": 0.0,
+      "after_db": 0.574,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_insult",
+      "file": "Metadata\\Event\\{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml",
+      "object_id": "{d0363fac-7eb6-45c9-ab31-84e7aa16fd86}",
+      "before_db": -2.5,
+      "after_db": -6.59,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "dark_ninja_insult",
+      "file": "Metadata\\Event\\{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml",
+      "object_id": "{aaec7b1a-61d7-4d38-80ea-0d57a74228fc}",
+      "before_db": 0.0,
+      "after_db": 0.123,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_insult",
+      "file": "Metadata\\Event\\{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml",
+      "object_id": "{04e7189e-493c-4254-8fa2-f581ffce1d6b}",
+      "before_db": 0.0,
+      "after_db": -0.123,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_kirisute_goumen",
+      "file": "Metadata\\Event\\{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml",
+      "object_id": "{c042124c-e109-444f-8f97-8887656fae5c}",
+      "before_db": -4.0,
+      "after_db": -6.459,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "dark_ninja_kirisute_goumen",
+      "file": "Metadata\\Event\\{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml",
+      "object_id": "{0d1c094e-98ac-4582-beaa-25741efda68c}",
+      "before_db": 0.0,
+      "after_db": -0.355,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_kirisute_goumen",
+      "file": "Metadata\\Event\\{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml",
+      "object_id": "{0853edd8-f495-4a10-9a2d-796e30b3cc05}",
+      "before_db": 0.0,
+      "after_db": 0.356,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_slow_attack",
+      "file": "Metadata\\Event\\{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml",
+      "object_id": "{073776a0-da69-4983-8c34-b3f85456495b}",
+      "before_db": -5.0,
+      "after_db": -3.356,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "dark_ninja_slow_attack",
+      "file": "Metadata\\Event\\{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml",
+      "object_id": "{b16d9492-a90d-4235-9981-e6420581352a}",
+      "before_db": 0.0,
+      "after_db": 1.211,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "dark_ninja_slow_attack",
+      "file": "Metadata\\Event\\{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml",
+      "object_id": "{4d129625-460c-4b2d-9233-281b2743a4b5}",
+      "before_db": 0.0,
+      "after_db": -0.126,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{687d60e8-5fd1-4b44-8aee-f66d3d836b71}",
+      "before_db": -1.0,
+      "after_db": -2.419,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{470dcd01-31bc-4ee4-869c-43a57653d28f}",
+      "before_db": 0.0,
+      "after_db": -0.213,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{357e40de-ec5f-40ae-9d48-8cf3e30cc309}",
+      "before_db": 0.0,
+      "after_db": -1.066,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{84200c0c-dd99-4e08-a860-3ddcd7c310e6}",
+      "before_db": 0.0,
+      "after_db": 3.276,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{8104c9d2-a2d7-410a-9495-6285af4253ce}",
+      "before_db": 0.0,
+      "after_db": 0.992,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{593332d0-89ee-4437-8a88-0af0940dcc79}",
+      "before_db": 0.0,
+      "after_db": -0.562,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_attack",
+      "file": "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml",
+      "object_id": "{fcf2e802-6d25-4362-a025-390361158fd6}",
+      "before_db": 0.0,
+      "after_db": 0.213,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_bamboo",
+      "file": "Metadata\\Event\\{91b5a40d-26eb-4af1-9d1e-51cadac4ece8}.xml",
+      "object_id": "{06701b21-4dea-487e-88fa-6ec3d7ac0168}",
+      "before_db": -3.4000001,
+      "after_db": -6.98,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "forest_sawatari_bamboo_attack",
+      "file": "Metadata\\Event\\{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml",
+      "object_id": "{24011ef0-c6b8-4aba-bb32-9ea277f50343}",
+      "before_db": -1.0,
+      "after_db": -0.93,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "forest_sawatari_bamboo_attack",
+      "file": "Metadata\\Event\\{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml",
+      "object_id": "{a5e49c1f-cb86-4c58-a4f7-36f97066857c}",
+      "before_db": 0.0,
+      "after_db": -1.321,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_bamboo_attack",
+      "file": "Metadata\\Event\\{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml",
+      "object_id": "{f370563c-e074-4ff8-ae20-e6fbbc17b332}",
+      "before_db": 0.0,
+      "after_db": 1.321,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_begin",
+      "file": "Metadata\\Event\\{72e056f8-0323-41e9-adac-54260b068b91}.xml",
+      "object_id": "{ddde32be-ed0f-46c4-843d-d454362f4748}",
+      "before_db": -1.10000002,
+      "after_db": -7.029,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "forest_sawatari_death",
+      "file": "Metadata\\Event\\{8da32b4e-0fc2-43c3-a183-5a5380b4832b}.xml",
+      "object_id": "{b37c3aa3-1213-4e80-b9b6-5550f9b4846c}",
+      "before_db": -1.89999998,
+      "after_db": -4.267,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "forest_sawatari_duel",
+      "file": "Metadata\\Event\\{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml",
+      "object_id": "{166988fa-ca98-4d34-ab2a-85f6d978e4ed}",
+      "before_db": -0.200000003,
+      "after_db": -4.128,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "forest_sawatari_duel",
+      "file": "Metadata\\Event\\{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml",
+      "object_id": "{50375267-2b1f-477b-b240-2e77905ac25a}",
+      "before_db": 0.0,
+      "after_db": -0.851,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_duel",
+      "file": "Metadata\\Event\\{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml",
+      "object_id": "{06fb3297-09ec-4f90-aea3-3d02d9ede0c1}",
+      "before_db": 0.0,
+      "after_db": 0.851,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "forest_sawatari_end",
+      "file": "Metadata\\Event\\{647b142a-123d-4b70-8ba1-87338a14b3c1}.xml",
+      "object_id": "{1ed2fb79-c873-423e-b342-a21f6d91bc17}",
+      "before_db": -0.400000006,
+      "after_db": -4.838,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "forest_sawatari_enhanced",
+      "file": "Metadata\\Event\\{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0}.xml",
+      "object_id": "{472446ce-7136-4113-9a2b-05e9ff9ff6c8}",
+      "before_db": -2.9000001,
+      "after_db": -7.556,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "forest_sawatari_hurt",
+      "file": "Metadata\\Event\\{1ce1c03a-d143-4e63-8185-7fd0a132b37f}.xml",
+      "object_id": "{396ef01b-be22-4701-a8bd-b13e062bd8f9}",
+      "before_db": -5.0,
+      "after_db": -6.851,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "naraku_cast",
+      "file": "Metadata\\Event\\{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml",
+      "object_id": "{11fcfb90-541d-4851-8ae9-b41e8df8e78d}",
+      "before_db": -1.0,
+      "after_db": -1.612,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "naraku_cast",
+      "file": "Metadata\\Event\\{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml",
+      "object_id": "{4b393d19-e98e-41e6-981d-a87585d272f5}",
+      "before_db": 0.0,
+      "after_db": 2.323,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "naraku_cast",
+      "file": "Metadata\\Event\\{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml",
+      "object_id": "{71a0dc50-430f-4541-a09e-122c60dd8cd0}",
+      "before_db": 0.0,
+      "after_db": -1.145,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "naraku_death",
+      "file": "Metadata\\Event\\{1756f2f9-39e1-48ad-b868-b363650ff6d6}.xml",
+      "object_id": "{afb20ec7-42ec-4bac-8b64-bfdfe0796976}",
+      "before_db": -3.0,
+      "after_db": -6.107,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "naraku_fast_attack",
+      "file": "Metadata\\Event\\{73c6a36b-aa58-493f-8425-41f1d0487d9b}.xml",
+      "object_id": "{fba4d6ba-5ecc-4bab-8b12-fda42892c422}",
+      "before_db": 2.0,
+      "after_db": -0.428,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "naraku_hurt",
+      "file": "Metadata\\Event\\{b6131b0d-f431-47e5-85ef-e20be2b85dd0}.xml",
+      "object_id": "{a5a318c5-3d37-42e5-9cba-e1c8c658e0e1}",
+      "before_db": -3.0,
+      "after_db": -1.997,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "naraku_slow_attack",
+      "file": "Metadata\\Event\\{cd6687eb-fb28-470c-b914-90d8c1509680}.xml",
+      "object_id": "{28f971c4-7ce5-4492-9756-1b696dd5b16d}",
+      "before_db": -0.5,
+      "after_db": -3.775,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "ninja_slayer_cast",
+      "file": "Metadata\\Event\\{393ec121-609e-469f-94fb-9a06c5926b32}.xml",
+      "object_id": "{6b0a5c52-2d5a-4db5-ae79-e5800e1dca20}",
+      "before_db": 6.0,
+      "after_db": 4.87,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "ninja_slayer_cast",
+      "file": "Metadata\\Event\\{393ec121-609e-469f-94fb-9a06c5926b32}.xml",
+      "object_id": "{907baf9b-28dc-489f-948c-f40ffe5dd9c1}",
+      "before_db": -4.5,
+      "after_db": -2.599,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_cast",
+      "file": "Metadata\\Event\\{393ec121-609e-469f-94fb-9a06c5926b32}.xml",
+      "object_id": "{a2289957-f7e4-42d5-8dda-56f7878cf8d0}",
+      "before_db": -2.0,
+      "after_db": -3.9,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_death",
+      "file": "Metadata\\Event\\{8399306f-54e8-4300-ab25-bde9b8f689ff}.xml",
+      "object_id": "{d53c5566-6f93-4d82-a8fe-3d6463f4ef4a}",
+      "before_db": -6.5,
+      "after_db": -8.688,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_fast_attack",
+      "file": "Metadata\\Event\\{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml",
+      "object_id": "{9f61298b-efa1-4ca7-8b5c-b07b5f56cf3a}",
+      "before_db": 2.5,
+      "after_db": 1.953,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "ninja_slayer_fast_attack",
+      "file": "Metadata\\Event\\{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml",
+      "object_id": "{2df1102a-a458-4df3-be8e-28b71df6069f}",
+      "before_db": -1.0,
+      "after_db": -1.759,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_fast_attack",
+      "file": "Metadata\\Event\\{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml",
+      "object_id": "{aa5bb33a-6d9f-491f-a404-1153d00ec21f}",
+      "before_db": -6.0,
+      "after_db": -5.241,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_fast_domo",
+      "file": "Metadata\\Event\\{da307a67-b27f-4a03-8fc7-64d5140b4bbb}.xml",
+      "object_id": "{c6821ce1-4499-4621-9c8b-c5bb9dc1042f}",
+      "before_db": -2.5,
+      "after_db": -7.714,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "ninja_slayer_hurt",
+      "file": "Metadata\\Event\\{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml",
+      "object_id": "{32be1f4b-51c3-4a89-9a70-d8e454e9ac91}",
+      "before_db": 2.5,
+      "after_db": 3.049,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "ninja_slayer_hurt",
+      "file": "Metadata\\Event\\{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml",
+      "object_id": "{9b3517e4-5359-4d54-aaba-1e8710600d6e}",
+      "before_db": -2.5,
+      "after_db": -1.22,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_hurt",
+      "file": "Metadata\\Event\\{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml",
+      "object_id": "{383f7b6b-de4a-4d10-b26d-03edbf56ed0d}",
+      "before_db": -4.5,
+      "after_db": -6.167,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_intro_spin_attack",
+      "file": "Metadata\\Event\\{09550113-0b1f-430c-9f3e-d8be1fc650ea}.xml",
+      "object_id": "{88e5e724-026b-40ef-a9a5-b5c17cefe3b5}",
+      "before_db": -4.0,
+      "after_db": -7.356,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_korosu_beshi",
+      "file": "Metadata\\Event\\{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}.xml",
+      "object_id": "{09261eb2-45d6-49ef-813d-1e69036eb7be}",
+      "before_db": 0.0,
+      "after_db": -4.314,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_long_washoi",
+      "file": "Metadata\\Event\\{15554978-a2b5-482c-8c50-ee1eba9c1b3f}.xml",
+      "object_id": "{4717d667-bba5-4a7d-9152-1c7d07b35fea}",
+      "before_db": -0.5,
+      "after_db": -4.762,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_loop_spin_attack",
+      "file": "Metadata\\Event\\{a9bee68e-cb5d-427e-8248-e8a063343b0e}.xml",
+      "object_id": "{54ecf0ee-9b49-4743-b46c-ca0c2fea3fad}",
+      "before_db": -4.0,
+      "after_db": -7.356,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_ninja_soul",
+      "file": "Metadata\\Event\\{d4a68540-4006-4f13-9215-9cfd6f05feae}.xml",
+      "object_id": "{e61bbd55-d2d0-416c-bf0c-4dffcd0a0721}",
+      "before_db": -4.0,
+      "after_db": -10.622,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_no_domo",
+      "file": "Metadata\\Event\\{7d050980-32d2-4444-83bf-559d9264cf44}.xml",
+      "object_id": "{f11bb6c3-6c3d-4a21-a29a-3f9675ccb0aa}",
+      "before_db": -2.5,
+      "after_db": -5.196,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "ninja_slayer_outro_spin_attack",
+      "file": "Metadata\\Event\\{191e4ae4-25f9-41f7-9571-639313302897}.xml",
+      "object_id": "{f02cf928-f9b2-45fe-b0a3-c9e558f5fad5}",
+      "before_db": -4.0,
+      "after_db": -7.356,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_select",
+      "file": "Metadata\\Event\\{5fc0244c-1cce-44ce-947f-0246892aa6f0}.xml",
+      "object_id": "{8fda50a4-e106-4602-94f3-0dd28f3cedec}",
+      "before_db": -6.0,
+      "after_db": -14.592,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "ninja_slayer_short_washoi",
+      "file": "Metadata\\Event\\{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml",
+      "object_id": "{d9b8e55b-8749-49a3-9c4c-2aae92bc2a99}",
+      "before_db": 3.5,
+      "after_db": 4.751,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "ninja_slayer_short_washoi",
+      "file": "Metadata\\Event\\{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml",
+      "object_id": "{ffa442fe-807d-4bf8-a87a-e65b29c37d17}",
+      "before_db": -7.0,
+      "after_db": -7.445,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_short_washoi",
+      "file": "Metadata\\Event\\{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml",
+      "object_id": "{ac3ddd50-2250-4478-94f6-f188fd2ca3ee}",
+      "before_db": 0.0,
+      "after_db": 0.445,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_slow_attack",
+      "file": "Metadata\\Event\\{841f8492-9735-4dea-b652-b8d22523f8c7}.xml",
+      "object_id": "{b80facc1-6a2b-4df7-a01d-67fa35f3852c}",
+      "before_db": 3.5,
+      "after_db": 1.585,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "ninja_slayer_slow_attack",
+      "file": "Metadata\\Event\\{841f8492-9735-4dea-b652-b8d22523f8c7}.xml",
+      "object_id": "{48e7b064-4082-4902-8a79-4a8a9ba422ec}",
+      "before_db": -2.0,
+      "after_db": -3.022,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_slow_attack",
+      "file": "Metadata\\Event\\{841f8492-9735-4dea-b652-b8d22523f8c7}.xml",
+      "object_id": "{65c5ce4e-d697-47f9-a897-f19a0ac142fc}",
+      "before_db": -5.0,
+      "after_db": -4.038,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "ninja_slayer_slow_domo",
+      "file": "Metadata\\Event\\{eeb09a3c-39f1-4190-b538-d248b6dfbeec}.xml",
+      "object_id": "{e48829a0-4dbe-4c49-823b-ee28d933ffb5}",
+      "before_db": -2.5,
+      "after_db": -6.237,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "ninja_slayer_suicide",
+      "file": "Metadata\\Event\\{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f}.xml",
+      "object_id": "{21e2cb45-b7b9-4e58-928b-198ba924055a}",
+      "before_db": -3.0,
+      "after_db": -5.234,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "ninja_slayer_transition",
+      "file": "Metadata\\Event\\{fed07464-e229-44ff-93b4-89ce41274988}.xml",
+      "object_id": "{f1e77934-46e5-4518-b580-dc71ae2ed287}",
+      "before_db": 0.5,
+      "after_db": -8.246,
+      "reason": "purpose emphasis"
+    },
+    {
+      "event": "pangbai_breast",
+      "file": "Metadata\\Event\\{7589eded-6028-46dc-9a8e-fe677238ebc3}.xml",
+      "object_id": "{6f3016de-3553-4a25-a48f-25e6c4e725b7}",
+      "before_db": 0.0,
+      "after_db": -6.782,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "pangbai_low_health",
+      "file": "Metadata\\Event\\{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml",
+      "object_id": "{9bb110f1-7508-48e3-81f1-cab8ff14b1bb}",
+      "before_db": 2.0,
+      "after_db": -3.595,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "pangbai_low_health",
+      "file": "Metadata\\Event\\{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml",
+      "object_id": "{aae037db-a47b-420e-90d2-ef18f1939202}",
+      "before_db": 0.0,
+      "after_db": 0.973,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "pangbai_low_health",
+      "file": "Metadata\\Event\\{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml",
+      "object_id": "{e1aab90f-a040-4cc2-8013-f2d409bae960}",
+      "before_db": 0.0,
+      "after_db": -0.974,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yamoto_koki_bye",
+      "file": "Metadata\\Event\\{351f3e4c-5dae-4668-b9f2-280480f0982e}.xml",
+      "object_id": "{fabf954e-9379-41ee-aebd-6e29fbf92eba}",
+      "before_db": -5.5,
+      "after_db": -9.65,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "yamoto_koki_domo",
+      "file": "Metadata\\Event\\{f56e5817-8ce7-4a18-8175-57f5d93dde22}.xml",
+      "object_id": "{48ce36ec-c703-4173-9b97-3169a9781532}",
+      "before_db": -8.5,
+      "after_db": -13.065,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "yamoto_koki_event",
+      "file": "Metadata\\Event\\{618017ad-c42d-42ec-9ec8-ed766627a7cd}.xml",
+      "object_id": "{5d246f78-6ef5-42f8-a11d-1070aff47048}",
+      "before_db": 1.0,
+      "after_db": -3.91,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "yamoto_koki_fast_attack",
+      "file": "Metadata\\Event\\{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml",
+      "object_id": "{be4fae71-8f99-490a-aed2-777c6e3e4b42}",
+      "before_db": -9.0,
+      "after_db": -9.67,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "yamoto_koki_fast_attack",
+      "file": "Metadata\\Event\\{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml",
+      "object_id": "{1da53f2f-e1d6-4e69-ba58-ed88f69001d9}",
+      "before_db": -1.0,
+      "after_db": -1.466,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yamoto_koki_fast_attack",
+      "file": "Metadata\\Event\\{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml",
+      "object_id": "{930e92e2-65e9-45b4-909b-6e40018e9c4a}",
+      "before_db": 0.0,
+      "after_db": 0.467,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yamoto_koki_go",
+      "file": "Metadata\\Event\\{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml",
+      "object_id": "{06dd71c2-bd57-44a6-9bae-99ea678453cd}",
+      "before_db": -7.5,
+      "after_db": -11.18,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "yamoto_koki_go",
+      "file": "Metadata\\Event\\{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml",
+      "object_id": "{30032c4e-baea-4233-b89a-431e2039af7e}",
+      "before_db": -2.0,
+      "after_db": -1.222,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yamoto_koki_go",
+      "file": "Metadata\\Event\\{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml",
+      "object_id": "{18cebb97-0d07-478d-a767-41514f8ba8e4}",
+      "before_db": -2.0,
+      "after_db": -2.777,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yamoto_koki_slow_attack",
+      "file": "Metadata\\Event\\{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml",
+      "object_id": "{78f03485-5551-4974-bf61-5004ba2acba7}",
+      "before_db": -8.0,
+      "after_db": -7.882,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "yamoto_koki_slow_attack",
+      "file": "Metadata\\Event\\{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml",
+      "object_id": "{958fdca1-821e-4f1b-88a7-933802f3b726}",
+      "before_db": 0.0,
+      "after_db": -2.196,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yamoto_koki_slow_attack",
+      "file": "Metadata\\Event\\{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml",
+      "object_id": "{edbc0925-f0c2-45e7-aa85-443f1d2a1639}",
+      "before_db": 2.0,
+      "after_db": 4.195,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yukano_fast_attack",
+      "file": "Metadata\\Event\\{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml",
+      "object_id": "{add0dc66-ce2b-42c4-b73c-df9dc7d99ead}",
+      "before_db": -9.0,
+      "after_db": -1.167,
+      "reason": "purpose frequent"
+    },
+    {
+      "event": "yukano_fast_attack",
+      "file": "Metadata\\Event\\{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml",
+      "object_id": "{ec7a02af-00b7-49d6-b725-2392be83957c}",
+      "before_db": 0.0,
+      "after_db": -0.011,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yukano_fast_attack",
+      "file": "Metadata\\Event\\{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml",
+      "object_id": "{2f94e86a-033c-4d3e-93ec-308ec1b61cba}",
+      "before_db": 0.0,
+      "after_db": 0.011,
+      "reason": "equalize random variant"
+    },
+    {
+      "event": "yukano_fast_bye",
+      "file": "Metadata\\Event\\{70c9ff13-388e-4528-b851-4a7759a53738}.xml",
+      "object_id": "{3d727bc1-c7c6-42a6-8c04-88b61dad282d}",
+      "before_db": -5.5,
+      "after_db": -2.766,
+      "reason": "purpose dialogue"
+    },
+    {
+      "event": "dark_ninja_battle",
+      "file": "Metadata\\Event\\{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml",
+      "object_id": "{1bb4711d-7523-41de-bc93-d7749e8fa47e}",
+      "before_db": -5.30000019,
+      "after_db": -7.8,
+      "reason": "combat reference"
+    },
+    {
+      "event": "dark_ninja_battle",
+      "file": "Metadata\\Event\\{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml",
+      "object_id": "{b02399af-252c-4b26-9726-974aaffe1df0}",
+      "before_db": 6.30000019,
+      "after_db": -0.9,
+      "reason": "narrative prelude reference"
+    },
+    {
+      "event": "dark_ninja_battle",
+      "file": "Metadata\\Event\\{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml",
+      "object_id": "{14dffc6c-7415-4542-9ade-eeb411ea412b}",
+      "before_db": 6.30000019,
+      "after_db": -0.9,
+      "reason": "narrative prelude reference"
+    },
+    {
+      "event": "forest_sawatari_battle",
+      "file": "Metadata\\Event\\{bf759c4b-49e9-4918-8f80-f68d5c84663d}.xml",
+      "object_id": "{9f17f156-ee55-4333-b245-60fd6538442f}",
+      "before_db": -7.19999981,
+      "after_db": -9.0,
+      "reason": "music combat"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{bdb41235-a062-491a-b7d7-521df82bfb3f}",
+      "before_db": -6.80000019,
+      "after_db": -9.0,
+      "reason": "duel combat reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{0468da75-8d88-42fd-882d-04b30cc39cd0}",
+      "before_db": 0.800000012,
+      "after_db": 1.2,
+      "reason": "cooperative combat reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{fa7bc99c-a91a-4ebb-8fd4-25076a912113}",
+      "before_db": 0.800000012,
+      "after_db": 1.2,
+      "reason": "cooperative combat reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{8dd5c764-46e7-4287-a0d8-1da2442d5067}",
+      "before_db": 1.20000005,
+      "after_db": -5.6,
+      "reason": "narrative choice reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{2908fafe-9a22-4c28-abfe-0996e4a11e88}",
+      "before_db": 1.20000005,
+      "after_db": -5.6,
+      "reason": "narrative choice reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{57532c2e-7118-49e7-a381-4157e39f77be}",
+      "before_db": 0.800000012,
+      "after_db": 1.2,
+      "reason": "cooperative combat reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{acaac5b4-0eea-4045-9cfa-6abcdedc17ae}",
+      "before_db": 0.800000012,
+      "after_db": 1.2,
+      "reason": "cooperative combat reference"
+    },
+    {
+      "event": "sawatari_coop_sequence",
+      "file": "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml",
+      "object_id": "{8cf89708-d961-4829-887b-0a4d75026eda}",
+      "before_db": 1.20000005,
+      "after_db": -5.6,
+      "reason": "narrative choice reference"
+    },
+    {
+      "event": "naraku_crystal_variation",
+      "file": "Metadata\\Event\\{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}.xml",
+      "object_id": "{69065875-898c-4183-aed4-e4544a5d56db}",
+      "before_db": -7.19999981,
+      "after_db": -10.8,
+      "reason": "music narrative"
+    },
+    {
+      "event": "yamoto_koki_remix",
+      "file": "Metadata\\Event\\{5a225627-5e7e-47e9-b304-d297ccbd36cc}.xml",
+      "object_id": "{33e6075b-47a4-4b16-8e34-fa463f663ecc}",
+      "before_db": -7.19999981,
+      "after_db": -15.0,
+      "reason": "music narrative"
+    },
+    {
+      "event": "yukano_teahouse",
+      "file": "Metadata\\Event\\{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}.xml",
+      "object_id": "{75814a6d-f762-4c27-ae26-51552e033822}",
+      "before_db": -7.19999981,
+      "after_db": -12.3,
+      "reason": "music narrative"
+    }
+  ],
+  "published": {
+    "time": "2026-09-28 19:15:04",
+    "project": "C:\\Users\\theon\\Documents\\NinjaSlayer\\STS2_FModProject_Minimal-main\\STS2.fspro",
+    "events_changed": 60,
+    "event_file_hashes": {
+      "Metadata\\Event\\{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml": "6ac2c2a0137078ad354cfc82cf69019d57ceeff99f0ca9abbe09b023d8523d68",
+      "Metadata\\Event\\{09550113-0b1f-430c-9f3e-d8be1fc650ea}.xml": "8f5651e6e2b0b00a0edb96613d19fee415be0bbd03610e625ce8907853875c06",
+      "Metadata\\Event\\{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml": "40a83c5dc56b7960d9daf6c535fb755342d056938631b06af384ba0e1bf5eaa5",
+      "Metadata\\Event\\{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml": "57d35283fa8d13f93f8ce1e4f828a93d4366d8a47884cd1b2aa461dddb1e421e",
+      "Metadata\\Event\\{11bb4a3f-5f68-4eaf-a971-12cc063edcfa}.xml": "b56bcc6db09a1fe63002b3408759e2f936d0f083ba26da3d6bba40ac7ead7462",
+      "Metadata\\Event\\{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f}.xml": "84a3e093322c6c5adf56beb2a9956031bdbf886558d249839f5996054373b762",
+      "Metadata\\Event\\{15554978-a2b5-482c-8c50-ee1eba9c1b3f}.xml": "d4a41e623de582dcab55edd83c6c955813cd1438704582fa3f352ccefff0e09f",
+      "Metadata\\Event\\{1756f2f9-39e1-48ad-b868-b363650ff6d6}.xml": "ba8f00662aba06e8d3f757fc74191e7fea9a06666aca314078408af4dd54718d",
+      "Metadata\\Event\\{191e4ae4-25f9-41f7-9571-639313302897}.xml": "f35263eeb2e522b8aed90aefd8d850f34d3adc743853792772446dd3ef3f49f0",
+      "Metadata\\Event\\{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml": "0d09b05888e5b33b1d4f4603504dbbc8ea05b7369ae1e4171188fca84fe3f9c6",
+      "Metadata\\Event\\{1ce1c03a-d143-4e63-8185-7fd0a132b37f}.xml": "938e9999cf42d0233d37b12ca4f17901bbe0a294e6c6cd6ab5aa140b47195385",
+      "Metadata\\Event\\{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml": "011e4838cf8821ca7874e374ea9d630d8a6255115b3518650a02a5ebff3170df",
+      "Metadata\\Event\\{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml": "6d8cd7df81667541443b9c177f4c655813b27274aa70402e531a357bddbd377e",
+      "Metadata\\Event\\{351f3e4c-5dae-4668-b9f2-280480f0982e}.xml": "e59cdc4e52e722d27fe7893e93824dc061e884da0d96e4ef26b3b2982c1e4f9a",
+      "Metadata\\Event\\{393ec121-609e-469f-94fb-9a06c5926b32}.xml": "72aded7daf056add1cd20a8d76f3129b216790861daa677ef60733a42eff4bba",
+      "Metadata\\Event\\{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml": "e082db4010c46e74ade95f4e104da278ae865982749909c881a7cfcfbaf78852",
+      "Metadata\\Event\\{3bae8a83-e507-444f-a37c-9888668e1a02}.xml": "7ae7cfa5dca3accd57e67dbcb6a692e9b41972ee5530a0e1f773a6482029bfe1",
+      "Metadata\\Event\\{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}.xml": "85042be08289e7d49e906d49f642a57544d0898cecc7ac0d65b55020c15bb66e",
+      "Metadata\\Event\\{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}.xml": "6e63e7791e2e50be027834619834702ec061dcbdb26160f5de9504f3ee64c735",
+      "Metadata\\Event\\{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0}.xml": "58da0cc5b305a00105d26f91aff0b4e74e84937925ba13b0f61f91d976785ca2",
+      "Metadata\\Event\\{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml": "ae41e241cb90cd8f288531900d7771b835f3fae584325d1125f90cb1b7ef60d8",
+      "Metadata\\Event\\{5a225627-5e7e-47e9-b304-d297ccbd36cc}.xml": "1e622017b19d77be5bf9de0b61e5578ced3b72c6ccce03d1324cd6bf493cd9ea",
+      "Metadata\\Event\\{5fc0244c-1cce-44ce-947f-0246892aa6f0}.xml": "0caf66838630272b8df35ef55a1ffcbc7e4bd2c4f598eba618ac3ca7d6c4e55e",
+      "Metadata\\Event\\{618017ad-c42d-42ec-9ec8-ed766627a7cd}.xml": "28f29b3360cb7cf9a677977589293970df2e9ab851c5b8b1edb1d994e690ce93",
+      "Metadata\\Event\\{647b142a-123d-4b70-8ba1-87338a14b3c1}.xml": "3439191ebea8a72c55b46bbda5b34bb2ec520002fe05a39e5a76b4d58abb43c4",
+      "Metadata\\Event\\{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml": "c8b9676059c470ecbff51c17caa7e5419ec42327fa9340bc2b5d95ae2f8ebfcd",
+      "Metadata\\Event\\{70c9ff13-388e-4528-b851-4a7759a53738}.xml": "e8c94d31aca7cd3a5acdf4497a36131b92ceb136eea3a674cd9f96989b8537f2",
+      "Metadata\\Event\\{72e056f8-0323-41e9-adac-54260b068b91}.xml": "1d795c2ee7375bc3f5ada1e788c7f2f3272caf2a26ce2ed4fbf13d502d3b4138",
+      "Metadata\\Event\\{73c6a36b-aa58-493f-8425-41f1d0487d9b}.xml": "ac56f34d9a263303b7851cbbd0a132ed5f1bfea27c2e147cd2f50fc04bb604ca",
+      "Metadata\\Event\\{7589eded-6028-46dc-9a8e-fe677238ebc3}.xml": "2a074c6fd4ca55ef1e9bb96f74c3258687780ad6ea85b0c2cb32a96a475382b7",
+      "Metadata\\Event\\{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml": "f86ffd77f905d2de6eba5d4628db9aa887f22e79eaeb7200db49dbfa7cef7473",
+      "Metadata\\Event\\{7d050980-32d2-4444-83bf-559d9264cf44}.xml": "e4acb19ff1217cf9fe38d11849ff18a59c5f55012ce54101bef94eaee73dd275",
+      "Metadata\\Event\\{8399306f-54e8-4300-ab25-bde9b8f689ff}.xml": "00498f34d87dad7ee228cc3ebe1e188425d16189eb8e1791835a1b8d55420b51",
+      "Metadata\\Event\\{841f8492-9735-4dea-b652-b8d22523f8c7}.xml": "9711333e32758bb6cfdbd2c114693a36c9c5c7f4ae4b1cecfe721fb8e1846093",
+      "Metadata\\Event\\{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml": "a3dbea0bc75f6fdf9b5d20b3a5ec1f32d07024db7163994e276817fd9874853a",
+      "Metadata\\Event\\{85c62279-908d-42cb-9b36-d2a0b0823a73}.xml": "7e358ddaa4d2195a6d0d17ad67e0cc591968e4c3a87d15a6dab96d30775cd3f4",
+      "Metadata\\Event\\{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml": "fdaeb45ab771cddbb625721dd66492c2cd03ae00c77e258c67dfea6690af8c49",
+      "Metadata\\Event\\{8da32b4e-0fc2-43c3-a183-5a5380b4832b}.xml": "c1783cb400cc11f387a711b0225b1aef1b10afa0d3c9f2e9ab321d9526b4a258",
+      "Metadata\\Event\\{8e57e5da-7a6f-49ac-b634-a4b087ab569b}.xml": "80f01d8d11c9cce04c1a14cc4e3c1a14ad2714752c4c46de004d6e0ca9d0a3ef",
+      "Metadata\\Event\\{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml": "c0843da9f971ad0043f4c4c74ca28f32024f6ae17f5ce5511eb4fa3a2469e8c0",
+      "Metadata\\Event\\{91b5a40d-26eb-4af1-9d1e-51cadac4ece8}.xml": "b873eb9f297911422d8536dc07891cae90240a993be317cf6f4bd2e3e2f5d19e",
+      "Metadata\\Event\\{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml": "57e3da56e231a6d045ac5e9a4eafdd59042897aeac34317089a8c2ab4fc264ee",
+      "Metadata\\Event\\{a9bee68e-cb5d-427e-8248-e8a063343b0e}.xml": "c077f11bd29cb6cf2664a5be9e911e0ed5b8fdd7d12b62f5df556351c1c6edc2",
+      "Metadata\\Event\\{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}.xml": "1bd18edf07d600603a210709376be4d131f3f4cc1a10bb7cc3088ec62582956b",
+      "Metadata\\Event\\{ae9355ab-3946-4624-adca-eb051baef884}.xml": "4c8197ea03a11632a21676f63c8f01dddfccca3dc2e598abbd70e2f60e0e023a",
+      "Metadata\\Event\\{b389c986-2115-49c1-acdb-b17b1d31c665}.xml": "ae8314d7f09e3e50a8c69a6e41ba6d822ff078e8c36e29497d7465aeb876b412",
+      "Metadata\\Event\\{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml": "241411fc1c09f886a654a19e2e4ab2cd3354f4fe9b13f11c2edde703cf0d9282",
+      "Metadata\\Event\\{b6131b0d-f431-47e5-85ef-e20be2b85dd0}.xml": "126b1ee4a4ddbb108f4950db3d8f9c97b583964a18f4494175484985eb732cad",
+      "Metadata\\Event\\{bf759c4b-49e9-4918-8f80-f68d5c84663d}.xml": "39f43d31c0ae1fc72b8faeebc6980d318ec695bfd263be3f06444eeaf5e8b048",
+      "Metadata\\Event\\{c30e2c16-a858-4486-8015-74f749a5fc59}.xml": "c6a0a60d2a889d9a46202ce427e9bac89c72a14a82dba32aec44d7f8767ef2d1",
+      "Metadata\\Event\\{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml": "94006103cd2ecaab208436a1b00ccccedf404ecde98f1b4bcc41860aeb55e69c",
+      "Metadata\\Event\\{cd6687eb-fb28-470c-b914-90d8c1509680}.xml": "f8eb57e7f3599e353475e9d11de9a8f604d868c6fa9c8ddaf55dc58d73ec07ff",
+      "Metadata\\Event\\{d4a68540-4006-4f13-9215-9cfd6f05feae}.xml": "6298c86ce83554db7751ca3af945da9139761dcaa4def613cf6ae2d54f757002",
+      "Metadata\\Event\\{da307a67-b27f-4a03-8fc7-64d5140b4bbb}.xml": "7da9d3aca9eedb8e26fd39cde8e567dbb05d63bbe988f394c918ff32cfcfcc45",
+      "Metadata\\Event\\{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml": "6068523ab98e4866598bbcd4d645843523dcacb4ec1275cbcc64cd61b32eb657",
+      "Metadata\\Event\\{eeb09a3c-39f1-4190-b538-d248b6dfbeec}.xml": "92bf062b5098d8cd6d7c97bfc3aa47e117baa0b456dc2c56d2c55553d9654cd7",
+      "Metadata\\Event\\{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml": "9ba4e27a085324e1301d42fcc27ecc08c3d20dc71aa5fec0fb25f9f95744dfb9",
+      "Metadata\\Event\\{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml": "d4e3a26dea9f10670609a37901d1b367e94edc54869e332cdcb954535228aefa",
+      "Metadata\\Event\\{f56e5817-8ce7-4a18-8175-57f5d93dde22}.xml": "12747e0a4ec8b3f4be6653148febc66dc9aeb13b8a8782c21b026325123a2476",
+      "Metadata\\Event\\{fed07464-e229-44ff-93b4-89ce41274988}.xml": "0bd4a803662c0ca17079f7728b9ff1987aaeb329a2e932d2f2dbdff955db9cec"
+    },
+    "bank_sha256": {
+      "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer\\NinjaSlayer\\audio\\fmod\\NinjaSlayer.bank": "f352ed8457f8ec2488dfa482b7e8fe472909318c444cf3f04430d9811521f149",
+      "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer\\NinjaSlayer\\audio\\fmod\\desktop\\NinjaSlayer.bank": "f352ed8457f8ec2488dfa482b7e8fe472909318c444cf3f04430d9811521f149",
+      "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer\\NinjaSlayer\\audio\\fmod\\NinjaSlayerEventMusic.bank": "d22dddf06ca7179f1d4d1e25e855554f0f34267dedba9bb734438bec557be897",
+      "C:\\Users\\theon\\Documents\\NinjaSlayer\\NinjaSlayer\\NinjaSlayer\\audio\\fmod\\desktop\\NinjaSlayerEventMusic.bank": "d22dddf06ca7179f1d4d1e25e855554f0f34267dedba9bb734438bec557be897"
+    },
+    "source_hashes_unchanged": true
+  }
+}

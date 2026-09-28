@@ -1,0 +1,779 @@
+{
+  "status": "verified",
+  "baseline": "Current user FMOD project on 2026-09-28",
+  "replacements": [
+    {
+      "asset": "ninja_slayer_hurt 1.wav",
+      "asset_guid": "{70a7e82a-db61-4f43-a714-75605056d6fc}",
+      "before_sha256": "BEBD1B75DD8F6ACFE2DBCFDE3BFAD784BEB23E760386144FB24087E562DC3B8D",
+      "sample_rate": 44100,
+      "frames": 52685,
+      "channels": 2,
+      "identity_correlation": 0.9979386541796372,
+      "source_offsets_samples": [
+        1
+      ],
+      "current_reference_correlation": 1.0,
+      "current_envelope_reconstruction_correlation": 0.9999999999999998,
+      "status": "prepared",
+      "after_sha256": "3CD6E9C7B1449B7D5A1E7DEB2481E643C5692F5CDDC378B57585AB5440535F67",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\02_受击与痛呼\\纯人声\\3_Aaaargh!!!__5AE07CE175173AEE.wav",
+          "sha256": "9F46B9643C0BF6D3F726A5327E9DAAA1AA1AD00A5C2BD80A1DBB7EEF174BBE85"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.45,
+        "input_tp": -6.63,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.46,
+        "input_tp": -6.51,
+        "input_lra": 0.0
+      },
+      "gain_db": -0.02999999999999936
+    },
+    {
+      "asset": "voice_ninja_slayer_hurt_02_clean.wav",
+      "asset_guid": "{f3cd7fc7-e699-4194-b849-2f2131726182}",
+      "before_sha256": "70136D4FB4DEB8E41DF520467D0DCCC9721AABDB964A0B81AF200206A743710C",
+      "sample_rate": 44100,
+      "frames": 58726,
+      "channels": 2,
+      "identity_correlation": 0.9234876637829563,
+      "source_offsets_samples": [
+        2427
+      ],
+      "current_reference_correlation": 0.9999999959025763,
+      "current_envelope_reconstruction_correlation": 0.9999999977869687,
+      "status": "prepared",
+      "after_sha256": "871222CF8665FB33EDB9115312A236F7EA4C5E7D676BBAF30C3A154562D16F2F",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\02_受击与痛呼\\纯人声\\2_aaaaargt__0D5BBCCDFE75EC2A.wav",
+          "sha256": "EC89C73E7044A5B93EE95E969690B5734E5D822BCD4FF724C8DFA14B4E2C9919"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -17.52,
+        "input_tp": -9.1,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -17.51,
+        "input_tp": -8.97,
+        "input_lra": 0.0
+      },
+      "gain_db": -1.6099999999999994
+    },
+    {
+      "asset": "ninja_slayer_spin_intro.wav",
+      "asset_guid": "{abd2267b-8368-4536-9a6b-845e818ec3c8}",
+      "before_sha256": "0C62356D7F904E3620C33DC94CD6177E785CE336ECD744DBC06D01776CDB3780",
+      "sample_rate": 44100,
+      "frames": 60416,
+      "channels": 2,
+      "identity_correlation": 0.9270412988468915,
+      "source_offsets_samples": [
+        -1
+      ],
+      "current_reference_correlation": 0.9995497266915756,
+      "current_envelope_reconstruction_correlation": 0.9999479702616043,
+      "status": "restored_at_user_request",
+      "after_sha256": "0C62356D7F904E3620C33DC94CD6177E785CE336ECD744DBC06D01776CDB3780",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\12_yeeart!yeart!yeart!yeart!yeart!yeart!__0D8099CA492C8BC1.wav",
+          "sha256": "75DEEEA5A28F0195E3CBFEA1B5208CA7BB63035A1A491693E22542231EE25A6A"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.82,
+        "input_tp": -4.91,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.8,
+        "input_tp": -3.24,
+        "input_lra": 0.0
+      },
+      "gain_db": 2.2699999999999996,
+      "previous_cleaned_sha256": "A6FD2E413B9886B5398DA854EAA6CAFAB543453CB079855B9B0814EC1B89067F",
+      "current_source": "Original pre-refresh asset restored byte-for-byte"
+    },
+    {
+      "asset": "ninja_slayer_suicide.wav",
+      "asset_guid": "{4b8de1e0-27c7-4bf5-958a-f86eff8a9c1e}",
+      "before_sha256": "53300AE45C0B8BFA01AEF18B13702A30A80C09F923A526DA401F92FB95455D6F",
+      "sample_rate": 44100,
+      "frames": 135476,
+      "channels": 2,
+      "identity_correlation": 0.9749340759036415,
+      "source_offsets_samples": [
+        1
+      ],
+      "current_reference_correlation": 0.9999999999999999,
+      "current_envelope_reconstruction_correlation": 1.0,
+      "status": "prepared",
+      "after_sha256": "BAB5216AB418AA43B9287EF9337427E1F7DD636B2052E6AAFCD7BAFCB59A98C1",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\1_nuoooooooo!__F7E9BECAC486B9A4.wav",
+          "sha256": "B7DA9FBAC5D69BF1723BFFEB5793C1842E517E6A377EFC493DA3427FEC9FD996"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -19.08,
+        "input_tp": -11.52,
+        "input_lra": 0.3
+      },
+      "loudness_after": {
+        "input_i": -19.08,
+        "input_tp": -10.19,
+        "input_lra": 0.2
+      },
+      "gain_db": -0.389999999999997
+    },
+    {
+      "asset": "voice_ninja_slayer_long_washoi_clean.wav",
+      "asset_guid": "{d2da4a9a-d484-4507-857c-566a77a94e88}",
+      "before_sha256": "93B73FB1ED211514C9C523C00086F4A49373FCB152C4AD8DED5EDA4383FD4ECD",
+      "sample_rate": 44100,
+      "frames": 57301,
+      "channels": 2,
+      "identity_correlation": 0.9374831154222296,
+      "source_offsets_samples": [
+        5734
+      ],
+      "current_reference_correlation": 0.9999999829826087,
+      "current_envelope_reconstruction_correlation": 0.9999999942856991,
+      "status": "prepared",
+      "after_sha256": "759A1DCEE89B14F088B9E01CD7EDB297BF873E147201AA356EC45B99B4A6DBBE",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\9_Wwwashoi!__25C6659CDBEC7DB3.wav",
+          "sha256": "948EF58DD8ABA7D187E893E77CE9DBFAE30A576031D7E9E920A643D16B6EF226"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -18.5,
+        "input_tp": -9.73,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -18.51,
+        "input_tp": -9.41,
+        "input_lra": 0.0
+      },
+      "gain_db": -3.119999999999999
+    },
+    {
+      "asset": "ninja_slayer_spin_outro.wav",
+      "asset_guid": "{20117b66-f72e-4b91-8e4c-9b14e0f45c17}",
+      "before_sha256": "4B3FF381DF2E5A4A5565F62266C3FD1227A665141AA01856695BF8B7AEB87E95",
+      "sample_rate": 44100,
+      "frames": 49152,
+      "channels": 2,
+      "identity_correlation": 0.9999995230093621,
+      "source_offsets_samples": [
+        60270,
+        0
+      ],
+      "preserved_two_source_crossfade": true,
+      "status": "restored_at_user_request",
+      "after_sha256": "4B3FF381DF2E5A4A5565F62266C3FD1227A665141AA01856695BF8B7AEB87E95",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\12_yeeart!yeart!yeart!yeart!yeart!yeart!__0D8099CA492C8BC1.wav",
+          "sha256": "75DEEEA5A28F0195E3CBFEA1B5208CA7BB63035A1A491693E22542231EE25A6A"
+        },
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\1_咿呀7__ADC73EEF13F32E3B.wav",
+          "sha256": "F3299EB2AF6D5C54056E3CC9CDCC110361DE564DA838D316581971CDF320CA0A"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -15.48,
+        "input_tp": -5.69,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -15.48,
+        "input_tp": -4.0,
+        "input_lra": 0.0
+      },
+      "gain_db": -0.6900000000000013,
+      "previous_cleaned_sha256": "8A8F60342F9DF71CE764D8300E27F9272CB20E9821C246B5CA14A6DD5F2984A7",
+      "current_source": "Original pre-refresh asset restored byte-for-byte"
+    },
+    {
+      "asset": "1_ke!_(Vocals).wav",
+      "asset_guid": "{67621c78-9458-4e4d-b12e-d900299b41a6}",
+      "before_sha256": "A2FB56E5AE798BD0BE696535542AD0F934DD3D2DB8D3D8E3691E7B75975B8942",
+      "sample_rate": 44100,
+      "frames": 15053,
+      "channels": 2,
+      "identity_correlation": 0.8550319558041091,
+      "source_offsets_samples": [
+        -2
+      ],
+      "current_reference_correlation": 1.0,
+      "current_envelope_reconstruction_correlation": 1.0,
+      "status": "prepared",
+      "after_sha256": "D931EE75BBDB8EE9AD7CA2DCBD3E44C5F7AF6AA98A14B7E49F0952466BCDB5B8",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\04_语气与反应\\纯人声\\ke!__47BD10DD0DB89C18.wav",
+          "sha256": "EBCAB8C1D1C922E37E12AB55DDD81A54108381F926362C65B01A5DDDED465EEF"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -23.15,
+        "input_tp": -9.34,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -23.14,
+        "input_tp": -9.35,
+        "input_lra": 0.0
+      },
+      "gain_db": -4.109999999999999
+    },
+    {
+      "asset": "7_额！？_WAV_(Vocals).wav",
+      "asset_guid": "{19cbcd52-23b1-438e-9a22-b8ab0719ee5e}",
+      "before_sha256": "5F2D7D5019FAF28D9134B9178C41FFDD065DAF29110D11656E32B16789BE975F",
+      "sample_rate": 44100,
+      "frames": 7527,
+      "channels": 2,
+      "status": "preserved",
+      "reason": "交付包无可确认覆盖当前完整剪辑的更干净版本；短反应仍为未重新还原原件。"
+    },
+    {
+      "asset": "ninja_slayer_fast_attack 1.wav",
+      "asset_guid": "{56edca68-dfe9-4f43-b05f-31577f697e4a}",
+      "before_sha256": "7D7F6D4AE3F0443C3FC910599BFC50BFBE61EC9C0142930F2B48D689BB77C6FB",
+      "sample_rate": 44100,
+      "frames": 32928,
+      "channels": 2,
+      "identity_correlation": 0.9736696391618724,
+      "source_offsets_samples": [
+        -2
+      ],
+      "current_reference_correlation": 1.0,
+      "current_envelope_reconstruction_correlation": 0.9999999999999998,
+      "status": "prepared",
+      "after_sha256": "14D8BA82A1F05700738EA1D253A2EFBBD22C28F9527784834CC8AD2A05245245",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\咿呀11__E5780C69CE7B3C08.wav",
+          "sha256": "EB8EC7BDA1A735AB17E215551CB394FABCEA42B42FB41CDEBB77BEA24F59D0C5"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -17.88,
+        "input_tp": -10.3,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -17.89,
+        "input_tp": -10.24,
+        "input_lra": 0.0
+      },
+      "gain_db": 0.010000000000001563
+    },
+    {
+      "asset": "ninja_slayer_fast_attack 2.wav",
+      "asset_guid": "{97b4faca-657e-4895-aefa-de528eaac9fd}",
+      "before_sha256": "E045C3CE5D254394D14188EBD51B70C08BD41F12C3807ACFBFBF1CED08F7499E",
+      "sample_rate": 44100,
+      "frames": 43277,
+      "channels": 2,
+      "identity_correlation": 0.9812213288967643,
+      "source_offsets_samples": [
+        2
+      ],
+      "current_reference_correlation": 1.0,
+      "current_envelope_reconstruction_correlation": 1.0,
+      "status": "prepared",
+      "after_sha256": "FB36D9705C4070CACBC55F2EAE9ED2A1F727C82E71B74402AB4F7E8F6DF9B4C2",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\5_yeart__39BDB783B2A63330.wav",
+          "sha256": "4DCC48ED1D71AF48F378828A5C3D185B45B7D4A9BCDA9F8457A7075579206A95"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.62,
+        "input_tp": -6.27,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.58,
+        "input_tp": -5.79,
+        "input_lra": 0.0
+      },
+      "gain_db": 0.4400000000000013
+    },
+    {
+      "asset": "voice_ninja_slayer_korosu_beshi_clean.wav",
+      "asset_guid": "{2c949bd1-e392-4443-92aa-7a60fb65b32a}",
+      "before_sha256": "9EA4D5285A5084C0BE57D3A341BC5F18B34E72240AE230903AC355CB33EBB457",
+      "sample_rate": 44100,
+      "frames": 79380,
+      "channels": 2,
+      "identity_correlation": 0.9517338202619068,
+      "source_offsets_samples": [
+        0
+      ],
+      "current_reference_correlation": 0.9999940303167283,
+      "current_envelope_reconstruction_correlation": 0.9999999455319972,
+      "status": "prepared",
+      "after_sha256": "BB550979CE37A5FD883F96753B132CAB5910989F805F094EAB40C98B17D748C9",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\07_台词\\纯人声\\3_NINJYA KOROSU BESHI!!! 忍者杀无赦__67C25896E0487248.wav",
+          "sha256": "449D2EEEB13B4E3D5AC65F53CF4E705E28E7287E852FDF88B511F13A8496096D"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -18.05,
+        "input_tp": -7.46,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -18.05,
+        "input_tp": -7.08,
+        "input_lra": 0.0
+      },
+      "gain_db": -3.0100000000000016
+    },
+    {
+      "asset": "ninja_slayer_select_ushimitsu.wav",
+      "asset_guid": "{0fd8f6bb-f2d7-4b30-882b-e6ab5a6ca530}",
+      "before_sha256": "78603776D923096C2202E836C0D5532C988437F0AE074FF6DC885E9BF2FF48C8",
+      "sample_rate": 44100,
+      "frames": 91728,
+      "channels": 2,
+      "status": "preserved",
+      "reason": "交付包无可确认覆盖当前完整剪辑的更干净版本；短反应仍为未重新还原原件。"
+    },
+    {
+      "asset": "机械之流无需问候__E9D133E6AB3C18ED.wav",
+      "asset_guid": "{98e95cc5-0521-4575-b60d-846f27001c78}",
+      "before_sha256": "EBA1BA1E0703298687FE577F6CC98908BEBB3DB5B222BD614108FCDAA8E44855",
+      "sample_rate": 48000,
+      "frames": 103428,
+      "channels": 2,
+      "status": "already_identical",
+      "reason": "当前素材已经与交付纯人声逐字节一致。"
+    },
+    {
+      "asset": "16_yarareta_(Vocals).mp3",
+      "asset_guid": "{45653cdb-83be-46f2-9124-028fcbcbba8d}",
+      "before_sha256": "EE90C5B20058622CE04ED758EDAEE1E30EDB5FAD97176379CDC2BC472D28C916",
+      "sample_rate": 48000,
+      "frames": 155648,
+      "channels": 2,
+      "identity_correlation": 0.8996524085247517,
+      "piecewise_identity": [
+        {
+          "start_sample": 0,
+          "end_sample": 19619,
+          "source_offset_samples": 1923,
+          "correlation": 0.8806430300854783
+        },
+        {
+          "start_sample": 19619,
+          "end_sample": 37435,
+          "source_offset_samples": 17922,
+          "correlation": 0.8918617926797219
+        },
+        {
+          "start_sample": 37435,
+          "end_sample": 55274,
+          "source_offset_samples": 32322,
+          "correlation": 0.9014565342742451
+        },
+        {
+          "start_sample": 55274,
+          "end_sample": 152576,
+          "source_offset_samples": 49922,
+          "correlation": 0.9055656189109001
+        }
+      ],
+      "source_offsets_samples": [
+        1923,
+        17922,
+        32322,
+        49922
+      ],
+      "output_asset": "voice_ninja_slayer_death_restored.wav",
+      "shared_source_isolated": true,
+      "status": "prepared",
+      "after_sha256": "5E651A5D95982AA02C3B10CAD6192984EBC3CF891F7862DB398C92C88E8D3693",
+      "delivery_sources": [
+        {
+          "path": "黑忍\\02_受击与痛呼\\纯人声\\16_yarareta__BA7BE96A55BA6156.wav",
+          "sha256": "DF3E6F9E2601FD0FE2F8E237B0A5BE1F94739D1F234237112FF69AA1F16B3117"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -12.96,
+        "input_tp": -4.36,
+        "input_lra": 0.1
+      },
+      "loudness_after": {
+        "input_i": -12.95,
+        "input_tp": -4.82,
+        "input_lra": 0.1
+      },
+      "gain_db": 1.2299999999999986,
+      "codec_timing_padding": {
+        "lead_samples": 2257,
+        "tail_samples": 815,
+        "reason": "Match original MP3 FMOD decoder delay and end padding measured from actual baseline bank render",
+        "runtime_alignment_correlation": 0.9094225228352857
+      }
+    },
+    {
+      "asset": "voice_ninja_slayer_slow_attack_01_clean.wav",
+      "asset_guid": "{161ba0ff-8545-4cd0-89c9-3996bd209379}",
+      "before_sha256": "51E772350AD66FBC6363D6BE8CA2E67BC56E75196A9FCA5E90D3B029378DE56C",
+      "sample_rate": 44100,
+      "frames": 47981,
+      "channels": 2,
+      "identity_correlation": 0.9777317005353016,
+      "source_offsets_samples": [
+        -2
+      ],
+      "current_reference_correlation": 0.9999435520717203,
+      "current_envelope_reconstruction_correlation": 0.9999999832735648,
+      "status": "prepared",
+      "after_sha256": "51B49C0D1D3D40912129E0B19D6B4441A254EAEE3543EBE7947CACA078169CE1",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\1_咿呀7__ADC73EEF13F32E3B.wav",
+          "sha256": "F3299EB2AF6D5C54056E3CC9CDCC110361DE564DA838D316581971CDF320CA0A"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.8,
+        "input_tp": -6.26,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.78,
+        "input_tp": -6.46,
+        "input_lra": 0.0
+      },
+      "gain_db": -0.07000000000000028
+    },
+    {
+      "asset": "voice_ninja_slayer_slow_attack_02_clean.wav",
+      "asset_guid": "{472130e3-c98d-4b9e-a335-0e471a5e4199}",
+      "before_sha256": "8AEFB5C9543FFC3017BFC3C44B6FA902D03DB2B58CDB35F91E7C7725FAB196CF",
+      "sample_rate": 44100,
+      "frames": 56478,
+      "channels": 2,
+      "identity_correlation": 0.9816067853682098,
+      "source_offsets_samples": [
+        7497
+      ],
+      "current_reference_correlation": 0.9999999458273121,
+      "current_envelope_reconstruction_correlation": 0.9999999840987398,
+      "status": "prepared",
+      "after_sha256": "8BCA76333A949CD04029C15CDB1A3878CD8CD0632881B74BF88724D197FDB5EF",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\11_yeea↓rt__D5071A4B0D017C1E.wav",
+          "sha256": "02B5306B396CD6FDDEBBB80EF51A94FE0B322A1C8E64BA0DCC0B1817B7A1EC93"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.28,
+        "input_tp": -5.25,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.28,
+        "input_tp": -5.18,
+        "input_lra": 0.0
+      },
+      "gain_db": 1.3000000000000007
+    },
+    {
+      "asset": "ninja_slayer_slow_attack 3.wav",
+      "asset_guid": "{c1f9a49b-d660-46bd-92be-67a03316c511}",
+      "before_sha256": "870726730BB981F3143F56AC03AD9C8B071E9CCED5717F336FFCC20294AA7157",
+      "sample_rate": 44100,
+      "frames": 47040,
+      "channels": 2,
+      "identity_correlation": 0.9029478066839581,
+      "source_offsets_samples": [
+        1
+      ],
+      "current_reference_correlation": 1.0,
+      "current_envelope_reconstruction_correlation": 1.0,
+      "status": "prepared",
+      "after_sha256": "6429EAFF0F2ABECF37321ECCF39264377483C3405958FAF6CB884AD4B7336A02",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\13_yeeart__8F7399177A5D5871.wav",
+          "sha256": "24095DC2094679D11A267D7F98091D7EA79FCC7518ED70306E4388E51D6AA824"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -11.86,
+        "input_tp": -4.59,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -11.85,
+        "input_tp": -5.62,
+        "input_lra": 0.0
+      },
+      "gain_db": 0.9900000000000002
+    },
+    {
+      "asset": "1_wasshoi_(Vocals).wav",
+      "asset_guid": "{a92360f0-527d-4a5f-a632-9ead46380595}",
+      "before_sha256": "F285C6B2B48D56936DC7647A5AB72CDC183C57B3E2413311509096E10967642F",
+      "sample_rate": 44100,
+      "frames": 45159,
+      "channels": 2,
+      "identity_correlation": 0.98621170856372,
+      "source_offsets_samples": [
+        0
+      ],
+      "current_reference_correlation": 1.0000000000000002,
+      "current_envelope_reconstruction_correlation": 1.0,
+      "status": "prepared",
+      "after_sha256": "D7F48B4F8B4010C2D363A790C3C080DDB93A7A55B10B395B545B317BB5DB74A5",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\1_wasshoi__EC34F300FC07B16B.wav",
+          "sha256": "DA36948C4383BECA6E4E861DA0FC6AA519E389A679805E883333158145C79672"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.59,
+        "input_tp": -5.39,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.62,
+        "input_tp": -5.6,
+        "input_lra": 0.0
+      },
+      "gain_db": -0.02999999999999936
+    },
+    {
+      "asset": "6_Wasshoi!_(Vocals).wav",
+      "asset_guid": "{84e7f156-9ad3-4f78-93e2-76a05b52ac4a}",
+      "before_sha256": "5A907BC02D466347A2B3AF96E04D7BC571066D91639F63FF1220B83F26C21CD6",
+      "sample_rate": 44100,
+      "frames": 38573,
+      "channels": 2,
+      "identity_correlation": 0.8739482235351428,
+      "source_offsets_samples": [
+        -1
+      ],
+      "current_reference_correlation": 1.0,
+      "current_envelope_reconstruction_correlation": 1.0,
+      "status": "prepared",
+      "after_sha256": "FFEF781E67E569AAC7BF7BC032E2A7F5087C630F78C9720CF85D94B1277F6E20",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\6_Wasshoi!__D43B1A7760A388D1.wav",
+          "sha256": "589692713040A55EE8AA3CF9AB2CCB654615C2D660280BE5FA32221A41BDD88D"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -21.38,
+        "input_tp": -10.4,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -21.4,
+        "input_tp": -12.86,
+        "input_lra": 0.0
+      },
+      "gain_db": -7.079999999999998
+    },
+    {
+      "asset": "ninja_slayer_spin_loop.wav",
+      "asset_guid": "{1771c541-0413-49da-bcfb-bcaf3a0f28ab}",
+      "before_sha256": "BD0B84B273DAE7AC99F0976B3FB5E70C5C42FCD220792AF74E9044472939686B",
+      "sample_rate": 44100,
+      "frames": 52224,
+      "channels": 2,
+      "identity_correlation": 0.9243054630954762,
+      "source_offsets_samples": [
+        8819
+      ],
+      "current_reference_correlation": 0.9966586562598615,
+      "current_envelope_reconstruction_correlation": 0.999926208372564,
+      "status": "restored_at_user_request",
+      "after_sha256": "BD0B84B273DAE7AC99F0976B3FB5E70C5C42FCD220792AF74E9044472939686B",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\01_战吼与攻击喊声\\纯人声\\12_yeeart!yeart!yeart!yeart!yeart!yeart!__0D8099CA492C8BC1.wav",
+          "sha256": "75DEEEA5A28F0195E3CBFEA1B5208CA7BB63035A1A491693E22542231EE25A6A"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -13.78,
+        "input_tp": -4.91,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -13.77,
+        "input_tp": -3.22,
+        "input_lra": 0.0
+      },
+      "gain_db": 2.290000000000001,
+      "previous_cleaned_sha256": "B5D06299EAB675EBABE4B50591E362E366F031B4C99A331FB05B7435E776D138",
+      "current_source": "Original pre-refresh asset restored byte-for-byte"
+    },
+    {
+      "asset": "爆发四散.wav",
+      "asset_guid": "{3de85b34-c337-4d24-8c9f-8c4963348673}",
+      "before_sha256": "0145E28D6FFFE3BC62D46574A84D0A7D47F9A6C049AC84E8FF33AB346746A548",
+      "sample_rate": 44100,
+      "frames": 112640,
+      "channels": 2,
+      "status": "preserved",
+      "reason": "交付包无可确认覆盖当前完整剪辑的更干净版本；短反应仍为未重新还原原件。"
+    },
+    {
+      "asset": "NK1 Ultra(1)_C0887.wav",
+      "asset_guid": "{bc5fd832-2dbc-4bfb-bef6-82b4405b1ae4}",
+      "before_sha256": "2B7422BB13A41B7BE63103FAA15BEBAC5C46A4B50994B389B6A0239EC9F29AA1",
+      "sample_rate": 44100,
+      "frames": 91136,
+      "channels": 2,
+      "identity_correlation": 0.7746242991916055,
+      "source_offsets_samples": [
+        128753
+      ],
+      "status": "prepared",
+      "after_sha256": "08735B0E5060B16BADD6D11F46CA5424A1BCDF99882050D64CF7F5529154868A",
+      "delivery_sources": [
+        {
+          "path": "忍杀\\03_问候与自我介绍\\纯人声\\6_domo 初次见面 索尼克爆音=san__CD0302217A95B466.wav",
+          "sha256": "5E0DBE25B8B8E8E3CE36822AEB768EC9B4F45BFC1FC0DD4B3707CE944A362737"
+        }
+      ],
+      "loudness_before": {
+        "input_i": -16.86,
+        "input_tp": -5.01,
+        "input_lra": 0.0
+      },
+      "loudness_after": {
+        "input_i": -16.84,
+        "input_tp": -4.83,
+        "input_lra": 0.0
+      },
+      "gain_db": 0.16000000000000014
+    },
+    {
+      "asset": "ninja_slayer_domo.wav",
+      "asset_guid": "{e6eabd98-940b-43d5-8b85-2bc60a586f7a}",
+      "before_sha256": "F292F4CE22C6668C22BCAEE35415ED642A7F6BBEEEF8C09E37E1FA0F53E30293",
+      "sample_rate": 44100,
+      "frames": 478208,
+      "channels": 2,
+      "status": "preserved",
+      "reason": "交付包无可确认覆盖当前完整剪辑的更干净版本；短反应仍为未重新还原原件。"
+    },
+    {
+      "asset": "6月16日(1).wav",
+      "asset_guid": "{dc53fa82-f723-4002-b5af-26712a15a04f}",
+      "before_sha256": "7483D449699FDF81A458AD0AFF015417D35F3808D792A1481063B3338DCDDDEE",
+      "sample_rate": 44100,
+      "frames": 89088,
+      "channels": 2,
+      "status": "preserved",
+      "reason": "交付包无可确认覆盖当前完整剪辑的更干净版本；短反应仍为未重新还原原件。"
+    }
+  ],
+  "runtime_max_loudness_delta_lu": 0.1999999999999993,
+  "runtime_max_duration_delta_ms": 0.0,
+  "bank_sha256": "8B020A05BEA2F9D4E992C019DD1C26701C28AF01CE3E500AA5C45794129F817A",
+  "local_evidence_directory": "C:\\Users\\theon\\Documents\\NinjaSlayer\\deliveries\\NSVC-NINJA-REFRESH-20260928",
+  "spin_rollback": {
+    "status": "passed",
+    "restored_assets": [
+      "ninja_slayer_spin_intro.wav",
+      "ninja_slayer_spin_loop.wav",
+      "ninja_slayer_spin_outro.wav"
+    ],
+    "restored_sources_byte_identical": true,
+    "restored_fmod_renders_byte_identical_to_original": true,
+    "render_checks": [
+      {
+        "event": "ninja_slayer_intro_spin_attack",
+        "seed": 1,
+        "sha256": "11DE58862EE7434AEE0C06394C77CBCF10D5FA9429566F9713456C8E3289E2C5",
+        "frames": 72704,
+        "rate": 48000,
+        "loudness": {
+          "input_i": -18.95,
+          "input_tp": -10.48,
+          "input_lra": 0.0
+        },
+        "capture": {
+          "stopped": true,
+          "playback_elapsed_seconds": 1.392,
+          "update_seconds": 0.005333333333333333
+        },
+        "loudness_delta_lu": 0.0,
+        "duration_delta_ms": 0.0
+      },
+      {
+        "event": "ninja_slayer_outro_spin_attack",
+        "seed": 1,
+        "sha256": "CE7EE11B76B1E5FAA1E0CA5E04D02DC58993112615832AFAEBC3367B20461B74",
+        "frames": 60416,
+        "rate": 48000,
+        "loudness": {
+          "input_i": -21.4,
+          "input_tp": -11.47,
+          "input_lra": 0.0
+        },
+        "capture": {
+          "stopped": true,
+          "playback_elapsed_seconds": 1.136,
+          "update_seconds": 0.005333333333333333
+        },
+        "loudness_delta_lu": 0.0,
+        "duration_delta_ms": 0.0
+      },
+      {
+        "event": "ninja_slayer_loop_spin_attack",
+        "seed": 1,
+        "sha256": "A26474EAAE74EDF400CDEDD6D31225E19FA6EAD6D341A5B001CA858ED72E3E31",
+        "frames": 579328,
+        "rate": 48000,
+        "loudness": {
+          "input_i": -19.22,
+          "input_tp": -10.43,
+          "input_lra": 0.2
+        },
+        "capture": {
+          "stopped": false,
+          "playback_elapsed_seconds": 12.0,
+          "update_seconds": 0.005333333333333333
+        },
+        "loudness_delta_lu": 0.0,
+        "duration_delta_ms": 0.0
+      }
+    ],
+    "other_assets_and_all_metadata_unchanged": true,
+    "bank_sha256": "8B020A05BEA2F9D4E992C019DD1C26701C28AF01CE3E500AA5C45794129F817A",
+    "remaining_cleaned_assets": 15
+  }
+}

@@ -20,6 +20,9 @@ using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Monsters;
+using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
 using STS2RitsuLib.Audio;
@@ -122,7 +125,15 @@ public static class BossGreetingCinematic
                 TryMarkProcessed(combatState.RunState, roomKey);
                 foreach (Player player in ninjaSlayers)
                     NinjaSlayerRunData.MarkBossGreetingCompleted(player, roomKey);
-                if (!sync.Brief && !sync.Shortened)
+                if (SelectBoss(combatState)?.HasPower<ArtifactPower>() == true)
+                {
+                    context.BeginBrief();
+                    foreach (Player player in ninjaSlayers)
+                        room.GetCreatureNode(player.Creature)?.Visuals.Show();
+                    context.PlaySfx(NinjaSlayerAudio.NinjaSlayerNoDomoEvent);
+                    await context.WaitSeconds(2.15f);
+                }
+                else if (!sync.Brief && !sync.Shortened)
                 {
                     context.BeginFull();
                     try { await PlayInternal(combatState, ninjaSlayers, room, run.GlobalUi, context); }
@@ -184,17 +195,15 @@ public static class BossGreetingCinematic
         Player followed = SelectFollowedPlayer(state, players, context.RoomKeySeed);
         Creature? boss = SelectBoss(state);
         NCreature? bossNode = boss == null ? null : room.GetCreatureNode(boss);
-        var bows = new List<(NinjaSlayerAimPose Pose, NinjaSlayerAimPose.VisualMotion Motion)>();
+        var bows = new List<GreetingBow>();
         foreach (Player player in players)
         {
             room.GetCreatureNode(player.Creature)?.Visuals.Show();
-            NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(player.Creature);
-            if (pose?.BeginVisualMotion(NinjaSlayerAimPose.MotionKind.Offset, 1f) is not { } motion) continue;
-            motion.Paused = true;
-            bows.Add((pose, motion));
+            bows.Add(new GreetingBow(player.Creature));
         }
+        context.PlaySfx(NinjaSlayerAudio.NinjaSlayerFastDomoEvent);
         string name = LocManager.Instance.Language == "zhs" ? "忍者杀手" : "NINJA SLAYER";
-        string title = state.Encounter?.Title.GetFormattedText() ?? boss?.Monster?.Id.Entry ?? "Boss";
+        string title = boss?.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss?.Monster?.Id.Entry ?? "Boss";
         var bubble = NSpeechBubbleVfx.Create($"DOMO, {title}=SAN, {name} DESU.".ToUpperInvariant(), followed.Creature, 1.8f);
         if (bubble != null) { room.SceneContainer.AddChildSafely(bubble); context.TrackNode(bubble); }
         float elapsed = 0f;
@@ -206,13 +215,7 @@ public static class BossGreetingCinematic
         {
             while (elapsed < duration)
             {
-                float weight = elapsed < 0.2f ? Mathf.SmoothStep(0f, 1f, elapsed / 0.2f)
-                    : elapsed < 0.7f ? 1f : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - 0.7f) / 0.3f);
-                foreach (var (pose, motion) in bows)
-                {
-                    motion.Radians = Mathf.DegToRad(18f) * motion.Facing * weight;
-                    pose.SyncNow();
-                }
+                foreach (GreetingBow bow in bows) bow.Apply(elapsed);
                 if (elapsed >= 0.5f && !context.BossResponseStarted && boss != null && bossNode != null)
                 {
                     ShowBriefBossBubble(state, room, boss, bossNode, context);
@@ -230,7 +233,7 @@ public static class BossGreetingCinematic
         }
         finally
         {
-            foreach (var (pose, motion) in bows) { motion.Dispose(); if (GodotObject.IsInstanceValid(pose)) pose.SyncNow(); }
+            foreach (GreetingBow bow in bows) bow.Dispose();
         }
     }
 
@@ -238,7 +241,7 @@ public static class BossGreetingCinematic
         NCreature bossNode, BossGreetingSession context)
     {
         if (boss.Monster is LagavulinMatriarch) return;
-        string title = state.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
+        string title = boss.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
         var bubble = IsKaiserBoss(boss)
             ? NSpeechBubbleVfx.Create(BuildBossGreetingDialogue(title), DialogueSide.Right,
                 GetGlobalCenter(GetBossFocus(room, boss, bossNode)!), 2f)
@@ -407,7 +410,7 @@ public static class BossGreetingCinematic
         bool anchorBubbleToBoss = IsKaiserBoss(boss);
         if (showBubble)
         {
-            string title = combatState.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
+            string title = boss.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : combatState.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
             string dialogue = BuildBossGreetingDialogue(title);
             bubble = anchorBubbleToBoss
                 ? NSpeechBubbleVfx.Create(
@@ -589,7 +592,9 @@ public static class BossGreetingCinematic
 
     private static bool IsGreetingEligible(ICombatState combatState, CombatRoom room) =>
         room.RoomType == RoomType.Boss
-        || combatState.Encounter is HunterKillerNormal;
+        || combatState.Encounter is HunterKillerNormal
+        || combatState.Enemies.Any(enemy => enemy.Monster is DarkNinjaMonster
+            || SawatariEventSession.IsActiveDuelCreature(enemy));
 
     private static bool TryGetRoomKey(ICombatState combatState, out string roomKey)
     {
@@ -604,6 +609,7 @@ public static class BossGreetingCinematic
 
         string coord = runState.CurrentMapCoord is { } mapCoord ? $"{mapCoord.col}:{mapCoord.row}" : "none";
         roomKey = $"{runState.Rng.Seed}:{runState.CurrentActIndex}:{coord}:{combatState.Encounter.Id.Entry}";
+        if (combatState.Enemies.Any(SawatariEventSession.IsActiveDuelCreature)) roomKey += ":sawatari-duel";
         return true;
     }
 
@@ -648,7 +654,8 @@ public static class BossGreetingCinematic
 
         lock (state.Gate)
         {
-            return state.ResumedLocation == runState.MapLocation || state.RoomKeys.Contains(roomKey);
+            return state.ResumedLocation == runState.MapLocation && !roomKey.EndsWith(":sawatari-duel", StringComparison.Ordinal)
+                || state.RoomKeys.Contains(roomKey);
         }
     }
 
@@ -712,6 +719,7 @@ public static class BossGreetingCinematic
         private Creature? _respondingBoss;
         private BossGreetingActionSpec? _response;
         private float _responseElapsed;
+        private GreetingBow? _responseBow;
         private bool _responseVfxPlayed;
         public Task? Entrances { get; set; }
         public NSpeechBubbleVfx? BossBubble { get; set; }
@@ -788,6 +796,7 @@ public static class BossGreetingCinematic
             if (_response != null) return;
             _respondingBoss = boss;
             _response = BossGreetingActionCatalog.Get(boss);
+            if (boss.Monster is DarkNinjaMonster or SawatariMonster) _responseBow = new GreetingBow(boss);
             if (_response.SfxPath != null) BossAudio = PlaySfxWithHandle(_response.SfxPath);
             if (_response.AnimationTrigger != null) node.SetAnimationTrigger(_response.AnimationTrigger);
         }
@@ -897,6 +906,12 @@ public static class BossGreetingCinematic
                 if (_response != null)
                 {
                     _responseElapsed += _cachedFrameDelta;
+                    _responseBow?.Apply(_responseElapsed);
+                    if (_responseElapsed >= GreetingBow.Duration)
+                    {
+                        _responseBow?.Dispose();
+                        _responseBow = null;
+                    }
                     if (!_responseVfxPlayed && _response.VfxPath != null && _responseElapsed >= _response.VfxDelay)
                     {
                         _responseVfxPlayed = true;
@@ -1081,6 +1096,8 @@ public static class BossGreetingCinematic
             }
 
             _disposed = true;
+            _responseBow?.Dispose();
+            _responseBow = null;
             _video?.Stop();
             if (_video != null && GodotObject.IsInstanceValid(_video))
             {

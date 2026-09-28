@@ -76,7 +76,7 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
         if (created)
         {
             _ = TaskHelper.RunSafely(
-                YamotoKokiCombatAnimations.PlayEntrance(yukano, playVoice: false));
+                YukanoCombatAnimations.PlayEntrance(yukano));
         }
     }
 
@@ -99,7 +99,7 @@ public sealed class YukanoCompanionRelic : NinjaSlayerRelicTemplate
         }
 
         CompanionIntentLifecycle.Invalidate(yukano);
-        _ = TaskHelper.RunSafely(YamotoKokiCombatAnimations.PlayFarewell(yukano));
+        _ = TaskHelper.RunSafely(YukanoCombatAnimations.PlayFarewell(yukano));
         return Task.CompletedTask;
     }
 

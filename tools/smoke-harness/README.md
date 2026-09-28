@@ -34,6 +34,15 @@ The current automation controls the Windows client. macOS and Linux/Steam Deck v
 
 ## Scenario
 
+`-Mode CombatRegression -NoScreenshots` runs the focused Yukano arrow,
+native multi-phase death/remaining-hit, Naraku Life icon and final-finisher
+checks. It uses real native encounters and an isolated single-player run;
+checkpoints are not multiplayer or save/reload evidence. Use the universal
+candidate bundle with its production loader. For dirty local candidates,
+record the source baseline plus product DLL hashes separately: `CandidateSha`
+alone identifies only the baseline. See
+`Docs/validation/combat-regression-20260928.md` for the comparison and limits.
+
 The fresh process uses the original `AutoSlayer` for menu, reward, and map navigation while trusted Harmony patches select NinjaSlayer and replace only the first combat handler. The scenario:
 
 1. Plays `ReadyBlade` and verifies Prepared is created.

@@ -37,7 +37,6 @@ public sealed class DragonFlyingKickRedesignV1 : RedesignV1RareCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiDragonFlyingKickEvent);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
             .FromCard(this)

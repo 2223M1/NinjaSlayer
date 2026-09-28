@@ -24,7 +24,6 @@ public sealed class NarakuWithinRelic : NinjaSlayerRelicTemplate
     {
         Flash();
         NarakuVisualOverlay.Sync(Owner.Creature);
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
         NinjaSlayerCombatVfx.PlayBurnStatusFeedback([Owner.Creature]);
         return Task.CompletedTask;
     }

@@ -55,6 +55,7 @@ internal static class FinisherForecast
         IRunState? runState = ResolveRunState(owner);
         if (combatState == null
             || runState == null
+            || Hook.ShouldStopCombatFromEnding(combatState)
             || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _)))
         {
             return FinisherForecastOutcome.NotGuaranteed;
@@ -192,6 +193,7 @@ internal static class FinisherForecast
             || runState == null
             || descriptor.HitCount <= 0
             || enemies.Count == 0
+            || Hook.ShouldStopCombatFromEnding(combatState)
             || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _)))
         {
             return FinisherForecastOutcome.NotGuaranteed;
@@ -269,6 +271,7 @@ internal static class FinisherForecast
             || combatState == null
             || runState == null
             || enemies.Count == 0
+            || Hook.ShouldStopCombatFromEnding(combatState)
             || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _))
             || missiles.Any(missile => missile.Monster is not YamotoKokiOrigamiMissile))
         {

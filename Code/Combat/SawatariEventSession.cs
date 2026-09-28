@@ -46,7 +46,8 @@ internal sealed class SawatariEventSession
     private bool _entrancePlayed;
     private bool _bambooVoicePending;
     private bool _ownsCombatPause;
-    private float _deathAnimLength;
+    private bool _positioning;
+    private Task? _intermissionMove;
     private TaskCompletionSource? _intermissionChoice;
 
     private SawatariEventSession(
@@ -188,12 +189,7 @@ internal sealed class SawatariEventSession
 
     public void ObserveDeath(Creature creature, float deathAnimLength)
     {
-        if (Phase == SawatariEventPhase.FirstCombat && creature.Side == CombatSide.Enemy)
-        {
-            // Death listeners may still spawn replacements or retire summons after this callback.
-            _deathAnimLength = Math.Max(_deathAnimLength, deathAnimLength);
-        }
-        else if (Phase == SawatariEventPhase.Duel
+        if (Phase == SawatariEventPhase.Duel
             && ReferenceEquals(creature, _duelCreature)
             && _phases.TryMove(
                 SawatariEventPhase.Duel,
@@ -204,26 +200,50 @@ internal sealed class SawatariEventSession
         }
     }
 
-    // The host reaches this point only after every participating player has ended
-    // their turn and the queued plays and turn-end hooks have completed.
+    // Called only after the native victory check, after death/spawn listeners.
+    internal void AfterWinCheck()
+    {
+        if (_positioning || !CanFinishFirstCombat()) return;
+        _positioning = true;
+        _intermissionMove = PositionForIntermission();
+        _ = TaskHelper.RunSafely(_intermissionMove);
+    }
+
+    private bool CanFinishFirstCombat() => Phase == SawatariEventPhase.FirstCombat
+        && ReferenceEquals(CombatManager.Instance.DebugOnlyGetState(), _state)
+        && _state.IsLiveCombat() && _state.Players.Any(player => player.Creature.IsAlive)
+        && !_state.Enemies.Any(enemy => enemy.IsAlive)
+        && !_state.IterateHookListeners().Any(model => model.ShouldStopCombatFromEnding());
+
+    private async Task PositionForIntermission()
+    {
+        NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(_companion);
+        CompanionIntentLifecycle.Retire(_companion);
+        NCreature node = _room.GetCreatureNode(_companion)
+            ?? throw new InvalidOperationException("Sawatari companion node is unavailable.");
+        Vector2 destination = ResolveIntermissionPosition(node);
+        // Retire completed death models without replaying death hooks or rewards.
+        foreach (Creature enemy in _state.Enemies.ToArray()) RemoveCreature(enemy);
+        SawatariMusicSession.PlayDecision();
+        await TweenGlobalPosition(node, destination, IntermissionMoveSeconds);
+        if (GodotObject.IsInstanceValid(node) && node.IsInsideTree())
+            SetFacing(_companion, faceRight: false);
+    }
+
+    // All players and native turn-end hooks must finish before choices take input.
     internal async Task AfterPlayerTurnEnded(CancellationToken combatCt)
     {
-        if (Phase != SawatariEventPhase.FirstCombat
-            || !ReferenceEquals(CombatManager.Instance.DebugOnlyGetState(), _state)
-            || !_state.IsLiveCombat() || !_state.Players.Any(player => player.Creature.IsAlive)
-            || _state.Enemies.Any(enemy => enemy.IsAlive)
-            || _state.IterateHookListeners().Any(model => model.ShouldStopCombatFromEnding())) return;
-        if (!_phases.TryMove(SawatariEventPhase.FirstCombat, SawatariEventPhase.Intermission)) return;
+        if (!CanFinishFirstCombat()) return;
+        AfterWinCheck();
+        if (_intermissionMove != null) await _intermissionMove.WaitAsync(combatCt);
+        if (!CanFinishFirstCombat()
+            || !_phases.TryMove(SawatariEventPhase.FirstCombat, SawatariEventPhase.Intermission)) return;
 
         _intermissionChoice = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        // Illusion keeps a dead model for revival; this event continues the same combat.
-        // Finish its native death presentation before retiring it from the next wave.
-        foreach (Creature enemy in _state.Enemies)
-            if (_room.GetCreatureNode(enemy) is { } node)
-                _deathAnimLength = Math.Max(_deathAnimLength, node.StartDeathAnim(shouldRemove: true));
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEndEvent);
         EnterDecisionState();
-        await BeginIntermission(_deathAnimLength);
+        foreach (SawatariEvent eventModel in _events) eventModel.ShowIntermissionPage();
+        SawatariEventUi.Show(_state.Players.Count > 1);
         // Wait outside the action executor. Event choices use the native event
         // synchronizer, while the host retains ownership of the pending turn end.
         await _intermissionChoice.Task.WaitAsync(combatCt);
@@ -301,7 +321,7 @@ internal sealed class SawatariEventSession
             }
 
             _bambooVoicePending = true;
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariDuelEvent);
+            await BossGreetingCinematic.TryPlay(_state);
 
             _room.AddChildSafely(NCombatStartBanner.Create());
             ExitDecisionState();
@@ -338,40 +358,6 @@ internal sealed class SawatariEventSession
         SawatariEventUi.Hide();
         ExitDecisionState();
         await CombatManager.Instance.CheckWinCondition();
-    }
-
-    private async Task BeginIntermission(float deathAnimLength)
-    {
-        SawatariMusicSession.PlayDecision();
-        if (deathAnimLength > 0f)
-        {
-            await Cmd.Wait(deathAnimLength);
-        }
-        await NextFrame();
-
-        try
-        {
-            if (_state.Enemies.Any(enemy => enemy.IsAlive))
-                throw new InvalidOperationException("A living enemy appeared after Sawatari's victory check.");
-            foreach (Creature enemy in _state.Enemies.ToArray()) RemoveCreature(enemy);
-            NCreature companionNode = _room.GetCreatureNode(_companion)
-                ?? throw new InvalidOperationException("Sawatari companion node is unavailable.");
-            NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(_companion);
-            CompanionIntentLifecycle.Retire(_companion);
-            Vector2 destination = ResolveIntermissionPosition(companionNode);
-            await TweenGlobalPosition(companionNode, destination, IntermissionMoveSeconds);
-            SetFacing(_companion, faceRight: false);
-
-            foreach (SawatariEvent eventModel in _events)
-            {
-                eventModel.ShowIntermissionPage();
-            }
-            SawatariEventUi.Show(_state.Players.Count > 1);
-        }
-        catch (Exception exception)
-        {
-            await FallBackToRegularRewards(exception);
-        }
     }
 
     private async Task BeginDuelResult(float deathAnimLength)
@@ -554,7 +540,7 @@ internal sealed class SawatariEventSession
             .SetEase(Tween.EaseType.InOut)
             .SetTrans(Tween.TransitionType.Quad);
         await TweenPlayback.AwaitCompletion(tween, node);
-        node.GlobalPosition = destination;
+        if (GodotObject.IsInstanceValid(node) && node.IsInsideTree()) node.GlobalPosition = destination;
     }
 
     private static async Task NextFrame()

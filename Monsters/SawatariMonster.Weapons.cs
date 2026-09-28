@@ -92,6 +92,7 @@ public sealed partial class SawatariMonster
             _ => SawatariWeaponVisuals.PlayArrow(Creature, target));
         if (Creature.IsAlive)
             await PowerCmd.Apply<PlatingPower>(new BlockingPlayerChoiceContext(), Creature, 4, Creature, null);
+        PlayEnhancedVoice();
     }
 
     internal Task PlayDualAttack(Creature target)
@@ -142,6 +143,7 @@ public sealed partial class SawatariMonster
                 knife = null;
             }
             if (Creature.IsAlive) SawatariWeaponVisuals.Get(Creature)?.Refresh();
+            if (MacheteCount == 0) PlayEnhancedVoice();
         }
         finally
         {

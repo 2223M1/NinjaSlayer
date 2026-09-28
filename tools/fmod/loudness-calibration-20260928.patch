@@ -1,0 +1,1209 @@
+--- a/Metadata/Event/{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml
++++ b/Metadata/Event/{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{32be1f4b-51c3-4a89-9a70-d8e454e9ac91}">
+ 		<property name="volume">
+-			<value>2.5</value>
++			<value>3.049</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{12564016-b8d4-486c-968b-cbcd1388b930}</destination>
+@@ -124,7 +124,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{9b3517e4-5359-4d54-aaba-1e8710600d6e}">
+ 		<property name="volume">
+-			<value>-2.5</value>
++			<value>-1.22</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{f3cd7fc7-e699-4194-b849-2f2131726182}</destination>
+@@ -132,7 +132,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{383f7b6b-de4a-4d10-b26d-03edbf56ed0d}">
+ 		<property name="volume">
+-			<value>-4.5</value>
++			<value>-6.167</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{75d01c0a-006f-42bb-bd0d-b76b3b55cd96}</destination>
+--- a/Metadata/Event/{09550113-0b1f-430c-9f3e-d8be1fc650ea}.xml
++++ b/Metadata/Event/{09550113-0b1f-430c-9f3e-d8be1fc650ea}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{88e5e724-026b-40ef-a9a5-b5c17cefe3b5}">
+ 		<property name="volume">
+-			<value>-4</value>
++			<value>-7.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{838d4bc4-acc0-43ac-bbf9-4d40b3710c12}</destination>
+--- a/Metadata/Event/{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml
++++ b/Metadata/Event/{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{24011ef0-c6b8-4aba-bb32-9ea277f50343}">
+ 		<property name="volume">
+-			<value>-1</value>
++			<value>-0.93</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ea544c5a-e956-4d57-a757-c309cbbc6b2b}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{c3d78e1e-c83a-44c0-8fdb-31ce9d35a160}" />
+ 	<object class="MixerBusFader" id="{f9e036e2-7592-4bfd-b56a-4c21735a0d9f}" />
+ 	<object class="SingleSound" id="{a5e49c1f-cb86-4c58-a4f7-36f97066857c}">
++		<property name="volume">
++			<value>-1.321</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{cb3ae2b2-891d-46dd-830f-5a1b9dbab149}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{f370563c-e074-4ff8-ae20-e6fbbc17b332}">
++		<property name="volume">
++			<value>1.321</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{687fe0c5-30f6-4c18-bdde-f90637dd7a4b}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml
++++ b/Metadata/Event/{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{be4fae71-8f99-490a-aed2-777c6e3e4b42}">
+ 		<property name="volume">
+-			<value>-9</value>
++			<value>-9.67</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{1da3f9e1-5c2b-4b15-82f7-70b8c9a26862}</destination>
+@@ -112,13 +112,16 @@
+ 	<object class="MixerBusFader" id="{afd07e1d-26a9-4b6e-a19f-49be7b1d9008}" />
+ 	<object class="SingleSound" id="{1da53f2f-e1d6-4e69-ba58-ed88f69001d9}">
+ 		<property name="volume">
+-			<value>-1</value>
++			<value>-1.466</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{5d2c254b-9605-4bbf-8751-3ceb520dbf77}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{930e92e2-65e9-45b4-909b-6e40018e9c4a}">
++		<property name="volume">
++			<value>0.467</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{69be6921-514d-4771-8e09-923f605420b9}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{11bb4a3f-5f68-4eaf-a971-12cc063edcfa}.xml
++++ b/Metadata/Event/{11bb4a3f-5f68-4eaf-a971-12cc063edcfa}.xml
+@@ -72,6 +72,9 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="EventMixerMaster" id="{6119f496-b4bc-42f8-af52-fe5c05d08822}">
++		<property name="volume">
++			<value>-7.539</value>
++		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{a4bbf2a0-3098-4eba-be34-8df652dda4b7}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f}.xml
++++ b/Metadata/Event/{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{21e2cb45-b7b9-4e58-928b-198ba924055a}">
+ 		<property name="volume">
+-			<value>-3</value>
++			<value>-5.234</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{3a968d71-a188-4a3c-b76b-7452b038daa2}</destination>
+--- a/Metadata/Event/{15554978-a2b5-482c-8c50-ee1eba9c1b3f}.xml
++++ b/Metadata/Event/{15554978-a2b5-482c-8c50-ee1eba9c1b3f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{4717d667-bba5-4a7d-9152-1c7d07b35fea}">
+ 		<property name="volume">
+-			<value>-0.5</value>
++			<value>-4.762</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{2ecd5242-147d-4e7b-8033-786a0ea3e437}</destination>
+--- a/Metadata/Event/{1756f2f9-39e1-48ad-b868-b363650ff6d6}.xml
++++ b/Metadata/Event/{1756f2f9-39e1-48ad-b868-b363650ff6d6}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{afb20ec7-42ec-4bac-8b64-bfdfe0796976}">
+ 		<property name="volume">
+-			<value>-3</value>
++			<value>-6.107</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{184d25f9-9be0-4c4a-ba24-ae795fdaeff9}</destination>
+--- a/Metadata/Event/{191e4ae4-25f9-41f7-9571-639313302897}.xml
++++ b/Metadata/Event/{191e4ae4-25f9-41f7-9571-639313302897}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{f02cf928-f9b2-45fe-b0a3-c9e558f5fad5}">
+ 		<property name="volume">
+-			<value>-4</value>
++			<value>-7.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{c289625c-9dd1-4c14-bcce-13a68c4c28d1}</destination>
+--- a/Metadata/Event/{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml
++++ b/Metadata/Event/{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{11fcfb90-541d-4851-8ae9-b41e8df8e78d}">
+ 		<property name="volume">
+-			<value>-1</value>
++			<value>-1.612</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b8c17d46-0837-4d0d-831f-ca10ed52f7f0}</destination>
+@@ -120,11 +120,17 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{4b393d19-e98e-41e6-981d-a87585d272f5}">
++		<property name="volume">
++			<value>2.323</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{45a8bccb-7cef-42d6-84b1-f2b578698856}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{71a0dc50-430f-4541-a09e-122c60dd8cd0}">
++		<property name="volume">
++			<value>-1.145</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{99858eb1-f2ff-4721-955d-9d03420cb5e4}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{1ce1c03a-d143-4e63-8185-7fd0a132b37f}.xml
++++ b/Metadata/Event/{1ce1c03a-d143-4e63-8185-7fd0a132b37f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{396ef01b-be22-4701-a8bd-b13e062bd8f9}">
+ 		<property name="volume">
+-			<value>-5</value>
++			<value>-6.851</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{26441a5a-7dbd-4955-a4e4-1d6db1a68524}</destination>
+--- a/Metadata/Event/{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml
++++ b/Metadata/Event/{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e5807cc1-908a-4d6c-9498-07b8b3159f42}">
+ 		<property name="volume">
+-			<value>-3</value>
++			<value>-4.984</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{10bd58ac-a038-4f6a-aa9f-ad017ec7d8cb}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{906b9132-6277-4fc7-99d4-7d66a24bfe9c}" />
+ 	<object class="MixerBusFader" id="{f04f6bc6-5c3e-4a4e-8710-06d8c3615143}" />
+ 	<object class="SingleSound" id="{9761211d-e7bc-4d7d-b416-35f7bb3f1efd}">
++		<property name="volume">
++			<value>1.183</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{c65616df-6758-4f37-877b-dc4681dc3c2e}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{8ceaa029-9fa7-4053-8481-ddf66ab9618b}">
++		<property name="volume">
++			<value>-1.184</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{eb93c6ef-08b9-43ed-bfe7-4f0802452ce6}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml
++++ b/Metadata/Event/{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{06dd71c2-bd57-44a6-9bae-99ea678453cd}">
+ 		<property name="volume">
+-			<value>-7.5</value>
++			<value>-11.18</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{5f3b9449-c197-4f3e-8739-3cc4de928d3d}</destination>
+@@ -112,7 +112,7 @@
+ 	<object class="MixerBusFader" id="{7f6f652c-b7f0-454e-8884-e8b51a47028a}" />
+ 	<object class="SingleSound" id="{30032c4e-baea-4233-b89a-431e2039af7e}">
+ 		<property name="volume">
+-			<value>-2</value>
++			<value>-1.222</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{5ce9911d-ce29-4b4e-9634-0ea50b1b49ea}</destination>
+@@ -120,7 +120,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{18cebb97-0d07-478d-a767-41514f8ba8e4}">
+ 		<property name="volume">
+-			<value>-2</value>
++			<value>-2.777</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{f063c2d4-a9a8-4dba-8a54-8200720ade90}</destination>
+--- a/Metadata/Event/{351f3e4c-5dae-4668-b9f2-280480f0982e}.xml
++++ b/Metadata/Event/{351f3e4c-5dae-4668-b9f2-280480f0982e}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{fabf954e-9379-41ee-aebd-6e29fbf92eba}">
+ 		<property name="volume">
+-			<value>-5.5</value>
++			<value>-9.65</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{799be665-c7f1-4d74-9c92-aa323d818afe}</destination>
+--- a/Metadata/Event/{393ec121-609e-469f-94fb-9a06c5926b32}.xml
++++ b/Metadata/Event/{393ec121-609e-469f-94fb-9a06c5926b32}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{6b0a5c52-2d5a-4db5-ae79-e5800e1dca20}">
+ 		<property name="volume">
+-			<value>6</value>
++			<value>4.87</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{33d21177-d6bb-4dbc-8929-3087087569c6}</destination>
+@@ -112,7 +112,7 @@
+ 	<object class="MixerBusFader" id="{20647880-a128-4df4-b634-185766a2ce6e}" />
+ 	<object class="SingleSound" id="{907baf9b-28dc-489f-948c-f40ffe5dd9c1}">
+ 		<property name="volume">
+-			<value>-4.5</value>
++			<value>-2.599</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{67621c78-9458-4e4d-b12e-d900299b41a6}</destination>
+@@ -120,7 +120,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{a2289957-f7e4-42d5-8dda-56f7878cf8d0}">
+ 		<property name="volume">
+-			<value>-2</value>
++			<value>-3.9</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{19cbcd52-23b1-438e-9a22-b8ab0719ee5e}</destination>
+--- a/Metadata/Event/{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml
++++ b/Metadata/Event/{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{9f61298b-efa1-4ca7-8b5c-b07b5f56cf3a}">
+ 		<property name="volume">
+-			<value>2.5</value>
++			<value>1.953</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{edc1c3e5-de0d-4189-b8b2-5398e4d27d9b}</destination>
+@@ -112,7 +112,7 @@
+ 	<object class="MixerBusFader" id="{7b1e284c-965e-45a8-9e7d-0dd4012ad7c7}" />
+ 	<object class="SingleSound" id="{2df1102a-a458-4df3-be8e-28b71df6069f}">
+ 		<property name="volume">
+-			<value>-1</value>
++			<value>-1.759</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{56edca68-dfe9-4f43-b05f-31577f697e4a}</destination>
+@@ -120,7 +120,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{aa5bb33a-6d9f-491f-a404-1153d00ec21f}">
+ 		<property name="volume">
+-			<value>-6</value>
++			<value>-5.241</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{97b4faca-657e-4895-aefa-de528eaac9fd}</destination>
+--- a/Metadata/Event/{3bae8a83-e507-444f-a37c-9888668e1a02}.xml
++++ b/Metadata/Event/{3bae8a83-e507-444f-a37c-9888668e1a02}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{fd408e03-8cbe-412e-b160-6e416909e384}">
+ 		<property name="volume">
+-			<value>-5</value>
++			<value>-3.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b2a69e4b-0ac7-4c18-aef0-f0e9122a8981}</destination>
+@@ -119,21 +119,33 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{1456be48-1672-4e18-8473-d6051388e17e}">
++		<property name="volume">
++			<value>-1.578</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{0c2c9f9d-116f-4425-867b-e01c5a17933d}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{f9936415-edbf-4704-ba3b-7fcd396058f1}">
++		<property name="volume">
++			<value>-0.126</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{ae763eb9-8e46-4b7b-9fee-4d319a013401}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{2e65f644-ec50-4114-a1a0-35b2a6126dc7}">
++		<property name="volume">
++			<value>0.958</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{2c66b0ea-219b-4d17-84e8-3a29d0c6b84f}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{3ffa00f8-e312-4bf5-b627-659f69b4473d}">
++		<property name="volume">
++			<value>1.211</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{eecbb9a4-7996-418a-8199-901866d42056}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}.xml
++++ b/Metadata/Event/{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}.xml
+@@ -261,7 +261,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{69065875-898c-4183-aed4-e4544a5d56db}">
+ 		<property name="volume">
+-			<value>-7.19999981</value>
++			<value>-10.8</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{21f64148-57ef-4440-af37-cee11b3cb74a}</destination>
+--- a/Metadata/Event/{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}.xml
++++ b/Metadata/Event/{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}.xml
+@@ -72,6 +72,9 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="EventMixerMaster" id="{09261eb2-45d6-49ef-813d-1e69036eb7be}">
++		<property name="volume">
++			<value>-4.314</value>
++		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f6b75187-1279-4eca-a3d9-8005fd604fec}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0}.xml
++++ b/Metadata/Event/{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{472446ce-7136-4113-9a2b-05e9ff9ff6c8}">
+ 		<property name="volume">
+-			<value>-2.9000001</value>
++			<value>-7.556</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f213556b-b627-4725-9a5a-49e91720b30a}</destination>
+--- a/Metadata/Event/{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml
++++ b/Metadata/Event/{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml
+@@ -107,7 +107,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{1bb4711d-7523-41de-bc93-d7749e8fa47e}">
+ 		<property name="volume">
+-			<value>-5.30000019</value>
++			<value>-7.8</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{1b48b0de-fec6-4dff-9aca-c4d82d686720}</destination>
+@@ -130,7 +130,7 @@
+ 			<value>10.689342403628117</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>6.30000019</value>
++			<value>-0.9</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{32e1ac81-aaef-4887-acb9-d4317045f720}</destination>
+@@ -144,7 +144,7 @@
+ 			<value>6.8571655328798187</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>6.30000019</value>
++			<value>-0.9</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{44f59bc9-c1d4-4ae7-9ab0-d21b7111741b}</destination>
+--- a/Metadata/Event/{5a225627-5e7e-47e9-b304-d297ccbd36cc}.xml
++++ b/Metadata/Event/{5a225627-5e7e-47e9-b304-d297ccbd36cc}.xml
+@@ -402,7 +402,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{33e6075b-47a4-4b16-8e34-fa463f663ecc}">
+ 		<property name="volume">
+-			<value>-7.19999981</value>
++			<value>-15</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{7205afd5-bbcd-4a37-a0ae-094c93c88e11}</destination>
+--- a/Metadata/Event/{5fc0244c-1cce-44ce-947f-0246892aa6f0}.xml
++++ b/Metadata/Event/{5fc0244c-1cce-44ce-947f-0246892aa6f0}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{8fda50a4-e106-4602-94f3-0dd28f3cedec}">
+ 		<property name="volume">
+-			<value>-6</value>
++			<value>-14.592</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{97557ed6-04ae-4efa-b6b6-bac41f90afab}</destination>
+--- a/Metadata/Event/{618017ad-c42d-42ec-9ec8-ed766627a7cd}.xml
++++ b/Metadata/Event/{618017ad-c42d-42ec-9ec8-ed766627a7cd}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{5d246f78-6ef5-42f8-a11d-1070aff47048}">
+ 		<property name="volume">
+-			<value>1</value>
++			<value>-3.91</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{5474962a-01a8-4107-9334-22279c61c0d1}</destination>
+--- a/Metadata/Event/{647b142a-123d-4b70-8ba1-87338a14b3c1}.xml
++++ b/Metadata/Event/{647b142a-123d-4b70-8ba1-87338a14b3c1}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{1ed2fb79-c873-423e-b342-a21f6d91bc17}">
+ 		<property name="volume">
+-			<value>-0.400000006</value>
++			<value>-4.838</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f73eeae2-45db-43b9-a9dc-981a9bae3609}</destination>
+--- a/Metadata/Event/{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml
++++ b/Metadata/Event/{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{9bb110f1-7508-48e3-81f1-cab8ff14b1bb}">
+ 		<property name="volume">
+-			<value>2</value>
++			<value>-3.595</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b8dd9f61-c4a3-40a9-9467-b8b7ac183fdf}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{7838a163-7f0f-4ce8-baa5-0c1127615bfd}" />
+ 	<object class="MixerBusFader" id="{8c6c615e-854b-4baf-8721-eae957f05263}" />
+ 	<object class="SingleSound" id="{aae037db-a47b-420e-90d2-ef18f1939202}">
++		<property name="volume">
++			<value>0.973</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{74c4247a-14d0-46af-a93e-bee86b9a179d}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{e1aab90f-a040-4cc2-8013-f2d409bae960}">
++		<property name="volume">
++			<value>-0.974</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{df2ee416-8bfa-421d-9a34-0aff0007dd8c}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{70c9ff13-388e-4528-b851-4a7759a53738}.xml
++++ b/Metadata/Event/{70c9ff13-388e-4528-b851-4a7759a53738}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{3d727bc1-c7c6-42a6-8c04-88b61dad282d}">
+ 		<property name="volume">
+-			<value>-5.5</value>
++			<value>-2.766</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{15461013-de53-4d05-8395-0b728b6422eb}</destination>
+--- a/Metadata/Event/{72e056f8-0323-41e9-adac-54260b068b91}.xml
++++ b/Metadata/Event/{72e056f8-0323-41e9-adac-54260b068b91}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{ddde32be-ed0f-46c4-843d-d454362f4748}">
+ 		<property name="volume">
+-			<value>-1.10000002</value>
++			<value>-7.029</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{7054c42c-4e80-4da7-b2aa-b5123bea6674}</destination>
+--- a/Metadata/Event/{73c6a36b-aa58-493f-8425-41f1d0487d9b}.xml
++++ b/Metadata/Event/{73c6a36b-aa58-493f-8425-41f1d0487d9b}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{fba4d6ba-5ecc-4bab-8b12-fda42892c422}">
+ 		<property name="volume">
+-			<value>2</value>
++			<value>-0.428</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{a284a898-e08c-4fa1-ae4e-970fd24a4f15}</destination>
+--- a/Metadata/Event/{7589eded-6028-46dc-9a8e-fe677238ebc3}.xml
++++ b/Metadata/Event/{7589eded-6028-46dc-9a8e-fe677238ebc3}.xml
+@@ -72,6 +72,9 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="EventMixerMaster" id="{6f3016de-3553-4a25-a48f-25e6c4e725b7}">
++		<property name="volume">
++			<value>-6.782</value>
++		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{2d31c9a5-21b8-4b28-8098-60ca5958a590}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml
++++ b/Metadata/Event/{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{add0dc66-ce2b-42c4-b73c-df9dc7d99ead}">
+ 		<property name="volume">
+-			<value>-9</value>
++			<value>-1.167</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{e3fd2869-c161-4e3d-a554-c4ba98ebd3e0}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{0690bd8e-24b4-4dc6-ada2-a3076a5153ed}" />
+ 	<object class="MixerBusFader" id="{ac994c8b-4267-4d1b-aa12-1de448c68598}" />
+ 	<object class="SingleSound" id="{ec7a02af-00b7-49d6-b725-2392be83957c}">
++		<property name="volume">
++			<value>-0.011</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{f01c204d-1350-49af-ac8f-ef32236dedae}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{2f94e86a-033c-4d3e-93ec-308ec1b61cba}">
++		<property name="volume">
++			<value>0.011</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{4c28693a-62f8-449f-be68-1a66f501d6de}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{7d050980-32d2-4444-83bf-559d9264cf44}.xml
++++ b/Metadata/Event/{7d050980-32d2-4444-83bf-559d9264cf44}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{f11bb6c3-6c3d-4a21-a29a-3f9675ccb0aa}">
+ 		<property name="volume">
+-			<value>-2.5</value>
++			<value>-5.196</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f911b564-dbb0-4e3a-a5b7-fe40eeceb81a}</destination>
+--- a/Metadata/Event/{8399306f-54e8-4300-ab25-bde9b8f689ff}.xml
++++ b/Metadata/Event/{8399306f-54e8-4300-ab25-bde9b8f689ff}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{d53c5566-6f93-4d82-a8fe-3d6463f4ef4a}">
+ 		<property name="volume">
+-			<value>-6.5</value>
++			<value>-8.688</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{aa584cdf-b3e9-4891-9dfe-cb9e3349d765}</destination>
+--- a/Metadata/Event/{841f8492-9735-4dea-b652-b8d22523f8c7}.xml
++++ b/Metadata/Event/{841f8492-9735-4dea-b652-b8d22523f8c7}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{b80facc1-6a2b-4df7-a01d-67fa35f3852c}">
+ 		<property name="volume">
+-			<value>3.5</value>
++			<value>1.585</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ced7438a-e9e1-4a46-bd46-1a75349e4489}</destination>
+@@ -124,7 +124,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{48e7b064-4082-4902-8a79-4a8a9ba422ec}">
+ 		<property name="volume">
+-			<value>-2</value>
++			<value>-3.022</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{472130e3-c98d-4b9e-a335-0e471a5e4199}</destination>
+@@ -132,7 +132,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{65c5ce4e-d697-47f9-a897-f19a0ac142fc}">
+ 		<property name="volume">
+-			<value>-5</value>
++			<value>-4.038</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{c1f9a49b-d660-46bd-92be-67a03316c511}</destination>
+--- a/Metadata/Event/{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml
++++ b/Metadata/Event/{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{d0363fac-7eb6-45c9-ab31-84e7aa16fd86}">
+ 		<property name="volume">
+-			<value>-2.5</value>
++			<value>-6.59</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{9e64d902-d326-411c-8352-59efb2d7cfb3}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{9570f0cb-45b6-47f9-973b-c00ef61e96a8}" />
+ 	<object class="MixerBusFader" id="{dea99cb8-9834-4eea-b972-bd0f3bfa14e8}" />
+ 	<object class="SingleSound" id="{aaec7b1a-61d7-4d38-80ea-0d57a74228fc}">
++		<property name="volume">
++			<value>0.123</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{7cec2ce5-5009-4f78-b4b7-cf8d6412faa4}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{04e7189e-493c-4254-8fa2-f581ffce1d6b}">
++		<property name="volume">
++			<value>-0.123</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{449cce8c-c6c6-44ed-b825-800b13223910}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{85c62279-908d-42cb-9b36-d2a0b0823a73}.xml
++++ b/Metadata/Event/{85c62279-908d-42cb-9b36-d2a0b0823a73}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{aaf168b3-9124-4c0b-9fd8-b288dcc61d9a}">
+ 		<property name="volume">
+-			<value>-1.60000002</value>
++			<value>-6.747</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{d97036b5-2faf-4ed2-9641-6545be59f247}</destination>
+--- a/Metadata/Event/{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml
++++ b/Metadata/Event/{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml
+@@ -388,7 +388,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{bdb41235-a062-491a-b7d7-521df82bfb3f}">
+ 		<property name="volume">
+-			<value>-6.80000019</value>
++			<value>-9</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f90535fe-9fce-42b4-b106-604748a713d6}</destination>
+@@ -411,7 +411,7 @@
+ 			<value>23.077868480725623</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>0.800000012</value>
++			<value>1.2</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{8558edb3-83b5-49dd-bbf1-aeb931afb12f}</destination>
+@@ -425,7 +425,7 @@
+ 			<value>121.57344671201814</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>0.800000012</value>
++			<value>1.2</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{bd5cff68-e9ab-4b24-af4a-369a0906d9e2}</destination>
+@@ -439,7 +439,7 @@
+ 			<value>77.202789115646254</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>1.20000005</value>
++			<value>-5.6</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{87317355-5b5d-42df-b4c0-6c7dd09db910}</destination>
+@@ -453,7 +453,7 @@
+ 			<value>26.85315192743764</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>1.20000005</value>
++			<value>-5.6</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{bd88a2c6-5f8f-427b-9fa3-695421045d2a}</destination>
+@@ -489,7 +489,7 @@
+ 			<value>9.4850793650793648</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>0.800000012</value>
++			<value>1.2</value>
+ 		</property>
+ 		<relationship name="triggerConditions">
+ 			<destination>{39f1d6d6-f7ef-4ead-b422-ffb57a7ba813}</destination>
+@@ -604,7 +604,7 @@
+ 			<value>0.75102040816326532</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>0.800000012</value>
++			<value>1.2</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{4738ebf3-4b69-4b47-8913-b67b68627387}</destination>
+@@ -618,7 +618,7 @@
+ 			<value>0.128140589569161</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>1.20000005</value>
++			<value>-5.6</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{a6b94e2d-8118-47fd-a0f1-1e703f6e691d}</destination>
+--- a/Metadata/Event/{8da32b4e-0fc2-43c3-a183-5a5380b4832b}.xml
++++ b/Metadata/Event/{8da32b4e-0fc2-43c3-a183-5a5380b4832b}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{b37c3aa3-1213-4e80-b9b6-5550f9b4846c}">
+ 		<property name="volume">
+-			<value>-1.89999998</value>
++			<value>-4.267</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{a9b805dd-f927-402f-b785-46cf3d5f01a4}</destination>
+--- a/Metadata/Event/{8e57e5da-7a6f-49ac-b634-a4b087ab569b}.xml
++++ b/Metadata/Event/{8e57e5da-7a6f-49ac-b634-a4b087ab569b}.xml
+@@ -72,6 +72,9 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="EventMixerMaster" id="{b88a31b7-c56e-4f74-86ca-5a637f6e75d1}">
++		<property name="volume">
++			<value>-3.408</value>
++		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f7c27714-72db-4fa8-9e72-a3e30a4fff56}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml
++++ b/Metadata/Event/{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{d9b8e55b-8749-49a3-9c4c-2aae92bc2a99}">
+ 		<property name="volume">
+-			<value>3.5</value>
++			<value>4.751</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{6a814401-3b73-4958-b66a-9e02e6c49caf}</destination>
+@@ -115,13 +115,16 @@
+ 	<object class="MixerBusFader" id="{1e71504d-5f08-4511-a35f-10247c48acac}" />
+ 	<object class="SingleSound" id="{ffa442fe-807d-4bf8-a87a-e65b29c37d17}">
+ 		<property name="volume">
+-			<value>-7</value>
++			<value>-7.445</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{a92360f0-527d-4a5f-a632-9ead46380595}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{ac3ddd50-2250-4478-94f6-f188fd2ca3ee}">
++		<property name="volume">
++			<value>0.445</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{84e7f156-9ad3-4f78-93e2-76a05b52ac4a}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{91b5a40d-26eb-4af1-9d1e-51cadac4ece8}.xml
++++ b/Metadata/Event/{91b5a40d-26eb-4af1-9d1e-51cadac4ece8}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{06701b21-4dea-487e-88fa-6ec3d7ac0168}">
+ 		<property name="volume">
+-			<value>-3.4000001</value>
++			<value>-6.98</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{5ae0156c-61be-457e-9841-74d49c6889de}</destination>
+--- a/Metadata/Event/{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml
++++ b/Metadata/Event/{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{a46369f7-95dd-4d8a-9c52-5f32ed120373}">
+ 		<property name="volume">
+-			<value>-1.39999998</value>
++			<value>-2.52</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{4aae6b2c-6376-4b69-a675-108100df6aad}</destination>
+@@ -112,6 +112,9 @@
+ 	<object class="MixerBusFader" id="{564321f7-57cd-445b-8c47-47cc10ff1428}" />
+ 	<object class="MixerBusFader" id="{911b46a6-a770-4e98-bb5a-4c91238d3a6a}" />
+ 	<object class="SingleSound" id="{28b67241-e4c7-45be-9fb3-62562dd86844}">
++		<property name="volume">
++			<value>-0.392</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{0ad2ec05-dcaf-4519-a9c5-f4b5066b92ad}</destination>
+ 		</relationship>
+@@ -122,6 +125,9 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{a9961963-4835-4626-88a6-08374a512716}">
++		<property name="volume">
++			<value>3.022</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{9dbb2f46-b8c9-40c8-baa0-78c1a6e171ea}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{a9bee68e-cb5d-427e-8248-e8a063343b0e}.xml
++++ b/Metadata/Event/{a9bee68e-cb5d-427e-8248-e8a063343b0e}.xml
+@@ -76,7 +76,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{54ecf0ee-9b49-4743-b46c-ca0c2fea3fad}">
+ 		<property name="volume">
+-			<value>-4</value>
++			<value>-7.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{834e2139-88f3-425a-a60d-ad34e3020f9b}</destination>
+--- a/Metadata/Event/{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}.xml
++++ b/Metadata/Event/{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}.xml
+@@ -294,7 +294,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{75814a6d-f762-4c27-ae26-51552e033822}">
+ 		<property name="volume">
+-			<value>-7.19999981</value>
++			<value>-12.3</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{10a48aa6-7c22-4d36-b5be-ce58f6d974d2}</destination>
+--- a/Metadata/Event/{ae9355ab-3946-4624-adca-eb051baef884}.xml
++++ b/Metadata/Event/{ae9355ab-3946-4624-adca-eb051baef884}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{687d60e8-5fd1-4b44-8aee-f66d3d836b71}">
+ 		<property name="volume">
+-			<value>-1</value>
++			<value>-2.419</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ade955f5-b0ce-4354-94cd-e82db7af9adb}</destination>
+@@ -115,31 +115,49 @@
+ 	<object class="MixerBusFader" id="{d432fef6-8abb-4a12-808f-838df25d912c}" />
+ 	<object class="MixerBusFader" id="{5321e88a-ae5c-4198-a541-1ae1d0ee625d}" />
+ 	<object class="SingleSound" id="{470dcd01-31bc-4ee4-869c-43a57653d28f}">
++		<property name="volume">
++			<value>-0.213</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{2632bfe4-6f19-4f8d-8cb0-b3e4f338b3cf}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{357e40de-ec5f-40ae-9d48-8cf3e30cc309}">
++		<property name="volume">
++			<value>-1.066</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{0429be9f-76a0-438d-874f-077bde7d4565}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{84200c0c-dd99-4e08-a860-3ddcd7c310e6}">
++		<property name="volume">
++			<value>3.276</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{caa259a0-c055-4990-ba63-3f592447de2f}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{8104c9d2-a2d7-410a-9495-6285af4253ce}">
++		<property name="volume">
++			<value>0.992</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{549fb285-9fe8-426c-b7bb-7758f93218f0}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{593332d0-89ee-4437-8a88-0af0940dcc79}">
++		<property name="volume">
++			<value>-0.562</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{c665f240-55d4-44d2-864f-046d68b47b5a}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{fcf2e802-6d25-4362-a025-390361158fd6}">
++		<property name="volume">
++			<value>0.213</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{c0430507-a0ee-408e-ac25-a7f93fed5e7e}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{b389c986-2115-49c1-acdb-b17b1d31c665}.xml
++++ b/Metadata/Event/{b389c986-2115-49c1-acdb-b17b1d31c665}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{71361f0d-7601-4d5d-98ec-800edaa83f3c}">
+ 		<property name="volume">
+-			<value>4.5</value>
++			<value>-2.163</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{c2ae8bb5-c074-4110-b656-fc21d29c9da9}</destination>
+@@ -113,21 +113,33 @@
+ 	<object class="MixerBusFader" id="{e684eacf-8377-4906-ae37-8f49f83fd3bc}" />
+ 	<object class="MixerBusFader" id="{973bd225-8b81-486b-a155-b2b75996785d}" />
+ 	<object class="SingleSound" id="{1abd4b47-e4d7-48d2-af54-5d36ec0755f1}">
++		<property name="volume">
++			<value>-0.916</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{44e976f7-c141-4c83-9b60-8f13c56d94c9}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{ed676562-a4dd-40c2-94b1-6c9a70696541}">
++		<property name="volume">
++			<value>-0.373</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{c158cd78-9ca3-4006-aa28-1226def5dc54}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{b2f700d7-a1d7-475f-ac32-2cb690f5bb7f}">
++		<property name="volume">
++			<value>0.372</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{7a6ab16f-a4d6-4e28-82dc-03a6a16a7ab7}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{4e3246ec-5b5e-4a21-967f-72604d0c439a}">
++		<property name="volume">
++			<value>0.574</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{ea0469d2-8e41-4196-8723-b825cda7d387}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml
++++ b/Metadata/Event/{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{c042124c-e109-444f-8f97-8887656fae5c}">
+ 		<property name="volume">
+-			<value>-4</value>
++			<value>-6.459</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{9db8b7d5-971e-4be6-9334-ef0445ffb2f9}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{347d6d61-449b-4c99-a793-323bf83d917a}" />
+ 	<object class="MixerBusFader" id="{6e3eb922-76be-43b5-9859-98333e787194}" />
+ 	<object class="SingleSound" id="{0d1c094e-98ac-4582-beaa-25741efda68c}">
++		<property name="volume">
++			<value>-0.355</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{a482be2f-ed23-42da-b1aa-2895482a5f6f}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{0853edd8-f495-4a10-9a2d-796e30b3cc05}">
++		<property name="volume">
++			<value>0.356</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{a4ec2ef0-52c6-42d1-86ed-6a4508672ec2}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{b6131b0d-f431-47e5-85ef-e20be2b85dd0}.xml
++++ b/Metadata/Event/{b6131b0d-f431-47e5-85ef-e20be2b85dd0}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{a5a318c5-3d37-42e5-9cba-e1c8c658e0e1}">
+ 		<property name="volume">
+-			<value>-3</value>
++			<value>-1.997</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{9c65b2d9-4532-4486-b253-0c2d78062c2f}</destination>
+--- a/Metadata/Event/{bf759c4b-49e9-4918-8f80-f68d5c84663d}.xml
++++ b/Metadata/Event/{bf759c4b-49e9-4918-8f80-f68d5c84663d}.xml
+@@ -96,7 +96,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{9f17f156-ee55-4333-b245-60fd6538442f}">
+ 		<property name="volume">
+-			<value>-7.19999981</value>
++			<value>-9</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{1f6d5718-e19a-41df-b908-a4c29708fd9d}</destination>
+--- a/Metadata/Event/{c30e2c16-a858-4486-8015-74f749a5fc59}.xml
++++ b/Metadata/Event/{c30e2c16-a858-4486-8015-74f749a5fc59}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e5507118-c3ef-46f7-83b3-578f35c62bd8}">
+ 		<property name="volume">
+-			<value>-6.5</value>
++			<value>-8.688</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b441d790-1db6-4ae8-a9c3-d743ae1bfc27}</destination>
+--- a/Metadata/Event/{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml
++++ b/Metadata/Event/{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{166988fa-ca98-4d34-ab2a-85f6d978e4ed}">
+ 		<property name="volume">
+-			<value>-0.200000003</value>
++			<value>-4.128</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{d95e53c3-5bef-41cb-9958-163913ceeecc}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{0a80cf20-15db-4cb0-806e-b2f3ea2f8acc}" />
+ 	<object class="MixerBusFader" id="{e0b41ef3-ea4f-4a5e-970b-df3beac73c5e}" />
+ 	<object class="SingleSound" id="{50375267-2b1f-477b-b240-2e77905ac25a}">
++		<property name="volume">
++			<value>-0.851</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{ba221573-4972-4f7b-b685-c6323e4d5e33}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{06fb3297-09ec-4f90-aea3-3d02d9ede0c1}">
++		<property name="volume">
++			<value>0.851</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{f3ecbdbc-af8c-4998-a1ab-ce49c9081751}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{cd6687eb-fb28-470c-b914-90d8c1509680}.xml
++++ b/Metadata/Event/{cd6687eb-fb28-470c-b914-90d8c1509680}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{28f971c4-7ce5-4492-9756-1b696dd5b16d}">
+ 		<property name="volume">
+-			<value>-0.5</value>
++			<value>-3.775</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{626cb335-c2dc-4b78-a634-4de1126067f0}</destination>
+--- a/Metadata/Event/{d4a68540-4006-4f13-9215-9cfd6f05feae}.xml
++++ b/Metadata/Event/{d4a68540-4006-4f13-9215-9cfd6f05feae}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e61bbd55-d2d0-416c-bf0c-4dffcd0a0721}">
+ 		<property name="volume">
+-			<value>-4</value>
++			<value>-10.622</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{4cf0d46e-32cd-498a-ae58-8f23ec27aac5}</destination>
+--- a/Metadata/Event/{da307a67-b27f-4a03-8fc7-64d5140b4bbb}.xml
++++ b/Metadata/Event/{da307a67-b27f-4a03-8fc7-64d5140b4bbb}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{c6821ce1-4499-4621-9c8b-c5bb9dc1042f}">
+ 		<property name="volume">
+-			<value>-2.5</value>
++			<value>-7.714</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ae95e122-5202-4c95-98fe-f4507b8efefe}</destination>
+--- a/Metadata/Event/{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml
++++ b/Metadata/Event/{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{073776a0-da69-4983-8c34-b3f85456495b}">
+ 		<property name="volume">
+-			<value>-5</value>
++			<value>-3.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{3ca98a58-ee1d-4b32-ba54-cb5fe7f14447}</destination>
+@@ -112,6 +112,9 @@
+ 	<object class="MixerBusFader" id="{5d8f10b8-ba3d-41b3-8f33-739057e5e7b4}" />
+ 	<object class="MixerBusFader" id="{c1d01ed4-beae-4dcd-9a85-92bd3cae08f5}" />
+ 	<object class="SingleSound" id="{b16d9492-a90d-4235-9981-e6420581352a}">
++		<property name="volume">
++			<value>1.211</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{eecbb9a4-7996-418a-8199-901866d42056}</destination>
+ 		</relationship>
+@@ -122,6 +125,9 @@
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{4d129625-460c-4b2d-9233-281b2743a4b5}">
++		<property name="volume">
++			<value>-0.126</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{ae763eb9-8e46-4b7b-9fee-4d319a013401}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{eeb09a3c-39f1-4190-b538-d248b6dfbeec}.xml
++++ b/Metadata/Event/{eeb09a3c-39f1-4190-b538-d248b6dfbeec}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e48829a0-4dbe-4c49-823b-ee28d933ffb5}">
+ 		<property name="volume">
+-			<value>-2.5</value>
++			<value>-6.237</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f9190dc2-aaa7-44eb-9f31-9b54ec1a7b5d}</destination>
+--- a/Metadata/Event/{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml
++++ b/Metadata/Event/{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{78f03485-5551-4974-bf61-5004ba2acba7}">
+ 		<property name="volume">
+-			<value>-8</value>
++			<value>-7.882</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{621d29b2-98b1-4d13-ba90-c633612fc613}</destination>
+@@ -111,13 +111,16 @@
+ 	<object class="MixerBusFader" id="{01763e8a-d323-4d7c-92a2-e5a61b549c5f}" />
+ 	<object class="MixerBusFader" id="{1fa68cf5-02a4-4110-84c2-402cf658662c}" />
+ 	<object class="SingleSound" id="{958fdca1-821e-4f1b-88a7-933802f3b726}">
++		<property name="volume">
++			<value>-2.196</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{498824d9-9b41-4a86-83a8-7622436e7e2c}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{edbc0925-f0c2-45e7-aa85-443f1d2a1639}">
+ 		<property name="volume">
+-			<value>2</value>
++			<value>4.195</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{66fa37f7-50c1-4e23-b7a2-eebe7dfe37c8}</destination>
+--- a/Metadata/Event/{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml
++++ b/Metadata/Event/{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{821d7651-ee0c-48f7-8772-74798b97c201}">
+ 		<property name="volume">
+-			<value>-5</value>
++			<value>0.44</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{91dccc68-fb20-4a1b-a1d7-e4c6084e9be5}</destination>
+@@ -111,11 +111,17 @@
+ 	<object class="MixerBusFader" id="{3cf5f4ff-1598-425b-a224-a4451261936d}" />
+ 	<object class="MixerBusFader" id="{abcfb5a8-e9e4-45e2-92d1-3a09f5924788}" />
+ 	<object class="SingleSound" id="{6a66bdf2-e32d-4b3f-8cc7-ea234c1fa427}">
++		<property name="volume">
++			<value>-0.977</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{64820ebc-9ef0-49d0-b11e-5f40b11791d2}</destination>
+ 		</relationship>
+ 	</object>
+ 	<object class="SingleSound" id="{eff8ff09-d7a4-44d3-995a-e69843fe406d}">
++		<property name="volume">
++			<value>0.978</value>
++		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{e15e08ad-5b0e-4028-b21b-f6f07ed3c351}</destination>
+ 		</relationship>
+--- a/Metadata/Event/{f56e5817-8ce7-4a18-8175-57f5d93dde22}.xml
++++ b/Metadata/Event/{f56e5817-8ce7-4a18-8175-57f5d93dde22}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{48ce36ec-c703-4173-9b97-3169a9781532}">
+ 		<property name="volume">
+-			<value>-8.5</value>
++			<value>-13.065</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{7e384b40-0e3c-4bf8-9df4-5d2278a091fc}</destination>
+--- a/Metadata/Event/{fed07464-e229-44ff-93b4-89ce41274988}.xml
++++ b/Metadata/Event/{fed07464-e229-44ff-93b4-89ce41274988}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{f1e77934-46e5-4518-b580-dc71ae2ed287}">
+ 		<property name="volume">
+-			<value>0.5</value>
++			<value>-8.246</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{4fb6821d-754f-4ac8-adc2-1dbc7a39c653}</destination>

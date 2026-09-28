@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
 using STS2RitsuLib.Patching.Models;
 
@@ -25,8 +26,12 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
             [typeof(List<NCreature>), typeof(float), typeof(bool)])
     ];
 
-    public static void Prefix(ref List<NCreature> creatureNodes)
+    public static void Prefix(ref List<NCreature> creatureNodes,
+        out Dictionary<NCreature, Vector2> __state)
     {
+        __state = creatureNodes
+            .Where(node => node.IsInsideTree() && node.Entity.Player?.Character is INinjaSlayerCharacter)
+            .ToDictionary(node => node, node => node.Position);
         if (!creatureNodes.Any(node => IsCompanion(node.Entity))) return;
 
         // Only the native layout input changes, never combat/player/pet enumeration.
@@ -39,6 +44,13 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
             .ThenBy(node => IsCompanionAnchor(node.Entity) ? insertionOrder.IndexOf(node.Entity) : 0)
             .ToList();
         foreach (NCreature node in creatureNodes) node.Visuals.Modulate = Colors.White;
+    }
+
+    public static void Postfix(List<NCreature> creatureNodes, Dictionary<NCreature, Vector2> __state)
+    {
+        int companions = creatureNodes.Count(node => IsCompanionAnchor(node.Entity));
+        foreach (var (node, previousPosition) in __state)
+            NinjaSlayerAllyLayoutMotion.Ensure(node).OnLayout(previousPosition, companions);
     }
 
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

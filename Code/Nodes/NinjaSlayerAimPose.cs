@@ -86,6 +86,7 @@ public partial class NinjaSlayerAimPose : Node2D
     internal bool UseTornadoHitStop { get; set; } = true;
     internal bool OwnsSpin => _spin != null || Turning;
     internal bool IsAiming => _enabled;
+    internal bool IsReturning => _returning;
     internal bool IsExclusive => _exclusive;
     internal bool IsBusy => _busy || _exclusive;
     internal float? AttackForwardSign { get; set; }

@@ -101,19 +101,19 @@ internal sealed partial class SmokeController
         try
         {
             V0217NarrationObserver.Played.Clear();
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLowHealthEvent);
             narration.Write(false);
             narration.Save();
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiDragonFlyingKickEvent);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLowHealthEvent);
             NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerFastAttackEvent);
             await WaitFrames(100);
             Require(V0217NarrationObserver.Played.SequenceEqual([NinjaSlayerAudio.NinjaSlayerFastAttackEvent]),
                 "Narration toggle must suppress both queued and newly requested narration without muting character voice.");
             narration.Write(true);
             narration.Save();
-            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiScaryEvent);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.PangbaiLowHealthEvent);
             await WaitFrames(100);
-            Require(V0217NarrationObserver.Played.Contains(NinjaSlayerAudio.PangbaiScaryEvent), "Reenabled narration did not play.");
+            Require(V0217NarrationObserver.Played.Contains(NinjaSlayerAudio.PangbaiLowHealthEvent), "Reenabled narration did not play.");
         }
         finally { observer.UnpatchAll(observer.Id); }
         _checkpoints.Write("v0217.live-narration-toggle");

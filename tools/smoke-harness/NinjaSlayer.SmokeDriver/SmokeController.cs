@@ -1671,6 +1671,14 @@ internal sealed partial class SmokeController
             {
                 await RunTornadoPreviewAsync();
             }
+            else if (_configuration.Phase == SmokePhase.Release034)
+            {
+                await RunRelease034Async();
+            }
+            else if (_configuration.Phase == SmokePhase.CombatRegression)
+            {
+                await RunCombatRegressionAsync();
+            }
             else if (_configuration.Phase == SmokePhase.ModCompatibility)
             {
                 await RunModCompatibilityPhaseAsync();

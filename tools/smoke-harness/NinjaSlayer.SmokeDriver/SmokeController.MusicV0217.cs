@@ -34,6 +34,11 @@ internal sealed partial class SmokeController
         var router = new Harmony("NinjaSlayer.SmokeDriver.MusicReload");
         router.Patch(AccessTools.Method(typeof(RunManager), "CreateRoom"),
             prefix: new HarmonyMethod(typeof(V0217MusicRoomFixture), nameof(V0217MusicRoomFixture.Prefix)));
+        if (_configuration.Phase == SmokePhase.Release034)
+        {
+            await Reload();
+            run = RunManager.Instance.DebugOnlyGetState()!;
+        }
         V0217MusicRoomFixture.Event = ModelDb.Event<SawatariEvent>();
         Type route = typeof(SawatariEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
         AccessTools.Method(route, "Schedule").Invoke(null, [run.Act, ModelDb.Encounter<GremlinMercNormal>()]);
@@ -49,6 +54,7 @@ internal sealed partial class SmokeController
         while (state.HittableEnemies.Any()) await CreatureCmd.Kill(state.HittableEnemies.ToArray(), force: true);
         await CombatManager.Instance.CheckWinCondition();
         await WaitFrames(60);
+        if (_configuration.Phase == SmokePhase.Release034) await VerifyEarlySawatariPosition();
         await VerifyPostVictoryCardInput(ct);
         await EndSawatariPlayerTurn(ct);
         await WaitUntilAsync(() => GetSawatariOptions().Count == 2 && GetSawatariOptions().All(o => o.IsEnabled), "Sawatari decision missing.", ct);
@@ -129,11 +135,38 @@ internal sealed partial class SmokeController
             await WaitUntilAsync(() => NGame.Instance?.MainMenu != null, "Main menu not ready.", ct);
             var button = NGame.Instance!.MainMenu!.GetNode<NButton>("MainMenuTextButtons/ContinueButton");
             await WaitUntilAsync(() => button.Visible && button.IsEnabled, "Native Continue not ready.", ct);
+            ulong reloadStarted = Time.GetTicksMsec();
             await UiHelper.Click(button);
-            await WaitUntilAsync(() => RunManager.Instance.IsInProgress && NEventRoom.Instance != null, "Event reload did not finish.", ct);
-            // Continue is asynchronous; wait for its fade-in before emitting event clicks.
-            await WaitFrames(180);
-            if (V0217MusicRoomFixture.Event is SawatariEvent) await Ready();
+            await WaitUntilAsync(() => RunManager.Instance.IsInProgress
+                && (V0217MusicRoomFixture.Event == null ? NCombatRoom.Instance != null : NEventRoom.Instance != null),
+                "Room reload did not finish.", ct);
+            Type transitionGate = typeof(SawatariEvent).Assembly.GetType("NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate", true)!;
+            var activeTransition = AccessTools.Property(transitionGate, "HasActiveSession");
+            await WaitUntilAsync(() => !(bool)activeTransition.GetValue(null)!, "Transition did not release.", ct);
+            ulong transitionFinished = Time.GetTicksMsec();
+            _checkpoints.Write("release034.room-revealed", data: new JsonObject
+            {
+                ["event"] = V0217MusicRoomFixture.Event?.Id.ToString() ?? "ordinary-combat",
+                ["milliseconds"] = transitionFinished - reloadStarted,
+                ["visible"] = NCombatRoom.Instance?.IsVisibleInTree() ?? NEventRoom.Instance?.IsVisibleInTree()
+            });
+            if (V0217MusicRoomFixture.Event is not DarkNinjaEvent)
+            {
+                await WaitUntilAsync(() => CombatManager.Instance.IsInProgress && !CombatManager.Instance.IsStarting
+                    && !CombatManager.Instance.PlayerActionsDisabled
+                    && LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())?.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
+                    "Reloaded Sawatari was not playable after transition.", ct);
+                await RunManager.Instance.ActionExecutor.FinishedExecutingActions();
+                NMapScreen.Instance?.Close(animateOut: false);
+            }
+            _checkpoints.Write("release034.reload-time", data: new JsonObject
+            {
+                ["event"] = V0217MusicRoomFixture.Event?.Id.ToString() ?? "ordinary-combat",
+                ["milliseconds"] = Time.GetTicksMsec() - reloadStarted,
+                ["transitionMilliseconds"] = transitionFinished - reloadStarted,
+                ["postTransitionMilliseconds"] = Time.GetTicksMsec() - transitionFinished,
+                ["includesFixtureWaitFrames"] = 0
+            });
         }
         async Task CheckMusic(string label, string expected, string parameter)
         {

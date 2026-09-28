@@ -33,7 +33,7 @@ public static class NinjaSlayerAudio
     public const string NinjaSlayerTransitionEvent = NinjaSlayerRoot + "/ninja_slayer_transition";
     public const string NinjaSlayerShortWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_short_washoi";
     public const string NinjaSlayerLongWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_long_washoi";
-    public const string NinjaSlayerDomoEvent = NinjaSlayerRoot + "/ninja_slayer_domo";
+    public const string NinjaSlayerDomoEvent = NinjaSlayerRoot + "/ninja_slayer_slow_domo";
     public const string NinjaSlayerNinjaSoulEvent = NinjaSlayerRoot + "/ninja_slayer_ninja_soul";
     public const string NinjaSlayerExplosionEvent = NinjaSlayerRoot + "/ninja_slayer_explotion";
     public const string NinjaSlayerKorosuBeshiEvent = NinjaSlayerRoot + "/ninja_slayer_korosu_beshi";
@@ -66,15 +66,18 @@ public static class NinjaSlayerAudio
     public const string NarakuHurtEvent = NarakuRoot + "/naraku_hurt";
     public const string NarakuDeathEvent = NarakuRoot + "/naraku_death";
 
-    public const string PangbaiLongjuanquanEvent = PangbaiRoot + "/pangbai_longjuanquan";
-    public const string PangbaiDragonFlyingKickEvent = PangbaiRoot + "/pangbai_dragon_flying_kick";
-    public const string PangbaiSomersaultKickEvent = PangbaiRoot + "/pangbai_somersault_kick";
-    public const string PangbaiScaryEvent = PangbaiRoot + "/pangbai_scary";
+    internal const string YukanoByeEvent = Root + "/yukano/yukano_fast_bye";
+    internal const string YukanoAttackEvent = Root + "/yukano/yukano_fast_attack";
+    internal const string PangbaiBreastEvent = PangbaiRoot + "/pangbai_breast";
+    public const string NinjaSlayerFastDomoEvent = NinjaSlayerRoot + "/ninja_slayer_fast_domo";
+    public const string NinjaSlayerNoDomoEvent = NinjaSlayerRoot + "/ninja_slayer_no_domo";
+    public const string DarkNinjaDomoEvent = DarkNinjaRoot + "/dark_ninja_domo";
+    public const string ForestSawatariBambooAttackEvent = ForestSawatariRoot + "/forest_sawatari_bamboo_attack";
+    public const string YamotoKokiSlowAttackEvent = YamotoKokiRoot + "/yamoto_koki_slow_attack";
     public const string PangbaiLowHealthEvent = PangbaiRoot + "/pangbai_low_health";
 
     public const string YamotoKokiByeEvent = YamotoKokiRoot + "/yamoto_koki_bye";
     public const string YamotoKokiEvent = YamotoKokiRoot + "/yamoto_koki_event";
-    public const string YamotoKokiFastAttackEvent = YamotoKokiRoot + "/yamoto_koki_fast_attack";
     public const string YamotoKokiGoEvent = YamotoKokiRoot + "/yamoto_koki_go";
     public const string YamotoKokiMissileSummonEvent =
         "event:/sfx/characters/defect/defect_dark_channel";

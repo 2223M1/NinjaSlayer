@@ -96,9 +96,9 @@ public partial class OrbContractRunner
             AddCard<DefendIronclad>(combat, PileType.Draw);
             if (upgraded) AddCard<DefendIronclad>(combat, PileType.Draw);
             await CardCmd.AutoPlay(Choice, AddCard<Slaughter>(combat, upgraded: upgraded), combat.Enemy);
-            Require(old.Pile?.Type == PileType.Hand && wound.Pile?.Type == PileType.Hand && drawn.Pile?.Type == PileType.Discard
-                && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == (upgraded ? 3 : 2),
-                "Burning Blood discards only its directly drawn non-status cards, preserving the existing hand.");
+            Require(old.Pile?.Type == PileType.Hand && wound.Pile?.Type == PileType.Discard && drawn.Pile?.Type == PileType.Hand
+                && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == (upgraded ? 4 : 3),
+                "Press the Attack discards only its directly drawn non-attack cards, preserving the existing hand.");
             var retrieve = AddCard<Excavate>(combat, upgraded: upgraded);
             await CardCmd.Exhaust(Choice, wound);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
@@ -110,25 +110,33 @@ public partial class OrbContractRunner
             Require(PileType.Draw.GetPile(combat.Player).Cards.First() == wound && retrieve.Pile?.Type == PileType.Discard,
                 "Excavate places its selection on top without exhausting itself.");
         }
+        foreach (bool upgraded in new[] { false, true })
         foreach (bool echo in new[] { false, true })
         {
             using var combat = new OrbCombat();
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
-            var strike = AddCard<ChopStrikeRedesignV1>(combat);
+            var strike = AddCard<ChopStrikeRedesignV1>(combat, upgraded: upgraded);
+            strike.EnergyCost.SetCustomBaseCost(0);
             if (echo) await PowerCmd.Apply<EchoFormPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
-            for (int play = 1; play <= 4; play++)
-            {
-                await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
-                Require(strike.Pile?.Type == (play <= 3 ? PileType.Hand : PileType.Discard),
-                    $"Strike Strike play {play}, echo {echo}: native repeat series consumes only one return opportunity.");
-            }
-            var other = AddCard<ChopStrikeRedesignV1>(combat);
-            await CardCmd.AutoPlay(Choice, other, combat.Enemy);
-            Require(other.Pile?.Type == PileType.Hand, "Another physical card has an independent allowance.");
-            combat.State.RoundNumber++;
-            combat.Player.PlayerCombatState!.IncrementTurnNumber();
             await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
-            Require(strike.Pile?.Type == PileType.Hand, "Strike Strike replenishes returns next turn.");
+            var generated = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChopStrikeRedesignV1>().ToArray();
+            Require(strike.Pile?.Type == PileType.Exhaust && generated.Length == (echo ? 2 : 1)
+                && generated.All(c => !ReferenceEquals(c, strike) && c.IsUpgraded == upgraded
+                    && c.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1 && c.Keywords.Contains(CardKeyword.Exhaust)),
+                "Strike Strike creates fresh same-upgrade cards per resolution, exhausts the source and does not inherit its free cost.");
+        }
+        using (var combat = new OrbCombat())
+        {
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
+            for (int i = 0; i < 9; i++) AddCard<Wound>(combat);
+            var strike = AddCard<ChopStrikeRedesignV1>(combat, upgraded: true);
+            await PowerCmd.Apply<EchoFormPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+            await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
+            var created = combat.Player.Piles.SelectMany(p => p.Cards).OfType<ChopStrikeRedesignV1>()
+                .Where(card => !ReferenceEquals(card, strike)).ToArray();
+            Require(created.Length == 2 && created.Count(c => c.Pile?.Type == PileType.Hand) == 1
+                && created.Count(c => c.Pile?.Type == PileType.Discard) == 1,
+                "Repeated Strike Strike generation uses native hand overflow, without losing the extra card.");
         }
         using (var combat = new OrbCombat())
         {
@@ -144,6 +152,6 @@ public partial class OrbContractRunner
             Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 5,
                 "Zanshin must not reward an earlier turn twice.");
         }
-        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Excavate, Strike returns and Zanshin");
+        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Excavate, Strike generation and Zanshin");
     }
 }

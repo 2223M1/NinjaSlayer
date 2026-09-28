@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Scripts;
 
@@ -25,6 +26,88 @@ internal static class YukanoCombatAnimations
     private static Texture2D? _shurikenTexture;
     private static AtlasTexture? _arrowTexture;
     private static bool _arrowFailureLogged;
+
+    public static Task PlayEntrance(Creature creature) => PlayRoll(creature, leaving: false);
+
+    public static Task PlayFarewell(Creature creature) => PlayRoll(creature, leaving: true);
+
+    private static async Task PlayRoll(Creature creature, bool leaving)
+    {
+        if (creature.IsDead || CompanionIntentLifecycle.HasRetired(creature)) return;
+        NinjaSlayerRapidAnimationCoordinator.CancelAndRestore(creature);
+        if (leaving) CompanionIntentLifecycle.Invalidate(creature);
+        NCreature? node = creature.GetCreatureNode();
+        Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(node?.Visuals);
+        Sprite2D? body = NinjaSlayerVisualRig.GetBodySprite(node?.Visuals);
+        if (node == null || anchor == null || body == null) return;
+        if (CombatActionTimingRuntime.VisualSeconds(1f) <= 0f)
+        {
+            if (leaving)
+            {
+                node.Hide();
+                CompanionIntentLifecycle.Retire(creature);
+            }
+            else node.Show();
+            return;
+        }
+
+        // Reverse EP18's three-frame turn at its original rate, without motion blur.
+        const float turnSeconds = 3f * 1001f / 24000f;
+        const float duration = 6f * turnSeconds;
+        Node2D center = node.Visuals.VfxSpawnPosition;
+        CanvasItem parent = anchor.GetParent<CanvasItem>();
+        var (baseline, core) = StaggerAnimation.CaptureAttackPose(creature, anchor, center);
+        Transform2D canvas = parent.GetGlobalTransformWithCanvas();
+        Vector2 canvasCore = canvas * core;
+        float radius = (body.GetGlobalTransformWithCanvas() * body.GetRect()).Size.Length() * .5f;
+        float distance = Math.Max(0f, canvasCore.X - node.GetViewportRect().Position.X) + radius + 64f;
+        Vector2 travel = canvas.AffineInverse().BasisXform(Vector2.Left * distance);
+        Tween? tween = null;
+        bool active = true;
+        void Restore()
+        {
+            if (!active) return;
+            active = false;
+            if (tween?.IsValid() == true) tween.Kill();
+            if (GodotObject.IsInstanceValid(anchor) && GodotObject.IsInstanceValid(center))
+                StaggerAnimation.ApplyAttackPose(creature, anchor, center, baseline, core);
+        }
+        // Farewell starts inside AfterCombatEnd, before the ordinary-action reset.
+        // Its node-bound tween lives until departure or room exit, not CombatEnded.
+        long? generation = leaving ? null
+            : NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Restore);
+        void Apply(float elapsed)
+        {
+            if (!active) return;
+            if (creature.IsDead) { Restore(); return; }
+            float p = elapsed / duration;
+            float angle = (leaving ? -1f : 1f) * Mathf.Tau * elapsed / turnSeconds;
+            float travelProgress = leaving ? p : 1f - p;
+            Vector2 posedCore = core + travel * (.35f * travelProgress + .65f * travelProgress * travelProgress);
+            Transform2D pose = new(angle, Vector2.Zero);
+            pose.Origin = posedCore - pose.BasisXform(core);
+            StaggerAnimation.ApplyAttackPose(creature, anchor, center, pose * baseline, posedCore);
+        }
+        try
+        {
+            Apply(0f);
+            node.Show();
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YukanoByeEvent);
+            tween = node.CreateTween();
+            tween.TweenMethod(Callable.From<float>(Apply), 0f, duration, duration);
+            if (await TweenPlayback.AwaitCompletion(tween, node) && active && leaving)
+            {
+                node.Hide();
+                CompanionIntentLifecycle.Retire(creature);
+            }
+        }
+        finally
+        {
+            Restore();
+            if (generation is { } ownedGeneration)
+                NinjaSlayerRapidAnimationCoordinator.CompleteVisualTail(creature, ownedGeneration);
+        }
+    }
 
     public static void SetSpeaking(Creature creature, bool speaking)
     {
@@ -68,6 +151,8 @@ internal static class YukanoCombatAnimations
         Node2D? anchor = NinjaSlayerVisualRig.GetAirborneAnchor(node?.Visuals);
         if (node == null || anchor == null || duration <= 0f)
         {
+            if (spin && source.IsAlive && target.IsAlive)
+                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YukanoAttackEvent);
             return await PlayProjectile(source, target, texture, scale, spin, duration);
         }
 
@@ -100,7 +185,7 @@ internal static class YukanoCombatAnimations
         float release = spin ? ShurikenThrowMotion.ReleaseProgress : .4f;
         Vector2[] contour = ShadowBodyGeometry.Resolve("Yukano", false, false, false);
         var offsets = new System.Numerics.Vector2[contour.Length];
-        Task<bool> flight = Task.FromResult(false);
+
         void Apply(float progress)
         {
             if (!active || source.IsDead) return;
@@ -121,24 +206,28 @@ internal static class YukanoCombatAnimations
             transform.Origin = posedCore - transform.BasisXform(core);
             StaggerAnimation.ApplyAttackPose(source, anchor, center, transform * baseline, posedCore);
         }
-        void Release()
-        {
-            if (!active || !source.IsAlive || !target.IsAlive) return;
-            if (spin) NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow);
-            flight = PlayProjectile(source, target, texture, scale, spin, duration, () => active);
-        }
         try
         {
-            if (!spin) popup = YukanoArrowPopup.TryStart(source, target, Apply, Release);
+            if (!spin) popup = YukanoArrowPopup.TryStart(source, target, Apply);
             YukanoArrowPopup.LaunchResult launch = popup == null
                 ? YukanoArrowPopup.LaunchResult.Fallback : await popup.Launch;
             if (!active || launch == YukanoArrowPopup.LaunchResult.Cancelled) return false;
-            tween = node.CreateTween();
-            if (launch != YukanoArrowPopup.LaunchResult.Released)
+            if (launch == YukanoArrowPopup.LaunchResult.Fallback)
             {
+                tween = node.CreateTween();
                 tween.TweenMethod(Callable.From<float>(Apply), 0f, release, motionSeconds * release);
-                tween.TweenCallback(Callable.From(Release));
+                await TweenPlayback.AwaitCompletion(tween, node);
             }
+            if (!active || !source.IsAlive || !target.IsAlive) return false;
+            if (spin)
+            {
+                NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YukanoAttackEvent);
+                NDebugAudioManager.Instance?.Play(TmpSfx.daggerThrow);
+            }
+            // Film and fallback converge here, in the attack's execution context.
+            // Visual callbacks never own another flight or a damage continuation.
+            Task<bool> flight = PlayProjectile(source, target, texture, scale, spin, duration, () => active);
+            tween = node.CreateTween();
             tween.TweenMethod(Callable.From<float>(Apply), release, 1f, motionSeconds * (1f - release));
             await TweenPlayback.AwaitCompletion(tween, node);
             completed = await flight && active;

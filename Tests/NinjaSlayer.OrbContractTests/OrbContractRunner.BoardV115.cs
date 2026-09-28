@@ -18,6 +18,30 @@ public partial class OrbContractRunner
 {
     private static async Task VerifyBoardV115()
     {
+        foreach (string scenario in new[] { "blocked", "no-stock", "no-target", "token" })
+        {
+            using var combat = new OrbCombat();
+            await CreatureCmd.GainBlock(combat.Enemy, 100, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
+            if (scenario == "no-target") combat.State.RemoveCreature(combat.Enemy);
+            if (scenario is "blocked" or "no-target") await AddStock(combat.Player, 1);
+            if (scenario == "token")
+                await CardCmd.AutoPlay(Choice, AddCard<StrongShurikenTokenRedesignV1>(combat), combat.Enemy);
+            else
+                await CardCmd.Discard(Choice, AddCard<Wound>(combat));
+            if (scenario == "no-target") combat.AddEnemy();
+            // Qualification belongs to the turn, including shots before the power exists.
+            await PowerCmd.Apply<ShurikenDrawPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
+            combat.Player.PlayerCombatState!.IncrementTurnNumber();
+            var prepared = combat.Player.Creature.GetPower<ShurikenDrawPower>()
+                ?? throw new InvalidOperationException($"Prepared fixture power missing in {scenario}.");
+            Require(prepared.ModifyHandDraw(combat.Player, 5) == (scenario == "blocked" ? 7 : 5),
+                $"Prepared must count actual blocked stock shots, excluding {scenario} without a stock release.");
+            var other = MegaCrit.Sts2.Core.Entities.Players.Player.CreateForNewRun<MegaCrit.Sts2.Core.Models.Characters.Ironclad>(
+                MegaCrit.Sts2.Core.Unlocks.UnlockState.all, 2);
+            combat.State.AddPlayer(other);
+            other.ResetCombatState();
+            Require(prepared.ModifyHandDraw(other, 5) == 5, "Prepared cannot increase another player's draw.");
+        }
         foreach (bool ninja in new[] { false, true })
         {
             using var combat = new OrbCombat(ninjaSlayer: ninja);
@@ -30,20 +54,28 @@ public partial class OrbContractRunner
             var shield = AddCard<ShurikenGenerationRedesignV1>(combat);
             Require(!shield.ShouldGlowGold, "Barrier starts without a gain this turn.");
             await AddStock(combat.Player, 3);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Wound>().Count() == 3 && combat.Tokens == 1
-                && combat.Stock == 3 && shield.ShouldGlowGold, "One three-layer grant draws three from stacked powers and generates one token.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Wound>().Count() == 0 && combat.Tokens == 1
+                && combat.Stock == 3 && shield.ShouldGlowGold, "Stock gain generates one token without triggering Prepared draw.");
             await AddStock(combat.Player, 2);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Wound>().Count() == 6 && combat.Tokens == 2,
-                "Replenishment triggers again once, not once per layer.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Wound>().Count() == 0 && combat.Tokens == 2,
+                "Replenishment generates one token without drawing.");
             await AddStock(combat.Player, 0);
             Require(combat.Tokens == 2, "Zero stock grants must not trigger.");
             Require(combat.Player.Piles.SelectMany(p => p.Cards).OfType<StrongShurikenTokenRedesignV1>()
                 .All(card => card.SnapshotDamage == 8), "Every token snapshots Focus at gain time.");
-            await CardCmd.Discard(Choice, PileType.Hand.GetPile(combat.Player).Cards.OfType<Wound>().Take(5).ToArray());
+            for (int i = 0; i < 5; i++) await CardCmd.Discard(Choice, AddCard<Wound>(combat));
             Require(combat.Stock == 0 && combat.Tokens == 2 && shield.ShouldGlowGold, "Discard does not generate tokens or erase the turn's gain.");
             combat.State.RoundNumber++;
             combat.Player.PlayerCombatState!.IncrementTurnNumber();
             Require(!shield.ShouldGlowGold, "Gain glow expires on turn change.");
+            var prepared = owner.GetPower<ShurikenDrawPower>()!;
+            Require(prepared.ModifyHandDraw(combat.Player, 5) == 8, "Stacked Prepared adds three after last turn's shots.");
+            await AddStock(combat.Player, 1);
+            await CardCmd.Discard(Choice, AddCard<Wound>(combat));
+            Require(prepared.ModifyHandDraw(combat.Player, 5) == 8, "Current-turn shots do not erase prior-turn qualification.");
+            combat.Player.PlayerCombatState.IncrementTurnNumber();
+            combat.Player.PlayerCombatState.IncrementTurnNumber();
+            Require(prepared.ModifyHandDraw(combat.Player, 5) == 5, "Prepared expires after a turn with no shots.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
@@ -82,8 +114,7 @@ public partial class OrbContractRunner
             var draw = AddCard<DefendIronclad>(combat, PileType.Draw);
             await AddStock(combat.Player, 2);
             var token = combat.Player.Piles.SelectMany(p => p.Cards).OfType<StrongShurikenTokenRedesignV1>().Single();
-            Require(token.Pile?.Type == (starlessFirst ? PileType.Hand : PileType.Discard)
-                && draw.Pile?.Type == (starlessFirst ? PileType.Draw : PileType.Hand),
+            Require(token.Pile?.Type == PileType.Hand && draw.Pile?.Type == PileType.Draw,
                 "Stock gains resolve powers in owner order and use native full-hand handling.");
         }
         foreach (bool upgraded in new[] { false, true })
