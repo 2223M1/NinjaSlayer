@@ -423,5 +423,55 @@
       "name": "regression",
       "timings": []
     }
-  ]
+  ],
+  "finalCandidateGreeting": {
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "de1faa7bf9b978f602153c9d4ccfeb8c84defef1",
+      "bundleVersion": "0.3.4",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.2",
+      "additionalMods": [],
+      "bundleSha256": "fd08e6a12ce42ef21b69527957dcd9c6122ff686aa6c84cf29ed94c85411b7dc",
+      "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+      "mode": "release034",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-09-28T21:30:51.7199741+08:00"
+    },
+    "testSource": "pending fixture-only changes on de1faa7",
+    "checkpoints": [
+      {
+        "SchemaVersion": 1,
+        "CandidateSha": "de1faa7bf9b978f602153c9d4ccfeb8c84defef1",
+        "Phase": "release034",
+        "Name": "release034.artifact-observed",
+        "Sequence": 36,
+        "Status": "passed",
+        "ElapsedMilliseconds": 136912,
+        "Data": {
+          "events": "event:/NinjaSlayerAudio/sfx/ninja_slayer/ninja_slayer_no_domo",
+          "bows": 0,
+          "visibleDuringVoice": true,
+          "visibleAfterGreeting": true
+        }
+      },
+      {
+        "SchemaVersion": 1,
+        "CandidateSha": "de1faa7bf9b978f602153c9d4ccfeb8c84defef1",
+        "Phase": "release034",
+        "Name": "release034.artifact-greeting",
+        "Sequence": 37,
+        "Status": "passed",
+        "ElapsedMilliseconds": 136912,
+        "Data": null
+      }
+    ]
+  }
 }
