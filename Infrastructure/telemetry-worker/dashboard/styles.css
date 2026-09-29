@@ -1239,3 +1239,13 @@ footer { flex-wrap: wrap; gap: 12px; }
   #chart-nav { display: none; }
   .chart-main #chart-select { display: block; }
 }
+/* Language choice belongs to the public shell, not the local admin tools. */
+.language-picker { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.language-picker select { min-width: 7rem; max-width: 10rem; }
+body[data-view="admin"] .language-picker { display: none; }
+@media (max-width: 700px) {
+  .topbar { flex-wrap: wrap; gap: .5rem; height: auto; min-height: 49px; padding: 8px 0; }
+  .sidebar nav { flex-wrap: wrap; }
+  .nav-item { flex: 1 1 25%; min-width: 0; padding: 10px 5px; overflow-wrap: anywhere; }
+  .brand > span { min-width: 0; font-size: 17px; letter-spacing: 2px; overflow-wrap: anywhere; }
+}

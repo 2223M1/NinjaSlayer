@@ -1,0 +1,20 @@
+{
+  "NINJA_SLAYER_GREETING_PLAYER": "ドーモ、{BossTitle}＝サン。ニンジャスレイヤーです。",
+  "NINJA_SLAYER_GREETING_BOSS": "ドーモ、ニンジャスレイヤー＝サン。{BossTitle}です。",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.title": "ニンジャスレイヤー",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.name": "ニンジャスレイヤー",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.titleObject": "ニンジャスレイヤー",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.description": "妻子を失ったサラリマン。\n謎のニンジャソウルに憑依され、ニンジャを殺すニンジャとなった。復讐のために戦い続ける。",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounSubject": "彼",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounObject": "彼",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.pronounPossessive": "彼の",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.possessiveAdjective": "彼の",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.aromaPrinciple": "私はフジキド・ケンジだ。",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.goldMonologue": "[sine]何人のニンジャの居場所が買えるだろうか……[/sine]",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.eventDeathPrevention": "復讐はまだ終わっていない。",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierTitle": "ニンジャスレイヤーのカード",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.cardsModifierDescription": "カード報酬にニンジャスレイヤーのカードが出現する。",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.alive.endTurnPing": "用意はいいか。",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.banter.dead.endTurnPing": "止まるな……！",
+  "NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER.bestiaryQuote": "ニンジャ殺すべし。"
+}

@@ -160,3 +160,17 @@ Local evidence and the updated listening package are in
 `../deliveries/FMOD-LOUDNESS-20260929-R2`, including focused A/B comparisons of
 the long greeting, soul explosion and Yamoto music. Automated verification
 does not imply human listening approval.
+
+## 2026-09-29 character and narrator revision
+
+Relative to the second listening revision, 50 character events decrease by
+1 dB and the two narrator events increase independently by 2 dB. Select,
+transition and all music retain their gains. Only 52 event master gains change;
+instrument gains, source files and every other playback property stay intact.
+The NinjaSlayer bank is rebuilt; NinjaSlayerEventMusic remains byte-identical.
+
+`tools/fmod/loudness-calibration-20260929-r3.json` and its sibling `.patch`
+record this revision. `../deliveries/FMOD-LOUDNESS-20260929-R3` contains the
+backup, 90 variant renders, five FMOD mix/transition checks, guarded restore
+script and separate character/narrator/cutscene listening files. This gain-only
+revision does not repeat the earlier full game-scene automation.

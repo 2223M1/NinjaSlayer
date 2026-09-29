@@ -1,0 +1,7 @@
+{
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.title": "Prepared",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.description": "Can only be drawn by additional card draw during your turn. Scry skips this card.",
+  "NINJA_SLAYER_AFFLICTION_PREPARED_AFFLICTION.extraCardText": "Prepared",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.title": "Source Protection",
+  "NINJA_SLAYER_AFFLICTION_NEXT_DISCARD_SOURCE_AFFLICTION.description": "Preserves the source state while a card resolves."
+}

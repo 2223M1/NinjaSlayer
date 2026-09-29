@@ -1,13 +1,10 @@
 <div align="center">
-  <img src="Workshop/image.png" width="256" alt="NinjaSlayer project icon">
+  <img src="Workshop/image.png" width="256" alt="Ninja Slayer">
   <h1>NinjaSlayer</h1>
   <p>A Ninja Slayer character mod for Slay the Spire 2</p>
-  <p><a href="README.md">简体中文</a> | <strong>English</strong></p>
+  <p><a href="README.md">简体中文</a> | <strong>English</strong> | <a href="README_JA.md">日本語</a></p>
   <!-- compatibility-badges:start -->
   <p>
-    <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
-    <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
-    <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
     <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1%20%7C%200.111.0-B51F24" alt="Slay the Spire 2 0.107.1 and 0.111.0">
     <img src="https://img.shields.io/badge/RitsuLib-0.5.12-2D7D9A" alt="RitsuLib 0.5.12">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
@@ -15,75 +12,41 @@
   <!-- compatibility-badges:end -->
 </div>
 
-NinjaSlayer brings the combat style of Ninja Slayer to Slay the Spire 2. Built on RitsuLib, it delivers a complete playable character experience centered on karate, shuriken, chado, Naraku, and Ninja Soul, together with custom presentation, events, and audio.
+Fight up close with Karate, follow up with Shuriken, and catch your breath with Chado. Or draw on Naraku and set the Spire ablaze. Familiar faces such as Yamoto Koki and Nancy Lee await along the way, some as companions, others as opponents.
 
-## Highlights
+Includes character-specific cards, relics and events, plus animations, greetings and finishers. The [card catalog](Docs/card-catalog.md) is currently in Chinese.
 
-- Cohesive character mechanics with multiple combat routes grounded in the Ninja Slayer theme.
-- Custom finishers, character animation, boss death presentation, companion visuals, and FMOD audio.
-- Explicit safeguards and validation for saves, multiplayer, game-version contracts, and mod compatibility.
-- A separately maintained [card catalog](Docs/card-catalog.md) without duplicating content inventories on the project home page.
+## Install
 
-## Installation
+1. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) and its required mod, [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
+2. Enable `STS2-RitsuLib` and `NinjaSlayer` in the game's mod manager.
+3. Choose Ninja Slayer and start a run.
 
-### Steam Workshop
+The Workshop item is unlisted, so use the link above. The same Workshop download works with both supported game branches.
 
-1. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) through its direct link; the unlisted item delivers one bundle for both stable and preview.
-2. Subscribe to and enable [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
-3. Launch the game and enable both `STS2-RitsuLib` and `NinjaSlayer` in the mod manager.
+For manual installation, download the universal Workshop archive from [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases), extract it into the game's `mods` folder, and install RitsuLib separately.
 
-### Manual installation
+Finish your current run before updating. Old in-progress saves are not supported; back them up before starting a new run if you want to keep them.
 
-1. Download the latest build from [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases).
-2. Extract the archive into the Slay the Spire 2 `mods` directory.
-3. Install and enable a compatible RitsuLib version separately, then enable NinjaSlayer.
-
-## Compatibility And Language
+## Versions and languages
 
 <!-- compatibility:start -->
-| Component | Supported version |
-|---|---|
-| Slay the Spire 2 | stable public `0.107.1`; preview beta `0.111.0` |
-| RitsuLib | build baseline and minimum dependency `0.5.12`; Workshop installs receive its current release automatically |
-| Platform targets | Windows x64, macOS, and Linux x86_64 / Steam Deck; formal cross-platform support requires the six-cell real-device matrix |
-| .NET | `9.0` |
-| Godot | `4.5.1 Mono` |
-| In-game language | Primarily Simplified Chinese at present |
-
-Each GitHub Release contains stable and preview diagnostic archives plus one universal Workshop archive. The unlisted Workshop item remains accessible by link; every subscriber receives the same bundle, which selects the exact stable or preview implementation at startup. The universal PCK carries no native Spine extension and reuses the platform extension already loaded by the official client. Automated real-game testing currently covers Windows only; formal macOS and Linux support is not claimed until both channels pass on those platforms.
+- Game stable `0.107.1` and beta `0.111.0`.
+- Requires RitsuLib `0.5.12` or later.
+- Text is available in Simplified Chinese, English and Japanese, following the game's language setting.
+- Tested on Windows. Real-device testing on macOS, Linux and Steam Deck is not yet complete.
 <!-- compatibility:end -->
 
-This English README documents the project and installation process. It does not indicate complete English localization in the game.
+## Feedback
 
-## Development
+Press F2 in game or [open an issue](https://github.com/2223M1/NinjaSlayer/issues). Include your game and mod versions, and what you did before the problem appeared.
 
-Development requires the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0), [Godot 4.5.1 Mono](https://godotengine.org/download/archive/4.5.1-stable/), PowerShell 7 (`pwsh`), and compatible game files. Repository automation does not support Windows PowerShell 5.1.
+The [public observatory](https://2223m1.github.io/NinjaSlayer/) shows card statistics, public battle reports and player feedback in Chinese, English and Japanese. You can turn data sharing off in the mod settings. See the [privacy notice](Docs/privacy.md#english) for details.
 
-```powershell
-git clone https://github.com/2223M1/NinjaSlayer.git
-cd NinjaSlayer
-dotnet restore .\NinjaSlayer.csproj
-dotnet build .\NinjaSlayer.csproj --no-restore -c Release -v:minimal
-```
+## Author and thanks
 
-An ordinary build never installs or publishes the mod automatically. See the [development and release guide](Docs/development.md) for tests, real-game contracts, packaging, local installation, and release boundaries.
+I'm 波比梓狸 ([2223M1](https://github.com/2223M1)). I develop this mod with the AI assistants I use. Bug reports and suggestions are welcome.
 
-## Links
+Thanks to the authors of [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) and the community members who share tutorials and help.
 
-- [Steam Workshop (unlisted link)](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)
-- [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases)
-- [Issue tracker](https://github.com/2223M1/NinjaSlayer/issues)
-- [Card catalog](Docs/card-catalog.md)
-- [Privacy notice](Docs/privacy.md)
-
-## Author And Acknowledgements
-
-Maintained by [2223M1](https://github.com/2223M1).
-
-Thanks to the maintainers of [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib), the STS2 modding tutorials, and the modding community for their framework, documentation, and technical discussion.
-
-## Rights Notice
-
-This is an unofficial fan-made mod. Slay the Spire 2, Ninja Slayer, and all related names, characters, artwork, and other third-party material remain the property of their respective rights holders.
-
-This repository does not declare an open-source license. Public visibility of the source code does not grant permission to copy, modify, redistribute, or create derivative releases. Obtain explicit permission from the maintainer and applicable rights holders before using project material.
+This is an unofficial fan mod. The original works and third-party material belong to their respective rights holders. This project has no open-source license. Obtain permission from the author and relevant rights holders before using, modifying or redistributing its contents.

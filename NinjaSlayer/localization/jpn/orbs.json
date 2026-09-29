@@ -1,0 +1,5 @@
+{
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.title": "スリケン",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.description": "カードを捨てるたび、ランダムな敵を攻撃し、1スリケンを失う。\n解放時、スリケン1スタックにつき1回攻撃する。",
+  "NINJA_SLAYER_ORB_SHURIKEN_ORB.smartDescription": "[blue]{Passive}[/blue]スタック\nカードを捨てるたび、ランダムな敵に{Evoke}ダメージを与え、1スリケンを失う。\n解放時、スリケン1スタックにつきランダムな敵に{Evoke}ダメージを与える。"
+}
