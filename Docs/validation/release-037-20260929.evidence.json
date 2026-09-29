@@ -1,0 +1,167 @@
+{
+  "version": "0.3.7",
+  "sourceRevision": "5907cb4b9e31de716b077394e09f20f7ce31861f",
+  "verifiedAtUtc": "2026-09-29T08:27:35.3468290+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/143",
+  "files": [
+    {
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "path": "Box2D.NET.dll"
+    },
+    {
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "path": "LICENSE.Box2D.NET.txt"
+    },
+    {
+      "bytes": 644,
+      "sha256": "29d937200e7f20c8f3903cc165a7fe0be928110e0a21a41935a83471a01f0a3d",
+      "path": "ninjaslayer-variants.manifest"
+    },
+    {
+      "bytes": 24576,
+      "sha256": "565b5e6fefa662c1af80f75749e8ee6de25ee6dd0893e5fc51ec3a580eb9c572",
+      "path": "NinjaSlayer.dll"
+    },
+    {
+      "bytes": 362,
+      "sha256": "8162dae459fd68e9f4ed561d90ef20a22fa50ffcb906fc4c9f8383004574d34a",
+      "path": "NinjaSlayer.json"
+    },
+    {
+      "bytes": 210031376,
+      "sha256": "b934eac58e5ebc0274ba98f88b47a9076736a5d8d6d83b818c39b6e8f2289667",
+      "path": "NinjaSlayer.pck"
+    },
+    {
+      "bytes": 1008,
+      "sha256": "a6e67a21421b0f984d3859c02a9660d193abbc98cc712653945b45f641f80708",
+      "path": "SHA256SUMS"
+    },
+    {
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "path": "lib\\0.107.1\\compat-target.txt"
+    },
+    {
+      "bytes": 2240512,
+      "sha256": "aa261b4f058ab1e0950f3a35ed237915289aad28dff6919ef40ad298ca4f6e01",
+      "path": "lib\\0.107.1\\NinjaSlayer.dll"
+    },
+    {
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "path": "lib\\0.111.0\\compat-target.txt"
+    },
+    {
+      "bytes": 122880,
+      "sha256": "84145ba4fba2bdbb1169301d06c6045d90d3dc4a90176031b1a87527682eb0b4",
+      "path": "lib\\0.111.0\\NinjaSlayer.AutoAnthony.dll"
+    },
+    {
+      "bytes": 2244096,
+      "sha256": "47b0ca456c5a3b95d33967a6aba5362084f471e2e164c8bce5f2f309360a095d",
+      "path": "lib\\0.111.0\\NinjaSlayer.dll"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "29d937200e7f20c8f3903cc165a7fe0be928110e0a21a41935a83471a01f0a3d",
+    "565b5e6fefa662c1af80f75749e8ee6de25ee6dd0893e5fc51ec3a580eb9c572",
+    "8162dae459fd68e9f4ed561d90ef20a22fa50ffcb906fc4c9f8383004574d34a",
+    "b934eac58e5ebc0274ba98f88b47a9076736a5d8d6d83b818c39b6e8f2289667",
+    "a6e67a21421b0f984d3859c02a9660d193abbc98cc712653945b45f641f80708",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "aa261b4f058ab1e0950f3a35ed237915289aad28dff6919ef40ad298ca4f6e01",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "84145ba4fba2bdbb1169301d06c6045d90d3dc4a90176031b1a87527682eb0b4",
+    "47b0ca456c5a3b95d33967a6aba5362084f471e2e164c8bce5f2f309360a095d"
+  ],
+  "live": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "5907cb4b9e31de716b077394e09f20f7ce31861f",
+      "bundleVersion": "0.3.7",
+      "result": "passed",
+      "channel": "stable",
+      "gameApiVersion": "0.107.1",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+      "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.2",
+      "additionalMods": [],
+      "bundleSha256": "a6e67a21421b0f984d3859c02a9660d193abbc98cc712653945b45f641f80708",
+      "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-09-29T16:16:52.1158873+08:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "5907cb4b9e31de716b077394e09f20f7ce31861f",
+      "bundleVersion": "0.3.7",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.2",
+      "additionalMods": [],
+      "bundleSha256": "a6e67a21421b0f984d3859c02a9660d193abbc98cc712653945b45f641f80708",
+      "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-09-29T16:17:07.2538952+08:00"
+    }
+  ],
+  "github": {
+    "url": "https://github.com/2223M1/NinjaSlayer/releases/tag/v0.3.7",
+    "archives": [
+      {
+        "sha256": "e442651e9c6d64615d2f46033f4c74effd7436331d11c78bb66b42e879888cc8",
+        "path": "NinjaSlayer-v0.3.7-stable-sts2-0.107.1.zip"
+      },
+      {
+        "sha256": "ca737115d113ccdc6811c3295de9b6262351595a0b2fa3f1caf0cb939d2a3744",
+        "path": "NinjaSlayer-v0.3.7-preview-sts2-0.111.0.zip"
+      },
+      {
+        "sha256": "49dd8e659a73043896252fabf7ef651c49fa50886cf9377f053d41871877d37f",
+        "path": "NinjaSlayer-v0.3.7-workshop-universal.zip"
+      }
+    ],
+    "remoteArchivesVerified": true
+  },
+  "workshop": {
+    "description": "",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityUnlisted",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteSource": "User confirmed the existing short Workshop note; GitHub keeps the trilingual release note",
+    "remoteDescriptionVerified": true,
+    "changeNote": "0.3.7 更新说明\n\n更新了一些内容",
+    "itemId": "3776911445",
+    "dependencies": [
+      3747602295
+    ]
+  },
+  "audio": {
+    "packedMusicSha256": "c36f1954071622eade109d9970ceb718b2930681200b47a07c5bb3ff019dc321",
+    "revision": "20260929-R3",
+    "packedSoundSha256": "2e7bb0e4ef4b598b499a4e69ec669289bc5a2b1f34b8a889c6d386177b66432b",
+    "musicUnchanged": true
+  },
+  "notVerified": [
+    "Every event and settings page at every resolution",
+    "Full Japanese playthrough",
+    "macOS, Linux, Steam Deck",
+    "Repeated full audio scene automation for R3"
+  ]
+}
