@@ -61,7 +61,7 @@ RitsuLib 0.5.12/0.5.20 的 `run_history.completed` 内部是原生 **Serializabl
 
 `balance_schema = ninja_slayer_run_history_v3` 在 `applicant_payload.mod_payload.combats` 保存按楼层/房间键控的战斗汇总。每项含 encounter、rounds、won、采集版本、各角色及卡牌计数。使用独立的 `balance_runs` 申请项，沿用 RitsuLib 的队列、适配器和原有 Worker。忍者杀手设置提供开关与说明。未知授权默认显示开启，但首次告知前不投递；确认立即开启，忽略本次不上传、下次进程启动默认开启，明确拒绝持续关闭。已有 RitsuLib 拒绝和仅有旧 `run_history` 的授权不会被升级覆盖，不补传历史对局。
 
-Worker 同时接受已发布的 `run_history` 与新的 `balance_runs` 请求。新请求的 Worker 校验改动须在分发新版 DLL 前部署。
+Worker 仅接受新版单条 gzip 事件，申请项为 `balance_runs` 和 `public_replays`；不再接受旧 `run_history` 申请项、明文或批次包装。客户端沿用原生持久队列，将仍获授权的记录逐条压缩发送。接收协议改动与 Workshop 客户端同步发布。
 
 逐项数据在 CombatHistory.Changed 和原生回调内即时快照，胜利在 CombatEndedEvent 保存该场测量；终局失败在 RunEndedEvent 保存当前测量。战斗数据通过 RitsuLib RunSavedData 保存，重打同一房间替换该项，不累加已放弃的尝试。此前版本或不同同意状态导致的缺口由覆盖率显示。退出/放弃不会上传半局。
 
