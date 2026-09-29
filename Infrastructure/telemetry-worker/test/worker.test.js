@@ -20,8 +20,8 @@ const UUID = '9b3d6f32-f6d4-4ca4-9a34-128763c3154b';
 const SECOND_UUID = 'c4b7a218-e75c-4c4f-8df4-41bb741b44e2';
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const ZIP = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
-const RITSU_FIXTURE = JSON.parse(readFileSync(
-  new URL('./fixtures/ritsulib-0.4.62-run-history.json', import.meta.url),
+const TELEMETRY_FIXTURE = JSON.parse(readFileSync(
+  new URL('./fixtures/balance-envelope.json', import.meta.url),
   'utf8',
 ));
 
@@ -183,14 +183,14 @@ function feedbackRequest(overrides = {}) {
   });
 }
 
-function telemetryRequest(body = structuredClone(RITSU_FIXTURE), overrides = {}) {
-  return new Request('https://worker.test/', {
+function telemetryRequest(body = structuredClone(TELEMETRY_FIXTURE), overrides = {}) {
+  return new Request('https://worker.test/batch/', {
     method: overrides.method ?? 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json', 'Content-Encoding': 'gzip',
       'CF-Connecting-IP': overrides.ip ?? '203.0.113.7',
     },
-    body: JSON.stringify(body),
+    body: gzipSync(JSON.stringify(body)),
   });
 }
 
@@ -205,9 +205,9 @@ test('production endpoints fail closed when secrets or Durable Object bindings a
   assert.equal((await handleRequest(feedbackRequest(), { FEEDBACK_KV: new MockKv() })).status, 503);
 });
 
-test('native PostHog batch paths use the same telemetry receiver', async () => {
+test('the registered upload path accepts one compressed record', async () => {
   await withSuccessfulPostHog(async () => {
-    for (const path of ['/', '/batch', '/batch/']) {
+    for (const path of ['/batch', '/batch/']) {
       const request = new Request(`https://worker.test${path}`, telemetryRequest());
       const response = await handleRequest(request, workerEnv());
       assert.equal(response.status, 200, path);
@@ -229,33 +229,33 @@ test('minute rate limiting uses a stable HMAC and never stores the IP', async ()
   assert.notEqual(limiter.calls[0], '203.0.113.7');
 });
 
-test('real RitsuLib 0.4.62 envelope is accepted and camelCase or extra properties are rejected', async () => {
+test('the current balance envelope is accepted; camelCase and extra properties are rejected', async () => {
   await withSuccessfulPostHog(async () => {
     assert.equal((await handleRequest(telemetryRequest(), workerEnv())).status, 200);
   });
 
-  const camelCase = structuredClone(RITSU_FIXTURE);
-  camelCase.batch[0].properties.applicantId = camelCase.batch[0].properties.applicant_id;
-  delete camelCase.batch[0].properties.applicant_id;
+  const camelCase = structuredClone(TELEMETRY_FIXTURE);
+  camelCase.properties.applicantId = camelCase.properties.applicant_id;
+  delete camelCase.properties.applicant_id;
   assert.equal((await handleRequest(telemetryRequest(camelCase), workerEnv())).status, 400);
 
-  const extra = structuredClone(RITSU_FIXTURE);
-  extra.batch[0].properties.unreviewed = true;
+  const extra = structuredClone(TELEMETRY_FIXTURE);
+  extra.properties.unreviewed = true;
   assert.equal((await handleRequest(telemetryRequest(extra), workerEnv())).status, 400);
 });
 
 test('balance combat request is accepted without broadening the envelope allowlist', async () => {
-  const body = structuredClone(RITSU_FIXTURE);
-  body.batch[0].properties.request_id = 'balance_runs';
+  const body = structuredClone(TELEMETRY_FIXTURE);
+  body.properties.request_id = 'balance_runs';
   await withSuccessfulPostHog(async () => {
     assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 200);
   });
-  body.batch[0].properties.request_id = 'unregistered';
+  body.properties.request_id = 'unregistered';
   assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 400);
 });
 
-test('gzip telemetry preserves payloads and reuses PostHog IDs across encoding and batch retries', async () => {
-  const body = structuredClone(RITSU_FIXTURE);
+test('gzip telemetry preserves payloads and reuses PostHog IDs across retries', async () => {
+  const body = structuredClone(TELEMETRY_FIXTURE);
   const forwarded = [];
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (_url, init) => {
@@ -270,9 +270,9 @@ test('gzip telemetry preserves payloads and reuses PostHog IDs across encoding a
     }), workerEnv());
     assert.equal(response.status, 200, await response.clone().text());
     assert.deepEqual(forwarded[0], forwarded[1]);
-    assert.deepEqual(forwarded[0].batch[0].properties, body.batch[0].properties);
+    assert.deepEqual(forwarded[0].batch[0].properties, body.properties);
     assert.match(forwarded[0].batch[0].uuid, /^[0-9a-f-]{36}$/);
-    body.batch[0].timestamp = '2030-08-10T10:00:00Z';
+    body.timestamp = '2030-08-10T10:00:00Z';
     assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 200);
     assert.notEqual(forwarded[0].batch[0].uuid, forwarded[2].batch[0].uuid);
   } finally { globalThis.fetch = originalFetch; }
@@ -285,15 +285,28 @@ test('gzip bodies are bounded after expansion and corrupt encodings are rejected
   const oversized = gzipSync(' '.repeat(TELEMETRY_MAX_BODY_BYTES + 1));
   assert(oversized.byteLength < 10000);
   assert.equal((await send(oversized)).status, 413);
-  const corrupt = gzipSync(JSON.stringify(RITSU_FIXTURE)).subarray(0, 30);
+  const corrupt = gzipSync(JSON.stringify(TELEMETRY_FIXTURE)).subarray(0, 30);
   assert.equal((await send(corrupt)).status, 400);
   assert.equal((await send('{}', 'br')).status, 415);
   assert.equal((await send(new Uint8Array(TELEMETRY_MAX_BODY_BYTES + 1))).status, 413);
 });
 
+test('only single gzip records are accepted; legacy plaintext, batches and request IDs are rejected', async () => {
+  const legacy = new Request('https://worker.test/batch/', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.7' },
+    body: JSON.stringify({ api_key: 'proxy', batch: [TELEMETRY_FIXTURE] }),
+  });
+  assert.equal((await handleRequest(legacy, workerEnv())).status, 415);
+  assert.equal((await handleRequest(telemetryRequest({ batch: [TELEMETRY_FIXTURE] }), workerEnv())).status, 400);
+  const old = structuredClone(TELEMETRY_FIXTURE);
+  old.properties.request_id = 'run_history';
+  assert.equal((await handleRequest(telemetryRequest(old), workerEnv())).status, 400);
+  assert.equal((await handleRequest(new Request('https://worker.test/'), workerEnv())).status, 404);
+});
+
 test('telemetry rejects excessive JSON depth and streaming bodies over the limit', async () => {
-  const nested = structuredClone(RITSU_FIXTURE);
-  let cursor = nested.batch[0].properties.payload;
+  const nested = structuredClone(TELEMETRY_FIXTURE);
+  let cursor = nested.properties.payload;
   for (let index = 0; index < 40; index += 1) cursor = cursor.next = {};
   assert.equal((await handleRequest(telemetryRequest(nested), workerEnv())).status, 400);
 
@@ -304,9 +317,9 @@ test('telemetry rejects excessive JSON depth and streaming bodies over the limit
       controller.close();
     },
   });
-  const request = new Request('https://worker.test/', {
+  const request = new Request('https://worker.test/batch/', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.7' },
+    headers: { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip', 'CF-Connecting-IP': '203.0.113.7' },
     body: stream,
     duplex: 'half',
   });
@@ -317,18 +330,18 @@ test('telemetry rejects excessive JSON depth and streaming bodies over the limit
 test('invalid telemetry never consumes daily quota while valid telemetry does', async () => {
   const env = workerEnv();
   const headers = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', 'Content-Encoding': 'gzip',
     'CF-Connecting-IP': '203.0.113.7',
   };
-  const malformed = new Request('https://worker.test/', {
+  const malformed = new Request('https://worker.test/batch/', {
     method: 'POST',
     headers,
-    body: '{"batch":',
+    body: gzipSync('{"event":'),
   });
   assert.equal((await handleRequest(malformed, env)).status, 400);
 
-  const unsupported = structuredClone(RITSU_FIXTURE);
-  unsupported.batch[0].properties.unreviewed = 'not allowlisted';
+  const unsupported = structuredClone(TELEMETRY_FIXTURE);
+  unsupported.properties.unreviewed = 'not allowlisted';
   assert.equal((await handleRequest(telemetryRequest(unsupported), env)).status, 400);
   assert.equal(env.ANONYMOUS_QUOTAS.instances.size, 0);
 
@@ -340,7 +353,7 @@ test('invalid telemetry never consumes daily quota while valid telemetry does', 
     .find(instance => instance.storage.objects.has('quota:telemetry'));
   const quota = quotaCoordinator.storage.objects.get('quota:telemetry');
   assert.equal(quota.count, 1);
-  assert.equal(quota.bytes, new TextEncoder().encode(JSON.stringify(RITSU_FIXTURE)).byteLength);
+  assert.equal(quota.bytes, new TextEncoder().encode(JSON.stringify(TELEMETRY_FIXTURE)).byteLength);
 });
 
 test('telemetry forwards only validated fields and no IP header', async () => {

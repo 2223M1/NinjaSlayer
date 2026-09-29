@@ -2,7 +2,6 @@ import {
   BodyTooLargeError,
   POSTHOG_HOST,
   REQUEST_TIMEOUT_MS,
-  TELEMETRY_MAX_BATCH_SIZE,
   TELEMETRY_MAX_BODY_BYTES,
   JSON_HEADER,
   jsonResponse,
@@ -11,11 +10,11 @@ import {
 import { FeedbackSubmissionCoordinator } from './feedback.js';
 import { feedbackTombstoneKey } from './feedback-storage.js';
 import { AnonymousQuotaGuard, consumeDailyQuota, enforceMinuteRateLimit } from './security.js';
-import { UUID_PATTERN, validateTelemetryBody } from './validation.js';
+import { UUID_PATTERN, validateTelemetryEvent } from './validation.js';
 import { handleObservatory } from './observatory.js';
 import { acceptReplay, readPublicReplay } from './replays.js';
 
-async function handleTelemetry(request, env, ctx) {
+async function handleTelemetry(request, env) {
   if (request.method !== 'POST') {
     return jsonResponse(405, { error: 'method_not_allowed', message: 'Only POST is accepted' }, { Allow: 'POST' });
   }
@@ -27,53 +26,44 @@ async function handleTelemetry(request, env, ctx) {
   if (!(request.headers.get('content-type') || '').toLowerCase().includes('application/json')) {
     return jsonResponse(415, { error: 'unsupported_media_type', message: 'Content-Type must be application/json' });
   }
-  const encoding = (request.headers.get('content-encoding') || 'identity').toLowerCase();
-  if (!['identity', 'gzip'].includes(encoding)) return jsonResponse(415, { error: 'unsupported_content_encoding' });
+  if (request.headers.get('content-encoding')?.toLowerCase() !== 'gzip')
+    return jsonResponse(415, { error: 'gzip_required' });
 
   let bodyBytes;
   try {
     bodyBytes = await readBodyLimited(request, TELEMETRY_MAX_BODY_BYTES);
-    if (encoding === 'gzip') {
-      const decoded = new Blob([bodyBytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-      bodyBytes = await readBodyLimited(new Response(decoded), TELEMETRY_MAX_BODY_BYTES);
-    }
+    const decoded = new Blob([bodyBytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    bodyBytes = await readBodyLimited(new Response(decoded), TELEMETRY_MAX_BODY_BYTES);
   } catch (error) {
     if (error instanceof BodyTooLargeError) {
       console.warn(`[telemetry] payload_too_large: ${error.actualBytes} bytes; limit ${error.maximumBytes}`);
       return jsonResponse(413, { error: 'payload_too_large', maximumBytes: error.maximumBytes });
     }
-    if (encoding === 'gzip') return jsonResponse(400, { error: 'invalid_gzip' });
-    throw error;
+    return jsonResponse(400, { error: 'invalid_gzip' });
   }
-  let body;
+  let event;
   try {
-    body = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bodyBytes));
+    event = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bodyBytes));
   } catch {
     return jsonResponse(400, { error: 'invalid_json', message: 'Failed to parse body as JSON' });
   }
-  const validationError = validateTelemetryBody(body, TELEMETRY_MAX_BATCH_SIZE);
+  const validationError = validateTelemetryEvent(event);
   if (validationError) return jsonResponse(400, { error: 'invalid_format', message: validationError });
 
   const quotaResponse = await consumeDailyQuota(env, rateLimit.clientKey, 'telemetry', bodyBytes.byteLength);
   if (!quotaResponse.ok) return quotaResponse;
 
-  for (const event of body.batch.filter(event => event.event === 'battle_report.completed')) {
-    const response = await acceptReplay(event, env);
-    if (!response.ok) return response;
-  }
-  const balanceEvents = body.batch.filter(event => event.event === 'run_history.completed');
-  if (balanceEvents.length === 0) return jsonResponse(200, { ok: true, accepted: body.batch.length, rejected: 0 });
+  if (event.event === 'battle_report.completed') return acceptReplay(event, env);
 
   const cleanBody = {
     api_key: env.POSTHOG_API_KEY,
-    batch: await Promise.all(balanceEvents.map(async (event) => ({
+    batch: [{
       event: event.event,
       uuid: await telemetryEventId(event),
       properties: event.properties,
       distinct_id: event.distinct_id,
-      ...(event.timestamp === undefined ? {} : { timestamp: event.timestamp }),
-    }))),
-    ...(body.sentAt === undefined ? {} : { sentAt: body.sentAt }),
+      timestamp: event.timestamp,
+    }],
   };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -91,11 +81,11 @@ async function handleTelemetry(request, env, ctx) {
     clearTimeout(timer);
   }
   if (postHogResponse.ok) {
-    ctx.waitUntil(Promise.resolve().then(() => console.log(`[ok] ${body.batch.length} telemetry events accepted`)));
-    return jsonResponse(200, { ok: true, accepted: body.batch.length, rejected: 0 });
+    console.log('[ok] telemetry event accepted');
+    return jsonResponse(200, { ok: true, accepted: 1, rejected: 0 });
   }
   const upstreamBody = (await postHogResponse.text()).slice(0, 200);
-  ctx.waitUntil(Promise.resolve().then(() => console.error(`[fail] PostHog ${postHogResponse.status}: ${upstreamBody}`)));
+  console.error(`[fail] PostHog ${postHogResponse.status}: ${upstreamBody}`);
   return jsonResponse(502, { error: 'upstream_failed', message: `PostHog returned ${postHogResponse.status}` });
 }
 
@@ -155,7 +145,7 @@ export async function handleRequest(request, env, ctx = { waitUntil() {} }) {
   }
   if (path.startsWith('/observatory/')) return handleObservatory(request, env);
   if (path === '/feedback') return handleFeedback(request, env);
-  if (path === '/' || path === '/batch') return handleTelemetry(request, env, ctx);
+  if (path === '/batch') return handleTelemetry(request, env);
   return jsonResponse(404, { error: 'not_found' });
 }
 

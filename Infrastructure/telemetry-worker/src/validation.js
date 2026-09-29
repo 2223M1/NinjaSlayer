@@ -15,7 +15,6 @@ const ZIP_SIGNATURES = [
   new Uint8Array([0x50, 0x4b, 0x07, 0x08]),
 ];
 
-const TELEMETRY_BODY_FIELDS = new Set(['api_key', 'batch', 'sentAt']);
 const TELEMETRY_EVENT_FIELDS = new Set(['event', 'distinct_id', 'properties', 'timestamp']);
 const TELEMETRY_PROPERTY_FIELDS = new Set([
   'schema', 'applicant_id', 'request_id', 'category', 'payload',
@@ -63,47 +62,33 @@ function validateJsonComplexity(value) {
   return true;
 }
 
-export function validateTelemetryBody(body, maximumBatchSize) {
-  if (!body || typeof body !== 'object' || Array.isArray(body) || !hasOnlyFields(body, TELEMETRY_BODY_FIELDS)) {
-    return 'Body contains unsupported fields';
+export function validateTelemetryEvent(event) {
+  if (!event || typeof event !== 'object' || Array.isArray(event) || !hasOnlyFields(event, TELEMETRY_EVENT_FIELDS)) {
+    return 'Event contains unsupported fields';
   }
-  if (body.api_key !== undefined && body.api_key !== 'proxy') return 'api_key is not allowed';
-  if (!Array.isArray(body.batch) || body.batch.length === 0) return 'Missing or empty batch array';
-  if (body.batch.length > maximumBatchSize) return `Max ${maximumBatchSize} events per batch`;
-  if (body.sentAt !== undefined && (typeof body.sentAt !== 'string' || body.sentAt.length > 64)) {
-    return 'sentAt is invalid';
+  if (!['run_history.completed', 'battle_report.completed'].includes(event.event)) return 'Event.event is not allowed';
+  if (!event.properties || typeof event.properties !== 'object' || Array.isArray(event.properties)
+    || !hasOnlyFields(event.properties, TELEMETRY_PROPERTY_FIELDS)) {
+    return 'Event.properties contains unsupported fields';
   }
-
-  for (let index = 0; index < body.batch.length; index += 1) {
-    const event = body.batch[index];
-    if (!event || typeof event !== 'object' || Array.isArray(event) || !hasOnlyFields(event, TELEMETRY_EVENT_FIELDS)) {
-      return `batch[${index}] contains unsupported fields`;
-    }
-    if (!['run_history.completed', 'battle_report.completed'].includes(event.event)) return `batch[${index}].event is not allowed`;
-    if (!event.properties || typeof event.properties !== 'object' || Array.isArray(event.properties)
-      || !hasOnlyFields(event.properties, TELEMETRY_PROPERTY_FIELDS)) {
-      return `batch[${index}].properties contains unsupported fields`;
-    }
-    const properties = event.properties;
-    if (properties.schema !== 'ritsulib.telemetry.v1'
-      || properties.applicant_id !== 'NinjaSlayer'
-      || properties.owner_mod_id !== 'NinjaSlayer'
-      || !(event.event === 'battle_report.completed' ? properties.request_id === 'public_replays' : ['run_history', 'balance_runs'].includes(properties.request_id))
-      || properties.category !== 'RunHistory') {
-      return `batch[${index}] is not a NinjaSlayer RunHistory envelope`;
-    }
-    if (!INSTALL_ID_PATTERN.test(properties.anonymous_install_id)
-      || event.distinct_id !== properties.anonymous_install_id) {
-      return `batch[${index}].distinct_id is invalid`;
-    }
-    if (!properties.payload || typeof properties.payload !== 'object' || Array.isArray(properties.payload)
-      || (event.event !== 'battle_report.completed' && !validateJsonComplexity(properties.payload))) {
-      return `batch[${index}].properties.payload is invalid`;
-    }
-    if (event.timestamp !== undefined && event.timestamp !== null
-      && (typeof event.timestamp !== 'string' || Number.isNaN(Date.parse(event.timestamp)))) {
-      return `batch[${index}].timestamp is invalid`;
-    }
+  const properties = event.properties;
+  if (properties.schema !== 'ritsulib.telemetry.v1'
+    || properties.applicant_id !== 'NinjaSlayer'
+    || properties.owner_mod_id !== 'NinjaSlayer'
+    || !(event.event === 'battle_report.completed' ? properties.request_id === 'public_replays' : properties.request_id === 'balance_runs')
+    || properties.category !== 'RunHistory') {
+    return 'Event is not a NinjaSlayer RunHistory envelope';
+  }
+  if (!INSTALL_ID_PATTERN.test(properties.anonymous_install_id)
+    || event.distinct_id !== properties.anonymous_install_id) {
+    return 'Event.distinct_id is invalid';
+  }
+  if (!properties.payload || typeof properties.payload !== 'object' || Array.isArray(properties.payload)
+    || (event.event !== 'battle_report.completed' && !validateJsonComplexity(properties.payload))) {
+    return 'Event.properties.payload is invalid';
+  }
+  if (typeof event.timestamp !== 'string' || Number.isNaN(Date.parse(event.timestamp))) {
+    return 'Event.timestamp is invalid';
   }
   return null;
 }

@@ -42,9 +42,8 @@ internal sealed class NinjaSlayerTelemetryAdapter(Uri endpoint) : ITelemetryAdap
             if (evt.Payload is not null) properties["payload"] = evt.Payload;
             byte[] json = JsonSerializer.SerializeToUtf8Bytes(new
             {
-                api_key = "proxy",
-                batch = new[] { new { @event = evt.EventName,
-                    distinct_id = properties["anonymous_install_id"], properties, timestamp = evt.TimestampUtc } }
+                @event = evt.EventName, distinct_id = properties["anonymous_install_id"],
+                properties, timestamp = evt.TimestampUtc
             }, JsonOptions);
             using var compressed = new MemoryStream();
             using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, leaveOpen: true))

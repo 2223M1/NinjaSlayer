@@ -3,14 +3,15 @@
 For the GitHub Pages public observatory and loopback-only private dashboard, see
 [观测室部署、启动与统计口径](dashboard/README.md). Run `npm run dashboard` for private administration.
 
-This Worker accepts the RitsuLib `run_history.completed` envelope (`run_history` or `balance_runs` requests) and anonymous
+This Worker accepts the RitsuLib `run_history.completed` envelope (`balance_runs` requests) and anonymous
 F2 feedback. Inputs are strictly validated before telemetry is forwarded to
 PostHog or feedback is committed to private R2 storage. Separately authorized `battle_report.completed` envelopes are validated, anonymized and compressed into R2 for 90 days; they never enter PostHog. Small indexes and feedback metadata remain in Workers KV. The public report index/detail routes expose only the validated projection. Feedback and replays share the storage budget in `src/free-storage.js`.
 
 Raw IP addresses are never stored or forwarded. A server-secret HMAC of the
 transient Cloudflare source IP is used for minute limits and Durable Object
-daily quotas. Telemetry accepts JSON or HTTP gzip, with a 5 MiB limit both on
-the wire and after decompression, and at most 50 events per request. The game
+daily quotas. Telemetry accepts one HTTP-gzipped JSON event per request, with a
+5 MiB limit both on the wire and after decompression. There is no batch wrapper
+or client-supplied API key. The game
 uses RitsuLib's public adapter interface to gzip and send one queued record at
 a time. It keeps native consent, queue persistence and retries. Balance records
 are sent before public reports; partial successes are remembered until the native
@@ -34,8 +35,8 @@ retained tombstone before removing data so a late retry cannot recreate it.
 ## Deployment
 
 The game and observatory use `https://telemetry.feixingwawa.cn`. This custom
-domain points to the existing Worker; the `workers.dev` address stays enabled
-for older clients. `api.feixingwawa.cn` belongs to a separate service and must
+domain is the Worker's sole public upload address. The `workers.dev` address is
+disabled. `api.feixingwawa.cn` belongs to a separate service and must
 not be changed. Keep the custom domain in `wrangler.jsonc` so deployments retain it.
 
 `GET /batch/` returns HTTP 405 with `Only POST is accepted`; this checks routing
@@ -100,8 +101,8 @@ while the download tools still join the historical chunk list. Private backups
 and the detailed migration inventory belong under ignored `build/r2-migration/`.
 
 Run `npx wrangler deploy --dry-run` before a live deployment. The Worker accepts
-only snake_case `applicant_id` and `request_id` fields from the RitsuLib 0.4.62
-contract; camelCase and unknown envelope fields are rejected.
+only snake_case `applicant_id` and `request_id` properties from the RitsuLib
+envelope; camelCase and unknown fields are rejected.
 
 ## Feedback administration
 
@@ -125,10 +126,10 @@ is projected into the public artifact; historical feedback remains private.
 
 ## Native upload regression
 
-The game adapter and older RitsuLib PostHog adapter send `POST /batch/`; `/batch`
-and the existing `/` entry use the same receiver. Upgrading the game also compresses
-and splits records already waiting in the native queue. Older oversized batches
-need the client update; they are not silently accepted or discarded. Game feedback uses `PUT /feedback` and .NET multipart
+The game adapter sends `POST /batch/` with one gzipped event. Upgrading the game
+also converts records already waiting in the native queue to this format. The
+receiver rejects uncompressed requests, batch wrappers and the retired `run_history`
+request ID; it has no legacy root route. Game feedback uses `PUT /feedback` and .NET multipart
 with quoted disposition names and filenames. A successful feedback response must
 contain `ok: true` and the matching submission `id`.
 

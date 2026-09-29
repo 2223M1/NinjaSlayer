@@ -3,7 +3,7 @@
 	"name": "ninja-slayer-telemetry",
 	"main": "src/index.js",
 	"compatibility_date": "2026-07-15",
-	"workers_dev": true,
+	"workers_dev": false,
 	"routes": [
 		{ "pattern": "telemetry.feixingwawa.cn", "custom_domain": true }
 	],

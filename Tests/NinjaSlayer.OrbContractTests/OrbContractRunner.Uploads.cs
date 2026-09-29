@@ -27,7 +27,7 @@ public partial class OrbContractRunner
         var requests = new List<object>();
         Task receive = Task.Run(async () =>
         {
-            for (int attempt = 0; attempt < 9; attempt++)
+            for (int attempt = 0; attempt < 8; attempt++)
             {
                 HttpListenerContext context = await listener.GetContextAsync().WaitAsync(TimeSpan.FromSeconds(15));
                 using var bytes = new MemoryStream();
@@ -36,26 +36,26 @@ public partial class OrbContractRunner
                     contentType = context.Request.ContentType, body = Convert.ToBase64String(bytes.ToArray()),
                     contentEncoding = context.Request.Headers["Content-Encoding"],
                     submissionId = context.Request.Headers["X-NinjaSlayer-Submission-Id"] });
-                if (attempt >= 3)
+                if (attempt >= 2)
                 {
                     Require(context.Request.Headers["Content-Encoding"] == "gzip", "Telemetry must use HTTP gzip.");
                     bytes.Position = 0;
                     using var gzip = new GZipStream(bytes, CompressionMode.Decompress, leaveOpen: true);
                     var decoded = JsonNode.Parse(gzip)!;
-                    Require(decoded["batch"]!.AsArray().Count == 1, "Queued records must be sent separately.");
-                    if (attempt is 3 or 4 or 5 or 8)
+                    Require(decoded["event"] is not null && decoded["batch"] is null, "Send one event without a batch wrapper.");
+                    if (attempt is 2 or 3 or 4 or 7)
                     {
-                        var values = decoded["batch"]![0]!["properties"]!["payload"]!["applicant_payload"]!["measurements"]!.AsArray();
+                        var values = decoded["properties"]!["payload"]!["applicant_payload"]!["measurements"]!.AsArray();
                         Require(values.Count == 2000 && values[1999]!["hp"]!.GetValue<int>() == 1999,
                             "Gzip must preserve every measurement.");
                         Require(bytes.Length < Encoding.UTF8.GetByteCount(decoded.ToJsonString()) / 5,
                             "Representative repetitive measurements should be substantially compressed.");
                     }
                 }
-                context.Response.StatusCode = attempt switch { 0 => 503, 4 => 429, 6 => 413, _ => 200 };
+                context.Response.StatusCode = attempt switch { 0 => 503, 3 => 429, 5 => 413, _ => 200 };
                 byte[] response = Encoding.UTF8.GetBytes(attempt switch
                 {
-                    0 => "{\"error\":\"storage_busy\"}", 4 => "{\"error\":\"rate_limited\"}", 6 => "{\"error\":\"invalid_replay\"}",
+                    0 => "{\"error\":\"storage_busy\"}", 3 => "{\"error\":\"rate_limited\"}", 5 => "{\"error\":\"invalid_replay\"}",
                     _ =>
                     $"{{\"ok\":true,\"id\":\"{id}\"}}"
                 });
@@ -86,7 +86,9 @@ public partial class OrbContractRunner
         });
         Require(result.IsSuccess && result.Attempts.Count == 2, "Feedback must retry 503 and require its receipt.");
         Require(screenshot.CanRead && logs.CanRead, "Retry must preserve the caller's attachment streams.");
-        var adapter = new PostHogTelemetryAdapter($"http://127.0.0.1:{port}", "proxy");
+        var adapter = (ITelemetryAdapter)Activator.CreateInstance(
+            typeof(NinjaSlayer.Content.NinjaSlayerBalanceTelemetry).Assembly.GetType("NinjaSlayer.Code.Telemetry.NinjaSlayerTelemetryAdapter", true)!,
+            [new Uri($"http://127.0.0.1:{port}/batch/")])!;
         var applicant = new TelemetryApplicant { ApplicantId = "NinjaSlayer", OwnerModId = "NinjaSlayer",
             DisplayName = "NinjaSlayer", Adapter = adapter, Requests = [] };
         var envelope = new TelemetryEnvelope { ApplicantId = "NinjaSlayer", EventName = "run_history.completed",
@@ -94,10 +96,6 @@ public partial class OrbContractRunner
             Properties = new Dictionary<string, object?> { ["owner_mod_id"] = "NinjaSlayer",
                 ["anonymous_install_id"] = "00000000000000000000000000000001" },
             Payload = new JsonObject { ["applicant_payload"] = new JsonObject() } };
-        Require((await adapter.SendAsync(applicant, [envelope])).Success, "Native telemetry adapter failed loopback delivery.");
-        var compressedAdapter = (ITelemetryAdapter)Activator.CreateInstance(
-            typeof(NinjaSlayer.Content.NinjaSlayerBalanceTelemetry).Assembly.GetType("NinjaSlayer.Code.Telemetry.NinjaSlayerTelemetryAdapter", true)!,
-            [new Uri($"http://127.0.0.1:{port}/batch/")])!;
         var measurements = new JsonArray(Enumerable.Range(0, 2000).Select(i => (JsonNode)new JsonObject
             { ["model"] = "CARD.NINJA_SLAYER_CHARACTER_STRIKE", ["hp"] = i, ["blocked"] = 0 }).ToArray());
         TelemetryEnvelope summary(int number) => new() { ApplicantId = "NinjaSlayer", EventName = "run_history.completed",
@@ -121,14 +119,14 @@ public partial class OrbContractRunner
             Payload = new JsonObject { ["applicant_payload"] = new JsonObject { ["run_key"] = new string('a', 64),
                 ["encoding"] = "gzip+base64", ["report"] = Convert.ToBase64String(replayBytes.ToArray()) } } };
         TelemetryEnvelope[] queued = [replay, summary(1), summary(2)];
-        Require(!(await compressedAdapter.SendAsync(applicant, queued)).Success, "A partial 429 must keep the native queue.");
+        Require(!(await adapter.SendAsync(applicant, queued)).Success, "A partial 429 must keep the native queue.");
         // A later flush deserializes new envelope instances from the same native queue.
         queued = JsonSerializer.Deserialize<TelemetryEnvelope[]>(JsonSerializer.Serialize(queued))!;
-        var rejected = await compressedAdapter.SendAsync(applicant, queued);
+        var rejected = await adapter.SendAsync(applicant, queued);
         Require(!rejected.Success && rejected.ErrorMessage!.Contains("413 invalid_replay", StringComparison.Ordinal),
             "Report rejection must remain retryable and identify the receiver's failure and sizes.");
-        Require((await compressedAdapter.SendAsync(applicant, queued)).Success, "Only the unsent report should be retried.");
-        Require((await compressedAdapter.SendAsync(applicant, [summary(1)])).Success, "A new flush must not inherit completed acknowledgements.");
+        Require((await adapter.SendAsync(applicant, queued)).Success, "Only the unsent report should be retried.");
+        Require((await adapter.SendAsync(applicant, [summary(1)])).Success, "A new flush must not inherit completed acknowledgements.");
         await receive;
         string? directory = System.Environment.GetEnvironmentVariable("NINJASLAYER_UPLOAD_FIXTURE_DIR");
         if (directory is not null)
