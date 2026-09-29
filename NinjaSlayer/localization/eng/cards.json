@@ -90,7 +90,7 @@
   "NINJA_SLAYER_CARD_KARATE_TRAINING_REDESIGN_V1.title": "Training",
   "NINJA_SLAYER_CARD_KARATE_TRAINING_REDESIGN_V1.description": "At the start of your turn, gain {Karate:diff()} [gold]Karate[/gold] and discard 1 card.",
   "NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1.title": "Strike Strike",
-  "NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1.description": "Deal {Damage:diff()} damage.\n[gold]Scry[/gold] {Cards:diff()}.\nAdd a Strike Strike to your Hand.",
+  "NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1.description": "Deal {Damage:diff()} damage.\n[gold]Scry[/gold] {Cards:diff()}.\nAdd a [gold]Strike Strike{IfUpgraded:show:+|}[/gold] to your Hand.",
   "NINJA_SLAYER_CARD_BACK_BRIDGE_REDESIGN_V1.title": "Back Bridge",
   "NINJA_SLAYER_CARD_BACK_BRIDGE_REDESIGN_V1.description": "Gain {Block:diff()} [gold]Block[/gold].\nGain {Karate:diff()} [gold]Karate[/gold].",
   "NINJA_SLAYER_CARD_WASSHOI_REDESIGN_V1.title": "Navy Hammer",

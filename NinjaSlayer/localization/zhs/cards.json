@@ -90,7 +90,7 @@
   "NINJA_SLAYER_CARD_KARATE_TRAINING_REDESIGN_V1.title": "修行",
   "NINJA_SLAYER_CARD_KARATE_TRAINING_REDESIGN_V1.description": "在你的回合开始时，获得{Karate:diff()}层[gold]空手道[/gold]，丢弃1张牌。",
   "NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1.title": "打击·打击",
-  "NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1.description": "造成{Damage:diff()}点伤害。\n[gold]预见[/gold]{Cards:diff()}。\n将一张打击·打击加入你的手牌。",
+  "NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1.description": "造成{Damage:diff()}点伤害。\n[gold]预见[/gold]{Cards:diff()}。\n将一张[gold]打击·打击{IfUpgraded:show:+|}[/gold]加入你的手牌。",
   "NINJA_SLAYER_CARD_BACK_BRIDGE_REDESIGN_V1.title": "后拱桥",
   "NINJA_SLAYER_CARD_BACK_BRIDGE_REDESIGN_V1.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n获得{Karate:diff()}层[gold]空手道[/gold]。",
   "NINJA_SLAYER_CARD_WASSHOI_REDESIGN_V1.title": "海军战锤",
