@@ -13,6 +13,13 @@
 ## Original Assets
 
 Source: `popup-frame-and-yukano-right-no-hold.zip`, directory `yukano-film/`.
+
+The episode 26 “Naraku popup” is this transparent comic frame. Its atlas is
+shipped under `NinjaSlayer/animations/yukano_arrow_popup/` and loaded by
+`YukanoArrowPopup` during Yukano's first arrow; it is not a separate Naraku event.
+Since 2026-09-29, offline production tools live outside Git at
+`C:/Users/theon/Documents/NinjaSlayer/production-tools/ep26-naraku-popup/`.
+Removing those tools from the repository does not remove the runtime assets.
 Runtime assets are copied byte-for-byte: `runtime-atlas.png`, `interior-clip.png`, `clip.gdshader`, `animation.json`, `yukano-original.ogv`.
 
 OGV SHA-256: `53ab1549562c0f08372becf46fa76a608f06b0251800f48c303b7df3e01d4383`.

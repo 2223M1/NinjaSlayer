@@ -1,0 +1,723 @@
+--- before/Metadata/Event/{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml
++++ after/Metadata/Event/{0351689c-9613-4b9d-b9f0-c2d16fc805a1}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{32be1f4b-51c3-4a89-9a70-d8e454e9ac91}">
+ 		<property name="volume">
+-			<value>3.049</value>
++			<value>5.049</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{12564016-b8d4-486c-968b-cbcd1388b930}</destination>
+--- before/Metadata/Event/{09550113-0b1f-430c-9f3e-d8be1fc650ea}.xml
++++ after/Metadata/Event/{09550113-0b1f-430c-9f3e-d8be1fc650ea}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{88e5e724-026b-40ef-a9a5-b5c17cefe3b5}">
+ 		<property name="volume">
+-			<value>-7.356</value>
++			<value>-5.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{838d4bc4-acc0-43ac-bbf9-4d40b3710c12}</destination>
+--- before/Metadata/Event/{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml
++++ after/Metadata/Event/{0b71aae2-0a2c-49ea-bcd0-66117618e765}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{24011ef0-c6b8-4aba-bb32-9ea277f50343}">
+ 		<property name="volume">
+-			<value>-0.93</value>
++			<value>0.57</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ea544c5a-e956-4d57-a757-c309cbbc6b2b}</destination>
+@@ -112,7 +112,7 @@
+ 	<object class="MixerBusFader" id="{f9e036e2-7592-4bfd-b56a-4c21735a0d9f}" />
+ 	<object class="SingleSound" id="{a5e49c1f-cb86-4c58-a4f7-36f97066857c}">
+ 		<property name="volume">
+-			<value>-1.321</value>
++			<value>-0.821</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{cb3ae2b2-891d-46dd-830f-5a1b9dbab149}</destination>
+@@ -120,7 +120,7 @@
+ 	</object>
+ 	<object class="SingleSound" id="{f370563c-e074-4ff8-ae20-e6fbbc17b332}">
+ 		<property name="volume">
+-			<value>1.321</value>
++			<value>0.821</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{687fe0c5-30f6-4c18-bdde-f90637dd7a4b}</destination>
+--- before/Metadata/Event/{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml
++++ after/Metadata/Event/{0e218cb6-679e-48ee-8e4a-4abd6401640f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{be4fae71-8f99-490a-aed2-777c6e3e4b42}">
+ 		<property name="volume">
+-			<value>-9.67</value>
++			<value>-7.67</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{1da3f9e1-5c2b-4b15-82f7-70b8c9a26862}</destination>
+--- before/Metadata/Event/{11bb4a3f-5f68-4eaf-a971-12cc063edcfa}.xml
++++ after/Metadata/Event/{11bb4a3f-5f68-4eaf-a971-12cc063edcfa}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{6119f496-b4bc-42f8-af52-fe5c05d08822}">
+ 		<property name="volume">
+-			<value>-7.539</value>
++			<value>-5.539</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{a4bbf2a0-3098-4eba-be34-8df652dda4b7}</destination>
+--- before/Metadata/Event/{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f}.xml
++++ after/Metadata/Event/{14ef3bcc-5017-4ec9-a02e-31a00bac0c5f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{21e2cb45-b7b9-4e58-928b-198ba924055a}">
+ 		<property name="volume">
+-			<value>-5.234</value>
++			<value>-3.234</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{3a968d71-a188-4a3c-b76b-7452b038daa2}</destination>
+--- before/Metadata/Event/{15554978-a2b5-482c-8c50-ee1eba9c1b3f}.xml
++++ after/Metadata/Event/{15554978-a2b5-482c-8c50-ee1eba9c1b3f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{4717d667-bba5-4a7d-9152-1c7d07b35fea}">
+ 		<property name="volume">
+-			<value>-4.762</value>
++			<value>-2.762</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{2ecd5242-147d-4e7b-8033-786a0ea3e437}</destination>
+--- before/Metadata/Event/{1756f2f9-39e1-48ad-b868-b363650ff6d6}.xml
++++ after/Metadata/Event/{1756f2f9-39e1-48ad-b868-b363650ff6d6}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{afb20ec7-42ec-4bac-8b64-bfdfe0796976}">
+ 		<property name="volume">
+-			<value>-6.107</value>
++			<value>-4.107</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{184d25f9-9be0-4c4a-ba24-ae795fdaeff9}</destination>
+--- before/Metadata/Event/{191e4ae4-25f9-41f7-9571-639313302897}.xml
++++ after/Metadata/Event/{191e4ae4-25f9-41f7-9571-639313302897}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{f02cf928-f9b2-45fe-b0a3-c9e558f5fad5}">
+ 		<property name="volume">
+-			<value>-7.356</value>
++			<value>-5.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{c289625c-9dd1-4c14-bcce-13a68c4c28d1}</destination>
+--- before/Metadata/Event/{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml
++++ after/Metadata/Event/{1b2002fc-5bd1-4b96-935f-d81455abdcc8}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{11fcfb90-541d-4851-8ae9-b41e8df8e78d}">
+ 		<property name="volume">
+-			<value>-1.612</value>
++			<value>0.388</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b8c17d46-0837-4d0d-831f-ca10ed52f7f0}</destination>
+--- before/Metadata/Event/{1ce1c03a-d143-4e63-8185-7fd0a132b37f}.xml
++++ after/Metadata/Event/{1ce1c03a-d143-4e63-8185-7fd0a132b37f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{396ef01b-be22-4701-a8bd-b13e062bd8f9}">
+ 		<property name="volume">
+-			<value>-6.851</value>
++			<value>-4.851</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{26441a5a-7dbd-4955-a4e4-1d6db1a68524}</destination>
+--- before/Metadata/Event/{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml
++++ after/Metadata/Event/{1d32f558-6166-40fe-9f20-cd5f4664e423}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e5807cc1-908a-4d6c-9498-07b8b3159f42}">
+ 		<property name="volume">
+-			<value>-4.984</value>
++			<value>-2.984</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{10bd58ac-a038-4f6a-aa9f-ad017ec7d8cb}</destination>
+--- before/Metadata/Event/{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml
++++ after/Metadata/Event/{1ed6e64e-43e7-4388-ae4a-2748a7f1a380}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{06dd71c2-bd57-44a6-9bae-99ea678453cd}">
+ 		<property name="volume">
+-			<value>-11.18</value>
++			<value>-9.18</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{5f3b9449-c197-4f3e-8739-3cc4de928d3d}</destination>
+--- before/Metadata/Event/{351f3e4c-5dae-4668-b9f2-280480f0982e}.xml
++++ after/Metadata/Event/{351f3e4c-5dae-4668-b9f2-280480f0982e}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{fabf954e-9379-41ee-aebd-6e29fbf92eba}">
+ 		<property name="volume">
+-			<value>-9.65</value>
++			<value>-7.65</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{799be665-c7f1-4d74-9c92-aa323d818afe}</destination>
+--- before/Metadata/Event/{393ec121-609e-469f-94fb-9a06c5926b32}.xml
++++ after/Metadata/Event/{393ec121-609e-469f-94fb-9a06c5926b32}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{6b0a5c52-2d5a-4db5-ae79-e5800e1dca20}">
+ 		<property name="volume">
+-			<value>4.87</value>
++			<value>6.87</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{33d21177-d6bb-4dbc-8929-3087087569c6}</destination>
+--- before/Metadata/Event/{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml
++++ after/Metadata/Event/{3af9f8fc-8a5b-4b20-97f3-9584ae998a50}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{9f61298b-efa1-4ca7-8b5c-b07b5f56cf3a}">
+ 		<property name="volume">
+-			<value>1.953</value>
++			<value>3.953</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{edc1c3e5-de0d-4189-b8b2-5398e4d27d9b}</destination>
+--- before/Metadata/Event/{3bae8a83-e507-444f-a37c-9888668e1a02}.xml
++++ after/Metadata/Event/{3bae8a83-e507-444f-a37c-9888668e1a02}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{fd408e03-8cbe-412e-b160-6e416909e384}">
+ 		<property name="volume">
+-			<value>-3.356</value>
++			<value>-1.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b2a69e4b-0ac7-4c18-aef0-f0e9122a8981}</destination>
+--- before/Metadata/Event/{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}.xml
++++ after/Metadata/Event/{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}.xml
+@@ -261,7 +261,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{69065875-898c-4183-aed4-e4544a5d56db}">
+ 		<property name="volume">
+-			<value>-10.8</value>
++			<value>-11.65</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{21f64148-57ef-4440-af37-cee11b3cb74a}</destination>
+--- before/Metadata/Event/{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}.xml
++++ after/Metadata/Event/{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{09261eb2-45d6-49ef-813d-1e69036eb7be}">
+ 		<property name="volume">
+-			<value>-4.314</value>
++			<value>-2.314</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f6b75187-1279-4eca-a3d9-8005fd604fec}</destination>
+--- before/Metadata/Event/{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0}.xml
++++ after/Metadata/Event/{4ae1ef2b-e48b-4a5f-bde7-23f53aae05d0}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{472446ce-7136-4113-9a2b-05e9ff9ff6c8}">
+ 		<property name="volume">
+-			<value>-7.556</value>
++			<value>-5.556</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f213556b-b627-4725-9a5a-49e91720b30a}</destination>
+--- before/Metadata/Event/{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml
++++ after/Metadata/Event/{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}.xml
+@@ -107,7 +107,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{1bb4711d-7523-41de-bc93-d7749e8fa47e}">
+ 		<property name="volume">
+-			<value>-7.8</value>
++			<value>-7.7</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{1b48b0de-fec6-4dff-9aca-c4d82d686720}</destination>
+@@ -130,7 +130,7 @@
+ 			<value>10.689342403628117</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>-0.9</value>
++			<value>6.6</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{32e1ac81-aaef-4887-acb9-d4317045f720}</destination>
+@@ -144,7 +144,7 @@
+ 			<value>6.8571655328798187</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>-0.9</value>
++			<value>6.6</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{44f59bc9-c1d4-4ae7-9ab0-d21b7111741b}</destination>
+--- before/Metadata/Event/{5a225627-5e7e-47e9-b304-d297ccbd36cc}.xml
++++ after/Metadata/Event/{5a225627-5e7e-47e9-b304-d297ccbd36cc}.xml
+@@ -402,7 +402,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{33e6075b-47a4-4b16-8e34-fa463f663ecc}">
+ 		<property name="volume">
+-			<value>-15</value>
++			<value>-16.4</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{7205afd5-bbcd-4a37-a0ae-094c93c88e11}</destination>
+--- before/Metadata/Event/{5fc0244c-1cce-44ce-947f-0246892aa6f0}.xml
++++ after/Metadata/Event/{5fc0244c-1cce-44ce-947f-0246892aa6f0}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{8fda50a4-e106-4602-94f3-0dd28f3cedec}">
+ 		<property name="volume">
+-			<value>-14.592</value>
++			<value>-5.452</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{97557ed6-04ae-4efa-b6b6-bac41f90afab}</destination>
+--- before/Metadata/Event/{618017ad-c42d-42ec-9ec8-ed766627a7cd}.xml
++++ after/Metadata/Event/{618017ad-c42d-42ec-9ec8-ed766627a7cd}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{5d246f78-6ef5-42f8-a11d-1070aff47048}">
+ 		<property name="volume">
+-			<value>-3.91</value>
++			<value>-1.91</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{5474962a-01a8-4107-9334-22279c61c0d1}</destination>
+--- before/Metadata/Event/{647b142a-123d-4b70-8ba1-87338a14b3c1}.xml
++++ after/Metadata/Event/{647b142a-123d-4b70-8ba1-87338a14b3c1}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{1ed2fb79-c873-423e-b342-a21f6d91bc17}">
+ 		<property name="volume">
+-			<value>-4.838</value>
++			<value>-2.838</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f73eeae2-45db-43b9-a9dc-981a9bae3609}</destination>
+--- before/Metadata/Event/{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml
++++ after/Metadata/Event/{665130dc-3ac9-43f2-aa59-845d9dfb2f71}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{9bb110f1-7508-48e3-81f1-cab8ff14b1bb}">
+ 		<property name="volume">
+-			<value>-3.595</value>
++			<value>-1.595</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b8dd9f61-c4a3-40a9-9467-b8b7ac183fdf}</destination>
+--- before/Metadata/Event/{70c9ff13-388e-4528-b851-4a7759a53738}.xml
++++ after/Metadata/Event/{70c9ff13-388e-4528-b851-4a7759a53738}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{3d727bc1-c7c6-42a6-8c04-88b61dad282d}">
+ 		<property name="volume">
+-			<value>-2.766</value>
++			<value>-0.766</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{15461013-de53-4d05-8395-0b728b6422eb}</destination>
+--- before/Metadata/Event/{72e056f8-0323-41e9-adac-54260b068b91}.xml
++++ after/Metadata/Event/{72e056f8-0323-41e9-adac-54260b068b91}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{ddde32be-ed0f-46c4-843d-d454362f4748}">
+ 		<property name="volume">
+-			<value>-7.029</value>
++			<value>-5.029</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{7054c42c-4e80-4da7-b2aa-b5123bea6674}</destination>
+--- before/Metadata/Event/{73c6a36b-aa58-493f-8425-41f1d0487d9b}.xml
++++ after/Metadata/Event/{73c6a36b-aa58-493f-8425-41f1d0487d9b}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{fba4d6ba-5ecc-4bab-8b12-fda42892c422}">
+ 		<property name="volume">
+-			<value>-0.428</value>
++			<value>1.572</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{a284a898-e08c-4fa1-ae4e-970fd24a4f15}</destination>
+--- before/Metadata/Event/{7589eded-6028-46dc-9a8e-fe677238ebc3}.xml
++++ after/Metadata/Event/{7589eded-6028-46dc-9a8e-fe677238ebc3}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{6f3016de-3553-4a25-a48f-25e6c4e725b7}">
+ 		<property name="volume">
+-			<value>-6.782</value>
++			<value>-4.782</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{2d31c9a5-21b8-4b28-8098-60ca5958a590}</destination>
+--- before/Metadata/Event/{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml
++++ after/Metadata/Event/{7b89b887-40cb-46ee-bcb8-3d0d31729f48}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{add0dc66-ce2b-42c4-b73c-df9dc7d99ead}">
+ 		<property name="volume">
+-			<value>-1.167</value>
++			<value>0.833</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{e3fd2869-c161-4e3d-a554-c4ba98ebd3e0}</destination>
+--- before/Metadata/Event/{7d050980-32d2-4444-83bf-559d9264cf44}.xml
++++ after/Metadata/Event/{7d050980-32d2-4444-83bf-559d9264cf44}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{f11bb6c3-6c3d-4a21-a29a-3f9675ccb0aa}">
+ 		<property name="volume">
+-			<value>-5.196</value>
++			<value>-3.196</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f911b564-dbb0-4e3a-a5b7-fe40eeceb81a}</destination>
+--- before/Metadata/Event/{8399306f-54e8-4300-ab25-bde9b8f689ff}.xml
++++ after/Metadata/Event/{8399306f-54e8-4300-ab25-bde9b8f689ff}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{d53c5566-6f93-4d82-a8fe-3d6463f4ef4a}">
+ 		<property name="volume">
+-			<value>-8.688</value>
++			<value>-6.688</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{aa584cdf-b3e9-4891-9dfe-cb9e3349d765}</destination>
+--- before/Metadata/Event/{841f8492-9735-4dea-b652-b8d22523f8c7}.xml
++++ after/Metadata/Event/{841f8492-9735-4dea-b652-b8d22523f8c7}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{b80facc1-6a2b-4df7-a01d-67fa35f3852c}">
+ 		<property name="volume">
+-			<value>1.585</value>
++			<value>3.585</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ced7438a-e9e1-4a46-bd46-1a75349e4489}</destination>
+--- before/Metadata/Event/{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml
++++ after/Metadata/Event/{858f6fb8-46c2-4feb-85a9-747b7872375f}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{d0363fac-7eb6-45c9-ab31-84e7aa16fd86}">
+ 		<property name="volume">
+-			<value>-6.59</value>
++			<value>-4.59</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{9e64d902-d326-411c-8352-59efb2d7cfb3}</destination>
+--- before/Metadata/Event/{85c62279-908d-42cb-9b36-d2a0b0823a73}.xml
++++ after/Metadata/Event/{85c62279-908d-42cb-9b36-d2a0b0823a73}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{aaf168b3-9124-4c0b-9fd8-b288dcc61d9a}">
+ 		<property name="volume">
+-			<value>-6.747</value>
++			<value>-4.747</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{d97036b5-2faf-4ed2-9641-6545be59f247}</destination>
+--- before/Metadata/Event/{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml
++++ after/Metadata/Event/{8bbed2bb-0814-4e59-87f5-5e77e0e32dca}.xml
+@@ -388,7 +388,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{bdb41235-a062-491a-b7d7-521df82bfb3f}">
+ 		<property name="volume">
+-			<value>-9</value>
++			<value>-9.3</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f90535fe-9fce-42b4-b106-604748a713d6}</destination>
+@@ -439,7 +439,7 @@
+ 			<value>77.202789115646254</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>-5.6</value>
++			<value>2.2</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{87317355-5b5d-42df-b4c0-6c7dd09db910}</destination>
+@@ -453,7 +453,7 @@
+ 			<value>26.85315192743764</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>-5.6</value>
++			<value>2.2</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{bd88a2c6-5f8f-427b-9fa3-695421045d2a}</destination>
+@@ -618,7 +618,7 @@
+ 			<value>0.128140589569161</value>
+ 		</property>
+ 		<property name="volume">
+-			<value>-5.6</value>
++			<value>2.2</value>
+ 		</property>
+ 		<relationship name="audioFile">
+ 			<destination>{a6b94e2d-8118-47fd-a0f1-1e703f6e691d}</destination>
+--- before/Metadata/Event/{8da32b4e-0fc2-43c3-a183-5a5380b4832b}.xml
++++ after/Metadata/Event/{8da32b4e-0fc2-43c3-a183-5a5380b4832b}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{b37c3aa3-1213-4e80-b9b6-5550f9b4846c}">
+ 		<property name="volume">
+-			<value>-4.267</value>
++			<value>-2.267</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{a9b805dd-f927-402f-b785-46cf3d5f01a4}</destination>
+--- before/Metadata/Event/{8e57e5da-7a6f-49ac-b634-a4b087ab569b}.xml
++++ after/Metadata/Event/{8e57e5da-7a6f-49ac-b634-a4b087ab569b}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{b88a31b7-c56e-4f74-86ca-5a637f6e75d1}">
+ 		<property name="volume">
+-			<value>-3.408</value>
++			<value>-1.408</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f7c27714-72db-4fa8-9e72-a3e30a4fff56}</destination>
+--- before/Metadata/Event/{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml
++++ after/Metadata/Event/{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{d9b8e55b-8749-49a3-9c4c-2aae92bc2a99}">
+ 		<property name="volume">
+-			<value>4.751</value>
++			<value>6.751</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{6a814401-3b73-4958-b66a-9e02e6c49caf}</destination>
+--- before/Metadata/Event/{91b5a40d-26eb-4af1-9d1e-51cadac4ece8}.xml
++++ after/Metadata/Event/{91b5a40d-26eb-4af1-9d1e-51cadac4ece8}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{06701b21-4dea-487e-88fa-6ec3d7ac0168}">
+ 		<property name="volume">
+-			<value>-6.98</value>
++			<value>-4.98</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{5ae0156c-61be-457e-9841-74d49c6889de}</destination>
+--- before/Metadata/Event/{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml
++++ after/Metadata/Event/{95d1f458-be6e-412a-9725-67d8b0c46d1c}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{a46369f7-95dd-4d8a-9c52-5f32ed120373}">
+ 		<property name="volume">
+-			<value>-2.52</value>
++			<value>-0.52</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{4aae6b2c-6376-4b69-a675-108100df6aad}</destination>
+--- before/Metadata/Event/{a9bee68e-cb5d-427e-8248-e8a063343b0e}.xml
++++ after/Metadata/Event/{a9bee68e-cb5d-427e-8248-e8a063343b0e}.xml
+@@ -76,7 +76,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{54ecf0ee-9b49-4743-b46c-ca0c2fea3fad}">
+ 		<property name="volume">
+-			<value>-7.356</value>
++			<value>-5.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{834e2139-88f3-425a-a60d-ad34e3020f9b}</destination>
+--- before/Metadata/Event/{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}.xml
++++ after/Metadata/Event/{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}.xml
+@@ -294,7 +294,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{75814a6d-f762-4c27-ae26-51552e033822}">
+ 		<property name="volume">
+-			<value>-12.3</value>
++			<value>-13.4</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{10a48aa6-7c22-4d36-b5be-ce58f6d974d2}</destination>
+--- before/Metadata/Event/{ae9355ab-3946-4624-adca-eb051baef884}.xml
++++ after/Metadata/Event/{ae9355ab-3946-4624-adca-eb051baef884}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{687d60e8-5fd1-4b44-8aee-f66d3d836b71}">
+ 		<property name="volume">
+-			<value>-2.419</value>
++			<value>-0.419</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ade955f5-b0ce-4354-94cd-e82db7af9adb}</destination>
+--- before/Metadata/Event/{b389c986-2115-49c1-acdb-b17b1d31c665}.xml
++++ after/Metadata/Event/{b389c986-2115-49c1-acdb-b17b1d31c665}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{71361f0d-7601-4d5d-98ec-800edaa83f3c}">
+ 		<property name="volume">
+-			<value>-2.163</value>
++			<value>-0.163</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{c2ae8bb5-c074-4110-b656-fc21d29c9da9}</destination>
+--- before/Metadata/Event/{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml
++++ after/Metadata/Event/{b4951a3f-380e-4694-a3e6-bdb14065ff24}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{c042124c-e109-444f-8f97-8887656fae5c}">
+ 		<property name="volume">
+-			<value>-6.459</value>
++			<value>-4.459</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{9db8b7d5-971e-4be6-9334-ef0445ffb2f9}</destination>
+--- before/Metadata/Event/{b6131b0d-f431-47e5-85ef-e20be2b85dd0}.xml
++++ after/Metadata/Event/{b6131b0d-f431-47e5-85ef-e20be2b85dd0}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{a5a318c5-3d37-42e5-9cba-e1c8c658e0e1}">
+ 		<property name="volume">
+-			<value>-1.997</value>
++			<value>0.003</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{9c65b2d9-4532-4486-b253-0c2d78062c2f}</destination>
+--- before/Metadata/Event/{bf759c4b-49e9-4918-8f80-f68d5c84663d}.xml
++++ after/Metadata/Event/{bf759c4b-49e9-4918-8f80-f68d5c84663d}.xml
+@@ -96,7 +96,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{9f17f156-ee55-4333-b245-60fd6538442f}">
+ 		<property name="volume">
+-			<value>-9</value>
++			<value>-9.3</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{1f6d5718-e19a-41df-b908-a4c29708fd9d}</destination>
+--- before/Metadata/Event/{c30e2c16-a858-4486-8015-74f749a5fc59}.xml
++++ after/Metadata/Event/{c30e2c16-a858-4486-8015-74f749a5fc59}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e5507118-c3ef-46f7-83b3-578f35c62bd8}">
+ 		<property name="volume">
+-			<value>-8.688</value>
++			<value>-6.688</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{b441d790-1db6-4ae8-a9c3-d743ae1bfc27}</destination>
+--- before/Metadata/Event/{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml
++++ after/Metadata/Event/{c3984c02-fa51-4afa-aede-0d8e7393a8f4}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{166988fa-ca98-4d34-ab2a-85f6d978e4ed}">
+ 		<property name="volume">
+-			<value>-4.128</value>
++			<value>-2.128</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{d95e53c3-5bef-41cb-9958-163913ceeecc}</destination>
+--- before/Metadata/Event/{cd6687eb-fb28-470c-b914-90d8c1509680}.xml
++++ after/Metadata/Event/{cd6687eb-fb28-470c-b914-90d8c1509680}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{28f971c4-7ce5-4492-9756-1b696dd5b16d}">
+ 		<property name="volume">
+-			<value>-3.775</value>
++			<value>-1.775</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{626cb335-c2dc-4b78-a634-4de1126067f0}</destination>
+--- before/Metadata/Event/{d4a68540-4006-4f13-9215-9cfd6f05feae}.xml
++++ after/Metadata/Event/{d4a68540-4006-4f13-9215-9cfd6f05feae}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e61bbd55-d2d0-416c-bf0c-4dffcd0a0721}">
+ 		<property name="volume">
+-			<value>-10.622</value>
++			<value>-8.622</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{4cf0d46e-32cd-498a-ae58-8f23ec27aac5}</destination>
+--- before/Metadata/Event/{da307a67-b27f-4a03-8fc7-64d5140b4bbb}.xml
++++ after/Metadata/Event/{da307a67-b27f-4a03-8fc7-64d5140b4bbb}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{c6821ce1-4499-4621-9c8b-c5bb9dc1042f}">
+ 		<property name="volume">
+-			<value>-7.714</value>
++			<value>-5.714</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{ae95e122-5202-4c95-98fe-f4507b8efefe}</destination>
+--- before/Metadata/Event/{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml
++++ after/Metadata/Event/{ea0bd5a0-86fe-4978-9862-9202c3a3a4ab}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{073776a0-da69-4983-8c34-b3f85456495b}">
+ 		<property name="volume">
+-			<value>-3.356</value>
++			<value>-1.356</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{3ca98a58-ee1d-4b32-ba54-cb5fe7f14447}</destination>
+--- before/Metadata/Event/{eeb09a3c-39f1-4190-b538-d248b6dfbeec}.xml
++++ after/Metadata/Event/{eeb09a3c-39f1-4190-b538-d248b6dfbeec}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{e48829a0-4dbe-4c49-823b-ee28d933ffb5}">
+ 		<property name="volume">
+-			<value>-6.237</value>
++			<value>-4.237</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{f9190dc2-aaa7-44eb-9f31-9b54ec1a7b5d}</destination>
+--- before/Metadata/Event/{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml
++++ after/Metadata/Event/{f2a39090-8ebf-467b-8908-2e1d3f0ac2ed}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{78f03485-5551-4974-bf61-5004ba2acba7}">
+ 		<property name="volume">
+-			<value>-7.882</value>
++			<value>-5.882</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{621d29b2-98b1-4d13-ba90-c633612fc613}</destination>
+--- before/Metadata/Event/{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml
++++ after/Metadata/Event/{f44ae942-9b6c-4794-9f2d-cb09df4f92c9}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{821d7651-ee0c-48f7-8772-74798b97c201}">
+ 		<property name="volume">
+-			<value>0.44</value>
++			<value>2.44</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{91dccc68-fb20-4a1b-a1d7-e4c6084e9be5}</destination>
+--- before/Metadata/Event/{f56e5817-8ce7-4a18-8175-57f5d93dde22}.xml
++++ after/Metadata/Event/{f56e5817-8ce7-4a18-8175-57f5d93dde22}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{48ce36ec-c703-4173-9b97-3169a9781532}">
+ 		<property name="volume">
+-			<value>-13.065</value>
++			<value>-11.065</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{7e384b40-0e3c-4bf8-9df4-5d2278a091fc}</destination>
+--- before/Metadata/Event/{fed07464-e229-44ff-93b4-89ce41274988}.xml
++++ after/Metadata/Event/{fed07464-e229-44ff-93b4-89ce41274988}.xml
+@@ -73,7 +73,7 @@
+ 	</object>
+ 	<object class="EventMixerMaster" id="{f1e77934-46e5-4518-b580-dc71ae2ed287}">
+ 		<property name="volume">
+-			<value>-8.246</value>
++			<value>0.554</value>
+ 		</property>
+ 		<relationship name="effectChain">
+ 			<destination>{4fb6821d-754f-4ac8-adc2-1dbc7a39c653}</destination>

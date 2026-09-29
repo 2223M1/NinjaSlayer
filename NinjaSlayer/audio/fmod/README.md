@@ -86,6 +86,9 @@ locations are in `tools/fmod/yamoto-narrator-clean-refresh-20260928.json`.
 
 ## 2026-09-28 FMOD gain calibration
 
+This is the September 28 baseline; the September 29 revision below supersedes
+its gain targets while preserving its source cleanup and restoration.
+
 The latest user project contains 60 events: six music events and 54 character
 events with 90 sound instances. Calibration changes only 60 event master gains
 and 61 SingleSound gains. All 217 source asset hashes, event identities, random
@@ -113,3 +116,47 @@ backups and bank hashes. The sibling delivery directory
 banks, guarded restore script, individual render evidence, six A/B samples and
 the Chinese acceptance report. The source metadata diff is also recorded in
 `tools/fmod/loudness-calibration-20260928.patch`.
+
+## 2026-09-29 gain and listening revision
+
+Music calibration excludes brief high-level passages from the normal-level
+statistic for both vanilla and custom tracks. The retained-window reference
+medians are -29.6 LUFS for narrative and -20.6 LUFS for combat. Dark Ninja's
+prelude and Sawatari's choice phase now match their battle material's normal
+level, with phase gains increased by 7.6 dB and 7.5 dB respectively.
+
+Character material is raised by 2 dB relative to the September 28 calibration.
+One Sawatari bamboo-attack variant is raised by 1 dB to retain peak headroom.
+The character transition is raised by 8.8 dB; select is raised by 9.14 dB to
+match its measured active level, within 0.01 dB. The spin attack's three parts
+share the same 2 dB increase. Only event/instrument gain values change; source
+audio, DSP, playback structure, identifiers and routing remain intact.
+
+`tools/fmod/loudness-calibration-20260929.json` records the measurements, gain
+changes, exclusions, bank hashes and backup location. Its sibling `.patch`
+contains the FMOD gain diff. Local delivery evidence is under
+`../deliveries/FMOD-LOUDNESS-20260929`. The listening package there excludes
+vanilla menu music and includes all 90 character sounds, nine music phases,
+and actual game recordings with vanilla combat sounds and act-music
+transitions. Automated checks and user listening acceptance are reported
+separately; the package includes a timestamp index for feedback.
+
+## 2026-09-29 second listening revision
+
+User listening feedback adjusts the September 29 gains: ordinary character
+sounds decrease by 1 dB; all Mod music increases by 1 dB, with Yamoto's event
+music increased by 3 dB total. The long greeting (`ninja_slayer_slow_domo`)
+increases by 2 dB total and the enemy-burst `ninja_slayer_ninja_soul` by 4 dB
+total. These totals are relative to the previous delivery. Select and
+transition are cutscene cues and retain their previous gains unchanged.
+
+This revision changes 58 event master gains only. The 217 source files,
+instrument gains, random playlists, pitch, timing, routing and DSP remain
+unchanged. The previous normal-music measurement method still excludes brief
+climaxes; these new increments reflect the user's listening preferences.
+The manifest and gain patch are
+`tools/fmod/loudness-calibration-20260929-r2.json` and its sibling `.patch`.
+Local evidence and the updated listening package are in
+`../deliveries/FMOD-LOUDNESS-20260929-R2`, including focused A/B comparisons of
+the long greeting, soul explosion and Yamoto music. Automated verification
+does not imply human listening approval.
