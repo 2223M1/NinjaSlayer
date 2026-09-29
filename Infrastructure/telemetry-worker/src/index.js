@@ -27,12 +27,22 @@ async function handleTelemetry(request, env, ctx) {
   if (!(request.headers.get('content-type') || '').toLowerCase().includes('application/json')) {
     return jsonResponse(415, { error: 'unsupported_media_type', message: 'Content-Type must be application/json' });
   }
+  const encoding = (request.headers.get('content-encoding') || 'identity').toLowerCase();
+  if (!['identity', 'gzip'].includes(encoding)) return jsonResponse(415, { error: 'unsupported_content_encoding' });
 
   let bodyBytes;
   try {
     bodyBytes = await readBodyLimited(request, TELEMETRY_MAX_BODY_BYTES);
+    if (encoding === 'gzip') {
+      const decoded = new Blob([bodyBytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      bodyBytes = await readBodyLimited(new Response(decoded), TELEMETRY_MAX_BODY_BYTES);
+    }
   } catch (error) {
-    if (error instanceof BodyTooLargeError) return jsonResponse(413, { error: 'payload_too_large' });
+    if (error instanceof BodyTooLargeError) {
+      console.warn(`[telemetry] payload_too_large: ${error.actualBytes} bytes; limit ${error.maximumBytes}`);
+      return jsonResponse(413, { error: 'payload_too_large', maximumBytes: error.maximumBytes });
+    }
+    if (encoding === 'gzip') return jsonResponse(400, { error: 'invalid_gzip' });
     throw error;
   }
   let body;
@@ -56,12 +66,13 @@ async function handleTelemetry(request, env, ctx) {
 
   const cleanBody = {
     api_key: env.POSTHOG_API_KEY,
-    batch: balanceEvents.map((event) => ({
+    batch: await Promise.all(balanceEvents.map(async (event) => ({
       event: event.event,
+      uuid: await telemetryEventId(event),
       properties: event.properties,
       distinct_id: event.distinct_id,
       ...(event.timestamp === undefined ? {} : { timestamp: event.timestamp }),
-    })),
+    }))),
     ...(body.sentAt === undefined ? {} : { sentAt: body.sentAt }),
   };
   const controller = new AbortController();
@@ -86,6 +97,17 @@ async function handleTelemetry(request, env, ctx) {
   const upstreamBody = (await postHogResponse.text()).slice(0, 200);
   ctx.waitUntil(Promise.resolve().then(() => console.error(`[fail] PostHog ${postHogResponse.status}: ${upstreamBody}`)));
   return jsonResponse(502, { error: 'upstream_failed', message: `PostHog returned ${postHogResponse.status}` });
+}
+
+async function telemetryEventId(event) {
+  // PostHog deduplicates capture UUIDs. A queue retry (including after restart)
+  // must reuse the event's UUID, independent of HTTP encoding or batch position.
+  const identity = [event.distinct_id, event.event, event.timestamp, event.properties.request_id, event.properties.payload];
+  const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(identity)))).slice(0, 16);
+  bytes[6] = (bytes[6] & 15) | 0x80; // UUIDv8: application-defined deterministic hash.
+  bytes[8] = (bytes[8] & 63) | 0x80;
+  const hex = [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 async function handleFeedback(request, env) {

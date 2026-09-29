@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { gzipSync } from 'node:zlib';
+import { gzipSync, gunzipSync } from 'node:zlib';
 import { Miniflare } from 'miniflare';
 import { parseFeedbackIndexMarker } from '../src/feedback-storage.js';
 import { publicFeedback } from '../dashboard/publish.mjs';
+import { publicRunId } from '../src/replays.js';
 
 // Exported by the product DLL and real RitsuLib adapter in VerifyUploadTransport.
 const fixturePath = process.env.NINJASLAYER_UPLOAD_FIXTURE
@@ -39,6 +40,7 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
   const send = (record, body = Buffer.from(record.body, 'base64')) => mf.dispatchFetch(
     `https://worker.test${record.path}`, { method: record.method,
       headers: { 'Content-Type': record.contentType, 'CF-Connecting-IP': '203.0.113.8',
+        ...(record.contentEncoding ? { 'Content-Encoding': record.contentEncoding } : {}),
         ...(record.submissionId ? { 'X-NinjaSlayer-Submission-Id': record.submissionId } : {}) }, body });
   try {
     const [first, retry, telemetry] = wire;
@@ -84,5 +86,43 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
     assert.equal((await send(telemetry)).status, 200);
     assert.equal(upstream.length, 1);
     assert.equal(upstream[0].batch[0].properties.request_id, 'balance_runs');
+
+    assert.equal(wire.length, 9, 'Regenerate the candidate DLL upload fixture');
+    for (const record of wire.slice(3)) {
+      assert.equal(record.contentEncoding, 'gzip');
+      const decoded = JSON.parse(gunzipSync(Buffer.from(record.body, 'base64')));
+      assert.equal(decoded.batch.length, 1);
+      const result = await send(record);
+      assert.equal(result.status, 200, await result.clone().text());
+    }
+    assert.equal(upstream.length, 5); // Two report attempts only go to R2.
+    assert.equal(upstream[1].batch[0].uuid, upstream[4].batch[0].uuid);
+    assert.equal(upstream[2].batch[0].uuid, upstream[3].batch[0].uuid);
+    assert.equal(upstream[1].batch[0].properties.payload.applicant_payload.measurements.length, 2000);
+    const reportId = await publicRunId('a'.repeat(64), 'local-contract-salt-only');
+    const stored = await r2.get(`replays/${reportId}/0`);
+    assert(stored);
+    const publicReport = await mf.dispatchFetch(`https://worker.test/observatory/replays/${reportId}/0`);
+    assert.equal(publicReport.status, 200);
+    assert.equal((await publicReport.json()).frames.length, 2);
+    assert.equal(await kv.get(`replay-index/${reportId}/0`), '1');
+
+    // Optional real local AutoSlay capture: measure it without committing its
+    // private payload or ever sending it to production PostHog/R2.
+    if (process.env.NINJASLAYER_REAL_TELEMETRY_DIR) {
+      const directory = process.env.NINJASLAYER_REAL_TELEMETRY_DIR;
+      for (const suffix of ['telemetry', 'telemetry.replay']) {
+        const events = JSON.parse(await readFile(`${directory}/checkpoints.${suffix}.json`, 'utf8'));
+        for (const event of events) {
+          const json = Buffer.from(JSON.stringify({ api_key: 'proxy', batch: [event] }));
+          const compressed = gzipSync(json);
+          const response = await send({ ...telemetry, contentEncoding: 'gzip' }, compressed);
+          assert.equal(response.status, 200, await response.clone().text());
+          if (event.event === 'run_history.completed')
+            assert.deepEqual(upstream.at(-1).batch[0].properties, event.properties);
+          console.log(`${suffix}: ${json.byteLength} JSON bytes -> ${compressed.byteLength} gzip bytes; local Worker accepted`);
+        }
+      }
+    }
   } finally { await mf.dispose(); }
 });
