@@ -48,6 +48,18 @@ const documentReplacements = [
     content: renderEnglishCompatibility(manifest),
   },
   {
+    file: path.join(root, 'README_JA.md'),
+    start: '<!-- compatibility-badges:start -->',
+    end: '<!-- compatibility-badges:end -->',
+    content: renderCompatibilityBadges(manifest),
+  },
+  {
+    file: path.join(root, 'README_JA.md'),
+    start: '<!-- compatibility:start -->',
+    end: '<!-- compatibility:end -->',
+    content: renderJapaneseCompatibility(manifest),
+  },
+  {
     file: path.join(root, 'Docs', 'development.md'),
     start: '<!-- compatibility:start -->',
     end: '<!-- compatibility:end -->',
@@ -210,9 +222,6 @@ function renderCompatibilityBadges(value) {
   const preview = value.channels.preview.gameApiVersion;
   return `<!-- compatibility-badges:start -->
   <p>
-    <img src="https://img.shields.io/badge/C%23-.NET-512BD4?logo=dotnet&amp;logoColor=white" alt="C#">
-    <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&amp;logoColor=white" alt=".NET 9">
-    <img src="https://img.shields.io/badge/Godot-4.5.1-478CBF?logo=godotengine&amp;logoColor=white" alt="Godot 4.5.1">
     <img src="https://img.shields.io/badge/Slay%20the%20Spire%202-${stable}%20%7C%20${preview}-B51F24" alt="Slay the Spire 2 ${stable} and ${preview}">
     <img src="https://img.shields.io/badge/RitsuLib-${value.ritsuLibVersion}-2D7D9A" alt="RitsuLib ${value.ritsuLibVersion}">
     <a href="https://github.com/2223M1/NinjaSlayer/releases/latest"><img src="https://img.shields.io/github/v/release/2223M1/NinjaSlayer?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
@@ -239,36 +248,29 @@ function renderSmokeDriverManifest(value) {
 }
 
 function renderChineseCompatibility(value) {
-  const stable = value.channels.stable;
-  const preview = value.channels.preview;
   return `<!-- compatibility:start -->
-| 组件 | 支持范围 |
-|---|---|
-| Slay the Spire 2 | stable 正式版 \`${stable.gameApiVersion}\`；preview 测试版 \`${preview.gameApiVersion}\` |
-| RitsuLib | 编译基线与最低依赖 \`${value.ritsuLibVersion}\`；Workshop 运行时使用自动更新的最新版 |
-| 平台目标 | Windows x64、macOS、Linux x86_64 / Steam Deck；正式跨平台支持须通过六格实机矩阵 |
-| .NET | \`9.0\` |
-| Godot | \`4.5.1 Mono\` |
-| 游戏内语言 | 目前主要提供简体中文 |
-
-GitHub Release 提供 stable、preview 两个宿主专用诊断包和一个通用 Workshop 包。Workshop 条目不进入公开列表和搜索，但可通过链接访问并订阅；所有玩家下载同一个包，启动时按游戏宿主精确选择 stable 或 preview 实现。通用 PCK 不携带 Spine 原生扩展，运行时复用官方客户端已经加载的当前平台扩展。当前自动化真实游戏测试仅覆盖 Windows；macOS 与 Linux 的 stable/preview 实机矩阵通过前不宣称已完成正式跨平台验证。
+- 游戏正式版 \`${value.channels.stable.gameApiVersion}\`，测试版 \`${value.channels.preview.gameApiVersion}\`。
+- 需要 RitsuLib \`${value.ritsuLibVersion}\` 或更新版本。
+- 提供简体中文、英文和日文文本，随游戏语言切换。
+- 已在 Windows 上测试；macOS、Linux 和 Steam Deck 尚未完成实机验证。
 <!-- compatibility:end -->`;
 }
 
 function renderEnglishCompatibility(value) {
-  const stable = value.channels.stable;
-  const preview = value.channels.preview;
   return `<!-- compatibility:start -->
-| Component | Supported version |
-|---|---|
-| Slay the Spire 2 | stable public \`${stable.gameApiVersion}\`; preview beta \`${preview.gameApiVersion}\` |
-| RitsuLib | build baseline and minimum dependency \`${value.ritsuLibVersion}\`; Workshop installs receive its current release automatically |
-| Platform targets | Windows x64, macOS, and Linux x86_64 / Steam Deck; formal cross-platform support requires the six-cell real-device matrix |
-| .NET | \`9.0\` |
-| Godot | \`4.5.1 Mono\` |
-| In-game language | Primarily Simplified Chinese at present |
+- Game stable \`${value.channels.stable.gameApiVersion}\` and beta \`${value.channels.preview.gameApiVersion}\`.
+- Requires RitsuLib \`${value.ritsuLibVersion}\` or later.
+- Text is available in Simplified Chinese, English and Japanese, following the game's language setting.
+- Tested on Windows. Real-device testing on macOS, Linux and Steam Deck is not yet complete.
+<!-- compatibility:end -->`;
+}
 
-Each GitHub Release contains stable and preview diagnostic archives plus one universal Workshop archive. The unlisted Workshop item remains accessible by link; every subscriber receives the same bundle, which selects the exact stable or preview implementation at startup. The universal PCK carries no native Spine extension and reuses the platform extension already loaded by the official client. Automated real-game testing currently covers Windows only; formal macOS and Linux support is not claimed until both channels pass on those platforms.
+function renderJapaneseCompatibility(value) {
+  return `<!-- compatibility:start -->
+- ゲーム正式版 \`${value.channels.stable.gameApiVersion}\`、ベータ版 \`${value.channels.preview.gameApiVersion}\`に対応。
+- RitsuLib \`${value.ritsuLibVersion}\`以降が必要です。
+- 簡体字中国語、英語、日本語のテキストを収録。ゲームの言語設定に従います。
+- Windowsでテスト済みです。macOS、Linux、Steam Deckの実機確認は完了していません。
 <!-- compatibility:end -->`;
 }
 

@@ -1,0 +1,4 @@
+{
+  "NINJA_SLAYER_CHADO_BREATHING.title": "チャドー呼吸",
+  "NINJA_SLAYER_CHADO_BREATHING.description": "手札にあるすべての[gold]チャドー[/gold]が与えるエナジーを、指定の数だけ増加させる。チャドーがない場合、呼吸を1使ってチャドーを1枚生成し、残りでそれを強化する。"
+}

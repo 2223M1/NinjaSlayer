@@ -63,7 +63,7 @@ await mkdir(output, { recursive: true });
 const template = await readFile(new URL('index.html', import.meta.url), 'utf8');
 await writeFile(join(output, 'index.html'), template.replaceAll('{{view}}', 'pages').replace(/<!-- ADMIN -->[\s\S]*?<!-- END ADMIN -->/g, ''));
 await writeFile(join(output, 'data.json'), JSON.stringify(snapshot));
-for (const file of ['app.js', 'styles.css', 'public-data.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) await copyFile(new URL(file, import.meta.url), join(output, file));
+for (const file of ['app.js', 'styles.css', 'i18n.mjs', 'translations.mjs', 'public-data.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) await copyFile(new URL(file, import.meta.url), join(output, file));
 await mkdir(join(output, 'vendor'), { recursive: true });
 await copyFile(new URL('../node_modules/chart.js/dist/chart.umd.js', import.meta.url), join(output, 'vendor/chart.umd.js'));
 await copyFile(new URL('../node_modules/chart.js/LICENSE.md', import.meta.url), join(output, 'vendor/LICENSE.Chart.js.md'));

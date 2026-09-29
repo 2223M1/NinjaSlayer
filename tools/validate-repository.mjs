@@ -109,7 +109,10 @@ function validateReadme(relativePath, counterpart, language) {
   if (!source.includes(`href="${counterpart}"`)) {
     errors.push(`${relativePath} must link to ${counterpart}`);
   }
-  const badgeFragments = ['C%23', '.NET-9.0', 'Godot-4.5.1', 'github/v/release'];
+  const badgeFragments = ['github/v/release'];
+  for (const sibling of ['README.md', 'README_EN.md', 'README_JA.md'].filter(file => file !== relativePath)) {
+    if (!source.includes(`href="${sibling}"`)) errors.push(`${relativePath} must link to ${sibling}`);
+  }
   if (compatibility) {
     badgeFragments.push(
       `Spire%202-${compatibility.channels.stable.gameApiVersion}%20%7C%20${compatibility.channels.preview.gameApiVersion}`,
@@ -145,6 +148,9 @@ function validateReadme(relativePath, counterpart, language) {
 
 validateReadme('README.md', 'README_EN.md', 'zhs');
 validateReadme('README_EN.md', 'README.md', 'eng');
+validateReadme('README_JA.md', 'README.md', 'jpn');
+const localizationCheck = spawnSync(process.execPath, [join(root, 'tools', 'validate-localization.mjs')], { cwd: root, encoding: 'utf8' });
+if (localizationCheck.status !== 0) errors.push(localizationCheck.stdout + localizationCheck.stderr);
 
 for (const path of filesUnder(join(root, 'NinjaSlayer', 'localization')).filter((path) => path.endsWith('.json'))) {
   readJson(path);

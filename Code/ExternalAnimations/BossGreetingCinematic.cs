@@ -202,9 +202,10 @@ public static class BossGreetingCinematic
             bows.Add(new GreetingBow(player.Creature));
         }
         context.PlaySfx(NinjaSlayerAudio.NinjaSlayerFastDomoEvent);
-        string name = LocManager.Instance.Language == "zhs" ? "忍者杀手" : "NINJA SLAYER";
         string title = boss?.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss?.Monster?.Id.Entry ?? "Boss";
-        var bubble = NSpeechBubbleVfx.Create($"DOMO, {title}=SAN, {name} DESU.".ToUpperInvariant(), followed.Creature, 1.8f);
+        var greeting = new LocString("characters", "NINJA_SLAYER_GREETING_PLAYER");
+        greeting.Add("BossTitle", title);
+        var bubble = NSpeechBubbleVfx.Create(greeting.GetFormattedText().ToUpperInvariant(), followed.Creature, 1.8f);
         if (bubble != null) { room.SceneContainer.AddChildSafely(bubble); context.TrackNode(bubble); }
         float elapsed = 0f;
         bool recovered = false;
@@ -470,10 +471,9 @@ public static class BossGreetingCinematic
 
     private static string BuildBossGreetingDialogue(string bossTitle)
     {
-        string ninjaSlayerName = LocManager.Instance.Language == "zhs"
-            ? "忍者杀手"
-            : "NINJA SLAYER";
-        return $"DOMO, {ninjaSlayerName}=SAN, {bossTitle} DESU.".ToUpperInvariant();
+        var greeting = new LocString("characters", "NINJA_SLAYER_GREETING_BOSS");
+        greeting.Add("BossTitle", bossTitle);
+        return greeting.GetFormattedText().ToUpperInvariant();
     }
 
     private static async Task FadeBossBubbleAfterCombatStart(NSpeechBubbleVfx bubble)

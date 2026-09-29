@@ -101,33 +101,33 @@ public static class NinjaSlayerSettings
             .AddSection("appearance", section => section
                 .WithTitle(Text("NINJA_SLAYER_SETTINGS_APPEARANCE_TITLE", "Appearance"))
                 .AddToggle("manga_select_portrait",
-                    Text("NINJA_SLAYER_SETTINGS_MANGA_SELECT_TITLE", "Manga selection portrait"),
+                    Text("NINJA_SLAYER_SETTINGS_MANGA_SELECT_TITLE", "Manga character portrait"),
                     _mangaSelectPortrait,
                     Text("NINJA_SLAYER_SETTINGS_MANGA_SELECT_DESCRIPTION",
-                        "Off: animated official front portrait. On: manga portrait with the original hand animation. Only affects character selection.")))
+                        "Use the manga portrait on the character selection screen. Turn off to use the official website artwork. Combat appearance is unchanged.")))
             .AddSection("combat_presentation", section => section
-                .WithTitle(Text("NINJA_SLAYER_SETTINGS_COMBAT_PRESENTATION_TITLE", "Combat presentation"))
+                .WithTitle(Text("NINJA_SLAYER_SETTINGS_COMBAT_PRESENTATION_TITLE", "Battle presentation"))
                 .AddToggle("brief_boss_greeting",
-                    Text("NINJA_SLAYER_SETTINGS_BRIEF_BOSS_GREETING_TITLE", "Brief boss greetings by default"),
+                    Text("NINJA_SLAYER_SETTINGS_BRIEF_BOSS_GREETING_TITLE", "Brief greetings"),
                     _briefBossGreeting,
                     Text("NINJA_SLAYER_SETTINGS_BRIEF_BOSS_GREETING_DESCRIPTION",
-                        "After the first full greeting, use brief greetings by default. Manual choices are retained. In multiplayer the host decides; only the host can press Space to shorten the current greeting.")))
+                        "Turns on after your first full greeting. Manual choices are saved and apply from the next greeting. Press Space during a full greeting to shorten it. In multiplayer, the host chooses the setting and is the only player who can shorten a greeting.")))
             .AddSection("audio", section => section
                 .WithTitle(Text("NINJA_SLAYER_SETTINGS_AUDIO_TITLE", "Audio"))
                 .AddToggle("narration",
-                    Text("NINJA_SLAYER_SETTINGS_NARRATION_TITLE", "Narration"),
+                    Text("NINJA_SLAYER_SETTINGS_NARRATION_TITLE", "Narrator voice"),
                     _narration,
-                    Text("NINJA_SLAYER_SETTINGS_NARRATION_DESCRIPTION", "Play narrator voice lines."))
+                    Text("NINJA_SLAYER_SETTINGS_NARRATION_DESCRIPTION", "Only affects the narrator. Character voices and music stay on."))
                 .AddToggle("radio", Text("NINJA_SLAYER_SETTINGS_RADIO_TITLE", "Ninja Slayer Radio"),
                     _radio, Text("NINJA_SLAYER_SETTINGS_RADIO_DESCRIPTION",
-                        "Selected music will replace most game tracks. Tracks are coming later; current music is unchanged.")))
+                        "Tracks have not been added yet. This switch does not currently change the music.")))
             .AddSection("hidden", section => section
-                .WithTitle(Text("NINJA_SLAYER_SETTINGS_HIDDEN_TITLE", "Hidden features"))
+                .WithTitle(Text("NINJA_SLAYER_SETTINGS_HIDDEN_TITLE", "Extras"))
                 .AddToggle("free_control",
-                    Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE", "Ether Reflux"),
+                    Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_TITLE", "Free control"),
                     _freeControl,
                     Text("NINJA_SLAYER_SETTINGS_FREE_CONTROL_DESCRIPTION",
-                        "Single-player play phase only. Free movement and attacks; returns home when the turn ends."))));
+                        "Single-player only, during your action phase. Move, drag and attack freely, then return when the turn ends. Runs that use this option are excluded from balance statistics."))));
     }
 
     private static ModSettingsText Text(string key, string fallback) =>

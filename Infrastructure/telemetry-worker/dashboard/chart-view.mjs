@@ -1,3 +1,4 @@
+import { t, tr } from './i18n.mjs';
 import { charts, wilson, selectGroups, chartRows } from "./charts.mjs";
 // Adapted from Spire Codex ChartsClient.tsx (69b3c898a1b62fa277359a17970b9061abf60354).
 // Required Notice: Copyright © 2025-present Peter Lord and Spire Codex contributors.
@@ -65,12 +66,12 @@ export function renderCharts(snapshot, filters, onCard) {
           new Option(
             entityName(id) ??
               {
-                all: "全部",
-                duration: "用时",
-                floor: "楼层",
-                deck: "牌组张数",
-                elites: "精英数",
-                smiths: "升级次数",
+                all: t("全部"),
+                duration: t("用时"),
+                floor: t("楼层"),
+                deck: t("牌组张数"),
+                elites: t("精英数"),
+                smiths: t("升级次数"),
               }[id] ??
               id,
             id,
@@ -83,7 +84,7 @@ export function renderCharts(snapshot, filters, onCard) {
     $("#chart-title").textContent = definition.title;
     const observed = rows.reduce((n, row) => n + row.n, 0),
       runs = groups.reduce((n, group) => n + group.runs, 0);
-    $("#chart-note").textContent = `${definition.note}。${runs} 场对局，${observed} 条记录。`;
+    $("#chart-note").textContent = tr`${definition.note}。${runs} 场对局，${observed} 条记录。`;
     $("#chart-empty").hidden = rows.length > 0;
     $("#chart-canvas").hidden = rows.length === 0;
     graph?.destroy();
@@ -200,7 +201,7 @@ function renderMechanisms(groups, snapshot, onCard, filters) {
     )
     .reduce((sum, row) => sum + row.n, 0);
   $("#mechanic-coverage").textContent =
-    `有详细记录的战斗：${measured} / ${total}${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ""}。`;
+    tr`有详细记录的战斗：${measured} / ${total}${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ""}。`;
   const values = new Map();
   for (const group of groups)
     for (const row of group.mechanisms ?? []) {
@@ -226,39 +227,39 @@ function renderMechanisms(groups, snapshot, onCard, filters) {
       card
         ? card.variants[0].name +
             (row.group === "card" && !row.id.endsWith("/0") ? " +" : "") +
-            (row.group === "damage_source" ? " · 直接伤害" : "")
+            (row.group === "damage_source" ? t(" · 直接伤害") : "")
         : ({
-            karate: "空手道",
-            black_flame: "黑炎",
-            shuriken: "手里剑",
-            naraku_absorbed: "奈落吸收",
-            naraku_gained: "奈落生命获得",
-            karate_gained: "空手道获得",
-            karate_lost: "空手道减少",
-            generate: "生成卡牌",
-            discard: "弃牌",
-            exhaust: "消耗卡牌",
-            shuffle: "洗牌",
-            chado_breath: "茶道呼吸",
-            chado_generated: "茶道生成",
-            chado_exhausted: "茶道消耗",
-            scry_discard: "预见弃牌",
-            shuriken_evoked: "手里剑激发",
-            shuriken_converted: "转化强手里剑",
-            shuriken_stock: "手里剑库存净变化",
-            hp_lost: "真实生命损失",
-            blocked: "实际抵挡伤害",
-            block_generated: "生成格挡",
-            healed: "治疗",
-            damage: "对敌失血伤害",
-            enemy_blocked: "被敌方格挡",
-            kills: "击杀",
-            unattributed: "来源未归属",
+            karate: t("空手道"),
+            black_flame: t("黑炎"),
+            shuriken: t("手里剑"),
+            naraku_absorbed: t("奈落吸收"),
+            naraku_gained: t("奈落生命获得"),
+            karate_gained: t("空手道获得"),
+            karate_lost: t("空手道减少"),
+            generate: t("生成卡牌"),
+            discard: t("弃牌"),
+            exhaust: t("消耗卡牌"),
+            shuffle: t("洗牌"),
+            chado_breath: t("茶道呼吸"),
+            chado_generated: t("茶道生成"),
+            chado_exhausted: t("茶道消耗"),
+            scry_discard: t("预见弃牌"),
+            shuriken_evoked: t("手里剑激发"),
+            shuriken_converted: t("转化强手里剑"),
+            shuriken_stock: t("手里剑库存净变化"),
+            hp_lost: t("真实生命损失"),
+            blocked: t("实际抵挡伤害"),
+            block_generated: t("生成格挡"),
+            healed: t("治疗"),
+            damage: t("对敌失血伤害"),
+            enemy_blocked: t("被敌方格挡"),
+            kills: t("击杀"),
+            unattributed: t("来源未归属"),
           }[row.id] ?? row.id),
     );
     if (card) name.onclick = () => onCard(id);
     if (row.group === "power")
-      name.textContent = (model?.name ?? row.id) + " · 层数净变化";
+      name.textContent = (model?.name ?? row.id) + t(" · 层数净变化");
     name.append(node("small", ` · v${row.version}`));
     tr.append(
       name,

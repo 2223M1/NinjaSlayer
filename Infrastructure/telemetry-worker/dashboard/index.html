@@ -12,11 +12,11 @@
     <a class="brand" href="./" aria-label="社区统计首页"><img src="./assets/logo.png" alt="Ninja Slayer"><span>社区统计<small>COMMUNITY STATS</small></span></a>
     <div class="nav-caption">忍者杀手 · 杀戮尖塔 2</div>
     <nav aria-label="页面"><button class="nav-item" data-page="charts"><span>▥</span>统计图表<span class="nav-number">26</span></button><button class="nav-item" data-page="reports"><span>▷</span>对局记录</button><button class="nav-item active" data-page="cards"><span>▤</span>卡牌统计</button><button class="nav-item" data-page="feedback"><span>◫</span>玩家反馈<span class="nav-number" id="feedback-nav-count">—</span></button><!-- ADMIN --><button class="nav-item" id="connect-nav"><span>⇄</span>数据连接</button><!-- END ADMIN --></nav>
-    <div class="sidebar-note"><span id="catalog-version">卡牌内容加载中</span><p>在模组设置中开启数据分享，<br>即可贡献你的对局。</p></div>
+    <div class="sidebar-note"><span id="catalog-version">卡牌内容加载中</span><p>数据分享可在模组设置中关闭。</p></div>
     <a class="workshop-link" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445" target="_blank" rel="noreferrer">创意工坊条目 <span>↗</span></a>
   </aside>
   <main>
-    <header class="topbar"><span>NINJA SLAYER MOD <span class="slash">/</span> 社区统计</span><!-- ADMIN --><button class="subtle" id="connection-button">连接设置 <span>↗</span></button><!-- END ADMIN --></header>
+    <header class="topbar"><label class="language-picker">语言 <select id="language" aria-label="语言"><option value="zhs">简体中文</option><option value="eng">English</option><option value="jpn">日本語</option></select></label><span>NINJA SLAYER MOD <span class="slash">/</span> 社区统计</span><!-- ADMIN --><button class="subtle" id="connection-button">连接设置 <span>↗</span></button><!-- END ADMIN --></header>
     <section class="page-heading"><img class="hero-ninja" src="./assets/ninja.png" alt="" aria-hidden="true"><div><div class="eyebrow">COMMUNITY STATS</div><h1 id="page-title">卡牌统计</h1><p id="page-subtitle">查看卡牌抓取率、胜率与战斗表现。</p></div><div class="heading-actions"><button id="export" class="button">↓ 导出表格</button><button id="refresh" class="button primary"><span id="refresh-icon">↻</span> 刷新数据</button></div></section>
     <div class="source-line" aria-live="polite"><span id="telemetry-state" class="source-pill">对局统计 · 加载中</span><span id="feedback-state" class="source-pill">玩家反馈 · 加载中</span><span id="replays-state" class="source-pill">对局记录 · 加载中</span><span id="last-sync">加载中…</span></div>
     <div id="notice" class="notice" hidden></div>

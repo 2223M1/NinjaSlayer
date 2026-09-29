@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.title": "召喚",
+  "NINJA_SLAYER_YAMOTO_KOKI_SUMMON.description": "この味方は[gold]オリガミ・ミサイル[/gold]を[blue]{Count}[/blue]個召喚しようとしている。",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.title": "イアイ斬撃",
+  "NINJA_SLAYER_YAMOTO_KOKI_IAI_SLASH.description": "この味方は敵全体を[gold]攻撃[/gold]し、[blue]{Damage}[/blue]ダメージを与えようとしている。"
+}

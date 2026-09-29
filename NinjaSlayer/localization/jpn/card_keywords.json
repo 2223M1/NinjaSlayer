@@ -1,0 +1,6 @@
+{
+  "NINJA_SLAYER_KEYWORD_SCRY.description": "[gold]山札[/gold]の上から指定枚数のカードを見て、好きな枚数を捨てる。この効果で捨てたカードの[gold]スライ[/gold]も発動する。",
+  "NINJA_SLAYER_KEYWORD_SCRY.title": "占術",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.description": "敵のHPが指定の条件を満たす場合、[gold]ブロック[/gold]を無視して倒す。",
+  "NINJA_SLAYER_KEYWORD_JUDGMENT.title": "審判"
+}

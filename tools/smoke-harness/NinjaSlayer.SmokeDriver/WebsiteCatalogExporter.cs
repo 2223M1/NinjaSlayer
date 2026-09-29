@@ -16,8 +16,11 @@ namespace NinjaSlayer.SmokeDriver;
 // Runs in the installed candidate's main menu. The website never reads test card specifications.
 internal static class WebsiteCatalogExporter
 {
+    private static readonly Dictionary<(ulong TextureId, int Width), string> ImageNames = new();
+
     internal static void Export(string destination)
     {
+        ImageNames.Clear();
         if (DirAccess.DirExistsAbsolute("res://Website"))
             throw new InvalidOperationException("Website resources must not be shipped in the game pack.");
         Directory.CreateDirectory(destination);
@@ -42,16 +45,26 @@ internal static class WebsiteCatalogExporter
         string originalLanguage = LocManager.Instance.Language;
         try
         {
-            foreach (string language in new[] { "zhs", "eng" })
+            foreach (string language in new[] { "zhs", "eng", "jpn" })
             {
                 LocManager.Instance.SetLanguage(language);
+                // Vanilla caches formatted keyword/potion tips across language changes.
+                // This exporter visits three locales in one process; normal play does not.
+                foreach (string field in new[] { "_keywordHoverTips", "_potionHoverTips" })
+                    ((System.Collections.IDictionary)typeof(HoverTipFactory)
+                        .GetField(field, BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!).Clear();
+                VerifyLocalizedTables(language);
                 translations[language] = models.Select(model => Describe(model, assets)).ToArray();
                 var events = LocManager.Instance.GetTable("events");
                 labels[language] = events.Keys.Where(key => key.EndsWith(".title", StringComparison.Ordinal))
                     .ToDictionary(key => key, key => events.GetRawText(key));
             }
         }
-        finally { LocManager.Instance.SetLanguage(originalLanguage); }
+        finally
+        {
+            LocManager.Instance.SetLanguage(originalLanguage);
+            ImageNames.Clear();
+        }
         var catalog = new
         {
             schemaVersion = 1, version,
@@ -95,12 +108,43 @@ internal static class WebsiteCatalogExporter
         };
     }
 
+    private static void VerifyLocalizedTables(string language)
+    {
+        foreach (string table in new[] { "cards", "powers", "relics", "events", "ancients",
+            "characters", "monsters", "intents", "card_keywords", "potions", "settings_ui",
+            "afflictions", "enchantments", "orbs", "static_hover_tips", "encounters" })
+        {
+            string path = $"res://NinjaSlayer/localization/{language}/{table}.json";
+            if (!Godot.FileAccess.FileExists(path)) throw new InvalidOperationException($"Missing packed localization: {path}");
+            using JsonDocument expected = JsonDocument.Parse(Godot.FileAccess.GetFileAsString(path));
+            foreach (JsonProperty entry in expected.RootElement.EnumerateObject())
+            {
+                if (!LocString.Exists(table, entry.Name)
+                    || LocManager.Instance.GetTable(table).GetRawText(entry.Name) != entry.Value.GetString())
+                    throw new InvalidOperationException($"Localization fallback or mismatch: {language}/{table}/{entry.Name}");
+            }
+        }
+        var greeting = new LocString("characters", "NINJA_SLAYER_GREETING_PLAYER");
+        greeting.Add("BossTitle", "TEST");
+        string formatted = greeting.GetFormattedText();
+        if (!formatted.Contains("TEST") || formatted.Contains("{BossTitle}"))
+            throw new InvalidOperationException($"Greeting formatting failed: {language}");
+        var exhaust = (HoverTip)HoverTipFactory.FromKeyword(CardKeyword.Exhaust);
+        if (exhaust.Title != new LocString("card_keywords", "EXHAUST.title").GetFormattedText()
+            || exhaust.Description != new LocString("card_keywords", "EXHAUST.description").GetFormattedText())
+            throw new InvalidOperationException($"Cached keyword text has the wrong language: {language}");
+        GD.Print($"Localization tables verified: {language}, 16 tables.");
+    }
+
     private static object CardVariant(CardModel canonical, bool upgraded)
     {
         CardModel card = canonical.ToMutable();
         if (upgraded && card.MaxUpgradeLevel > 0) card.UpgradeInternal();
+        string description = card.GetDescriptionForPile(PileType.None);
+        if (card is ModCardTemplate && System.Text.RegularExpressions.Regex.IsMatch(description, @"\{[A-Za-z_]"))
+            throw new InvalidOperationException($"Unresolved card text: {LocManager.Instance.Language}/{card.Id}/{upgraded}");
         return new { name = card.Title, upgraded, cost = card.EnergyCost.GetWithModifiers(CostModifiers.Local),
-            costsX = card.EnergyCost.CostsX, description = card.GetDescriptionForPile(PileType.None),
+            costsX = card.EnergyCost.CostsX, description,
             keywords = card.Keywords.Select(keyword => keyword.ToString()).ToArray(), tips = Tips(card.HoverTips) };
     }
 
@@ -113,6 +157,8 @@ internal static class WebsiteCatalogExporter
 
     private static string SaveImage(Texture2D texture, string assets, int width)
     {
+        var key = (texture.GetInstanceId(), width);
+        if (ImageNames.TryGetValue(key, out string? cached)) return cached;
         // AtlasTexture.GetImage blits before decompressing. Imported BC7 atlases must be decoded first.
         using Image source = (texture is AtlasTexture atlas ? atlas.Atlas : texture).GetImage();
         if (source.IsCompressed()) source.Decompress();
@@ -123,6 +169,8 @@ internal static class WebsiteCatalogExporter
         string name = Convert.ToHexStringLower(SHA256.HashData(bytes)) + ".webp";
         string path = Path.Combine(assets, name);
         if (!System.IO.File.Exists(path)) System.IO.File.WriteAllBytes(path, bytes);
-        return "images/" + name;
+        string relative = "images/" + name;
+        ImageNames.Add(key, relative);
+        return relative;
     }
 }
