@@ -1,7 +1,6 @@
 export const POSTHOG_HOST = 'https://us.i.posthog.com';
 // Apply the same bound before and after HTTP decompression.
 export const TELEMETRY_MAX_BODY_BYTES = 5 * 1024 * 1024;
-export const TELEMETRY_MAX_BATCH_SIZE = 50;
 export const TELEMETRY_DAILY_BYTES = 25 * 1024 * 1024;
 export const FEEDBACK_MAX_BODY_BYTES = 24 * 1024 * 1024;
 export const FEEDBACK_DAILY_COUNT = 5;

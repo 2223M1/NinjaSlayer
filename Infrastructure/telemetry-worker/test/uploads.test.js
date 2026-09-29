@@ -9,7 +9,7 @@ import { parseFeedbackIndexMarker } from '../src/feedback-storage.js';
 import { publicFeedback } from '../dashboard/publish.mjs';
 import { publicRunId } from '../src/replays.js';
 
-// Exported by the product DLL and real RitsuLib adapter in VerifyUploadTransport.
+// Exported by the product DLL's RitsuLib transport adapter in VerifyUploadTransport.
 const fixturePath = process.env.NINJASLAYER_UPLOAD_FIXTURE
   ?? new URL('fixtures/dotnet-uploads.json', import.meta.url);
 const wire = JSON.parse(await readFile(fixturePath, 'utf8'));
@@ -83,22 +83,20 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
       assert.equal(await replayResponse.text(), replayText);
     }
     assert.equal(telemetry.path, '/batch/');
-    assert.equal((await send(telemetry)).status, 200);
-    assert.equal(upstream.length, 1);
-    assert.equal(upstream[0].batch[0].properties.request_id, 'balance_runs');
-
-    assert.equal(wire.length, 9, 'Regenerate the candidate DLL upload fixture');
-    for (const record of wire.slice(3)) {
+    assert.equal(wire.length, 8, 'Regenerate the candidate DLL upload fixture');
+    for (const record of wire.slice(2)) {
       assert.equal(record.contentEncoding, 'gzip');
       const decoded = JSON.parse(gunzipSync(Buffer.from(record.body, 'base64')));
-      assert.equal(decoded.batch.length, 1);
+      assert.equal(typeof decoded.event, 'string');
+      assert.equal(decoded.batch, undefined);
       const result = await send(record);
       assert.equal(result.status, 200, await result.clone().text());
     }
-    assert.equal(upstream.length, 5); // Two report attempts only go to R2.
-    assert.equal(upstream[1].batch[0].uuid, upstream[4].batch[0].uuid);
-    assert.equal(upstream[2].batch[0].uuid, upstream[3].batch[0].uuid);
-    assert.equal(upstream[1].batch[0].properties.payload.applicant_payload.measurements.length, 2000);
+    assert.equal(upstream.length, 4); // Two report attempts only go to R2.
+    assert.equal(upstream[0].batch[0].uuid, upstream[3].batch[0].uuid);
+    assert.equal(upstream[1].batch[0].uuid, upstream[2].batch[0].uuid);
+    assert.equal(upstream[0].batch[0].properties.request_id, 'balance_runs');
+    assert.equal(upstream[0].batch[0].properties.payload.applicant_payload.measurements.length, 2000);
     const reportId = await publicRunId('a'.repeat(64), 'local-contract-salt-only');
     const stored = await r2.get(`replays/${reportId}/0`);
     assert(stored);
@@ -114,7 +112,7 @@ test('actual .NET uploads survive Worker parsing, durable storage, retries and n
       for (const suffix of ['telemetry', 'telemetry.replay']) {
         const events = JSON.parse(await readFile(`${directory}/checkpoints.${suffix}.json`, 'utf8'));
         for (const event of events) {
-          const json = Buffer.from(JSON.stringify({ api_key: 'proxy', batch: [event] }));
+          const json = Buffer.from(JSON.stringify(event));
           const compressed = gzipSync(json);
           const response = await send({ ...telemetry, contentEncoding: 'gzip' }, compressed);
           assert.equal(response.status, 200, await response.clone().text());
