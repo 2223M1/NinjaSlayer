@@ -9,7 +9,16 @@ PostHog or feedback is committed to private R2 storage. Separately authorized `b
 
 Raw IP addresses are never stored or forwarded. A server-secret HMAC of the
 transient Cloudflare source IP is used for minute limits and Durable Object
-daily quotas. Telemetry is limited to 25 MiB per HMAC per day. Feedback is
+daily quotas. Telemetry accepts JSON or HTTP gzip, with a 5 MiB limit both on
+the wire and after decompression, and at most 50 events per request. The game
+uses RitsuLib's public adapter interface to gzip and send one queued record at
+a time. It keeps native consent, queue persistence and retries. Balance records
+are sent before public reports; partial successes are remembered until the native
+batch is acknowledged. PostHog UUIDs are deterministic across retries, including
+client restarts. Report receipts separately deduplicate R2 writes. Each report
+keeps its 2 MiB compressed / 12 MiB expanded limit. Oversized requests log byte
+counts and limits, never payloads or identifiers. Telemetry is limited to
+25 MiB of expanded request JSON per HMAC per day. Feedback is
 limited to five submissions and 96 MiB per HMAC per day. A submission-scoped
 Durable Object owns a renewable two-minute write lease so one complete attempt
 wins even when requests overlap or an isolate is restarted.
@@ -116,8 +125,10 @@ is projected into the public artifact; historical feedback remains private.
 
 ## Native upload regression
 
-The RitsuLib PostHog adapter sends `POST /batch/`; `/batch` and the existing `/`
-entry use the same receiver. Game feedback uses `PUT /feedback` and .NET multipart
+The game adapter and older RitsuLib PostHog adapter send `POST /batch/`; `/batch`
+and the existing `/` entry use the same receiver. Upgrading the game also compresses
+and splits records already waiting in the native queue. Older oversized batches
+need the client update; they are not silently accepted or discarded. Game feedback uses `PUT /feedback` and .NET multipart
 with quoted disposition names and filenames. A successful feedback response must
 contain `ok: true` and the matching submission `id`.
 
@@ -128,3 +139,7 @@ HTTP adapter by `VerifyUploadTransport` in the product contracts. Set
 fresh requests for either host; run the Node test with `NINJASLAYER_UPLOAD_FIXTURE`
 pointing to that directory's `requests.json`. External PostHog delivery is mocked;
 feedback, attachments and retry receipts are verified against local storage.
+The fixture includes HTTP gzip, partial 429/413 failures, and retries with newly
+deserialized envelopes. `NINJASLAYER_REAL_TELEMETRY_DIR` can point to an ignored
+AutoSlay capture directory for a real single-player size/round-trip check; the test
+only uses local Miniflare storage and mocked PostHog, never the production service.

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import test from 'node:test';
 import { MockR2 } from './support/r2.js';
 import { expireReceipts, R2_CLEANUP_BYTES } from '../src/free-storage.js';
+import { TELEMETRY_MAX_BODY_BYTES } from '../src/limits.js';
 import {
   AnonymousQuotaGuard,
   FeedbackSubmissionCoordinator,
@@ -252,6 +254,43 @@ test('balance combat request is accepted without broadening the envelope allowli
   assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 400);
 });
 
+test('gzip telemetry preserves payloads and reuses PostHog IDs across encoding and batch retries', async () => {
+  const body = structuredClone(RITSU_FIXTURE);
+  const forwarded = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    forwarded.push(JSON.parse(init.body));
+    return new Response('{}', { status: 200 });
+  };
+  try {
+    assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 200);
+    const response = await handleRequest(new Request('https://worker.test/batch/', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip', 'CF-Connecting-IP': '203.0.113.7' },
+      body: gzipSync(JSON.stringify(body)),
+    }), workerEnv());
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.deepEqual(forwarded[0], forwarded[1]);
+    assert.deepEqual(forwarded[0].batch[0].properties, body.batch[0].properties);
+    assert.match(forwarded[0].batch[0].uuid, /^[0-9a-f-]{36}$/);
+    body.batch[0].timestamp = '2030-08-10T10:00:00Z';
+    assert.equal((await handleRequest(telemetryRequest(body), workerEnv())).status, 200);
+    assert.notEqual(forwarded[0].batch[0].uuid, forwarded[2].batch[0].uuid);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test('gzip bodies are bounded after expansion and corrupt encodings are rejected', async () => {
+  const send = (bytes, encoding = 'gzip') => handleRequest(new Request('https://worker.test/batch/', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Encoding': encoding, 'CF-Connecting-IP': '203.0.113.7' }, body: bytes,
+  }), workerEnv());
+  const oversized = gzipSync(' '.repeat(TELEMETRY_MAX_BODY_BYTES + 1));
+  assert(oversized.byteLength < 10000);
+  assert.equal((await send(oversized)).status, 413);
+  const corrupt = gzipSync(JSON.stringify(RITSU_FIXTURE)).subarray(0, 30);
+  assert.equal((await send(corrupt)).status, 400);
+  assert.equal((await send('{}', 'br')).status, 415);
+  assert.equal((await send(new Uint8Array(TELEMETRY_MAX_BODY_BYTES + 1))).status, 413);
+});
+
 test('telemetry rejects excessive JSON depth and streaming bodies over the limit', async () => {
   const nested = structuredClone(RITSU_FIXTURE);
   let cursor = nested.batch[0].properties.payload;
@@ -260,7 +299,7 @@ test('telemetry rejects excessive JSON depth and streaming bodies over the limit
 
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(new Uint8Array(5 * 1024 * 1024));
+      controller.enqueue(new Uint8Array(TELEMETRY_MAX_BODY_BYTES));
       controller.enqueue(new Uint8Array(1));
       controller.close();
     },

@@ -35,10 +35,7 @@ public static class NinjaSlayerBalanceTelemetry
                 OwnerModId = NinjaSlayerIds.ModId,
                 DisplayName = NinjaSlayerIds.ModId,
                 DisplayNameText = ModSettingsText.Literal("Ninja Slayer"),
-                Adapter = new PostHogTelemetryAdapter(
-                    host: "https://telemetry.feixingwawa.cn",
-                    projectApiKey: "proxy"
-                ),
+                Adapter = new NinjaSlayerTelemetryAdapter(new Uri("https://telemetry.feixingwawa.cn/batch/")),
                 Requests =
                 [
                     // A custom request avoids the framework's automatic run_history capture.
