@@ -1,0 +1,172 @@
+{
+  "version": "0.3.5",
+  "sourceRevision": "72578787866349db5fc4d28088d85c8697735088",
+  "verifiedAtUtc": "2026-09-29T02:50:52.1996559Z",
+  "files": [
+    {
+      "bytes": 317440,
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "path": "Box2D.NET.dll"
+    },
+    {
+      "bytes": 1097,
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "path": "LICENSE.Box2D.NET.txt"
+    },
+    {
+      "bytes": 644,
+      "sha256": "2cb2937d87f3d5edad3559d601c0211cbb8b723479b2a1cc7e22e8fddc1a1581",
+      "path": "ninjaslayer-variants.manifest"
+    },
+    {
+      "bytes": 24576,
+      "sha256": "de693b2b75a98906be7fa6f4a4dd143482d57b6c1b275af7853fb9f1fb5cba41",
+      "path": "NinjaSlayer.dll"
+    },
+    {
+      "bytes": 362,
+      "sha256": "fb72f6f18197b2d86bf60199645ec319dc049b7382143c75f0a07fc47e2ca26d",
+      "path": "NinjaSlayer.json"
+    },
+    {
+      "bytes": 209971108,
+      "sha256": "0090b0eff4b527c1562da53d4714dd0fc6fb90f8c7b85e38143830db3bc267cc",
+      "path": "NinjaSlayer.pck"
+    },
+    {
+      "bytes": 1008,
+      "sha256": "8383442a84bdaf6b5ca1bd51f1159fa47abf9368efc5b6b2e94e796e4b1855fb",
+      "path": "SHA256SUMS"
+    },
+    {
+      "bytes": 8,
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "path": "lib\\0.107.1\\compat-target.txt"
+    },
+    {
+      "bytes": 2240512,
+      "sha256": "e8a0e976776b2cea893d5607f8614cdac772d1a540effbe357bc12971cf28a2a",
+      "path": "lib\\0.107.1\\NinjaSlayer.dll"
+    },
+    {
+      "bytes": 8,
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "path": "lib\\0.111.0\\compat-target.txt"
+    },
+    {
+      "bytes": 122880,
+      "sha256": "0780f448c3d651f8d7577380cfc0e292ce9dd9570e8dac3b415aef4fc2f6120d",
+      "path": "lib\\0.111.0\\NinjaSlayer.AutoAnthony.dll"
+    },
+    {
+      "bytes": 2244096,
+      "sha256": "c4e411df9b3ffb4a107992bec0d4a84a88f1d2a9fc71cbd9046a46a13f47d21a",
+      "path": "lib\\0.111.0\\NinjaSlayer.dll"
+    }
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "2cb2937d87f3d5edad3559d601c0211cbb8b723479b2a1cc7e22e8fddc1a1581",
+    "de693b2b75a98906be7fa6f4a4dd143482d57b6c1b275af7853fb9f1fb5cba41",
+    "fb72f6f18197b2d86bf60199645ec319dc049b7382143c75f0a07fc47e2ca26d",
+    "0090b0eff4b527c1562da53d4714dd0fc6fb90f8c7b85e38143830db3bc267cc",
+    "8383442a84bdaf6b5ca1bd51f1159fa47abf9368efc5b6b2e94e796e4b1855fb",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "e8a0e976776b2cea893d5607f8614cdac772d1a540effbe357bc12971cf28a2a",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "0780f448c3d651f8d7577380cfc0e292ce9dd9570e8dac3b415aef4fc2f6120d",
+    "c4e411df9b3ffb4a107992bec0d4a84a88f1d2a9fc71cbd9046a46a13f47d21a"
+  ],
+  "pullRequests": [
+    "https://github.com/2223M1/NinjaSlayer/pull/139",
+    "https://github.com/2223M1/NinjaSlayer/pull/140"
+  ],
+  "workshop": {
+    "dependencies": [
+      3747602295
+    ],
+    "remotePackageVerified": true,
+    "itemId": "3776911445",
+    "remoteChangeNoteVerified": true,
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityUnlisted"
+  },
+  "mainCi": {
+    "conclusion": "success",
+    "databaseId": 36513152593,
+    "headSha": "72578787866349db5fc4d28088d85c8697735088",
+    "status": "completed"
+  },
+  "live": [
+    {
+      "schemaVersion": 6,
+      "candidateSha": "72578787866349db5fc4d28088d85c8697735088",
+      "bundleVersion": "0.3.5",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.2",
+      "additionalMods": [],
+      "bundleSha256": "8383442a84bdaf6b5ca1bd51f1159fa47abf9368efc5b6b2e94e796e4b1855fb",
+      "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-09-29T10:46:32.117712+08:00"
+    },
+    {
+      "schemaVersion": 6,
+      "candidateSha": "72578787866349db5fc4d28088d85c8697735088",
+      "bundleVersion": "0.3.5",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.2",
+      "additionalMods": [],
+      "bundleSha256": "8383442a84bdaf6b5ca1bd51f1159fa47abf9368efc5b6b2e94e796e4b1855fb",
+      "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+      "mode": "singleplayer-telemetry-loss",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-09-29T10:47:48.9726827+08:00"
+    }
+  ],
+  "notRun": [
+    "new full AutoSlay",
+    "multiplayer game",
+    "affected player queue recovery",
+    "F2 screenshot UI in this run (NoScreenshots); actual DLL feedback transport tested"
+  ],
+  "worker": {
+    "versionId": "775ca490-6976-4ea8-98d7-230448d95fb4",
+    "workersDev": false,
+    "probe": {
+      "plainStatus": 415,
+      "directDnsAddress": "172.67.132.240",
+      "gzipEmptyEventStatus": 400,
+      "createdProductionEvents": false,
+      "note": "Default local proxy/DNS routing and direct 104.21.5.40 failed TLS; alternate published A address passed directly."
+    },
+    "endpoint": "https://telemetry.feixingwawa.cn/batch/",
+    "sourceRevision": "72578787866349db5fc4d28088d85c8697735088"
+  },
+  "catalog": {
+    "host": "preview 0.111.0",
+    "fingerprint": "a4929423da09afa892e1463c0710616273462963779ec326c7bd00644fed2688",
+    "version": "0.3.5",
+    "models": 1672
+  },
+  "contracts": {
+    "preview": "passed full product suite and actual DLL Worker/R2 upload contract",
+    "stable": "passed full product suite and actual DLL Worker/R2 upload contract",
+    "rawCaptureUploadedToProduction": false
+  }
+}
