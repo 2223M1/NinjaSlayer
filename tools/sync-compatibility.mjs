@@ -30,12 +30,6 @@ const documentReplacements = [
     content: renderCompatibilityBadges(manifest),
   },
   {
-    file: path.join(root, 'README.md'),
-    start: '<!-- compatibility:start -->',
-    end: '<!-- compatibility:end -->',
-    content: renderChineseCompatibility(manifest),
-  },
-  {
     file: path.join(root, 'README_EN.md'),
     start: '<!-- compatibility-badges:start -->',
     end: '<!-- compatibility-badges:end -->',
@@ -245,15 +239,6 @@ function renderSmokeDriverManifest(value) {
     ],
     affects_gameplay: true,
   }, null, 2)}\n`;
-}
-
-function renderChineseCompatibility(value) {
-  return `<!-- compatibility:start -->
-- 游戏正式版 \`${value.channels.stable.gameApiVersion}\`，测试版 \`${value.channels.preview.gameApiVersion}\`。
-- 需要 RitsuLib \`${value.ritsuLibVersion}\` 或更新版本。
-- 提供简体中文、英文和日文文本，随游戏语言切换。
-- 已在 Windows 上测试；macOS、Linux 和 Steam Deck 尚未完成实机验证。
-<!-- compatibility:end -->`;
 }
 
 function renderEnglishCompatibility(value) {
