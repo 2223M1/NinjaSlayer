@@ -43,7 +43,7 @@
         "passed": true,
         "results": [
           {
-            "model": "TheCrookedToriiEvent",
+            "model": "YukanoEvent",
             "one_instance": true,
             "no_layered_act_music": true,
             "natural_outro": true,
@@ -52,7 +52,7 @@
             "reentry": true
           },
           {
-            "model": "YamotoKokiIsSoCuteEvent",
+            "model": "YamotoKokiCuteEvent",
             "one_instance": true,
             "no_layered_act_music": true,
             "natural_outro": true,
@@ -70,12 +70,12 @@
             "reentry": true
           },
           {
-            "model": "GloryOfKyotoEvent",
+            "model": "DarkNinjaEvent",
             "prelude_to_battle": true,
             "live_attack_hurt_narration_mix": true
           },
           {
-            "model": "TheMovingJungleEvent",
+            "model": "SawatariEvent",
             "cooperative_combat": true,
             "choice_phase": true,
             "duel_transition": true
@@ -98,7 +98,7 @@
         "passed": true,
         "results": [
           {
-            "model": "TheCrookedToriiEvent",
+            "model": "YukanoEvent",
             "one_instance": true,
             "no_layered_act_music": true,
             "natural_outro": true,
@@ -107,7 +107,7 @@
             "reentry": true
           },
           {
-            "model": "YamotoKokiIsSoCuteEvent",
+            "model": "YamotoKokiCuteEvent",
             "one_instance": true,
             "no_layered_act_music": true,
             "natural_outro": true,
@@ -125,12 +125,12 @@
             "reentry": true
           },
           {
-            "model": "GloryOfKyotoEvent",
+            "model": "DarkNinjaEvent",
             "prelude_to_battle": true,
             "live_attack_hurt_narration_mix": true
           },
           {
-            "model": "TheMovingJungleEvent",
+            "model": "SawatariEvent",
             "cooperative_combat": true,
             "choice_phase": true,
             "duel_transition": true
