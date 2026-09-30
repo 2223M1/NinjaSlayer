@@ -75,13 +75,10 @@ export function normalizeEvents(input) {
       ? readCombats(p.payload.applicant_payload.mod_payload, rooms, new Set(ids)) : { combats: [], invalid: 0 };
     invalidCombats += metrics.invalid;
     const run = {
-      at, version: balance?.version ?? '未记录', gameVersion: p.game_version ?? '未记录',
-      mode: p.run_game_mode ?? history.game_mode, reloads: history.num_reloads ?? null,
+      at, version: balance?.version ?? '未记录', reloads: history.num_reloads ?? null,
       ascension: history.ascension, win: p.is_victory, floor: rooms.length,
       players, playerCount: history.players.length, rooms, combats: metrics.combats,
-      duration: history.run_time ?? null, winTime: history.win_time ?? null, daily: history.dailyTime ?? null,
       actFloors: history.map_point_history.map(act => act.length),
-      floorMeasurements: balance?.balance_schema === 'ninja_slayer_run_history_v3' ? p.payload.applicant_payload.mod_payload?.floors ?? {} : {},
     };
     const previous = byRun.get(identity);
     if (previous) {
@@ -90,7 +87,6 @@ export function normalizeEvents(input) {
       if (previous.reloads !== run.reloads) conflicted.delete(identity);
       if (previous.win !== run.win && previous.reloads === run.reloads) conflicted.add(identity);
       if (previous.reloads === run.reloads && previous.win === run.win) {
-        run.floorMeasurements = { ...previous.floorMeasurements, ...run.floorMeasurements };
         for (const combat of previous.combats) {
           const current = run.combats.find(item => item.floor === combat.floor && item.room_index === combat.room_index);
           if (!current) run.combats.push(combat);
@@ -110,10 +106,8 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
   const cutoff = filters.days ? Date.parse(new Date(now).toISOString().slice(0, 10)) - (Number(filters.days) - 1) * 86400000 : -Infinity;
   const selected = runs.filter(run => Date.parse(run.at) >= cutoff
     && (!filters.version || run.version === filters.version)
-    && (!filters.gameVersion || run.gameVersion === filters.gameVersion)
-    && (!filters.mode || run.mode === filters.mode)
     && (!filters.party || (filters.party === 'solo' ? run.playerCount === 1 : run.playerCount > 1))
-    && (!filters.reloads || run.reloads === 0)
+    && (!filters.outcome || run.win === (filters.outcome === 'win'))
     && (filters.ascension === '' || filters.ascension == null || run.ascension === Number(filters.ascension)));
   const empty = card => ({ ...card, offered: 0, picked: 0, held: 0, wins: 0, removed: 0, upgraded: 0,
     pickFloorTotal: 0, chosenRuns: 0, chosenWins: 0, skippedRuns: 0, skippedWins: 0,
@@ -170,8 +164,6 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
     averageFloor: selected.length ? selected.reduce((sum, run) => sum + run.floor, 0) / selected.length : null,
     cards: [...stats.values()], trend: [...trend.values()].sort((a, b) => a.date.localeCompare(b.date)),
     versions: [...new Set(runs.map(run => run.version))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true })),
-    gameVersions: [...new Set(runs.map(run => run.gameVersion))].sort(),
-    modes: [...new Set(runs.map(run => run.mode))].sort(),
     ascensions: [...new Set(runs.map(run => run.ascension))].sort((a, b) => a - b),
   };
 }

@@ -23,13 +23,11 @@ import { AnonymousQuotaGuard } from "../src/security.js";
 import { handleRequest } from "../src/index.js";
 import {
   charts,
-  wilson,
   chartRows,
   selectGroups,
 } from "../dashboard/charts.mjs";
 import {
   chartBins,
-  a10Cohorts,
   mechanismBins,
 } from "../dashboard/chart-data.mjs";
 
@@ -473,18 +471,12 @@ test('replay replacement keeps its original deadline and the expiry alarm delete
 const run = (win = true) => ({
   at: "2030-01-01T10:00:00Z",
   version: "0.2.7",
-  gameVersion: "0.107.1",
-  mode: "Standard",
   ascension: 10,
   win,
   floor: 1,
   playerCount: 1,
   reloads: 0,
-  duration: 600,
-  winTime: win ? 600 : 0,
-  daily: null,
   actFloors: [1],
-  floorMeasurements: {},
   players: [{ net_id: "private-player", deck: [{ id: "CARD.TEST" }] }],
   rooms: [
     {
@@ -505,57 +497,33 @@ const run = (win = true) => ({
   ],
   combats: [],
 });
-test("26 chart definitions and independent denominator/CI fixtures", () => {
-  assert.equal(charts.length, 26);
-  assert.equal(new Set(charts.map((chart) => chart.id)).size, 26);
+test("eight player charts keep their own denominators and hide private IDs", () => {
+  assert.equal(new Set(charts.map((chart) => chart.id)).size, 8);
+  const chart = (id) => charts.find((chart) => chart.id === id);
   const bins = chartBins([run(), run(false), run()]);
-  const rows = chartRows([{ charts: bins }], "winrate-by-ascension");
-  assert.deepEqual(rows, [{ x: 10, y: null, n: 3, sum: 3, wins: 2 }]);
-  assert.equal(bins.find((bin) => bin.chart === "encounter-damage").sum, 45); // Healing does not cancel damage.
-  assert.equal(
-    bins.some((bin) => bin.chart === "deck-growth"),
-    false,
-  ); // Never manufacture old deck measurements.
-  const ci = wilson(2, 3);
-  assert.ok(Math.abs(ci[0] - 0.20766) < 0.0001);
-  assert.ok(Math.abs(ci[1] - 0.9385) < 0.0001);
-  assert.equal(wilson(0, 0), null);
+  const rows = (id) => chartRows([{ charts: bins }], chart(id));
+  assert.deepEqual(rows("ascension-wins"), [{ x: 10, n: 3, sum: 3, wins: 2 }]);
+  assert.deepEqual(rows("floor-deaths"), [{ x: 1, n: 1, sum: 1, wins: 0 }]); // Only lost runs.
+  assert.deepEqual(rows("act-reach"), [{ x: 1, n: 3, sum: 3, wins: 0 }]);
+  assert.equal(rows("hp-by-floor")[0].sum / rows("hp-by-floor")[0].n, 50);
+  assert.equal(rows("enemy-damage")[0].sum, 45); // Healing does not cancel damage.
+  assert.deepEqual(rows("deck-wins"), [{ x: 0, n: 3, sum: 3, wins: 2 }]);
   assert.ok(!JSON.stringify(bins).includes("private-player"));
 });
-test("A10 grouping requires 20 valid runs and filters retain outcome/date/mode boundaries", () => {
-  assert.equal(a10Cohorts(Array.from({ length: 19 }, () => run())).size, 0);
-  const cohort = a10Cohorts([
-    ...Array.from({ length: 10 }, () => run()),
-    ...Array.from({ length: 10 }, () => run(false)),
-  ]);
-  assert.equal(cohort.get("private-player"), "50-60%");
+test("enemy rankings list only the fifteen highest averages", () => {
+  const points = Array.from({ length: 20 }, (_, index) => ({ chart: "enemy-turns", x: `ENCOUNTER.${index}`, n: 1, sum: index, wins: 0 }));
+  const rows = chartRows([{ charts: points }], charts.find((chart) => chart.id === "enemy-turns"));
+  assert.equal(rows.length, 15);
+  assert.deepEqual(rows.slice(0, 2).map((row) => row.x), ["ENCOUNTER.19", "ENCOUNTER.18"]);
+});
+test("filters keep outcome, party, version and ascension boundaries", () => {
   const snapshot = {
-    groups: [
-      {
-        date: "2030-01-01",
-        version: "0.2.7",
-        gameVersion: "0.107.1",
-        mode: "Standard",
-        party: "solo",
-        ascension: 10,
-        noReloads: false,
-        outcome: "loss",
-        a10: "50-60%",
-      },
-    ],
+    groups: [{ date: "2030-01-01", version: "0.2.7", party: "solo", ascension: 10, outcome: "loss" }],
   };
   assert.equal(selectGroups(snapshot, { outcome: "win" }).length, 0);
-  assert.equal(
-    selectGroups(snapshot, {
-      outcome: "loss",
-      reloads: "yes",
-      from: "2030-01-01",
-      to: "2030-01-01",
-      a10: "50-60%",
-    }).length,
-    1,
-  );
-  assert.equal(selectGroups(snapshot, { reloads: "none" }).length, 0);
+  assert.equal(selectGroups(snapshot, { party: "multi" }).length, 0);
+  assert.equal(selectGroups(snapshot, { ascension: "0" }).length, 0);
+  assert.equal(selectGroups(snapshot, { outcome: "loss", party: "solo", version: "0.2.7", ascension: "10" }).length, 1);
   assert.deepEqual(mechanismBins([run()]), []);
 });
 

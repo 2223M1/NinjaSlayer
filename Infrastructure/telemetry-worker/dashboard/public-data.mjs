@@ -12,7 +12,6 @@ export function useCurrentCatalog(snapshot, catalog) {
     ...group,
     cards: group.cards.filter(card => ids.has(card.id)),
     combats: group.combats.map(combat => ({ ...combat, cards: combat.cards.filter(card => ids.has(card.id)) })),
-    charts: (group.charts ?? []).filter(point => current(point.x) && current(point.series)),
     mechanisms: (group.mechanisms ?? []).filter(row => current(row.id)),
   })) };
 }
@@ -37,7 +36,6 @@ export function summarizePublic(snapshot, filters = {}, now = Date.now()) {
   return { ...result, averageFloor: result.runs ? result.floorTotal / result.runs : null, cards: [...cards.values()],
     trend: [...dates.values()].sort((a, b) => a.date.localeCompare(b.date)),
     versions: [...new Set(groups.map(group => group.version))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true })),
-    gameVersions: [...new Set(groups.map(group => group.gameVersion))].sort(), modes: [...new Set(groups.map(group => group.mode))].sort(),
     ascensions: [...new Set(groups.map(group => group.ascension))].sort((a, b) => a - b),
     sources, feedback, feedbackWarnings: [], ...excluded, view: 'public' };
 }

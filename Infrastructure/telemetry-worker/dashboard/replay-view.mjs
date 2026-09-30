@@ -13,20 +13,20 @@ const actionNames = {
   combat_end: t("战斗结束"),
   attempt_end: t("尝试结束"),
   attempt_interrupted: t("读档中断"),
-  snapshot_end: t("初始快照完成"),
+  snapshot_end: t("开局状态"),
   pile: t("牌堆变动"),
   creature: t("初始生命"),
   turn: t("回合开始"),
   draw: t("抽牌"),
   play: t("打出"),
-  resolve: t("完成结算"),
+  resolve: t("结算完毕"),
   discard: t("弃牌"),
   exhaust: t("消耗"),
   generate: t("生成"),
   hit: t("伤害"),
   block: t("获得格挡"),
   heal: t("治疗"),
-  hp_loss: t("实际失血"),
+  hp_loss: t("掉血"),
   power: t("状态变化"),
   power_snapshot: t("初始状态"),
   move: t("怪物行动"),
@@ -47,14 +47,6 @@ const actionNames = {
 export function renderReports(snapshot, filters, onCard) {
   const list = $("#report-list");
   list.replaceChildren();
-  if (filters.a10)
-    list.append(
-      node(
-        "p",
-        t("A10 玩家胜率分组仅用于汇总图表，不用于匿名战报筛选。"),
-        "notice",
-      ),
-    );
   const cutoff = filters.days
     ? Date.now() - Number(filters.days) * 86400000
     : 0;
@@ -62,33 +54,25 @@ export function renderReports(snapshot, filters, onCard) {
     (report) =>
       Date.parse(report.expires) > Date.now() &&
       Date.parse(report.at) >= cutoff &&
-      (!filters.from || report.at.slice(0, 10) >= filters.from) &&
-      (!filters.to || report.at.slice(0, 10) <= filters.to) &&
       (!filters.version || report.version === filters.version) &&
-      (!filters.gameVersion || report.gameVersion === filters.gameVersion) &&
       (filters.ascension === "" ||
         filters.ascension == null ||
         report.ascension === Number(filters.ascension)) &&
-      (!filters.mode || report.mode === filters.mode) &&
       (!filters.party ||
         (filters.party === "solo" ? report.party === 1 : report.party > 1)) &&
-      (!filters.outcome || report.won === (filters.outcome === "win")) &&
-      (!filters.reloads ||
-        (filters.reloads === "none"
-          ? report.reloads === 0
-          : report.reloads > 0)),
+      (!filters.outcome || report.won === (filters.outcome === "win")),
   );
   for (const report of reports.sort((a, b) => b.at.localeCompare(a.at))) {
-    const button = node("button", undefined, "report-row");
+    const button = node("button", undefined, `report-row ${report.won ? "won" : "lost"}`);
     button.append(
-      node("strong", report.won ? t("通关") : t("未通关")),
+      node("strong", report.won ? t("通关") : t("撒由那拉")),
       node(
         "span",
         tr`A${report.ascension} · ${report.rooms} 层 · ${Math.round(report.duration / 60)} 分钟`,
       ),
       node(
         "small",
-        tr`${report.at.slice(0, 10)} · v${report.version} · ${{ complete: t("完整"), gapped: t("有缺段"), truncated: t("超出记录上限") }[report.coverage]} · ${report.party} 人`,
+        tr`${report.at.slice(0, 10)} · v${report.version} · ${{ complete: t("完整"), gapped: t("有缺段"), truncated: t("太长没录完") }[report.coverage]} · ${report.party} 人`,
       ),
     );
     button.onclick = () => openReport(report, onCard, snapshot);
@@ -98,7 +82,7 @@ export function renderReports(snapshot, filters, onCard) {
     list.append(
       node(
         "p",
-        t("暂无符合筛选条件的对局。你可以在设置中开启“公开完整战报”，分享自己的对局。"),
+        t("还没有战报。在模组设置里打开“公开完整战报”，来当第一个吧！"),
         "empty",
       ),
     );
@@ -117,7 +101,7 @@ export function renderReports(snapshot, filters, onCard) {
 async function openReport(report, onCard, snapshot) {
   const panel = $("#report-detail");
   panel.hidden = false;
-  panel.replaceChildren(node("p", t("正在读取战报…")));
+  panel.replaceChildren(node("p", t("咿呀——！战报读取中…")));
   try {
     const response = await fetch(
       `${ENDPOINT}/observatory/replays/${report.id}/${report.contributor}`,
@@ -125,12 +109,12 @@ async function openReport(report, onCard, snapshot) {
     if (!response.ok)
       throw new Error(
         response.status === 410
-          ? t("该战报已过期或尚未同步。")
-          : t("战报暂时无法读取，请稍后重试。"),
+          ? t("南无三！这份战报已经过期，或者还没同步过来。")
+          : t("咕哇——！战报读不出来，等会儿再试试。"),
       );
     const data = await response.json();
     if (Date.parse(data.expires) <= Date.now())
-      throw new Error(t("该战报已过期。"));
+      throw new Error(t("南无三！这份战报已经过期了。"));
     const url = new URL(location.href);
     url.searchParams.set("report", report.id);
     url.searchParams.set("contributor", report.contributor);
@@ -138,7 +122,7 @@ async function openReport(report, onCard, snapshot) {
     panel.replaceChildren(
       node(
         "h2",
-        tr`匿名战报 · ${data.won ? t("通关") : t("未通关")} · A${data.ascension}`,
+        tr`匿名战报 · ${data.won ? t("通关") : t("撒由那拉")} · A${data.ascension}`,
       ),
       node(
         "p",
@@ -161,7 +145,7 @@ async function openReport(report, onCard, snapshot) {
       panel.append(
         node(
           "p",
-          t("部分回合未能记录，以下战报不完整。"),
+          t("有些回合没录到，这份战报不完整。"),
           "notice",
         ),
       );
@@ -181,7 +165,7 @@ async function openReport(report, onCard, snapshot) {
     panel.append(controls, current, state);
     const catalog = await loadCatalog(data.version);
     if (catalog && !catalog.languages[language])
-      panel.append(node("p", t('此版本尚无所选语言的卡牌资料，以下卡牌资料使用英文。'), "notice"));
+      panel.append(node("p", t("这个版本还没有所选语言的卡牌资料，先用英文顶一下。"), "notice"));
     const name = (id) => {
       const model = (catalog?.languages[language] ?? catalog?.languages.eng)?.find((model) => model.id === id);
       return model?.variants?.[0].name ?? model?.name ?? id ?? "";
@@ -205,7 +189,7 @@ async function openReport(report, onCard, snapshot) {
     const actionText = (frame) => {
       const action = frame.action;
       const target = action.target ? ` → ${actorName(action.target)}` : "";
-      return tr`第${frame.floor}层 · 回合${action.round} · ${actorName(action.actor)} ${actionNames[action.kind] ?? action.kind} ${name(action.model)}${action.upgrade ? " +" : ""}${action.amount !== undefined ? " " + action.amount : ""}${target}${action.kind === "hit" ? tr`：失血${action.hp_loss} / 格挡${action.blocked}${action.killed ? t(" · 击杀") : ""}` : ""}${action.kind === "play" ? tr` · ${action.auto ? t("自动") : t("手动")} · 实付${action.energy}能量/${action.stars}星 · 重复序号${action.repeat}` : ""}`;
+      return tr`第${frame.floor}层 · 回合${action.round} · ${actorName(action.actor)} ${actionNames[action.kind] ?? action.kind} ${name(action.model)}${action.upgrade ? " +" : ""}${action.amount !== undefined ? " " + action.amount : ""}${target}${action.kind === "hit" ? tr`：失血${action.hp_loss} / 格挡${action.blocked}${action.killed ? t(" · 击杀") : ""}` : ""}${action.kind === "play" && action.auto ? t("（自动）") : ""}`;
     };
     let cursor = 0;
     const update = () => {
@@ -242,7 +226,7 @@ async function openReport(report, onCard, snapshot) {
               )?.maxHp,
           });
       }
-      state.replaceChildren(node("h3", t("已记录的生命与牌堆")));
+      state.replaceChildren(node("h3", t("当前生命与牌堆")));
       const snapshotComplete = data.frames
         .slice(0, cursor + 1)
         .some(
@@ -254,7 +238,7 @@ async function openReport(report, onCard, snapshot) {
         state.append(
           node(
             "p",
-            t("牌堆仅列出已采集的卡牌；初始快照未完成或战报缺段时，数量可能不完整。"),
+            t("牌堆只列出录到的牌，战报有缺段时数量可能对不上。"),
             "notice",
           ),
         );
@@ -282,7 +266,7 @@ async function openReport(report, onCard, snapshot) {
       ]) {
         const items = [...cards.values()].filter((card) => card.pile === pile),
           section = node("details");
-        section.append(node("summary", tr`${label} · ${items.length} 张已记录`));
+        section.append(node("summary", tr`${label} · ${items.length} 张`));
         for (const card of items) {
           const button = node(
             "button",
@@ -325,7 +309,7 @@ async function openReport(report, onCard, snapshot) {
         node(
           "summary",
           floor.missing
-            ? tr`第${floor.floor}层 · 房间信息未采集`
+            ? tr`第${floor.floor}层 · 没录到房间信息`
             : tr`第${floor.floor}层 · ${floor.rooms.map((room) => name(room.model) || roomNames[room.type] || room.type).join(" → ")} · 生命 ${floor.hp}/${floor.max_hp} · 金币 ${floor.gold}`,
         ),
       );

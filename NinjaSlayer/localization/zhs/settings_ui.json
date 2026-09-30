@@ -18,7 +18,7 @@
   "NINJA_SLAYER_TELEMETRY_NOTICE_BODY": "我会用对局数据调整卡牌平衡。分享内容包括路线、奖励选择、结束牌组、胜负和战斗统计，网页只展示汇总结果。\n\n本次启动暂不上传。选择“现在开启”会立即启用；直接关闭或忽略此提示，下次启动游戏后会默认开启。选择“关闭分享”则持续停用。之后也可以在模组设置中更改。",
   "NINJA_SLAYER_TELEMETRY_DECLINE": "关闭分享",
   "NINJA_SLAYER_TELEMETRY_ACCEPT": "现在开启",
-  "NINJA_SLAYER_TELEMETRY_WEBSITE": "公开观测室",
+  "NINJA_SLAYER_TELEMETRY_WEBSITE": "忍杀情报站",
   "NINJA_SLAYER_TELEMETRY_OPEN_WEBSITE": "查看统计与反馈",
   "NINJA_SLAYER_TELEMETRY_REPLAY_TOGGLE": "公开完整战报",
   "NINJA_SLAYER_TELEMETRY_REPLAY_DESCRIPTION": "默认关闭。开启后记录后续房间的路线、选择和逐回合行动，匿名公开，最多保留90天。不公开账号、种子、截图或日志；联机只公开你的详细记录。可以随时关闭，未记录的部分会注明。",

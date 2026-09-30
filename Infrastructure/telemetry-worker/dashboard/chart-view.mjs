@@ -1,207 +1,104 @@
-import { t, tr } from './i18n.mjs';
-import { charts, wilson, selectGroups, chartRows } from "./charts.mjs";
-// Adapted from Spire Codex ChartsClient.tsx (69b3c898a1b62fa277359a17970b9061abf60354).
-// Required Notice: Copyright © 2025-present Peter Lord and Spire Codex contributors.
-// PolyForm Noncommercial 1.0.0; see vendor/LICENSE.Spire-Codex.md.
-const tooltipStyle = {
-  backgroundColor: "#15151a", borderColor: "#33333a", borderWidth: 1,
-  cornerRadius: 6, padding: 8, titleColor: "#e5e5e5", bodyColor: "#a1a1aa",
-  displayColors: true, boxWidth: 8, boxHeight: 8,
-  titleFont: { size: 12 }, bodyFont: { size: 12 },
-};
+import { t, tr, locale } from './i18n.mjs';
+import { charts, chartRows, chartValue, selectGroups } from './charts.mjs';
 const $ = (selector) => document.querySelector(selector);
-const node = (tag, text) => {
+const node = (tag, text, className) => {
   const item = document.createElement(tag);
   if (text !== undefined) item.textContent = text;
+  if (className) item.className = className;
   return item;
 };
-let graph;
-export function renderCharts(snapshot, filters, onCard) {
-  const groups = selectGroups(snapshot, filters),
-    select = $("#chart-select");
-  if (!select.options.length) {
-    for (const group of [...new Set(charts.map((c) => c.group))]) {
-      const options = node("optgroup");
-      options.label = group;
-      const section = node("section");
-      section.append(node("h3", group));
-      for (const chart of charts.filter((c) => c.group === group)) {
-        options.append(new Option(chart.title, chart.id));
-        const button = node("button", chart.title);
-        button.dataset.chart = chart.id;
-        button.onclick = () => { select.value = chart.id; select.onchange(); };
-        section.append(button);
-      }
-      select.append(options);
-      $("#chart-nav").append(section);
-    }
-  }
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+let graph, redraw;
+
+function format(chart, value) {
+  return chart.metric === 'count' ? value.toLocaleString(locale)
+    : `${value.toFixed(1)}${chart.metric === 'rate' || chart.unit === '%' ? '%' : ''}`;
+}
+
+export function renderCharts(snapshot, filters) {
+  const groups = selectGroups(snapshot, filters);
   const params = new URLSearchParams(location.search);
-  if (!select.dataset.initialized) {
-    select.value = params.get("chart") ?? charts[0].id;
-    select.dataset.initialized = "true";
-  }
+  const tabs = $('#chart-tabs');
+  if (!tabs.childElementCount)
+    for (const chart of charts) {
+      const tab = node('button', chart.title, 'chip');
+      tab.dataset.chart = chart.id;
+      tab.onclick = () => { tabs.dataset.selected = chart.id; redraw(); };
+      tabs.append(tab);
+    }
+  tabs.dataset.selected ||= charts.some((chart) => chart.id === params.get('chart')) ? params.get('chart') : charts[0].id;
+  const entityName = (id) => snapshot.entities?.get(id)?.name ?? snapshot.labels?.[id] ?? String(id);
   const draw = () => {
-    const definition = charts.find((c) => c.id === select.value) ?? charts[0];
-    for (const button of document.querySelectorAll('[data-chart]'))
-      button.setAttribute('aria-current', String(button.dataset.chart === definition.id));
-    const seriesSelect = $("#chart-series");
-    const available = [
-      ...new Set(
-        groups.flatMap((group) =>
-          (group.charts ?? [])
-            .filter((point) => point.chart === definition.id)
-            .map((point) => point.series),
-        ),
-      ),
-    ];
-    const selected = seriesSelect.value || params.get("series");
-    const entityName = (id) =>
-      snapshot.entities?.get(id)?.name ??
-      snapshot.entities?.get(id)?.variants?.[0].name ??
-      snapshot.catalog.find((c) => c.id === id)?.name;
-    seriesSelect.replaceChildren(
-      ...(available.length ? available : ["all"]).map(
-        (id) =>
-          new Option(
-            entityName(id) ??
-              {
-                all: t("全部"),
-                duration: t("用时"),
-                floor: t("楼层"),
-                deck: t("牌组张数"),
-                elites: t("精英数"),
-                smiths: t("升级次数"),
-              }[id] ??
-              id,
-            id,
-          ),
-      ),
-    );
-    if (available.includes(selected)) seriesSelect.value = selected;
-    seriesSelect.hidden = available.length <= 1;
-    const rows = chartRows(groups, definition.id, seriesSelect.value);
-    $("#chart-title").textContent = definition.title;
-    const observed = rows.reduce((n, row) => n + row.n, 0),
-      runs = groups.reduce((n, group) => n + group.runs, 0);
-    $("#chart-note").textContent = tr`${definition.note}。${runs} 场对局，${observed} 条记录。`;
-    $("#chart-empty").hidden = rows.length > 0;
-    $("#chart-canvas").hidden = rows.length === 0;
+    const chart = charts.find((chart) => chart.id === tabs.dataset.selected);
+    for (const tab of tabs.children) tab.classList.toggle('active', tab.dataset.chart === chart.id);
+    const rows = chartRows(groups, chart);
+    const label = (x) => chart.label ? chart.label(x) : entityName(x);
+    $('#chart-title').textContent = chart.title;
+    $('#chart-note').textContent = chart.note;
+    $('#chart-empty').hidden = rows.length > 0;
+    $('#chart-canvas').hidden = rows.length === 0;
     graph?.destroy();
     graph = null;
-    const value = (row) =>
-      definition.metric === "rate"
-        ? (100 * row.wins) / row.n
-        : definition.metric === "mean"
-          ? row.sum / row.n
-          : row.n;
-    const label = (value) =>
-      entityName(value) ?? snapshot.labels?.[value] ?? String(value);
+    const horizontal = Boolean(chart.top);
     if (rows.length)
-      graph = new globalThis.Chart($("#chart-canvas"), {
-        type: definition.type,
+      graph = new globalThis.Chart($('#chart-canvas'), {
+        type: chart.type,
         data: {
           labels: rows.map((row) => label(row.x)),
-          datasets: [
-            {
-              label: definition.title,
-              data: rows.map((row) =>
-                definition.type === "bubble"
-                  ? { x: row.x, y: row.y, r: 3 + Math.sqrt(row.n) * 2 }
-                  : value(row),
-              ),
-              backgroundColor: "#bd273b99",
-              borderColor: "#ff5269",
-              borderWidth: 2,
-              pointRadius: 3,
-              tension: 0.2,
-            },
-          ],
+          datasets: [{
+            data: rows.map((row) => chartValue(chart, row)),
+            backgroundColor: css('--red-soft'), borderColor: css('--red'), borderWidth: 2,
+            pointBackgroundColor: css('--red'), pointRadius: 3, tension: 0.25, borderRadius: 3,
+          }],
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: false,
+          indexAxis: horizontal ? 'y' : 'x',
+          responsive: true, maintainAspectRatio: false, animation: false,
           plugins: {
             legend: { display: false },
             tooltip: {
-              ...tooltipStyle,
+              backgroundColor: css('--ink'), borderColor: css('--red'), borderWidth: 1, cornerRadius: 0,
+              titleColor: css('--paper'), bodyColor: css('--paper'), displayColors: false, padding: 10,
               callbacks: {
+                label: (context) => format(chart, context.parsed[horizontal ? 'x' : 'y']),
                 afterLabel: (context) => {
-                  const row = rows[context.dataIndex],
-                    ci = wilson(row.wins, row.n);
-                  return definition.metric === "rate"
-                    ? `${row.wins}/${row.n} · 95% CI ${(ci[0] * 100).toFixed(1)}–${(ci[1] * 100).toFixed(1)}%`
-                    : `n=${row.n}`;
+                  const row = rows[context.dataIndex];
+                  return chart.metric === 'rate' ? tr`${row.wins} / ${row.n} 局通关` : tr`${row.n} 条记录`;
                 },
               },
             },
           },
           scales: {
-            x: {
-              ticks: { color: "#bfb2b3", maxRotation: 60 },
-              grid: { color: "#ffffff08" },
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { color: "#bfb2b3" },
-              grid: { color: "#ffffff0d" },
-            },
+            x: { ticks: { color: css('--muted'), maxRotation: 50 }, grid: { color: css('--grid') } },
+            y: { beginAtZero: true, ticks: { color: css('--muted') }, grid: { color: css('--grid') } },
           },
         },
       });
-    const tbody = $("#chart-rows");
-    tbody.replaceChildren();
+    const body = $('#chart-rows');
+    body.replaceChildren();
     for (const row of rows) {
-      const tr = node("tr"),
-        name = node("td", label(row.x));
-      if (String(row.x).startsWith("CARD.")) {
-        const button = node("button", label(row.x));
-        button.onclick = () => onCard(row.x);
-        name.replaceChildren(button);
-      }
-      const ci = wilson(row.wins, row.n);
-      tr.append(
-        name,
-        node(
-          "td",
-          value(row).toFixed(definition.metric === "count" ? 0 : 1) +
-            (definition.metric === "rate" ? "%" : ""),
-        ),
-        node("td", row.n),
-        node(
-          "td",
-          definition.metric === "rate"
-            ? `${(ci[0] * 100).toFixed(1)}–${(ci[1] * 100).toFixed(1)}%`
-            : "—",
-        ),
-      );
-      tbody.append(tr);
+      const line = node('tr');
+      line.append(node('td', label(row.x)), node('td', format(chart, chartValue(chart, row))), node('td', row.n.toLocaleString(locale)));
+      body.append(line);
     }
     const url = new URL(location.href);
-    url.searchParams.set("chart", definition.id);
-    url.searchParams.set("series", seriesSelect.value);
-    history.replaceState(null, "", url);
+    url.searchParams.set('chart', chart.id);
+    history.replaceState(null, '', url);
   };
-  select.onchange = draw;
-  $("#chart-series").onchange = draw;
+  redraw = draw;
   draw();
-  renderMechanisms(groups, snapshot, onCard, filters);
 }
 
-function renderMechanisms(groups, snapshot, onCard, filters) {
+// Local admin only: mechanic and per-card combat measurements for balance work.
+export function renderMechanisms(snapshot, filters, onCard) {
+  const groups = selectGroups(snapshot, filters);
   const total = groups.reduce((sum, group) => sum + group.totalCombats, 0);
   const measured = groups
     .flatMap((group) => group.mechanisms ?? [])
-    .filter(
-      (row) =>
-        row.group === "vitals" &&
-        row.id === "hp_lost" &&
-        (!filters.version || row.version === filters.version),
-    )
+    .filter((row) => row.group === 'vitals' && row.id === 'hp_lost' && (!filters.version || row.version === filters.version))
     .reduce((sum, row) => sum + row.n, 0);
-  $("#mechanic-coverage").textContent =
-    tr`有详细记录的战斗：${measured} / ${total}${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ""}。`;
+  $('#mechanic-coverage').textContent =
+    `有详细记录的战斗：${measured} / ${total}${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ''}。`;
   const values = new Map();
   for (const group of groups)
     for (const row of group.mechanisms ?? []) {
@@ -210,68 +107,39 @@ function renderMechanisms(groups, snapshot, onCard, filters) {
         sum = values.get(key) ?? { ...row, n: 0 };
       if (!values.has(key))
         for (const field of Object.keys(row))
-          if (typeof row[field] === "number") sum[field] = 0;
+          if (typeof row[field] === 'number') sum[field] = 0;
       for (const field of Object.keys(row))
-        if (typeof row[field] === "number") sum[field] += row[field];
+        if (typeof row[field] === 'number') sum[field] += row[field];
       values.set(key, sum);
     }
-  const body = $("#mechanic-rows");
+  const body = $('#mechanic-rows');
   body.replaceChildren();
   for (const row of [...values.values()].sort((a, b) => b.n - a.n)) {
-    const tr = node("tr"),
-      id = row.id.split("/")[0],
+    const line = node('tr'),
+      id = row.id.split('/')[0],
       model = snapshot.entities.get(id),
-      card = model?.kind === "card" ? model : null;
-    const name = node(
-      "td",
-      card
-        ? card.variants[0].name +
-            (row.group === "card" && !row.id.endsWith("/0") ? " +" : "") +
-            (row.group === "damage_source" ? t(" · 直接伤害") : "")
-        : ({
-            karate: t("空手道"),
-            black_flame: t("黑炎"),
-            shuriken: t("手里剑"),
-            naraku_absorbed: t("奈落吸收"),
-            naraku_gained: t("奈落生命获得"),
-            karate_gained: t("空手道获得"),
-            karate_lost: t("空手道减少"),
-            generate: t("生成卡牌"),
-            discard: t("弃牌"),
-            exhaust: t("消耗卡牌"),
-            shuffle: t("洗牌"),
-            chado_breath: t("茶道呼吸"),
-            chado_generated: t("茶道生成"),
-            chado_exhausted: t("茶道消耗"),
-            scry_discard: t("预见弃牌"),
-            shuriken_evoked: t("手里剑激发"),
-            shuriken_converted: t("转化强手里剑"),
-            shuriken_stock: t("手里剑库存净变化"),
-            hp_lost: t("真实生命损失"),
-            blocked: t("实际抵挡伤害"),
-            block_generated: t("生成格挡"),
-            healed: t("治疗"),
-            damage: t("对敌失血伤害"),
-            enemy_blocked: t("被敌方格挡"),
-            kills: t("击杀"),
-            unattributed: t("来源未归属"),
-          }[row.id] ?? row.id),
-    );
+      card = model?.kind === 'card' ? model : null;
+    const name = node('td', card
+      ? card.variants[0].name + (row.group === 'card' && !row.id.endsWith('/0') ? ' +' : '') + (row.group === 'damage_source' ? ' · 直接伤害' : '')
+      : ({
+          karate: '空手道', black_flame: '黑炎', shuriken: '手里剑', naraku_absorbed: '奈落吸收', naraku_gained: '奈落生命获得',
+          karate_gained: '空手道获得', karate_lost: '空手道减少', generate: '生成卡牌', discard: '弃牌', exhaust: '消耗卡牌',
+          shuffle: '洗牌', chado_breath: '茶道呼吸', chado_generated: '茶道生成', chado_exhausted: '茶道消耗', scry_discard: '预见弃牌',
+          shuriken_evoked: '手里剑激发', shuriken_converted: '转化强手里剑', shuriken_stock: '手里剑层数净变化', hp_lost: '真实生命损失',
+          blocked: '实际抵挡伤害', block_generated: '生成格挡', healed: '治疗', damage: '对敌失血伤害', enemy_blocked: '被敌方格挡',
+          kills: '击杀', unattributed: '来源未记录',
+        }[row.id] ?? row.id));
     if (card) name.onclick = () => onCard(id);
-    if (row.group === "power")
-      name.textContent = (model?.name ?? row.id) + t(" · 层数净变化");
-    name.append(node("small", ` · v${row.version}`));
-    tr.append(
+    if (row.group === 'power') name.textContent = (model?.name ?? row.id) + ' · 层数净变化';
+    name.append(node('small', ` · v${row.version}`));
+    line.append(
       name,
-      node("td", row.n),
-      node("td", row.group === "card" ? row.finished : row.sum.toFixed(1)),
-      node("td", row.group === "card" ? `${row.damage} / ${row.block}` : "—"),
-      node(
-        "td",
-        row.energy_spent > 0 ? (row.damage / row.energy_spent).toFixed(2) : "—",
-      ),
+      node('td', row.n),
+      node('td', row.group === 'card' ? row.finished : row.sum.toFixed(1)),
+      node('td', row.group === 'card' ? `${row.damage} / ${row.block}` : '—'),
+      node('td', row.energy_spent > 0 ? (row.damage / row.energy_spent).toFixed(2) : '—'),
     );
-    body.append(tr);
+    body.append(line);
   }
-  $("#mechanic-empty").hidden = values.size > 0;
+  $('#mechanic-empty').hidden = values.size > 0;
 }

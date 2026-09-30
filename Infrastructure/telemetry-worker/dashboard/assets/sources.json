@@ -20,11 +20,6 @@
     "sha256": "6219c627eb7f4a2923b4b23e28e881ffa73a17c4a5e5d3ae70d16a2e8f809a20"
   },
   {
-    "file": "copyright.png",
-    "url": "http://www.ninjaslayer-animation.com/images/common/txt_copyright.png",
-    "sha256": "8c0e82e15ee39d06948cfa9ac48538c3782aef7d01fc0544d3dc69bfc683d7b5"
-  },
-  {
     "file": "ninja.png",
     "url": "http://www.ninjaslayer-animation.com/images/index/main-ninja.png",
     "sha256": "3478c447a00ead0c2362ee916d3cf221946eeaa42bfd6989e268f2a03e9604e8"

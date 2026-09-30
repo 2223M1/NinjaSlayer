@@ -1,7 +1,7 @@
 import { summarize } from './data.mjs';
 import { choiceCounters, combatCounters, useCurrentCatalog } from './public-data.mjs';
 import { readFile } from 'node:fs/promises';
-import { a10Cohorts, chartBins, mechanismBins } from './chart-data.mjs';
+import { chartBins, mechanismBins } from './chart-data.mjs';
 
 const contentRoot = new URL('../../../Website/content/', import.meta.url);
 export async function readCurrentRelease() {
@@ -26,12 +26,9 @@ export function publicFeedback(records) {
 
 export function publishSnapshot(telemetry, catalog) {
   const grouped = new Map();
-  const cohorts = a10Cohorts(telemetry.runs);
   for (const run of telemetry.runs) {
-    const dimensions = { date: new Date(run.at).toISOString().slice(0, 10), version: run.version, gameVersion: run.gameVersion, mode: run.mode,
-      party: run.playerCount === 1 ? 'solo' : 'multi', ascension: run.ascension, noReloads: run.reloads === 0,
-      outcome: run.win ? 'win' : 'loss',
-      a10: run.playerCount === 1 ? cohorts.get(String(run.players[0].net_id)) ?? 'unranked' : 'multiplayer' };
+    const dimensions = { date: new Date(run.at).toISOString().slice(0, 10), version: run.version,
+      party: run.playerCount === 1 ? 'solo' : 'multi', ascension: run.ascension, outcome: run.win ? 'win' : 'loss' };
     const key = JSON.stringify(dimensions);
     if (!grouped.has(key)) grouped.set(key, { dimensions, runs: [] });
     grouped.get(key).runs.push(run);

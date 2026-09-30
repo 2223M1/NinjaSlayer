@@ -1,4 +1,4 @@
-import { messages, chinese } from './translations.mjs';
+import { messages } from './translations.mjs';
 
 const inBrowser = typeof document !== 'undefined';
 const isAdmin = inBrowser && document.body?.dataset.view === 'admin';
@@ -13,7 +13,7 @@ if (inBrowser) {
 export const language = !isAdmin && supported.includes(preferred) ? preferred : 'zhs';
 export const locale = { zhs: 'zh-CN', eng: 'en-US', jpn: 'ja-JP' }[language];
 export function t(key, ...values) {
-  const text = language === 'zhs' ? chinese[key] ?? key : messages[key]?.[language === 'eng' ? 0 : 1] ?? key;
+  const text = language === 'zhs' ? key : messages[key]?.[language === 'eng' ? 0 : 1] ?? key;
   return String(text).replace(/\{(\d+)\}/g, (token, index) => values[index] === undefined ? token : String(values[index]));
 }
 export function tr(parts, ...values) {
@@ -28,7 +28,7 @@ export function localizePage() {
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     if (['SCRIPT', 'STYLE'].includes(node.parentElement?.tagName)) continue;
     const key = node.textContent.trim();
-    if (messages[key] || chinese[key]) node.textContent = node.textContent.replace(key, t(key));
+    if (messages[key]) node.textContent = node.textContent.replace(key, t(key));
   }
   for (const node of document.querySelectorAll('[aria-label], [placeholder], [alt]')) {
     for (const attr of ['aria-label', 'placeholder', 'alt']) if (node.hasAttribute(attr)) node.setAttribute(attr, t(node.getAttribute(attr)));
