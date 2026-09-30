@@ -2,7 +2,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using V2 = System.Numerics.Vector2;
 
@@ -16,7 +16,7 @@ public partial class NinjaSlayerAimPose
     private double _somersaultClock;
 
     internal static bool IsSomersaultHeavy(CardModel? card) =>
-        card is CollapseFistRedesignV1 or Slaughter or StraightKiRedesignV1;
+        card is CollapseFist or PressTheAttack or StraightKi;
 
     internal void ApplySomersault(float progress)
     {

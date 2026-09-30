@@ -43,7 +43,7 @@ internal sealed partial class SmokeController
             return;
         }
 
-        if (_configuration.PreviewFormFinisher == "SawatariEvent")
+        if (_configuration.PreviewFormFinisher == "TheMovingJungleEvent")
         {
             foreach (Creature enemy in combat.HittableEnemies.ToArray())
                 await CreatureCmd.Kill(enemy, force: true);
@@ -51,11 +51,11 @@ internal sealed partial class SmokeController
             return;
         }
 
-        async Task<SawatariMonster> Replace(bool third)
+        async Task<ForestSawatariMonster> Replace(bool third)
         {
             Creature[] previous = combat.HittableEnemies.ToArray();
             Vector2 position = room.GetCreatureNode(previous[0])!.Position;
-            var model = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            var model = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             model.ActThree = third;
             Creature creature = combat.CreateCreature(model, CombatSide.Enemy, null);
             await CreatureCmd.Add(creature);
@@ -74,7 +74,7 @@ internal sealed partial class SmokeController
             await WaitFrames(30);
             return model;
         }
-        async Task Move(SawatariMonster model)
+        async Task Move(ForestSawatariMonster model)
         {
             await model.PerformMove();
             model.RollMove(combat.PlayerCreatures);
@@ -119,7 +119,7 @@ internal sealed partial class SmokeController
                 "New body is not aligned to the existing ground contact.");
             foreach (int mask in new[] { 3, 1, 2, 0 })
             {
-                AccessTools.Property(typeof(SawatariMonster), "HeldMachetes").SetValue(model, mask);
+                AccessTools.Property(typeof(ForestSawatariMonster), "HeldMachetes").SetValue(model, mask);
                 foreach (bool raised in new[] { true, false })
                 {
                     refresh.Invoke(visual, [raised]);
@@ -136,7 +136,7 @@ internal sealed partial class SmokeController
                     await Capture($"rig-{mask}-{(raised ? "upright" : "horizontal")}");
                 }
             }
-            AccessTools.Property(typeof(SawatariMonster), "HeldMachetes").SetValue(model, 3);
+            AccessTools.Property(typeof(ForestSawatariMonster), "HeldMachetes").SetValue(model, 3);
             body.FlipH = !body.FlipH;
             refresh.Invoke(visual, [true]);
             await WaitFrames(20);
@@ -240,14 +240,14 @@ internal sealed partial class SmokeController
         await arrowMove;
         Require(arrow.Creature.GetPowerAmount<PlatingPower>() == 4 && !arrow.Creature.HasPower<StrengthPower>(),
             "Act-one arrow must grant four Plating instead of Strength.");
-        Require(capturedArrow && bowBody.Texture.ResourcePath == SawatariMonster.TexturePath,
+        Require(capturedArrow && bowBody.Texture.ResourcePath == ForestSawatariMonster.TexturePath,
             "The real opening move did not release the arrow and restore bamboo.");
         Require(bowBody.ToGlobal(new Vector2(-20.5f, 259.5f))
             .DistanceTo(archer.Visuals.GetNode<Node2D>("GroundContact").GlobalPosition) < .1f,
             "Switching from the hatted bow to bamboo moved the shared foot anchor.");
         await Capture("act1-after-arrow");
-        string[] followups = [SawatariMonster.SecondAttackMoveId, SawatariMonster.EnhanceMoveId,
-            SawatariMonster.AttackMoveId, SawatariMonster.SecondAttackMoveId, SawatariMonster.EnhanceMoveId];
+        string[] followups = [ForestSawatariMonster.SecondAttackMoveId, ForestSawatariMonster.EnhanceMoveId,
+            ForestSawatariMonster.AttackMoveId, ForestSawatariMonster.SecondAttackMoveId, ForestSawatariMonster.EnhanceMoveId];
         foreach (string next in followups)
         {
             await Move(arrow);
@@ -267,7 +267,7 @@ internal sealed partial class SmokeController
         Vector2 intent = enemyNode.Visuals.GetNode<Node2D>("%IntentPos").Position;
         await Capture("act3-dual-ready");
         await Move(dual);
-        Require(dual.NextMove.Id == SawatariMonster.ThrowMoveId, "Dual attack did not schedule a throw.");
+        Require(dual.NextMove.Id == ForestSawatariMonster.ThrowMoveId, "Dual attack did not schedule a throw.");
         await Capture("act3-throw-ready");
         foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
             await CardPileCmd.Add(card, PileType.Discard);
@@ -300,13 +300,13 @@ internal sealed partial class SmokeController
         Require(capturedKnife, "Knife flight was not captured.");
         Sprite2D secondKnife = originalKnives.Single(knife => knife != firstKnife);
         Require(dual.MacheteCount == 1, "First visual throw did not remove one weapon.");
-        var firstCard = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().Single();
+        var firstCard = PileType.Hand.GetPile(player).Cards.OfType<Machete>().Single();
         string firstHand = firstCard.HeldHand == 0 ? "Primary" : "Secondary";
         Require(firstKnife!.GetParent().Name == firstHand, "First throw missed the selected receiving hand.");
         CheckWeaponLayer(firstKnife);
         await Capture("act3-one-each");
         await Move(dual);
-        var cards = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().ToArray();
+        var cards = PileType.Hand.GetPile(player).Cards.OfType<Machete>().ToArray();
         Require(cards.Length == 2 && dual.MacheteCount == 0, "Second visual throw did not transfer the other weapon.");
         Require(secondKnife.GetParent() != firstKnife.GetParent() && firstKnife.GetParent().Name == firstHand,
             "Second catch moved the already-held knife or failed to use the empty hand.");
@@ -319,13 +319,13 @@ internal sealed partial class SmokeController
         Require(originalKnives.Count(knife => knife.GetParent().GetParent().Name == "WeaponRig") == 1,
             "Playing Machete did not return one original sprite.");
         await Capture("act3-return-one");
-        Require(dual.NextMove.Id == SawatariMonster.ThrowMoveId, "One returned weapon did not select throwing.");
+        Require(dual.NextMove.Id == ForestSawatariMonster.ThrowMoveId, "One returned weapon did not select throwing.");
         await CardCmd.AutoPlay(choice, cards[1], dual.Creature);
         Require(originalKnives.All(knife => knife.GetParent().GetParent().Name == "WeaponRig"),
             "Second Machete did not return the remaining original sprite.");
         foreach (var knife in originalKnives) CheckWeaponLayer(knife);
         await Capture("act3-return-two");
-        Require(dual.NextMove.Id == SawatariMonster.DualMoveId && dual.MacheteCount == 2,
+        Require(dual.NextMove.Id == ForestSawatariMonster.DualMoveId && dual.MacheteCount == 2,
             "Two returned weapons did not select the dual attack.");
         Require(enemyNode.Position.IsEqualApprox(root)
             && enemyNode.Visuals.GetNode<Node2D>("%IntentPos").Position.IsEqualApprox(intent),
@@ -361,7 +361,7 @@ internal sealed partial class SmokeController
         var win = new WinConsoleCmd().Process(player, []);
         Require(win.success, win.msg);
         await win.task!;
-        var entry = new EventConsoleCmd().Process(player, [ModelDb.Event<SawatariEvent>().Id.Entry]);
+        var entry = new EventConsoleCmd().Process(player, [ModelDb.Event<TheMovingJungleEvent>().Id.Entry]);
         Require(entry.success, entry.msg);
         await entry.task!;
         // Console-selected encounters are not the fixed Finisher fixture.

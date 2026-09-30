@@ -1,5 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.Nodes;
 
@@ -13,7 +13,7 @@ public static class TornadoFistSpinAnimation
 
     internal static void NotifyHitTriggered(Creature target, string trigger)
     {
-        if (trigger != "Hit" || NinjaSlayerAttackExecution.CurrentCommand is not { ModelSource: TornadoFistRedesignV1 } command
+        if (trigger != "Hit" || NinjaSlayerAttackExecution.CurrentCommand is not { ModelSource: TornadoFist } command
             || command.Attacker is not { } attacker || target.Side == attacker.Side
             || NinjaSlayerFinisherCinematic.IsMovementOwned(attacker)) return;
         NinjaSlayerAimPose? pose = NinjaSlayerAimPose.Get(attacker);

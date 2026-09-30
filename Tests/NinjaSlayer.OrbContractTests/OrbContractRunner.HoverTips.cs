@@ -3,7 +3,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
@@ -46,26 +46,26 @@ public partial class OrbContractRunner
     {
         foreach (bool upgraded in new[] { false, true })
         {
-            var karate = AddCard<KarateStraightRedesignV1>(combat, upgraded: upgraded);
+            var karate = AddCard<StraightPunch>(combat, upgraded: upgraded);
             Require(karate.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<KaratePower>().Id),
                 "Karate must expose its native side tooltip on mutable base/upgraded cards.");
-            var flame = AddCard<ReturnReturnReturnRedesignV1>(combat, upgraded: upgraded);
-            Require(flame.HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BlackFlameRedesignV1)
+            var flame = AddCard<DevourFlame>(combat, upgraded: upgraded);
+            Require(flame.HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BlackFlame)
                 && flame.HoverTips.Any(tip => tip.Id == HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>().Id),
                 "Return Return Return must preview Black Flame and explain Naraku Life.");
-            var starless = AddCard<GiantShurikenRedesignV1>(combat, upgraded: upgraded);
+            var starless = AddCard<StarlessNight>(combat, upgraded: upgraded);
             Require(!starless.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Starless Night must preview an unupgraded token even when the power card is upgraded.");
-            var guard = AddCard<KillingIntentRedesignV1>(combat, upgraded: upgraded);
+            var guard = AddCard<KillingIntent>(combat, upgraded: upgraded);
             Require(!guard.HoverTips.OfType<CardHoverTip>().Single().Card.IsUpgraded,
                 "Killing Intent must preview the generated Straight Ki's upgrade.");
         }
         Require(ModelDb.Relic<IrcTerminalRelic>().HoverTips.OfType<CardHoverTip>().Any(tip => tip.Card is BusyLine),
             "IRC Terminal must expose its Busy Line card preview.");
-        foreach (RelicModel relic in new RelicModel[] { ModelDb.Relic<ChadoBreathingRelic>(), ModelDb.Relic<DeepChadoBreathingRelic>() })
+        foreach (RelicModel relic in new RelicModel[] { ModelDb.Relic<ChadoBreathingRelic>(), ModelDb.Relic<ChadoBreathingMasteryRelic>() })
             Require(relic.HoverTips.OfType<CardHoverTip>().Single().Card.Keywords.Contains(CardKeyword.Retain)
                 == false, "Starter relics grant temporary retention without changing tea keywords.");
-        Require(!ModelDb.Card<ChadoEnergyRedesignV1>().Keywords.Contains(CardKeyword.Retain),
+        Require(!ModelDb.Card<Chado>().Keywords.Contains(CardKeyword.Retain),
             "Relic previews must not mutate the canonical tea model.");
     }
 }

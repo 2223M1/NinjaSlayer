@@ -13,7 +13,7 @@ using MegaCrit.Sts2.Core.Models.Encounters;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -51,9 +51,9 @@ internal sealed partial class SmokeController
             enemy.SetMaxHpInternal(1000);
             enemy.SetCurrentHpInternal(1000);
         }
-        await RelicCmd.Obtain<YukanoCompanionRelic>(player);
+        await RelicCmd.Obtain<ToriiPactRelic>(player);
         var pet = await PlayerCmd.AddPet<YukanoMonster>(player);
-        var relic = player.GetRelic<YukanoCompanionRelic>()!;
+        var relic = player.GetRelic<ToriiPactRelic>()!;
         var product = typeof(YukanoMonster).Assembly;
         var observer = new Harmony("NinjaSlayer.SmokeDriver.CombatRegression");
         var events = new JsonArray();
@@ -157,7 +157,7 @@ internal sealed partial class SmokeController
                 Require(Hook.ShouldStopCombatFromEnding(combat), monsterName + " native continuation flag is absent");
                 CardModel card = targeting switch
                 {
-                    "random" => combat.CreateCard<PalmThrustRedesignV1>(player),
+                    "random" => combat.CreateCard<PalmThrust>(player),
                     "all" => combat.CreateCard<DaggerSpray>(player),
                     _ => combat.CreateCard<TwinStrike>(player)
                 };
@@ -204,7 +204,7 @@ internal sealed partial class SmokeController
             var lastEnemies = combat.HittableEnemies.ToArray();
             foreach (var enemy in lastEnemies.Skip(1)) await CreatureCmd.Kill(enemy);
             lastEnemies[0].SetCurrentHpInternal(1);
-            var strike = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            var strike = combat.CreateCard<StrikeNinjaSlayer>(player);
             await CardPileCmd.Add(strike, PileType.Hand, skipVisuals: true);
             FinisherSmokeObserver.Reset();
             await CardCmd.AutoPlay(choice, strike, lastEnemies[0]);

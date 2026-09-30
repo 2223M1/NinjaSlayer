@@ -27,7 +27,7 @@ using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.TestSupport;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -128,7 +128,7 @@ internal sealed partial class SmokeController
         private readonly List<(Creature Actor, Action<int, int> Handler)> _hpSubscriptions = [];
         private readonly TornadoViewportRecording _recorder;
         private CombatCinematicCameraLease? _camera;
-        private NarakuWithinRelic? _fullNaraku;
+        private NarakuUnleashedRelic? _fullNaraku;
         private long _start;
         private bool _recording;
         private string _cue = "setup";
@@ -174,7 +174,7 @@ internal sealed partial class SmokeController
             await _driver.WaitFrames(90);
             Creature[] previous = _combat.HittableEnemies.ToArray();
             _enemySlot = previous[0].GetCreatureNode()!.Position;
-            var sawatari = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            var sawatari = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             sawatari.ActThree = true;
             Creature enemy = _combat.CreateCreature(sawatari, CombatSide.Enemy, null);
             await CreatureCmd.Add(enemy);
@@ -198,15 +198,15 @@ internal sealed partial class SmokeController
                 await CardPileCmd.Add(copy, PileType.Draw, skipVisuals: true);
             }
             for (int i = _player.Deck.Cards.Count; i < 45; i++)
-                await CardPileCmd.Add(_combat.CreateCard<StrikeNinjaSlayerRedesignV1>(_player), PileType.Draw, skipVisuals: true);
+                await CardPileCmd.Add(_combat.CreateCard<StrikeNinjaSlayer>(_player), PileType.Draw, skipVisuals: true);
             await CardPileCmd.Draw(_choice, 4, _player, fromHandDraw: true);
             await PowerCmd.Apply<KaratePower>(_choice, _player.Creature, _script.Karate, _player.Creature, null);
             if (_script.Purpose == "promo")
             {
-                await RelicCmd.Obtain<YamotoKokiCuteRelic>(_player);
-                await RelicCmd.Obtain<YukanoCompanionRelic>(_player);
+                await RelicCmd.Obtain<OrigamiPactRelic>(_player);
+                await RelicCmd.Obtain<ToriiPactRelic>(_player);
             }
-            if (_script.Purpose == "yukano-popup") await RelicCmd.Obtain<YukanoCompanionRelic>(_player);
+            if (_script.Purpose == "yukano-popup") await RelicCmd.Obtain<ToriiPactRelic>(_player);
             await RemovePower<EvasionPower>(_player.Creature);
             await PlayerCmd.SetEnergy(6, _player);
             AccessTools.Property(Pose.GetType(), "UseTornadoHitStop").SetValue(Pose, true);
@@ -337,7 +337,7 @@ internal sealed partial class SmokeController
         private async Task PlayCard(TheaterStep step)
         {
             if (_player.PlayerCombatState!.Hand.Cards.Count >= 9)
-                await CardCmd.Discard(_choice, _player.PlayerCombatState.Hand.Cards.Where(c => c is not SawatariMachete).Take(3).ToArray());
+                await CardCmd.Discard(_choice, _player.PlayerCombatState.Hand.Cards.Where(c => c is not Machete).Take(3).ToArray());
             await PlayerCmd.SetEnergy(step.Energy, _player);
             CardModel card = CreateCard(step.Card!);
             await CardPileCmd.Add(card, PileType.Hand, skipVisuals: true);
@@ -356,7 +356,7 @@ internal sealed partial class SmokeController
 
         private CardModel CreateCard(string name)
         {
-            Type type = typeof(StrikeNinjaSlayerRedesignV1).Assembly.GetTypes().Concat(typeof(MegaCrit.Sts2.Core.Models.Cards.Shiv).Assembly.GetTypes())
+            Type type = typeof(StrikeNinjaSlayer).Assembly.GetTypes().Concat(typeof(MegaCrit.Sts2.Core.Models.Cards.Shiv).Assembly.GetTypes())
                 .Single(type => type.Name == name && typeof(CardModel).IsAssignableFrom(type));
             var canonical = (CardModel)AccessTools.Method(typeof(ModelDb), "Card", [], [type]).Invoke(null, null)!;
             return _combat.CreateCard(canonical, _player);
@@ -406,7 +406,7 @@ internal sealed partial class SmokeController
         private async Task Move(TheaterStep step)
         {
             Creature actor = Actor(step.Actor), target = Actor(step.Target);
-            if (actor.Monster is SawatariMonster sawatari)
+            if (actor.Monster is ForestSawatariMonster sawatari)
             {
                 string method = step.Move switch
                 {
@@ -430,7 +430,7 @@ internal sealed partial class SmokeController
         {
             var hand = _player.PlayerCombatState!.Hand;
             if (hand.Cards.Count > 6)
-                await CardCmd.Discard(_choice, hand.Cards.Where(c => c is not SawatariMachete).Take(hand.Cards.Count - 6).ToArray());
+                await CardCmd.Discard(_choice, hand.Cards.Where(c => c is not Machete).Take(hand.Cards.Count - 6).ToArray());
             await (Task)InvokeMethod(typeof(ShurikenOrb), null, "AddStock", _choice, _player, shots)!;
             var before = hand.Cards.ToHashSet();
             await CardPileCmd.Draw(_choice, shots, _player);
@@ -443,7 +443,7 @@ internal sealed partial class SmokeController
         private async Task KnifeExchange(int knives)
         {
             for (int i = 0; i < knives; i++) await Move(new() { Actor = "sawatari", Target = "ninja", Move = "throw" });
-            foreach (var knife in _player.PlayerCombatState!.Hand.Cards.OfType<SawatariMachete>().ToArray())
+            foreach (var knife in _player.PlayerCombatState!.Hand.Cards.OfType<Machete>().ToArray())
             {
                 await PlayerCmd.SetEnergy(6, _player);
                 await PlayCreatedCard(knife, Actor("sawatari"));
@@ -467,11 +467,11 @@ internal sealed partial class SmokeController
         private async Task Missiles(bool misfire)
         {
             await Move(new() { Actor = "koki", Move = YamotoKokiMonster.SummonMissileMoveId });
-            Creature[] missiles = _player.PlayerCombatState!.Pets.Where(p => p.Monster is YamotoKokiOrigamiMissile && p.IsAlive).ToArray();
+            Creature[] missiles = _player.PlayerCombatState!.Pets.Where(p => p.Monster is OrigamiMissileMonster && p.IsAlive).ToArray();
             Require(missiles.Length == 2, "A theater missile round must contain exactly two live missiles.");
             if (_script.Purpose == "finisher-audit")
             {
-                await ((YamotoKokiOrigamiMissile)missiles[0].Monster!).ExecuteExplosion(missiles[0]);
+                await ((OrigamiMissileMonster)missiles[0].Monster!).ExecuteExplosion(missiles[0]);
                 _missileRounds++;
                 return;
             }
@@ -499,7 +499,7 @@ internal sealed partial class SmokeController
         private async Task Aim()
         {
             var drag = new Node(); Node("ninja").AddChild(drag);
-            CardModel card = _combat.CreateCard<StrikeNinjaSlayerRedesignV1>(_player);
+            CardModel card = _combat.CreateCard<StrikeNinjaSlayer>(_player);
             Call(Pose, "Drag", drag, card, Node("enemy").VfxSpawnPosition + new Vector2(0, -150), Actor("enemy"));
             await Wait(.18); Call(Pose, "EndDrag", drag, false); drag.QueueFree();
         }
@@ -513,7 +513,7 @@ internal sealed partial class SmokeController
             bool Shown() => ninja.Visuals.GetNode<Node2D>("AirborneAnchor").Scale.X < 0;
             bool baseline = Committed();
             var drag = new Node(); ninja.AddChild(drag);
-            CardModel card = _combat.CreateCard<StrikeNinjaSlayerRedesignV1>(_player);
+            CardModel card = _combat.CreateCard<StrikeNinjaSlayer>(_player);
             SurroundedPower? surrounded = null;
             Vector2 Core(NCreature node) => node.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
             void Point(Vector2 point, Creature? hovered = null) => Call(Pose, "Drag", drag, card, point, hovered);
@@ -570,7 +570,7 @@ internal sealed partial class SmokeController
                     Vector2 target = Core(enemy);
                     await Sweep(target + Vector2.Up * 200, target, .1);
                     Call(Pose, "EndDrag", drag, true);
-                    await PlayCard(new() { Card = nameof(KarateStraightRedesignV1) });
+                    await PlayCard(new() { Card = nameof(StraightPunch) });
                 }
                 else if (mode == "surrounded")
                 {
@@ -596,7 +596,7 @@ internal sealed partial class SmokeController
                     Call(Pose, "EndDrag", drag, false);
                     await Wait(.25);
                     Require(!Shown(), "Cancelled Surrounded preview did not return right.");
-                    await PlayCard(new() { Card = nameof(KarateStraightRedesignV1) });
+                    await PlayCard(new() { Card = nameof(StraightPunch) });
                     Require(surrounded.Facing == SurroundedPower.Direction.Left, "Actual card did not turn Surrounded facing.");
                     await Sweep(right, right, .3);
                     Require(!Shown() && Committed(), "Preview did not preserve the new committed left facing.");
@@ -628,17 +628,17 @@ internal sealed partial class SmokeController
         {
             switch (form)
             {
-                case "semi": await PlayCard(new() { Card = nameof(NarakuFormRedesignV1) }); break;
+                case "semi": await PlayCard(new() { Card = nameof(NarakuForm) }); break;
                 case "full":
-                    _fullNaraku = await RelicCmd.Obtain<NarakuWithinRelic>(_player);
+                    _fullNaraku = await RelicCmd.Obtain<NarakuUnleashedRelic>(_player);
                     await _fullNaraku.BeforeCombatStart(); break;
-                case "soul": await PlayCard(new() { Card = nameof(OneBodyOneSoul) }); break;
+                case "soul": await PlayCard(new() { Card = nameof(OneMindOneBody) }); break;
                 case "normal":
                     await ClearAir();
-                    await RemovePower<OneBodyOneSoulPower>(_player.Creature);
+                    await RemovePower<OneMindOneBodyPower>(_player.Creature);
                     if (_fullNaraku != null) { await RelicCmd.Remove(_fullNaraku); _fullNaraku = null; }
                     await RemovePower<NarakuLifePower>(_player.Creature);
-                    await RemovePower<NarakuFormRedesignPower>(_player.Creature); break;
+                    await RemovePower<NarakuFormPower>(_player.Creature); break;
                 default: throw new InvalidDataException("Unknown theater form.");
             }
             Cover("form-" + form);
@@ -646,7 +646,7 @@ internal sealed partial class SmokeController
 
         private async Task ClearAir()
         {
-            await RemovePower<HellTornadoRedesignPower>(_player.Creature);
+            await RemovePower<HellTornadoPower>(_player.Creature);
             await RemovePower<SoarPower>(_player.Creature);
         }
 
@@ -807,7 +807,7 @@ internal sealed partial class SmokeController
                 if (_script.Purpose == "finisher-audit") core = _auditRender * core;
                 row[name] = new JsonObject { ["x"] = node.Position.X, ["y"] = node.Position.Y,
                     ["coreX"] = core.X, ["coreY"] = core.Y, ["hp"] = actor.CurrentHp,
-                    ["iai"] = actor.GetPowerAmount<IaiPower>() };
+                    ["iai"] = actor.GetPowerAmount<DarkCounterPower>() };
                 if (name == "yukano")
                 {
                     var sprite = (Sprite2D)node.Body;
@@ -919,8 +919,8 @@ internal sealed partial class SmokeController
     }
 }
 
-[HarmonyPatch(typeof(IaiPower), "TryCounter")]
+[HarmonyPatch(typeof(DarkCounterPower), "TryCounter")]
 internal static class TheaterCounterObserver
 {
-    private static void Prefix(IaiPower __instance) => SmokeController.Current?.ObserveTheaterCounter(__instance.Owner);
+    private static void Prefix(DarkCounterPower __instance) => SmokeController.Current?.ObserveTheaterCounter(__instance.Owner);
 }

@@ -132,7 +132,7 @@ draw backflips and shuriken throws may overlap that held stance.
 
 ## Special heavy and separated Hell Tornado candidate
 
-- Collapse Fist, Slaughter and Straight Ki alone use a planar forward somersault.
+- Collapse Fist, PressTheAttack and Straight Ki alone use a planar forward somersault.
   The full turn and 120px horizontal approach share the Slow gate of 0.20/0.10/0s.
   Core height follows the live target while the body contour remains above ground.
   There is no squash or stretch. Like native Bludgeon, the complete heavy-blunt
@@ -195,7 +195,7 @@ zero stock hides the visual and clears its spin without delaying model removal.
 Existing damage, projectile timing, texture, trajectory, sound and target rules
 are unchanged.
 
-Only Collapse Fist, Slaughter and Straight Ki use native heavyBlunt at the base;
+Only Collapse Fist, PressTheAttack and Straight Ki use native heavyBlunt at the base;
 the other seven mod heavy-feedback calls use bluntPath/bluntAttack at the core,
 like ordinary attacks. Acquired native cards retain their own feedback.
 Native heavy, slash, horizontal slash, dramatic stab, fire burst and hit sparks

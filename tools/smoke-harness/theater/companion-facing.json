@@ -4,7 +4,7 @@
   "act": 3,
   "duration": 13,
   "karate": 0,
-  "audit": { "monster": "SawatariMonster", "targets": 2, "targetHp": 70, "companion": "sawatari", "mode": "Fast" },
+  "audit": { "monster": "ForestSawatariMonster", "targets": 2, "targetHp": 70, "companion": "sawatari", "mode": "Fast" },
   "cues": [
     { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
     { "id": "facing_rules", "steps": [{ "action": "companion_facing" }] },

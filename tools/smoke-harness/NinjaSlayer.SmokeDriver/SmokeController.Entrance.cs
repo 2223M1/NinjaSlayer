@@ -23,7 +23,7 @@ internal sealed partial class SmokeController
     {
         if (_theater?.IsEntrancePreview != true) return;
         var companion = NCombatRoom.Instance!.CreatureNodes.Single(n =>
-            n.Entity.Monster is SawatariMonster && n.Entity.Side == CombatSide.Player);
+            n.Entity.Monster is ForestSawatariMonster && n.Entity.Side == CombatSide.Player);
         Require(companion.IsVisibleInTree() && companion.Visuals.IsVisibleInTree(),
             "Sawatari must already be visible in the friendly slot before Ninja Slayer enters.");
         Require(!player.Creature.GetCreatureNode()!.Visuals.Visible,
@@ -47,7 +47,7 @@ internal sealed partial class SmokeController
                 Type route = ProductType("NinjaSlayer.Code.Patches.SawatariEventRoute");
                 InvokeMethod(route, null, "Schedule", run.Act, ModelDb.Encounter<GremlinMercNormal>());
                 Require((bool)InvokeMethod(route, null, "TryActivate", run.Act)!, "Could not route Sawatari event.");
-                await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<SawatariEvent>());
+                await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheMovingJungleEvent>());
                 await _driver.WaitUntilAsync(() => CombatManager.Instance.IsInProgress
                     && !CombatManager.Instance.IsStarting && _player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
                     "Sawatari event did not finish the entrance and start combat", _cancel);
@@ -55,7 +55,7 @@ internal sealed partial class SmokeController
                 var ninja = _player.Creature.GetCreatureNode()!;
                 Require(ninja.Visuals.IsVisibleInTree(), "Ninja Slayer did not return to the battle layout.");
                 var companion = NCombatRoom.Instance!.CreatureNodes.Single(n =>
-                    n.Entity.Monster is SawatariMonster && n.Entity.Side == CombatSide.Player);
+                    n.Entity.Monster is ForestSawatariMonster && n.Entity.Side == CombatSide.Player);
                 AddActor("friendly_sawatari", companion.Entity);
                 await Wait(2);
                 Cover("sawatari-native-event-entrance");
@@ -70,12 +70,6 @@ internal static class EventPreviewEntrance
 {
     private static bool Prefix(Player player, ref Task __result)
     {
-        if (SmokeController.Current?.UseFullArchitectGreeting == true)
-        {
-            // The native full greeting stages and plays its own entrance.
-            __result = Task.CompletedTask;
-            return false;
-        }
         if (SmokeController.Current is not { PreviewEntranceVariant: { } variant } driver) return true;
         driver.ObserveEventEntrance(player);
         __result = AncientEntranceAnimation.Play(player, variant);

@@ -1,6 +1,6 @@
 [
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ABANDON_THOUGHT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_LET_GO",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -13,13 +13,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BrewTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/LetGo.png",
     "Vars": {
       "Breath": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ABANDON_THOUGHT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_LET_GO",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -30,13 +30,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BrewTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/LetGo.png",
     "Vars": {
       "Breath": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ABYSS_STRENGTH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NARAKUS_MIGHT",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -47,13 +47,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NarakuRecovery.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NarakusMight.png",
     "Vars": {
       "Karate": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ABYSS_STRENGTH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NARAKUS_MIGHT",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -64,13 +64,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NarakuRecovery.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NarakusMight.png",
     "Vars": {
       "Karate": 7
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ADVERSITY_CARAPACE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_GATHER_MOMENTUM",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -81,13 +81,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IronShirt.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GatherMomentum.png",
     "Vars": {
       "VigorPower": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ADVERSITY_CARAPACE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_GATHER_MOMENTUM",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -98,13 +98,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IronShirt.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GatherMomentum.png",
     "Vars": {
       "VigorPower": 8
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -124,7 +124,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -186,7 +186,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BACK_BRIDGE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BACK_BRIDGE",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -199,12 +199,12 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BackBridge.png",
     "Vars": {
-      "Block": 14,
+      "Block": 13,
       "Karate": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BACK_BRIDGE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BACK_BRIDGE",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -217,12 +217,12 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/BackBridge.png",
     "Vars": {
-      "Block": 17,
+      "Block": 16,
       "Karate": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_RECOVERY",
+    "Id": "CARD.NINJA_SLAYER_CARD_REKINDLE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -235,13 +235,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRecovery.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Rekindle.png",
     "Vars": {
       "NarakuLife": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_RECOVERY",
+    "Id": "CARD.NINJA_SLAYER_CARD_REKINDLE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -254,13 +254,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRecovery.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Rekindle.png",
     "Vars": {
       "NarakuLife": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME",
     "Upgraded": false,
     "Cost": -2,
     "X": false,
@@ -274,13 +274,13 @@
       "Unplayable"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BlackFlame.png",
     "Vars": {
       "Damage": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME",
     "Upgraded": true,
     "Cost": -2,
     "X": false,
@@ -294,13 +294,13 @@
       "Unplayable"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BlackFlame.png",
     "Vars": {
       "Damage": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_CYCLE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_CYCLE",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -311,13 +311,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BladeCycleRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladeCycle.png",
     "Vars": {
       "StockLoss": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_CYCLE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_CYCLE",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -328,13 +328,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BladeCycleRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladeCycle.png",
     "Vars": {
       "StockLoss": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_RESERVE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_PREP",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -345,14 +345,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenCard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladePrep.png",
     "Vars": {
       "Cards": 2,
       "Stock": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_RESERVE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_PREP",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -363,14 +363,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenCard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladePrep.png",
     "Vars": {
       "Cards": 2,
       "Stock": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_SWEEP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_SWEEP",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -381,13 +381,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenStockRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladeSweep.png",
     "Vars": {
       "Stock": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_SWEEP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_SWEEP",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -398,13 +398,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenStockRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladeSweep.png",
     "Vars": {
       "Stock": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BURN_BURN_BURN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_INFERNO",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -415,13 +415,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BloodTears.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
     "Vars": {
       "EnemyHpLoss": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_BURN_BURN_BURN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLACK_FLAME_INFERNO",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -432,7 +432,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BloodTears.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BlackFlameInferno.png",
     "Vars": {
       "EnemyHpLoss": 8
     }
@@ -474,7 +474,7 @@
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHADO_ENERGY_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CHADO",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -487,13 +487,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ChadoCard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Chado.png",
     "Vars": {
       "Energy": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHADO_ENERGY_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CHADO",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -506,13 +506,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ChadoCard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Chado.png",
     "Vars": {
       "Energy": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_FURIN_KAZAN",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -522,17 +522,17 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
-      "Exhaust",
-      "Retain"
+      "Ethereal",
+      "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SenchaStorm.png",
+    "Portrait": "res://NinjaSlayer/images/cards/FurinKazan.png",
     "Vars": {
       "Cards": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_FURIN_KAZAN",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -542,17 +542,17 @@
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [
-      "Exhaust",
-      "Retain"
+      "Ethereal",
+      "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SenchaStorm.png",
+    "Portrait": "res://NinjaSlayer/images/cards/FurinKazan.png",
     "Vars": {
       "Cards": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHADO_STILLNESS_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STILLNESS",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -563,14 +563,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ChadoStillnessRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Stillness.png",
     "Vars": {
       "Breath": 2,
       "Turns": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHADO_STILLNESS_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STILLNESS",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -581,14 +581,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ChadoStillnessRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Stillness.png",
     "Vars": {
       "Breath": 2,
       "Turns": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_DEFENSE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CROSS_GUARD",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -599,13 +599,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Topdeck.png",
+    "Portrait": "res://NinjaSlayer/images/cards/CrossGuard.png",
     "Vars": {
       "Block": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_DEFENSE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CROSS_GUARD",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -616,13 +616,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Topdeck.png",
+    "Portrait": "res://NinjaSlayer/images/cards/CrossGuard.png",
     "Vars": {
       "Block": 9
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HELL_CHOP",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -633,7 +633,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ChopRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
     "Vars": {
       "Cards": 3,
       "Damage": 5,
@@ -641,7 +641,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HELL_CHOP",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -652,7 +652,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ChopRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HellChop.png",
     "Vars": {
       "Cards": 3,
       "Damage": 6,
@@ -660,7 +660,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -673,14 +673,14 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IyaIronSlashWave.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StrikeStrike.png",
     "Vars": {
       "Cards": 2,
       "Damage": 8
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRIKE_STRIKE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -693,14 +693,14 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IyaIronSlashWave.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StrikeStrike.png",
     "Vars": {
       "Cards": 3,
       "Damage": 10
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_COLLAPSE_FIST",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -718,7 +718,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COLLAPSE_FIST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_COLLAPSE_FIST",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -736,7 +736,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COMBAT_ADJUSTMENT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_MOTION_AND_STILLNESS",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -747,14 +747,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TeaHitsPeople.png",
+    "Portrait": "res://NinjaSlayer/images/cards/MotionAndStillness.png",
     "Vars": {
       "Breath": 1,
       "Damage": 7
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COMBAT_ADJUSTMENT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_MOTION_AND_STILLNESS",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -765,14 +765,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TeaHitsPeople.png",
+    "Portrait": "res://NinjaSlayer/images/cards/MotionAndStillness.png",
     "Vars": {
       "Breath": 1,
       "Damage": 11
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COMMON_CHOP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CHOP",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -783,14 +783,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PerfectChop.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
     "Vars": {
       "Damage": 3,
       "Karate": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COMMON_CHOP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CHOP",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -801,14 +801,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PerfectChop.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
     "Vars": {
       "Damage": 6,
       "Karate": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COMPOSE_HAIKU_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_FORETHOUGHT",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -819,11 +819,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Recycle.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Forethought.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COMPOSE_HAIKU_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_FORETHOUGHT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -834,11 +834,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Recycle.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Forethought.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COUNTEROFFENSIVE_GUARD_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BAREHANDED_CATCH",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -849,13 +849,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/CounteroffensiveGuardRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BarehandedCatch.png",
     "Vars": {
       "Block": 12
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_COUNTEROFFENSIVE_GUARD_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BAREHANDED_CATCH",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -866,13 +866,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/CounteroffensiveGuardRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BarehandedCatch.png",
     "Vars": {
       "Block": 15
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_DECIDED_OUTCOME_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DISCERN",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -885,13 +885,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateFinish.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Discern.png",
     "Vars": {
       "Cards": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_DECIDED_OUTCOME_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DISCERN",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -904,13 +904,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateFinish.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Discern.png",
     "Vars": {
       "Cards": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_DEFEND_NINJA_SLAYER_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DEFEND_NINJA_SLAYER",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -929,7 +929,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_DEFEND_NINJA_SLAYER_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DEFEND_NINJA_SLAYER",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -948,7 +948,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -961,14 +961,14 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NinjaSlayerFootwork.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DragonFlyingKick.png",
     "Vars": {
       "Breath": 2,
       "Damage": 15
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -981,7 +981,7 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NinjaSlayerFootwork.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DragonFlyingKick.png",
     "Vars": {
       "Breath": 3,
       "Damage": 20
@@ -1024,7 +1024,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_EXCAVATE",
+    "Id": "CARD.NINJA_SLAYER_CARD_RECOVER",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1033,13 +1033,15 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Recover.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_EXCAVATE",
+    "Id": "CARD.NINJA_SLAYER_CARD_RECOVER",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -1048,13 +1050,15 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [],
+    "Keywords": [
+      "Exhaust"
+    ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderGoldDefense01.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Recover.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_FLYING_BLADE_DANCE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_COMPOSURE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1065,13 +1069,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BladeDance.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Composure.png",
     "Vars": {
       "Block": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_FLYING_BLADE_DANCE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_COMPOSURE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1084,13 +1088,13 @@
       "Innate"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BladeDance.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Composure.png",
     "Vars": {
       "Block": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_FURIN_KAZAN_CHADO_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CLEAR_MIND",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1103,13 +1107,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TeaSamadhi.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ClearMind.png",
     "Vars": {
       "ArtifactPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_FURIN_KAZAN_CHADO_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CLEAR_MIND",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -1122,7 +1126,7 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TeaSamadhi.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ClearMind.png",
     "Vars": {
       "ArtifactPower": 1
     }
@@ -1160,7 +1164,7 @@
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STARLESS_NIGHT",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1175,7 +1179,7 @@
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_GIANT_SHURIKEN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STARLESS_NIGHT",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1192,8 +1196,25 @@
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_GREAT_UKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_GREAT_UKEMI",
     "Upgraded": false,
+    "Cost": 3,
+    "X": false,
+    "Type": "Skill",
+    "Rarity": "Rare",
+    "Target": "Self",
+    "CanBeGeneratedInCombat": true,
+    "CanBeGeneratedByModifiers": true,
+    "Keywords": [
+      "Exhaust"
+    ],
+    "Tags": [],
+    "Portrait": "res://NinjaSlayer/images/cards/GreatUkemi.png",
+    "Vars": {}
+  },
+  {
+    "Id": "CARD.NINJA_SLAYER_CARD_GREAT_UKEMI",
+    "Upgraded": true,
     "Cost": 2,
     "X": false,
     "Type": "Skill",
@@ -1205,28 +1226,11 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OmnidirectionalThrow.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GreatUkemi.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_GREAT_UKE_REDESIGN_V1",
-    "Upgraded": true,
-    "Cost": 1,
-    "X": false,
-    "Type": "Skill",
-    "Rarity": "Rare",
-    "Target": "Self",
-    "CanBeGeneratedInCombat": true,
-    "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Exhaust"
-    ],
-    "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OmnidirectionalThrow.png",
-    "Vars": {}
-  },
-  {
-    "Id": "CARD.NINJA_SLAYER_CARD_GUIDING_FLAME_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_FLAME_GUARD",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1237,13 +1241,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BurningStrike.png",
+    "Portrait": "res://NinjaSlayer/images/cards/FlameGuard.png",
     "Vars": {
       "Block": 12
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_GUIDING_FLAME_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_FLAME_GUARD",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1254,13 +1258,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BurningStrike.png",
+    "Portrait": "res://NinjaSlayer/images/cards/FlameGuard.png",
     "Vars": {
       "Block": 15
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HARD_IT_OUT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_MACACO",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1273,13 +1277,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateWall.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Macaco.png",
     "Vars": {
       "EvasionPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HARD_IT_OUT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_MACACO",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1292,13 +1296,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateWall.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Macaco.png",
     "Vars": {
       "EvasionPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HELL_TORNADO_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HELL_TORNADO",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1315,7 +1319,7 @@
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HELL_TORNADO_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HELL_TORNADO",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1333,7 +1337,7 @@
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HIDDEN_EDGE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HIDDEN_EDGE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1344,14 +1348,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/HiddenEdgeRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HiddenEdge.png",
     "Vars": {
       "FocusPower": 3,
       "DexterityPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HIDDEN_EDGE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HIDDEN_EDGE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1362,14 +1366,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/HiddenEdgeRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HiddenEdge.png",
     "Vars": {
       "FocusPower": 5,
       "DexterityPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HOOK_ROPE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_GRAPPLING_HOOK",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1382,13 +1386,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NinjaWhip.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GrapplingHook.png",
     "Vars": {
       "WeakPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_HOOK_ROPE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_GRAPPLING_HOOK",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1401,13 +1405,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NinjaWhip.png",
+    "Portrait": "res://NinjaSlayer/images/cards/GrapplingHook.png",
     "Vars": {
       "WeakPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_IRON_BODY_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1418,14 +1422,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IronBodyRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NinjaTaunt.png",
     "Vars": {
       "Block": 14,
       "Karate": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_IRON_BODY_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NINJA_TAUNT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1436,14 +1440,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IronBodyRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NinjaTaunt.png",
     "Vars": {
       "Block": 17,
       "Karate": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_STRAIGHT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRAIGHT_PUNCH",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1454,14 +1458,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateStraightRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StraightPunch.png",
     "Vars": {
       "Damage": 8,
       "Karate": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_STRAIGHT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRAIGHT_PUNCH",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1472,14 +1476,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateStraightRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StraightPunch.png",
     "Vars": {
       "Damage": 11,
       "Karate": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_TEA_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_POISE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1490,13 +1494,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TeaOffering.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Poise.png",
     "Vars": {
       "Karate": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_TEA_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_POISE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1507,13 +1511,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TeaOffering.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Poise.png",
     "Vars": {
       "Karate": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_TRAINING_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1524,13 +1528,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Evolution.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Training.png",
     "Vars": {
       "Karate": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_TRAINING_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_TRAINING",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1541,13 +1545,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Evolution.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Training.png",
     "Vars": {
       "Karate": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KILLING_INTENT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KILLING_INTENT",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1564,7 +1568,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_KILLING_INTENT_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KILLING_INTENT",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1581,7 +1585,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_LEFT_HEAVY_PUNCH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1592,14 +1596,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/MasochisticBliss.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
       "Damage": 9,
       "Karate": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_LEFT_HEAVY_PUNCH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CHOP_STRIKE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1610,14 +1614,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/MasochisticBliss.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
       "Damage": 10,
       "Karate": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_LINGERING_MELEE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_RELENTLESS",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1628,13 +1632,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IHit.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Relentless.png",
     "Vars": {
       "Cards": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_LINGERING_MELEE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_RELENTLESS",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1645,13 +1649,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/IHit.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Relentless.png",
     "Vars": {
       "Cards": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_LUCKY_STRIKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_READ_THE_ENEMY",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -1662,14 +1666,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ReadTheEnemy.png",
     "Vars": {
       "Cards": 1,
       "Draw": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_LUCKY_STRIKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_READ_THE_ENEMY",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -1680,14 +1684,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ReadTheEnemy.png",
     "Vars": {
       "Cards": 2,
       "Draw": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_METABOLIC_ACCELERATION_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HISS_AND_HUFF",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1700,13 +1704,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/MetabolicAccelerationRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HissAndHuff.png",
     "Vars": {
       "Heal": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_METABOLIC_ACCELERATION_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HISS_AND_HUFF",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1719,13 +1723,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/MetabolicAccelerationRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HissAndHuff.png",
     "Vars": {
       "Heal": 8
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_NARAKU_FORM_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NARAKU_FORM",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -1736,11 +1740,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NarakuFormRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NarakuForm.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_NARAKU_FORM_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NARAKU_FORM",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -1753,11 +1757,11 @@
       "Retain"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NarakuFormRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NarakuForm.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_OBSERVE_BATTLEFIELD",
+    "Id": "CARD.NINJA_SLAYER_CARD_TOMOE_THROW",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -1768,14 +1772,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ObserveBattlefield.png",
+    "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
       "Block": 6,
       "WeakPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_OBSERVE_BATTLEFIELD",
+    "Id": "CARD.NINJA_SLAYER_CARD_TOMOE_THROW",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -1786,14 +1790,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ObserveBattlefield.png",
+    "Portrait": "res://NinjaSlayer/images/cards/TomoeThrow.png",
     "Vars": {
       "Block": 7,
       "WeakPower": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL",
+    "Id": "CARD.NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -1806,13 +1810,13 @@
       "Ethereal"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OneBodyOneSoul.png",
+    "Portrait": "res://NinjaSlayer/images/cards/OneMindOneBody.png",
     "Vars": {
       "NarakuLife": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL",
+    "Id": "CARD.NINJA_SLAYER_CARD_ONE_MIND_ONE_BODY",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -1825,13 +1829,13 @@
       "Ethereal"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OneBodyOneSoul.png",
+    "Portrait": "res://NinjaSlayer/images/cards/OneMindOneBody.png",
     "Vars": {
       "NarakuLife": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ONE_DRINK_ONE_STRIKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1842,14 +1846,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PursuitStrike.png",
+    "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
     "Vars": {
       "Breath": 2,
       "Damage": 14
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ONE_DRINK_ONE_STRIKE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -1860,14 +1864,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PursuitStrike.png",
+    "Portrait": "res://NinjaSlayer/images/cards/SomersaultKick.png",
     "Vars": {
       "Breath": 2,
       "Damage": 18
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ONLY_KARATE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_REDOUBLE",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -1880,11 +1884,11 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OnlyKarateRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Redouble.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ONLY_KARATE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_REDOUBLE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1897,11 +1901,11 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OnlyKarateRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Redouble.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+    "Id": "CARD.NINJA_SLAYER_CARD_MOONSAULT",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1912,11 +1916,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OyeahThrowSword.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Moonsault.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_OYEAH_THROW_SWORD",
+    "Id": "CARD.NINJA_SLAYER_CARD_MOONSAULT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1929,11 +1933,11 @@
       "Retain"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OyeahThrowSword.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Moonsault.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PALM_THRUST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1951,7 +1955,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PALM_THRUST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1969,7 +1973,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PLACEHOLDER_BLUE_DEFENSE01",
+    "Id": "CARD.NINJA_SLAYER_CARD_NINJA_CALTROPS",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -1980,14 +1984,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderBlueDefense01.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NinjaCaltrops.png",
     "Vars": {
       "Block": 5,
-      "ThornsPower": 3
+      "ThornsPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PLACEHOLDER_BLUE_DEFENSE01",
+    "Id": "CARD.NINJA_SLAYER_CARD_NINJA_CALTROPS",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -1998,14 +2002,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PlaceholderBlueDefense01.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NinjaCaltrops.png",
     "Vars": {
       "Block": 8,
-      "ThornsPower": 4
+      "ThornsPower": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_POUR_TEA_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_REGULATE_BREATH",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2016,14 +2020,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PourTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/RegulateBreath.png",
     "Vars": {
       "Block": 7,
       "Breath": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_POUR_TEA_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_REGULATE_BREATH",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2034,14 +2038,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/PourTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/RegulateBreath.png",
     "Vars": {
       "Block": 10,
       "Breath": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PREJUDGE",
+    "Id": "CARD.NINJA_SLAYER_CARD_READ_AHEAD",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2052,14 +2056,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Prejudge.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ReadAhead.png",
     "Vars": {
       "Block": 4,
       "Scry": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PREJUDGE",
+    "Id": "CARD.NINJA_SLAYER_CARD_READ_AHEAD",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2070,14 +2074,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Prejudge.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ReadAhead.png",
     "Vars": {
       "Block": 4,
       "Scry": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PREPARED_SHURIKEN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_READY_SHURIKEN",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2088,14 +2092,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OpeningGuard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ReadyShuriken.png",
     "Vars": {
-      "Block": 4,
-      "Stock": 2
+      "Block": 7,
+      "Stock": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_PREPARED_SHURIKEN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_READY_SHURIKEN",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2106,14 +2110,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/OpeningGuard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/ReadyShuriken.png",
     "Vars": {
-      "Block": 7,
-      "Stock": 3
+      "Block": 8,
+      "Stock": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_READY_STANCE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_JUJUTSU",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2126,13 +2130,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KataDrill.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Jujutsu.png",
     "Vars": {
       "Karate": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_READY_STANCE_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_JUJUTSU",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2145,13 +2149,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KataDrill.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Jujutsu.png",
     "Vars": {
       "Karate": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RECYCLED_BLADES_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_WATCHFUL_BLADES",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2162,11 +2166,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenThrow.png",
+    "Portrait": "res://NinjaSlayer/images/cards/WatchfulBlades.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RECYCLED_BLADES_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_WATCHFUL_BLADES",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2179,11 +2183,11 @@
       "Innate"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenThrow.png",
+    "Portrait": "res://NinjaSlayer/images/cards/WatchfulBlades.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RED_BLACK_FLAME_ATTACK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KINDLE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2194,14 +2198,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ImpureFlame.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Kindle.png",
     "Vars": {
       "BlackFlames": 2,
       "Cards": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RED_BLACK_FLAME_ATTACK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KINDLE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2212,14 +2216,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ImpureFlame.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Kindle.png",
     "Vars": {
       "BlackFlames": 2,
       "Cards": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RETURN_RETURN_RETURN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DEVOUR_FLAME",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2230,13 +2234,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/AssassinationFist.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DevourFlame.png",
     "Vars": {
       "StrengthPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RETURN_RETURN_RETURN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DEVOUR_FLAME",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2247,13 +2251,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/AssassinationFist.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DevourFlame.png",
     "Vars": {
       "StrengthPower": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_HEAVY_PUNCH_AFTER_SKILL_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_UPPERCUT",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2264,14 +2268,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/LuckyStrike.png",
+    "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
       "Damage": 8,
       "WeakPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_HEAVY_PUNCH_AFTER_SKILL_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_UPPERCUT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2282,14 +2286,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/LuckyStrike.png",
+    "Portrait": "res://NinjaSlayer/images/cards/RightUppercut.png",
     "Vars": {
       "Damage": 10,
       "WeakPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_HEAVY_PUNCH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_LEFT_UPPERCUT",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2300,14 +2304,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BangBangFist.png",
+    "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
     "Vars": {
       "Damage": 8,
       "VulnerablePower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_RIGHT_HEAVY_PUNCH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_LEFT_UPPERCUT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2318,14 +2322,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/BangBangFist.png",
+    "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
     "Vars": {
       "Damage": 10,
       "VulnerablePower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ROUNDHOUSE_KICK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -2336,14 +2340,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SweepKick.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DragonRoundhouseKick.png",
     "Vars": {
       "Damage": 7,
       "Repeat": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_ROUNDHOUSE_KICK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -2354,14 +2358,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SweepKick.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DragonRoundhouseKick.png",
     "Vars": {
       "Damage": 9,
       "Repeat": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SATSUBATSU_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -2372,13 +2376,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/RedBlackFlame.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BS1260Kick.png",
     "Vars": {
       "Damage": 27
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SATSUBATSU_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -2389,13 +2393,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/RedBlackFlame.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BS1260Kick.png",
     "Vars": {
       "Damage": 33
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SAWATARI_MACHETE",
+    "Id": "CARD.NINJA_SLAYER_CARD_MACHETE",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -2409,7 +2413,7 @@
       "Retain"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SawatariMachete.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Machete.png",
     "Vars": {
       "Damage": 12
     }
@@ -2455,7 +2459,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_DRAW",
+    "Id": "CARD.NINJA_SLAYER_CARD_BATTLE_READY",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2466,13 +2470,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenCreation.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BattleReady.png",
     "Vars": {
       "Cards": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_DRAW",
+    "Id": "CARD.NINJA_SLAYER_CARD_BATTLE_READY",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2483,13 +2487,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenCreation.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BattleReady.png",
     "Vars": {
       "Cards": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_GENERATION_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_BARRIER",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2500,13 +2504,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenGuard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladeBarrier.png",
     "Vars": {
       "Block": 8
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_GENERATION_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_BLADE_BARRIER",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2517,7 +2521,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenGuard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/BladeBarrier.png",
     "Vars": {
       "Block": 11
     }
@@ -2561,7 +2565,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SIP_TEA",
+    "Id": "CARD.NINJA_SLAYER_CARD_SIP",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2572,11 +2576,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SipTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Sip.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SIP_TEA",
+    "Id": "CARD.NINJA_SLAYER_CARD_SIP",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2587,11 +2591,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SipTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Sip.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SLAUGHTER",
+    "Id": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -2602,14 +2606,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Slaughter.png",
+    "Portrait": "res://NinjaSlayer/images/cards/PressTheAttack.png",
     "Vars": {
       "Damage": 10,
       "Cards": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SLAUGHTER",
+    "Id": "CARD.NINJA_SLAYER_CARD_PRESS_THE_ATTACK",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -2620,14 +2624,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Slaughter.png",
+    "Portrait": "res://NinjaSlayer/images/cards/PressTheAttack.png",
     "Vars": {
       "Damage": 12,
       "Cards": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SPIRAL_ROUNDHOUSE_JUMP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_SPIRAL_JUMP",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2638,14 +2642,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenSpread.png",
+    "Portrait": "res://NinjaSlayer/images/cards/SpiralJump.png",
     "Vars": {
       "Damage": 7,
       "Stock": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SPIRAL_ROUNDHOUSE_JUMP_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_SPIRAL_JUMP",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2656,14 +2660,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ShurikenSpread.png",
+    "Portrait": "res://NinjaSlayer/images/cards/SpiralJump.png",
     "Vars": {
       "Damage": 8,
       "Stock": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STATUS_DRAW",
+    "Id": "CARD.NINJA_SLAYER_CARD_RESILIENCE",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2674,13 +2678,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/StatusDraw.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Resilience.png",
     "Vars": {
       "Cards": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STATUS_DRAW",
+    "Id": "CARD.NINJA_SLAYER_CARD_RESILIENCE",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2693,13 +2697,13 @@
       "Innate"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/StatusDraw.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Resilience.png",
     "Vars": {
       "Cards": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STORM_FIST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
     "Upgraded": false,
     "Cost": 3,
     "X": false,
@@ -2710,7 +2714,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StormFist.png",
     "Vars": {
       "CalculatedDamage": 4,
       "CalculationBase": 4,
@@ -2719,7 +2723,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STORM_FIST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
     "Upgraded": true,
     "Cost": 3,
     "X": false,
@@ -2730,7 +2734,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StormFist.png",
     "Vars": {
       "CalculatedDamage": 6,
       "CalculationBase": 6,
@@ -2739,7 +2743,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STRAIGHT_KI_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRAIGHT_KI",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -2758,7 +2762,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STRAIGHT_KI_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRAIGHT_KI",
     "Upgraded": true,
     "Cost": 2,
     "X": false,
@@ -2777,7 +2781,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2796,7 +2800,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2815,7 +2819,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STRONG_SHURIKEN_TOKEN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRONG_SHURIKEN",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -2830,13 +2834,13 @@
     "Tags": [
       "2000406097"
     ],
-    "Portrait": "res://NinjaSlayer/images/cards/GiantShurikenCard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StrongShuriken.png",
     "Vars": {
       "Damage": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_STRONG_SHURIKEN_TOKEN_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_STRONG_SHURIKEN",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -2851,13 +2855,13 @@
     "Tags": [
       "2000406097"
     ],
-    "Portrait": "res://NinjaSlayer/images/cards/GiantShurikenCard.png",
+    "Portrait": "res://NinjaSlayer/images/cards/StrongShuriken.png",
     "Vars": {
       "Damage": 10
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SWEEP_KICK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HALF_MOON_COMPASS_KICK",
     "Upgraded": false,
     "Cost": 0,
     "X": false,
@@ -2868,13 +2872,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Evade.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HalfMoonCompassKick.png",
     "Vars": {
       "Damage": 5
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_SWEEP_KICK_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_HALF_MOON_COMPASS_KICK",
     "Upgraded": true,
     "Cost": 0,
     "X": false,
@@ -2885,13 +2889,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Evade.png",
+    "Portrait": "res://NinjaSlayer/images/cards/HalfMoonCompassKick.png",
     "Vars": {
       "Damage": 7
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TEA_STORM_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DEEP_BREATH",
     "Upgraded": false,
     "Cost": 0,
     "X": true,
@@ -2905,14 +2909,14 @@
       "Retain"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SteepTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DeepBreath.png",
     "Vars": {
       "BreathPerX": 2,
       "ExtraX": 0
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TEA_STORM_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_DEEP_BREATH",
     "Upgraded": true,
     "Cost": 0,
     "X": true,
@@ -2926,14 +2930,14 @@
       "Retain"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/SteepTea.png",
+    "Portrait": "res://NinjaSlayer/images/cards/DeepBreath.png",
     "Vars": {
       "BreathPerX": 2,
       "ExtraX": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TEA_TEA_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_MEDITATION",
     "Upgraded": false,
     "Cost": 2,
     "X": false,
@@ -2944,11 +2948,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ColdBrew.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Meditation.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TEA_TEA_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_MEDITATION",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2959,11 +2963,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ColdBrew.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Meditation.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TECHNIQUE_SEARCH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_ADAPT",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -2974,13 +2978,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TechniqueSearchRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Adapt.png",
     "Vars": {
       "Cards": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TECHNIQUE_SEARCH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_ADAPT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -2991,13 +2995,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TechniqueSearchRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Adapt.png",
     "Vars": {
       "Cards": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_THROW_KUNAI_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KUNAI_THROW",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -3008,14 +3012,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ThrowKunai.png",
+    "Portrait": "res://NinjaSlayer/images/cards/KunaiThrow.png",
     "Vars": {
       "Cards": 2,
       "Damage": 9
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_THROW_KUNAI_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KUNAI_THROW",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -3026,14 +3030,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/ThrowKunai.png",
+    "Portrait": "res://NinjaSlayer/images/cards/KunaiThrow.png",
     "Vars": {
       "Cards": 3,
       "Damage": 11
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TONY_RETENTION",
+    "Id": "CARD.NINJA_SLAYER_CARD_ASSESS",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -3044,14 +3048,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TonyRetention.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Assess.png",
     "Vars": {
       "Block": 3,
       "Scry": 4
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TONY_RETENTION",
+    "Id": "CARD.NINJA_SLAYER_CARD_ASSESS",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -3062,14 +3066,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TonyRetention.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Assess.png",
     "Vars": {
-      "Block": 5,
+      "Block": 4,
       "Scry": 6
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
     "Upgraded": false,
     "Cost": 0,
     "X": true,
@@ -3080,7 +3084,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TornadoFistRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 4,
       "Threshold": 4,
@@ -3088,7 +3092,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
     "Upgraded": true,
     "Cost": 0,
     "X": true,
@@ -3099,7 +3103,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TornadoFistRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 6,
       "Threshold": 4,
@@ -3107,7 +3111,7 @@
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TURTLE_SHELL_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_BULWARK",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -3120,11 +3124,11 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TurtleShellRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/KarateBulwark.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_TURTLE_SHELL_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_KARATE_BULWARK",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -3135,11 +3139,11 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/TurtleShellRedesignV1.png",
+    "Portrait": "res://NinjaSlayer/images/cards/KarateBulwark.png",
     "Vars": {}
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_WASSHOI_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NAVY_HAMMER",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -3152,13 +3156,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NinjaGreeting.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NavyHammer.png",
     "Vars": {
       "Repeat": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_WASSHOI_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_NAVY_HAMMER",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -3171,13 +3175,13 @@
       "Exhaust"
     ],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/NinjaGreeting.png",
+    "Portrait": "res://NinjaSlayer/images/cards/NavyHammer.png",
     "Vars": {
       "Repeat": 3
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_WASSSSSSHOI",
+    "Id": "CARD.NINJA_SLAYER_CARD_ONSLAUGHT",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -3188,13 +3192,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Wasssssshoi.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Onslaught.png",
     "Vars": {
       "StrengthPower": 1
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_WASSSSSSHOI",
+    "Id": "CARD.NINJA_SLAYER_CARD_ONSLAUGHT",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -3205,13 +3209,13 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/Wasssssshoi.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Onslaught.png",
     "Vars": {
       "StrengthPower": 2
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_WHISK_TEA_FLASH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CATAPULT_THROW",
     "Upgraded": false,
     "Cost": 1,
     "X": false,
@@ -3222,14 +3226,14 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/WhiskSlash.png",
+    "Portrait": "res://NinjaSlayer/images/cards/CatapultThrow.png",
     "Vars": {
       "Cards": 2,
       "Damage": 9
     }
   },
   {
-    "Id": "CARD.NINJA_SLAYER_CARD_WHISK_TEA_FLASH_REDESIGN_V1",
+    "Id": "CARD.NINJA_SLAYER_CARD_CATAPULT_THROW",
     "Upgraded": true,
     "Cost": 1,
     "X": false,
@@ -3240,7 +3244,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/WhiskSlash.png",
+    "Portrait": "res://NinjaSlayer/images/cards/CatapultThrow.png",
     "Vars": {
       "Cards": 3,
       "Damage": 11
@@ -3258,7 +3262,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateScry.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Zanshin.png",
     "Vars": {
       "Cards": 1
     }
@@ -3275,7 +3279,7 @@
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
-    "Portrait": "res://NinjaSlayer/images/cards/KarateScry.png",
+    "Portrait": "res://NinjaSlayer/images/cards/Zanshin.png",
     "Vars": {
       "Cards": 2
     }

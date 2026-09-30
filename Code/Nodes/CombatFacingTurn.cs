@@ -83,7 +83,7 @@ internal sealed partial class CombatFacingTurn : Node
     private void ApplyFacing(bool left)
     {
         Node2D drawing = _actor.Body;
-        if (_actor.Entity.Monster is SawatariMonster)
+        if (_actor.Entity.Monster is ForestSawatariMonster)
         {
             var sprite = (Sprite2D)drawing;
             bool changed = sprite.FlipH != !left;
@@ -93,7 +93,7 @@ internal sealed partial class CombatFacingTurn : Node
         }
         else drawing.Transform = YamotoKokiAllyFacingController.WithFacing(drawing.Transform, left);
         NinjaSlayerShadowController.Get(_actor.Entity)?.SetMirrored(
-            _actor.Entity.Monster is SawatariMonster ? !left : left);
+            _actor.Entity.Monster is ForestSawatariMonster ? !left : left);
     }
 
     private void DrawTurn()

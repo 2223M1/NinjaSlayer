@@ -32,17 +32,17 @@ public sealed class NancyLee : ModAncientEventTemplate
 
     private IReadOnlyList<EventOption> Pool1 => [
         CreateModRelicOption<IrcTerminalRelic>(),
-        CreateModRelicOption<MotherUnixRelic>()
+        CreateModRelicOption<MotherUNIXAccessKeyRelic>()
     ];
 
     private IReadOnlyList<EventOption> Pool2 => [
-        CreateModRelicOption<ReporterPassRelic>(),
-        CreateModRelicOption<HackerMotokoRelic>()
+        CreateModRelicOption<NSTVPressPassRelic>(),
+        CreateModRelicOption<NancysElectronicSunglassesRelic>()
     ];
 
     private IReadOnlyList<EventOption> Pool3 => [
-        CreateModRelicOption<ElectricBoobyTrapRelic>(),
-        CreateModRelicOption<NancyZazenDrinkRelic>()
+        CreateModRelicOption<AdhesiveEMPMineRelic>(),
+        CreateModRelicOption<ZazenDrinkBandolierRelic>()
     ];
 
     public override IEnumerable<EventOption> AllPossibleOptions => [.. Pool1, .. Pool2, .. Pool3];

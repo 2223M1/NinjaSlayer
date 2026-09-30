@@ -6,7 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using STS2RitsuLib.Patching.Core;
 using STS2RitsuLib.Patching.Models;
 
@@ -88,7 +88,7 @@ internal static class NinjaComponentCardPatches
         public static void Postfix(ChaosCardModel __instance, ref bool __result)
         {
             if (__result && (Has(__instance, "tea_heal") || Has(__instance, "tea_karate") || Has(__instance, "tea_block_weak")))
-                __result = PileType.Hand.GetPile(__instance.Owner).Cards.OfType<ChadoEnergyRedesignV1>().Any();
+                __result = PileType.Hand.GetPile(__instance.Owner).Cards.OfType<Chado>().Any();
         }
     }
 }

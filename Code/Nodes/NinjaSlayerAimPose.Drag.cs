@@ -1,7 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
@@ -43,12 +43,12 @@ public partial class NinjaSlayerAimPose
     internal TornadoChargeProfile ChargeProfile { get; set; } = TornadoChargeProfile.Default;
     private bool Turning => _turnDuration > 0f;
     private bool HasCharge => _charging || _chargePending || _chargeScale != Vector2.One || _chargeBack != 0f;
-    private bool ChargePreview => !IsBusy && (_charging || _chargePending || _dragCard is TornadoFistRedesignV1);
+    private bool ChargePreview => !IsBusy && (_charging || _chargePending || _dragCard is TornadoFist);
 
     private void UpdateDragFacing()
     {
         if (_actor == null || IsBusy) return;
-        if (_dragOwner != null && _dragCard is not TornadoFistRedesignV1)
+        if (_dragOwner != null && _dragCard is not TornadoFist)
         {
             HasFacingPreview = true;
             Vector2 target = _hovered?.GetCreatureNode()?.Visuals.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin
@@ -227,7 +227,7 @@ public partial class NinjaSlayerAimPose
 
     private void UpdateTornadoCharge()
     {
-        if (IsBusy || _tornado || _dragOwner == null || _dragCard is not TornadoFistRedesignV1 card) return;
+        if (IsBusy || _tornado || _dragOwner == null || _dragCard is not TornadoFist card) return;
         if (card.ShouldCharge)
         {
             if (_charging) return;

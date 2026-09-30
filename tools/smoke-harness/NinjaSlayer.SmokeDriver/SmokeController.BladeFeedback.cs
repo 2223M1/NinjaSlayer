@@ -16,7 +16,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
@@ -38,7 +38,7 @@ internal sealed partial class SmokeController
             });
     }
 
-    private async Task VerifyBladeFeedback(string directory, Func<bool, Task<SawatariMonster>> replace)
+    private async Task VerifyBladeFeedback(string directory, Func<bool, Task<ForestSawatariMonster>> replace)
     {
         var combat = CombatManager.Instance.DebugOnlyGetState()!;
         var player = LocalContext.GetMe(combat.RunState)!;
@@ -51,7 +51,7 @@ internal sealed partial class SmokeController
         foreach (var card in PileType.Hand.GetPile(player).Cards.ToArray())
             await CardPileCmd.Add(card, PileType.Discard);
         var model = await replace(false);
-        var relic = await RelicCmd.Obtain<YamotoKokiCuteRelic>(player);
+        var relic = await RelicCmd.Obtain<OrigamiPactRelic>(player);
         await relic.BeforeCombatStart();
         Creature koki = player.PlayerCombatState!.Pets.Single(p => p.Monster is YamotoKokiMonster);
         await WaitFrames(60);
@@ -61,7 +61,7 @@ internal sealed partial class SmokeController
             sections.Add(new JsonObject { ["name"] = name, ["qpc"] = Stopwatch.GetTimestamp() });
             _checkpoints.Write("blade.feedback." + name);
         }
-        Task Weapon(string method, Creature target) => (Task)AccessTools.Method(typeof(SawatariMonster), method)
+        Task Weapon(string method, Creature target) => (Task)AccessTools.Method(typeof(ForestSawatariMonster), method)
             .Invoke(model, method == "PlayAttack" || method == "PlayDualAttack"
                 ? [target] : [new Creature[] { target }])!;
         async Task SoundOnce(string sound, Func<Task> action)
@@ -81,7 +81,7 @@ internal sealed partial class SmokeController
             Section("audio-preroll");
             for (int i = 0; i < 2; i++)
             {
-                await CardCmd.AutoPlay(choice, combat.CreateCard<KarateStraightRedesignV1>(player), model.Creature);
+                await CardCmd.AutoPlay(choice, combat.CreateCard<StraightPunch>(player), model.Creature);
                 await WaitFrames(45);
             }
             Section("bamboo");
@@ -109,7 +109,7 @@ internal sealed partial class SmokeController
                 await WaitFrames(30);
                 Section("machete-return-" + (i + 1));
                 await SoundOnce(macheteSound, () => CardCmd.AutoPlay(choice,
-                    PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().Single(), model.Creature));
+                    PileType.Hand.GetPile(player).Cards.OfType<Machete>().Single(), model.Creature));
                 await WaitFrames(30);
             }
             Section("koki-iai");
@@ -139,10 +139,10 @@ internal sealed partial class SmokeController
             Section("dark-counter");
             for (int i = 0; i < 2; i++)
             {
-                await PowerCmd.Remove<IaiPower>(enemy);
-                await PowerCmd.Apply<IaiPower>(choice, enemy, 1, enemy, null);
+                await PowerCmd.Remove<DarkCounterPower>(enemy);
+                await PowerCmd.Apply<DarkCounterPower>(choice, enemy, 1, enemy, null);
                 await SoundOnce("event:/sfx/characters/ironclad/ironclad_attack", () => CardCmd.AutoPlay(choice,
-                    combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player), enemy));
+                    combat.CreateCard<StrikeNinjaSlayer>(player), enemy));
                 await WaitFrames(35);
             }
             Section("completed");

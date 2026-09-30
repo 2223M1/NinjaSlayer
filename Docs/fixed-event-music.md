@@ -4,8 +4,8 @@
 
 | 事件 | 用户标题 | 原曲 | FMOD 事件名 |
 | --- | --- | --- | --- |
-| YukanoEvent | 茶室 | Ash | yukano_teahouse |
-| YamotoKokiCuteEvent | 小季事件 - Remix | ア・ガール・フロム・キョート・リパブリック ~ABE RYUDAI Remix ver.~ | yamoto_koki_remix |
+| TheCrookedToriiEvent | 茶室 | Ash | yukano_teahouse |
+| YamotoKokiIsSoCuteEvent | 小季事件 - Remix | ア・ガール・フロム・キョート・リパブリック ~ABE RYUDAI Remix ver.~ | yamoto_koki_remix |
 | NarakuEvent | 忍魂 - 变奏 | Crystal part2 | naraku_crystal_variation |
 
 路径前缀为 `event:/NinjaSlayerEventMusic/music/`。独立 `NinjaSlayerEventMusic.bank`

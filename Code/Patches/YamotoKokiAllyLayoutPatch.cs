@@ -37,7 +37,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
         // Only the native layout input changes, never combat/player/pet enumeration.
         List<Creature> insertionOrder = creatureNodes[0].Entity.CombatState!.Creatures.ToList();
         creatureNodes = creatureNodes
-            .Where(node => node.Entity.Monster is not YamotoKokiOrigamiMissile
+            .Where(node => node.Entity.Monster is not OrigamiMissileMonster
                 && (!IsCompanion(node.Entity) || IsCompanionAnchor(node.Entity)))
             .OrderBy(node => LocalContext.IsMe(node.Entity) ? 0
                 : IsCompanionAnchor(node.Entity) ? 1 : node.Entity.IsPlayer ? 2 : 3)
@@ -75,7 +75,7 @@ public sealed class YamotoKokiAllyLayoutPatch : IPatchMethod
     }
 
     private static bool IsCompanion(Creature creature) =>
-        creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster;
+        creature.Monster is YamotoKokiMonster or ForestSawatariMonster or YukanoMonster;
 
     private static bool IsCompanionAnchor(Creature creature) =>
         FriendlyCompanionTargeting.IsFriendlyCompanion(creature)

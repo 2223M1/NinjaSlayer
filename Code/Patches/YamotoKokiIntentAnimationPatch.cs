@@ -61,7 +61,7 @@ public sealed class YamotoKokiIntentGenerationPatch : IPatchMethod
     public static bool Prefix(NCreature __instance, ref Task __result)
     {
         if (__instance.Entity.Side != CombatSide.Player
-            || __instance.Entity.Monster is not (YamotoKokiMonster or SawatariMonster or YukanoMonster)
+            || __instance.Entity.Monster is not (YamotoKokiMonster or ForestSawatariMonster or YukanoMonster)
             || CompanionIntentLifecycle.IsActive(__instance.Entity))
         {
             return true;

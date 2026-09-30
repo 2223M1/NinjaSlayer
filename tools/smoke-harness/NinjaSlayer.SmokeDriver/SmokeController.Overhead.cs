@@ -16,7 +16,7 @@ internal sealed partial class SmokeController
         {
             await Entrance("koki");
             await Entrance("yukano");
-            var friend = await PlayerCmd.AddPet<SawatariMonster>(_player);
+            var friend = await PlayerCmd.AddPet<ForestSawatariMonster>(_player);
             AddActor("sawatari-ally", friend);
             string[] names = ["koki", "yukano", "sawatari", "sawatari-ally"];
             foreach (string name in names)
@@ -80,7 +80,7 @@ internal sealed partial class SmokeController
                     var overlay = actor.Visuals.FindChild("NarakuVisualOverlay", true, false) as Sprite2D;
                     Sprite2D body = overlay is { Visible: true } ? overlay : source;
                     var kind = ProductType("NinjaSlayer.Content.NinjaSlayerFormKind");
-                    string key = form switch { "semi" => "Naraku", "full" => "FullyReleasedNaraku", "soul" => "OneBodyOneSoul", _ => "Normal" };
+                    string key = form switch { "semi" => "Naraku", "full" => "FullyReleasedNaraku", "soul" => "OneMindOneBody", _ => "Normal" };
                     var contour = (System.Numerics.Vector2[])InvokeMethod(ProductType("NinjaSlayer.Code.Combat.CombatBodyContours"),
                         null, "ForForm", Enum.Parse(kind, key))!;
                     float top = contour.Min(p => (body.GetGlobalTransformWithCanvas()

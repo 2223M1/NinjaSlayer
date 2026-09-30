@@ -9,7 +9,7 @@
     {"id": "entrance", "steps": [
       {"action": "block", "actor": "enemy", "amount": 6},
       {"parallel": [
-        {"action": "card", "card": "StrikeNinjaSlayerRedesignV1"},
+        {"action": "card", "card": "StrikeNinjaSlayer"},
         {"action": "entrance", "actor": "yukano", "delay": 0.05}
       ]},
       {"action": "wait", "seconds": 0.5}

@@ -114,9 +114,9 @@ public sealed class YamotoKokiMonster : ModMonsterTemplate
             {
                 await YamotoKokiCombatAnimations.PlaySummon(Creature, async () =>
                 {
-                    Creature missileCreature = await PlayerCmd.AddPet<YamotoKokiOrigamiMissile>(owner);
+                    Creature missileCreature = await PlayerCmd.AddPet<OrigamiMissileMonster>(owner);
                     NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.YamotoKokiMissileSummonEvent);
-                    if (missileCreature.Monster is YamotoKokiOrigamiMissile missile)
+                    if (missileCreature.Monster is OrigamiMissileMonster missile)
                     {
                         await missile.PrepareExplosionIntent(missileCreature);
                     }

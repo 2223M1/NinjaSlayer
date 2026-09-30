@@ -29,7 +29,7 @@ public partial class OrbContractRunner
     {
         internal readonly OrbCombat Combat = new(ninjaSlayer: true);
         internal readonly RunState Run;
-        internal readonly SawatariMonster Monster;
+        internal readonly ForestSawatariMonster Monster;
         internal readonly Player? Other;
         private readonly object? _previousRun = AccessTools.Property(typeof(RunManager), "State").GetValue(RunManager.Instance);
         private readonly object? _previousAscension = RunManager.Instance.AscensionManager;
@@ -51,7 +51,7 @@ public partial class OrbContractRunner
             AccessTools.Field(Combat.State.GetType(), "<RunState>k__BackingField").SetValue(Combat.State, Run);
             Run.AppendToMapPointHistory(MapPointType.Monster, RoomType.Monster, new ModelId("ENCOUNTER", "TEST"));
             Run.PushRoom(new CombatRoom(Combat.State));
-            Monster = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            Monster = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             Monster.ActThree = third;
             Monster.RunRng = Run.Rng;
             var creature = new Creature(Monster, CombatSide.Enemy, null);
@@ -85,7 +85,7 @@ public partial class OrbContractRunner
             using var f = new DarkStrikeFixture();
             var dark = f.Monster.Creature;
             await PowerCmd.Apply<StrengthPower>(Choice, dark, 4, dark, null);
-            var iai = await PowerCmd.Apply<IaiPower>(Choice, dark, 1, dark, null);
+            var iai = await PowerCmd.Apply<DarkCounterPower>(Choice, dark, 1, dark, null);
             int flashes = 0;
             iai!.Flashed += _ => flashes++;
             int hp = f.Target.CurrentHp;
@@ -124,7 +124,7 @@ public partial class OrbContractRunner
                 f.Run.Act.MarkRoomVisited(RoomType.Monster);
             foreach (bool visited in new[] { false, true })
             {
-                if (visited) f.Run.AddVisitedEvent(ModelDb.Event<SawatariEvent>());
+                if (visited) f.Run.AddVisitedEvent(ModelDb.Event<TheMovingJungleEvent>());
                 var odds = f.Run.Odds.UnknownMapPoint;
                 SawatariUnknownRoomRollPatch.Prefix(odds, f.Run, out var roll);
                 try
@@ -148,8 +148,8 @@ public partial class OrbContractRunner
             using (var f = new SawatariFixture(third: false, ascension: spec.Asc))
             {
                 Require(f.Monster.Creature.CurrentHp == spec.Hp1, $"Act-one A{spec.Asc} HP differs.");
-                string[] moves = [SawatariMonster.EnhanceMoveId, SawatariMonster.AttackMoveId,
-                    SawatariMonster.SecondAttackMoveId];
+                string[] moves = [ForestSawatariMonster.EnhanceMoveId, ForestSawatariMonster.AttackMoveId,
+                    ForestSawatariMonster.SecondAttackMoveId];
                 int strength = 0;
                 for (int turn = 0; turn < 6; turn++)
                 {
@@ -173,7 +173,7 @@ public partial class OrbContractRunner
                 Require(f.Monster.Creature.CurrentHp == spec.Hp3, "Act-three HP is incorrect.");
                 await f.Move();
                 Require(f.Target.CurrentHp == 500 - 2 * spec.Dual && !f.Monster.Creature.HasPower<StrengthPower>()
-                    && f.Monster.NextMove.Id == SawatariMonster.ThrowMoveId, "Opening dual attack or forced throw is incorrect.");
+                    && f.Monster.NextMove.Id == ForestSawatariMonster.ThrowMoveId, "Opening dual attack or forced throw is incorrect.");
                 await f.Move();
                 Require(f.Target.CurrentHp == 500 - 2 * spec.Dual - spec.Throw
                     && f.Monster.MacheteCount == 1 && f.Monster.Creature.GetPowerAmount<VigorPower>() == 6
@@ -182,7 +182,7 @@ public partial class OrbContractRunner
                 await f.Move();
                 Require(f.Target.CurrentHp == hp - spec.Throw - 6 && f.Monster.MacheteCount == 0
                     && f.Monster.Creature.GetPowerAmount<VigorPower>() == 6
-                    && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Count() == 2,
+                    && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<Machete>().Count() == 2,
                     "Second throw must consume old Vigor and grant six new Vigor.");
                 hp = f.Target.CurrentHp;
                 var intent = f.Monster.NextMove.Intents.OfType<MegaCrit.Sts2.Core.MonsterMoves.Intents.AttackIntent>().Single();
@@ -213,7 +213,7 @@ public partial class OrbContractRunner
             int before = f.Target.CurrentHp;
             await f.Move();
             Require(f.Target.CurrentHp == before && f.Monster.MacheteCount == 1
-                && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Count() == 1
+                && PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<Machete>().Count() == 1
                 && f.Monster.Creature.GetPowerAmount<VigorPower>() == 6,
                 $"{defense} incorrectly prevented the thrown knife transfer.");
         }
@@ -223,7 +223,7 @@ public partial class OrbContractRunner
             using var f = new SawatariFixture(third: third, ascension: 10);
             // The event calls these shared presentation/attack entry points for support.
             int hp = f.Target.CurrentHp;
-            await (Task)AccessTools.Method(typeof(SawatariMonster), third ? "PlayDualAttack" : "PlayAttack")
+            await (Task)AccessTools.Method(typeof(ForestSawatariMonster), third ? "PlayDualAttack" : "PlayAttack")
                 .Invoke(f.Monster, [f.Target])!;
             Require(f.Target.CurrentHp == hp - (third ? 20 : 8)
                 && !f.Monster.Creature.HasPower<StrengthPower>()
@@ -235,7 +235,7 @@ public partial class OrbContractRunner
             using var f = new SawatariFixture(third: move != "ArrowMove");
             f.Monster.Creature.SetCurrentHpInternal(1);
             await PowerCmd.Apply<ThornsPower>(Choice, f.Target, 100, f.Target, null);
-            await (Task)AccessTools.Method(typeof(SawatariMonster), move).Invoke(f.Monster, [new Creature[] { f.Target }])!;
+            await (Task)AccessTools.Method(typeof(ForestSawatariMonster), move).Invoke(f.Monster, [new Creature[] { f.Target }])!;
             Require(f.Monster.Creature.IsDead && !f.Monster.Creature.HasPower<StrengthPower>()
                 && !f.Monster.Creature.HasPower<VigorPower>() && !f.Monster.Creature.HasPower<PlatingPower>(),
                 $"{move} granted a buff after lethal thorns.");
@@ -251,7 +251,7 @@ public partial class OrbContractRunner
         using (var f = new SawatariFixture())
         {
             await f.Move(); await f.Move();
-            SawatariMachete card = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Single();
+            Machete card = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<Machete>().Single();
             CardModel copy = f.Combat.State.CloneCard(card);
             await CardPileCmd.Add(copy, PileType.Hand);
             Require(card.EnergyCost.GetWithModifiers(CostModifiers.Local) == 2 && !card.IsUpgradable
@@ -264,10 +264,10 @@ public partial class OrbContractRunner
             int hp = f.Monster.Creature.CurrentHp;
             await CardCmd.AutoPlay(Choice, card, f.Monster.Creature);
             Require(f.Monster.Creature.CurrentHp == hp - 24 && card.Pile?.Type == PileType.Exhaust
-                && f.Monster.NextMove.Id == SawatariMonster.DualMoveId && f.Monster.MacheteCount == 2,
+                && f.Monster.NextMove.Id == ForestSawatariMonster.DualMoveId && f.Monster.MacheteCount == 2,
                 "Returned Machete must use normal Strength/Vulnerable damage and immediately change intent.");
             await f.Move();
-            Require(f.Monster.NextMove.Id == SawatariMonster.ThrowMoveId
+            Require(f.Monster.NextMove.Id == ForestSawatariMonster.ThrowMoveId
                 && f.Monster.Creature.GetPowerAmount<StrengthPower>() == 0 && !f.Monster.Creature.HasPower<VigorPower>(), "Later dual attack gained Strength or skipped forced throw.");
             await f.Move();
             await CardCmd.AutoPlay(Choice, copy, f.Monster.Creature);
@@ -275,13 +275,13 @@ public partial class OrbContractRunner
             f.Monster.ReturnMachete();
             Require(f.Monster.MacheteCount == 2, "Machete count exceeded two.");
             SavedProperties saved = SavedProperties.From(f.Monster)!;
-            var restored = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            var restored = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             saved.Fill(restored);
             Require(restored.ActThree && restored.HeldMachetes == f.Monster.HeldMachetes
                 && restored.MustThrow == f.Monster.MustThrow && restored.NextThrowHand == f.Monster.NextThrowHand,
                 "Native saved properties lost weapon state.");
             CardModel restoredCard = CardModel.FromSerializable(card.ToSerializable());
-            Require(restoredCard is SawatariMachete && !restoredCard.IsUpgradable,
+            Require(restoredCard is Machete && !restoredCard.IsUpgradable,
                 "Native card serialization lost the event Token attack model.");
         }
         GD.Print("PASS defenses, native Machete damage/exhaust, immediate intent, copied return and model serialization.");
@@ -292,7 +292,7 @@ public partial class OrbContractRunner
             await f.Move();
             if (action == "full-hand") for (int i = 0; i < 10; i++) f.Combat.Card();
             await f.Move();
-            SawatariMachete knife = f.Combat.Player.Piles.SelectMany(p => p.Cards).OfType<SawatariMachete>().Single();
+            Machete knife = f.Combat.Player.Piles.SelectMany(p => p.Cards).OfType<Machete>().Single();
             if (action == "discard") await CardCmd.Discard(Choice, knife);
             if (action == "exhaust") await CardCmd.Exhaust(Choice, knife);
             if (action == "other-enemy") await CardCmd.AutoPlay(Choice, knife, f.Combat.Enemy);
@@ -304,8 +304,8 @@ public partial class OrbContractRunner
         {
             using var f = new SawatariFixture(multiplayer: true);
             await f.Move(); await f.Move(); await f.Move();
-            int first = f.Combat.Player.Piles.Sum(p => p.Cards.OfType<SawatariMachete>().Count());
-            int second = f.Other!.Piles.Sum(p => p.Cards.OfType<SawatariMachete>().Count());
+            int first = f.Combat.Player.Piles.Sum(p => p.Cards.OfType<Machete>().Count());
+            int second = f.Other!.Piles.Sum(p => p.Cards.OfType<Machete>().Count());
             string sequence = $"{first}/{second}/{f.Target.CurrentHp}/{f.Other.Creature.CurrentHp}";
             Require(first + second == 2, "Multiplayer duplicated a thrown knife for each player.");
             if (firstSequence != null) Require(sequence == firstSequence, "Fixed-seed weapon targeting diverged.");
@@ -323,15 +323,15 @@ public partial class OrbContractRunner
             {
                 using var f = new SawatariFixture(seed: $"sawatari-hands-{seed}");
                 await f.Move(); await f.Move();
-                var first = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Single();
+                var first = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<Machete>().Single();
                 int caught = first.HeldHand;
                 Require(caught is 0 or 1, "First knife has no receiving hand.");
                 playerCatches.Add(caught);
                 enemyThrows.Add(f.Monster.NextThrowHand);
-                Require(((SawatariMachete)CardModel.FromSerializable(first.ToSerializable())).HeldHand == caught,
+                Require(((Machete)CardModel.FromSerializable(first.ToSerializable())).HeldHand == caught,
                     "Native card serialization lost the receiving hand.");
                 await f.Move();
-                var second = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().Single(c => c != first);
+                var second = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<Machete>().Single(c => c != first);
                 Require(first.HeldHand == caught && second.HeldHand == 1 - caught,
                     "Second catch moved the first knife or reused its occupied hand.");
                 await CardCmd.AutoPlay(Choice, first, f.Monster.Creature);
@@ -353,10 +353,10 @@ public partial class OrbContractRunner
         using (var f = new SawatariFixture())
         {
             await f.Move(); await f.Move(); await f.Move();
-            SawatariMachete card = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<SawatariMachete>().First();
+            Machete card = PileType.Hand.GetPile(f.Combat.Player).Cards.OfType<Machete>().First();
             for (int count = 0; count <= 2; count++)
             {
-                var restored = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+                var restored = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
                 SavedProperties.From(f.Monster)!.Fill(restored);
                 Require(restored.MacheteCount == count && restored.NextThrowHand == f.Monster.NextThrowHand,
                     "Saving zero/one/two weapons changed which hand owns each knife.");

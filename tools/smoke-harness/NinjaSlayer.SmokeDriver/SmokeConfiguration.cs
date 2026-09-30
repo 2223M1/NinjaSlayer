@@ -20,7 +20,8 @@ internal enum SmokePhase
     ActionPreview,
     ModCompatibility,
     CombatRegression,
-    Release034
+    Release034,
+    Release038
 }
 
 internal sealed record SmokeConfiguration(

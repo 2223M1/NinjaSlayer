@@ -9,7 +9,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class EndurancePower : RedesignV1CounterPower
+public sealed class EndurancePower : NinjaSlayerCounterPower
 {
     internal static bool HasNotAttackedThisTurn(MegaCrit.Sts2.Core.Entities.Players.Player player) =>
         !CombatManager.Instance.History.CardPlaysFinished.Any(entry =>

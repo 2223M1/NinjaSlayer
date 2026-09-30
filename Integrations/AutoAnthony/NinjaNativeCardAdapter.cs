@@ -36,7 +36,7 @@ internal sealed class NinjaNativeCardAdapter : IExternalNativeCardAdapter
         }
         definition = new(recipe.Cost, recipe.Type, recipe.Target, recipe.OriginalRarity,
             string.Join('\n', recipe.Atoms.Select(a => a.ChineseText)), recipe.Tags, operations,
-            new(row.Chinese, row.English, [row.Card.Name]),
+            new(row.Chinese, row.English, [source.Id.Entry]),
             new(upgradeRecipe.Cost, effects, string.Join('\n', upgradeRecipe.Atoms.Select(a => a.ChineseText)),
                 upgradeRecipe.Tags.Except(recipe.Tags).ToArray(),
                 string.Join('\n', upgradeRecipe.Atoms.Select(a => a.LocalizedText!.RenderEnglish(a.RuntimeSpec!)!)),

@@ -10,7 +10,7 @@ internal static class YukanoCompanionPartyState
     public static int GetActiveRelicCount(IRunState runState) =>
         EnumerateRelics(runState).Count(IsActive);
 
-    public static bool IsController(YukanoCompanionRelic relic) =>
+    public static bool IsController(ToriiPactRelic relic) =>
         ReferenceEquals(EnumerateRelics(relic.Owner.RunState).FirstOrDefault(IsActive), relic);
 
     public static Creature? FindCompanion(IRunState runState, bool livingOnly)
@@ -28,9 +28,9 @@ internal static class YukanoCompanionPartyState
         return null;
     }
 
-    private static IEnumerable<YukanoCompanionRelic> EnumerateRelics(IRunState runState) =>
-        runState.Players.SelectMany(player => player.Relics.OfType<YukanoCompanionRelic>());
+    private static IEnumerable<ToriiPactRelic> EnumerateRelics(IRunState runState) =>
+        runState.Players.SelectMany(player => player.Relics.OfType<ToriiPactRelic>());
 
-    private static bool IsActive(YukanoCompanionRelic relic) =>
+    private static bool IsActive(ToriiPactRelic relic) =>
         relic.CombatsLeft > 0 && !relic.IsMelted;
 }

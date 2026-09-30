@@ -98,11 +98,7 @@ internal sealed partial class TomoeThrowAnimation : Node
             _pose.ReleaseTomoe(_ownerMotion, recover: true);
             _freeControl?.Dispose();
             _freeControl = null;
-            if (_victim is { IsActive: true } && _target.Entity.IsAlive)
-            {
-                SfxCmd.Play("event:/sfx/enemy/enemy_attacks/thieving_hopper/thieving_hopper_land");
-                NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
-            }
+            ByrdFallAnimation.PlayLandingImpact(null);
             _ = ResolveImpact();
         }
         _elapsed = next;

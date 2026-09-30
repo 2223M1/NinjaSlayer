@@ -31,7 +31,7 @@ internal static class FriendlyCompanionTargeting
         creature.Side == CombatSide.Player
         && creature.PetOwner != null
         && creature.IsAlive
-        && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster;
+        && creature.Monster is YamotoKokiMonster or ForestSawatariMonster or YukanoMonster;
 
     public static bool Supports(CardModel card) =>
         card.TargetType == TargetType.AnyAlly

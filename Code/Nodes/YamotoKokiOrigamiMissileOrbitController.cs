@@ -59,7 +59,7 @@ public partial class YamotoKokiOrigamiMissileOrbitController : Node
         }
 
         int existingMissileCount = _room.CreatureNodes.Count(node =>
-            node.Entity.Monster is YamotoKokiOrigamiMissile { IsLaunching: false }
+            node.Entity.Monster is OrigamiMissileMonster { IsLaunching: false }
             && node.Entity.PetOwner == owner
             && node.Entity.IsAlive);
         _reservedMissileCounts[owner] = existingMissileCount + incomingMissileCount;
@@ -183,7 +183,7 @@ public partial class YamotoKokiOrigamiMissileOrbitController : Node
 
         foreach (NCreature node in _creatureNodeScratch)
         {
-            if (node.Entity.Monster is not YamotoKokiOrigamiMissile { IsLaunching: false }
+            if (node.Entity.Monster is not OrigamiMissileMonster { IsLaunching: false }
                 || !node.Entity.IsAlive
                 || node.Entity.PetOwner is not { } owner)
             {
@@ -236,7 +236,7 @@ public partial class YamotoKokiOrigamiMissileOrbitController : Node
             state = new MissileVisualState(damageAmount, LastDamage: null, DamageText: null);
         }
 
-        if (missileNode.Entity.Monster is YamotoKokiOrigamiMissile missile
+        if (missileNode.Entity.Monster is OrigamiMissileMonster missile
             && damageAmount != null
             && GodotObject.IsInstanceValid(damageAmount))
         {

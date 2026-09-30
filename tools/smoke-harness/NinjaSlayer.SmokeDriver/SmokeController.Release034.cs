@@ -21,7 +21,7 @@ internal sealed partial class SmokeController
     private async Task RunRelease034Async()
     {
         var probe = new Harmony("NinjaSlayer.SmokeDriver.Release034Stages");
-        var sessionType = typeof(SawatariMonster).Assembly.GetType("NinjaSlayer.Code.Combat.SawatariEventSession", true)!;
+        var sessionType = typeof(ForestSawatariMonster).Assembly.GetType("NinjaSlayer.Code.Combat.SawatariEventSession", true)!;
         Release034StageProbe.Report = (name, ticks) => _checkpoints.Write("release034.stage." + name,
             data: new JsonObject { ["ticks"] = ticks });
         foreach (string method in new[] { "PlayNinjaSlayerEntrance", "PlaySupportTurn" })
@@ -90,7 +90,7 @@ internal sealed partial class SmokeController
     private async Task VerifyEarlySawatariPosition()
     {
         var state = CombatManager.Instance.DebugOnlyGetState()!;
-        var companion = state.Creatures.Single(c => c.Monster is SawatariMonster
+        var companion = state.Creatures.Single(c => c.Monster is ForestSawatariMonster
             && c.Side == CombatSide.Player);
         var node = NCombatRoom.Instance!.GetCreatureNode(companion)!;
         var player = NCombatRoom.Instance.GetCreatureNode(LocalContext.GetMe(state)!.Creature)!;
@@ -99,7 +99,7 @@ internal sealed partial class SmokeController
         Require(arrived.X > player.GlobalPosition.X + 300 && !((Sprite2D)node.Body).FlipH
             && !CombatManager.Instance.IsPaused && GetSawatariOptions().Count == 0,
             "Sawatari did not move and face the player before End Turn.");
-        var layout = typeof(SawatariMonster).Assembly.GetType("NinjaSlayer.Code.Patches.YamotoKokiAllyLayoutPatch", true)!;
+        var layout = typeof(ForestSawatariMonster).Assembly.GetType("NinjaSlayer.Code.Patches.YamotoKokiAllyLayoutPatch", true)!;
         AccessTools.Method(layout, "Reflow").Invoke(null, [NCombatRoom.Instance]);
         await WaitFrames(20);
         Require(node.GlobalPosition.DistanceTo(arrived) < 1f, "Ally reflow pulled Sawatari back from his waiting position.");

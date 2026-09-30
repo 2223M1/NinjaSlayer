@@ -8,7 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -19,9 +19,9 @@ internal sealed partial class SmokeController
         var choice = new BlockingPlayerChoiceContext();
         CardModel[] originalHand = PileType.Hand.GetPile(player).Cards.ToArray();
         foreach (CardModel card in originalHand) await CardPileCmd.Add(card, PileType.Discard);
-        var flames = new[] { combat.CreateCard<BlackFlameRedesignV1>(player), combat.CreateCard<BlackFlameRedesignV1>(player) };
+        var flames = new[] { combat.CreateCard<BlackFlame>(player), combat.CreateCard<BlackFlame>(player) };
         foreach (var flame in flames) await CardPileCmd.Add(flame, PileType.Hand);
-        var attack = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+        var attack = combat.CreateCard<StrikeNinjaSlayer>(player);
         await CardPileCmd.Add(attack, PileType.Hand);
         var room = NCombatRoom.Instance!;
         await room.ToSignal(room.GetTree(), SceneTree.SignalName.ProcessFrame);

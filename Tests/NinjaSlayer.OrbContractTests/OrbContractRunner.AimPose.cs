@@ -7,7 +7,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Powers;
 using NinjaSlayer.Relics;
@@ -111,7 +111,7 @@ public partial class OrbContractRunner
             Require(pose.GetType() == poseType, "The packaged AimPose script failed to bind.");
             var facingDrag = new Node();
             stage.AddChild(facingDrag);
-            var aimedCard = combat.State.CreateCard<SatsubatsuRedesignV1>(combat.Player);
+            var aimedCard = combat.State.CreateCard<BS1260Kick>(combat.Player);
             Sprite2D facingOverlay = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
             foreach (bool locked in new[] { false, true })
             foreach (float pointerX in new[] { 0f, -15f, 15f, -100f, 100f })
@@ -251,7 +251,7 @@ public partial class OrbContractRunner
             VerifyHellTornado(actor, new(620f, -203f));
             var dragOwner = new Node();
             stage.AddChild(dragOwner);
-            var tornadoCard = combat.State.CreateCard<TornadoFistRedesignV1>(combat.Player);
+            var tornadoCard = combat.State.CreateCard<TornadoFist>(combat.Player);
             PileType.Hand.GetPile(combat.Player).AddInternal(tornadoCard, -1, silent: true);
             combat.Player.PlayerCombatState!.GainEnergy(4);
             Invoke("Drag", dragOwner, tornadoCard, new Vector2(700f, -300f), combat.Enemy);
@@ -275,10 +275,10 @@ public partial class OrbContractRunner
             foreach (int formIndex in new[] { 0, 1, 2 })
             {
                 if (formIndex == 1)
-                    await PowerCmd.Apply<NarakuFormRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+                    await PowerCmd.Apply<NarakuFormPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
                 if (formIndex == 2)
                 {
-                    var relic = ModelDb.Relic<NarakuWithinRelic>().ToMutable();
+                    var relic = ModelDb.Relic<NarakuUnleashedRelic>().ToMutable();
                     combat.Player.AddRelicInternal(relic);
                 }
                 if (formIndex is 1 or 2)
@@ -298,7 +298,7 @@ public partial class OrbContractRunner
                     Vector2 corePoint = formIndex == 2 ? new(64.99405f, 112.94429f) : new(580f, 30.30303f);
                     Require((active.GetGlobalTransformWithCanvas() * corePoint).DistanceTo(center.GetGlobalTransformWithCanvas().Origin) < 0.1f,
                         "Form core lost affine transform tracking.");
-                    var kick = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
+                    var kick = combat.State.CreateCard<DragonRoundhouseKick>(combat.Player);
                     var play = new CardPlay { Card = kick,
 #if !NINJASLAYER_CHANNEL_STABLE
                         Player = combat.Player,
@@ -322,7 +322,7 @@ public partial class OrbContractRunner
             }
             Invoke("Reset");
             anchor.Transform = Transform2D.Identity;
-            await PowerCmd.Apply<OneBodyOneSoulPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<OneMindOneBodyPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             Invoke("SyncNow");
             Sprite2D oneSoul = rig.GetNode<Sprite2D>("AirborneAnchor/AimPose/NarakuVisualOverlay");
             Require(oneSoul.Texture.GetSize() == new Vector2(1743f, 2712f), "One Soul did not use the final delivered canvas.");
@@ -330,7 +330,7 @@ public partial class OrbContractRunner
                 "One Soul replacement changed its authored ground baseline.");
             VerifyHellTornado(actor, new(-365.5f, -1049f));
             VerifyDrawAndThrowPose(combat, pose, anchor, oneSoul, center, target, 3);
-            await PowerCmd.Remove<OneBodyOneSoulPower>(combat.Player.Creature);
+            await PowerCmd.Remove<OneMindOneBodyPower>(combat.Player.Creature);
             Invoke("SyncNow");
             Require(oneSoul.Texture.ResourcePath.EndsWith("/naraku.png", StringComparison.Ordinal),
                 "Removing One Soul did not restore the underlying full Naraku form.");

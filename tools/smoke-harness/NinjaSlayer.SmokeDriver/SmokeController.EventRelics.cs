@@ -25,8 +25,8 @@ internal sealed partial class SmokeController
         var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!;
         var state = CombatManager.Instance.DebugOnlyGetState()!;
         var choice = new BlockingPlayerChoiceContext();
-        var bamboo = await RelicCmd.Obtain<BioBambooRelic>(player);
-        var fragment = await RelicCmd.Obtain<BeppinFragmentRelic>(player);
+        var bamboo = await RelicCmd.Obtain<BioBambooSplintRelic>(player);
+        var fragment = await RelicCmd.Obtain<BeppinShardRelic>(player);
         var puzzle = await RelicCmd.Obtain<CentennialPuzzle>(player);
         foreach (var relic in new MegaCrit.Sts2.Core.Models.RelicModel[] { bamboo, fragment })
         {

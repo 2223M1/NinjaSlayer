@@ -89,7 +89,7 @@ public partial class OrbContractRunner
                 player.SetCurrentHpInternal(3);
                 var rune = (RelicModel)ModelDb.GetById<RelicModel>(ModelDb.GetId(runeType)).ToMutable();
                 combat.Player.AddRelicInternal(rune);
-                var fragment = (BeppinFragmentRelic)ModelDb.Relic<BeppinFragmentRelic>().ToMutable();
+                var fragment = (BeppinShardRelic)ModelDb.Relic<BeppinShardRelic>().ToMutable();
                 combat.Player.AddRelicInternal(fragment);
                 int flashes = 0;
                 fragment.Flashed += (_, _) => flashes++;

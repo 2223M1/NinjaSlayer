@@ -131,7 +131,7 @@ public partial class OrbContractRunner
             Require(!Get<bool>("_mouseDown") && Get<System.Collections.ICollection>("_strikes").Count == 0,
                 "Moving a blank-space charge over UI did not cancel it.");
             var dragOwner = new Node(); stage.AddChild(dragOwner);
-            var dragCard = MegaCrit.Sts2.Core.Models.ModelDb.Card<NinjaSlayer.Cards.RedesignV1.SatsubatsuRedesignV1>().ToMutable();
+            var dragCard = MegaCrit.Sts2.Core.Models.ModelDb.Card<NinjaSlayer.Cards.Standard.BS1260Kick>().ToMutable();
             dragCard.Owner = combat.Player;
             AccessTools.Method(pose.GetType(), "Drag").Invoke(pose, [dragOwner, dragCard, blank, null]);
             Click(blank, MouseButton.Right, true);

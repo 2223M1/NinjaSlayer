@@ -15,7 +15,7 @@ using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Screens.Map;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -95,7 +95,7 @@ internal sealed partial class SmokeController
             OrbCmd.RemoveSlots(player, 20);
             Require(queue.Capacity == 0 && StockCount() == 2 && queue.Orbs.Count == 1, "Shrinking removed dedicated stock.");
             await Snapshot("normal-slots-removed");
-            var discarded = combat.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+            var discarded = combat.CreateCard<DefendNinjaSlayer>(player);
             await CardPileCmd.Add(discarded, PileType.Hand);
             await CardCmd.Discard(choice, discarded);
             Require(StockCount() == 1, "Ordinary discard did not consume exactly one stack.");

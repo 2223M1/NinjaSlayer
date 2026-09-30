@@ -176,7 +176,7 @@ The foundational shared portraits include:
 
 New cards should use a `{ClassName}.png`. Temporary aliases must also be recorded in `Docs/placeholder-assets.json`; replacing an alias with dedicated art requires removing both its `AssetName` and inventory entry.
 
-The active Redesign reward pool keeps a one-to-one portrait mapping. Approved reuse from retired models is explicit: `SatsubatsuRedesignV1` uses `RedBlackFlame.png`, `ChadoStillnessRedesignV1` uses `Meditation.png`, `BladeReserveRedesignV1` uses `ShurikenCard.png`, `RedBlackFlameAttackRedesignV1` uses `ImpureFlame.png`, `EmptyShurikenRedesignV1` uses `SmokeRead.png`, `TeaTeaRedesignV1` uses `ColdBrew.png`, `BurnBurnBurnRedesignV1` uses `BloodTears.png`, `ReturnReturnReturnRedesignV1` uses `AssassinationFist.png`, and `LingeringMeleeRedesignV1` uses `IHit.png`. `FinisherRedesignV1` reuses the retired `PunchRedesignV1` portrait `ComboFist.png`; `HellTornadoRedesignV1` restores the archived `HellTornado.png` portrait. `BlackFlameRedesignV1` uses the old status portrait `BurningCard.png`; the erroneous `BlackFlame.png` One Body One Soul form portrait and its import metadata are intentionally deleted. These are final mappings, not outstanding placeholder aliases.
+The active Redesign reward pool keeps a one-to-one portrait mapping. Approved reuse from retired models is explicit: `BS1260Kick` uses `RedBlackFlame.png`, `Stillness` uses `Meditation.png`, `BladePrep` uses `ShurikenCard.png`, `Kindle` uses `ImpureFlame.png`, `EmptyShurikenRedesignV1` uses `SmokeRead.png`, `Meditation` uses `ColdBrew.png`, `BlackFlameInferno` uses `BloodTears.png`, `DevourFlame` uses `AssassinationFist.png`, and `Relentless` uses `IHit.png`. `FinisherRedesignV1` reuses the retired `PunchRedesignV1` portrait `ComboFist.png`; `HellTornado` restores the archived `HellTornado.png` portrait. `BlackFlame` uses the old status portrait `BurningCard.png`; the erroneous `BlackFlame.png` One Body One Soul form portrait and its import metadata are intentionally deleted. These are final mappings, not outstanding placeholder aliases.
 
 Standard card portraits use `1000x760` and Ancient card portraits use `606x852`. `KarateStraight.png` remains at its restored source size of `1438x1093`, and the unchanged Shuriken Token `ShurikenCard.png` remains at `1439x1093`, as explicit source-art exceptions.
 
@@ -199,7 +199,7 @@ Her authoritative identity sheet is archived at `../art-production/output/ancill
 
 ## Power Icons
 
-Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. Every concrete mod Power class has a dedicated 256x256 transparent PNG; no shared fallback icon remains. `IaiPower.png` is the dedicated Iai icon.
+Power icons resolve through `Content/NinjaSlayerPowerAssets.For(...)` from `NinjaSlayer/images/powers/{PowerClassName}.png`. Every concrete mod Power class has a dedicated 256x256 transparent PNG; no shared fallback icon remains. `DarkCounterPower.png` is the dedicated Iai icon.
 
 ## Monster And Event Images
 
@@ -223,7 +223,7 @@ Yukano uses the complete character images that already include the yellow bow:
 
 - `NinjaSlayer/images/monsters/yukano_closed.png` is the default `1074x1245` combat portrait, SHA-256 `B43A1D01B7623FD8666BA884DD56D02DDFDF5074C8BAA739F560463C7F3CBF1E`.
 - `NinjaSlayer/images/monsters/yukano_open.png` is the same-size speaking portrait, SHA-256 `EA0F26DCFE68767C4005511B97046F69B15A983C2E0A57700DA3245DBA5E5426`.
-- `NinjaSlayer/images/events/yukano_event.png` is the closed-mouth `1920x1080` event portrait, SHA-256 `E78C69F27FCFC9289DAE44E51D2A749839AC05B2506441A4F5F31B98489DEE91`.
+- `NinjaSlayer/images/events/the_crooked_torii_event.png` is the closed-mouth `1920x1080` event portrait, SHA-256 `E78C69F27FCFC9289DAE44E51D2A749839AC05B2506441A4F5F31B98489DEE91`.
 - `NinjaSlayer/images/projectiles/yukano_red_shuriken.png` is the `209x208` shared combat and relic source, SHA-256 `0DBAE503153C90FF949DFC4AC8019596310233A4B061AD28F6D4121D522EEF24`.
 
-`YukanoCompanionRelic.png`, `YukanoCompanionRelic_large.png`, and `YukanoCompanionRelic_outline.png` are centered standard-size derivatives of that red shuriken. Yukano's arrow is loaded at runtime from the host's `CrossbowRubyRaider` `arrow` atlas region; the original game atlas is not copied into the Mod.
+`ToriiPactRelic.png`, `ToriiPactRelic_large.png`, and `ToriiPactRelic_outline.png` are centered standard-size derivatives of that red shuriken. Yukano's arrow is loaded at runtime from the host's `CrossbowRubyRaider` `arrow` atlas region; the original game atlas is not copied into the Mod.

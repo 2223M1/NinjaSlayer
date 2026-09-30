@@ -35,7 +35,7 @@
   "card": {
     "acceptedSource": "build/source-reconstruction/sawatari-weapons/accessory-review/card-interface.json",
     "sha256": "44cfd50c722edf5ab52f1c63923732286df10bc7f24777f87f47a7277e5deaa1",
-    "file": "../../cards/SawatariMachete.png"
+    "file": "../../cards/Machete.png"
   },
   "bow": {
     "nocked": {

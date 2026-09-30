@@ -13,7 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Vfx.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 
 namespace NinjaSlayer.SmokeDriver;
 
@@ -25,7 +25,7 @@ internal sealed partial class SmokeController
         foreach (FastModeType speed in Enum.GetValues<FastModeType>())
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
-            var model = combat.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+            var model = combat.CreateCard<DefendNinjaSlayer>(player);
             PileType.Discard.GetPile(player).AddInternal(model);
             var card = NCard.Create(model)!;
             var ui = NCombatRoom.Instance!.Ui;
@@ -39,7 +39,7 @@ internal sealed partial class SmokeController
             ulong cardId = card.GetInstanceId();
             card.QueueFreeSafely();
             await WaitFrames(3);
-            var next = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            var next = combat.CreateCard<StrikeNinjaSlayer>(player);
             PileType.Discard.GetPile(player).AddInternal(next);
             var reused = NCard.Create(next)!;
             Require(reused.GetInstanceId() == cardId, "The test must exercise the same pooled NCard.");
@@ -54,9 +54,9 @@ internal sealed partial class SmokeController
             reused.QueueFreeSafely();
             await WaitFrames(3);
 
-            var handCard = combat.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+            var handCard = combat.CreateCard<DefendNinjaSlayer>(player);
             await CardPileCmd.Add(handCard, PileType.Hand);
-            var transformed = (await CardCmd.TransformTo<BlackFlameRedesignV1>(handCard))!.Value.cardAdded;
+            var transformed = (await CardCmd.TransformTo<BlackFlame>(handCard))!.Value.cardAdded;
             CardCmd.Upgrade(transformed);
             await WaitUntilAsync(() => FindDescendant<NCardTransformShineVfx>(ui) is null,
                 $"A completed hand-card transform left a shine overlay at {speed} speed.");

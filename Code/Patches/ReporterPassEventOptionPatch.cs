@@ -17,14 +17,14 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 {
     private const int CardsToUpgrade = 3;
     private const string RecordOptionKey = "NINJA_SLAYER_REPORTER_PASS_RECORD";
-    private const string RelicLocPrefix = "NINJA_SLAYER_RELIC_REPORTER_PASS_RELIC";
+    private const string RelicLocPrefix = "NINJA_SLAYER_RELIC_NSTV_PRESS_PASS_RELIC";
     private static readonly MethodInfo SetEventFinished =
         AccessTools.Method(typeof(EventModel), "SetEventFinished", [typeof(LocString)])
         ?? throw new MissingMethodException(typeof(EventModel).FullName, "SetEventFinished");
 
     public static string PatchId => "ninjaslayer_reporter_pass_event_option";
 
-    public static string Description => "Inject ReporterPassRelic record option into events.";
+    public static string Description => "Inject NSTVPressPassRelic record option into events.";
 
     public static bool IsCritical => true;
 
@@ -33,7 +33,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 
     public static void Prefix(EventModel __instance, ref IEnumerable<EventOption> eventOptions)
     {
-        if (__instance.Owner?.GetRelic<ReporterPassRelic>() == null ||
+        if (__instance.Owner?.GetRelic<NSTVPressPassRelic>() == null ||
             __instance.IsFinished || eventOptions == null)
         {
             return;
@@ -63,7 +63,7 @@ public sealed class ReporterPassEventOptionPatch : IPatchMethod
 
     private static Task Record(EventModel eventModel)
     {
-        eventModel.Owner?.GetRelic<ReporterPassRelic>()?.Flash();
+        eventModel.Owner?.GetRelic<NSTVPressPassRelic>()?.Flash();
 
         if (eventModel.Owner != null)
         {

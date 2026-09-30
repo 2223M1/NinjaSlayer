@@ -29,13 +29,13 @@ public partial class OrbContractRunner
             prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveHurtRoom)));
         harmony.Patch(AccessTools.Method(typeof(NCombatRoom), nameof(NCombatRoom.GetCreatureNode), [typeof(Creature)]),
             prefix: new HarmonyMethod(typeof(OrbContractRunner), nameof(ResolveHurtActor)));
-        const string path = "res://NinjaSlayer/scenes/creature_visuals/sawatari.tscn";
+        const string path = "res://NinjaSlayer/scenes/creature_visuals/forest_sawatari.tscn";
         PreloadManager.Cache.SetAsset(path, GD.Load(path));
         try
         {
             foreach (CombatSide side in new[] { CombatSide.Enemy, CombatSide.Player })
             {
-                var creature = new Creature(ModelDb.Monster<SawatariMonster>().ToMutable(), side, null)
+                var creature = new Creature(ModelDb.Monster<ForestSawatariMonster>().ToMutable(), side, null)
                 {
                     CombatState = combat.State,
                     PetOwner = side == CombatSide.Player ? combat.Player : null
@@ -51,7 +51,7 @@ public partial class OrbContractRunner
                 AimActors.Add(creature, actor);
                 stage.AddChild(actor);
                 // This fixture bypasses AfterAddedToRoom; initialize its normal body facing too.
-                AccessTools.Method(typeof(SawatariMonster), "SetFacingPlayerSide")
+                AccessTools.Method(typeof(ForestSawatariMonster), "SetFacingPlayerSide")
                     .Invoke(creature.Monster, [side == CombatSide.Player]);
                 Node2D anchor = rig.GetNode<Node2D>("AirborneAnchor");
                 Transform2D baseline = anchor.Transform;

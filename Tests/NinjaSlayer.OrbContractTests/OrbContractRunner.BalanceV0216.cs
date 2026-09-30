@@ -8,7 +8,7 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -19,8 +19,8 @@ public partial class OrbContractRunner
     {
         using (var combat = new OrbCombat())
         {
-            await CardCmd.AutoPlay(Choice, AddCard<KarateTrainingRedesignV1>(combat), null);
-            await CardCmd.AutoPlay(Choice, AddCard<KarateTrainingRedesignV1>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Training>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Training>(combat, upgraded: true), null);
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             for (int i = 0; i < 9; i++) AddCard<DefendIronclad>(combat, PileType.Draw);
             int choices = 0;
@@ -51,10 +51,10 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            await CardCmd.AutoPlay(Choice, AddCard<KarateTrainingRedesignV1>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Training>(combat), null);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ =>
                 throw new InvalidOperationException("Empty-hand Training must not open a selector.")));
-            foreach (var power in combat.Player.Creature.Powers.OfType<KarateTrainingPower>().ToArray())
+            foreach (var power in combat.Player.Creature.Powers.OfType<TrainingPower>().ToArray())
                 await power.AfterPlayerTurnStart(Choice, combat.Player);
             Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 2,
                 "Empty-hand Training still grants Karate.");
@@ -63,22 +63,22 @@ public partial class OrbContractRunner
         {
             var owner = combat.Player.Creature;
             await PowerCmd.Apply<ThornsPower>(Choice, owner, 2, owner, null);
-            await CardCmd.AutoPlay(Choice, AddCard<PlaceholderBlueDefense01>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaCaltrops>(combat), null);
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [owner]);
 #else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [owner]);
 #endif
-            Require(owner.GetPowerAmount<ThornsPower>() == 5, "Caltrops must survive the player's turn end.");
+            Require(owner.GetPowerAmount<ThornsPower>() == 4, "NinjaCaltrops must survive the player's turn end.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
 #else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
 #endif
-            await CardCmd.AutoPlay(Choice, AddCard<PlaceholderBlueDefense01>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaCaltrops>(combat, upgraded: true), null);
             for (int enemyTurn = 2; enemyTurn <= 4; enemyTurn++)
             {
-                int expected = enemyTurn <= 3 ? 9 : 6;
+                int expected = 7;
                 int before = combat.Enemy.CurrentHp;
                 await CreatureCmd.Damage(Choice, new[] { owner }, 1, ValueProp.Move, combat.Enemy, null
 #if !NINJASLAYER_CHANNEL_STABLE
@@ -86,17 +86,16 @@ public partial class OrbContractRunner
 #endif
                 );
                 Require(before - combat.Enemy.CurrentHp == expected,
-                    "Native Thorns must retain each grant through its third enemy turn.");
+                    "Native Thorns must retain both NinjaCaltrops grants throughout combat.");
 #if NINJASLAYER_CHANNEL_STABLE
                 await Hook.AfterTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
 #else
                 await Hook.AfterSideTurnEnd(combat.State, CombatSide.Enemy, [combat.Enemy]);
 #endif
-                Require(owner.GetPowerAmount<ThornsPower>() == (enemyTurn == 2 ? 9 : enemyTurn == 3 ? 6 : 2),
-                    "Caltrops grants must expire independently, preserving permanent Thorns.");
+                Require(owner.GetPowerAmount<ThornsPower>() == 7,
+                    "NinjaCaltrops and other Thorns remain after the third enemy turn.");
             }
-            Require(!owner.HasPower<CaltropsDurationPower>(), "Expired Caltrops must remove its timer.");
         }
-        GD.Print("PASS v0.2.16 Training after draw, mixed copies, Sly, empty hand; native Thorns and independent three-turn expiry");
+        GD.Print("PASS v0.2.16 Training after draw, mixed copies, Sly, empty hand; native permanent Thorns");
     }
 }

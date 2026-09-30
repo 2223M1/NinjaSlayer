@@ -7,7 +7,7 @@ using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 using MegaCrit.Sts2.Core.Models.Cards;
@@ -63,8 +63,8 @@ public partial class OrbContractRunner
             {
                 using var combat = new OrbCombat(ninjaSlayer: true);
                 var second = combat.AddEnemy();
-                for (int i = 0; i < flameCount; i++) AddCard<BlackFlameRedesignV1>(combat);
-                await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+                for (int i = 0; i < flameCount; i++) AddCard<BlackFlame>(combat);
+                await PowerCmd.Apply<BlackFlameInfernoPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
                 if (beatDown)
                 {
                     for (int i = 0; i < (upgraded ? 4 : 3); i++) AddCard<TwinStrike>(combat, PileType.Discard);
@@ -73,13 +73,13 @@ public partial class OrbContractRunner
                 else
                 {
                     AddCard<TwinStrike>(combat, PileType.Draw);
-                    await CardCmd.AutoPlay(Choice, AddCard<WasshoiRedesignV1>(combat, upgraded: upgraded), null);
+                    await CardCmd.AutoPlay(Choice, AddCard<NavyHammer>(combat, upgraded: upgraded), null);
                 }
                 int expectedPlays = beatDown ? (upgraded ? 4 : 3) : (upgraded ? 3 : 2);
                 foreach (var enemy in new[] { combat.Enemy, second })
                 {
                     var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                        .Where(e => e.Receiver == enemy && e.CardSource is BlackFlameRedesignV1).ToArray();
+                        .Where(e => e.Receiver == enemy && e.CardSource is BlackFlame).ToArray();
                     Require(burns.Length == expectedPlays * flameCount && burns.All(e => e.Result.TotalDamage == 7),
                         $"Nested autoplay must complete with one independently amplified burn per held flame and actual play: BeatDown={beatDown}, upgraded={upgraded}, flames={flameCount}.");
                 }

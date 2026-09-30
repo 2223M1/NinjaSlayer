@@ -9,7 +9,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Relics;
@@ -59,9 +59,9 @@ public sealed class NarakuEvent : ModEventTemplate
 
     private static bool HasNarakuThemedDeckCard(Player player) =>
         PileType.Deck.GetPile(player).Cards.Any(card => card is
-            GuidingFlameRedesignV1 or SatsubatsuRedesignV1 or AbyssStrengthRedesignV1
-            or HardItOutRedesignV1 or RedBlackFlameAttackRedesignV1 or BurnBurnBurnRedesignV1
-            or NarakuFormRedesignV1 or ReturnReturnReturnRedesignV1 or BlackFlameRecovery or OneBodyOneSoul);
+            FlameGuard or BS1260Kick or NarakusMight
+            or Macaco or Kindle or BlackFlameInferno
+            or NarakuForm or DevourFlame or Rekindle or OneMindOneBody);
 
     private IReadOnlyList<EventOption> GenerateNarakuOptions(string page) =>
         [
@@ -72,7 +72,7 @@ public sealed class NarakuEvent : ModEventTemplate
 
     private IReadOnlyList<EventOption> GenerateAcceptanceOptions(string page) =>
         [
-            new EventOption(this, AcceptNaraku, ModOptionKey(page, "ACCEPT_NARAKU"), HoverTipFactory.FromRelic<NarakuWithinRelic>()),
+            new EventOption(this, AcceptNaraku, ModOptionKey(page, "ACCEPT_NARAKU"), HoverTipFactory.FromRelic<NarakuUnleashedRelic>()),
             CreateSilenceOption(page)
         ];
 
@@ -96,7 +96,7 @@ public sealed class NarakuEvent : ModEventTemplate
 
     private async Task AcceptNaraku()
     {
-        await RelicCmd.Obtain<NarakuWithinRelic>(Owner!);
+        await RelicCmd.Obtain<NarakuUnleashedRelic>(Owner!);
         SetEventFinished(PageDescription("ACCEPTED"));
     }
 

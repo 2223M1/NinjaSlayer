@@ -14,8 +14,8 @@ import { publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
 import { summarizePublic, useCurrentCatalog } from '../dashboard/public-data.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
 
-const cardA = 'CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER_REDESIGN_V1';
-const cardB = 'CARD.NINJA_SLAYER_CARD_DEFEND_NINJA_SLAYER_REDESIGN_V1';
+const cardA = 'CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER';
+const cardB = 'CARD.NINJA_SLAYER_CARD_DEFEND_NINJA_SLAYER';
 const character = 'CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER';
 const playerId = '76561198000000001';
 const now = Date.parse('2026-09-12T12:00:00Z');

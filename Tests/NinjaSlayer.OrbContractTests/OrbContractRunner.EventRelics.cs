@@ -23,9 +23,9 @@ public partial class OrbContractRunner
     {
         using (var combat = new OrbCombat())
         {
-            var bamboo = (BioBambooRelic)ModelDb.Relic<BioBambooRelic>().ToMutable();
+            var bamboo = (BioBambooSplintRelic)ModelDb.Relic<BioBambooSplintRelic>().ToMutable();
             combat.Player.AddRelicInternal(bamboo);
-            Require(bamboo.Rarity == RelicRarity.Event && ModelDb.Relic<BeppinFragmentRelic>().Rarity == RelicRarity.Event,
+            Require(bamboo.Rarity == RelicRarity.Event && ModelDb.Relic<BeppinShardRelic>().Rarity == RelicRarity.Event,
                 "Both duel relics must remain event-only.");
             await CardCmd.AutoPlay(Choice, combat.Card(), combat.Enemy);
             Require(bamboo.DisplayAmount == 1 && !combat.Player.Creature.HasPower<PlatingPower>(), "First attack must only advance the counter.");
@@ -33,7 +33,7 @@ public partial class OrbContractRunner
             Require(bamboo.DisplayAmount == 1, "Non-attacks must not advance the counter.");
             await bamboo.BeforeSideTurnStart(Choice, combat.Player.Creature.Side, [combat.Player.Creature], combat.State);
             await bamboo.AfterCombatEnd(null!);
-            var restored = (BioBambooRelic)RelicModel.FromSerializable(bamboo.ToSerializable());
+            var restored = (BioBambooSplintRelic)RelicModel.FromSerializable(bamboo.ToSerializable());
             Require(restored.DisplayAmount == 1, "Bamboo remainder must survive turn, combat and native save serialization.");
             combat.Player.RemoveRelicInternal(bamboo);
             combat.Player.AddRelicInternal(restored);
@@ -51,7 +51,7 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var player = combat.Player.Creature;
-            var fragment = (BeppinFragmentRelic)ModelDb.Relic<BeppinFragmentRelic>().ToMutable();
+            var fragment = (BeppinShardRelic)ModelDb.Relic<BeppinShardRelic>().ToMutable();
             var puzzle = (CentennialPuzzle)ModelDb.Relic<CentennialPuzzle>().ToMutable();
             combat.Player.AddRelicInternal(fragment);
             combat.Player.AddRelicInternal(puzzle);
@@ -86,12 +86,12 @@ public partial class OrbContractRunner
             Require(flashes == 2 && player.GetPowerAmount<KaratePower>() == 14 && PileType.Hand.GetPile(combat.Player).Cards.Count == 6,
                 "Life-loss relics did not reset for the next combat.");
         }
-        foreach (RelicModel canonical in new RelicModel[] { ModelDb.Relic<BioBambooRelic>(), ModelDb.Relic<BeppinFragmentRelic>() })
+        foreach (RelicModel canonical in new RelicModel[] { ModelDb.Relic<BioBambooSplintRelic>(), ModelDb.Relic<BeppinShardRelic>() })
         {
             using var f = new DarkStrikeFixture(multiplayer: true);
             var room = new CombatRoom(ModelDb.Encounter<DarkNinjaEncounter>().ToMutable(), f.Run)
             {
-                ParentEventId = canonical is BioBambooRelic ? ModelDb.Event<SawatariEvent>().Id : ModelDb.Event<DarkNinjaEvent>().Id,
+                ParentEventId = canonical is BioBambooSplintRelic ? ModelDb.Event<TheMovingJungleEvent>().Id : ModelDb.Event<GloryOfKyotoEvent>().Id,
                 ShouldResumeParentEventAfterCombat = false
             };
             room.MarkPreFinished();
@@ -104,7 +104,7 @@ public partial class OrbContractRunner
                 Require(reward.Relic?.Id == canonical.Id && reward.Player == player
                     && !player.Relics.Any(relic => relic.Id == canonical.Id),
                     "Saved manual reward lost its model/owner or granted itself.");
-                if (canonical is BioBambooRelic)
+                if (canonical is BioBambooSplintRelic)
                 {
                     var rewards = new RewardsSet(player).WithRewardsFromRoom(reloadedRoom);
                     Require(rewards.Rewards.Count == 1 && rewards.Rewards[0] == reward,

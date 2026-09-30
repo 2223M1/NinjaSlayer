@@ -13,7 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
 
@@ -41,15 +41,15 @@ internal sealed partial class SmokeController
             Vector2 originalPlayer = ninja.Position;
             darkNode.Position = _enemySlot;
             nativeNode.Position = new((originalPlayer.X + _enemySlot.X) * .5f, _enemySlot.Y);
-            await RemovePower<IaiPower>(dark);
+            await RemovePower<DarkCounterPower>(dark);
             await RemovePower<EvasionPower>(dark);
             await RemovePower<EvasionPower>(_player.Creature);
             await RemoveSmokeBlock(_player.Creature);
             await CreatureCmd.Heal(_player.Creature, _player.Creature.MaxHp);
             foreach (CardModel card in CardPile.GetCards(_player, PileType.Draw, PileType.Discard).ToArray())
                 await CardPileCmd.RemoveFromCombat(card, skipVisuals: true);
-            CardModel[] theftCards = [ModelDb.Card<KarateStraightRedesignV1>(), ModelDb.Card<DefendNinjaSlayerRedesignV1>(),
-                ModelDb.Card<DragonFlyingKickRedesignV1>(), ModelDb.Card<HellTornadoRedesignV1>()];
+            CardModel[] theftCards = [ModelDb.Card<StraightPunch>(), ModelDb.Card<DefendNinjaSlayer>(),
+                ModelDb.Card<DragonFlyingKick>(), ModelDb.Card<HellTornado>()];
             foreach (CardModel template in theftCards)
             {
                 CardModel deck = _player.RunState.CreateCard(template, _player);

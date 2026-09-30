@@ -49,7 +49,7 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
         return visual._hands[hand];
     }
 
-    internal static void Bind(SawatariMachete card, Sprite2D knife)
+    internal static void Bind(Machete card, Sprite2D knife)
     {
         // Called before the native generated-card command dispatches pile changes.
         Ensure(card.Owner)!._knives.Add(card, knife);
@@ -57,7 +57,7 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
 
     internal static void Refresh(Player player)
     {
-        SawatariMachete[] cards = PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().ToArray();
+        Machete[] cards = PileType.Hand.GetPile(player).Cards.OfType<Machete>().ToArray();
         PlayerMacheteVisuals? visual = Get(player.Creature) ?? (cards.Length > 0 ? Ensure(player) : null);
         if (visual == null) return;
         foreach (var (card, knife) in visual._knives.ToArray())
@@ -116,7 +116,7 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
         }
     }
 
-    internal static async Task Throw(SawatariMachete card, SawatariMachete thrown, int hand,
+    internal static async Task Throw(Machete card, Machete thrown, int hand,
         Creature target, int returnHand)
     {
         if (Ensure(card.Owner) is not { } visual || target.GetCreatureNode() is not { } victim) return;
@@ -135,7 +135,7 @@ internal sealed partial class PlayerMacheteVisuals : Node2D
         await Cmd.Wait(NinjaSlayerAimPose.ShurikenWindupSeconds);
         if (!GodotObject.IsInstanceValid(knife) || !knife.IsInsideTree()) return;
         visual.SyncForPose();
-        SawatariWeaponVisuals? receiver = returnHand >= 0 && target.Monster is SawatariMonster { ActThree: true, MacheteCount: < 2 }
+        SawatariWeaponVisuals? receiver = returnHand >= 0 && target.Monster is ForestSawatariMonster { ActThree: true, MacheteCount: < 2 }
             ? SawatariWeaponVisuals.Get(target) : null;
         Node2D destination = receiver?.ReturnHand(returnHand) ?? victim.Visuals.VfxSpawnPosition;
         if (await SawatariWeaponVisuals.FlyWeapon(knife, destination, catchWeapon: receiver != null))

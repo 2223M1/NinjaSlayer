@@ -19,13 +19,13 @@
     { "id": "opening", "steps": [
       { "action": "block", "actor": "sawatari", "amount": 74 },
       { "action": "aim", "covers": ["aim"] },
-      { "action": "card", "card": "CollapseFistRedesignV1", "covers": ["somersault-heavy"] },
+      { "action": "card", "card": "CollapseFist", "covers": ["somersault-heavy"] },
       { "action": "wait", "seconds": 0.125 },
       { "parallel": [
         { "sequence": [
-          { "action": "card", "card": "StrikeNinjaSlayerRedesignV1", "covers": ["fast-attack"] },
-          { "action": "card", "card": "KarateStraightRedesignV1", "covers": ["slow-attack"] },
-          { "action": "card", "card": "DefendNinjaSlayerRedesignV1", "covers": ["cast", "block"] }
+          { "action": "card", "card": "StrikeNinjaSlayer", "covers": ["fast-attack"] },
+          { "action": "card", "card": "StraightPunch", "covers": ["slow-attack"] },
+          { "action": "card", "card": "DefendNinjaSlayer", "covers": ["cast", "block"] }
         ]},
         { "sequence": [
           { "action": "move", "actor": "sawatari", "target": "ninja", "move": "bamboo", "covers": ["bamboo", "hurt"] },
@@ -37,8 +37,8 @@
       { "action": "clear_block" }
     ]},
     { "id": "tomoe_throw", "steps": [
-      { "action": "give_card", "card": "ChadoEnergyRedesignV1" },
-      { "action": "card", "card": "ObserveBattlefield", "selection": [0], "covers": ["tomoe-throw"] },
+      { "action": "give_card", "card": "Chado" },
+      { "action": "card", "card": "TomoeThrow", "selection": [0], "covers": ["tomoe-throw"] },
       { "action": "wait", "seconds": 0.15 }
     ]},
     { "id": "knife_exchange_1", "steps": [
@@ -51,11 +51,11 @@
     ]},
     { "id": "knife_exchange_2", "steps": [
       { "action": "knife_exchange" },
-      { "action": "card", "card": "OneDrinkOneStrikeRedesignV1", "covers": ["kick-overhead"] }
+      { "action": "card", "card": "SomersaultKick", "covers": ["kick-overhead"] }
     ]},
     { "id": "knife_exchange_3", "steps": [
       { "action": "knife_exchange" },
-      { "action": "card", "card": "TornadoFistRedesignV1", "energy": 3, "covers": ["tornado-normal"] }
+      { "action": "card", "card": "TornadoFist", "energy": 3, "covers": ["tornado-normal"] }
     ]},
     { "id": "koki_arrival", "steps": [
       { "parallel": [
@@ -65,8 +65,8 @@
       { "parallel": [
         { "action": "missiles", "covers": ["origami-missiles"] },
         { "sequence": [
-          { "action": "card", "card": "RoundhouseKickRedesignV1", "covers": ["kick-roundhouse"] },
-          { "action": "card", "card": "SweepKickRedesignV1", "covers": ["kick-sweep"] },
+          { "action": "card", "card": "DragonRoundhouseKick", "covers": ["kick-roundhouse"] },
+          { "action": "card", "card": "HalfMoonCompassKick", "covers": ["kick-sweep"] },
           { "action": "move", "actor": "sawatari", "target": "ninja", "move": "bamboo" }
         ]}
       ]}
@@ -78,8 +78,8 @@
           { "action": "missiles" }
         ]},
         { "sequence": [
-          { "action": "card", "card": "SatsubatsuRedesignV1", "covers": ["kick-bs1260"] },
-          { "action": "card", "card": "DragonFlyingKickRedesignV1", "covers": ["kick-flying", "jump"] }
+          { "action": "card", "card": "BS1260Kick", "covers": ["kick-bs1260"] },
+          { "action": "card", "card": "DragonFlyingKick", "covers": ["kick-flying", "jump"] }
         ]}
       ]},
       { "action": "entrance", "actor": "yukano", "covers": ["yukano-entrance"] },
@@ -89,13 +89,13 @@
       { "action": "clear_block" },
       { "parallel": [
         { "action": "missiles", "friendlyFire": true },
-        { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" }
+        { "action": "card", "card": "StrikeNinjaSlayer" }
       ]},
       { "parallel": [
         { "action": "apology", "covers": ["turn"] },
         { "sequence": [
           { "action": "wait", "seconds": 0.36 },
-          { "action": "card", "card": "KarateStraightRedesignV1" },
+          { "action": "card", "card": "StraightPunch" },
           { "action": "move", "actor": "sawatari", "target": "ninja", "move": "dual" }
         ]}
       ]}
@@ -118,9 +118,9 @@
     { "id": "dark_first_counter", "steps": [
       { "action": "block", "amount": 35 },
       { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_COUNTER_STANCE", "covers": ["dark-stance"] },
-      { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" },
-      { "action": "card", "card": "KarateStraightRedesignV1" },
-      { "action": "card", "card": "CollapseFistRedesignV1" },
+      { "action": "card", "card": "StrikeNinjaSlayer" },
+      { "action": "card", "card": "StraightPunch" },
+      { "action": "card", "card": "CollapseFist" },
       { "action": "move", "actor": "dark", "target": "ninja", "move": "DEATH_SLASH", "covers": ["death-slash", "debuff"] },
       { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_ROBE", "covers": ["dark-robe"] },
       { "action": "form", "form": "semi" },
@@ -128,17 +128,17 @@
     ]},
     { "id": "alabama_counter", "steps": [
       { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_STRIKE", "covers": ["dark-strike-combat"] },
-      { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_KILLING_INTENT", "covers": ["dark-intent"] },
-      { "action": "card", "card": "StrikeNinjaSlayerRedesignV1" },
-      { "action": "card", "card": "KarateStraightRedesignV1" },
-      { "action": "card", "card": "AlabamaDropRedesignV1", "covers": ["alabama-drop"] },
-      { "action": "remove_power", "actor": "dark", "power": "IaiPower" }
+      { "action": "move", "actor": "dark", "target": "ninja", "move": "DARK_ROBE", "covers": ["dark-robe"] },
+      { "action": "card", "card": "StrikeNinjaSlayer" },
+      { "action": "card", "card": "StraightPunch" },
+      { "action": "card", "card": "AlabamaDrop", "covers": ["alabama-drop"] },
+      { "action": "remove_power", "actor": "dark", "power": "DarkCounterPower" }
     ]},
     { "id": "hell_tornado", "steps": [
       { "parallel": [
         { "sequence": [
-          { "action": "card", "card": "HellTornadoRedesignV1", "covers": ["hell-tornado"] },
-          { "action": "card", "card": "RoundhouseKickRedesignV1" }
+          { "action": "card", "card": "HellTornado", "covers": ["hell-tornado"] },
+          { "action": "card", "card": "DragonRoundhouseKick" }
         ]},
         { "action": "move", "actor": "yukano", "move": "HEAL", "covers": ["yukano-heal"] }
       ]},
@@ -151,12 +151,12 @@
     ]},
     { "id": "one_body_one_soul", "steps": [
       { "action": "form", "form": "soul" },
-      { "action": "card", "card": "StraightKiRedesignV1" },
+      { "action": "card", "card": "StraightKi" },
       { "action": "wait", "seconds": 0.125 },
       { "action": "form", "form": "normal" }
     ]},
     { "id": "final_tornado", "steps": [
-      { "action": "card", "card": "TornadoFistRedesignV1", "energy": 6, "charge": true, "seconds": 0.25,
+      { "action": "card", "card": "TornadoFist", "energy": 6, "charge": true, "seconds": 0.25,
         "covers": ["tornado-empowered-b", "finisher"] },
       { "action": "wait", "seconds": 0.65 }
     ]}

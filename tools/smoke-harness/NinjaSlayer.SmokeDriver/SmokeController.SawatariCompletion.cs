@@ -12,7 +12,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Content;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using STS2RitsuLib.Audio;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -30,8 +30,8 @@ internal sealed partial class SmokeController
         await PlayerCmd.SetEnergy(10, player);
         foreach (var card in PileType.Hand.GetPile(player).Cards.ToArray())
             await CardPileCmd.Add(card, PileType.Discard);
-        var attack = state.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
-        var defense = state.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+        var attack = state.CreateCard<StrikeNinjaSlayer>(player);
+        var defense = state.CreateCard<DefendNinjaSlayer>(player);
         await CardPileCmd.Add(attack, PileType.Hand);
         await CardPileCmd.Add(defense, PileType.Hand);
         await WaitFrames(30);

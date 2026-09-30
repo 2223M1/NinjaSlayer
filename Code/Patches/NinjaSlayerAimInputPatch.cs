@@ -6,7 +6,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Patching.Models;
@@ -29,7 +29,7 @@ internal sealed class NinjaSlayerAimStartPatch : IPatchMethod
         CardModel? card = __instance.Holder?.CardNode?.Model;
         if (card?.Owner.Character is INinjaSlayerCharacter
             && (card.TargetType is TargetType.AnyEnemy or TargetType.AnyAlly or TargetType.AnyPlayer
-                || card is TornadoFistRedesignV1)
+                || card is TornadoFist)
             && NinjaSlayerAimPose.Get(card.Owner.Creature) is { } pose)
             __instance.AddChild(new NinjaSlayerAimInput { Name = "NinjaSlayerAimInput", Card = card, Pose = pose });
     }
@@ -102,7 +102,7 @@ public partial class NinjaSlayerAimInput : Node
         if (_finished || !GodotObject.IsInstanceValid(Pose)) return;
         Vector2 pointer = GetViewport().GetMousePosition();
         Creature? target = Hovered;
-        if (Card is TornadoFistRedesignV1) target = null;
+        if (Card is TornadoFist) target = null;
         else if (GetParent() is NMouseCardPlay && NCombatRoom.Instance is { } room)
         {
             target = room.CreatureNodes.FirstOrDefault(node =>

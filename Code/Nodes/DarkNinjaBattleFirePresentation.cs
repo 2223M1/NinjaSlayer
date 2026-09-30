@@ -282,7 +282,7 @@ internal sealed partial class DarkNinjaBattleFireRoot : Node2D
                 continue;
             }
 
-            if (creature.Entity.Monster is not YamotoKokiOrigamiMissile)
+            if (creature.Entity.Monster is not OrigamiMissileMonster)
             {
                 hitboxBottoms.Add((toContainer * creature.GetBottomOfHitbox()).Y);
             }

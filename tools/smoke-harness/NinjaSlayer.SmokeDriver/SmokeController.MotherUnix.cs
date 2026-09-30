@@ -12,7 +12,7 @@ using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Relics;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
 using MegaCrit.Sts2.Core.Runs;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Relics;
 
@@ -26,7 +26,7 @@ internal sealed partial class SmokeController
         var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!;
         var state = CombatManager.Instance.DebugOnlyGetState()!;
         foreach (var existing in player.Relics.ToArray()) await RelicCmd.Remove(existing);
-        var relic = await RelicCmd.Obtain<MotherUnixRelic>(player);
+        var relic = await RelicCmd.Obtain<MotherUNIXAccessKeyRelic>(player);
         var holder = UiHelper.FindAll<NRelicInventoryHolder>(_tree.Root).Single(node => node.Relic.Model == relic);
         holder.EmitSignal(Control.SignalName.MouseEntered);
         await WaitFrames(60);

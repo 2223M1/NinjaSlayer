@@ -18,7 +18,7 @@ using MegaCrit.Sts2.Core.Multiplayer.Transport.ENet;
 using MegaCrit.Sts2.Core.Platform;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -113,16 +113,16 @@ public partial class OrbContractRunner
         RunManager.Instance.ActionExecutor.AfterActionExecuted += _ => completed++;
         var plays = new (CardModel Card, Creature? Target)[]
         {
-            (combat.State.CreateCard<PreparedShurikenRedesignV1>(first), null),
-            (combat.State.CreateCard<PreparedShurikenRedesignV1>(second), null),
+            (combat.State.CreateCard<ReadyShuriken>(first), null),
+            (combat.State.CreateCard<ReadyShuriken>(second), null),
             (combat.State.CreateCard<Zap>(first), null),
             (combat.State.CreateCard<Dualcast>(first), null),
             (combat.State.CreateCard<Dualcast>(second), null),
-            (combat.State.CreateCard<ChopStrikeRedesignV1>(second), combat.Enemy),
-            (combat.State.CreateCard<ChopStrikeRedesignV1>(second), combat.Enemy),
-            (combat.State.CreateCard<NarakuFormRedesignV1>(first), null),
-            (combat.State.CreateCard<StrikeNinjaSlayerRedesignV1>(second), combat.Enemy),
-            (combat.State.CreateCard<StrikeNinjaSlayerRedesignV1>(first), combat.Enemy)
+            (combat.State.CreateCard<StrikeStrike>(second), combat.Enemy),
+            (combat.State.CreateCard<StrikeStrike>(second), combat.Enemy),
+            (combat.State.CreateCard<NarakuForm>(first), null),
+            (combat.State.CreateCard<StrikeNinjaSlayer>(second), combat.Enemy),
+            (combat.State.CreateCard<StrikeNinjaSlayer>(first), combat.Enemy)
         };
         plays[0].Card.UpgradeInternal();
         PileType?[] destinations = [PileType.Discard, PileType.Discard, PileType.Discard,
@@ -143,18 +143,18 @@ public partial class OrbContractRunner
             Require(card.Pile?.Type == destinations[step],
                 $"Action {expected} resolved to the wrong pile.");
         }
-        Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 3
+        Require(first.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2
             && first.PlayerCombatState.OrbQueue.Capacity == 1 && second.PlayerCombatState!.OrbQueue.Capacity == 0
             && !second.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
             "Mixed normal/dedicated priority or multiplayer stock ownership changed.");
-        Require(PileType.Hand.GetPile(second).Cards.OfType<ChopStrikeRedesignV1>().Count() == 2
-            && !PileType.Hand.GetPile(first).Cards.OfType<ChopStrikeRedesignV1>().Any(),
+        Require(PileType.Hand.GetPile(second).Cards.OfType<StrikeStrike>().Count() == 2
+            && !PileType.Hand.GetPile(first).Cards.OfType<StrikeStrike>().Any(),
             "Strike Strike must generate two fresh cards for the playing owner on both peers.");
-        Require(first.Creature.HasPower<NarakuFormRedesignPower>() && !second.Creature.HasPower<NarakuFormRedesignPower>()
+        Require(first.Creature.HasPower<NarakuFormPower>() && !second.Creature.HasPower<NarakuFormPower>()
             && plays[8].Card.Pile?.Type == PileType.Discard && plays[9].Card.Pile?.Type == PileType.Discard,
             "Naraku Form crossed player ownership or changed the attack destination.");
-        Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlameRedesignV1>().Count() == 0
-            && !PileType.Draw.GetPile(second).Cards.OfType<BlackFlameRedesignV1>().Any(),
+        Require(PileType.Draw.GetPile(first).Cards.OfType<BlackFlame>().Count() == 0
+            && !PileType.Draw.GetPile(second).Cards.OfType<BlackFlame>().Any(),
             "Naraku must no longer generate Black Flame cards.");
 #if !NINJASLAYER_CHANNEL_STABLE
         int localSelections = 0;
@@ -174,7 +174,7 @@ public partial class OrbContractRunner
         {
             foreach (CardModel card in PileType.Hand.GetPile(player).Cards.ToArray())
                 await CardPileCmd.Add(card, PileType.Discard);
-            var discard = combat.State.CreateCard<ReadyStanceRedesignV1>(player);
+            var discard = combat.State.CreateCard<Jujutsu>(player);
             var sly = combat.State.CreateCard<ShurikenCreation>(player);
             var nested = combat.State.CreateCard<ShurikenCreation>(player);
             var last = combat.State.CreateCard<DefendIronclad>(player);
@@ -207,8 +207,8 @@ public partial class OrbContractRunner
             int stock = player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount;
             foreach (CardModel card in new CardModel[]
             {
-                combat.State.CreateCard<GiantShurikenRedesignV1>(player),
-                combat.State.CreateCard<OyeahThrowSword>(player)
+                combat.State.CreateCard<StarlessNight>(player),
+                combat.State.CreateCard<Moonsault>(player)
             })
             {
                 await CardPileCmd.Add(card, PileType.Hand);
@@ -220,9 +220,9 @@ public partial class OrbContractRunner
                 if (player.NetId == _network.NetId)
                     RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(card, null));
                 await WaitNetwork(() => completed > before, "native converted volley action");
-                if (card is GiantShurikenRedesignV1) await AddStock(player, 1);
+                if (card is StarlessNight) await AddStock(player, 1);
             }
-            var tokens = player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().ToArray();
+            var tokens = player.PlayerCombatState.AllCards.OfType<StrongShuriken>().ToArray();
             Require(tokens.Length == 1 && tokens.All(card => card.SnapshotDamage == 8),
                 "One stock grant creates one synchronized eight-damage snapshot token.");
         }
@@ -232,12 +232,12 @@ public partial class OrbContractRunner
                 await CardPileCmd.Add(card, PileType.Discard);
             await AddStock(player, 3);
             int stock = player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount;
-            int tokens = player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count();
+            int tokens = player.PlayerCombatState.AllCards.OfType<StrongShuriken>().Count();
             await CardPileCmd.Add(combat.State.CreateCard<Wound>(player), PileType.Draw);
             await CardPileCmd.Add(combat.State.CreateCard<Wound>(player), PileType.Draw);
             await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Draw);
             await CardPileCmd.Add(combat.State.CreateCard<DefendIronclad>(player), PileType.Draw);
-            var burning = combat.State.CreateCard<Slaughter>(player);
+            var burning = combat.State.CreateCard<PressTheAttack>(player);
             await CardPileCmd.Add(burning, PileType.Hand);
             await PlayerCmd.SetEnergy(10, player);
             int before = completed;
@@ -248,12 +248,12 @@ public partial class OrbContractRunner
             if (player.NetId == _network.NetId)
                 RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(burning, combat.Enemy));
             await WaitNetwork(() => completed > before, "native Burning Blood batch");
-            Require(player.PlayerCombatState.AllCards.OfType<StrongShurikenTokenRedesignV1>().Count() == tokens
+            Require(player.PlayerCombatState.AllCards.OfType<StrongShuriken>().Count() == tokens
                 && !player.PlayerCombatState.OrbQueue.Orbs.OfType<ShurikenOrb>().Any(),
                 "Discard batches consume stock without generating tokens.");
         }
         GD.Print("PASS synchronized Burning Blood batch cap and independent player allowances");
-        var sawatari = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+        var sawatari = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
         sawatari.ActThree = true;
         Creature weaponEnemy = combat.State.CreateCreature(sawatari, CombatSide.Enemy, null);
         await CreatureCmd.Add(weaponEnemy);
@@ -270,15 +270,15 @@ public partial class OrbContractRunner
             await sawatari.PerformMove();
             sawatari.RollMove(combat.State.PlayerCreatures);
         }
-        SawatariMachete[] machetes = run.Players.SelectMany(player => player.PlayerCombatState!.AllCards)
-            .OfType<SawatariMachete>().ToArray();
+        Machete[] machetes = run.Players.SelectMany(player => player.PlayerCombatState!.AllCards)
+            .OfType<Machete>().ToArray();
         Require(machetes.Length == 2 && sawatari.MacheteCount == 0,
             "Two networked throws must transfer exactly two knives across all players.");
         var caughtHands = machetes.Select(card => new { card.Owner.NetId, card.HeldHand }).ToArray();
         var returnedHands = new List<int>();
         for (int index = 0; index < machetes.Length; index++)
         {
-            SawatariMachete card = machetes[index];
+            Machete card = machetes[index];
             await CardPileCmd.Add(card, PileType.Hand);
             await PlayerCmd.SetEnergy(10, card.Owner);
             int before = completed;
@@ -293,16 +293,16 @@ public partial class OrbContractRunner
                 "A synchronized Machete play must exhaust and return one knife.");
             returnedHands.Add(sawatari.HeldMachetes);
         }
-        Require(sawatari.NextMove.Id == SawatariMonster.DualMoveId,
+        Require(sawatari.NextMove.Id == ForestSawatariMonster.DualMoveId,
             "Returning both networked knives must immediately show the dual-attack intent.");
         foreach (Player player in run.Players)
         {
-            await RelicCmd.Obtain<BioBambooRelic>(player);
-            await RelicCmd.Obtain<BeppinFragmentRelic>(player);
+            await RelicCmd.Obtain<BioBambooSplintRelic>(player);
+            await RelicCmd.Obtain<BeppinShardRelic>(player);
         }
         foreach (Player player in run.Players)
         {
-            var bamboo = player.Relics.OfType<BioBambooRelic>().Single();
+            var bamboo = player.Relics.OfType<BioBambooSplintRelic>().Single();
             for (int index = 0; index < 2; index++)
             {
                 var card = combat.State.CreateCard<StrikeIronclad>(player);
@@ -344,8 +344,8 @@ public partial class OrbContractRunner
                 OrbCapacity = player.PlayerCombatState.OrbQueue.Capacity,
                 Orbs = player.PlayerCombatState.OrbQueue.Orbs.Select(orb => new { orb.Id, Stock = (orb as ShurikenOrb)?.StackCount }),
                 Cards = player.PlayerCombatState.AllCards.Select(card => new { Id = card.Id.ToString(), Pile = card.Pile?.Type.ToString(),
-                    Snapshot = (card as StrongShurikenTokenRedesignV1)?.SnapshotDamage,
-                    MacheteHand = (card as SawatariMachete)?.HeldHand })
+                    Snapshot = (card as StrongShuriken)?.SnapshotDamage,
+                    MacheteHand = (card as Machete)?.HeldHand })
             })
         };
         System.IO.File.WriteAllText(Path.Combine(directory, role + ".json"), JsonSerializer.Serialize(snapshot));

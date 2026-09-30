@@ -36,7 +36,7 @@ internal static class YamotoKokiCombatAnimations
         ref Task result)
     {
         bool isYamotoKoki = creature.Monster is YamotoKokiMonster;
-        bool isSawatariCompanion = creature.Monster is SawatariMonster
+        bool isSawatariCompanion = creature.Monster is ForestSawatariMonster
             && creature.Side == CombatSide.Player
             && creature.PetOwner != null;
         bool isYukanoCompanion = creature.Monster is YukanoMonster

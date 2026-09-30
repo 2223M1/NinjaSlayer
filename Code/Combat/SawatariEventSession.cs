@@ -36,7 +36,7 @@ internal sealed class SawatariEventSession
 
     private readonly CombatState _state;
     private readonly NCombatRoom _room;
-    private readonly SawatariEvent[] _events;
+    private readonly TheMovingJungleEvent[] _events;
     private readonly Player _ninjaSlayer;
     private readonly SawatariEventPhaseGate _phases = new();
     private Creature _companion;
@@ -53,14 +53,14 @@ internal sealed class SawatariEventSession
     private SawatariEventSession(
         CombatState state,
         NCombatRoom room,
-        SawatariEvent[] events,
+        TheMovingJungleEvent[] events,
         Player ninjaSlayer)
     {
         _state = state;
         _room = room;
         _events = events;
         _ninjaSlayer = ninjaSlayer;
-        var model = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+        var model = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
         model.ActThree = state.RunState.CurrentActIndex == 2;
         _companion = state.CreateCreature(model, CombatSide.Player, null);
         _companion.PetOwner = ninjaSlayer;
@@ -73,7 +73,7 @@ internal sealed class SawatariEventSession
         _room.AddCreature(_companion);
         SetFacing(_companion, faceRight: true);
         // The host calls Monster.AfterAddedToRoom only for enemies.
-        SawatariWeaponVisuals.Create((SawatariMonster)_companion.Monster!);
+        SawatariWeaponVisuals.Create((ForestSawatariMonster)_companion.Monster!);
         YamotoKokiAllyLayoutPatch.Reflow(_room);
         SawatariMusicSession.Begin(eventRoom);
     }
@@ -83,7 +83,7 @@ internal sealed class SawatariEventSession
     public static SawatariEventSession Create(
         CombatState state,
         NCombatRoom room,
-        SawatariEvent[] events,
+        TheMovingJungleEvent[] events,
         Player localOwner,
         EventRoom eventRoom)
     {
@@ -145,7 +145,7 @@ internal sealed class SawatariEventSession
         await AncientEntranceAnimation.Play(_ninjaSlayer);
     }
 
-    public async Task PlaySupportTurn(SawatariMonster monster, CombatSide side)
+    public async Task PlaySupportTurn(ForestSawatariMonster monster, CombatSide side)
     {
         if (side != CombatSide.Player
             || Phase != SawatariEventPhase.FirstCombat
@@ -242,7 +242,7 @@ internal sealed class SawatariEventSession
         _intermissionChoice = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.ForestSawatariEndEvent);
         EnterDecisionState();
-        foreach (SawatariEvent eventModel in _events) eventModel.ShowIntermissionPage();
+        foreach (TheMovingJungleEvent eventModel in _events) eventModel.ShowIntermissionPage();
         SawatariEventUi.Show(_state.Players.Count > 1);
         // Wait outside the action executor. Event choices use the native event
         // synchronizer, while the host retains ownership of the pending turn end.
@@ -281,7 +281,7 @@ internal sealed class SawatariEventSession
             CreatureVisualTransform transform = CreatureVisualTransform.Capture(companionNode);
             RemoveCreature(_companion);
 
-            var model = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            var model = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             model.ActThree = _state.RunState.CurrentActIndex == 2;
             Creature duelCreature = _state.CreateCreature(model, CombatSide.Enemy, null);
             _duelCreature = duelCreature;
@@ -382,11 +382,11 @@ internal sealed class SawatariEventSession
             foreach (Player player in _state.Players)
             {
                 combatRoom.AddExtraReward(player,
-                    new RelicReward(ModelDb.Relic<BioBambooRelic>().ToMutable(), player));
+                    new RelicReward(ModelDb.Relic<BioBambooSplintRelic>().ToMutable(), player));
                 combatRoom.AddExtraReward(player, new RelicReward(player));
             }
 
-            foreach (SawatariEvent eventModel in _events)
+            foreach (TheMovingJungleEvent eventModel in _events)
             {
                 eventModel.ShowDuelResultPage();
             }
@@ -404,7 +404,7 @@ internal sealed class SawatariEventSession
         SawatariEventPhase failedPhase = Phase;
         RemoveCreatureIfPresent(_duelCreature);
         RemoveCreatureIfPresent(_companion);
-        foreach (SawatariEvent eventModel in _events)
+        foreach (TheMovingJungleEvent eventModel in _events)
         {
             eventModel.FinishForFallback();
         }
@@ -654,7 +654,7 @@ internal static class SawatariMusicSession
         AbstractRoom? current = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom;
         return ReferenceEquals(current, _eventRoom)
             || current is CombatRoom combatRoom
-                && combatRoom.ParentEventId == ModelDb.Event<SawatariEvent>().Id;
+                && combatRoom.ParentEventId == ModelDb.Event<TheMovingJungleEvent>().Id;
     }
 
     private static void Clear(bool stopMusic)

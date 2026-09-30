@@ -10,7 +10,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -29,20 +29,20 @@ internal sealed partial class SmokeController
             NonInteractiveMode.AutoSlayerCheck = static () => false;
             SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
             await PowerCmd.Apply<KaratePower>(choice, player.Creature, 4, player.Creature, null);
-            var alabama = combat.CreateCard<AlabamaDropRedesignV1>(player);
+            var alabama = combat.CreateCard<AlabamaDrop>(player);
             await CardPileCmd.Add(alabama, PileType.Hand);
             await PlayWithStationaryCombatUi(alabama, target);
             Require(target.CurrentHp == 976 && player.Creature.GetPowerAmount<KaratePower>() == 3,
                 "Rendered Alabama must deal 20 main plus four Karate and consume one stack.");
             await PowerCmd.Remove<KaratePower>(player.Creature);
-            foreach (Type type in new[] { typeof(KarateStraightRedesignV1), typeof(SatsubatsuRedesignV1),
-                typeof(OneDrinkOneStrikeRedesignV1), typeof(RoundhouseKickRedesignV1),
-                typeof(SweepKickRedesignV1), typeof(DragonFlyingKickRedesignV1) })
+            foreach (Type type in new[] { typeof(StraightPunch), typeof(BS1260Kick),
+                typeof(SomersaultKick), typeof(DragonRoundhouseKick),
+                typeof(HalfMoonCompassKick), typeof(DragonFlyingKick) })
             {
                 CardModel card = combat.CreateCard(ModelDb.GetById<CardModel>(ModelDb.GetId(type)), player);
                 await CardPileCmd.Add(card, PileType.Hand);
                 await PlayWithStationaryCombatUi(card, target);
-                foreach (var flame in PileType.Hand.GetPile(player).Cards.OfType<BlackFlameRedesignV1>().ToArray())
+                foreach (var flame in PileType.Hand.GetPile(player).Cards.OfType<BlackFlame>().ToArray())
                     await CardPileCmd.Add(flame, PileType.Discard);
             }
             await CapturePresentation("combat-fixes-returned");

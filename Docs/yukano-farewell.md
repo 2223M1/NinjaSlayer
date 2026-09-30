@@ -1,6 +1,6 @@
 # Yukano farewell and shuriken voice
 
-The exhausted `YukanoCompanionRelic` uses `YukanoCombatAnimations.PlayFarewell`.
+The exhausted `ToriiPactRelic` uses `YukanoCombatAnimations.PlayFarewell`.
 It no longer borrows Yamoto Koki's bow-and-exit animation. First arrival also uses the
 roll, travelling right from outside the left screen edge to the combat slot.
 

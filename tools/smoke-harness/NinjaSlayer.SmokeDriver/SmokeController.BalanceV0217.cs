@@ -15,7 +15,7 @@ using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
 using MegaCrit.Sts2.Core.Runs;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
@@ -43,7 +43,7 @@ internal sealed partial class SmokeController
         var victim = combat.HittableEnemies.First();
         int hp = victim.CurrentHp;
         await PowerCmd.Apply<VigorPower>(choice, player.Creature, 7, player.Creature, null);
-        var palm = await Add<PalmThrustRedesignV1>();
+        var palm = await Add<PalmThrust>();
         CardCmd.Upgrade(palm);
         await CardCmd.AutoPlay(choice, palm, null);
         Require(combat.HittableEnemies.Sum(enemy => 1000 - enemy.CurrentHp) == 36
@@ -51,33 +51,33 @@ internal sealed partial class SmokeController
         _checkpoints.Write("v0217.live-palm-vigor");
 
         await ClearCards();
-        await PowerCmd.Apply<StarlessNightRedesignPower>(choice, player.Creature, 1, player.Creature, null);
+        await PowerCmd.Apply<StarlessNightPower>(choice, player.Creature, 1, player.Creature, null);
         await PowerCmd.Apply<FocusPower>(choice, player.Creature, 2, player.Creature, null);
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 10])!;
         var top = new List<CardModel>();
         for (int i = 0; i < 5; i++) top.Add(await Add<DefendIronclad>(PileType.Draw));
         var handCard = await Add<DefendIronclad>();
-        var insight = await Add<TechniqueSearchRedesignV1>();
+        var insight = await Add<Adapt>();
         int before = combat.HittableEnemies.Sum(enemy => enemy.CurrentHp);
         await CardCmd.AutoPlay(choice, insight, null);
         Require(top.Take(2).All(card => card.Pile?.Type == PileType.Hand && card.Keywords.Contains(CardKeyword.Sly))
             && !handCard.Keywords.Contains(CardKeyword.Sly), "Insight grants Sly only to directly drawn cards.");
         await Snapshot("insight-sly-draw");
         await CardCmd.Discard(choice, top.Take(2).ToArray());
-        Require(PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1
+        Require(PileType.Hand.GetPile(player).Cards.OfType<StrongShuriken>().Count() == 1
             && before - combat.HittableEnemies.Sum(enemy => enemy.CurrentHp) == 16 && player.Creature.Block == 10,
             "Granted Sly must play both discards without additional Starless tokens.");
         await Snapshot("insight-after-discard");
         _checkpoints.Write("v115.live-insight-sly-stock-gain");
-        var token = PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Single();
+        var token = PileType.Hand.GetPile(player).Cards.OfType<StrongShuriken>().Single();
         await CardCmd.AutoPlay(choice, token, victim);
         Require(token.Pile?.Type == PileType.Exhaust, "Snapshot Shuriken finishes its native throw in Exhaust.");
         await ClearCards();
         for (int i = 0; i < 5; i++) await Add<Wound>(PileType.Draw);
-        await CardCmd.AutoPlay(choice, await Add<ShurikenDraw>(), null);
+        await CardCmd.AutoPlay(choice, await Add<BattleReady>(), null);
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
         Require(PileType.Hand.GetPile(player).Cards.OfType<Wound>().Count() == 1
-            && PileType.Hand.GetPile(player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1,
+            && PileType.Hand.GetPile(player).Cards.OfType<StrongShuriken>().Count() == 1,
             "Three additional layers trigger one draw and one snapshot token.");
         await Snapshot("stock-gain-powers");
         _checkpoints.Write("v115.live-stock-gain-replenishment");
@@ -87,10 +87,10 @@ internal sealed partial class SmokeController
         var exhausted = await Add<Wound>();
         await CardCmd.Exhaust(choice, exhausted);
         await CardCmd.Exhaust(choice, await Add<DefendIronclad>());
-        playing = CardCmd.AutoPlay(choice, await Add<Excavate>(), null);
+        playing = CardCmd.AutoPlay(choice, await Add<Recover>(), null);
         await ChooseGrid([exhausted], "excavate");
         await playing;
-        Require(PileType.Draw.GetPile(player).Cards.First() == exhausted, "Excavate did not put the selected exhausted card on top.");
+        Require(PileType.Draw.GetPile(player).Cards.First() == exhausted, "Recover did not put the selected exhausted card on top.");
         _checkpoints.Write("v0217.live-excavate");
 
         var narration = (ModSettingsValueBinding<NinjaSlayerSettingsData, bool>)AccessTools.Field(typeof(NinjaSlayerSettings), "_narration").GetValue(null)!;
@@ -120,12 +120,12 @@ internal sealed partial class SmokeController
 
         await ClearCards();
         foreach (var power in player.Creature.Powers.ToArray()) await PowerCmd.Remove(power);
-        foreach (var type in new[] { typeof(Slaughter), typeof(Zanshin), typeof(ShurikenDraw), typeof(Excavate),
-            typeof(ChopStrikeRedesignV1), typeof(KillingIntentRedesignV1), typeof(GiantShurikenRedesignV1) })
+        foreach (var type in new[] { typeof(PressTheAttack), typeof(Zanshin), typeof(BattleReady), typeof(Recover),
+            typeof(StrikeStrike), typeof(KillingIntent), typeof(StarlessNight) })
             await CardPileCmd.Add(combat.CreateCard(ModelDb.GetById<CardModel>(ModelDb.GetId(type)), player), PileType.Hand);
         await Snapshot("new-cards");
         await ClearCards();
-        for (int i = 0; i < 3; i++) await Add<BlackFlameRedesignV1>();
+        for (int i = 0; i < 3; i++) await Add<BlackFlame>();
         foreach (var enemy in combat.HittableEnemies) enemy.SetCurrentHpInternal(1);
         player.Creature.SetMaxHpInternal(200);
         player.Creature.SetCurrentHpInternal(200);

@@ -7,7 +7,7 @@ using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Unlocks;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Orbs;
 
@@ -49,8 +49,8 @@ public partial class OrbContractRunner
         }
         var drag = new Node();
         actor.GetParent().AddChild(drag);
-        var card = combat.State.CreateCard<SatsubatsuRedesignV1>(combat.Player);
-        var tornado = combat.State.CreateCard<TornadoFistRedesignV1>(combat.Player);
+        var card = combat.State.CreateCard<BS1260Kick>(combat.Player);
+        var tornado = combat.State.CreateCard<TornadoFist>(combat.Player);
         MegaCrit.Sts2.Core.Entities.Cards.PileType.Hand.GetPile(combat.Player).AddInternal(tornado, -1, silent: true);
         var profile = AccessTools.Property(type, "ChargeProfile");
         object savedProfile = profile.GetValue(pose)!;

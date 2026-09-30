@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Nodes;
+using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
@@ -165,12 +166,11 @@ public static class AncientEntranceAnimation
             tween.TweenInterval(WallPushSeconds);
             tween.TweenMethod(Callable.From<float>(p =>
             {
-                motion.PlanarBlur = p < 1f;
                 Vector2 core = launch.Lerp(baseline, 1f - (1f - p) * (1f - p));
                 core.Y = Mathf.Lerp(launch.Y, baseline.Y, p) - 4f * 185f * p * (1f - p);
                 float takeoff = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp(p / .08f, 0f, 1f));
                 float turns = Mathf.Clamp((p - .08f) / .84f, 0f, 1f);
-                Apply(core, Mathf.Pi * .5f * takeoff + 2f * Mathf.Tau * turns);
+                Apply(core, Mathf.Pi * .5f * takeoff + Mathf.Tau * turns);
             }), 0f, 1f, WallLeapSeconds);
             await AwaitTween(node, tween, context);
             if (motion.Active && GodotObject.IsInstanceValid(node) && node.IsInsideTree())
@@ -231,41 +231,50 @@ public static class AncientEntranceAnimation
             await WaitForStart(startSignal, cinematicContext);
             PlaySfx(cinematicContext, NinjaSlayerAudio.NinjaSlayerLongWashoiEvent);
 
+            // The projection changes only X. Measure the inverted head in canvas space
+            // once, then end the original quadratic fall at its exact ground crossing.
+            NarakuVisualOverlay.Sync(creature);
+            Sprite2D source = NinjaSlayerVisualRig.GetBodySprite(creatureNode.Visuals)!;
+            var overlay = (NarakuVisualOverlay)creatureNode.Visuals.FindChild("NarakuVisualOverlay", true);
+            Sprite2D shown = overlay.Visible ? overlay : source;
+            var head = CombatBodyContours.ForForm(NinjaSlayerFormState.GetPresentation(creature).Kind)
+                .MinBy(point => point.Y);
+            Vector2 headLocal = new(head.X, head.Y);
+            if (shown.FlipH) headLocal.X = -headLocal.X;
+            if (shown.FlipV) headLocal.Y = -headLocal.Y;
+            if (!shown.Centered) headLocal += shown.Texture.GetSize() * .5f;
+            float headY = (shown.GetGlobalTransformWithCanvas() * (headLocal + shown.Offset)).Y;
+            float groundY = NinjaSlayerVisualRig.GetGroundContact(creatureNode.Visuals)!
+                .GetGlobalTransformWithCanvas().Origin.Y;
+            float travel = anchor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                .AffineInverse().BasisXform(new Vector2(0f, groundY - headY)).Y;
+            if (travel <= 0f || travel > FallDistance)
+                throw new InvalidOperationException("Inverted entrance must start above its head contact point.");
+            float contactProgress = Mathf.Sqrt(travel / FallDistance);
+            float contactSeconds = FallDuration * contactProgress;
             VerticalAxisSpinProjection? invertedProjection = CaptureCurrentShadowAxisProjection(
-                creatureNode.Visuals,
-                body);
+                creatureNode.Visuals, body);
             Task spin = invertedProjection is { } projection
-                ? PlayFiniteProjection(
-                    creature,
-                    projection,
-                    FallDuration,
-                    GetTumbleAngleDegrees,
-                    cinematicContext)
-                : SoarSpinAnimation.PlayFiniteAirborneSpin(
-                    creature,
-                    FallDuration,
-                    GetTumbleAngleDegrees,
-                    cinematicContext);
-            Task holdRotation = invertedProjection == null
-                ? HoldBodyRotation(
-                    body,
-                    invertedRotationDegrees,
-                    snapshot.BodyScale,
-                    FallDuration,
-                    cinematicContext,
-                    shadowPivot)
-                : Task.CompletedTask;
-            await Task.WhenAll(
-                ByrdFallAnimation.Play(creature, FallDistance, FallDuration, cinematicContext: cinematicContext),
-                holdRotation,
-                spin);
+                ? PlayFiniteProjection(creature, projection, contactSeconds,
+                    p => GetTumbleAngleDegrees(p * contactProgress), cinematicContext)
+                : SoarSpinAnimation.PlayFiniteAirborneSpin(creature, contactSeconds,
+                    p => GetTumbleAngleDegrees(p * contactProgress), cinematicContext);
+            var fall = creatureNode.CreateTween();
+            fall.TweenProperty(anchor, "position:y", anchor.Position.Y + travel, contactSeconds)
+                .SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Quad);
+            await Task.WhenAll(AwaitTween(creatureNode, fall, cinematicContext), spin);
+            ByrdFallAnimation.PlayLandingImpact(cinematicContext);
             body.Scale = snapshot.BodyScale;
             if (body is Sprite2D sprite)
             {
                 sprite.Offset = Vector2.Zero;
             }
             ApplyBodyRotation(body, shadowPivot, invertedRotationDegrees, snapshot.BodyScale);
+            var rise = creatureNode.CreateTween();
+            rise.TweenProperty(anchor, "position", snapshot.AnchorPosition, RiseDuration)
+                .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quad);
             await Task.WhenAll(
+                AwaitTween(creatureNode, rise, cinematicContext),
                 TweenNodePosition(creatureNode, snapshot.CreaturePosition, RiseDuration, Tween.EaseType.Out, Tween.TransitionType.Quad, cinematicContext),
                 TweenBodyRotation(
                     body,
@@ -501,24 +510,6 @@ public static class AncientEntranceAnimation
 
         await AwaitTween(body, tween, cinematicContext);
         ApplyBodyRotation(body, pivot, targetDegrees, scale);
-    }
-
-    private static async Task HoldBodyRotation(
-        Node2D body,
-        float rotationDegrees,
-        Vector2 scale,
-        float duration,
-        ICinematicAnimationContext? cinematicContext,
-        FixedPivotTransform? pivot = null)
-    {
-        var tween = body.CreateTween();
-        tween.TweenMethod(
-            Callable.From<float>(_ => ApplyBodyRotation(body, pivot, rotationDegrees, scale)),
-            0f,
-            1f,
-            duration);
-
-        await AwaitTween(body, tween, cinematicContext);
     }
 
     private static async Task AwaitTween(Node owner, Tween tween, ICinematicAnimationContext? cinematicContext)

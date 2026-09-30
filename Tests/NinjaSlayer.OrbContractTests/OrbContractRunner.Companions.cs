@@ -21,7 +21,7 @@ public partial class OrbContractRunner
 {
     private static void VerifyNativeCompanionLayout()
     {
-        _ = ModelDb.Monster<SawatariMonster>().AssetPaths.ToArray();
+        _ = ModelDb.Monster<ForestSawatariMonster>().AssetPaths.ToArray();
         using var combat = new OrbCombat();
         var players = new List<Player> { combat.Player };
         for (ulong id = 2; id <= 4; id++)
@@ -43,8 +43,8 @@ public partial class OrbContractRunner
             return pet;
         }
         Creature[] pets = [Pet(ModelDb.Monster<YamotoKokiMonster>()),
-            Pet(ModelDb.Monster<SawatariMonster>()), Pet(ModelDb.Monster<YukanoMonster>())];
-        Creature missile = Pet(ModelDb.Monster<YamotoKokiOrigamiMissile>());
+            Pet(ModelDb.Monster<ForestSawatariMonster>()), Pet(ModelDb.Monster<YukanoMonster>())];
+        Creature missile = Pet(ModelDb.Monster<OrigamiMissileMonster>());
         Creature osty = Pet(ModelDb.Monster<Osty>());
         var parent = new Control();
         _hurtRoom = new NCombatRoom();
@@ -132,7 +132,7 @@ public partial class OrbContractRunner
     {
         using var combat = new OrbCombat();
         foreach (MonsterModel model in new MonsterModel[] {
-            ModelDb.Monster<YamotoKokiMonster>(), ModelDb.Monster<SawatariMonster>(), ModelDb.Monster<YukanoMonster>() })
+            ModelDb.Monster<YamotoKokiMonster>(), ModelDb.Monster<ForestSawatariMonster>(), ModelDb.Monster<YukanoMonster>() })
         {
             var owner = new Creature(model.ToMutable(), CombatSide.Player, null)
                 { CombatState = combat.State, PetOwner = combat.Player };

@@ -8,7 +8,7 @@
   "cues": [
     { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
     { "id": "idle", "steps": [{ "action": "wait", "seconds": 1 }] },
-    { "id": "player_combo", "steps": [{ "action": "card", "card": "RoundhouseKickRedesignV1" }] },
+    { "id": "player_combo", "steps": [{ "action": "card", "card": "DragonRoundhouseKick" }] },
     { "id": "recovery", "steps": [{ "action": "wait", "seconds": 2 }] }
   ]
 }

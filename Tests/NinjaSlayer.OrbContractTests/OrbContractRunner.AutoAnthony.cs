@@ -8,7 +8,7 @@ using MegaCrit.Sts2.Core.Modding;
 using NinjaSlayer.Content;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 using MegaCrit.Sts2.Core.Models.Powers;
 using System.Collections;
@@ -136,40 +136,38 @@ public partial class OrbContractRunner
 
         using (var arena = new OrbCombat())
         {
-            await Play(arena, Create(arena, ModelDb.Card<KarateStraightRedesignV1>()));
+            await Play(arena, Create(arena, ModelDb.Card<StraightPunch>()));
             Require(arena.Enemy.CurrentHp == 992 && arena.Player.Creature.GetPowerAmount<KaratePower>() == 4,
                 "Generated Straight Punch must deal 8 and grant 4 Karate.");
         }
         using (var arena = new OrbCombat())
         {
-            await Play(arena, Create(arena, ModelDb.Card<PreparedShurikenRedesignV1>(), upgrade: true));
-            Require(arena.Stock == 3 && arena.Player.Creature.Block == 7, "Generated upgraded Prepared Shuriken lost source values.");
-            await Play(arena, Create(arena, ModelDb.Card<GiantShurikenRedesignV1>()));
-            Require(arena.Player.Creature.HasPower<StarlessNightRedesignPower>(), "Fixed nonnumeric power was applied with zero amount.");
-            await Play(arena, Create(arena, ModelDb.Card<BladeReserveRedesignV1>()));
+            await Play(arena, Create(arena, ModelDb.Card<ReadyShuriken>(), upgrade: true));
+            Require(arena.Stock == 2 && arena.Player.Creature.Block == 8, "Generated upgraded Ready Shuriken lost source values.");
+            await Play(arena, Create(arena, ModelDb.Card<StarlessNight>()));
+            Require(arena.Player.Creature.HasPower<StarlessNightPower>(), "Fixed nonnumeric power was applied with zero amount.");
+            await Play(arena, Create(arena, ModelDb.Card<BladePrep>()));
             Require(arena.Tokens == 1, "Generated stock gain failed to trigger Starless Night once.");
         }
         using (var arena = new OrbCombat())
         {
-            await Play(arena, Create(arena, ModelDb.Card<PlaceholderBlueDefense01>(), upgrade: true));
-            Require(arena.Player.Creature.Block == 8 && arena.Player.Creature.GetPowerAmount<ThornsPower>() == 4,
-                "Generated upgraded Caltrops lost its timed Thorns or Block.");
-            Require(arena.Player.Creature.GetPower<CaltropsDurationPower>()?.ThornsAmount == 4,
-                "Timed Thorns receipt must match actual upgraded amount.");
+            await Play(arena, Create(arena, ModelDb.Card<NinjaCaltrops>(), upgrade: true));
+            Require(arena.Player.Creature.Block == 8 && arena.Player.Creature.GetPowerAmount<ThornsPower>() == 3,
+                "Generated upgraded NinjaCaltrops lost its permanent Thorns or Block.");
         }
         using (var arena = new OrbCombat())
         {
-            await Play(arena, Create(arena, ModelDb.Card<Prejudge>(), upgrade: true));
+            await Play(arena, Create(arena, ModelDb.Card<ReadAhead>(), upgrade: true));
             Require(arena.Player.Creature.Block == 0, "Scry with no cards must not grant Block.");
-            await Play(arena, Create(arena, ModelDb.Card<SipTea>(), upgrade: true));
-            Require(arena.Player.Creature.GetPowerAmount<SipTeaPower>() == 3
-                && PileType.Hand.GetPile(arena.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 1,
+            await Play(arena, Create(arena, ModelDb.Card<Sip>(), upgrade: true));
+            Require(arena.Player.Creature.GetPowerAmount<SipPower>() == 3
+                && PileType.Hand.GetPile(arena.Player).Cards.OfType<Chado>().Count() == 1,
                 "Generated upgraded Sip Tea must breathe immediately and keep three future turns.");
         }
-        GD.Print("PASS generated component gameplay: damage/Karate, stock, fixed power, derivative snapshot, timed Thorns, empty Scry and upgraded Sip Tea.");
+        GD.Print("PASS generated component gameplay: damage/Karate, stock, fixed power, derivative snapshot, permanent Thorns, empty Scry and upgraded Sip Tea.");
         using (var arena = new OrbCombat())
         {
-            var source = ModelDb.Card<KarateStraightRedesignV1>().ToMutable();
+            var source = ModelDb.Card<StraightPunch>().ToMutable();
             _ = MegaCrit.Sts2.Core.Runs.RunState.CreateForTest([arena.Player], seed: "ANTHONY_EDITED_SOURCE");
             source.Owner = arena.Player;
             source.UpgradeInternal();
@@ -190,10 +188,10 @@ public partial class OrbContractRunner
         }
         using (var arena = new OrbCombat())
         {
-            CardModel sourceStrike = Create(arena, ModelDb.Card<ChopStrikeRedesignV1>());
+            CardModel sourceStrike = Create(arena, ModelDb.Card<StrikeStrike>());
             await Play(arena, sourceStrike);
             Require(sourceStrike.Pile?.Type == PileType.Exhaust
-                && PileType.Hand.GetPile(arena.Player).Cards.OfType<ChopStrikeRedesignV1>().Count() == 1,
+                && PileType.Hand.GetPile(arena.Player).Cards.OfType<StrikeStrike>().Count() == 1,
                 "Generated Strike Strike exhausts and generates a native Strike Strike.");
         }
         GD.Print("PASS native decomposition keeps edited damage/cost/keywords/upgrade and Strike generation.");

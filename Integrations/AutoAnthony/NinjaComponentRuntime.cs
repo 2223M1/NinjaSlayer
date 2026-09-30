@@ -9,7 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
@@ -42,7 +42,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
         {
             case "sip_tea":
                 if (amount > 0) await ChadoBreathCmd.Apply(choice, owner, amount);
-                await PowerCmd.Apply<SipTeaPower>(choice, owner.Creature, Value("turns"), owner.Creature, card);
+                await PowerCmd.Apply<SipPower>(choice, owner.Creature, Value("turns"), owner.Creature, card);
                 break;
             // These are intrinsic card rules; NinjaComponentCardPatches uses native card hooks.
             case "return_first":
@@ -54,7 +54,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                     Math.Max(0, CardPile.MaxCardsInHand - PileType.Hand.GetPile(owner).Cards.Count), owner));
                 break;
             case "draw_if_tea":
-                if (PileType.Hand.GetPile(owner).Cards.OfType<ChadoEnergyRedesignV1>().Any())
+                if (PileType.Hand.GetPile(owner).Cards.OfType<Chado>().Any())
                     context.ReplaceDrawnCards(await CardPileCmd.Draw(choice, amount, owner));
                 break;
             case "breath_after_discard":
@@ -71,7 +71,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 break;
             case "hook_strength":
                 if (context.Target is { IsAlive: true } hooked && owner.Creature.GetPowerAmount<KaratePower>() > 0)
-                    await PowerCmd.Apply<HookRopeStrengthDownPower>(choice, hooked, owner.Creature.GetPowerAmount<KaratePower>(), owner.Creature, card);
+                    await PowerCmd.Apply<GrapplingHookStrengthDownPower>(choice, hooked, owner.Creature.GetPowerAmount<KaratePower>(), owner.Creature, card);
                 break;
             case "enemy_karate":
                 if (owner.RunState.Rng.CombatTargets.NextItem(card.CombatState!.HittableEnemies) is { } enemy)
@@ -94,21 +94,19 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 else if (amount < cycle.Amount)
                     await PowerCmd.ModifyAmount(choice, cycle, amount - cycle.Amount, owner.Creature, card);
                 break;
-            case "timed_thorns":
+            case "thorns":
                 await PowerCmd.Apply<ThornsPower>(choice, owner.Creature, amount, owner.Creature, card);
-                var duration = (await PowerCmd.Apply<CaltropsDurationPower>(choice, owner.Creature, 3, owner.Creature, card))!;
-                duration.ThornsAmount = amount;
                 break;
             case "copy_hand_top":
                 var copies = (await CardSelectCmd.FromHand(choice, owner,
-                    new CardSelectorPrefs(new MegaCrit.Sts2.Core.Localization.LocString("cards", ModelDb.Card<ChadoFurinKazanRedesignV1>().Id.Entry + ".selectionScreenPrompt"), amount), c => c != card, card)).ToArray();
+                    new CardSelectorPrefs(new MegaCrit.Sts2.Core.Localization.LocString("cards", ModelDb.Card<FurinKazan>().Id.Entry + ".selectionScreenPrompt"), amount), c => c != card, card)).ToArray();
                 foreach (var copy in copies.Reverse())
                     await CardPileCmd.AddGeneratedCardToCombat(copy.CreateClone(), PileType.Draw, owner, CardPilePosition.Top);
                 break;
             case "transform_flame":
                 var toTransform = await CardSelectCmd.FromHand(choice, owner,
-                    new CardSelectorPrefs(new MegaCrit.Sts2.Core.Localization.LocString("cards", ModelDb.Card<BlackFlameRecovery>().Id.Entry + ".selectionScreenPrompt"), 1), c => c != card && c.IsTransformable, card);
-                foreach (var transformed in toTransform) await CardCmd.TransformTo<BlackFlameRedesignV1>(transformed);
+                    new CardSelectorPrefs(new MegaCrit.Sts2.Core.Localization.LocString("cards", ModelDb.Card<Rekindle>().Id.Entry + ".selectionScreenPrompt"), 1), c => c != card && c.IsTransformable, card);
+                foreach (var transformed in toTransform) await CardCmd.TransformTo<BlackFlame>(transformed);
                 break;
             case "play_statuses":
                 var statuses = new[] { PileType.Draw, PileType.Hand, PileType.Discard }.SelectMany(p => p.GetPile(owner).Cards)
@@ -124,7 +122,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 {
                     if (topCard.Type == CardType.Attack && amount > 1)
                     {
-                        var duplication = (WasshoiDuplicationPower)ModelDb.Power<WasshoiDuplicationPower>().ToMutable();
+                        var duplication = (NavyHammerPower)ModelDb.Power<NavyHammerPower>().ToMutable();
                         duplication.Arm(topCard);
                         await PowerCmd.Apply(choice, duplication, owner.Creature, amount - 1, owner.Creature, card);
                     }
@@ -138,7 +136,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
             case "tea_block_weak":
                 var tea = (await CardSelectCmd.FromHand(choice, owner,
                     new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 1),
-                    c => c is ChadoEnergyRedesignV1, card)).FirstOrDefault();
+                    c => c is Chado, card)).FirstOrDefault();
                 if (tea is null) break;
                 decimal energy = tea.DynamicVars.Energy.BaseValue;
                 await CardCmd.Exhaust(choice, tea);
@@ -172,7 +170,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 context.RecordDamageDealt((int)random.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 break;
             case "tea_exhaust_damage":
-                var teaAttack = DamageCmd.Attack(amount + Value("bonus") * PileType.Exhaust.GetPile(owner).Cards.OfType<ChadoEnergyRedesignV1>().Count())
+                var teaAttack = DamageCmd.Attack(amount + Value("bonus") * PileType.Exhaust.GetPile(owner).Cards.OfType<Chado>().Count())
                     .FromCard(card, context.CardPlay).WithHitCount(Value("hits")).Targeting(context.Target!);
                 await teaAttack.Execute(choice);
                 context.RecordDamageDealt((int)teaAttack.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
@@ -184,8 +182,8 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 if (context.RuntimeSpec.Variant == "tea_area_damage")
                 {
                     var teas = (await CardSelectCmd.FromHand(choice, owner,
-                        new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, PileType.Hand.GetPile(owner).Cards.OfType<ChadoEnergyRedesignV1>().Count()),
-                        c => c is ChadoEnergyRedesignV1, card)).ToArray();
+                        new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, PileType.Hand.GetPile(owner).Cards.OfType<Chado>().Count()),
+                        c => c is Chado, card)).ToArray();
                     foreach (var selectedTea in teas) await CardCmd.Exhaust(choice, selectedTea);
                     repeats = 1 + 2 * teas.Length;
                 }
@@ -203,7 +201,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 context.RecordDamageDealt(dealt);
                 break;
             case "breath_next_x":
-                await PowerCmd.Apply<PourTeaNextTurnPower>(choice, owner.Creature, card.ResolveEnergyXValue() * amount + Value("extra"), owner.Creature, card);
+                await PowerCmd.Apply<ChadoNextTurnPower>(choice, owner.Creature, card.ResolveEnergyXValue() * amount + Value("extra"), owner.Creature, card);
                 break;
             case "scry_block":
                 var scry = await ScryCmd.Execute(choice, owner, amount);
@@ -240,7 +238,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 break;
             case "exhaust_to_top":
                 var selected = await CardSelectCmd.FromSimpleGrid(choice, PileType.Exhaust.GetPile(owner).Cards,
-                    owner, new CardSelectorPrefs(new MegaCrit.Sts2.Core.Localization.LocString("cards", ModelDb.Card<Excavate>().Id.Entry + ".selectionScreenPrompt"), amount));
+                    owner, new CardSelectorPrefs(new MegaCrit.Sts2.Core.Localization.LocString("cards", ModelDb.Card<Recover>().Id.Entry + ".selectionScreenPrompt"), amount));
                 await CardPileCmd.Add(selected, PileType.Draw, CardPilePosition.Top);
                 break;
             case "karate":
@@ -262,7 +260,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 await ScryCmd.Execute(choice, owner, amount, exhaustDiscarded: true);
                 break;
             case "chado_retain":
-                await PowerCmd.Apply<ChadoRetainPower>(choice, owner.Creature, amount, owner.Creature, card);
+                await PowerCmd.Apply<RetainChadoPower>(choice, owner.Creature, amount, owner.Creature, card);
                 break;
             case "draw_sly":
                 var drawn = await CardPileCmd.Draw(choice, amount, owner);
@@ -270,7 +268,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 foreach (var drawnCard in drawn) CardCmd.ApplyKeyword(drawnCard, CardKeyword.Sly);
                 break;
             case "generate_strike_strike":
-                var generatedStrike = owner.Creature.CombatState!.CreateCard<ChopStrikeRedesignV1>(owner);
+                var generatedStrike = owner.Creature.CombatState!.CreateCard<StrikeStrike>(owner);
                 if (card.IsUpgraded) CardCmd.Upgrade(generatedStrike);
                 await CardPileCmd.AddGeneratedCardToCombat(generatedStrike, PileType.Hand, owner);
                 break;
@@ -283,7 +281,7 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
             case "blackflame_hand":
             case "blackflame_draw":
                 for (int i = 0; i < amount; i++)
-                    await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlameRedesignV1>(owner,
+                    await NinjaSlayerCardCmd.AddGeneratedCard<BlackFlame>(owner,
                         context.RuntimeSpec.Variant == "blackflame_hand" ? PileType.Hand : PileType.Draw,
                         CardPilePosition.Random);
                 break;

@@ -3,7 +3,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Lifecycle;
@@ -70,9 +70,9 @@ public partial class NinjaSlayerAimPose : Node2D
     internal static NinjaSlayerAimPose? Get(Creature creature) =>
         creature.GetCreatureNode()?.Visuals.GetNodeOrNull<NinjaSlayerAimPose>("%AimPose");
 
-    internal static bool IsKick(CardModel? card) => card is SatsubatsuRedesignV1
-        or OneDrinkOneStrikeRedesignV1 or RoundhouseKickRedesignV1
-        or SweepKickRedesignV1 or DragonFlyingKickRedesignV1;
+    internal static bool IsKick(CardModel? card) => card is BS1260Kick
+        or SomersaultKick or DragonRoundhouseKick
+        or HalfMoonCompassKick or DragonFlyingKick;
 
     internal static Creature? Focus(Creature actor) => actor.CombatState?.GetOpponentsOf(actor)
         .Where(c => c.IsAlive && c.IsHittable && c.GetCreatureNode() != null)
@@ -176,7 +176,7 @@ public partial class NinjaSlayerAimPose : Node2D
         _hovered = hovered;
         if (IsBusy) return;
         _enabled = true;
-        if (card is TornadoFistRedesignV1)
+        if (card is TornadoFist)
         {
             UpdateTornadoCharge();
         }
@@ -438,7 +438,7 @@ public partial class NinjaSlayerAimPose : Node2D
             StopSpin();
             _finisherTargetLocal = null;
             _returning = false;
-            _enabled = _dragOwner != null && (_dragCard is not TornadoFistRedesignV1 tornado || tornado.ShouldCharge);
+            _enabled = _dragOwner != null && (_dragCard is not TornadoFist tornado || tornado.ShouldCharge);
             if (!_enabled) Transform = Transform2D.Identity;
             SyncNow();
         }

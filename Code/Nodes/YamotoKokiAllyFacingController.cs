@@ -113,5 +113,5 @@ public partial class YamotoKokiAllyFacingController : Node
         node.Entity.IsAlive
         && !CompanionIntentLifecycle.HasRetired(node.Entity)
         && node.Entity.PetOwner != null
-        && node.Entity.Monster is YamotoKokiMonster or YamotoKokiOrigamiMissile or YukanoMonster or SawatariMonster;
+        && node.Entity.Monster is YamotoKokiMonster or OrigamiMissileMonster or YukanoMonster or ForestSawatariMonster;
 }

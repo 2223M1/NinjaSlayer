@@ -5,7 +5,7 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Powers;
 
@@ -19,39 +19,39 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             await PowerCmd.Apply<VigorPower>(Choice, combat.Player.Creature, 7, combat.Player.Creature, null);
-            await CardCmd.AutoPlay(Choice, AddCard<PalmThrustRedesignV1>(combat, upgraded: upgraded), null);
+            await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: upgraded), null);
             Require(combat.Enemy.CurrentHp == 1000 - 12 * (upgraded ? 3 : 2)
                 && !combat.Player.Creature.HasPower<VigorPower>(), "Palm Thrust must spend Vigor after all random hits.");
         }
         using (var combat = new OrbCombat())
         {
             var owner = combat.Player.Creature;
-            await CardCmd.AutoPlay(Choice, AddCard<NinjaSlayer.Cards.OneBodyOneSoul>(combat), null);
-            await CardCmd.AutoPlay(Choice, AddCard<NinjaSlayer.Cards.OneBodyOneSoul>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaSlayer.Cards.OneMindOneBody>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaSlayer.Cards.OneMindOneBody>(combat, upgraded: true), null);
             await PowerCmd.Apply<DexterityPower>(Choice, owner, 100, owner, null);
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await PowerCmd.Apply<KaratePower>(Choice, owner, 4, owner, null);
             await CreatureCmd.Damage(Choice, new[] { combat.Enemy, combat.AddEnemy() }, 1, ValueProp.Move, owner);
             Require(owner.GetPowerAmount<NarakuLifePower>() == 7 && owner.GetPowerAmount<KaratePower>() == 3,
                 "One Body grants seven Naraku Life once for an AOE Karate wave.");
-            await CardCmd.AutoPlay(Choice, AddCard<PalmThrustRedesignV1>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<PalmThrust>(combat, upgraded: true), null);
             Require(owner.GetPowerAmount<NarakuLifePower>() == 28 && !owner.HasPower<KaratePower>(), "Each multihit Karate wave grants Naraku Life separately.");
         }
         using (var combat = new OrbCombat())
         {
             var owner = combat.Player.Creature;
-            await CardCmd.AutoPlay(Choice, AddCard<FlyingBladeDanceRedesignV1>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Composure>(combat), null);
             await PowerCmd.Apply<DexterityPower>(Choice, owner, 100, owner, null);
             await PowerCmd.Apply<FrailPower>(Choice, owner, 2, combat.Enemy, null);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
             Require(owner.Block == 4, "Composure must ignore Dexterity and Frail like Feel No Pain.");
-            await CardCmd.AutoPlay(Choice, AddCard<FlyingBladeDanceRedesignV1>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Composure>(combat, upgraded: true), null);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card() });
             Require(owner.Block == 12, "Base and upgraded Composure stack the same two unpowered block per discard.");
         }
         using (var combat = new OrbCombat())
         {
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             await AddStock(combat.Player, 5);
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card(), combat.Card() });
@@ -62,7 +62,7 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 5);
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             var outer = AddCard<DefendIronclad>(combat, PileType.Draw);
@@ -95,31 +95,31 @@ public partial class OrbContractRunner
             AddCard<Wound>(combat, PileType.Draw);
             AddCard<DefendIronclad>(combat, PileType.Draw);
             if (upgraded) AddCard<DefendIronclad>(combat, PileType.Draw);
-            await CardCmd.AutoPlay(Choice, AddCard<Slaughter>(combat, upgraded: upgraded), combat.Enemy);
+            await CardCmd.AutoPlay(Choice, AddCard<PressTheAttack>(combat, upgraded: upgraded), combat.Enemy);
             Require(old.Pile?.Type == PileType.Hand && wound.Pile?.Type == PileType.Discard && drawn.Pile?.Type == PileType.Hand
                 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == (upgraded ? 4 : 3),
                 "Press the Attack discards only its directly drawn non-attack cards, preserving the existing hand.");
-            var retrieve = AddCard<Excavate>(combat, upgraded: upgraded);
+            var retrieve = AddCard<Recover>(combat, upgraded: upgraded);
             await CardCmd.Exhaust(Choice, wound);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
             {
-                Require(options.Contains(wound) && !options.Contains(drawn), "Excavate must select only exhausted cards.");
+                Require(options.Contains(wound) && !options.Contains(drawn), "Recover must select only exhausted cards.");
                 return [wound];
             }));
             await CardCmd.AutoPlay(Choice, retrieve, null);
-            Require(PileType.Draw.GetPile(combat.Player).Cards.First() == wound && retrieve.Pile?.Type == PileType.Discard,
-                "Excavate places its selection on top without exhausting itself.");
+            Require(PileType.Draw.GetPile(combat.Player).Cards.First() == wound && retrieve.Pile?.Type == PileType.Exhaust,
+                "Recover places its selection on top and exhausts itself.");
         }
         foreach (bool upgraded in new[] { false, true })
         foreach (bool echo in new[] { false, true })
         {
             using var combat = new OrbCombat();
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
-            var strike = AddCard<ChopStrikeRedesignV1>(combat, upgraded: upgraded);
+            var strike = AddCard<StrikeStrike>(combat, upgraded: upgraded);
             strike.EnergyCost.SetCustomBaseCost(0);
             if (echo) await PowerCmd.Apply<EchoFormPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
-            var generated = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChopStrikeRedesignV1>().ToArray();
+            var generated = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrikeStrike>().ToArray();
             Require(strike.Pile?.Type == PileType.Exhaust && generated.Length == (echo ? 2 : 1)
                 && generated.All(c => !ReferenceEquals(c, strike) && c.IsUpgraded == upgraded
                     && c.EnergyCost.GetWithModifiers(CostModifiers.Local) == 1 && c.Keywords.Contains(CardKeyword.Exhaust)),
@@ -129,10 +129,10 @@ public partial class OrbContractRunner
         {
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             for (int i = 0; i < 9; i++) AddCard<Wound>(combat);
-            var strike = AddCard<ChopStrikeRedesignV1>(combat, upgraded: true);
+            var strike = AddCard<StrikeStrike>(combat, upgraded: true);
             await PowerCmd.Apply<EchoFormPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, strike, combat.Enemy);
-            var created = combat.Player.Piles.SelectMany(p => p.Cards).OfType<ChopStrikeRedesignV1>()
+            var created = combat.Player.Piles.SelectMany(p => p.Cards).OfType<StrikeStrike>()
                 .Where(card => !ReferenceEquals(card, strike)).ToArray();
             Require(created.Length == 2 && created.Count(c => c.Pile?.Type == PileType.Hand) == 1
                 && created.Count(c => c.Pile?.Type == PileType.Discard) == 1,
@@ -152,6 +152,6 @@ public partial class OrbContractRunner
             Require(combat.Player.Creature.GetPower<ZanshinPower>()!.ModifyHandDraw(combat.Player, 5) == 5,
                 "Zanshin must not reward an earlier turn twice.");
         }
-        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Excavate, Strike generation and Zanshin");
+        GD.Print("PASS v0.2.17 Palm Vigor, unpowered guards, stock gain and nested Scry, Scry draw isolation, Burning Blood, Recover, Strike generation and Zanshin");
     }
 }

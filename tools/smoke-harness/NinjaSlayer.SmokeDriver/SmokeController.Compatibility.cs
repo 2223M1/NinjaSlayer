@@ -110,7 +110,7 @@ internal sealed partial class SmokeController
                 return (bool)AccessTools.Property(value.GetType(), "Shown").GetValue(value)!;
             }
             Require(!PopupShown(run), "Popup fixture must start with a fresh run.");
-            await RelicCmd.Obtain<NinjaSlayer.Relics.YukanoCompanionRelic>(player);
+            await RelicCmd.Obtain<NinjaSlayer.Relics.ToriiPactRelic>(player);
             Creature archer = await PlayerCmd.AddPet<YukanoMonster>(player);
             var arrow = (MoveState)archer.Monster!.MoveStateMachine!.States[YukanoMonster.ArrowMoveId];
             enemy.SetMaxHpInternal(500);

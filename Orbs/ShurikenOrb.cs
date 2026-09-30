@@ -48,8 +48,8 @@ public sealed class ShurikenOrb : ModOrbTemplate
 
     public override decimal PassiveVal => StackCount;
     public override decimal EvokeVal => IsMutable
-        ? ModifyOrbValue(RedesignV1Rules.ShurikenBaseDamage)
-        : RedesignV1Rules.ShurikenBaseDamage;
+        ? ModifyOrbValue(NinjaSlayerCardRules.ShurikenBaseDamage)
+        : NinjaSlayerCardRules.ShurikenBaseDamage;
     public override ModOrbValueDisplayMode ValueDisplayMode => ModOrbValueDisplayMode.Both;
     public override Color DarkenedColor => new("805900");
     public override OrbAssetProfile AssetProfile => new(
@@ -130,7 +130,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         int damage = (int)EvokeVal;
         foreach (PowerModel power in Owner.Creature.Powers.ToArray())
         {
-            if (power is StarlessNightRedesignPower starless)
+            if (power is StarlessNightPower starless)
                 await starless.GenerateStrongShuriken(damage);
         }
     }
@@ -140,7 +140,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
         bool isOwnerDiscard = card.Owner == Owner;
         await FireStock(
             choiceContext,
-            RedesignV1Rules.ResolveShurikenDiscard(
+            NinjaSlayerCardRules.ResolveShurikenDiscard(
                 StackCount,
                 isOwnerDiscard,
                 CombatState.HittableEnemies.Count),
@@ -150,7 +150,7 @@ public sealed class ShurikenOrb : ModOrbTemplate
     public override Task AfterShuffle(PlayerChoiceContext choiceContext, Player shuffler) =>
         FireStock(
             choiceContext,
-            RedesignV1Rules.ResolveBladeCycleShuffle(
+            NinjaSlayerCardRules.ResolveBladeCycleShuffle(
                 StackCount,
                 Owner.Creature.HasPower<BladeCyclePower>(),
                 shuffler == Owner,

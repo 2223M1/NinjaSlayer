@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034')]
+    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -21,7 +21,8 @@ param(
     [string[]]$AdditionalModDirectories = @(),
     [ValidateSet('gl_compatibility', 'mobile', 'forward_plus')][string]$RenderingMethod,
     [switch]$DevelopmentPackage,
-    [switch]$NoScreenshots
+    [switch]$NoScreenshots,
+    [switch]$BackgroundDesktop
 )
 
 $ErrorActionPreference = 'Stop'
@@ -139,7 +140,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -160,6 +161,7 @@ function Invoke-SmokePhase {
             'ModCompatibility' { 12 }
             'CombatRegression' { 13 }
             'Release034' { 14 }
+            'Release038' { 15 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -183,7 +185,13 @@ function Invoke-SmokePhase {
             "--ninjaslayer-smoke-config=$configurationPath"
         )
         if ($RenderingMethod) { $arguments += @('--rendering-method', $RenderingMethod) }
-        $process = Start-Process -FilePath $gameExecutable -ArgumentList $arguments `
+        $launcher = $gameExecutable
+        if ($BackgroundDesktop) {
+            Invoke-Native -Command dotnet -Arguments @('build', "$PSScriptRoot/NinjaSlayer.BackgroundGame/NinjaSlayer.BackgroundGame.csproj", '-c', 'Release', '-v:quiet')
+            $launcher = "$PSScriptRoot/NinjaSlayer.BackgroundGame/bin/Release/net9.0-windows/BackgroundGame.exe"
+            $arguments = @('"' + $gameExecutable + '"') + $arguments
+        }
+        $process = Start-Process -FilePath $launcher -ArgumentList $arguments `
             -WorkingDirectory $isolatedGameRoot -WindowStyle Hidden -PassThru
         if (-not $process.WaitForExit($effectivePhaseTimeoutSeconds * 1000)) {
             Stop-ProcessTree -Process $process
@@ -470,7 +478,7 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034')) {
+    elseif ($Mode -in @('FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -502,6 +510,9 @@ try {
     }
     elseif ($Mode -eq 'TelemetryLoss') {
         @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
+    }
+    elseif ($Mode -eq 'Release038') {
+        @('release038.completed')
     }
     elseif ($Mode -eq 'Release034') {
         @('release034.completed')
@@ -546,6 +557,7 @@ try {
             'ModCompatibility' { 'singleplayer-mod-compatibility' }
             'CombatRegression' { 'combat-regression' }
             'Release034' { 'release034' }
+            'Release038' { 'release038' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }
             'Catalog' { 'runtime-content-export' }

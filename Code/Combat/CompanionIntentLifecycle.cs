@@ -86,7 +86,7 @@ internal static class CompanionIntentLifecycle
         {
             Creature creature = node.Entity;
             if (creature.Side == CombatSide.Player
-                && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster
+                && creature.Monster is YamotoKokiMonster or ForestSawatariMonster or YukanoMonster
                 && ReferenceEquals(creature.CombatState, combatState))
             {
                 Invalidate(creature);

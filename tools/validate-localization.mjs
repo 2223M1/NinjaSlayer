@@ -36,7 +36,7 @@ for (const table of Object.keys(tables.zhs)) {
       validateText(current[key], label);
       if (variables(base[key]) !== variables(current[key])) errors.push(label + ' variable mismatch');
       // The approved English Roundhouse text also highlights Repeat; Chinese does not.
-      const expectedFormats = language === 'eng' && key === 'NINJA_SLAYER_CARD_ROUNDHOUSE_KICK_REDESIGN_V1.description'
+      const expectedFormats = language === 'eng' && key === 'NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK.description'
         ? 'Damage:diff(),Repeat:diff()' : formatters(base[key]);
       if (expectedFormats !== formatters(current[key])) errors.push(label + ' formatter mismatch');
       if ((base[key] === '') !== (current[key] === '')) errors.push(label + ' intentional-empty mismatch');

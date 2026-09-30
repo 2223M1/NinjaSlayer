@@ -27,7 +27,7 @@ public sealed class AncientEntranceCreatureVisibilityPatch : IPatchMethod
             || (!(BossGreetingCinematic.ReplacesAncientEntrance(player)
                     ? BossGreetingCinematic.ShouldStage(player)
                     : NinjaSlayerRunData.HasPendingAncientEntranceAnimation(player))
-                && player.RunState.CurrentRoom is not EventRoom { CanonicalEvent: SawatariEvent or TheArchitect }))
+                && player.RunState.CurrentRoom is not EventRoom { CanonicalEvent: TheMovingJungleEvent or TheArchitect }))
         {
             return;
         }

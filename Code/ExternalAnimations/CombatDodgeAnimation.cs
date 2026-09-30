@@ -269,7 +269,7 @@ internal static class EnemyAttackDodgeContext
             foreach (Creature companion in combatState.Creatures.Where(creature =>
                          creature.PetOwner == player
                          && creature.IsAlive
-                         && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster))
+                         && creature.Monster is YamotoKokiMonster or ForestSawatariMonster or YukanoMonster))
             {
                 dodgers.Add(companion);
             }

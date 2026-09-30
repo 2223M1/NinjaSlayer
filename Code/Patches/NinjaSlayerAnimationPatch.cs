@@ -32,7 +32,7 @@ public sealed class NinjaSlayerAnimationPatch : IPatchMethod
         DarkNinjaSpecialAttackPresentation.CancelDeferredHurt(creature);
         FinisherAttackVfxBaselineContext.BeginApproach(creature, triggerName, waitTime);
         Nodes.TornadoHurtPause.Cancel(creature);
-        if (creature.Monster is SawatariMonster && creature.Side == CombatSide.Enemy && creature.IsAlive)
+        if (creature.Monster is ForestSawatariMonster && creature.Side == CombatSide.Enemy && creature.IsAlive)
         {
             if (triggerName == "Hit")
             {

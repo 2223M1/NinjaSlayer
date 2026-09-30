@@ -56,7 +56,6 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
     public const string DeathSlashMoveId = "DEATH_SLASH";
     public const string DarkRobeMoveId = "DARK_ROBE";
     public const string DarkStrikeMoveId = "DARK_STRIKE";
-    public const string KillingIntentMoveId = "DARK_KILLING_INTENT";
 
     public override int MinInitialHp =>
         AscensionHelper.GetValueIfAscension(AscensionLevel.ToughEnemies, 200, 180);
@@ -127,8 +126,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
         }
     }
 
-    internal static int StrengthAmount =>
-        AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 5, 4);
+    internal const int StrengthAmount = 10;
 
     internal static int DeathSlashDamage =>
         AscensionHelper.GetValueIfAscension(AscensionLevel.DeadlyEnemies, 30, 25);
@@ -227,14 +225,11 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
             new SingleAttackIntent(() => DarkStrikeDamage),
             new HealIntent(),
             new CardDebuffIntent());
-        MoveState intent = new(KillingIntentMoveId, KillingIntentMove, new BuffIntent());
-
-        stance.FollowUpState = slash;
+        stance.FollowUpState = strike;
+        strike.FollowUpState = slash;
         slash.FollowUpState = robe;
         robe.FollowUpState = strike;
-        strike.FollowUpState = intent;
-        intent.FollowUpState = slash;
-        return new MonsterMoveStateMachine([stance, slash, robe, strike, intent], stance);
+        return new MonsterMoveStateMachine([stance, strike, slash, robe], stance);
     }
 
     private async Task CounterStanceMove(IReadOnlyList<Creature> _)
@@ -255,7 +250,7 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
         Task fireReveal = NCombatRoom.Instance is { } room
             ? DarkNinjaBattleFirePresentation.RevealFromRightToLeft(room)
             : Task.CompletedTask;
-        await PowerCmd.Apply<IaiPower>(
+        await PowerCmd.Apply<DarkCounterPower>(
             choiceContext,
             Creature,
             DarkNinjaCombatMath.CounterInterval,
@@ -353,18 +348,6 @@ public sealed class DarkNinjaMonster : ModMonsterTemplate
         CardRarity.Ancient => 3,
         _ => 4
     };
-
-    private async Task KillingIntentMove(IReadOnlyList<Creature> _)
-    {
-        Task bladeCharge = DarkNinjaBladeChargePresentation.Play(Creature);
-        await PowerCmd.Apply<StrengthPower>(
-            new ThrowingPlayerChoiceContext(),
-            Creature,
-            StrengthAmount,
-            Creature,
-            null);
-        await bladeCharge;
-    }
 
     private void EnterCombatStance()
     {

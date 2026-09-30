@@ -23,8 +23,8 @@ public static class FixedEventMusicProbe
     const BindingFlags Static = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
     static Type Find(string name) => AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType(name)).First(t => t != null)!;
     static readonly string[][] Tracks = [
-        ["YukanoEvent", "YukanoEventMusicGuid", "yukano_teahouse"],
-        ["YamotoKokiCuteEvent", "YamotoKokiEventMusicGuid", "yamoto_koki_remix"],
+        ["TheCrookedToriiEvent", "YukanoEventMusicGuid", "yukano_teahouse"],
+        ["YamotoKokiIsSoCuteEvent", "YamotoKokiEventMusicGuid", "yamoto_koki_remix"],
         ["NarakuEvent", "NarakuEventMusicGuid", "naraku_crystal_variation"],
     ];
     public static void Init()
@@ -117,7 +117,7 @@ public static class FixedEventMusicProbe
                     natural_outro = true, act_restored = true, early_exit_clean = true, reentry = true });
                 File.WriteAllText(Path.Combine(output, "progress.json"), JsonSerializer.Serialize(results));
             }
-            await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: Model("YukanoEvent"));
+            await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: Model("TheCrookedToriiEvent"));
             await Frames(60); await game.ReturnToMainMenu(); await Frames(60);
             Require(Tracks.All(r => Active(r[1]).Length == 0), "Music survived return to menu");
             File.WriteAllText(Path.Combine(output, "result.json"), JsonSerializer.Serialize(new { passed = true, results, menu_cleanup = true }, new JsonSerializerOptions { WriteIndented = true }));

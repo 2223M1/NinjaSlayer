@@ -45,9 +45,9 @@ internal sealed class GreetingBow : IDisposable
             _baseline = _anchor.Transform;
             _pivot = _anchor.GetParent<CanvasItem>().GetGlobalTransform().AffineInverse()
                 * node.Visuals.VfxSpawnPosition.GlobalPosition;
-            bool left = creature.Monster is SawatariMonster
+            bool left = creature.Monster is ForestSawatariMonster
                 ? !((Sprite2D)node.Body).FlipH : node.Body.Transform.Determinant() < 0f;
-            _facing = left ? -1f : 1f;
+            _facing = left ? 1f : -1f;
         }
         _generation = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Dispose);
     }

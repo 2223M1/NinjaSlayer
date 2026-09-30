@@ -1,7 +1,7 @@
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models.Powers;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
 using STS2RitsuLib.Cards.DynamicVars;
@@ -26,7 +26,7 @@ public sealed class ChadoVar : DynamicVar
 {
     public const string Key = "Chado";
     public ChadoVar(decimal amount) : base(Key, amount) =>
-        this.WithTooltip(_ => HoverTipFactory.FromCard<ChadoEnergyRedesignV1>());
+        this.WithTooltip(_ => HoverTipFactory.FromCard<Chado>());
 }
 
 public sealed class NarakuLifeVar : DynamicVar

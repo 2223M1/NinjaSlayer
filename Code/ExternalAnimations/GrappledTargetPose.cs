@@ -57,9 +57,9 @@ internal sealed class GrappledTargetPose : IDisposable
             * actor.Visuals.Bounds.GetGlobalTransformWithCanvas()
             * new Rect2(Vector2.Zero, actor.Visuals.Bounds.Size);
         Vector2[] points;
-        if (_drawing is Sprite2D sprite && actor.Entity.Monster is SawatariMonster or DarkNinjaMonster)
+        if (_drawing is Sprite2D sprite && actor.Entity.Monster is ForestSawatariMonster or DarkNinjaMonster)
         {
-            string rig = actor.Entity.Monster is SawatariMonster ? "Sawatari" : "DarkNinja";
+            string rig = actor.Entity.Monster is ForestSawatariMonster ? "Sawatari" : "DarkNinja";
             bool standing = sprite.Texture.ResourcePath.Contains("dark_ninja_standing", StringComparison.Ordinal);
             points = ShadowBodyGeometry.Resolve(rig, false, standing).Select(p =>
             {
