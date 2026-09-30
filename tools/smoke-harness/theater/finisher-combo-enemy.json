@@ -4,7 +4,7 @@
   "act": 3,
   "duration": 10,
   "karate": 0,
-  "audit": { "monster": "SawatariMonster", "targetHp": 70, "playerHp": 1, "expectedHits": 4, "mode": "Fast" },
+  "audit": { "monster": "ForestSawatariMonster", "targetHp": 70, "playerHp": 1, "expectedHits": 4, "mode": "Fast" },
   "cues": [
     { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
     { "id": "idle", "steps": [{ "action": "wait", "seconds": 1 }] },

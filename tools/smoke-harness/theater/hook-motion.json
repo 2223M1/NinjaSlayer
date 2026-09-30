@@ -15,11 +15,11 @@
         },
         {
           "action": "give_card",
-          "card": "ChadoEnergyRedesignV1"
+          "card": "Chado"
         },
         {
           "action": "card",
-          "card": "ObserveBattlefield",
+          "card": "TomoeThrow",
           "selection": [
             0
           ],
@@ -33,7 +33,7 @@
         },
         {
           "action": "card",
-          "card": "KarateStraightRedesignV1"
+          "card": "StraightPunch"
         },
         {
           "action": "wait",
@@ -50,7 +50,7 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-normal"
           ]
@@ -70,14 +70,14 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-fast"
           ]
         },
         {
           "action": "card",
-          "card": "KarateStraightRedesignV1",
+          "card": "StraightPunch",
           "covers": [
             "hook-handoff"
           ]
@@ -100,7 +100,7 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-mirrored"
           ]
@@ -127,7 +127,7 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-spine"
           ]
@@ -147,11 +147,11 @@
         },
         {
           "action": "card",
-          "card": "HellTornadoRedesignV1"
+          "card": "HellTornado"
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-separated-body"
           ]
@@ -174,7 +174,7 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-full"
           ]
@@ -194,7 +194,7 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-soul"
           ]
@@ -218,7 +218,7 @@
         },
         {
           "action": "card",
-          "card": "HookRopeRedesignV1",
+          "card": "GrapplingHook",
           "covers": [
             "hook-instant"
           ]

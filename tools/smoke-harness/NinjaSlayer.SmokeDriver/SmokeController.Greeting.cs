@@ -17,7 +17,7 @@ using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.Runs;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Data;
@@ -165,7 +165,7 @@ internal sealed partial class SmokeController
         for (int index = 0; index < 3; index++)
         {
             var state = CombatManager.Instance.DebugOnlyGetState()!;
-            var card = state.CreateCard<KarateStraightRedesignV1>(player);
+            var card = state.CreateCard<StraightPunch>(player);
             await CardPileCmd.Add(card, PileType.Hand);
             await PlayerCmd.SetEnergy(3, player);
             var action = new PlayCardAction(card, state.HittableEnemies.First());

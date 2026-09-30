@@ -6,7 +6,7 @@ using STS2RitsuLib.Scaffolding.Content;
 
 namespace NinjaSlayer.Powers;
 
-public sealed class ZanshinPower : RedesignV1CounterPower
+public sealed class ZanshinPower : NinjaSlayerCounterPower
 {
     public override PowerAssetProfile AssetProfile => NinjaSlayerPowerAssets.Named(nameof(ZanshinPower));
 

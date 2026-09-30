@@ -39,9 +39,9 @@ namespace NinjaSlayer.Content
     }
 }
 
-namespace NinjaSlayer.Cards.RedesignV1
+namespace NinjaSlayer.Cards.Standard
 {
-    public sealed class AlabamaDropRedesignV1 : MegaCrit.Sts2.Core.Models.CardModel;
+    public sealed class AlabamaDrop : MegaCrit.Sts2.Core.Models.CardModel;
 }
 
 namespace MegaCrit.Sts2.Core.Nodes.Combat

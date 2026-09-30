@@ -117,7 +117,7 @@ internal static class FinisherEligibilityService
     {
         if (!(FriendlyCompanionTargeting.IsFriendlyCompanion(owner)
                 || owner.Player?.Character is INinjaSlayerCharacter
-                || owner is { Side: CombatSide.Player, PetOwner: not null, Monster: YamotoKokiOrigamiMissile })
+                || owner is { Side: CombatSide.Player, PetOwner: not null, Monster: OrigamiMissileMonster })
             || owner.CombatState is not { } combatState
             || NCombatRoom.Instance is not { } room
             || owner.GetCreatureNode() is not { } ownerNode

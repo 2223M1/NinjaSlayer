@@ -7,7 +7,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -49,10 +49,10 @@ public partial class OrbContractRunner
         foreach (int held in new[] { 0, 1, 2 })
         {
             using var combat = new OrbCombat();
-            for (int i = 0; i < held; i++) AddCard<BlackFlameRedesignV1>(combat);
-            await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+            for (int i = 0; i < held; i++) AddCard<BlackFlame>(combat);
+            await PowerCmd.Apply<BlackFlameInfernoPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             BurnSounds.Clear();
-            await CardCmd.AutoPlay(Choice, AddCard<SatsubatsuRedesignV1>(combat, upgraded: upgraded), combat.Enemy);
+            await CardCmd.AutoPlay(Choice, AddCard<BS1260Kick>(combat, upgraded: upgraded), combat.Enemy);
             int burnDamage = held * 7;
             Require(combat.Enemy.CurrentHp == 1000 - (upgraded ? 33 : 27) - burnDamage
                 && BurnSounds.Count == held,
@@ -61,17 +61,17 @@ public partial class OrbContractRunner
             BurnSounds.Clear();
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             var hits = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                .Where(e => e.CardSource is BlackFlameRedesignV1).ToArray();
+                .Where(e => e.CardSource is BlackFlame).ToArray();
             Require(hits.Length == held + 1 && hits.All(hit => hit.Result.TotalDamage == 7) && BurnSounds.Count == held + 1,
                 "The next attack must include the newly generated flame and play one native burn sound per flame.");
         }
         using (var combat = new OrbCombat())
         {
-            AddCard<SatsubatsuRedesignV1>(combat, PileType.Draw);
+            AddCard<BS1260Kick>(combat, PileType.Draw);
             BurnSounds.Clear();
-            await CardCmd.AutoPlay(Choice, AddCard<WasshoiRedesignV1>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NavyHammer>(combat, upgraded: true), null);
             var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                .Where(e => e.CardSource is BlackFlameRedesignV1).Select(e => e.Result.TotalDamage).ToArray();
+                .Where(e => e.CardSource is BlackFlame).Select(e => e.Result.TotalDamage).ToArray();
             Require(burns.SequenceEqual(new[] { 4, 4, 4 }) && BurnSounds.Count == 3,
                 "Repeated BS1260 plays must capture a new hand each time: no burn, then one flame, then two separate flames.");
         }
@@ -88,13 +88,13 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var owner = combat.Player.Creature;
-            if (immune) await PowerCmd.Apply<OneBodyOneSoulPower>(Choice, owner, 1, owner, null);
+            if (immune) await PowerCmd.Apply<OneMindOneBodyPower>(Choice, owner, 1, owner, null);
             if (naraku > 0) await PowerCmd.Apply<NarakuLifePower>(Choice, owner, naraku, owner, null);
             await CreatureCmd.GainBlock(owner, 99, ValueProp.Unpowered, null);
-            await PowerCmd.Apply<BurnBurnBurnPower>(Choice, owner, 3, owner, null);
+            await PowerCmd.Apply<BlackFlameInfernoPower>(Choice, owner, 3, owner, null);
             int hp = owner.CurrentHp;
             BurnSounds.Clear();
-            for (int i = 0; i < 2; i++) await ResolveBurnTurnEnd(AddCard<BlackFlameRedesignV1>(combat));
+            for (int i = 0; i < 2; i++) await ResolveBurnTurnEnd(AddCard<BlackFlame>(combat));
             Require(BurnSounds.Count == 2 && combat.Enemy.CurrentHp == 986
                 && owner.CurrentHp == hp - (8 - naraku)
                 && owner.Block == 99 && owner.GetPowerAmount<NarakuLifePower>() == 0
@@ -103,25 +103,25 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var first = AddCard<BlackFlameRedesignV1>(combat);
-            var removed = AddCard<BlackFlameRedesignV1>(combat);
+            var first = AddCard<BlackFlame>(combat);
+            var removed = AddCard<BlackFlame>(combat);
             combat.Player.Creature.GetPower<EvokeObserver>()!.AfterFlameDamage = () =>
                 CardPileCmd.Add(removed, PileType.Discard);
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                .Where(entry => entry.CardSource is BlackFlameRedesignV1).ToArray();
+                .Where(entry => entry.CardSource is BlackFlame).ToArray();
             Require(burns.Length == 1 && burns[0].CardSource == first && removed.Pile?.Type == PileType.Discard,
                 "A snapshotted flame moved out of hand during the first burn must not trigger later.");
         }
         using (var combat = new OrbCombat())
         {
-            AddCard<BlackFlameRedesignV1>(combat);
-            AddCard<BlackFlameRedesignV1>(combat);
+            AddCard<BlackFlame>(combat);
+            AddCard<BlackFlame>(combat);
             combat.Player.Creature.GetPower<EvokeObserver>()!.AfterFlameDamage = async () =>
-                await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, 6, combat.Player.Creature, null);
+                await PowerCmd.Apply<BlackFlameInfernoPower>(Choice, combat.Player.Creature, 6, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                .Where(entry => entry.CardSource is BlackFlameRedesignV1).ToArray();
+                .Where(entry => entry.CardSource is BlackFlame).ToArray();
             Require(burns.Select(entry => (decimal)entry.Result.TotalDamage).SequenceEqual(new decimal[] { 4, 10 }),
                 "Each flame reads its own amplification after earlier damage callbacks finish.");
         }

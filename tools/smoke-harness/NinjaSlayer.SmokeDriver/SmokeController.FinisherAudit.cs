@@ -97,7 +97,7 @@ internal sealed partial class SmokeController
             var profile = AccessTools.Property(ProductType("NinjaSlayer.Code.ExternalAnimations.FinisherTimeline"),
                 "PreviewProfile");
             profile.SetValue(null, Enum.Parse(profile.PropertyType, setup.CameraProfile));
-            if (setup.Monster != "SawatariMonster")
+            if (setup.Monster != "ForestSawatariMonster")
             {
                 Type type = typeof(MonsterModel).Assembly.GetTypes().Concat(typeof(DarkNinjaMonster).Assembly.GetTypes())
                     .Single(t => t.Name == setup.Monster && typeof(MonsterModel).IsAssignableFrom(t));
@@ -126,15 +126,15 @@ internal sealed partial class SmokeController
             if (setup.Form != "normal") await Form(setup.Form);
             if (setup.Companion == "sawatari")
             {
-                Creature companion = await PlayerCmd.AddPet<SawatariMonster>(_player);
+                Creature companion = await PlayerCmd.AddPet<ForestSawatariMonster>(_player);
                 AddActor("ally_sawatari", companion);
                 // The real event initializes weapons explicitly; AddPet does not call AfterAddedToRoom.
                 InvokeMethod(ProductType("NinjaSlayer.Code.Nodes.SawatariWeaponVisuals"), null, "Create", companion.Monster!);
             }
             else if (setup.Companion is { } companion)
             {
-                if (companion == "koki") await RelicCmd.Obtain<YamotoKokiCuteRelic>(_player);
-                else if (companion == "yukano") await RelicCmd.Obtain<YukanoCompanionRelic>(_player);
+                if (companion == "koki") await RelicCmd.Obtain<OrigamiPactRelic>(_player);
+                else if (companion == "yukano") await RelicCmd.Obtain<ToriiPactRelic>(_player);
                 await Entrance(companion);
             }
             if (setup.Orb is { } orb)
@@ -281,7 +281,7 @@ internal sealed partial class SmokeController
                 ["actorFrozen"] = !actorNode.CanProcess(),
                 ["squashAreaRatios"] = ratios,
                 ["squashEligibleVictims"] = victims.Count(v => v.Player?.Character is not NinjaSlayer.Content.INinjaSlayerCharacter
-                    && v.Monster?.GetType().Assembly != typeof(SawatariMonster).Assembly)
+                    && v.Monster?.GetType().Assembly != typeof(ForestSawatariMonster).Assembly)
             };
             Vector2 combo = (Vector2)AccessTools.Field(session.GetType(), "_comboTravel").GetValue(session)!;
             row["comboTravel"] = new JsonObject { ["x"] = combo.X, ["y"] = combo.Y };

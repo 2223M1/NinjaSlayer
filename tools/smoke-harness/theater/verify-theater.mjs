@@ -114,7 +114,7 @@ if (full && script.purpose === 'blood') {
     assert(count('blood-' + name) > 0, `Missing completed blood check: ${name}`);
 }
 if (full && script.purpose === 'architect' && script.cues.some(cue => cue.steps?.some(
-  step => step.action === 'architect_execution' && step.card === 'AlabamaDropRedesignV1'))) {
+  step => step.action === 'architect_execution' && step.card === 'AlabamaDrop'))) {
   const recovering = motion.filter(row => row.architectTrack?.recoveryProgress > 0
     && row.architectTrack.recoveryProgress < 1);
   assert(recovering.length >= 2, 'Missing gradual Architect Alabama recovery.');

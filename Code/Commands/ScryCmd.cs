@@ -48,7 +48,7 @@ public static class ScryCmd
 
         int exhaustedCards = 0;
         int discardedAmount = 0;
-        if (player.Creature.GetPower<ScryPlanningPower>() is { } planning)
+        if (player.Creature.GetPower<ForethoughtPower>() is { } planning)
         {
             planning.ApplyToUnselectedCards(cardsToScry.Except(cardsToDiscard));
         }
@@ -74,7 +74,7 @@ public static class ScryCmd
         }
 
         int viewedAmount = cardsToScry.Count;
-        foreach (IRedesignScryListener listener in player.Creature.Powers.OfType<IRedesignScryListener>().ToList())
+        foreach (IScryListener listener in player.Creature.Powers.OfType<IScryListener>().ToList())
         {
             await listener.AfterScry(choiceContext, viewedAmount, discardedAmount);
         }

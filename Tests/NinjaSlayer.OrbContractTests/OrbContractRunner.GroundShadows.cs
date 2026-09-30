@@ -27,7 +27,7 @@ public partial class OrbContractRunner
         var actionType = typeof(ShurikenOrb).Assembly.GetType("NinjaSlayer.Code.Combat.ShadowActionKind", true)!;
         string? renderDirectory = System.Environment.GetEnvironmentVariable("NINJASLAYER_SHADOW_RENDER_DIR");
         if (renderDirectory != null) System.IO.Directory.CreateDirectory(renderDirectory);
-        foreach (string name in new[] { "ninja_slayer", "yamoto_koki", "dark_ninja", "sawatari", "yukano" })
+        foreach (string name in new[] { "ninja_slayer", "yamoto_koki", "dark_ninja", "forest_sawatari", "yukano" })
         {
             string scenePath = $"res://NinjaSlayer/scenes/creature_visuals/{name}.tscn";
             PreloadManager.Cache.SetAsset(scenePath, GD.Load<PackedScene>(scenePath));
@@ -131,7 +131,7 @@ public partial class OrbContractRunner
                 }
                 else
                 {
-                    if (name == "sawatari")
+                    if (name == "forest_sawatari")
                     {
                         // The independent body crop has an offset foot pivot. Mirror the
                         // sprite origin too, as the live weapon rig does when it plants the foot.

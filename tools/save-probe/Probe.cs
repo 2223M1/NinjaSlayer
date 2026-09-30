@@ -167,7 +167,7 @@ public static class Probe
                     {
                         if (Ninja)
                         {
-                            var flame = ModelDb.AllCards.Single(c => c.GetType().Name == "BlackFlameRedesignV1");
+                            var flame = ModelDb.AllCards.Single(c => c.GetType().Name == "BlackFlame");
                             await CardPileCmd.Add(state.CreateCard(flame, player), PileType.Hand);
                         }
                         else foreach (var enemy in state.Enemies.ToArray())

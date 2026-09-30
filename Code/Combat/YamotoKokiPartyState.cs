@@ -10,10 +10,10 @@ internal static class YamotoKokiPartyState
     public static int GetActiveRelicCount(IRunState runState) =>
         EnumerateRelics(runState).Count(IsActive);
 
-    public static YamotoKokiCuteRelic? GetController(IRunState runState) =>
+    public static OrigamiPactRelic? GetController(IRunState runState) =>
         EnumerateRelics(runState).FirstOrDefault(IsActive);
 
-    public static bool IsController(YamotoKokiCuteRelic relic) =>
+    public static bool IsController(OrigamiPactRelic relic) =>
         ReferenceEquals(GetController(relic.Owner.RunState), relic);
 
     public static bool HasPlayedEntrance(IRunState runState) =>
@@ -37,9 +37,9 @@ internal static class YamotoKokiPartyState
         return null;
     }
 
-    private static IEnumerable<YamotoKokiCuteRelic> EnumerateRelics(IRunState runState) =>
-        runState.Players.SelectMany(player => player.Relics.OfType<YamotoKokiCuteRelic>());
+    private static IEnumerable<OrigamiPactRelic> EnumerateRelics(IRunState runState) =>
+        runState.Players.SelectMany(player => player.Relics.OfType<OrigamiPactRelic>());
 
-    private static bool IsActive(YamotoKokiCuteRelic relic) =>
+    private static bool IsActive(OrigamiPactRelic relic) =>
         relic.CombatsLeft > 0 && !relic.IsMelted;
 }

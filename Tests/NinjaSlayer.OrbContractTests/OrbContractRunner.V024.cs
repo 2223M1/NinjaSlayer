@@ -6,7 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -28,7 +28,7 @@ public partial class OrbContractRunner
             if (strength > 0) await PowerCmd.Apply<StrengthPower>(Choice, owner, strength, owner, null);
             if (weak) await PowerCmd.Apply<WeakPower>(Choice, owner, 1, combat.Enemy, null);
             if (vulnerable) await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, owner, null);
-            var card = AddCard<AlabamaDropRedesignV1>(combat, upgraded: upgraded);
+            var card = AddCard<AlabamaDrop>(combat, upgraded: upgraded);
             int main = (int)Math.Floor(((upgraded ? 28 : 20) + strength) * (weak ? .75m : 1m) * (vulnerable ? 1.5m : 1m));
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             var hits = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
@@ -45,7 +45,7 @@ public partial class OrbContractRunner
             combat.AddEnemy();
             combat.Enemy.SetCurrentHpInternal(hp);
             await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
-            var card = alabama ? (MegaCrit.Sts2.Core.Models.CardModel)AddCard<AlabamaDropRedesignV1>(combat)
+            var card = alabama ? (MegaCrit.Sts2.Core.Models.CardModel)AddCard<AlabamaDrop>(combat)
                 : AddCard<StrikeIronclad>(combat);
             await CardCmd.AutoPlay(Choice, card, combat.Enemy);
             var hits = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
@@ -72,8 +72,8 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var second = combat.AddEnemy();
-            await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
-            for (int i = 0; i < flameCount; i++) AddCard<BlackFlameRedesignV1>(combat);
+            await PowerCmd.Apply<BlackFlameInfernoPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+            for (int i = 0; i < flameCount; i++) AddCard<BlackFlame>(combat);
             for (int play = 0; play < 2; play++)
             {
                 CombatManager.Instance.History.Clear();
@@ -81,7 +81,7 @@ public partial class OrbContractRunner
                 foreach (var enemy in new[] { combat.Enemy, second })
                 {
                     var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                        .Where(e => e.Receiver == enemy && e.CardSource is BlackFlameRedesignV1).ToArray();
+                        .Where(e => e.Receiver == enemy && e.CardSource is BlackFlame).ToArray();
                     Require(burns.Length == flameCount && burns.All(hit => hit.Result.TotalDamage == 7),
                         "Each independent multi-hit attack triggers each held flame once, independently amplified per enemy.");
                 }
@@ -89,13 +89,13 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            AddCard<BlackFlameRedesignV1>(combat);
-            AddCard<BlackFlameRedesignV1>(combat);
+            AddCard<BlackFlame>(combat);
+            AddCard<BlackFlame>(combat);
             var observer = combat.Player.Creature.GetPower<EvokeObserver>()!;
             observer.NestedFlameAttack = AddCard<StrikeIronclad>(combat);
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             var burns = CombatManager.Instance.History.Entries.OfType<DamageReceivedEntry>()
-                .Where(e => e.CardSource is BlackFlameRedesignV1).ToArray();
+                .Where(e => e.CardSource is BlackFlame).ToArray();
             Require(observer.NestedFlameAttack == null && combat.Enemy.CurrentHp == 972
                 && burns.Length == 4 && burns.All(e => e.Result.TotalDamage == 4),
                 "An attack nested inside Black Flame damage gets its own per-card burns without re-triggering the outer play.");
@@ -105,12 +105,12 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             var selected = Enumerable.Range(0, selectedCount).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
-            var discern = AddCard<DecidedOutcomeRedesignV1>(combat, upgraded: upgraded);
+            var discern = AddCard<Discern>(combat, upgraded: upgraded);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => selected));
             await CardCmd.AutoPlay(Choice, discern, null);
             Require(discern.Pile?.Type == PileType.Exhaust && selected.All(card => card.Pile?.Type == PileType.Exhaust),
                 "Discern and its selections must exhaust through native commands.");
-            int energy = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>()
+            int energy = PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>()
                 .Sum(card => card.DynamicVars.Energy.IntValue);
             Require(energy == selectedCount, "Discern's own exhaust must not add to its breathing count.");
         }

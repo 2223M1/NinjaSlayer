@@ -28,8 +28,8 @@ Ninja Slayer 初始与最大生命均为72。初始牌组为4张打击、5张防
 - 初始遗物在每场战斗开始时触发茶道呼吸2。
 - 先古初始遗物先将2张茶道加入手牌，再触发茶道呼吸2。
 - 藏锋、舍念和飞刃轮转是蓝卡奖励；岚之拳是金卡奖励，出拳退出当前特殊牌区。
-- 黑炎重拳沿用稳定ID `SatsubatsuRedesignV1`；阿拉巴马落沿用稳定ID `AlabamaDropRedesignV1` 并进入金卡奖励。
-- 打击·打击只有一个有效模型，稳定ID为 `ChopStrikeRedesignV1`，采用原版粒子墙式回手语义。
+- 黑炎重拳沿用稳定ID `BS1260Kick`；阿拉巴马落沿用稳定ID `AlabamaDrop` 并进入金卡奖励。
+- 打击·打击只有一个有效模型，稳定ID为 `StrikeStrike`，采用原版粒子墙式回手语义。
 - 强·手里剑是0费消耗Token，只有无星之夜的手里剑结算链会生成。
 - 崩拳、坐禅饮料和一心同体继续作为3张先古牌。
 
@@ -52,7 +52,7 @@ Ninja Slayer 初始与最大生命均为72。初始牌组为4张打击、5张防
 
 ## 静态验收
 
-仓库校验器从 `RedesignV1Rules` 读取三档奖励清单，并与实际继承 `RedesignV1CommonCard`、`RedesignV1UncommonCard`、`RedesignV1RareCard` 的类集合比较。它同时检查：
+仓库校验器从 `NinjaSlayerCardRules` 读取三档奖励清单，并与实际继承 `NinjaSlayerCommonCard`、`NinjaSlayerUncommonCard`、`NinjaSlayerRareCard` 的类集合比较。它同时检查：
 
 - 20/31/23数量与74张唯一奖励牌；
 - 10种特殊牌不进入奖励池且实现仍存在；

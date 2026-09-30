@@ -24,7 +24,7 @@ using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Monsters;
@@ -115,7 +115,7 @@ internal sealed partial class SmokeController
                 await Task.Delay(Timeout.Infinite, cancellationToken);
                 return;
             }
-            if (IsBladeFeedbackPreview || _configuration.PreviewFormFinisher is "SawatariCleanup" or "SawatariWeapons" or "SawatariRig" or "SawatariBow" or "SawatariEvent" or "SawatariMotion")
+            if (IsBladeFeedbackPreview || _configuration.PreviewFormFinisher is "SawatariCleanup" or "SawatariWeapons" or "SawatariRig" or "SawatariBow" or "TheMovingJungleEvent" or "SawatariMotion")
             {
                 await recorder.Start();
                 recording = true;
@@ -146,10 +146,10 @@ internal sealed partial class SmokeController
                 await CreatureCmd.SetCurrentHp(replacement, 1500);
                 return replacement;
             }
-            Creature target = await ReplaceEnemy<SawatariMonster>();
-            var kokiRelic = await RelicCmd.Obtain<YamotoKokiCuteRelic>(player);
+            Creature target = await ReplaceEnemy<ForestSawatariMonster>();
+            var kokiRelic = await RelicCmd.Obtain<OrigamiPactRelic>(player);
             await kokiRelic.BeforeCombatStart();
-            var yukanoRelic = await RelicCmd.Obtain<YukanoCompanionRelic>(player);
+            var yukanoRelic = await RelicCmd.Obtain<ToriiPactRelic>(player);
             await yukanoRelic.BeforeCombatStart();
             Creature koki = player.PlayerCombatState!.Pets.Single(p => p.Monster is YamotoKokiMonster);
             Creature yukano = player.PlayerCombatState.Pets.Single(p => p.Monster is YukanoMonster);
@@ -163,7 +163,7 @@ internal sealed partial class SmokeController
             await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null,
                 [choice, player, _configuration.PreviewFormFinisher == "ShurikenInertia" ? 3 : 6])!;
             for (int i = 0; i < 40; i++)
-                await CardPileCmd.Add(combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player), PileType.Draw, skipVisuals: true);
+                await CardPileCmd.Add(combat.CreateCard<StrikeNinjaSlayer>(player), PileType.Draw, skipVisuals: true);
             NRunMusicController.Instance?.PlayCustomMusic(NinjaSlayerAudio.ForestSawatariBattleMusicEvent);
             await WaitFrames(120);
             await recorder.Start();
@@ -195,7 +195,7 @@ internal sealed partial class SmokeController
                 int beforeDamage = target.CurrentHp;
                 Task playing = CardCmd.AutoPlay(choice, card,
                     selected ?? (card.TargetType == TargetType.Self ? player.Creature : target));
-                if (card is DragonFlyingKickRedesignV1)
+                if (card is DragonFlyingKick)
                 {
                     long? damageAt = null;
                     int heldFrames = 0;
@@ -226,9 +226,9 @@ internal sealed partial class SmokeController
             async Task Move(Creature creature, string id, Creature victim)
             {
                 MonsterModel monster = creature.Monster!;
-                if (monster is SawatariMonster)
+                if (monster is ForestSawatariMonster)
                 {
-                    await (Task)AccessTools.Method(typeof(SawatariMonster), "PlayAttack").Invoke(monster, [victim])!;
+                    await (Task)AccessTools.Method(typeof(ForestSawatariMonster), "PlayAttack").Invoke(monster, [victim])!;
                     return;
                 }
                 var move = (MoveState)monster.MoveStateMachine!.States[id];
@@ -293,9 +293,9 @@ internal sealed partial class SmokeController
                 if (showcase != "Forms")
                 {
                     Section("native-audio-and-action-reference");
-                    await Play<KarateStraightRedesignV1>();
+                    await Play<StraightPunch>();
                     await WaitFrames(24);
-                    await Play<KarateStraightRedesignV1>();
+                    await Play<StraightPunch>();
                     await WaitFrames(24);
                 }
                 if (showcase == "Forms")
@@ -304,13 +304,13 @@ internal sealed partial class SmokeController
                     target = await ReplaceEnemy<MegaCrit.Sts2.Core.Models.Monsters.TwigSlimeS>();
                     await Play<MegaCrit.Sts2.Core.Models.Cards.Bludgeon>();
                     await WaitFrames(36);
-                    await Play<CollapseFistRedesignV1>();
+                    await Play<CollapseFist>();
                     await WaitFrames(36);
                     Section("native-bludgeon-versus-mod-heavy-large-target");
                     target = await ReplaceEnemy<MegaCrit.Sts2.Core.Models.Monsters.SewerClam>();
                     await Play<MegaCrit.Sts2.Core.Models.Cards.Bludgeon>();
                     await WaitFrames(36);
-                    await Play<StraightKiRedesignV1>();
+                    await Play<StraightKi>();
                     await WaitFrames(36);
                     Section("native-ground-effect-raised-target");
                     NCreature raised = room.GetCreatureNode(target)!;
@@ -318,37 +318,37 @@ internal sealed partial class SmokeController
                     raised.Position += new Vector2(0f, -100f);
                     await Play<MegaCrit.Sts2.Core.Models.Cards.Bludgeon>();
                     await WaitFrames(30);
-                    await Play<CollapseFistRedesignV1>();
+                    await Play<CollapseFist>();
                     await WaitFrames(30);
                     raised.Position = targetRoot;
                     Section("normal-fingertip-and-shatter-to-half");
                     await WaitFrames(60);
-                    await Play<NarakuFormRedesignV1>();
+                    await Play<NarakuForm>();
                     await WaitFrames(45);
                     Section("shatter-to-upright-full");
-                    var relic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
+                    var relic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
                     await WaitFrames(60);
                     Section("shatter-to-one-soul-priority");
-                    await Play<OneBodyOneSoul>();
+                    await Play<OneMindOneBody>();
                     await WaitFrames(60);
-                    await Play<HellTornadoRedesignV1>();
+                    await Play<HellTornado>();
                     await WaitFrames(45);
                     Section("layered-shatter-restores-full-mid-orbit");
-                    await PowerCmd.Remove<OneBodyOneSoulPower>(player.Creature);
+                    await PowerCmd.Remove<OneMindOneBodyPower>(player.Creature);
                     await WaitFrames(60);
-                    await Play<StrikeNinjaSlayerRedesignV1>();
+                    await Play<StrikeNinjaSlayer>();
                     Section("layered-shatter-restores-normal");
-                    await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
+                    await PowerCmd.Remove<NarakuFormPower>(player.Creature);
                     await RelicCmd.Remove(relic);
                     await PowerCmd.Remove<NarakuLifePower>(player.Creature);
                     await WaitFrames(45);
-                    await PowerCmd.Remove<HellTornadoRedesignPower>(player.Creature);
+                    await PowerCmd.Remove<HellTornadoPower>(player.Creature);
                     await PowerCmd.Remove<SoarPower>(player.Creature);
                     await RollAndShoot(1);
                     await WaitFrames(30);
                     Section("forward-finisher-still-direct-placement");
                     await CreatureCmd.SetCurrentHp(target, 1);
-                    await Play<CollapseFistRedesignV1>();
+                    await Play<CollapseFist>();
                     await WaitFrames(45);
                 }
                 else if (showcase == "LayoutSlow")
@@ -359,38 +359,38 @@ internal sealed partial class SmokeController
                     await PowerCmd.Remove<KaratePower>(player.Creature);
                     await PowerCmd.Remove<EvasionPower>(player.Creature);
                     Section("ordinary-slow-feedback-and-koki");
-                    await Play<KarateStraightRedesignV1>();
+                    await Play<StraightPunch>();
                     await WaitFrames(18);
                     await Move(koki, YamotoKokiMonster.IaiSlashMoveId, target);
                     await WaitFrames(30);
                     Section("half-naraku-matches-normal-fingertip");
-                    await Play<NarakuFormRedesignV1>();
+                    await Play<NarakuForm>();
                     await WaitFrames(60);
                     Section("full-naraku-centered-wrist-shuriken");
-                    var relic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
+                    var relic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
                     await WaitFrames(90);
                     Section("one-soul-height-versus-dark-ninja-standing");
-                    await Play<OneBodyOneSoul>();
+                    await Play<OneMindOneBody>();
                     await WaitFrames(90);
-                    await PowerCmd.Remove<OneBodyOneSoulPower>(player.Creature);
-                    await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
+                    await PowerCmd.Remove<OneMindOneBodyPower>(player.Creature);
+                    await PowerCmd.Remove<NarakuFormPower>(player.Creature);
                     await RelicCmd.Remove(relic);
                     await PowerCmd.Remove<NarakuLifePower>(player.Creature);
                     await WaitFrames(24);
                     Section("dark-counter-after-complete-hurt");
                     await Move(target, DarkNinjaMonster.CounterStanceMoveId, player.Creature);
-                    await PowerCmd.Remove<IaiPower>(target);
-                    await PowerCmd.Apply<IaiPower>(choice, target, 1, target, null);
-                    await Play<StrikeNinjaSlayerRedesignV1>();
+                    await PowerCmd.Remove<DarkCounterPower>(target);
+                    await PowerCmd.Apply<DarkCounterPower>(choice, target, 1, target, null);
+                    await Play<StrikeNinjaSlayer>();
                     await WaitFrames(30);
                     Section("flying-kick-holds-while-drawing");
-                    await Play<DragonFlyingKickRedesignV1>();
+                    await Play<DragonFlyingKick>();
                     await WaitFrames(45);
                     Require(((Vector2)AccessTools.Property(pose.GetType(), "Travel").GetValue(pose)!).Length() < .5f,
                         "Flying Kick did not return after the card completed.");
                     Section("full-naraku-shuriken-launch");
-                    await Play<NarakuFormRedesignV1>();
-                    relic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
+                    await Play<NarakuForm>();
+                    relic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
                     await WaitFrames(45);
                     await CardCmd.Discard(choice, PileType.Hand.GetPile(player).Cards.ToArray());
                     await CardPileCmd.Add(PileType.Draw.GetPile(player).Cards.ToArray(), PileType.Discard, skipVisuals: true);
@@ -401,7 +401,7 @@ internal sealed partial class SmokeController
                 {
                     async Task DiscardOne()
                     {
-                        CardModel card = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+                        CardModel card = combat.CreateCard<StrikeNinjaSlayer>(player);
                         await CardPileCmd.Add(card, PileType.Hand, skipVisuals: true);
                         await CardCmd.Discard(choice, new[] { card });
                     }
@@ -458,10 +458,10 @@ internal sealed partial class SmokeController
                         SaveManager.Instance.PrefsSave.FastMode = mode;
                         for (int repeat = 0; repeat < 2; repeat++)
                         {
-                            await PowerCmd.Remove<IaiPower>(target);
-                            await PowerCmd.Apply<IaiPower>(choice, target, 1, target, null);
+                            await PowerCmd.Remove<DarkCounterPower>(target);
+                            await PowerCmd.Apply<DarkCounterPower>(choice, target, 1, target, null);
                             Section($"dark-counter-after-hurt-{mode}-{repeat + 1}");
-                            await Play<StrikeNinjaSlayerRedesignV1>();
+                            await Play<StrikeNinjaSlayer>();
                             await WaitFrames(30);
                         }
                     }
@@ -481,15 +481,15 @@ internal sealed partial class SmokeController
                     target = await ReplaceEnemy<DarkNinjaMonster>();
                     NRunMusicController.Instance?.PlayCustomMusic(NinjaSlayerAudio.DarkNinjaBattleMusicEvent);
                     await Move(target, DarkNinjaMonster.CounterStanceMoveId, player.Creature);
-                    await PowerCmd.Remove<IaiPower>(target);
+                    await PowerCmd.Remove<DarkCounterPower>(target);
                     await PowerCmd.Remove<EvasionPower>(target);
                     await PowerCmd.Remove<EvasionPower>(player.Creature);
                     if (player.Creature.Block > 0) await RemoveSmokeBlock(player.Creature);
                     foreach (CardModel old in CardPile.GetCards(player, PileType.Draw, PileType.Discard).ToArray())
                         await CardPileCmd.RemoveFromCombat(old);
                     var receipts = new List<CardModel>();
-                    foreach (CardModel model in new CardModel[] { ModelDb.Card<PlaceholderBlueDefense01>(),
-                        ModelDb.Card<ShurikenDraw>(), ModelDb.Card<PalmThrustRedesignV1>() })
+                    foreach (CardModel model in new CardModel[] { ModelDb.Card<NinjaCaltrops>(),
+                        ModelDb.Card<BattleReady>(), ModelDb.Card<PalmThrust>() })
                     {
                         CardModel deck = player.RunState.CreateCard(model, player);
                         CardCmd.Upgrade(deck);
@@ -556,11 +556,11 @@ internal sealed partial class SmokeController
                     await PowerCmd.Remove<KaratePower>(player.Creature);
                     await PowerCmd.Remove<EvasionPower>(player.Creature);
                     await Move(target, DarkNinjaMonster.CounterStanceMoveId, player.Creature);
-                    await PowerCmd.Remove<IaiPower>(target);
-                    await PowerCmd.Apply<IaiPower>(choice, target, 1, target, null);
+                    await PowerCmd.Remove<DarkCounterPower>(target);
+                    await PowerCmd.Apply<DarkCounterPower>(choice, target, 1, target, null);
                     Section("reverse-slow-attack-approach");
                     await CreatureCmd.SetCurrentHp(player.Creature, 1);
-                    await Play<StrikeNinjaSlayerRedesignV1>();
+                    await Play<StrikeNinjaSlayer>();
                     await WaitFrames(45);
                 }
                 else throw new InvalidOperationException("Unknown form/finisher preview mode.");
@@ -597,83 +597,83 @@ internal sealed partial class SmokeController
                 {
                     SaveManager.Instance.PrefsSave.FastMode = mode;
                     Section($"special-heavy-{mode}-collapse-slaughter-straight-ki");
-                    await Play<CollapseFistRedesignV1>();
+                    await Play<CollapseFist>();
                     await WaitFrames(12);
-                    await Play<Slaughter>();
+                    await Play<PressTheAttack>();
                     await WaitFrames(12);
-                    await Play<StraightKiRedesignV1>();
+                    await Play<StraightKi>();
                     await WaitFrames(12);
                     Require(actor.Position.IsEqualApprox(root), "Special heavy moved the health/status root.");
                 }
                 Section("special-heavy-roll-and-attack-overlap");
                 await RollAndShoot(1);
-                await Play<CollapseFistRedesignV1>();
-                await Play<StrikeNinjaSlayerRedesignV1>();
+                await Play<CollapseFist>();
+                await Play<StrikeNinjaSlayer>();
                 await WaitFrames(15);
                 Section("special-heavy-raised-target");
                 NCreature raised = room.GetCreatureNode(target)!;
                 Vector2 targetBaseline = raised.Position;
                 raised.Position += new Vector2(0f, -100f);
-                await Play<StraightKiRedesignV1>();
+                await Play<StraightKi>();
                 await WaitFrames(18);
                 raised.Position = targetBaseline;
                 Section("sawatari-restored-whole-body-and-exchange");
-                await Move(target, SawatariMonster.AttackMoveId, player.Creature);
-                await Task.WhenAll(Move(target, SawatariMonster.AttackMoveId, player.Creature),
-                    Play<StrikeNinjaSlayerRedesignV1>());
+                await Move(target, ForestSawatariMonster.AttackMoveId, player.Creature);
+                await Task.WhenAll(Move(target, ForestSawatariMonster.AttackMoveId, player.Creature),
+                    Play<StrikeNinjaSlayer>());
                 await WaitFrames(18);
                 Require(room.GetCreatureNode(target)!.Visuals.GetNode<Node2D>("AirborneAnchor").Transform.IsEqualApprox(Transform2D.Identity),
                     "Bamboo retained a tilted pose after simultaneous hurt.");
                 Section("head-orbit-heavy-kick-throw-alabama-tornado");
-                await Play<HellTornadoRedesignV1>();
+                await Play<HellTornado>();
                 await WaitFrames(60);
-                await Play<StraightKiRedesignV1>();
-                await Play<RoundhouseKickRedesignV1>();
+                await Play<StraightKi>();
+                await Play<DragonRoundhouseKick>();
                 await RollAndShoot(1);
-                await Play<AlabamaDropRedesignV1>();
+                await Play<AlabamaDrop>();
                 object hellPose = AccessTools.Property(pose.GetType(), "HellTornado").GetValue(pose)!;
                 Require((bool)AccessTools.Property(hellPose.GetType(), "Active").GetValue(hellPose)!,
                     "Alabama removed the persistent Hell Tornado body split.");
-                await Play<TornadoFistRedesignV1>(energy: 4);
-                await PowerCmd.Remove<HellTornadoRedesignPower>(player.Creature);
+                await Play<TornadoFist>(energy: 4);
+                await PowerCmd.Remove<HellTornadoPower>(player.Creature);
                 await PowerCmd.Remove<SoarPower>(player.Creature);
                 await WaitFrames(18);
                 Section("semi-naraku-head-orbit-switch-and-heavy");
-                await Play<HellTornadoRedesignV1>();
-                await Play<NarakuFormRedesignV1>();
-                await Play<StraightKiRedesignV1>();
-                await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
-                await Play<RoundhouseKickRedesignV1>();
-                await PowerCmd.Remove<HellTornadoRedesignPower>(player.Creature);
+                await Play<HellTornado>();
+                await Play<NarakuForm>();
+                await Play<StraightKi>();
+                await PowerCmd.Remove<NarakuFormPower>(player.Creature);
+                await Play<DragonRoundhouseKick>();
+                await PowerCmd.Remove<HellTornadoPower>(player.Creature);
                 await PowerCmd.Remove<SoarPower>(player.Creature);
                 await WaitFrames(18);
                 Section("one-soul-form-priority-head-orbit-and-heavy");
-                await Play<OneBodyOneSoul>();
+                await Play<OneMindOneBody>();
                 await WaitFrames(18);
-                await Play<CollapseFistRedesignV1>();
-                await Play<HellTornadoRedesignV1>();
+                await Play<CollapseFist>();
+                await Play<HellTornado>();
                 await WaitFrames(60);
-                await Play<StraightKiRedesignV1>();
+                await Play<StraightKi>();
                 await RollAndShoot(1);
-                await PowerCmd.Remove<OneBodyOneSoulPower>(player.Creature);
-                await PowerCmd.Remove<HellTornadoRedesignPower>(player.Creature);
+                await PowerCmd.Remove<OneMindOneBodyPower>(player.Creature);
+                await PowerCmd.Remove<HellTornadoPower>(player.Creature);
                 await PowerCmd.Remove<SoarPower>(player.Creature);
                 await WaitFrames(18);
                 Section("full-naraku-final-layers-heavy-and-head-orbit");
-                var fullRelic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
+                var fullRelic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
                 await fullRelic.BeforeCombatStart();
-                await Play<StraightKiRedesignV1>();
-                await Play<HellTornadoRedesignV1>();
+                await Play<StraightKi>();
+                await Play<HellTornado>();
                 await WaitFrames(60);
-                await PowerCmd.Remove<HellTornadoRedesignPower>(player.Creature);
+                await PowerCmd.Remove<HellTornadoPower>(player.Creature);
                 await PowerCmd.Remove<SoarPower>(player.Creature);
-                await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
+                await PowerCmd.Remove<NarakuFormPower>(player.Creature);
                 await RelicCmd.Remove(fullRelic);
                 await PowerCmd.Remove<NarakuLifePower>(player.Creature);
                 await WaitFrames(18);
                 Section("special-heavy-direct-placement-finisher");
                 await CreatureCmd.SetCurrentHp(target, 1);
-                await Play<CollapseFistRedesignV1>();
+                await Play<CollapseFist>();
                 await WaitFrames(45);
                 _checkpoints.Write("action.special-heavy-completed");
                 await recorder.Stop();
@@ -685,7 +685,7 @@ internal sealed partial class SmokeController
                 return;
             }
             Section("sawatari-opening-aim");
-            CardModel aimed = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            CardModel aimed = combat.CreateCard<StrikeNinjaSlayer>(player);
             var aimDrag = new Node();
             actor.AddChild(aimDrag);
             Vector2 core = actor.GetGlobalTransformWithCanvas() * actor.VfxSpawnPosition;
@@ -699,38 +699,38 @@ internal sealed partial class SmokeController
             aimDrag.QueueFree();
 
             Section("sawatari-punch-roll-volley");
-            await Play<StrikeNinjaSlayerRedesignV1>();
-            await Play<KarateStraightRedesignV1>();
+            await Play<StrikeNinjaSlayer>();
+            await Play<StraightPunch>();
             await RollAndShoot(1);
-            await Play<OneDrinkOneStrikeRedesignV1>();
+            await Play<SomersaultKick>();
 
             Section("sawatari-bamboo-hurt-dodge-block");
-            await Task.WhenAll(Move(target, SawatariMonster.AttackMoveId, player.Creature),
-                Play<StrikeNinjaSlayerRedesignV1>());
+            await Task.WhenAll(Move(target, ForestSawatariMonster.AttackMoveId, player.Creature),
+                Play<StrikeNinjaSlayer>());
             Require(room.GetCreatureNode(target)!.Visuals.GetNode<Node2D>("AirborneAnchor").Transform.IsEqualApprox(Transform2D.Identity),
                 "Sawatari retained a tilted attack/hurt snapshot after the exchange.");
             _checkpoints.Write("action.sawatari-exchange-restored");
-            await Play<HardItOutRedesignV1>();
-            await Task.WhenAll(Move(target, SawatariMonster.AttackMoveId, player.Creature),
-                Play<DefendNinjaSlayerRedesignV1>());
+            await Play<Macaco>();
+            await Task.WhenAll(Move(target, ForestSawatariMonster.AttackMoveId, player.Creature),
+                Play<DefendNinjaSlayer>());
             await PowerCmd.Apply<WeakPower>(choice, player.Creature, 1, target, null);
             await PowerCmd.Remove<WeakPower>(player.Creature);
 
             Section("sawatari-companion-combination");
             await Task.WhenAll(Move(koki, YamotoKokiMonster.SummonMissileMoveId, target),
-                Move(yukano, YukanoMonster.ArrowMoveId, target), Play<RoundhouseKickRedesignV1>());
+                Move(yukano, YukanoMonster.ArrowMoveId, target), Play<DragonRoundhouseKick>());
             await Task.WhenAll(Move(koki, YamotoKokiMonster.IaiSlashMoveId, target),
                 Move(yukano, YukanoMonster.ShurikenMoveId, target), RollAndShoot(1));
             foreach (Creature missile in player.PlayerCombatState.Pets
-                         .Where(p => p.Monster is YamotoKokiOrigamiMissile).ToArray())
+                         .Where(p => p.Monster is OrigamiMissileMonster).ToArray())
                 await missile.Monster!.PerformMove();
-            await Play<SweepKickRedesignV1>();
-            await Play<DragonFlyingKickRedesignV1>();
+            await Play<HalfMoonCompassKick>();
+            await Play<DragonFlyingKick>();
 
             Section("sawatari-tornado-alabama");
-            await Play<TornadoFistRedesignV1>(energy: 3);
-            await Play<AlabamaDropRedesignV1>();
-            await Play<StrikeNinjaSlayerRedesignV1>();
+            await Play<TornadoFist>(energy: 3);
+            await Play<AlabamaDrop>();
+            await Play<StrikeNinjaSlayer>();
             await WaitFrames(6);
             Require(actor.Position.IsEqualApprox(root), "Sawatari sequence moved the combat root.");
 
@@ -739,8 +739,8 @@ internal sealed partial class SmokeController
             NRunMusicController.Instance?.PlayCustomMusic(NinjaSlayerAudio.DarkNinjaBattleMusicEvent);
             await Move(target, DarkNinjaMonster.CounterStanceMoveId, player.Creature);
             await PowerCmd.Remove<EvasionPower>(target);
-            for (int i = 0; i < 3; i++) await Play<StrikeNinjaSlayerRedesignV1>();
-            await PowerCmd.Remove<IaiPower>(target);
+            for (int i = 0; i < 3; i++) await Play<StrikeNinjaSlayer>();
+            await PowerCmd.Remove<DarkCounterPower>(target);
 
             Section("dark-ninja-slash-and-dark-strike");
             await Move(target, DarkNinjaMonster.DarkStrikeMoveId, player.Creature);
@@ -748,27 +748,27 @@ internal sealed partial class SmokeController
                 Move(yukano, YukanoMonster.ShurikenMoveId, target), RollAndShoot(1));
 
             Section("naraku-airborne-attack-throw");
-            await Play<NarakuFormRedesignV1>();
-            await Play<HellTornadoRedesignV1>();
-            await Play<StrikeNinjaSlayerRedesignV1>();
-            await Play<RoundhouseKickRedesignV1>();
+            await Play<NarakuForm>();
+            await Play<HellTornado>();
+            await Play<StrikeNinjaSlayer>();
+            await Play<DragonRoundhouseKick>();
             await RollAndShoot(1);
-            await PowerCmd.Remove<HellTornadoRedesignPower>(player.Creature);
+            await PowerCmd.Remove<HellTornadoPower>(player.Creature);
             await PowerCmd.Remove<SoarPower>(player.Creature);
 
             Section("full-naraku-tornado-combination");
-            var narakuRelic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
+            var narakuRelic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
             await narakuRelic.BeforeCombatStart();
-            await Play<TornadoFistRedesignV1>(energy: 4, charge: true);
-            await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
+            await Play<TornadoFist>(energy: 4, charge: true);
+            await PowerCmd.Remove<NarakuFormPower>(player.Creature);
             await RelicCmd.Remove(narakuRelic);
             await PowerCmd.Remove<NarakuLifePower>(player.Creature);
 
             Section("final-roll-volley-tornado-finisher");
             await RollAndShoot(1);
-            await Play<SatsubatsuRedesignV1>();
+            await Play<BS1260Kick>();
             await CreatureCmd.SetCurrentHp(target, 1);
-            await Play<TornadoFistRedesignV1>(energy: 6, charge: true);
+            await Play<TornadoFist>(energy: 6, charge: true);
             await WaitFrames(45);
             _checkpoints.Write("action.preview-completed");
             await recorder.Stop();

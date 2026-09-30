@@ -386,25 +386,25 @@ for (const name of ['settings_ui.json', 'enchantments.json']) {
   }
 }
 
-const redesignCardsByLanguage = Object.fromEntries(
+const modCardsByLanguage = Object.fromEntries(
   ['eng', 'zhs'].map((language) => {
     const cards = readJson(join(root, 'NinjaSlayer', 'localization', language, 'cards.json')) ?? {};
     return [language, Object.fromEntries(
       Object.entries(cards).filter(([key]) =>
-        key.includes('_REDESIGN_V1.') || key.startsWith('NINJA_SLAYER_CARD_BUSY_LINE.')),
+        key.startsWith('NINJA_SLAYER_CARD_')),
     )];
   }),
 );
-const englishRedesignKeys = Object.keys(redesignCardsByLanguage.eng).sort();
-const chineseRedesignKeys = Object.keys(redesignCardsByLanguage.zhs).sort();
-if (JSON.stringify(englishRedesignKeys) !== JSON.stringify(chineseRedesignKeys)) {
-  errors.push('Redesign V1 card localization keys differ between eng/cards.json and zhs/cards.json');
+const englishModKeys = Object.keys(modCardsByLanguage.eng).sort();
+const chineseModKeys = Object.keys(modCardsByLanguage.zhs).sort();
+if (JSON.stringify(englishModKeys) !== JSON.stringify(chineseModKeys)) {
+  errors.push('NinjaSlayer card localization keys differ between eng/cards.json and zhs/cards.json');
 }
-const redesignSelectionPromptStems = [
-  'NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1',
+const selectionPromptStems = [
+  'NINJA_SLAYER_CARD_FURIN_KAZAN',
 ];
 for (const language of ['eng', 'zhs']) {
-  const cards = redesignCardsByLanguage[language];
+  const cards = modCardsByLanguage[language];
   const stems = new Set(Object.keys(cards).map((key) => key.replace(/\.(?:title|description|selectionScreenPrompt)$/, '')));
   for (const stem of stems) {
     for (const suffix of ['title', 'description']) {
@@ -417,24 +417,24 @@ for (const language of ['eng', 'zhs']) {
       }
     }
   }
-  for (const stem of redesignSelectionPromptStems) {
+  for (const stem of selectionPromptStems) {
     const value = cards[`${stem}.selectionScreenPrompt`];
     if (typeof value !== 'string' || value.trim().length === 0) {
       errors.push(`${language}/cards.json is missing non-empty ${stem}.selectionScreenPrompt`);
     }
   }
 }
-for (const key of englishRedesignKeys.filter((key) => key.endsWith('.description'))) {
+for (const key of englishModKeys.filter((key) => key.endsWith('.description'))) {
   const englishFields = [...new Set(
-    [...redesignCardsByLanguage.eng[key].matchAll(/\{([A-Za-z_][A-Za-z0-9_]*)(?=[:}])/g)]
+    [...modCardsByLanguage.eng[key].matchAll(/\{([A-Za-z_][A-Za-z0-9_]*)(?=[:}])/g)]
       .map((match) => match[1]),
   )].sort();
   const chineseFields = [...new Set(
-    [...redesignCardsByLanguage.zhs[key].matchAll(/\{([A-Za-z_][A-Za-z0-9_]*)(?=[:}])/g)]
+    [...modCardsByLanguage.zhs[key].matchAll(/\{([A-Za-z_][A-Za-z0-9_]*)(?=[:}])/g)]
       .map((match) => match[1]),
   )].sort();
   if (JSON.stringify(englishFields) !== JSON.stringify(chineseFields)) {
-    errors.push(`Redesign V1 format fields differ between eng and zhs for ${key}`);
+    errors.push(`NinjaSlayer format fields differ between eng and zhs for ${key}`);
   }
 }
 

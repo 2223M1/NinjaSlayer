@@ -8,7 +8,7 @@
   "cues": [
     { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
     { "id": "wall_entry_greeting_execution", "steps": [
-      { "action": "architect_execution", "actor": "native", "card": "CollapseFistRedesignV1", "mode": "WallSlideFromLeft" }
+      { "action": "architect_execution", "actor": "native", "card": "CollapseFist", "mode": "WallSlideFromLeft" }
     ] }
   ]
 }

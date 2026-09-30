@@ -11,7 +11,7 @@ using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.TestSupport;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Powers;
 
@@ -52,7 +52,7 @@ public partial class OrbContractRunner
                     System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
                         System.IO.File.ReadAllText(Path.Combine(localizationRoot, language, table + ".json")))!);
             using var combat = new OrbCombat();
-            foreach (Type type in typeof(Prejudge).Assembly.GetTypes().Where(type => !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)))
+            foreach (Type type in typeof(ReadAhead).Assembly.GetTypes().Where(type => !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type)))
             {
                 CardModel card = ModelDb.GetById<CardModel>(ModelDb.GetId(type)).ToMutable();
                 card.Owner = combat.Player;
@@ -80,11 +80,11 @@ public partial class OrbContractRunner
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            var palm = AddCard<PalmThrustRedesignV1>(combat, upgraded: upgraded);
-            var adjustment = AddCard<CombatAdjustmentRedesignV1>(combat, upgraded: upgraded);
-            var judge = AddCard<Prejudge>(combat, upgraded: upgraded);
-            var storm = AddCard<StormFistRedesignV1>(combat, upgraded: upgraded);
-            AddCard<ChadoEnergyRedesignV1>(combat, PileType.Exhaust);
+            var palm = AddCard<PalmThrust>(combat, upgraded: upgraded);
+            var adjustment = AddCard<MotionAndStillness>(combat, upgraded: upgraded);
+            var judge = AddCard<ReadAhead>(combat, upgraded: upgraded);
+            var storm = AddCard<StormFist>(combat, upgraded: upgraded);
+            AddCard<Chado>(combat, PileType.Exhaust);
 
             void Expect(CardModel card, int expected, bool block = false)
             {
@@ -134,7 +134,7 @@ public partial class OrbContractRunner
     {
         using (var combat = new OrbCombat())
         {
-            var judge = AddCard<Prejudge>(combat);
+            var judge = AddCard<ReadAhead>(combat);
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             var discarded = AddCard<DefendIronclad>(combat, PileType.Draw);
             var nested = AddCard<DefendIronclad>(combat, PileType.Draw);
@@ -153,14 +153,14 @@ public partial class OrbContractRunner
             Require(selection == 2 && combat.Stock == 3 && combat.Enemy.CurrentHp == 982,
                 "Scry/Sly must dispatch three discards and then gain three stock exactly once.");
             Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
-                "Prejudge must count its two discards only; discard powers must also see the nested discard.");
+                "ReadAhead must count its two discards only; discard powers must also see the nested discard.");
         }
         using (var combat = new OrbCombat())
         {
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             var second = AddCard<DefendIronclad>(combat, PileType.Draw);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [sly, second]));
-            await PowerCmd.Apply<RecycledBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<WatchfulBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await ScryCmd.Execute(Choice, combat.Player, 2);
             Require(combat.Stock == 4 && second.Pile?.Type == PileType.Discard && sly.Pile?.Type == PileType.Discard,
                 "Scry must dispatch both discards before Sly generates new stock.");
@@ -182,7 +182,7 @@ public partial class OrbContractRunner
         foreach (string scenario in new[] { "keep", "discard", "nested", "short", "empty" })
         {
             using var combat = new OrbCombat();
-            combat.Player.AddRelicInternal(ModelDb.Relic<NinjaSlayer.Relics.MotherUnixRelic>().ToMutable());
+            combat.Player.AddRelicInternal(ModelDb.Relic<NinjaSlayer.Relics.MotherUNIXAccessKeyRelic>().ToMutable());
             if (turn == 2) combat.Player.PlayerCombatState!.IncrementTurnNumber();
             int count = scenario == "empty" ? 0 : scenario == "short" ? 2 : 10;
             var cards = new List<CardModel>();
@@ -238,12 +238,12 @@ public partial class OrbContractRunner
     {
         using (var combat = new OrbCombat())
         {
-            var uke = AddCard<GreatUkeRedesignV1>(combat);
-            var tea = AddCard<ChadoEnergyRedesignV1>(combat, PileType.Draw);
+            var uke = AddCard<GreatUkemi>(combat);
+            var tea = AddCard<Chado>(combat, PileType.Draw);
             tea.IncreaseEnergy(3);
             var wound = AddCard<Wound>(combat, PileType.Hand);
-            var flame = AddCard<BlackFlameRedesignV1>(combat, PileType.Discard);
-            await PowerCmd.Apply<ReturnReturnReturnPower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
+            var flame = AddCard<BlackFlame>(combat, PileType.Discard);
+            await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
             int before = combat.Player.PlayerCombatState!.Energy;
             await CardCmd.AutoPlay(Choice, uke, null);
             Require(new CardModel[] { uke, tea, wound, flame }.All(card => card.Pile?.Type == PileType.Exhaust),
@@ -255,18 +255,18 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var recovery = AddCard<BlackFlameRecovery>(combat);
+            var recovery = AddCard<Rekindle>(combat);
             var first = AddCard<DefendIronclad>(combat);
             var second = AddCard<DefendIronclad>(combat);
             var wound = AddCard<Wound>(combat);
             combat.Player.Creature.SetCurrentHpInternal(30);
-            await PowerCmd.Apply<ReturnReturnReturnPower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
+            await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 4, combat.Player.Creature, null);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first]));
             await CardCmd.AutoPlay(Choice, recovery, null);
             Require(combat.Player.Creature.CurrentHp == 30 && combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 0,
                 "Recovery must not heal or exhaust hand statuses.");
             Require(wound.Pile?.Type == PileType.Hand && second.Pile?.Type == PileType.Hand
-                && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlameRedesignV1>().Count() == 1,
+                && PileType.Hand.GetPile(combat.Player).Cards.OfType<BlackFlame>().Count() == 1,
                 "Recovery must transform exactly one selected card.");
             await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 3,
@@ -276,14 +276,14 @@ public partial class OrbContractRunner
 #else
             await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #endif
-            Require(!combat.Player.Creature.HasPower<BlackFlameRecoveryPower>(), "Recovery must expire this turn.");
+            Require(!combat.Player.Creature.HasPower<RekindlePower>(), "Recovery must expire this turn.");
         }
         using (var combat = new OrbCombat())
         {
-            AddCard<ChadoEnergyRedesignV1>(combat, PileType.Draw);
+            AddCard<Chado>(combat, PileType.Draw);
             AddCard<Wound>(combat, PileType.Draw);
             AddCard<DefendIronclad>(combat, PileType.Draw);
-            await PowerCmd.Apply<StatusDrawPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3, "Status Draw must chain across successive drawn statuses.");
         }
@@ -295,7 +295,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var gather = AddCard<GatherKi>(combat);
-            var tea = AddCard<ChadoEnergyRedesignV1>(combat);
+            var tea = AddCard<Chado>(combat);
             tea.IncreaseEnergy(4);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
             await CardCmd.AutoPlay(Choice, gather, null);
@@ -304,22 +304,22 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            await CardCmd.AutoPlay(Choice, AddCard<SipTea>(combat, upgraded: true), null);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single().DynamicVars.Energy.BaseValue == 1,
+            await CardCmd.AutoPlay(Choice, AddCard<Sip>(combat, upgraded: true), null);
+            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single().DynamicVars.Energy.BaseValue == 1,
                 "Upgraded Sip Tea must breathe immediately.");
             for (int turn = 0; turn < 4; turn++) await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
-            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single().DynamicVars.Energy.BaseValue == 4
-                && !combat.Player.Creature.HasPower<SipTeaPower>(), "Sip Tea must expire after exactly three turn starts.");
+            Require(PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single().DynamicVars.Energy.BaseValue == 4
+                && !combat.Player.Creature.HasPower<SipPower>(), "Sip Tea must expire after exactly three turn starts.");
         }
         using (var combat = new OrbCombat())
         {
-            var storm = AddCard<StormFistRedesignV1>(combat);
+            var storm = AddCard<StormFist>(combat);
             await PlayerCmd.SetEnergy(10, combat.Player);
             Require(storm.CanPlay(), "Storm Fist must be playable without Chado.");
-            foreach (var pile in new[] { PileType.Draw, PileType.Hand, PileType.Discard, PileType.Exhaust }) AddCard<ChadoEnergyRedesignV1>(combat, pile);
+            foreach (var pile in new[] { PileType.Draw, PileType.Hand, PileType.Discard, PileType.Exhaust }) AddCard<Chado>(combat, pile);
             Require(storm.CanPlay(), "Three Chado across active piles must enable Storm Fist.");
             await CardCmd.AutoPlay(Choice, storm, combat.Enemy);
-            Require(combat.Enemy.CurrentHp == 972 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Count() == 1,
+            Require(combat.Enemy.CurrentHp == 972 && PileType.Exhaust.GetPile(combat.Player).Cards.OfType<Chado>().Count() == 1,
                 "Storm Fist leaves active tea untouched and deals four hits of 4 + 3.");
         }
         GD.Print("PASS accumulated Chado, Sip Tea duration, Storm Fist playability/damage");
@@ -330,13 +330,13 @@ public partial class OrbContractRunner
         using var combat = new OrbCombat();
         await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
         await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
-        await CardCmd.AutoPlay(Choice, AddCard<Wasssssshoi>(combat), null);
+        await CardCmd.AutoPlay(Choice, AddCard<Onslaught>(combat), null);
         await CreatureCmd.GainBlock(combat.Enemy, 100, ValueProp.Unpowered, null);
-        await CardCmd.AutoPlay(Choice, AddCard<StrongShurikenTokenRedesignV1>(combat), combat.Enemy);
+        await CardCmd.AutoPlay(Choice, AddCard<StrongShuriken>(combat), combat.Enemy);
         Require(combat.Enemy.Block == 89 && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 3
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2, "Strong Shuriken must gain Focus damage and an attack card must not trigger Press the Advantage.");
         await AddStock(combat.Player, 1);
-        await CardCmd.Discard(Choice, AddCard<AlabamaDropRedesignV1>(combat));
+        await CardCmd.Discard(Choice, AddCard<AlabamaDrop>(combat));
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2,
             "Orb damage caused by discarding an Attack must count once, not as both attack and stock damage.");
         await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Unpowered, combat.Player.Creature);
@@ -348,7 +348,7 @@ public partial class OrbContractRunner
         await Hook.AfterSideTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #endif
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 3 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2,
-            "Wasssssshoi must remove only temporary gains at turn end.");
+            "Onslaught must remove only temporary gains at turn end.");
         GD.Print("PASS Focus-enhanced token, blocked attack, stock damage source separation and temporary-stat cleanup");
     }
 
@@ -356,7 +356,7 @@ public partial class OrbContractRunner
     {
         using var combat = new OrbCombat();
         combat.AddEnemy();
-        await CardCmd.AutoPlay(Choice, AddCard<Wasssssshoi>(combat), null);
+        await CardCmd.AutoPlay(Choice, AddCard<Onslaught>(combat), null);
         await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         await AddStock(combat.Player, 3);
         await CardCmd.AutoPlay(Choice, AddCard<Dualcast>(combat), null);
@@ -364,7 +364,7 @@ public partial class OrbContractRunner
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
             "Three stock evoked twice against two targets must grant twelve stat increments.");
         await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
-        AddCard<BlackFlameRedesignV1>(combat);
+        AddCard<BlackFlame>(combat);
         await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
         Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
@@ -409,7 +409,7 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var chop = AddCard<ChopRedesignV1>(combat, PileType.Discard);
+            var chop = AddCard<HellChop>(combat, PileType.Discard);
             for (int i = 0; i < 3; i++) await CardCmd.AutoPlay(Choice, AddCard<DefendIronclad>(combat), null);
             Require(chop.Pile?.Type == PileType.Discard, "Skills must not return Strong Chop.");
             for (int i = 0; i < 3; i++) await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
@@ -417,7 +417,7 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var copy = AddCard<ChadoFurinKazanRedesignV1>(combat, upgraded: true);
+            var copy = AddCard<FurinKazan>(combat, upgraded: true);
             var first = AddCard<StrikeIronclad>(combat, upgraded: true);
             var second = AddCard<DefendIronclad>(combat);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [first, second]));
@@ -430,7 +430,7 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var retained = AddCard<DefendIronclad>(combat);
-            var card = AddCard<TonyRetention>(combat);
+            var card = AddCard<Assess>(combat);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await CardCmd.AutoPlay(Choice, card, null);
             Require(!retained.ShouldRetainThisTurn && combat.Player.Creature.Block == 3, "Macaco grants block without Retain.");
@@ -449,9 +449,9 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             var second = combat.AddEnemy();
-            var tea = AddCard<ChadoEnergyRedesignV1>(combat);
+            var tea = AddCard<Chado>(combat);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [tea]));
-            await CardCmd.AutoPlay(Choice, AddCard<ObserveBattlefield>(combat, upgraded: true), combat.Enemy);
+            await CardCmd.AutoPlay(Choice, AddCard<TomoeThrow>(combat, upgraded: true), combat.Enemy);
             Require(combat.Enemy.GetPowerAmount<WeakPower>() == 3 && !second.HasPower<WeakPower>()
                 && combat.Player.Creature.Block == 7 && tea.Pile?.Type == PileType.Exhaust,
                 "Sudden Guard must consume tea, grant seven Block and weaken only its selected target.");

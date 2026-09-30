@@ -139,14 +139,14 @@ internal sealed partial class SmokeController
         }
     }
 
-    private async Task VerifySawatariFeedbackDefenses(SawatariMonster enemy)
+    private async Task VerifySawatariFeedbackDefenses(ForestSawatariMonster enemy)
     {
         var combat = CombatManager.Instance.DebugOnlyGetState()!;
         var player = LocalContext.GetMe(combat.RunState)!;
         var choice = new BlockingPlayerChoiceContext();
-        Task Dual(SawatariMonster model, Creature target) => (Task)AccessTools.Method(typeof(SawatariMonster), "PlayDualAttack").Invoke(model, [target])!;
-        Task Arrow(SawatariMonster model, Creature target) => (Task)AccessTools.Method(typeof(SawatariMonster), "ArrowMove").Invoke(model, [new Creature[] { target }])!;
-        Task Bamboo(SawatariMonster model, Creature target) => (Task)AccessTools.Method(typeof(SawatariMonster), "PlayAttack").Invoke(model, [target])!;
+        Task Dual(ForestSawatariMonster model, Creature target) => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "PlayDualAttack").Invoke(model, [target])!;
+        Task Arrow(ForestSawatariMonster model, Creature target) => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "ArrowMove").Invoke(model, [new Creature[] { target }])!;
+        Task Bamboo(ForestSawatariMonster model, Creature target) => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "PlayAttack").Invoke(model, [target])!;
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Fast;
         await CreatureCmd.GainBlock(player.Creature, 100, ValueProp.Unpowered, null);
         int hp = player.Creature.CurrentHp;
@@ -161,11 +161,11 @@ internal sealed partial class SmokeController
         await VerifySawatariFeedback(ArrowFeedback, enemy.Creature, player.Creature, () => Arrow(enemy, player.Creature), 1, 1);
         await PowerCmd.Apply<EvasionPower>(choice, player.Creature, 1, player.Creature, null);
         await VerifySawatariFeedback(ThrowFeedback, enemy.Creature, player.Creature,
-            () => (Task)AccessTools.Method(typeof(SawatariMonster), "ThrowMove").Invoke(enemy, [new Creature[] { player.Creature }])!, 1, 1);
+            () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "ThrowMove").Invoke(enemy, [new Creature[] { player.Creature }])!, 1, 1);
         Require(player.Creature.CurrentHp == hp, "Evaded weapon attacks changed HP.");
-        await CardCmd.AutoPlay(choice, PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().Single(), enemy.Creature);
+        await CardCmd.AutoPlay(choice, PileType.Hand.GetPile(player).Cards.OfType<Machete>().Single(), enemy.Creature);
 
-        var ally = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+        var ally = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
         ally.ActThree = true;
         Creature friend = combat.CreateCreature(ally, CombatSide.Player, null);
         friend.PetOwner = player;
@@ -180,7 +180,7 @@ internal sealed partial class SmokeController
             await VerifySawatariFeedback(DualFeedback, friend, enemy.Creature, () => Dual(ally, enemy.Creature), 2);
             await VerifySawatariFeedback(BambooFeedback, friend, enemy.Creature, () => Bamboo(ally, enemy.Creature), 4);
             await VerifySawatariFeedback(ArrowFeedback, friend, enemy.Creature, () => Arrow(ally, enemy.Creature), 1);
-            var disappearing = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            var disappearing = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             Creature victim = combat.CreateCreature(disappearing, CombatSide.Enemy, null);
             await CreatureCmd.Add(victim);
             disappearing.RollMove(combat.PlayerCreatures);
@@ -196,7 +196,7 @@ internal sealed partial class SmokeController
                 await shot;
                 await WaitFrames(5);
             }, 1, cancelled: true);
-            var frail = (SawatariMonster)ModelDb.Monster<SawatariMonster>().ToMutable();
+            var frail = (ForestSawatariMonster)ModelDb.Monster<ForestSawatariMonster>().ToMutable();
             Creature dying = combat.CreateCreature(frail, CombatSide.Enemy, null);
             await CreatureCmd.Add(dying);
             frail.RollMove(combat.PlayerCreatures);

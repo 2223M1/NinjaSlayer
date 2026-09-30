@@ -202,7 +202,7 @@ public static class BossGreetingCinematic
             bows.Add(new GreetingBow(player.Creature));
         }
         context.PlaySfx(NinjaSlayerAudio.NinjaSlayerFastDomoEvent);
-        string title = boss?.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss?.Monster?.Id.Entry ?? "Boss";
+        string title = boss?.Monster is DarkNinjaMonster or ForestSawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss?.Monster?.Id.Entry ?? "Boss";
         var greeting = new LocString("characters", "NINJA_SLAYER_GREETING_PLAYER");
         greeting.Add("BossTitle", title);
         var bubble = NSpeechBubbleVfx.Create(greeting.GetFormattedText().ToUpperInvariant(), followed.Creature, 1.8f);
@@ -242,7 +242,7 @@ public static class BossGreetingCinematic
         NCreature bossNode, BossGreetingSession context)
     {
         if (boss.Monster is LagavulinMatriarch) return;
-        string title = boss.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
+        string title = boss.Monster is DarkNinjaMonster or ForestSawatariMonster ? boss.Monster.Title.GetFormattedText() : state.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
         var bubble = IsKaiserBoss(boss)
             ? NSpeechBubbleVfx.Create(BuildBossGreetingDialogue(title), DialogueSide.Right,
                 GetGlobalCenter(GetBossFocus(room, boss, bossNode)!), 2f)
@@ -411,7 +411,7 @@ public static class BossGreetingCinematic
         bool anchorBubbleToBoss = IsKaiserBoss(boss);
         if (showBubble)
         {
-            string title = boss.Monster is DarkNinjaMonster or SawatariMonster ? boss.Monster.Title.GetFormattedText() : combatState.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
+            string title = boss.Monster is DarkNinjaMonster or ForestSawatariMonster ? boss.Monster.Title.GetFormattedText() : combatState.Encounter?.Title.GetFormattedText() ?? boss.Monster?.Id.Entry ?? "Boss";
             string dialogue = BuildBossGreetingDialogue(title);
             bubble = anchorBubbleToBoss
                 ? NSpeechBubbleVfx.Create(
@@ -796,7 +796,7 @@ public static class BossGreetingCinematic
             if (_response != null) return;
             _respondingBoss = boss;
             _response = BossGreetingActionCatalog.Get(boss);
-            if (boss.Monster is DarkNinjaMonster or SawatariMonster) _responseBow = new GreetingBow(boss);
+            if (boss.Monster is DarkNinjaMonster or ForestSawatariMonster) _responseBow = new GreetingBow(boss);
             if (_response.SfxPath != null) BossAudio = PlaySfxWithHandle(_response.SfxPath);
             if (_response.AnimationTrigger != null) node.SetAnimationTrigger(_response.AnimationTrigger);
         }

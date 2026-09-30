@@ -10,7 +10,7 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
@@ -39,7 +39,7 @@ internal sealed partial class SmokeController
         Node2D anchor = NinjaSlayerVisualRig.GetAirborneAnchor(visuals)!;
 
         // Applying the power outside a card exercises its awaited presentation path.
-        var normalTornado = await PowerCmd.Apply<HellTornadoRedesignPower>(choice, player.Creature, 1, player.Creature, null);
+        var normalTornado = await PowerCmd.Apply<HellTornadoPower>(choice, player.Creature, 1, player.Creature, null);
         Require(SoarVisualState.IsAirborne(player.Creature) && anchor.Position.Y < -200,
             "Hell Tornado's normal application returned before rising.");
         await PowerCmd.Remove(normalTornado!);
@@ -47,13 +47,13 @@ internal sealed partial class SmokeController
             "Removing Hell Tornado left the body airborne.");
 
         await PlayerCmd.SetEnergy(10, player);
-        var stockCard = combat.CreateCard<PreparedShurikenRedesignV1>(player);
+        var stockCard = combat.CreateCard<ReadyShuriken>(player);
         await CardPileCmd.Add(stockCard, PileType.Hand);
         await CardCmd.AutoPlay(choice, stockCard, player.Creature);
-        var tornado = combat.CreateCard<HellTornadoRedesignV1>(player);
+        var tornado = combat.CreateCard<HellTornado>(player);
         await CardPileCmd.Add(tornado, PileType.Hand);
         await CardCmd.AutoPlay(choice, tornado, player.Creature);
-        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 4,
+        Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == 2,
             "Hell Tornado did not double stock.");
         await WaitUntilAsync(() => anchor.Position.Y < -200, "Rapid Hell Tornado did not finish rising.", cancellationToken);
         await CapturePresentation("hell-tornado-airborne");
@@ -65,7 +65,7 @@ internal sealed partial class SmokeController
         });
         await WaitTaskAsync(enemyTurn.Task, "Hell Tornado enemy turn did not start.", DefaultTimeout);
         await WaitUntilAsync(() => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play
-                && !player.Creature.HasPower<HellTornadoRedesignPower>(),
+                && !player.Creature.HasPower<HellTornadoPower>(),
             "Hell Tornado did not finish its next-turn volley.", cancellationToken);
         Require(!SoarVisualState.IsAirborne(player.Creature) && anchor.Position.IsZeroApprox()
             && !player.Creature.HasPower<SoarPower>()
@@ -84,7 +84,7 @@ internal sealed partial class SmokeController
             && NinjaSlayerFormState.GetPresentation(player.Creature).Kind == NinjaSlayerFormKind.Normal,
             "ZBR changed Strength or form, or granted the wrong Naraku Life.");
         await PlayerCmd.SetEnergy(10, player);
-        var formCard = combat.CreateCard<NarakuFormRedesignV1>(player);
+        var formCard = combat.CreateCard<NarakuForm>(player);
         await CardPileCmd.Add(formCard, PileType.Hand);
         await CardCmd.AutoPlay(choice, formCard, player.Creature);
         await WaitFrames(3);
@@ -92,15 +92,15 @@ internal sealed partial class SmokeController
         Require(overlay.Visible && overlay.Texture.ResourcePath.StartsWith(NinjaSlayerFormPresentationCatalog.NarakuIdleTexturePrefix),
             "Naraku Form did not render the half-Naraku texture.");
         await CapturePresentation("naraku-half");
-        await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
-        var relic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
+        await PowerCmd.Remove<NarakuFormPower>(player.Creature);
+        var relic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
         await relic.BeforeCombatStart();
         await WaitFrames(3);
         Require(overlay.Visible && overlay.Texture.ResourcePath == NinjaSlayerFormPresentationCatalog.FullyReleasedNarakuTexturePath
-            && !player.Creature.HasPower<NarakuFormRedesignPower>(),
+            && !player.Creature.HasPower<NarakuFormPower>(),
             "The event relic must render full Naraku without adding the card's independent Black Flame power.");
         await CapturePresentation("naraku-full");
-        await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
+        await PowerCmd.Remove<NarakuFormPower>(player.Creature);
         await RelicCmd.Remove(relic);
         await PowerCmd.Remove<NarakuLifePower>(player.Creature);
         await WaitFrames(3);
@@ -112,7 +112,7 @@ internal sealed partial class SmokeController
 
     private async Task VerifyCardPresentation(ICombatState combat, Player player)
     {
-        CardModel[] cards = typeof(NarakuFormRedesignV1).Assembly.GetTypes()
+        CardModel[] cards = typeof(NarakuForm).Assembly.GetTypes()
             .Where(type => !type.IsAbstract && typeof(CardModel).IsAssignableFrom(type))
             .Select(type => ModelDb.GetById<CardModel>(ModelDb.GetId(type))).ToArray();
         foreach (var card in cards.Cast<ModCardTemplate>())
@@ -122,7 +122,7 @@ internal sealed partial class SmokeController
             Require(texture is not null && texture.GetWidth() > 0 && texture.GetHeight() > 0,
                 $"Card portrait did not load: {path}.");
         }
-        foreach (Type type in typeof(NarakuFormRedesignV1).Assembly.GetTypes()
+        foreach (Type type in typeof(NarakuForm).Assembly.GetTypes()
                      .Where(type => !type.IsAbstract && typeof(PowerModel).IsAssignableFrom(type)))
         {
             PowerModel power = ModelDb.GetById<PowerModel>(ModelDb.GetId(type));
@@ -139,8 +139,8 @@ internal sealed partial class SmokeController
         layer.AddChild(vanillaNode);
         vanillaNode.Hide();
         Font vanillaFont = vanillaNode.GetNode<MegaLabel>("%TitleLabel").GetThemeFont(ThemeConstants.Label.Font);
-        CardModel[] examples = [combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player),
-            combat.CreateCard<NarakuFormRedesignV1>(player), combat.CreateCard<TornadoFistRedesignV1>(player)];
+        CardModel[] examples = [combat.CreateCard<StrikeNinjaSlayer>(player),
+            combat.CreateCard<NarakuForm>(player), combat.CreateCard<TornadoFist>(player)];
         for (int index = 0; index < examples.Length; index++)
         {
             NCard node = NCard.Create(examples[index])!;

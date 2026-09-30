@@ -15,7 +15,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Relics;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -28,7 +28,7 @@ internal sealed partial class SmokeController
         foreach (FastModeType speed in Enum.GetValues<FastModeType>())
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
-            var tea = combat.CreateCard<ChadoEnergyRedesignV1>(player);
+            var tea = combat.CreateCard<Chado>(player);
             await CardPileCmd.Add(tea, PileType.Hand);
             await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), tea, player.Creature);
             var button = NCombatRoom.Instance!.Ui.ExhaustPile;
@@ -54,7 +54,7 @@ internal sealed partial class SmokeController
         {
             ("irc", ModelDb.Relic<IrcTerminalRelic>().HoverTips),
             ("starter-tea", ModelDb.Relic<ChadoBreathingRelic>().HoverTips),
-            ("karate", ModelDb.Card<KarateStraightRedesignV1>().HoverTips)
+            ("karate", ModelDb.Card<StraightPunch>().HoverTips)
         })
         {
             var set = NHoverTipSet.CreateAndShow(anchor, tips, HoverTipAlignment.Right);

@@ -17,7 +17,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
     internal static readonly string[] AssetPaths =
     [RootPath + "body.png", RootPath + "inner-fist.png", RootPath + "machete.png", RootPath + "arrow.png",
         RootPath + "bow.png", RootPath + "bow-string.png", RootPath + "bamboo.png"];
-    private SawatariMonster _monster = null!;
+    private ForestSawatariMonster _monster = null!;
     private Sprite2D _body = null!;
     private Vector2 _bodyScale;
     private Vector2 _groundContact;
@@ -86,7 +86,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
         }
     }
 
-    internal static void Create(SawatariMonster monster)
+    internal static void Create(ForestSawatariMonster monster)
     {
         if (monster.Creature.GetCreatureNode() is not { } actor) return;
         var visual = new SawatariWeaponVisuals { Name = "SawatariWeapons", _monster = monster };
@@ -166,7 +166,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
         if (!_monster.ActThree)
         {
             if (_monster.Creature.Side == CombatSide.Enemy
-                && _monster.NextMove.Id == SawatariMonster.EnhanceMoveId) ShowBow(nocked: true);
+                && _monster.NextMove.Id == ForestSawatariMonster.EnhanceMoveId) ShowBow(nocked: true);
             else ShowBamboo();
             return;
         }
@@ -175,7 +175,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
             ShowBamboo();
             return;
         }
-        bool raised = dual ?? _monster.PlannedMacheteMove == SawatariMonster.DualMoveId;
+        bool raised = dual ?? _monster.PlannedMacheteMove == ForestSawatariMonster.DualMoveId;
         _weapons.MoveChild(_fist, _weapons.GetChildCount() - 1);
         SyncBody();
         for (int hand = 0; hand < 2; hand++)
@@ -243,7 +243,7 @@ internal sealed partial class SawatariWeaponVisuals : Node
         _weapons.Visible = _monster.Creature.IsAlive;
     }
 
-    internal static async Task<Sprite2D?> PlayThrow(SawatariMonster monster, Creature target, int hand, int receivingHand)
+    internal static async Task<Sprite2D?> PlayThrow(ForestSawatariMonster monster, Creature target, int hand, int receivingHand)
     {
         if (Get(monster.Creature) is not { } visual || target.GetCreatureNode() is not { } victim) return null;
         visual.Refresh(dual: false);

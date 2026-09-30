@@ -10,7 +10,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
@@ -29,23 +29,23 @@ public partial class OrbContractRunner
             if (chemicalX)
                 combat.Player.AddRelicInternal(ModelDb.Relic<MegaCrit.Sts2.Core.Models.Relics.ChemicalX>().ToMutable());
             await PlayerCmd.SetEnergy(energy, combat.Player);
-            await CardCmd.AutoPlay(Choice, AddCard<TeaStormRedesignV1>(combat, upgraded: upgraded), null);
+            await CardCmd.AutoPlay(Choice, AddCard<DeepBreath>(combat, upgraded: upgraded), null);
             int breaths = 2 * (energy + (chemicalX ? 2 : 0)) + (upgraded ? 1 : 0);
-            Require(!combat.Player.Piles.SelectMany(p => p.Cards).OfType<ChadoEnergyRedesignV1>().Any(),
+            Require(!combat.Player.Piles.SelectMany(p => p.Cards).OfType<Chado>().Any(),
                 "Long Breath must wait until the next owner turn.");
             await PlayerCmd.SetEnergy(9, combat.Player);
             await Hook.BeforeSideTurnStart(combat.State, CombatSide.Enemy, [combat.Enemy]);
-            Require(combat.Player.Creature.GetPowerAmount<PourTeaNextTurnPower>() == breaths,
+            Require(combat.Player.Creature.GetPowerAmount<ChadoNextTurnPower>() == breaths,
                 "Enemy turn must preserve captured X and delayed breathing.");
             await Hook.BeforeSideTurnStart(combat.State, CombatSide.Player, [combat.Player.Creature]);
-            var tea = combat.Player.Piles.SelectMany(p => p.Cards).OfType<ChadoEnergyRedesignV1>().SingleOrDefault();
+            var tea = combat.Player.Piles.SelectMany(p => p.Cards).OfType<Chado>().SingleOrDefault();
             Require((tea?.DynamicVars.Energy.IntValue ?? 0) == breaths
-                && !combat.Player.Creature.HasPower<PourTeaNextTurnPower>(),
+                && !combat.Player.Creature.HasPower<ChadoNextTurnPower>(),
                 "Long Breath uses native X modifiers and 2X/2X+1 exactly once.");
         }
         using (var combat = new OrbCombat())
         {
-            await CardCmd.AutoPlay(Choice, AddCard<RecycledBladesRedesignV1>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<WatchfulBlades>(combat), null);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
             await ScryCmd.Execute(Choice, combat.Player, 2);
             Require(combat.Stock == 0, "Empty Scry must not award stock.");
@@ -58,11 +58,11 @@ public partial class OrbContractRunner
         foreach (int amplification in new[] { 0, 6, 8 })
         {
             using var combat = new OrbCombat();
-            if (amplification > 0) await PowerCmd.Apply<BurnBurnBurnPower>(Choice, combat.Player.Creature, amplification, combat.Player.Creature, null);
+            if (amplification > 0) await PowerCmd.Apply<BlackFlameInfernoPower>(Choice, combat.Player.Creature, amplification, combat.Player.Creature, null);
             if (layers > 0)
                 for (int i = 0; i < layers; i++)
-                    await CardCmd.AutoPlay(Choice, AddCard<NarakuFormRedesignV1>(combat), null);
-            for (int i = 0; i < flameCount; i++) AddCard<BlackFlameRedesignV1>(combat);
+                    await CardCmd.AutoPlay(Choice, AddCard<NarakuForm>(combat), null);
+            for (int i = 0; i < flameCount; i++) AddCard<BlackFlame>(combat);
             var attack = AddCard<StrikeIronclad>(combat);
             int ownerHp = combat.Player.Creature.CurrentHp;
             await CardCmd.AutoPlay(Choice, attack, combat.Enemy);
@@ -76,20 +76,20 @@ public partial class OrbContractRunner
                 && combat.Player.Creature.CurrentHp == ownerHp,
                 "Each virtual and physical flame must be a separate damage callback without attack-trigger self-damage.");
             Require(attack.Pile?.Type == PileType.Discard
-                && combat.Player.Piles.SelectMany(p => p.Cards).OfType<BlackFlameRedesignV1>().Count() == flameCount,
+                && combat.Player.Piles.SelectMany(p => p.Cards).OfType<BlackFlame>().Count() == flameCount,
                 "Naraku must not exhaust attacks or generate flames.");
         }
         using (var combat = new OrbCombat())
         {
-            await CardCmd.AutoPlay(Choice, AddCard<OneBodyOneSoul>(combat), null);
-            await CardCmd.AutoPlay(Choice, AddCard<OneBodyOneSoul>(combat, upgraded: true), null);
+            await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<OneMindOneBody>(combat, upgraded: true), null);
             await ChadoBreathCmd.Apply(Choice, combat.Player, 4);
             Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0,
                 "One Body must no longer award Karate on breathing.");
             await ChadoBreathCmd.Apply(Choice, combat.Player, 1);
             Require(combat.Player.Creature.GetPowerAmount<KaratePower>() == 0, "Further breathing must not grant Karate.");
             int hp = combat.Player.Creature.CurrentHp;
-            var flame = AddCard<BlackFlameRedesignV1>(combat);
+            var flame = AddCard<BlackFlame>(combat);
 #if NINJASLAYER_CHANNEL_STABLE
             await flame.OnTurnEndInHandWrapper(Choice);
 #else
@@ -102,8 +102,8 @@ public partial class OrbContractRunner
         foreach (bool exhaust in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            await CardCmd.AutoPlay(Choice, AddCard<ComposeHaikuRedesignV1>(combat), null);
-            await CardCmd.AutoPlay(Choice, AddCard<RecycledBladesRedesignV1>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Forethought>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<WatchfulBlades>(combat), null);
             var kept = AddCard<DefendIronclad>(combat, PileType.Draw);
             var selected = AddCard<StrikeIronclad>(combat, PileType.Draw);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => [selected]));
@@ -117,23 +117,23 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var tea = AddCard<ChadoEnergyRedesignV1>(combat, PileType.Draw);
-            await CardCmd.AutoPlay(Choice, AddCard<TeaTeaRedesignV1>(combat), null);
-            var later = combat.State.CreateCard<ChadoEnergyRedesignV1>(combat.Player);
+            var tea = AddCard<Chado>(combat, PileType.Draw);
+            await CardCmd.AutoPlay(Choice, AddCard<Meditation>(combat), null);
+            var later = combat.State.CreateCard<Chado>(combat.Player);
             await CardPileCmd.AddGeneratedCardToCombat(later, PileType.Hand, combat.Player);
             Require(tea.Keywords.Contains(CardKeyword.Retain) && later.Keywords.Contains(CardKeyword.Retain),
                 "Meditation grants native Retain to existing and future tea.");
             using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => []));
-            await CardCmd.AutoPlay(Choice, AddCard<TonyRetention>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Assess>(combat), null);
             Require(combat.Player.Creature.Block == 3 && tea.Pile?.Type == PileType.Draw,
                 "Macaco now grants three Block and scries without changing Tea Retain.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            var shield = AddCard<ShurikenGenerationRedesignV1>(combat, upgraded: upgraded);
+            var shield = AddCard<BladeBarrier>(combat, upgraded: upgraded);
             Require(!shield.ShouldGlowGold, "Shuriken Barrier starts inactive.");
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 1);
             await CardCmd.Discard(Choice, combat.Card());
             Require(combat.Stock == 0 && shield.ShouldGlowGold, "Gain qualification persists after the last orb is removed.");

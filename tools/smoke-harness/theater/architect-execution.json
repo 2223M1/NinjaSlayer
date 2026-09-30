@@ -11,9 +11,9 @@
       { "action": "wait", "seconds": 0.8 }
     ] },
     { "id": "sync_attacks", "steps": [
-      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "card", "card": "StraightPunch" },
       { "action": "wait", "seconds": 0.5 },
-      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "card", "card": "StraightPunch" },
       { "action": "wait", "seconds": 0.7 }
     ] },
     { "id": "complete_execution", "steps": [{ "action": "architect_execution" }] }

@@ -9,7 +9,7 @@ using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -28,8 +28,8 @@ public static class ChadoBreathCmd
         }
 
         CardPile hand = PileType.Hand.GetPile(player);
-        List<ChadoEnergyRedesignV1> cards = hand.Cards
-            .OfType<ChadoEnergyRedesignV1>()
+        List<Chado> cards = hand.Cards
+            .OfType<Chado>()
             .ToList();
 
         bool hasChadoInHand = cards.Count > 0;
@@ -37,13 +37,13 @@ public static class ChadoBreathCmd
         {
             ICombatState combatState = player.Creature.CombatState
                 ?? throw new InvalidOperationException("Chado Breathing requires combat.");
-            ChadoEnergyRedesignV1 card = combatState.CreateCard<ChadoEnergyRedesignV1>(player);
+            Chado card = combatState.CreateCard<Chado>(player);
             await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, player);
             cards.Add(card);
         }
 
-        int increase = RedesignV1Rules.ResolveChadoBreathIncrease(amount, hasChadoInHand);
-        foreach (ChadoEnergyRedesignV1 card in cards)
+        int increase = NinjaSlayerCardRules.ResolveChadoBreathIncrease(amount, hasChadoInHand);
+        foreach (Chado card in cards)
         {
             card.IncreaseEnergy(increase);
         }
@@ -52,7 +52,7 @@ public static class ChadoBreathCmd
         Telemetry.NinjaSlayerCombatTelemetry.Mechanic("chado_breath", player.Creature, amount);
     }
 
-    private static void PlayForgeFeedback(List<ChadoEnergyRedesignV1> cards)
+    private static void PlayForgeFeedback(List<Chado> cards)
     {
         if (!LocalContext.IsMine(cards[0]) || NCombatRoom.Instance is not { } room)
         {
@@ -60,7 +60,7 @@ public static class ChadoBreathCmd
         }
 
         SfxCmd.Play(ForgeSfx);
-        foreach (ChadoEnergyRedesignV1 card in cards)
+        foreach (Chado card in cards)
         {
             if (room.Ui.Hand.GetCard(card) is { } node)
             {

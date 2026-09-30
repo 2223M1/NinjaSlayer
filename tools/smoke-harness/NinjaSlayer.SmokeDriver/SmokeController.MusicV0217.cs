@@ -39,8 +39,8 @@ internal sealed partial class SmokeController
             await Reload();
             run = RunManager.Instance.DebugOnlyGetState()!;
         }
-        V0217MusicRoomFixture.Event = ModelDb.Event<SawatariEvent>();
-        Type route = typeof(SawatariEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
+        V0217MusicRoomFixture.Event = ModelDb.Event<TheMovingJungleEvent>();
+        Type route = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
         AccessTools.Method(route, "Schedule").Invoke(null, [run.Act, ModelDb.Encounter<GremlinMercNormal>()]);
         Require((bool)AccessTools.Method(route, "TryActivate").Invoke(null, [run.Act])!, "Sawatari music fixture did not activate.");
         await RunManager.Instance.EnterMapPointInternal(run.ActFloor, run.CurrentMapPoint!.PointType, null, saveGame: true);
@@ -49,7 +49,7 @@ internal sealed partial class SmokeController
         await Reload();
         await CheckMusic("sawatari-reloaded", NinjaSlayerAudio.SawatariCoopMusicEvent, NinjaSlayerAudio.SawatariCoopPhaseParameter);
         var state = CombatManager.Instance.DebugOnlyGetState()!;
-        Require(state.Creatures.Any(c => c.Monster is SawatariMonster && c.Side == CombatSide.Player),
+        Require(state.Creatures.Any(c => c.Monster is ForestSawatariMonster && c.Side == CombatSide.Player),
             "Sawatari ally must survive event reconstruction.");
         while (state.HittableEnemies.Any()) await CreatureCmd.Kill(state.HittableEnemies.ToArray(), force: true);
         await CombatManager.Instance.CheckWinCondition();
@@ -62,7 +62,7 @@ internal sealed partial class SmokeController
         await UiHelper.Click(GetSawatariOptions()[1]);
         await WaitFrames(12);
         await CheckMusic("sawatari-duel-immediate", NinjaSlayerAudio.SawatariCoopMusicEvent, NinjaSlayerAudio.SawatariCoopPhaseParameter);
-        await WaitUntilAsync(() => !CombatManager.Instance.IsPaused && state.HittableEnemies.Any(c => c.Monster is SawatariMonster), "Duel not started.", ct);
+        await WaitUntilAsync(() => !CombatManager.Instance.IsPaused && state.HittableEnemies.Any(c => c.Monster is ForestSawatariMonster), "Duel not started.", ct);
         await WaitUntilAsync(() => LocalContext.GetMe(state)?.PlayerCombatState?.Phase == PlayerTurnPhase.Play
             && !CombatManager.Instance.PlayerActionsDisabled, "Duel did not start a fresh player turn.", ct);
         await WaitFrames(450);
@@ -75,7 +75,7 @@ internal sealed partial class SmokeController
         _checkpoints.Write("v0217.live-sawatari-music-reload-and-phases");
 
         run = RunManager.Instance.DebugOnlyGetState()!;
-        V0217MusicRoomFixture.Event = ModelDb.Event<DarkNinjaEvent>();
+        V0217MusicRoomFixture.Event = ModelDb.Event<GloryOfKyotoEvent>();
         await RunManager.Instance.EnterMapPointInternal(run.ActFloor, run.CurrentMapPoint!.PointType, null, saveGame: true);
         await WaitUntilAsync(() => Options().Length == 2, "Dark Ninja initial options missing.", ct);
         await UiHelper.Click(Options()[1]);
@@ -107,7 +107,7 @@ internal sealed partial class SmokeController
         Require(AccessTools.Field(musicProxy, "_runMusicInstance").GetValue(null) == null && !string.IsNullOrEmpty(path),
             "Custom event music leaked into the next room.");
         _checkpoints.Write("v0217.live-dark-music-reload-and-cleanup", data: new JsonObject { ["restMusic"] = path });
-        foreach (var model in new EventModel[] { ModelDb.Event<YamotoKokiCuteEvent>(), ModelDb.Event<YukanoEvent>() })
+        foreach (var model in new EventModel[] { ModelDb.Event<YamotoKokiIsSoCuteEvent>(), ModelDb.Event<TheCrookedToriiEvent>() })
         {
             await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: model);
             await WaitFrames(60);
@@ -140,7 +140,7 @@ internal sealed partial class SmokeController
             await WaitUntilAsync(() => RunManager.Instance.IsInProgress
                 && (V0217MusicRoomFixture.Event == null ? NCombatRoom.Instance != null : NEventRoom.Instance != null),
                 "Room reload did not finish.", ct);
-            Type transitionGate = typeof(SawatariEvent).Assembly.GetType("NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate", true)!;
+            Type transitionGate = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Code.Transition.NinjaSlayerTransitionGate", true)!;
             var activeTransition = AccessTools.Property(transitionGate, "HasActiveSession");
             await WaitUntilAsync(() => !(bool)activeTransition.GetValue(null)!, "Transition did not release.", ct);
             ulong transitionFinished = Time.GetTicksMsec();
@@ -150,7 +150,7 @@ internal sealed partial class SmokeController
                 ["milliseconds"] = transitionFinished - reloadStarted,
                 ["visible"] = NCombatRoom.Instance?.IsVisibleInTree() ?? NEventRoom.Instance?.IsVisibleInTree()
             });
-            if (V0217MusicRoomFixture.Event is not DarkNinjaEvent)
+            if (V0217MusicRoomFixture.Event is not GloryOfKyotoEvent)
             {
                 await WaitUntilAsync(() => CombatManager.Instance.IsInProgress && !CombatManager.Instance.IsStarting
                     && !CombatManager.Instance.PlayerActionsDisabled
@@ -214,9 +214,9 @@ internal static class V0217MusicRoomFixture
         if (Event == null) return;
         roomType = RoomType.Event;
         model = Event;
-        if (Event is SawatariEvent)
+        if (Event is TheMovingJungleEvent)
         {
-            Type route = typeof(SawatariEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
+            Type route = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
             var act = RunManager.Instance.DebugOnlyGetState()!.Act;
             AccessTools.Method(route, "Schedule").Invoke(null, [act, ModelDb.Encounter<GremlinMercNormal>()]);
             AccessTools.Method(route, "TryActivate").Invoke(null, [act]);

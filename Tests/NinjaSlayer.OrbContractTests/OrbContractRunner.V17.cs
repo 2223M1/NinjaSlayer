@@ -7,7 +7,7 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -25,7 +25,7 @@ public partial class OrbContractRunner
                 attack ? new SingleAttackIntent(5) : new BuffIntent()), forceTransition: true);
             Intent(scenario != "intent appears" && scenario != "no attack");
             if (scenario == "before play") await CreatureCmd.Damage(Choice, player, 1, ValueProp.Unpowered, player);
-            var card = AddCard<KillingIntentRedesignV1>(combat);
+            var card = AddCard<KillingIntent>(combat);
             Require(card.ShouldGlowGold == (scenario != "intent appears" && scenario != "no attack"), "Killing Intent glow must follow current attack intent.");
             await CardCmd.AutoPlay(Choice, card, null);
             if (scenario == "intent appears") Intent(true);
@@ -36,8 +36,8 @@ public partial class OrbContractRunner
             if (scenario is "damage" or "self" or "shield" or "overflow" or "buffer" or "heal" or "reapply" or "blocked")
                 await CreatureCmd.Damage(Choice, player, 2, scenario == "self" ? ValueProp.Unpowered : ValueProp.Move, scenario == "self" ? player : combat.Enemy);
             if (scenario == "heal") await CreatureCmd.Heal(player, 2);
-            if (scenario is "reapply" or "upgraded") await CardCmd.AutoPlay(Choice, AddCard<KillingIntentRedesignV1>(combat, upgraded: true), null);
-            Require(player.HasPower<KillingIntentRedesignPower>(), "Killing Intent must be applied before the end-turn snapshot.");
+            if (scenario is "reapply" or "upgraded") await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat, upgraded: true), null);
+            Require(player.HasPower<KillingIntentPower>(), "Killing Intent must be applied before the end-turn snapshot.");
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [player]);
 #else
@@ -48,18 +48,18 @@ public partial class OrbContractRunner
             if (scenario == "full hand")
                 while (PileType.Hand.GetPile(combat.Player).Cards.Count < 10) combat.Card();
             await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
-            var generated = combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKiRedesignV1>().ToArray();
+            var generated = combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKi>().ToArray();
             bool eligible = scenario is "intent appears" or "blocked" or "buffer" or "upgraded" or "full hand" or "before play" or "self";
             Require(generated.Length == (eligible ? 1 : 0), $"Killing Intent {scenario}: wrong reward count {generated.Length}.");
             if (scenario == "upgraded") Require(!generated.Single().IsUpgraded, "Both Killing Intent versions generate ordinary Straight Ki.");
-            Require(!player.HasPower<KillingIntentRedesignPower>(), "Killing Intent must expire at next player turn.");
+            Require(!player.HasPower<KillingIntentPower>(), "Killing Intent must expire at next player turn.");
         }
         // Native damage occurring after the end-turn snapshot also invalidates the reward.
         using (var combat = new OrbCombat())
         {
             combat.Enemy.Monster!.SetUpForCombat();
             combat.Enemy.Monster!.SetMoveImmediate(new MoveState("attack", _ => Task.CompletedTask, new SingleAttackIntent(3)), true);
-            await CardCmd.AutoPlay(Choice, AddCard<KillingIntentRedesignV1>(combat), null);
+            await CardCmd.AutoPlay(Choice, AddCard<KillingIntent>(combat), null);
 #if NINJASLAYER_CHANNEL_STABLE
             await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #else
@@ -68,7 +68,7 @@ public partial class OrbContractRunner
             combat.Player.Creature.LoseBlockInternal(combat.Player.Creature.Block);
             await CreatureCmd.Damage(Choice, combat.Player.Creature, 1, ValueProp.Unpowered, (MegaCrit.Sts2.Core.Entities.Creatures.Creature)null!);
             await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
-            Require(combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKiRedesignV1>().Count() == 1, "Enemy-turn DOT must not invalidate Killing Intent.");
+            Require(combat.Player.Piles.SelectMany(p => p.Cards).OfType<StraightKi>().Count() == 1, "Enemy-turn DOT must not invalidate Killing Intent.");
         }
         GD.Print("PASS v1.7 Killing Intent intent/glow, full block, all damage sources, Naraku absorption, reapplication, upgrade and expiry");
     }

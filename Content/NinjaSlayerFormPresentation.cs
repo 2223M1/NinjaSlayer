@@ -99,7 +99,7 @@ public static class NinjaSlayerFormPresentationCatalog
         UseNormalSpinPivot: false,
         ForcePerHitComboAudio: true);
 
-    public static NinjaSlayerFormPresentation OneBodyOneSoul { get; } = new(
+    public static NinjaSlayerFormPresentation OneMindOneBody { get; } = new(
         NinjaSlayerFormKind.OneBodyOneSoul,
         NinjaSlayerBodyTextureMode.Static,
         NinjaSlayerBodyTransformMode.LegacyCentered,
@@ -119,7 +119,7 @@ public static class NinjaSlayerFormPresentationCatalog
         bool hasNarakuWithinRelic,
         bool hasOneBodyOneSoulPower = false)
     {
-        if (hasOneBodyOneSoulPower) return OneBodyOneSoul;
+        if (hasOneBodyOneSoulPower) return OneMindOneBody;
         if (hasNarakuPower)
         {
             return hasNarakuWithinRelic ? FullyReleasedNaraku : Naraku;

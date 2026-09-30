@@ -13,7 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Monsters;
 using STS2RitsuLib;
@@ -157,8 +157,8 @@ public partial class OrbContractRunner
             using (var combat = new OrbCombat(ninjaSlayer: true))
             {
                 foreach (var (card, expected) in new (CardModel, bool)[] {
-                    (ModelDb.Card<Shiv>(), true), (ModelDb.Card<StrongShurikenTokenRedesignV1>(), true),
-                    (ModelDb.Card<SawatariMachete>(), true), (ModelDb.Card<StrikeNinjaSlayerRedesignV1>(), false) })
+                    (ModelDb.Card<Shiv>(), true), (ModelDb.Card<StrongShuriken>(), true),
+                    (ModelDb.Card<Machete>(), true), (ModelDb.Card<StrikeNinjaSlayer>(), false) })
                     Require((bool)AccessTools.Method(RangedActionType, "IsRangedCard").Invoke(null, [card])! == expected,
                         "Ranged card routing changed: " + card.Id);
                 // A scheduled release appends its own arrival after waiting has already begun.

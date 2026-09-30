@@ -17,7 +17,7 @@ using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.SmokeDriver;
@@ -39,7 +39,7 @@ internal sealed partial class SmokeController
         foreach (var card in PileType.Hand.GetPile(player).Cards.ToArray())
             await CardPileCmd.Add(card, PileType.Discard);
         FinisherSmokeObserver.Reset();
-        var chop = state.CreateCard<CommonChopRedesignV1>(player);
+        var chop = state.CreateCard<Chop>(player);
         await CardPileCmd.Add(chop, PileType.Hand);
         await CardCmd.AutoPlay(choice, chop, giant);
         await WaitUntilAsync(() => FinisherSmokeObserver.Snapshots().Any(s => s.CompletionObserved),
@@ -92,7 +92,7 @@ internal sealed partial class SmokeController
             await PowerCmd.Remove<KaratePower>(player.Creature);
             foreach (var enemy in state.Enemies) enemy.SetCurrentHpInternal(delaySave ? 1 : 7);
             for (int i = 0; i < 2; i++)
-                await CardPileCmd.Add(state.CreateCard<BlackFlameRedesignV1>(player), PileType.Hand);
+                await CardPileCmd.Add(state.CreateCard<BlackFlame>(player), PileType.Hand);
             int victories = 0;
             void Won(CombatRoom _) => victories++;
             manager.CombatWon += Won;
@@ -120,7 +120,7 @@ internal sealed partial class SmokeController
                 }
                 else
                 {
-                    var attack = state.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+                    var attack = state.CreateCard<StrikeNinjaSlayer>(player);
                     await CardPileCmd.Add(attack, PileType.Hand);
                     await CardCmd.AutoPlay(choice, attack, state.HittableEnemies.First());
                     await manager.CheckWinCondition();

@@ -15,7 +15,7 @@ using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
 
@@ -23,21 +23,21 @@ namespace NinjaSlayer.SmokeDriver;
 
 internal sealed partial class SmokeController
 {
-    private async Task VerifySawatariMotion(string directory, Func<bool, Task<SawatariMonster>> replace)
+    private async Task VerifySawatariMotion(string directory, Func<bool, Task<ForestSawatariMonster>> replace)
     {
         var combat = CombatManager.Instance.DebugOnlyGetState()!;
         var player = LocalContext.GetMe(combat.RunState)!;
         var choice = new BlockingPlayerChoiceContext();
         var room = NCombatRoom.Instance!;
         var timings = new JsonArray();
-        Type weapons = typeof(SawatariMonster).Assembly.GetType("NinjaSlayer.Code.Nodes.SawatariWeaponVisuals", true)!;
+        Type weapons = typeof(ForestSawatariMonster).Assembly.GetType("NinjaSlayer.Code.Nodes.SawatariWeaponVisuals", true)!;
         await PowerCmd.Remove<EvasionPower>(player.Creature);
         await PowerCmd.Remove<KaratePower>(player.Creature);
         foreach (var card in PileType.Hand.GetPile(player).Cards.ToArray()) await CardPileCmd.Add(card, PileType.Discard);
-        SawatariMonster model = await replace(false);
+        ForestSawatariMonster model = await replace(false);
         async Task AudioReference()
         {
-            await CardCmd.AutoPlay(choice, combat.CreateCard<KarateStraightRedesignV1>(player), model.Creature);
+            await CardCmd.AutoPlay(choice, combat.CreateCard<StraightPunch>(player), model.Creature);
             await WaitFrames(80);
         }
         await AudioReference();
@@ -60,7 +60,7 @@ internal sealed partial class SmokeController
             try
             {
                 Task attack = VerifySawatariFeedback(ArrowFeedback, model.Creature, player.Creature,
-                    () => (Task)AccessTools.Method(typeof(SawatariMonster), "ArrowMove")
+                    () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "ArrowMove")
                         .Invoke(model, [new Creature[] { player.Creature }])!, 1);
                 while (!attack.IsCompleted)
                 {
@@ -85,11 +85,11 @@ internal sealed partial class SmokeController
         {
             SaveManager.Instance.PrefsSave.FastMode = speed;
             await VerifySawatariFeedback(BambooFeedback, model.Creature, player.Creature,
-                () => (Task)AccessTools.Method(typeof(SawatariMonster), "PlayAttack").Invoke(model, [player.Creature])!, 4);
+                () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "PlayAttack").Invoke(model, [player.Creature])!, 4);
             await WaitFrames(20);
         }
         await VerifySawatariFeedback(ArrowFeedback, model.Creature, player.Creature,
-            () => (Task)AccessTools.Method(typeof(SawatariMonster), "ArrowMove")
+            () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "ArrowMove")
                 .Invoke(model, [new Creature[] { player.Creature }])!, 1);
         model = await replace(true);
         var enemy = model.Creature.GetCreatureNode()!;
@@ -118,7 +118,7 @@ internal sealed partial class SmokeController
             try
             {
                 await VerifySawatariFeedback(DualFeedback, model.Creature, player.Creature,
-                    () => (Task)AccessTools.Method(typeof(SawatariMonster), "PlayDualAttack").Invoke(model, [player.Creature])!, 2);
+                    () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "PlayDualAttack").Invoke(model, [player.Creature])!, 2);
                 Require(impacts.Count == 2, "Dual thrust did not resolve exactly two damage events.");
                 if (speed == FastModeType.Instant)
                     Require(hitFrames.All(f => f == frame), "Instant dual thrust yielded a render frame.");
@@ -135,7 +135,7 @@ internal sealed partial class SmokeController
             await WaitFrames(35);
         }
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
-        Task Dual() => (Task)AccessTools.Method(typeof(SawatariMonster), "PlayDualAttack").Invoke(model, [player.Creature])!;
+        Task Dual() => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "PlayDualAttack").Invoke(model, [player.Creature])!;
         async Task HurtDuringAttack()
         {
             await Cmd.Wait(.12f);
@@ -175,7 +175,7 @@ internal sealed partial class SmokeController
             try
             {
                 Task throwing = VerifySawatariFeedback(ThrowFeedback, model.Creature, player.Creature,
-                    () => (Task)AccessTools.Method(typeof(SawatariMonster), "ThrowMove")
+                    () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "ThrowMove")
                         .Invoke(model, [new Creature[] { player.Creature }])!, 1);
                 while (!throwing.IsCompleted)
                 {
@@ -195,7 +195,7 @@ internal sealed partial class SmokeController
             VerifyCaughtMacheteOrientation(knife);
             SaveScreenshot(Path.Combine(directory, $"held-mirror-fixed-{hand + 1}.png"));
         }
-        async Task ReturnWithImpact(SawatariMachete card)
+        async Task ReturnWithImpact(Machete card)
         {
             Sprite2D? slash = null;
             Sprite2D? projectile = null;
@@ -256,7 +256,7 @@ internal sealed partial class SmokeController
             }
             await WaitFrames(25);
         }
-        foreach (var card in PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().ToArray())
+        foreach (var card in PileType.Hand.GetPile(player).Cards.OfType<Machete>().ToArray())
         {
             await ReturnWithImpact(card);
             foreach (Sprite2D knife in knives) VerifyCaughtMacheteOrientation(knife);
@@ -269,13 +269,13 @@ internal sealed partial class SmokeController
         }
         _checkpoints.Write("sawatari.motion.mirrored-catch-and-token-impact");
         SaveManager.Instance.PrefsSave.FastMode = FastModeType.Instant;
-        Type facing = typeof(SawatariMachete).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState", true)!;
+        Type facing = typeof(Machete).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState", true)!;
         AccessTools.Method(facing, "SetFacing").Invoke(null, [player.Creature.GetCreatureNode()!, true]);
         await VerifySawatariFeedback(ThrowFeedback, model.Creature, player.Creature,
-            () => (Task)AccessTools.Method(typeof(SawatariMonster), "ThrowMove")
+            () => (Task)AccessTools.Method(typeof(ForestSawatariMonster), "ThrowMove")
                 .Invoke(model, [new Creature[] { player.Creature }])!, 1);
         foreach (Sprite2D knife in knives) VerifyCaughtMacheteOrientation(knife);
-        await ReturnWithImpact(PileType.Hand.GetPile(player).Cards.OfType<SawatariMachete>().Single());
+        await ReturnWithImpact(PileType.Hand.GetPile(player).Cards.OfType<Machete>().Single());
         foreach (Sprite2D knife in knives) VerifyCaughtMacheteOrientation(knife);
         _checkpoints.Write("sawatari.motion.instant-catch-and-token-impact");
         AccessTools.Method(facing, "SetFacing").Invoke(null, [player.Creature.GetCreatureNode()!, false]);

@@ -233,7 +233,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
         out List<EvasionPower>? __state)
     {
         List<Creature> targetList = targets?
-            .Where(target => target.Monster is not YamotoKokiOrigamiMissile)
+            .Where(target => target.Monster is not OrigamiMissileMonster)
             .ToList() ?? [];
         targets = targetList;
         __state = null;
@@ -322,7 +322,7 @@ internal sealed class AttackEvasionDamagePatch : IPatchMethod
             foreach (Creature companion in combatState.Creatures.Where(creature =>
                          creature.PetOwner == player
                          && creature.IsAlive
-                         && creature.Monster is YamotoKokiMonster or SawatariMonster or YukanoMonster))
+                         && creature.Monster is YamotoKokiMonster or ForestSawatariMonster or YukanoMonster))
             {
                 CombatDodgeAnimation.NotifyImpact(companion);
             }

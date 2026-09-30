@@ -19,9 +19,9 @@ public partial class OrbContractRunner
         bool CanSquash(Creature victim) => (bool)AccessTools.Method(timeline, "AllowsDeathSquash").Invoke(null, [victim])!;
         Require(!CanSquash(actor.Entity) && CanSquash(focus.Entity),
             "Finisher squash must exclude Ninja Slayer without disabling native monster squash.");
-        foreach (MonsterModel model in new MonsterModel[] { ModelDb.Monster<SawatariMonster>(),
+        foreach (MonsterModel model in new MonsterModel[] { ModelDb.Monster<ForestSawatariMonster>(),
             ModelDb.Monster<DarkNinjaMonster>(), ModelDb.Monster<YamotoKokiMonster>(),
-            ModelDb.Monster<YukanoMonster>(), ModelDb.Monster<YamotoKokiOrigamiMissile>() })
+            ModelDb.Monster<YukanoMonster>(), ModelDb.Monster<OrigamiMissileMonster>() })
             foreach (CombatSide side in new[] { CombatSide.Enemy, CombatSide.Player })
                 Require(!CanSquash(new Creature(model.ToMutable(), side, null)),
                     "Mod character received finisher deformation: " + model.GetType().Name);

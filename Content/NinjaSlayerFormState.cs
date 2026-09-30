@@ -7,14 +7,14 @@ namespace NinjaSlayer.Content;
 public static class NinjaSlayerFormState
 {
     public static bool IsNaraku(Creature creature) =>
-        creature.HasPower<NarakuFormRedesignPower>() || IsFullyReleasedNaraku(creature);
+        creature.HasPower<NarakuFormPower>() || IsFullyReleasedNaraku(creature);
 
     public static bool IsFullyReleasedNaraku(Creature creature) =>
-        creature.Player?.GetRelic<NarakuWithinRelic>() != null;
+        creature.Player?.GetRelic<NarakuUnleashedRelic>() != null;
 
     public static NinjaSlayerFormPresentation GetPresentation(Creature creature) =>
         NinjaSlayerFormPresentationCatalog.Resolve(
             IsNaraku(creature),
-            creature.Player?.GetRelic<NarakuWithinRelic>() != null,
-            creature.HasPower<OneBodyOneSoulPower>());
+            creature.Player?.GetRelic<NarakuUnleashedRelic>() != null,
+            creature.HasPower<OneMindOneBodyPower>());
 }

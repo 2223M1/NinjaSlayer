@@ -13,15 +13,15 @@
 
 | 采用文案的卡牌 | 当前类名 |
 |---|---|
-| 黑炎 | `BlackFlameRedesignV1` |
-| 砍刀 | `SawatariMachete` |
-| 嘶哈 | `MetabolicAccelerationRedesignV1` |
-| 半月圆规踢 | `SweepKickRedesignV1` |
-| 巴投 | `ObserveBattlefield` |
+| 黑炎 | `BlackFlame` |
+| 砍刀 | `Machete` |
+| 嘶哈 | `HissAndHuff` |
+| 半月圆规踢 | `HalfMoonCompassKick` |
+| 巴投 | `TomoeThrow` |
 | 聚气 | `GatherKi` |
-| 强攻 | `Slaughter` |
-| 重拾 | `Excavate` |
-| 一心同体 | `OneBodyOneSoul` |
+| 强攻 | `PressTheAttack` |
+| 重拾 | `Recover` |
+| 一心同体 | `OneMindOneBody` |
 
 本次检查未发现卡牌、Power、遗物源码或在用图片偏离审查基线；新增的泽渡事件会话流程不在本文的修改范围。
 
@@ -51,8 +51,8 @@
 
 | 接收卡牌 | 建议复用的现图 | 原持有者后续处理 |
 |---|---|---|
-| 空手入白刃 | [cards/ObserveBattlefield.png](../NinjaSlayer/images/cards/ObserveBattlefield.png) | 巴投另画后倒蹬腹的抛投；先保存旧夹刃图，不能被新巴投图覆盖。 |
-| 玛卡古 | [cards/TonyRetention.png](../NinjaSlayer/images/cards/TonyRetention.png) | 审势另画防守中的观察；单手倒立图仅作近似动作候选，原作腿路仍待核实。 |
+| 空手入白刃 | [cards/TomoeThrow.png](../NinjaSlayer/images/cards/TomoeThrow.png) | 巴投另画后倒蹬腹的抛投；先保存旧夹刃图，不能被新巴投图覆盖。 |
+| 玛卡古 | [cards/Assess.png](../NinjaSlayer/images/cards/Assess.png) | 审势另画防守中的观察；单手倒立图仅作近似动作候选，原作腿路仍待核实。 |
 
 ## 逐项清单
 
@@ -61,7 +61,7 @@
 #### C01 茶道 · 建议重画
 
 - 英文名：Chado。
-- 当前类名：`ChadoEnergyRedesignV1`；[Cards/RedesignV1/ChadoEnergyRedesignV1.cs](../Cards/RedesignV1/ChadoEnergyRedesignV1.cs)。
+- 当前类名：`Chado`；[Cards/Standard/Chado.cs](../Cards/Standard/Chado.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_CHADO_ENERGY_REDESIGN_V1`。
 - 现图：[cards/ChadoCard.png](../NinjaSlayer/images/cards/ChadoCard.png)，1000×760。
 - 当前画面：茶杯与延伸的小径。
@@ -73,7 +73,7 @@
 #### C02 投石器摔 · 建议重画
 
 - 英文名：Catapult Throw。
-- 当前类名：`WhiskTeaFlashRedesignV1`；[Cards/RedesignV1/WhiskTeaFlashRedesignV1.cs](../Cards/RedesignV1/WhiskTeaFlashRedesignV1.cs)。
+- 当前类名：`CatapultThrow`；[Cards/Standard/CatapultThrow.cs](../Cards/Standard/CatapultThrow.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_WHISK_TEA_FLASH_REDESIGN_V1`。
 - 现图：[cards/WhiskSlash.png](../NinjaSlayer/images/cards/WhiskSlash.png)，1000×760。
 - 当前画面：大拳砸向弯曲手臂。
@@ -86,7 +86,7 @@
 #### C03 倒挂金钩踢 · 建议重画
 
 - 英文名：Somersault Kick。
-- 当前类名：`OneDrinkOneStrikeRedesignV1`；[Cards/RedesignV1/OneDrinkOneStrikeRedesignV1.cs](../Cards/RedesignV1/OneDrinkOneStrikeRedesignV1.cs)。
+- 当前类名：`SomersaultKick`；[Cards/Standard/SomersaultKick.cs](../Cards/Standard/SomersaultKick.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_ONE_DRINK_ONE_STRIKE_REDESIGN_V1`。
 - 现图：[cards/PursuitStrike.png](../NinjaSlayer/images/cards/PursuitStrike.png)，1000×760。
 - 当前画面：单手支地旋转横踢。
@@ -99,7 +99,7 @@
 #### C04 BS1260踢 · 建议重画
 
 - 英文名：BS1260 Kick。
-- 当前类名：`SatsubatsuRedesignV1`；[Cards/RedesignV1/SatsubatsuRedesignV1.cs](../Cards/RedesignV1/SatsubatsuRedesignV1.cs)。
+- 当前类名：`BS1260Kick`；[Cards/Standard/BS1260Kick.cs](../Cards/Standard/BS1260Kick.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_SATSUBATSU_REDESIGN_V1`。
 - 现图：[cards/RedBlackFlame.png](../NinjaSlayer/images/cards/RedBlackFlame.png)，1000×760。
 - 当前画面：空中伸腿踢击。
@@ -111,9 +111,9 @@
 #### C05 察敌 · 建议重画
 
 - 英文名：Read the Enemy。
-- 当前类名：`LuckyStrikeRedesignV1`；[Cards/RedesignV1/LuckyStrikeRedesignV1.cs](../Cards/RedesignV1/LuckyStrikeRedesignV1.cs)。
+- 当前类名：`ReadTheEnemy`；[Cards/Standard/ReadTheEnemy.cs](../Cards/Standard/ReadTheEnemy.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_LUCKY_STRIKE_REDESIGN_V1`。
-- 现图：[cards/LuckyStrikeRedesignV1.png](../NinjaSlayer/images/cards/LuckyStrikeRedesignV1.png)，1000×760。
+- 现图：[cards/ReadTheEnemy.png](../NinjaSlayer/images/cards/ReadTheEnemy.png)，1000×760。
 - 当前画面：手持碎片靠近面甲。
 - 不适配处：拿碎片靠近脸更像鉴定物品。
 - 重画／调配需求：眼部近景看向进入边缘的细小飞刃，用目光与来袭方向联系预见；不要发光第三只眼或水晶占卜。
@@ -122,7 +122,7 @@
 #### C06 左·上勾拳 · 建议重画
 
 - 英文名：Left Uppercut。
-- 当前类名：`RightHeavyPunchRedesignV1`；[Cards/RedesignV1/RightHeavyPunchRedesignV1.cs](../Cards/RedesignV1/RightHeavyPunchRedesignV1.cs)。
+- 当前类名：`LeftUppercut`；[Cards/Standard/LeftUppercut.cs](../Cards/Standard/LeftUppercut.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_RIGHT_HEAVY_PUNCH_REDESIGN_V1`。
 - 现图：[cards/BangBangFist.png](../NinjaSlayer/images/cards/BangBangFist.png)，1000×760。
 - 当前画面：屈肘拳向来拳上挑。
@@ -134,7 +134,7 @@
 #### C07 右·上勾拳 · 建议重画
 
 - 英文名：Right Uppercut。
-- 当前类名：`RightHeavyPunchAfterSkillRedesignV1`；[Cards/RedesignV1/RightHeavyPunchAfterSkillRedesignV1.cs](../Cards/RedesignV1/RightHeavyPunchAfterSkillRedesignV1.cs)。
+- 当前类名：`RightUppercut`；[Cards/Standard/RightUppercut.cs](../Cards/Standard/RightUppercut.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_RIGHT_HEAVY_PUNCH_AFTER_SKILL_REDESIGN_V1`。
 - 现图：[cards/LuckyStrike.png](../NinjaSlayer/images/cards/LuckyStrike.png)，1000×760。
 - 当前画面：低头架臂并举拳。
@@ -146,9 +146,9 @@
 #### C08 嘶哈 · 建议重画
 
 - 英文名：Hiss and Huff。
-- 当前类名：`MetabolicAccelerationRedesignV1`；[Cards/RedesignV1/MetabolicAccelerationRedesignV1.cs](../Cards/RedesignV1/MetabolicAccelerationRedesignV1.cs)。
+- 当前类名：`HissAndHuff`；[Cards/Standard/HissAndHuff.cs](../Cards/Standard/HissAndHuff.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_METABOLIC_ACCELERATION_REDESIGN_V1`。
-- 现图：[cards/MetabolicAccelerationRedesignV1.png](../NinjaSlayer/images/cards/MetabolicAccelerationRedesignV1.png)，1000×760。
+- 现图：[cards/HissAndHuff.png](../NinjaSlayer/images/cards/HissAndHuff.png)，1000×760。
 - 当前画面：只露面甲的侧脸。
 - 不适配处：单纯面甲侧脸没有恢复或呼吸动作。
 - 重画／调配需求：肩颈放松、腹部起伏、手指从僵直转松，茶碗只作边缘提示；不画治疗光束或喝药瓶。
@@ -157,9 +157,9 @@
 #### C09 巴投 · 建议重画
 
 - 英文名：Tomoe Throw。
-- 当前类名：`ObserveBattlefield`；[Cards/RedesignV1/ObserveBattlefield.cs](../Cards/RedesignV1/ObserveBattlefield.cs)。
+- 当前类名：`TomoeThrow`；[Cards/Standard/TomoeThrow.cs](../Cards/Standard/TomoeThrow.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_OBSERVE_BATTLEFIELD`。
-- 现图：[cards/ObserveBattlefield.png](../NinjaSlayer/images/cards/ObserveBattlefield.png)，1000×760。
+- 现图：[cards/TomoeThrow.png](../NinjaSlayer/images/cards/TomoeThrow.png)，1000×760。
 - 当前画面：双掌夹住刀刃。
 - 不适配处：夹刀图属于空手入白刃，不能表达巴投。
 - 重画／调配需求：侧视忍者后倒、一脚抵对手腹部，借蹬腿将其翻过头顶；清楚画出抓握、支点和抛出方向，不锁双臂倒栽。现夹刀图可调配给空手入白刃。
@@ -170,7 +170,7 @@
 #### C10 聚气 · 建议重画
 
 - 英文名：Gather Ki。
-- 当前类名：`GatherKi`；[Cards/RedesignV1/GatherKi.cs](../Cards/RedesignV1/GatherKi.cs)。
+- 当前类名：`GatherKi`；[Cards/Standard/GatherKi.cs](../Cards/Standard/GatherKi.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_GATHER_KI`。
 - 现图：[cards/GatherKi.png](../NinjaSlayer/images/cards/GatherKi.png)，1000×760。
 - 当前画面：双手间漂浮金色书本。
@@ -181,9 +181,9 @@
 #### C11 月面宙反 · 建议重画
 
 - 英文名：Moonsault。
-- 当前类名：`OyeahThrowSword`；[Cards/RedesignV1/OyeahThrowSword.cs](../Cards/RedesignV1/OyeahThrowSword.cs)。
+- 当前类名：`Moonsault`；[Cards/Standard/Moonsault.cs](../Cards/Standard/Moonsault.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_OYEAH_THROW_SWORD`。
-- 现图：[cards/OyeahThrowSword.png](../NinjaSlayer/images/cards/OyeahThrowSword.png)，1000×760。
+- 现图：[cards/Moonsault.png](../NinjaSlayer/images/cards/Moonsault.png)，1000×760。
 - 当前画面：忍者趴地躲避飞镖。
 - 不适配处：趴地并非月面宙反。
 - 重画／调配需求：忍者在空中向后翻转，从翻转轨迹投出手里剑；远近镖建立纵深，避免地面匍匐。
@@ -194,9 +194,9 @@
 #### C12 审势 · 建议重画
 
 - 英文名：Assess。
-- 当前类名：`TonyRetention`；[Cards/RedesignV1/TonyRetention.cs](../Cards/RedesignV1/TonyRetention.cs)。
+- 当前类名：`Assess`；[Cards/Standard/Assess.cs](../Cards/Standard/Assess.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_TONY_RETENTION`。
-- 现图：[cards/TonyRetention.png](../NinjaSlayer/images/cards/TonyRetention.png)，1000×760。
+- 现图：[cards/Assess.png](../NinjaSlayer/images/cards/Assess.png)，1000×760。
 - 当前画面：单手倒立、双腿分开的人影。
 - 不适配处：这张旧玛卡古已改为格挡加预见，翻身图可留给回避牌，审势应突出防守中的观察。
 - 重画／调配需求：近景忍者以前臂挡住来击，目光越过护腕观察敌人下一步；眼神、接触点与后方威胁形成三角。避免翻身、把玩纸牌或留手藏镖的旧设计。
@@ -205,7 +205,7 @@
 #### C13 海军战锤 · 建议重画
 
 - 英文名：Navy Hammer。
-- 当前类名：`WasshoiRedesignV1`；[Cards/RedesignV1/WasshoiRedesignV1.cs](../Cards/RedesignV1/WasshoiRedesignV1.cs)。
+- 当前类名：`NavyHammer`；[Cards/Standard/NavyHammer.cs](../Cards/Standard/NavyHammer.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_WASSHOI_REDESIGN_V1`。
 - 现图：[cards/NinjaGreeting.png](../NinjaSlayer/images/cards/NinjaGreeting.png)，1000×760。
 - 当前画面：双手相握、下方木板。
@@ -218,9 +218,9 @@
 #### C14 龙卷拳 · 建议重画
 
 - 英文名：Tornado Fist。
-- 当前类名：`TornadoFistRedesignV1`；[Cards/RedesignV1/TornadoFistRedesignV1.cs](../Cards/RedesignV1/TornadoFistRedesignV1.cs)。
+- 当前类名：`TornadoFist`；[Cards/Standard/TornadoFist.cs](../Cards/Standard/TornadoFist.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_TORNADO_FIST_REDESIGN_V1`。
-- 现图：[cards/TornadoFistRedesignV1.png](../NinjaSlayer/images/cards/TornadoFistRedesignV1.png)，1000×760。
+- 现图：[cards/TornadoFist.png](../NinjaSlayer/images/cards/TornadoFist.png)，1000×760。
 - 当前画面：手臂挥拳并绕出弧线。
 - 不适配处：原作龙卷拳是旋转双腿踢，不是拳头转圈。
 - 重画／调配需求：空中斜向前旋身，双腿如镰刀扫向头颈，躯干在旋转轴上；去掉水系漩涡和拳头中心。
@@ -230,9 +230,9 @@
 #### C15 强攻 · 建议重画
 
 - 英文名：Press the Attack。
-- 当前类名：`Slaughter`；[Cards/RedesignV1/Slaughter.cs](../Cards/RedesignV1/Slaughter.cs)。
+- 当前类名：`PressTheAttack`；[Cards/Standard/PressTheAttack.cs](../Cards/Standard/PressTheAttack.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_SLAUGHTER`。
-- 现图：[cards/Slaughter.png](../NinjaSlayer/images/cards/Slaughter.png)，1000×760。
+- 现图：[cards/PressTheAttack.png](../NinjaSlayer/images/cards/PressTheAttack.png)，1000×760。
 - 当前画面：拳砸向地面并激起碎裂。
 - 不适配处：砸地容易被读成范围攻击；当前为对单个敌人的打击，标题也不再涉及血焰。
 - 重画／调配需求：红黑忍者向画面侧前方单个敌人贴身挥拳，接触点与前压身姿占据中心，后方短残迹表达动作衔接。不要砸地冲击波、血液燃烧、实体纸牌或锤子。
@@ -240,10 +240,10 @@
 
 #### C16 撒菱 · 建议重画
 
-- 英文名：Caltrops。
-- 当前类名：`PlaceholderBlueDefense01`；[Cards/RedesignV1/PlaceholderBlueDefense01.cs](../Cards/RedesignV1/PlaceholderBlueDefense01.cs)。
+- 英文名：NinjaCaltrops。
+- 当前类名：`NinjaCaltrops`；[Cards/Standard/NinjaCaltrops.cs](../Cards/Standard/NinjaCaltrops.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_PLACEHOLDER_BLUE_DEFENSE01`。
-- 现图：[cards/PlaceholderBlueDefense01.png](../NinjaSlayer/images/cards/PlaceholderBlueDefense01.png)，1000×760。
+- 现图：[cards/NinjaCaltrops.png](../NinjaSlayer/images/cards/NinjaCaltrops.png)，1000×760。
 - 当前画面：平放的四角手里剑。
 - 不适配处：现图是平面四角镖，落地后不具撒菱外形。
 - 重画／调配需求：近景几枚立体四尖撒菱，一尖朝上，远景追击者鞋底将踏入；不画投掷中的平面飞镖。
@@ -252,20 +252,20 @@
 #### C17 空手入白刃 · 可调配现有素材
 
 - 英文名：Barehanded Catch。
-- 当前类名：`CounteroffensiveGuardRedesignV1`；[Cards/RedesignV1/CounteroffensiveGuardRedesignV1.cs](../Cards/RedesignV1/CounteroffensiveGuardRedesignV1.cs)。
+- 当前类名：`BarehandedCatch`；[Cards/Standard/BarehandedCatch.cs](../Cards/Standard/BarehandedCatch.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_COUNTEROFFENSIVE_GUARD_REDESIGN_V1`。
-- 现图：[cards/CounteroffensiveGuardRedesignV1.png](../NinjaSlayer/images/cards/CounteroffensiveGuardRedesignV1.png)，1000×760。
+- 现图：[cards/BarehandedCatch.png](../NinjaSlayer/images/cards/BarehandedCatch.png)，1000×760。
 - 当前画面：忍者低伏躲过巨拳。
 - 不适配处：现图只是避开拳头，缺夹刃；巴投现图恰是双掌夹刃。
-- 重画／调配需求：建议调配 ObserveBattlefield 的原图；保留双掌左右夹住刀身的接触点和刀锋方向，不新增光盾。
-- 候选源图：[cards/ObserveBattlefield.png](../NinjaSlayer/images/cards/ObserveBattlefield.png)。
+- 重画／调配需求：建议调配 TomoeThrow 的原图；保留双掌左右夹住刀身的接触点和刀锋方向，不新增光盾。
+- 候选源图：[cards/TomoeThrow.png](../NinjaSlayer/images/cards/TomoeThrow.png)。
 - 文案采用状态：仅采用名称，卡牌文案保留现状。
 - 沿用审查板的原作索引：[第二部｜Bigger cageslonger chains｜p2-c029-s02.md:287]。此索引用于查回场景，不代表游戏数值在原作中存在。
 
 #### C18 风林火山 · 建议重画
 
 - 英文名：Furin Kazan。
-- 当前类名：`ChadoFurinKazanRedesignV1`；[Cards/RedesignV1/ChadoFurinKazanRedesignV1.cs](../Cards/RedesignV1/ChadoFurinKazanRedesignV1.cs)。
+- 当前类名：`FurinKazan`；[Cards/Standard/FurinKazan.cs](../Cards/Standard/FurinKazan.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_CHADO_FURIN_KAZAN_REDESIGN_V1`。
 - 现图：[cards/SenchaStorm.png](../NinjaSlayer/images/cards/SenchaStorm.png)，1000×760。
 - 当前画面：四元素悬于人物周围。
@@ -277,7 +277,7 @@
 #### C19 岚之拳 · 建议重画
 
 - 英文名：Storm Fist。
-- 当前类名：`StormFistRedesignV1`；[Cards/RedesignV1/StormFistRedesignV1.cs](../Cards/RedesignV1/StormFistRedesignV1.cs)。
+- 当前类名：`StormFist`；[Cards/Standard/StormFist.cs](../Cards/Standard/StormFist.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_STORM_FIST_REDESIGN_V1`。
 - 现图：[cards/TornadoFist.png](../NinjaSlayer/images/cards/TornadoFist.png)，1000×760。
 - 当前画面：拳下有水面漩涡。
@@ -289,7 +289,7 @@
 #### C20 重拾 · 建议重画
 
 - 英文名：Recover。
-- 当前类名：`Excavate`；[Cards/RedesignV1/Excavate.cs](../Cards/RedesignV1/Excavate.cs)。
+- 当前类名：`Recover`；[Cards/Standard/Recover.cs](../Cards/Standard/Recover.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_EXCAVATE`。
 - 现图：[cards/PlaceholderGoldDefense01.png](../NinjaSlayer/images/cards/PlaceholderGoldDefense01.png)，1000×760。
 - 当前画面：两掌平举防御。
@@ -300,7 +300,7 @@
 #### C21 阿拉巴马落 · 建议重画
 
 - 英文名：Alabama Drop。
-- 当前类名：`AlabamaDropRedesignV1`；[Cards/RedesignV1/AlabamaDropRedesignV1.cs](../Cards/RedesignV1/AlabamaDropRedesignV1.cs)。
+- 当前类名：`AlabamaDrop`；[Cards/Standard/AlabamaDrop.cs](../Cards/Standard/AlabamaDrop.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_ALABAMA_DROP_REDESIGN_V1`。
 - 现图：[cards/AlabamaDrop.png](../NinjaSlayer/images/cards/AlabamaDrop.png)，1000×760。
 - 当前画面：抱住对手横向倒落。
@@ -312,7 +312,7 @@
 #### C22 地狱龙卷 · 建议重画
 
 - 英文名：Hell Tornado。
-- 当前类名：`HellTornadoRedesignV1`；[Cards/RedesignV1/HellTornadoRedesignV1.cs](../Cards/RedesignV1/HellTornadoRedesignV1.cs)。
+- 当前类名：`HellTornado`；[Cards/Standard/HellTornado.cs](../Cards/Standard/HellTornado.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_HELL_TORNADO_REDESIGN_V1`。
 - 现图：[cards/HellTornado.png](../NinjaSlayer/images/cards/HellTornado.png)，1000×760。
 - 当前画面：魔法龙卷风卷着飞镖。
@@ -324,7 +324,7 @@
 #### C23 伺机备刃 · 建议重画
 
 - 英文名：Watchful Blades。
-- 当前类名：`RecycledBladesRedesignV1`；[Cards/RedesignV1/RecycledBladesRedesignV1.cs](../Cards/RedesignV1/RecycledBladesRedesignV1.cs)。
+- 当前类名：`WatchfulBlades`；[Cards/Standard/WatchfulBlades.cs](../Cards/Standard/WatchfulBlades.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_RECYCLED_BLADES_REDESIGN_V1`。
 - 现图：[cards/ShurikenThrow.png](../NinjaSlayer/images/cards/ShurikenThrow.png)，1000×760。
 - 当前画面：手里剑与蓄势痕迹。
@@ -335,7 +335,7 @@
 #### C24 龙·飞踢 · 建议重画
 
 - 英文名：Dragon Flying Kick。
-- 当前类名：`DragonFlyingKickRedesignV1`；[Cards/RedesignV1/DragonFlyingKickRedesignV1.cs](../Cards/RedesignV1/DragonFlyingKickRedesignV1.cs)。
+- 当前类名：`DragonFlyingKick`；[Cards/Standard/DragonFlyingKick.cs](../Cards/Standard/DragonFlyingKick.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_DRAGON_FLYING_KICK_REDESIGN_V1`。
 - 现图：[cards/NinjaSlayerFootwork.png](../NinjaSlayer/images/cards/NinjaSlayerFootwork.png)，1000×760。
 - 当前画面：忍者向前打出的拳臂特写。
@@ -346,8 +346,8 @@
 
 #### C25 澄明 · 建议重画
 
-- 英文名：Clarity。
-- 当前类名：`FurinKazanChadoRedesignV1`；[Cards/RedesignV1/FurinKazanChadoRedesignV1.cs](../Cards/RedesignV1/FurinKazanChadoRedesignV1.cs)。
+- 英文名：ClearMind。
+- 当前类名：`ClearMind`；[Cards/Standard/ClearMind.cs](../Cards/Standard/ClearMind.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_FURIN_KAZAN_CHADO_REDESIGN_V1`。
 - 现图：[cards/TeaSamadhi.png](../NinjaSlayer/images/cards/TeaSamadhi.png)，1000×760。
 - 当前画面：忍者拿着破碎面具。
@@ -358,22 +358,22 @@
 #### C26 玛卡古 · 可调配现有素材
 
 - 英文名：Macaco。
-- 当前类名：`HardItOutRedesignV1`；[Cards/RedesignV1/HardItOutRedesignV1.cs](../Cards/RedesignV1/HardItOutRedesignV1.cs)。
+- 当前类名：`Macaco`；[Cards/Standard/Macaco.cs](../Cards/Standard/Macaco.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_HARD_IT_OUT_REDESIGN_V1`。
 - 现图：[cards/KarateWall.png](../NinjaSlayer/images/cards/KarateWall.png)，1000×760。
 - 当前画面：双脚快速踏地闪身。
 - 不适配处：新名玛卡古需要翻身动作，原TonyRetention图接近单手翻。
-- 重画／调配需求：可调入 TonyRetention 单手倒立图，暂作为动作候选；正式重画前核实原作腿路，不能把近似卡波耶拉当作原作证据。
-- 候选源图：[cards/TonyRetention.png](../NinjaSlayer/images/cards/TonyRetention.png)。
+- 重画／调配需求：可调入 Assess 单手倒立图，暂作为动作候选；正式重画前核实原作腿路，不能把近似卡波耶拉当作原作证据。
+- 候选源图：[cards/Assess.png](../NinjaSlayer/images/cards/Assess.png)。
 - 文案采用状态：仅采用名称，卡牌文案保留现状。
 - 原作／适配边界：牵强适配／待审。名称已按用户意见采用，这条保留意见仅约束后续画面，不撤销名称。
 
 #### C27 一心同体 · 建议重画
 
 - 英文名：One Mind, One Body。
-- 当前类名：`OneBodyOneSoul`；[Cards/Ancients/OneBodyOneSoul.cs](../Cards/Ancients/OneBodyOneSoul.cs)。
+- 当前类名：`OneMindOneBody`；[Cards/Ancients/OneMindOneBody.cs](../Cards/Ancients/OneMindOneBody.cs)。
 - 当前内部ID：`NINJA_SLAYER_CARD_ONE_BODY_ONE_SOUL`。
-- 现图：[cards/OneBodyOneSoul.png](../NinjaSlayer/images/cards/OneBodyOneSoul.png)，606×852。
+- 现图：[cards/OneMindOneBody.png](../NinjaSlayer/images/cards/OneMindOneBody.png)，606×852。
 - 当前画面：同一人物交叉双臂。
 - 不适配处：仍能表示同一肉体，但旧版沿呼吸汇合的重画说明已不对应空手道触发奈落生命。
 - 重画／调配需求：同一忍者的拳臂完成近身打击，赤黑火线沿同一手臂收拢到胸腹，形成护住躯干的轮廓；保持单人身体完整。不要第二个肉体、治疗十字或免伤护罩。
@@ -407,8 +407,8 @@
 
 #### P03 烈焰 · 建议重画
 
-- 英文名：Inferno。
-- 当前类名：`BurnBurnBurnPower`；[Powers/BurnBurnBurnPower.cs](../Powers/BurnBurnBurnPower.cs)。
+- 英文名：BlackFlameInferno。
+- 当前类名：`BlackFlameInfernoPower`；[Powers/BlackFlameInfernoPower.cs](../Powers/BlackFlameInfernoPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_BURN_BURN_BURN_POWER`。
 - 现图：[powers/NarakuPower.png](../NinjaSlayer/images/powers/NarakuPower.png)，256×256。
 - 当前画面：共用黑炎鬼面。
@@ -419,9 +419,9 @@
 #### P04 保留茶道 · 建议重画
 
 - 英文名：Retain Chado。
-- 当前类名：`ChadoRetainPower`；[Powers/ChadoRetainPower.cs](../Powers/ChadoRetainPower.cs)。
+- 当前类名：`RetainChadoPower`；[Powers/RetainChadoPower.cs](../Powers/RetainChadoPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_CHADO_RETAIN_POWER`。
-- 现图：[powers/ChadoRetainPower.png](../NinjaSlayer/images/powers/ChadoRetainPower.png)，256×256。
+- 现图：[powers/RetainChadoPower.png](../NinjaSlayer/images/powers/RetainChadoPower.png)，256×256。
 - 当前画面：倾斜茶杯水流。
 - 不适配处：多个呼吸或保留效果图形相同。
 - 重画／调配需求：完整茶碗加环扣，表示留下。
@@ -430,7 +430,7 @@
 #### P05 Chop打击 · 建议重画
 
 - 英文名：Chop Strike。
-- 当前类名：`ChopStrikeNextTurnPower`；[Powers/ChopStrikeNextTurnPower.cs](../Powers/ChopStrikeNextTurnPower.cs)。
+- 当前类名：`ChopStrikePower`；[Powers/ChopStrikePower.cs](../Powers/ChopStrikePower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_CHOP_STRIKE_NEXT_TURN_POWER`。
 - 现图：[powers/KaratePower.png](../NinjaSlayer/images/powers/KaratePower.png)，256×256。
 - 当前画面：红色握拳与黄色冲击闪光。
@@ -441,7 +441,7 @@
 #### P06 动静相生 · 建议重画
 
 - 英文名：Motion and Stillness。
-- 当前类名：`CombatAdjustmentPower`；[Powers/CombatAdjustmentPower.cs](../Powers/CombatAdjustmentPower.cs)。
+- 当前类名：`MotionAndStillnessPower`；[Powers/MotionAndStillnessPower.cs](../Powers/MotionAndStillnessPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_COMBAT_ADJUSTMENT_POWER`。
 - 现图：[powers/TeaDrinkingSwordPower.png](../NinjaSlayer/images/powers/TeaDrinkingSwordPower.png)，256×256。
 - 当前画面：红色刀刃与气流。
@@ -463,7 +463,7 @@
 #### P08 地狱龙卷 · 建议重画
 
 - 英文名：Hell Tornado。
-- 当前类名：`HellTornadoRedesignPower`；[Powers/HellTornadoRedesignPower.cs](../Powers/HellTornadoRedesignPower.cs)。
+- 当前类名：`HellTornadoPower`；[Powers/HellTornadoPower.cs](../Powers/HellTornadoPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_HELL_TORNADO_REDESIGN_POWER`。
 - 现图：[powers/HellTornadoPower.png](../NinjaSlayer/images/powers/HellTornadoPower.png)，256×256。
 - 当前画面：旋转手里剑共用图。
@@ -475,7 +475,7 @@
 #### P09 钩绳降力量（沿用原版名称） · 建议重画
 
 - 英文名：Vanilla inherited text。
-- 当前类名：`HookRopeStrengthDownPower`；[Powers/HookRopeStrengthDownPower.cs](../Powers/HookRopeStrengthDownPower.cs)。
+- 当前类名：`GrapplingHookStrengthDownPower`；[Powers/GrapplingHookStrengthDownPower.cs](../Powers/GrapplingHookStrengthDownPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_HOOK_ROPE_STRENGTH_DOWN_POWER`。
 - 现图：[powers/RiffleStrengthDownPower.png](../NinjaSlayer/images/powers/RiffleStrengthDownPower.png)，256×256。
 - 当前画面：弯曲红剑。
@@ -486,9 +486,9 @@
 #### P10 空手入白刃 · 建议重画
 
 - 英文名：Barehanded Catch。
-- 当前类名：`IBlockPower`；[Powers/IBlockPower.cs](../Powers/IBlockPower.cs)。
+- 当前类名：`BarehandedCatchPower`；[Powers/BarehandedCatchPower.cs](../Powers/BarehandedCatchPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_I_BLOCK_POWER`。
-- 现图：[powers/IBlockPower.png](../NinjaSlayer/images/powers/IBlockPower.png)，256×256。
+- 现图：[powers/BarehandedCatchPower.png](../NinjaSlayer/images/powers/BarehandedCatchPower.png)，256×256。
 - 当前画面：蓝盾与闪光。
 - 不适配处：能表示防守，但不对应新的夹刃标题。
 - 重画／调配需求：两掌夹住一截刀刃，刀与掌三块轮廓占满图标，避免完整人物。
@@ -498,9 +498,9 @@
 #### P11 拔刀反击 · 建议重画
 
 - 英文名：Blade Counter。
-- 当前类名：`IaiPower`；[Powers/IaiPower.cs](../Powers/IaiPower.cs)。
+- 当前类名：`DarkCounterPower`；[Powers/DarkCounterPower.cs](../Powers/DarkCounterPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_IAI_POWER`。
-- 现图：[powers/IaiPower.png](../NinjaSlayer/images/powers/IaiPower.png)，256×256。
+- 现图：[powers/DarkCounterPower.png](../NinjaSlayer/images/powers/DarkCounterPower.png)，256×256。
 - 当前画面：紫色全身铠甲剑士。
 - 不适配处：人物不像黑暗忍者，缩小后剑势消失。
 - 重画／调配需求：黑色刀鞘口与短促拔刀斩弧，宽刀刃形成一个大剪影；不用全身武士或文字。
@@ -510,7 +510,7 @@
 #### P12 以静制动 · 建议重画
 
 - 英文名：Poise。
-- 当前类名：`KarateTeaPower`；[Powers/KarateTeaPower.cs](../Powers/KarateTeaPower.cs)。
+- 当前类名：`PoisePower`；[Powers/PoisePower.cs](../Powers/PoisePower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_KARATE_TEA_POWER`。
 - 现图：[powers/TeaDrinkingSwordPower.png](../NinjaSlayer/images/powers/TeaDrinkingSwordPower.png)，256×256。
 - 当前画面：红色刀刃与气流。
@@ -521,7 +521,7 @@
 #### P13 修行 · 建议重画
 
 - 英文名：Training。
-- 当前类名：`KarateTrainingPower`；[Powers/KarateTrainingPower.cs](../Powers/KarateTrainingPower.cs)。
+- 当前类名：`TrainingPower`；[Powers/TrainingPower.cs](../Powers/TrainingPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_KARATE_TRAINING_POWER`。
 - 现图：[powers/KaratePower.png](../NinjaSlayer/images/powers/KaratePower.png)，256×256。
 - 当前画面：共用红色拳头闪光。
@@ -532,7 +532,7 @@
 #### P14 攻势不息 · 建议重画
 
 - 英文名：Relentless。
-- 当前类名：`LingeringMeleePower`；[Powers/LingeringMeleePower.cs](../Powers/LingeringMeleePower.cs)。
+- 当前类名：`RelentlessPower`；[Powers/RelentlessPower.cs](../Powers/RelentlessPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_LINGERING_MELEE_POWER`。
 - 现图：[powers/TeaDrinkingSwordPower.png](../NinjaSlayer/images/powers/TeaDrinkingSwordPower.png)，256×256。
 - 当前画面：红色刀刃与气流。
@@ -543,7 +543,7 @@
 #### P15 一心同体 · 建议重画
 
 - 英文名：One Mind, One Body。
-- 当前类名：`OneBodyOneSoulPower`；[Powers/OneBodyOneSoulPower.cs](../Powers/OneBodyOneSoulPower.cs)。
+- 当前类名：`OneMindOneBodyPower`；[Powers/OneMindOneBodyPower.cs](../Powers/OneMindOneBodyPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_ONE_BODY_ONE_SOUL_POWER`。
 - 现图：[powers/NarakuPower.png](../NinjaSlayer/images/powers/NarakuPower.png)，256×256。
 - 当前画面：黑炎包围的鬼面。
@@ -555,7 +555,7 @@
 #### P16 下回合茶道 · 建议重画
 
 - 英文名：Chado Next Turn。
-- 当前类名：`PourTeaNextTurnPower`；[Powers/PourTeaNextTurnPower.cs](../Powers/PourTeaNextTurnPower.cs)。
+- 当前类名：`ChadoNextTurnPower`；[Powers/ChadoNextTurnPower.cs](../Powers/ChadoNextTurnPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_POUR_TEA_NEXT_TURN_POWER`。
 - 现图：[powers/PourTeaPower.png](../NinjaSlayer/images/powers/PourTeaPower.png)，256×256。
 - 当前画面：倾斜茶杯水流。
@@ -566,7 +566,7 @@
 #### P17 伺机备刃 · 建议重画
 
 - 英文名：Watchful Blades。
-- 当前类名：`RecycledBladesPower`；[Powers/RecycledBladesPower.cs](../Powers/RecycledBladesPower.cs)。
+- 当前类名：`WatchfulBladesPower`；[Powers/WatchfulBladesPower.cs](../Powers/WatchfulBladesPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_RECYCLED_BLADES_POWER`。
 - 现图：[powers/ExhaustForShurikenPower.png](../NinjaSlayer/images/powers/ExhaustForShurikenPower.png)，256×256。
 - 当前画面：弹簧式机械装置。
@@ -577,7 +577,7 @@
 #### P18 噬火 · 建议重画
 
 - 英文名：Devour Flame。
-- 当前类名：`ReturnReturnReturnPower`；[Powers/ReturnReturnReturnPower.cs](../Powers/ReturnReturnReturnPower.cs)。
+- 当前类名：`DevourFlamePower`；[Powers/DevourFlamePower.cs](../Powers/DevourFlamePower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_RETURN_RETURN_RETURN_POWER`。
 - 现图：[powers/NarakuLifePower.png](../NinjaSlayer/images/powers/NarakuLifePower.png)，256×256。
 - 当前画面：紫焰心形。
@@ -588,7 +588,7 @@
 #### P19 备战 · 建议重画
 
 - 英文名：Battle Ready。
-- 当前类名：`ShurikenDrawPower`；[Powers/ShurikenDrawPower.cs](../Powers/ShurikenDrawPower.cs)。
+- 当前类名：`BattleReadyPower`；[Powers/BattleReadyPower.cs](../Powers/BattleReadyPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_SHURIKEN_DRAW_POWER`。
 - 现图：[powers/ExhaustForShurikenPower.png](../NinjaSlayer/images/powers/ExhaustForShurikenPower.png)，256×256。
 - 当前画面：弹簧式机械装置。
@@ -599,7 +599,7 @@
 #### P20 啜饮 · 建议重画
 
 - 英文名：Sip。
-- 当前类名：`SipTeaPower`；[Powers/SipTeaPower.cs](../Powers/SipTeaPower.cs)。
+- 当前类名：`SipPower`；[Powers/SipPower.cs](../Powers/SipPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_SIP_TEA_POWER`。
 - 现图：[powers/PourTeaPower.png](../NinjaSlayer/images/powers/PourTeaPower.png)，256×256。
 - 当前画面：倾斜茶杯水流。
@@ -610,7 +610,7 @@
 #### P21 韧性 · 建议重画
 
 - 英文名：Resilience。
-- 当前类名：`StatusDrawPower`；[Powers/StatusDrawPower.cs](../Powers/StatusDrawPower.cs)。
+- 当前类名：`ResiliencePower`；[Powers/ResiliencePower.cs](../Powers/ResiliencePower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_STATUS_DRAW_POWER`。
 - 现图：[powers/DamageFocusPower.png](../NinjaSlayer/images/powers/DamageFocusPower.png)，256×256。
 - 当前画面：共用红眼。
@@ -621,7 +621,7 @@
 #### P22 蓄势 · 建议重画
 
 - 英文名：Gather Momentum。
-- 当前类名：`VitalityTeaPower`；[Powers/VitalityTeaPower.cs](../Powers/VitalityTeaPower.cs)。
+- 当前类名：`GatherMomentumPower`；[Powers/GatherMomentumPower.cs](../Powers/GatherMomentumPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_VITALITY_TEA_POWER`。
 - 现图：[powers/TeaDrinkingSwordPower.png](../NinjaSlayer/images/powers/TeaDrinkingSwordPower.png)，256×256。
 - 当前画面：红色刀刃与气流。
@@ -632,7 +632,7 @@
 #### P23 海军战锤 · 建议重画
 
 - 英文名：Navy Hammer。
-- 当前类名：`WasshoiDuplicationPower`；[Powers/WasshoiDuplicationPower.cs](../Powers/WasshoiDuplicationPower.cs)。
+- 当前类名：`NavyHammerPower`；[Powers/NavyHammerPower.cs](../Powers/NavyHammerPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_WASSHOI_DUPLICATION_POWER`。
 - 现图：[powers/EveryThirdAttackPower.png](../NinjaSlayer/images/powers/EveryThirdAttackPower.png)，256×256。
 - 当前画面：弹簧式机械装置。
@@ -645,7 +645,7 @@
 #### P24 乘胜 · 建议重画
 
 - 英文名：Onslaught。
-- 当前类名：`WasssssshoiPower`；[Powers/WasssssshoiPower.cs](../Powers/WasssssshoiPower.cs)。
+- 当前类名：`OnslaughtPower`；[Powers/OnslaughtPower.cs](../Powers/OnslaughtPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_WASSSSSSHOI_POWER`。
 - 现图：[powers/DamageFocusPower.png](../NinjaSlayer/images/powers/DamageFocusPower.png)，256×256。
 - 当前画面：共用红眼。
@@ -656,7 +656,7 @@
 #### P25 乘胜·力量 · 建议重画
 
 - 英文名：Onslaught Strength。
-- 当前类名：`WasssssshoiStrengthPower`；[Powers/WasssssshoiStrengthPower.cs](../Powers/WasssssshoiStrengthPower.cs)。
+- 当前类名：`OnslaughtStrengthPower`；[Powers/OnslaughtStrengthPower.cs](../Powers/OnslaughtStrengthPower.cs)。
 - 当前内部ID：`NINJA_SLAYER_POWER_WASSSSSSHOI_STRENGTH_POWER`。
 - 现图：[powers/KaratePower.png](../NinjaSlayer/images/powers/KaratePower.png)，256×256。
 - 当前画面：共用红色拳头闪光。
@@ -681,90 +681,90 @@
 #### R01 别嫔残刃 · 建议重画
 
 - 英文名：Beppin Shard。
-- 当前类名：`BeppinFragmentRelic`；[Relics/BeppinFragmentRelic.cs](../Relics/BeppinFragmentRelic.cs)。
+- 当前类名：`BeppinShardRelic`；[Relics/BeppinShardRelic.cs](../Relics/BeppinShardRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_BEPPIN_FRAGMENT_RELIC`。
-- 现图：[relics/BeppinFragmentRelic.png](../NinjaSlayer/images/relics/BeppinFragmentRelic.png)，85×85。
+- 现图：[relics/BeppinShardRelic.png](../NinjaSlayer/images/relics/BeppinShardRelic.png)，85×85。
 - 当前画面：细长金属刀片。
 - 不适配处：残片太细，易误认为完整小刀。
 - 重画／调配需求：不规则断口残刃置于深灰容器边，残刃占主体，不画完整别嫔。
-- 三规格：normal 85×85（[relics/BeppinFragmentRelic.png](../NinjaSlayer/images/relics/BeppinFragmentRelic.png)）；_large 256×256（[relics/BeppinFragmentRelic_large.png](../NinjaSlayer/images/relics/BeppinFragmentRelic_large.png)）；_outline 85×85（[relics/BeppinFragmentRelic_outline.png](../NinjaSlayer/images/relics/BeppinFragmentRelic_outline.png)）。
+- 三规格：normal 85×85（[relics/BeppinShardRelic.png](../NinjaSlayer/images/relics/BeppinShardRelic.png)）；_large 256×256（[relics/BeppinFragmentRelic_large.png](../NinjaSlayer/images/relics/BeppinFragmentRelic_large.png)）；_outline 85×85（[relics/BeppinFragmentRelic_outline.png](../NinjaSlayer/images/relics/BeppinFragmentRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 - 沿用审查板的原作索引：[第一部｜DARK NINJA RETURNS 黑暗忍者归来｜p1-c042-s01.md:22]。此索引用于查回场景，不代表游戏数值在原作中存在。
 
 #### R02 生化竹片 · 建议重画
 
 - 英文名：Bio-Bamboo Splint。
-- 当前类名：`BioBambooRelic`；[Relics/BioBambooRelic.cs](../Relics/BioBambooRelic.cs)。
+- 当前类名：`BioBambooSplintRelic`；[Relics/BioBambooSplintRelic.cs](../Relics/BioBambooSplintRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_BIO_BAMBOO_RELIC`。
-- 现图：[relics/BioBambooRelic.png](../NinjaSlayer/images/relics/BioBambooRelic.png)，85×85。
+- 现图：[relics/BioBambooSplintRelic.png](../NinjaSlayer/images/relics/BioBambooSplintRelic.png)，85×85。
 - 当前画面：细长绿色竹管。
 - 不适配处：图太细，改名后应体现竹片。
 - 重画／调配需求：两片厚竹以粗绳交叠捆扎，竹节与断面清楚；不要发光盾法阵。
-- 三规格：normal 85×85（[relics/BioBambooRelic.png](../NinjaSlayer/images/relics/BioBambooRelic.png)）；_large 256×256（[relics/BioBambooRelic_large.png](../NinjaSlayer/images/relics/BioBambooRelic_large.png)）；_outline 85×85（[relics/BioBambooRelic_outline.png](../NinjaSlayer/images/relics/BioBambooRelic_outline.png)）。
+- 三规格：normal 85×85（[relics/BioBambooSplintRelic.png](../NinjaSlayer/images/relics/BioBambooSplintRelic.png)）；_large 256×256（[relics/BioBambooRelic_large.png](../NinjaSlayer/images/relics/BioBambooRelic_large.png)）；_outline 85×85（[relics/BioBambooRelic_outline.png](../NinjaSlayer/images/relics/BioBambooRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 - 原作／适配边界：拟制物件，覆甲关系为设计推论。名称已按用户意见采用，这条保留意见仅约束后续画面，不撤销名称。
 
 #### R03 吸附型脉冲地雷 · 建议重画
 
 - 英文名：Adhesive EMP Mine。
-- 当前类名：`ElectricBoobyTrapRelic`；[Relics/ElectricBoobyTrapRelic.cs](../Relics/ElectricBoobyTrapRelic.cs)。
+- 当前类名：`AdhesiveEMPMineRelic`；[Relics/AdhesiveEMPMineRelic.cs](../Relics/AdhesiveEMPMineRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_ELECTRIC_BOOBY_TRAP_RELIC`。
-- 现图：[relics/ElectricBoobyTrapRelic.png](../NinjaSlayer/images/relics/ElectricBoobyTrapRelic.png)，128×128。
+- 现图：[relics/AdhesiveEMPMineRelic.png](../NinjaSlayer/images/relics/AdhesiveEMPMineRelic.png)，128×128。
 - 当前画面：黄色环形电线炸弹。
 - 不适配处：缺吸附盘结构，看似手雷。
 - 重画／调配需求：扁圆吸附盘、粗金属接点和一圈脉冲灯；不画拉环、计时数字或散乱细线。
-- 三规格：normal 128×128（[relics/ElectricBoobyTrapRelic.png](../NinjaSlayer/images/relics/ElectricBoobyTrapRelic.png)）；_large 256×256（[relics/ElectricBoobyTrapRelic_large.png](../NinjaSlayer/images/relics/ElectricBoobyTrapRelic_large.png)）；_outline 128×128（[relics/ElectricBoobyTrapRelic_outline.png](../NinjaSlayer/images/relics/ElectricBoobyTrapRelic_outline.png)）。
+- 三规格：normal 128×128（[relics/AdhesiveEMPMineRelic.png](../NinjaSlayer/images/relics/AdhesiveEMPMineRelic.png)）；_large 256×256（[relics/ElectricBoobyTrapRelic_large.png](../NinjaSlayer/images/relics/ElectricBoobyTrapRelic_large.png)）；_outline 128×128（[relics/ElectricBoobyTrapRelic_outline.png](../NinjaSlayer/images/relics/ElectricBoobyTrapRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 - 沿用审查板的原作索引：[第三部｜[第3部049]Farewell My Shadow 后篇 by alex.ma｜p3-c051-s01.md:30]。此索引用于查回场景，不代表游戏数值在原作中存在。
 
 #### R04 坐禅Drink枪带 · 建议重画
 
 - 英文名：Zazen Drink Bandolier。
-- 当前类名：`NancyZazenDrinkRelic`；[Relics/NancyZazenDrinkRelic.cs](../Relics/NancyZazenDrinkRelic.cs)。
+- 当前类名：`ZazenDrinkBandolierRelic`；[Relics/ZazenDrinkBandolierRelic.cs](../Relics/ZazenDrinkBandolierRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_NANCY_ZAZEN_DRINK_RELIC`。
-- 现图：[relics/NancyZazenDrinkRelic.png](../NinjaSlayer/images/relics/NancyZazenDrinkRelic.png)，128×128。
+- 现图：[relics/ZazenDrinkBandolierRelic.png](../NinjaSlayer/images/relics/ZazenDrinkBandolierRelic.png)，128×128。
 - 当前画面：茶碗与勺子。
 - 不适配处：完全不对应五瓶饮料枪带。
 - 重画／调配需求：五瓶小饮料固定在弧形宽腰带，瓶盖为明亮辨识点；无枪、茶壶或杯子。
-- 三规格：normal 128×128（[relics/NancyZazenDrinkRelic.png](../NinjaSlayer/images/relics/NancyZazenDrinkRelic.png)）；_large 256×256（[relics/NancyZazenDrinkRelic_large.png](../NinjaSlayer/images/relics/NancyZazenDrinkRelic_large.png)）；_outline 128×128（[relics/NancyZazenDrinkRelic_outline.png](../NinjaSlayer/images/relics/NancyZazenDrinkRelic_outline.png)）。
+- 三规格：normal 128×128（[relics/ZazenDrinkBandolierRelic.png](../NinjaSlayer/images/relics/ZazenDrinkBandolierRelic.png)）；_large 256×256（[relics/NancyZazenDrinkRelic_large.png](../NinjaSlayer/images/relics/NancyZazenDrinkRelic_large.png)）；_outline 128×128（[relics/NancyZazenDrinkRelic_outline.png](../NinjaSlayer/images/relics/NancyZazenDrinkRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 - 沿用审查板的原作索引：[第一部｜【新埼玉炎上17】ONE MINUTE BEFORE THE TANUKI 狸猫前一分钟｜p1-c017-s02.md:95]。此索引用于查回场景，不代表游戏数值在原作中存在。
 
 #### R05 奈落解放 · 建议重画
 
 - 英文名：Naraku Unleashed。
-- 当前类名：`NarakuWithinRelic`；[Relics/NarakuWithinRelic.cs](../Relics/NarakuWithinRelic.cs)。
+- 当前类名：`NarakuUnleashedRelic`；[Relics/NarakuUnleashedRelic.cs](../Relics/NarakuUnleashedRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_NARAKU_WITHIN_RELIC`。
-- 现图：[relics/NarakuWithinRelic.png](../NinjaSlayer/images/relics/NarakuWithinRelic.png)，128×128。
+- 现图：[relics/NarakuUnleashedRelic.png](../NinjaSlayer/images/relics/NarakuUnleashedRelic.png)，128×128。
 - 当前画面：破裂黑紫胸甲。
 - 不适配处：奈落解放不是换穿实体铠甲。
 - 重画／调配需求：赤黑火焰挣开一圈束缚，中心留凶恶轮廓；不画可穿胸甲。
-- 三规格：normal 128×128（[relics/NarakuWithinRelic.png](../NinjaSlayer/images/relics/NarakuWithinRelic.png)）；_large 256×256（[relics/NarakuWithinRelic_large.png](../NinjaSlayer/images/relics/NarakuWithinRelic_large.png)）；_outline 128×128（[relics/NarakuWithinRelic_outline.png](../NinjaSlayer/images/relics/NarakuWithinRelic_outline.png)）。
+- 三规格：normal 128×128（[relics/NarakuUnleashedRelic.png](../NinjaSlayer/images/relics/NarakuUnleashedRelic.png)）；_large 256×256（[relics/NarakuWithinRelic_large.png](../NinjaSlayer/images/relics/NarakuWithinRelic_large.png)）；_outline 128×128（[relics/NarakuWithinRelic_outline.png](../NinjaSlayer/images/relics/NarakuWithinRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 
 #### R06 道具社忍具袋 · 建议重画
 
 - 英文名：Dogusha Tool Pouch。
-- 当前类名：`PortableIrcTerminalRelic`；[Relics/PortableIrcTerminalRelic.cs](../Relics/PortableIrcTerminalRelic.cs)。
+- 当前类名：`DogushaToolPouchRelic`；[Relics/DogushaToolPouchRelic.cs](../Relics/DogushaToolPouchRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_PORTABLE_IRC_TERMINAL_RELIC`。
-- 现图：[relics/PortableIrcTerminalRelic.png](../NinjaSlayer/images/relics/PortableIrcTerminalRelic.png)，128×128。
+- 现图：[relics/DogushaToolPouchRelic.png](../NinjaSlayer/images/relics/DogushaToolPouchRelic.png)，128×128。
 - 当前画面：红色便携电脑。
 - 不适配处：代码遗留电脑图与忍具袋冲突。
 - 重画／调配需求：束口深红布袋露两枚镖，粗绳扣带和缝线；不要终端屏幕。
-- 三规格：normal 128×128（[relics/PortableIrcTerminalRelic.png](../NinjaSlayer/images/relics/PortableIrcTerminalRelic.png)）；_large 256×256（[relics/PortableIrcTerminalRelic_large.png](../NinjaSlayer/images/relics/PortableIrcTerminalRelic_large.png)）；_outline 128×128（[relics/PortableIrcTerminalRelic_outline.png](../NinjaSlayer/images/relics/PortableIrcTerminalRelic_outline.png)）。
+- 三规格：normal 128×128（[relics/DogushaToolPouchRelic.png](../NinjaSlayer/images/relics/DogushaToolPouchRelic.png)）；_large 256×256（[relics/PortableIrcTerminalRelic_large.png](../NinjaSlayer/images/relics/PortableIrcTerminalRelic_large.png)）；_outline 128×128（[relics/PortableIrcTerminalRelic_outline.png](../NinjaSlayer/images/relics/PortableIrcTerminalRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 - 沿用审查板的原作索引：[第一部｜【新埼玉炎上28】OGRE THE COLD STEEL 冷钢恶鬼｜p1-c028-s01.md:27]。此索引用于查回场景，不代表游戏数值在原作中存在。
 
 #### R07 鸟居之约 · 建议重画
 
 - 英文名：Torii Pact。
-- 当前类名：`YukanoCompanionRelic`；[Relics/YukanoCompanionRelic.cs](../Relics/YukanoCompanionRelic.cs)。
+- 当前类名：`ToriiPactRelic`；[Relics/ToriiPactRelic.cs](../Relics/ToriiPactRelic.cs)。
 - 当前内部ID：`NINJA_SLAYER_RELIC_YUKANO_COMPANION_RELIC`。
-- 现图：[relics/YukanoCompanionRelic.png](../NinjaSlayer/images/relics/YukanoCompanionRelic.png)，128×128。
+- 现图：[relics/ToriiPactRelic.png](../NinjaSlayer/images/relics/ToriiPactRelic.png)，128×128。
 - 当前画面：红色四角手里剑。
 - 不适配处：鸟居之约缺鸟居或由佳乃的标识。
 - 重画／调配需求：小型朱红鸟居与一圈结绳，粗横梁和两脚辨识；不画镖、人物肖像。
-- 三规格：normal 128×128（[relics/YukanoCompanionRelic.png](../NinjaSlayer/images/relics/YukanoCompanionRelic.png)）；_large 256×256（[relics/YukanoCompanionRelic_large.png](../NinjaSlayer/images/relics/YukanoCompanionRelic_large.png)）；_outline 128×128（[relics/YukanoCompanionRelic_outline.png](../NinjaSlayer/images/relics/YukanoCompanionRelic_outline.png)）。
+- 三规格：normal 128×128（[relics/ToriiPactRelic.png](../NinjaSlayer/images/relics/ToriiPactRelic.png)）；_large 256×256（[relics/YukanoCompanionRelic_large.png](../NinjaSlayer/images/relics/YukanoCompanionRelic_large.png)）；_outline 128×128（[relics/YukanoCompanionRelic_outline.png](../NinjaSlayer/images/relics/YukanoCompanionRelic_outline.png)）。
 - 文案采用状态：采用新版名称与文案。
 
 ## 共用资源的影响范围
@@ -773,15 +773,15 @@
 
 | 现图路径（相同内容合并） | 当前使用者 | 本次处理 |
 |---|---|---|
-| [powers/NarakuLifePower.png](../NinjaSlayer/images/powers/NarakuLifePower.png) | 浴火（`BlackFlameRecoveryPower`）<br>奈落生命（`NarakuLifePower`）<br>噬火（`ReturnReturnReturnPower`） | 浴火：可保留<br>奈落生命：可保留<br>噬火：建议重画 |
-| [powers/HellTornadoPower.png](../NinjaSlayer/images/powers/HellTornadoPower.png) | 飞刃轮转（`BladeCyclePower`）<br>飞刃席卷（`BladeSweepPower`）<br>地狱龙卷（`HellTornadoRedesignPower`） | 飞刃轮转：建议重画<br>飞刃席卷：建议重画<br>地狱龙卷：建议重画 |
-| [powers/NarakuPower.png](../NinjaSlayer/images/powers/NarakuPower.png) | 烈焰（`BurnBurnBurnPower`）<br>奈落形态（`NarakuFormRedesignPower`）<br>一心同体（`OneBodyOneSoulPower`） | 烈焰：建议重画<br>奈落形态：可保留<br>一心同体：建议重画 |
-| [powers/KaratePower.png](../NinjaSlayer/images/powers/KaratePower.png) | Chop打击（`ChopStrikeNextTurnPower`）<br>忍耐（`EndurancePower`）<br>空手道（`KaratePower`）<br>修行（`KarateTrainingPower`）<br>乘胜·力量（`WasssssshoiStrengthPower`） | Chop打击：建议重画<br>忍耐：建议重画<br>空手道：可保留<br>修行：建议重画<br>乘胜·力量：建议重画 |
-| [powers/TeaDrinkingSwordPower.png](../NinjaSlayer/images/powers/TeaDrinkingSwordPower.png) | 动静相生（`CombatAdjustmentPower`）<br>以静制动（`KarateTeaPower`）<br>攻势不息（`LingeringMeleePower`）<br>蓄势（`VitalityTeaPower`） | 动静相生：建议重画<br>以静制动：建议重画<br>攻势不息：建议重画<br>蓄势：建议重画 |
-| [powers/KillingIntentPower.png](../NinjaSlayer/images/powers/KillingIntentPower.png) | 杀气（`KillingIntentRedesignPower`）<br>残心（`ZanshinPower`） | 杀气：可保留<br>残心：建议重画 |
-| [powers/PourTeaPower.png](../NinjaSlayer/images/powers/PourTeaPower.png) | 下回合茶道（`PourTeaNextTurnPower`）<br>啜饮（`SipTeaPower`） | 下回合茶道：建议重画<br>啜饮：建议重画 |
-| [powers/ExhaustForShurikenPower.png](../NinjaSlayer/images/powers/ExhaustForShurikenPower.png)<br>[powers/EveryThirdAttackPower.png](../NinjaSlayer/images/powers/EveryThirdAttackPower.png) | 伺机备刃（`RecycledBladesPower`）<br>备战（`ShurikenDrawPower`）<br>海军战锤（`WasshoiDuplicationPower`） | 伺机备刃：建议重画<br>备战：建议重画<br>海军战锤：建议重画 |
-| [powers/DamageFocusPower.png](../NinjaSlayer/images/powers/DamageFocusPower.png) | 韧性（`StatusDrawPower`）<br>乘胜（`WasssssshoiPower`） | 韧性：建议重画<br>乘胜：建议重画 |
+| [powers/NarakuLifePower.png](../NinjaSlayer/images/powers/NarakuLifePower.png) | 浴火（`RekindlePower`）<br>奈落生命（`NarakuLifePower`）<br>噬火（`DevourFlamePower`） | 浴火：可保留<br>奈落生命：可保留<br>噬火：建议重画 |
+| [powers/HellTornadoPower.png](../NinjaSlayer/images/powers/HellTornadoPower.png) | 飞刃轮转（`BladeCyclePower`）<br>飞刃席卷（`BladeSweepPower`）<br>地狱龙卷（`HellTornadoPower`） | 飞刃轮转：建议重画<br>飞刃席卷：建议重画<br>地狱龙卷：建议重画 |
+| [powers/NarakuPower.png](../NinjaSlayer/images/powers/NarakuPower.png) | 烈焰（`BlackFlameInfernoPower`）<br>奈落形态（`NarakuFormPower`）<br>一心同体（`OneMindOneBodyPower`） | 烈焰：建议重画<br>奈落形态：可保留<br>一心同体：建议重画 |
+| [powers/KaratePower.png](../NinjaSlayer/images/powers/KaratePower.png) | Chop打击（`ChopStrikePower`）<br>忍耐（`EndurancePower`）<br>空手道（`KaratePower`）<br>修行（`TrainingPower`）<br>乘胜·力量（`OnslaughtStrengthPower`） | Chop打击：建议重画<br>忍耐：建议重画<br>空手道：可保留<br>修行：建议重画<br>乘胜·力量：建议重画 |
+| [powers/TeaDrinkingSwordPower.png](../NinjaSlayer/images/powers/TeaDrinkingSwordPower.png) | 动静相生（`MotionAndStillnessPower`）<br>以静制动（`PoisePower`）<br>攻势不息（`RelentlessPower`）<br>蓄势（`GatherMomentumPower`） | 动静相生：建议重画<br>以静制动：建议重画<br>攻势不息：建议重画<br>蓄势：建议重画 |
+| [powers/KillingIntentPower.png](../NinjaSlayer/images/powers/KillingIntentPower.png) | 杀气（`KillingIntentPower`）<br>残心（`ZanshinPower`） | 杀气：可保留<br>残心：建议重画 |
+| [powers/PourTeaPower.png](../NinjaSlayer/images/powers/PourTeaPower.png) | 下回合茶道（`ChadoNextTurnPower`）<br>啜饮（`SipPower`） | 下回合茶道：建议重画<br>啜饮：建议重画 |
+| [powers/ExhaustForShurikenPower.png](../NinjaSlayer/images/powers/ExhaustForShurikenPower.png)<br>[powers/EveryThirdAttackPower.png](../NinjaSlayer/images/powers/EveryThirdAttackPower.png) | 伺机备刃（`WatchfulBladesPower`）<br>备战（`BattleReadyPower`）<br>海军战锤（`NavyHammerPower`） | 伺机备刃：建议重画<br>备战：建议重画<br>海军战锤：建议重画 |
+| [powers/DamageFocusPower.png](../NinjaSlayer/images/powers/DamageFocusPower.png) | 韧性（`ResiliencePower`）<br>乘胜（`OnslaughtPower`） | 韧性：建议重画<br>乘胜：建议重画 |
 
 ## 名称分配的关键变动
 
@@ -790,20 +790,20 @@
 | 旧中文名 | 采用中文名 | 当前类名 |
 |---|---|---|
 | 死线 | 占线 | `BusyLine` |
-| 大刀 | 砍刀 | `SawatariMachete` |
-| 低空上勾拳 | 投石器摔 | `WhiskTeaFlashRedesignV1` |
-| 忍者感应 | 察敌 | `LuckyStrikeRedesignV1` |
-| 未命名 | 备战 | `ShurikenDraw` |
-| 燃烧殆尽 | 引火 | `RedBlackFlameAttackRedesignV1` |
-| 深渊之力 | 奈落之力 | `AbyssStrengthRedesignV1` |
-| 洞察 | 应变 | `TechniqueSearchRedesignV1` |
-| 玛卡古 | 审势 | `TonyRetention` |
-| 燃血 | 强攻 | `Slaughter` |
-| 发掘 | 重拾 | `Excavate` |
-| 弃刃成锋 | 伺机备刃 | `RecycledBladesRedesignV1` |
-| 制定计划 | 谋定 | `ComposeHaikuRedesignV1` |
-| 真名看破 | 澄明 | `FurinKazanChadoRedesignV1` |
-| 疾闪 | 玛卡古 | `HardItOutRedesignV1` |
+| 大刀 | 砍刀 | `Machete` |
+| 低空上勾拳 | 投石器摔 | `CatapultThrow` |
+| 忍者感应 | 察敌 | `ReadTheEnemy` |
+| 未命名 | 备战 | `BattleReady` |
+| 燃烧殆尽 | 燃火 | `Kindle` |
+| 深渊之力 | 奈落之力 | `NarakusMight` |
+| 洞察 | 应变 | `Adapt` |
+| 玛卡古 | 审势 | `Assess` |
+| 燃血 | 强攻 | `PressTheAttack` |
+| 发掘 | 重拾 | `Recover` |
+| 弃刃成锋 | 伺机备刃 | `WatchfulBlades` |
+| 制定计划 | 谋定 | `Forethought` |
+| 真名看破 | 澄明 | `ClearMind` |
+| 疾闪 | 玛卡古 | `Macaco` |
 
 ## 后续交付检查
 

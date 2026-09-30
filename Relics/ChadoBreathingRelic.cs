@@ -6,7 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -15,7 +15,7 @@ using STS2RitsuLib.Interop.AutoRegistration;
 namespace NinjaSlayer.Relics;
 
 [RegisterCharacterStarterRelic(typeof(NinjaSlayerCharacter), 1)]
-[RegisterTouchOfOrobasRefinement(typeof(DeepChadoBreathingRelic))]
+[RegisterTouchOfOrobasRefinement(typeof(ChadoBreathingMasteryRelic))]
 public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 {
     protected virtual int ChadoCount => 0;
@@ -27,7 +27,7 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
     {
         get
         {
-            var tea = ModelDb.Card<ChadoEnergyRedesignV1>().ToMutable();
+            var tea = ModelDb.Card<Chado>().ToMutable();
             return [NinjaSlayerHoverTips.ChadoBreathing, HoverTipFactory.FromKeyword(CardKeyword.Retain), HoverTipFactory.FromCard(tea), .. tea.HoverTips];
         }
     }
@@ -44,12 +44,12 @@ public class ChadoBreathingRelic : NinjaSlayerRelicTemplate
 
         for (int i = 0; i < ChadoCount; i++)
         {
-            ChadoEnergyRedesignV1 chado = combatState.CreateCard<ChadoEnergyRedesignV1>(Owner);
+            Chado chado = combatState.CreateCard<Chado>(Owner);
             await CardPileCmd.AddGeneratedCardToCombat(chado, PileType.Hand, Owner);
         }
 
         await ChadoBreathCmd.Apply(choiceContext, Owner, BreathAmount);
-        await PowerCmd.Apply<ChadoRetainPower>(choiceContext, Owner.Creature, 1, Owner.Creature, null);
+        await PowerCmd.Apply<RetainChadoPower>(choiceContext, Owner.Creature, 1, Owner.Creature, null);
         Flash();
     }
 }

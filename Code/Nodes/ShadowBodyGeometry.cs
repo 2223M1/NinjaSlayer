@@ -8,7 +8,7 @@ internal static class ShadowBodyGeometry
     private static readonly Vector2[] Normal = CombatBodyContours.NinjaSlayer.Select(p => new Vector2(p.X, p.Y)).ToArray();
     private static readonly Vector2[] Naraku = CombatBodyContours.FullyReleasedNaraku.Select(p => new Vector2(p.X, p.Y)).ToArray();
     private static readonly Vector2[] Koki = CombatBodyContours.YamotoKoki.Select(p => new Vector2(p.X, p.Y)).ToArray();
-    private static readonly Vector2[] OneSoul = CombatBodyContours.OneBodyOneSoul.Select(p => new Vector2(p.X, p.Y)).ToArray();
+    private static readonly Vector2[] OneSoul = CombatBodyContours.OneMindOneBody.Select(p => new Vector2(p.X, p.Y)).ToArray();
 
     // Clockwise normalized solid-body contours; exclude long airborne weapons and
     // cloth, but retain Sawatari's lower cloak and Yukano's single grounded leg.

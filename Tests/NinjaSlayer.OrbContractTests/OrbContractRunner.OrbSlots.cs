@@ -125,7 +125,7 @@ public partial class OrbContractRunner
             await AddStock(combat.Player, 3);
             await OrbCmd.Channel<FrostOrb>(Choice, combat.Player);
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             int events = _evoked, hp = combat.Enemy.CurrentHp;
             await CardCmd.AutoPlay(Choice, AddCard<Shatter>(combat), null);
             Require(hp - combat.Enemy.CurrentHp == 7 + 20 + 48 && combat.Player.Creature.Block == 14

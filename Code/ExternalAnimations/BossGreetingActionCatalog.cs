@@ -26,7 +26,7 @@ internal static class BossGreetingActionCatalog
         return boss.Monster switch
         {
             DarkNinjaMonster => new BossGreetingActionSpec(null, NinjaSlayerAudio.DarkNinjaDomoEvent, 2.368f),
-            SawatariMonster => new BossGreetingActionSpec(null, NinjaSlayerAudio.ForestSawatariDuelEvent, 1f),
+            ForestSawatariMonster => new BossGreetingActionSpec(null, NinjaSlayerAudio.ForestSawatariDuelEvent, 1f),
             CeremonialBeast => new BossGreetingActionSpec(
                 "Cast",
                 "event:/sfx/enemy/enemy_attacks/ceremonial_beast/ceremonial_beast_shrill",

@@ -6,7 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Cards;
 using NinjaSlayer.Content;
 using STS2RitsuLib.Scaffolding.Content;
@@ -30,9 +30,9 @@ internal static class WebsiteCatalogExporter
         string version = System.Environment.GetEnvironmentVariable("NINJASLAYER_CATALOG_VERSION")
             ?? throw new InvalidOperationException("Catalog export requires the candidate package version.");
         var cards = ModelDb.AllCards.Concat(new CardModel[] {
-            ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
-            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(), ModelDb.Card<BusyLine>(),
-            ModelDb.Card<SawatariMachete>()
+            ModelDb.Card<Chado>(), ModelDb.Card<StraightKi>(),
+            ModelDb.Card<BlackFlame>(), ModelDb.Card<StrongShuriken>(), ModelDb.Card<BusyLine>(),
+            ModelDb.Card<Machete>()
         }).DistinctBy(card => card.Id).ToArray();
         var models = cards.Cast<AbstractModel>().Concat(ModelDb.AllRelics).Concat(ModelDb.AllPotions)
             .Concat(ModelDb.Monsters).Concat(ModelDb.AllEvents).Concat(ModelDb.AllAncients).Concat(ModelDb.AllEncounters).Concat(ModelDb.AllPowers)

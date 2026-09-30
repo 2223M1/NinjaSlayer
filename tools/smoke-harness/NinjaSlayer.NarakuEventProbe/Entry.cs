@@ -124,7 +124,7 @@ public static class NarakuEventProbe
                 using (await Capture("event-call-" + (i + 1))) { }
             }
             await UiHelper.Click(Options()[0]); await Frames(90);
-            Require(player.Relics.Any(r => r.GetType().Name == "NarakuWithinRelic"), "Naraku reward missing");
+            Require(player.Relics.Any(r => r.GetType().Name == "NarakuUnleashedRelic"), "Naraku reward missing");
             using (await Capture("event-accepted")) { }
             await RunManager.Instance.EnterRoomDebug(RoomType.RestSite); await Frames(60);
             Require(!GodotObject.IsInstanceValid(video), "Video survived event exit");

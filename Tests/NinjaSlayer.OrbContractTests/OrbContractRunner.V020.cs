@@ -8,7 +8,7 @@ using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Powers;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -60,20 +60,20 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 1);
             await AddStock(combat.Player, 2);
-            await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, upgraded: upgraded), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Moonsault>(combat, upgraded: upgraded), null);
             Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == 0 && combat.Enemy.CurrentHp == 976,
                 "Oyeah Throw Sword must grant no block and consume the old stock without replenishing it.");
-            var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
+            var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShuriken>().First();
             Require(token.SnapshotDamage == 8, "Conversion must snapshot the six base damage and two Focus.");
             CardCmd.Upgrade(token);
             Require(token.DynamicVars.Damage.BaseValue == 12, "Strong Shuriken upgrade must add four damage.");
-            var clone = (StrongShurikenTokenRedesignV1)token.CreateClone();
+            var clone = (StrongShuriken)token.CreateClone();
             Require(clone.SnapshotDamage == 8 && clone.DynamicVars.Damage.BaseValue == 12,
                 "Card cloning must retain the snapshot and upgrade.");
-            var restored = (StrongShurikenTokenRedesignV1)CardModel.FromSerializable(token.ToSerializable());
+            var restored = (StrongShuriken)CardModel.FromSerializable(token.ToSerializable());
             Require(restored.SnapshotDamage == 8 && restored.DynamicVars.Damage.BaseValue == 12,
                 $"Card serialization must retain the snapshot and upgrade: snapshot={restored.SnapshotDamage}, damage={restored.DynamicVars.Damage.BaseValue}, level={restored.CurrentUpgradeLevel}; saved={System.Text.Json.JsonSerializer.Serialize(token.ToSerializable(), new System.Text.Json.JsonSerializerOptions { IncludeFields = true })}.");
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 8, combat.Player.Creature, null);
@@ -82,7 +82,7 @@ public partial class OrbContractRunner
             Require(combat.Enemy.CurrentHp == 961, "Snapshot token must gain Strength but not count Focus twice.");
             await PowerCmd.Apply<WeakPower>(Choice, combat.Player.Creature, 1, combat.Enemy, null);
             await PowerCmd.Apply<VulnerablePower>(Choice, combat.Enemy, 1, combat.Player.Creature, null);
-            var nextToken = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().First();
+            var nextToken = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShuriken>().First();
             await CardCmd.AutoPlay(Choice, nextToken, combat.Enemy);
             Require(combat.Enemy.CurrentHp == 949, "Snapshot tokens must still use native Strength, Weak and Vulnerable modifiers.");
         }
@@ -91,7 +91,7 @@ public partial class OrbContractRunner
             await AddStock(combat.Player, 8);
             foreach (var (upgraded, expectedLoss) in new[] { (false, 2), (false, 2), (true, 1), (false, 1) })
             {
-                await CardCmd.AutoPlay(Choice, AddCard<BladeCycleRedesignV1>(combat, upgraded: upgraded), null);
+                await CardCmd.AutoPlay(Choice, AddCard<BladeCycle>(combat, upgraded: upgraded), null);
                 Require(combat.Player.Creature.GetPowerAmount<BladeCyclePower>() == expectedLoss,
                     "Repeated Blade Cycle must retain the best stock loss instead of adding its amounts.");
                 int stock = combat.Stock;
@@ -105,28 +105,28 @@ public partial class OrbContractRunner
         using (var combat = new OrbCombat())
         {
             for (int index = 0; index < CardPile.MaxCardsInHand; index++) AddCard<DefendIronclad>(combat);
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await AddStock(combat.Player, 2);
-            await CardCmd.AutoPlay(Choice, AddCard<OyeahThrowSword>(combat, PileType.Discard), null);
+            await CardCmd.AutoPlay(Choice, AddCard<Moonsault>(combat, PileType.Discard), null);
             Require(combat.Tokens == 1 && combat.Stock == 0 && combat.Enemy.CurrentHp == 988,
                 "A full hand must not lose converted shots or prevent stock replacement.");
-            Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<StrongShurikenTokenRedesignV1>().Count() == 1,
+            Require(PileType.Discard.GetPile(combat.Player).Cards.OfType<StrongShuriken>().Count() == 1,
                 "Native generation must send overflow tokens to discard.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            await CardCmd.AutoPlay(Choice, AddCard<PlaceholderBlueDefense01>(combat, upgraded: upgraded), null);
+            await CardCmd.AutoPlay(Choice, AddCard<NinjaCaltrops>(combat, upgraded: upgraded), null);
             Require(combat.Player.Creature.Block == (upgraded ? 8 : 5)
-                && combat.Player.Creature.GetPowerAmount<ThornsPower>() == (upgraded ? 4 : 3),
-                "Caltrops must grant its block and native Thorns.");
+                && combat.Player.Creature.GetPowerAmount<ThornsPower>() == (upgraded ? 3 : 2),
+                "NinjaCaltrops must grant its block and native Thorns.");
         }
         foreach (bool upgraded in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            var tea = AddCard<ChadoEnergyRedesignV1>(combat);
+            var tea = AddCard<Chado>(combat);
             for (int index = 0; index < 15; index++) AddCard<DefendIronclad>(combat, PileType.Draw);
-            var kick = AddCard<DragonFlyingKickRedesignV1>(combat, upgraded: upgraded);
+            var kick = AddCard<DragonFlyingKick>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, kick, combat.Enemy);
             Require(combat.Enemy.CurrentHp == (upgraded ? 980 : 985)
                 && PileType.Hand.GetPile(combat.Player).Cards.Count == CardPile.MaxCardsInHand
@@ -135,7 +135,7 @@ public partial class OrbContractRunner
         }
         using (var combat = new OrbCombat())
         {
-            var relic = ModelDb.Relic<NinjaSlayer.Relics.BlanketRelic>().ToMutable();
+            var relic = ModelDb.Relic<NinjaSlayer.Relics.MentalBlanketRelic>().ToMutable();
             combat.Player.AddRelicInternal(relic);
             for (int turn = 0; turn < 3; turn++) await Hook.AfterPlayerTurnStart(combat.State, Choice, combat.Player);
             Require(combat.Player.Creature.GetPowerAmount<NarakuLifePower>() == 6,

@@ -8,7 +8,7 @@
   "cues": [
     { "id": "opening", "steps": [
       { "action": "wait", "seconds": 0.4 },
-      { "action": "card", "card": "KarateStraightRedesignV1" },
+      { "action": "card", "card": "StraightPunch" },
       { "action": "wait", "seconds": 0.3 }
     ] },
     { "id": "normal_soft_limits", "steps": [ { "action": "aim_motion", "mode": "tracking" } ] },

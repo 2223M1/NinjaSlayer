@@ -21,7 +21,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using MegaCrit.Sts2.Core.AutoSlay.Helpers;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
@@ -47,20 +47,20 @@ internal sealed partial class SmokeController
         await PowerCmd.Remove<EvasionPower>(player.Creature);
         await PowerCmd.Apply<StrengthPower>(choice, dark, 4, dark, null);
         dark.SetCurrentHpInternal(100);
-        var iai = await PowerCmd.Apply<IaiPower>(choice, dark, 1, dark, null);
+        var iai = await PowerCmd.Apply<DarkCounterPower>(choice, dark, 1, dark, null);
         int flashes = 0;
         iai!.Flashed += _ => flashes++;
         async Task Strike()
         {
-            var card = state.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            var card = state.CreateCard<StrikeNinjaSlayer>(player);
             await CardPileCmd.Add(card, PileType.Hand);
             await CardCmd.AutoPlay(choice, card, dark);
         }
         int hp = player.Creature.CurrentHp;
         await Strike();
         Require(flashes == 1 && player.Creature.CurrentHp == hp - 4, "Living Dark Ninja did not counter exactly once.");
-        await PowerCmd.Remove<IaiPower>(dark);
-        iai = await PowerCmd.Apply<IaiPower>(choice, dark, 1, dark, null);
+        await PowerCmd.Remove<DarkCounterPower>(dark);
+        iai = await PowerCmd.Apply<DarkCounterPower>(choice, dark, 1, dark, null);
         flashes = 0;
         iai!.Flashed += _ => flashes++;
         hp = player.Creature.CurrentHp;
@@ -85,7 +85,7 @@ internal sealed partial class SmokeController
         await CreatureCmd.Add(dark);
         await PowerCmd.Remove<EvasionPower>(dark);
         await PowerCmd.Apply<StrengthPower>(choice, dark, 4, dark, null);
-        iai = await PowerCmd.Apply<IaiPower>(choice, dark, 1, dark, null);
+        iai = await PowerCmd.Apply<DarkCounterPower>(choice, dark, 1, dark, null);
         flashes = 0;
         iai!.Flashed += _ => flashes++;
         hp = player.Creature.CurrentHp;
@@ -100,7 +100,7 @@ internal sealed partial class SmokeController
         Require(finishRoom.success, finishRoom.msg);
         await finishRoom.task!;
 
-        Type route = typeof(SawatariEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
+        Type route = typeof(TheMovingJungleEvent).Assembly.GetType("NinjaSlayer.Code.Patches.SawatariEventRoute", true)!;
         foreach (var scenario in new[] { (Act: 1, Fog: false, Duel: false, Kill: "thorns"),
             (Act: 1, Fog: true, Duel: true, Kill: "native"),
             (Act: 3, Fog: false, Duel: true, Kill: "support"),
@@ -108,7 +108,7 @@ internal sealed partial class SmokeController
             (Act: 3, Fog: false, Duel: false, Kill: "area") })
         {
             string label = $"act{scenario.Act}-{(scenario.Fog ? "fogmog" : "gremlin")}-{(scenario.Duel ? "duel" : "loot")}-{scenario.Kill}";
-            foreach (var relic in player.Relics.OfType<BioBambooRelic>().ToArray()) await RelicCmd.Remove(relic);
+            foreach (var relic in player.Relics.OfType<BioBambooSplintRelic>().ToArray()) await RelicCmd.Remove(relic);
             var act = new ActConsoleCmd().Process(player, [scenario.Act.ToString()]);
             Require(act.success, act.msg);
             await act.task!;
@@ -116,7 +116,7 @@ internal sealed partial class SmokeController
             AccessTools.Method(route, "Schedule").Invoke(null, [run.Act, encounter]);
             Require((bool)AccessTools.Method(route, "TryActivate").Invoke(null, [run.Act])!, "Could not route fixture encounter.");
             // The event console command bypasses native replay initialization.
-            await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<SawatariEvent>());
+            await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheMovingJungleEvent>());
             await WaitUntilAsync(() => manager.IsInProgress && !manager.IsStarting
                 && player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
                 "Cleanup fixture did not reach player turn", ct);
@@ -125,7 +125,7 @@ internal sealed partial class SmokeController
             await WaitFrames(2);
             state = manager.DebugOnlyGetState()!;
             var room = NCombatRoom.Instance!;
-            Creature companion = state.Creatures.Single(c => c.Monster is SawatariMonster && c.Side == CombatSide.Player);
+            Creature companion = state.Creatures.Single(c => c.Monster is ForestSawatariMonster && c.Side == CombatSide.Player);
             Creature original = state.Enemies.Single(e => e.Monster is Fogmog or GremlinMerc);
             if (scenario.Fog)
             {
@@ -191,9 +191,9 @@ internal sealed partial class SmokeController
             await UiHelper.Click(GetSawatariOptions()[scenario.Duel ? 1 : 0]);
             if (scenario.Duel)
             {
-                await WaitUntilAsync(() => !manager.IsPaused && state.Enemies.Any(e => e.Monster is SawatariMonster),
+                await WaitUntilAsync(() => !manager.IsPaused && state.Enemies.Any(e => e.Monster is ForestSawatariMonster),
                     "Duel did not start", ct);
-                Require(state.Enemies.Count() == 1 && state.Enemies.Single().Monster is SawatariMonster,
+                Require(state.Enemies.Count() == 1 && state.Enemies.Single().Monster is ForestSawatariMonster,
                     "A split enemy or illusion entered Sawatari's duel.");
                 await WaitFrames(45);
                 Require(state.Enemies.Count() == 1, "A retired illusion revived during the duel.");
@@ -201,7 +201,7 @@ internal sealed partial class SmokeController
                 await WaitUntilAsync(() => manager.IsPaused && GetSawatariOptions().Count == 1
                     && GetSawatariOptions()[0].IsVisibleInTree() && GetSawatariOptions()[0].IsEnabled,
                     "Duel reward choice missing", ct);
-                Require(!player.Relics.OfType<BioBambooRelic>().Any(),
+                Require(!player.Relics.OfType<BioBambooSplintRelic>().Any(),
                     "Duel victory granted Bio-Bamboo before manual collection.");
                 await WaitFrames(90);
                 SaveScreenshot(Path.Combine(directory, label + "-relic.png"));
@@ -217,14 +217,14 @@ internal sealed partial class SmokeController
                 var rewardScreen = (NRewardsScreen)NOverlayStack.Instance!.Peek()!;
                 var rewards = UiHelper.FindAll<NRewardButton>(rewardScreen).ToArray();
                 Require(rewards.Length == 2 && rewards.All(button => button.Reward is RelicReward)
-                    && rewards.Count(button => button.Reward is RelicReward { Relic: BioBambooRelic }) == 1,
+                    && rewards.Count(button => button.Reward is RelicReward { Relic: BioBambooSplintRelic }) == 1,
                     "Duel must offer Bamboo and one random relic.");
                 await WaitFrames(60);
                 SaveScreenshot(Path.Combine(directory, label + "-reward.png"));
-                if (scenario.Act == 1) await UiHelper.Click(rewards.Single(button => button.Reward is RelicReward { Relic: BioBambooRelic }));
+                if (scenario.Act == 1) await UiHelper.Click(rewards.Single(button => button.Reward is RelicReward { Relic: BioBambooSplintRelic }));
                 await UiHelper.Click(UiHelper.FindFirst<MegaCrit.Sts2.Core.Nodes.CommonUi.NProceedButton>(rewardScreen)!);
             }
-            Require(player.Relics.OfType<BioBambooRelic>().Count() == (scenario.Duel && scenario.Act == 1 ? 1 : 0),
+            Require(player.Relics.OfType<BioBambooSplintRelic>().Count() == (scenario.Duel && scenario.Act == 1 ? 1 : 0),
                 "Manual Bamboo reward did not respect collection or skipping.");
             _checkpoints.Write("sawatari.cleanup." + label);
         }

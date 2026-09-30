@@ -22,7 +22,7 @@ public abstract class NinjaSlayerCardPoolTemplate : TypeListCardPoolModel
 public sealed class NinjaSlayerCardPool : NinjaSlayerCardPoolTemplate
 {
     private static readonly List<string> RewardOrder =
-        [.. RedesignV1Rules.CommonRewardCardIds, .. RedesignV1Rules.UncommonRewardCardIds, .. RedesignV1Rules.RareRewardCardIds];
+        [.. NinjaSlayerCardRules.CommonRewardCardIds, .. NinjaSlayerCardRules.UncommonRewardCardIds, .. NinjaSlayerCardRules.RareRewardCardIds];
 
     public override IEnumerable<CardModel> AllCards =>
         base.AllCards.OrderBy(card => RewardOrder.IndexOf(card.GetType().Name));

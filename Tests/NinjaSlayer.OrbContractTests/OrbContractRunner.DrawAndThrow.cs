@@ -127,7 +127,7 @@ public partial class OrbContractRunner
             : new(854f, -110f);
         var contour = (System.Numerics.Vector2[])AccessTools.Field(typeof(ShurikenOrb).Assembly
             .GetType("NinjaSlayer.Code.Combat.CombatBodyContours"),
-            formIndex == 3 ? "OneBodyOneSoul" : formIndex == 2 ? "FullyReleasedNaraku" : "NinjaSlayer").GetValue(null)!;
+            formIndex == 3 ? "OneMindOneBody" : formIndex == 2 ? "FullyReleasedNaraku" : "NinjaSlayer").GetValue(null)!;
         FastModeType speed = SaveManager.Instance.PrefsSave.FastMode;
         Transform2D anchorBaseline = anchor.Transform;
         pose.SetProcess(false);
@@ -433,14 +433,14 @@ public partial class OrbContractRunner
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             Require(!(await CardPileCmd.Draw(Choice, 1, combat.Player)).Any() && _drawFlipCalls == 0, "Full-hand draw played a flip.");
             ResetBatch();
-            await PowerCmd.Apply<StatusDrawPower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
+            await PowerCmd.Apply<ResiliencePower>(Choice, combat.Player.Creature, 2, combat.Player.Creature, null);
             AddCard<Wound>(combat, PileType.Draw);
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             AddCard<StrikeIronclad>(combat, PileType.Draw);
             await CardPileCmd.Draw(Choice, 1, combat.Player);
             Require(PileType.Hand.GetPile(combat.Player).Cards.Count == 3 && _drawFlipCalls == 1,
                 "Nested status-triggered draws were not grouped with the outer batch.");
-            await PowerCmd.Remove(combat.Player.Creature.GetPower<StatusDrawPower>()!);
+            await PowerCmd.Remove(combat.Player.Creature.GetPower<ResiliencePower>()!);
             ResetBatch();
             Type batches = product.GetType("NinjaSlayer.Code.Lifecycle.NinjaSlayerDrawAnimationBatch", true)!;
             using ((IDisposable)AccessTools.Method(batches, "Enter").Invoke(null, [combat.Player, false])!)

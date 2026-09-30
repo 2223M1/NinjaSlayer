@@ -6230,7 +6230,7 @@
           "menu_music_stopped_before_scenes": true
         },
         {
-          "model": "YukanoEvent",
+          "model": "TheCrookedToriiEvent",
           "one_instance": true,
           "no_layered_act_music": true,
           "natural_outro": true,
@@ -6239,7 +6239,7 @@
           "reentry": true
         },
         {
-          "model": "YamotoKokiCuteEvent",
+          "model": "YamotoKokiIsSoCuteEvent",
           "one_instance": true,
           "no_layered_act_music": true,
           "natural_outro": true,
@@ -6257,12 +6257,12 @@
           "reentry": true
         },
         {
-          "model": "DarkNinjaEvent",
+          "model": "GloryOfKyotoEvent",
           "prelude_to_battle": true,
           "live_attack_hurt_narration_mix": true
         },
         {
-          "model": "SawatariEvent",
+          "model": "TheMovingJungleEvent",
           "cooperative_combat": true,
           "choice_phase": true,
           "duel_transition": true

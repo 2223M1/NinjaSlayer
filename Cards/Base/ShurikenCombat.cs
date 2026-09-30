@@ -110,7 +110,7 @@ internal static class ShurikenCombat
 #endif
         )).ToList();
         Code.Telemetry.NinjaSlayerCombatTelemetry.AttributeDamage(results, "shuriken");
-        if (owner.GetPower<WasssssshoiPower>() is { } wasshoi)
+        if (owner.GetPower<OnslaughtPower>() is { } wasshoi)
         {
             foreach (DamageResult result in results.Where(result => result.TotalDamage > 0 && result.Receiver.Side != owner.Side))
                 await wasshoi.GainTemporaryStats(choiceContext, source);

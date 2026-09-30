@@ -35,7 +35,7 @@ public sealed class YamotoKokiFinishedCombatRestorePatch : IPatchMethod
             return;
         }
 
-        YamotoKokiCuteRelic? controller = YamotoKokiPartyState.GetController(runState);
+        OrigamiPactRelic? controller = YamotoKokiPartyState.GetController(runState);
         bool companionPresent = room.CreatureNodes.Any(
             node => node.Entity.Monster is YamotoKokiMonster);
         if (room.Mode != CombatRoomMode.FinishedCombat

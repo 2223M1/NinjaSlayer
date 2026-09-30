@@ -202,7 +202,7 @@ internal static class NinjaSlayerCombatTelemetry
                 }
                 action.Killed = e.Result.WasTargetKilled;
                 action.Hp = e.Receiver.CurrentHp;
-                action.Source = e.CardSource is Cards.RedesignV1.BlackFlameRedesignV1 ? "black_flame" : "unattributed";
+                action.Source = e.CardSource is Cards.Standard.BlackFlame ? "black_flame" : "unattributed";
                 if (e.CardSource is { } source && source.Owner == _player && e.Result.Props.IsPoweredAttack())
                 {
                     SnapshotCard(action, source);
@@ -384,7 +384,7 @@ internal static class NinjaSlayerCombatTelemetry
             case "turn": case "move": case "potion": case "channel": case "afflict": case "pile": case "creature": case "snapshot_end": case "power_snapshot": break;
             default: Add(metrics.Mechanics, action.Kind, action.Amount ?? 1); break;
         }
-        if (action.Model == ModelDb.Card<Cards.RedesignV1.ChadoEnergyRedesignV1>().Id.ToString()
+        if (action.Model == ModelDb.Card<Cards.Standard.Chado>().Id.ToString()
             && action.Kind is "generate" or "exhaust")
             Add(metrics.Mechanics, action.Kind == "generate" ? "chado_generated" : "chado_exhausted", 1);
     }

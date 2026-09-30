@@ -5,7 +5,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Orbs;
 
 namespace NinjaSlayer.OrbContractTests;
@@ -44,7 +44,7 @@ public partial class OrbContractRunner
         await customGate;
         await ToSignal(GetTree().CreateTimer(.11), SceneTreeTimer.SignalName.Timeout);
         Run("CancelAndRestore", combat.Player.Creature);
-        var card = combat.State.CreateCard<RoundhouseKickRedesignV1>(combat.Player);
+        var card = combat.State.CreateCard<DragonRoundhouseKick>(combat.Player);
         var play = new CardPlay { Card = card,
 #if !NINJASLAYER_CHANNEL_STABLE
             Player = combat.Player,

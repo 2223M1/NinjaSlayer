@@ -4,11 +4,11 @@
   "act": 3,
   "duration": 10,
   "karate": 0,
-  "audit": { "monster": "SawatariMonster", "targetHp": 13, "expectedHits": 2, "mode": "Fast" },
+  "audit": { "monster": "ForestSawatariMonster", "targetHp": 13, "expectedHits": 2, "mode": "Fast" },
   "cues": [
     { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
     { "id": "idle", "steps": [{ "action": "wait", "seconds": 1 }] },
-    { "id": "rigid_mod_victim", "steps": [{ "action": "card", "card": "RoundhouseKickRedesignV1" }] },
+    { "id": "rigid_mod_victim", "steps": [{ "action": "card", "card": "DragonRoundhouseKick" }] },
     { "id": "recovery", "steps": [{ "action": "wait", "seconds": 2 }] }
   ]
 }

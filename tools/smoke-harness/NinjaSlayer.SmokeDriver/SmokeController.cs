@@ -38,7 +38,7 @@ using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
@@ -152,7 +152,7 @@ internal sealed partial class SmokeController
     public bool TryHandleSawatariEventCombat(CancellationToken cancellationToken, ref Task result)
     {
         if (_configuration.Phase != SmokePhase.SawatariSameCombat
-            || !RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any())
+            || !RunManager.Instance.EventSynchronizer.Events.OfType<TheMovingJungleEvent>().Any())
         {
             return false;
         }
@@ -169,7 +169,7 @@ internal sealed partial class SmokeController
             return;
         }
 
-        EventModel sawatari = ModelDb.Event<SawatariEvent>();
+        EventModel sawatari = ModelDb.Event<TheMovingJungleEvent>();
         runState.AddVisitedEvent(sawatari);
         nextEvent = sawatari;
     }
@@ -386,12 +386,12 @@ internal sealed partial class SmokeController
         }
         await CreatureCmd.SetCurrentHp(player.Creature, originalHp);
         _checkpoints.Write("naraku.lethal-hit-absorption");
-        PreparedShurikenRedesignV1 readyBlade = combatState.CreateCard<PreparedShurikenRedesignV1>(player);
+        ReadyShuriken readyBlade = combatState.CreateCard<ReadyShuriken>(player);
         await CardPileCmd.Add(readyBlade, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), readyBlade, player.Creature);
-        const int preparedStock = 2;
+        const int preparedStock = 1;
         Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().Single().StackCount == preparedStock,
-            "Prepared Shuriken did not create two stock.");
+            "Base Ready Shuriken did not create one stock.");
         _checkpoints.Write("shuriken.created");
 
         var enemyTurnStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -413,7 +413,7 @@ internal sealed partial class SmokeController
             "End-turn hand cleanup incorrectly consumed shuriken stock.");
         for (int stock = preparedStock; stock > 0; stock--)
         {
-            var discarded = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+            var discarded = combatState.CreateCard<DefendNinjaSlayer>(player);
             await CardPileCmd.Add(discarded, PileType.Hand);
             await CardCmd.Discard(new BlockingPlayerChoiceContext(), discarded);
             Require(player.PlayerCombatState!.OrbQueue.Orbs.OfType<ShurikenOrb>().SingleOrDefault()?.StackCount == stock - 1
@@ -433,7 +433,7 @@ internal sealed partial class SmokeController
             "The preceding hit animation did not settle before the X attack scenario.",
             cancellationToken);
         await PlayerCmd.SetEnergy(1m, player);
-        TornadoFistRedesignV1 nonLethal = combatState.CreateCard<TornadoFistRedesignV1>(player);
+        TornadoFist nonLethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(nonLethal, PileType.Hand);
         NCreature playerNode = NCombatRoom.Instance?.GetCreatureNode(player.Creature)
             ?? throw new InvalidOperationException("The local player creature node was unavailable.");
@@ -471,7 +471,7 @@ internal sealed partial class SmokeController
 
         FinisherSmokeObserver.Reset(injectPresentationFailure: true);
         await PlayerCmd.SetEnergy(3m, player);
-        TornadoFistRedesignV1 lethal = combatState.CreateCard<TornadoFistRedesignV1>(player);
+        TornadoFist lethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(lethal, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), lethal, focus);
         _checkpoints.Write(
@@ -658,7 +658,7 @@ internal sealed partial class SmokeController
             ?? throw new InvalidOperationException("Sawatari combat state was unavailable.");
         NCombatRoom room = NEventRoom.Instance?.EmbeddedCombatRoom
             ?? throw new InvalidOperationException("Sawatari combat room was unavailable.");
-        Creature companion = state.Creatures.Single(c => c.Side == CombatSide.Player && c.Monster is SawatariMonster);
+        Creature companion = state.Creatures.Single(c => c.Side == CombatSide.Player && c.Monster is ForestSawatariMonster);
         Require(room.GetCreatureNode(companion)!.Visuals.HasNode("SawatariWeapons"),
             "The real event did not initialize allied Sawatari's weapon rig.");
         Player player = LocalContext.GetMe(state.RunState)
@@ -706,8 +706,8 @@ internal sealed partial class SmokeController
                 "Could not prepare Sawatari's first-wave Finisher target at one HP.");
             FinisherSmokeObserver.Reset();
             await PlayerCmd.SetEnergy(10m, player);
-            StrikeNinjaSlayerRedesignV1 strike =
-                state.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            StrikeNinjaSlayer strike =
+                state.CreateCard<StrikeNinjaSlayer>(player);
             await CardPileCmd.Add(strike, PileType.Hand);
             await CardCmd.AutoPlay(
                 new BlockingPlayerChoiceContext(),
@@ -773,7 +773,7 @@ internal sealed partial class SmokeController
             await WaitUntilAsync(
                 () => !manager.IsPaused
                     && !manager.PlayerActionsDisabled
-                    && state.Enemies.Any(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster),
+                    && state.Enemies.Any(enemy => enemy.IsAlive && enemy.Monster is ForestSawatariMonster),
                 "Sawatari duel did not resume the original combat",
                 cancellationToken);
             Require(state.RoundNumber == round + 1, "Sawatari duel did not start on the next round.");
@@ -785,7 +785,7 @@ internal sealed partial class SmokeController
             Require(room.Ui.Visible, "Sawatari duel did not restore the combat UI.");
             Require(!manager.PlayerActionsDisabled, "Sawatari duel did not restore local player actions.");
 
-            Creature duel = state.Enemies.Single(enemy => enemy.IsAlive && enemy.Monster is SawatariMonster);
+            Creature duel = state.Enemies.Single(enemy => enemy.IsAlive && enemy.Monster is ForestSawatariMonster);
             await CreatureCmd.Kill(duel);
             await WaitUntilAsync(
                 () => manager.IsPaused && GetSawatariOptions().Count == 1,
@@ -834,7 +834,7 @@ internal sealed partial class SmokeController
         Creature target)
     {
         // The preceding presentation scenarios may draw Black Flame; its independent burn is not evaded.
-        foreach (CardModel flame in PileType.Hand.GetPile(player).Cards.OfType<BlackFlameRedesignV1>().ToArray())
+        foreach (CardModel flame in PileType.Hand.GetPile(player).Cards.OfType<BlackFlame>().ToArray())
             await CardPileCmd.Add(flame, PileType.Discard);
         await PowerCmd.Remove<ArtifactPower>(target);
         await PowerCmd.Remove<VulnerablePower>(target);
@@ -855,7 +855,7 @@ internal sealed partial class SmokeController
             1,
             target,
             null);
-        RightHeavyPunchRedesignV1 first = combatState.CreateCard<RightHeavyPunchRedesignV1>(player);
+        LeftUppercut first = combatState.CreateCard<LeftUppercut>(player);
         await CardPileCmd.Add(first, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), first, target);
         Require(target.GetPower<EvasionPower>()?.Amount is null or 0, "Evasion was not consumed by an attack card.");
@@ -875,7 +875,7 @@ internal sealed partial class SmokeController
             1,
             target,
             null);
-        RightHeavyPunchRedesignV1 second = combatState.CreateCard<RightHeavyPunchRedesignV1>(player);
+        LeftUppercut second = combatState.CreateCard<LeftUppercut>(player);
         await CardPileCmd.Add(second, PileType.Hand);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), second, target);
 
@@ -983,7 +983,7 @@ internal sealed partial class SmokeController
         Require(target.HasPower<WeakPower>(), "A connected hit incorrectly suppressed its move debuff.");
         await PowerCmd.Remove<WeakPower>(target);
 
-        DefendNinjaSlayerRedesignV1 nonAttackSource = combatState.CreateCard<DefendNinjaSlayerRedesignV1>(player);
+        DefendNinjaSlayer nonAttackSource = combatState.CreateCard<DefendNinjaSlayer>(player);
         var nonAttackSourceMove = new MoveState(
             "NINJASLAYER_SMOKE_NON_ATTACK_SOURCE",
             async targets =>
@@ -1671,6 +1671,10 @@ internal sealed partial class SmokeController
             {
                 await RunTornadoPreviewAsync();
             }
+            else if (_configuration.Phase == SmokePhase.Release038)
+            {
+                await RunRelease038Async();
+            }
             else if (_configuration.Phase == SmokePhase.Release034)
             {
                 await RunRelease034Async();
@@ -1760,7 +1764,7 @@ internal sealed partial class SmokeController
         while (true)
         {
             if (CombatManager.Instance.IsInProgress
-                && RunManager.Instance.EventSynchronizer.Events.OfType<SawatariEvent>().Any()
+                && RunManager.Instance.EventSynchronizer.Events.OfType<TheMovingJungleEvent>().Any()
                 && GetSawatariOptions().FirstOrDefault(button => button.IsVisibleInTree() && button.IsEnabled) is { } option)
             {
                 await UiHelper.Click(option);

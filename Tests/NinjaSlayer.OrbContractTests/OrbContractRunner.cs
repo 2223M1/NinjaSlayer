@@ -28,7 +28,7 @@ using MegaCrit.Sts2.Core.Saves.Migrations;
 using MegaCrit.Sts2.Core.Saves.Test;
 using MegaCrit.Sts2.Core.TestSupport;
 using MegaCrit.Sts2.Core.Unlocks;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Powers;
@@ -134,7 +134,7 @@ public partial class OrbContractRunner : Node
                 AccessTools.Method(typeof(ShurikenOrb), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
                 AccessTools.Method(product.GetType("NinjaSlayer.Code.Nodes.NinjaSlayerFreeControl"), "RegisterSavedData")
                     .Invoke(null, ["NinjaSlayer.OrbContracts"]);
-                AccessTools.Method(typeof(StrongShurikenTokenRedesignV1), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
+                AccessTools.Method(typeof(StrongShuriken), "RegisterSavedData").Invoke(null, ["NinjaSlayer.OrbContracts"]);
             }
             ModTypeDiscoveryHub.RegisterModAssembly("NinjaSlayer", product);
             if (anthonyBridge is not null)
@@ -149,10 +149,10 @@ public partial class OrbContractRunner : Node
                 .CreateDelegate<Action<CharacterRegistrationEntry<NinjaSlayerCharacter>>>();
             RitsuLibFramework.CreateContentPack("NinjaSlayer")
                 .Character(configureDeck)
-                .Card<NinjaSlayerCardPool, NinjaSlayer.Cards.OneBodyOneSoul>()
+                .Card<NinjaSlayerCardPool, NinjaSlayer.Cards.OneMindOneBody>()
                 .Card<MegaCrit.Sts2.Core.Models.CardPools.EventCardPool, NinjaSlayer.Cards.ZazenDrink>()
                 .Apply();
-            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, NinjaSlayer.Cards.CollapseFistRedesignV1>();
+            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<StraightPunch, NinjaSlayer.Cards.CollapseFist>();
             // Run the framework's post-mod-load discovery without loading menu/localization assets.
             AccessTools.Method(typeof(RitsuLibFramework).Assembly.GetType("STS2RitsuLib.Interop.Patches.ModTypeDiscoveryPatch", true), "Prefix")
                 .Invoke(null, null);
@@ -279,6 +279,7 @@ public partial class OrbContractRunner : Node
                 GetTree().Quit(0);
                 return;
             }
+            await VerifyRelease038();
             await VerifyIaiLifeBoundary();
             await VerifySawatariWeapons();
             if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_ONLY_SAWATARI") == "1")
@@ -340,9 +341,9 @@ public partial class OrbContractRunner : Node
     {
         CardModel[] catalog = ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.Concat(new CardModel[]
         {
-            ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
-            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<NinjaSlayer.Cards.BusyLine>(), ModelDb.Card<NinjaSlayer.Cards.SawatariMachete>(),
+            ModelDb.Card<Chado>(), ModelDb.Card<StraightKi>(),
+            ModelDb.Card<BlackFlame>(), ModelDb.Card<StrongShuriken>(),
+            ModelDb.Card<NinjaSlayer.Cards.BusyLine>(), ModelDb.Card<NinjaSlayer.Cards.Machete>(),
             ModelDb.Card<NinjaSlayer.Cards.ZazenDrink>()
         }).Distinct().ToArray();
         Require(catalog.Length == 93 && ModelDb.AllCharacters.Count(character => character is INinjaSlayerCharacter) == 1,
@@ -351,19 +352,19 @@ public partial class OrbContractRunner : Node
             .GetUnlockedCards(UnlockState.all, CardMultiplayerConstraint.SingleplayerOnly).ToArray();
         foreach (var (rarity, expected) in new[]
         {
-            (CardRarity.Common, RedesignV1Rules.CommonRewardCardIds),
-            (CardRarity.Uncommon, RedesignV1Rules.UncommonRewardCardIds),
-            (CardRarity.Rare, RedesignV1Rules.RareRewardCardIds)
+            (CardRarity.Common, NinjaSlayerCardRules.CommonRewardCardIds),
+            (CardRarity.Uncommon, NinjaSlayerCardRules.UncommonRewardCardIds),
+            (CardRarity.Rare, NinjaSlayerCardRules.RareRewardCardIds)
         })
             Require(rewards.Where(card => card.Rarity == rarity).Select(card => card.GetType().Name).SequenceEqual(expected),
                 $"Unlocked {rarity} reward order differs from the approved board.");
         Player player = Player.CreateForNewRun<NinjaSlayerCharacter>(UnlockState.all, 1);
         player.InitializeSeed("save-contract");
         Require(player.Deck.Cards.Count == 10
-            && player.Deck.Cards.Count(card => card is StrikeNinjaSlayerRedesignV1) == 4
-            && player.Deck.Cards.Count(card => card is DefendNinjaSlayerRedesignV1) == 4
-            && player.Deck.Cards.Count(card => card is KarateStraightRedesignV1) == 1
-            && player.Deck.Cards.Count(card => card is Prejudge) == 1, "New run must use the 4/4/1/1 starting deck.");
+            && player.Deck.Cards.Count(card => card is StrikeNinjaSlayer) == 4
+            && player.Deck.Cards.Count(card => card is DefendNinjaSlayer) == 4
+            && player.Deck.Cards.Count(card => card is StraightPunch) == 1
+            && player.Deck.Cards.Count(card => card is ReadAhead) == 1, "New run must use the 4/4/1/1 starting deck.");
         var store = new MockGodotFileIo("user://orb-contract-saves");
         var saves = new RunSaveManager(1, store, new MigrationManager(store), forceSynchronous: true);
         var run = new SerializableRun { SchemaVersion = saves.SchemaVersion, Players = [player.ToSerializable()] };
@@ -427,7 +428,7 @@ public partial class OrbContractRunner : Node
         {
             using var combat = new OrbCombat();
             await AddStock(combat.Player, stock);
-            await PowerCmd.Apply<RecycledBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<WatchfulBladesPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             int hp = combat.Enemy.CurrentHp;
             await CardCmd.Discard(Choice, new[] { combat.Card(), combat.Card(), combat.Card() });
             Require(combat.Stock == Math.Max(stock - 3, 0), $"Discard must consume existing stock at initial {stock}.");
@@ -448,7 +449,7 @@ public partial class OrbContractRunner : Node
         foreach (int shots in new[] { 2, 4 })
         {
             using var combat = new OrbCombat();
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             for (int chain = 0; chain < 2; chain++)
             {
                 await AddStock(combat.Player, 3);
@@ -471,7 +472,7 @@ public partial class OrbContractRunner : Node
         {
             await AddStock(combat.Player, 3);
             await PowerCmd.Apply<BladeCyclePower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
-            await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+            await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
             Creature second = combat.AddEnemy();
             int hp = combat.Enemy.CurrentHp;
@@ -506,13 +507,13 @@ public partial class OrbContractRunner : Node
         JsonSerializer.Deserialize<SavedProperties>(json, jsonOptions)!.Fill(restored);
         Require(restored.StackCount == 3, "Orb model data must round-trip stock without a second slot-capacity owner.");
 
-        await PowerCmd.Apply<StarlessNightRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+        await PowerCmd.Apply<StarlessNightPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         int hp = combat.Enemy.CurrentHp;
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "FireConsumedVolley").Invoke(orb, [Choice, 1, null])!;
         Require(hp - combat.Enemy.CurrentHp == 18 && combat.Stock == 0 && combat.Capacity == 1 && combat.Tokens == 0,
             "Hell Tornado consumes stock and preserves ordinary slots without generating tokens.");
         await AddStock(combat.Player, 3);
-        await PowerCmd.Remove<StarlessNightRedesignPower>(combat.Player.Creature);
+        await PowerCmd.Remove<StarlessNightPower>(combat.Player.Creature);
         combat.Enemy.SetCurrentHpInternal(1);
         await (Task)AccessTools.Method(typeof(ShurikenOrb), "FireConsumedVolley").Invoke(combat.Orb, [Choice, 1, null])!;
         Require(combat.Enemy.CurrentHp == 0 && combat.Stock == 0, "Lethal volley must stop and remove the empty orb.");
@@ -529,9 +530,9 @@ public partial class OrbContractRunner : Node
     {
         CardModel[] catalog = ModelDb.CardPool<NinjaSlayerCardPool>().AllCards.Concat(new CardModel[]
         {
-            ModelDb.Card<ChadoEnergyRedesignV1>(), ModelDb.Card<StraightKiRedesignV1>(),
-            ModelDb.Card<BlackFlameRedesignV1>(), ModelDb.Card<StrongShurikenTokenRedesignV1>(),
-            ModelDb.Card<NinjaSlayer.Cards.BusyLine>(), ModelDb.Card<NinjaSlayer.Cards.SawatariMachete>(),
+            ModelDb.Card<Chado>(), ModelDb.Card<StraightKi>(),
+            ModelDb.Card<BlackFlame>(), ModelDb.Card<StrongShuriken>(),
+            ModelDb.Card<NinjaSlayer.Cards.BusyLine>(), ModelDb.Card<NinjaSlayer.Cards.Machete>(),
             ModelDb.Card<NinjaSlayer.Cards.ZazenDrink>()
         }).Distinct().OrderBy(card => card.Id.ToString(), StringComparer.Ordinal).ToArray();
         var states = catalog.SelectMany(canonical => (canonical.MaxUpgradeLevel == 0 ? new[] { false } : new[] { false, true }).Select(upgraded =>
@@ -599,12 +600,12 @@ public partial class OrbContractRunner : Node
         public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result,
             MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)
         {
-            if (cardSource is BlackFlameRedesignV1 && AfterFlameDamage is { } callback)
+            if (cardSource is BlackFlame && AfterFlameDamage is { } callback)
             {
                 AfterFlameDamage = null;
                 return callback();
             }
-            if (cardSource is BlackFlameRedesignV1 && NestedFlameAttack is { } attack)
+            if (cardSource is BlackFlame && NestedFlameAttack is { } attack)
             {
                 NestedFlameAttack = null;
                 return CardCmd.AutoPlay(choiceContext, attack, target);
@@ -641,7 +642,7 @@ public partial class OrbContractRunner : Node
         public ShurikenOrb? Orb => Queue.Orbs.OfType<ShurikenOrb>().SingleOrDefault();
         public int Stock => Orb?.StackCount ?? 0;
         public int Capacity => Queue.Capacity;
-        public int Tokens => Player.Piles.SelectMany(pile => pile.Cards).Count(card => card is StrongShurikenTokenRedesignV1);
+        public int Tokens => Player.Piles.SelectMany(pile => pile.Cards).Count(card => card is StrongShuriken);
 
         public OrbCombat(bool ninjaSlayer = false, CharacterModel? character = null)
         {

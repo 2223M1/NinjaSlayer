@@ -40,7 +40,7 @@ internal sealed class FinisherRangedAction : IDisposable
         Current.Value is { } action && action.Actor == actor ? action : null;
 
     internal static bool IsRangedCard(CardModel card) =>
-        card is Shiv or SawatariMachete || card.Tags.Contains(NinjaSlayerCardTags.Shuriken);
+        card is Shiv or Machete || card.Tags.Contains(NinjaSlayerCardTags.Shuriken);
 
     internal static bool IsRangedMove(MonsterModel monster) => (monster, monster.NextMove.Id) switch
     {

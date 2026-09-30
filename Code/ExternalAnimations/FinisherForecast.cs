@@ -273,7 +273,7 @@ internal static class FinisherForecast
             || enemies.Count == 0
             || Hook.ShouldStopCombatFromEnding(combatState)
             || enemies.Any(enemy => !Hook.ShouldDie(runState, combatState, enemy, out _))
-            || missiles.Any(missile => missile.Monster is not YamotoKokiOrigamiMissile))
+            || missiles.Any(missile => missile.Monster is not OrigamiMissileMonster))
         {
             return FinisherForecastOutcome.NotGuaranteed;
         }
@@ -285,7 +285,7 @@ internal static class FinisherForecast
             enemy.IsPrimaryEnemy)).ToArray();
         Creature[] missileDealers = [.. missiles];
         decimal[] missileDamage = missileDealers
-            .Select(missile => (decimal)((YamotoKokiOrigamiMissile)missile.Monster!).GetExplodeDamage())
+            .Select(missile => (decimal)((OrigamiMissileMonster)missile.Monster!).GetExplodeDamage())
             .ToArray();
         decimal[] iaiDamage = Enumerable.Repeat(
                 (decimal)yamotoKoki.GetIaiSlashDamage(),
@@ -432,7 +432,7 @@ internal static class FinisherForecast
             spec.Card,
             triggersKarate: true);
 
-        if (spec.Card is Cards.RedesignV1.TornadoFistRedesignV1 tornado
+        if (spec.Card is Cards.Standard.TornadoFist tornado
             && tornado.IsEmpowered(spec.Forecast.HitCount))
         {
             foreach (int index in targets.Where(index => states[index].Hp > 0))

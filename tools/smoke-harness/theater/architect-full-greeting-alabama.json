@@ -9,7 +9,7 @@
   "cues": [
     { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
     { "id": "architect_room_full_greeting_alabama", "steps": [
-      { "action": "architect_execution", "actor": "native", "card": "AlabamaDropRedesignV1", "greeting": "full" }
+      { "action": "architect_execution", "actor": "native", "card": "AlabamaDrop", "greeting": "full" }
     ] }
   ]
 }

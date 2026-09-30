@@ -9,7 +9,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using MegaCrit.Sts2.Core.ValueProps;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Commands;
 using NinjaSlayer.Content;
 using NinjaSlayer.Events;
@@ -56,14 +56,14 @@ public partial class OrbContractRunner
         for (int i = 0; i < 32; i++)
         {
             tome.SetupForPlayer(player);
-            Require(tome.AncientCard == ModelDb.Card<OneBodyOneSoul>().Id,
+            Require(tome.AncientCard == ModelDb.Card<OneMindOneBody>().Id,
                 "Darv's Dusty Tome must select One Body One Soul, never Nancy's Zazen Drink.");
         }
         player.AddRelicInternal(tome);
         await tome.AfterObtained();
-        Require(player.Deck.Cards.OfType<OneBodyOneSoul>().Single().IsUpgraded,
+        Require(player.Deck.Cards.OfType<OneMindOneBody>().Single().IsUpgraded,
             "Dusty Tome must grant the native upgraded ancient card.");
-        var drink = ModelDb.Relic<NancyZazenDrinkRelic>().ToMutable();
+        var drink = ModelDb.Relic<ZazenDrinkBandolierRelic>().ToMutable();
         player.AddRelicInternal(drink);
         await drink.AfterObtained();
         Require(player.Deck.Cards.OfType<ZazenDrink>().Count() == 1
@@ -75,15 +75,15 @@ public partial class OrbContractRunner
     private static async Task VerifyChadoGeneration()
     {
         using var combat = new OrbCombat();
-        await PowerCmd.Apply<KarateTeaPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
+        await PowerCmd.Apply<PoisePower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
         await ChadoBreathCmd.Apply(Choice, combat.Player, 2);
-        ChadoEnergyRedesignV1 tea = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
+        Chado tea = PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single();
         Require(tea.DynamicVars.Energy.BaseValue == 2 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
             "First Chado Breathing must create one 2-energy Chado and trigger Karate Tea once.");
         await ChadoBreathCmd.Apply(Choice, combat.Player, 2);
         Require(tea.DynamicVars.Energy.BaseValue == 4 && combat.Player.Creature.GetPowerAmount<KaratePower>() == 3,
             "Increasing held Chado must preserve its identity and not trigger generation effects.");
-        var retain = await PowerCmd.Apply<ChadoRetainPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+        var retain = await PowerCmd.Apply<RetainChadoPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         CardModel strike = combat.Card();
         await retain!.BeforeFlush(Choice, combat.Player);
         Require(tea.ShouldRetainThisTurn && !strike.ShouldRetainThisTurn, "Chado retention affected another card.");
@@ -96,11 +96,11 @@ public partial class OrbContractRunner
         {
             using var combat = new OrbCombat();
             RelicModel relic = upgraded
-                ? ModelDb.Relic<DeepChadoBreathingRelic>().ToMutable()
+                ? ModelDb.Relic<ChadoBreathingMasteryRelic>().ToMutable()
                 : ModelDb.Relic<ChadoBreathingRelic>().ToMutable();
             combat.Player.AddRelicInternal(relic);
             await relic.BeforeHandDraw(combat.Player, Choice, combat.State);
-            var opening = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().ToArray();
+            var opening = PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().ToArray();
             Require(opening.Length == (upgraded ? 2 : 1)
                 && opening.All(card => !card.Keywords.Contains(CardKeyword.Retain)
                     && card.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2)),
@@ -108,10 +108,10 @@ public partial class OrbContractRunner
             foreach (var tea in opening)
                 await CardPileCmd.Add(tea, PileType.Discard);
             await ChadoBreathCmd.Apply(Choice, combat.Player, 2);
-            var later = PileType.Hand.GetPile(combat.Player).Cards.OfType<ChadoEnergyRedesignV1>().Single();
+            var later = PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single();
             Require(!later.Keywords.Contains(CardKeyword.Retain), "Later tea must not inherit the opening relic's Retain.");
             await CardPileCmd.Add(opening[0], PileType.Hand);
-            await combat.Player.Creature.GetPower<ChadoRetainPower>()!.BeforeFlush(Choice, combat.Player);
+            await combat.Player.Creature.GetPower<RetainChadoPower>()!.BeforeFlush(Choice, combat.Player);
             Require(later.ShouldRetainThisTurn, "Tea generated later in the first turn must also be retained.");
             Require(!opening[0].Keywords.Contains(CardKeyword.Retain) && opening[0].ShouldRetainThisTurn, "Pile changes must preserve opening tea's keywords.");
             Require(opening[0].MutableClone() is CardModel copy && !copy.Keywords.Contains(CardKeyword.Retain),
@@ -128,8 +128,8 @@ public partial class OrbContractRunner
     private static async Task VerifyBlackFlameTurnEnd()
     {
         using var combat = new OrbCombat();
-        await PowerCmd.Apply<ReturnReturnReturnPower>(Choice, combat.Player.Creature, 6, combat.Player.Creature, null);
-        var flames = new[] { AddCard<BlackFlameRedesignV1>(combat), AddCard<BlackFlameRedesignV1>(combat) };
+        await PowerCmd.Apply<DevourFlamePower>(Choice, combat.Player.Creature, 6, combat.Player.Creature, null);
+        var flames = new[] { AddCard<BlackFlame>(combat), AddCard<BlackFlame>(combat) };
         foreach (var flame in flames)
         {
 #if NINJASLAYER_CHANNEL_STABLE
@@ -157,7 +157,7 @@ public partial class OrbContractRunner
             && combat.Player.Creature.GetPowerAmount<StrengthPower>() == 0
             && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.Normal,
             "ZBR must grant exactly 12 Naraku Life without Strength or transformation.");
-        var form = await PowerCmd.Apply<NarakuFormRedesignPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
+        var form = await PowerCmd.Apply<NarakuFormPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         Require(NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.Naraku,
             "Naraku Form must select the half-Naraku presentation.");
         CardModel attack = combat.Card();
@@ -166,10 +166,10 @@ public partial class OrbContractRunner
         await PowerCmd.Remove(form);
         Require(NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.Normal,
             "Removing Naraku Form must restore normal presentation.");
-        var relic = ModelDb.Relic<NarakuWithinRelic>().ToMutable();
+        var relic = ModelDb.Relic<NarakuUnleashedRelic>().ToMutable();
         combat.Player.AddRelicInternal(relic);
         await relic.BeforeCombatStart();
-        Require(combat.Player.Creature.GetPower<NarakuFormRedesignPower>() is null
+        Require(combat.Player.Creature.GetPower<NarakuFormPower>() is null
             && NinjaSlayerFormState.GetPresentation(combat.Player.Creature).Kind == NinjaSlayerFormKind.FullyReleasedNaraku,
             "The event relic must grant full presentation without the ordinary card damage power.");
         GD.Print("PASS ZBR, half Naraku, form removal and fully released event relic");
@@ -181,9 +181,9 @@ public partial class OrbContractRunner
         var run = RunState.CreateForTest([player]);
         var model = ModelDb.Event<NarakuEvent>();
         Require(!model.IsAllowed(run), "The starter deck must not qualify for the Naraku event.");
-        Type[] qualifying = [typeof(GuidingFlameRedesignV1), typeof(SatsubatsuRedesignV1), typeof(AbyssStrengthRedesignV1),
-            typeof(HardItOutRedesignV1), typeof(RedBlackFlameAttackRedesignV1), typeof(BurnBurnBurnRedesignV1),
-            typeof(NarakuFormRedesignV1), typeof(ReturnReturnReturnRedesignV1), typeof(BlackFlameRecovery), typeof(OneBodyOneSoul)];
+        Type[] qualifying = [typeof(FlameGuard), typeof(BS1260Kick), typeof(NarakusMight),
+            typeof(Macaco), typeof(Kindle), typeof(BlackFlameInferno),
+            typeof(NarakuForm), typeof(DevourFlame), typeof(Rekindle), typeof(OneMindOneBody)];
         foreach (CardModel canonical in ModelDb.CardPool<NinjaSlayerCardPool>().AllCards)
         {
             CardModel card = canonical.ToMutable();

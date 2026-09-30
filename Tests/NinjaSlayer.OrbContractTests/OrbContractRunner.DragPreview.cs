@@ -6,7 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Orbs;
 
@@ -99,7 +99,7 @@ public partial class OrbContractRunner
                 second.SetCurrentHpInternal(0);
                 leftVisual.Visible = false;
                 profile.SetValue(pose, Activator.CreateInstance(profile.PropertyType, values.Cast<object>().ToArray()));
-                var card = combat.State.CreateCard<TornadoFistRedesignV1>(combat.Player);
+                var card = combat.State.CreateCard<TornadoFist>(combat.Player);
                 MegaCrit.Sts2.Core.Entities.Cards.PileType.Hand.GetPile(combat.Player).AddInternal(card, -1, silent: true);
                 combat.Player.PlayerCombatState!.GainEnergy(4);
                 Type rapid = assembly.GetType("NinjaSlayer.Code.Lifecycle.RapidCardPresentationContext", true)!;
@@ -160,7 +160,7 @@ public partial class OrbContractRunner
                 leftVisual.Visible = bothSides;
                 platform.Visible = true;
                 Face(false);
-                var card = combat.State.CreateCard<SatsubatsuRedesignV1>(combat.Player);
+                var card = combat.State.CreateCard<BS1260Kick>(combat.Player);
                 cursor.Visible = ray.Visible = true;
                 for (int frame = 0; frame < 480; frame++)
                 {

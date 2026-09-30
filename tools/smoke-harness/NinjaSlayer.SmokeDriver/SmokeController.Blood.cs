@@ -99,7 +99,7 @@ internal sealed partial class SmokeController
                 await Hit(4);
                 Require(Effect() != null,"Low HP hit did not emit blood in " + mode);
                 if (mode == "moving")
-                    await PlayCard(new() { Card = "KarateStraightRedesignV1" });
+                    await PlayCard(new() { Card = "StraightPunch" });
                 await Wait(1.3);
                 Require(Effect() == null,"Blood retained nodes after " + mode);
                 Cover("blood-"+mode);

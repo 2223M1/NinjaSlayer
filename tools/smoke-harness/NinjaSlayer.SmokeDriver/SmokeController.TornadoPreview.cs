@@ -21,7 +21,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
 
@@ -89,7 +89,7 @@ internal sealed partial class SmokeController
             }
             _timedTarget = combat.HittableEnemies.First();
             NCreature actor = NCombatRoom.Instance!.GetCreatureNode(player.Creature)!;
-            var strike = combat.CreateCard<StrikeNinjaSlayerRedesignV1>(player);
+            var strike = combat.CreateCard<StrikeNinjaSlayer>(player);
             await CardPileCmd.Add(strike, PileType.Hand);
             await PlayWithStationaryCombatUi(strike, _timedTarget);
             Node2D pose = actor.Visuals.GetNode<Node2D>("%AimPose");
@@ -111,7 +111,7 @@ internal sealed partial class SmokeController
                     foreach (Creature enemy in combat.HittableEnemies.ToArray())
                         await PowerCmd.Remove<VulnerablePower>(enemy);
                     await PlayerCmd.SetEnergy(x, player);
-                    var card = combat.CreateCard<TornadoFistRedesignV1>(player);
+                    var card = combat.CreateCard<TornadoFist>(player);
                     await CardPileCmd.Add(card, PileType.Hand);
                     await WaitFrames(45);
                     AccessTools.Method(poseType, "Drag").Invoke(pose,
@@ -158,7 +158,7 @@ internal sealed partial class SmokeController
                 foreach (bool native in new[] { true, false })
                 {
                     await PlayerCmd.SetEnergy(4, player);
-                    CardModel card = native ? combat.CreateCard<Whirlwind>(player) : combat.CreateCard<TornadoFistRedesignV1>(player);
+                    CardModel card = native ? combat.CreateCard<Whirlwind>(player) : combat.CreateCard<TornadoFist>(player);
                     await CardPileCmd.Add(card, PileType.Hand);
                     _timedTornado = card;
                     _tornadoHits.Clear();
@@ -220,7 +220,7 @@ internal sealed partial class SmokeController
     private async Task PlayWithStationaryCombatUi(CardModel card, Creature target)
     {
         NCreature actor = NCombatRoom.Instance!.GetCreatureNode(card.Owner.Creature)!;
-        NCreature[] actors = card is AlabamaDropRedesignV1
+        NCreature[] actors = card is AlabamaDrop
             ? [actor, NCombatRoom.Instance.GetCreatureNode(target)!] : [actor];
         Vector2 UiPosition(NCreature actor) => actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
             * actor.GetNode<Control>("%HealthBar").GetGlobalTransformWithCanvas().Origin;
@@ -238,7 +238,7 @@ internal sealed partial class SmokeController
                 maxRootShift = Math.Max(maxRootShift, actors[i].Position.DistanceTo(roots[i]));
                 maxUiShift = Math.Max(maxUiShift, UiPosition(actors[i]).DistanceTo(ui[i]));
             }
-            if (card is TornadoFistRedesignV1)
+            if (card is TornadoFist)
             {
                 Node2D aim = actor.Visuals.GetNode<Node2D>("%AimPose");
                 Node2D air = actor.Visuals.GetNode<Node2D>("AirborneAnchor");
@@ -262,7 +262,7 @@ internal sealed partial class SmokeController
         {
             await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
             await WaitFrames(60);
-            if (IsTornadoReturnProbe && card is TornadoFistRedesignV1)
+            if (IsTornadoReturnProbe && card is TornadoFist)
                 Require(CorePosition().Y <= coreBefore + 1f,
                     $"Tornado return sank the actual body: before={coreBefore}, after={CorePosition().Y}.");
             Require(maxRootShift < .1f && maxUiShift < .1f,

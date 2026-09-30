@@ -18,7 +18,7 @@ using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Events;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
@@ -34,12 +34,12 @@ internal sealed partial class SmokeController
         SaveManager.Instance.MarkFtueAsComplete("obtain_relic_ftue");
         foreach (bool thorns in new[] { false, true })
         {
-            var existing = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!.Relics.OfType<BeppinFragmentRelic>().ToArray();
+            var existing = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())!.Relics.OfType<BeppinShardRelic>().ToArray();
             foreach (var relic in existing) await RelicCmd.Remove(relic);
             string scenario = thorns ? "thorns-all-four" : "normal-take-one-skip-three";
             section($"dark-event-{scenario}");
             var eventRoom = (EventRoom)await RunManager.Instance.EnterRoomDebug(
-                RoomType.Event, model: ModelDb.Event<DarkNinjaEvent>());
+                RoomType.Event, model: ModelDb.Event<GloryOfKyotoEvent>());
             await WaitUntilAsync(() => Options().Length == 2, "Dark Ninja initial event options missing", ct);
             await UiHelper.Click(Options()[1]);
             await WaitUntilAsync(() => Options().Length == 1, "Dark Ninja fight option missing", ct);
@@ -64,7 +64,7 @@ internal sealed partial class SmokeController
             var originals = new List<CardModel>();
             for (int index = 0; index < 4; index++)
             {
-                CardModel deck = player.RunState.CreateCard(ModelDb.Card<PlaceholderBlueDefense01>(), player);
+                CardModel deck = player.RunState.CreateCard(ModelDb.Card<NinjaCaltrops>(), player);
                 if (index % 2 == 0) CardCmd.Upgrade(deck);
                 await CardPileCmd.Add(deck, PileType.Deck);
                 originals.Add(deck);
@@ -92,10 +92,10 @@ internal sealed partial class SmokeController
               Require(returns.Length == 4 && originals.All(card => !player.Deck.Cards.Contains(card)),
                   "Event reward UI must offer all four stolen cards before any are reclaimed.");
               var relicReward = UiHelper.FindAll<NRewardButton>(cardScreen)
-                  .Single(button => button.Reward is RelicReward { Relic: BeppinFragmentRelic });
+                  .Single(button => button.Reward is RelicReward { Relic: BeppinShardRelic });
               Require(UiHelper.FindAll<NRewardButton>(cardScreen).Count(button => button.Reward is RelicReward) == 2,
                   "Dark Ninja must offer the Fragment and one random relic alongside stolen cards.");
-              Require(!player.Relics.OfType<BeppinFragmentRelic>().Any(),
+              Require(!player.Relics.OfType<BeppinShardRelic>().Any(),
                   "Dark Ninja automatically granted the Fragment before collection.");
             Require(player.RunState.CurrentRoom is CombatRoom && !eventRoom.LocalMutableEvent.IsFinished,
                 "Event victory ran before the stolen-card rewards.");
@@ -113,7 +113,7 @@ internal sealed partial class SmokeController
             await WaitUntilAsync(() => eventRoom.LocalMutableEvent.IsFinished
                 && NOverlayStack.Instance?.Peek() is not NRewardsScreen,
                 "Event victory did not resume after manual rewards", ct);
-            Require(player.Relics.OfType<BeppinFragmentRelic>().Count() == (thorns ? 0 : 1),
+            Require(player.Relics.OfType<BeppinShardRelic>().Count() == (thorns ? 0 : 1),
                 "Fragment reward did not respect collection or skipping.");
             await WaitFrames(90);
             SaveScreenshot(Path.Combine(directory, $"event-{scenario}-relics.png"));

@@ -7,7 +7,7 @@
   "cues": [
     { "id": "overhead_clearance", "steps": [{ "action": "overhead_check" }] },
     { "id": "audio_reference", "steps": [
-      { "action": "card", "card": "KarateStraightRedesignV1", "repeat": 3 },
+      { "action": "card", "card": "StraightPunch", "repeat": 3 },
       { "action": "wait", "seconds": 1 }
     ] }
   ]

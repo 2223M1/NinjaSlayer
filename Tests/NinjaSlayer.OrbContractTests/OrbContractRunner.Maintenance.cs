@@ -9,7 +9,7 @@ using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Potions;
 using MegaCrit.Sts2.Core.Nodes.HoverTips;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Patches;
 using NinjaSlayer.Orbs;
 using NinjaSlayer.Monsters;
@@ -24,7 +24,7 @@ public partial class OrbContractRunner
         foreach (int handSize in new[] { 0, 1, 2 })
         {
             using var combat = new OrbCombat();
-            CardModel source = throwing ? AddCard<ThrowKunaiRedesignV1>(combat) : AddCard<ReadyStanceRedesignV1>(combat);
+            CardModel source = throwing ? AddCard<KunaiThrow>(combat) : AddCard<Jujutsu>(combat);
             CardModel? sly = handSize > 0 ? AddCard<ShurikenCreation>(combat) : null;
             CardModel? other = handSize > 1 ? AddCard<DefendIronclad>(combat) : null;
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
@@ -46,11 +46,11 @@ public partial class OrbContractRunner
         foreach (int teaCount in new[] { 0, 1, 2 })
         {
             using var combat = new OrbCombat();
-            var source = AddCard<MetabolicAccelerationRedesignV1>(combat, upgraded: upgraded);
+            var source = AddCard<HissAndHuff>(combat, upgraded: upgraded);
             combat.Player.Creature.SetCurrentHpInternal(30);
-            var teas = Enumerable.Range(0, teaCount).Select(_ => AddCard<ChadoEnergyRedesignV1>(combat)).ToArray();
-            var drawTea = AddCard<ChadoEnergyRedesignV1>(combat, PileType.Draw);
-            var discardTea = AddCard<ChadoEnergyRedesignV1>(combat, PileType.Discard);
+            var teas = Enumerable.Range(0, teaCount).Select(_ => AddCard<Chado>(combat)).ToArray();
+            var drawTea = AddCard<Chado>(combat, PileType.Draw);
+            var discardTea = AddCard<Chado>(combat, PileType.Discard);
             var other = AddCard<DefendIronclad>(combat);
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
             {
@@ -131,7 +131,7 @@ public partial class OrbContractRunner
     {
         using var combat = new OrbCombat();
         foreach (MonsterModel model in new MonsterModel[] { ModelDb.Monster<YamotoKokiMonster>(),
-                     ModelDb.Monster<SawatariMonster>(), ModelDb.Monster<YukanoMonster>() })
+                     ModelDb.Monster<ForestSawatariMonster>(), ModelDb.Monster<YukanoMonster>() })
         {
             var creature = new Creature(model.ToMutable(), CombatSide.Player, null)
             { CombatState = combat.State };

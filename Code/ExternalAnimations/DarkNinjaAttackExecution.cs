@@ -46,16 +46,9 @@ internal static class DarkNinjaAttackExecution
                         Creature[] impactTargets = targets.Where(execution.CanHit).ToArray();
                         if (impactTargets.Length > 0)
                         {
-                            Creature[] connectedTargets = impactTargets
-                                .Where(execution.WillConnect)
-                                .ToArray();
-                            if (connectedTargets.Length > 0)
-                            {
-                                VfxCmd.PlayOnCreatureCenters(
-                                    connectedTargets,
-                                    VfxCmd.giantHorizontalSlashPath);
-                                NinjaSlayerCombatAudioSet.Play(DeathSlashImpactSfx);
-                            }
+                            VfxCmd.PlayOnSide(CombatSide.Player,
+                                VfxCmd.giantHorizontalSlashPath, monster.Creature.CombatState!);
+                            NinjaSlayerCombatAudioSet.Play(DeathSlashImpactSfx);
 
                             await execution.Deal(impactTargets);
                         }

@@ -35,7 +35,7 @@ public static class Bridge
         CardNameGenerator.RegisterExternalParts("ninjaslayer.components", NinjaComponentSources.Sources.Select(source =>
         {
             int lastSpace = source.English.LastIndexOf(' ');
-            return new ComponentCardNameParts(source.Card.Name,
+            return new ComponentCardNameParts(ModelDb.GetId(source.Card).Entry,
                 source.Chinese.Chunk(2).Select(chars => new string(chars)).ToArray(),
                 lastSpace < 0 ? "" : source.English[..(lastSpace + 1)], source.English[(lastSpace + 1)..], "");
         }));

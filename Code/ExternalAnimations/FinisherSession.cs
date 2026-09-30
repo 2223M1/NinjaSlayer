@@ -209,7 +209,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             try
             {
                 _actorAimPose = NinjaSlayerAimPose.Get(Actor);
-                if (CardPlay?.Card is NinjaSlayer.Cards.RedesignV1.TornadoFistRedesignV1 tornado)
+                if (CardPlay?.Card is NinjaSlayer.Cards.Standard.TornadoFist tornado)
                     _actorAimPose?.BeginTornado(_focusNode.Entity, exclusive: true, empowered: tornado.IsEmpowered(ResolvedHits));
                 else if (AlabamaContact == null)
                     _actorAimPose?.BeginAction(_focusNode.Entity, exclusive: true);
@@ -252,10 +252,10 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         {
             _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier(_focusNode.Entity));
         }
-        else if (Scenario == FinisherScenarioKind.CompanionAttack && Actor.Monster is NinjaSlayer.Monsters.SawatariMonster)
+        else if (Scenario == FinisherScenarioKind.CompanionAttack && Actor.Monster is NinjaSlayer.Monsters.ForestSawatariMonster)
         {
             _approach = FinisherApproach.Create(_actorNode, _focusNode, GetDeathSquashMultiplier(_focusNode.Entity));
-            float peak = Actor.Monster is NinjaSlayer.Monsters.SawatariMonster { ActThree: true }
+            float peak = Actor.Monster is NinjaSlayer.Monsters.ForestSawatariMonster { ActThree: true }
                 ? SawatariWeaponVisuals.DualCycleSeconds * 2f / 7f
                 : SawatariBambooAnimation.CycleSeconds * SawatariBambooAnimation.PeakPhase;
             _approach.Start(CombatActionTimingRuntime.VisualSeconds(peak));

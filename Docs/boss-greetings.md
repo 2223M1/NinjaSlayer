@@ -90,3 +90,9 @@ Use `greeting-switch.json`, `greeting-response-switch.json`, `greeting-full.json
 `greeting-crab.json`, or `greeting-sleep-pause.json` for the other focused paths.
 The launcher uses an isolated profile and background Windows desktop. It does
 not install into the user's game or capture the foreground desktop.
+
+## 0.3.8 behavior
+
+Dark Ninja and Forest Sawatari bow toward the player using the opposite rig rotation sign; the player curve stays unchanged (18 degrees, 0.2/0.5/0.3 seconds). The Architect's entrance stays with native opening dialogue. The final Continue waits for thrown potions, then owns Ninja Slayer's greeting and bow, the Architect's greeting and native Attack animation, execution and the existing one-shot victory path. Native Attack is presentation only.
+
+Dark Ninja opens with 10 Strength and Dark Counter, then cycles Dark Strike, Death Slash, Dark Robe. Death Slash emits one native giant horizontal slash at the opposing side center at impact, including on fully evaded attacks. Each target still resolves its own damage and 3 Frail. Dark Counter previews attack-modified damage without a target-specific modifier or consuming Vigor.

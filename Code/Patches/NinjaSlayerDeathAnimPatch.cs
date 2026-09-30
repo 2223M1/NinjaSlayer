@@ -50,7 +50,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
             return true;
         }
 
-        if (__instance.Entity.Monster is DarkNinjaMonster or SawatariMonster)
+        if (__instance.Entity.Monster is DarkNinjaMonster or ForestSawatariMonster)
         {
             __state = false;
             if (__instance.DeathAnimationTask is { IsCompleted: false })
@@ -59,7 +59,7 @@ public sealed class NinjaSlayerDeathAnimPatch : IPatchMethod
                 return false;
             }
 
-            if (__instance.Entity.Monster is SawatariMonster sawatari) sawatari.PlayDeathVoice();
+            if (__instance.Entity.Monster is ForestSawatariMonster sawatari) sawatari.PlayDeathVoice();
             Nodes.DarkNinjaStolenCards.Get(__instance.Entity)?.Drop();
             Task deathTask = PlayMonsterDeathFlight(__instance, shouldRemove);
             __instance.DeathAnimationTask = deathTask;

@@ -5,7 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Content;
 using NinjaSlayer.Powers;
@@ -121,7 +121,7 @@ public sealed class KarateDamageWavePatch : IPatchMethod
 
         int amountBeforeConsumption = karate.Amount;
         await PowerCmd.ModifyAmount(choiceContext, karate, -1, dealer, cardSource);
-        if (dealer.GetPower<OneBodyOneSoulPower>() is { } soul)
+        if (dealer.GetPower<OneMindOneBodyPower>() is { } soul)
             await soul.AfterKarate(choiceContext);
         if (CombatManager.Instance.IsEnding && karate.Amount == amountBeforeConsumption)
         {

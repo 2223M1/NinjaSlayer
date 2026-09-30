@@ -35,7 +35,7 @@ internal static class CombatBodyContours
 {
     // Episode-26 delivered reconstruction: previous solid-body support mapped through
     // the reference registration; lowest foot updated from the delivered alpha.
-    internal static readonly Vector2[] OneBodyOneSoul =
+    internal static readonly Vector2[] OneMindOneBody =
     [
         new(-353.442f,-1325.026f),new(-284.432f,-1296.020f),new(-252.427f,-1264.014f),
         new(-72.405f,-1015.972f),new(-55.403f,-980.966f),new(-41.402f,-922.957f),
@@ -47,7 +47,7 @@ internal static class CombatBodyContours
 
     internal static Vector2[] ForForm(NinjaSlayerFormKind form) => form switch
     {
-        NinjaSlayerFormKind.OneBodyOneSoul => OneBodyOneSoul,
+        NinjaSlayerFormKind.OneBodyOneSoul => OneMindOneBody,
         NinjaSlayerFormKind.FullyReleasedNaraku => FullyReleasedNaraku,
         _ => NinjaSlayer
     };

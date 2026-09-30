@@ -121,7 +121,7 @@ public sealed class SawatariActRoomGenerationPatch : IPatchMethod
     public static void Postfix(ActModel __instance)
     {
         SawatariEventRoute.Reset(__instance);
-        __instance.RemoveEventFromSet(ModelDb.Event<SawatariEvent>());
+        __instance.RemoveEventFromSet(ModelDb.Event<TheMovingJungleEvent>());
     }
 }
 
@@ -214,7 +214,7 @@ public sealed class SawatariUnknownRoomRollPatch : IPatchMethod
             return;
         }
 
-        EventModel sawatari = ModelDb.Event<SawatariEvent>();
+        EventModel sawatari = ModelDb.Event<TheMovingJungleEvent>();
         bool eligible = runState.CurrentActIndex is 0 or 2
             && NinjaSlayerContentAccess.HasNinjaSlayer(runState)
             && !roll.Encounter.IsWeak
@@ -299,7 +299,7 @@ public sealed class SawatariPullEventPatch : IPatchMethod
             return true;
         }
 
-        EventModel sawatari = ModelDb.Event<SawatariEvent>();
+        EventModel sawatari = ModelDb.Event<TheMovingJungleEvent>();
         __instance.MarkRoomVisited(RoomType.Monster);
         runState.AddVisitedEvent(sawatari);
         __result = sawatari;
@@ -430,7 +430,7 @@ public sealed class SawatariDuelDeathAnimationPatch : IPatchMethod
             return true;
         }
 
-        ((SawatariMonster)__instance.Entity.Monster!).PlayDeathVoice();
+        ((ForestSawatariMonster)__instance.Entity.Monster!).PlayDeathVoice();
         __result = 0f;
         return false;
     }
@@ -450,9 +450,9 @@ public sealed class SawatariDuelRewardsPatch : IPatchMethod
     public static bool Prefix(RewardsSet __instance, AbstractRoom room, ref RewardsSet __result)
     {
         if (room is not CombatRoom combatRoom
-            || combatRoom.ParentEventId != ModelDb.Event<SawatariEvent>().Id
+            || combatRoom.ParentEventId != ModelDb.Event<TheMovingJungleEvent>().Id
             || !combatRoom.ExtraRewards.TryGetValue(__instance.Player, out var extraRewards)
-            || !extraRewards.OfType<RelicReward>().Any(reward => reward.Relic is NinjaSlayer.Relics.BioBambooRelic))
+            || !extraRewards.OfType<RelicReward>().Any(reward => reward.Relic is NinjaSlayer.Relics.BioBambooSplintRelic))
         {
             return true;
         }

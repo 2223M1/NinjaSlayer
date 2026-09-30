@@ -5,7 +5,7 @@ using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 using MegaCrit.Sts2.Core.Models;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Code.Nodes;
@@ -79,7 +79,7 @@ public class Entry
             requiredPatcher.RegisterPatch<ArchitectDeathResourcePatch>();
             requiredPatcher.RegisterPatch<ArchitectDialoguePatch>();
             requiredPatcher.RegisterPatch<ArchitectExecutionStartPatch>();
-            requiredPatcher.RegisterPatch<ArchitectGreetingBowPatch>();
+            requiredPatcher.RegisterPatch<ArchitectEntrancePatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerReviveAnimPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerIncomingDamageCapturePatch>();
             requiredPatcher.RegisterPatch<BlackFlameDamagePatch>();
@@ -215,16 +215,16 @@ public class Entry
                 ShurikenOrb.RegisterSavedData(NinjaSlayerIds.ModId);
                 NinjaSlayerFreeControl.RegisterSavedData(NinjaSlayerIds.ModId);
                 YukanoArrowPopup.RegisterSavedData(NinjaSlayerIds.ModId);
-                StrongShurikenTokenRedesignV1.RegisterSavedData(NinjaSlayerIds.ModId);
+                StrongShuriken.RegisterSavedData(NinjaSlayerIds.ModId);
             }
             RitsuLibFramework.CreateContentPack(NinjaSlayerIds.ModId)
                 .Character<NinjaSlayerCharacter>(ConfigureStartingDeck)
-                .Card<NinjaSlayerCardPool, OneBodyOneSoul>()
+                .Card<NinjaSlayerCardPool, OneMindOneBody>()
                 .Card<MegaCrit.Sts2.Core.Models.CardPools.EventCardPool, ZazenDrink>()
                 .HealthBarForecast<KarateHealthBarForecastSource>("karate")
                 .Apply();
 
-            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<KarateStraightRedesignV1, CollapseFistRedesignV1>();
+            RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<StraightPunch, CollapseFist>();
             BossGreetingCinematic.RegisterLifecycle();
         }
         catch (Exception exception)
@@ -261,10 +261,10 @@ public class Entry
         where TCharacter : CharacterModel
     {
         character
-            .AddStartingCard<StrikeNinjaSlayerRedesignV1>(RedesignV1Rules.StartingStrikeCount, 0)
-            .AddStartingCard<DefendNinjaSlayerRedesignV1>(RedesignV1Rules.StartingDefendCount, 1)
-            .AddStartingCard<Prejudge>(RedesignV1Rules.StartingPrejudgeCount, 3)
-            .AddStartingCard<KarateStraightRedesignV1>(1, 2);
+            .AddStartingCard<StrikeNinjaSlayer>(NinjaSlayerCardRules.StartingStrikeCount, 0)
+            .AddStartingCard<DefendNinjaSlayer>(NinjaSlayerCardRules.StartingDefendCount, 1)
+            .AddStartingCard<ReadAhead>(NinjaSlayerCardRules.StartingPrejudgeCount, 3)
+            .AddStartingCard<StraightPunch>(1, 2);
     }
 
     internal static void InitializeOptionalContent()

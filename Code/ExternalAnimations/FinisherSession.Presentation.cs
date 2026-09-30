@@ -12,7 +12,7 @@ using static NinjaSlayer.Code.ExternalAnimations.FinisherTimeline;
 namespace NinjaSlayer.Code.ExternalAnimations;
 internal sealed partial class FinisherSession : IAsyncDisposable
 {
-    private bool IsAlabamaDrop => CardPlay?.Card is NinjaSlayer.Cards.RedesignV1.AlabamaDropRedesignV1;
+    private bool IsAlabamaDrop => CardPlay?.Card is NinjaSlayer.Cards.Standard.AlabamaDrop;
     private bool AlabamaOwnsRecovery => IsAlabamaDrop && !_continuousPlayerApproach;
     private Node2D? AlabamaContact => IsAlabamaDrop
         ? _focusNode.Body.GetNodeOrNull<Marker2D>(AlabamaDropAnimation.GroundContactName) : null;

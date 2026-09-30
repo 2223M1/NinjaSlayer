@@ -1,11 +1,12 @@
 using Godot;
+using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Audio.Debug;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Localization;
 using NinjaSlayer.Cards;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Code.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
@@ -116,10 +117,9 @@ public sealed partial class ArchitectExecutionCinematic : Node
     {
         try
         {
-            if (ArchitectGreetingBowPatch.Greetings.TryGetValue(_eventModel, out Task? greeting))
-                await greeting.WaitAsync(cancelToken);
             await ArchitectPotionIntegration.WaitForThrows(_room, cancelToken);
             cancelToken.ThrowIfCancellationRequested();
+            await PlayGreetings(cancelToken);
             await PlayOwnedMeleeExecution(cancelToken);
 
             _completed = true;
@@ -148,38 +148,61 @@ public sealed partial class ArchitectExecutionCinematic : Node
         }
     }
 
-    internal static async Task PlayGreetingBow(Creature owner)
+    private async Task PlayGreetings(CancellationToken cancelToken)
     {
-        await AncientEntranceAnimation.Play(owner.Player!);
-        NCombatRoom? room = NCombatRoom.Instance;
-        NCreature? architect = room?.CreatureNodes.FirstOrDefault(node => node.Entity.Monster is Architect);
-        if (room == null || architect == null) return; // The dialogue room may have been exited while entering.
-        NinjaSlayerFacingState.SyncForTarget(owner, architect.Entity);
-        using var bow = new GreetingBow(owner);
-        float elapsed = 0f;
-        while (elapsed < GreetingBow.Duration && GodotObject.IsInstanceValid(room) && room.IsInsideTree()
-            && ReferenceEquals(NCombatRoom.Instance, room))
+        NinjaSlayerFacingState.SyncForTarget(_owner, _architectNode.Entity);
+        var playerText = new LocString("characters", "NINJA_SLAYER_GREETING_PLAYER");
+        var architectText = new LocString("characters", "NINJA_SLAYER_GREETING_BOSS");
+        string title = _architectNode.Entity.Monster!.Title.GetFormattedText();
+        playerText.Add("BossTitle", title);
+        architectText.Add("BossTitle", title);
+        NSpeechBubbleVfx? playerBubble = NSpeechBubbleVfx.Create(playerText.GetFormattedText(), _owner, 1.8f);
+        NSpeechBubbleVfx? architectBubble = null;
+        try
         {
-            bow.Apply(elapsed);
-            await room.ToSignal(room.GetTree(), SceneTree.SignalName.ProcessFrame);
-            if (GodotObject.IsInstanceValid(room) && room.ProcessMode != ProcessModeEnum.Disabled)
-                elapsed += Math.Min((float)room.GetProcessDeltaTime(), .05f);
+            if (playerBubble != null) _room.SceneContainer.AddChildSafely(playerBubble);
+            NinjaSlayerCombatAudioSet.Play(NinjaSlayerAudio.NinjaSlayerFastDomoEvent);
+            using (var bow = new GreetingBow(_owner))
+            {
+                float elapsed = 0f;
+                while (elapsed < GreetingBow.Duration)
+                {
+                    bow.Apply(elapsed);
+                    elapsed += await NextFrame(cancelToken);
+                }
+            }
+            architectBubble = NSpeechBubbleVfx.Create(architectText.GetFormattedText(), _architectNode.Entity, 2f);
+            if (architectBubble != null) _room.SceneContainer.AddChildSafely(architectBubble);
+            await CreatureCmd.TriggerAnim(_architectNode.Entity, "Attack", 0f);
+            var spine = new MegaSprite(_architectNode.Body);
+            var animationState = spine.GetAnimationState();
+            using var animationStateLease = animationState.BoundObject;
+            var track = animationState.GetCurrent(0)
+                ?? throw new InvalidOperationException("Architect greeting did not start its native attack.");
+            using var trackLease = track.BoundObject;
+            while (!track.IsComplete()) await NextFrame(cancelToken);
+        }
+        finally
+        {
+            if (GodotObject.IsInstanceValid(playerBubble)) playerBubble!.QueueFree();
+            if (GodotObject.IsInstanceValid(architectBubble)) architectBubble!.QueueFree();
+            if (IsRuntimeValid()) await CreatureCmd.TriggerAnim(_architectNode.Entity, "Idle", 0f);
         }
     }
 
     internal static string? MeleeTrigger(CardModel card) => card switch
     {
-        CollapseFistRedesignV1 or Slaughter or StraightKiRedesignV1
-            or KarateStraightRedesignV1 or LeftHeavyPunchRedesignV1 or RightHeavyPunchRedesignV1
-            or RightHeavyPunchAfterSkillRedesignV1 or OneDrinkOneStrikeRedesignV1
-            or SatsubatsuRedesignV1 or RoundhouseKickRedesignV1 or SweepKickRedesignV1
-            or StormFistRedesignV1 => "SlowAttack",
-        StrikeNinjaSlayerRedesignV1 or ChopRedesignV1 or CommonChopRedesignV1
-            or ChopStrikeRedesignV1 or CombatAdjustmentRedesignV1 or PalmThrustRedesignV1
-            or WhiskTeaFlashRedesignV1 or SpiralRoundhouseJumpRedesignV1 => "Attack",
-        DragonFlyingKickRedesignV1 => "FlyingKick",
-        TornadoFistRedesignV1 => TornadoFistSpinAnimation.TriggerName,
-        AlabamaDropRedesignV1 => "AlabamaDrop",
+        CollapseFist or PressTheAttack or StraightKi
+            or StraightPunch or ChopStrike or LeftUppercut
+            or RightUppercut or SomersaultKick
+            or BS1260Kick or DragonRoundhouseKick or HalfMoonCompassKick
+            or StormFist => "SlowAttack",
+        StrikeNinjaSlayer or HellChop or Chop
+            or StrikeStrike or MotionAndStillness or PalmThrust
+            or CatapultThrow or SpiralJump => "Attack",
+        DragonFlyingKick => "FlyingKick",
+        TornadoFist => TornadoFistSpinAnimation.TriggerName,
+        AlabamaDrop => "AlabamaDrop",
         _ => null
     };
 
@@ -190,7 +213,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         if (cards.Count > 0) card = cards[_eventModel.Rng.NextInt(cards.Count)];
         else
         {
-            card = ModelDb.Card<StrikeNinjaSlayerRedesignV1>().ToMutable();
+            card = ModelDb.Card<StrikeNinjaSlayer>().ToMutable();
             card.Owner = _owner.Player;
         }
         string trigger = MeleeTrigger(card)!;

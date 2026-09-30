@@ -25,17 +25,17 @@ internal sealed partial class SmokeController
         var choice = new BlockingPlayerChoiceContext();
         var rig = JsonNode.Parse(File.ReadAllText(Path.Combine(directory,
             "../../source-reconstruction/sawatari-weapons/player-grip-review-02/player-weapon-rig.json")))!;
-        Type facing = typeof(SawatariMachete).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState", true)!;
+        Type facing = typeof(Machete).Assembly.GetType("NinjaSlayer.Code.ExternalAnimations.NinjaSlayerFacingState", true)!;
         Vector2 Point(JsonNode node) => new(node[0]!.GetValue<float>(), node[1]!.GetValue<float>());
         foreach (string form in new[] { "normal", "semi-naraku", "naraku", "one-soul" })
         {
-            NarakuWithinRelic? relic = null;
+            NarakuUnleashedRelic? relic = null;
             if (form is "semi-naraku" or "naraku")
-                await PowerCmd.Apply<NarakuFormRedesignPower>(choice, player.Creature, 1, player.Creature, null);
-            if (form == "naraku") relic = await RelicCmd.Obtain<NarakuWithinRelic>(player);
-            if (form == "one-soul") await PowerCmd.Apply<OneBodyOneSoulPower>(choice, player.Creature, 1, player.Creature, null);
-            var first = combat.CreateCard<SawatariMachete>(player);
-            var second = combat.CreateCard<SawatariMachete>(player);
+                await PowerCmd.Apply<NarakuFormPower>(choice, player.Creature, 1, player.Creature, null);
+            if (form == "naraku") relic = await RelicCmd.Obtain<NarakuUnleashedRelic>(player);
+            if (form == "one-soul") await PowerCmd.Apply<OneMindOneBodyPower>(choice, player.Creature, 1, player.Creature, null);
+            var first = combat.CreateCard<Machete>(player);
+            var second = combat.CreateCard<Machete>(player);
             foreach (bool mirrored in new[] { false, true })
             {
                 AccessTools.Method(facing, "SetFacing").Invoke(null, [actor, mirrored]);
@@ -81,13 +81,13 @@ internal sealed partial class SmokeController
                 await CardCmd.Exhaust(choice, second);
             }
             if (relic != null) await RelicCmd.Remove(relic);
-            if (form is "semi-naraku" or "naraku") await PowerCmd.Remove<NarakuFormRedesignPower>(player.Creature);
-            if (form == "one-soul") await PowerCmd.Remove<OneBodyOneSoulPower>(player.Creature);
+            if (form is "semi-naraku" or "naraku") await PowerCmd.Remove<NarakuFormPower>(player.Creature);
+            if (form == "one-soul") await PowerCmd.Remove<OneMindOneBodyPower>(player.Creature);
         }
         AccessTools.Method(facing, "SetFacing").Invoke(null, [actor, false]);
         _checkpoints.Write("sawatari.player-review-02-verified");
 
-        Type weapons = typeof(SawatariMachete).Assembly.GetType("NinjaSlayer.Code.Nodes.SawatariWeaponVisuals", true)!;
+        Type weapons = typeof(Machete).Assembly.GetType("NinjaSlayer.Code.Nodes.SawatariWeaponVisuals", true)!;
         var projectile = (Sprite2D)AccessTools.Method(weapons, "CreateMachete").Invoke(null, null)!;
         var destination = new Node2D { Position = new Vector2(900, 300) };
         var container = NCombatRoom.Instance!.CombatVfxContainer;

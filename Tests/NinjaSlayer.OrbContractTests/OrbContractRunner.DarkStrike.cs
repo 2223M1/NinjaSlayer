@@ -16,7 +16,7 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Cards.RedesignV1;
+using NinjaSlayer.Cards.Standard;
 using NinjaSlayer.Encounters;
 using NinjaSlayer.Monsters;
 using NinjaSlayer.Powers;
@@ -86,7 +86,7 @@ public partial class OrbContractRunner
         foreach (string defense in new[] { "none", "block", "partial-block", "buffer", "evasion", "naraku", "overflow", "zero" })
         {
             using var f = new DarkStrikeFixture();
-            CardModel card = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>(), upgrade: true);
+            CardModel card = Stealable(f, ModelDb.Card<NinjaCaltrops>(), upgrade: true);
             if (defense is "block" or "partial-block")
                 await CreatureCmd.GainBlock(f.Target, defense == "block" ? 100 : 3, ValueProp.Unpowered, null);
             if (defense == "buffer") await PowerCmd.Apply<BufferPower>(Choice, f.Target, 1, f.Target, null);
@@ -111,12 +111,12 @@ public partial class OrbContractRunner
         for (int repeat = 0; repeat < 2; repeat++)
         {
             using var f = new DarkStrikeFixture();
-            CardModel hand = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>(), PileType.Hand);
-            CardModel generated = AddCard<PlaceholderBlueDefense01>(f.Combat, PileType.Draw);
+            CardModel hand = Stealable(f, ModelDb.Card<NinjaCaltrops>(), PileType.Hand);
+            CardModel generated = AddCard<NinjaCaltrops>(f.Combat, PileType.Draw);
             CardModel basic = Stealable(f, ModelDb.Card<StrikeIronclad>());
-            CardModel common = Stealable(f, ModelDb.Card<PalmThrustRedesignV1>(), PileType.Discard);
-            CardModel blue = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>());
-            CardModel otherBlue = Stealable(f, ModelDb.Card<FlyingBladeDanceRedesignV1>());
+            CardModel common = Stealable(f, ModelDb.Card<PalmThrust>(), PileType.Discard);
+            CardModel blue = Stealable(f, ModelDb.Card<NinjaCaltrops>());
+            CardModel otherBlue = Stealable(f, ModelDb.Card<Composure>());
             var seen = new List<CardModel>();
             for (int index = 0; index < 5; index++)
             {
@@ -146,11 +146,11 @@ public partial class OrbContractRunner
 
         using (var f = new DarkStrikeFixture(multiplayer: true))
         {
-            CardModel imbued = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>(), upgrade: true);
+            CardModel imbued = Stealable(f, ModelDb.Card<NinjaCaltrops>(), upgrade: true);
             CardCmd.Enchant<Imbued>(imbued.DeckVersion!, 1);
             CardCmd.Enchant<Imbued>(imbued, 1);
             CardModel basic = Stealable(f, ModelDb.Card<StrikeIronclad>());
-            CardModel theirs = Stealable(f, ModelDb.Card<PalmThrustRedesignV1>(), owner: f.Other!);
+            CardModel theirs = Stealable(f, ModelDb.Card<PalmThrust>(), owner: f.Other!);
             await DarkStrike(f.Monster, f.Target, f.Other!.Creature);
             var powers = f.Monster.Creature.Powers.OfType<SwipePower>().ToArray();
             Require(powers.Length == 2 && powers[0].StolenCard == basic && powers[1].StolenCard == theirs
@@ -169,7 +169,7 @@ public partial class OrbContractRunner
 
         using (var f = new DarkStrikeFixture(multiplayer: true))
         {
-            CardModel card = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>());
+            CardModel card = Stealable(f, ModelDb.Card<NinjaCaltrops>());
             f.Target.SetCurrentHpInternal(1);
             await DarkStrike(f.Monster, f.Target);
             Require(f.Target.IsDead && f.Monster.Creature.Powers.OfType<SwipePower>().Single().StolenCard == card,
@@ -188,7 +188,7 @@ public partial class OrbContractRunner
         foreach (bool vanilla in new[] { true, false })
         {
             using var f = new DarkStrikeFixture();
-            CardModel card = Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>());
+            CardModel card = Stealable(f, ModelDb.Card<NinjaCaltrops>());
             Creature attacker = f.Monster.Creature;
             MonsterModel monster = f.Monster;
             if (vanilla)
@@ -216,7 +216,7 @@ public partial class OrbContractRunner
         {
             var cards = new List<CardModel>();
             for (int index = 0; index < 4; index++)
-                cards.Add(Stealable(f, ModelDb.Card<PlaceholderBlueDefense01>(), upgrade: index % 2 == 0));
+                cards.Add(Stealable(f, ModelDb.Card<NinjaCaltrops>(), upgrade: index % 2 == 0));
             for (int index = 0; index < 3; index++) await DarkStrike(f.Monster, f.Target);
             Require(f.Monster.Creature.Powers.OfType<SwipePower>().Count() == 3, "Earlier theft receipts were not independent.");
             await PowerCmd.Apply<ThornsPower>(Choice, f.Target, 999, f.Target, null);
