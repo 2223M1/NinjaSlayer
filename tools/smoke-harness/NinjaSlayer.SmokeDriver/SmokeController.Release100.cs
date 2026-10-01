@@ -135,7 +135,7 @@ internal sealed partial class SmokeController
                 await scry;
                 await WaitFrames(120);
                 var ui = NCombatRoom.Instance!.Ui;
-                var counts = new JsonObject { ["selected"] = selected, ["exhaust"] = exhaustSelection };
+                var counts = new JsonObject { ["selected"] = selected, ["exhaustSelection"] = exhaustSelection };
                 foreach (var (pileType, node) in new (PileType, Control)[]
                     { (PileType.Draw, ui.DrawPile), (PileType.Discard, ui.DiscardPile), (PileType.Exhaust, ui.ExhaustPile) })
                 {
