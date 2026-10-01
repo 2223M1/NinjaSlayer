@@ -31,6 +31,20 @@
 - 编译依赖 RitsuLib 0.5.12，实际实机 RitsuLib 0.6.3。
   stable MVID `97f10687-c306-4798-ab75-8b9f23f34dfb`；preview MVID `73b63ee0-6c0a-47bb-b0d1-b21f6d94222e`。
 
+## 最终发布验证
+
+- PR [#150](https://github.com/2223M1/NinjaSlayer/pull/150) 已 squash 合并，产品源码为
+  `15c41dad318baaba6b50d955bdc4fb8787e88a0f`；[最终主分支 CI](https://github.com/2223M1/NinjaSlayer/actions/runs/36818375904) 通过。
+  提交署名为 2223M1，无共同作者尾注；发布时 Contributors 仍只有 2223M1。
+- 从该干净提交重建双宿主产品、SmokeDriver 及可选东尼程序集，两套候选 DLL 契约通过。
+  使用最终包在本机隔离后台桌面重跑两宿主的 1.0.0 实机检查，全部通过；实际 RitsuLib 0.6.3。
+- Workshop 3776911445 已发布 1.0.0，并通过 Steam 重新下载。12 个文件的 SHA256 与最终候选全部相同；
+  不公开列出、RitsuLib 依赖、三语介绍、固定一句更新说明及方形／宽幅封面 URL 均已核验。
+- 最终 stable 实机导出运行时目录，源码 SHA 与包内 DLL 校验值一致；按已核验工坊证据推进官网当前目录至 1.0.0。
+  官网目录和证据提交不改变已发布产品的源码 SHA。
+- 完整 DLL、PCK、宿主 MVID、实机检查点及远端下载校验值见
+  [release-1.0.0-evidence.json](release-1.0.0-evidence.json)。
+
 ## 验证边界
 
 本轮不重新执行四人联机、游戏录屏／截图或未涉及的完整处决演出；嵌套预见和联机选择由产品契约回归。
