@@ -15,12 +15,15 @@ function action(button, operation) {
     finally { button.disabled = false; }
   };
 }
-let feedback = [], defaults, draft, key, dirty = false, selection = 0;
+let feedback = [], defaults, draft, key, dirty = false, selection = 0, reviewDirty = false;
+const reviewName = value => value === 'resolved' ? '已解决' : '未解决';
+function leaveReview() { return !reviewDirty || window.confirm('此反馈有尚未保存的修改，放弃这些修改？'); }
 function showFeedbackList() {
   const query = $('#feedback-search').value.toLowerCase();
   const list = $('#feedback-list'); list.replaceChildren();
-  for (const item of feedback.filter(item => JSON.stringify(item).toLowerCase().includes(query))) {
-    const button = element('button', `${item.at?.slice(0, 10) ?? ''} · ${item.category ?? item.context?.category ?? '玩家反馈'}`);
+  for (const item of feedback.filter(item => JSON.stringify(item).toLowerCase().includes(query)
+      && (!$('#feedback-status').value || (item.review?.status ?? 'unresolved') === $('#feedback-status').value))) {
+    const button = element('button', `${reviewName(item.review?.status)} · ${item.at?.slice(0, 10) ?? ''} · ${item.category ?? item.context?.category ?? '玩家反馈'}`);
     button.append(element('small', String(item.description ?? item.message ?? item.id).slice(0, 120)));
     action(button, () => showFeedback(item)); list.append(button);
   }
@@ -33,13 +36,36 @@ async function loadFeedbackView() {
   showFeedbackList();
 }
 async function showFeedback(item) {
+  if (!leaveReview()) return;
+  reviewDirty = false;
   const current = ++selection, detail = $('#feedback-detail');
   detail.replaceChildren(element('p', '正在核验反馈及附件…'));
   const base = `/api/feedback/${encodeURIComponent(item.id)}`;
   const metadata = await api(`${base}/metadata`);
+  const review = await api(`${base}/review`);
   if (current !== selection) return;
   detail.replaceChildren(element('h3', `${item.at?.slice(0, 10) ?? ''} · ${item.id}`));
   const body = element('pre', JSON.stringify(metadata.payload, null, 2)); detail.append(body);
+  const reviewForm = element('form'); reviewForm.className = 'review-form';
+  const stateLabel = element('label', '解决状态'), state = element('select'); state.id = 'review-status'; stateLabel.htmlFor = state.id;
+  for (const value of ['unresolved', 'resolved']) { const option = element('option', reviewName(value)); option.value = value; state.append(option); }
+  state.value = review.status;
+  const replyLabel = element('label', '作者回应（公开反馈会同步到官网）'), reply = element('textarea');
+  reply.id = 'review-reply'; replyLabel.htmlFor = reply.id; reply.rows = 5; reply.maxLength = 5000; reply.value = review.reply;
+  const save = element('button', '保存状态与回应'); save.type = 'button';
+  const saved = element('p', review.updatedAt ? `上次保存：${review.updatedAt}` : '尚无作者处理记录，默认未解决。'); saved.setAttribute('role', 'status');
+  reviewForm.onsubmit = event => event.preventDefault();
+  state.onchange = reply.oninput = () => { reviewDirty = true; saved.textContent = '有尚未保存的反馈修改。'; };
+  action(save, async () => {
+    state.disabled = reply.disabled = true;
+    try {
+      const result = await api(`${base}/review`, 'PUT', { status: state.value, reply: reply.value });
+      item.review = result; showFeedbackList();
+      if (current === selection) { reviewDirty = false; saved.textContent = '已保存到 Cloudflare。官网将在定时同步或立即同步部署后更新。'; }
+      status('反馈处理记录已保存。');
+    } finally { state.disabled = reply.disabled = false; }
+  });
+  reviewForm.append(stateLabel, state, replyLabel, reply, save, saved); detail.append(reviewForm);
   const attachments = element('div'); attachments.className = 'attachments';
   const screenshot = link('打开原尺寸截图 ↗', `${base}/screenshot`); screenshot.target = '_blank'; screenshot.rel = 'noopener';
   const metadataLink = link('下载完整元数据', `${base}/metadata`); metadataLink.download = `${item.id}.json`;
@@ -92,16 +118,25 @@ async function saveDraft() {
   $('#dirty').textContent = '草稿已保存在本机。'; showCopyList(); status('草稿已保存，可打开预览。');
 }
 $('#feedback-search').oninput = showFeedbackList;
+$('#feedback-status').onchange = showFeedbackList;
 $('#copy-search').oninput = showCopyList;
 $('#copy-form').onsubmit = event => event.preventDefault();
 for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).oninput = setDirty;
 $('#reset').onclick = () => { if (!key) return; for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).value = defaults[key][lang]; capture(); setDirty(); };
 $('#preview').onclick = event => { if (dirty) { event.preventDefault(); status('请先保存草稿，再预览。'); } };
-action($('#refresh'), async () => { status('正在同步 Cloudflare 玩家反馈…'); await api('/api/refresh', 'POST'); await loadFeedbackView(); status('同步结束，详情见反馈状态。'); });
+action($('#refresh'), async () => { if (!leaveReview()) return; reviewDirty = false; selection++; $('#feedback-detail').replaceChildren(element('p', '请重新选择一封来信。')); status('正在同步 Cloudflare 玩家反馈…'); await api('/api/refresh', 'POST'); await loadFeedbackView(); status('同步结束，详情见反馈状态。'); });
+function showFeedbackPublication(receipt) {
+  const panel = $('#feedback-publication'); panel.replaceChildren();
+  if (!receipt) return;
+  panel.append(element('span', receipt.message));
+  if (receipt.url) panel.append(document.createTextNode(' '), link('查看部署任务 ↗', receipt.url));
+}
+action($('#feedback-publish'), async () => { if (reviewDirty) throw new Error('请先保存反馈修改。'); showFeedbackPublication(await api('/api/feedback-publication', 'POST')); });
+action($('#feedback-publication-refresh'), async () => showFeedbackPublication(await api('/api/feedback-publication')));
 action($('#save'), saveDraft);
 action($('#publish'), async () => { if (dirty) throw new Error('请先保存并预览草稿，再发布。'); status('正在创建网站文案 PR…'); showPublication(await api('/api/copy/publish', 'POST')); status('发布请求已处理，请查看 PR 状态。'); });
 action($('#continue'), async () => { status('正在检查 PR 与 CI…'); showPublication(await api('/api/copy/continue', 'POST')); status('发布状态已更新。'); });
-window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (dirty || reviewDirty) { event.preventDefault(); event.returnValue = ''; } });
 try {
   const data = await api('/api/copy'); defaults = data.defaults; draft = data.draft;
   showCopyList(); selectCopy('DOMO，玩家=SAN。'); showPublication(data.publication);

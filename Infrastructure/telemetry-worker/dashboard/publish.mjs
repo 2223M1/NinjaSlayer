@@ -2,6 +2,7 @@ import { summarize } from './data.mjs';
 import { choiceCounters, combatCounters, useCurrentCatalog } from './public-data.mjs';
 import { readFile } from 'node:fs/promises';
 import { chartBins, mechanismBins } from './chart-data.mjs';
+import { readFeedbackReview } from '../src/feedback-review.js';
 
 const contentRoot = new URL('../../../Website/content/', import.meta.url);
 export const chartSchemaVersion = 1;
@@ -22,6 +23,7 @@ export function publicFeedback(records) {
   return records.filter(item => item.context.publishDescription === true).map(item => ({
     id: item.id, at: item.at, description: item.description, category: item.category,
     gameVersion: item.gameVersion, context: { modVersion: item.context.modVersion },
+    review: item.review == null ? readFeedbackReview(null) : readFeedbackReview({ schemaVersion: 1, ...item.review }),
   }));
 }
 

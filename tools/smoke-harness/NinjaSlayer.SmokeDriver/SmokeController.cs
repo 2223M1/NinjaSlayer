@@ -555,14 +555,50 @@ internal sealed partial class SmokeController
         }
 
         await CreatureCmd.SetCurrentHp(target, 1);
-        Creature attacker = await CreatureCmd.Add<DarkNinjaMonster>(combatState);
-        DarkNinjaMonster monster = attacker.Monster as DarkNinjaMonster
-            ?? throw new InvalidOperationException("Reverse Finisher did not create a Dark Ninja attacker.");
+        Creature attacker = combatState.Enemies.First(enemy => enemy.IsAlive);
+        Creature witness = await CreatureCmd.Add<MegaCrit.Sts2.Core.Models.Monsters.Nibbit>(combatState);
         FinisherSmokeObserver.Reset();
-        await PerformObservedDarkStrike(monster, [target]);
+        NCreature attackerNode = NCombatRoom.Instance!.GetCreatureNode(attacker)!;
+        Vector2 rootBaseline = attackerNode.Position;
+        Vector2 visualGlobalBaseline = attackerNode.Visuals.GlobalPosition;
+        // Compare actual rendered pixels in memory; Visible alone does not catch
+        // a body moved offscreen. No screenshot files are created.
+        async Task<int> RenderedBodyPixels(NCreature subject)
+        {
+            Color original = subject.Body.Modulate;
+            try
+            {
+                subject.Body.Modulate = Colors.Red;
+                await WaitFrames(2);
+                await _tree.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                using Image red = _tree.Root.GetTexture().GetImage();
+                subject.Body.Modulate = Colors.Green;
+                await WaitFrames(2);
+                await _tree.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                using Image green = _tree.Root.GetTexture().GetImage();
+                int pixels = 0;
+                for (int y = 0; y < red.GetHeight(); y += 2)
+                    for (int x = 0; x < red.GetWidth(); x += 2)
+                    {
+                        Color a = red.GetPixel(x, y), b = green.GetPixel(x, y);
+                        if (a.R - b.R > .03f && b.G - a.G > .03f) pixels++;
+                    }
+                return pixels;
+            }
+            finally { subject.Body.Modulate = original; }
+        }
+        _checkpoints.Write("finisher.reverse.before", data: new JsonObject
+        {
+            ["path"] = attackerNode.Body.GetPath().ToString(),
+            ["global"] = attackerNode.Body.GlobalPosition.ToString()
+        });
+        int beforePixels = await RenderedBodyPixels(attackerNode);
+        Require(beforePixels > 100, "Reverse finisher fixture has no rendered attacker before combat.");
+        SaveManager.Instance.PrefsSave.FastMode = FastModeType.Normal;
+        PlayerCmd.EndTurn(player, canBackOut: false);
         await WaitUntilAsync(
             () => target.IsDead && target.CurrentHp == 0,
-            "Dark Ninja's real move did not kill the one-HP Ninja Slayer",
+            "The native monster turn did not kill the one-HP Ninja Slayer",
             cancellationToken,
             TimeSpan.FromSeconds(20));
         FinisherSessionSnapshot reverseFinisher = await RequireCompletedFinisherAsync(
@@ -571,7 +607,28 @@ internal sealed partial class SmokeController
             target,
             cancellationToken);
 
-        await WaitFrames(2);
+        await WaitFrames(90);
+        int afterPixels = await RenderedBodyPixels(attackerNode);
+        int otherPixels = await RenderedBodyPixels(NCombatRoom.Instance!.GetCreatureNode(witness)!);
+        _checkpoints.Write("finisher.reverse.actor-return", data: new JsonObject
+        {
+            ["beforePixels"] = beforePixels,
+            ["afterPixels"] = afterPixels,
+            ["otherPixels"] = otherPixels,
+            ["globalPosition"] = attackerNode.Body.GlobalPosition.ToString(),
+            ["path"] = attackerNode.Body.GetPath().ToString(),
+            ["rootPosition"] = attackerNode.Position.ToString(),
+            ["rootBaseline"] = rootBaseline.ToString(),
+            ["visible"] = attackerNode.Body.IsVisibleInTree(),
+            ["visualPosition"] = attackerNode.Visuals.Position.ToString()
+        });
+        Require(afterPixels > 100, "Reverse Finisher stopped rendering its surviving attacker.");
+        Require(otherPixels > 100, "The uninvolved monster disappeared from the native game-over screen.");
+        Require(!attackerNode.IsAncestorOf(attackerNode.Visuals), "The native game-over screen did not take the attacker visuals.");
+        Require(attackerNode.Position.IsEqualApprox(rootBaseline), "Reverse Finisher moved the attacker's UI root.");
+        Require(attackerNode.Body.IsVisibleInTree(), "Reverse Finisher hid its surviving attacker.");
+        Require(attackerNode.Visuals.GlobalPosition.DistanceTo(visualGlobalBaseline) < 1f,
+            "Reverse Finisher overwrote the native game-over placement of its surviving attacker.");
         NTransition transition = FindDescendant<NTransition>(_tree.Root)
             ?? throw new InvalidOperationException("The transition node was unavailable after reverse Finisher.");
         NinjaSlayerTransitionOverlay? overlay =
@@ -1673,6 +1730,10 @@ internal sealed partial class SmokeController
             else if (_configuration.Phase is SmokePhase.TornadoPreview or SmokePhase.ActionPreview)
             {
                 await RunTornadoPreviewAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.Release102)
+            {
+                await RunRelease102Async();
             }
             else if (_configuration.Phase == SmokePhase.Release100)
             {

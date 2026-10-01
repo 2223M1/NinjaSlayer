@@ -126,10 +126,24 @@ internal static class FinisherProtectionService
 
     // Both return an independent nonlethal result when intercepting HP loss. The final
     // protection prefix checks __runOriginal after them before reserving any death.
-    private static bool IsVerifiedHpPrefix(HarmonyLib.Patch patch) =>
-        patch.PatchMethod.Name == "Prefix" && patch.PatchMethod.DeclaringType?.FullName is
+    private static bool IsVerifiedHpPrefix(HarmonyLib.Patch patch)
+    {
+        MethodInfo method = patch.PatchMethod;
+        if (method.Name != "Prefix") return false;
+        if (method.DeclaringType?.FullName is
             "HextechRunes.HextechCombatHooks+NearDeathFeastLoseHpPatch"
-            or "Loadout.Patches.TildeKey.TildeKeyGodmodeLoseHpPatch";
+            or "Loadout.Patches.TildeKey.TildeKeyGodmodeLoseHpPatch") return true;
+
+        // Official MinionLib 0.5.2/0.6.3 suppress only the owner's temporary
+        // fallback loss while guardians distribute overflow. Actual loss runs later.
+        return patch.owner == "MinionLib"
+            && method.DeclaringType?.Assembly.GetName().Name == "MinionLib"
+            && method.DeclaringType.FullName == "MinionLib.Powers.Patches.MinionGuardianOwnerDamageSuppressPatch"
+            && method.IsStatic && method.ReturnType == typeof(bool)
+            && method.GetParameters().Select(parameter => (parameter.Name, parameter.ParameterType)).SequenceEqual(
+                new (string?, Type)[] { ("__instance", typeof(Creature)), ("amount", typeof(decimal)),
+                    ("props", typeof(ValueProp)), ("__result", typeof(DamageResult).MakeByRefType()) });
+    }
 
     private static string DescribePatch(HarmonyLib.Patch patch) =>
         $"owner={patch.owner}, method={patch.PatchMethod.DeclaringType?.FullName}.{patch.PatchMethod.Name}, "

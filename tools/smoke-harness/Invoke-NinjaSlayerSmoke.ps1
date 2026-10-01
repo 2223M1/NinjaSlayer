@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory)][string]$RitsuLibModDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateSet('stable', 'preview')][string]$Channel,
-    [ValidateSet('FirstCombatRestart', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100')]
+    [ValidateSet('FirstCombatRestart', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossReload', 'TelemetryLoss', 'Catalog', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102')]
     [string]$Mode = 'FirstCombatRestart',
     [ValidateRange(0, 7200)][int]$PhaseTimeoutSeconds = 0,
     [string]$Seed = 'NINJASLAYER_SMOKE_01',
@@ -140,7 +140,7 @@ function Stop-SmokeProcesses {
 function Invoke-SmokePhase {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100')]
+        [ValidateSet('Fresh', 'Resume', 'ReverseFinisher', 'FullAutoSlay', 'SawatariSameCombat', 'BossFresh', 'BossResume', 'BossVerify', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102')]
         [string]$Phase,
         [Parameter(Mandatory)][int]$ExpectedExitCode
     )
@@ -163,6 +163,7 @@ function Invoke-SmokePhase {
             'Release034' { 14 }
             'Release038' { 15 }
             'Release100' { 16 }
+            'Release102' { 17 }
         }
         CheckpointPath = $checkpointPath
         AutoSlayLogPath = (Join-Path $OutputDirectory "autoslay-$($Phase.ToLowerInvariant()).log")
@@ -479,7 +480,7 @@ try {
         Invoke-SmokePhase -Phase BossResume -ExpectedExitCode 20
         Invoke-SmokePhase -Phase BossVerify -ExpectedExitCode 0
     }
-    elseif ($Mode -in @('FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100')) {
+    elseif ($Mode -in @('ReverseFinisher', 'FullAutoSlay', 'TelemetryLoss', 'ModCompatibility', 'CombatRegression', 'Release034', 'Release038', 'Release100', 'Release102')) {
         Invoke-SmokePhase -Phase $Mode -ExpectedExitCode 0
     }
     elseif ($Mode -eq 'SawatariSameCombat') {
@@ -503,6 +504,9 @@ try {
     $requiredCheckpoints = if ($Mode -eq 'Catalog') {
         @('catalog.exported')
     }
+    elseif ($Mode -eq 'ReverseFinisher') {
+        @('finisher.reverse.starting', 'finisher.reverse.completed')
+    }
     elseif ($Mode -eq 'BossReload') {
         @('boss.first-snapshot', 'boss.reload-identical', 'boss.same-process-identical', 'boss.second-greeting')
     }
@@ -511,6 +515,9 @@ try {
     }
     elseif ($Mode -eq 'TelemetryLoss') {
         @('telemetry.run-ended', 'telemetry.captured', 'telemetry.loss-completed')
+    }
+    elseif ($Mode -eq 'Release102') {
+        @('release102.first', 'release102.repeat', 'release102.veteran', 'release102.custom', 'release102.other', 'release102.completed')
     }
     elseif ($Mode -eq 'Release100') {
         @('release100.completed')
@@ -563,6 +570,8 @@ try {
             'Release034' { 'release034' }
             'Release038' { 'release038' }
             'Release100' { 'release100' }
+            'Release102' { 'release102' }
+            'ReverseFinisher' { 'reverse-finisher' }
             'SawatariSameCombat' { 'singleplayer-sawatari-same-combat' }
             'BossReload' { 'singleplayer-double-boss-reload' }
             'Catalog' { 'runtime-content-export' }

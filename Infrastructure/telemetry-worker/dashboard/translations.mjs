@@ -1,4 +1,11 @@
 export const messages = {
+  "解决状态": ["Resolution status", "対応状況"],
+  "全部状态": ["All statuses", "すべての状態"],
+  "已解决": ["Resolved", "解決済み"],
+  "未解决": ["Unresolved", "未解決"],
+  "作者回应": ["Author response", "作者からの返信"],
+  "暂无作者回应": ["No author response yet", "作者からの返信はまだありません"],
+  "更新时间": ["Updated", "更新日時"],
   "无法连接战报服务。请检查网络或代理的 DNS 设置，然后重试。": ["Cannot connect to the replay service. Check your network or proxy DNS settings, then retry.", "戦報サービスに接続できません。ネットワークやプロキシのDNS設定を確認して再試行してください。"],
   "重试读取战报": ["Retry replay", "戦報を再読み込み"],
   "平衡建议": [

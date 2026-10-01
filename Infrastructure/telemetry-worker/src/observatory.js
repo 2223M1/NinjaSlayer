@@ -1,5 +1,6 @@
 import { jsonResponse } from './limits.js';
 import { feedbackIndexKey, parseFeedbackIndexMarker, validateCompletedFeedbackMetadata } from './feedback-storage.js';
+import { feedbackReviewKey, readFeedbackReview, feedbackExpiresAt } from './feedback-review.js';
 
 async function readFeedback(kv, id) {
   const marker = parseFeedbackIndexMarker(await kv.get(feedbackIndexKey(id)), id);
@@ -28,7 +29,11 @@ export async function handleObservatory(request, env) {
       const id = key.name.slice('feedback-index/'.length);
       try {
         const metadata = await readFeedback(env.FEEDBACK_KV, id);
-        if (metadata) feedback.push({ id, at: metadata.receivedAtUtc, ...metadata.payload, context: metadata.modContext });
+        if (metadata) {
+          feedbackExpiresAt(metadata);
+          const review = readFeedbackReview(await env.FEEDBACK_KV.get(feedbackReviewKey(id)));
+          feedback.push({ id, at: metadata.receivedAtUtc, ...metadata.payload, context: metadata.modContext, review });
+        }
       } catch { warnings.push(id); }
     }
     // Keep each Worker invocation below KV subrequest limits. The export job follows this cursor.

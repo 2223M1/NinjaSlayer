@@ -507,7 +507,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             ApplyDeathKickRecovery(measuredCamera
                 ? (Mathf.IsZeroApprox(actorReturnSeconds) ? 1f : Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f))
                 : cameraLinearProgress);
-            if (!IsRanged && !AlabamaOwnsRecovery)
+            if (!IsRanged && !AlabamaOwnsRecovery && _actorNode.IsAncestorOf(_actorNode.Visuals))
             {
                 Vector2 position = ownerFrom.Lerp(_actorReturnVisualPosition, actorProgress);
                 if (_continuousPlayerApproach && IsAlabamaDrop)
@@ -531,7 +531,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         if (_measuredCameraTask != null) await _measuredCameraTask;
         ApplyDeathKickRecovery(1f);
-        if (!IsRanged && !AlabamaOwnsRecovery)
+        if (!IsRanged && !AlabamaOwnsRecovery && _actorNode.IsAncestorOf(_actorNode.Visuals))
             FinisherApproach.SetAnimationPosition(Actor, _actorNode.Visuals, _actorReturnVisualPosition);
         _approach?.ApplyReturn(1f);
         RestoreActorLeapPose();

@@ -230,13 +230,17 @@ function renderTrend() {
 }
 function renderFeedback() {
   const query = $('#feedback-search').value.trim().toLocaleLowerCase(locale), category = $('#feedback-category').value;
+  const status = $('#feedback-status').value;
   const records = view.feedback.filter(item => (!category || item.category === category)
-    && `${item.description} ${item.context.modVersion}`.toLocaleLowerCase(locale).includes(query));
+    && (!status || (item.review?.status ?? 'unresolved') === status)
+    && `${item.description} ${item.context.modVersion} ${item.review?.reply ?? ''}`.toLocaleLowerCase(locale).includes(query));
   const fragment = document.createDocumentFragment();
   for (const item of records) {
     const letter = el('button', 'letter');
     letter.append(el('span', `tag ${item.category}`, categoryName(item.category)), el('strong', '', item.description),
       el('small', '', `v${item.context.modVersion} · ${time(item.at)}`));
+    letter.append(el('span', `badge review-${item.review?.status === 'resolved' ? 'resolved' : 'unresolved'}`,
+      t(item.review?.status === 'resolved' ? '已解决' : '未解决')));
     letter.addEventListener('click', () => openFeedback(item)); fragment.append(letter);
   }
   if (!records.length) {
@@ -250,6 +254,10 @@ function renderFeedback() {
 function openFeedback(item) {
   $('#feedback-detail-title').textContent = categoryName(item.category);
   $('#feedback-description').textContent = item.description;
+  const review = item.review ?? { status: 'unresolved', reply: '', updatedAt: null };
+  $('#feedback-review-status').textContent = t(review.status === 'resolved' ? '已解决' : '未解决');
+  $('#feedback-reply').textContent = review.reply || t('暂无作者回应');
+  $('#feedback-review-time').textContent = review.updatedAt ? `${t('更新时间')} · ${time(review.updatedAt)}` : '';
   const metadata = [time(item.at), tr`模组 v${item.context.modVersion}`, tr`游戏 ${item.gameVersion ?? '—'}`];
   if (!isPublic) metadata.push(`进阶 ${item.context.ascensionLevel ?? '—'}`, `楼层 ${item.context.totalFloor ?? '—'}`);
   $('#feedback-detail-meta').replaceChildren(...metadata.map(text => el('span', 'badge', text)));
@@ -299,7 +307,7 @@ for (const button of document.querySelectorAll('[data-layout]')) button.addEvent
 });
 $('#card-sort').addEventListener('change', () => { direction = $('#card-sort').value === 'name' ? 1 : -1; renderCards(); });
 $('#card-search').addEventListener('input', renderCards);
-for (const id of ['feedback-search', 'feedback-category']) $(`#${id}`).addEventListener('input', renderFeedback);
+for (const id of ['feedback-search', 'feedback-category', 'feedback-status']) $(`#${id}`).addEventListener('input', renderFeedback);
 if (!isPublic) {
   const refresh = async () => {
     $('#refresh').disabled = true; $('#refresh-icon').classList.add('spinning');

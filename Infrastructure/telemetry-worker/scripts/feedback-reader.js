@@ -2,7 +2,11 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { feedbackIndexKey, parseFeedbackIndexMarker, validateCompletedFeedbackMetadata } from '../src/feedback-storage.js';
+import { feedbackReviewKey, readFeedbackReview, validateFeedbackReview, feedbackExpiresAt } from '../src/feedback-review.js';
 
 const exec = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -41,18 +45,49 @@ export function verifyFeedbackMetadata(marker, bytes) {
 export async function readCompletedFeedback(id) {
   const marker = parseFeedbackIndexMarker((await readMetadata(feedbackIndexKey(id))).toString('utf8'), id);
   if (!marker || marker.state !== 'completed') throw new Error('此反馈尚未完成，或已过期。');
-  return verifyFeedbackMetadata(marker, await readMetadata(marker.completion.metadataKey));
+  const metadata = verifyFeedbackMetadata(marker, await readMetadata(marker.completion.metadataKey));
+  feedbackExpiresAt(metadata);
+  return metadata;
+}
+
+async function reviewKeys() {
+  return new Set(JSON.parse((await command(['kv', 'key', 'list', ...binding, '--prefix', 'feedback-review/'])).toString('utf8')).map(item => item.name));
+}
+
+export async function loadFeedbackReview(id) {
+  await readCompletedFeedback(id);
+  const key = feedbackReviewKey(id);
+  return readFeedbackReview((await reviewKeys()).has(key) ? (await readMetadata(key)).toString('utf8') : null);
+}
+
+export async function saveFeedbackReview(id, value) {
+  const review = { schemaVersion: 1, ...validateFeedbackReview(value), updatedAt: new Date().toISOString() };
+  await loadFeedbackReview(id); // A failed/corrupt read is not permission to overwrite the record.
+  const metadata = await readCompletedFeedback(id);
+  const expiration = feedbackExpiresAt(metadata);
+  // A separate object preserves the original hash-bound completion receipt.
+  const directory = await mkdtemp(join(tmpdir(), 'ninja-feedback-review-'));
+  try {
+    const path = join(directory, 'review.json');
+    await writeFile(path, JSON.stringify(review));
+    await command(['kv', 'key', 'put', feedbackReviewKey(id), ...binding, '--path', path, '--expiration', String(expiration)]);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+  return readFeedbackReview(review);
 }
 
 export async function loadFeedback() {
   const feedback = [], warnings = [];
+  const reviews = await reviewKeys();
   for (const entry of await listFeedbackKeys()) {
     try {
       const marker = parseFeedbackIndexMarker((await readMetadata(entry.name)).toString('utf8'));
       if (marker?.state === 'writing') continue;
       if (!marker) throw new Error('无效的完成标记');
       const metadata = verifyFeedbackMetadata(marker, await readMetadata(marker.completion.metadataKey));
-      feedback.push({ id: marker.submissionId, at: metadata.receivedAtUtc, ...metadata.payload, context: metadata.modContext });
+      feedbackExpiresAt(metadata);
+      const key = feedbackReviewKey(marker.submissionId);
+      const review = readFeedbackReview(reviews.has(key) ? (await readMetadata(key)).toString('utf8') : null);
+      feedback.push({ id: marker.submissionId, at: metadata.receivedAtUtc, ...metadata.payload, context: metadata.modContext, review });
     } catch (error) { warnings.push(`${entry.name}: ${error.message}`); }
   }
   return { feedback: feedback.sort((a, b) => b.at.localeCompare(a.at)), warnings };

@@ -1,0 +1,247 @@
+{
+  "baseRevision": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+  "candidateKind": "base revision plus the recorded local source changes; not a published build",
+  "verifiedAt": "2026-10-01T23:24:34.5895481+08:00",
+  "sources": [
+    {
+      "path": "Code/ExternalAnimations/FinisherApproach.cs",
+      "sha256": "5c30e3c5ec37a8004bd695959f5dadd0bfed753c832846133a76069df0e8baec"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherSession.cs",
+      "sha256": "02e8bd797067ff7fd4c744b01f16f0f98f1de9d2030a6e224dbb40c7d9a86d9d"
+    },
+    {
+      "path": "Code/ExternalAnimations/FinisherSession.Presentation.cs",
+      "sha256": "ce2e99a4a401e22f26f6b583e2fae1a21e0d2bfcb5bd0d54b4e1c77d6db233c9"
+    }
+  ],
+  "baseline": {
+    "productSource": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+    "expectedFailure": "Native game-over placement overwritten",
+    "checkpoints": [
+      {
+        "SchemaVersion": 1,
+        "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+        "Phase": "reversefinisher",
+        "Name": "finisher.reverse.before",
+        "Sequence": 8,
+        "Status": "passed",
+        "ElapsedMilliseconds": 12262,
+        "Data": {
+          "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/Creature/Nibbit/Visuals",
+          "global": "(1424, 723)",
+          "topLevel": false,
+          "parent": "Node2D"
+        }
+      },
+      {
+        "SchemaVersion": 1,
+        "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+        "Phase": "reversefinisher",
+        "Name": "finisher.reverse.actor-return",
+        "Sequence": 9,
+        "Status": "passed",
+        "ElapsedMilliseconds": 14713,
+        "Data": {
+          "beforePixels": 3518,
+          "afterPixels": 280,
+          "otherPixels": 2057,
+          "globalPosition": "(-16, -17)",
+          "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+          "parent": "Node2D",
+          "topLevel": false,
+          "rootPosition": "(480, 200)",
+          "rootBaseline": "(480, 200)",
+          "visualScale": "(1, 1)",
+          "processMode": "Inherit",
+          "visible": true,
+          "bodyPosition": "(-16, -17)",
+          "visualPosition": "(0, 0)",
+          "baseline": "(0, 0)",
+          "scale": "(0.28, 0.28)",
+          "alpha": 1,
+          "bodyZ": 0
+        }
+      }
+    ]
+  },
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+        "bundleVersion": "1.0.1",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "18b81dbb8acbca60b7b0a17813d538f703e8da8ad0279b66789b5796f58ce9d2",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "reverse-finisher",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T23:22:21.0405221+08:00"
+      },
+      "dllSha256": "fd2baca247e8d583bb53d01e9aa39b49b52a1c4a48d5ff3ac379323e2b308a97",
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 5047,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 12355,
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/Creature/Nibbit/Visuals",
+            "global": "(1424, 723)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16256,
+          "Data": {
+            "beforePixels": 3060,
+            "afterPixels": 1841,
+            "otherPixels": 1839,
+            "globalPosition": "(1424, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(480, 200)",
+            "rootBaseline": "(480, 200)",
+            "visible": true,
+            "visualPosition": "(1440, 740)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16258,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ]
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+        "bundleVersion": "1.0.1",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "18b81dbb8acbca60b7b0a17813d538f703e8da8ad0279b66789b5796f58ce9d2",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "reverse-finisher",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T23:23:21.1524735+08:00"
+      },
+      "dllSha256": "3f00b2c720572915df7a331b1c2e20571fa88d23453a800f82e28c4cd5e35d54",
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 4806,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 12110,
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/Creature/Nibbit/Visuals",
+            "global": "(1424, 723)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16012,
+          "Data": {
+            "beforePixels": 3058,
+            "afterPixels": 1860,
+            "otherPixels": 1874,
+            "globalPosition": "(1424, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(480, 200)",
+            "rootBaseline": "(480, 200)",
+            "visible": true,
+            "visualPosition": "(1440, 740)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "2db3280b7b5d15d17da3e992d41df393f99d79dd",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16015,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ]
+    }
+  ],
+  "logicTests": 375,
+  "dualHostContracts": "passed",
+  "notRun": [
+    "Four-client rendered multiplayer",
+    "macOS and Linux",
+    "Every monster individually"
+  ],
+  "published": false
+}

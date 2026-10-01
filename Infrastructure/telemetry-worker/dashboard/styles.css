@@ -452,3 +452,5 @@ body[data-page="feedback"] .hero { min-height: 260px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+.feedback-author {border-top:1px solid var(--border,#555);margin-top:1.5rem;padding-top:1rem}.review-resolved {color:#d9e8a5}.review-unresolved {color:#ffd77d}

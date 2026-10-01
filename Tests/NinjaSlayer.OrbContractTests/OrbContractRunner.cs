@@ -158,6 +158,26 @@ public partial class OrbContractRunner : Node
                 .Invoke(null, null);
             ModelDb.Init();
             ModelDb.Inject(typeof(EvokeObserver));
+            string? minionPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_MINION_DLL");
+            Assembly? minion = minionPath is null ? null : System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
+                .LoadFromAssemblyPath(System.IO.Path.GetFullPath(minionPath));
+            if (minion is not null)
+            {
+                var minionMod = new Mod { path = "res://", manifest = new ModManifest { id = "MinionLib", affectsGameplay = true }, state = ModLoadState.Loaded,
+#if NINJASLAYER_CHANNEL_STABLE
+                    assembly = minion
+#else
+                    assemblies = [minion]
+#endif
+                };
+                ((List<Mod>)AccessTools.Field(typeof(ModManager), "_mods").GetValue(null)!).Add(minionMod);
+#if !NINJASLAYER_CHANNEL_STABLE
+                AssemblyInfo.ModMap![minion] = minionMod;
+#endif
+                ModelDb.Inject(minion.GetType("MinionLib.Powers.MinionGuardianPower", true)!);
+                if (System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_MINION_FIRST") == "1")
+                    new Harmony("MinionLib").CreateClassProcessor(minion.GetType("MinionLib.Powers.Patches.MinionGuardianOwnerDamageSuppressPatch", true)!).Patch();
+            }
             string? hextechPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_HEXTECH_DLL");
             Assembly? hextech = hextechPath is null ? null : System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(typeof(Creature).Assembly)!
                 .LoadFromAssemblyPath(System.IO.Path.GetFullPath(hextechPath));
@@ -205,6 +225,13 @@ public partial class OrbContractRunner : Node
                 typeof(ModPatcherExtensions).GetMethod("RegisterPatch")!
                     .MakeGenericMethod(product.GetType("NinjaSlayer.Code.Patches." + name, true)!).Invoke(null, [patcher]);
             Require(patcher.PatchAll(), "Orb patches failed to install.");
+            if (minion is not null)
+            {
+                await VerifyMinionDamage(minion);
+                GD.Print("NinjaSlayer orb product contracts passed.");
+                GetTree().Quit(0);
+                return;
+            }
             string? loadoutPath = System.Environment.GetEnvironmentVariable("NINJASLAYER_CONTRACT_LOADOUT_DLL");
             if (loadoutPath is not null)
             {
