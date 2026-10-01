@@ -1,5 +1,6 @@
 import { mkdir, writeFile, readFile, copyFile, cp } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { normalizeEvents } from './data.mjs';
 import { useCurrentCatalog } from './public-data.mjs';
 import { chartSchemaVersion, publishSnapshot, publicFeedback, readCatalog, readCurrentRelease } from './publish.mjs';
@@ -63,9 +64,15 @@ snapshot.reports = (snapshot.reports ?? []).filter(report => Date.parse(report.e
 snapshot.feedback = snapshot.feedback.filter(item => Date.parse(item.at) >= Date.now() - 180 * 86_400_000);
 await mkdir(output, { recursive: true });
 const template = await readFile(new URL('index.html', import.meta.url), 'utf8');
-await writeFile(join(output, 'index.html'), template.replaceAll('{{view}}', 'pages').replace(/<!-- ADMIN -->[\s\S]*?<!-- END ADMIN -->/g, ''));
+const clientFiles = ['app.js', 'styles.css', 'i18n.mjs', 'translations.mjs', 'public-data.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs'];
+const clientSources = await Promise.all(clientFiles.map(file => readFile(new URL(file, import.meta.url), 'utf8')));
+const assetVersion = createHash('sha256').update(JSON.stringify([template, ...clientSources])).digest('hex').slice(0, 16);
+// Version the module imports too: cached pre-redesign scripts reference controls that no longer exist.
+const versionClientLinks = source => source.replace(/(["'])\.\/([\w.-]+\.(?:js|mjs|css))\1/g,
+  (match, quote, file) => clientFiles.includes(file) ? `${quote}./${file}?v=${assetVersion}${quote}` : match);
+await writeFile(join(output, 'index.html'), versionClientLinks(template.replaceAll('{{view}}', 'pages').replace(/<!-- ADMIN -->[\s\S]*?<!-- END ADMIN -->/g, '')));
 await writeFile(join(output, 'data.json'), JSON.stringify(snapshot));
-for (const file of ['app.js', 'styles.css', 'i18n.mjs', 'translations.mjs', 'public-data.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) await copyFile(new URL(file, import.meta.url), join(output, file));
+for (const [index, file] of clientFiles.entries()) await writeFile(join(output, file), versionClientLinks(clientSources[index]));
 await mkdir(join(output, 'vendor'), { recursive: true });
 await copyFile(new URL('../node_modules/chart.js/dist/chart.umd.js', import.meta.url), join(output, 'vendor/chart.umd.js'));
 await copyFile(new URL('../node_modules/chart.js/LICENSE.md', import.meta.url), join(output, 'vendor/LICENSE.Chart.js.md'));

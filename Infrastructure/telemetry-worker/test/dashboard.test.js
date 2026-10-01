@@ -267,7 +267,17 @@ test('Pages artifact is standalone under the project subpath and accepts genuine
   assert.match(html, /data-view="pages"/);
   assert.match(html, /Content-Security-Policy/);
   assert.doesNotMatch(html, /connection-dialog|screenshot-link|logs-link|feedback-screenshot|\{\{view\}\}/);
-  for (const [, local] of html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) await readFile(join(output, local));
+  for (const [, local] of html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) await readFile(join(output, local.split('?')[0]));
+  const assetVersion = html.match(/app\.js\?v=([a-f0-9]{16})/)[1];
+  assert.ok(html.includes(`styles.css?v=${assetVersion}`));
+  // An existing visitor's unversioned module cache must not mix with the new page.
+  for (const file of (await readdir(output)).filter(file => /\.(?:js|mjs)$/.test(file))) {
+    const source = await readFile(join(output, file), 'utf8');
+    for (const [, path] of source.matchAll(/from\s+["'](\.\/[^"']+)["']/g)) {
+      assert.equal(new URL(path, 'https://example.test/NinjaSlayer/').searchParams.get('v'), assetVersion, `${file}: ${path}`);
+      await readFile(join(output, path.split('?')[0]));
+    }
+  }
   const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
   assert.equal(snapshot.catalog.length, 93);
   assert.equal(summarizePublic(snapshot).runs, 0);
