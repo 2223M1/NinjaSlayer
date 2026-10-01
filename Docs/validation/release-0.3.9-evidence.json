@@ -1,0 +1,218 @@
+{
+  "version": "0.3.9",
+  "sourceRevision": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+  "verifiedAt": "2026-10-01T03:06:26.485852+00:00",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "d062e0ffd4c8a49557836fd0838dbfd21b9fe0cceb9c37264f48e958eefdd08e",
+    "eb0d0fdfab1583aa0b553018c8bfd21cb4a917b8a537f7e2c8ac3a32aeceeeb2",
+    "c8ab6f760f0f9b8a291ef59e6b0dbc9234e4834d5bab91aee77086be4b3a56d5",
+    "5b0139effd672b06740d9cbd147d141ba66f38b82148726a259b0d355bbbac3d",
+    "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "747213ef8a9a2f4382e651b1754bbbf572503b534a6b00a7afa9a80727f39f48",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "21b19ec0eedd805886d27c2641ab73765c41f236dd9e21717877207b51b0a4cf",
+    "2ae882f929bef4278e8645e93dd402b37539340c6a260181ba6e1729bb90d9ea"
+  ],
+  "files": {
+    "Box2D.NET.dll": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "LICENSE.Box2D.NET.txt": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "ninjaslayer-variants.manifest": "d062e0ffd4c8a49557836fd0838dbfd21b9fe0cceb9c37264f48e958eefdd08e",
+    "NinjaSlayer.dll": "eb0d0fdfab1583aa0b553018c8bfd21cb4a917b8a537f7e2c8ac3a32aeceeeb2",
+    "NinjaSlayer.json": "c8ab6f760f0f9b8a291ef59e6b0dbc9234e4834d5bab91aee77086be4b3a56d5",
+    "NinjaSlayer.pck": "5b0139effd672b06740d9cbd147d141ba66f38b82148726a259b0d355bbbac3d",
+    "SHA256SUMS": "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+    "lib/0.107.1/compat-target.txt": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "lib/0.107.1/NinjaSlayer.dll": "747213ef8a9a2f4382e651b1754bbbf572503b534a6b00a7afa9a80727f39f48",
+    "lib/0.111.0/compat-target.txt": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "lib/0.111.0/NinjaSlayer.AutoAnthony.dll": "21b19ec0eedd805886d27c2641ab73765c41f236dd9e21717877207b51b0a4cf",
+    "lib/0.111.0/NinjaSlayer.dll": "2ae882f929bef4278e8645e93dd402b37539340c6a260181ba6e1729bb90d9ea"
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "changeNoteTimestamp": "1790823842",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityUnlisted",
+    "dependencies": [
+      3747602295
+    ]
+  },
+  "github": {
+    "pullRequest": 147,
+    "sourceCi": "https://github.com/2223M1/NinjaSlayer/actions/runs/36807523528",
+    "author": "2223M1",
+    "contributors": [
+      "2223M1"
+    ],
+    "squashBodyHasCoauthors": false,
+    "newReleaseCreated": false
+  },
+  "history": {
+    "githubReleases": 39,
+    "releaseAttachmentsUnchanged": true,
+    "steamEntriesRewritten": 56,
+    "backup": "release-0.3.9-history-backup.zip"
+  },
+  "validation": {
+    "logicTestsPassed": 375,
+    "websiteTestsPassed": 58,
+    "websiteTestsSkipped": 1,
+    "productContracts": [
+      "stable 0.107.1",
+      "preview 0.111.0"
+    ],
+    "live": [
+      {
+        "schemaVersion": 6,
+        "candidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "bundleVersion": "0.3.9",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "release038",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T02:55:36.6746037+00:00"
+      },
+      {
+        "schemaVersion": 6,
+        "candidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "bundleVersion": "0.3.9",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T02:58:04.9374274+00:00"
+      },
+      {
+        "schemaVersion": 6,
+        "candidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "bundleVersion": "0.3.9",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "release038",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T02:59:40.7940095+00:00"
+      },
+      {
+        "schemaVersion": 6,
+        "candidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "bundleVersion": "0.3.9",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T03:01:58.1032782+00:00"
+      },
+      {
+        "schemaVersion": 6,
+        "candidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "bundleVersion": "0.3.9",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "67d55db19ce9faeb91f6d8c593142448620ba05f71e1d826036a8900752777b7",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "runtime-content-export",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T03:04:29.9022519+00:00"
+      }
+    ],
+    "spinAudio": [
+      {
+        "SchemaVersion": 1,
+        "CandidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "Phase": "release038",
+        "Name": "release039.spin-audio",
+        "Sequence": 5,
+        "Status": "passed",
+        "ElapsedMilliseconds": 30008,
+        "Data": {
+          "loopWraps": 7,
+          "pauseDriftMs": 0,
+          "outro": true,
+          "nativeStateAtRelease": 2,
+          "released": true
+        }
+      },
+      {
+        "SchemaVersion": 1,
+        "CandidateSha": "3137538b2d87b9e7606ca3a6cc8dab0f7b5c5bfb",
+        "Phase": "release038",
+        "Name": "release039.spin-audio",
+        "Sequence": 5,
+        "Status": "passed",
+        "ElapsedMilliseconds": 29688,
+        "Data": {
+          "loopWraps": 7,
+          "pauseDriftMs": 0,
+          "outro": true,
+          "nativeStateAtRelease": 2,
+          "released": true
+        }
+      }
+    ]
+  },
+  "notRun": [
+    "Exhaustive four-player finisher/layout combinations",
+    "Full nine-mod combination regression",
+    "All interruption/pause permutations",
+    "New live Aether Reflux user-input handoff (covered by product contracts only)",
+    "New theater recordings",
+    "Full Japanese playthrough and all platforms"
+  ],
+  "website": {
+    "workerRedeployed": false,
+    "chartSchemaVersion": 1,
+    "initialFreshAggregationRuns": 67,
+    "catalogDeployment": "pending follow-up commit"
+  }
+}
