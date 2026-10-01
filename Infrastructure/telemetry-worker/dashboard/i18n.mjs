@@ -1,4 +1,5 @@
 import { messages } from './translations.mjs';
+import { siteCopy } from './site-copy.mjs';
 
 const inBrowser = typeof document !== 'undefined';
 const isAdmin = inBrowser && document.body?.dataset.view === 'admin';
@@ -13,7 +14,7 @@ if (inBrowser) {
 export const language = !isAdmin && supported.includes(preferred) ? preferred : 'zhs';
 export const locale = { zhs: 'zh-CN', eng: 'en-US', jpn: 'ja-JP' }[language];
 export function t(key, ...values) {
-  const text = language === 'zhs' ? key : messages[key]?.[language === 'eng' ? 0 : 1] ?? key;
+  const text = (isAdmin ? undefined : siteCopy[key]?.[language]) ?? (language === 'zhs' ? key : messages[key]?.[language === 'eng' ? 0 : 1] ?? key);
   return String(text).replace(/\{(\d+)\}/g, (token, index) => values[index] === undefined ? token : String(values[index]));
 }
 export function tr(parts, ...values) {

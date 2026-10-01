@@ -1,0 +1,211 @@
+[
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 5,
+    "Status": "passed",
+    "ElapsedMilliseconds": 18720,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 1,
+      "confirm": "(1870, 813)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": true
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 6,
+    "Status": "passed",
+    "ElapsedMilliseconds": 19974,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 1,
+      "pileOpened": false,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 7,
+    "Status": "passed",
+    "ElapsedMilliseconds": 20974,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 2,
+      "confirm": "(1870, 813)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": true
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 8,
+    "Status": "passed",
+    "ElapsedMilliseconds": 22224,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 2,
+      "pileOpened": true,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 9,
+    "Status": "passed",
+    "ElapsedMilliseconds": 23074,
+    "Data": {
+      "speed": "Fast",
+      "clicks": 1,
+      "confirm": "(1870, 813)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": true
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 10,
+    "Status": "passed",
+    "ElapsedMilliseconds": 24023,
+    "Data": {
+      "speed": "Fast",
+      "clicks": 1,
+      "pileOpened": false,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 11,
+    "Status": "passed",
+    "ElapsedMilliseconds": 24874,
+    "Data": {
+      "speed": "Fast",
+      "clicks": 2,
+      "confirm": "(1870, 813)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": true
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 12,
+    "Status": "passed",
+    "ElapsedMilliseconds": 25823,
+    "Data": {
+      "speed": "Fast",
+      "clicks": 2,
+      "pileOpened": true,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 13,
+    "Status": "passed",
+    "ElapsedMilliseconds": 26574,
+    "Data": {
+      "speed": "Instant",
+      "clicks": 1,
+      "confirm": "(1870, 813)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": true
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 14,
+    "Status": "passed",
+    "ElapsedMilliseconds": 26707,
+    "Data": {
+      "speed": "Instant",
+      "clicks": 1,
+      "pileOpened": false,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 15,
+    "Status": "passed",
+    "ElapsedMilliseconds": 27457,
+    "Data": {
+      "speed": "Instant",
+      "clicks": 2,
+      "confirm": "(1870, 813)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": true
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 16,
+    "Status": "passed",
+    "ElapsedMilliseconds": 27607,
+    "Data": {
+      "speed": "Instant",
+      "clicks": 2,
+      "pileOpened": true,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.fake-merchant",
+    "Sequence": 17,
+    "Status": "passed",
+    "ElapsedMilliseconds": 28684,
+    "Data": {
+      "containerScale": "(1.75, 1.75)",
+      "portraitScale": "(0.5714286, 0.5714286)"
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "4f97293c07e217efa7e9e349c4386866525403e8",
+    "Phase": "release100",
+    "Name": "release100.completed",
+    "Sequence": 18,
+    "Status": "passed",
+    "ElapsedMilliseconds": 28684,
+    "Data": null
+  }
+]

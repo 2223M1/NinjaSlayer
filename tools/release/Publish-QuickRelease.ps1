@@ -60,7 +60,6 @@ if ($SkipGitHub) {
     }
     $workshopParameters = @{
         Version = $Version
-        ReleaseNoteFile = $ReleaseNoteFile
         SourceRevision = $SourceRevision
         Confirm = $true
     }

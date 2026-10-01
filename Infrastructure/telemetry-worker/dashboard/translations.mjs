@@ -1,4 +1,6 @@
 export const messages = {
+  "无法连接战报服务。请检查网络或代理的 DNS 设置，然后重试。": ["Cannot connect to the replay service. Check your network or proxy DNS settings, then retry.", "戦報サービスに接続できません。ネットワークやプロキシのDNS設定を確認して再試行してください。"],
+  "重试读取战报": ["Retry replay", "戦報を再読み込み"],
   "平衡建议": [
     "Balance suggestion",
     "バランス"

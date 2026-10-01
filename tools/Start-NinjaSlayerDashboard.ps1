@@ -24,5 +24,5 @@ if (!$running) {
 }
 $view = Invoke-RestMethod "$url/api/view" -TimeoutSec 5
 if ($view.application -ne 'NinjaSlayerDashboard') { throw "端口 $port 已被其他应用占用。" }
-if (!$NoBrowser) { Start-Process $url }
-Write-Output $url
+if (!$NoBrowser) { Start-Process "$url/admin" }
+Write-Output "$url/admin"
