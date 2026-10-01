@@ -132,12 +132,31 @@ public partial class OrbContractRunner
 
     private static async Task VerifyScryAndSly()
     {
+        foreach (var (selected, exhaust) in new[] { (0, false), (1, false), (3, false), (3, true) })
+        {
+            using var combat = new OrbCombat();
+            var cards = Enumerable.Range(0, 3).Select(_ => AddCard<DefendIronclad>(combat, PileType.Draw)).ToArray();
+            var draw = PileType.Draw.GetPile(combat.Player);
+            int removed = 0;
+            int finished = 0;
+            int contentsChanged = 0;
+            draw.CardRemoved += _ => removed++;
+            draw.CardRemoveFinished += () => finished++;
+            draw.ContentsChanged += () => contentsChanged++;
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(_ => cards.Take(selected).ToArray()));
+            await ScryCmd.Execute(Choice, combat.Player, 3, exhaust);
+            Require(draw.Cards.Count == 3 - selected && removed == selected && finished == selected
+                && contentsChanged == selected,
+                $"Scry must notify native draw-pile views once per removed card: selected={selected}, exhaust={exhaust}, removed={removed}, finished={finished}, changed={contentsChanged}.");
+        }
         using (var combat = new OrbCombat())
         {
             var judge = AddCard<ReadAhead>(combat);
             var sly = AddCard<ShurikenCreation>(combat, PileType.Draw);
             var discarded = AddCard<DefendIronclad>(combat, PileType.Draw);
             var nested = AddCard<DefendIronclad>(combat, PileType.Draw);
+            int drawRemoved = 0;
+            PileType.Draw.GetPile(combat.Player).CardRemoveFinished += () => drawRemoved++;
             await AddStock(combat.Player, 3);
             int selection = 0;
             using var selector = CardSelectCmd.UseSelector(new SelectCards(options =>
@@ -152,6 +171,7 @@ public partial class OrbContractRunner
             await CardCmd.AutoPlay(Choice, judge, null);
             Require(selection == 2 && combat.Stock == 3 && combat.Enemy.CurrentHp == 982,
                 "Scry/Sly must dispatch three discards and then gain three stock exactly once.");
+            Require(drawRemoved == 3, "Nested Scry must update the native draw-pile counter for all three removals.");
             Require(combat.Player.Creature.Block == 8 && combat.Player.Creature.GetPower<EvokeObserver>()!.Discarded == 3,
                 "ReadAhead must count its two discards only; discard powers must also see the nested discard.");
         }

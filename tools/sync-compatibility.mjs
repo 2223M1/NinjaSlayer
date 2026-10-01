@@ -91,8 +91,8 @@ function validateManifest(value) {
     throw new Error('ritsuLibVersion must be an exact SemVer core.');
   }
   if (!/^\d+$/.test(value.workshop?.itemId ?? '')
-      || !['private', 'unlisted'].includes(value.workshop?.visibility)) {
-    throw new Error('workshop must declare one numeric private or unlisted item.');
+      || !['public', 'private', 'unlisted'].includes(value.workshop?.visibility)) {
+    throw new Error('workshop must declare one numeric public, private or unlisted item.');
   }
   const spineFiles = value.spineExtension?.windowsFiles;
   if (!Array.isArray(spineFiles) || spineFiles.length !== 3) {

@@ -289,15 +289,23 @@ public partial class OrbContractRunner
             {
                 SaveManager.Instance.PrefsSave.FastMode = mode;
                 ulong start = Time.GetTicksUsec();
-                await (Task)AccessTools.Method(typeof(SlowAttackAnimation), "PlayIai").Invoke(null, [creature])!;
+                // Tween advances on Godot's process delta, not the wall clock. Summing the
+                // same frame clock avoids rejecting the correct gate due to timer jitter.
+                double elapsed = 0;
+                void CountFrame() => elapsed += GetProcessDeltaTime();
+                GetTree().ProcessFrame += CountFrame;
+                try
+                {
+                    await (Task)AccessTools.Method(typeof(SlowAttackAnimation), "PlayIai").Invoke(null, [creature])!;
+                }
+                finally { GetTree().ProcessFrame -= CountFrame; }
                 if (mode != FastModeType.Instant)
                 {
-                    double elapsed = (Time.GetTicksUsec() - start) / 1000000d;
                     // A new Tween consumes the current frame's delta, even when created mid-frame.
                     double frameSeconds = Math.Max(1d / 60d, GetProcessDeltaTime());
                     double gate = mode == FastModeType.Normal ? .5d : .25d;
                     Require(elapsed + frameSeconds >= gate && elapsed < gate + 2d * frameSeconds,
-                        $"Iai gate was {elapsed:F4}s in {mode} (frame {frameSeconds:F4}s).");
+                        $"Iai gate was {elapsed:F4}s in {mode} (frame {frameSeconds:F4}s, wall {(Time.GetTicksUsec() - start) / 1000000d:F4}s).");
                     Require(Math.Abs((rig.Position.X - baseline.X) * direction - 120f) < 1f,
                         $"Iai released damage away from the 120px peak: {rig.Position - baseline}.");
                     await ToSignal(GetTree().CreateTimer(.27), SceneTreeTimer.SignalName.Timeout);

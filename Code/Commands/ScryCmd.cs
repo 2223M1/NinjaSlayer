@@ -67,8 +67,9 @@ public static class ScryCmd
         }
         else
         {
-            // Discard callbacks may draw or shuffle before the rest of the batch is processed.
-            await CardPileCmd.Add(cardsToDiscard, PileType.Play, skipVisuals: true);
+            // Move the batch out before discard callbacks can draw it again. Keep native
+            // pile notifications: skipVisuals also suppresses draw-pile counter updates.
+            await CardPileCmd.Add(cardsToDiscard, PileType.Play);
             int historyStart = CombatManager.Instance.History.Entries.Count();
             await CardCmd.Discard(choiceContext, cardsToDiscard);
             discardedAmount = CombatManager.Instance.History.Entries.Skip(historyStart).OfType<CardDiscardedEntry>()

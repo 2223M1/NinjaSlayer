@@ -4,7 +4,7 @@
   "ritsuLibVersion": "0.5.12",
   "workshop": {
     "itemId": "3776911445",
-    "visibility": "unlisted"
+    "visibility": "public"
   },
   "spineExtension": {
     "windowsFiles": [

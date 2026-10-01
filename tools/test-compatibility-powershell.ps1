@@ -61,9 +61,9 @@ try {
 
     $compatibility = Read-NinjaSlayerCompatibility `
         -Path (Join-Path $repositoryRoot 'eng\compatibility.json')
-    if ([string]$compatibility.workshop.visibility -cne 'unlisted' -or
+    if ([string]$compatibility.workshop.visibility -cne 'public' -or
         [string]$compatibility.workshop.itemId -notmatch '^\d+$') {
-        throw 'Universal Workshop compatibility must resolve to one unlisted numeric item.'
+        throw 'Universal Workshop compatibility must resolve to one public numeric item.'
     }
     foreach ($channelName in @('stable', 'preview')) {
         $profile = Get-NinjaSlayerCompatibilityChannel `

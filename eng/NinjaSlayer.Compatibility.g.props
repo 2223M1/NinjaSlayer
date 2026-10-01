@@ -5,7 +5,7 @@
     <NinjaSlayerHostChannel Condition="'$(NinjaSlayerHostChannel)' == ''">preview</NinjaSlayerHostChannel>
     <NinjaSlayerRitsuLibVersion>0.5.12</NinjaSlayerRitsuLibVersion>
     <NinjaSlayerWorkshopItemId>3776911445</NinjaSlayerWorkshopItemId>
-    <NinjaSlayerWorkshopVisibility>unlisted</NinjaSlayerWorkshopVisibility>
+    <NinjaSlayerWorkshopVisibility>public</NinjaSlayerWorkshopVisibility>
     <NinjaSlayerCompatibilityManifest>$(MSBuildThisFileDirectory)compatibility.json</NinjaSlayerCompatibilityManifest>
   </PropertyGroup>
 
