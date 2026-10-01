@@ -41,3 +41,8 @@
 - After publishing and re-downloading a release to verify all files, remove redundant local release packages, superseded build outputs and completed test caches. Do not retain a full local copy for every version.
 - Keep compact release evidence, source and artifact hashes, and validation summaries. Preserve source files, uncommitted work, intentional archives, production assets, normal saves, and the reference runtimes still needed for supported-host validation.
 - Inspect active processes and resolved paths before deleting generated directories. Use the app's archive-worktree tool for eligible managed checkouts; never shell-delete a worktree or a parent containing one.
+
+## Workshop publication policy
+
+- Every automated Workshop upload must use exactly `我们修复了一些问题，增添了一些内容，调整了一些东西。` as its update note. Detailed Workshop notes are written manually by the owner; never generate or overwrite them during other maintenance.
+- The next game release after 0.3.9 is **1.0.0**. Website-only changes do not bump the game version.

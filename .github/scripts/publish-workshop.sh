@@ -6,7 +6,6 @@ set -euo pipefail
 : "${CONTENT_DIR:?CONTENT_DIR is required}"
 : "${PREVIEW_FILE:?PREVIEW_FILE is required}"
 : "${STEAMCMD:?STEAMCMD is required}"
-: "${CHANGE_NOTE_FILE:?CHANGE_NOTE_FILE is required}"
 : "${WORKSHOP_ITEM_ID:?WORKSHOP_ITEM_ID is required}"
 : "${WORKSHOP_VISIBILITY:?WORKSHOP_VISIBILITY is required}"
 
@@ -22,10 +21,9 @@ test -d "$CONTENT_DIR/lib" || { echo "Missing release artifact directory: lib"; 
 test -f "$PREVIEW_FILE" || { echo "Missing Workshop preview image"; exit 1; }
 test "$(stat -c%s "$PREVIEW_FILE")" -le 1048576 || { echo "Workshop preview exceeds 1 MiB"; exit 1; }
 test -x "$STEAMCMD" || { echo "SteamCMD is unavailable"; exit 1; }
-test -f "$CHANGE_NOTE_FILE" || { echo "Workshop change note is unavailable"; exit 1; }
 
-CHANGE_NOTE="$(tr '\r\n' '  ' < "$CHANGE_NOTE_FILE" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
-test -n "$CHANGE_NOTE" || { echo "Workshop change note is empty"; exit 1; }
+# Detailed Workshop notes are edited manually by the owner.
+CHANGE_NOTE='我们修复了一些问题，增添了一些内容，调整了一些东西。'
 
 steam_home="${STEAM_HOME:-$HOME/Steam}"
 mkdir -p "$steam_home/config"

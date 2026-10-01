@@ -98,13 +98,18 @@ export function renderReports(snapshot, filters, onCard) {
   }
 }
 
+let reportRequest;
 async function openReport(report, onCard, snapshot) {
+  reportRequest?.abort();
+  const controller = new AbortController();
+  reportRequest = controller;
   const panel = $("#report-detail");
   panel.hidden = false;
   panel.replaceChildren(node("p", t("咿呀——！战报读取中…")));
   try {
     const response = await fetch(
       `${ENDPOINT}/observatory/replays/${report.id}/${report.contributor}`,
+      { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]) },
     );
     if (!response.ok)
       throw new Error(
@@ -113,6 +118,7 @@ async function openReport(report, onCard, snapshot) {
           : t("咕哇——！战报读不出来，等会儿再试试。"),
       );
     const data = await response.json();
+    if (controller.signal.aborted) return;
     if (Date.parse(data.expires) <= Date.now())
       throw new Error(t("南无三！这份战报已经过期了。"));
     const url = new URL(location.href);
@@ -164,6 +170,7 @@ async function openReport(report, onCard, snapshot) {
       state = node("div", undefined, "replay-state");
     panel.append(controls, current, state);
     const catalog = await loadCatalog(data.version);
+    if (controller.signal.aborted) return;
     if (catalog && !catalog.languages[language])
       panel.append(node("p", t("这个版本还没有所选语言的卡牌资料，先用英文顶一下。"), "notice"));
     const name = (id) => {
@@ -426,6 +433,11 @@ async function openReport(report, onCard, snapshot) {
     }
     panel.append(route);
   } catch (error) {
-    panel.replaceChildren(node("p", error.message, "notice"));
+    if (controller.signal.aborted) return;
+    const message = error instanceof TypeError || error.name === 'TimeoutError'
+      ? t('无法连接战报服务。请检查网络或代理的 DNS 设置，然后重试。') : error.message;
+    const retry = node('button', t('重试读取战报'));
+    retry.onclick = () => openReport(report, onCard, snapshot);
+    panel.replaceChildren(node("p", message, "notice"), retry);
   }
 }

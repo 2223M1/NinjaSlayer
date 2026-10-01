@@ -262,7 +262,7 @@ async function buildPages(t, { previous, failTelemetry = false, rows = [] } = {}
 
 test('Pages artifact is standalone under the project subpath and accepts genuinely empty fresh telemetry', async t => {
   const output = await buildPages(t);
-  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'styles.css', 'translations.mjs', 'vendor']);
+  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'site-copy.mjs', 'styles.css', 'translations.mjs', 'vendor']);
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.match(html, /data-view="pages"/);
   assert.match(html, /Content-Security-Policy/);

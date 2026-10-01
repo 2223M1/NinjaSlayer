@@ -157,6 +157,8 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerEnemyAttackVfxBaselinePatch>();
             requiredPatcher.RegisterPatch<TargetedRelicFlashAnchorPatch>();
             requiredPatcher.RegisterPatch<OrobasSeaGlassCharacterPatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFakeMerchantScalePatch>();
+            requiredPatcher.RegisterPatch<ScryConfirmLayoutPatch>();
             requiredPatcher.RegisterPatch<CardPlayResolutionBeforePatch>();
             requiredPatcher.RegisterPatch<CardPlayResolutionAfterPatch>();
             requiredPatcher.RegisterPatch<CardResolutionCleanupPatch>();

@@ -7,6 +7,7 @@ on:
       - '.github/workflows/observatory.yml'
       - 'Infrastructure/telemetry-worker/**'
       - 'Website/content/**'
+      - 'Website/site-copy.json'
   workflow_dispatch:
   schedule:
     - cron: '7,22,37,52 * * * *'

@@ -26,6 +26,26 @@ pwsh -NoProfile -File tools/Start-NinjaSlayerDashboard.ps1
 
 ## 连接
 
+启动后默认打开 `http://127.0.0.1:4178/admin`。旧统计管理页保留在 `/`，可从顶部“统计与连接设置”进入，继续提供导入、PostHog 连接、机制表和 CSV。
+
+### 本机来信与附件
+
+点击“同步玩家反馈”，在左侧选择来信。可查看完整反馈与环境信息、原尺寸截图、下载完整元数据和日志 ZIP；“查看日志包内文件”列出所有成员，支持单文件下载及文本预览。文本超过 512 KiB 时明确提示截断，下载仍返回完整内容。ZIP 只在内存中读取，不把成员路径写入磁盘；加密、无效路径和过大压缩包明确拒绝预览，原始包仍可下载。附件每次读取均先验证完成标记与元数据归属，不创建公开附件接口。
+
+### 网页文案
+
+`/admin` 下方可搜索并编辑中、英、日文案，使用“保存草稿 → 预览已保存草稿 → 发布到官网”。只支持纯文本，必须保留 `{0}` 等动态占位符；卡牌效果和卡图仍来自运行时目录。
+
+- 草稿保存在忽略目录 `build/dashboard/site-copy-draft.json`，重启后仍在；公开源码为 `Website/site-copy.json`。
+- `/preview/` 使用已保存草稿和当前官网公开数据，预览不包含管理控件或私有附件。三语切换与官网一致。
+- 发布使用本机 `gh` 登录，只在新 `codex/site-copy-*` 分支修改文案 JSON 并创建 PR，不暂存或切换本地工作树。
+- 点击“检查 CI 并继续发布”：只有 PR 最新 SHA 未改变、仅一个文案文件、必需 `validate` 成功且分支保护允许时才 squash 合并。CI 尚未完成时保留 PR，稍后再点；后台重启会恢复 `build/dashboard/copy-publication.json` 中的进度。
+- 合并后仍须等待 GitHub Pages 部署，界面不会把“PR 合并”冒充“官网部署完成”。不发布游戏包，不修改 Workshop，不上传私有反馈。
+
+### 战报连接诊断
+
+战报详情仍从 `https://telemetry.feixingwawa.cn/observatory/replays/...` 读取。读取有 30 秒超时和重试按钮，切换战报会取消旧请求，旧结果不能覆盖新选择。本机若出现 TLS 握手失败而真实 DNS 地址访问成功，应修复代理对此域名的 fake-IP 解析；不要关闭 TLS 验证或把 CDN 地址写死在网站里。
+
 - F2 反馈复用这个 Worker 的 Wrangler 登录；首次需要在 Worker 目录运行 `npx wrangler login`。索引和正文读取 KV，截图和日志读取私有 R2，网页不提供删除接口。
 - 对局数据在“连接设置”填写 PostHog 区域、数字项目 ID 和具有该项目查询权限的个人 API key。游戏使用的 ingestion key 无读取权限。
 - 连接凭据只存在于本次 Node 进程内，不发送给浏览器、不写入项目或 localStorage。重启后重新输入；也可通过 `POSTHOG_QUERY_HOST`、`POSTHOG_PROJECT_ID`、`POSTHOG_PERSONAL_API_KEY` 环境变量提供。

@@ -10,7 +10,6 @@ param(
     [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')]
     [string] $Version,
 
-    [string] $ReleaseNoteFile = 'Workshop\change-note.md',
     [string] $WorkshopUploadRoot,
     [string] $StableDataDir,
     [string] $PreviewDataDir,
@@ -39,6 +38,9 @@ function Invoke-Native {
 
 function Get-NextWorkshopVersion([string] $releaseDirectory) {
     $versions = [Collections.Generic.List[version]]::new()
+    # This catalog only advances after verifying the downloaded Workshop package.
+    $published = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../Website/content/current.json') -Raw | ConvertFrom-Json
+    $versions.Add([version]$published.version)
     $tags = & git tag --list 'v*'
     if ($LASTEXITCODE -ne 0) {
         throw 'Unable to inspect local release tags.'
@@ -65,10 +67,11 @@ function Get-NextWorkshopVersion([string] $releaseDirectory) {
     }
 
     if ($versions.Count -eq 0) {
-        return '0.1.0'
+        return '1.0.0'
     }
 
     [version] $latest = $versions | Sort-Object -Descending | Select-Object -First 1
+    if ($latest -lt [version]'1.0.0') { return '1.0.0' }
     return "$($latest.Major).$($latest.Minor).$($latest.Build + 1)"
 }
 
@@ -103,19 +106,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 }
 $tag = "v$Version"
 
-$releaseNotePath = if ([IO.Path]::IsPathRooted($ReleaseNoteFile)) {
-    [IO.Path]::GetFullPath($ReleaseNoteFile)
-}
-else {
-    [IO.Path]::GetFullPath((Join-Path $repositoryRoot $ReleaseNoteFile))
-}
-if (-not (Test-Path -LiteralPath $releaseNotePath -PathType Leaf)) {
-    throw "Release note file is missing: $releaseNotePath"
-}
-$releaseNote = (Get-Content -LiteralPath $releaseNotePath -Raw -Encoding UTF8).Trim()
-if ([string]::IsNullOrWhiteSpace($releaseNote)) {
-    throw 'Release note must contain at least one sentence.'
-}
+$releaseNote = '我们修复了一些问题，增添了一些内容，调整了一些东西。'
 
 if ([string]::IsNullOrWhiteSpace($WorkshopUploadRoot)) {
     $workspaceRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..'))

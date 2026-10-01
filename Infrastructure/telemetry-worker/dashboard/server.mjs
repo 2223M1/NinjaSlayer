@@ -8,10 +8,14 @@ import { readCatalog, readCurrentRelease, publishSnapshot, publicFeedback } from
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
 import { loadFeedback, readCompletedFeedback, readFeedbackObject } from '../scripts/feedback-reader.js';
 import { UUID_PATTERN } from '../src/validation.js';
+import { copyDefaults, readDraft, readCopy, saveCopy, draftCopyPath, copyModule } from './copy-store.mjs';
+import { publishCopy, continuePublication, readPublication } from './copy-publisher.mjs';
+import { inspectFeedbackZip } from './feedback-files.mjs';
 
 const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
 for (const file of ['i18n.mjs', 'translations.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
 publicFiles.set('/vendor/chart.umd.js', ['../node_modules/chart.js/dist/chart.umd.js', 'text/javascript']);
+for (const [path, file, type] of [['/admin', 'admin.html', 'text/html'], ['/admin.js', 'admin.js', 'text/javascript'], ['/admin.css', 'admin.css', 'text/css']]) publicFiles.set(path, [file, type]);
 
 async function body(request) {
   const chunks = [];
@@ -24,7 +28,7 @@ async function body(request) {
   return parseData(Buffer.concat(chunks).toString('utf8'));
 }
 
-export async function createDashboardServer() {
+export async function createDashboardServer({ feedbackReader = { loadFeedback, readCompletedFeedback, readFeedbackObject }, draftPath = draftCopyPath } = {}) {
   const catalog = await readCatalog();
   for (const name of await readdir(new URL('assets/', import.meta.url))) {
     const type = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif' }[name.split('.').at(-1)];
@@ -34,6 +38,8 @@ export async function createDashboardServer() {
   let telemetry = { runs: [], rejected: 0, duplicates: 0 }, feedback = [], feedbackWarnings = [];
   const sources = { telemetry: { state: 'unconnected' }, feedback: { state: 'unloaded' } };
   let refreshing = null;
+  let editing = false;
+  let zipCache = null, zipCacheTimer;
 
   async function refresh() {
     const jobs = await Promise.allSettled([
@@ -41,7 +47,7 @@ export async function createDashboardServer() {
         telemetry = normalizeEvents(result.results);
         sources.telemetry = { state: 'ready', label: 'PostHog', at: new Date().toISOString(), truncated: result.truncated };
       }) : Promise.resolve(),
-      loadFeedback().then(result => {
+      feedbackReader.loadFeedback().then(result => {
         feedback = result.feedback;
         feedbackWarnings = result.warnings;
         sources.feedback = { state: 'ready', label: 'Cloudflare', at: new Date().toISOString() };
@@ -65,16 +71,41 @@ export async function createDashboardServer() {
       return;
     }
     const url = new URL(request.url, `http://${expectedHost}`);
+    const preview = url.pathname.startsWith('/preview/');
+    if (preview) url.pathname = url.pathname.slice('/preview'.length);
     const send = (status, data, type = 'application/json; charset=utf-8', extra = {}) => {
       response.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://telemetry.feixingwawa.cn; object-src 'none'; frame-ancestors 'none'; base-uri 'none'", ...extra });
       response.end(type.startsWith('application/json') ? JSON.stringify(data) : data);
     };
     try {
-      if (request.method === 'GET' && publicFiles.has(url.pathname)) {
+      if (preview && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin'))) {
+        send(404, { error: '预览不包含管理接口。' });
+      } else if (request.method === 'GET' && url.pathname === '/site-copy.mjs') {
+        send(200, copyModule(preview ? await readDraft(draftPath) : await readCopy()), 'text/javascript; charset=utf-8');
+      } else if (preview && request.method === 'GET' && url.pathname === '/data.json') {
+        const remote = await fetch('https://2223m1.github.io/NinjaSlayer/data.json', { signal: AbortSignal.timeout(30000) });
+        if (!remote.ok) throw new Error('无法读取官网快照。');
+        send(200, await remote.json());
+      } else if (request.method === 'GET' && publicFiles.has(url.pathname)) {
         const [file, type] = publicFiles.get(url.pathname);
         const bytes = await readFile(new URL(file, import.meta.url));
-        send(200, file === 'index.html' ? bytes.toString('utf8').replaceAll('{{view}}', 'admin') : bytes, type.startsWith('image/') ? type : `${type}; charset=utf-8`);
+        let content = bytes;
+        if (file === 'index.html') {
+          content = bytes.toString('utf8').replaceAll('{{view}}', preview ? 'pages' : 'admin');
+          if (preview) content = content.replace(/<!-- ADMIN -->[\s\S]*?<!-- END ADMIN -->/g, '');
+        }
+        send(200, content, type.startsWith('image/') ? type : `${type}; charset=utf-8`);
+      } else if (request.method === 'GET' && url.pathname === '/api/copy') {
+        send(200, { defaults: copyDefaults, draft: await readDraft(draftPath), publication: await readPublication() });
+      } else if (request.method === 'POST' && ['/api/copy', '/api/copy/publish', '/api/copy/continue'].includes(url.pathname)) {
+        if (editing) { send(409, { error: '文案正在保存或发布，请稍候。' }); return; }
+        editing = true;
+        try {
+          if (url.pathname === '/api/copy') send(200, await saveCopy(draftPath, await body(request)));
+          else if (url.pathname.endsWith('/publish')) send(200, await publishCopy(await readDraft(draftPath)));
+          else send(200, await continuePublication());
+        } finally { editing = false; }
       } else if (request.method === 'GET' && /^\/content\/(images\/[a-f0-9]{64}\.webp|versions\/\d+\.\d+\.\d+\/catalog\.json)$/.test(url.pathname)) {
         const bytes = await readFile(new URL('../../../Website' + url.pathname, import.meta.url));
         send(200, url.pathname.endsWith('.json') ? JSON.parse(bytes) : bytes, url.pathname.endsWith('.json') ? 'application/json' : 'image/webp');
@@ -106,10 +137,40 @@ export async function createDashboardServer() {
         send(200, { ok: true, runs: imported.runs.length });
       } else if (request.method === 'GET' && url.pathname.startsWith('/api/feedback/')) {
         const [, , , id, kind] = url.pathname.split('/');
-        if (!UUID_PATTERN.test(id ?? '') || !['screenshot', 'logs'].includes(kind)) { send(404, { error: '未找到此附件。' }); return; }
-        const metadata = await readCompletedFeedback(id);
-        const bytes = kind === 'screenshot' ? await readFeedbackObject(metadata.storage.screenshot.key)
-          : Buffer.concat(await Promise.all(metadata.storage.logs.chunks.map(readFeedbackObject)));
+        if (!UUID_PATTERN.test(id ?? '') || url.pathname.split('/').length !== 5 || !['screenshot', 'logs', 'metadata', 'files', 'file'].includes(kind)) { send(404, { error: '未找到此附件。' }); return; }
+        let metadata;
+        try { metadata = await feedbackReader.readCompletedFeedback(id); }
+        catch { throw new Error('无法核验此反馈，请检查 Cloudflare 登录和网络，或确认附件尚未过期。'); }
+        if (kind === 'metadata') { send(200, metadata); return; }
+        const zipKey = kind === 'screenshot' ? null : JSON.stringify(metadata.storage.logs.chunks);
+        let bytes;
+        try {
+          bytes = kind === 'screenshot' ? await feedbackReader.readFeedbackObject(metadata.storage.screenshot.key)
+            : zipCache?.key === zipKey ? zipCache.bytes : Buffer.concat(await Promise.all(metadata.storage.logs.chunks.map(feedbackReader.readFeedbackObject)));
+        } catch { throw new Error('附件下载失败，请检查网络后重试。已过期的附件无法恢复。'); }
+        // Real feedback contains large crash dumps. Re-downloading the same archive per member
+        // timed out in local verification. Keep one bounded archive briefly, after revalidating
+        // its completion marker on every request, so revoked/expired feedback is never reused.
+        if (zipKey !== null && zipCache?.key !== zipKey && bytes.length <= 64 * 1024 * 1024) {
+          clearTimeout(zipCacheTimer);
+          zipCache = { key: zipKey, bytes };
+          zipCacheTimer = setTimeout(() => { zipCache = null; }, 5 * 60 * 1000);
+          zipCacheTimer.unref();
+        }
+        if (kind === 'files') { send(200, await inspectFeedbackZip(bytes)); return; }
+        if (kind === 'file') {
+          const index = url.searchParams.get('index');
+          if (!/^\d{1,4}$/.test(index ?? '')) throw new Error('附件编号无效。');
+          const file = await inspectFeedbackZip(bytes, Number(index));
+          if (url.searchParams.has('download')) {
+            send(200, file.bytes, 'application/octet-stream', { 'Content-Disposition': `attachment; filename="attachment-${index}.bin"; filename*=UTF-8''${encodeURIComponent(file.name.split('/').at(-1)).replaceAll("'", '%27')}` });
+          } else {
+            const text = file.bytes.subarray(0, 512 * 1024);
+            send(200, { name: file.name, size: file.size, truncated: text.length < file.bytes.length,
+              binary: text.includes(0), text: text.includes(0) ? '' : text.toString('utf8') });
+          }
+          return;
+        }
         send(200, bytes, kind === 'screenshot' ? 'image/png' : 'application/zip',
           { 'Content-Disposition': `${kind === 'screenshot' ? 'inline' : 'attachment'}; filename="${id}.${kind === 'screenshot' ? 'png' : 'zip'}"` });
       } else send(404, { error: '未找到此页面。' });
