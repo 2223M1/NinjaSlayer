@@ -54,6 +54,10 @@ Press **F2** in game to send me a letter, with a screenshot and logs attached. Y
 
 Curious what everyone picks and where runs fall? Visit [Ninja Slayer Intel](https://2223m1.github.io/NinjaSlayer/?lang=eng). The data comes from players who chose to share; you can turn it off in the mod settings. See the [privacy notice](Docs/privacy.md#english).
 
+## Discord community
+
+[Join the community](https://discord.gg/3Dn9fxwF) for updates, build discussions, bug reports and suggestions. Chinese, English, Japanese and other languages are welcome.
+
 ## Author
 
 Made by 波比梓狸 ([2223M1](https://github.com/2223M1)) together with a few AI assistants. Thanks to the authors of [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) and everyone who shares tutorials and helps with debugging.

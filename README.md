@@ -45,6 +45,10 @@
 
 想看大家都抓什么牌、倒在哪一层？去[忍杀情报站](https://2223m1.github.io/NinjaSlayer/)。数据来自自愿分享的玩家，不想分享的话在模组设置里关掉就行，详见[隐私说明](Docs/privacy.md)。
 
+## Discord 社区
+
+[加入玩家社区](https://discord.gg/3Dn9fxwF)，交流打法、查看更新、反馈问题与建议。支持中文、English、日本語及其他语言交流。
+
 ## 作者
 
 波比梓狸（[2223M1](https://github.com/2223M1)），和几位 AI 助手一起做的。谢谢 [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) 的作者，以及分享教程、帮忙排错的各位。
