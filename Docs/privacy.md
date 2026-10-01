@@ -20,6 +20,8 @@
 
 ## F2 反馈
 
+本机档案首次使用忍者杀手通关标准模式后，会打开一次反馈框；已有通关记录不补弹。打开不会发送，关闭后不再自动提示，也不改变统计分享开关。公开反馈会显示解决状态、作者回应及更新时间；这些信息与反馈一同到期或删除。
+
 发送前会再次确认。反馈正文、分类、时间及游戏和模组版本会公开，请勿填写个人隐私。截图和游戏日志只供 Mod 作者查看，不会公开，也不会发送给 MegaCrit。日志可能包含设备、存档和已安装 Mod 的信息。
 
 反馈最多保留180天，空间不足时可能提前清理。删除或到期后，网页会在下次成功更新时移除相应条目。已经被他人下载的公开反馈或战报无法收回。
@@ -46,6 +48,8 @@ Reports are saved locally and queued when the run ends. Queued does not mean rec
 
 ### F2 feedback
 
+The first standard-mode Ninja Slayer victory on a local profile opens the feedback form once. Profiles with an earlier victory are not prompted. Opening sends nothing, dismissing prevents another automatic prompt, and statistics consent is unchanged. Public feedback shows its resolution status, author response and update time; these expire or are deleted with the submission.
+
 A confirmation appears before sending. The message, category, time, and game and mod versions will be public. Do not include personal information. Screenshots and game logs are available only to the mod author, not the public or MegaCrit. Logs may include device, save and installed-mod information.
 
 Feedback is kept for up to 180 days and may be removed earlier if storage is low. Deleted or expired entries disappear from the site after its next successful update. Public feedback or reports that others have already downloaded cannot be recalled.
@@ -71,6 +75,8 @@ Contact me on [GitHub](https://github.com/2223M1/NinjaSlayer/issues) with questi
 記録は端末に保存し、冒険終了後に送信待ちになります。送信待ちは受信完了を意味しません。サイトへの掲載を確認してください。端末とサーバーの記録は最長90日間保存し、容量不足の際は早く削除する場合があります。集計結果は別に保持します。設定を無効にしても、公開済みの記録は自動では取り下げられません。
 
 ### F2フィードバック
+
+ローカルプロフィールでニンジャスレイヤーの通常モードを初めてクリアすると、一度だけフォームを開きます。過去にクリア済みの場合は表示しません。開くだけでは送信されず、閉じると自動表示は繰り返しません。統計共有の設定も変わりません。公開された投稿には対応状況、作者の返信、更新日時を表示し、投稿と同時に期限切れ・削除となります。
 
 送信前に確認画面が出ます。本文、分類、日時、ゲームとModのバージョンは公開されます。個人情報を書かないでください。スクリーンショットとログを確認できるのはMod作者だけで、公開もMegaCritへの送信もしません。ログには端末、セーブ、導入済みModの情報が含まれる場合があります。
 

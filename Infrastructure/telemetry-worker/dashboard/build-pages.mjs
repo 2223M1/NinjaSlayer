@@ -9,6 +9,8 @@ import { loadRemoteFeedback } from '../scripts/feedback-reader.js';
 import { readCopy, copyModule } from './copy-store.mjs';
 
 const output = resolve(process.argv[2] ?? 'build/pages');
+if (process.env.OBSERVATORY_REQUIRE_FRESH_FEEDBACK === 'true' && !process.env.OBSERVATORY_READ_TOKEN)
+  throw new Error('Manual feedback sync requires the feedback export credential.');
 const catalog = await readCatalog();
 let snapshot = { schemaVersion: 1, catalog, groups: [], feedback: [], excluded: {},
   sources: { telemetry: { state: 'unconnected' }, feedback: { state: 'unloaded' } } };
@@ -41,7 +43,7 @@ if (process.env.OBSERVATORY_READ_TOKEN) {
     snapshot.feedback = publicFeedback(result.feedback);
     snapshot.sources.feedback = { state: 'ready', label: '玩家提交', at: new Date().toISOString() };
   } catch (error) {
-    if (!snapshot.sources.feedback.at) throw error;
+    if (!snapshot.sources.feedback.at || process.env.OBSERVATORY_REQUIRE_FRESH_FEEDBACK === 'true') throw error;
     snapshot.sources.feedback = { ...snapshot.sources.feedback, state: 'error', message: '咕哇——！来信这次没更新成功，先看上次的吧。' };
   }
 }

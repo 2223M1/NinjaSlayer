@@ -183,6 +183,7 @@ public class Entry
             requiredPatcher.RegisterPatch<NinjaSlayerFeedbackConfirmPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFeedbackSendPatch>();
             requiredPatcher.RegisterPatch<NinjaSlayerFeedbackClosePatch>();
+            requiredPatcher.RegisterPatch<NinjaSlayerFirstVictoryFeedbackPatch>();
 
             int expectedRequiredPatchCount = requiredPatcher.RegisteredPatchCount
                 + requiredPatcher.RegisteredDynamicPatchCount;
@@ -213,6 +214,7 @@ public class Entry
             using (RitsuLibFramework.BeginModDataRegistration(NinjaSlayerIds.ModId))
             {
                 NinjaSlayerSettings.Register(NinjaSlayerIds.ModId);
+                Code.Feedback.FirstVictoryFeedback.RegisterData();
                 NinjaSlayerRunData.Register(NinjaSlayerIds.ModId);
                 ShurikenOrb.RegisterSavedData(NinjaSlayerIds.ModId);
                 NinjaSlayerFreeControl.RegisterSavedData(NinjaSlayerIds.ModId);
@@ -228,6 +230,7 @@ public class Entry
 
             RitsuLibFramework.RegisterArchaicToothTranscendenceMapping<StraightPunch, CollapseFist>();
             BossGreetingCinematic.RegisterLifecycle();
+            Code.Feedback.FirstVictoryFeedback.RegisterLifecycle();
         }
         catch (Exception exception)
         {

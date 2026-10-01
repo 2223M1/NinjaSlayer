@@ -6,11 +6,12 @@ import { parseData, normalizeEvents } from './data.mjs';
 import { summarizePublic } from './public-data.mjs';
 import { readCatalog, readCurrentRelease, publishSnapshot, publicFeedback } from './publish.mjs';
 import { loadTelemetry, QUERY_HOSTS } from './posthog.mjs';
-import { loadFeedback, readCompletedFeedback, readFeedbackObject } from '../scripts/feedback-reader.js';
+import { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview } from '../scripts/feedback-reader.js';
 import { UUID_PATTERN } from '../src/validation.js';
 import { copyDefaults, readDraft, readCopy, saveCopy, draftCopyPath, copyModule } from './copy-store.mjs';
 import { publishCopy, continuePublication, readPublication } from './copy-publisher.mjs';
 import { inspectFeedbackZip } from './feedback-files.mjs';
+import { feedbackPublication, publishFeedback } from './feedback-publisher.mjs';
 
 const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
 for (const file of ['i18n.mjs', 'translations.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
@@ -28,7 +29,7 @@ async function body(request) {
   return parseData(Buffer.concat(chunks).toString('utf8'));
 }
 
-export async function createDashboardServer({ feedbackReader = { loadFeedback, readCompletedFeedback, readFeedbackObject }, draftPath = draftCopyPath } = {}) {
+export async function createDashboardServer({ feedbackReader = { loadFeedback, readCompletedFeedback, readFeedbackObject, loadFeedbackReview, saveFeedbackReview }, feedbackPublisher = { feedbackPublication, publishFeedback }, draftPath = draftCopyPath } = {}) {
   const catalog = await readCatalog();
   for (const name of await readdir(new URL('assets/', import.meta.url))) {
     const type = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif' }[name.split('.').at(-1)];
@@ -39,6 +40,7 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
   const sources = { telemetry: { state: 'unconnected' }, feedback: { state: 'unloaded' } };
   let refreshing = null;
   let editing = false;
+  let reviewing = false, publishingFeedback = false;
   let zipCache = null, zipCacheTimer;
 
   async function refresh() {
@@ -125,6 +127,7 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
         config = { host: next.host, projectId: next.projectId, key: next.key.trim() };
         send(200, { ok: true });
       } else if (request.method === 'POST' && url.pathname === '/api/refresh') {
+        if (reviewing) { send(409, { error: '反馈正在保存，请稍候再同步。' }); return; }
         refreshing ??= refresh().finally(() => { refreshing = null; });
         await refreshing;
         send(200, { ok: true });
@@ -135,6 +138,23 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
         telemetry = imported;
         sources.telemetry = { state: 'ready', label: '本机导入', at: new Date().toISOString() };
         send(200, { ok: true, runs: imported.runs.length });
+      } else if (url.pathname === '/api/feedback-publication' && ['GET', 'POST'].includes(request.method)) {
+        if (publishingFeedback) { send(409, { error: '正在提交同步请求，请稍候。' }); return; }
+        publishingFeedback = true;
+        try { send(200, await (request.method === 'POST' ? feedbackPublisher.publishFeedback() : feedbackPublisher.feedbackPublication())); }
+        finally { publishingFeedback = false; }
+      } else if (/^\/api\/feedback\/[^/]+\/review$/.test(url.pathname) && ['GET', 'PUT'].includes(request.method)) {
+        const id = url.pathname.split('/')[3];
+        if (!UUID_PATTERN.test(id)) { send(404, { error: '反馈编号无效。' }); return; }
+        if (request.method === 'GET') { send(200, await feedbackReader.loadFeedbackReview(id)); return; }
+        if (reviewing || refreshing) { send(409, { error: '反馈正在保存或同步，请稍后重试。' }); return; }
+        reviewing = true;
+        try {
+          const review = await feedbackReader.saveFeedbackReview(id, await body(request));
+          const item = feedback.find(item => item.id === id);
+          if (item) item.review = review;
+          send(200, review);
+        } finally { reviewing = false; }
       } else if (request.method === 'GET' && url.pathname.startsWith('/api/feedback/')) {
         const [, , , id, kind] = url.pathname.split('/');
         if (!UUID_PATTERN.test(id ?? '') || url.pathname.split('/').length !== 5 || !['screenshot', 'logs', 'metadata', 'files', 'file'].includes(kind)) { send(404, { error: '未找到此附件。' }); return; }

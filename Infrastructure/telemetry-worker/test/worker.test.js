@@ -604,6 +604,18 @@ test('feedback export preserves notice flags and verifies metadata without servi
   const list = await (await read('feedback')).json();
   assert.equal(list.feedback.length, 1); assert.equal(list.feedback[0].context.publishDescription, true);
   assert.equal(list.warnings.length, 0);
+  assert.deepEqual(list.feedback[0].review, { status: 'unresolved', reply: '', updatedAt: null });
+  const reviewKey = `feedback-review/${UUID}`;
+  const review = { schemaVersion: 1, status: 'resolved', reply: 'Author response', updatedAt: new Date().toISOString() };
+  await env.FEEDBACK_KV.put(reviewKey, JSON.stringify(review));
+  const updated = await (await read('feedback')).json();
+  assert.equal(updated.feedback[0].review.reply, review.reply);
+  assert.equal(updated.feedback[0].review.status, 'resolved');
+  await env.FEEDBACK_KV.put(reviewKey, '{');
+  const damaged = await (await read('feedback')).json();
+  assert.equal(damaged.feedback.length, 0);
+  assert.deepEqual(damaged.warnings, [UUID]);
+  await env.FEEDBACK_KV.delete(reviewKey);
   for (const path of ['feedback', `feedback/${UUID}/screenshot`, `feedback/${UUID}/logs`]) assert.equal((await read(path, false)).status, 403);
   assert.equal((await read(`feedback/${UUID}/screenshot`)).status, 404);
   assert.equal((await read(`feedback/${UUID}/logs`)).status, 404);

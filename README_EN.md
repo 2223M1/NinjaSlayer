@@ -35,6 +35,8 @@ A salaryman who lost his wife and child is possessed by a mysterious ninja soul,
 
 The Workshop item doesn't show up in search yet, so use the link above. The stable and beta branches share one download.
 
+MinionLib is optional. When another mod requires it, use an official package matching the game: this release was checked with MinionLib 0.5.2 on stable 0.107.1 and 0.6.3 on beta 0.111.0. MinionLib 0.6.3 requires game 0.110.1 or later and cannot run on 0.107.1.
+
 The latest version is published on the Workshop. [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) keeps historical packages for rollbacks.
 
 0.3.9 supports runs from 0.3.8. Model IDs from before 0.3.8 remain incompatible; finish those runs first. Existing saves and history files are not rewritten or deleted.
@@ -49,6 +51,8 @@ The latest version is published on the Workshop. [GitHub Releases](https://githu
 <!-- compatibility:end -->
 
 ## Something broke?
+
+A local profile's first standard-mode Ninja Slayer victory opens the feedback form once, without sending anything. Existing winners are not prompted. Public feedback shows its resolution status and the author's response on the site.
 
 Press **F2** in game to send me a letter, with a screenshot and logs attached. You can also [open an issue](https://github.com/2223M1/NinjaSlayer/issues). Tell me your game and mod versions and what you did right before, and I'll find the culprit faster.
 

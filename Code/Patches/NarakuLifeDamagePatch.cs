@@ -22,9 +22,11 @@ public sealed class NarakuLifeDamagePatch : IPatchMethod
         [new(typeof(Creature), nameof(Creature.LoseHpInternal), [typeof(decimal), typeof(ValueProp)])];
 
     [HarmonyPriority(Priority.First)]
-    [HarmonyAfter("Loadout")]
-    public static void Prefix(Creature __instance, ref decimal amount, out int __state)
+    [HarmonyAfter("Loadout", "MinionLib")]
+    public static void Prefix(Creature __instance, ref decimal amount, out int __state, bool __runOriginal = true)
     {
+        __state = 0;
+        if (!__runOriginal) return;
         decimal before = amount;
         if (__instance.GetPower<NarakuLifePower>() is { } life)
             amount = life.AbsorbHpLoss(amount);

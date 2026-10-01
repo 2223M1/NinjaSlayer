@@ -66,9 +66,13 @@ internal static class FinisherAttackCommandAdapter
                 null,
 #endif
                 ModifyDamageHookType.All, CardPreviewMode.None, out _);
+            // A redirect may absorb any or all later hits. Do not predict its
+            // deaths or overflow; the real final HP-loss callback owns that decision.
+            if (!ReferenceEquals(Hook.ModifyUnblockedDamageTarget(actor.CombatState, target,
+                    Math.Max(0m, perHit), command.DamageProps, actor), target)) continue;
             decimal remaining = Math.Max(0m, decimal.Floor(perHit)) * hits
                 - (command.DamageProps.HasFlag(ValueProp.Unblockable) ? 0 : target.Block);
-            if (remaining >= target.CurrentHp) return target;
+            if (remaining >= target.CurrentHp + target.GetPowerAmount<NarakuLifePower>()) return target;
         }
         return null;
     }

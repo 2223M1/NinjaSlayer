@@ -107,7 +107,7 @@ function deleteFeedback(submissionId) {
     '--ttl', String(180 * 24 * 60 * 60),
   ]);
   for (const key of attachments) runWrangler(['r2', 'object', 'delete', `${RECORDS_BUCKET}/${key}`, '--remote']);
-  for (const key of [marker.completion.metadataKey, indexKey]) runWrangler(['kv', 'key', 'delete', key, ...bindingArgs]);
+  for (const key of [marker.completion.metadataKey, indexKey, `feedback-review/${submissionId}`]) runWrangler(['kv', 'key', 'delete', key, ...bindingArgs]);
   console.log(`Deleted ${submissionId}.`);
 }
 

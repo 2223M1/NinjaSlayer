@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Nodes.Multiplayer;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
 using MegaCrit.Sts2.Core.Nodes.Screens.FeedbackScreen;
+using MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen;
 using MegaCrit.Sts2.Core.Runs;
 using NinjaSlayer.Code.Feedback;
 using NinjaSlayer.Content;
@@ -23,6 +24,7 @@ namespace NinjaSlayer.Code.Patches;
 
 public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
 {
+    private static Task? _opening;
     public static string PatchId => "ninjaslayer_feedback_f2_route";
 
     public static string Description => "Route only a local NinjaSlayer player's in-run F2 feedback to the mod author.";
@@ -46,7 +48,6 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
             return true;
         }
 
-        NinjaSlayerFeedbackSession.Begin();
         TaskHelper.RunSafely(OpenFeedbackScreen(__instance));
         return false;
     }
@@ -64,8 +65,16 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
         }
     }
 
-    private static async Task OpenFeedbackScreen(NFeedbackScreenOpener opener)
+    internal static Task OpenFeedbackScreen(NFeedbackScreenOpener opener)
     {
+        if (_opening is { IsCompleted: false }) return _opening;
+        if (NGame.Instance is not { } game || game.GetOrCreateFeedbackScreen().Visible) return Task.CompletedTask;
+        return _opening = Open(opener);
+    }
+
+    private static async Task Open(NFeedbackScreenOpener opener)
+    {
+        NinjaSlayerFeedbackSession.Begin();
         try
         {
             await opener.OpenFeedbackScreen();
@@ -76,6 +85,16 @@ public sealed class NinjaSlayerFeedbackOpenerPatch : IPatchMethod
             throw;
         }
     }
+}
+
+public sealed class NinjaSlayerFirstVictoryFeedbackPatch : IPatchMethod
+{
+    public static string PatchId => "ninjaslayer_first_victory_feedback";
+    public static string Description => "Invite the local NinjaSlayer first-time winner after the native game-over entrance.";
+    public static bool IsCritical => true;
+    public static ModPatchTarget[] GetTargets() => [new(typeof(NGameOverScreen), "AnimateIn", Type.EmptyTypes)];
+    public static void Postfix(NGameOverScreen __instance, ref Task __result) =>
+        __result = FirstVictoryFeedback.AfterGameOverAnimation(__result, __instance);
 }
 
 public sealed class NinjaSlayerFeedbackOpenPatch : IPatchMethod

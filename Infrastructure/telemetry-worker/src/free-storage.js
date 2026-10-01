@@ -220,6 +220,7 @@ export async function expireReceipts(storage, env, now = new Date()) {
           await env.FEEDBACK_KV.put(`feedback-tombstone/${id}`, JSON.stringify({ deletedAtUtc: now.toISOString() }),
             { expirationTtl: 180 * 86400 });
           await env.FEEDBACK_KV.delete(indexKey);
+          await env.FEEDBACK_KV.delete(`feedback-review/${id}`);
         }
         await env.FEEDBACK_KV.delete(metadataKey);
       } else if (record.key.startsWith('replays/')) {

@@ -1,4 +1,5 @@
 name: Public observatory
+run-name: ${{ inputs.feedback_sync_id && format('Feedback sync {0}', inputs.feedback_sync_id) || 'Public observatory' }}
 
 on:
   push:
@@ -9,6 +10,11 @@ on:
       - 'Website/content/**'
       - 'Website/site-copy.json'
   workflow_dispatch:
+    inputs:
+      feedback_sync_id:
+        description: Local admin feedback publication receipt
+        required: false
+        type: string
   schedule:
     - cron: '7,22,37,52 * * * *'
 
@@ -34,6 +40,7 @@ jobs:
           POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
           POSTHOG_QUERY_HOST: ${{ secrets.POSTHOG_QUERY_HOST }}
           OBSERVATORY_READ_TOKEN: ${{ secrets.OBSERVATORY_READ_TOKEN }}
+          OBSERVATORY_REQUIRE_FRESH_FEEDBACK: ${{ inputs.feedback_sync_id != '' }}
           OBSERVATORY_PREVIOUS_URL: https://2223m1.github.io/NinjaSlayer/data.json
         run: |
           npm ci --prefix Infrastructure/telemetry-worker

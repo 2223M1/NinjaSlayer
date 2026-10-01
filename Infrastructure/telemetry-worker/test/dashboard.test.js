@@ -219,7 +219,8 @@ test('public feedback projection excludes old notices and private context', () =
   const item = { id: 'id', at: '2026-09-12', description: '<script>hello</script>', category: 'bug', gameVersion: 'v',
     context: { publishDescription: true, modVersion: '0.2.6', seed: 'secret-seed', characterId: 'private', playerCount: 2 } };
   assert.deepEqual(publicFeedback([item, { ...item, context: { modVersion: 'old' } }]), [{
-    id: 'id', at: '2026-09-12', description: '<script>hello</script>', category: 'bug', gameVersion: 'v', context: { modVersion: '0.2.6' }
+    id: 'id', at: '2026-09-12', description: '<script>hello</script>', category: 'bug', gameVersion: 'v', context: { modVersion: '0.2.6' },
+    review: { status: 'unresolved', reply: '', updatedAt: null }
   }]);
 });
 
@@ -244,21 +245,37 @@ test('public aggregates match private statistics across date, version, ascension
     assert.ok(!output.includes(privateValue), privateValue);
 });
 
-async function buildPages(t, { previous, failTelemetry = false, rows = [] } = {}) {
+async function buildPages(t, { previous, failTelemetry = false, rows = [], feedbackToken = '', failFeedback = false, manualFeedback = false } = {}) {
   const output = await mkdtemp(join(tmpdir(), 'ninjaslayer-pages-'));
   t.after(() => rm(output, { recursive: true, force: true }));
   const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: 'test-only', POSTHOG_PROJECT_ID: '42', POSTHOG_QUERY_HOST: 'https://us.posthog.com',
-    OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: previous ? 'https://previous.invalid/data.json' : '' };
+    OBSERVATORY_READ_TOKEN: feedbackToken, OBSERVATORY_REQUIRE_FRESH_FEEDBACK: String(manualFeedback), OBSERVATORY_PREVIOUS_URL: previous ? 'https://previous.invalid/data.json' : '' };
   const mock = `globalThis.fetch = async url => {
     if (String(url).startsWith('https://previous.invalid/')) return Response.json(${JSON.stringify(previous ?? {})});
     if (String(url).startsWith('https://us.posthog.com/')) return ${failTelemetry ? "new Response('unavailable', {status: 503})" : `Response.json({results: ${JSON.stringify(rows)}})`};
     if (String(url).startsWith('https://telemetry.feixingwawa.cn/observatory/replays')) return Response.json({reports: []});
+    if (String(url).startsWith('https://telemetry.feixingwawa.cn/observatory/feedback')) return ${failFeedback ? "new Response('unavailable', {status: 503})" : "Response.json({feedback: [], warnings: []})"};
     throw new Error('Unexpected fetch: ' + url);
   };`;
   await promisify(execFile)(process.execPath, ['--import', 'data:text/javascript,' + encodeURIComponent(mock),
     fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
   return output;
 }
+
+test('scheduled feedback failure retains the last complete snapshot; manual sync must fetch fresh data', async t => {
+  const previous = { schemaVersion: 1, ...publishSnapshot(normalizeEvents([]), catalog),
+    feedback: [{ id: 'old-public', at: new Date().toISOString(), description: 'keep me', review: { status: 'resolved', reply: 'saved reply', updatedAt: new Date().toISOString() } }],
+    sources: { telemetry: { state: 'ready', at: new Date().toISOString() }, feedback: { state: 'ready', at: new Date().toISOString() } } };
+  const args = { previous, feedbackToken: 'test-only', failFeedback: true };
+  const output = await buildPages(t, args);
+  const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
+  assert.deepEqual(snapshot.feedback, previous.feedback);
+  assert.equal(snapshot.sources.feedback.state, 'error');
+  await assert.rejects(buildPages(t, { ...args, manualFeedback: true }));
+  await assert.rejects(buildPages(t, { previous, manualFeedback: true }));
+  const fresh = await buildPages(t, { previous, feedbackToken: 'test-only', manualFeedback: true });
+  assert.deepEqual(JSON.parse(await readFile(join(fresh, 'data.json'), 'utf8')).feedback, []);
+});
 
 test('Pages artifact is standalone under the project subpath and accepts genuinely empty fresh telemetry', async t => {
   const output = await buildPages(t);
