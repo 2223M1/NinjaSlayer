@@ -24,6 +24,10 @@ export function chartBins(runs) {
       0,
     );
     add("elite-wins", elites, 1, win);
+    for (const point of run.rooms)
+      for (const room of point.rooms)
+        if (["monster", "elite", "boss"].includes(room.room_type.toLowerCase()) && number(room.turns_taken))
+          add("enemy-turns", room.model_id, room.turns_taken, win);
     for (const player of run.players) {
       const id = slot(player);
       add("deck-wins", Math.floor((player.deck ?? []).length / 5) * 5, 1, win);
@@ -46,7 +50,6 @@ export function chartBins(runs) {
             add("enemy-damage", room.model_id, metrics.hp_lost, win);
           else if (combatRooms.length === 1 && number(stats.damage_taken))
             add("enemy-damage", room.model_id, stats.damage_taken, win);
-          if (number(room.turns_taken)) add("enemy-turns", room.model_id, room.turns_taken, win);
         }
       }
     }

@@ -35,9 +35,9 @@ A salaryman who lost his wife and child is possessed by a mysterious ninja soul,
 
 The Workshop item doesn't show up in search yet, so use the link above. The stable and beta branches share one download.
 
-Prefer not to use the Workshop? Grab the universal package from [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases), extract it into the game's `mods` folder, and install RitsuLib separately.
+The latest version is published on the Workshop. [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) keeps historical packages for rollbacks.
 
-Finish your current run before updating. Mid-run saves from older versions won't load.
+0.3.9 supports runs from 0.3.8. Model IDs from before 0.3.8 remain incompatible; finish those runs first. Existing saves and history files are not rewritten or deleted.
 
 ## Versions and languages
 

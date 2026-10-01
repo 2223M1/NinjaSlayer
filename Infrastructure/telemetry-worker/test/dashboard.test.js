@@ -10,7 +10,7 @@ import { normalizeEvents, parseData, summarize } from '../dashboard/data.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createDashboardServer } from '../dashboard/server.mjs';
-import { publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
+import { chartSchemaVersion, publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
 import { summarizePublic, useCurrentCatalog } from '../dashboard/public-data.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
 
@@ -244,11 +244,24 @@ test('public aggregates match private statistics across date, version, ascension
     assert.ok(!output.includes(privateValue), privateValue);
 });
 
-test('Pages artifact is standalone under the project subpath and excludes private controls and data', async t => {
+async function buildPages(t, { previous, failTelemetry = false, rows = [] } = {}) {
   const output = await mkdtemp(join(tmpdir(), 'ninjaslayer-pages-'));
   t.after(() => rm(output, { recursive: true, force: true }));
-  const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: '', POSTHOG_PROJECT_ID: '', OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: '' };
-  await promisify(execFile)(process.execPath, [fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
+  const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: 'test-only', POSTHOG_PROJECT_ID: '42', POSTHOG_QUERY_HOST: 'https://us.posthog.com',
+    OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: previous ? 'https://previous.invalid/data.json' : '' };
+  const mock = `globalThis.fetch = async url => {
+    if (String(url).startsWith('https://previous.invalid/')) return Response.json(${JSON.stringify(previous ?? {})});
+    if (String(url).startsWith('https://us.posthog.com/')) return ${failTelemetry ? "new Response('unavailable', {status: 503})" : `Response.json({results: ${JSON.stringify(rows)}})`};
+    if (String(url).startsWith('https://telemetry.feixingwawa.cn/observatory/replays')) return Response.json({reports: []});
+    throw new Error('Unexpected fetch: ' + url);
+  };`;
+  await promisify(execFile)(process.execPath, ['--import', 'data:text/javascript,' + encodeURIComponent(mock),
+    fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
+  return output;
+}
+
+test('Pages artifact is standalone under the project subpath and accepts genuinely empty fresh telemetry', async t => {
+  const output = await buildPages(t);
   assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'styles.css', 'translations.mjs', 'vendor']);
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.match(html, /data-view="pages"/);
@@ -258,6 +271,30 @@ test('Pages artifact is standalone under the project subpath and excludes privat
   const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
   assert.equal(snapshot.catalog.length, 93);
   assert.equal(summarizePublic(snapshot).runs, 0);
-  assert.equal(snapshot.sources.telemetry.state, 'unconnected');
+  assert.equal(snapshot.sources.telemetry.state, 'ready');
+  assert.equal(snapshot.chartSchemaVersion, chartSchemaVersion);
   assert.deepEqual(snapshot.feedback, []);
+});
+
+test('Pages refuses old chart snapshots after aggregation failure and preserves compatible data', async t => {
+  const previous = { schemaVersion: 1, ...publishSnapshot(normalizeEvents([event()]), catalog), feedback: [],
+    sources: { telemetry: { state: 'ready', at: '2026-09-30T00:00:00Z' }, feedback: { state: 'unloaded' } } };
+  const legacy = structuredClone(previous);
+  delete legacy.chartSchemaVersion;
+  legacy.groups[0].charts = [{ chart: 'win-rate-floor', x: 1, n: 1, sum: 1, wins: 1 }];
+  await assert.rejects(buildPages(t, { previous: legacy, failTelemetry: true }));
+  await assert.rejects(buildPages(t, { failTelemetry: true }));
+  const output = await buildPages(t, { previous, failTelemetry: true });
+  const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
+  assert.equal(snapshot.sources.telemetry.state, 'error');
+  assert.deepEqual(snapshot.groups.map(group => group.charts), previous.groups.map(group => group.charts));
+  assert.equal(snapshot.groups[0].runs, 1);
+  const row = event();
+  const fresh = await buildPages(t, { previous: legacy, rows: [['fixture-id', row.timestamp, JSON.stringify(row.properties)]] });
+  const replaced = JSON.parse(await readFile(join(fresh, 'data.json'), 'utf8'));
+  assert.equal(replaced.sources.telemetry.state, 'ready');
+  assert.equal(replaced.chartSchemaVersion, chartSchemaVersion);
+  assert.equal(replaced.groups[0].runs, 1);
+  assert.ok(replaced.groups[0].charts.some(point => point.chart === 'ascension-wins'));
+  assert.ok(!replaced.groups[0].charts.some(point => point.chart === 'win-rate-floor'));
 });

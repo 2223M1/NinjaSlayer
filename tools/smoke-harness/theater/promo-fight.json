@@ -81,7 +81,9 @@
           { "action": "card", "card": "BS1260Kick", "covers": ["kick-bs1260"] },
           { "action": "card", "card": "DragonFlyingKick", "covers": ["kick-flying", "jump"] }
         ]}
-      ]},
+      ]}
+    ]},
+    { "id": "yukano_arrival", "steps": [
       { "action": "entrance", "actor": "yukano", "covers": ["yukano-entrance"] },
       { "action": "move", "actor": "yukano", "move": "BARRIER", "covers": ["yukano-barrier"] }
     ]},
@@ -112,8 +114,8 @@
       { "action": "takeover" }
     ]},
     { "id": "yukano_shuriken_support", "steps": [
-      { "action": "block", "actor": "dark", "amount": 250 },
-      { "action": "move", "actor": "yukano", "move": "SHURIKEN", "covers": ["yukano-shuriken"] }
+      { "action": "block", "actor": "dark", "amount": 262 },
+      { "action": "move", "actor": "yukano", "move": "SHURIKEN", "repeat": 2, "covers": ["yukano-shuriken"] }
     ]},
     { "id": "dark_first_counter", "steps": [
       { "action": "block", "amount": 35 },
@@ -157,8 +159,10 @@
     ]},
     { "id": "final_tornado", "steps": [
       { "action": "card", "card": "TornadoFist", "energy": 6, "charge": true, "seconds": 0.25,
-        "covers": ["tornado-empowered-b", "finisher"] },
-      { "action": "wait", "seconds": 0.65 }
+        "covers": ["tornado-empowered-b", "finisher"] }
+    ]},
+    { "id": "yukano_departure", "steps": [
+      { "action": "yukano_farewell", "mode": "wait" }
     ]}
   ]
 }

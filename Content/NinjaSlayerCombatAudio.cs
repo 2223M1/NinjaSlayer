@@ -15,9 +15,6 @@ public readonly struct NinjaSlayerCombatAudioSet
     public string Cast { get; init; }
     public string Hurt { get; init; }
     public string Death { get; init; }
-    public string IntroSpinAttack { get; init; }
-    public string LoopSpinAttack { get; init; }
-    public string OutroSpinAttack { get; init; }
 
     public static NinjaSlayerCombatAudioSet For(Creature creature) =>
         NinjaSlayerFormState.GetPresentation(creature).UsesNarakuAudio ? Naraku : NinjaSlayer;
@@ -29,9 +26,6 @@ public readonly struct NinjaSlayerCombatAudioSet
         Cast = NinjaSlayerAudio.NinjaSlayerCastEvent,
         Hurt = NinjaSlayerAudio.NinjaSlayerHurtEvent,
         Death = NinjaSlayerAudio.NinjaSlayerDeathEvent,
-        IntroSpinAttack = NinjaSlayerAudio.NinjaSlayerIntroSpinAttackEvent,
-        LoopSpinAttack = NinjaSlayerAudio.NinjaSlayerLoopSpinAttackEvent,
-        OutroSpinAttack = NinjaSlayerAudio.NinjaSlayerOutroSpinAttackEvent,
     };
 
     public static readonly NinjaSlayerCombatAudioSet Naraku = new()
@@ -41,9 +35,6 @@ public readonly struct NinjaSlayerCombatAudioSet
         Cast = NinjaSlayerAudio.NarakuCastEvent,
         Hurt = NinjaSlayerAudio.NarakuHurtEvent,
         Death = NinjaSlayerAudio.NarakuDeathEvent,
-        IntroSpinAttack = NinjaSlayerAudio.NinjaSlayerIntroSpinAttackEvent,
-        LoopSpinAttack = NinjaSlayerAudio.NinjaSlayerLoopSpinAttackEvent,
-        OutroSpinAttack = NinjaSlayerAudio.NinjaSlayerOutroSpinAttackEvent,
     };
 
     public static void Play(string? eventPath, float volume = 1f)
@@ -53,7 +44,7 @@ public readonly struct NinjaSlayerCombatAudioSet
             return;
         }
 
-        if (eventPath.StartsWith(NinjaSlayerAudio.PangbaiRoot + "/", StringComparison.Ordinal))
+        if (eventPath.StartsWith(NinjaSlayerAudio.NarrationRoot + "/", StringComparison.Ordinal))
         {
             if (!NinjaSlayerSettings.NarrationEnabled) return;
             _ = TaskHelper.RunSafely(PlayDelayed(eventPath, volume));

@@ -40,7 +40,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
     private readonly CombatCinematicCameraLease _camera;
     private readonly NCombatRoom _room;
     private readonly Vector2 _actorStartPosition;
-    private Vector2 _actorReturnPosition;
+    private Vector2 _actorReturnVisualPosition;
     private readonly HashSet<ulong> _vfxBaselineChildIds;
     private HashSet<ulong>? _completedWaveVfx;
     private HashSet<ulong>? _impactWaveBaseline;
@@ -129,9 +129,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         _actorStartPosition = !IsRanged && request.Scenario == FinisherScenarioKind.NinjaSlayerAttack
             ? NinjaSlayerRapidAnimationCoordinator.ClaimExclusiveBaseline(request.Actor, request.ActorNode)
             : request.ActorNode.Position;
-        _freeControlLease = NinjaSlayerFreeControl.Get(request.Actor)?.SuspendForCinematic(_actorStartPosition);
-        if (_freeControlLease != null) _actorStartPosition = _freeControlLease.Baseline;
-        _actorReturnPosition = _actorStartPosition;
+        _freeControlLease = NinjaSlayerFreeControl.Get(request.Actor)?.SuspendForCinematic();
+        _actorReturnVisualPosition = FinisherApproach.AnimationPosition(Actor, _actorNode.Visuals);
         _impactPosition = request.ActorNode.Position;
         _actionPeakReached = !IsCompanionIai;
         _vfxBaselineChildIds = (request.VfxBaselineChildIds ?? _ranged?.Baseline)?.ToHashSet()
@@ -277,7 +276,9 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             else if (_actorAimPose != null)
                 _actorAimPose.PlaceAtImpact(_focusNode.Entity, _impactPosition.X);
             else
-                _actorNode.Position = _impactPosition;
+                _actorNode.Visuals.Position += _actorNode.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                    .AffineInverse().BasisXform(_actorNode.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+                        .BasisXform(_impactPosition - _actorNode.Position));
             _actionStarted = !_continuousPlayerApproach;
             _actionPeakReached = true;
             _actionPeakTask = Task.CompletedTask;
@@ -337,6 +338,13 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             ? _actionPeakTask
             : Cmd.Wait(Math.Max(0f, repeatWaitSeconds));
     }
+
+    // Include the real impact hold and replace the ordinary return with this session's return.
+    internal float TornadoAudioExtraSeconds => (_impactCamera
+        ? ImpactReleaseSeconds(_previewProfile)
+        : DoomPoseSeconds + DeathKickSettleSeconds)
+        + (_continuousPlayerApproach ? CombatActionTimingRuntime.ReturnSeconds : ReturnSeconds)
+        - CombatActionTimingRuntime.ReturnSeconds;
 
     private async Task PlayAimedAction(float seconds, float attackDistance)
     {
@@ -586,10 +594,12 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         if (!_continuousPlayerApproach || _approach == null)
             throw new InvalidOperationException("Architect recovery requires its continuous approach.");
         Vector2 approach = _approach.OffsetInActorParent;
-        // Transfer the retained approach to the event actor's root while the
-        // visual lease recovers. Together they move back only one ordinary lunge.
-        _actorReturnPosition = _actorNode.Position + new Vector2(
-            approach.X - Math.Sign(approach.X) * retreatDistance, 0f);
+        // Retain the approach in the visual animation channel while its offset
+        // recovers. The event retreats one lunge without moving native combat UI.
+        Vector2 retained = new(approach.X - Math.Sign(approach.X) * retreatDistance, 0f);
+        _actorReturnVisualPosition = FinisherApproach.AnimationPosition(Actor, _actorNode.Visuals)
+            + _actorNode.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+                .BasisXform(_actorNode.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(retained));
     }
 
     internal Task ReturnArchitectAlabama()
@@ -1016,7 +1026,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         if (!IsRanged && !AlabamaOwnsRecovery && mayRestoreCurrentCombat && GodotObject.IsInstanceValid(_actorNode))
         {
-            Capture(() => _actorNode.Position = _actorReturnPosition);
+            Capture(() => FinisherApproach.SetAnimationPosition(Actor, _actorNode.Visuals, _actorReturnVisualPosition));
         }
 
         Capture(() => _hoverTipSuppression?.Dispose());

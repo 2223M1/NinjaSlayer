@@ -109,8 +109,7 @@ public static class AlabamaDropAnimation
             return;
         }
 
-        using var freeControlLease = NinjaSlayerFreeControl.Get(owner)?.SuspendForCinematic(
-            NinjaSlayerRapidAnimationCoordinator.GetBaseline(owner, ownerRig.CreatureNode));
+        using var freeControlLease = NinjaSlayerFreeControl.Get(owner)?.SuspendForCinematic();
         using var grabLayers = FinisherActorLayerLease.AcquireBehind(ownerRig.CreatureNode, targetRig.CreatureNode);
         targetBody = targetRig.Body;
         targetBodyProcessMode = targetRig.Body.ProcessMode;
@@ -175,7 +174,7 @@ public static class AlabamaDropAnimation
                         NinjaSlayerCombatVisuals.AttackLungeDistance, LungeDuration,
                         FinisherActionTrajectory.FastProgress, standardPresentation: false);
                 aimPose.BeginAction(target, exclusive: true);
-                if (!owned) aimPose.PlaceAtImpact(target, ownerLandingPos.X, moveRoot: false);
+                if (!owned) aimPose.PlaceAtImpact(target, ownerLandingPos.X);
             }
             else
             {
@@ -346,6 +345,11 @@ public static class AlabamaDropAnimation
             if (!visualTailOwnsRestore)
             {
                 RestoreTargetPose();
+                // The Architect's retreat now retains its position in the visual
+                // channel. Restore the body pose without undoing that handoff.
+                if (architectRecovery)
+                    ownerRestoreSnapshot = ownerRestoreSnapshot with
+                    { VisualsPosition = FinisherApproach.AnimationPosition(owner, ownerRig.Visuals) };
                 ownerRestoreSnapshot.Restore(restoreNinjaSlayerAirborneState: true,
                     restoreCreaturePosition: !architectRecovery);
                 if (!architectRecovery && GodotObject.IsInstanceValid(ownerRig.CreatureNode))

@@ -239,9 +239,9 @@ export const messages = {
     "HP left by floor",
     "階ごとの残り体力"
   ],
-  "每层结束时，平均剩余生命占上限的比例。": [
-    "Average HP left, as a share of max HP, at the end of each floor.",
-    "各階の終了時点で、最大体力に対して平均どれだけ残っているか。"
+  "每层结束时，按玩家记录计算剩余生命占上限的平均比例。": [
+    "Average HP left as a share of max HP at each floor's end, measured per player.",
+    "各階終了時の残り体力の割合を、プレイヤー単位で平均します。"
   ],
   "各进阶胜率": [
     "Win rate by Ascension",
@@ -255,9 +255,9 @@ export const messages = {
     "Who hits hardest",
     "一番痛い相手"
   ],
-  "每场战斗平均掉多少血，治疗不抵消。只列前 15 名。": [
-    "Average HP lost per fight; healing doesn't cancel it out. Top 15 only.",
-    "戦闘ごとの平均被ダメージ（回復は差し引きません）。上位15件のみ。"
+  "每位玩家每场战斗平均掉多少血，治疗不抵消。只列前 15 名。": [
+    "Average HP lost per player per fight; healing doesn't cancel it out. Top 15 only.",
+    "各プレイヤーの戦闘ごとの平均被ダメージ（回復は差し引きません）。上位15件のみ。"
   ],
   "哪场仗最磨蹭": [
     "Longest fights",
@@ -279,9 +279,9 @@ export const messages = {
     "Best deck size",
     "勝てるデッキ枚数"
   ],
-  "按结束时的牌组张数统计通关率，每 5 张一组。": [
-    "Win rate by final deck size, in groups of 5.",
-    "終了時のデッキ枚数（5枚刻み）ごとのクリア率。"
+  "按玩家结束时的牌组张数统计通关率，每 5 张一组。": [
+    "Win rate per player by final deck size, in groups of 5.",
+    "各プレイヤーの終了時デッキ枚数（5枚刻み）ごとのクリア率。"
   ],
   "{0} 层": [
     "Floor {0}",

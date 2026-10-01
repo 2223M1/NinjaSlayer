@@ -170,11 +170,11 @@ public partial class OrbContractRunner
             Node2D exposure = Get<Node2D>("_blur");
             Require(exposure.Visible && rig.GetNode<Sprite2D>("%Visuals").Material is ShaderMaterial,
                 "Actual thrown angular velocity did not produce the planar exposure renderer.");
-            using ((IDisposable)Invoke("SuspendForCinematic", original)!)
+            using ((IDisposable)Invoke("SuspendForCinematic")!)
             {
                 Require(!exposure.Visible, "A frozen free-rotation afterimage remained visible during a cinematic.");
                 Vector2 claimed = actor.Position;
-                Require(Invoke("SuspendForCinematic", original) == null && actor.Position == claimed,
+                Require(Invoke("SuspendForCinematic") == null && actor.Position == claimed,
                     "Nested cinematics applied the free offset twice.");
             }
             KeyInput(Key.D, true); await Frames(20); KeyInput(Key.D, false);
@@ -182,8 +182,10 @@ public partial class OrbContractRunner
                 "Keyboard movement did not resume smoothly after throwing.");
             Sync();
             Vector2 freeCore = rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin;
-            var lease = (IDisposable)Invoke("SuspendForCinematic", original)!;
-            Require(actor.Position != original, "Exclusive animation did not inherit the free position.");
+            var lease = (IDisposable)Invoke("SuspendForCinematic")!;
+            Require(actor.Position.IsEqualApprox(original)
+                && rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.DistanceTo(freeCore) < .5f,
+                "Exclusive animation must inherit the free body position without moving its health/status root.");
             lease.Dispose(); Sync();
             Require(actor.Position.IsEqualApprox(original)
                 && rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.DistanceTo(freeCore) < .5f,
@@ -266,7 +268,12 @@ public partial class OrbContractRunner
             await (Task)AccessTools.Method(FreeImpacts[0].GetType(), "ExecuteAction").Invoke(FreeImpacts[0], null)!;
             Require(combat.Enemy.CurrentHp == hp - 6m, "Free shuriken must deal 6 damage without inventory.");
             FreeImpacts.Clear();
+            Vector2 beforeStopVisual = rig.Position;
+            var endingLease = (IDisposable)Invoke("SuspendForCinematic")!;
             Invoke("EndTurn"); Sync();
+            endingLease.Dispose();
+            Require(rig.Position.IsEqualApprox(beforeStopVisual),
+                "Stopping free control before cinematic disposal left a visual offset.");
             Require(!(bool)AccessTools.Property(type, "Active").GetValue(control)!
                 && actor.Position.IsEqualApprox(original), "Turn end left free control or root movement active.");
             Require(rig.VfxSpawnPosition.GetGlobalTransformWithCanvas().Origin.DistanceTo(freeCore) > 1f,

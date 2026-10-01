@@ -27,8 +27,14 @@ replay prepares again. Kick hits are therefore 0.25/0.70/1.15s in Normal and
 
 Ordinary Slow never changes to an Attack gate merely because another card preceded
 it. Cross-card visual recovery remains nonblocking; gameplay, Hooks, piles, History
-and death processing remain serial. Finishers still place Ninja Slayer directly at
-impact and retain exclusive ownership until their cinematic ends.
+and death processing remain serial. Finishers still place Ninja Slayer's visual rig
+directly at impact and retain exclusive ownership until their cinematic ends.
+Impact placement, combo recovery, cinematic takeover from Aether Reflux, and the
+Architect's retreat/exit move only visual animation channels. Native creature
+layout roots, health bars and status containers remain at their combat positions;
+camera zoom/shake remains a render transform. Existing companion/enemy approaches
+continue to use their visual-only channel. See
+[stationary finisher UI validation](validation/finisher-stationary-ui-20260930.md).
 
 ## PNG presentation
 

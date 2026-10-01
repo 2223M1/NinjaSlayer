@@ -26,6 +26,16 @@ internal sealed partial class SmokeController
     private sealed partial class TheaterRuntime
     {
         internal bool IsArchitectPreview => _script.Purpose == "architect";
+        private CanvasLayer? _architectCurtain;
+
+        private async Task ArchitectTransition(double seconds)
+        {
+            _architectCurtain = new CanvasLayer { Layer = 100 };
+            _architectCurtain.AddChild(new ColorRect { Color = Colors.Black,
+                Size = _driver._tree.Root.GetVisibleRect().Size, MouseFilter = Control.MouseFilterEnum.Ignore });
+            _driver._tree.Root.AddChild(_architectCurtain);
+            await Wait(seconds);
+        }
 
         private async Task ArchitectComparison()
         {
@@ -176,6 +186,8 @@ internal sealed partial class SmokeController
         private async Task ArchitectExecution(TheaterStep step)
         {
             Require(IsArchitectPreview, "Architect execution requires its dedicated script.");
+            _architectCurtain?.QueueFree();
+            _architectCurtain = null;
             if (step.Card != null)
             {
                 await CardPileCmd.RemoveFromDeck(_player.Deck.Cards.ToArray(), showPreview: false);
@@ -187,6 +199,7 @@ internal sealed partial class SmokeController
             int hp = _player.Creature.CurrentHp;
             CardModel[] deck = _player.Deck.Cards.ToArray();
             Vector2 playerSlot = Node("ninja").Position;
+            float playerVisualX = Node("ninja").Visuals.GlobalPosition.X;
             var probabilities = Enumerable.Range(0, 1000)
                 .Select(i => AncientEntranceAnimation.FromRoll((i + .5f) / 1000f)).GroupBy(v => v)
                 .ToDictionary(g => g.Key, g => g.Count());
@@ -206,6 +219,9 @@ internal sealed partial class SmokeController
                 Require(room.GetNodeOrNull("NinjaSlayerArchitectExecution") == null,
                     "Architect executed before Continue.");
                 await architectEvent.CurrentOptions.Single().Chosen();
+                await Wait(1f);
+                playerSlot = Node("ninja").Position;
+                playerVisualX = Node("ninja").Visuals.GlobalPosition.X;
                 await architectEvent.CurrentOptions.Single().Chosen();
             }
             else
@@ -221,7 +237,9 @@ internal sealed partial class SmokeController
                 .GetValue(controller)!, "Architect cinematic did not complete", _cancel);
             Require(_player.Deck.Cards.SequenceEqual(deck) && _player.Creature.CurrentHp == hp,
                 "Architect visual execution changed the deck or player HP.");
-            Require(Node("ninja").Position.X > playerSlot.X + 800f, "Ninja Slayer did not finish exiting the stage.");
+            Require(Node("ninja").Position.IsEqualApprox(playerSlot)
+                && Node("ninja").Visuals.GlobalPosition.X > playerVisualX + 800f,
+                "Architect execution must move the body across the stage without moving its combat UI root.");
             _driver.PreviewEntranceVariant = null;
             await Wait(1.2);
             Cover("architect-production-execution");

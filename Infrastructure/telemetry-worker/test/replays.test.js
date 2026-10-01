@@ -516,6 +516,21 @@ test("enemy rankings list only the fifteen highest averages", () => {
   assert.equal(rows.length, 15);
   assert.deepEqual(rows.slice(0, 2).map((row) => row.x), ["ENCOUNTER.19", "ENCOUNTER.18"]);
 });
+
+test("multiplayer keeps one combat-turn sample and individual deck and health samples", () => {
+  const solo = run(), multi = run();
+  solo.rooms[0].rooms[0].turns_taken = 2;
+  multi.rooms[0].rooms[0].turns_taken = 8;
+  multi.players.push({ net_id: 'second-player', deck: [] });
+  multi.rooms[0].player_stats.push({ ...multi.rooms[0].player_stats[0], player_id: 'second-player', current_hp: 10 });
+  const bins = chartBins([solo, multi]);
+  const turns = bins.find(point => point.chart === 'enemy-turns');
+  assert.equal(turns.n, 2);
+  assert.equal(turns.sum / turns.n, 5);
+  assert.equal(bins.find(point => point.chart === 'ascension-wins').n, 2);
+  assert.equal(bins.find(point => point.chart === 'hp-by-floor').n, 3);
+  assert.equal(bins.filter(point => point.chart === 'deck-wins').reduce((n, point) => n + point.n, 0), 3);
+});
 test("filters keep outcome, party, version and ascension boundaries", () => {
   const snapshot = {
     groups: [{ date: "2030-01-01", version: "0.2.7", party: "solo", ascension: 10, outcome: "loss" }],

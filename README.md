@@ -35,9 +35,9 @@
 
 工坊条目暂时搜不到，用上面的链接进。正式版和测试版用同一个包，不用挑。
 
-不想走工坊的话，去 [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) 下载通用包，解压到游戏的 `mods` 文件夹，再单独装好 RitsuLib。
+最新版通过工坊发布。[GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) 保留历史包，供需要回滚的玩家使用。
 
-更新前记得先把手上这局打完，旧版本的中途存档读不了。
+0.3.9 兼容 0.3.8 跑局。0.3.8 之前的模型 ID 不兼容，请先结束旧局；旧存档和历史文件不会被改写或删除。
 
 ## 出问题了？
 

@@ -1,0 +1,53 @@
+{
+  "seed": "TORNADO_AUDIO_CONTROL",
+  "purpose": "finisher-audit",
+  "act": 3,
+  "duration": 10,
+  "karate": 0,
+  "narrationEnabled": false,
+  "audit": {
+    "monster": "ThievingHopper",
+    "targetHp": 79,
+    "mode": "Normal",
+    "form": "normal"
+  },
+  "cues": [
+    {
+      "id": "surviving_target",
+      "steps": [
+        {
+          "action": "block",
+          "actor": "enemy",
+          "amount": 10000
+        }
+      ]
+    },
+    {
+      "id": "audio_calibration",
+      "steps": [
+        {
+          "action": "audit_calibration"
+        }
+      ]
+    },
+    {
+      "id": "control_pause",
+      "steps": [
+        {
+          "action": "tornado_audio_check",
+          "mode": "pause",
+          "seconds": 0.6
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "steps": [
+        {
+          "action": "wait",
+          "seconds": 2
+        }
+      ]
+    }
+  ]
+}

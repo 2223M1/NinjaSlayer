@@ -21,7 +21,11 @@ export function tr(parts, ...values) {
 }
 // Translate only the static shell, before any player-submitted text is rendered.
 export function localizePage() {
-  if (!inBrowser || isAdmin) return;
+  if (!inBrowser) return;
+  if (isAdmin) {
+    document.querySelector('#language').hidden = true;
+    return;
+  }
   document.documentElement.lang = locale;
   for (const option of document.querySelectorAll('option:not([value])')) option.value = option.textContent;
   const walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT);

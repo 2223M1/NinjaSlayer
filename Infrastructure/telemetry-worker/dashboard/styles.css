@@ -88,6 +88,7 @@ select:hover, input[type="search"]:hover { border-color: var(--red); }
 /* Hero */
 main { max-width: 1320px; margin: 0 auto; padding: 0 28px; }
 .hero {
+  overflow: clip;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);

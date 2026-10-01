@@ -101,7 +101,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
 
     private void Begin()
     {
-        _ownerStartPosition = _ownerNode.Position;
+        _ownerStartPosition = FinisherApproach.AnimationPosition(_owner, _ownerNode.Visuals);
         _architectBodyPosition = _architectNode.Body.Position;
         _architectBodyScale = _architectNode.Body.Scale;
         _architectBodyRotation = _architectNode.Body.Rotation;
@@ -380,20 +380,22 @@ public sealed partial class ArchitectExecutionCinematic : Node
     private async Task ExitScene(CancellationToken cancelToken)
     {
         NinjaSlayerFacingState.SetFacing(_ownerNode, faceLeft: false);
-        Vector2 start = _ownerNode.Position;
-        float exitX = _room.SceneContainer.Size.X + ExitMargin;
-        Vector2 destination = new(exitX, start.Y);
-        float duration = Math.Max(0.1f, Mathf.Abs(destination.X - start.X) / ExitSpeedPixelsPerSecond);
+        Vector2 start = FinisherApproach.AnimationPosition(_owner, _ownerNode.Visuals);
+        Transform2D sceneToCanvas = _room.SceneContainer.GetGlobalTransformWithCanvas();
+        Vector2 sceneStart = sceneToCanvas.AffineInverse() * _ownerNode.Visuals.GetGlobalTransformWithCanvas().Origin;
+        Vector2 sceneTravel = new(_room.SceneContainer.Size.X + ExitMargin - sceneStart.X, 0f);
+        Vector2 destination = start + _ownerNode.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+            .AffineInverse().BasisXform(sceneToCanvas.BasisXform(sceneTravel));
+        float duration = Math.Max(0.1f, Mathf.Abs(sceneTravel.X) / ExitSpeedPixelsPerSecond);
         float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += await NextFrame(cancelToken);
-            _ownerNode.Position = start.Lerp(
-                destination,
-                Mathf.Clamp(elapsed / duration, 0f, 1f));
+            FinisherApproach.SetAnimationPosition(_owner, _ownerNode.Visuals,
+                start.Lerp(destination, Mathf.Clamp(elapsed / duration, 0f, 1f)));
         }
 
-        _ownerNode.Position = destination;
+        FinisherApproach.SetAnimationPosition(_owner, _ownerNode.Visuals, destination);
     }
 
     private void RestoreTemporaryState(bool restoreOwnerPosition)
@@ -401,7 +403,7 @@ public sealed partial class ArchitectExecutionCinematic : Node
         SoarSpinAnimation.ResetSpinVisual(_owner);
         if (restoreOwnerPosition && GodotObject.IsInstanceValid(_ownerNode))
         {
-            _ownerNode.Position = _ownerStartPosition;
+            FinisherApproach.SetAnimationPosition(_owner, _ownerNode.Visuals, _ownerStartPosition);
         }
 
         if (!_architectDeathCommitted && GodotObject.IsInstanceValid(_architectNode))

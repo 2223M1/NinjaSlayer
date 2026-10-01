@@ -31,7 +31,7 @@ public sealed class StormFist : NinjaSlayerRareCard
         int hits = DynamicVars.Repeat.IntValue;
         await this.ExecuteSequenceWithFinisher(choiceContext, cardPlay, hits,
             () => NinjaSlayerXAttackSequence.Run(Owner.Creature, hits,
-                Owner.Character.AttackAnimDelay, Owner.Character.AttackAnimDelay, async _ =>
+                async _ =>
                 {
                     await DamageCmd.Attack(DynamicVars.CalculatedDamage)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS

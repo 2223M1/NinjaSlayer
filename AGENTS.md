@@ -1,5 +1,12 @@
 # NinjaSlayer project instructions
 
+## Theater recording
+
+- Production and theater edits share this main project; do not create a recording code fork.
+- Start with `tools/smoke-harness/theater/README.md`. Routine choreography belongs in `promo-fight.json`.
+- `Invoke-TheaterPreview.ps1` exports current resources and builds both hosts on every run; do not substitute old DLLs, PCKs or audio banks.
+- Record on the isolated background desktop, never install into the daily game or take the foreground.
+
 ## Architecture constraints
 
 - These constraints are non-negotiable. Refactor deletion-first: remove unnecessary layers before adding code, and do not treat existing internal abstractions as required precedent.

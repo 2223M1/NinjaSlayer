@@ -8,17 +8,17 @@ export const charts = [
   { id: 'act-reach', type: 'bar', metric: 'count', title: t('能走到第几幕'),
     note: t('到达每一幕的对局数。'), label: x => tr`第 ${x} 幕` },
   { id: 'hp-by-floor', type: 'line', metric: 'mean', unit: '%', title: t('每层还剩多少血'),
-    note: t('每层结束时，平均剩余生命占上限的比例。'), label: x => tr`${x} 层` },
+    note: t('每层结束时，按玩家记录计算剩余生命占上限的平均比例。'), label: x => tr`${x} 层` },
   { id: 'ascension-wins', type: 'bar', metric: 'rate', title: t('各进阶胜率'),
     note: t('每个进阶等级的通关率。'), label: x => `A${x}` },
   { id: 'enemy-damage', type: 'bar', metric: 'mean', top: 15, title: t('谁下手最狠'),
-    note: t('每场战斗平均掉多少血，治疗不抵消。只列前 15 名。') },
+    note: t('每位玩家每场战斗平均掉多少血，治疗不抵消。只列前 15 名。') },
   { id: 'enemy-turns', type: 'bar', metric: 'mean', top: 15, title: t('哪场仗最磨蹭'),
     note: t('每场战斗平均打几回合。只列前 15 名。') },
   { id: 'elite-wins', type: 'bar', metric: 'rate', title: t('精英打几个'),
     note: t('按整局打过的精英数量统计通关率。'), label: x => tr`${x} 个精英` },
   { id: 'deck-wins', type: 'bar', metric: 'rate', title: t('牌组多厚最好赢'),
-    note: t('按结束时的牌组张数统计通关率，每 5 张一组。'), label: x => tr`${x}–${x + 4} 张` },
+    note: t('按玩家结束时的牌组张数统计通关率，每 5 张一组。'), label: x => tr`${x}–${x + 4} 张` },
 ];
 
 export function chartValue(chart, row) {

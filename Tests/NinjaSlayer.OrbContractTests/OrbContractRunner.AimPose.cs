@@ -83,9 +83,11 @@ public partial class OrbContractRunner
                 actor.Position = Vector2.Zero;
                 target.Position = new(side * 700f, 0f);
                 Invoke("BeginAction", combat.Enemy, true, false);
-                Invoke("PlaceAtImpact", combat.Enemy, side * 600f, true);
+                Vector2 root = actor.Position, visualStart = rig.Position;
+                Invoke("PlaceAtImpact", combat.Enemy, side * 600f);
                 Vector2 peak = center.GlobalPosition;
-                Vector2 root = actor.Position;
+                Require(actor.Position.IsEqualApprox(root) && !rig.Position.IsEqualApprox(visualStart),
+                    "Finisher impact must move the body without moving the combat layout root.");
                 for (int hit = 0; hit < 3; hit++)
                 {
                     Invoke("SetFinisherContactTravel", new Vector2(-side * 100f, 0f));
@@ -102,6 +104,7 @@ public partial class OrbContractRunner
                 Invoke("SetFinisherContactTravel", new Vector2(100f, 0f));
                 Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Expired finisher travel overwrote the next pose.");
                 Invoke("Reset");
+                rig.Position = visualStart;
             }
             actor.Position = Vector2.Zero;
             target.Position = new(700f, 0f);
@@ -191,8 +194,10 @@ public partial class OrbContractRunner
                 Invoke("BeginAction", combat.Enemy, false, false);
                 Invoke("SetTravel", new Vector2(90f, 0f), 1f);
                 Invoke("BeginAction", combat.Enemy, true, false);
-                Invoke("PlaceAtImpact", combat.Enemy, 600f, true);
-                Require(actor.Position.X == 600f, "Finisher no longer places the actor directly at impact.");
+                Vector2 visualStart = rig.Position;
+                Invoke("PlaceAtImpact", combat.Enemy, 600f);
+                Require(actor.Position == Vector2.Zero && Math.Abs(rig.Position.X - visualStart.X - 600f) < .01f,
+                    "Finisher impact must retain its body displacement while leaving the root stationary.");
                 Require(Math.Abs(((Vector2)AccessTools.Property(poseType, "Travel").GetValue(pose)!).X) < 0.01f,
                     "Finisher applied the preceding attack displacement a second time.");
                 Vector2 aimedForward = pose.GetGlobalTransformWithCanvas().BasisXform(Vector2.Right).Normalized();
@@ -220,6 +225,7 @@ public partial class OrbContractRunner
                 combat.Enemy.SetCurrentHpInternal(targetHp);
                 Invoke("BeginReturn");
                 Invoke("ApplyReturn", 1f);
+                rig.Position = visualStart;
             }
             actor.Position = Vector2.Zero;
             anchor.Position = Vector2.Zero;
@@ -229,20 +235,29 @@ public partial class OrbContractRunner
             var status = new Control { Position = new(10f, 40f) };
             actor.AddChild(health);
             actor.AddChild(status);
-            Vector2 healthBefore = health.GlobalPosition, statusBefore = status.GlobalPosition;
-            Invoke("BeginAction", combat.Enemy, true, false);
-            Invoke("PlaceAtImpact", combat.Enemy, 600f, false);
-            for (int frame = 0; frame < 10; frame++)
+            Vector2 actorScale = actor.Scale;
+            foreach (float externalScale in new[] { .65f, 1f, 1.4f })
             {
-                Invoke("SyncNow");
-                Require(actor.Position == Vector2.Zero && target.Position == targetBaseline
-                    && health.GlobalPosition == healthBefore && status.GlobalPosition == statusBefore,
-                    "Alabama visual placement moved a creature root or health/status UI.");
+                actor.Scale = actorScale * externalScale;
+                rig.Position = rigBaseline;
+                Vector2 healthBefore = health.GlobalPosition, statusBefore = status.GlobalPosition;
+                Vector2 visualBefore = rig.GlobalPosition;
+                Invoke("BeginAction", combat.Enemy, true, false);
+                Invoke("PlaceAtImpact", combat.Enemy, 600f);
+                for (int frame = 0; frame < 10; frame++)
+                {
+                    Invoke("SyncNow");
+                    Require(actor.Position == Vector2.Zero && target.Position == targetBaseline
+                        && health.GlobalPosition == healthBefore && status.GlobalPosition == statusBefore,
+                        "Scaled finisher placement moved a creature root or health/status UI.");
+                }
+                Require(Math.Abs(rig.GlobalPosition.X - visualBefore.X - 600f) < .01f,
+                    "External character scale changed the finisher's world-space travel.");
+                Invoke("BeginReturn");
+                Invoke("ApplyReturn", 1f);
+                rig.Position = rigBaseline;
             }
-            Require(rig.Position != rigBaseline, "Alabama must still move the body to impact.");
-            Invoke("BeginReturn");
-            Invoke("ApplyReturn", 1f);
-            rig.Position = rigBaseline;
+            actor.Scale = actorScale;
             health.Free(); status.Free();
             await VerifyNativeDrawBatches(combat, pose);
             await VerifyNonblockingThrow(combat, pose);
@@ -265,7 +280,7 @@ public partial class OrbContractRunner
             Invoke("Drag", dragOwner, tornadoCard, new Vector2(700f, -300f), combat.Enemy);
             pose._Process(0.27);
             Invoke("EndDrag", dragOwner, true);
-            await NinjaSlayerXAttackSequence.Run(combat.Player.Creature, 0, 0.15f, 0.35f,
+            await NinjaSlayerXAttackSequence.Run(combat.Player.Creature, 0,
                 _ => throw new InvalidOperationException("Zero-hit Tornado dealt damage."), heldApproach: true);
             await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
             Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Zero-hit Tornado retained its charged pose.");

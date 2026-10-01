@@ -334,7 +334,7 @@ if (!isPublic) {
   });
   $('#export').addEventListener('click', () => {
     const cell = value => `"${String(value).replace(/^[=+@-]/, "'$&").replaceAll('"', '""')}"`;
-    const rows = page === 'charts' ? [['图表', $('#chart-title').textContent], ['说明', $('#chart-note').textContent], ['分组', '数值', '对局数'],
+    const rows = page === 'charts' ? [['图表', $('#chart-title').textContent], ['说明', $('#chart-note').textContent], ['分组', '数值', '记录数'],
       ...[...$('#chart-rows').rows].map(row => [...row.cells].map(cell => cell.textContent))]
       : [['卡牌', '模型 ID', '稀有度', '提供次数', '选中次数', '抓取率', '持有角色数', '持有率', '持有通关率', '平均抓取楼层', '曾抓取样本', '曾抓取通关', '只跳过样本', '只跳过通关', '移除', '升级', '涉及战斗', '抽到', '手动打出', '自动打出', '开始结算', '完成结算', '实付能量', '实付星数'],
         ...displayedCards.map(card => [card.name, card.id, card.rarity, card.offered, card.picked, percent(metric.pickRate(card)), card.held, percent(metric.held(card)), percent(metric.winRate(card)),

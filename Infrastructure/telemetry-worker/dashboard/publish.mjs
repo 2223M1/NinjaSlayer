@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { chartBins, mechanismBins } from './chart-data.mjs';
 
 const contentRoot = new URL('../../../Website/content/', import.meta.url);
+export const chartSchemaVersion = 1;
 export async function readCurrentRelease() {
   return JSON.parse(await readFile(new URL('current.json', contentRoot), 'utf8'));
 }
@@ -46,6 +47,6 @@ export function publishSnapshot(telemetry, catalog) {
       floorTotal: runs.reduce((sum, run) => sum + run.floor, 0),
       cards: summary.cards.filter(card => choiceCounters.some(key => card[key])).map(card => ({ id: card.id, ...Object.fromEntries(choiceCounters.map(key => [key, card[key]])) })) };
   });
-  return useCurrentCatalog({ groups,
+  return useCurrentCatalog({ chartSchemaVersion, groups,
     excluded: { rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts, invalidCombats: telemetry.invalidCombats } }, catalog);
 }

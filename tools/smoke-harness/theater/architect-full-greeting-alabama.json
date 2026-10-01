@@ -1,15 +1,16 @@
 {
-  "seed": "NINJASLAYER_ARCHITECT_FULL_ALABAMA_20260926",
+  "seed": "NINJASLAYER_THEATER_01",
   "purpose": "architect",
   "act": 3,
-  "duration": 24,
+  "duration": 1,
+  "continuePromo": true,
   "narrationEnabled": false,
   "karate": 2,
   "relics": [],
   "cues": [
-    { "id": "audio_calibration", "steps": [{ "action": "audit_calibration" }] },
+    { "id": "architect_black_buffer", "steps": [{ "action": "architect_transition", "seconds": 4 }] },
     { "id": "architect_room_full_greeting_alabama", "steps": [
-      { "action": "architect_execution", "actor": "native", "card": "AlabamaDrop", "greeting": "full" }
+      { "action": "architect_execution", "actor": "native", "card": "AlabamaDrop" }
     ] }
   ]
 }

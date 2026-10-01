@@ -53,8 +53,6 @@ public sealed class HalfMoonCompassKick : NinjaSlayerUncommonCard
             () => NinjaSlayerXAttackSequence.Run(
                 Owner.Creature,
                 hits,
-                Owner.Character.AttackAnimDelay,
-                Owner.Character.AttackAnimDelay,
                 async _ =>
                 {
                     AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)

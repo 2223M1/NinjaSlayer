@@ -48,8 +48,6 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
             () => NinjaSlayerXAttackSequence.Run(
                 Owner.Creature,
                 hits,
-                TornadoFistSpinAnimation.TurnSeconds,
-                CombatActionTimingRuntime.AttackSeconds + CombatActionTimingRuntime.DamageRecoverySeconds,
                 async index =>
                 {
                     AttackCommand command;
@@ -64,6 +62,17 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
                             .WithDefectStrikeHitFx()
                             .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
                             .TargetingAllOpponents(CombatState!);
+                        if (index == hits - 1)
+                        {
+                            command.BeforeDamage(() =>
+                            {
+                                if (!NinjaSlayerAttackExecution.NeedsDamageRecovery)
+                                    foreach (SpinComboAudio audio in MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance!
+                                                 .GetChildren().OfType<SpinComboAudio>())
+                                        if (audio.Actor == Owner.Creature) audio.Finish();
+                                return Task.CompletedTask;
+                            });
+                        }
                         await command.Execute(choiceContext);
                     }
 
