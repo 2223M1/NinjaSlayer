@@ -53,9 +53,10 @@ jobs:
             throw 'The universal Workshop item id is invalid.'
           }
           $visibilityCode = switch ([string]$compatibility.workshop.visibility) {
+            'public' { '0' }
             'private' { '2' }
             'unlisted' { '3' }
-            default { throw 'The universal Workshop visibility must be private or unlisted.' }
+            default { throw 'The universal Workshop visibility must be public, private or unlisted.' }
           }
           $expectedConfirmation = "PUBLISH_NINJASLAYER_WORKSHOP_$itemId"
           if ($env:CONFIRMATION -cne $expectedConfirmation) {

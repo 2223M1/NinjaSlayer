@@ -31,8 +31,8 @@ function Read-NinjaSlayerCompatibility {
         throw 'Compatibility ritsuLibVersion must be an exact SemVer core.'
     }
     if ([string]$manifest.workshop.itemId -notmatch '^\d+$' -or
-        [string]$manifest.workshop.visibility -notin @('private', 'unlisted')) {
-        throw 'Compatibility Workshop target must have a numeric item id and private or unlisted visibility.'
+        [string]$manifest.workshop.visibility -notin @('public', 'private', 'unlisted')) {
+        throw 'Compatibility Workshop target must have a numeric item id and public, private or unlisted visibility.'
     }
     $spineFiles = @($manifest.spineExtension.windowsFiles)
     if ($spineFiles.Count -ne 3) {

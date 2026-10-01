@@ -51,7 +51,7 @@ internal sealed partial class SmokeController
         NonInteractiveMode.AutoSlayerCheck = static () => false;
         try
         {
-            await WaitFrames(45);
+            await WaitFrames(120);
             var exhaustButton = NCombatRoom.Instance!.Ui.ExhaustPile;
             await MouseClickAtAsync(exhaustButton.GetGlobalRect().GetCenter());
             await WaitFrames(3);
@@ -64,13 +64,22 @@ internal sealed partial class SmokeController
             {
                 SaveManager.Instance.PrefsSave.FastMode = speed;
                 var cards = Enumerable.Range(0, 3).Select(_ => combat.CreateCard<DefendNinjaSlayer>(player)).ToArray();
+                // Enter the draw pile from a visible native pile, so its animation counter
+                // is initialized too. Adding new models straight to Draw omits that animation.
+                await CardPileCmd.Add(cards, PileType.Hand);
+                await WaitFrames(120);
                 await CardPileCmd.Add(cards, PileType.Draw, CardPilePosition.Top);
+                await WaitFrames(120);
                 await (Task)AccessTools.Method(typeof(ShurikenOrb), "AddStock").Invoke(null, [choice, player, 3])!;
                 Task<ScryResult> scry = ScryCmd.Execute(choice, player, 3);
                 NSimpleCardSelectScreen? screen = null;
                 await WaitUntilAsync(() => (screen = FindDescendant<NSimpleCardSelectScreen>(_tree.Root)) != null,
                     "Scry selection did not open.");
-                await WaitFrames(45);
+                await WaitFrames(120);
+                string initialDisplay = NCombatRoom.Instance!.Ui.DrawPile.GetNode<Label>("CountContainer/Count").Text;
+                int initialActual = PileType.Draw.GetPile(player).Cards.Count;
+                Require(initialDisplay == initialActual.ToString(),
+                    $"Fixture must start Scry with an accurate native draw-pile counter: {initialDisplay} vs {initialActual}.");
                 foreach (var card in cards)
                     AccessTools.Method(typeof(NSimpleCardSelectScreen), "OnCardClicked").Invoke(screen, [card]);
                 var confirm = screen!.GetNode<NButton>("%Confirm");
@@ -95,6 +104,48 @@ internal sealed partial class SmokeController
                 Require(!opened, "Scry confirmation opened a combat pile.");
                 Require(scry.Result.Discarded == 3, "Mouse confirmation lost selected Scry cards.");
                 Require(!overlap.HasArea(), "Scry confirmation still overlaps the exhaust pile button.");
+                await WaitFrames(120);
+                int drawCount = PileType.Draw.GetPile(player).Cards.Count;
+                string displayedDrawCount = NCombatRoom.Instance!.Ui.DrawPile
+                    .GetNode<Label>("CountContainer/Count").Text;
+                _checkpoints.Write("release100.scry-pile-count", data: new JsonObject
+                { ["speed"] = speed.ToString(), ["clicks"] = clickCount,
+                    ["actual"] = drawCount, ["displayed"] = displayedDrawCount });
+                Require(displayedDrawCount == drawCount.ToString(),
+                    $"Scry left draw-pile count stale: displayed {displayedDrawCount}, actual {drawCount}.");
+            }
+            foreach (var (selected, exhaustSelection) in new[] { (0, false), (1, false), (3, false), (3, true) })
+            {
+                await CardPileCmd.Add(PileType.Draw.GetPile(player).Cards.ToArray(), PileType.Discard);
+                var cards = Enumerable.Range(0, 3).Select(_ => combat.CreateCard<DefendNinjaSlayer>(player)).ToArray();
+                await CardPileCmd.Add(cards, PileType.Hand);
+                await WaitFrames(120);
+                await CardPileCmd.Add(cards, PileType.Draw, CardPilePosition.Top);
+                await WaitFrames(120);
+                Require(NCombatRoom.Instance!.Ui.DrawPile.GetNode<Label>("CountContainer/Count").Text == "3",
+                    "Fixture must show three cards before the selection-count scenarios.");
+                Task<ScryResult> scry = ScryCmd.Execute(choice, player, 3, exhaustSelection);
+                NSimpleCardSelectScreen? screen = null;
+                await WaitUntilAsync(() => (screen = FindDescendant<NSimpleCardSelectScreen>(_tree.Root)) != null,
+                    "Scry count selection did not open.");
+                await WaitFrames(120);
+                foreach (var card in cards.Take(selected))
+                    AccessTools.Method(typeof(NSimpleCardSelectScreen), "OnCardClicked").Invoke(screen, [card]);
+                await MouseClickAtAsync(screen!.GetNode<NButton>("%Confirm").GetGlobalRect().GetCenter());
+                await scry;
+                await WaitFrames(120);
+                var ui = NCombatRoom.Instance!.Ui;
+                var counts = new JsonObject { ["selected"] = selected, ["exhaust"] = exhaustSelection };
+                foreach (var (pileType, node) in new (PileType, Control)[]
+                    { (PileType.Draw, ui.DrawPile), (PileType.Discard, ui.DiscardPile), (PileType.Exhaust, ui.ExhaustPile) })
+                {
+                    int actual = pileType.GetPile(player).Cards.Count;
+                    string displayed = node.GetNode<Label>("CountContainer/Count").Text;
+                    counts[pileType.ToString()] = new JsonObject { ["actual"] = actual, ["displayed"] = displayed };
+                    Require(displayed == actual.ToString(), $"{pileType} count differs after Scry: {displayed} vs {actual}.");
+                }
+                Require(PileType.Draw.GetPile(player).Cards.Count == 3 - selected, "Scry selection removed the wrong number of cards.");
+                _checkpoints.Write("release100.scry-count-variants", data: counts);
             }
             await MouseClickAtAsync(exhaustButton.GetGlobalRect().GetCenter());
             await WaitFrames(3);

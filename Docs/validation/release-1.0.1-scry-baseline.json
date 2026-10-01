@@ -1,0 +1,108 @@
+[
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "driver.started",
+    "Sequence": 1,
+    "Status": "passed",
+    "ElapsedMilliseconds": 1,
+    "Data": null
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "telemetry.notice-dismissed",
+    "Sequence": 2,
+    "Status": "passed",
+    "ElapsedMilliseconds": 4962,
+    "Data": null
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "mods.loaded",
+    "Sequence": 3,
+    "Status": "passed",
+    "ElapsedMilliseconds": 4963,
+    "Data": {
+      "loaded": [
+        "NinjaSlayer",
+        "NinjaSlayer-SmokeDriver",
+        "STS2-RitsuLib"
+      ]
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "redesign.content-validated",
+    "Sequence": 4,
+    "Status": "passed",
+    "ElapsedMilliseconds": 4985,
+    "Data": {
+      "cardCount": 86
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "release100.confirm-geometry",
+    "Sequence": 5,
+    "Status": "passed",
+    "ElapsedMilliseconds": 19094,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 1,
+      "confirm": "(1860, 661)",
+      "exhaust": "(1830, 790), (80, 80)",
+      "overlap": false
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "release100.scry-mouse",
+    "Sequence": 6,
+    "Status": "passed",
+    "ElapsedMilliseconds": 20332,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 1,
+      "pileOpened": false,
+      "discarded": 3
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "release100.scry-pile-count",
+    "Sequence": 7,
+    "Status": "passed",
+    "ElapsedMilliseconds": 21082,
+    "Data": {
+      "speed": "Normal",
+      "clicks": 1,
+      "actual": 5,
+      "displayed": "8"
+    }
+  },
+  {
+    "SchemaVersion": 1,
+    "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "Phase": "release100",
+    "Name": "driver.failed",
+    "Sequence": 8,
+    "Status": "failed",
+    "ElapsedMilliseconds": 21083,
+    "Data": {
+      "exception": "System.InvalidOperationException: Scry left draw-pile count stale: displayed 8, actual 5.\r\n   at NinjaSlayer.SmokeDriver.SmokeController.Require(Boolean condition, String message)\r\n   at NinjaSlayer.SmokeDriver.SmokeController.RunRelease100Async()\r\n   at NinjaSlayer.SmokeDriver.SmokeController.RunSafelyAsync()"
+    }
+  }
+]
