@@ -1,0 +1,609 @@
+{
+  "version": "1.0.0",
+  "sourceRevision": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+  "verifiedAtUtc": "2026-10-01T05:19:08.8907586+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/150",
+  "ci": {
+    "conclusion": "success",
+    "headSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/36818375904"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "60d365524f2c343205e8e9c97864b2a59927ffec8b257b6501c9145aa8cae1c9",
+    "bbc855a501e74681c2ca7373c2471980b2fab534f65ff5b0e1891cfea935032a",
+    "d4ac8f9c858bf74cc82eb5378977a334bc1d2307e97c9a58f3c466b725b2504a",
+    "68d072cbe3bddcf58611a5331f5b31379e57d35c316f29bbff51346524e8ba51",
+    "20654061d0ace7f9c64ee2ebcd9ad49c7f23b295bb6079a901468eaccc6294fe",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "b221fae27b9ce578231ef3493c41bf0060caadb1cf947e1c5e3643bb28bfbcc4",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "1a723cb88db71f5cc2ed840b555b7759d61b0e2b6fa9c54138ecb0772f9bf451",
+    "62c77ead3c8321ce9322b74132dcc1211d661c388b458ced9a001cb9d3bcd479"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "60d365524f2c343205e8e9c97864b2a59927ffec8b257b6501c9145aa8cae1c9",
+      "bytes": 644
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "bbc855a501e74681c2ca7373c2471980b2fab534f65ff5b0e1891cfea935032a",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "d4ac8f9c858bf74cc82eb5378977a334bc1d2307e97c9a58f3c466b725b2504a",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "68d072cbe3bddcf58611a5331f5b31379e57d35c316f29bbff51346524e8ba51",
+      "bytes": 209291576
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "20654061d0ace7f9c64ee2ebcd9ad49c7f23b295bb6079a901468eaccc6294fe",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "b221fae27b9ce578231ef3493c41bf0060caadb1cf947e1c5e3643bb28bfbcc4",
+      "bytes": 2229248
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "1a723cb88db71f5cc2ed840b555b7759d61b0e2b6fa9c54138ecb0772f9bf451",
+      "bytes": 121856
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "62c77ead3c8321ce9322b74132dcc1211d661c388b458ced9a001cb9d3bcd479",
+      "bytes": 2232832
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+        "bundleVersion": "1.0.0",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "20654061d0ace7f9c64ee2ebcd9ad49c7f23b295bb6079a901468eaccc6294fe",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "release100",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T13:11:13.5758036+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19447,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 20682,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 21682,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "confirm": "(1860.0001, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 22932,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 23782,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 24732,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 25582,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26531,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 13,
+          "Status": "passed",
+          "ElapsedMilliseconds": 27281,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 14,
+          "Status": "passed",
+          "ElapsedMilliseconds": 27415,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 15,
+          "Status": "passed",
+          "ElapsedMilliseconds": 28165,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 16,
+          "Status": "passed",
+          "ElapsedMilliseconds": 28315,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.fake-merchant",
+          "Sequence": 17,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29439,
+          "Data": {
+            "containerScale": "(1.75, 1.75)",
+            "portraitScale": "(0.5714286, 0.5714286)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.completed",
+          "Sequence": 18,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29439,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+        "bundleVersion": "1.0.0",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "20654061d0ace7f9c64ee2ebcd9ad49c7f23b295bb6079a901468eaccc6294fe",
+        "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+        "mode": "release100",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T13:11:59.4529575+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19079,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 20332,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 21332,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 22582,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 23432,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 24382,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 25232,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26182,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 13,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26932,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 14,
+          "Status": "passed",
+          "ElapsedMilliseconds": 27065,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 15,
+          "Status": "passed",
+          "ElapsedMilliseconds": 27815,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 16,
+          "Status": "passed",
+          "ElapsedMilliseconds": 27965,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.fake-merchant",
+          "Sequence": 17,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29104,
+          "Data": {
+            "containerScale": "(1.75, 1.75)",
+            "portraitScale": "(0.5714286, 0.5714286)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+          "Phase": "release100",
+          "Name": "release100.completed",
+          "Sequence": 18,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29104,
+          "Data": null
+        }
+      ]
+    }
+  ],
+  "catalog": {
+    "schemaVersion": 6,
+    "candidateSha": "15c41dad318baaba6b50d955bdc4fb8787e88a0f",
+    "bundleVersion": "1.0.0",
+    "result": "passed",
+    "channel": "stable",
+    "gameApiVersion": "0.107.1",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.3",
+    "additionalMods": [],
+    "bundleSha256": "20654061d0ace7f9c64ee2ebcd9ad49c7f23b295bb6079a901468eaccc6294fe",
+    "compatibilityManifestSha256": "5f488eb7d0e150ea02a5a25f5e8058519cd0a7fdcb98bc7dcccde7e8ec32bd5c",
+    "mode": "runtime-content-export",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-10-01T13:14:32.8444541+08:00"
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityUnlisted",
+    "dependencies": [
+      3747602295
+    ],
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214220655
+  },
+  "validation": {
+    "logicTests": 375,
+    "websitePassed": 62,
+    "websiteSkipped": 1,
+    "dualHostProducts": true,
+    "dualHostSmokeDrivers": true,
+    "dualHostContracts": true,
+    "localAdminRealFeedbackRead": true,
+    "localCopySaveReloadPreview": true
+  },
+  "notVerified": [
+    "Four-client rendered multiplayer was not rerun this round.",
+    "Keyboard/controller Scry confirmation was not manually retested; native bindings were unchanged.",
+    "Copy publishing was covered by contracts; no test copy was publicly published.",
+    "Default local telemetry DNS remains unresolved: FlClash edit/restart was denied by automatic approval. Correct-DNS replay fetch succeeded without disabling TLS checks."
+  ]
+}
