@@ -97,7 +97,7 @@ internal sealed class FinisherApproach : IDisposable
         if (Active.TryGetValue(actor, out var lease))
         {
             lease._animationPosition = position;
-            visuals.Position = position + lease._offset;
+            lease.Apply(lease._offset);
         }
         else visuals.Position = position;
     }
@@ -119,7 +119,10 @@ internal sealed class FinisherApproach : IDisposable
 
     private void Apply(Vector2 offset)
     {
-        if (_disposed || !GodotObject.IsInstanceValid(_actor.Visuals)) return;
+        // The native game-over screen takes the surviving killer's visuals. Its
+        // new parent owns their position; a combat return must not overwrite it.
+        if (_disposed || !GodotObject.IsInstanceValid(_actor.Visuals)
+            || !_actor.IsAncestorOf(_actor.Visuals)) return;
         _offset = offset;
         _actor.Visuals.Position = _animationPosition + offset;
     }

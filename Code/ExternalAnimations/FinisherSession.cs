@@ -1024,7 +1024,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
         if (_measuredCameraTask != null) await CaptureAsync(() => _measuredCameraTask);
         await CaptureAsync(() => _cameraShakePumpTask);
 
-        if (!IsRanged && !AlabamaOwnsRecovery && mayRestoreCurrentCombat && GodotObject.IsInstanceValid(_actorNode))
+        if (!IsRanged && !AlabamaOwnsRecovery && mayRestoreCurrentCombat
+            && GodotObject.IsInstanceValid(_actorNode) && _actorNode.IsAncestorOf(_actorNode.Visuals))
         {
             Capture(() => FinisherApproach.SetAnimationPosition(Actor, _actorNode.Visuals, _actorReturnVisualPosition));
         }

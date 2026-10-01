@@ -116,6 +116,31 @@ public partial class OrbContractRunner
                     "Iai prediction return failed to restore the visual baseline with a stable UI root.");
             }
             VerifyWeaponContact(actor, focus, type, bounds);
+            var gameOverContainer = new Node2D();
+            AddChild(gameOverContainer);
+            var handedOff = (IDisposable)AccessTools.Method(type, "Create").Invoke(null, [actor, focus, Vector2.One])!;
+            try
+            {
+                AccessTools.Method(type, "ApplyProgress").Invoke(handedOff, [1f]);
+                actor.Visuals.Reparent(gameOverContainer);
+                Vector2 gameOverPosition = new(480f, 320f);
+                actor.Visuals.Position = gameOverPosition;
+                AccessTools.Method(type, "BeginReturn").Invoke(handedOff, null);
+                AccessTools.Method(type, "ApplyReturn").Invoke(handedOff, [.5f]);
+                AccessTools.Method(type, "SetAnimationPosition").Invoke(null, [actor.Entity, actor.Visuals, baseline]);
+                handedOff.Dispose();
+                Require(actor.Visuals.Position.IsEqualApprox(gameOverPosition),
+                    "Combat return overwrote the native game-over screen's visual placement.");
+                Require(!(bool)AccessTools.Method(type, "IsActive").Invoke(null, [actor.Entity])!,
+                    "Handed-off visuals left an active finisher approach.");
+            }
+            finally
+            {
+                handedOff.Dispose();
+                actor.Visuals.Reparent(originalParent);
+                actor.Visuals.Position = baseline;
+                gameOverContainer.QueueFree();
+            }
         }
         finally
         {
