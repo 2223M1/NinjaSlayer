@@ -1,0 +1,988 @@
+{
+  "version": "1.0.1",
+  "sourceRevision": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+  "verifiedAtUtc": "2026-10-01T13:17:30.7940394+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/152",
+  "ci": {
+    "conclusion": "success",
+    "headSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/36866429746"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "52ffe71119eef84114541181b979ab83914a5fea74a8bd47f76058f157c1dc28",
+    "c041585ccf261f31fd424f85eb352ac9e8ce11e7c60cd052b6bf8d44a090837a",
+    "d0af909a71321b36e7a5c8e92e4af42c1a6adde283927e876fd864c594f15673",
+    "6be7c08bff4894302da760ed66c5d462f62ec5b461744b5f75d9556713632a23",
+    "9e6a525dceac0fdafe442fbd20e49e8064c4f9ccfd9be279c86d79a26da4c4ba",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "bb22cd36ca49e75b006c0f1466237b96452856f8061b96472d3fabdc43afe7db",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "6e4ce34dc1f57b2d4ff7937766300a36e279580bf9ce73db85f61b4697cce419",
+    "350ef44dc14a5908c8a009d4cd49941c4bad3da1cdb04035de1690a0d4c88ed2"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "52ffe71119eef84114541181b979ab83914a5fea74a8bd47f76058f157c1dc28",
+      "bytes": 644
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "c041585ccf261f31fd424f85eb352ac9e8ce11e7c60cd052b6bf8d44a090837a",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "d0af909a71321b36e7a5c8e92e4af42c1a6adde283927e876fd864c594f15673",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "6be7c08bff4894302da760ed66c5d462f62ec5b461744b5f75d9556713632a23",
+      "bytes": 209291576
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "9e6a525dceac0fdafe442fbd20e49e8064c4f9ccfd9be279c86d79a26da4c4ba",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "bb22cd36ca49e75b006c0f1466237b96452856f8061b96472d3fabdc43afe7db",
+      "bytes": 2229248
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "6e4ce34dc1f57b2d4ff7937766300a36e279580bf9ce73db85f61b4697cce419",
+      "bytes": 121856
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "350ef44dc14a5908c8a009d4cd49941c4bad3da1cdb04035de1690a0d4c88ed2",
+      "bytes": 2232832
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+        "bundleVersion": "1.0.1",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "9e6a525dceac0fdafe442fbd20e49e8064c4f9ccfd9be279c86d79a26da4c4ba",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release100",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T21:11:56.9243681+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26446,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 27962,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29961,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 36461,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 37978,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 39978,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 46178,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 47394,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 13,
+          "Status": "passed",
+          "ElapsedMilliseconds": 49394,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 14,
+          "Status": "passed",
+          "ElapsedMilliseconds": 55594,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 15,
+          "Status": "passed",
+          "ElapsedMilliseconds": 56810,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 16,
+          "Status": "passed",
+          "ElapsedMilliseconds": 58810,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 17,
+          "Status": "passed",
+          "ElapsedMilliseconds": 64810,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 18,
+          "Status": "passed",
+          "ElapsedMilliseconds": 65210,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 19,
+          "Status": "passed",
+          "ElapsedMilliseconds": 67213,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 20,
+          "Status": "passed",
+          "ElapsedMilliseconds": 73213,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 21,
+          "Status": "passed",
+          "ElapsedMilliseconds": 73613,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 22,
+          "Status": "passed",
+          "ElapsedMilliseconds": 75613,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 23,
+          "Status": "passed",
+          "ElapsedMilliseconds": 83646,
+          "Data": {
+            "selected": 0,
+            "exhaustSelection": false,
+            "Draw": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Discard": {
+              "actual": 23,
+              "displayed": "23"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 24,
+          "Status": "passed",
+          "ElapsedMilliseconds": 91946,
+          "Data": {
+            "selected": 1,
+            "exhaustSelection": false,
+            "Draw": {
+              "actual": 2,
+              "displayed": "2"
+            },
+            "Discard": {
+              "actual": 27,
+              "displayed": "27"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 25,
+          "Status": "passed",
+          "ElapsedMilliseconds": 100279,
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": false,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 32,
+              "displayed": "32"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 26,
+          "Status": "passed",
+          "ElapsedMilliseconds": 109995,
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": true,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 32,
+              "displayed": "32"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.fake-merchant",
+          "Sequence": 27,
+          "Status": "passed",
+          "ElapsedMilliseconds": 111138,
+          "Data": {
+            "containerScale": "(1.75, 1.75)",
+            "portraitScale": "(0.5714286, 0.5714286)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.completed",
+          "Sequence": 28,
+          "Status": "passed",
+          "ElapsedMilliseconds": 111138,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+        "bundleVersion": "1.0.1",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.3",
+        "additionalMods": [],
+        "bundleSha256": "9e6a525dceac0fdafe442fbd20e49e8064c4f9ccfd9be279c86d79a26da4c4ba",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release100",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-01T21:13:59.4414459+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 25257,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26773,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 28772,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 35022,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 36539,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 38539,
+          "Data": {
+            "speed": "Normal",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 44638,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 45855,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 13,
+          "Status": "passed",
+          "ElapsedMilliseconds": 47855,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 14,
+          "Status": "passed",
+          "ElapsedMilliseconds": 53955,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 15,
+          "Status": "passed",
+          "ElapsedMilliseconds": 55172,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 16,
+          "Status": "passed",
+          "ElapsedMilliseconds": 57171,
+          "Data": {
+            "speed": "Fast",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 17,
+          "Status": "passed",
+          "ElapsedMilliseconds": 63171,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 18,
+          "Status": "passed",
+          "ElapsedMilliseconds": 63571,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 19,
+          "Status": "passed",
+          "ElapsedMilliseconds": 65571,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 1,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.confirm-geometry",
+          "Sequence": 20,
+          "Status": "passed",
+          "ElapsedMilliseconds": 71571,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "confirm": "(1860, 661)",
+            "exhaust": "(1830, 790), (80, 80)",
+            "overlap": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-mouse",
+          "Sequence": 21,
+          "Status": "passed",
+          "ElapsedMilliseconds": 71971,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "pileOpened": false,
+            "discarded": 3
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-pile-count",
+          "Sequence": 22,
+          "Status": "passed",
+          "ElapsedMilliseconds": 73970,
+          "Data": {
+            "speed": "Instant",
+            "clicks": 2,
+            "actual": 5,
+            "displayed": "5"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 23,
+          "Status": "passed",
+          "ElapsedMilliseconds": 82004,
+          "Data": {
+            "selected": 0,
+            "exhaustSelection": false,
+            "Draw": {
+              "actual": 3,
+              "displayed": "3"
+            },
+            "Discard": {
+              "actual": 23,
+              "displayed": "23"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 24,
+          "Status": "passed",
+          "ElapsedMilliseconds": 90303,
+          "Data": {
+            "selected": 1,
+            "exhaustSelection": false,
+            "Draw": {
+              "actual": 2,
+              "displayed": "2"
+            },
+            "Discard": {
+              "actual": 27,
+              "displayed": "27"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 25,
+          "Status": "passed",
+          "ElapsedMilliseconds": 98636,
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": false,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 32,
+              "displayed": "32"
+            },
+            "Exhaust": {
+              "actual": 1,
+              "displayed": "1"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.scry-count-variants",
+          "Sequence": 26,
+          "Status": "passed",
+          "ElapsedMilliseconds": 107452,
+          "Data": {
+            "selected": 3,
+            "exhaustSelection": true,
+            "Draw": {
+              "actual": 0,
+              "displayed": "0"
+            },
+            "Discard": {
+              "actual": 32,
+              "displayed": "32"
+            },
+            "Exhaust": {
+              "actual": 4,
+              "displayed": "4"
+            }
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.fake-merchant",
+          "Sequence": 27,
+          "Status": "passed",
+          "ElapsedMilliseconds": 108608,
+          "Data": {
+            "containerScale": "(1.75, 1.75)",
+            "portraitScale": "(0.5714286, 0.5714286)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+          "Phase": "release100",
+          "Name": "release100.completed",
+          "Sequence": 28,
+          "Status": "passed",
+          "ElapsedMilliseconds": 108608,
+          "Data": null
+        }
+      ]
+    }
+  ],
+  "catalog": {
+    "schemaVersion": 6,
+    "candidateSha": "1de86cf0e51cad5371de00cabad5ee92a033d522",
+    "bundleVersion": "1.0.1",
+    "result": "passed",
+    "channel": "stable",
+    "gameApiVersion": "0.107.1",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.3",
+    "additionalMods": [],
+    "bundleSha256": "9e6a525dceac0fdafe442fbd20e49e8064c4f9ccfd9be279c86d79a26da4c4ba",
+    "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+    "mode": "runtime-content-export",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-10-01T21:16:42.1681435+08:00"
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Character,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214220655
+  },
+  "validation": {
+    "logicTests": 375,
+    "dualHostProducts": true,
+    "dualHostSmokeDrivers": true,
+    "dualHostContracts": true,
+    "nativePileNotificationContracts": true,
+    "dualHostMouseScryCounts": true
+  },
+  "notVerified": [
+    "Four-client rendered multiplayer was not rerun this round.",
+    "Keyboard/controller Scry confirmation was not manually retested; native bindings were unchanged.",
+    "macOS and Linux real-game validation was not performed this round."
+  ]
+}
