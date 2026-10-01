@@ -19,6 +19,7 @@ export async function loadCatalog(version) {
 }
 export const plain = (text) =>
   String(text ?? "")
+    .replace(/\[img\]res:\/\/images\/packed\/sprite_fonts\/[a-z_]*energy_icon\.png\[\/img\]/g, "◆")
     .replace(
       /\[\/?(?:b|i|u|s|gold|red|green|blue|purple|orange|color(?:=[^\]]*)?|font(?:=[^\]]*)?)\]/g,
       "",
