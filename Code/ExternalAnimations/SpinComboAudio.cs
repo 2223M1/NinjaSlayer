@@ -1,185 +1,98 @@
-using MegaCrit.Sts2.Core.Commands;
+using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using NinjaSlayer.Code.Combat;
+using NinjaSlayer.Code.Nodes;
 using NinjaSlayer.Content;
 using NinjaSlayer.Scripts;
+using STS2RitsuLib.Audio;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-/// <summary>
-/// Spin-combo FMOD for X-cost multi-hit attacks.
-/// The custom bank's loop has no native "loop" stop parameter.
-/// </summary>
-public static class SpinComboAudio
+/// <summary>One Tornado Fist instance, owned until its outro ends or the room unloads.</summary>
+internal sealed partial class SpinComboAudio : Node
 {
-    public static async Task PlaySequence(
-        Creature creature,
-        int hitCount,
-        float perHitDuration,
-        Func<Task> executeHits)
+    private AudioEventHandle _audio = null!;
+    private NCombatRoom _room = null!;
+    private Creature _actor = null!;
+    private float _elapsed;
+    private bool _finishing, _paused;
+    internal Creature Actor => _actor;
+
+    internal static SpinComboAudio Start(Creature actor)
     {
-        if (hitCount <= 0)
-        {
-            return;
-        }
-
-        var audio = NinjaSlayerCombatAudioSet.For(creature);
-        bool forcePerHitComboAudio = NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
-
-        if (hitCount == 1)
-        {
-            await RunWithSuppressedAutomaticSfx(async () =>
+        NCombatRoom room = NCombatRoom.Instance ?? throw new InvalidOperationException("Tornado audio requires a combat room.");
+        AudioEventHandle audio = FmodStudioEventInstances.TryCreateHandle(
+            AudioSource.Event(NinjaSlayerAudio.NinjaSlayerSpinAttackEvent),
+            new AudioPlaybackOptions
             {
-                NinjaSlayerCombatAudioSet.Play(audio.SlowAttack);
-                await executeHits();
-            });
-            return;
-        }
-
-        if (forcePerHitComboAudio)
+                Scope = AudioLifecycleScope.Manual
+            }) ?? throw new InvalidOperationException("Could not create the Tornado Fist FMOD event.");
+        // TryCreateHandle copies lifecycle scope only; it does not apply playback options.
+        if (!audio.TrySetParameter("sustain", 1f)
+            || !audio.TrySetParameter("finish", 0f))
         {
-            await RunWithSuppressedAutomaticSfx(executeHits);
-            return;
+            audio.TryRelease();
+            throw new InvalidOperationException("Could not initialize the Tornado Fist FMOD parameters.");
         }
-
-        float totalDuration = hitCount * perHitDuration;
-        float loopPlayDuration = Math.Max(
-            0f,
-            totalDuration - NinjaSlayerAudio.IntroSpinAttackSeconds - NinjaSlayerAudio.OutroSpinAttackSeconds);
-
-        NinjaSlayerCombatAudioSet.Play(audio.IntroSpinAttack);
-        Task hitsTask = ObserveFaults(RunWithSuppressedAutomaticSfx(executeHits), "spin combo");
-
-        await Cmd.Wait(NinjaSlayerAudio.IntroSpinAttackSeconds);
-
-        bool loopStarted = false;
-        try
+        var owner = new SpinComboAudio
         {
-            if (loopPlayDuration > 0f)
-            {
-                SfxCmd.PlayLoop(audio.LoopSpinAttack, usesLoopParam: false);
-                loopStarted = true;
-                await Cmd.Wait(loopPlayDuration);
-            }
-
-            await hitsTask;
-            NinjaSlayerCombatAudioSet.Play(audio.OutroSpinAttack);
-        }
-        finally
+            _audio = audio, _room = room, _actor = actor,
+            ProcessMode = ProcessModeEnum.Always
+        };
+        room.AddChild(owner);
+        if (!audio.TryPlay())
         {
-            if (loopStarted)
-            {
-                SfxCmd.StopLoop(audio.LoopSpinAttack);
-            }
+            owner.QueueFree();
+            throw new InvalidOperationException("Could not start the Tornado Fist FMOD event.");
         }
+        Entry.Logger.Info("Tornado audio: sustain until the final hit.");
+        return owner;
     }
 
-    public static void PlayFormSlowAttack(Creature creature) =>
-        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
-
-    public static async Task PlayTornadoFistSequence(
-        Creature creature,
-        int hitCount,
-        float perHitDuration,
-        Func<Action, Task> executeHits)
+    internal static float RemainingSeconds(Creature actor, int hits)
     {
-        var audio = NinjaSlayerCombatAudioSet.For(creature);
-        float totalDuration = hitCount * perHitDuration;
-        float loopPlayDuration = Math.Max(
-            0f,
-            totalDuration - NinjaSlayerAudio.IntroSpinAttackSeconds);
-
-        bool loopStarted = false;
-        bool outroPlayed = false;
-        var earlyOutro = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        void FinishAudio()
-        {
-            if (outroPlayed)
-            {
-                return;
-            }
-
-            if (loopStarted)
-            {
-                SfxCmd.StopLoop(audio.LoopSpinAttack);
-                loopStarted = false;
-            }
-
-            outroPlayed = true;
-            NinjaSlayerCombatAudioSet.Play(audio.OutroSpinAttack);
-            earlyOutro.TrySetResult();
-        }
-
-        NinjaSlayerCombatAudioSet.Play(audio.IntroSpinAttack);
-        Task hitsTask = ObserveFaults(
-            RunWithSuppressedAutomaticSfx(() => executeHits(FinishAudio)),
-            "Tornado Fist combo");
-
-        try
-        {
-            Task completed = await Task.WhenAny(
-                Cmd.Wait(NinjaSlayerAudio.IntroSpinAttackSeconds),
-                earlyOutro.Task,
-                hitsTask);
-            if (completed == earlyOutro.Task)
-            {
-                await hitsTask;
-                return;
-            }
-            if (completed == hitsTask)
-            {
-                await hitsTask;
-                FinishAudio();
-                return;
-            }
-
-            if (loopPlayDuration > 0f)
-            {
-                SfxCmd.PlayLoop(audio.LoopSpinAttack, usesLoopParam: false);
-                loopStarted = true;
-                completed = await Task.WhenAny(
-                    Cmd.Wait(loopPlayDuration),
-                    earlyOutro.Task,
-                    hitsTask);
-                if (completed == earlyOutro.Task)
-                {
-                    await hitsTask;
-                    return;
-                }
-                if (completed == hitsTask)
-                {
-                    await hitsTask;
-                    FinishAudio();
-                    return;
-                }
-            }
-
-            await hitsTask;
-            FinishAudio();
-        }
-        finally
-        {
-            if (loopStarted)
-            {
-                SfxCmd.StopLoop(audio.LoopSpinAttack);
-            }
-        }
+        FinisherSession? session = FinisherSessionRegistry.GetActiveSession();
+        float extra = session?.Actor == actor && !session.IsRanged ? session.TornadoAudioExtraSeconds : 0f;
+        return TornadoSpinTiming.RemainingSeconds(hits, CombatActionTimingRuntime.CurrentSpeed) + extra;
     }
 
-    public static async Task RunWithSuppressedAutomaticSfx(Func<Task> action)
+    internal void Finish()
     {
-        using IDisposable suppression = XAttackAudioContext.Suppress();
-        await action();
+        if (_finishing) return;
+        if (!_audio.TrySetParameter("finish", 1f))
+            throw new InvalidOperationException("Tornado Fist could not enter its outro.");
+        _finishing = true;
+        Entry.Logger.Info($"Tornado audio: outro at {_elapsed:F6}s.");
     }
 
-    private static Task ObserveFaults(Task task, string operation)
+    public override void _Process(double delta)
     {
-        _ = task.ContinueWith(
-            faultedTask => Entry.Logger.Error(
-                $"NinjaSlayer {operation} hit task failed: {faultedTask.Exception}"),
-            CancellationToken.None,
-            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
-        return task;
+        bool paused = CombatManager.Instance.IsPaused || !_room.CanProcess();
+        if (paused != _paused)
+        {
+            if (!(paused ? _audio.TryPause() : _audio.TryResume()))
+                throw new InvalidOperationException("Tornado Fist audio pause failed.");
+            _paused = paused;
+        }
+        if (paused) return;
+        _elapsed += (float)delta;
+        if (_finishing)
+        {
+            // Wait for native STOPPED, including FMOD command/mixer latency and the full tail.
+            if (_audio.RawInstance!.Call("get_playback_state").AsInt32() == 2) QueueFree();
+            return;
+        }
+        bool targetsGone = _actor.CombatState == null
+            || (_actor.CombatState.HittableEnemies.Count == 0 && !NinjaSlayerFinisherCinematic.IsMovementOwned(_actor));
+        if (targetsGone || _actor.IsDead || NinjaSlayerAimPose.Get(_actor)?.IsTornado != true)
+            Finish();
+    }
+
+    public override void _ExitTree()
+    {
+        _audio.TryStop(false);
+        _audio.TryRelease();
     }
 }

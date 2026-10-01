@@ -18,7 +18,7 @@
   "NINJA_SLAYER_TELEMETRY_NOTICE_BODY": "カードのバランス調整にプレイデータを使わせてください。ルート、報酬の選択、最後のデッキ、結果、戦闘の統計を共有します。サイトには集計結果だけを表示します。\n\n今回の起動ではまだ自動送信していません。「今すぐ有効にする」で共有を開始します。案内を閉じるか無視した場合は、次回起動時から自動で有効になります。「共有しない」を選ぶと、無効のまま維持されます。後からMod設定で変更できます。",
   "NINJA_SLAYER_TELEMETRY_DECLINE": "共有しない",
   "NINJA_SLAYER_TELEMETRY_ACCEPT": "今すぐ有効にする",
-  "NINJA_SLAYER_TELEMETRY_WEBSITE": "公開統計ページ",
+  "NINJA_SLAYER_TELEMETRY_WEBSITE": "ニンジャ情報局",
   "NINJA_SLAYER_TELEMETRY_OPEN_WEBSITE": "統計とフィードバックを見る",
   "NINJA_SLAYER_TELEMETRY_REPLAY_TOGGLE": "リプレイを公開する",
   "NINJA_SLAYER_TELEMETRY_REPLAY_DESCRIPTION": "初期設定は無効です。有効にすると以降の部屋、選択、ターンごとの行動を記録し、匿名で最長90日間公開します。アカウント、シード、画像、ログは公開しません。マルチプレイでは自分の詳細だけを共有します。いつでも停止でき、記録のない区間は明示されます。",

@@ -1,0 +1,249 @@
+{
+  "seed": "FMOD_RESTRUCTURE_20260929",
+  "purpose": "finisher-audit",
+  "act": 3,
+  "duration": 38,
+  "karate": 0,
+  "narrationEnabled": false,
+  "audit": {
+    "monster": "ThievingHopper",
+    "targetHp": 79,
+    "mode": "Normal",
+    "form": "normal"
+  },
+  "cues": [
+    {
+      "id": "surviving_target",
+      "steps": [
+        {
+          "action": "block",
+          "actor": "enemy",
+          "amount": 10000
+        }
+      ]
+    },
+    {
+      "id": "audio_calibration",
+      "steps": [
+        {
+          "action": "audit_calibration"
+        }
+      ]
+    },
+    {
+      "id": "speed_normal",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Normal"
+        }
+      ]
+    },
+    {
+      "id": "normal_x0",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 0
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "normal_x3",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 3
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "normal_x4",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 4
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "normal_x7",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 7
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "normal_x8",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 8
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "normal_x11",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 11
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "speed_fast",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Fast"
+        }
+      ]
+    },
+    {
+      "id": "fast_x14",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 14
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "fast_x15",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 15
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "fast_x21",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 21
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "speed_instant",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Instant"
+        }
+      ]
+    },
+    {
+      "id": "instant_x21",
+      "steps": [
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 21
+        },
+        {
+          "action": "wait",
+          "seconds": 0.4
+        }
+      ]
+    },
+    {
+      "id": "naraku_voice",
+      "steps": [
+        {
+          "action": "speed",
+          "mode": "Fast"
+        },
+        {
+          "action": "form",
+          "form": "full"
+        },
+        {
+          "action": "card",
+          "card": "TornadoFist",
+          "energy": 21
+        }
+      ]
+    },
+    {
+      "id": "non_tornado",
+      "steps": [
+        {
+          "action": "form",
+          "form": "normal"
+        },
+        {
+          "action": "card",
+          "card": "StormFist"
+        }
+      ]
+    },
+    {
+      "id": "audio_calibration_end",
+      "steps": [
+        {
+          "action": "audit_calibration"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "steps": [
+        {
+          "action": "wait",
+          "seconds": 2
+        }
+      ]
+    }
+  ]
+}

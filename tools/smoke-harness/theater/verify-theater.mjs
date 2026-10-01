@@ -66,9 +66,41 @@ if (script.purpose === 'greeting') {
     }
   }
 }
+if (full && script.purpose === 'yukano-farewell') {
+  assert.equal(count('yukano-farewell-native'), 1, 'Relic combat-end departure did not complete.');
+  for (const cue of ['shuriken_normal', 'shuriken_fast'])
+    assert.equal(damage.filter(row => row.cue === cue && row.actor === 'sawatari').length, 2);
+  const poses = motion.filter(row => row.yukanoPose);
+  assert(poses.every(row => Math.abs(row.yukanoPose.scaleX - 1) < .001
+    && Math.abs(row.yukanoPose.scaleY - 1) < .001), 'Roll deformed Yukano.');
+  const entry = poses.filter(row => row.cue === 'entrance');
+  const exit = poses.filter(row => row.cue === 'farewell_on_victory');
+  assert(entry[0].yukano.coreX < 0 && entry.at(-1).yukano.coreX > 0,
+    'Entrance did not roll from offscreen left to the combat slot.');
+  assert(exit.some(row => row.yukanoPose.visible && row.yukano.coreX < 0)
+    && exit.at(-1).yukanoPose.visible === false, 'Farewell disappeared before leaving the screen.');
+  assert(poses.every(row => Math.abs(row.yukano.x - entry.at(-1).yukano.x) < .001
+    && Math.abs(row.yukano.y - entry.at(-1).yukano.y) < .001), 'Roll moved the layout root.');
+  if (motion.some(row => row.allyLayout)) {
+    for (const cue of ['entrance', 'farewell_on_victory']) {
+      const moving = motion.filter(row => row.cue === cue && row.allyLayout?.pending
+        && !row.allyLayout.actionOwnsPosition && row.allyLayout.elapsed > 0);
+      assert(moving.length >= 3, `Missing smooth player layout during ${cue}.`);
+      assert(moving.at(-1).seconds - moving[0].seconds >= .15, `Player layout snapped during ${cue}.`);
+      assert(new Set(moving.map(row => row.ninja.x.toFixed(2))).size >= 3, 'Layout has no intermediate positions.');
+      const settled = motion.filter(row => row.cue === cue).at(-1);
+      assert.equal(settled.allyLayout.pending, false, 'Layout did not settle.');
+      assert(Math.abs(settled.ninja.x - settled.allyLayout.targetX) < .01, 'Player missed native layout destination.');
+    }
+  }
+}
 if (full && script.purpose === 'yukano-popup') {
   const release = motion.find(row => row.popup?.releasePosition >= 1.001);
   if (script.cues.some(cue => cue.id === 'first_arrow')) {
+    const audioEvents = readFileSync(join(directory, 'audio-events.jsonl'), 'utf8').trim()
+      .split(/\r?\n/).map(line => JSON.parse(line));
+    assert.equal(audioEvents.filter(row => row.event === 'event:/NinjaSlayerAudio/sfx/narration/breast').length,
+      script.narrationEnabled === false ? 0 : 1, 'Popup narration must obey the setting and play only once.');
     assert(release, 'Movie did not release a real arrow.');
     assert.equal(release.renderFrame, release.popup.releaseFrame, 'Arrow and movie release span different render frames.');
     const arrow = release.yukanoProjectiles.find(p => p.kind === 'arrow');
@@ -131,12 +163,16 @@ if (full && script.purpose === 'architect' && script.cues.some(cue => cue.steps?
     'Player recovery must overlap the Architect death track.');
 }
 if (full && (script.purpose ?? 'promo') === 'promo') {
+  assert(Number(media.format.duration) < 40, 'Promotional theater must finish below 40 seconds.');
+  assert.equal(count('yukano-farewell-native'), 1, 'Missing native Yukano departure.');
+  assert(count('yukano-shuriken') >= 2, 'Missing second Yukano shuriken round.');
+  assert.equal(sync.acceptedByEvent.yukano_embedded_movie, 1, 'Arrow movie audio was not calibrated.');
   assert(count('backflip') >= 4);
   assert(count('shuriken-volley') >= 4);
   assert.equal(count('knife-round-trip'), 3);
   assert.equal(count('dark-iai-counter'), 2);
   assert.equal(count('friendly-fire'), 1);
-  for (const [kind, expected] of [['arrow', 1], ['shuriken', 2]]) {
+  for (const [kind, expected] of [['arrow', 1], ['shuriken', 4]]) {
     const visible = motion.flatMap(row => row.yukanoProjectiles ?? [])
       .filter(p => p.kind === kind && p.visible && p.x >= 0 && p.x <= 1920 && p.y >= 0 && p.y <= 1080);
     assert.equal(new Set(visible.map(p => p.id)).size, expected, `Missing visible Yukano ${kind} projectiles.`);

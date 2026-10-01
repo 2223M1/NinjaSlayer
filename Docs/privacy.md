@@ -8,7 +8,7 @@
 
 首次提示出现时，本次启动暂不自动上传。选择“现在开启”会立即启用；直接关闭或忽略提示，下次启动游戏后会默认开启。选择“关闭分享”则持续停用，之后可在模组设置中更改。已经拒绝过分享的选择会保留。
 
-汇总分析使用 PostHog，上传记录包含用于关联对局和玩家的标识。[公开观测室](https://2223m1.github.io/NinjaSlayer/)只显示汇总结果，不公开这些标识、种子、截图或日志。服务不会保存或转发原始 IP；防滥用只使用不可逆的摘要。
+汇总分析使用 PostHog，上传记录包含用于关联对局和玩家的标识。[忍杀情报站](https://2223m1.github.io/NinjaSlayer/)只显示汇总结果，不公开这些标识、种子、截图或日志。服务不会保存或转发原始 IP；防滥用只使用不可逆的摘要。
 
 ## 公开完整战报
 
@@ -34,7 +34,7 @@ I use shared run data to balance the cards. When a run ends, the mod sends its r
 
 When the first notice appears, nothing is sent automatically during that session. “Enable now” starts sharing immediately. Closing or ignoring the notice enables sharing on the next launch. “Disable sharing” keeps it off. You can change this in the mod settings. Earlier refusals remain respected.
 
-Aggregate analysis uses PostHog. Uploaded records include identifiers that link runs and players. The [public observatory](https://2223m1.github.io/NinjaSlayer/) shows aggregates, not those identifiers, seeds, screenshots or logs. The service does not store or forward raw IP addresses; abuse prevention uses a non-reversible digest.
+Aggregate analysis uses PostHog. Uploaded records include identifiers that link runs and players. [Ninja Slayer Intel](https://2223m1.github.io/NinjaSlayer/?lang=eng) shows aggregates, not those identifiers, seeds, screenshots or logs. The service does not store or forward raw IP addresses; abuse prevention uses a non-reversible digest.
 
 ### Public battle reports
 
@@ -60,7 +60,7 @@ Contact me on [GitHub](https://github.com/2223M1/NinjaSlayer/issues) with questi
 
 初回の案内が出た時点では、その起動中に自動送信しません。「今すぐ有効にする」で共有を開始します。案内を閉じるか無視した場合、次回の起動から自動で有効になります。「共有しない」を選ぶと無効のまま維持されます。後からMod設定で変更でき、以前の拒否も維持されます。
 
-集計にはPostHogを使います。送信する記録には、冒険とプレイヤーを関連付ける識別子が含まれます。[公開統計ページ](https://2223m1.github.io/NinjaSlayer/)に表示するのは集計結果だけです。識別子、シード、画像、ログは公開しません。サービスは生のIPアドレスを保存・転送せず、不正利用対策には元に戻せない要約値だけを使います。
+集計にはPostHogを使います。送信する記録には、冒険とプレイヤーを関連付ける識別子が含まれます。[ニンジャ情報局](https://2223m1.github.io/NinjaSlayer/?lang=jpn)に表示するのは集計結果だけです。識別子、シード、画像、ログは公開しません。サービスは生のIPアドレスを保存・転送せず、不正利用対策には元に戻せない要約値だけを使います。
 
 ### 詳細なプレイ記録の公開
 

@@ -7,36 +7,29 @@ public static class NinjaSlayerAudio
     public const string EventMusicBankPath = NinjaSlayerAssetPaths.FmodRoot + "/NinjaSlayerEventMusic.bank";
     public const string EventMusicGuidMappingsPath = NinjaSlayerAssetPaths.FmodRoot + "/EventMusicGUIDs.txt";
     public const string EventMusicEndParameter = "event_end";
-    public const string YukanoEventMusic = "event:/NinjaSlayerEventMusic/music/yukano_teahouse";
-    public const string YamotoKokiEventMusic = "event:/NinjaSlayerEventMusic/music/yamoto_koki_remix";
-    public const string NarakuEventMusic = "event:/NinjaSlayerEventMusic/music/naraku_crystal_variation";
+    public const string YukanoEventMusic = "event:/NinjaSlayerAudio/music/yukano_teahouse";
+    public const string YamotoKokiEventMusic = "event:/NinjaSlayerAudio/music/yamoto_koki_remix";
+    public const string NarakuEventMusic = "event:/NinjaSlayerAudio/music/naraku_crystal_variation";
     public const string YukanoEventMusicGuid = "{ae18763d-ad15-4e6f-be82-0f2eccb17eb7}";
     public const string YamotoKokiEventMusicGuid = "{5a225627-5e7e-47e9-b304-d297ccbd36cc}";
     public const string NarakuEventMusicGuid = "{420ac8ed-0e4f-4b2d-a134-2beaa0d7ca43}";
 
-    private const string Root = "event:/NinjaSlayerAudio/sfx";
     private const string MusicRoot = "event:/NinjaSlayerAudio/music";
-    private const string NinjaSlayerRoot = Root + "/ninja_slayer";
-    private const string NarakuRoot = Root + "/naraku";
-    private const string DarkNinjaRoot = Root + "/dark_ninja";
-    private const string ForestSawatariRoot = Root + "/forest_sawatari";
-    public const string PangbaiRoot = Root + "/pangbai";
-    public const string YamotoKokiRoot = Root + "/yamoto_koki";
+    public const string NarrationRoot = "event:/NinjaSlayerAudio/sfx/narration";
 
-    public const string NinjaSlayerFastAttackEvent = NinjaSlayerRoot + "/ninja_slayer_fast_attack";
-    public const string NinjaSlayerSlowAttackEvent = NinjaSlayerRoot + "/ninja_slayer_slow_attack";
-    public const string NinjaSlayerCastEvent = NinjaSlayerRoot + "/ninja_slayer_cast";
-    public const string NinjaSlayerHurtEvent = NinjaSlayerRoot + "/ninja_slayer_hurt";
-    public const string NinjaSlayerDeathEvent = NinjaSlayerRoot + "/ninja_slayer_death";
-    public const string NinjaSlayerSuicideEvent = NinjaSlayerRoot + "/ninja_slayer_suicide";
-    public const string NinjaSlayerSelectEvent = NinjaSlayerRoot + "/ninja_slayer_select";
-    public const string NinjaSlayerTransitionEvent = NinjaSlayerRoot + "/ninja_slayer_transition";
-    public const string NinjaSlayerShortWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_short_washoi";
-    public const string NinjaSlayerLongWashoiEvent = NinjaSlayerRoot + "/ninja_slayer_long_washoi";
-    public const string NinjaSlayerDomoEvent = NinjaSlayerRoot + "/ninja_slayer_slow_domo";
-    public const string NinjaSlayerNinjaSoulEvent = NinjaSlayerRoot + "/ninja_slayer_ninja_soul";
-    public const string NinjaSlayerExplosionEvent = NinjaSlayerRoot + "/ninja_slayer_explotion";
-    public const string NinjaSlayerKorosuBeshiEvent = NinjaSlayerRoot + "/ninja_slayer_korosu_beshi";
+    public const string NinjaSlayerFastAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/fast_attack";
+    public const string NinjaSlayerSlowAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/slow_attack";
+    public const string NinjaSlayerCastEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/cast";
+    public const string NinjaSlayerHurtEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/hurt";
+    public const string NinjaSlayerDeathEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/death";
+    public const string NinjaSlayerSuicideEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/suicide";
+    public const string NinjaSlayerSelectEvent = "event:/NinjaSlayerAudio/sfx/cinematics/character_select";
+    public const string NinjaSlayerTransitionEvent = "event:/NinjaSlayerAudio/sfx/cinematics/run_transition";
+    public const string NinjaSlayerShortWashoiEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/short_washoi";
+    public const string NinjaSlayerLongWashoiEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/long_washoi";
+    public const string NinjaSlayerDomoEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/slow_domo";
+    public const string NinjaSlayerNinjaSoulEvent = "event:/NinjaSlayerAudio/sfx/combat/ninja_soul";
+    public const string NinjaSlayerKorosuBeshiEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/korosu_beshi";
 
     /// <summary>Longest clip in the randomized short Washoi FMOD event.</summary>
     public const float ShortWashoiSeconds = 1.024014f;
@@ -56,46 +49,44 @@ public static class NinjaSlayerAudio
     /// <summary>Delay before saved-run loading starts after the Transition view takes over.</summary>
     public const float SaveLoadStartDelaySeconds = 0.6f;
 
-    public const string NinjaSlayerIntroSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_intro_spin_attack";
-    public const string NinjaSlayerLoopSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_loop_spin_attack";
-    public const string NinjaSlayerOutroSpinAttackEvent = NinjaSlayerRoot + "/ninja_slayer_outro_spin_attack";
+    public const string NinjaSlayerSpinAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/spin_attack";
 
-    public const string NarakuFastAttackEvent = NarakuRoot + "/naraku_fast_attack";
-    public const string NarakuSlowAttackEvent = NarakuRoot + "/naraku_slow_attack";
-    public const string NarakuCastEvent = NarakuRoot + "/naraku_cast";
-    public const string NarakuHurtEvent = NarakuRoot + "/naraku_hurt";
-    public const string NarakuDeathEvent = NarakuRoot + "/naraku_death";
+    public const string NarakuFastAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/naraku/fast_attack";
+    public const string NarakuSlowAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/naraku/slow_attack";
+    public const string NarakuCastEvent = "event:/NinjaSlayerAudio/sfx/characters/naraku/cast";
+    public const string NarakuHurtEvent = "event:/NinjaSlayerAudio/sfx/characters/naraku/hurt";
+    public const string NarakuDeathEvent = "event:/NinjaSlayerAudio/sfx/characters/naraku/death";
 
-    internal const string YukanoByeEvent = Root + "/yukano/yukano_fast_bye";
-    internal const string YukanoAttackEvent = Root + "/yukano/yukano_fast_attack";
-    internal const string PangbaiBreastEvent = PangbaiRoot + "/pangbai_breast";
-    public const string NinjaSlayerFastDomoEvent = NinjaSlayerRoot + "/ninja_slayer_fast_domo";
-    public const string NinjaSlayerNoDomoEvent = NinjaSlayerRoot + "/ninja_slayer_no_domo";
-    public const string DarkNinjaDomoEvent = DarkNinjaRoot + "/dark_ninja_domo";
-    public const string ForestSawatariBambooAttackEvent = ForestSawatariRoot + "/forest_sawatari_bamboo_attack";
-    public const string YamotoKokiSlowAttackEvent = YamotoKokiRoot + "/yamoto_koki_slow_attack";
-    public const string PangbaiLowHealthEvent = PangbaiRoot + "/pangbai_low_health";
+    internal const string YukanoByeEvent = "event:/NinjaSlayerAudio/sfx/characters/yukano/fast_bye";
+    internal const string YukanoAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/yukano/fast_attack";
+    internal const string PangbaiBreastEvent = "event:/NinjaSlayerAudio/sfx/narration/breast";
+    public const string NinjaSlayerFastDomoEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/fast_domo";
+    public const string NinjaSlayerNoDomoEvent = "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/no_domo";
+    public const string DarkNinjaDomoEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/domo";
+    public const string ForestSawatariBambooAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/bamboo_attack";
+    public const string YamotoKokiSlowAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/yamoto_koki/slow_attack";
+    public const string PangbaiLowHealthEvent = "event:/NinjaSlayerAudio/sfx/narration/low_health";
 
-    public const string YamotoKokiByeEvent = YamotoKokiRoot + "/yamoto_koki_bye";
-    public const string YamotoKokiEvent = YamotoKokiRoot + "/yamoto_koki_event";
-    public const string YamotoKokiGoEvent = YamotoKokiRoot + "/yamoto_koki_go";
+    public const string YamotoKokiByeEvent = "event:/NinjaSlayerAudio/sfx/characters/yamoto_koki/bye";
+    public const string YamotoKokiEvent = "event:/NinjaSlayerAudio/sfx/characters/yamoto_koki/event";
+    public const string YamotoKokiGoEvent = "event:/NinjaSlayerAudio/sfx/characters/yamoto_koki/go";
     public const string YamotoKokiMissileSummonEvent =
         "event:/sfx/characters/defect/defect_dark_channel";
 
     public const string DarkNinjaBattleMusicEvent = MusicRoot + "/dark_ninja_battle";
     public const string DarkNinjaBattleMusicGuid = "{4dc577b9-8347-4b1e-b6c1-e4e2e5847207}";
-    public const string DarkNinjaBeginEvent = DarkNinjaRoot + "/dark_ninja_begin";
-    public const string DarkNinjaBeppinAwakensEvent = DarkNinjaRoot + "/dark_ninja_beppin_awakens";
-    public const string DarkNinjaDarkRobeEvent = DarkNinjaRoot + "/dark_ninja_dark_robe";
-    public const string DarkNinjaDeathEvent = DarkNinjaRoot + "/dark_ninja_death";
-    public const string DarkNinjaDeathKiriEvent = DarkNinjaRoot + "/dark_ninja_death_kiri";
-    public const string DarkNinjaFailedEvent = DarkNinjaRoot + "/dark_ninja_failed";
-    public const string DarkNinjaFastAttackEvent = DarkNinjaRoot + "/dark_ninja_fast_attack";
-    public const string DarkNinjaHurtEvent = DarkNinjaRoot + "/dark_ninja_hurt";
-    public const string DarkNinjaInsultEvent = DarkNinjaRoot + "/dark_ninja_insult";
+    public const string DarkNinjaBeginEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/begin";
+    public const string DarkNinjaBeppinAwakensEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/beppin_awakens";
+    public const string DarkNinjaDarkRobeEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/dark_robe";
+    public const string DarkNinjaDeathEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/death";
+    public const string DarkNinjaDeathKiriEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/death_kiri";
+    public const string DarkNinjaFailedEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/failed";
+    public const string DarkNinjaFastAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/fast_attack";
+    public const string DarkNinjaHurtEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/hurt";
+    public const string DarkNinjaInsultEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/insult";
     public const string DarkNinjaKirisuteGomenEvent =
-        DarkNinjaRoot + "/dark_ninja_kirisute_goumen";
-    public const string DarkNinjaSlowAttackEvent = DarkNinjaRoot + "/dark_ninja_slow_attack";
+        "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/kirisute_gomen";
+    public const string DarkNinjaSlowAttackEvent = "event:/NinjaSlayerAudio/sfx/characters/dark_ninja/slow_attack";
     public const string DarkNinjaStabEvent =
         "event:/sfx/enemy/enemy_attacks/lagavulin_matriarch/lagavulin_matriarch_attack_stab";
     public const string DarkNinjaProgressParameter = "dark_ninja_progress";
@@ -114,29 +105,20 @@ public static class NinjaSlayerAudio
     public const float SawatariCoopDuelEndPhase = 4f;
 
     public const string ForestSawatariBeginEvent =
-        ForestSawatariRoot + "/forest_sawatari_begin";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/begin";
     public const string ForestSawatariHurtEvent =
-        ForestSawatariRoot + "/forest_sawatari_hurt";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/hurt";
     public const string ForestSawatariDeathEvent =
-        ForestSawatariRoot + "/forest_sawatari_death";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/death";
     public const string ForestSawatariAttackEvent =
-        ForestSawatariRoot + "/forest_sawatari_attack";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/attack";
     public const string ForestSawatariEndEvent =
-        ForestSawatariRoot + "/forest_sawatari_end";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/end";
     public const string ForestSawatariDuelEvent =
-        ForestSawatariRoot + "/forest_sawatari_duel";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/duel";
     public const string ForestSawatariEnhancedEvent =
-        ForestSawatariRoot + "/forest_sawatari_enhanced";
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/enhanced";
     public const string ForestSawatariBambooEvent =
-        ForestSawatariRoot + "/forest_sawatari_bamboo";
-
-    /// <summary>FMOD clip length for ninja_slayer_intro_spin_attack.</summary>
-    public const float IntroSpinAttackSeconds = 1.369f;
-
-    /// <summary>FMOD clip length for ninja_slayer_loop_spin_attack (one cycle).</summary>
-    public const float LoopSpinAttackClipSeconds = 1.184f;
-
-    /// <summary>FMOD clip length for ninja_slayer_outro_spin_attack.</summary>
-    public const float OutroSpinAttackSeconds = 1.114f;
+        "event:/NinjaSlayerAudio/sfx/characters/forest_sawatari/bamboo";
 
 }

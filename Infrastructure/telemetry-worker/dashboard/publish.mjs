@@ -1,9 +1,10 @@
 import { summarize } from './data.mjs';
 import { choiceCounters, combatCounters, useCurrentCatalog } from './public-data.mjs';
 import { readFile } from 'node:fs/promises';
-import { a10Cohorts, chartBins, mechanismBins } from './chart-data.mjs';
+import { chartBins, mechanismBins } from './chart-data.mjs';
 
 const contentRoot = new URL('../../../Website/content/', import.meta.url);
+export const chartSchemaVersion = 1;
 export async function readCurrentRelease() {
   return JSON.parse(await readFile(new URL('current.json', contentRoot), 'utf8'));
 }
@@ -26,12 +27,9 @@ export function publicFeedback(records) {
 
 export function publishSnapshot(telemetry, catalog) {
   const grouped = new Map();
-  const cohorts = a10Cohorts(telemetry.runs);
   for (const run of telemetry.runs) {
-    const dimensions = { date: new Date(run.at).toISOString().slice(0, 10), version: run.version, gameVersion: run.gameVersion, mode: run.mode,
-      party: run.playerCount === 1 ? 'solo' : 'multi', ascension: run.ascension, noReloads: run.reloads === 0,
-      outcome: run.win ? 'win' : 'loss',
-      a10: run.playerCount === 1 ? cohorts.get(String(run.players[0].net_id)) ?? 'unranked' : 'multiplayer' };
+    const dimensions = { date: new Date(run.at).toISOString().slice(0, 10), version: run.version,
+      party: run.playerCount === 1 ? 'solo' : 'multi', ascension: run.ascension, outcome: run.win ? 'win' : 'loss' };
     const key = JSON.stringify(dimensions);
     if (!grouped.has(key)) grouped.set(key, { dimensions, runs: [] });
     grouped.get(key).runs.push(run);
@@ -49,6 +47,6 @@ export function publishSnapshot(telemetry, catalog) {
       floorTotal: runs.reduce((sum, run) => sum + run.floor, 0),
       cards: summary.cards.filter(card => choiceCounters.some(key => card[key])).map(card => ({ id: card.id, ...Object.fromEntries(choiceCounters.map(key => [key, card[key]])) })) };
   });
-  return useCurrentCatalog({ groups,
+  return useCurrentCatalog({ chartSchemaVersion, groups,
     excluded: { rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts, invalidCombats: telemetry.invalidCombats } }, catalog);
 }

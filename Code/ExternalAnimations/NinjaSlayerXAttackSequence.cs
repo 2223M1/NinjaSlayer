@@ -4,65 +4,45 @@ using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Code.ExternalAnimations;
 
-/// <summary>
-/// Orchestrates X-cost attack spin SFX and lunge movement for NinjaSlayer X attack cards.
-/// Cards must inherit <see cref="Cards.NinjaSlayerXAttackCard"/>; vanilla WithHitCount(X) is not covered.
-/// </summary>
 public static class NinjaSlayerXAttackSequence
 {
-    public static async Task Run(
-        Creature creature,
-        int hits,
-        float perHitDelay,
-        float audioHitDuration,
-        Func<int, Task<bool>> perHit,
-        bool heldApproach = false)
+    public static async Task Run(Creature creature, int hits, Func<int, Task<bool>> perHit, bool heldApproach = false)
     {
         if (hits <= 0)
         {
-            if (heldApproach)
-                Nodes.NinjaSlayerAimPose.Get(creature)?.ReleaseEmptyTornado();
+            if (heldApproach) Nodes.NinjaSlayerAimPose.Get(creature)?.ReleaseEmptyTornado();
             return;
         }
-
         using var cadence = NinjaSlayerAttackExecution.EnterSequence(hits);
-        if (heldApproach)
-            XAttackComboMovement.BeginCombo(creature, perHitDelay);
-        bool useSlowAttack = hits <= 4
-            || NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio;
-        Func<Action, Task> executeHits = async finishSpinEarly =>
+        using IDisposable? suppression = heldApproach ? XAttackAudioContext.Suppress() : null;
+        SpinComboAudio? spin = null;
+        try
         {
-            try
+            if (heldApproach)
             {
-                for (int i = 0; i < hits; i++)
+                XAttackComboMovement.BeginCombo(creature, TornadoFistSpinAnimation.TurnSeconds);
+                float duration = SpinComboAudio.RemainingSeconds(creature, hits);
+                TornadoAudioMode mode = TornadoSpinTiming.Select(hits, duration,
+                    NinjaSlayerFormState.GetPresentation(creature).ForcePerHitComboAudio);
+                if (mode != TornadoAudioMode.PerHit)
+                    spin = SpinComboAudio.Start(creature);
+            }
+            for (int i = 0; i < hits; i++)
+            {
+                cadence.SetHit(i);
+                if (heldApproach && spin == null)
+                    NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).FastAttack);
+                bool targetKilled = await perHit(i);
+                if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
                 {
-                    cadence.SetHit(i);
-                    if (useSlowAttack)
-                    {
-                        NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(creature).SlowAttack);
-                    }
-
-                    bool targetKilled = await perHit(i);
-                    if (targetKilled && !NinjaSlayerFinisherCinematic.IsMovementOwned(creature))
-                    {
-                        finishSpinEarly();
-                        break;
-                    }
+                    break;
                 }
             }
-            finally
-            {
-                if (heldApproach)
-                    await XAttackComboMovement.EndCombo(creature);
-            }
-        };
-
-        if (useSlowAttack)
-        {
-            await SpinComboAudio.RunWithSuppressedAutomaticSfx(() => executeHits(static () => { }));
-            return;
         }
-
-        await SpinComboAudio.PlayTornadoFistSequence(creature, hits, audioHitDuration, executeHits);
+        finally
+        {
+            if (spin != null && Godot.GodotObject.IsInstanceValid(spin)) spin.Finish();
+            if (heldApproach) await XAttackComboMovement.EndCombo(creature);
+        }
     }
 }

@@ -473,6 +473,7 @@ internal sealed partial class SmokeController
         await PlayerCmd.SetEnergy(3m, player);
         TornadoFist lethal = combatState.CreateCard<TornadoFist>(player);
         await CardPileCmd.Add(lethal, PileType.Hand);
+        using var finisherUi = new FinisherUiProbe(playerNode);
         await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), lethal, focus);
         _checkpoints.Write(
             "finisher.card-returned",
@@ -510,6 +511,8 @@ internal sealed partial class SmokeController
                 ["killAttempts"] = finisher.KillAttempts.GetValueOrDefault(focus),
                 ["successfulKills"] = finisher.SuccessfulKills.GetValueOrDefault(focus)
             });
+        finisherUi.Verify();
+        _checkpoints.Write("finisher.stationary-ui.completed");
         _checkpoints.Write("finisher.presentation-fallback.completed");
         bool combatEnded = await CombatManager.Instance.CheckWinCondition();
         Require(combatEnded && !CombatManager.Instance.IsInProgress, "The completed finisher did not end combat.");

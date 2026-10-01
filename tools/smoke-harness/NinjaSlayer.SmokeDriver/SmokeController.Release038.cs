@@ -51,6 +51,7 @@ internal sealed partial class SmokeController
             prefix: new HarmonyMethod(typeof(Release038Probe), nameof(Release038Probe.SideVfx)));
         try
         {
+            await VerifySpinAudioAsync(player);
             foreach (int form in new[] { 0, 1, 2, 3 })
             {
                 if (form == 1) await PowerCmd.Apply<NarakuFormPower>(choice, player.Creature, 1, player.Creature, null);
@@ -122,21 +123,38 @@ internal sealed partial class SmokeController
                 "A fully evaded Death Slash with an ally must retain one side-center swing without HP loss.");
             _checkpoints.Write("release038.dark-evaded-with-ally");
             await RunManager.Instance.EnterAct(run.Acts.Count - 1);
+            await CardPileCmd.RemoveFromDeck(player.Deck.Cards.ToArray(), showPreview: false);
+            await CardPileCmd.Add(run.CreateCard(ModelDb.Card<NinjaSlayer.Cards.Standard.AlabamaDrop>(), player),
+                MegaCrit.Sts2.Core.Entities.Cards.PileType.Deck);
             await RunManager.Instance.EnterRoomDebug(RoomType.Event, model: ModelDb.Event<TheArchitect>());
             var model = ((EventRoom)run.CurrentRoom!).LocalMutableEvent;
             await WaitUntilAsync(() => model.CurrentOptions.Count > 0, "Architect options missing.");
             Require(NCombatRoom.Instance!.GetNodeOrNull("NinjaSlayerArchitectExecution") == null,
                 "Architect executed during opening dialogue.");
             await model.CurrentOptions.Single().Chosen();
+            // Native options appear before the separate room entrance finishes.
+            // Sample execution UI from its standing layout, not the entrance slide.
+            await Cmd.Wait(1f);
             int wins = SaveManager.Instance.Progress.Wins;
             Func<bool> autoslay = NonInteractiveMode.AutoSlayerCheck;
             NonInteractiveMode.AutoSlayerCheck = static () => false;
             try
             {
+                probe.Patch(AccessTools.Method(typeof(ArchitectExecutionCinematic), "ExitScene"),
+                    prefix: new HarmonyMethod(typeof(Release038Probe), nameof(Release038Probe.Exiting)));
+                Release038Probe.Exit = () =>
+                {
+                    var owner = player.Creature.GetCreatureNode()!;
+                    Require(owner.Visuals.GlobalPosition.X - owner.GlobalPosition.X > 100f,
+                        "Architect Alabama recovery snapped the body back to its layout root before walking off.");
+                };
+                using var architectUi = new FinisherUiProbe(player.Creature.GetCreatureNode()!);
                 await model.CurrentOptions.Single().Chosen();
                 await WaitUntilAsync(() => SaveManager.Instance.Progress.Wins > wins,
                     "Architect Continue did not finish the run.");
                 await WaitFrames(3);
+                architectUi.Verify();
+                _checkpoints.Write("finisher.architect-stationary-ui.completed");
             }
             finally { NonInteractiveMode.AutoSlayerCheck = autoslay; }
             Require(SaveManager.Instance.Progress.Wins == wins + 1, "Architect victory did not complete exactly once.");
@@ -145,6 +163,7 @@ internal sealed partial class SmokeController
         finally
         {
             Release038Probe.Landing = null;
+            Release038Probe.Exit = null;
             probe.UnpatchAll(probe.Id);
         }
         _checkpoints.Write("release038.completed");
@@ -154,6 +173,8 @@ internal sealed partial class SmokeController
 
 internal static class Release038Probe
 {
+    internal static Action? Exit;
+    public static void Exiting() => Exit?.Invoke();
     internal static Action? Landing;
     internal static int Slashes;
     public static void Landed() => Landing?.Invoke();

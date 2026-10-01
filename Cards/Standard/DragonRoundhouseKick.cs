@@ -42,8 +42,6 @@ public sealed class DragonRoundhouseKick : NinjaSlayerUncommonCard
             () => NinjaSlayerXAttackSequence.Run(
                 Owner.Creature,
                 hits,
-                Owner.Character.AttackAnimDelay,
-                Owner.Character.AttackAnimDelay,
                 async _ =>
                 {
                     AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)

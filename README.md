@@ -1,7 +1,7 @@
 <div align="center">
   <img src="Workshop/image.png" width="256" alt="忍者杀手">
-  <h1>忍者杀手 NinjaSlayer</h1>
-  <p>《杀戮尖塔 2》的忍者杀手角色 Mod</p>
+  <h1>忍者杀手 Ninja Slayer</h1>
+  <p>《杀戮尖塔 2》角色模组</p>
   <p><strong>简体中文</strong> | <a href="README_EN.md">English</a> | <a href="README_JA.md">日本語</a></p>
   <!-- compatibility-badges:start -->
   <p>
@@ -12,22 +12,41 @@
   <!-- compatibility-badges:end -->
 </div>
 
-模组包含专属卡牌、遗物和事件，以及角色动画、问候与处决演出。
+> 「DOMO，尖塔=SAN。忍者杀手DESU。」
+>
+> 进门先问候，问候完再开打。古事记上也是这么写的。
 
-## 安装
+一个失去妻儿的上班族，被神秘的忍者灵魂附了体，现在他爬进了尖塔。塔里到底有没有忍者？有的话，一个都跑不掉。
 
-1. 订阅 [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) 和前置模组 [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
-2. 在游戏的 Mod 管理器中启用 `STS2-RitsuLib` 与 `NinjaSlayer`。
-3. 选择忍者杀手，开始爬塔。
+## 能玩到什么
 
-工坊条目暂时只能通过链接访问，搜索不到。正式版和测试版使用同一个工坊包。
+- **空手道**：贴脸互殴，越打越顺手。
+- **手里剑**：攒在身边的飞镖，看准时机甩出去。
+- **茶道**：打累了喝口茶，嘶——哈——，喘匀了再上。
+- **奈落**：借奈落的力量，把尖塔烧成赤黑色。
+- 一路上会碰到小季、南希·李、泽渡·弗利斯特、黑暗忍者……有人帮你，有人找你决斗。
+- 专属卡牌、遗物和事件，外加角色动画、问候和处决演出。想先看看牌？翻[卡牌目录](Docs/card-catalog.md)。
 
-手动安装请到 [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) 下载通用 Workshop 包，解压到游戏的 `mods` 目录，并单独安装 RitsuLib。
+## 怎么装
 
-## 反馈
+1. 在创意工坊订阅[忍者杀手](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445)和前置模组 [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
+2. 在游戏的模组管理里勾上 `STS2-RitsuLib` 和 `NinjaSlayer`。
+3. 选忍者杀手，开爬。
 
-遇到问题可以在游戏内按 F2，或到 [GitHub 留言](https://github.com/2223M1/NinjaSlayer/issues)。请带上游戏与模组版本，说明出问题前做了什么。
+工坊条目暂时搜不到，用上面的链接进。正式版和测试版用同一个包，不用挑。
 
-[公开观测室](https://2223m1.github.io/NinjaSlayer/)可以查看卡牌统计、公开战报和玩家反馈，支持中英日切换。数据分享可在模组设置中关闭，具体内容见[隐私说明](Docs/privacy.md)。
+最新版通过工坊发布。[GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) 保留历史包，供需要回滚的玩家使用。
 
-这是非官方同人 Mod，相关作品与第三方素材的权利归各自权利人所有。
+0.3.9 兼容 0.3.8 跑局。0.3.8 之前的模型 ID 不兼容，请先结束旧局；旧存档和历史文件不会被改写或删除。
+
+## 出问题了？
+
+游戏里按 **F2** 就能给我写信，截图和日志会自动带上。也可以到 [GitHub](https://github.com/2223M1/NinjaSlayer/issues) 留言，写清游戏和模组版本、出事前你干了什么，我会更快找到凶手。
+
+想看大家都抓什么牌、倒在哪一层？去[忍杀情报站](https://2223m1.github.io/NinjaSlayer/)。数据来自自愿分享的玩家，不想分享的话在模组设置里关掉就行，详见[隐私说明](Docs/privacy.md)。
+
+## 作者
+
+波比梓狸（[2223M1](https://github.com/2223M1)），和几位 AI 助手一起做的。谢谢 [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) 的作者，以及分享教程、帮忙排错的各位。
+
+非官方同人 Mod。代码没有开源许可，想转载或改编请先打声招呼。

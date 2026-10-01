@@ -201,12 +201,18 @@ internal sealed partial class SmokeController
                 await CardPileCmd.Add(_combat.CreateCard<StrikeNinjaSlayer>(_player), PileType.Draw, skipVisuals: true);
             await CardPileCmd.Draw(_choice, 4, _player, fromHandDraw: true);
             await PowerCmd.Apply<KaratePower>(_choice, _player.Creature, _script.Karate, _player.Creature, null);
-            if (_script.Purpose == "promo")
+            if (_script.Purpose == "promo" || _script.ContinuePromo)
             {
                 await RelicCmd.Obtain<OrigamiPactRelic>(_player);
                 await RelicCmd.Obtain<ToriiPactRelic>(_player);
+                _player.Relics.OfType<ToriiPactRelic>().Single().CombatsLeft = 1;
             }
-            if (_script.Purpose == "yukano-popup") await RelicCmd.Obtain<ToriiPactRelic>(_player);
+            if (_script.Purpose is "yukano-popup" or "yukano-farewell") await RelicCmd.Obtain<ToriiPactRelic>(_player);
+            if (_script.Purpose == "yukano-farewell")
+            {
+                _player.Relics.OfType<ToriiPactRelic>().Single().CombatsLeft = 1;
+                await CreatureCmd.SetCurrentHp(enemy, 30);
+            }
             await RemovePower<EvasionPower>(_player.Creature);
             await PlayerCmd.SetEnergy(6, _player);
             AccessTools.Property(Pose.GetType(), "UseTornadoHitStop").SetValue(Pose, true);
@@ -323,11 +329,14 @@ internal sealed partial class SmokeController
                     case "sawatari_event_entrance": await SawatariEventEntrance(step); break;
                     case "theft_round": await TheftRound(step.Mode!); break;
                     case "blood_check": await BloodCheck(step.Mode!); break;
-                    case "overhead_check": await OverheadCheck(); break;
+                    case "architect_transition": await ArchitectTransition(step.Seconds); break;
                     case "audit_calibration": SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerSlowAttackEvent); await Wait(1.5); SfxCmd.Play(NinjaSlayerAudio.NinjaSlayerHurtEvent); await Wait(1.5); break;
                     case "audit_orb": await OrbCmd.EvokeNext(_choice, _player); break;
+                    case "tornado_audio_check": await TornadoAudioCheck(step.Mode!, step.Seconds, step.Count > 1 ? step.Count : 30); break;
                     case "companion_facing": await CompanionFacingPreview(); break;
                     case "popup_check": await PopupCheck(step.Mode!); break;
+                    case "yukano_farewell": await YukanoFarewell(step.Mode == "wait"); break;
+                    case "overhead_check": await OverheadCheck(); break;
                     default: throw new InvalidDataException($"Unsupported theater action {step.Action}.");
                 }
                 foreach (string cover in step.Covers) Cover(cover);
@@ -461,7 +470,22 @@ internal sealed partial class SmokeController
             };
             AddActor(name, pet);
             InvokeMethod(ProductType("NinjaSlayer.Code.Combat.CompanionIntentLifecycle"), null, "BeginCombat", pet);
-            await Animation("YamotoKokiCombatAnimations", "PlayEntrance", pet, name == "koki");
+            if (name == "yukano") await Animation("YukanoCombatAnimations", "PlayEntrance", pet);
+            else await Animation("YamotoKokiCombatAnimations", "PlayEntrance", pet, true);
+        }
+
+        private async Task YukanoFarewell(bool waitOnly)
+        {
+            var relic = _player.Relics.OfType<ToriiPactRelic>().Single();
+            NCreature node = Node("yukano");
+            Vector2 slot = node.Position;
+            if (!waitOnly) await PlayCard(new() { Card = "StrikeNinjaSlayer" });
+            await _driver.WaitUntilAsync(() => relic.CombatsLeft == 0 && !node.Visible,
+                "Yukano did not leave through the exhausted relic's real combat-end hook.", _cancel);
+            Require(node.Position == slot, "Yukano farewell moved the combat layout root.");
+            Require((bool)InvokeMethod(ProductType("NinjaSlayer.Code.Combat.CompanionIntentLifecycle"),
+                null, "HasRetired", node.Entity)!, "Yukano retained her companion layout slot.");
+            Cover("yukano-farewell-native");
         }
 
         private async Task Missiles(bool misfire)
@@ -808,6 +832,19 @@ internal sealed partial class SmokeController
                 row[name] = new JsonObject { ["x"] = node.Position.X, ["y"] = node.Position.Y,
                     ["coreX"] = core.X, ["coreY"] = core.Y, ["hp"] = actor.CurrentHp,
                     ["iai"] = actor.GetPowerAmount<DarkCounterPower>() };
+                if (name == "ninja" && node.GetNodeOrNull<Node>("NinjaSlayerAllyLayoutMotion") is { } layout)
+                {
+                    Type type = layout.GetType();
+                    Vector2 destination = (Vector2)AccessTools.Field(type, "_destination").GetValue(layout)!;
+                    row["allyLayout"] = new JsonObject
+                    {
+                        ["pending"] = (bool)AccessTools.Field(type, "_pending").GetValue(layout)!,
+                        ["elapsed"] = (float)AccessTools.Field(type, "_elapsed").GetValue(layout)!,
+                        ["targetX"] = destination.X,
+                        ["targetY"] = destination.Y,
+                        ["actionOwnsPosition"] = (bool)AccessTools.Property(type, "ActionOwnsPosition").GetValue(layout)!
+                    };
+                }
                 if (name == "yukano")
                 {
                     var sprite = (Sprite2D)node.Body;
@@ -818,7 +855,8 @@ internal sealed partial class SmokeController
                         ["bottom"] = intentBottom.Y, ["visible"] = node.IntentContainer.IsVisibleInTree() };
                     Node2D anchor = node.Visuals.GetNode<Node2D>("AirborneAnchor");
                     row["yukanoPose"] = new JsonObject { ["rotation"] = anchor.Rotation,
-                        ["scaleX"] = anchor.Transform.X.Length(), ["scaleY"] = anchor.Transform.Y.Length() };
+                        ["scaleX"] = anchor.Transform.X.Length(), ["scaleY"] = anchor.Transform.Y.Length(),
+                        ["visible"] = node.IsVisibleInTree() };
                 }
                 if (_cue == "dark_strike_closeup" && name == "sawatari")
                 {
@@ -910,6 +948,8 @@ internal sealed partial class SmokeController
 
         public void Dispose()
         {
+            _architectCurtain?.QueueFree();
+            _architectCurtain = null;
             RenderingServer.FramePreDraw -= Sample;
             RenderingServer.FramePostDraw -= Sample;
             FinisherAuditObservationPatch.Record = null;

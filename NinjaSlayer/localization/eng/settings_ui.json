@@ -18,7 +18,7 @@
   "NINJA_SLAYER_TELEMETRY_NOTICE_BODY": "I use run data to balance the cards. Sharing includes your route, reward choices, final deck, result and combat statistics. The site shows aggregates only.\n\nNothing has been sent automatically this session. Choose “Enable now” to start sharing. Closing or ignoring this notice enables sharing on your next launch. Choose “Disable sharing” to keep it off. You can change this in the mod settings at any time.",
   "NINJA_SLAYER_TELEMETRY_DECLINE": "Disable sharing",
   "NINJA_SLAYER_TELEMETRY_ACCEPT": "Enable now",
-  "NINJA_SLAYER_TELEMETRY_WEBSITE": "Public observatory",
+  "NINJA_SLAYER_TELEMETRY_WEBSITE": "Ninja Slayer Intel",
   "NINJA_SLAYER_TELEMETRY_OPEN_WEBSITE": "View statistics and feedback",
   "NINJA_SLAYER_TELEMETRY_REPLAY_TOGGLE": "Share full replays",
   "NINJA_SLAYER_TELEMETRY_REPLAY_DESCRIPTION": "Off by default. Record subsequent rooms, choices and turn-by-turn actions for anonymous public reports, kept for up to 90 days. No account IDs, seeds, screenshots or logs are published. In multiplayer, only your details are shared. Turn off at any time; missing sections are marked.",

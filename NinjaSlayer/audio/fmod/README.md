@@ -15,6 +15,22 @@ After `File → Build` in FMOD Studio:
 
 Do not place `Master.bank` here. The mod uses the original game's master buses.
 
+## 0.3.9 event organization and Tornado Fist
+
+The September 29 user project organizes voices by actor and music by event.
+Runtime paths follow the exported GUID mappings; existing event GUIDs and
+the current greeting, bamboo, death and event-music hooks are retained.
+The three old spin events are replaced by one `spin_attack` event using the
+former intro GUID. Its `sustain` and `finish` parameters hold the loop and enter
+the outro at the final impact. One combat-room child owns the FMOD instance,
+pauses with combat, waits for native STOPPED, and releases it on room exit.
+Short attacks continue using per-hit voice calls. No card effect changed.
+
+`tools/fmod/restructure_20260929.js` and `.py` document the source-project edit.
+The ordinary build consumes the checked-in banks; it does not run those tools.
+The 0.3.9 SmokeDriver plays a real 30-hit card without recording video and
+checks loop wraps, pause, outro and natural release on the supported hosts.
+
 ## 0.2.17 event transitions
 
 The source project is `../STS2_FModProject_Minimal-main/STS2.fspro` relative to the

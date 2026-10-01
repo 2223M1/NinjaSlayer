@@ -1,7 +1,7 @@
 <div align="center">
   <img src="Workshop/image.png" width="256" alt="Ninja Slayer">
-  <h1>NinjaSlayer</h1>
-  <p>A Ninja Slayer character mod for Slay the Spire 2</p>
+  <h1>Ninja Slayer</h1>
+  <p>A character mod for Slay the Spire 2</p>
   <p><a href="README.md">简体中文</a> | <strong>English</strong> | <a href="README_JA.md">日本語</a></p>
   <!-- compatibility-badges:start -->
   <p>
@@ -12,21 +12,32 @@
   <!-- compatibility-badges:end -->
 </div>
 
-Fight up close with Karate, follow up with Shuriken, and catch your breath with Chado. Or draw on Naraku and set the Spire ablaze. Familiar faces such as Yamoto Koki and Nancy Lee await along the way, some as companions, others as opponents.
+> "Domo, Spire-san. Ninja Slayer desu."
+>
+> Greet first, fight second. It is written in the Kojiki.
 
-Includes character-specific cards, relics and events, plus animations, greetings and finishers. The [card catalog](Docs/card-catalog.md) is currently in Chinese.
+A salaryman who lost his wife and child is possessed by a mysterious ninja soul, and now he's climbing the Spire. Are there ninjas up there? If there are, none of them are getting away.
+
+## What's inside
+
+- **Karate**: trade blows up close and get better the longer you swing.
+- **Shuriken**: keep a stack of throwing stars handy and let them fly at the right moment.
+- **Chado**: out of breath? Sip some tea, hiss, huff, and get back in there.
+- **Naraku**: borrow Naraku's power and set the Spire burning red and black.
+- Along the way you'll meet Yamoto Koki, Nancy Lee, Forest Sawatari, Dark Ninja… some will help, some want a duel.
+- Character-specific cards, relics and events, plus animations, greetings and finishers. Want a peek at the cards? The [card catalog](Docs/card-catalog.md) is in Chinese for now.
 
 ## Install
 
-1. Subscribe to [NinjaSlayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) and its required mod, [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
+1. Subscribe to [Ninja Slayer](https://steamcommunity.com/sharedfiles/filedetails/?id=3776911445) and its required mod, [RitsuLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
 2. Enable `STS2-RitsuLib` and `NinjaSlayer` in the game's mod manager.
-3. Choose Ninja Slayer and start a run.
+3. Pick Ninja Slayer and start climbing.
 
-The Workshop item is unlisted, so use the link above. The same Workshop download works with both supported game branches.
+The Workshop item doesn't show up in search yet, so use the link above. The stable and beta branches share one download.
 
-For manual installation, download the universal Workshop archive from [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases), extract it into the game's `mods` folder, and install RitsuLib separately.
+The latest version is published on the Workshop. [GitHub Releases](https://github.com/2223M1/NinjaSlayer/releases) keeps historical packages for rollbacks.
 
-Finish your current run before updating. Old in-progress saves are not supported; back them up before starting a new run if you want to keep them.
+0.3.9 supports runs from 0.3.8. Model IDs from before 0.3.8 remain incompatible; finish those runs first. Existing saves and history files are not rewritten or deleted.
 
 ## Versions and languages
 
@@ -37,16 +48,14 @@ Finish your current run before updating. Old in-progress saves are not supported
 - Tested on Windows. Real-device testing on macOS, Linux and Steam Deck is not yet complete.
 <!-- compatibility:end -->
 
-## Feedback
+## Something broke?
 
-Press F2 in game or [open an issue](https://github.com/2223M1/NinjaSlayer/issues). Include your game and mod versions, and what you did before the problem appeared.
+Press **F2** in game to send me a letter, with a screenshot and logs attached. You can also [open an issue](https://github.com/2223M1/NinjaSlayer/issues). Tell me your game and mod versions and what you did right before, and I'll find the culprit faster.
 
-The [public observatory](https://2223m1.github.io/NinjaSlayer/) shows card statistics, public battle reports and player feedback in Chinese, English and Japanese. You can turn data sharing off in the mod settings. See the [privacy notice](Docs/privacy.md#english) for details.
+Curious what everyone picks and where runs fall? Visit [Ninja Slayer Intel](https://2223m1.github.io/NinjaSlayer/?lang=eng). The data comes from players who chose to share; you can turn it off in the mod settings. See the [privacy notice](Docs/privacy.md#english).
 
-## Author and thanks
+## Author
 
-I'm 波比梓狸 ([2223M1](https://github.com/2223M1)). I develop this mod with the AI assistants I use. Bug reports and suggestions are welcome.
+Made by 波比梓狸 ([2223M1](https://github.com/2223M1)) together with a few AI assistants. Thanks to the authors of [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) and everyone who shares tutorials and helps with debugging.
 
-Thanks to the authors of [RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib) and the community members who share tutorials and help.
-
-This is an unofficial fan mod. The original works and third-party material belong to their respective rights holders. This project has no open-source license. Obtain permission from the author and relevant rights holders before using, modifying or redistributing its contents.
+Unofficial fan mod. The code has no open-source license, so please ask before reposting or adapting it.

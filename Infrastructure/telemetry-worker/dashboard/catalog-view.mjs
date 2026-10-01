@@ -17,8 +17,9 @@ export async function loadCatalog(version) {
     );
   return cache.get(version);
 }
-const plain = (text) =>
+export const plain = (text) =>
   String(text ?? "")
+    .replace(/\[img\]res:\/\/images\/packed\/sprite_fonts\/[a-z_]*energy_icon\.png\[\/img\]/g, "◆")
     .replace(
       /\[\/?(?:b|i|u|s|gold|red|green|blue|purple|orange|color(?:=[^\]]*)?|font(?:=[^\]]*)?)\]/g,
       "",
@@ -28,19 +29,19 @@ const plain = (text) =>
       (match) => ({ "[energy]": "◆", "[star]": "★" })[match] ?? match,
     );
 export async function cardPreview(id, version, container, onCard) {
-  container.replaceChildren(node("p", t("加载卡牌…")));
+  container.replaceChildren(node("p", t("咿呀——！卡牌读取中…")));
   const catalog = await loadCatalog(version);
   const catalogLanguage = catalog?.languages[language] ? language : 'eng';
   const models = catalog?.languages[catalogLanguage] ?? [];
   const model = models.find((model) => model.id === id);
   if (!model) {
-    container.replaceChildren(node("p", t("暂无此版本的卡牌资料。")));
+    container.replaceChildren(node("p", t("南无三！这个版本里找不到这张牌。")));
     return;
   }
   const render = (upgraded) => {
     container.replaceChildren();
     if (catalogLanguage !== language)
-      container.append(node("p", t('此版本尚无所选语言的卡牌资料，以下卡牌资料使用英文。'), "notice"));
+      container.append(node("p", t("这个版本还没有所选语言的卡牌资料，先用英文顶一下。"), "notice"));
     const card = node("article", undefined, "game-card"),
       variant = model.variants?.[Number(upgraded)];
     if (model.image) {
@@ -70,7 +71,7 @@ export async function cardPreview(id, version, container, onCard) {
     if (model.variants?.length > 1) {
       const toggle = node(
         "button",
-        upgraded ? t("查看基础牌") : t("查看升级牌"),
+        upgraded ? t("看原版") : t("看升级版"),
         "button",
       );
       toggle.onclick = () => render(!upgraded);

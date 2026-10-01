@@ -2,7 +2,7 @@ import { mkdir, writeFile, readFile, copyFile, cp } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { normalizeEvents } from './data.mjs';
 import { useCurrentCatalog } from './public-data.mjs';
-import { publishSnapshot, publicFeedback, readCatalog, readCurrentRelease } from './publish.mjs';
+import { chartSchemaVersion, publishSnapshot, publicFeedback, readCatalog, readCurrentRelease } from './publish.mjs';
 import { loadTelemetry } from './posthog.mjs';
 import { loadRemoteFeedback } from '../scripts/feedback-reader.js';
 
@@ -26,10 +26,12 @@ if (config.key && config.projectId) {
     Object.assign(snapshot, publishSnapshot(normalizeEvents(result.results), catalog));
     snapshot.sources.telemetry = { state: 'ready', label: 'PostHog', at: new Date().toISOString(), truncated: result.truncated };
   } catch (error) {
-    if (!snapshot.sources.telemetry.at) throw error;
-    snapshot.sources.telemetry = { ...snapshot.sources.telemetry, state: 'error', message: '统计暂时无法更新，显示上次更新的数据。' };
+    if (!snapshot.sources.telemetry.at || snapshot.chartSchemaVersion !== chartSchemaVersion) throw error;
+    snapshot.sources.telemetry = { ...snapshot.sources.telemetry, state: 'error', message: '咕哇——！统计这次没更新成功，先看上次的吧。' };
   }
 }
+if (snapshot.chartSchemaVersion !== chartSchemaVersion)
+  throw new Error('The new charts require a successful telemetry aggregation before deployment.');
 if (process.env.OBSERVATORY_READ_TOKEN) {
   try {
     const result = await loadRemoteFeedback(process.env.OBSERVATORY_READ_TOKEN);
@@ -38,7 +40,7 @@ if (process.env.OBSERVATORY_READ_TOKEN) {
     snapshot.sources.feedback = { state: 'ready', label: '玩家提交', at: new Date().toISOString() };
   } catch (error) {
     if (!snapshot.sources.feedback.at) throw error;
-    snapshot.sources.feedback = { ...snapshot.sources.feedback, state: 'error', message: '反馈暂时无法更新，显示上次更新的内容。' };
+    snapshot.sources.feedback = { ...snapshot.sources.feedback, state: 'error', message: '咕哇——！来信这次没更新成功，先看上次的吧。' };
   }
 }
 snapshot.generatedAt = new Date().toISOString();
@@ -55,7 +57,7 @@ try {
   snapshot.reports = reports;
   snapshot.sources.replays = { state: 'ready', at: snapshot.generatedAt };
 } catch {
-  snapshot.sources.replays = { ...snapshot.sources.replays, state: 'error', message: '对局记录暂时无法更新，显示上次更新的内容。' };
+  snapshot.sources.replays = { ...snapshot.sources.replays, state: 'error', message: '咕哇——！战报这次没更新成功，先看上次的吧。' };
 }
 snapshot.reports = (snapshot.reports ?? []).filter(report => Date.parse(report.expires) > Date.now());
 snapshot.feedback = snapshot.feedback.filter(item => Date.parse(item.at) >= Date.now() - 180 * 86_400_000);
@@ -67,7 +69,6 @@ for (const file of ['app.js', 'styles.css', 'i18n.mjs', 'translations.mjs', 'pub
 await mkdir(join(output, 'vendor'), { recursive: true });
 await copyFile(new URL('../node_modules/chart.js/dist/chart.umd.js', import.meta.url), join(output, 'vendor/chart.umd.js'));
 await copyFile(new URL('../node_modules/chart.js/LICENSE.md', import.meta.url), join(output, 'vendor/LICENSE.Chart.js.md'));
-await copyFile(new URL('vendor/LICENSE.Spire-Codex.md', import.meta.url), join(output, 'vendor/LICENSE.Spire-Codex.md'));
 await cp(new URL('../../../Website/content/', import.meta.url), join(output, 'content'), { recursive: true });
 await cp(new URL('assets/', import.meta.url), join(output, 'assets'), { recursive: true });
 await writeFile(join(output, '.nojekyll'), '');

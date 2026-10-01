@@ -482,7 +482,7 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             return;
         }
 
-        Vector2 ownerFrom = _actorNode.Position;
+        Vector2 ownerFrom = FinisherApproach.AnimationPosition(Actor, _actorNode.Visuals);
         if (!AlabamaOwnsRecovery) _actorAimPose?.BeginReturn();
         _approach?.BeginReturn();
         Vector2 cameraFrom = _camera.CurrentPosition;
@@ -507,9 +507,17 @@ internal sealed partial class FinisherSession : IAsyncDisposable
             ApplyDeathKickRecovery(measuredCamera
                 ? (Mathf.IsZeroApprox(actorReturnSeconds) ? 1f : Mathf.Clamp(elapsed / actorReturnSeconds, 0f, 1f))
                 : cameraLinearProgress);
-            if (!IsRanged && !AlabamaOwnsRecovery) _actorNode.Position = ownerFrom.Lerp(_actorReturnPosition, actorProgress);
-            if (_continuousPlayerApproach && IsAlabamaDrop)
-                _actorNode.Position -= Vector2.Down * (AlabamaDropAnimation.ReturnHopHeight * Mathf.Sin(actorProgress * Mathf.Pi));
+            if (!IsRanged && !AlabamaOwnsRecovery)
+            {
+                Vector2 position = ownerFrom.Lerp(_actorReturnVisualPosition, actorProgress);
+                if (_continuousPlayerApproach && IsAlabamaDrop)
+                {
+                    Vector2 hop = Vector2.Up * (AlabamaDropAnimation.ReturnHopHeight * Mathf.Sin(actorProgress * Mathf.Pi));
+                    position += _actorNode.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().AffineInverse()
+                        .BasisXform(_actorNode.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(hop));
+                }
+                FinisherApproach.SetAnimationPosition(Actor, _actorNode.Visuals, position);
+            }
             if (!AlabamaOwnsRecovery) _actorAimPose?.ApplyReturn(actorProgress);
             _approach?.ApplyReturn(actorProgress);
             if (!measuredCamera)
@@ -523,7 +531,8 @@ internal sealed partial class FinisherSession : IAsyncDisposable
 
         if (_measuredCameraTask != null) await _measuredCameraTask;
         ApplyDeathKickRecovery(1f);
-        if (!IsRanged && !AlabamaOwnsRecovery) _actorNode.Position = _actorReturnPosition;
+        if (!IsRanged && !AlabamaOwnsRecovery)
+            FinisherApproach.SetAnimationPosition(Actor, _actorNode.Visuals, _actorReturnVisualPosition);
         _approach?.ApplyReturn(1f);
         RestoreActorLeapPose();
         _returnTimelineCompleted = true;

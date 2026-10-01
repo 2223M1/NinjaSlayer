@@ -251,7 +251,7 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         Stop();
     }
 
-    internal CinematicLease? SuspendForCinematic(Vector2 authoredRoot)
+    internal CinematicLease? SuspendForCinematic()
     {
         if (!Active || _exclusiveDepth > 0) return null;
         Pose.SyncNow();
@@ -261,21 +261,24 @@ internal sealed partial class NinjaSlayerFreeControl : Node
         ClearInput();
         ClearAttacks();
         _physicsRemainder = 0d;
-        Actor.Position += translation;
+        Vector2 baseline = FinisherApproach.AnimationPosition(Actor.Entity, Actor.Visuals);
+        Vector2 visualTranslation = Actor.Visuals.GetParent<CanvasItem>().GetGlobalTransformWithCanvas()
+            .AffineInverse().BasisXform(Actor.GetParent<CanvasItem>().GetGlobalTransformWithCanvas().BasisXform(translation));
+        FinisherApproach.SetAnimationPosition(Actor.Entity, Actor.Visuals, baseline + visualTranslation);
         Pose.SyncNow();
-        return new CinematicLease(this, authoredRoot, translation);
+        return new CinematicLease(this, baseline);
     }
 
-    internal sealed class CinematicLease(NinjaSlayerFreeControl owner, Vector2 authored, Vector2 translation) : IDisposable
+    internal sealed class CinematicLease(NinjaSlayerFreeControl owner, Vector2 visualBaseline) : IDisposable
     {
-        internal Vector2 Baseline => authored + translation;
         private bool _disposed;
         public void Dispose()
         {
             if (_disposed || !GodotObject.IsInstanceValid(owner)) return;
             _disposed = true;
             owner._exclusiveDepth--;
-            if (GodotObject.IsInstanceValid(owner.Actor)) owner.Actor.Position = authored;
+            if (GodotObject.IsInstanceValid(owner.Actor) && GodotObject.IsInstanceValid(owner.Actor.Visuals))
+                FinisherApproach.SetAnimationPosition(owner.Actor.Entity, owner.Actor.Visuals, visualBaseline);
             if (owner.Active)
             {
                 owner.Pose.SyncNow();

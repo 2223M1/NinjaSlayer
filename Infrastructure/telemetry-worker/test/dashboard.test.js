@@ -10,7 +10,7 @@ import { normalizeEvents, parseData, summarize } from '../dashboard/data.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createDashboardServer } from '../dashboard/server.mjs';
-import { publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
+import { chartSchemaVersion, publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
 import { summarizePublic, useCurrentCatalog } from '../dashboard/public-data.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
 
@@ -96,7 +96,6 @@ test('last successful snapshot is pruned against a new catalog without losing ru
   const snapshot = publishSnapshot(normalizeEvents([event()]), catalog);
   const group = snapshot.groups[0];
   const removed = cardB;
-  group.charts.push({ chart: 'entity-over-time', series: removed, x: '2026-09-12', n: 1, wins: 1, sum: 1 });
   group.mechanisms.push({ group: 'card', id: removed + '/1', n: 1, version: '0.2.4' },
     { group: 'damage_source', id: removed, n: 1, sum: 8, version: '0.2.4' },
     { group: 'mechanic', id: 'shuriken', n: 1, sum: 6, version: '0.2.4' });
@@ -147,11 +146,11 @@ test('old runs remain usable without invented combat measurements; filters retai
   const all = summarize(runs, catalog, {}, now);
   assert.equal(all.runs, 2); assert.equal(all.measuredCombats, 1); assert.equal(all.totalCombats, 2);
   assert.equal(all.cards[0].drawn, 2);
-  for (const filter of [{ version: '0.2.4' }, { reloads: 'none' }, { ascension: '10' }]) {
+  for (const filter of [{ version: '0.2.4' }, { outcome: 'win' }, { ascension: '10' }]) {
     const filtered = summarize(runs, catalog, filter, now);
     assert.equal(filtered.runs, 1); assert.equal(filtered.playerSamples, 1);
   }
-  const empty = summarize(runs, catalog, { gameVersion: 'different' }, now);
+  const empty = summarize(runs, catalog, { version: 'different' }, now);
   assert.equal(empty.averageFloor, null);
   assert.equal(empty.cards[0].combatSamples, 0);
 });
@@ -203,7 +202,7 @@ test('local dashboard serves real catalog and imports; refuses cross-origin read
   assert.equal((await read()).runs, 1, 'a failed import must preserve the last usable view');
   const page = await fetch(url);
   assert.ok(page.headers.get('content-security-policy').includes("frame-ancestors 'none'"));
-  assert.match(await page.text(), /卡牌统计/);
+  assert.match(await page.text(), /忍杀情报站/);
 });
 
 test('dashboard accepts an exact native product fixture when supplied by host contracts', async t => {
@@ -224,13 +223,10 @@ test('public feedback projection excludes old notices and private context', () =
   }]);
 });
 
-test('public aggregates match private statistics across date, version, mode and multiplayer filters', () => {
+test('public aggregates match private statistics across date, version, ascension, outcome and multiplayer filters', () => {
   const old = event({ seed: 'old', won: false, version: '0.2.3' });
   old.timestamp = '2026-09-11T23:30:00Z';
   old.properties.payload.applicant_payload.run_history.ascension = 0;
-  old.properties.payload.applicant_payload.run_history.num_reloads = 2;
-  old.properties.game_version = '0.111.0';
-  old.properties.run_game_mode = 'Daily';
   const mixed = event({ seed: 'cross-version' });
   mixed.properties.payload.applicant_payload.mod_payload.combats['1/0'].version = '0.2.3';
   const multi = event({ seed: 'multiplayer' });
@@ -238,7 +234,7 @@ test('public aggregates match private statistics across date, version, mode and 
   const telemetry = normalizeEvents([event(), old, mixed, multi]);
   const snapshot = { ...publishSnapshot(telemetry, catalog), sources: {}, feedback: [] };
   for (const filters of [{}, { days: '1' }, { days: '2' }, { version: '0.2.4' }, { version: '0.2.3' },
-    { ascension: '0' }, { ascension: '10', reloads: 'none' }, { party: 'multi' }, { party: 'solo' }, { gameVersion: '0.111.0' }, { mode: 'Daily' }, { mode: 'empty' }]) {
+    { ascension: '0' }, { ascension: '10', outcome: 'win' }, { party: 'multi' }, { party: 'solo' }, { outcome: 'loss' }]) {
     const actual = summarizePublic(snapshot, filters, now);
     const expected = summarize(telemetry.runs, snapshot.catalog, filters, now);
     for (const key of Object.keys(expected)) assert.deepEqual(actual[key], expected[key], `${JSON.stringify(filters)} / ${key}`);
@@ -248,11 +244,24 @@ test('public aggregates match private statistics across date, version, mode and 
     assert.ok(!output.includes(privateValue), privateValue);
 });
 
-test('Pages artifact is standalone under the project subpath and excludes private controls and data', async t => {
+async function buildPages(t, { previous, failTelemetry = false, rows = [] } = {}) {
   const output = await mkdtemp(join(tmpdir(), 'ninjaslayer-pages-'));
   t.after(() => rm(output, { recursive: true, force: true }));
-  const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: '', POSTHOG_PROJECT_ID: '', OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: '' };
-  await promisify(execFile)(process.execPath, [fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
+  const env = { ...process.env, POSTHOG_PERSONAL_API_KEY: 'test-only', POSTHOG_PROJECT_ID: '42', POSTHOG_QUERY_HOST: 'https://us.posthog.com',
+    OBSERVATORY_READ_TOKEN: '', OBSERVATORY_PREVIOUS_URL: previous ? 'https://previous.invalid/data.json' : '' };
+  const mock = `globalThis.fetch = async url => {
+    if (String(url).startsWith('https://previous.invalid/')) return Response.json(${JSON.stringify(previous ?? {})});
+    if (String(url).startsWith('https://us.posthog.com/')) return ${failTelemetry ? "new Response('unavailable', {status: 503})" : `Response.json({results: ${JSON.stringify(rows)}})`};
+    if (String(url).startsWith('https://telemetry.feixingwawa.cn/observatory/replays')) return Response.json({reports: []});
+    throw new Error('Unexpected fetch: ' + url);
+  };`;
+  await promisify(execFile)(process.execPath, ['--import', 'data:text/javascript,' + encodeURIComponent(mock),
+    fileURLToPath(new URL('../dashboard/build-pages.mjs', import.meta.url)), output], { env });
+  return output;
+}
+
+test('Pages artifact is standalone under the project subpath and accepts genuinely empty fresh telemetry', async t => {
+  const output = await buildPages(t);
   assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'styles.css', 'translations.mjs', 'vendor']);
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.match(html, /data-view="pages"/);
@@ -262,6 +271,30 @@ test('Pages artifact is standalone under the project subpath and excludes privat
   const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
   assert.equal(snapshot.catalog.length, 93);
   assert.equal(summarizePublic(snapshot).runs, 0);
-  assert.equal(snapshot.sources.telemetry.state, 'unconnected');
+  assert.equal(snapshot.sources.telemetry.state, 'ready');
+  assert.equal(snapshot.chartSchemaVersion, chartSchemaVersion);
   assert.deepEqual(snapshot.feedback, []);
+});
+
+test('Pages refuses old chart snapshots after aggregation failure and preserves compatible data', async t => {
+  const previous = { schemaVersion: 1, ...publishSnapshot(normalizeEvents([event()]), catalog), feedback: [],
+    sources: { telemetry: { state: 'ready', at: '2026-09-30T00:00:00Z' }, feedback: { state: 'unloaded' } } };
+  const legacy = structuredClone(previous);
+  delete legacy.chartSchemaVersion;
+  legacy.groups[0].charts = [{ chart: 'win-rate-floor', x: 1, n: 1, sum: 1, wins: 1 }];
+  await assert.rejects(buildPages(t, { previous: legacy, failTelemetry: true }));
+  await assert.rejects(buildPages(t, { failTelemetry: true }));
+  const output = await buildPages(t, { previous, failTelemetry: true });
+  const snapshot = JSON.parse(await readFile(join(output, 'data.json'), 'utf8'));
+  assert.equal(snapshot.sources.telemetry.state, 'error');
+  assert.deepEqual(snapshot.groups.map(group => group.charts), previous.groups.map(group => group.charts));
+  assert.equal(snapshot.groups[0].runs, 1);
+  const row = event();
+  const fresh = await buildPages(t, { previous: legacy, rows: [['fixture-id', row.timestamp, JSON.stringify(row.properties)]] });
+  const replaced = JSON.parse(await readFile(join(fresh, 'data.json'), 'utf8'));
+  assert.equal(replaced.sources.telemetry.state, 'ready');
+  assert.equal(replaced.chartSchemaVersion, chartSchemaVersion);
+  assert.equal(replaced.groups[0].runs, 1);
+  assert.ok(replaced.groups[0].charts.some(point => point.chart === 'ascension-wins'));
+  assert.ok(!replaced.groups[0].charts.some(point => point.chart === 'win-rate-floor'));
 });

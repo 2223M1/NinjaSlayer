@@ -177,11 +177,11 @@ if (!existsSync(fmodGuidMappingsPath)) {
 } else {
   const fmodGuidMappings = readFileSync(fmodGuidMappingsPath, 'utf8');
   for (const eventPath of [
-    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_death',
-    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_death_kiri',
-    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_fast_attack',
-    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_kirisute_goumen',
-    'event:/NinjaSlayerAudio/sfx/dark_ninja/dark_ninja_slow_attack',
+    'event:/NinjaSlayerAudio/sfx/characters/dark_ninja/death',
+    'event:/NinjaSlayerAudio/sfx/characters/dark_ninja/death_kiri',
+    'event:/NinjaSlayerAudio/sfx/characters/dark_ninja/fast_attack',
+    'event:/NinjaSlayerAudio/sfx/characters/dark_ninja/kirisute_gomen',
+    'event:/NinjaSlayerAudio/sfx/characters/dark_ninja/slow_attack',
   ]) {
     if (!fmodGuidMappings.includes(eventPath)) {
       errors.push(`NinjaSlayer/audio/fmod/GUIDs.txt is missing ${eventPath}`);

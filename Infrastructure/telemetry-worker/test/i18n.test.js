@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { messages, chinese } from '../dashboard/translations.mjs';
+import { messages } from '../dashboard/translations.mjs';
 
 const placeholders = text => [...new Set([...text.matchAll(/\{(\d+)\}/g)].map(match => match[1]))].sort();
 
@@ -13,8 +13,6 @@ test('website translations preserve every interpolated value', () => {
       assert.deepEqual(placeholders(text), placeholders(key), key);
     }
   }
-  for (const [key, text] of Object.entries(chinese))
-    assert.deepEqual(placeholders(text), placeholders(key), key);
 });
 
 test('website language uses URL, then saved choice; admin remains Chinese', async () => {

@@ -55,8 +55,7 @@ internal sealed partial class TomoeThrowAnimation : Node
     {
         try
         {
-            _freeControl = NinjaSlayerFreeControl.Get(_actor.Entity)?.SuspendForCinematic(
-                NinjaSlayerRapidAnimationCoordinator.GetBaseline(_actor.Entity, _actor));
+            _freeControl = NinjaSlayerFreeControl.Get(_actor.Entity)?.SuspendForCinematic();
             _victim = new GrappledTargetPose(_target, blur: true);
             _ownerMotion = _pose.BeginTomoe(_target.Entity);
             _target.TreeExiting += TargetExiting;

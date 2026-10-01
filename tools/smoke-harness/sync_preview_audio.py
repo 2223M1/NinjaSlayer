@@ -18,10 +18,24 @@ from scipy.signal import correlate
 
 SAMPLE_RATE = 48000
 REPOSITORY = Path(__file__).resolve().parents[2]
-SOURCES = {
-    "ninja_slayer_slow_attack": "ninja_slayer_attack.wav",
-    "ninja_slayer_hurt": "ninja_slayer_hurt.wav",
+SOURCE_EVENTS = {
+    "{841f8492-9735-4dea-b652-b8d22523f8c7}": "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/slow_attack",
+    "{0351689c-9613-4b9d-b9f0-c2d16fc805a1}": "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/hurt",
+    "{7589eded-6028-46dc-9a8e-fe677238ebc3}": "event:/NinjaSlayerAudio/sfx/narration/breast",
+    "{15554978-a2b5-482c-8c50-ee1eba9c1b3f}": "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/long_washoi",
+    "{916dc9b2-8eb7-4722-8826-8fa50f5f74e2}": "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/short_washoi",
+    "{eeb09a3c-39f1-4190-b538-d248b6dfbeec}": "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/slow_domo",
+    "{44e279a6-3e23-4b6d-8be0-f6dbf834e11a}": "event:/NinjaSlayerAudio/sfx/characters/ninja_slayer/korosu_beshi",
+    "{70c9ff13-388e-4528-b851-4a7759a53738}": "event:/NinjaSlayerAudio/sfx/characters/yukano/fast_bye",
+    "{7b89b887-40cb-46ee-bcb8-3d0d31729f48}": "event:/NinjaSlayerAudio/sfx/characters/yukano/fast_attack",
+    "{351f3e4c-5dae-4668-b9f2-280480f0982e}": "event:/NinjaSlayerAudio/sfx/characters/yamoto_koki/bye",
+    "{f56e5817-8ce7-4a18-8175-57f5d93dde22}": "event:/NinjaSlayerAudio/sfx/characters/yamoto_koki/domo",
 }
+
+
+def event_key(path):
+    return path if path in SOURCE_EVENTS.values() else path.rsplit("/", 1)[-1]
+
 
 
 def read_audio(path):
@@ -45,13 +59,12 @@ def locate_waveform(samples, template, lower, upper):
 
 
 def source_templates(project, debug_audio=None, native_templates=None):
-    paths = {name: {REPOSITORY / "NinjaSlayer/audio/sources" / source}
-             for name, source in SOURCES.items()}
+    paths = {name: set() for name in SOURCE_EVENTS.values()}
     # FMOD multi-sounds choose among distinct recordings of the same event.
     # Read their source assets instead of assuming the legacy waveform is chosen.
     for event_path in (project / "Metadata/Event").glob("*.xml"):
         event = ET.parse(event_path).getroot()
-        name = event.findtext("object[@class='Event']/property[@name='name']/value")
+        name = SOURCE_EVENTS.get(event.find("object[@class='Event']").attrib["id"])
         if name not in paths:
             continue
         for reference in event.findall(".//relationship[@name='audioFile']/destination"):
@@ -80,11 +93,12 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
     frame_times = [row[0] for row in frames]
     samples = read_audio(directory / "audio.wav")
     templates = source_templates(fmod_project, debug_audio, native_templates)
-    events = [json.loads(line) for line in (directory / "audio-events.jsonl").read_text().splitlines()]
-    observed = {event["event"].rsplit("/", 1)[-1] for event in events}
+    events = [event for line in (directory / "audio-events.jsonl").read_text().splitlines()
+              if frame_times[0] <= (event := json.loads(line))["qpc"] <= frame_times[-1]]
+    observed = {event_key(event["event"]) for event in events}
     matches = []
     for event in events:
-        name = event["event"].rsplit("/", 1)[-1]
+        name = event_key(event["event"])
         if name not in templates:
             continue
         frame_index = bisect.bisect_left(frame_times, event["qpc"])
@@ -101,14 +115,36 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
         if not candidates:
             continue
         score, located_time, source = max(candidates)
-        if score < 0.3:
+        source_offset, source_length = 0, len(templates[name][source])
+        # An overlapping voice can obscure part of a long source. Accept short
+        # windows only when two disjoint, high-confidence windows independently
+        # identify the same source start to within 2ms.
+        if score < .7:
+            windows = []
+            for candidate_source, template in templates[name].items():
+                energy = np.dot(template, template)
+                found = []
+                for first in range(0, len(template) - 4800, 4800):
+                    chunk = template[first:first + 4800]
+                    if np.dot(chunk, chunk) < energy * .01:
+                        continue
+                    hit = locate_waveform(samples, chunk, lower + first,
+                        min(len(samples), round((cue + .5) * SAMPLE_RATE) + first + len(chunk)))
+                    if hit is not None and hit[1] >= .7:
+                        found.append((hit[1], hit[0] - first / SAMPLE_RATE, candidate_source, first, len(chunk)))
+                windows.extend(hit for hit in found if any(other[3] != hit[3]
+                    and abs(other[1] - hit[1]) <= .002 for other in found))
+            if windows:
+                score, located_time, source, source_offset, source_length = max(windows)
+        if score < 0.7:
             continue
         sound_time = located_time - offset
         frame = frames[frame_index][1]
         matches.append({"event": name, "videoFrame": frame, "videoSeconds": frame / 60,
                         "audioSeconds": sound_time, "correlation": score, "source": source,
-                        "delaySeconds": sound_time - frame / 60})
-    if len(matches) < 2:
+                        "delaySeconds": sound_time - frame / 60,
+                        "sourceOffsetSamples": source_offset, "sourceLengthSamples": source_length})
+    if not matches:
         raise RuntimeError("Insufficient waveform matches; audio sync has not been verified.")
     delays = np.array([match["delaySeconds"] for match in matches])
     median = float(np.median(delays))
@@ -121,16 +157,30 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
     median = float(np.median(delays))
     tolerance = max(0.02, 3 * float(np.median(np.abs(delays - median))))
     accepted = [match for match in matches if abs(match["delaySeconds"] - median) <= tolerance]
-    if len(accepted) < 2:
+    if not accepted:
         raise RuntimeError("Audio latency is inconsistent across the recording.")
     if popup_movie is not None:
         motion = json.loads((directory / "motion.json").read_text())
-        released = [row for row in motion if row.get("popup", {}).get("releasePosition", -1) > 0]
+        capture_start = json.loads((directory / "runtime.json").read_text())["captureStartSeconds"]
+        released = [row for row in motion if row["seconds"] >= capture_start
+                    and row.get("popup", {}).get("releasePosition", -1) > 0]
         if released:
             row = released[0]
-            movie_start = row["seconds"] - row["popup"]["position"]
+            movie_start = row["seconds"] - capture_start - row["popup"]["position"]
             template = read_audio(popup_movie)
-            located = locate_waveform(samples, template,
+            # The popup narrator overlaps the embedded film. Remove its measured
+            # waveform from the analysis buffer only, never from delivered audio.
+            movie_samples = samples.copy()
+            for narrator in accepted:
+                if narrator["event"] != "event:/NinjaSlayerAudio/sfx/narration/breast":
+                    continue
+                voice = templates["event:/NinjaSlayerAudio/sfx/narration/breast"][narrator["source"]]
+                first = round((narrator["audioSeconds"] + offset) * SAMPLE_RATE)
+                voice = voice[:len(movie_samples) - first]
+                window = movie_samples[first:first + len(voice)]
+                gain = np.dot(window, voice) / max(np.dot(voice, voice), 1e-20)
+                window -= gain * voice
+            located = locate_waveform(movie_samples, template,
                 max(0, round((offset + movie_start - .2) * SAMPLE_RATE)),
                 min(len(samples), round((offset + movie_start + .5) * SAMPLE_RATE) + len(template)))
             if located is None or located[1] < .7:
@@ -142,7 +192,12 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
                      "delaySeconds": located[0] - offset - movie_start}
             matches.append(match)
             accepted.append(match)
+    # The independently measured embedded movie is also a synchronization anchor.
+    if len(accepted) < 2:
+        raise RuntimeError("Insufficient independent waveform matches; audio sync has not been verified.")
     required = set()
+    if "event:/NinjaSlayerAudio/sfx/narration/breast" in observed:
+        required.add("event:/NinjaSlayerAudio/sfx/narration/breast")
     if debug_audio is not None:
         required.update(name for name in templates if name.endswith(".mp3") and name in observed)
     if native_templates is not None:
@@ -180,7 +235,9 @@ def synchronize(directory, output, fmod_project, debug_audio=None, native_templa
         encoded = read_audio(output)
         for match in accepted:
             template = templates[match["event"]][match["source"]]
-            cue = match["videoSeconds"]
+            first = match.get("sourceOffsetSamples", 0)
+            template = template[first:first + match.get("sourceLengthSamples", len(template))]
+            cue = match["videoSeconds"] + first / SAMPLE_RATE
             located = locate_waveform(encoded, template, max(0, round((cue - 0.08) * SAMPLE_RATE)),
                                       min(len(encoded), round((cue + 0.08) * SAMPLE_RATE) + len(template)))
             # AAC can slightly reduce the score of a quiet sound under other effects.

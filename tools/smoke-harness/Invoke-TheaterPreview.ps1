@@ -3,18 +3,18 @@
 [CmdletBinding()]
 param(
     [string]$Script = (Join-Path $PSScriptRoot 'theater/promo-fight.json'),
-    [Parameter(Mandatory)][string]$OutputDirectory,
+    [string]$OutputDirectory,
+    [string]$PreparationDirectory,
     [string]$FromCue,
     [string]$ToCue,
     [ValidateRange(1, 10)][int]$Repeat = 1,
     [switch]$Rehearsal,
-    [switch]$SkipBuild,
     [switch]$FullMix,
     [string]$GameRoot = 'C:/Program Files (x86)/Steam/steamapps/common/Slay the Spire 2',
     [string]$RitsuLibDirectory = 'C:/Program Files (x86)/Steam/steamapps/workshop/content/2868840/3747602295',
     [string]$StableDataDirectory,
     [string]$PreviewDataDirectory = 'C:/Users/theon/Documents/NinjaSlayer/NinjaSlayer/build/aim-validation/reference/preview',
-    [string]$ResourcePack,
+    [string]$Godot = 'C:/Program Files/Godot_v4.5.1-stable_mono_win64/Godot_v4.5.1-stable_mono_win64_console.exe',
     [string]$DebugAudioDirectory,
     [ValidateSet('forward_plus', 'gl_compatibility')][string]$Renderer = 'forward_plus',
     [string]$Python = 'C:/Users/theon/AppData/Local/Python/bin/python.exe'
@@ -22,6 +22,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$runId = (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
+if (!$OutputDirectory) { $OutputDirectory = Join-Path $repo "build/theater/recordings/$runId" }
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 $scriptPath = (Resolve-Path -LiteralPath $Script).Path
 $story = Get-Content -LiteralPath $scriptPath -Raw | ConvertFrom-Json
@@ -38,13 +40,34 @@ if ($channel.Count -ne 1) { throw "Unsupported recording host: $mvid" }
 $channelName = $channel[0].Name
 $build = Join-Path $repo "build/theater/compile/$channelName"
 $assembly = Join-Path $build 'Debug/NinjaSlayer.dll'
-if (!$ResourcePack) { $ResourcePack = Join-Path $repo 'build/balance-v0216/NinjaSlayer.pck' }
-$ResourcePack = (Resolve-Path -LiteralPath $ResourcePack).Path
 function Invoke-Checked([string]$Exe, [string[]]$Arguments) {
     & $Exe @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Exe failed with exit code $LASTEXITCODE" }
 }
-if (!$SkipBuild) {
+$preparationRoot = [IO.Path]::GetFullPath((Join-Path $repo 'build/theater/preparation'))
+$preparation = Join-Path $preparationRoot $runId
+if ($PreparationDirectory) {
+    $preparation = (Resolve-Path -LiteralPath $PreparationDirectory).Path
+    if (!$preparation.StartsWith($preparationRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Reused preparation must be an existing directory inside this project theater staging root.'
+    }
+    $active = @(Get-CimInstance Win32_Process | Where-Object {
+        $_.Name -eq 'SlayTheSpire2.exe' -and (!$_.ExecutablePath -or $_.ExecutablePath.StartsWith($preparation, [StringComparison]::OrdinalIgnoreCase))
+    })
+    if ($active.Count) { throw 'The selected isolated game is still running.' }
+    $stagedExe = Join-Path $preparation "game-$channelName/SlayTheSpire2.exe"
+    if (!(Test-Path -LiteralPath $stagedExe) -or
+        (Get-FileHash -LiteralPath $stagedExe).Hash -ne (Get-FileHash -LiteralPath (Join-Path $GameRoot 'SlayTheSpire2.exe')).Hash) {
+        throw 'Reused staging must contain the complete current game executable.'
+    }
+}
+New-Item -ItemType Directory -Path $preparation -Force | Out-Null
+$ResourcePack = Join-Path $preparation 'NinjaSlayer.pck'
+Write-Output 'Importing and exporting current main-project resources; no cached PCK is accepted.'
+Invoke-Checked $Godot @('--headless', '--editor', '--path', $repo, '--import') *> "$preparation/import.log"
+Invoke-Checked node @("$PSScriptRoot/recording-inputs.mjs", "$preparation/source-inputs.json")
+Invoke-Checked $Godot @('--headless', '--path', $repo, '--export-pack', 'Windows Desktop', $ResourcePack) *> "$preparation/export.log"
+& {
     foreach ($variant in @('stable', 'preview')) {
         $references = if ($variant -eq 'stable') { $StableDataDirectory } else { $PreviewDataDirectory }
         if ((Get-NinjaSlayerGameModuleMvid -AssemblyPath "$references/sts2.dll") -ne $manifest.channels.$variant.hostContract.moduleMvid) {
@@ -60,8 +83,9 @@ if (!$SkipBuild) {
     Invoke-Checked dotnet @('build', "$PSScriptRoot/NinjaSlayer.BackgroundGame/NinjaSlayer.BackgroundGame.csproj", '-c', 'Release', '--nologo', '-v:quiet')
     Invoke-Checked dotnet @('build', "$PSScriptRoot/NinjaSlayer.AudioCapture/NinjaSlayer.AudioCapture.csproj", '-c', 'Release', '--nologo', '-v:quiet')
 }
+Invoke-Checked node @("$PSScriptRoot/recording-inputs.mjs", "$preparation/built-inputs.json", "$preparation/source-inputs.json")
 if (!(Test-Path -LiteralPath $assembly)) { throw "Build is missing: $assembly" }
-$game = Join-Path $repo "build/theater/game-$channelName"
+$game = Join-Path $preparation "game-$channelName"
 if (!(Test-Path -LiteralPath "$game/SlayTheSpire2.exe")) {
     New-Item -ItemType Directory -Path $game -Force | Out-Null
     foreach ($file in Get-ChildItem -LiteralPath $GameRoot -File) {
@@ -101,14 +125,16 @@ Invoke-Checked node @("$repo/tools/package-contract.mjs", 'generate', '--source'
     '--min-game-version', $channel[0].Value.gameApiVersion, '--ritsulib-version', $manifest.ritsuLibVersion)
 Copy-Item -LiteralPath "$PSScriptRoot/NinjaSlayer.SmokeDriver/bin/Debug/net9.0/NinjaSlayer-SmokeDriver.dll",
     "$PSScriptRoot/NinjaSlayer.SmokeDriver/NinjaSlayer-SmokeDriver.json" -Destination "$mods/NinjaSlayer-SmokeDriver" -Force
-$rule = "NinjaSlayer-Theater-$channelName"
+$rule = "NinjaSlayer-Theater-$runId"
 $exe = [IO.Path]::GetFullPath("$game/SlayTheSpire2.exe")
 & ssh localadmin "if (!(Get-NetFirewallRule -DisplayName '$rule' -ErrorAction SilentlyContinue)) { New-NetFirewallRule -DisplayName '$rule' -Direction Outbound -Action Block -Program '$exe' | Out-Null }"
 if ($LASTEXITCODE -ne 0) { throw 'Recording network isolation failed.' }
+try {
 for ($iteration = 1; $iteration -le $Repeat; $iteration++) {
     $destination = if ($Repeat -eq 1) { $output } else { Join-Path $output ('take-{0:D2}' -f $iteration) }
     if (Test-Path -LiteralPath $destination) { throw "Recording output already exists: $destination" }
     New-Item -ItemType Directory -Path $destination | Out-Null
+    Copy-Item -LiteralPath "$preparation/source-inputs.json" -Destination "$destination/source-inputs.json"
     $configuration = [ordered]@{
         CandidateSha = ((git -C $repo rev-parse HEAD).Trim()); Seed = $story.seed; Phase = 11
         CheckpointPath = "$destination/checkpoints.jsonl"; AutoSlayLogPath = "$destination/autoslay.log"
@@ -148,11 +174,13 @@ for ($iteration = 1; $iteration -le $Repeat; $iteration++) {
         if (!$process.HasExited) { throw 'Theater exceeded five minutes.' }
         if ($process.ExitCode -ne 0) { throw "Theater failed: $($process.ExitCode). See $destination/checkpoints.jsonl" }
         if (!$capture.WaitForExit(10000)) { throw 'Audio capture did not stop.' }
+        Invoke-Checked node @("$PSScriptRoot/recording-inputs.mjs", "$destination/recorded-inputs.json", "$preparation/source-inputs.json")
         $syncArguments = @("$PSScriptRoot/sync_preview_audio.py", $destination, '--output', "$destination/theater.mp4")
-        if ($story.PSObject.Properties.Name -contains 'purpose' -and $story.purpose -eq 'yukano-popup') {
+        if ($DebugAudioDirectory) { $syncArguments += @('--debug-audio', $DebugAudioDirectory) }
+        $motion = @(Get-Content -LiteralPath "$destination/motion.json" -Raw | ConvertFrom-Json)
+        if ($motion.Where({ $null -ne $_.PSObject.Properties['popup'] }).Count -gt 0) {
             $syncArguments += @('--popup-movie', "$repo/NinjaSlayer/animations/yukano_arrow_popup/yukano-original.ogv")
         }
-        if ($DebugAudioDirectory) { $syncArguments += @('--debug-audio', $DebugAudioDirectory) }
         Invoke-Checked $Python $syncArguments
         $sync = Get-Content -LiteralPath "$destination/audio-sync.json" -Raw | ConvertFrom-Json
         $start = $sync.clockOffsetSeconds + $sync.playbackLatencySeconds
@@ -163,6 +191,11 @@ for ($iteration = 1; $iteration -le $Repeat; $iteration++) {
             hostChannel=$channelName; hostMvid=$mvid; renderer=$Renderer; scriptSha256=(Get-FileHash -LiteralPath $scriptPath).Hash
             assemblySha256=(Get-FileHash -LiteralPath $assembly).Hash; resourceSha256=(Get-FileHash -LiteralPath $ResourcePack).Hash
             driverSha256=(Get-FileHash -LiteralPath "$mods/NinjaSlayer-SmokeDriver/NinjaSlayer-SmokeDriver.dll").Hash
+            sourceRoot=$repo; sourceInputsSha256=(Get-FileHash -LiteralPath "$destination/source-inputs.json").Hash
+            audioBanks=@(Get-ChildItem -LiteralPath "$repo/NinjaSlayer/audio/fmod" -Filter '*.bank' -File | ForEach-Object {
+                @{name=$_.Name;sha256=(Get-FileHash -LiteralPath $_.FullName).Hash}
+            })
+            ritsuManifestSha256=(Get-FileHash -LiteralPath "$mods/STS2-RitsuLib/mod_manifest.json").Hash
         } | ConvertTo-Json | Set-Content -LiteralPath "$destination/recording-build.json"
         Invoke-Checked node @("$PSScriptRoot/theater/verify-theater.mjs", $destination)
         Write-Output "Theater ready: $destination/theater.mp4"
@@ -172,4 +205,8 @@ for ($iteration = 1; $iteration -le $Repeat; $iteration++) {
         if ($null -ne $capture -and !$capture.HasExited) { $capture.Kill($true) }
         $env:APPDATA = $oldAppData; $env:LOCALAPPDATA = $oldLocalAppData
     }
+}
+}
+finally {
+    & ssh localadmin "Remove-NetFirewallRule -DisplayName '$rule' -ErrorAction SilentlyContinue"
 }
