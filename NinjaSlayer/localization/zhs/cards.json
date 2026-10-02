@@ -101,7 +101,7 @@
   "NINJA_SLAYER_CARD_BLADE_CYCLE.description": "每当你的[gold]抽牌堆[/gold]洗牌时，[gold]激发[/gold]所有[gold]手里剑[/gold]并只失去{StockLoss:diff()}层[gold]手里剑[/gold]。",
   "NINJA_SLAYER_CARD_STARLESS_NIGHT.title": "无星之夜",
   "NINJA_SLAYER_CARD_STARLESS_NIGHT.description": "每当你获得[gold]手里剑[/gold]时，将1张同等伤害的[gold]强·手里剑[/gold]加入你的[gold]手牌[/gold]。",
-  "NINJA_SLAYER_CARD_CLEAR_MIND.title": "澄明",
+  "NINJA_SLAYER_CARD_CLEAR_MIND.title": "真名看破",
   "NINJA_SLAYER_CARD_CLEAR_MIND.description": "获得{ArtifactPower}层[gold]人工制品[/gold]。",
   "NINJA_SLAYER_CARD_MACACO.title": "玛卡古",
   "NINJA_SLAYER_CARD_MACACO.description": "获得{EvasionPower:diff()}层[gold]回避[/gold]。\n将2张[gold]黑炎[/gold]加入你的[gold]手牌[/gold]。",
