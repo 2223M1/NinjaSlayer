@@ -555,8 +555,23 @@ internal sealed partial class SmokeController
         }
 
         await CreatureCmd.SetCurrentHp(target, 1);
-        Creature attacker = combatState.Enemies.First(enemy => enemy.IsAlive);
+        // The random first encounter can open with buffs only. Use native Nibbit
+        // moves so this fixture always reaches one lethal hit on the next turn.
+        Creature[] originalEnemies = combatState.Enemies.ToArray();
+        Creature attacker = await CreatureCmd.Add<MegaCrit.Sts2.Core.Models.Monsters.Nibbit>(combatState);
         Creature witness = await CreatureCmd.Add<MegaCrit.Sts2.Core.Models.Monsters.Nibbit>(combatState);
+        foreach (Creature enemy in originalEnemies)
+            await CreatureCmd.Escape(enemy);
+        attacker.Monster!.SetMoveImmediate(
+            (MoveState)attacker.Monster.MoveStateMachine!.States["BUTT_MOVE"], forceTransition: true);
+        witness.Monster!.SetMoveImmediate(
+            (MoveState)witness.Monster.MoveStateMachine!.States["HISS_MOVE"], forceTransition: true);
+        NCombatRoom room = NCombatRoom.Instance!;
+        // AddCreature does not lay out new enemies without encounter slots.
+        typeof(NCombatRoom).GetMethod("PositionEnemies", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(room, [new List<NCreature> { room.GetCreatureNode(attacker)!, room.GetCreatureNode(witness)! },
+                combatState.Encounter!.GetCameraScaling()]);
+        await WaitFrames(30);
         FinisherSmokeObserver.Reset();
         NCreature attackerNode = NCombatRoom.Instance!.GetCreatureNode(attacker)!;
         Vector2 rootBaseline = attackerNode.Position;

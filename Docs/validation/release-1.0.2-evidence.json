@@ -1,0 +1,1121 @@
+{
+  "version": "1.0.2",
+  "sourceRevision": "36cfde86520291e133935d575dd4e03ef53ee788",
+  "verifiedAtUtc": "2026-10-02T00:16:04.6687428+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/154",
+  "ci": {
+    "conclusion": "success",
+    "headSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/36941835659"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "126bbdd4b104324f3a51f7adc50456787b154f3e8aeb2ccdfe82df85d64bb47d",
+    "f48a28cc2c7315d7514d9c4003e2207f695b8a6bf0c1ac24ecf39d7f8ddea3cc",
+    "6f19977e0107f53be16e6755927f0119f94e76fe0a56e161c7e9e9f5286332d0",
+    "e936f8c967e87764059357b71e8b5baebb177fdea10f7c045962597ab1df267d",
+    "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "decc413bf6c1db76bddba404054da380834c66b63c674118698859429304c8e7",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "35a48c418118d335dcd1758b56e4c79cf6bafbdfd1c2809fe0c46bf7c3b25a06",
+    "9533427954d2f9a09b0d1a54e9e38dbc164ada8c465bc4a2c95a857f44f8e40d"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "126bbdd4b104324f3a51f7adc50456787b154f3e8aeb2ccdfe82df85d64bb47d",
+      "bytes": 644
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "f48a28cc2c7315d7514d9c4003e2207f695b8a6bf0c1ac24ecf39d7f8ddea3cc",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "6f19977e0107f53be16e6755927f0119f94e76fe0a56e161c7e9e9f5286332d0",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "e936f8c967e87764059357b71e8b5baebb177fdea10f7c045962597ab1df267d",
+      "bytes": 209291720
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "decc413bf6c1db76bddba404054da380834c66b63c674118698859429304c8e7",
+      "bytes": 2234368
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "35a48c418118d335dcd1758b56e4c79cf6bafbdfd1c2809fe0c46bf7c3b25a06",
+      "bytes": 121856
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "9533427954d2f9a09b0d1a54e9e38dbc164ada8c465bc4a2c95a857f44f8e40d",
+      "bytes": 2237952
+    }
+  ],
+  "live": [
+    {
+      "run": "final-stable-Release102",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release102",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T07:40:47.5095676+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.first",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 17084,
+          "Data": {
+            "wins": 1,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.repeat",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29412,
+          "Data": {
+            "wins": 2,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.veteran",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 41641,
+          "Data": {
+            "wins": 5,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.custom",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 53899,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.other",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 66051,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68051,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "run": "verified-stable-ReverseFinisher",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "reverse-finisher",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T08:06:06.6642993+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 4808,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 12548,
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1348/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16470,
+          "Data": {
+            "beforePixels": 1974,
+            "afterPixels": 1835,
+            "otherPixels": 1872,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16472,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ]
+    },
+    {
+      "run": "verified-stable-FirstCombatRestart",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T08:08:35.1463298+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Sequence": 42,
+          "Status": "passed",
+          "ElapsedMilliseconds": 76870,
+          "Data": {
+            "combatInProgress": true,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "focusBlock": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Sequence": 43,
+          "Status": "passed",
+          "ElapsedMilliseconds": 76871,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 3,
+            "killAttempts": 1,
+            "successfulKills": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Sequence": 44,
+          "Status": "passed",
+          "ElapsedMilliseconds": 76872,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Sequence": 45,
+          "Status": "passed",
+          "ElapsedMilliseconds": 76872,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Sequence": 46,
+          "Status": "passed",
+          "ElapsedMilliseconds": 76925,
+          "Data": {
+            "combatInProgress": false,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Sequence": 4,
+          "Status": "passed",
+          "ElapsedMilliseconds": 4888,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 12736,
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1312/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16625,
+          "Data": {
+            "beforePixels": 2476,
+            "afterPixels": 1850,
+            "otherPixels": 1865,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16627,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ]
+    },
+    {
+      "run": "final-stable-Minion",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [
+          {
+            "version": "0.5.2",
+            "id": "MinionLib"
+          }
+        ],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release102",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T07:45:11.3513014+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.first",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16878,
+          "Data": {
+            "wins": 1,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.repeat",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29185,
+          "Data": {
+            "wins": 2,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.veteran",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 41410,
+          "Data": {
+            "wins": 5,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.custom",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 53659,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.other",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 66004,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 67983,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "run": "final-preview-Release102",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release102",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T07:46:34.0341475+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.first",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 17350,
+          "Data": {
+            "wins": 1,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.repeat",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29776,
+          "Data": {
+            "wins": 2,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.veteran",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 42193,
+          "Data": {
+            "wins": 5,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.custom",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 54516,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.other",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 66700,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68562,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "run": "verified-preview-ReverseFinisher",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "reverse-finisher",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T08:03:18.4254278+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 4920,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 12762,
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1394/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16669,
+          "Data": {
+            "beforePixels": 2500,
+            "afterPixels": 1864,
+            "otherPixels": 1874,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16672,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ]
+    },
+    {
+      "run": "verified-preview-FirstCombatRestart",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T08:05:34.7588085+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Sequence": 42,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68897,
+          "Data": {
+            "combatInProgress": true,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "focusBlock": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Sequence": 43,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68898,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 3,
+            "killAttempts": 1,
+            "successfulKills": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Sequence": 44,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68899,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Sequence": 45,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68899,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Sequence": 46,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68949,
+          "Data": {
+            "combatInProgress": false,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Sequence": 4,
+          "Status": "passed",
+          "ElapsedMilliseconds": 4696,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 12570,
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1397/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16476,
+          "Data": {
+            "beforePixels": 1902,
+            "afterPixels": 1877,
+            "otherPixels": 1881,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 16479,
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ]
+    },
+    {
+      "run": "final-preview-Minion",
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+        "bundleVersion": "1.0.2",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [
+          {
+            "version": "0.6.3",
+            "id": "MinionLib"
+          }
+        ],
+        "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release102",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T08:09:57.1103238+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.first",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 17253,
+          "Data": {
+            "wins": 1,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.repeat",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29646,
+          "Data": {
+            "wins": 2,
+            "shown": true
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.veteran",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 41836,
+          "Data": {
+            "wins": 5,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.custom",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 54012,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.other",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 66333,
+          "Data": {
+            "wins": 0,
+            "shown": false
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+          "Phase": "release102",
+          "Name": "release102.completed",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 68370,
+          "Data": null
+        }
+      ]
+    }
+  ],
+  "catalog": {
+    "schemaVersion": 6,
+    "candidateSha": "36cfde86520291e133935d575dd4e03ef53ee788",
+    "bundleVersion": "1.0.2",
+    "result": "passed",
+    "channel": "stable",
+    "gameApiVersion": "0.107.1",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.4",
+    "additionalMods": [],
+    "bundleSha256": "461adb6bac44827f9ee94009a883c2e47266946d3468ef295e3d612e9a4e8079",
+    "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+    "mode": "runtime-content-export",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-10-02T08:12:37.1127731+08:00"
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Character,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214231039
+  },
+  "validation": {
+    "logicTests": 375,
+    "workerAndWebsiteTests": {
+      "passed": 67,
+      "skipped": 1,
+      "failed": 0
+    },
+    "repository": true,
+    "compatibilityManifest": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostSmokeDrivers": true,
+    "dualHostContracts": true,
+    "officialMinionPrefixOrders": [
+      "before",
+      "after"
+    ],
+    "minionContracts": [
+      "stable/0.5.2",
+      "preview/0.6.3"
+    ],
+    "loadoutAndHextechRealPrefixContracts": [
+      "stable/Loadout0.5.8",
+      "preview/Loadout0.5.8",
+      "stable/Hextech0.9.7",
+      "preview/Hextech0.9.7"
+    ],
+    "fixtureSourceRevision": "532f47394429899b0705cdb53d284b83dece28a3",
+    "fixtureProductUnchanged": true,
+    "fixtureCorrections": [
+      "Random first encounter could open with non-attacking ShrinkerBeetle SHRINKER_MOVE and Nibbit HISS_MOVE. Replaced only smoke fixture with native Nibbit BUTT_MOVE plus HISS_MOVE witness.",
+      "Added enemies have no automatic layout without encounter slots. Smoke fixture calls native PositionEnemies before measuring rendered return. All rendering and finisher assertions retained."
+    ],
+    "browserSyntheticReviewChecks": [
+      "default unresolved",
+      "save reply",
+      "clear reply",
+      "status independent",
+      "reopen",
+      "unsaved changes",
+      "sync failure distinct from save"
+    ],
+    "actualManualPagesSync": "https://github.com/2223M1/NinjaSlayer/actions/runs/36942407863"
+  },
+  "worker": {
+    "versionId": "b66efe39-f0b8-4b6e-8681-b4cc01efe34e",
+    "deployedBeforeClient": true
+  },
+  "dependencies": [
+    {
+      "id": "MinionLib",
+      "version": "0.5.2",
+      "host": null,
+      "dll": "MinionLib.dll",
+      "sha256": "ec19a2b4884b4ce281be1b02338fe5ce7244f8a7ffa2188684d77883763d3372"
+    },
+    {
+      "id": "MinionLib",
+      "version": "0.6.3",
+      "host": null,
+      "dll": "MinionLib.dll",
+      "sha256": "cb4cb7d57cd47d318ce485e67c19bce3e06cf91cc77b76b6fd0e520d868a4113"
+    },
+    {
+      "id": "RitsuLib",
+      "version": "0.6.4",
+      "host": "0.107.1",
+      "dll": "STS2-RitsuLib.Runtime.dll",
+      "sha256": "b66e34ee2fa10563275b8922ff5fae3534889448229e326e9229120a9ccdd7de"
+    },
+    {
+      "id": "RitsuLib",
+      "version": "0.6.4",
+      "host": "0.111.0",
+      "dll": "STS2-RitsuLib.Runtime.dll",
+      "sha256": "cd52776070e6b2a24fdaf9d44f5018b55accad83cf2a863008d79df80bccb013"
+    },
+    {
+      "id": "Loadout",
+      "version": "0.5.8",
+      "host": null,
+      "dll": "Loadout.dll",
+      "sha256": "653e4a61db77618e2bed7c3c9ecb2937887927d74c0788e2d4311e2707ace23a"
+    },
+    {
+      "id": "HextechRunes",
+      "version": "0.9.7",
+      "host": "0.107.1",
+      "dll": "HextechRunes.dll",
+      "sha256": "11bb59f46ef41276f9926a686835c1d0afdee6cded73231255f8f25e80ec5747"
+    },
+    {
+      "id": "HextechRunes",
+      "version": "0.9.7",
+      "host": "0.111.0",
+      "dll": "HextechRunes.dll",
+      "sha256": "274eebc2513a501fbbb654fc6100d47c6dbba9bf2088137293d234cb6f1ed56f"
+    }
+  ],
+  "hostMismatch": {
+    "host": "stable 0.107.1",
+    "minionLib": "0.6.3",
+    "minimumGame": "0.110.1",
+    "result": "Native loader rejected unsupported third-party host version; direct assembly reports missing CardLocation."
+  },
+  "notVerified": [
+    "Original player loading-error logs unavailable; not a claim to fix every reported error.",
+    "Standalone Minion and Minion plus Ritsu without Ninja full front-end matrix not performed.",
+    "Two/four-client rendered first-win, profile switching and process restart combinations not performed.",
+    "Not every guardian AOE/multihit/Hextech combination was real-game tested; official DLL contracts are recorded separately.",
+    "First-win scenarios invoke native victory/progress/game-over, not a complete manual playthrough.",
+    "macOS, Linux and Steam Deck not tested.",
+    "Existing Godot resource-cleanup warnings on exit remain. No screenshots or videos captured."
+  ]
+}
