@@ -47,7 +47,9 @@ internal sealed class GreetingBow : IDisposable
                 * node.Visuals.VfxSpawnPosition.GlobalPosition;
             bool left = creature.Monster is ForestSawatariMonster
                 ? !((Sprite2D)node.Body).FlipH : node.Body.Transform.Determinant() < 0f;
-            _facing = left ? 1f : -1f;
+            // This rotation is applied to the anchor, outside the mirrored body.
+            // In Godot's downward Y axis, a negative angle leans the head left.
+            _facing = left ? -1f : 1f;
         }
         _generation = NinjaSlayerRapidAnimationCoordinator.RegisterReturnTail(creature, null, Dispose);
     }
