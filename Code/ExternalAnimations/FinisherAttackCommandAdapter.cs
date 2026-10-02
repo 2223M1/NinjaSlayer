@@ -42,7 +42,7 @@ internal static class FinisherAttackCommandAdapter
     internal static Creature? PredictReverseVictim(AttackCommand command, int hits, out IReadOnlyList<Creature> targets)
     {
         targets = [];
-        if (command.IsRandomlyTargeted || CalculatedDamage.GetValue(command) != null
+        if (!command.DamageProps.IsPoweredAttack() || command.IsRandomlyTargeted || CalculatedDamage.GetValue(command) != null
             || AfterAnimation.GetValue(command) != null || BeforeDamage.GetValue(command) != null
             || command.Attacker is not { IsMonster: true } actor || actor.CombatState == null) return null;
         Creature? single = (Creature?)SingleTarget.GetValue(command);

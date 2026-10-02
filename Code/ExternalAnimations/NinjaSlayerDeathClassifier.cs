@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.ValueProps;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using NinjaSlayer.Code.Patches;
@@ -21,18 +22,13 @@ internal static class NinjaSlayerDeathClassifier
         DamageReceivedEntry? fatalEntry = FindFatalEntry(creature);
         var consumed = ConsumedEntries.GetOrCreateValue(creature);
         IncomingCaptures.TryGetValue(creature, out IncomingDamageCapture? capture);
-        if (capture != null && IsValidEnemyDealer(creature, capture.Dealer))
+        if (capture != null)
         {
-            if (fatalEntry != null)
-            {
-                consumed.Entry = fatalEntry;
-            }
-
+            if (fatalEntry != null) consumed.Entry = fatalEntry;
+            bool enemyAttack = capture.Props.IsPoweredAttack() && IsValidEnemyDealer(creature, capture.Dealer);
             return new NinjaSlayerDeathContext(
-                NinjaSlayerDeathKind.EnemyKill,
-                fatalEntry,
-                capture.Dealer,
-                capture.VfxBaselineChildIds);
+                enemyAttack ? NinjaSlayerDeathKind.EnemyKill : NinjaSlayerDeathKind.Other,
+                fatalEntry, enemyAttack ? capture.Dealer : null, capture.VfxBaselineChildIds);
         }
 
         if (fatalEntry == null || ReferenceEquals(consumed.Entry, fatalEntry))
@@ -46,17 +42,12 @@ internal static class NinjaSlayerDeathClassifier
 
         consumed.Entry = fatalEntry;
         Creature? dealer = fatalEntry.Dealer;
-        bool isEnemyKill = IsValidEnemyDealer(creature, dealer);
-        IReadOnlySet<ulong> baseline = isEnemyKill
-            && capture != null
-            && capture.Dealer == dealer
-                ? capture.VfxBaselineChildIds
-                : new HashSet<ulong>();
+        bool isEnemyKill = fatalEntry.Result.Props.IsPoweredAttack() && IsValidEnemyDealer(creature, dealer);
         return new NinjaSlayerDeathContext(
             isEnemyKill ? NinjaSlayerDeathKind.EnemyKill : NinjaSlayerDeathKind.Other,
             fatalEntry,
             isEnemyKill ? dealer : null,
-            baseline);
+            new HashSet<ulong>());
     }
 
     public static void MarkCurrentFatalDamageConsumed(Creature creature)
@@ -67,18 +58,16 @@ internal static class NinjaSlayerDeathClassifier
         }
     }
 
-    public static object? BeginIncomingDamageCapture(IEnumerable<Creature>? targets, Creature? dealer)
+    public static object? BeginIncomingDamageCapture(IEnumerable<Creature>? targets, Creature? dealer, ValueProp props)
     {
         NCombatRoom? room = NCombatRoom.Instance;
-        if (dealer == null || room == null || targets == null)
+        if (room == null || targets == null)
         {
             return null;
         }
 
         List<Creature> ninjaSlayerTargets = targets
-            .Where(target => target.Player?.Character is INinjaSlayerCharacter
-                && target != dealer
-                && target.Side != dealer.Side)
+            .Where(target => target.Player?.Character is INinjaSlayerCharacter)
             .Distinct()
             .ToList();
         if (ninjaSlayerTargets.Count == 0)
@@ -86,18 +75,22 @@ internal static class NinjaSlayerDeathClassifier
             return null;
         }
 
-        FinisherAttackVfxBaselineContext.ReachImpact(dealer);
+        bool enemyAttack = dealer is { IsMonster: true } && props.IsPoweredAttack();
+        if (enemyAttack) FinisherAttackVfxBaselineContext.ReachImpact(dealer!);
 
         var previousCaptures = new Dictionary<Creature, IncomingDamageCapture?>();
-        IReadOnlySet<ulong> baseline = FinisherRangedAction.For(dealer)?.Baseline
-            ?? FinisherAttackVfxBaselineContext.GetBaseline(dealer)
-            ?? FinisherImpactVfxFreezeLease.CaptureBaseline(room);
+        IReadOnlySet<ulong> baseline = enemyAttack
+            ? FinisherRangedAction.For(dealer!)?.Baseline
+                ?? FinisherAttackVfxBaselineContext.GetBaseline(dealer!)
+                ?? FinisherImpactVfxFreezeLease.CaptureBaseline(room)
+            : new HashSet<ulong>();
         var capture = new IncomingDamageCapture(
             dealer,
+            props,
             baseline,
             ninjaSlayerTargets,
             previousCaptures,
-            FinisherAttackVfxBaselineContext.For(dealer));
+            enemyAttack ? FinisherAttackVfxBaselineContext.For(dealer) : null);
         foreach (Creature target in ninjaSlayerTargets)
         {
             previousCaptures[target] = IncomingCaptures.GetValueOrDefault(target);
@@ -113,6 +106,8 @@ internal static class NinjaSlayerDeathClassifier
             || target.CurrentHp <= 0
             || amount < target.CurrentHp
             || !IncomingCaptures.TryGetValue(target, out IncomingDamageCapture? capture)
+            || !capture.Props.IsPoweredAttack()
+            || capture.Dealer == null
             || capture.IsCompleted
             || capture.Session != null)
         {
@@ -128,7 +123,7 @@ internal static class NinjaSlayerDeathClassifier
     internal static void TryStartPredictedReverseFinisher(
         FinisherAttackVfxBaselineContext.Frame frame, Creature target, IReadOnlyList<Creature> targets)
     {
-        if (frame.Hits <= 1 || frame.ReverseSession != null
+        if (!frame.Command.DamageProps.IsPoweredAttack() || frame.Hits <= 1 || frame.ReverseSession != null
             || FinisherTimeline.PreviewProfile == FinisherPreviewProfile.A) return;
         TryCreateReverseFinisher(target, frame.Attacker, targets, frame.BaselineChildIds, frame, out _);
     }
@@ -290,7 +285,7 @@ internal static class NinjaSlayerDeathClassifier
     }
 
     private static bool IsValidEnemyDealer(Creature creature, Creature? dealer) =>
-        dealer != null
+        dealer is { IsMonster: true }
         && dealer != creature
         && dealer.Side != creature.Side
         && NCombatRoom.Instance?.GetCreatureNode(dealer) != null;
@@ -301,13 +296,15 @@ internal static class NinjaSlayerDeathClassifier
             .LastOrDefault(entry => entry.Receiver == creature && entry.Result.WasTargetKilled);
 
     private sealed class IncomingDamageCapture(
-        Creature dealer,
+        Creature? dealer,
+        ValueProp props,
         IReadOnlySet<ulong> vfxBaselineChildIds,
         IReadOnlyList<Creature> targets,
         IReadOnlyDictionary<Creature, IncomingDamageCapture?> previousCaptures,
         FinisherAttackVfxBaselineContext.Frame? attackFrame)
     {
-        public Creature Dealer { get; } = dealer;
+        public Creature? Dealer { get; } = dealer;
+        public ValueProp Props { get; } = props;
         public IReadOnlySet<ulong> VfxBaselineChildIds { get; } = vfxBaselineChildIds;
         public IReadOnlyList<Creature> Targets { get; } = targets;
         public IReadOnlyDictionary<Creature, IncomingDamageCapture?> PreviousCaptures { get; } = previousCaptures;

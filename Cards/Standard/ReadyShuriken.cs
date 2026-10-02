@@ -12,7 +12,7 @@ public sealed class ReadyShuriken : NinjaSlayerCommonCard
 {
     public override bool GainsBlock => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new BlockVar(7, ValueProp.Move), new DynamicVar("Stock", 1)];
+        [new BlockVar(8, ValueProp.Move), new DynamicVar("Stock", 1)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
         [HoverTipFactory.FromOrb<ShurikenOrb>()];
 
@@ -27,7 +27,7 @@ public sealed class ReadyShuriken : NinjaSlayerCommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Block.UpgradeValueBy(1);
+        DynamicVars.Block.UpgradeValueBy(2);
         DynamicVars["Stock"].UpgradeValueBy(1);
     }
 }

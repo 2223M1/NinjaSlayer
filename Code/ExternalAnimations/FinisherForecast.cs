@@ -432,25 +432,6 @@ internal static class FinisherForecast
             spec.Card,
             triggersKarate: true);
 
-        if (spec.Card is Cards.Standard.TornadoFist tornado
-            && tornado.IsEmpowered(spec.Forecast.HitCount))
-        {
-            foreach (int index in targets.Where(index => states[index].Hp > 0))
-            {
-                ForecastState state = states[index];
-                if (state.Artifact > 0)
-                {
-                    states[index] = state with { Artifact = state.Artifact - 1 };
-                    continue;
-                }
-                decimal amount = tornado.DynamicVars.Vulnerable.BaseValue;
-                foreach (AbstractModel listener in ResolveRunState(owner)!.IterateHookListeners(owner.CombatState))
-                    if (listener is not ArtifactPower && listener.TryModifyPowerAmountReceived(
-                        ModelDb.Power<VulnerablePower>(), enemies[index], amount, owner, out decimal modified))
-                        amount = modified;
-                if (amount > 0m) states[index] = state with { GainedVulnerable = true };
-            }
-        }
     }
 
     private static void ApplyKarateWave(

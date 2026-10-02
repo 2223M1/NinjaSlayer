@@ -14,7 +14,7 @@ public sealed class Onslaught : NinjaSlayerRareCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>(), HoverTipFactory.FromPower<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>()];
 
     public Onslaught() : base(nameof(Onslaught), 1, CardType.Power, TargetType.Self) { }
-    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(1)];
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new PowerVar<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(2)];
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<OnslaughtPower>(choiceContext, Owner.Creature, DynamicVars["StrengthPower"].BaseValue, Owner.Creature, this);
     protected override void OnUpgrade() => DynamicVars["StrengthPower"].UpgradeValueBy(1);

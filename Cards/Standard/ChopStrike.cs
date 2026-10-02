@@ -23,7 +23,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class ChopStrike : NinjaSlayerCommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(9, ValueProp.Move), new KarateVar(2)];
+        [new DamageVar(11, ValueProp.Move), new KarateVar(2)];
 
     public ChopStrike()
         : base(nameof(ChopStrike), 1, CardType.Attack, TargetType.AnyEnemy) { }
@@ -50,7 +50,7 @@ public sealed class ChopStrike : NinjaSlayerCommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(1);
+        DynamicVars.Damage.UpgradeValueBy(2);
         DynamicVars.Karate().UpgradeValueBy(1);
     }
 }

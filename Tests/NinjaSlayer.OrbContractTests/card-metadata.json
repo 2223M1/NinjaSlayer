@@ -38,35 +38,37 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_NARAKUS_MIGHT",
     "Upgraded": false,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
-    "Type": "Skill",
+    "Type": "Attack",
     "Rarity": "Uncommon",
-    "Target": "Self",
+    "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/NarakusMight.png",
     "Vars": {
-      "Karate": 5
+      "Damage": 8,
+      "VulnerablePower": 2
     }
   },
   {
     "Id": "CARD.NINJA_SLAYER_CARD_NARAKUS_MIGHT",
     "Upgraded": true,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
-    "Type": "Skill",
+    "Type": "Attack",
     "Rarity": "Uncommon",
-    "Target": "Self",
+    "Target": "AnyEnemy",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
     "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/NarakusMight.png",
     "Vars": {
-      "Karate": 7
+      "Damage": 10,
+      "VulnerablePower": 3
     }
   },
   {
@@ -785,7 +787,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
     "Vars": {
-      "Damage": 3,
+      "Damage": 4,
       "Karate": 1
     }
   },
@@ -803,7 +805,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Chop.png",
     "Vars": {
-      "Damage": 6,
+      "Damage": 7,
       "Karate": 1
     }
   },
@@ -1388,7 +1390,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/GrapplingHook.png",
     "Vars": {
-      "WeakPower": 1
+      "WeakPower": 1,
+      "StrengthLoss": 4
     }
   },
   {
@@ -1407,7 +1410,8 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/GrapplingHook.png",
     "Vars": {
-      "WeakPower": 2
+      "WeakPower": 2,
+      "StrengthLoss": 6
     }
   },
   {
@@ -1598,7 +1602,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
-      "Damage": 9,
+      "Damage": 11,
       "Karate": 2
     }
   },
@@ -1616,7 +1620,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ChopStrike.png",
     "Vars": {
-      "Damage": 10,
+      "Damage": 13,
       "Karate": 3
     }
   },
@@ -1706,7 +1710,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HissAndHuff.png",
     "Vars": {
-      "Heal": 5
+      "Heal": 6
     }
   },
   {
@@ -1725,7 +1729,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HissAndHuff.png",
     "Vars": {
-      "Heal": 8
+      "Heal": 9
     }
   },
   {
@@ -2094,7 +2098,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ReadyShuriken.png",
     "Vars": {
-      "Block": 7,
+      "Block": 8,
       "Stock": 1
     }
   },
@@ -2112,7 +2116,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/ReadyShuriken.png",
     "Vars": {
-      "Block": 8,
+      "Block": 10,
       "Stock": 2
     }
   },
@@ -2306,7 +2310,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
     "Vars": {
-      "Damage": 8,
+      "Damage": 10,
       "VulnerablePower": 1
     }
   },
@@ -2324,7 +2328,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/LeftUppercut.png",
     "Vars": {
-      "Damage": 10,
+      "Damage": 12,
       "VulnerablePower": 2
     }
   },
@@ -2421,7 +2425,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_CREATION",
     "Upgraded": false,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -2441,7 +2445,7 @@
   {
     "Id": "CARD.NINJA_SLAYER_CARD_SHURIKEN_CREATION",
     "Upgraded": true,
-    "Cost": 2,
+    "Cost": 1,
     "X": false,
     "Type": "Skill",
     "Rarity": "Uncommon",
@@ -2608,7 +2612,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PressTheAttack.png",
     "Vars": {
-      "Damage": 10,
+      "Damage": 16,
       "Cards": 4
     }
   },
@@ -2626,7 +2630,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/PressTheAttack.png",
     "Vars": {
-      "Damage": 12,
+      "Damage": 20,
       "Cards": 5
     }
   },
@@ -2645,7 +2649,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/SpiralJump.png",
     "Vars": {
       "Damage": 7,
-      "Stock": 1
+      "Stock": 2
     }
   },
   {
@@ -2662,7 +2666,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/SpiralJump.png",
     "Vars": {
-      "Damage": 8,
+      "Damage": 11,
       "Stock": 2
     }
   },
@@ -2874,7 +2878,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HalfMoonCompassKick.png",
     "Vars": {
-      "Damage": 5
+      "Damage": 10
     }
   },
   {
@@ -2891,7 +2895,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/HalfMoonCompassKick.png",
     "Vars": {
-      "Damage": 7
+      "Damage": 13
     }
   },
   {
@@ -3087,8 +3091,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 4,
-      "Threshold": 4,
-      "VulnerablePower": 1
+      "Threshold": 4
     }
   },
   {
@@ -3106,8 +3109,7 @@
     "Portrait": "res://NinjaSlayer/images/cards/TornadoFist.png",
     "Vars": {
       "Damage": 6,
-      "Threshold": 4,
-      "VulnerablePower": 1
+      "Threshold": 4
     }
   },
   {
@@ -3194,7 +3196,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Onslaught.png",
     "Vars": {
-      "StrengthPower": 1
+      "StrengthPower": 2
     }
   },
   {
@@ -3211,7 +3213,7 @@
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Onslaught.png",
     "Vars": {
-      "StrengthPower": 2
+      "StrengthPower": 3
     }
   },
   {

@@ -26,51 +26,63 @@ namespace NinjaSlayer.Cards.Standard;
 
 public sealed class HalfMoonCompassKick : NinjaSlayerUncommonCard
 {
-    protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        HoverTipFactory.FromCardWithCardHoverTips<Chado>();
-
-    protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(5, ValueProp.Move)];
+    private decimal _extraDamageThisTurn;
+    protected override bool IsPlayable => PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Any();
+    protected override bool ShouldGlowGoldInternal => CombatState != null && IsPlayable;
+    protected override IEnumerable<IHoverTip> AdditionalHoverTips => HoverTipFactory.FromCardWithCardHoverTips<Chado>();
+    protected override IEnumerable<DynamicVar> CanonicalVars => [new DamageVar(10, ValueProp.Move)];
 
     public HalfMoonCompassKick()
         : base(nameof(HalfMoonCompassKick), 0, CardType.Attack, TargetType.AllEnemies) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int available = PileType.Hand.GetPile(Owner).Cards.OfType<Chado>().Count();
-        List<CardModel> selected = (await CardSelectCmd.FromHand(
-            choiceContext, Owner,
-            new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, available),
-            card => card is Chado, this)).ToList();
-        foreach (CardModel card in selected)
-            await CardCmd.Exhaust(choiceContext, card);
-        int consumed = selected.Count;
-        int hits = 1 + consumed * 2;
-        await this.ExecuteSequenceWithFinisher(
-            choiceContext,
-            cardPlay,
-            hits,
-            () => NinjaSlayerXAttackSequence.Run(
-                Owner.Creature,
-                hits,
-                async _ =>
-                {
-                    AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+        CardModel? tea = (await CardSelectCmd.FromHand(choiceContext, Owner,
+            new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 1),
+            card => card is Chado, this)).FirstOrDefault();
+        if (tea == null) return;
+        await CardCmd.Exhaust(choiceContext, tea);
+        if (tea.Pile?.Type != PileType.Exhaust) return;
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                        .FromCard(this)
+            .FromCard(this)
 #else
-                        .FromCard(this, cardPlay)
+            .FromCard(this, cardPlay)
 #endif
-                        .WithDefectStrikeHitFx()
-                        .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
-                        .TargetingAllOpponents(CombatState!);
-                    await command.Execute(choiceContext);
-                    return CombatState!.HittableEnemies.Count == 0;
-                }));
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
+            .TargetingAllOpponents(CombatState!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
+        _extraDamageThisTurn += DynamicVars.Damage.BaseValue;
+        DynamicVars.Damage.BaseValue *= 2;
     }
 
-    protected override void OnUpgrade()
+#if NINJASLAYER_CHANNEL_STABLE
+    protected override PileType GetResultPileTypeForCardPlay()
     {
-        DynamicVars.Damage.UpgradeValueBy(2);
+        PileType pile = base.GetResultPileTypeForCardPlay();
+        return pile == PileType.Discard ? PileType.Hand : pile;
     }
+#else
+    protected override CardLocation GetResultLocationForCardPlay()
+    {
+        CardLocation location = base.GetResultLocationForCardPlay();
+        if (location.pileType == PileType.Discard) location.pileType = PileType.Hand;
+        return location;
+    }
+#endif
+
+    public override Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        if (participants.Contains(Owner.Creature))
+        {
+            DynamicVars.Damage.BaseValue -= _extraDamageThisTurn;
+            _extraDamageThisTurn = 0;
+        }
+        return Task.CompletedTask;
+    }
+
+    protected override void AfterDowngraded() => DynamicVars.Damage.BaseValue += _extraDamageThisTurn;
+    protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(3);
 }

@@ -42,8 +42,6 @@ public partial class NarakuVisualOverlay : Sprite2D
 
     private static void SyncCore(Creature creature)
     {
-        NinjaSlayerVisualRig.SyncShadowScale(creature);
-
         NCreature? creatureNode = NCombatRoom.Instance?.GetCreatureNode(creature);
         if (creatureNode == null)
         {
@@ -54,7 +52,9 @@ public partial class NarakuVisualOverlay : Sprite2D
         Sprite2D source = visualsRoot.GetNode<Sprite2D>("%Visuals");
         Node parent = source.GetParent()
             ?? throw new InvalidOperationException("The NinjaSlayer body sprite has no parent node.");
-        NarakuVisualOverlay overlay = visualsRoot.FindChild(NodeName, recursive: true) as NarakuVisualOverlay
+        // Death temporarily reparents this sibling under a runtime pivot. Godot
+        // clears its scene owner there; it remains part of this creature's rig.
+        NarakuVisualOverlay overlay = visualsRoot.FindChild(NodeName, recursive: true, owned: false) as NarakuVisualOverlay
             ?? throw new InvalidOperationException("The NinjaSlayer visual rig is missing its Naraku overlay.");
         if (!ReferenceEquals(overlay.GetParent(), parent))
         {
@@ -70,6 +70,7 @@ public partial class NarakuVisualOverlay : Sprite2D
         overlay.ShowBehindParent = source.ShowBehindParent;
         parent.MoveChild(overlay, source.GetIndex() + 1);
         overlay.UpdateVisual();
+        NinjaSlayerVisualRig.SyncShadowScale(creature);
     }
 
     public override void _Ready()

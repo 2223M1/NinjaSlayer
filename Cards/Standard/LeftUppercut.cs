@@ -26,7 +26,7 @@ public sealed class LeftUppercut : NinjaSlayerCommonCard
     protected override bool ShouldGlowGoldInternal => CombatState != null && MeetsBonusCondition;
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(8, ValueProp.Move), new PowerVar<VulnerablePower>(1)];
+        [new DamageVar(10, ValueProp.Move), new PowerVar<VulnerablePower>(1)];
 
     public LeftUppercut()
         : base(nameof(LeftUppercut), 1, CardType.Attack, TargetType.AnyEnemy) { }
