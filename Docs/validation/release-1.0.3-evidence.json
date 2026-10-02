@@ -1,0 +1,374 @@
+{
+  "version": "1.0.3",
+  "sourceRevision": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+  "verifiedAtUtc": "2026-10-02T09:04:49.7168164+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/156",
+  "ci": {
+    "conclusion": "success",
+    "headSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/36986584406"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "9ae51816fb078019c2b9cea997fd0101ad8d01fe3b0647fee44f8ce7f43a63c4",
+    "c93679b464e2be84933da13ff5b8b0be0aad502872586cf081a2a3ff8bf51126",
+    "5953036ead911a31fd832e0bf6c5ccecc190e9bac491ec171dd45acde59cbe43",
+    "3c2bc4b62964848d7b0907f1d4a6dd941ecff331117adbc9648d59e459b81e6c",
+    "afb5c25ef5c70549219b1f06b7a2842e9e92165aee721c997c1290ddcceb937a",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "ce940ef373ce007a92df6563180cb2751262ea1e43b01cd5d651a8c7c4fa9ee0",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "339ead24823033709f65ea353db82849b8063c834e25108f42502c4becc5c73b",
+    "c56864ada38ed9788186e8c10469261a8d63cd4e27d59a390edb591a1118b550"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "9ae51816fb078019c2b9cea997fd0101ad8d01fe3b0647fee44f8ce7f43a63c4",
+      "bytes": 644
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "c93679b464e2be84933da13ff5b8b0be0aad502872586cf081a2a3ff8bf51126",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "5953036ead911a31fd832e0bf6c5ccecc190e9bac491ec171dd45acde59cbe43",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "3c2bc4b62964848d7b0907f1d4a6dd941ecff331117adbc9648d59e459b81e6c",
+      "bytes": 209292168
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "afb5c25ef5c70549219b1f06b7a2842e9e92165aee721c997c1290ddcceb937a",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "ce940ef373ce007a92df6563180cb2751262ea1e43b01cd5d651a8c7c4fa9ee0",
+      "bytes": 2232320
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "339ead24823033709f65ea353db82849b8063c834e25108f42502c4becc5c73b",
+      "bytes": 125440
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "c56864ada38ed9788186e8c10469261a8d63cd4e27d59a390edb591a1118b550",
+      "bytes": 2235904
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+        "bundleVersion": "1.0.3",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "afb5c25ef5c70549219b1f06b7a2842e9e92165aee721c997c1290ddcceb937a",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release103",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T16:59:56.7075987+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.tornado",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 22156,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.dead.Decay",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26574,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.settled.Decay",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 29692,
+          "Data": {
+            "hp": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.dead.enemy-unpowered",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 43660,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.settled.enemy-unpowered",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 46776,
+          "Data": {
+            "hp": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.dead.enemy-attack",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 62617,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.settled.enemy-attack",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 65901,
+          "Data": {
+            "hp": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.completed",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 67991,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+        "bundleVersion": "1.0.3",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.4",
+        "additionalMods": [],
+        "bundleSha256": "afb5c25ef5c70549219b1f06b7a2842e9e92165aee721c997c1290ddcceb937a",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "release103",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T16:57:03.7009889+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.tornado",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 21815,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.dead.Decay",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 23015,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.settled.Decay",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 26132,
+          "Data": {
+            "hp": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.dead.enemy-unpowered",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 38593,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.settled.enemy-unpowered",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 41708,
+          "Data": {
+            "hp": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.dead.enemy-attack",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 55196,
+          "Data": null
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.settled.enemy-attack",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 58503,
+          "Data": {
+            "hp": 1
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+          "Phase": "release103",
+          "Name": "release103.completed",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 60369,
+          "Data": null
+        }
+      ]
+    }
+  ],
+  "catalog": {
+    "schemaVersion": 6,
+    "candidateSha": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+    "bundleVersion": "1.0.3",
+    "result": "passed",
+    "channel": "stable",
+    "gameApiVersion": "0.107.1",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.4",
+    "additionalMods": [],
+    "bundleSha256": "afb5c25ef5c70549219b1f06b7a2842e9e92165aee721c997c1290ddcceb937a",
+    "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+    "mode": "runtime-content-export",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-10-02T17:03:26.3165659+08:00"
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Character,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214230975
+  },
+  "validation": {
+    "logicTests": 375,
+    "repository": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostContracts": true,
+    "dualHostSmokeDrivers": true,
+    "dualHostNativeENet": true,
+    "previewHalfMoonSynchronizedChoices": true,
+    "previewAnthonyComponents": true,
+    "renderedDeathFixture": "Two native Player models in one game process; not two networked rendering clients."
+  },
+  "baseline": {
+    "version": "1.0.2",
+    "sourceRevision": "36cfde86520291e133935d575dd4e03ef53ee788",
+    "result": "Decay death reproduced revival exception and CombatWon timeout",
+    "exception": "NinjaSlayerAimPose.SyncPose -> Shadow.ClearDeathFall -> DeathVisualState.Restore -> StartReviveAnim -> Player.ReviveBeforeCombatEnd",
+    "firstCandidateFailure": "Scene-owned lookup could not find the overlay after runtime reparenting; repaired owned=false lookup before shadow refresh."
+  },
+  "notRun": [
+    "Cross-client rendered death/revival and reconnect matrix",
+    "Four-player full run",
+    "Manual viewing of all entrance variants/forms/pause/third-party revival combinations",
+    "macOS/Linux/Steam Deck"
+  ]
+}
