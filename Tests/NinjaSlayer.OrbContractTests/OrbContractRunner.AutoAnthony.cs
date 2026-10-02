@@ -134,6 +134,50 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS all 84 source definitions: base/upgraded construction and native card serialization.");
 
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            var kick = Create(arena, ModelDb.Card<HalfMoonCompassKick>(), upgraded);
+            await CardPileCmd.Add(kick, PileType.Hand);
+            Require(!(bool)AccessTools.Property(kick.GetType(), "IsPlayable").GetValue(kick)!, "Generated Half-Moon requires hand Chado.");
+            using var selector = CardSelectCmd.UseSelector(new SelectCards(options => options.OfType<Chado>().Take(1)));
+            AddCard<Chado>(arena);
+            await CardCmd.AutoPlay(Choice, kick, null);
+            int firstDamage = 1000 - arena.Enemy.CurrentHp;
+            Require(firstDamage > 0 && kick.Pile?.Type == PileType.Hand, "Generated Half-Moon must attack and return.");
+            AddCard<Chado>(arena);
+            await CardCmd.AutoPlay(Choice, kick, null);
+            Require(1000 - arena.Enemy.CurrentHp == firstDamage * 3, "Generated Half-Moon must double damage for its second play.");
+            var copy = arena.State.CloneCard(kick);
+            kick.EndOfTurnCleanup();
+            copy.EndOfTurnCleanup();
+            AddCard<Chado>(arena);
+            await CardCmd.AutoPlay(Choice, kick, null);
+            Require(1000 - arena.Enemy.CurrentHp == firstDamage * 4, "Generated Half-Moon must reset on turn cleanup.");
+            AddCard<Chado>(arena);
+            await Play(arena, copy);
+            Require(1000 - arena.Enemy.CurrentHp == firstDamage * 5, "Generated Half-Moon copies must reset their own temporary damage.");
+            if (upgraded)
+            {
+                kick.DowngradeInternal();
+                kick.EndOfTurnCleanup();
+                var fresh = Create(arena, ModelDb.Card<HalfMoonCompassKick>());
+                foreach (var variable in fresh.DynamicVars.Values)
+                    Require(kick.DynamicVars[variable.Name].BaseValue == variable.BaseValue,
+                        "Generated Half-Moon downgrade and cleanup retained a stale damage adjustment.");
+            }
+        }
+        using (var arena = new OrbCombat())
+        {
+            var tornado = Create(arena, ModelDb.Card<TornadoFist>());
+            arena.Player.PlayerCombatState!.GainEnergy(4);
+            await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
+            await Play(arena, tornado);
+            Require(arena.Enemy.CurrentHp == 912 && !arena.Enemy.HasPower<VulnerablePower>(),
+                "Generated Tornado must use eight native Vigor-enhanced hits without Vulnerable at X=4.");
+        }
+        GD.Print("PASS v1.18 generated Half-Moon tea/doubling/reset and native Tornado multihit.");
+
         using (var arena = new OrbCombat())
         {
             await Play(arena, Create(arena, ModelDb.Card<StraightPunch>()));
@@ -143,7 +187,7 @@ public partial class OrbContractRunner
         using (var arena = new OrbCombat())
         {
             await Play(arena, Create(arena, ModelDb.Card<ReadyShuriken>(), upgrade: true));
-            Require(arena.Stock == 2 && arena.Player.Creature.Block == 8, "Generated upgraded Ready Shuriken lost source values.");
+            Require(arena.Stock == 2 && arena.Player.Creature.Block == 10, "Generated upgraded Ready Shuriken lost source values.");
             await Play(arena, Create(arena, ModelDb.Card<StarlessNight>()));
             Require(arena.Player.Creature.HasPower<StarlessNightPower>(), "Fixed nonnumeric power was applied with zero amount.");
             await Play(arena, Create(arena, ModelDb.Card<BladePrep>()));

@@ -127,7 +127,7 @@ public partial class OrbContractRunner
             int count = upgraded ? 3 : 2;
             Require(top.Pile?.Type == PileType.Exhaust && hammer.Pile?.Type == PileType.Exhaust,
                 "Hammer exhausts both itself and its fully resolved target, including a returning Chop.");
-            if (attack) Require(combat.Enemy.CurrentHp == 1000 - 3 * count - (count - 1), "Hammer completes every repeat before exhaust.");
+            if (attack) Require(combat.Enemy.CurrentHp == 1000 - 4 * count - (count - 1), "Hammer completes every repeat before exhaust.");
             else Require(combat.Player.Creature.Block == 5, "A non-attack is played only once.");
         }
         foreach (bool upgraded in new[] { false, true })

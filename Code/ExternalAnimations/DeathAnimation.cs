@@ -1,5 +1,6 @@
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.ValueProps;
 using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes;
@@ -62,8 +63,8 @@ public static class DeathAnimation
 
     internal static object? BeginIncomingDamageCapture(
         IEnumerable<Creature>? targets,
-        Creature? dealer)
-        => NinjaSlayerDeathClassifier.BeginIncomingDamageCapture(targets, dealer);
+        Creature? dealer, ValueProp props)
+        => NinjaSlayerDeathClassifier.BeginIncomingDamageCapture(targets, dealer, props);
 
     internal static async Task<IEnumerable<DamageResult>> CompleteIncomingDamageCapture(
         Task<IEnumerable<DamageResult>> damageTask,
@@ -110,7 +111,7 @@ public static class DeathAnimation
             return;
         }
 
-        var state = DeathVisualState.Capture(anchor, body);
+        var state = DeathVisualState.Capture(anchor, body, context.Kind);
         VisualStates.Add(creature, state);
 
         try
@@ -177,7 +178,7 @@ public static class DeathAnimation
             return;
         }
 
-        var state = DeathVisualState.Capture(anchor, body);
+        var state = DeathVisualState.Capture(anchor, body, NinjaSlayerDeathKind.EnemyKill);
         VisualStates.Add(creature, state);
         try
         {
@@ -209,6 +210,9 @@ public static class DeathAnimation
         creatureNode.SetAnimationTrigger("Dead");
         await PlayEnemyKillFlight(creatureNode, anchor, body, state);
     }
+
+    internal static bool HasFlightVisual(Creature creature) =>
+        VisualStates.TryGetValue(creature, out var state) && state.Kind == NinjaSlayerDeathKind.EnemyKill;
 
     public static void RestoreVisual(Creature creature, bool markCurrentFatalDamageConsumed = true)
     {
@@ -528,7 +532,7 @@ public static class DeathAnimation
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
 
-        await AwaitTween(tween, state.Cancellation.Token);
+        await TweenPlayback.AwaitCompletion(tween, creatureNode, state.Cancellation.Token);
         presentation?.SetBackdropIntensity(0f);
         camera?.ResetToBaseline();
     }
@@ -657,7 +661,7 @@ public static class DeathAnimation
             .SetEase(Tween.EaseType.In)
             .SetTrans(Tween.TransitionType.Quad);
 
-        await AwaitTween(tween, state.Cancellation.Token);
+        await TweenPlayback.AwaitCompletion(tween, creatureNode, state.Cancellation.Token);
     }
 
     private static Vector2 GetDeathFallPivotTextureOffset(Sprite2D body)
@@ -818,23 +822,6 @@ public static class DeathAnimation
         }
     }
 
-    private static async Task AwaitTween(Tween tween, CancellationToken cancellationToken)
-    {
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        void OnFinished() => completion.TrySetResult();
-        tween.Finished += OnFinished;
-        using CancellationTokenRegistration registration = cancellationToken.Register(
-            () => completion.TrySetCanceled(cancellationToken));
-        try
-        {
-            await completion.Task;
-        }
-        finally
-        {
-            tween.Finished -= OnFinished;
-        }
-    }
-
     private static async Task WaitForTimer(Node owner, float duration)
     {
         await owner.ToSignal(
@@ -865,10 +852,11 @@ public static class DeathAnimation
         private readonly Vector2 _anchorScale;
         private readonly NinjaSlayerShadowController? _shadowController;
 
-        private DeathVisualState(Node2D anchor, Sprite2D body)
+        private DeathVisualState(Node2D anchor, Sprite2D body, NinjaSlayerDeathKind kind)
         {
             Anchor = anchor;
             Body = body;
+            Kind = kind;
             _bodyParent = body.GetParent();
             _bodyIndex = body.GetIndex();
             _bodyPosition = body.Position;
@@ -882,6 +870,7 @@ public static class DeathAnimation
                 ?.GetNodeOrNull<NinjaSlayerShadowController>(NinjaSlayerVisualRig.ShadowControllerNodeName);
         }
 
+        public NinjaSlayerDeathKind Kind { get; }
         public Node2D Anchor { get; }
         public Sprite2D Body { get; }
         public float AnchorRotationDegrees => _anchorRotationDegrees;
@@ -891,7 +880,7 @@ public static class DeathAnimation
         public NinjaSlayerDeathJitter? Jitter { get; set; }
         public Tween? Tween { get; set; }
 
-        public static DeathVisualState Capture(Node2D anchor, Sprite2D body) => new(anchor, body);
+        public static DeathVisualState Capture(Node2D anchor, Sprite2D body, NinjaSlayerDeathKind kind = NinjaSlayerDeathKind.Other) => new(anchor, body, kind);
 
         public void SetDeathFallShadow(float progress, float direction)
         {
@@ -932,12 +921,13 @@ public static class DeathAnimation
                 Anchor.Scale = _anchorScale;
             }
 
+            // Restore the body and its overlay together before the shadow refresh
+            // asks AimPose to resolve those siblings (including combat-end revival).
+            NarakuVisualOverlay.Sync(creature);
             if (_shadowController != null && GodotObject.IsInstanceValid(_shadowController))
             {
                 _shadowController.ClearDeathFall();
             }
-
-            NarakuVisualOverlay.Sync(creature);
             if (Pivot != null && GodotObject.IsInstanceValid(Pivot))
             {
                 Pivot.QueueFree();

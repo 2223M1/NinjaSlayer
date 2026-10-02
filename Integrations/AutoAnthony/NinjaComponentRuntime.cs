@@ -70,8 +70,8 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                     await PowerCmd.Apply<WeakPower>(choice, weak, amount, owner.Creature, card);
                 break;
             case "hook_strength":
-                if (context.Target is { IsAlive: true } hooked && owner.Creature.GetPowerAmount<KaratePower>() > 0)
-                    await PowerCmd.Apply<GrapplingHookStrengthDownPower>(choice, hooked, owner.Creature.GetPowerAmount<KaratePower>(), owner.Creature, card);
+                if (context.Target is { IsAlive: true } hooked && amount > 0)
+                    await PowerCmd.Apply<GrapplingHookStrengthDownPower>(choice, hooked, amount, owner.Creature, card);
                 break;
             case "enemy_karate":
                 if (owner.RunState.Rng.CombatTargets.NextItem(card.CombatState!.HittableEnemies) is { } enemy)
@@ -176,29 +176,34 @@ internal sealed class NinjaComponentRuntime : IComponentRuntimeHandler
                 context.RecordDamageDealt((int)teaAttack.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 break;
             case "tea_area_damage":
+                var kickTea = (await CardSelectCmd.FromHand(choice, owner,
+                    new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 1),
+                    c => c is Chado, card)).FirstOrDefault();
+                if (kickTea == null) break;
+                await CardCmd.Exhaust(choice, kickTea);
+                if (kickTea.Pile?.Type != PileType.Exhaust) break;
+                var kick = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).TargetingAllOpponents(card.CombatState!);
+                await kick.Execute(choice);
+                context.RecordDamageDealt((int)kick.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
+                NinjaComponentCardPatches.DoubleDamageThisTurn(card);
+                break;
             case "area_multi":
-            case "area_x":
-                int repeats;
-                if (context.RuntimeSpec.Variant == "tea_area_damage")
-                {
-                    var teas = (await CardSelectCmd.FromHand(choice, owner,
-                        new CardSelectorPrefs(CardSelectorPrefs.ExhaustSelectionPrompt, 0, PileType.Hand.GetPile(owner).Cards.OfType<Chado>().Count()),
-                        c => c is Chado, card)).ToArray();
-                    foreach (var selectedTea in teas) await CardCmd.Exhaust(choice, selectedTea);
-                    repeats = 1 + 2 * teas.Length;
-                }
-                else repeats = context.RuntimeSpec.Variant == "area_x" ? card.ResolveEnergyXValue() : Value("hits");
                 int dealt = 0;
-                for (int i = 0; i < repeats && card.CombatState!.HittableEnemies.Count > 0; i++)
+                for (int i = 0; i < Value("hits") && card.CombatState!.HittableEnemies.Count > 0; i++)
                 {
-                    var area = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).TargetingAllOpponents(card.CombatState!);
-                    await area.Execute(choice);
-                    dealt += (int)area.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage);
-                    if (context.RuntimeSpec.Variant == "area_x" && repeats >= 4)
-                        foreach (var hit in area.Results.SelectMany(r => r).Select(r => r.Receiver).Where(c => c.IsAlive).Distinct())
-                            await PowerCmd.Apply<VulnerablePower>(choice, hit, 1, owner.Creature, card);
+                    var hit = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).TargetingAllOpponents(card.CombatState!);
+                    await hit.Execute(choice);
+                    dealt += (int)hit.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage);
                 }
                 context.RecordDamageDealt(dealt);
+                break;
+            case "area_x":
+                int repeats = card.ResolveEnergyXValue();
+                if (repeats >= 4) repeats *= 2;
+                var area = DamageCmd.Attack(amount).FromCard(card, context.CardPlay).WithHitCount(repeats)
+                    .TargetingAllOpponents(card.CombatState!);
+                await area.Execute(choice);
+                context.RecordDamageDealt((int)area.Results.SelectMany(r => r).Sum(r => r.UnblockedDamage));
                 break;
             case "breath_next_x":
                 await PowerCmd.Apply<ChadoNextTurnPower>(choice, owner.Creature, card.ResolveEnergyXValue() * amount + Value("extra"), owner.Creature, card);

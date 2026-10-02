@@ -13,16 +13,16 @@ public sealed class GrapplingHook : NinjaSlayerCommonCard
 {
     public override IEnumerable<CardKeyword> CanonicalKeywords => [CardKeyword.Exhaust];
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new PowerVar<WeakPower>(1)];
+        [new DynamicVar("StrengthLoss", 4), new PowerVar<WeakPower>(1)];
     protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
-        [HoverTipFactory.FromPower<KaratePower>(), HoverTipFactory.FromPower<StrengthPower>()];
+        [HoverTipFactory.FromPower<StrengthPower>()];
 
     public GrapplingHook()
         : base(nameof(GrapplingHook), 1, CardType.Skill, TargetType.AnyEnemy) { }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int strengthLoss = Owner.Creature.GetPowerAmount<KaratePower>();
+        decimal strengthLoss = DynamicVars["StrengthLoss"].BaseValue;
         await HookRopeAnimation.Play(Owner.Creature, cardPlay.Target!, async () =>
         {
             if (strengthLoss > 0)
@@ -45,6 +45,7 @@ public sealed class GrapplingHook : NinjaSlayerCommonCard
 
     protected override void OnUpgrade()
     {
+        DynamicVars["StrengthLoss"].UpgradeValueBy(2);
         DynamicVars.Weak.UpgradeValueBy(1);
     }
 }

@@ -32,69 +32,56 @@ public sealed class TornadoFist : NinjaSlayerUncommonCard
 
     protected override bool HasEnergyCostX => true;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(4, ValueProp.Move), new PowerVar<VulnerablePower>(1), new DynamicVar("Threshold", 4)];
+        [new DamageVar(4, ValueProp.Move), new DynamicVar("Threshold", 4)];
 
     public TornadoFist()
         : base(nameof(TornadoFist), 0, CardType.Attack, TargetType.AllEnemies) { }
 
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int hits = ResolveEnergyXValue();
-        bool empowered = IsEmpowered(hits);
-        return this.ExecuteSequenceWithFinisher(
-            choiceContext,
-            cardPlay,
-            hits,
-            () => NinjaSlayerXAttackSequence.Run(
-                Owner.Creature,
-                hits,
-                async index =>
-                {
-                    AttackCommand command;
-                    using (CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.RapidCard))
-                    {
-                        command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+        int x = ResolveEnergyXValue();
+        int hits = IsEmpowered(x) ? x * 2 : x;
+        if (hits <= 0)
+        {
+            NinjaSlayer.Code.Nodes.NinjaSlayerAimPose.Get(Owner.Creature)?.ReleaseEmptyTornado();
+            return;
+        }
+        using var cadence = NinjaSlayerAttackExecution.EnterSequence(hits);
+        using var suppression = XAttackAudioContext.Suppress();
+        using var pacing = CombatPresentationPacingScope.Begin(CombatPresentationPacingPolicy.RapidCard);
+        SpinComboAudio? spin = null;
+        try
+        {
+            XAttackComboMovement.BeginCombo(Owner.Creature, TornadoFistSpinAnimation.TurnSeconds);
+            float duration = SpinComboAudio.RemainingSeconds(Owner.Creature, hits);
+            if (MegaCrit.Sts2.Core.TestSupport.TestMode.IsOff && TornadoSpinTiming.Select(hits, duration,
+                NinjaSlayerFormState.GetPresentation(Owner.Creature).ForcePerHitComboAudio) != TornadoAudioMode.PerHit)
+                spin = SpinComboAudio.Start(Owner.Creature);
+            AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+                .WithHitCount(hits)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                            .FromCard(this)
+                .FromCard(this)
 #else
-                            .FromCard(this, cardPlay)
+                .FromCard(this, cardPlay)
 #endif
-                            .WithDefectStrikeHitFx()
-                            .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
-                            .TargetingAllOpponents(CombatState!);
-                        if (index == hits - 1)
-                        {
-                            command.BeforeDamage(() =>
-                            {
-                                if (!NinjaSlayerAttackExecution.NeedsDamageRecovery)
-                                    foreach (SpinComboAudio audio in MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance!
-                                                 .GetChildren().OfType<SpinComboAudio>())
-                                        if (audio.Actor == Owner.Creature) audio.Finish();
-                                return Task.CompletedTask;
-                            });
-                        }
-                        await command.Execute(choiceContext);
-                    }
-
-                    if (empowered)
-                    {
-                        foreach (Creature target in command.Results
-                                     .SelectMany(results => results)
-                                     .Select(result => result.Receiver)
-                                     .Where(target => target.IsAlive && target.Side != Owner.Creature.Side)
-                                     .Distinct())
-                        {
-                            await PowerCmd.Apply<VulnerablePower>(
-                                choiceContext,
-                                target,
-                                DynamicVars.Vulnerable.BaseValue,
-                                Owner.Creature,
-                                this);
-                        }
-                    }
-
-                    return CombatState!.HittableEnemies.Count == 0;
-                }, heldApproach: true));
+                .WithDefectStrikeHitFx()
+                .WithAttackerAnim(TornadoFistSpinAnimation.TriggerName, TornadoFistSpinAnimation.TurnSeconds)
+                .TargetingAllOpponents(CombatState!);
+            command.BeforeDamage(() =>
+            {
+                cadence.SetHit(command.Results.Count());
+                if (spin == null && MegaCrit.Sts2.Core.TestSupport.TestMode.IsOff)
+                    NinjaSlayerCombatAudioSet.Play(NinjaSlayerCombatAudioSet.For(Owner.Creature).FastAttack);
+                else if (spin != null && !NinjaSlayerAttackExecution.NeedsDamageRecovery) spin.Finish();
+                return Task.CompletedTask;
+            });
+            await command.ExecuteWithFinisher(choiceContext, this, cardPlay, hitCountOverride: hits);
+        }
+        finally
+        {
+            if (spin != null && Godot.GodotObject.IsInstanceValid(spin)) spin.Finish();
+            await XAttackComboMovement.EndCombo(Owner.Creature);
+        }
     }
 
     protected override void OnUpgrade() => DynamicVars.Damage.UpgradeValueBy(2);

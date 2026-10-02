@@ -357,11 +357,11 @@ public partial class OrbContractRunner
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2, "Strong Shuriken must gain Focus damage and an attack card must not trigger Press the Advantage.");
         await AddStock(combat.Player, 1);
         await CardCmd.Discard(Choice, AddCard<AlabamaDrop>(combat));
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2,
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 5 && combat.Player.Creature.GetPowerAmount<FocusPower>() == 2,
             "Orb damage caused by discarding an Attack must count once, not as both attack and stock damage.");
         await CreatureCmd.Damage(Choice, combat.Enemy, 1, ValueProp.Unpowered, combat.Player.Creature);
         await CreatureCmd.Damage(Choice, combat.Player.Creature, 1, ValueProp.Unpowered, combat.Player.Creature);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 4, "Independent unpowered damage and self damage must not grant stats.");
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 5, "Independent unpowered damage and self damage must not grant stats.");
 #if NINJASLAYER_CHANNEL_STABLE
         await Hook.AfterTurnEnd(combat.State, CombatSide.Player, [combat.Player.Creature]);
 #else
@@ -380,13 +380,13 @@ public partial class OrbContractRunner
         await PowerCmd.Apply<BladeSweepPower>(Choice, combat.Player.Creature, 1, combat.Player.Creature, null);
         await AddStock(combat.Player, 3);
         await CardCmd.AutoPlay(Choice, AddCard<Dualcast>(combat), null);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 24
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
-            "Three stock evoked twice against two targets must grant twelve stat increments.");
+            "Three stock evoked twice against two targets must grant twenty-four temporary Strength.");
         await PowerCmd.Apply<KaratePower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
         AddCard<BlackFlame>(combat);
         await CardCmd.AutoPlay(Choice, AddCard<StrikeIronclad>(combat), combat.Enemy);
-        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 12
+        Require(combat.Player.Creature.GetPowerAmount<StrengthPower>() == 24
             && combat.Player.Creature.GetPowerAmount<FocusPower>() == 0,
             "An attack with Karate and Black Flame must not grant orb-only Strength.");
         GD.Print("PASS multi-target multi-evoke stat counts and actual Karate/Black Flame source exclusion");

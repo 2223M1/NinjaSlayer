@@ -23,7 +23,7 @@ namespace NinjaSlayer.Cards.Standard;
 public sealed class Chop : NinjaSlayerCommonCard
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(3, ValueProp.Move), new KarateVar(1)];
+        [new DamageVar(4, ValueProp.Move), new KarateVar(1)];
 
     public Chop()
         : base(nameof(Chop), 0, CardType.Attack, TargetType.AnyEnemy) { }

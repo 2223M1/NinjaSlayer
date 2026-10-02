@@ -58,7 +58,7 @@ public partial class OrbContractRunner
                 return [teas.Last()];
             }));
             await CardCmd.AutoPlay(Choice, source, null);
-            Require(combat.Player.Creature.CurrentHp == 30 + (teaCount > 0 ? upgraded ? 8 : 5 : 0),
+            Require(combat.Player.Creature.CurrentHp == 30 + (teaCount > 0 ? upgraded ? 9 : 6 : 0),
                 "Healing must require one successfully selected hand tea, including autoplay without tea.");
             Require(teas.Count(card => card.Pile?.Type == PileType.Exhaust) == Math.Min(teaCount, 1)
                 && drawTea.Pile?.Type == PileType.Draw && discardTea.Pile?.Type == PileType.Discard

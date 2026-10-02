@@ -26,7 +26,7 @@ public sealed class SpiralJump : NinjaSlayerCommonCard
         [HoverTipFactory.FromOrb<NinjaSlayer.Orbs.ShurikenOrb>()];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DamageVar(7, ValueProp.Move), new DynamicVar("Stock", 1)];
+        [new DamageVar(7, ValueProp.Move), new DynamicVar("Stock", 2)];
 
     public SpiralJump()
         : base(nameof(SpiralJump), 1, CardType.Attack, TargetType.AllEnemies) { }
@@ -48,7 +48,6 @@ public sealed class SpiralJump : NinjaSlayerCommonCard
 
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(1);
-        DynamicVars["Stock"].UpgradeValueBy(1);
+        DynamicVars.Damage.UpgradeValueBy(4);
     }
 }

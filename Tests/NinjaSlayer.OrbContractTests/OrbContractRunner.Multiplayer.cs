@@ -199,6 +199,28 @@ public partial class OrbContractRunner
         }
         Require(localSelections == 3, "Only the local player may make the three synchronized choices.");
         GD.Print("PASS synchronized hand discard and nested Scry/Sly choices");
+        foreach (Player player in run.Players)
+        {
+            var kick = combat.State.CreateCard<HalfMoonCompassKick>(player);
+            var tea = combat.State.CreateCard<Chado>(player);
+            var spare = combat.State.CreateCard<Chado>(player);
+            await CardPileCmd.Add(kick, PileType.Hand);
+            await CardPileCmd.Add(tea, PileType.Hand);
+            await CardPileCmd.Add(spare, PileType.Hand);
+            int before = completed;
+            string fixture = $"halfmoon-{player.NetId}";
+            System.IO.File.WriteAllText(Path.Combine(directory, $"{role}.{fixture}"), "ready");
+            await WaitNetwork(() => System.IO.File.Exists(Path.Combine(directory, $"host.{fixture}"))
+                && System.IO.File.Exists(Path.Combine(directory, $"client.{fixture}")), "both Half-Moon fixtures");
+            if (player.NetId == _network.NetId)
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new PlayCardAction(kick, null));
+            await WaitNetwork(() => completed > before, "native Half-Moon selection");
+            Require(tea.Pile?.Type == PileType.Exhaust && spare.Pile?.Type == PileType.Hand
+                && kick.Pile?.Type == PileType.Hand && kick.DynamicVars.Damage.BaseValue == 20,
+                "Half-Moon must synchronize exactly one selected tea, damage doubling and return on both peers.");
+        }
+        Require(localSelections == 4, "Half-Moon may prompt only its local owner.");
+        GD.Print("PASS synchronized Half-Moon exact-one tea selection, doubling and return for both players");
 #endif
         foreach (Player player in run.Players)
         {

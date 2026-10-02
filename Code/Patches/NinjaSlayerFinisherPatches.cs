@@ -61,12 +61,13 @@ public sealed class NinjaSlayerFinisherLethalDamagePatch : IPatchMethod
     public static void Prefix(
         Creature __instance,
         ref decimal amount,
+        ValueProp props,
         bool __runOriginal,
         out FinisherProtectionToken? __state)
     {
         __state = null;
         // Hextech's earlier prefix may resolve this hit as a living, dying-state creature.
-        if (!__runOriginal) return;
+        if (!__runOriginal || (__instance.Player?.Character is INinjaSlayerCharacter && !props.IsPoweredAttack())) return;
         FinisherProtectionService.TryProtectLethalDamage(__instance, ref amount, out __state);
     }
 
@@ -325,11 +326,12 @@ public sealed class NinjaSlayerIncomingDamageCapturePatch : IPatchMethod
     public static void Prefix(
         ref IEnumerable<Creature>? targets,
         Creature? dealer,
+        ValueProp props,
         out object? __state)
     {
         List<Creature> targetList = targets?.ToList() ?? [];
         targets = targetList;
-        __state = DeathAnimation.BeginIncomingDamageCapture(targetList, dealer);
+        __state = DeathAnimation.BeginIncomingDamageCapture(targetList, dealer, props);
     }
 
     public static void Postfix(ref Task<IEnumerable<DamageResult>> __result, object? __state)

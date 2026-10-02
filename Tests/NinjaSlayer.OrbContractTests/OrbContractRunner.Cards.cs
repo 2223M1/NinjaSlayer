@@ -39,6 +39,7 @@ public partial class OrbContractRunner
                     $"{original.Id}: a cost-reducing upgrade must not add Retain or Innate.");
         }
         GD.Print("PASS all current upgrades: no simultaneous cost reduction and added Retain/Innate");
+        await VerifyBoardV118();
         await VerifyNewCardInteractions();
         await VerifyAncientCardSources();
         await VerifyChadoGeneration();
