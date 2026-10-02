@@ -15,3 +15,9 @@
 ## 限制
 
 本轮未复测跨客户端完整问候、手动暂停和全部事件选择分支；共用动作之外的逻辑未改。Godot 退出仍有既有资源释放警告，不宣称日志零警告。
+
+## 发布核验
+
+最终运行包来自 `bcba1fed8851ac6d33207ac06b0de276656f4e9c`，鞠躬修复 [PR #158](https://github.com/2223M1/NinjaSlayer/pull/158) 与卡名补充 [PR #159](https://github.com/2223M1/NinjaSlayer/pull/159) 均已合并。[最终主分支 CI](https://github.com/2223M1/NinjaSlayer/actions/runs/36992965537) 通过。从干净提交重建后，双宿主完整 DLL 契约和跨帧鞠躬夹具再次通过。
+
+Workshop 上传后重新下载，12 个文件 SHA-256 全部匹配；版本为 1.0.4，公开状态、介绍、图片、标签与 RitsuLib 依赖保持，最新更新说明逐字匹配固定句子。GitHub Contributors 仍只有 `2223M1`。完整散列、宿主 MVID、实际 RitsuLib 版本及未执行范围见相邻证据 JSON。

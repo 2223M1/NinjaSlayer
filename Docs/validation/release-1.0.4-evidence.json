@@ -1,0 +1,463 @@
+{
+  "version": "1.0.4",
+  "sourceRevision": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+  "verifiedAtUtc": "2026-10-02T18:05:06.8417287+08:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/159",
+  "greetingPullRequest": "https://github.com/2223M1/NinjaSlayer/pull/158",
+  "ci": {
+    "conclusion": "success",
+    "headSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+    "url": "https://github.com/2223M1/NinjaSlayer/actions/runs/36992965537"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "7b82270c414169f758dc3b95227539b691c546e50b43853917af6c5e5107a399",
+    "70a9b80bbfc5140514a2170063b36e1c0755cd120f3dc6c4c6cc42c44f0122ca",
+    "e1fb20dc2dd467146f9ef2308587979a219d3396487f2494332c12ef46c4f309",
+    "5e27a89a76953099fcf0caf8530814b147322ca3cb5e1f6c909ba381c16f2157",
+    "908089ac4eccd9092cee617678c4baf10f5e21eeec5c2341f8b45d42f0fc918d",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "353298d9743b40bb9a2130ac0e30c94875c8dd8c00991532cf2c5f2494eaa372",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "79f82d3389facaf1db97a4a946999a3a7a27290d3f0e66c197218e100b3bc24f",
+    "f75d6e8ff639ef75f432a4b5b62df0a94cbc856237a0290d74a352d57b24808b"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "7b82270c414169f758dc3b95227539b691c546e50b43853917af6c5e5107a399",
+      "bytes": 644
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "70a9b80bbfc5140514a2170063b36e1c0755cd120f3dc6c4c6cc42c44f0122ca",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "e1fb20dc2dd467146f9ef2308587979a219d3396487f2494332c12ef46c4f309",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "5e27a89a76953099fcf0caf8530814b147322ca3cb5e1f6c909ba381c16f2157",
+      "bytes": 209292184
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "908089ac4eccd9092cee617678c4baf10f5e21eeec5c2341f8b45d42f0fc918d",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "353298d9743b40bb9a2130ac0e30c94875c8dd8c00991532cf2c5f2494eaa372",
+      "bytes": 2232320
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "79f82d3389facaf1db97a4a946999a3a7a27290d3f0e66c197218e100b3bc24f",
+      "bytes": 125440
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "f75d6e8ff639ef75f432a4b5b62df0a94cbc856237a0290d74a352d57b24808b",
+      "bytes": 2235904
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+        "bundleVersion": "1.0.4",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "908089ac4eccd9092cee617678c4baf10f5e21eeec5c2341f8b45d42f0fc918d",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "greetingbow",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T18:01:57.8320155+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18188,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": true,
+            "scale": 1,
+            "headDeltaX": -54.149048
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18321,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": true,
+            "scale": 1.4,
+            "headDeltaX": -75.80859
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18454,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": false,
+            "scale": 1,
+            "headDeltaX": 54.149048
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18588,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": false,
+            "scale": 1.4,
+            "headDeltaX": 75.808716
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19721,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": true,
+            "scale": 1,
+            "headDeltaX": -46.43701
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19854,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": true,
+            "scale": 1.4,
+            "headDeltaX": -65.01184
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19988,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": false,
+            "scale": 1,
+            "headDeltaX": 46.43701
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 20121,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": false,
+            "scale": 1.4,
+            "headDeltaX": 65.01184
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.completed",
+          "Sequence": 13,
+          "Status": "passed",
+          "ElapsedMilliseconds": 20121,
+          "Data": null
+        }
+      ]
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+        "bundleVersion": "1.0.4",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "908089ac4eccd9092cee617678c4baf10f5e21eeec5c2341f8b45d42f0fc918d",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "greetingbow",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-02T18:02:36.096696+08:00"
+      },
+      "checkpoints": [
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 5,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18071,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": true,
+            "scale": 1,
+            "headDeltaX": -54.149048
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 6,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18204,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": true,
+            "scale": 1.4,
+            "headDeltaX": -75.80859
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 7,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18338,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": false,
+            "scale": 1,
+            "headDeltaX": 54.149048
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 8,
+          "Status": "passed",
+          "ElapsedMilliseconds": 18471,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_DARK_NINJA_MONSTER",
+            "left": false,
+            "scale": 1.4,
+            "headDeltaX": 75.808716
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 9,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19604,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": true,
+            "scale": 1,
+            "headDeltaX": -46.43701
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 10,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19738,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": true,
+            "scale": 1.4,
+            "headDeltaX": -65.01184
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 11,
+          "Status": "passed",
+          "ElapsedMilliseconds": 19871,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": false,
+            "scale": 1,
+            "headDeltaX": 46.43701
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.sample",
+          "Sequence": 12,
+          "Status": "passed",
+          "ElapsedMilliseconds": 20004,
+          "Data": {
+            "model": "MONSTER.NINJA_SLAYER_MONSTER_FOREST_SAWATARI_MONSTER",
+            "left": false,
+            "scale": 1.4,
+            "headDeltaX": 65.01184
+          }
+        },
+        {
+          "SchemaVersion": 1,
+          "CandidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+          "Phase": "greetingbow",
+          "Name": "greetingbow.completed",
+          "Sequence": 13,
+          "Status": "passed",
+          "ElapsedMilliseconds": 20004,
+          "Data": null
+        }
+      ]
+    }
+  ],
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Character,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214230991
+  },
+  "validation": {
+    "logicTests": 375,
+    "repository": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostContracts": true,
+    "dualHostSmokeDrivers": true,
+    "renderedBowFixture": "Real monster nodes, both facing directions and external scales, across rendered frames; not the full event greeting flow.",
+    "websiteTests": {
+      "skipped": 1,
+      "passed": 67,
+      "failed": 0
+    }
+  },
+  "baseline": {
+    "version": "1.0.3",
+    "sourceRevision": "aacfc7f622987dfdb89f34858aedc4fa83899ba5",
+    "result": "Dark Ninja facing left moved its head right by 54.149 pixels; direction assertion failed."
+  },
+  "notRun": [
+    "Full event greeting options and films",
+    "Cross-client complete greetings",
+    "Manual pause matrix",
+    "macOS/Linux/Steam Deck"
+  ],
+  "catalog": {
+    "schemaVersion": 6,
+    "candidateSha": "bcba1fed8851ac6d33207ac06b0de276656f4e9c",
+    "bundleVersion": "1.0.4",
+    "result": "passed",
+    "channel": "stable",
+    "gameApiVersion": "0.107.1",
+    "gameAssemblyVersion": "0.1.0.0",
+    "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+    "ritsuLibVersion": "0.5.12",
+    "ritsuLibRuntimeVersion": "0.6.5",
+    "additionalMods": [],
+    "bundleSha256": "908089ac4eccd9092cee617678c4baf10f5e21eeec5c2341f8b45d42f0fc918d",
+    "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+    "mode": "runtime-content-export",
+    "repository": "local",
+    "workflowRunId": "local",
+    "completedAtUtc": "2026-10-02T18:05:43.1904876+08:00"
+  }
+}
