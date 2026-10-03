@@ -1,0 +1,3108 @@
+{
+  "version": "1.0.7",
+  "sourceRevision": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+  "verifiedAtUtc": "2026-10-03T18:08:16.5617950+00:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/167",
+  "includedPullRequests": [
+    "https://github.com/2223M1/NinjaSlayer/pull/165",
+    "https://github.com/2223M1/NinjaSlayer/pull/166",
+    "https://github.com/2223M1/NinjaSlayer/pull/167"
+  ],
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37142168545,
+    "headSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+    "status": "completed"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "author": "2223M1 <104559061+2223M1@users.noreply.github.com>",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "66273449a21f672642d57ac343487e5dce9dbaad538a35af78e5ab37da2d0045",
+    "c3fbd22ebd204ecdf984b67043210ee7fde3acb93bb5a33d08363aeb0ce892de",
+    "c38f2eb95a3cbc0e7f4b29a503b34783e17067714d2a49e0965d997638c2ba14",
+    "9aee2f1df0a9eb0e8a6237c4da9ba62b6caa1d0e2bbf4bc0ce0154475e89505d",
+    "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "b09daff74d76623836c4c6854f288c3c8007b220a772009228882749a2529e0b",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "f7cace6ba42a840f8e297ef3f649cc332d02f3fc8b7d322e32f1748bdf24c9df",
+    "7ed7f37231d935c20190381b15c1bb59324b0118c2d654297484474d6c8e34c2"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "66273449a21f672642d57ac343487e5dce9dbaad538a35af78e5ab37da2d0045",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "c3fbd22ebd204ecdf984b67043210ee7fde3acb93bb5a33d08363aeb0ce892de",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "c38f2eb95a3cbc0e7f4b29a503b34783e17067714d2a49e0965d997638c2ba14",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "9aee2f1df0a9eb0e8a6237c4da9ba62b6caa1d0e2bbf4bc0ce0154475e89505d",
+      "bytes": 209292008
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "b09daff74d76623836c4c6854f288c3c8007b220a772009228882749a2529e0b",
+      "bytes": 2227712
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "f7cace6ba42a840f8e297ef3f649cc332d02f3fc8b7d322e32f1748bdf24c9df",
+      "bytes": 125440
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "7ed7f37231d935c20190381b15c1bb59324b0118c2d654297484474d6c8e34c2",
+      "bytes": 2231296
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+        "bundleVersion": "1.0.7",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T02:02:33.5407641+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "fresh",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.autoslay-starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "transition.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat.started",
+          "Status": "passed",
+          "Data": {
+            "enemyCount": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "count": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "count": 2
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "count": 3
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "count": 4
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "irc"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "starter-tea"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "karate"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.lethal-hit-absorption",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.created",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.lifecycle-cleared",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.runtime-contracts-validated",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "cards.presentation-validated",
+          "Status": "passed",
+          "Data": {
+            "count": 93
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "black-flame.native-flash-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
+            "rootShift": 0,
+            "uiShift": 6.1035156e-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STRAIGHT_PUNCH",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_HALF_MOON_COMPASS_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK",
+            "rootShift": 0,
+            "uiShift": 3.0517578e-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat-fixes.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "hell-tornado.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "x-attack.nonlethal-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.cardplay-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.move-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "spine.platform-extension-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "dark-strike.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": true,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "focusBlock": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 3,
+            "killAttempts": 1,
+            "successfulKills": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": false,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.saved",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.restart-requested",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.loaded",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Status": "passed",
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1314/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Status": "passed",
+          "Data": {
+            "beforePixels": 1927,
+            "afterPixels": 1825,
+            "otherPixels": 1830,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ],
+      "contractSha256": "51c1e23d54c18b0f169cd0abc24ef45cb6b4513fdb72340ccaac0df165fef21a"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+        "bundleVersion": "1.0.7",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "multihit-vigor",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T02:04:38.0368047+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "multihitvigor",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 20,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 17,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 2,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 18,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 14,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 20,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 17,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 2,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 18,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 14,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 24,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 19,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 21,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 16,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 24,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 19,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 21,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 16,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": false,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 2,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": false,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 2,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": true,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": true,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": false,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": false,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": true,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 4,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": true,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 4,
+            "drawnTeaEnergy": 1
+          }
+        }
+      ],
+      "contractSha256": "51c1e23d54c18b0f169cd0abc24ef45cb6b4513fdb72340ccaac0df165fef21a"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+        "bundleVersion": "1.0.7",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "tomoe-throw",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T02:06:24.4522308+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "tomoethrow",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.completed",
+          "Status": "passed",
+          "Data": null
+        }
+      ],
+      "contractSha256": "51c1e23d54c18b0f169cd0abc24ef45cb6b4513fdb72340ccaac0df165fef21a"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+        "bundleVersion": "1.0.7",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T01:57:04.6008576+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "fresh",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.autoslay-starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "transition.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat.started",
+          "Status": "passed",
+          "Data": {
+            "enemyCount": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "count": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "count": 2
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "count": 3
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "count": 4
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "irc"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "starter-tea"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed",
+          "Data": {
+            "name": "karate"
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "None",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Normal",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Fast",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed",
+          "Data": {
+            "speed": "Instant",
+            "whiteOverlayRemaining": false,
+            "completedTransformUpgradedAndExhausted": true
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.lethal-hit-absorption",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.created",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.lifecycle-cleared",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.runtime-contracts-validated",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "cards.presentation-validated",
+          "Status": "passed",
+          "Data": {
+            "count": 93
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "black-flame.native-flash-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ALABAMA_DROP",
+            "rootShift": 0,
+            "uiShift": 6.1035156e-05
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STRAIGHT_PUNCH",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_BS1260_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_SOMERSAULT_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_HALF_MOON_COMPASS_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_FLYING_KICK",
+            "rootShift": 0,
+            "uiShift": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat-fixes.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "hell-tornado.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.presentation-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "x-attack.nonlethal-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.cardplay-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.move-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "spine.platform-extension-completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "dark-strike.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": true,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "focusBlock": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 3,
+            "killAttempts": 1,
+            "successfulKills": 1
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Status": "passed",
+          "Data": {
+            "combatInProgress": false,
+            "focusAlive": false,
+            "focusCurrentHp": 0,
+            "hittableEnemyCount": 0
+          }
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.saved",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.restart-requested",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.loaded",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed",
+          "Data": {
+            "characterId": "CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Status": "passed",
+          "Data": {
+            "path": "/root/Game/RootSceneContainer/Run/RoomContainer/CombatRoom/CombatSceneContainer/EnemyContainer/@Control@1397/Nibbit/Visuals",
+            "global": "(1254, 723)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Status": "passed",
+          "Data": {
+            "beforePixels": 2446,
+            "afterPixels": 1844,
+            "otherPixels": 1813,
+            "globalPosition": "(1254, 723)",
+            "path": "/root/Game/RootSceneContainer/Run/GlobalUi/OverlayScreensContainer/GameOverScreen/ScreenshakeContainer/CreatureContainer/Nibbit/Visuals",
+            "rootPosition": "(310, 200)",
+            "rootBaseline": "(310, 200)",
+            "visible": true,
+            "visualPosition": "(1270, 740)"
+          }
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Status": "passed",
+          "Data": {
+            "sessionId": 1,
+            "resolvedHits": 1,
+            "killAttempts": 1,
+            "successfulKills": 1,
+            "targetHp": 0
+          }
+        }
+      ],
+      "contractSha256": "344b355d9aa29f447da593e677612f74fdc4ef5c6625d8aade6f3e97dc16d183"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+        "bundleVersion": "1.0.7",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "multihit-vigor",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T01:58:40.1709772+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "multihitvigor",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 20,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 17,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 2,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 18,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": false,
+            "speed": "Normal",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 14,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 20,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 17,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 2,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 18,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": false,
+            "speed": "Fast",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 14,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 24,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 19,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 21,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": true,
+            "speed": "Normal",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 16,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_STORM_FIST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 4,
+            "targetsPerHit": 1,
+            "damagePerTarget": 24,
+            "animationGates": 4
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_DRAGON_ROUNDHOUSE_KICK",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 2,
+            "targetsPerHit": 2,
+            "damagePerTarget": 19,
+            "animationGates": 2
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_PALM_THRUST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 15,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_ANTI_AIR_BANG_BANG_FIST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 3,
+            "targetsPerHit": 1,
+            "damagePerTarget": 21,
+            "animationGates": 3
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.resolved",
+          "Status": "passed",
+          "Data": {
+            "card": "CARD.NINJA_SLAYER_CARD_TORNADO_FIST",
+            "upgraded": true,
+            "speed": "Fast",
+            "hits": 8,
+            "targetsPerHit": 2,
+            "damagePerTarget": 16,
+            "animationGates": 8
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "multihit.completed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": false,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 2,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": false,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 2,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": true,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": false,
+            "hadTea": true,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": false,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": false,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 3,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": true,
+            "speed": "Normal",
+            "handCount": 10,
+            "breathedEnergy": 4,
+            "drawnTeaEnergy": 1
+          }
+        },
+        {
+          "Phase": "multihitvigor",
+          "Name": "dragon-kick.breath-before-draw",
+          "Status": "passed",
+          "Data": {
+            "upgraded": true,
+            "hadTea": true,
+            "speed": "Fast",
+            "handCount": 10,
+            "breathedEnergy": 4,
+            "drawnTeaEnergy": 1
+          }
+        }
+      ],
+      "contractSha256": "344b355d9aa29f447da593e677612f74fdc4ef5c6625d8aade6f3e97dc16d183"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+        "bundleVersion": "1.0.7",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "tomoe-throw",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-04T02:00:04.371011+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "tomoethrow",
+          "Name": "driver.started",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed",
+          "Data": null
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "mods.loaded",
+          "Status": "passed",
+          "Data": {
+            "loaded": [
+              "NinjaSlayer",
+              "NinjaSlayer-SmokeDriver",
+              "STS2-RitsuLib"
+            ]
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "redesign.content-validated",
+          "Status": "passed",
+          "Data": {
+            "cardCount": 86
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 2,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 4,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.CRUSHER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true,
+            "bodyVisible": false,
+            "hasTexture": false
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.ROCKET",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.start",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true,
+            "bodyVisible": true,
+            "hasTexture": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.resolved",
+          "Status": "passed",
+          "Data": {
+            "players": 1,
+            "target": "MONSTER.THIEVING_HOPPER",
+            "upgraded": true
+          }
+        },
+        {
+          "Phase": "tomoethrow",
+          "Name": "tomoe.completed",
+          "Status": "passed",
+          "Data": null
+        }
+      ],
+      "contractSha256": "344b355d9aa29f447da593e677612f74fdc4ef5c6625d8aade6f3e97dc16d183"
+    }
+  ],
+  "browserChecks": [
+    {
+      "language": "zhs",
+      "width": 1440,
+      "multiVersion": true,
+      "reload": true,
+      "charts": 8,
+      "reports": true,
+      "keyboard": true,
+      "legacyLink": true,
+      "unknownVersionEmpty": true,
+      "noOverflow": true
+    },
+    {
+      "language": "eng",
+      "width": 390,
+      "multiVersion": true,
+      "reload": true,
+      "charts": 8,
+      "reports": true,
+      "keyboard": true,
+      "legacyLink": true,
+      "unknownVersionEmpty": true,
+      "noOverflow": true
+    },
+    {
+      "language": "jpn",
+      "width": 390,
+      "multiVersion": true,
+      "reload": true,
+      "charts": 8,
+      "reports": true,
+      "keyboard": true,
+      "legacyLink": true,
+      "unknownVersionEmpty": true,
+      "noOverflow": true
+    }
+  ],
+  "ritsuLib": {
+    "runtimeVersion": "0.6.5",
+    "compileVersion": "0.5.12",
+    "dlls": [
+      {
+        "sha256": "b82ce613a2811b169f9dd05669c1503d7928a209eab22ba85222abddb05ce9ec",
+        "name": "STS2-RitsuLib.dll"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214221477
+  },
+  "validation": {
+    "logicTests": 375,
+    "webTestsPassed": 73,
+    "webTestsSkipped": 1,
+    "repository": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostContracts": true,
+    "dualHostSmokeDrivers": true,
+    "multiHitVigor": true,
+    "tomoeCrab": true,
+    "dragonKickBreathBeforeDraw": true,
+    "websiteMultiVersion": true
+  },
+  "autoAnthony": {
+    "runtimeVersion": "0.3.119",
+    "channel": "preview",
+    "dllSha256": "4fc1dd972fcf3f88bc025d84eaf16765ed93abcd22552287aef4a1a123f415e3",
+    "contractSha256": "f5ca69df7ee92b351a7051e147e9b244dab911e220dce271d996d29a67d54a5a"
+  },
+  "baseline": {
+    "version": "1.0.6",
+    "sourceRevision": "cccbe06b02b8838dbaeedb322598a063bfc17f43",
+    "result": "Separate per-hit commands consumed Vigor early; textureless Emperor Crab nodes crashed Tomoe blur initialization."
+  },
+  "notRun": [
+    "macOS/Linux live gameplay",
+    "Independent multiplayer clients and transport",
+    "Live-run telemetry save reload (no same-host fixture supplied)",
+    "Reported Naraku-life multiplayer black-screen freeze: awaiting player logs; deferred by user, no fix claimed"
+  ],
+  "catalog": {
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+      "bundleVersion": "1.0.7",
+      "result": "passed",
+      "channel": "stable",
+      "gameApiVersion": "0.107.1",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+      "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.5",
+      "additionalMods": [],
+      "bundleSha256": "b342899ba59997e1816471d1bf1fe6e305b6a82be897574fcf05c789b3b8cbdf",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-03T18:09:03.7484605+00:00"
+    },
+    "current": {
+      "version": "1.0.7",
+      "sourceRevision": "7e04386fd7e2fd3e698d2117a150a0a2f0a92c7e",
+      "fingerprint": "23b39f8815bb7e5d1abcbc875c8476651a07c02f7551dca4d0554126514b43a2"
+    }
+  },
+  "cleanup": {
+    "logicalBytesRemoved": 1709660824.0,
+    "directoriesRemoved": 11,
+    "preservedDeniedTargets": [
+      "build/tomoe-crab/candidate",
+      "build/tomoe-crab/bundle",
+      "build/tomoe-crab/loader"
+    ]
+  }
+}
