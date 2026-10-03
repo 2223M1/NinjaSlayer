@@ -1746,6 +1746,14 @@ internal sealed partial class SmokeController
             {
                 await RunTornadoPreviewAsync();
             }
+            else if (_configuration.Phase == SmokePhase.MultiHitVigor)
+            {
+                await RunMultiHitVigorAsync();
+            }
+            else if (_configuration.Phase == SmokePhase.TomoeThrow)
+            {
+                await RunTomoeThrowAsync();
+            }
             else if (_configuration.Phase == SmokePhase.GreetingBow)
             {
                 await RunGreetingBowAsync();

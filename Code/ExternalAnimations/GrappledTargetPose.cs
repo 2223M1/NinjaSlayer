@@ -97,7 +97,9 @@ internal sealed class GrappledTargetPose : IDisposable
                 _track.SetTimeScale(0f);
             }
         }
-        if (blur)
+        // Background-driven creatures can expose a textureless Sprite2D as their
+        // targeting body (e.g. Emperor Crab's arms). It has no pixels to sample.
+        if (blur && _drawing is not Sprite2D { Texture: null })
         {
             if (_drawing is Sprite2D)
             {

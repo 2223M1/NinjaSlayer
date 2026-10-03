@@ -280,8 +280,10 @@ public partial class OrbContractRunner
             Invoke("Drag", dragOwner, tornadoCard, new Vector2(700f, -300f), combat.Enemy);
             pose._Process(0.27);
             Invoke("EndDrag", dragOwner, true);
-            await NinjaSlayerXAttackSequence.Run(combat.Player.Creature, 0,
-                _ => throw new InvalidOperationException("Zero-hit Tornado dealt damage."), heldApproach: true);
+            combat.Player.PlayerCombatState!.LoseEnergy(combat.Player.PlayerCombatState.Energy);
+            int beforeEmptyTornado = combat.Enemy.CurrentHp;
+            await CardCmd.AutoPlay(Choice, tornadoCard, null);
+            Require(combat.Enemy.CurrentHp == beforeEmptyTornado, "Zero-hit Tornado dealt damage.");
             await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
             Require(pose.Transform.IsEqualApprox(Transform2D.Identity), "Zero-hit Tornado retained its charged pose.");
             Require(sprite.Transform.IsEqualApprox(unchargedBody), "Zero-hit Tornado left the body flattened or displaced.");
