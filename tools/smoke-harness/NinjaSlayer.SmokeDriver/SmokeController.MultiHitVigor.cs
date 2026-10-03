@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Nodes;
@@ -106,6 +107,39 @@ internal sealed partial class SmokeController
                     ["targetsPerHit"] = targets, ["damagePerTarget"] = damage, ["animationGates"] = MultiHitVigorProbe.AnimationGates });
             }
             _checkpoints.Write("multihit.completed");
+            MultiHitVigorProbe.Card = null;
+            foreach (bool upgraded in new[] { false, true })
+            foreach (bool hasTea in new[] { false, true })
+            foreach (var speed in new[] { FastModeType.Normal, FastModeType.Fast })
+            {
+                SaveManager.Instance.PrefsSave.FastMode = speed;
+                foreach (var old in player.Piles.Where(p => p.Type != PileType.Deck).SelectMany(p => p.Cards).ToArray())
+                    await CardPileCmd.RemoveFromCombat(old);
+                var tea = hasTea ? combat.CreateCard<Chado>(player) : null;
+                if (tea != null) await CardPileCmd.Add(tea, PileType.Hand);
+                var drawnTea = combat.CreateCard<Chado>(player);
+                await CardPileCmd.Add(drawnTea, PileType.Draw);
+                for (int i = 0; i < 15; i++) await CardPileCmd.Add(combat.CreateCard<DefendIronclad>(player), PileType.Draw);
+                var kick = combat.CreateCard<DragonFlyingKick>(player);
+                if (upgraded) kick.UpgradeInternal();
+                await CardPileCmd.Add(kick, PileType.Hand);
+                player.PlayerCombatState!.GainEnergy(3);
+                var action = new PlayCardAction(kick, combat.HittableEnemies[0]);
+                RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(action);
+                await action.CompletionTask.WaitAsync(TimeSpan.FromSeconds(20));
+                if (action.Exception != null) throw action.Exception;
+                var hand = PileType.Hand.GetPile(player).Cards;
+                var breathedTea = tea ?? hand.OfType<Chado>().Single(c => c != drawnTea);
+                Require(hand.Count == CardPile.MaxCardsInHand && breathedTea.Pile?.Type == PileType.Hand
+                    && breathedTea.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2) + (hasTea ? 1 : 0)
+                    && drawnTea.Pile?.Type == PileType.Hand && drawnTea.DynamicVars.Energy.BaseValue == 1
+                    && kick.Pile?.Type == PileType.Exhaust,
+                    "Dragon Flying Kick must breathe before drawing to capacity; newly drawn Chado must remain unchanged.");
+                _checkpoints.Write("dragon-kick.breath-before-draw", data: new JsonObject {
+                    ["upgraded"] = upgraded, ["hadTea"] = hasTea, ["speed"] = speed.ToString(),
+                    ["handCount"] = hand.Count, ["breathedEnergy"] = breathedTea.DynamicVars.Energy.IntValue,
+                    ["drawnTeaEnergy"] = drawnTea.DynamicVars.Energy.IntValue });
+            }
         }
         finally { MultiHitVigorProbe.Card = null; observer.UnpatchAll(observer.Id); }
         NGame.Instance!.Quit();

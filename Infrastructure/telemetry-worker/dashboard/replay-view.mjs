@@ -1,3 +1,4 @@
+import { matchesVersion } from './version-filter.mjs';
 import { t, tr, language } from './i18n.mjs';
 import { loadCatalog } from "./catalog-view.mjs";
 const ENDPOINT = "https://telemetry.feixingwawa.cn";
@@ -54,7 +55,7 @@ export function renderReports(snapshot, filters, onCard) {
     (report) =>
       Date.parse(report.expires) > Date.now() &&
       Date.parse(report.at) >= cutoff &&
-      (!filters.version || report.version === filters.version) &&
+      matchesVersion(report.version, filters.version) &&
       (filters.ascension === "" ||
         filters.ascension == null ||
         report.ascension === Number(filters.ascension)) &&

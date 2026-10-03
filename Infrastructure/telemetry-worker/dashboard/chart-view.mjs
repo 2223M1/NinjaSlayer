@@ -1,3 +1,4 @@
+import { matchesVersion } from './version-filter.mjs';
 import { t, tr, locale } from './i18n.mjs';
 import { charts, chartRows, chartValue, selectGroups } from './charts.mjs';
 const $ = (selector) => document.querySelector(selector);
@@ -95,14 +96,14 @@ export function renderMechanisms(snapshot, filters, onCard) {
   const total = groups.reduce((sum, group) => sum + group.totalCombats, 0);
   const measured = groups
     .flatMap((group) => group.mechanisms ?? [])
-    .filter((row) => row.group === 'vitals' && row.id === 'hp_lost' && (!filters.version || row.version === filters.version))
+    .filter((row) => row.group === 'vitals' && row.id === 'hp_lost' && matchesVersion(row.version, filters.version))
     .reduce((sum, row) => sum + row.n, 0);
   $('#mechanic-coverage').textContent =
     `有详细记录的战斗：${measured} / ${total}${total ? `（${((100 * measured) / total).toFixed(1)}%）` : ''}。`;
   const values = new Map();
   for (const group of groups)
     for (const row of group.mechanisms ?? []) {
-      if (filters.version && row.version !== filters.version) continue;
+      if (!matchesVersion(row.version, filters.version)) continue;
       const key = `${row.version}/${row.group}/${row.id}`,
         sum = values.get(key) ?? { ...row, n: 0 };
       if (!values.has(key))

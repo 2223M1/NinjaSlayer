@@ -126,16 +126,22 @@ public partial class OrbContractRunner
                 "NinjaCaltrops must grant its block and native Thorns.");
         }
         foreach (bool upgraded in new[] { false, true })
+        foreach (bool hasTea in new[] { false, true })
         {
             using var combat = new OrbCombat();
-            var tea = AddCard<Chado>(combat);
+            var tea = hasTea ? AddCard<Chado>(combat) : null;
+            var drawnTea = AddCard<Chado>(combat, PileType.Draw);
             for (int index = 0; index < 15; index++) AddCard<DefendIronclad>(combat, PileType.Draw);
             var kick = AddCard<DragonFlyingKick>(combat, upgraded: upgraded);
             await CardCmd.AutoPlay(Choice, kick, combat.Enemy);
+            var breathedTea = tea ?? PileType.Hand.GetPile(combat.Player).Cards.OfType<Chado>().Single(card => card != drawnTea);
             Require(combat.Enemy.CurrentHp == (upgraded ? 980 : 985)
                 && PileType.Hand.GetPile(combat.Player).Cards.Count == CardPile.MaxCardsInHand
-                && tea.DynamicVars.Energy.BaseValue == (upgraded ? 4 : 3) && kick.Pile?.Type == PileType.Exhaust,
-                "Dragon Flying Kick must damage, draw to native hand capacity, then breathe and exhaust.");
+                && breathedTea.Pile?.Type == PileType.Hand
+                && breathedTea.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2) + (hasTea ? 1 : 0)
+                && drawnTea.Pile?.Type == PileType.Hand && drawnTea.DynamicVars.Energy.BaseValue == 1
+                && kick.Pile?.Type == PileType.Exhaust,
+                "Dragon Flying Kick must breathe before drawing: keep the generated/enhanced Chado in hand, draw to capacity, and leave newly drawn Chado unchanged.");
         }
         using (var combat = new OrbCombat())
         {

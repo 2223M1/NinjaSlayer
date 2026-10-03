@@ -114,7 +114,7 @@
   "NINJA_SLAYER_CARD_HELL_CHOP.title": "地狱·Chop",
   "NINJA_SLAYER_CARD_HELL_CHOP.description": "造成{Damage:diff()}点伤害。\n获得{Karate:diff()}层[gold]空手道[/gold]。\n每当你在一回合内打出{Cards}张其他攻击牌，将这张牌放入你的[gold]手牌[/gold]。",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "龙·飞踢",
-  "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "造成{Damage:diff()}点伤害。\n抽牌直到抽满[gold]手牌[/gold]。\n[gold]茶道呼吸[/gold]{Breath:diff()}。",
+  "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "造成{Damage:diff()}点伤害。\n[gold]茶道呼吸[/gold]{Breath:diff()}。\n抽牌直到抽满[gold]手牌[/gold]。",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "杀气",
   "NINJA_SLAYER_CARD_KILLING_INTENT.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n在你的回合结束时，若你格挡了所有攻击伤害，在你的下个回合开始时，将1张[gold]直气[/gold]加入你的[gold]手牌[/gold]。",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "直气",

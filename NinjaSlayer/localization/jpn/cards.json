@@ -114,7 +114,7 @@
   "NINJA_SLAYER_CARD_HELL_CHOP.title": "ヘル・チョップ",
   "NINJA_SLAYER_CARD_HELL_CHOP.description": "{Damage:diff()}ダメージを与える。\n{Karate:diff()}[gold]カラテ[/gold]を得る。\n1ターン中に他のアタックを{Cards}枚プレイするたび、このカードを[gold]手札[/gold]に加える。",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "ドラゴン・トビゲリ",
-  "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "{Damage:diff()}ダメージを与える。\n[gold]手札[/gold]が上限に達するまでカードを引く。\n[gold]チャドー呼吸[/gold]{Breath:diff()}。",
+  "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "{Damage:diff()}ダメージを与える。\n[gold]チャドー呼吸[/gold]{Breath:diff()}。\n[gold]手札[/gold]が上限に達するまでカードを引く。",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "殺気",
   "NINJA_SLAYER_CARD_KILLING_INTENT.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\nターン終了時、すべてのアタックダメージをブロックしていた場合、次のターン開始時に[gold]直気[/gold]を1枚[gold]手札[/gold]に加える。",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "直気",
