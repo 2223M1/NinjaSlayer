@@ -1,0 +1,865 @@
+{
+  "version": "1.0.6",
+  "sourceRevision": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+  "verifiedAtUtc": "2026-10-03T19:34:24.2528119+08:00",
+  "pullRequest": "https://github.com/2223M1/NinjaSlayer/pull/163",
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 37119446713,
+    "headSha": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+    "status": "completed"
+  },
+  "contributors": [
+    "2223M1"
+  ],
+  "author": "2223M1 <104559061+2223M1@users.noreply.github.com>",
+  "checksums": [
+    "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+    "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+    "0a5dcbe51dfb9db89d144f7b292f5bba4dddf1157ad5fdd7c5e3ebacae9a5581",
+    "67378e94f02672b088c87a7febf7b38290cb6849a2efee3dab25981c3c4009c1",
+    "150beca7713a3c6b058b4354d4c5b28259571e4496896c88315d4a74b4ef01e2",
+    "6ef9f56831cc670d475b93e4a30c009a4b8321eeda3f8f67f41fba30a756c92a",
+    "45dc7831e31abf83cb55c4ccb3cb442d7e9b2a065ef622d02021d6905a04c6c6",
+    "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+    "792c62f04a9507c611c7d84fe1bcc32e280466b5de0001b52121ca344a874c8e",
+    "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+    "d8a0dfe9bd5561c1475a2276edcff54ce1ed0aab9c76b00325bdf7fab7ca9ca2",
+    "098c947e6c1abd71bbcdf61952616aadca299922e1b90e2cc51154ff8300eb3b"
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579",
+      "bytes": 317440
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385",
+      "bytes": 1097
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "0a5dcbe51dfb9db89d144f7b292f5bba4dddf1157ad5fdd7c5e3ebacae9a5581",
+      "bytes": 522
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "67378e94f02672b088c87a7febf7b38290cb6849a2efee3dab25981c3c4009c1",
+      "bytes": 24576
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "150beca7713a3c6b058b4354d4c5b28259571e4496896c88315d4a74b4ef01e2",
+      "bytes": 362
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "6ef9f56831cc670d475b93e4a30c009a4b8321eeda3f8f67f41fba30a756c92a",
+      "bytes": 209292184
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "45dc7831e31abf83cb55c4ccb3cb442d7e9b2a065ef622d02021d6905a04c6c6",
+      "bytes": 1008
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "792c62f04a9507c611c7d84fe1bcc32e280466b5de0001b52121ca344a874c8e",
+      "bytes": 2232320
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1",
+      "bytes": 8
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "d8a0dfe9bd5561c1475a2276edcff54ce1ed0aab9c76b00325bdf7fab7ca9ca2",
+      "bytes": 125440
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "098c947e6c1abd71bbcdf61952616aadca299922e1b90e2cc51154ff8300eb3b",
+      "bytes": 2235904
+    }
+  ],
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+        "bundleVersion": "1.0.6",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "45dc7831e31abf83cb55c4ccb3cb442d7e9b2a065ef622d02021d6905a04c6c6",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-03T19:31:32.8737489+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "fresh",
+          "Name": "driver.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "mods.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.content-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.autoslay-starting",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "transition.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.lethal-hit-absorption",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.created",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.lifecycle-cleared",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.runtime-contracts-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "cards.presentation-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "black-flame.native-flash-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat-fixes.presentation-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "hell-tornado.presentation-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.presentation-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "x-attack.nonlethal-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.cardplay-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.move-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "spine.platform-extension-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "dark-strike.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.saved",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.restart-requested",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "driver.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "mods.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "redesign.content-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "driver.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "mods.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "redesign.content-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Status": "passed"
+        }
+      ],
+      "contractSha256": "29cf91cd7acd098a1288298ef31409751f49b61461dd8f5444146c3504151b71"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+        "bundleVersion": "1.0.6",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "45dc7831e31abf83cb55c4ccb3cb442d7e9b2a065ef622d02021d6905a04c6c6",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "singleplayer-first-combat-restart",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-03T19:27:44.1745388+08:00"
+      },
+      "checkpoints": [
+        {
+          "Phase": "fresh",
+          "Name": "driver.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "telemetry.notice-dismissed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "mods.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.content-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.autoslay-starting",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "transition.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "exhaust.badge-list-match",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "tooltip.rendered",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "card.transform-pool-reuse",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.lethal-hit-absorption",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.created",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "shuriken.lifecycle-cleared",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "redesign.runtime-contracts-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "cards.presentation-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "black-flame.native-flash-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "attack.stationary-ui",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "combat-fixes.presentation-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "hell-tornado.presentation-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "naraku.presentation-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "x-attack.nonlethal-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.cardplay-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "evasion.move-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "spine.platform-extension-completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "dark-strike.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.card-returned",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.multi-hit.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.stationary-ui.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.presentation-fallback.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "finisher.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.saved",
+          "Status": "passed"
+        },
+        {
+          "Phase": "fresh",
+          "Name": "fresh.restart-requested",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "driver.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "mods.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "redesign.content-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "resume",
+          "Name": "resume.completed",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "driver.started",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "mods.loaded",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "redesign.content-validated",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.starting",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "character.selected",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.before",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.actor-return",
+          "Status": "passed"
+        },
+        {
+          "Phase": "reversefinisher",
+          "Name": "finisher.reverse.completed",
+          "Status": "passed"
+        }
+      ],
+      "contractSha256": "5f39c47b96c1dcb9f378ab480761591d7b468ee307a0e99d8c14a3fcb2fe3077"
+    }
+  ],
+  "ritsuLib": {
+    "runtimeVersion": "0.6.5",
+    "compileVersion": "0.5.12",
+    "dlls": [
+      {
+        "name": "STS2-RitsuLib.dll",
+        "sha256": "b82ce613a2811b169f9dd05669c1503d7928a209eab22ba85222abddb05ce9ec"
+      }
+    ]
+  },
+  "workshop": {
+    "itemId": "3776911445",
+    "visibility": "k_ERemoteStoragePublishedFileVisibilityPublic",
+    "dependencies": [
+      3747602295
+    ],
+    "tags": "Characters,Simplified Chinese,english,japanese",
+    "remoteTagsVerified": true,
+    "remotePackageVerified": true,
+    "remoteChangeNoteVerified": true,
+    "remoteDescriptionVerified": true,
+    "localizedLanguages": [
+      "english",
+      "schinese",
+      "japanese"
+    ],
+    "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
+    "mainPreview": "https://images.steamusercontent.com/ugc/13765530479187689089/F5A5A0550ED077F95747BF804BDCBE2119369C6A/",
+    "wideCoverUrl": "https://images.steamusercontent.com/ugc/17052177617860221983/48CBDACC20B6622E2B43A6CD6FE9AC8918DF6386/",
+    "previewUrlsUnchanged": true,
+    "downloadBytes": 214230869
+  },
+  "validation": {
+    "logicTests": 375,
+    "webTestsPassed": 71,
+    "webTestsSkipped": 1,
+    "repository": true,
+    "buildBoundaries": true,
+    "dualHostProducts": true,
+    "dualHostContracts": true,
+    "dualHostSmokeDrivers": true,
+    "resilienceBaseAndUpgrade": {
+      "cost": 1,
+      "cards": [
+        1,
+        2
+      ],
+      "keywords": []
+    }
+  },
+  "baseline": {
+    "version": "1.0.5",
+    "sourceRevision": "009d3c578bef52c6f0dc40f3b90c83d5e21e527f",
+    "result": "Resilience upgrade increased draw and added Innate; upgrade now only increases draw."
+  },
+  "notRun": [
+    "macOS/Linux live gameplay",
+    "Manual multiplayer Resilience opening-hand check",
+    "Live-run telemetry save reload (no same-host fixture supplied)",
+    "Manual old-save Resilience upgrade verification"
+  ],
+  "catalog": {
+    "current": {
+      "version": "1.0.6",
+      "sourceRevision": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+      "fingerprint": "6e450665704aa754e60a0e7400b49c27d81483649ab52d624ea5d1a9eabe50ac"
+    },
+    "attestation": {
+      "schemaVersion": 6,
+      "candidateSha": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+      "bundleVersion": "1.0.6",
+      "result": "passed",
+      "channel": "preview",
+      "gameApiVersion": "0.111.0",
+      "gameAssemblyVersion": "0.1.0.0",
+      "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+      "ritsuLibPackageId": "STS2.RitsuLib",
+      "ritsuLibVersion": "0.5.12",
+      "ritsuLibRuntimeVersion": "0.6.5",
+      "additionalMods": [],
+      "bundleSha256": "45dc7831e31abf83cb55c4ccb3cb442d7e9b2a065ef622d02021d6905a04c6c6",
+      "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+      "mode": "runtime-content-export",
+      "repository": "local",
+      "workflowRunId": "local",
+      "completedAtUtc": "2026-10-03T19:35:37.4060417+08:00"
+    },
+    "resilienceLocalesVerified": [
+      "zhs",
+      "eng",
+      "jpn"
+    ],
+    "otherDifferences": [
+      "Two native relic image variants; no description or gameplay change"
+    ]
+  },
+  "cleanup": {
+    "logicalBytesRemoved": 962974043,
+    "generatedDirectoriesRemoved": 6,
+    "scheduledTaskRemoved": true
+  }
+}
