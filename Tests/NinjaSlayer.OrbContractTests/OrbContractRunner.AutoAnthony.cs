@@ -195,6 +195,22 @@ public partial class OrbContractRunner
                 "Generated Storm/Dragon base+upgrade must apply Vigor to every hit and target, then consume it once.");
         }
         GD.Print("PASS generated Storm/Dragon base+upgrade: native multihit Vigor, Strength, Chado and target scope.");
+        foreach (bool upgraded in new[] { false, true })
+        foreach (bool hasTea in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            var tea = hasTea ? AddCard<Chado>(arena) : null;
+            var drawnTea = AddCard<Chado>(arena, PileType.Draw);
+            for (int i = 0; i < 15; i++) AddCard<MegaCrit.Sts2.Core.Models.Cards.DefendIronclad>(arena, PileType.Draw);
+            await Play(arena, Create(arena, ModelDb.Card<DragonFlyingKick>(), upgraded));
+            var hand = PileType.Hand.GetPile(arena.Player).Cards;
+            var breathedTea = tea ?? hand.OfType<Chado>().Single(c => c != drawnTea);
+            Require(hand.Count == CardPile.MaxCardsInHand && breathedTea.Pile?.Type == PileType.Hand
+                && breathedTea.DynamicVars.Energy.BaseValue == (upgraded ? 3 : 2) + (hasTea ? 1 : 0)
+                && drawnTea.Pile?.Type == PileType.Hand && drawnTea.DynamicVars.Energy.BaseValue == 1,
+                "Generated Dragon Flying Kick must breathe before filling the hand, preserving newly drawn Chado.");
+        }
+        GD.Print("PASS generated Dragon Flying Kick base+upgrade: breath before draw, existing/generated and newly drawn Chado.");
 
         using (var arena = new OrbCombat())
         {

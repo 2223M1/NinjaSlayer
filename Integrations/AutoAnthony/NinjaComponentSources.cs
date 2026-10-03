@@ -74,7 +74,7 @@ internal static class NinjaComponentSources
         new(typeof(Onslaught), "乘胜", "Onslaught", c => [Power<OnslaughtPower>(V(c,"StrengthPower"), "每当你的手里剑对敌人造成伤害时，本回合获得[[amount]]点力量。", "Whenever your Shuriken damages an enemy, gain [[amount]] Strength this turn.", persistent: true)]),
         new(typeof(Endurance), "忍耐", "Endurance", c => [Karate(c), Power<EndurancePower>(V(c,"LaterKarate"), "若本回合未打出攻击牌，在回合结束时获得[[amount]]层空手道。", "At the end of this turn, if you played no Attacks, gain [[amount]] Karate.")]),
         new(typeof(ReadTheEnemy), "察敌", "Read the Enemy", c => [Scry(c,"Cards"), Builtin("N:Draw", "抽[[draw]]张牌。", "Draw [[draw]] cards.", "draw", V(c,"Draw"))]),
-        new(typeof(DragonFlyingKick), "龙·飞踢", "Dragon Flying Kick", c => [Damage(c), Custom("fill_hand", "抽牌，直到手牌达到上限。", "Draw until your hand is full.", 1, fixedRule: true), Breath(c)]),
+        new(typeof(DragonFlyingKick), "龙·飞踢", "Dragon Flying Kick", c => [Damage(c), Breath(c), Custom("fill_hand", "抽牌，直到手牌达到上限。", "Draw until your hand is full.", 1, fixedRule: true)]),
         new(typeof(Moonsault), "月面宙反", "Moonsault", c => [ Custom("fire_stock", "激发并清空全部手里剑。", "Fire and consume all Shuriken.", 1, fixedRule: true)]),
         new(typeof(ShurikenStorm), "手里剑风暴", "Shuriken Storm", c => [Stock(c), Custom("discard_stock", "丢弃所有手牌，每丢弃1张牌获得1层手里剑。", "Discard your hand. Gain 1 Shuriken for each card discarded.", 1, fixedRule: true)]),
         new(typeof(NinjaCaltrops), "撒菱", "Ninja Caltrops", c => [Block(c), Custom("thorns", "获得[[amount]]点荆棘。", "Gain [[amount]] Thorns.", V(c,"ThornsPower"))]),
