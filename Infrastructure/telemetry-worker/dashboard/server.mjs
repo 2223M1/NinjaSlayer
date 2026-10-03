@@ -14,7 +14,7 @@ import { inspectFeedbackZip } from './feedback-files.mjs';
 import { feedbackPublication, publishFeedback } from './feedback-publisher.mjs';
 
 const publicFiles = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']], ['/public-data.mjs', ['public-data.mjs', 'text/javascript']]]);
-for (const file of ['i18n.mjs', 'translations.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
+for (const file of ['i18n.mjs', 'translations.mjs', 'version-filter.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs']) publicFiles.set('/' + file, [file, 'text/javascript']);
 publicFiles.set('/vendor/chart.umd.js', ['../node_modules/chart.js/dist/chart.umd.js', 'text/javascript']);
 for (const [path, file, type] of [['/admin', 'admin.html', 'text/html'], ['/admin.js', 'admin.js', 'text/javascript'], ['/admin.css', 'admin.css', 'text/css']]) publicFiles.set(path, [file, type]);
 
@@ -114,7 +114,7 @@ export async function createDashboardServer({ feedbackReader = { loadFeedback, r
       } else if (request.method === 'GET' && url.pathname === '/api/snapshot') {
         send(200, { ...publishSnapshot(telemetry, catalog), currentVersion: (await readCurrentRelease()).version, sources, feedback: publicFeedback(feedback) });
       } else if (request.method === 'GET' && url.pathname === '/api/view') {
-        const filters = Object.fromEntries(url.searchParams);
+        const filters = { ...Object.fromEntries(url.searchParams), version: url.searchParams.getAll('version').filter(Boolean) };
         send(200, { application: 'NinjaSlayerDashboard', ...summarizePublic(publishSnapshot(telemetry, catalog), filters), sources, feedback, feedbackWarnings,
           rejected: telemetry.rejected, duplicates: telemetry.duplicates, conflicts: telemetry.conflicts,
           invalidCombats: telemetry.invalidCombats,

@@ -48,8 +48,8 @@ public sealed class DragonFlyingKick : NinjaSlayerRareCard
             .AfterAttackerAnim(() => JumpAnimation.PlayFlyingKick(Owner.Creature))
             .Targeting(cardPlay.Target!)
             .ExecuteWithFinisher(choiceContext, this, cardPlay);
-        await CardPileCmd.Draw(choiceContext, Math.Max(0, CardPile.MaxCardsInHand - PileType.Hand.GetPile(Owner).Cards.Count), Owner);
         await ChadoBreathCmd.Apply(choiceContext, Owner, DynamicVars["Breath"].IntValue);
+        await CardPileCmd.Draw(choiceContext, Math.Max(0, CardPile.MaxCardsInHand - PileType.Hand.GetPile(Owner).Cards.Count), Owner);
     }
 
     protected override void OnUpgrade()

@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { createDashboardServer } from '../dashboard/server.mjs';
 import { chartSchemaVersion, publicFeedback, publishSnapshot } from '../dashboard/publish.mjs';
 import { summarizePublic, useCurrentCatalog } from '../dashboard/public-data.mjs';
+import { selectGroups, chartRows, chartValue, charts } from '../dashboard/charts.mjs';
 import { loadTelemetry } from '../dashboard/posthog.mjs';
 
 const cardA = 'CARD.NINJA_SLAYER_CARD_STRIKE_NINJA_SLAYER';
@@ -235,6 +236,7 @@ test('public aggregates match private statistics across date, version, ascension
   const telemetry = normalizeEvents([event(), old, mixed, multi]);
   const snapshot = { ...publishSnapshot(telemetry, catalog), sources: {}, feedback: [] };
   for (const filters of [{}, { days: '1' }, { days: '2' }, { version: '0.2.4' }, { version: '0.2.3' },
+    { version: ['0.2.3', '0.2.4'] }, { version: ['0.2.4'] }, { version: [] }, { version: ['unknown'] },
     { ascension: '0' }, { ascension: '10', outcome: 'win' }, { party: 'multi' }, { party: 'solo' }, { outcome: 'loss' }]) {
     const actual = summarizePublic(snapshot, filters, now);
     const expected = summarize(telemetry.runs, snapshot.catalog, filters, now);
@@ -243,6 +245,54 @@ test('public aggregates match private statistics across date, version, ascension
   const output = JSON.stringify(snapshot);
   for (const privateValue of [playerId, 'cross-version', 'card_choices', 'net_id', 'start_time'])
     assert.ok(!output.includes(privateValue), privateValue);
+});
+
+test('version subsets combine counts once, retain weighted chart totals and respect other filters', () => {
+  const versions = Array.from({ length: 12 }, (_, i) => `1.0.${i}`);
+  const rows = versions.map((version, i) => event({ seed: `version-${i}`, version, won: i % 2 === 0 }));
+  const multi = rows[2].properties.payload.applicant_payload.run_history;
+  multi.players.push({ character_id: character, net_id: '76561198000000002', deck: [{ id: cardB }] });
+  const telemetry = normalizeEvents([...rows, structuredClone(rows[2]),
+    event({ seed: 'extra-a', version: '1.0.0', won: false }), event({ seed: 'extra-b', version: '1.0.0', won: false })]);
+  const snapshot = publishSnapshot(telemetry, catalog);
+  const selected = ['1.0.0', '1.0.2', '1.0.5', '1.0.7', '1.0.9'];
+  const filters = { version: [...selected, '1.0.2'] };
+  const summary = summarizePublic(snapshot, filters, now);
+  assert.equal(summary.runs, 7, 'duplicate selections and uploads must not count twice');
+  assert.equal(summary.wins, 2);
+  assert.equal(summary.playerSamples, 8, 'two players still contribute to one multiplayer run');
+  assert.equal(summary.cards[0].picked, 7);
+  assert.equal(summarizePublic(snapshot, { ...filters, outcome: 'loss' }, now).runs, 5);
+  assert.equal(summarizePublic(snapshot, { ...filters, party: 'multi' }, now).runs, 1);
+  assert.equal(summarizePublic(snapshot, { version: [] }, now).runs, 14);
+  assert.equal(summarizePublic(snapshot, { version: versions }, now).runs, 14);
+  assert.equal(summarizePublic(snapshot, { version: ['missing'] }, now).runs, 0);
+  const groups = selectGroups(snapshot, filters, now);
+  const winChart = charts.find(chart => chart.id === 'ascension-wins');
+  const [winRow] = chartRows(groups, winChart);
+  assert.equal(winRow.n, 7);
+  assert.equal(chartValue(winChart, winRow), 200 / 7, 'combine run counts, not per-version averages');
+  for (const chart of charts) {
+    const expected = chartRows(snapshot.groups.filter(group => selected.includes(group.version)), chart);
+    assert.deepEqual(chartRows(groups, chart), expected, chart.id);
+  }
+});
+
+test('local statistics API accepts repeated version parameters without losing selected versions', async t => {
+  const server = await createDashboardServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  await fetch(`${base}/api/import`, { method: 'POST', body: JSON.stringify([
+    event({ seed: 'a', version: '1.0.1' }), event({ seed: 'b', version: '1.0.3', won: false }),
+    event({ seed: 'c', version: '1.0.5' }),
+  ]) });
+  const read = async query => (await fetch(`${base}/api/view?${query}`)).json();
+  assert.equal((await read('version=1.0.1&version=1.0.5')).runs, 2);
+  assert.equal((await read('version=1.0.1&version=1.0.5&version=1.0.1')).runs, 2);
+  assert.equal((await read('version=1.0.1&version=1.0.5&outcome=loss')).runs, 0);
+  assert.equal((await read('version=1.0.3')).wins, 0);
+  assert.equal((await read('version=')).runs, 3);
+  assert.equal((await read('version=missing')).runs, 0);
 });
 
 async function buildPages(t, { previous, failTelemetry = false, rows = [], feedbackToken = '', failFeedback = false, manualFeedback = false } = {}) {
@@ -279,7 +329,7 @@ test('scheduled feedback failure retains the last complete snapshot; manual sync
 
 test('Pages artifact is standalone under the project subpath and accepts genuinely empty fresh telemetry', async t => {
   const output = await buildPages(t);
-  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'site-copy.mjs', 'styles.css', 'translations.mjs', 'vendor']);
+  assert.deepEqual((await readdir(output)).sort(), ['.nojekyll', 'app.js', 'assets', 'catalog-view.mjs', 'chart-view.mjs', 'charts.mjs', 'content', 'data.json', 'i18n.mjs', 'index.html', 'public-data.mjs', 'replay-view.mjs', 'site-copy.mjs', 'styles.css', 'translations.mjs', 'vendor', 'version-filter.mjs']);
   const html = await readFile(join(output, 'index.html'), 'utf8');
   assert.match(html, /data-view="pages"/);
   assert.match(html, /Content-Security-Policy/);

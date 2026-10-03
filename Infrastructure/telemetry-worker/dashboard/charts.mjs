@@ -1,3 +1,4 @@
+import { matchesVersion } from './version-filter.mjs';
 import { t, tr } from './i18n.mjs';
 
 // metric: count = runs in the bin, rate = win rate, mean = average value.
@@ -30,7 +31,7 @@ export function selectGroups(snapshot, filters = {}, now = Date.now()) {
     ? new Date(Date.parse(new Date(now).toISOString().slice(0, 10)) - (Number(filters.days) - 1) * 86400000).toISOString().slice(0, 10)
     : '';
   return snapshot.groups.filter(group => (!cutoff || group.date >= cutoff)
-    && (!filters.version || group.version === filters.version)
+    && matchesVersion(group.version, filters.version)
     && (!filters.party || group.party === filters.party)
     && (filters.ascension === '' || filters.ascension == null || group.ascension === Number(filters.ascension))
     && (!filters.outcome || group.outcome === filters.outcome));

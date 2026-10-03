@@ -114,7 +114,7 @@
   "NINJA_SLAYER_CARD_HELL_CHOP.title": "Hell Chop",
   "NINJA_SLAYER_CARD_HELL_CHOP.description": "Deal {Damage:diff()} damage.\nGain {Karate:diff()} [gold]Karate[/gold].\nEvery {Cards} other Attacks you play in a turn, put this card into your [gold]Hand[/gold].",
   "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.title": "Dragon Flying Kick",
-  "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Deal {Damage:diff()} damage.\nDraw until your [gold]Hand[/gold] is full.\n[gold]Chado Breathing[/gold] {Breath:diff()}.",
+  "NINJA_SLAYER_CARD_DRAGON_FLYING_KICK.description": "Deal {Damage:diff()} damage.\n[gold]Chado Breathing[/gold] {Breath:diff()}.\nDraw until your [gold]Hand[/gold] is full.",
   "NINJA_SLAYER_CARD_KILLING_INTENT.title": "Killing Intent",
   "NINJA_SLAYER_CARD_KILLING_INTENT.description": "Gain {Block:diff()} [gold]Block[/gold].\nAt the end of your turn, if you blocked all attack damage, add a [gold]Straight Ki[/gold] to your [gold]Hand[/gold] at the start of your next turn.",
   "NINJA_SLAYER_CARD_STRAIGHT_KI.title": "Straight Ki",

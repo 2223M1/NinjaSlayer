@@ -1,3 +1,4 @@
+import { matchesVersion } from './version-filter.mjs';
 const CHARACTER = 'CHARACTER.NINJA_SLAYER_CHARACTER_NINJA_SLAYER_CHARACTER';
 const COMBAT_ROOMS = new Set(['monster', 'elite', 'boss']);
 const USE_FIELDS = ['drawn', 'started', 'finished', 'manual_plays', 'auto_plays', 'energy_spent', 'stars_spent'];
@@ -105,7 +106,7 @@ export function normalizeEvents(input) {
 export function summarize(runs, catalog, filters = {}, now = Date.now()) {
   const cutoff = filters.days ? Date.parse(new Date(now).toISOString().slice(0, 10)) - (Number(filters.days) - 1) * 86400000 : -Infinity;
   const selected = runs.filter(run => Date.parse(run.at) >= cutoff
-    && (!filters.version || run.version === filters.version)
+    && matchesVersion(run.version, filters.version)
     && (!filters.party || (filters.party === 'solo' ? run.playerCount === 1 : run.playerCount > 1))
     && (!filters.outcome || run.win === (filters.outcome === 'win'))
     && (filters.ascension === '' || filters.ascension == null || run.ascension === Number(filters.ascension)));
@@ -146,7 +147,7 @@ export function summarize(runs, catalog, filters = {}, now = Date.now()) {
         else { card.skippedRuns++; card.skippedWins += Number(run.win); }
       }
       for (const combat of run.combats) {
-        if (filters.version && combat.version !== filters.version) continue;
+        if (!matchesVersion(combat.version, filters.version)) continue;
         const measured = combat.players.find(stat => String(stat.player_id) === String(player.net_id));
         if (!measured) continue;
         measuredCombats++;

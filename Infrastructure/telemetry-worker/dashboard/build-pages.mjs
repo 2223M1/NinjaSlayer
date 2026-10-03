@@ -67,7 +67,7 @@ snapshot.reports = (snapshot.reports ?? []).filter(report => Date.parse(report.e
 snapshot.feedback = snapshot.feedback.filter(item => Date.parse(item.at) >= Date.now() - 180 * 86_400_000);
 await mkdir(output, { recursive: true });
 const template = await readFile(new URL('index.html', import.meta.url), 'utf8');
-const clientFiles = ['app.js', 'styles.css', 'i18n.mjs', 'translations.mjs', 'site-copy.mjs', 'public-data.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs'];
+const clientFiles = ['app.js', 'styles.css', 'i18n.mjs', 'translations.mjs', 'version-filter.mjs', 'site-copy.mjs', 'public-data.mjs', 'charts.mjs', 'chart-view.mjs', 'catalog-view.mjs', 'replay-view.mjs'];
 const copy = await readCopy();
 const clientSources = await Promise.all(clientFiles.map(file => file === 'site-copy.mjs' ? copyModule(copy) : readFile(new URL(file, import.meta.url), 'utf8')));
 const assetVersion = createHash('sha256').update(JSON.stringify([template, ...clientSources])).digest('hex').slice(0, 16);

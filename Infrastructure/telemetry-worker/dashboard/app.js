@@ -26,9 +26,32 @@ const pages = {
   reports: [t('战报回放'), t('玩家分享的对局，可以一个回合一个回合地重看。')],
   feedback: [t('玩家来信'), t('发现 Bug 或者有想法？在游戏里按 F2 就能写信给作者。古事记上也是这么写的。')],
 };
-let view, snapshot, displayedCards = [], direction = -1, rarity = '', layout = 'grid', page = 'cards', toastTimer;
-const filterIds = ['days', 'version', 'ascension', 'party', 'outcome'];
-const filters = () => Object.fromEntries(filterIds.map(key => [key, $(`#${key}`).value]));
+let view, snapshot, displayedCards = [], direction = -1, rarity = '', layout = 'grid', page = 'cards', toastTimer, viewRequest = 0;
+const filterIds = ['days', 'ascension', 'party', 'outcome'];
+const selectedVersions = new Set(new URLSearchParams(location.search).getAll('version').filter(Boolean));
+const filters = () => ({ ...Object.fromEntries(filterIds.map(key => [key, $(`#${key}`).value])), version: [...selectedVersions] });
+function filterParams() {
+  const { version, ...single } = filters();
+  const params = new URLSearchParams(single);
+  for (const value of version) params.append('version', value);
+  return params;
+}
+function renderVersionOptions(versions) {
+  const values = [...new Set([...versions, ...selectedVersions])];
+  const options = $('#version-options');
+  if (options.dataset.versions !== JSON.stringify(values)) {
+    options.replaceChildren(...values.map(value => {
+      const label = el('label'), input = el('input');
+      input.type = 'checkbox'; input.value = value;
+      label.append(input, el('span', '', value));
+      return label;
+    }));
+    options.dataset.versions = JSON.stringify(values);
+  }
+  for (const input of options.querySelectorAll('input')) input.checked = selectedVersions.has(input.value);
+  $('#version-summary').textContent = selectedVersions.size === 0 ? t('所有版本')
+    : selectedVersions.size === 1 ? [...selectedVersions][0] : tr`已选 ${selectedVersions.size} 个版本`;
+}
 const metric = {
   pickRate: card => ratio(card.picked, card.offered),
   winRate: card => ratio(card.wins, card.held),
@@ -54,16 +77,20 @@ function fillOptions(select, values, first, label = value => value) {
   if (values.map(String).includes(previous)) select.value = previous;
 }
 async function loadView() {
+  const request = ++viewRequest;
   const query = filters();
-  snapshot = await api(isPages ? './data.json' : '/api/snapshot', { cache: 'no-cache' });
-  view = isPages ? summarizePublic(snapshot, query) : await api(`/api/view?${new URLSearchParams(query)}`);
-  const versionCatalog = await loadCatalog(snapshot.currentVersion);
+  const params = filterParams();
+  const nextSnapshot = await api(isPages ? './data.json' : '/api/snapshot', { cache: 'no-cache' });
+  const nextView = isPages ? summarizePublic(nextSnapshot, query) : await api(`/api/view?${params}`);
+  const versionCatalog = await loadCatalog(nextSnapshot.currentVersion);
+  if (request !== viewRequest) return;
+  snapshot = nextSnapshot; view = nextView;
   const catalogLanguage = versionCatalog?.languages[language] ? language : 'eng';
   const models = new Map((versionCatalog?.languages[catalogLanguage] ?? []).map(model => [model.id, model]));
   for (const card of view.cards) card.name = models.get(card.id)?.variants?.[0]?.name ?? card.name;
   snapshot.entities = models;
   snapshot.labels = versionCatalog?.labels?.[catalogLanguage] ?? {};
-  fillOptions($('#version'), view.versions, t('所有版本'));
+  renderVersionOptions(view.versions);
   fillOptions($('#ascension'), view.ascensions, t('所有进阶'), value => `A${value}`);
   fillOptions($('#feedback-category'), [...new Set(view.feedback.map(item => item.category))].sort(), t('全部分类'), categoryName);
   const connected = view.sources.telemetry.state === 'ready' || Boolean(view.sources.telemetry.at);
@@ -284,14 +311,31 @@ for (const button of document.querySelectorAll('[data-page]')) button.addEventLi
   showPage(button.dataset.page);
   loadView().catch(error => toast(error.message));
 });
-for (const id of filterIds) $(`#${id}`).addEventListener('change', () => {
+function filtersChanged() {
   const url = new URL(location.href);
-  for (const key of filterIds) { if ($(`#${key}`).value) url.searchParams.set(key, $(`#${key}`).value); else url.searchParams.delete(key); }
+  for (const key of [...filterIds, 'version']) url.searchParams.delete(key);
+  for (const [key, value] of filterParams()) if (value) url.searchParams.append(key, value);
   history.replaceState(null, '', url); loadView().catch(error => toast(error.message));
+}
+for (const id of filterIds) $(`#${id}`).addEventListener('change', filtersChanged);
+$('#version-options').addEventListener('change', event => {
+  if (event.target.checked) selectedVersions.add(event.target.value);
+  else selectedVersions.delete(event.target.value);
+  renderVersionOptions(view?.versions ?? []); filtersChanged();
+});
+$('#all-versions').addEventListener('click', () => {
+  selectedVersions.clear(); renderVersionOptions(view?.versions ?? []); filtersChanged();
+});
+$('#version').addEventListener('keydown', event => {
+  if (event.key === 'Escape') { $('#version').open = false; $('#version summary').focus(); }
+});
+document.addEventListener('click', event => {
+  if (!$('#version').contains(event.target)) $('#version').open = false;
 });
 $('#reset-filters').addEventListener('click', () => {
   const url = new URL(location.href);
   for (const key of filterIds) { $(`#${key}`).value = key === 'days' ? '30' : ''; url.searchParams.delete(key); }
+  selectedVersions.clear(); url.searchParams.delete('version'); renderVersionOptions(view?.versions ?? []);
   history.replaceState(null, '', url);
   loadView().catch(error => toast(error.message));
 });
@@ -336,6 +380,7 @@ if (!isPublic) {
     try {
       const result = await api('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: await file.text() });
       for (const id of filterIds) $(`#${id}`).value = '';
+      selectedVersions.clear();
       $('#connection-dialog').close(); await loadView(); toast(`已导入 ${result.runs} 场对局；当前显示全部导入日期。`);
     } catch (error) { $('#connection-error').textContent = error.message; }
     finally { event.target.value = ''; }

@@ -157,6 +157,14 @@ main { max-width: 1320px; margin: 0 auto; padding: 0 28px; }
 }
 .filter-bar label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
 .filter-bar select { min-width: 120px; color: var(--paper); }
+.version-filter { display: grid; gap: 4px; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+.version-filter details { position: relative; }
+.version-filter summary { cursor: pointer; min-width: 150px; min-height: 38px; padding: 7px 10px; border: 1px solid var(--line); background: var(--ink); color: var(--paper); }
+.version-filter summary:hover { border-color: var(--red); }
+.version-menu { position: absolute; z-index: 5; top: 100%; left: 0; width: min(280px, 75vw); padding: 12px; background: var(--ink); border: 1px solid var(--line); box-shadow: 0 8px 24px #0009; }
+#version-options { max-height: 280px; overflow-y: auto; }
+#version-options label { display: flex; align-items: center; gap: 8px; padding: 7px 4px; cursor: pointer; color: var(--paper); }
+#version-options input { accent-color: var(--red); width: 17px; height: 17px; margin: 0; }
 .last-sync { margin-left: auto; align-self: center; font-size: 12px; color: var(--muted); }
 .text-button { border: 0; background: none; color: var(--muted); padding: 8px 4px; text-decoration: underline; text-underline-offset: 4px; }
 .text-button:hover { color: var(--paper); }
