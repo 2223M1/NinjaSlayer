@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
+using MegaCrit.Sts2.Core.Debug;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
 
@@ -18,7 +19,12 @@ public static class Bootstrap
             string loaderDirectory = Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location)
                 ?? throw new InvalidOperationException("NinjaSlayer loader has no assembly directory.");
             Guid hostMvid = typeof(ModManager).Assembly.ManifestModule.ModuleVersionId;
-            BundleVariant variant = VariantBundleContract.Select(loaderDirectory, hostMvid);
+            SemanticVersion hostVersion = ReleaseInfoManager.Instance.SemVer
+                ?? throw new InvalidDataException("NinjaSlayer could not read the native STS2 release version.");
+            if (hostVersion.Prerelease is not null)
+                throw new InvalidDataException($"NinjaSlayer does not support STS2 prerelease {hostVersion}.");
+            string gameApiVersion = $"{hostVersion.Major}.{hostVersion.Minor}.{hostVersion.Patch}";
+            BundleVariant variant = VariantBundleContract.Select(loaderDirectory, gameApiVersion);
             AssemblyLoadContext loadContext = AssemblyLoadContext.GetLoadContext(typeof(Bootstrap).Assembly)
                 ?? AssemblyLoadContext.Default;
             Assembly implementation = loadContext.LoadFromAssemblyPath(variant.AssemblyPath);
@@ -57,7 +63,7 @@ public static class Bootstrap
 
             Log.Info(
                 $"[NinjaSlayer.Loader] Loaded {variant.Channel} implementation for STS2 {variant.GameApiVersion} " +
-                $"({variant.ModuleMvid:D}).");
+                $"(host MVID {hostMvid:D}).");
         }
         catch (Exception exception)
         {

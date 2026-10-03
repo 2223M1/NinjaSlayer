@@ -160,13 +160,10 @@ static void ValidateWorkshopBundle(IReadOnlyDictionary<string, string> options)
         expectedPaths.Add($"lib/{gameApiVersion}/{VariantBundleContract.CompatTargetMarkerName}");
         expectedPaths.Add($"lib/{gameApiVersion}/{VariantBundleContract.VariantAssemblyName}");
 
-        Guid moduleMvid = Guid.ParseExact(
-            profile.GetProperty("hostContract").GetProperty("moduleMvid").GetString()!,
-            "D");
-        BundleVariant selected = VariantBundleContract.Select(directory, moduleMvid);
+        BundleVariant selected = VariantBundleContract.Select(directory, gameApiVersion);
         if (selected.Channel != channelName || selected.GameApiVersion != gameApiVersion)
         {
-            throw new InvalidDataException($"MVID mapping for {channelName} does not match compatibility.json.");
+            throw new InvalidDataException($"Version mapping for {channelName} does not match compatibility.json.");
         }
         var metadata = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -498,33 +495,47 @@ static void TestLoaderContract()
     try
     {
         Directory.CreateDirectory(root);
-        Guid stableMvid = Guid.NewGuid();
-        Guid previewMvid = Guid.NewGuid();
-        string stableHash = WriteVariant(root, "0.1.0", "stable");
-        string previewHash = WriteVariant(root, "0.2.0", "preview");
-        WriteVariantManifest(root, stableMvid, previewMvid, stableHash, previewHash);
+        string stableHash = WriteVariant(root, "0.107.1", "stable");
+        string previewHash = WriteVariant(root, "0.111.0", "preview");
+        WriteVariantManifest(root, stableHash, previewHash);
 
-        BundleVariant stable = VariantBundleContract.Select(root, stableMvid);
-        BundleVariant preview = VariantBundleContract.Select(root, previewMvid);
+        BundleVariant stable = VariantBundleContract.Select(root, "0.107.1");
+        BundleVariant preview = VariantBundleContract.Select(root, "0.111.0");
         if (stable.Channel != "stable" || preview.Channel != "preview")
         {
             throw new InvalidOperationException("Loader contract selected the wrong channel.");
         }
-        ExpectInvalid(() => VariantBundleContract.Select(root, Guid.NewGuid()), "unknown MVID");
+        // macOS report: 0.111.0, MVID 57785517-0b16-42b9-8b36-bad6fb28384b.
+        // Runtime selection needs no platform MVID and loads the same exact API version.
+        foreach (string version in new[] { "", "0.110.0", "0.111.1", "0.111.0-beta", "0.111.00" })
+            ExpectInvalid(() => VariantBundleContract.Select(root, version), "unsupported or missing version");
+        WriteVariantManifest(root, stableHash, previewHash, schemaVersion: 1);
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "old manifest with new loader");
+        WriteVariantManifest(root, stableHash, previewHash, previewChannel: "stable");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "duplicate channel");
+        WriteVariantManifest(root, stableHash, stableHash, previewVersion: "0.107.1");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.107.1"), "duplicate version");
+        WriteVariantManifest(root, stableHash, previewHash);
 
         File.AppendAllText(preview.AssemblyPath, "tampered");
-        ExpectInvalid(() => VariantBundleContract.Select(root, previewMvid), "hash mismatch");
-        previewHash = WriteVariant(root, "0.2.0", "preview");
-        WriteVariantManifest(root, stableMvid, previewMvid, stableHash, previewHash);
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "hash mismatch");
+        previewHash = WriteVariant(root, "0.111.0", "preview");
+        WriteVariantManifest(root, stableHash, previewHash);
         File.Delete(Path.Combine(
             root,
             "lib",
-            "0.2.0",
+            "0.111.0",
             VariantBundleContract.CompatTargetMarkerName));
-        ExpectInvalid(() => VariantBundleContract.Select(root, previewMvid), "missing marker");
-        previewHash = WriteVariant(root, "0.2.0", "preview");
-        WriteVariantManifest(root, stableMvid, previewMvid, stableHash, previewHash, "../outside");
-        ExpectInvalid(() => VariantBundleContract.Select(root, stableMvid), "directory escape");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "missing marker");
+        previewHash = WriteVariant(root, "0.111.0", "preview");
+        File.WriteAllText(Path.Combine(root, "lib", "0.111.0", VariantBundleContract.CompatTargetMarkerName), "0.107.1");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "wrong target marker");
+        previewHash = WriteVariant(root, "0.111.0", "preview");
+        File.Delete(preview.AssemblyPath);
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.111.0"), "missing implementation");
+        previewHash = WriteVariant(root, "0.111.0", "preview");
+        WriteVariantManifest(root, stableHash, previewHash, "../outside");
+        ExpectInvalid(() => VariantBundleContract.Select(root, "0.107.1"), "directory escape");
         Console.WriteLine("Loader variant contract tests passed.");
     }
     finally
@@ -548,32 +559,31 @@ static string WriteVariant(string root, string version, string content)
 
 static void WriteVariantManifest(
     string root,
-    Guid stableMvid,
-    Guid previewMvid,
     string stableHash,
     string previewHash,
-    string? previewDirectory = null)
+    string? previewDirectory = null,
+    int schemaVersion = 2,
+    string previewChannel = "preview",
+    string previewVersion = "0.111.0")
 {
     var manifest = new
     {
-        schemaVersion = 1,
+        schemaVersion,
         variants = new object[]
         {
             new
             {
                 channel = "stable",
-                gameApiVersion = "0.1.0",
-                moduleMvid = stableMvid.ToString("D"),
-                directory = "lib/0.1.0",
+                gameApiVersion = "0.107.1",
+                directory = "lib/0.107.1",
                 assembly = "NinjaSlayer.dll",
                 sha256 = stableHash
             },
             new
             {
-                channel = "preview",
-                gameApiVersion = "0.2.0",
-                moduleMvid = previewMvid.ToString("D"),
-                directory = previewDirectory ?? "lib/0.2.0",
+                channel = previewChannel,
+                gameApiVersion = previewVersion,
+                directory = previewDirectory ?? $"lib/{previewVersion}",
                 assembly = "NinjaSlayer.dll",
                 sha256 = previewHash
             }

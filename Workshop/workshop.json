@@ -1,10 +1,10 @@
 {
   "title": "忍者杀手 Ninja Slayer",
-  "description": "[h1]DOMO。忍者杀手DESU。[/h1]\r\n\r\n[h2]出问题了？[/h2]\r\n游戏里按 [b]F2[/b] 可以反馈 Bug 及提供建议。\r\n想看大家都抓什么牌、倒在哪一层：[url=https://2223m1.github.io/NinjaSlayer/]忍杀情报站[/url]\r\n\r\nQQ交流群：818223008 \r\nDiscord群组：https://discord.gg/3Dn9fxwF\r\n爱发电：https://afdian.com/a/bobbizerri?\r\n\r\n[i]非官方同人 Mod。[/i]\r\n\r\n[hr][/hr]\r\n\r\n[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：https://discord.gg/3Dn9fxwF\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]\r\n\r\n[hr][/hr]\r\n\r\n[h1]ドーモ。ニンジャスレイヤーです。[/h1]\r\n\r\n[h2]何か問題が？[/h2]\r\nゲーム内で [b]F2[/b] を押すと、不具合の報告やご意見・ご提案を送れます。\r\nみんながどんなカードを取り、どの階で倒れたのか知りたい？：[url=https://2223m1.github.io/NinjaSlayer/?lang=jpn]ニンジャ情報局[/url]\r\n\r\nDiscord コミュニティ：https://discord.gg/3Dn9fxwF\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]非公式ファン Mod です。[/i]",
+  "description": "[h1]Domo. Ninja Slayer desu.[/h1]\r\n\r\n[h2]Something wrong?[/h2]\r\nPress [b]F2[/b] in game to report bugs or send suggestions.\r\nWant to see what cards everyone is picking and where their runs end? [url=https://2223m1.github.io/NinjaSlayer/?lang=eng]Ninja Slayer Intel[/url]\r\n\r\nDiscord Community：https://discord.gg/3Dn9fxwF\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]Unofficial fan-made Mod.[/i]",
   "visibility": "public",
   "changeNote": "我们修复了一些问题，增添了一些内容，调整了一些东西。",
   "tags": [
-    "character",
+    "characters",
     "Simplified Chinese",
     "English",
     "Japanese"
@@ -12,5 +12,9 @@
   "dependencies": [
     3747602295
   ],
-  "contentDescriptors": []
+  "contentDescriptors": [],
+  "localizedDescriptions": {
+    "schinese": "[h1]DOMO。忍者杀手DESU。[/h1]\r\n\r\n[h2]出问题了？[/h2]\r\n游戏里按 [b]F2[/b] 可以反馈 Bug 及提供建议。\r\n想看大家都抓什么牌、倒在哪一层：[url=https://2223m1.github.io/NinjaSlayer/]忍杀情报站[/url]\r\n\r\nQQ交流群：818223008 \r\nDiscord群组：https://discord.gg/3Dn9fxwF\r\n爱发电：https://afdian.com/a/bobbizerri?\r\n\r\n[i]非官方同人 Mod。[/i]",
+    "japanese": "[h1]ドーモ。ニンジャスレイヤーです。[/h1]\r\n\r\n[h2]何か問題が？[/h2]\r\nゲーム内で [b]F2[/b] を押すと、不具合の報告やご意見・ご提案を送れます。\r\nみんながどんなカードを取り、どの階で倒れたのか知りたい？：[url=https://2223m1.github.io/NinjaSlayer/?lang=jpn]ニンジャ情報局[/url]\r\n\r\nDiscord コミュニティ：https://discord.gg/3Dn9fxwF\r\nPatreon：https://www.patreon.com/cw/bobbizerri\r\n\r\n[i]非公式ファン Mod です。[/i]"
+  }
 }

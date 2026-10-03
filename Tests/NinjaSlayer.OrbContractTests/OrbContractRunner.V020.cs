@@ -67,6 +67,8 @@ public partial class OrbContractRunner
             Require(combat.Stock == 0 && combat.Tokens == 2 && combat.Player.Creature.Block == 0 && combat.Enemy.CurrentHp == 976,
                 "Oyeah Throw Sword must grant no block and consume the old stock without replenishing it.");
             var token = PileType.Hand.GetPile(combat.Player).Cards.OfType<StrongShuriken>().First();
+            Require(token.Keywords.SetEquals([CardKeyword.Retain, CardKeyword.Exhaust]),
+                "Generated Strong Shuriken must retain natively and exhaust when played.");
             Require(token.SnapshotDamage == 8, "Conversion must snapshot the six base damage and two Focus.");
             CardCmd.Upgrade(token);
             Require(token.DynamicVars.Damage.BaseValue == 12, "Strong Shuriken upgrade must add four damage.");
@@ -76,6 +78,8 @@ public partial class OrbContractRunner
             var restored = (StrongShuriken)CardModel.FromSerializable(token.ToSerializable());
             Require(restored.SnapshotDamage == 8 && restored.DynamicVars.Damage.BaseValue == 12,
                 $"Card serialization must retain the snapshot and upgrade: snapshot={restored.SnapshotDamage}, damage={restored.DynamicVars.Damage.BaseValue}, level={restored.CurrentUpgradeLevel}; saved={System.Text.Json.JsonSerializer.Serialize(token.ToSerializable(), new System.Text.Json.JsonSerializerOptions { IncludeFields = true })}.");
+            Require(new[] { token, clone, restored }.All(card => card.Keywords.SetEquals([CardKeyword.Retain, CardKeyword.Exhaust])),
+                "Upgrade, clone and save/load must preserve Strong Shuriken's native Retain and Exhaust.");
             await PowerCmd.Apply<FocusPower>(Choice, combat.Player.Creature, 8, combat.Player.Creature, null);
             await PowerCmd.Apply<StrengthPower>(Choice, combat.Player.Creature, 3, combat.Player.Creature, null);
             await CardCmd.AutoPlay(Choice, token, combat.Enemy);

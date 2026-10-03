@@ -837,6 +837,11 @@ try {
             finally {
                 Pop-Location
             }
+            Invoke-Native dotnet @(
+                'run', '--project', (Join-Path $candidate.Root 'tools/workshop-metadata/WorkshopMetadata.csproj'),
+                '--configuration', 'Release', "-p:Sts2DataDir=$resolvedStableDataDir", '--',
+                'apply', $frozenWorkshopMetadataPath, (Join-Path $candidate.Root 'eng/compatibility.json')
+            )
         }
     }
 

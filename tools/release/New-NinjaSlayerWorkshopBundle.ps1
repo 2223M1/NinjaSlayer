@@ -238,13 +238,12 @@ foreach ($channelName in @('stable', 'preview')) {
     $variants.Add([ordered]@{
         channel = $channelName
         gameApiVersion = [string]$profile.gameApiVersion
-        moduleMvid = ([Guid][string]$profile.hostContract.moduleMvid).ToString('D')
         directory = "lib/$($profile.gameApiVersion)"
         assembly = 'NinjaSlayer.dll'
         sha256 = (Get-FileHash -LiteralPath $variantAssembly -Algorithm SHA256).Hash.ToLowerInvariant()
     })
 }
-$variantManifest = [ordered]@{ schemaVersion = 1; variants = $variants.ToArray() }
+$variantManifest = [ordered]@{ schemaVersion = 2; variants = $variants.ToArray() }
 [IO.File]::WriteAllText(
     (Join-Path $output 'ninjaslayer-variants.manifest'),
     (($variantManifest | ConvertTo-Json -Depth 6) + "`n"),

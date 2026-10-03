@@ -15,6 +15,7 @@ function action(button, operation) {
     finally { button.disabled = false; }
   };
 }
+let feedbackSource = { state: 'unloaded' }, feedbackWarnings = [];
 let feedback = [], defaults, draft, key, dirty = false, selection = 0, reviewDirty = false;
 const reviewName = value => value === 'resolved' ? '已解决' : '未解决';
 function leaveReview() { return !reviewDirty || window.confirm('此反馈有尚未保存的修改，放弃这些修改？'); }
@@ -27,22 +28,52 @@ function showFeedbackList() {
     button.append(element('small', String(item.description ?? item.message ?? item.id).slice(0, 120)));
     action(button, () => showFeedback(item)); list.append(button);
   }
-  if (!list.children.length) list.append(element('p', '没有符合条件的来信。'));
+  if (!list.children.length) {
+    const message = feedbackSource.state === 'loading' ? '正在读取玩家来信，请稍候…'
+      : feedbackSource.state === 'error' ? '来信读取失败，请重试同步；这不代表没有来信。'
+      : feedbackSource.state !== 'ready' ? '尚未读取玩家来信。'
+      : feedbackWarnings.length ? '有来信未能读取，请查看读取警告后重试。'
+      : '没有符合条件的来信。';
+    list.append(element('p', message));
+  }
 }
 async function loadFeedbackView() {
   const data = await api('/api/view'); feedback = data.feedback;
+  feedbackSource = data.sources.feedback; feedbackWarnings = data.feedbackWarnings;
   $('#feedback-state').textContent = `共 ${feedback.length} 条 · ${data.sources.feedback.state === 'ready' ? '已同步' : data.sources.feedback.message ?? '尚未同步'}${data.feedbackWarnings.length ? ` · ${data.feedbackWarnings.length} 条读取警告` : ''}`;
   if (data.feedbackWarnings.length) status(data.feedbackWarnings.join('\n'));
   showFeedbackList();
+  return feedbackSource.state;
+}
+async function refreshFeedback() {
+  if (!leaveReview()) return;
+  const button = $('#refresh'); button.disabled = true;
+  reviewDirty = false; selection++;
+  $('#feedback-detail').replaceChildren(element('p', '请重新选择一封来信。'));
+  feedbackSource = { state: 'loading' };
+  $('#feedback-state').textContent = '正在同步 Cloudflare 玩家反馈…';
+  showFeedbackList(); status('正在同步 Cloudflare 玩家反馈…');
+  try {
+    await api('/api/refresh', 'POST');
+    await loadFeedbackView();
+    if (!feedbackWarnings.length) status(feedbackSource.state === 'ready' ? '玩家来信已同步。' : feedbackSource.message ?? '反馈未能同步，请重试。');
+  } catch (error) {
+    feedbackSource = { state: 'error', message: error.message };
+    $('#feedback-state').textContent = '同步失败；已有列表保留。';
+    showFeedbackList(); status(error.message);
+  } finally { button.disabled = false; }
 }
 async function showFeedback(item) {
   if (!leaveReview()) return;
   reviewDirty = false;
   const current = ++selection, detail = $('#feedback-detail');
-  detail.replaceChildren(element('p', '正在核验反馈及附件…'));
+  const loading = element('p', '正在读取处理状态，截图将随后加载…');
+  detail.replaceChildren(element('h3', `${item.at?.slice(0, 10) ?? ''} · ${item.id}`),
+    element('pre', item.description ?? item.message ?? ''), loading);
   const base = `/api/feedback/${encodeURIComponent(item.id)}`;
-  const metadata = await api(`${base}/metadata`);
-  const review = await api(`${base}/review`);
+  let metadata, review;
+  try { ({ metadata, review } = await api(`${base}/details`)); }
+  catch (error) { if (current === selection) loading.textContent = `读取失败：${error.message} 请重新选择来信重试。`; throw error; }
   if (current !== selection) return;
   detail.replaceChildren(element('h3', `${item.at?.slice(0, 10) ?? ''} · ${item.id}`));
   const body = element('pre', JSON.stringify(metadata.payload, null, 2)); detail.append(body);
@@ -58,12 +89,17 @@ async function showFeedback(item) {
   state.onchange = reply.oninput = () => { reviewDirty = true; saved.textContent = '有尚未保存的反馈修改。'; };
   action(save, async () => {
     state.disabled = reply.disabled = true;
+    save.textContent = '正在保存…'; saved.textContent = '正在保存到 Cloudflare，请稍候…';
+    status('正在保存反馈处理记录…');
     try {
       const result = await api(`${base}/review`, 'PUT', { status: state.value, reply: reply.value });
       item.review = result; showFeedbackList();
       if (current === selection) { reviewDirty = false; saved.textContent = '已保存到 Cloudflare。官网将在定时同步或立即同步部署后更新。'; }
       status('反馈处理记录已保存。');
-    } finally { state.disabled = reply.disabled = false; }
+    } catch (error) {
+      if (current === selection) saved.textContent = `保存未获确认：${error.message} 输入内容已保留，可重试。`;
+      throw error;
+    } finally { state.disabled = reply.disabled = false; save.textContent = '保存状态与回应'; }
   });
   reviewForm.append(stateLabel, state, replyLabel, reply, save, saved); detail.append(reviewForm);
   const attachments = element('div'); attachments.className = 'attachments';
@@ -124,7 +160,7 @@ $('#copy-form').onsubmit = event => event.preventDefault();
 for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).oninput = setDirty;
 $('#reset').onclick = () => { if (!key) return; for (const lang of ['zhs', 'eng', 'jpn']) $(`#copy-${lang}`).value = defaults[key][lang]; capture(); setDirty(); };
 $('#preview').onclick = event => { if (dirty) { event.preventDefault(); status('请先保存草稿，再预览。'); } };
-action($('#refresh'), async () => { if (!leaveReview()) return; reviewDirty = false; selection++; $('#feedback-detail').replaceChildren(element('p', '请重新选择一封来信。')); status('正在同步 Cloudflare 玩家反馈…'); await api('/api/refresh', 'POST'); await loadFeedbackView(); status('同步结束，详情见反馈状态。'); });
+action($('#refresh'), refreshFeedback);
 function showFeedbackPublication(receipt) {
   const panel = $('#feedback-publication'); panel.replaceChildren();
   if (!receipt) return;
@@ -140,5 +176,10 @@ window.addEventListener('beforeunload', event => { if (dirty || reviewDirty) { e
 try {
   const data = await api('/api/copy'); defaults = data.defaults; draft = data.draft;
   showCopyList(); selectCopy('DOMO，玩家=SAN。'); showPublication(data.publication);
-  await loadFeedbackView(); status('后台已就绪。点击“同步玩家反馈”读取最新来信。');
 } catch (error) { status(error.message); }
+try {
+  if (await loadFeedbackView() !== 'ready') await refreshFeedback();
+} catch (error) {
+  feedbackSource = { state: 'error', message: error.message };
+  showFeedbackList(); status(error.message);
+}

@@ -44,9 +44,39 @@ public partial class OrbContractRunner
         await VerifyAncientCardSources();
         await VerifyChadoGeneration();
         await VerifyOpeningChadoRetention();
+        await VerifyStrongShurikenRetention();
         await VerifyBlackFlameTurnEnd();
         await VerifyNarakuForms();
         VerifyNarakuEventEligibility();
+    }
+
+    private static async Task VerifyStrongShurikenRetention()
+    {
+        foreach (bool upgraded in new[] { false, true })
+        {
+            using var combat = new OrbCombat();
+            var card = AddCard<StrongShuriken>(combat, upgraded: upgraded);
+            var ordinary = combat.Card();
+            var context = new MegaCrit.Sts2.Core.GameActions.Multiplayer.HookPlayerChoiceContext(
+                combat.Player, 1, MegaCrit.Sts2.Core.Entities.Multiplayer.GameActionType.Combat);
+            for (int turn = 0; turn < 2; turn++)
+            {
+#if NINJASLAYER_CHANNEL_STABLE
+                object[] arguments = [combat.Player, context];
+#else
+                object[] arguments = [AccessTools.Field(typeof(CombatManager), "_turnState").GetValue(CombatManager.Instance)!, combat.Player, context];
+#endif
+                await (Task)AccessTools.Method(typeof(CombatManager), "FlushPlayerHand")
+                    .Invoke(CombatManager.Instance, arguments)!;
+                Require(card.Pile?.Type == PileType.Hand && ordinary.Pile?.Type == PileType.Discard,
+                    "Native end-turn hand flush must keep Strong Shuriken and discard an ordinary card on consecutive turns.");
+            }
+            int damage = upgraded ? 10 : 6;
+            await CardCmd.AutoPlay(Choice, card, combat.Enemy);
+            Require(card.Pile?.Type == PileType.Exhaust && combat.Enemy.CurrentHp == 1000 - damage,
+                "Retained Strong Shuriken must deal unchanged damage and exhaust when played.");
+        }
+        GD.Print("PASS Strong Shuriken base/upgrade survive two native hand flushes, deal unchanged damage and exhaust");
     }
 
     private static async Task VerifyAncientCardSources()
