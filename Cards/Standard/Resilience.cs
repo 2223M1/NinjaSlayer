@@ -12,9 +12,5 @@ public sealed class Resilience : NinjaSlayerUncommonCard
     protected override IEnumerable<DynamicVar> CanonicalVars => [new CardsVar(1)];
     protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay) =>
         PowerCmd.Apply<ResiliencePower>(choiceContext, Owner.Creature, DynamicVars.Cards.BaseValue, Owner.Creature, this);
-    protected override void OnUpgrade()
-    {
-        DynamicVars.Cards.UpgradeValueBy(1);
-        AddKeyword(CardKeyword.Innate);
-    }
+    protected override void OnUpgrade() => DynamicVars.Cards.UpgradeValueBy(1);
 }
