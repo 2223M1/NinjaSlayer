@@ -2697,9 +2697,7 @@
     "Target": "Self",
     "CanBeGeneratedInCombat": true,
     "CanBeGeneratedByModifiers": true,
-    "Keywords": [
-      "Innate"
-    ],
+    "Keywords": [],
     "Tags": [],
     "Portrait": "res://NinjaSlayer/images/cards/Resilience.png",
     "Vars": {
