@@ -30,23 +30,6 @@ internal static class FinisherAttackExtensions
             hitCountOverride);
     }
 
-    public static Task ExecuteSequenceWithFinisher(
-        this CardModel card,
-        PlayerChoiceContext choiceContext,
-        CardPlay cardPlay,
-        int hitCount,
-        Func<Task> sequence)
-    {
-        FinisherAttackSpec spec = FinisherAttackSpec.FromCard(
-            card,
-            cardPlay,
-            hitCountOverride: hitCount);
-        return NinjaSlayerFinisherCinematic.ExecuteSequenceWithFinisher(
-            choiceContext,
-            spec,
-            sequence);
-    }
-
     public static Task ExecuteDirectWithFinisher(
         this CardModel card,
         PlayerChoiceContext choiceContext,

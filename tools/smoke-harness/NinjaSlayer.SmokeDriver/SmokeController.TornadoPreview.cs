@@ -37,9 +37,10 @@ internal sealed partial class SmokeController
     internal bool IsNativeTimingReference => _timedTornado is Whirlwind;
     internal bool IsTornadoReturnProbe => _configuration.PreviewFormFinisher == "tornado-return";
 
-    internal void ObserveTornadoStart()
+    internal void ObserveTornadoStart(CardModel? card)
     {
-        if (_timedTornado != null) _tornadoStart = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+        if (_timedTornado != null && ReferenceEquals(card, _timedTornado))
+            _tornadoStart = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
     }
 
     internal void ObserveTornadoDamage(Creature target, CardModel? card)
@@ -318,10 +319,11 @@ internal static class TornadoPreviewNativeTimingReference
     }
 }
 
-[HarmonyPatch(typeof(NinjaSlayerXAttackSequence), nameof(NinjaSlayerXAttackSequence.Run))]
+[HarmonyPatch(typeof(Hook), nameof(Hook.BeforeAttack))]
 internal static class TornadoPreviewStartObserver
 {
-    private static void Prefix() => SmokeController.Current?.ObserveTornadoStart();
+    private static void Prefix(MegaCrit.Sts2.Core.Commands.Builders.AttackCommand __1) =>
+        SmokeController.Current?.ObserveTornadoStart(__1.ModelSource as CardModel);
 }
 
 [HarmonyPatch(typeof(Hook), nameof(Hook.AfterDamageReceived))]

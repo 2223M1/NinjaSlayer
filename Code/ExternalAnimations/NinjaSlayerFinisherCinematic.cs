@@ -284,51 +284,6 @@ internal static class NinjaSlayerFinisherCinematic
         return result;
     }
 
-    public static async Task ExecuteSequenceWithFinisher(
-        PlayerChoiceContext choiceContext,
-        FinisherAttackSpec spec,
-        Func<Task> sequence)
-    {
-        if (!FinisherEligibilityService.TryCreateSession(
-                spec,
-                command: null,
-                entryPoint: "explicit-sequence",
-                out FinisherSession? session))
-        {
-            await sequence();
-            return;
-        }
-
-        try
-        {
-            session.Begin();
-            await sequence();
-            if (session.RequiresAfterCardPlayed)
-            {
-                FinisherSessionRegistry.TransferToAfterCardPlayed(session);
-                return;
-            }
-        }
-        catch (Exception originalFailure)
-        {
-            try
-            {
-                await session.CompleteAsync(playPose: false);
-            }
-            catch (Exception completionFailure)
-            {
-                throw new AggregateException(
-                    "Finisher sequence and cleanup both failed.",
-                    originalFailure,
-                    completionFailure);
-            }
-
-            throw;
-        }
-
-        await session.CompleteAsync(playPose: true);
-    }
-
     public static async Task ExecuteDirectWithFinisher(
         PlayerChoiceContext choiceContext,
         FinisherAttackSpec spec,

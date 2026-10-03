@@ -178,6 +178,24 @@ public partial class OrbContractRunner
         }
         GD.Print("PASS v1.18 generated Half-Moon tea/doubling/reset and native Tornado multihit.");
 
+        foreach (bool upgraded in new[] { false, true })
+        foreach (bool storm in new[] { false, true })
+        {
+            using var arena = new OrbCombat();
+            var second = arena.AddEnemy();
+            AddCard<Chado>(arena, PileType.Exhaust);
+            AddCard<Chado>(arena, PileType.Exhaust);
+            var card = Create(arena, storm ? ModelDb.Card<StormFist>() : ModelDb.Card<DragonRoundhouseKick>(), upgraded);
+            await PowerCmd.Apply<StrengthPower>(Choice, arena.Player.Creature, 3, arena.Player.Creature, null);
+            await PowerCmd.Apply<VigorPower>(Choice, arena.Player.Creature, 7, arena.Player.Creature, null);
+            await Play(arena, card);
+            int damage = storm ? 4 * ((upgraded ? 6 + 2 * 4 : 4 + 2 * 3) + 10) : 2 * ((upgraded ? 9 : 7) + 10);
+            Require(arena.Enemy.CurrentHp == 1000 - damage && second.CurrentHp == 1000 - (storm ? 0 : damage)
+                && !arena.Player.Creature.HasPower<VigorPower>(),
+                "Generated Storm/Dragon base+upgrade must apply Vigor to every hit and target, then consume it once.");
+        }
+        GD.Print("PASS generated Storm/Dragon base+upgrade: native multihit Vigor, Strength, Chado and target scope.");
+
         using (var arena = new OrbCombat())
         {
             await Play(arena, Create(arena, ModelDb.Card<StraightPunch>()));

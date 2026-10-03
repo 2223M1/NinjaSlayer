@@ -1,26 +1,11 @@
-using MegaCrit.Sts2.Core.CardSelection;
-using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Extensions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Helpers;
-using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Cards;
-using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.Commands;
-using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
-using NinjaSlayer.Orbs;
-using NinjaSlayer.Powers;
-using STS2RitsuLib.Interop.AutoRegistration;
 
 namespace NinjaSlayer.Cards.Standard;
 
@@ -32,30 +17,19 @@ public sealed class DragonRoundhouseKick : NinjaSlayerUncommonCard
     public DragonRoundhouseKick()
         : base(nameof(DragonRoundhouseKick), 2, CardType.Attack, TargetType.AllEnemies) { }
 
-    protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int hits = DynamicVars.Repeat.IntValue;
-        return this.ExecuteSequenceWithFinisher(
-            choiceContext,
-            cardPlay,
-            hits,
-            () => NinjaSlayerXAttackSequence.Run(
-                Owner.Creature,
-                hits,
-                async _ =>
-                {
-                    AttackCommand command = DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                        .FromCard(this)
+            .FromCard(this)
 #else
-                        .FromCard(this, cardPlay)
+            .FromCard(this, cardPlay)
 #endif
-                        .WithDefectStrikeHitFx()
-                        .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
-                        .TargetingAllOpponents(CombatState!);
-                    await command.Execute(choiceContext);
-                    return CombatState!.HittableEnemies.Count == 0;
-                }));
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
+            .TargetingAllOpponents(CombatState!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
     public override async Task AfterAutoPostPlayPhaseEntered(

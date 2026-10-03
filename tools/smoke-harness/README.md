@@ -100,6 +100,28 @@ Dispatch the same workflow with `mode=FullAutoSlay` for the periodic/manual advi
 
 Multiplayer smoke remains deferred until the single-player harness has stable field history.
 
+## Tomoe Throw and Emperor Crab
+
+Run `-Mode TomoeThrow -NoScreenshots -BackgroundDesktop` against the universal
+bundle to exercise the real Emperor Crab encounter with one, two and four native
+player models. The fixture plays base/upgraded Tomoe Throw through the native
+action queue against both arms and a visible Spine creature, then plays another
+card. It checks tea exhaustion, exactly one Block/Weak application, restored body
+and targeting-marker transforms, and removed animation nodes. Normal and Fast
+speeds are covered. This is a rendered local simulation of party layouts, not
+proof of transport or synchronization between independent clients.
+
+## Multi-hit Vigor
+
+Run `-Mode MultiHitVigor -NoScreenshots -BackgroundDesktop` from a universal
+candidate bundle. It plays Storm Fist, Dragon Roundhouse Kick, Palm Thrust,
+Anti-Air Bang Bang Fist and Tornado Fist in the native action queue, covering
+base/upgraded cards at Normal/Fast speed. Each play has 7 Vigor and 3 Strength;
+Storm Fist also has two exhausted Chado. It checks every hit and target, one
+attack command per play, Vigor consumption, animation completion before each
+damage callback, and restored body/root transforms. This is a single rendered
+client and does not validate multiplayer transport.
+
 ## Sawatari Same-Combat Gate
 
 Run `SawatariSameCombat` to verify the event's two decision pauses and duel in one real combat. The trusted SmokeDriver replaces only the first event returned by the host with Sawatari, kills all but one first-wave target, and uses a real single-hit Ninja Slayer Strike to observe normal Finisher completion before the intermission. It then requires the original `CombatState`, `NCombatRoom`, history, RNG, card piles, and powers to survive the intermission; requires exactly one duel combat-start banner without another `BeforeCombatStart`; and requires exactly one final `AfterCombatEnd`. The process exits as soon as these assertions pass, so unrelated AutoSlayer failures later in the seeded run cannot mask this gate.

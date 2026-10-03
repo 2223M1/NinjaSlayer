@@ -25,7 +25,9 @@ internal enum SmokePhase
     Release100,
     Release102,
     Release103,
-    GreetingBow
+    GreetingBow,
+    TomoeThrow,
+    MultiHitVigor
 }
 
 internal sealed record SmokeConfiguration(

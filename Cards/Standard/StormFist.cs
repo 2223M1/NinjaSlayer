@@ -1,12 +1,10 @@
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
-using NinjaSlayer.Code.ExternalAnimations;
 using NinjaSlayer.Content;
 
 namespace NinjaSlayer.Cards.Standard;
@@ -28,22 +26,17 @@ public sealed class StormFist : NinjaSlayerRareCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        int hits = DynamicVars.Repeat.IntValue;
-        await this.ExecuteSequenceWithFinisher(choiceContext, cardPlay, hits,
-            () => NinjaSlayerXAttackSequence.Run(Owner.Creature, hits,
-                async _ =>
-                {
-                    await DamageCmd.Attack(DynamicVars.CalculatedDamage)
+        await DamageCmd.Attack(DynamicVars.CalculatedDamage)
+            .WithHitCount(DynamicVars.Repeat.IntValue)
 #if NINJASLAYER_LEGACY_CARD_PLAY_LINKS
-                        .FromCard(this)
+            .FromCard(this)
 #else
-                        .FromCard(this, cardPlay)
+            .FromCard(this, cardPlay)
 #endif
-                        .WithDefectStrikeHitFx()
-                        .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
-                        .Targeting(cardPlay.Target!).Execute(choiceContext);
-                    return !cardPlay.Target!.IsAlive;
-                }));
+            .WithDefectStrikeHitFx()
+            .WithAttackerAnim("SlowAttack", Owner.Character.AttackAnimDelay)
+            .Targeting(cardPlay.Target!)
+            .ExecuteWithFinisher(choiceContext, this, cardPlay);
     }
 
     protected override void OnUpgrade()

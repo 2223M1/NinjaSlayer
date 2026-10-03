@@ -1,0 +1,331 @@
+{
+  "sourceBaseRevision": "cccbe06b02b8838dbaeedb322598a063bfc17f43",
+  "sourceState": "Base revision plus uncommitted production fix; artifact SourceRevision remains the base revision.",
+  "productionPatch": "diff --git a/Code/ExternalAnimations/GrappledTargetPose.cs b/Code/ExternalAnimations/GrappledTargetPose.cs\nindex c1370a6..364525c 100644\n--- a/Code/ExternalAnimations/GrappledTargetPose.cs\n+++ b/Code/ExternalAnimations/GrappledTargetPose.cs\n@@ -97,7 +97,9 @@ internal sealed class GrappledTargetPose : IDisposable\n                 _track.SetTimeScale(0f);\n             }\n         }\n-        if (blur)\n+        // Background-driven creatures can expose a textureless Sprite2D as their\n+        // targeting body (e.g. Emperor Crab's arms). It has no pixels to sample.\n+        if (blur && _drawing is not Sprite2D { Texture: null })\n         {\n             if (_drawing is Sprite2D)\n             {",
+  "productionPatchSha256": "747962a76e2998e1bd73081e84a02abb747c0192ca143d81f400e15c2dba9a5e",
+  "productionFileSha256": "1a436697e85215afc2a27b691284041a30328ad3abfa574697811178b2d93e21",
+  "baseline": {
+    "version": "1.0.6",
+    "sourceRevision": "b4455b891116aba989fe3b0b6c9d20fff2c66240",
+    "reproducedPlayers": 2,
+    "target": "MONSTER.CRUSHER",
+    "exception": "System.AggregateException: One or more errors occurred. (Object reference not set to an instance of an object.)\r\n ---> System.NullReferenceException: Object reference not set to an instance of an object.\r\n   at NinjaSlayer.Code.Nodes.FreeControlMotionBlur.RecordHistory(Sprite2D body, Double time, Transform2D space, Vector2 pivot, Transform2D authored, Double angle)\r\n   at NinjaSlayer.Code.ExternalAnimations.GrappledTargetPose.Apply(Vector2 core, Single angle)\r\n   at NinjaSlayer.Code.ExternalAnimations.TomoeThrowAnimation.SyncTarget()\r\n   at NinjaSlayer.Code.ExternalAnimations.TomoeThrowAnimation._Ready()\r\n--- End of stack trace from previous location ---\r\n   at NinjaSlayer.Cards.Standard.TomoeThrow.OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)\r\n   at STS2RitsuLib.Cards.CardOnPlayHook.RunCardOnPlayHooks(CardModel card, PlayerChoiceContext choiceContext, CardPlay cardPlay) in F:\\Github\\sts-2-opencode\\sts-2-ritsulib\\src\\Cards\\CardOnPlayHook.cs:line 120\r\n   at MegaCrit.Sts2.Core.Helpers.TaskHelper.WhenAny(Task[] tasks)\r\n   at MegaCrit.Sts2.Core.GameActions.Multiplayer.BranchingPlayerChoiceContext.AssignTaskAndWaitForPauseOrCompletion(Task task)\r\n   at MegaCrit.Sts2.Core.Models.CardModel+<OnPlayWrapper>d__339.MoveNext_Patch2(<OnPlayWrapper>d__339& this)\r\n--- End of stack trace from previous location ---\r\n   at MegaCrit.Sts2.Core.Models.CardModel+<OnPlayWrapper>d__339.MoveNext_Patch2(<OnPlayWrapper>d__339& this)\r\n--- End of stack trace from previous location ---\r\n   at STS2RitsuLib.Cards.FreePlay.Patches.CardModelFreeAfterPlayedCleanupPatch.After(CardModel card, Task original) in F:\\Github\\sts-2-opencode\\sts-2-ritsulib\\src\\Cards\\FreePlay\\Patches\\FreePlayBindingPatches.cs:line 86\r\n   at NinjaSlayer.Code.Lifecycle.CardPlayResolutionScope.CompleteCardAfter(Task task, CardResolution resolution)\r\n   at NinjaSlayer.Code.ExternalAnimations.FinisherCleanupService.CleanupAfterCardPlay(Task original, CardModel card)\r\n   at NinjaSlayer.Code.ExternalAnimations.FinisherCleanupService.ThrowFailures(Exception originalFailure, Exception completionFailure)\r\n   at NinjaSlayer.Code.ExternalAnimations.FinisherCleanupService.CleanupAfterCardPlay(Task original, CardModel card)\r\n   at NinjaSlayer.Code.Patches.RapidCardResolutionScopePatch.SettleAfterCardResolution(Task task, CardModel card)\r\n   at MegaCrit.Sts2.Core.GameActions.PlayCardAction+<ExecuteAction>d__25.MoveNext_Patch1(<ExecuteAction>d__25& this)\r\n--- End of stack trace from previous location ---\r\n   at MegaCrit.Sts2.Core.Helpers.TaskHelper.LogTaskExceptions(Task task)\r\n   at MegaCrit.Sts2.Core.Helpers.TaskHelper.WhenAny(Task[] tasks)\r\n   at MegaCrit.Sts2.Core.GameActions.GameAction.Execute()\r\n   --- End of inner exception stack trace ---\r\n   at NinjaSlayer.SmokeDriver.SmokeController.RunTomoeThrowAsync()\r\n   at NinjaSlayer.SmokeDriver.SmokeController.RunSafelyAsync()"
+  },
+  "validatedAtUtc": "2026-10-03T23:32:31.1293955+08:00",
+  "live": [
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "cccbe06b02b8838dbaeedb322598a063bfc17f43",
+        "bundleVersion": "1.0.6",
+        "result": "passed",
+        "channel": "preview",
+        "gameApiVersion": "0.111.0",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "73b63ee0-6c0a-47bb-b0d1-b21f6d94222e",
+        "ritsuLibPackageId": "STS2.RitsuLib",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "7bdcaa3694cfed0b06e29ada7e0c49e70d3e34f9c2bba134c8638abf5cd33c08",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "tomoe-throw",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-03T23:28:28.3275682+08:00"
+      },
+      "cases": [
+        {
+          "players": 2,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": false
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.ROCKET",
+          "upgraded": false
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": false
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": true
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.ROCKET",
+          "upgraded": true
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": true
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": false
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.ROCKET",
+          "upgraded": false
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": false
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": true
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.ROCKET",
+          "upgraded": true
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": true
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": false
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.ROCKET",
+          "upgraded": false
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": false
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": true
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.ROCKET",
+          "upgraded": true
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": true
+        }
+      ],
+      "contractSha256": "af532ed57bc651547a8d9d325301df710aae58064e9835b0363ac3c133075273"
+    },
+    {
+      "attestation": {
+        "schemaVersion": 6,
+        "candidateSha": "cccbe06b02b8838dbaeedb322598a063bfc17f43",
+        "bundleVersion": "1.0.6",
+        "result": "passed",
+        "channel": "stable",
+        "gameApiVersion": "0.107.1",
+        "gameAssemblyVersion": "0.1.0.0",
+        "gameModuleMvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+        "ritsuLibPackageId": "STS2.RitsuLib.Compat.0.107.1",
+        "ritsuLibVersion": "0.5.12",
+        "ritsuLibRuntimeVersion": "0.6.5",
+        "additionalMods": [],
+        "bundleSha256": "7bdcaa3694cfed0b06e29ada7e0c49e70d3e34f9c2bba134c8638abf5cd33c08",
+        "compatibilityManifestSha256": "1dfb40ab39a01b84f45774932617d830003227ba954b843c06e70b3812624ceb",
+        "mode": "tomoe-throw",
+        "repository": "local",
+        "workflowRunId": "local",
+        "completedAtUtc": "2026-10-03T23:30:48.6370936+08:00"
+      },
+      "cases": [
+        {
+          "players": 2,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": false
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.ROCKET",
+          "upgraded": false
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": false
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": true
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.ROCKET",
+          "upgraded": true
+        },
+        {
+          "players": 2,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": true
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": false
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.ROCKET",
+          "upgraded": false
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": false
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": true
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.ROCKET",
+          "upgraded": true
+        },
+        {
+          "players": 4,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": true
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": false
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.ROCKET",
+          "upgraded": false
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": false
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.CRUSHER",
+          "upgraded": true
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.ROCKET",
+          "upgraded": true
+        },
+        {
+          "players": 1,
+          "target": "MONSTER.THIEVING_HOPPER",
+          "upgraded": true
+        }
+      ],
+      "contractSha256": "b860dc89ecdeb3ece6be1dc0bc531dd75c39f64b96776f1f878ac56ad17e573c"
+    }
+  ],
+  "files": [
+    {
+      "path": "Box2D.NET.dll",
+      "sha256": "a905d5041a7f07fdd16c8d4d937b44ed58e71a913452ccff22892a51410ed579"
+    },
+    {
+      "path": "LICENSE.Box2D.NET.txt",
+      "sha256": "eb7462ebd32e475c0d2e4469811066306d9e12874ed94663d9a3656da18c7385"
+    },
+    {
+      "path": "ninjaslayer-variants.manifest",
+      "sha256": "0da60e943ea20a03dfb8b34425df9eeac1fff8533c52df2417b4919debbcf874"
+    },
+    {
+      "path": "NinjaSlayer.dll",
+      "sha256": "27ed013a5def4d05eb528443950d9f23bf0d0d45b6e7c2e828d5113e0e9d94f2"
+    },
+    {
+      "path": "NinjaSlayer.json",
+      "sha256": "150beca7713a3c6b058b4354d4c5b28259571e4496896c88315d4a74b4ef01e2"
+    },
+    {
+      "path": "NinjaSlayer.pck",
+      "sha256": "6ef9f56831cc670d475b93e4a30c009a4b8321eeda3f8f67f41fba30a756c92a"
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "7bdcaa3694cfed0b06e29ada7e0c49e70d3e34f9c2bba134c8638abf5cd33c08"
+    },
+    {
+      "path": "lib/0.107.1/compat-target.txt",
+      "sha256": "6f2af232b64ebf802d90bba45ea4a089a6663f100c713c34bc16de0236e9583a"
+    },
+    {
+      "path": "lib/0.107.1/NinjaSlayer.dll",
+      "sha256": "3891fdd48c3d71c3a7e0d903c17d18c72e5552473a7d6d0ff93d4186e77b0596"
+    },
+    {
+      "path": "lib/0.111.0/compat-target.txt",
+      "sha256": "4f1b6e009ecb91528ecd3be4edbeaa9d05ef1eb663c3151b47a61601ec8167d1"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.AutoAnthony.dll",
+      "sha256": "6cf249ae10ae72f9c82fe206d06034a417663e8bb7065fc2ea82d6fb7184d6b9"
+    },
+    {
+      "path": "lib/0.111.0/NinjaSlayer.dll",
+      "sha256": "135fa1d8da266e1f065be5843b052ad76a0cd82520cf22e560d34ba477aef01b"
+    }
+  ],
+  "ritsuLib": {
+    "runtimeVersion": "0.6.5",
+    "compileVersion": "0.5.12",
+    "sha256": "b82ce613a2811b169f9dd05669c1503d7928a209eab22ba85222abddb05ce9ec"
+  },
+  "checks": {
+    "logicPassed": 375,
+    "repository": true,
+    "buildBoundaries": true,
+    "compatibilityManifest": true,
+    "dualHostProducts": true,
+    "dualHostSmokeDrivers": true,
+    "dualHostFullContracts": true,
+    "renderedTomoeActions": 36,
+    "renderedFollowupCards": 36
+  },
+  "testHarnessFailure": "Direct internal DLL startup skipped the universal loader dependency registration and failed to load Box2D.NET; subsequent tests used the complete universal bundle.",
+  "notRun": [
+    "Independent multiplayer clients/network transport",
+    "Player original save/reload reproduction",
+    "macOS/Linux live gameplay"
+  ],
+  "published": false,
+  "cleanup": {
+    "status": "blocked_by_automatic_approval",
+    "generatedDirectoriesRetained": [
+      "build/tomoe-crab/candidate",
+      "build/tomoe-crab/bundle",
+      "build/tomoe-crab/loader"
+    ],
+    "bytesRemoved": 0,
+    "reason": "blocked by policy; no more specific reason supplied",
+    "bytesRetained": 686013180
+  }
+}
